@@ -13,7 +13,6 @@ import {
 import HorizontalLoader from '../../common/app-loader/horizontal-dots-loader';
 import DFSelectField from '../../common/multi-select/app-searchable-field';
 import RunningNotification from '../../common/header-view/running-notification';
-import ReportDownloadTrigger from '../../common/header-view/report-download';
 
 const loaderStyle = {
   top: '-110%',
@@ -178,9 +177,6 @@ class DiagnosisView extends React.PureComponent {
               </div>
               )}
             </div>
-          </div>
-          <div className="align-items-start pl-0 pt-2 pb-2 " id="summary_report">
-            <ReportDownloadTrigger />
           </div>
         </div>
         <div className="col-sm-4 col-md-4 col-lg-4">

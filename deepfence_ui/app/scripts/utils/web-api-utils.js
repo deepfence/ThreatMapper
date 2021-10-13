@@ -1400,27 +1400,6 @@ export function deleteDocsById(params = {}) {
   });
 }
 
-export function reportDownload({ period_id = '' }) {
-  const url = `${backendElasticApiEndPoint()}/report?period_id=${period_id}`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  })
-    .then(response => response.blob())
-    .then(blob => {
-      const fileURL = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = 'deepfence-security-report.pdf';
-      link.href = fileURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-}
-
 export function saveGceCredentialKey({
   dispatch,
   credentials_key,

@@ -499,9 +499,13 @@ def get_logs_from_agents():
     """
     payloads = request.json
     node_id_list = payloads.get('node_id_list', None)
+    if not node_id_list:
+        raise InvalidUsage("node_id_list must not be empty")
+    if type(node_id_list) != list:
+        raise InvalidUsage("node_id_list must be list of node ids")
     node_type = payloads.get('node_type', None)
     if node_type != "host":
-        raise InvalidUsage("Host type is not valid")
+        raise InvalidUsage("node_type must be host")
 
     topology_data_df_format = {}
     try:
@@ -517,7 +521,6 @@ def get_logs_from_agents():
     except Exception as e:
         raise InvalidUsage(e)
 
-
     random_string = get_random_string(10)
     download_path = os.path.join("/tmp/deepfence-logs-download", random_string)
     mkdir_recursive(download_path)
@@ -525,22 +528,25 @@ def get_logs_from_agents():
     mkdir_recursive(zip_path)
 
     def get_logs_from_agents_task(node_id):
-        eventlet.monkey_patch()
-        node = Node(node_id, df_id_to_scope_id_map=df_id_to_scope_id_map,
-                    topology_data_df_format=topology_data_df_format)
-        applicable_scans_api_url = constants.SCOPE_HOST_API_CONTROL_URL.format(
-            probe_id=node.probe_id, host_name=node.host_name, action="get_logs_from_agent")
-        with eventlet.Timeout(10):
-            resp = requests.post(applicable_scans_api_url, data='{}', verify=False)
-        response_data = resp.json()
-        if resp.status_code != 200:
-            raise InvalidUsage("Error: could not get logs from agent")
-        for single_file_info in response_data["agent_logs"]:
-            host_download_path = os.path.join(download_path, node.host_name)
-            mkdir_recursive(host_download_path)
-            f = open(os.path.join(host_download_path, single_file_info["file_name"]), "w+")
-            f.write(single_file_info["data"])
-            f.close()
+        try:
+            eventlet.monkey_patch()
+            node = Node(node_id, df_id_to_scope_id_map=df_id_to_scope_id_map,
+                        topology_data_df_format=topology_data_df_format)
+            applicable_scans_api_url = constants.SCOPE_HOST_API_CONTROL_URL.format(
+                probe_id=node.probe_id, host_name=node.host_name, action="get_logs_from_agent")
+            with eventlet.Timeout(10):
+                resp = requests.post(applicable_scans_api_url, data='{}', verify=False)
+            response_data = resp.json()
+            if resp.status_code != 200:
+                raise InvalidUsage("Error: could not get logs from agent")
+            for single_file_info in response_data["agent_logs"]:
+                host_download_path = os.path.join(download_path, node.host_name)
+                mkdir_recursive(host_download_path)
+                f = open(os.path.join(host_download_path, single_file_info["file_name"]), "w+")
+                f.write(single_file_info["data"])
+                f.close()
+        except:
+            pass
 
     processes = []
     num_of_thread = 20

@@ -4,22 +4,6 @@ import ActionTypes from '../constants/action-types';
 const initialState = Map();
 const ReportDownloadReducer = (state = initialState, action) => {
   switch (action.type) {
-    case ActionTypes.REPORT_DOWNLOAD_REQUEST: {
-      state = state.set('loading', true);
-      return state;
-    }
-
-    case ActionTypes.REPORT_DOWNLOAD_SUCCESS: {
-      state = state.set('loading', false);
-      return state;
-    }
-
-    case ActionTypes.REPORT_DOWNLOAD_FAILURE: {
-      state = state.set('loading', false);
-      state = state.set('info', 'Report download failed');
-      return state;
-    }
-
     case ActionTypes.VULNERABILITY_CSV_DOWNLOAD_REQUEST: {
       state = state.setIn(['cve', 'loading'], true);
       return state;

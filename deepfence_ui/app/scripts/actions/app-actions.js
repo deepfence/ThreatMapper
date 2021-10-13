@@ -39,7 +39,6 @@ import {
   maskDocs,
   deleteDocsById,
   searchDocsWrapper,
-  reportDownload,
   getAllUsers,
   deleteUser,
   groupby,
@@ -1130,15 +1129,6 @@ export function deleteDocsByIdAction(params) {
     ActionTypes.DELETE_DOCS_BY_ID_FAILURE,
   ];
   return genericThunkAction(actionTypes, deleteDocsById, params);
-}
-
-export function reportDownloadAction(params) {
-  const actionTypes = [
-    ActionTypes.REPORT_DOWNLOAD_REQUEST,
-    ActionTypes.REPORT_DOWNLOAD_SUCCESS,
-    ActionTypes.REPORT_DOWNLOAD_FAILURE,
-  ];
-  return genericThunkAction(actionTypes, reportDownload, params);
 }
 
 export function getAllUsersAction(params) {
