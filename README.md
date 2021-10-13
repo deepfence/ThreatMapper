@@ -106,7 +106,7 @@ These quickstart instructions use pre-built Deepfence ThreatMapper containers fr
 
 The following instuctions explain how to get started with a docker-based install on a single host system.  Please verify the prerequisites before proceeding.
 
-1. Download the file [docker-compose.yml](files/docker-compose.yml) to the system that will host the Console
+1. Download the file [docker-compose.yml](deployment-scripts/docker-compose.yml) to the system that will host the Console
 2. Execute the following command to install and start the Console
     ```shell script
     docker-compose -f docker-compose.yml up -d
