@@ -144,7 +144,9 @@ Optionally the sensor container can be tagged using `USER_DEFINED_TAGS=""` in th
 The Deepfence Sensor is most easily deployed using the Helm chart.  Use `helm version` to determine whether you are using Helm v2.x or v3.x:
 
 ```shell script
-helm repo add deepfence https://deepfence.github.io/ThreatMapper/deployment-scripts/helm-charts
+helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm show readme deepfence/deepfence-agent
+helm show values deepfence/deepfence-agent
 
 # helm v2
 helm install deepfence/deepfence-agent \
