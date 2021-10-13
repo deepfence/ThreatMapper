@@ -1,0 +1,85 @@
+# Default values for deepfence.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+registry:
+  name: "https://index.docker.io/v1/"
+  # Set docker hub username and password provided by Deepfence
+  # This will create a secret called "deepfence-docker-secret"
+  username: ""
+  password: ""
+  # If kubernetes secret is already defined externally, change following value to false
+  # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  createRegistrySecret: "true"
+
+# Set this value to false if using external secrets file
+createDeepfenceNamespace: "true"
+
+image:
+  # deepfence agent runs as a daemonset in all nodes in the cluster
+  name: deepfenceio/deepfence_agent_ce
+  tag: latest
+  # cluster agent runs as a single pod
+  clusterAgentImageName: deepfenceio/deepfence_discovery_ce
+  clusterAgentImageTag: latest
+  pullPolicy: Always
+  pullSecretName: deepfence-docker-secret
+
+managementConsoleIp: ""
+
+# Auth: Get deepfence api key from UI -> Settings -> User Management
+deepfenceKey: ""
+# If kubernetes secret is already defined externally, change following value to false
+createDeepfenceKeySecret: "true"
+
+namespace: deepfence
+
+# Suffix cloud instance id to hostnames
+instanceIdSuffix: "N"
+
+# comma separated list of tags (labels) to set for all agents
+userDefinedTags: ""
+
+# (Optional) Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
+# Example: prod-cluster or dev1-cluster
+# It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
+clusterName: ""
+
+# Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
+mountContainerRuntimeSocket:
+  dockerSock: "true"
+  containerdSock: "true"
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 512Mi
+  limits:
+    cpu: 1500m
+    memory: 1536Mi
+
+clusterAgentResources:
+  requests:
+    cpu: 25m
+    memory: 80Mi
+  limits:
+    cpu: 1500m
+    memory: 1536Mi
+
+nodeSelector: {}
+
+tolerations:
+  - operator: "Exists"
+    effect: "NoSchedule"
+  - operator: "Exists"
+    effect: "NoExecute"
+
+affinity: {}
+
+serviceAccount:
+  # Annotations to add to the service account
+  annotations: {}
+  name: "deepfence-agent"
+
+nameOverride: ""
+fullnameOverride: ""

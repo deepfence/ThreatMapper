@@ -1,0 +1,145 @@
+@import "variables.scss";
+
+.close-cb {
+  float: right;
+  cursor: pointer;
+}
+
+.confirmation-box {
+  font-size: 14px;
+  margin: auto;
+
+  .title {
+    border-bottom: none;
+    color: #ffffff;
+    font-family: "Source Sans Pro", sans-serif;
+    font-weight: 600;
+    background-color: #202020;
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .body {
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 15px;
+
+  .additional-inputs.agent-deregister .input-component input {
+    width: auto;
+  }
+
+    .additional-inputs {
+      margin-top: 10px;
+
+      .input-component {
+        margin-bottom: 5px;
+
+        input {
+          margin-top: 2px;
+          width: 100%;
+          background-color: #303030;
+          color: #999999;
+          padding: 4px 14px 6px 14px;
+          border-radius: 4px;
+        }
+        input#unblock_ip {
+          width: auto;
+        }
+        input{
+          position: relative;
+        }
+        input[type=checkbox]:before {
+          content: "";
+          display: block;
+          position: absolute;
+          width: 16px;
+          height: 16px;
+          top: 0;
+          left: 0;
+          background-color: #202020;
+          border: 1px solid #B2B0B2;
+          border-radius: 2px;
+        }
+        input[type=checkbox]:checked:before {
+          content: "";
+          display: block;
+          position: absolute;
+          width: 16px;
+          height: 16px;
+          top: 0;
+          left: 0;
+          background-color: #1E80EF;
+        }
+        input[type=checkbox]:checked:after {
+          content: "";
+          display: block;
+          width: 4px;
+          height: 8px;
+          border: solid white;
+          border-width: 0 2px 2px 0;
+          -webkit-transform: rotate(45deg);
+          -ms-transform: rotate(45deg);
+          transform: rotate(45deg);
+          position: absolute;
+          top: 3px;
+          left: 6px;
+        }input[type=radio] {
+          display: flex;
+          width: 10%;
+        }
+      }
+
+      .input-component:last-child {
+        margin-bottom: 0px;
+      }
+
+      input + .label {
+        margin-left: 10px;
+      }
+    }
+  }
+
+  .action {
+    display: flex;
+    justify-content: flex-end;
+    bottom: 10px;
+    right: 0;
+    left: 0;
+  }
+
+  .cbtn {
+    margin-right: 10px;
+    padding: 5px;
+    background-color: transparent;
+    font-size: 14px;
+  }
+  
+  .cbtn:last-child {
+    margin-right: 0px;
+  }
+
+  .confirm-btn {
+    background-color: #E73B3B;
+    color: #ffffff;
+    border-radius: 6px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .cancel-btn {
+    background-color: #3f3d3d;
+    color: #ffffff;
+    border-radius: 6px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+}

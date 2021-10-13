@@ -1,0 +1,5 @@
+boto3==1.18.51
+urllib3==1.26.7
+requests==2.26.0
+docker==5.0.2
+chardet==4.0.0

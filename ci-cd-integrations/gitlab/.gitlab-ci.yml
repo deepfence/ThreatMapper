@@ -1,0 +1,38 @@
+stages:
+  - test-go-app-build
+  - test-docker-build
+
+test-go-app-build:
+  image: golang:latest
+  stage: test-go-app-build
+
+  variables:
+    # Please edit to your GitLab project
+    REPO_NAME: gitlab.com/deepfence-gitlab/simple_go_server
+
+    # The problem is that to be able to use go get, one needs to put
+    # the repository in the $GOPATH. So for example if your gitlab domain
+    # is gitlab.com, and that your repository is namespace/project, and
+    # the default GOPATH being /go, then you'd need to have your
+    # repository in /go/src/gitlab.com/namespace/project
+    # Thus, making a symbolic link corrects this.
+  before_script:
+    - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
+    - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
+    - cd $GOPATH/src/$REPO_NAME
+
+  script:
+    - go build -o $CI_PROJECT_DIR/demo-app src/main.go
+  artifacts:
+    paths:
+      - demo-app
+    
+test-docker-build-and-cve:
+  image: docker:latest
+  stage: test-docker-build
+  services: 
+    - docker:dind
+  variables:
+    IMAGE_NAME: go-server-test:latest
+  script:
+    - docker run -it --rm --net=host -v /var/run/docker.sock:/var/run/docker.sock deepfenceio/deepfence_vulnerability_mapper_ce:latest -mgmt-console-ip=$DEEPFENCE_CONSOLE_IP -image-name="$IMAGE_NAME" -fail-cve-count=$FAIL_CVE_COUNT -fail-cve-score=$FAIL_CVE_SCORE

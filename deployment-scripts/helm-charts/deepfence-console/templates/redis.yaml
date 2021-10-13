@@ -1,0 +1,74 @@
+{{- if and (eq "deepfence-redis" .Values.db.redis.host) (eq "6379" .Values.db.redis.port) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-redis
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: deepfence-redis
+  template:
+    metadata:
+      labels:
+        name: deepfence-redis
+        app: deepfence-console
+    spec:
+{{- if .Values.topologyNodeAffinityHostName }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
+      containers:
+        - name: deepfence-redis
+          image: "{{ .Values.image.repository }}deepfence_redis_ce:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: INITIALIZE_REDIS
+              value: "Y"
+          ports:
+            - containerPort: 6379
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+              memory: {{ .Values.defaultResourceLimits.requests.memory }}
+            limits:
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
+              memory: 10Gi
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-redis
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-redis
+  ports:
+    - name: deepfence-redis-port
+      port: 6379
+      protocol: TCP
+      targetPort: 6379
+---
+{{- end }}

@@ -1,0 +1,18 @@
+
+Docker build instructions (standalone)
+======================================
+
+GOOS=linux GOARCH=386 go build *.go
+
+docker build -t deepfenceio/diagnonsis:0.1 .
+
+docker run -v /var/run/docker.sock:/var/run/docker.sock -p 8009:8009 -dit --name deepfence-diagnosis deepfenceio/diagnonsis:0.1
+
+
+Building deepfence_diagnosis as a submodule of deepfence_console repository
+===========================================================================
+
+Simply run build.sh inside the deepfence_console directory. It will always pull
+the latest from this repository and build it.
+
+

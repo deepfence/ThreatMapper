@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="248.0px"
+   height="248.0px"
+   viewBox="0 0 248.0 248.0"
+   version="1.1"
+   id="SVGRoot"
+   sodipodi:docname="Amazon-CloudFront_color.svg"
+   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)">
+  <defs
+     id="defs1402">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect2040"
+       is_visible="true"
+       lpeversion="1"
+       satellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,6.0755415,0,1 @ F,0,0,1,0,6.1445293,0,1 @ F,0,0,1,0,0,0,1"
+       unit="px"
+       method="auto"
+       mode="F"
+       radius="0"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="true"
+       hide_knots="false" />
+    <style
+       id="style1979">.cls-1{fill:url(#GreenGradient);}.cls-2{fill:#fff;}</style>
+    <linearGradient
+       id="GreenGradient"
+       x1="-522.53"
+       y1="465.47"
+       x2="-416.47"
+       y2="571.53"
+       gradientTransform="rotate(-90,-456.5,24.5)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#1b660f"
+         id="stop1981" />
+      <stop
+         offset="1"
+         stop-color="#6cae3e"
+         id="stop1983" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#101010"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.3552412"
+     inkscape:cx="69.509569"
+     inkscape:cy="124"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="true"
+     inkscape:window-width="1366"
+     inkscape:window-height="705"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     showguides="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1972" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata1405">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="BG" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Bounding Box" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Top">
+    <path
+       style="fill:#915aee;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       id="path883"
+       sodipodi:type="arc"
+       sodipodi:cx="154.57903"
+       sodipodi:cy="83.172447"
+       sodipodi:rx="111.24604"
+       sodipodi:ry="111.24604"
+       sodipodi:start="5.9893981"
+       sodipodi:end="5.9807042"
+       sodipodi:open="true"
+       sodipodi:arc-type="arc"
+       d="M 261.05862,50.957904 A 111.24604,111.24604 0 0 1 187.02492,189.58178 111.24604,111.24604 0 0 1 48.240468,115.84955 111.24604,111.24604 0 0 1 121.67088,-23.094836 111.24604,111.24604 0 0 1 260.77453,50.03341"
+       transform="rotate(16.68412)" />
+    <g
+       id="Icon_Test-1"
+       data-name="Icon Test"
+       transform="matrix(2.5645101,0,0,2.5645101,27.839596,27.82754)">
+      <path
+         class="cls-2"
+         d="m 46.14,60.67 -1.78,-0.92 a 29.75,29.75 0 0 0 2.27,-5.66 l 1.92,0.56 a 31.93,31.93 0 0 1 -2.41,6.02 z M 48,42.36 A 31.87,31.87 0 0 0 42.73,26.68 L 44.4,25.59 A 33.81,33.81 0 0 1 50,42.24 Z M 34.81,18.23 a 30.08,30.08 0 0 0 -4.62,-2.84 l 0.91,-1.78 a 31.94,31.94 0 0 1 4.92,3 z"
+         id="path14-4" />
+      <path
+         class="cls-2"
+         d="m 43,44.9 a 29.91,29.91 0 0 0 -11.17,-7 L 32.45,36 a 31.91,31.91 0 0 1 11.9,7.45 z"
+         id="path16-0" />
+      <path
+         class="cls-2"
+         d="m 51.24,56.84 c -0.37,-1 -0.79,-1.92 -1.25,-2.85 l 1.79,-0.89 a 32.71,32.71 0 0 1 1.33,3 z"
+         id="path18-2" />
+      <path
+         class="cls-2"
+         d="m 45.57,61.15 -0.64,-1.89 a 22.4,22.4 0 0 0 6.63,-3.57 l 1.23,1.58 a 24.36,24.36 0 0 1 -7.22,3.88 z"
+         id="path20" />
+      <path
+         class="cls-2"
+         d="m 13.78,37 -0.46,-1.94 a 31.25,31.25 0 0 1 6.77,-0.89 l 0.05,2 A 29.4,29.4 0 0 0 13.78,37 Z"
+         id="path22" />
+      <path
+         class="cls-2"
+         d="M 30.18,30.64 28.5,29.55 a 28.67,28.67 0 0 1 5.37,-6.4 l 1.32,1.51 a 26.64,26.64 0 0 0 -5.01,5.98 z"
+         id="path24" />
+      <path
+         class="cls-2"
+         d="M 45.05,18.78 44.37,16.9 A 29.77,29.77 0 0 1 49,15.58 l 0.37,2 a 26.9,26.9 0 0 0 -4.32,1.2 z"
+         id="path26" />
+      <path
+         class="cls-2"
+         d="M 25.25,59 A 31.53,31.53 0 0 1 22.68,47 21.72,21.72 0 0 1 23.3,42.28 c 0.07,-0.35 0.15,-0.71 0.22,-1.08 l 2,0.39 c -0.07,0.38 -0.15,0.74 -0.22,1.1 A 20,20 0 0 0 24.72,47 29.56,29.56 0 0 0 27.1,58.28 Z"
+         id="path28" />
+      <path
+         class="cls-2"
+         d="m 37.5,62.5 a 25,25 0 0 1 -25,-25 c 0,-0.51 0,-1 0.05,-1.51 A 25,25 0 0 1 30.36,13.54 25,25 0 0 1 49.72,15.7 25,25 0 0 1 52.79,57.28 25.2,25.2 0 0 1 37.5,62.5 Z m 0,-48 a 22.56,22.56 0 0 0 -6.57,1 23,23 0 0 0 -16.38,20.63 c 0,0.47 -0.05,0.92 -0.05,1.37 a 23,23 0 0 0 23,23 22.61,22.61 0 0 0 7.42,-1.24 22.32,22.32 0 0 0 6.64,-3.57 A 23,23 0 0 0 37.5,14.5 Z"
+         id="path30" />
+      <path
+         class="cls-2"
+         d="m 39.93,25.93 a 4.43,4.43 0 1 1 4.43,-4.42 4.42,4.42 0 0 1 -4.43,4.42 z m 0,-6.85 a 2.43,2.43 0 1 0 2.43,2.43 2.43,2.43 0 0 0 -2.43,-2.43 z"
+         id="path32" />
+      <path
+         class="cls-2"
+         d="m 26.29,39.88 a 4.43,4.43 0 1 1 4.43,-4.43 4.44,4.44 0 0 1 -4.43,4.43 z m 0,-6.86 A 2.43,2.43 0 1 0 28.72,35.45 2.43,2.43 0 0 0 26.29,33 Z"
+         id="path34" />
+      <path
+         class="cls-2"
+         d="m 48.28,52.7 a 4.43,4.43 0 1 1 4.42,-4.42 4.42,4.42 0 0 1 -4.42,4.42 z m 0,-6.85 a 2.43,2.43 0 1 0 2.42,2.43 2.43,2.43 0 0 0 -2.42,-2.43 z"
+         id="path36" />
+    </g>
+  </g>
+</svg>

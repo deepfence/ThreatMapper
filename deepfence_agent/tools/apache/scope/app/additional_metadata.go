@@ -1,0 +1,317 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/gomodule/redigo/redis"
+	"github.com/olivere/elastic/v7"
+	"github.com/sirupsen/logrus"
+	"os"
+	"strings"
+	"sync"
+	"time"
+)
+
+const (
+	esAggsSize             = 100000
+	cveScanLogsEsIndex     = "cve-scan"
+	complianceLogsEsIndex  = "compliance-scan-logs"
+	scanStatusNeverScanned = "never_scanned"
+	nodeSeverityRedisKey   = "NODE_SEVERITY"
+)
+
+var (
+	vulnerabilityStatusMap map[string]string
+	nStatus                *Status
+)
+
+type Status struct {
+	nodeStatus NodeStatus
+	esClient   *elastic.Client
+	redisPool  *redis.Pool
+}
+
+type NodeSeverityData struct {
+	Containers map[string]string `json:"containers,omitempty"`
+	Pods       map[string]string `json:"pods,omitempty"`
+	Severity   string            `json:"severity,omitempty"`
+}
+
+type NodeStatus struct {
+	VulnerabilityScanStatus     map[string]string
+	VulnerabilityScanStatusTime map[string]string
+	ComplianceScanStatus        map[string]string
+	ComplianceScanStatusTime    map[string]string
+	NodeSeverity                map[string]string
+	sync.RWMutex
+}
+
+func (st *Status) getNodeStatus() (map[string]string, map[string]string, map[string]string, map[string]string, map[string]string) {
+	st.nodeStatus.RLock()
+	nodeIdVulnerabilityStatusMap := st.nodeStatus.VulnerabilityScanStatus
+	nodeIdVulnerabilityStatusTimeMap := st.nodeStatus.VulnerabilityScanStatusTime
+	nodeIdComplianceStatusMap := st.nodeStatus.ComplianceScanStatus
+	nodeIdComplianceStatusTimeMap := st.nodeStatus.ComplianceScanStatusTime
+	nodeSeverityMap := st.nodeStatus.NodeSeverity
+	st.nodeStatus.RUnlock()
+	return nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdComplianceStatusMap, nodeIdComplianceStatusTimeMap, nodeSeverityMap
+}
+
+func (st *Status) getNodeSeverity() (map[string]string, error) {
+	nodeSeverity := make(map[string]string)
+	redisConn := st.redisPool.Get()
+	defer redisConn.Close()
+
+	var nodeSeverityData map[string]NodeSeverityData
+	nodeSeverityBytes, err := redisConn.Do("GET", nodeSeverityRedisKey)
+	if err != nil || nodeSeverityBytes == nil {
+		return nodeSeverity, err
+	}
+	switch nodeSeverityBytes.(type) {
+	case []byte:
+	default:
+		return nodeSeverity, err
+	}
+	err = json.Unmarshal(nodeSeverityBytes.([]byte), &nodeSeverityData)
+	if err != nil {
+		return nodeSeverity, err
+	}
+	for hostName, severityData := range nodeSeverityData {
+		nodeSeverity[hostName] = severityData.Severity
+	}
+	return nodeSeverity, nil
+}
+
+func (st *Status) updateScanStatusData() error {
+	var err error
+	// Node severity
+	nodeSeverity, err := st.getNodeSeverity()
+	if err != nil {
+		logrus.Error(err.Error())
+	}
+	st.nodeStatus.Lock()
+	st.nodeStatus.NodeSeverity = nodeSeverity
+	st.nodeStatus.Unlock()
+
+	var ok bool
+	mSearch := elastic.NewMultiSearchService(st.esClient)
+
+	nodeIdAggs := elastic.NewTermsAggregation().Field("node_id.keyword").Size(esAggsSize)
+	statusAggs := elastic.NewTermsAggregation().Field("action.keyword").Size(50)
+	recentTimestampAggs := elastic.NewMaxAggregation().Field("@timestamp")
+	statusAggs.SubAggregation("scan_recent_timestamp", recentTimestampAggs)
+	nodeIdAggs.SubAggregation("action", statusAggs)
+	esQuery := elastic.NewSearchRequest().Index(cveScanLogsEsIndex).Query(elastic.NewMatchAllQuery()).Size(0).Aggregation("node_id", nodeIdAggs)
+	mSearch.Add(esQuery)
+
+	boolQuery := elastic.NewBoolQuery()
+	nodeIdAggs = elastic.NewTermsAggregation().Field("node_id.keyword").Size(esAggsSize)
+	checkTypeAggs := elastic.NewTermsAggregation().Field("compliance_check_type.keyword").Size(50)
+	statusAggs = elastic.NewTermsAggregation().Field("scan_status.keyword").Size(50)
+	recentTimestampAggs = elastic.NewMaxAggregation().Field("@timestamp")
+	statusAggs.SubAggregation("scan_recent_timestamp", recentTimestampAggs)
+	checkTypeAggs.SubAggregation("scan_status", statusAggs)
+	nodeIdAggs.SubAggregation("compliance_check_type", checkTypeAggs)
+	esQuery = elastic.NewSearchRequest().Index(complianceLogsEsIndex).Query(boolQuery).Size(0).Aggregation("node_id", nodeIdAggs)
+	mSearch.Add(esQuery)
+
+	mSearchResult, err := mSearch.Do(context.Background())
+	if err != nil {
+		return err
+	}
+	nodeIdVulnerabilityStatusMap := make(map[string]string)
+	nodeIdVulnerabilityStatusTimeMap := make(map[string]string)
+	cveResp := mSearchResult.Responses[0]
+	nodeIdAggsBkt, ok := cveResp.Aggregations.Terms("node_id")
+	if !ok {
+		return nil
+	}
+	for _, nodeIdAggs := range nodeIdAggsBkt.Buckets {
+		if nodeIdAggs.Key.(string) == "" {
+			continue
+		}
+		latestScanTime := 0.0
+		var latestStatus, latestScanTimeStr string
+		scanStatusBkt, ok := nodeIdAggs.Aggregations.Terms("action")
+		if !ok {
+			continue
+		}
+		for _, scanStatusAggs := range scanStatusBkt.Buckets {
+			recentTimestampBkt, ok := scanStatusAggs.Aggregations.Max("scan_recent_timestamp")
+			if !ok || recentTimestampBkt == nil || recentTimestampBkt.Value == nil {
+				continue
+			}
+			if *recentTimestampBkt.Value > latestScanTime {
+				latestScanTime = *recentTimestampBkt.Value
+				latestStatus = scanStatusAggs.Key.(string)
+				valueAsStr, ok := recentTimestampBkt.Aggregations["value_as_string"]
+				if ok {
+					latestScanTimeStr = strings.ReplaceAll(string(valueAsStr), "\"", "")
+				}
+			}
+		}
+		latestStatus, ok = vulnerabilityStatusMap[latestStatus]
+		if !ok {
+			latestStatus = scanStatusNeverScanned
+		}
+		nodeIdVulnerabilityStatusMap[nodeIdAggs.Key.(string)] = latestStatus
+		nodeIdVulnerabilityStatusTimeMap[nodeIdAggs.Key.(string)] = latestScanTimeStr
+	}
+	st.nodeStatus.Lock()
+	st.nodeStatus.VulnerabilityScanStatus = nodeIdVulnerabilityStatusMap
+	st.nodeStatus.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap
+	st.nodeStatus.Unlock()
+
+	nodeIdComplianceStatusMap := make(map[string]string)
+	nodeIdComplianceStatusTimeMap := make(map[string]string)
+	complianceResp := mSearchResult.Responses[1]
+	nodeIdAggsBkt, ok = complianceResp.Aggregations.Terms("node_id")
+	if !ok {
+		return nil
+	}
+	var summary string
+	var completedCount, inProgressCount, errorCount int
+	for _, nodeIdAggs := range nodeIdAggsBkt.Buckets {
+		if nodeIdAggs.Key.(string) == "" {
+			continue
+		}
+		nodeLatestScanTime := 0.0
+		var nodeLatestScanTimeStr string
+		complianceCheckTypeAggsBkt, ok := nodeIdAggs.Aggregations.Terms("compliance_check_type")
+		if !ok {
+			continue
+		}
+		summary = ""
+		completedCount = 0
+		inProgressCount = 0
+		errorCount = 0
+		for _, complianceCheckTypeAggs := range complianceCheckTypeAggsBkt.Buckets {
+			latestScanTime := 0.0
+			var latestStatus string
+			scanStatusBkt, ok := complianceCheckTypeAggs.Aggregations.Terms("scan_status")
+			if !ok {
+				continue
+			}
+			for _, scanStatusAggs := range scanStatusBkt.Buckets {
+				recentTimestampBkt, ok := scanStatusAggs.Aggregations.Max("scan_recent_timestamp")
+				if !ok || recentTimestampBkt == nil || recentTimestampBkt.Value == nil {
+					continue
+				}
+				if *recentTimestampBkt.Value > latestScanTime {
+					latestScanTime = *recentTimestampBkt.Value
+					latestStatus = scanStatusAggs.Key.(string)
+					if latestScanTime >= nodeLatestScanTime {
+						nodeLatestScanTime = latestScanTime
+						valueAsStr, ok := recentTimestampBkt.Aggregations["value_as_string"]
+						if ok {
+							nodeLatestScanTimeStr = strings.ReplaceAll(string(valueAsStr), "\"", "")
+						}
+					}
+				}
+			}
+			if latestStatus == "QUEUED" || latestStatus == "INPROGRESS" || latestStatus == "SCAN_IN_PROGRESS" {
+				inProgressCount += 1
+			} else if latestStatus == "ERROR" {
+				errorCount += 1
+			} else if latestStatus == "COMPLETED" {
+				completedCount += 1
+			}
+		}
+		if inProgressCount > 0 {
+			summary = formatComplianceStatus(inProgressCount, "in progress")
+		} else if completedCount > 0 {
+			summary = formatComplianceStatus(completedCount, "completed")
+		} else if errorCount > 0 {
+			summary = formatComplianceStatus(errorCount, "failed")
+		}
+		if summary == "" {
+			summary = "Never Scanned"
+		}
+		nodeIdComplianceStatusMap[nodeIdAggs.Key.(string)] = summary
+		nodeIdComplianceStatusTimeMap[nodeIdAggs.Key.(string)] = nodeLatestScanTimeStr
+	}
+	st.nodeStatus.Lock()
+	st.nodeStatus.ComplianceScanStatus = nodeIdComplianceStatusMap
+	st.nodeStatus.ComplianceScanStatusTime = nodeIdComplianceStatusTimeMap
+	st.nodeStatus.Unlock()
+	return nil
+}
+
+func formatComplianceStatus(count int, status string) string {
+	if count > 1 {
+		return fmt.Sprintf("%d scans %s", count, status)
+	} else {
+		return fmt.Sprintf("%d scan %s", count, status)
+	}
+}
+
+func NewStatus() (*Status, error) {
+	vulnerabilityStatusMap = map[string]string{
+		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
+		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "UPLOADING_IMAGE": "in_progress",
+		"UPLOAD_COMPLETE": "in_progress"}
+
+	esHost := os.Getenv("ELASTICSEARCH_HOST")
+	if esHost == "" {
+		esHost = "deepfence-es"
+	}
+	esPort := os.Getenv("ELASTICSEARCH_PORT")
+	if esPort == "" {
+		esPort = "9200"
+	}
+	var status Status
+	esClient, err := elastic.NewClient(
+		elastic.SetHealthcheck(false),
+		elastic.SetSniff(false),
+		elastic.SetURL("http://"+esHost+":"+esPort),
+	)
+	if err != nil {
+		return &status, err
+	}
+	status.esClient = esClient
+	status.redisPool, _ = newRedisPool()
+	if status.redisPool == nil {
+		return nil, errors.New("could not create redis pool connection")
+	}
+	return &status, nil
+}
+
+func getScanStatus() error {
+	var err error
+	nStatus, err = NewStatus()
+	if err != nil {
+		return err
+	}
+	err = nStatus.updateScanStatusData()
+	if err != nil {
+		return err
+	}
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			err = nStatus.updateScanStatusData()
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func init() {
+	if os.Getenv("DF_PROG_NAME") == "topology" {
+		go func() {
+			for {
+				err := getScanStatus()
+				if err != nil {
+					logrus.Error(err.Error())
+				}
+				time.Sleep(30 * time.Second)
+			}
+		}()
+	}
+}

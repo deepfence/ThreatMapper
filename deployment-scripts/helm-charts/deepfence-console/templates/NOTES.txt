@@ -1,0 +1,10 @@
+---
+
+Verify Deepfence pods are running
+---------------------------------
+kubectl get pods -o wide -n {{ .Values.namespace }} -l "app=deepfence-console"
+kubectl get deployments -o wide -n {{ .Values.namespace }} -l "app=deepfence-console"
+kubectl get statefulsets -o wide -n {{ .Values.namespace }} -l "app=deepfence-console"
+kubectl get services -o wide -n {{ .Values.namespace }} -l "app=deepfence-console"
+
+---

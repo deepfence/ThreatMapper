@@ -1,0 +1,69 @@
+# Default values for deepfence-router.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Cloud Provider: aws, azure, google_cloud, ibm_cloud, open_stack
+# cloudProvider is required to set appropriate LoadBalancer annotations
+cloudProvider: ""
+
+service:
+  name: deepfence-router
+  type: LoadBalancer
+  #  Using static ip address for load balancer
+  # - Google Cloud: https://cloud.google.com/kubernetes-engine/docs/tutorials/configuring-domain-name-static-ip
+  # loadBalancerIP: "1.2.3.4"
+  # - Azure: https://docs.microsoft.com/en-us/azure/aks/static-ip
+  # loadBalancerIP: "1.2.3.4"
+  loadBalancerIP: ""
+  # - AWS: (v1.16+) https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.16
+  # Static ip for NLB: awsEipAllocations: "eipalloc-0123456789abcdefg,eipalloc-0123456789hijklmn"
+  awsEipAllocations: ""
+  # LoadBalancer type: external or internal
+  loadBalancerType: "external"
+  # If loadBalancerType is "external", we recommend setting loadBalancerSourceRanges to the ip address / CIDR ranges
+  # of your laptop's ip or corporate CIDR range. If this is set empty, ports 443 and 80 will be open to the public internet.
+  # Example: ["143.231.0.0/16","210.57.79.18/32"]
+  loadBalancerSourceRanges: []
+  # ACM SSL certificate for AWS Classic LoadBalancer (This cannot be set if awsEipAllocations is set)
+  # https://aws.amazon.com/premiumsupport/knowledge-center/terminate-https-traffic-eks-acm/
+  # Example: "arn:aws:acm:{region}:{user id}:certificate/{id}"
+  awsLoadBalancerAcmArn: ""
+  # externalIPs: When kubernetes is not cloud managed, add public ip addresses of kubernetes nodes to externalIPs
+  externalIPs: []
+  externalTrafficPolicy: "Cluster"
+
+# User can create separate k8s service for agents if required.
+# An use case for this is to deploy external load balancer for browser access and internal load balancer for agent access.
+createSeparateServiceForAgents: "false"
+
+agentService:
+  # Configuration for ports 8000 to 8010, accessed from agents
+  name: deepfence-agent-router
+  type: LoadBalancer
+  #  Using static ip address for load balancer
+  # - Google Cloud: https://cloud.google.com/kubernetes-engine/docs/tutorials/configuring-domain-name-static-ip
+  # loadBalancerIP: "1.2.3.4"
+  # - Azure: https://docs.microsoft.com/en-us/azure/aks/static-ip
+  # loadBalancerIP: "1.2.3.4"
+  loadBalancerIP: ""
+  # - AWS: (v1.16+) https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.16
+  # Static ip for NLB: awsEipAllocations: "eipalloc-0123456789abcdefg,eipalloc-0123456789hijklmn"
+  awsEipAllocations: ""
+  # LoadBalancer type: external or internal
+  loadBalancerType: "internal"
+  # If loadBalancerType is "external", we recommend setting loadBalancerSourceRanges to the ip address / CIDR ranges
+  # of your laptop's ip or corporate CIDR range. If this is set empty, ports 443 and 80 will be open to the public internet.
+  # Example: ["143.231.0.0/16","210.57.79.18/32"]
+  loadBalancerSourceRanges: []
+  # ACM SSL certificate for AWS Classic LoadBalancer (This cannot be set if awsEipAllocations is set)
+  # https://aws.amazon.com/premiumsupport/knowledge-center/terminate-https-traffic-eks-acm/
+  # Example: "arn:aws:acm:{region}:{user id}:certificate/{id}"
+  awsLoadBalancerAcmArn: ""
+  # externalIPs: When kubernetes is not cloud managed, add public ip addresses of kubernetes nodes to externalIPs
+  externalIPs: []
+  externalTrafficPolicy: "Cluster"
+
+namespace: default
+
+nameOverride: ""
+fullnameOverride: ""

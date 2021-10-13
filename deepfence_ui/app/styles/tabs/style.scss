@@ -1,0 +1,123 @@
+@import 'variables';
+
+.df-tabs {
+  
+  ul{
+      display: inline-block;
+      margin: 0px;
+      padding: 0px;
+      list-style: none;
+  }
+
+  .tabheading {
+      background-color: $flex-head-background;
+      padding-top: 14px;
+      padding-bottom: 14px;
+
+      @media screen and (min-width:768px) and (max-width: 1024px) {
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+  }
+
+  .chart-heading {
+    width:26%;
+    float: left;;
+  }
+
+  li.tab {
+      display: inline-block;
+      padding: 0px 26px;
+      text-align: center;
+      font-size: 14px;
+      cursor: pointer;
+
+      a {
+        color: inherit;
+        text-decoration: none;
+        font-size: 14px;
+        color: #fff;
+        line-height: 17px;
+        text-transform: capitalize;
+      }
+  }
+
+  @media screen and (min-width: 768px) and (max-width: 1024px) {
+    li.tab {
+      padding: 0px 7px;
+
+      a {
+        font-size: 10px;
+      }
+    }
+  }
+
+  @media screen and (min-width: 1025px) and (max-width: 1140px) {
+    li.tab {
+      padding: 0px 10px;
+
+      a {
+        font-size: 12px;
+      }
+    }
+  }
+
+  @media screen and (min-width: 1141px) and (max-width: 1240px) {
+    li.tab {
+      padding: 0px 14px;
+
+      a {
+        font-size: 12px;
+      }
+    }
+  }
+  @media screen and (min-width: 1241px) and (max-width: 1340px) {
+    li.tab {
+      padding: 0px 14px;
+
+      a {
+        font-size: 14px;
+      }
+    }
+  }
+
+  li.tab:hover {
+    color: $active-color;
+  }
+
+  li.tab:last-child {
+      border-right: none;
+  }
+
+  li.tab.active {
+    color: $active-color;
+    position: relative;
+
+    &:after {
+      content: "";
+      height: 5px;
+      background-color: $color-primary;
+      border-radius: 2px 2px 0 0;
+      position: absolute;
+      bottom: -16px;
+      left: 0px;
+      width: 100%;
+    }
+  }
+
+  a.tab-link.custom-link {
+      background: #6161a7;
+      color: white;
+      border-radius: 100px;
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      display: block;
+      text-align: center;
+      cursor: pointer;
+  }
+
+  a.tab-link.custom-link.active {
+      background: #969696;
+  }
+}

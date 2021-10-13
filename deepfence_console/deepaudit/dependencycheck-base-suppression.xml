@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+    <suppress base="true">
+        <notes><![CDATA[
+        This suppresses false positives identified on spring security.
+        ]]></notes>
+        <gav regex="true">org\.springframework\.security:spring.*</gav>
+        <cpe>cpe:/a:mod_security:mod_security</cpe>
+        <cpe>cpe:/a:springsource:spring_framework</cpe>
+        <cpe>cpe:/a:vmware:springsource_spring_framework</cpe>
+        <cpe>cpe:/a:pivotal:spring_framework</cpe>
+        <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        This suppresses false positives identified on spring security.
+        ]]></notes>
+        <filePath regex="true">.*spring-security-[^\\/]*\.jar$</filePath>
+        <cpe>cpe:/a:mod_security:mod_security</cpe>
+        <cpe>cpe:/a:springsource:spring_framework</cpe>
+        <cpe>cpe:/a:vmware:springsource_spring_framework</cpe>
+        <cpe>cpe:/a:pivotal:spring_framework</cpe>
+        <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        This suppreses additional false positives for the xstream library that occur because spring has a copy of this library.
+            com.springsource.com.thoughtworks.xstream-1.3.1.jar
+        ]]></notes>
+        <gav regex="true">com\.thoughtworks\.xstream:xstream:.*</gav>
+        <cpe>cpe:/a:springsource:spring_framework</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on velocity tools.
+        ]]></notes>
+        <gav regex="true">org\.apache\.velocity:velocity-tools:.*</gav>
+        <cpe>cpe:/a:apache:struts</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Sandbox is a php blog platform and should not be flagged as a CPE for java or .net dependencies.
+        ]]></notes>
+        <filePath regex="true">.*\.(jar|dll|exe|ear|war|pom)</filePath>
+        <cpe>cpe:/a:sandbox:sandbox</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppress false positives around dash.
+        ]]></notes>
+        <filePath regex="true">.*\.(jar|ear|war|pom)</filePath>
+        <cpe>cpe:/a:dash:dash</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on Jersey core client.
+        ]]></notes>
+        <gav regex="true">(com\.sun\.jersey|org\.glassfish\.jersey\.core):jersey-(client|common):.*</gav>
+        <cpe>cpe:/a:oracle:glassfish</cpe>
+        <cpe>cpe:/a:oracle:oracle_client</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Supresses false positives on jersey-apache-client4
+        ]]></notes>
+        <gav regex="true">com\.sun\.jersey\.contribs:jersey-apache-client.*</gav>
+        <cpe>cpe:/a:apache:httpclient</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on glassfish
+        ]]></notes>
+        <gav regex="true">org\.glassfish:.*(json|faces).*</gav>
+        <cpe>cpe:/a:oracle:glassfish</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on the grizzly-framework
+        ]]></notes>
+        <gav regex="true">org\.glassfish\.grizzly:grizzly-framework:.*</gav>
+        <cpe>cpe:/a:oracle:glassfish</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on the grizzly-framework
+        ]]></notes>
+        <gav regex="true">org\.forgerock\.opendj:opendj-ldap-sdk:.*</gav>
+        <cpe>cpe:/a:ldap_project:ldap</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on the org.opensaml:xmltooling
+        ]]></notes>
+        <gav regex="true">org\.opensaml:xmltooling:.*</gav>
+        <cpe>cpe:/a:shibboleth:opensaml</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on the org.opensaml:openws
+        ]]></notes>
+        <gav regex="true">org\.opensaml:openws:.*</gav>
+        <cpe>cpe:/a:internet2:opensaml</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on the org.opensaml:xmltooling
+        ]]></notes>
+        <gav regex="true">org\.opensaml:xmltooling:.*</gav>
+        <cpe>cpe:/a:internet2:opensaml</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives for python:python.
+        ]]></notes>
+        <filePath regex="true">.*(\.(whl|egg)|\b(site|dist)-packages\b.*)</filePath>
+        <cpe>cpe:/a:python:python</cpe>
+        <cpe>cpe:/a:python_software_foundation:python</cpe>
+        <cpe>cpe:/a:class:class</cpe>
+        <cpe>cpe:/a:file:file</cpe>
+        <cpe>cpe:/a:gnupg:gnupg</cpe>
+        <cpe>cpe:/a:mongodb:mongodb</cpe>
+        <cpe>cpe:/a:mozilla:mozilla</cpe>
+        <cpe>cpe:/a:openssl:openssl</cpe>
+        <cpe>cpe:/a:sendfile:sendfile</cpe>
+        <cpe>cpe:/a:sendmail:sendmail</cpe>
+        <cpe>cpe:/a:yacc:yacc</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives for com.google:.*
+        ]]></notes>
+        <gav regex="true">com\.google(\.[a-zA-Z0-9_-]+)?:.*:.*</gav>
+        <cpe>cpe:/a:google:desktop</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives for non-android JARs from google.
+        ]]></notes>
+        <gav regex="true">com\.google\.((?!android).)*:.*</gav>
+        <cpe>cpe:/a:google:android</cpe>
+        <cpe>cpe:/a:google:android_api</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives for android JARs in g:com.google.android
+        ]]></notes>
+        <gav regex="true">com\.google\.android\..*:.*</gav>
+        <cpe>cpe:/a:google:android</cpe>
+        <cpe>cpe:/a:google:android_api</cpe>
+        <cpe>cpe:/a:google:google</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses incorrect identification for bing ads.
+        ]]></notes>
+        <gav regex="true">com.microsoft.bingads:microsoft.bingads:.*</gav>
+        <cpe>cpe:/a:microsoft:bing</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Oracle Jersey is flagged as glassfish.
+        ]]></notes>
+        <gav regex="true">.*jersey.*</gav>
+        <cpe>cpe:/a:oracle:glassfish_server</cpe>
+        <cpe>cpe:/a:oracle:glassfish</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Oracle HK2 is flagged as glassfish.
+        ]]></notes>
+        <gav regex="true">.*\bhk2\b.*</gav>
+        <cpe>cpe:/a:oracle:glassfish</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        HK2-utils is flagged as glassfish.
+        ]]></notes>
+        <filePath regex="true">.*\bhk2-utils.*\.jar</filePath>
+        <cpe>cpe:/a:oracle:glassfish</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        file name: petals-se-camel-1.0.0.jar - false positive for apache camel.
+        ]]></notes>
+        <gav regex="true">org.ow2.petals:petals-se-camel:.*</gav>
+        <cpe>cpe:/a:apache:camel</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Mina gets flagged as apache-ssl
+        ]]></notes>
+        <gav regex="true">org.apache.mina:mina.*</gav>
+        <cpe>cpe:/a:apache-ssl:apache-ssl</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Woden gets flagged as apache-ssl
+        ]]></notes>
+        <gav regex="true">org.apache.woden:woden.*</gav>
+        <cpe>cpe:/a:apache-ssl:apache-ssl</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        spec gets flagged as the implementation.
+        ]]></notes>
+        <gav regex="true">org.apache.geronimo.specs:.*</gav>
+        <cpe>cpe:/a:apache:geronimo</cpe>
+    </suppress>
+    <!--
+    <suppress base="true">
+        <notes><![CDATA[
+        This suppresses false positives identified on tomcat-embed-el.
+        ]]></notes>
+        <gav regex="true">org\.apache\.tomcat\.embed:tomcat-embed-el:.*</gav>
+        <cpe>cpe:/a:apache:tomcat</cpe>
+        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        This suppresses false positives identified on tomcat-jdbc.
+        ]]></notes>
+        <gav regex="true">org\.apache\.tomcat:tomcat-jdbc:.*</gav>
+        <cpe>cpe:/a:apache:tomcat</cpe>
+        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        This suppresses false positives identified on tomcat-juli.
+        ]]></notes>
+        <gav regex="true">org\.apache\.tomcat:tomcat-juli:.*</gav>
+        <cpe>cpe:/a:apache:tomcat</cpe>
+        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
+    </suppress>
+    -->
+    <suppress base="true">
+        <notes><![CDATA[
+        suppress false positive per issue #433
+        ]]></notes>
+        <gav regex="true">com\.google\.javascript:closure-compiler:.*</gav>
+        <cpe>cpe:/a:google:google_apps:-</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        suppress false positives per issue #437
+        ]]></notes>
+        <gav regex="true">.*mongodb.*:.*:.*</gav>
+        <cpe>cpe:/a:mongodb:mongodb</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        suppress false positives per issue #438
+            Note, there will be more false positives for Netty. Trying to figure out a better suppression.
+        ]]></notes>
+        <gav regex="true">com.typesafe.netty:netty-http-pipelining:.*</gav>
+        <cpe>cpe:/a:netty_project:netty</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        JVM instrumentation to Ganglia
+        ]]></notes>
+        <gav regex="true">info\.ganglia\.gmetric4j:gmetric4j:.*</gav>
+        <cpe>cpe:/a:ganglia:ganglia</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        A reporter for Metrics which announces measurements to a Ganglia cluster
+        ]]></notes>
+        <gav regex="true">io\.dropwizard\.metrics:metrics-ganglia:.*</gav>
+        <cpe>cpe:/a:ganglia:ganglia</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        drop wizard false positives
+        ]]></notes>
+        <gav regex="true">io\.dropwizard:dropwizard-jetty:.*</gav>
+        <cpe>cpe:/a:jetty:jetty</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        drop wizard false positives
+        ]]></notes>
+        <gav regex="true">io\.dropwizard\.metrics:metrics-jetty:.*</gav>
+        <cpe>cpe:/a:jetty:jetty</cpe>
+    </suppress>
+    <!--
+    <suppress base="true">
+        <notes><![CDATA[
+        drop wizard false positives
+        ]]></notes>
+        <gav regex="true">org\.eclipse\.jetty\.toolchain\.setuid:jetty-setuid-java:.*</gav>
+        <cpe>cpe:/a:jetty:jetty</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        drop wizard false positives
+        ]]></notes>
+        <gav regex="true">org\.eclipse\.jetty:jetty-io:.*</gav>
+        <cpe>cpe:/a:jetty:jetty</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        drop wizard false positives
+        ]]></notes>
+        <gav regex="true">org\.eclipse\.jetty\.http2:http2-hpack:.*</gav>
+        <cpe>cpe:/a:jetty:jetty</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        drop wizard false positives
+        ]]></notes>
+        <gav regex="true">io\.dropwizard\.metrics:metrics-httpclient:.*</gav>
+        <cpe>cpe:/a:apache:httpclient</cpe>
+    </suppress>
+    -->
+    <suppress base="true">
+        <notes><![CDATA[
+        javax.transaction false positives
+        ]]></notes>
+        <gav regex="true">javax\.transaction:javax\.transaction-api:.*</gav>
+        <cpe>cpe:/a:oracle:glassfish</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        false positive in drop wizard
+        ]]></notes>
+        <filePath regex="true">.*\.(jar|ear|war|pom)</filePath>
+        <cpe>cpe:/a:tiger:tiger</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        php cpe
+        ]]></notes>
+        <filePath regex="true">.*\.(jar|exe|dll|ear|war|pom)</filePath>
+        <cpe>cpe:/a:class:class</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Linux ssh False Positives
+        ]]></notes>
+        <filePath regex="true">.*\.(jar|ear|war|pom)</filePath>
+        <cpe>cpe:/a:pam:pam</cpe>
+        <cpe>cpe:/a:pam_ssh:pam_ssh</cpe>
+        <cpe>cpe:/a:sun:linux</cpe>
+        <cpe>cpe:/a:sun:sunos</cpe>
+    </suppress>
+    <!--
+    <suppress base="true">
+        <notes><![CDATA[
+        elastic search false postivies
+        ]]></notes>
+        <gav regex="true">org\.elasticsearch:securesm:.*</gav>
+        <cpe>cpe:/a:elasticsearch:elasticsearch</cpe>
+    </suppress>
+    !-->
+    <suppress base="true">
+        <notes><![CDATA[
+        Glassfish false positives.
+        ]]></notes>
+        <gav regex="true">org\.glassfish:javax.el:.*</gav>
+        <cpe>cpe:/a:oracle:glassfish</cpe>
+    </suppress>
+    <!--
+    <suppress base="true">
+        <notes><![CDATA[
+        Struts false positives.
+        ]]></notes>
+        <gav regex="true">sslext:sslext:.*</gav>
+        <cpe>cpe:/a:apache:struts</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        ACtiveMQ false positives.
+        ]]></notes>
+        <gav regex="true">org\.apache\.activemq:activemq-pool.*</gav>
+        <cpe>cpe:/a:apache:activemq</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        ACtiveMQ false positives.
+        ]]></notes>
+        <gav regex="true">org\.apache\.activemq:artemis.*</gav>
+        <cpe>cpe:/a:apache:activemq</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Spring data mongodb false positives.
+        ]]></notes>
+        <gav regex="true">org\.springframework\.data:spring-data-mongodb.*</gav>
+        <cpe>cpe:/a:mongodb:mongodb</cpe>
+    </suppress>
+    !-->
+    <suppress base="true">
+        <notes><![CDATA[
+        Spring data neo4j false positives.
+        ]]></notes>
+        <gav regex="true">org\.springframework\.data:spring-data-neo4j:.*</gav>
+        <cpe>cpe:/a:vmware:springsource_spring_framework</cpe>
+        <cpe>cpe:/a:pivotal:spring_framework</cpe>
+        <cpe>cpe:/a:neo4j:neo4j</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Spring data solr false positives.
+        ]]></notes>
+        <gav regex="true">org\.springframework\.data:spring-data-solr:.*</gav>
+        <cpe>cpe:/a:apache:solr</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Spring social facebook false positive.
+        ]]></notes>
+        <gav regex="true">org\.springframework\.social:spring-social-facebook:.*</gav>
+        <cpe>cpe:/a:facebook:facebook</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Spring Security JWT false positive.
+        ]]></notes>
+        <gav regex="true">org\.springframework\.security:spring-security-jwt.*</gav>
+        <cpe>cpe:/a:vmware:springsource_spring_security</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Aether false positive.
+        ]]></notes>
+        <gav regex="true">org\.eclipse\.aether:aether.*</gav>
+        <cpe>cpe:/a:eclipse:eclipse_ide</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Drupal services false positive.
+        ]]></notes>
+        <filePath regex="true">.*\.(jar|ear|war|pom)</filePath>
+        <cpe>cpe:/a:services_project:services</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        jenkins-client false positives
+        ]]></notes>
+        <gav regex="true">com\.offbytwo\.jenkins:jenkins-client:.*</gav>
+        <cpe>cpe:/a:jenkins:jenkins</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        xstream false positives
+        ]]></notes>
+        <gav regex="true">^(?!com.thoughtworks).*xstream.*$</gav>
+        <cpe>cpe:/a:x-stream:xstream</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        false positive per issue #582
+        ]]></notes>
+        <gav regex="true">^org\.glassfish\.jersey\.ext:jersey-proxy-client:.*$</gav>
+        <cpe>cpe:/a:oracle:oracle_client</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        file name: smiley-http-proxy-servlet-1.7.jar
+        ]]></notes>
+        <gav regex="true">^org\.mitre\.dsmiley\.httpproxy:smiley-http-proxy-servlet:.*$</gav>
+        <cpe>cpe:/a:shttp:shttp</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        This CVE is disputed by the vendor and is not considered an issue.
+        ]]></notes>
+        <filePath regex="true">.*</filePath>
+        <cve>CVE-2007-6059</cve>
+    </suppress>
+    <!--
+    <suppress base="true">
+        <notes><![CDATA[
+      file name: jackson-core-2.6.5.jar
+      ]]></notes>
+        <gav regex="true">com\.fasterxml\.jackson\.core:jackson.*</gav>
+        <cve>CVE-2016-3720</cve>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+      file name: jackson-core-2.6.5.jar
+      ]]></notes>
+        <gav regex="true">com\.fasterxml\.jackson\.dataformat:jackson(?!\-dataformat\-xml).*</gav>
+        <cve>CVE-2016-3720</cve>
+    </suppress>
+    -->
+    <suppress base="true">
+        <notes><![CDATA[
+        False positives per issue #642
+        ]]></notes>
+        <gav regex="true">^org\.springframework\.boot:spring-boot.*$</gav>
+        <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
+        <cpe>cpe:/a:pivotal:spring_framework</cpe>
+        <cpe>cpe:/a:vmware:springsource_spring_framework</cpe>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        False positives per issue #642
+        ]]></notes>
+        <gav regex="true">^org\.springframework:spring-context:.*$</gav>
+        <cpe>cpe:/a:context_project:context</cpe>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: threadfix-cli-importers-2.3-SNAPSHOT.jar/META-INF/maven/com.jcraft/jsch.agentproxy.usocket-nc/pom.xml
+       ]]></notes>
+       <sha1>39da0290c5e8e97631d976f0b7458ffe117eb164</sha1>
+       <cpe>cpe:/a:netcat:netcat:0.0.7</cpe>
+    </suppress>
+
+    <!-- This vulnerability affects serialized objects; we don't use Java serialization -->
+    <suppress>
+       <notes><![CDATA[
+       file name: threadfix-cli-importers-2.3-SNAPSHOT.jar/META-INF/maven/commons-collections/commons-collections/pom.xml
+       ]]></notes>
+       <sha1>c812635cfb96cd2431ee315e73418eed86aeb5e4</sha1>
+       <cpe>cpe:/a:apache:commons_collections:3.2.1</cpe>
+    </suppress>
+
+    <!-- We don't run a struts server -->
+    <suppress>
+       <notes><![CDATA[
+       file name: struts-core-1.3.8.jar
+       ]]></notes>
+       <sha1>66178d4a9279ebb1cd1eb79c10dc204b4199f061</sha1>
+       <cpe>cpe:/a:apache:struts:1.3.8</cpe>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: struts-tiles-1.3.8.jar
+       ]]></notes>
+       <sha1>6d212f8ea5d908bc9906e669428b7694dff60785</sha1>
+       <cpe>cpe:/a:apache:struts:1.3.8</cpe>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: struts-tiles-1.3.8.jar
+       ]]></notes>
+       <sha1>6d212f8ea5d908bc9906e669428b7694dff60785</sha1>
+       <cpe>cpe:/a:apache:tiles:1.3.8</cpe>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: sslext-1.2-0.jar
+       ]]></notes>
+       <sha1>c86a7db4ac0bc450e675f3d44b3d64cdc934361b</sha1>
+       <cpe>cpe:/a:apache:struts:1.2.0</cpe>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: struts-taglib-1.3.8.jar
+       ]]></notes>
+       <sha1>e87e9817bdf03c2367fb5f6d5ead953db2df4c21</sha1>
+       <cpe>cpe:/a:apache:struts:1.3.8</cpe>
+    </suppress>
+
+    <!-- We don't run a MySQL server -->
+    <suppress>
+       <notes><![CDATA[
+       file name: mysql-connector-java-5.1.38.jar
+       ]]></notes>
+       <sha1>dbbd7cd309ce167ec8367de4e41c63c2c8593cc5</sha1>
+       <cpe>cpe:/a:mysql:mysql:5.1.38</cpe>
+    </suppress>
+
+    <!-- Sun disputes this issue, stating "The report makes references to source code and files that do not exist in the mentioned products." -->
+    <suppress>
+       <notes><![CDATA[
+       file name: mail-1.4.jar
+       ]]></notes>
+       <sha1>1aa1579ae5ecd41920c4f355b0a9ef40b68315dd</sha1>
+       <cpe>cpe:/a:sun:javamail:1.4</cpe>
+    </suppress>
+
+    <!-- We don't use the vulnerable tags (1) <x:parse> or (2) <x:transform> -->
+    <suppress>
+       <notes><![CDATA[
+       file name: jstl-1.2.jar
+       ]]></notes>
+       <sha1>74aca283cd4f4b4f3e425f5820cda58f44409547</sha1>
+       <cpe>cpe:/a:apache:standard_taglibs:1.2.1</cpe>
+    </suppress>
+
+    <!-- We don't use Daemon Tools Lite -->
+    <suppress>
+       <notes><![CDATA[
+       file name: cargo-daemon-client-1.4.8.jar
+       ]]></notes>
+       <sha1>455ccf4ddfd8298981377584a2580ea81159c76f</sha1>
+       <cpe>cpe:/a:daemon-tools:daemon_tools:1.4.8</cpe>
+    </suppress>
+
+    <!-- We only use POI to generate files, not to parse them -->
+    <suppress>
+       <notes><![CDATA[
+       file name: poi-3.11.jar
+       ]]></notes>
+       <sha1>51058d9db469437a5ed0aa508e7de8937019e1d9</sha1>
+       <cpe>cpe:/a:apache:poi:3.11:beta1</cpe>
+    </suppress>
+    <suppress>
+       <notes><![CDATA[
+       file name: poi-ooxml-3.11.jar
+       ]]></notes>
+       <sha1>e87975291fbb65888468b09fda2cf00e2996c2a0</sha1>
+       <cpe>cpe:/a:apache:poi:3.11:beta1</cpe>
+    </suppress>
+
+    <!-- We don't use libneon -->
+    <suppress>
+       <notes><![CDATA[
+       file name: svnkit-1.8.11.jar
+       ]]></notes>
+       <sha1>aee7f5d4a3d69c2dc033377c89c63a69ac6b67cd</sha1>
+       <cpe>cpe:/a:subversion:subversion:1.8.11</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on snmp 
+        ]]></notes>
+        <cpe>cpe:/a:snmp:snmp</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on ssl 
+        ]]></notes>
+        <cpe>cpe:/a:ssleay:ssleay</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on ssl 
+        ]]></notes>
+        <cpe>cpe:/a:openssl:openssl</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on docker  
+        ]]></notes>
+        <cpe>cpe:/a:docker:docker</cpe>
+    </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on out dated pkg 
+        ]]></notes>
+        <cpe>cpe:/a:netscape:navigator</cpe>
+    </suppress>
+        <suppress base="true">
+        <notes><![CDATA[
+        Suppresses false positives on out dated pkg 
+        ]]></notes>
+        <cpe>cpe:/a:sun:java</cpe>
+    </suppress>
+
+</suppressions>
+

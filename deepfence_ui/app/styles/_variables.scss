@@ -1,0 +1,141 @@
+$fa-font-path: "~font-awesome/fonts";
+/* weave company colours */
+$weave-gray-blue: rgb(85,105,145);
+$weave-blue: rgb(0,210,255);
+$weave-orange: rgb(255,75,25);
+$weave-charcoal-blue: rgb(50,50,75); // #32324B
+$success-green: green;
+
+$base-font: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+$mono-font: "Menlo", "DejaVu Sans Mono", "Liberation Mono", monospace;
+
+$base-ease: ease-in-out;
+$primary-color: $weave-charcoal-blue;
+
+$background-color: #1A1A1A;
+$background-lighter-color: #41454c;
+$background-average-color: #363636;
+$background-darker-color: #333333;
+$background-darker-secondary-color: #262626;
+$background-dark-color: #111111;
+$text-secondary-color: #EEEEEE;
+$text-tertiary-color: #d6d6d6;
+$border-light-color: #ffffff;
+$text-darker-color: #dddddd;
+
+$orange-border-background: #1d1915;
+
+$white: #FFFFFF;
+$text-color: #ffffff;
+
+$details-window-width: 420px;
+$details-window-padding-left: 36px;
+$border-radius: 4px;
+
+$terminal-header-height: 44px;
+
+$node-elements-in-background-opacity: 0.7;
+
+$node-highlight-shadow-opacity: 0.5;
+$node-highlight-stroke-opacity: 0.4;
+$node-highlight-stroke-width: 0.04;
+$node-border-stroke-width: 0;
+$node-shadow-stroke-width: 0.18;
+$node-pseudo-opacity: 0.8;
+$node-text-scale: 2;
+$edge-highlight-opacity: 0.1;
+$edge-opacity-blurred: 0.2;
+$edge-opacity: 0.5;
+$edge-color: rgb(110, 110, 156);
+
+$btn-opacity-default: 0.7;
+$btn-opacity-hover: 1;
+$btn-opacity-selected: 0.9;
+$btn-opacity-disabled: 0.25;
+
+$link-opacity-default: 0.8;
+
+$search-border-color: transparent;
+$search-border-width: 1px;
+
+$timeline-height: 55px;
+
+/* specific elements */
+$body-background-color: linear-gradient(30deg, $background-color 0%, $background-lighter-color 100%);
+$label-background-color: none; /*fade-out($background-average-color, .3); */
+
+/////////////////////////////////////////////// NEW VARIABLES //////////////////////////////////////////////////
+
+/* START :: FONTS IMPORTS */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700;900&display=swap');
+$open-sans: 'Source Sans Pro', sans-serif;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;400;500;600;700&display=swap');
+$inter-sans: 'Inter', sans-serif;
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&display=swap');
+$manrope: 'Manrope', sans-serif;
+
+/* END :: FONTS IMPORTS */
+
+/* START :: COLORS VARIABLE */
+$theme-color: #252525;
+$d-background-color: $background-canvas;
+$s-background-color: $background-primary;
+$h-background-color: $background-secondary;
+$bg-off-color: #303030;
+$color: #999999;
+$highlight-color: #464646;
+$red-color: #db2547;
+$active-color: $color-primary;
+$dark-black: #080808;
+$nav-menu-color: #C0C0C0;
+$border-color: #252525;
+$grey-color: #999999;
+$critical-alert-color: $critical-main;
+$critical-alert-background: #1f0a0f;
+$high-alert-color: $high-main;
+$high-alert-background: #20150b;
+$medium-alert-color: #F8CD39;
+$medium-alert-background: #211e0d;
+$low-alert-color: $color-primary;
+$low-alert-background: #07131d;
+$table-row-color: #181818;
+$input-field-background: #303030;
+$disabled-blue-btn-color: #00243e;
+$disabled-btn-text-color: #333333;
+$pinned-border: $color-primary;
+$pinned-background: #07131d;
+$orange-border: #F55D3E;
+$orange-background: #753328;
+$grey-border: #6D7A82;
+$grey-alert: #5D5D5D;
+$grey-background: #393E41;
+$yellow-border: #E7C663;
+$yellow-background: #9C7F2A;
+$violet-border: #8024B1;
+$violet-background: #3C1253;
+$green-border: #6CCF3F;
+$green-background: #537A27;
+$blue-border: $color-primary;
+$blue-background: #0b3e58;
+$light-orange-border: #e08a25;
+$light-orange-background: #58350b;
+$yellow-border: #e7d036;
+$yellow-background: #58481c;
+$red-border: #db2547;
+$red-background: #580b1d;
+$flex-box-background: $background-primary;
+$flex-head-background: $background-secondary;
+$placeholder-color: #ffffffb8;
+$dashbord-color: #03B2FF;
+$button-background-color: #0A0A0A;
+$filter-color-herder:  #22C993;
+$model-button-background: #222222;
+/* END :: COLORS VARIABLE */
+
+/* START :: DIMENSION VARIABLES */
+$font-size:14px;
+$height:30px;
+$spacing:10px;
+/* END :: DIMENSION VARIABLES */

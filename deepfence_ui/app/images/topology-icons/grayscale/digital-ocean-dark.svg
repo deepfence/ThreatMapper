@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Vectornator for iOS (http://vectornator.io/) -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xml:space="preserve"
+    xmlns:vectornator="http://vectornator.io" width="248.0px" height="248.0px" viewBox="0 0 248.0 248.0" id="SVGRoot">
+    <metadata>
+        <vectornator:setting key="DimensionsVisible" value="0" />
+        <vectornator:setting key="PencilOnly" value="0" />
+        <vectornator:setting key="SnapToPoints" value="0" />
+        <vectornator:setting key="OutlineMode" value="0" />
+        <vectornator:setting key="CMYKEnabledKey" value="0" />
+        <vectornator:setting key="RulersVisible" value="1" />
+        <vectornator:setting key="SnapToEdges" value="0" />
+        <vectornator:setting key="GuidesVisible" value="0" />
+        <vectornator:setting key="DisplayWhiteBackground" value="0" />
+        <vectornator:setting key="doHistoryDisabled" value="0" />
+        <vectornator:setting key="SnapToGuides" value="1" />
+        <vectornator:setting key="TimeLapseWatermarkDisabled" value="0" />
+        <vectornator:setting key="Units" value="Points" />
+        <vectornator:setting key="DynamicGuides" value="1" />
+        <vectornator:setting key="IsolateActiveLayer" value="0" />
+        <vectornator:setting key="SnapToGrid" value="0" />
+    </metadata>
+    <defs />
+    <g id="layer2" vectornator:layerName="layer2">
+        <g opacity="1">
+            <path
+                d="M235.246+123.711C235.405+185.056+185.875+234.952+124.53+235.245C63.186+235.537+13.1825+186.116+12.7567+124.772C12.3309+63.4286+61.6435+13.3177+122.986+12.7586C184.329+12.1995+234.547+61.4031+235.239+122.744"
+                fill-opacity="0.326613" fill="#5e5c64" opacity="1" />
+            <path stroke="#ffffff" stroke-width="4.5"
+                d="M235.246+123.711C235.405+185.056+185.875+234.952+124.53+235.245C63.186+235.537+13.1825+186.116+12.7567+124.772C12.3308+63.4286+61.6435+13.3178+122.986+12.7586C184.329+12.1995+234.547+61.4031+235.239+122.744"
+                fill="#5e5c64" stroke-linecap="round" opacity="1" stroke-linejoin="round" />
+        </g>
+    </g>
+    <g id="asd" vectornator:layerName="asd">
+        <g opacity="1">
+            <path
+                d="M124.007+200.911L124.007+171.101C155.56+171.101+180.054+139.81+167.936+106.599C163.432+94.2498+153.703+84.5199+141.354+80.014C108.144+67.9863+76.8527+92.3903+76.8527+123.944L47.1291+123.944C47.1291+73.6546+95.7674+34.4305+148.5+50.9014C171.513+58.1402+189.903+76.4409+197.052+99.4563C213.526+152.272+174.388+200.911+124.007+200.911"
+                opacity="1" fill="#0080ff" />
+            <path
+                d="M94.4591+171.187L124.093+171.187L124.093+141.553L94.4622+141.553L94.4591+171.187ZM71.6226+194.024L94.456+194.024L94.456+171.19L71.6226+171.19L71.6226+194.024ZM52.532+171.19L71.6226+171.19L71.6226+152.097L52.532+152.097L52.532+171.19Z"
+                opacity="1" fill="#0080ff" />
+        </g>
+    </g>
+</svg>

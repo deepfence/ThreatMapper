@@ -1,0 +1,123 @@
+# Default values for deepfence-console.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Set docker hub username and password provided by Deepfence
+registry:
+  name: "https://index.docker.io/v1/"
+  # Set docker hub username and password provided by Deepfence
+  # This will create a secret called "deepfence-docker-secret"
+  username: ""
+  password: ""
+  # If kubernetes secret is already defined externally, change following value to false
+  # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  createRegistrySecret: "true"
+
+image:
+  repository: "deepfenceio/"
+  tag: latest
+  pullPolicy: Always
+  pullSecretName: deepfence-docker-secret
+
+# Use custom ssl certificate for Deepfence UI
+# Copy *.key and *.crt file to current directory (same directory as values.yaml file)
+# Supported file extensions are .crt and .key (.pem, .cert not supported)
+# tls:
+#  certFile: "server.crt"
+#  keyFile: "server.key"
+tls:
+  certFile: ""
+  keyFile: ""
+
+volume:
+  storageClass: openebs-hostpath
+  # Change stoage class when using different PV provisioner.
+  # For example, it will be 'openebs-hostpath' when using openebs
+  # or it will be 'default' when using cloud managed Persistent Volumes.
+  esStorage: 30Gi
+  postgresStorage: 30Gi
+
+db:
+  # If kubernetes secret is already defined externally, change following value to false
+  createDbSecret: "true"
+  #  Change following values accordingly if using externally managed database
+  postgresUserDb:
+    host: deepfence-postgres
+    port: "5432"
+    user: "deepfence"
+    password: "KeTn4LA4SBN2"
+    dbname: "users"
+    sslmode: "disable"
+  postgresFetcherDb:
+    host: deepfence-postgres
+    port: "5432"
+    user: "deepfence"
+    password: "KeTn4LA4SBN2"
+    dbname: "cve"
+    sslmode: "disable"
+  elasticsearch:
+    host: deepfence-es
+    port: "9200"
+  redis:
+    host: deepfence-redis
+    port: "6379"
+
+# (Optional) Set custom name for the cluster and hostname prefix for console vm's to easily identify in Deepfence UI.
+# Example: df-console or deepfence-console
+# It will be suffixed with hostname - df-console-aks-agentpool-123456-vmss000001
+clusterName: "df-console"
+
+# Service name for access from agents and vulnerability mapper
+agentServiceName: deepfence-router
+
+# Show console vm in management console UI
+runConsoleDiscovery: "true"
+
+vulnerabilityScanConcurrency: "15"
+
+dnsResolver: "kube-dns.kube-system.svc.cluster.local"
+
+# Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
+mountContainerRuntimeSocket:
+  dockerSock: "true"
+  containerdSock: "true"
+
+# Optionally set node affinity for topology pod
+topologyNodeAffinityHostName: ""
+# Optionally set node affinity for backend pod
+backendNodeAffinityHostName: ""
+
+topologyResources:
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+  limits:
+    cpu: 16000m
+    memory: 32Gi
+
+elasticsearchResources:
+  requests:
+    cpu: 200m
+    memory: 2Gi
+  limits:
+    cpu: 8000m
+    memory: 8Gi
+elasticsearchHeapSize: "2g"
+
+defaultResourceLimits:
+  requests:
+    cpu: 50m
+    memory: 40Mi
+  limits:
+    cpu: 16000m
+    memory: 32Gi
+setDefaultResourceLimits: "false"
+
+enablePacketCaptureService: "true"
+
+serviceAccountName: deepfence-console
+
+namespace: default
+
+nameOverride: ""
+fullnameOverride: ""

@@ -1,0 +1,239 @@
+.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1050;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+  outline: 0;
+  background-color: rgba(16,16,16,0.8);
+  display: flex;
+  align-items: center;
+  .modal-container{
+    width: 500px;
+    margin: 0 auto;
+    border: none;
+    background-color: #171717;
+    border-radius: 10px;
+    box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.2);
+    .modal-header{
+      display: flex;
+      justify-content: space-between;
+      border-bottom: none;
+      padding-left: 26px;
+      padding-top: 23px;
+      padding-bottom: 0px;
+      .modal-heading{
+        font-size: 20px;
+        color: $text-color;
+        font-family: "Open Sans", sans-serif;
+        text-transform: capitalize;
+        font-weight: 600;
+      }
+      .modal-close {
+        float: right;
+        cursor: pointer;
+      }
+    }
+    .modal-body{
+      .license-expiry-msg{
+        padding: 10px;
+        font-size: 14px;
+        // font-family: $open-sans;
+        color: $grey-color;
+        text-align: center;
+      }
+      .license-expiry-description{
+        padding: 10px;
+        font-size: 16px;
+        // font-family: $open-sans;
+        color: $low-alert-color;
+        line-height: 26px;
+        text-align: center;
+      }
+    }
+    .form-wrapper {
+      .duration-container {
+        .auth-error-msg {
+          color: rgba(255, 255, 255, 0.72);
+          font-size: 12px;
+          // font-family: $open-sans;
+        }
+        .df-select-field .Select__control {
+          background-color: #303030;
+          border: none;
+        }
+      }
+      .form-field-label {
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 12px;
+      }
+      .form-field {
+        .df-select-field .Select__control {
+          background-color: #303030;
+          border: none;
+        }
+        .df-radio-button {
+          position: relative;
+          display: block;
+          input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 99;
+          }
+          .radio-label {
+            margin-bottom: 0px;
+            font-size: 14px;
+            padding-left: 20px;
+          }
+          .check {
+            position: absolute;
+            top: 3px;
+            left: 0px;
+            height: 16px;
+            width: 16px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+          }
+
+          .container:hover input ~ .check {
+            background-color: gray;
+          }
+          
+          input:checked ~ .check {
+            border: 2px solid $color-primary;
+          }
+          
+          .check:after {
+            content: "";
+            position: absolute;
+            display: none;
+          }
+          
+          input:checked ~ .check:after {
+            display: block;
+          }
+          
+          .check:after {
+            top: 3px;
+            left: 3px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: $color-primary;
+          }
+        }
+        input {
+          width: 100%;
+          height: 40px;
+          border-radius: 4px;
+          margin-left: 0px;
+        }
+        input[type="checkbox"] {
+          width: auto;
+          height: auto;
+        }
+      }
+      .heading {
+        padding-left: 2px;
+        font-size: 14px;
+        padding-bottom: 0px;
+        padding-top: 0px;
+        height: auto;
+      }
+      form .app-btn {
+        background-color: $color-primary;
+        width: 146px;
+        color: #fff;
+        border-radius: 4px;
+        border: 1px solid $color-primary;
+      }
+    }
+  }
+}
+
+.df-generic-modal {
+  // height: 100%;
+  background-color: #222222;
+
+  .modal-header {
+    border-bottom: none;
+    padding: 30px 40px 0px;
+    background-color: #222222;
+    margin-bottom: 20px;
+    .title {
+      font-family: "Open Sans", sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .modal-close {
+      float: right;
+      cursor: pointer;
+    }
+  }
+
+  .modal-body {
+    padding: 0 40px 32px 40px;
+    overflow-y: auto;
+    max-height: 520px;
+    height: 100%;
+
+    .node-details-table-node-link {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .compliance-check-view {
+      background-color: transparent;
+    }
+    input[type=checkbox]:before {
+      content: "";
+      display: block;
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      top: 2px;
+      left: 0;
+      background-color: #202020;
+      border: 1px solid #B2B0B2;
+      border-radius: 2px;
+    }
+    input[type=checkbox]:checked:before {
+      content: "";
+      display: block;
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      top: 0;
+      left: 0;
+      background-color: #1E80EF;
+    }
+    input[type=checkbox]:checked:after {
+      content: "";
+      display: block;
+      width: 5px;
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      -webkit-transform: rotate(45deg);
+      -ms-transform: rotate(45deg);
+      transform: rotate(45deg);
+      position: absolute;
+      top: 2px;
+      left: 5px;
+    }
+  }
+}
+
+.modal-trigger {
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.ReactModalPortal .ReactModal__Content--after-open {
+  border: none;
+}

@@ -1,0 +1,138 @@
+{
+  "ipcMode": null,
+  "executionRoleArn": "",
+  "containerDefinitions": [
+    {
+      "dnsSearchDomains": null,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/ecs-deepfence-agent",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "entryPoint": [
+        "/usr/local/bin/start_services"
+      ],
+      "portMappings": [
+
+      ],
+      "command": [
+
+      ],
+      "linuxParameters": null,
+      "cpu": 200,
+      "environment": [
+        {
+          "name": "DF_BACKEND_IP",
+          "value": "0.0.0.0"
+        },
+        {
+          "name": "DEEPFENCE_KEY",
+          "value": ""
+        },
+        {
+          "name": "USER_DEFINED_TAGS",
+          "value": ""
+        }
+      ],
+      "resourceRequirements": null,
+      "ulimits": null,
+      "dnsServers": null,
+      "mountPoints": [
+        {
+          "readOnly": true,
+          "containerPath": "/fenced/mnt/host/",
+          "sourceVolume": "Host"
+        },
+        {
+          "readOnly": null,
+          "containerPath": "/sys/kernel/debug",
+          "sourceVolume": "SysKernelDebug"
+        },
+        {
+          "readOnly": null,
+          "containerPath": "/var/run/docker.sock",
+          "sourceVolume": "DockerSock"
+        },
+        {
+          "readOnly": null,
+          "containerPath": "/var/log/fenced",
+          "sourceVolume": "VarLogFenced"
+        }
+      ],
+      "workingDirectory": "/home/deepfence",
+      "secrets": null,
+      "dockerSecurityOptions": null,
+      "memory": null,
+      "memoryReservation": 1024,
+      "volumesFrom": [
+
+      ],
+      "stopTimeout": null,
+      "image": "docker.io/deepfenceio/deepfence_agent_ce:latest",
+      "startTimeout": null,
+      "dependsOn": null,
+      "disableNetworking": null,
+      "interactive": null,
+      "healthCheck": null,
+      "essential": true,
+      "links": null,
+      "hostname": null,
+      "extraHosts": null,
+      "pseudoTerminal": null,
+      "user": "root",
+      "readonlyRootFilesystem": false,
+      "dockerLabels": {
+        "deepfence.role": "system"
+      },
+      "systemControls": null,
+      "privileged": true,
+      "name": "deepfence_agent"
+    }
+  ],
+  "memory": null,
+  "taskRoleArn": "",
+  "family": "ecs-deepfence-agent",
+  "pidMode": null,
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "networkMode": "host",
+  "cpu": null,
+  "proxyConfiguration": null,
+  "volumes": [
+    {
+      "name": "Host",
+      "host": {
+        "sourcePath": "/"
+      },
+      "dockerVolumeConfiguration": null
+    },
+    {
+      "name": "SysKernelDebug",
+      "host": {
+        "sourcePath": "/sys/kernel/debug"
+      },
+      "dockerVolumeConfiguration": null
+    },
+    {
+      "name": "DockerSock",
+      "host": {
+        "sourcePath": "/var/run/docker.sock"
+      },
+      "dockerVolumeConfiguration": null
+    },
+    {
+      "name": "VarLogFenced",
+      "host": {
+        "sourcePath": null
+      },
+      "dockerVolumeConfiguration": null
+    }
+  ],
+  "placementConstraints": [
+
+  ]
+}

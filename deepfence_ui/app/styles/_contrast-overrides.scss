@@ -1,0 +1,38 @@
+@import "variables";
+$background-color: lighten($primary-color, 75%);
+$background-lighter-color: lighten($background-color, 10%);
+$background-darker-color: darken($background-color, 20%);
+$background-darker-secondary-color: darken($background-color, 15%);
+$background-dark-color: $primary-color;
+$text-color: black;
+$text-secondary-color: lighten($text-color, 10%);
+$text-tertiary-color: lighten($text-color, 20%);
+$border-light-color: lighten($text-color, 50%);
+$text-darker-color: darken($text-color, 20%);
+$white: white;
+$edge-color: black;
+
+$node-elements-in-background-opacity: 0.4;
+
+$node-highlight-shadow-opacity: 0.4;
+$node-highlight-stroke-opacity: 0.5;
+$node-highlight-stroke-width: 0.16;
+$node-border-stroke-width: 0.2;
+$node-shadow-stroke-width: 0.25;
+$node-pseudo-opacity: 1;
+$edge-highlight-opacity: 0.3;
+$edge-opacity-blurred: 0;
+
+$btn-opacity-default: 1;
+$btn-opacity-hover: 1;
+$btn-opacity-selected: 1;
+$btn-opacity-disabled: 0.4;
+
+$link-opacity-default: 1;
+
+$search-border-color: $background-darker-color;
+$search-border-width: 2px;
+
+/* specific elements */
+$body-background-color: #FFF;
+$label-background-color: #FFF;

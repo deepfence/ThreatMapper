@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: deepfence-agent
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "deepfence-agent.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "deepfence-agent.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{- include "deepfence-agent.selectorLabels" . | nindent 8 }}
+    spec:
+      hostPID: true
+      hostNetwork: true
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      dnsPolicy: ClusterFirstWithHostNet
+
+      volumes:
+        {{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+        {{- end }}
+        {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
+        - name: containerd-sock
+          hostPath:
+            path: /run/containerd/containerd.sock
+            type: Socket
+        {{- end }}
+        - name: kernel-sys
+          hostPath:
+            path: /sys/kernel/debug
+            type: Directory
+        - name: host-fs
+          hostPath:
+            path: /
+            type: Directory
+        - name: fenced-path
+          emptyDir: {}
+
+      containers:
+        - name: deepfence-agent
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+          env:
+            - name: DEEPFENCE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "deepfence-key"
+                  key: "deepfence-key"
+            - name: USER_DEFINED_TAGS
+              value: {{ .Values.userDefinedTags }}
+            - name: DF_BACKEND_IP
+              value: "{{ required "managementConsoleIp is required" .Values.managementConsoleIp }}"
+            - name: DF_KUBERNETES_ON
+              value: "Y"
+            - name: INSTANCE_ID_SUFFIX
+              value: "{{ .Values.instanceIdSuffix }}"
+            - name: DF_CLUSTER_NAME
+              value: "{{ .Values.clusterName }}"
+            {{- if .Values.clusterName }}
+            - name: AGENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: SCOPE_HOSTNAME
+              value: "{{ .Values.clusterName }}-$(AGENT_HOSTNAME)"
+            {{- else }}
+            - name: SCOPE_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- end }}
+            - name: AGENT_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AGENT_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            {{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+            - mountPath: /var/run/docker.sock
+              name: docker-sock
+            {{ end }}
+            {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
+            - mountPath: /run/containerd/containerd.sock
+              name: containerd-sock
+            {{ end }}
+            - mountPath: /sys/kernel/debug
+              name: kernel-sys
+            - mountPath: /fenced/mnt/host
+              name: host-fs
+              readOnly: true
+            - mountPath: /var/log/fenced
+              name: fenced-path
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}

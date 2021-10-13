@@ -1,0 +1,110 @@
+//
+// DEEPFENCE SCSS
+//
+
+/* Background colors */
+$background-canvas: #101010; //#111217;
+$background-primary: #141414; //#181b1f;
+$background-secondary: #171717; //#22252b; //header
+
+/* Text colors */
+$text-primary: rgb(204, 204, 220);
+$text-secondary: rgb(192, 192, 192);
+$text-disabled: rgba(204, 204, 220, 0.4);
+
+/* Rich colors */
+$color-primary: rgb(0, 128, 255);
+$color-primary-shade: rgb(51, 153, 255);
+$color-primary-outline: rgb(90, 134, 222);
+
+$color-secondary: rgba(204, 204, 220, 0.1);
+$color-secondary-shade: rgba(204, 204, 220, 0.15);
+$color-secondary-outline: rgb(204, 204, 220);
+
+$color-success: #1a7f4b;
+$color-success-shade: rgb(60, 146, 102);
+$color-success-outline: #6ccf8e;
+
+$color-error: #d10e5c;
+$color-error-shade: rgb(215, 50, 116);
+$color-error-outline: #ff5286;
+
+$color-warning: #ffcd00;
+$color-warning-shade: rgb(246, 193, 90);
+$color-warning-outline: #f8d06b;
+
+$color-info: #3d71d9;
+$color-info-shade: rgb(90, 134, 222);
+$color-info-outline: #6e9fff;
+
+/* Severity colors */
+$critical-main: rgb(255, 69, 112);
+$critical-shade: #ff6a8d;
+
+$high-main: rgb(255, 153, 0);
+$high-shade: #ffad33;
+
+$medium-main: rgb(248, 203, 57);
+$medium-shade: #f9d561;
+
+$low-main: $color-primary;
+$low-shade: $color-primary-shade;
+
+$info-main: rgb(204, 204, 220);
+$info-shade: rgba(204, 204, 220, 0.5);
+
+$sidebar-color: #000000;
+
+/* Fonts */
+$font-family: "Manrope", sans-serif;
+$font-color-charts: $background-canvas;
+$heading-weight: 200;
+
+/* Font sizes */
+$font-size-small: 0.8rem;
+$font-size-medium: 1rem;
+$font-size-large: 1.2rem;
+$font-size-xlarge: 1.5rem;
+$font-size-xxlarge: 2rem;
+
+/* Font weights */
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-semi-bold: 500;
+$font-weight-bold: 700;
+
+/* export */
+
+:export {
+    fontFamily: $font-family;
+    background: $background-canvas;
+    cardHeader: $background-secondary;
+    fontHeader: $font-size-medium;
+    cardBody: $background-primary;
+
+    /*GENERAL COLORS*/
+    red: $color-error;
+    blue: $color-primary;
+    blueOutline: $color-primary-outline;
+
+    /* SEVERITY */
+    severityColorLow: $low-main;
+    severityColorLowShade: $low-shade;
+    severityColorMedium: $medium-main;
+    severityColorMediumShade: $medium-shade;
+    severityColorHigh: $high-main;
+    severityColorHighShade: $high-shade;
+    severityColorCritical: $critical-main;
+    severityColorCriticalShade: $critical-shade;
+    severityColorInfo: $info-main;
+    severityColorInfoShade: $info-shade;
+    passColor: $color-success;
+    passColorShade: $color-success-shade;
+
+    /*CHART*/
+    fontColorCharts: $font-color-charts;
+    fontChartSize: $font-size-small;
+    fontChartWeight: $font-weight-regular;
+    chartBorderLineWidth: 1.2;
+    chartBorderLineColor: $background-canvas;
+}

@@ -1,0 +1,27 @@
+Terms of Use
+
+The release of the software is governed by the following License Terms which represent an agreement between Deepfence and you. BY USING THE SOFTWARE, YOU ACCEPT THESE TERMS. IF YOU DO NOT ACCEPT THEM, DO NOT USE THE SOFTWARE. If you comply with these license terms, you have the rights below.
+
+Installation and User Rights
+
+You may install and use the software to monitor and scan running containers and hosts. You may also use the software to scan container images as part of CI/CD pipelines. 
+
+Scope of License
+
+The software is licensed, not sold. This agreement only gives you some rights to use the software. Deepfence reserves all other rights. Unless applicable law gives you more rights despite this limitation, you may use the software only as expressly permitted in this agreement. In doing so, you must comply with any technical limitations in the software that only allow you to use it in certain ways. Without Deepfence's explicitly consent, you may not
+
+* work around any technical limitations in the software;
+* reverse engineer, decompile or disassemble the software, except and only to the extent that applicable law expressly permits, despite this limitation;
+* make more copies of the software than specified in this agreement or allowed by applicable law, despite this limitation;
+* publish the software for others to copy;
+* sell, distribute, rent, lease or lend the software;
+* transfer the software or this agreement to any third party; or
+* use the software for commercial software hosting services
+
+Support Services
+
+This software is released "as is", our support will be on best effort basis.
+
+Disclaimer of Warranty
+
+The software is licensed "as-is." You bear the all risks of using it. Deepfence gives no express warranties, guarantees or conditions.

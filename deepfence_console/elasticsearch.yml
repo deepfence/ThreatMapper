@@ -1,0 +1,12 @@
+#cluster.name: "docker-cluster"
+#cluster node.local: true
+discovery.type: single-node
+network.host: 0.0.0.0
+
+# minimum_master_nodes need to be explicitly set when bound on a public IP
+# set to 1 to allow single node clusters
+# Details: https://github.com/elastic/elasticsearch/pull/17288
+discovery.zen.minimum_master_nodes: 1
+# node.roles: ["master", "data", "ingest"]
+# cluster.initial_master_nodes: ["deepfence-es-0","deepfence-es-1","deepfence-es-2"]
+

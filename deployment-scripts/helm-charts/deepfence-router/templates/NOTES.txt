@@ -1,0 +1,20 @@
+---
+
+kubectl get service -n {{ .Values.namespace }} {{ .Values.service.name }}
+
+{{- if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Values.namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Values.service.name }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Values.namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "https://$NODE_IP:$NODE_PORT"
+{{- else if contains "LoadBalancer" .Values.service.type }}
+{{- if .Values.service.loadBalancerIP }}
+  echo "https://{{ .Values.service.loadBalancerIP }}"
+{{- else }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Values.namespace }} svc -w {{ .Values.service.name }}'
+  export LOAD_BALANCER_IP=$(kubectl get svc --namespace {{ .Values.namespace }} {{ .Values.service.name }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo "https://$LOAD_BALANCER_IP"
+{{- end }}
+{{- end }}
+
+---

@@ -1,0 +1,15 @@
+<h4>{{applied_filter}}</h4>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-word;">
+        <tr>
+            {% for header in data %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for info, val in data.items() %}
+                <td>{{ ', '.join(val) }}</td>
+            {% endfor %}
+        </tr>
+    </table>
+</div>

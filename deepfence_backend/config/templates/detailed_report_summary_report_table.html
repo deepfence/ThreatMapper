@@ -1,0 +1,13 @@
+<br>
+<h3>{{summary_heading}}</h3>
+<table style="width:100%; table-layout: fixed;">
+    <tr>
+        {% for cve_type, count in cve_count.items() %}
+            {% if cve_type  in applied_severity %}
+                <th class={{"table-header-"+cve_type}}> {{ cve_type | title}} - {{count}} </th>
+            {% endif %}
+        {% endfor %}
+    </tr>
+        
+</table>
+<br>

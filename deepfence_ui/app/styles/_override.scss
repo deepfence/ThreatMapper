@@ -1,0 +1,755 @@
+.deepfence-topology,
+.terminal-app {
+  color: $grey-color;
+  height: 100%;
+  // font-family: $open-sans;
+  position: relative;
+  overflow: hidden;
+  p {
+    color: $grey-color;
+  }
+}
+
+.deepfence-topology {
+  margin-top: 58px; /* this needs to be kept in sync with the height of .header-view */
+  background-color: $flex-box-background;
+
+  .nodes-chart-error {
+    z-index: 9999;
+  }
+  .nodes-chart-loading {
+    z-index: 9999;
+  }
+}
+
+.footer {
+  display: none;
+
+  &-label,
+  .pause-text {
+    text-transform: none;
+  }
+
+  &-versionupdate {
+    text-transform: none;
+  }
+}
+
+.topologies {
+  .topologies-item {
+    margin: 0px;
+    text-align: center;
+    position: relative;
+
+    .topologies-sub {
+      position: absolute;
+      top: 40px;
+      z-index: 9999;
+      left: 20px;
+    }
+
+    &:hover {
+      .topologies-sub {
+        background-color: $d-background-color;
+        border-radius: 5px;
+      }
+      .topologies-sub-item {
+        display: block;
+        position: relative;
+        opacity: 1;
+        z-index: 10;
+      }
+    }
+
+    &-label {
+      font-size: 14px;
+      text-transform: none;
+      color: rgba(255, 255, 255, 0.72);
+
+      .fa-caret-down {
+        float: right;
+        padding-top: 2px;
+      }
+    }
+  }
+
+  .topologies-sub {
+    &-item {
+      &-label {
+        font-size: 14px;
+        text-transform: none;
+        color: rgba(255, 255, 255, 0.72);
+        text-align: left;
+      }
+    }
+  }
+
+  .topologies-item-main.topologies-item-main-active:after {
+    content: '';
+    height: 5px;
+    background-color: $color-primary;
+    border-radius: 2px 2px 0 0;
+    position: absolute;
+    bottom: -2px;
+    left: 0px;
+    width: 100%;
+  }
+
+  .topologies-item-main,
+  .topologies-sub-item {
+    color: $grey-color;
+    border-radius: 0px;
+    margin: 0px;
+    padding: 18px 26px;
+
+    .topologies-item-label {
+      color: #fff;
+      // font-family: $open-sans;
+      font-size: 14px;
+      line-height: 17px;
+      text-transform: uppercase;
+      font-weight: 400;
+
+      span {
+        margin-right: 7px;
+      }
+    }
+  }
+
+  .topologies-sub-item {
+    padding: 6px 15px;
+    display: none;
+    font-size: 14px;
+    text-align: left;
+  }
+  // .topologies-sub-item-active{
+  //   background-color: $color-primary;
+  // }
+
+  .topologies-sub-item-label {
+    color: $color-primary;
+  }
+}
+
+.nodes-chart-nodes .node {
+  .node-label-minor {
+    color: $grey-color;
+  }
+
+  .node-label,
+  .node-label-minor {
+    span:not(.match) {
+      background-color: transparent;
+    }
+  }
+}
+
+.nodes-chart-overlay {
+  &.active {
+    opacity: 0;
+  }
+}
+
+.nodes-chart,
+.nodes-resources {
+  .edge {
+    .link {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 1;
+    }
+  }
+
+  .nodes-chart-nodes .node {
+    .node-label,
+    .node-label-minor {
+      span:not(.match) {
+        background-color: transparent;
+      }
+    }
+  }
+
+  .shape {
+    .highlight-border {
+      fill: none;
+      stroke: #666;
+      stroke-width: 1.1;
+      stroke-opacity: 0.4;
+    }
+
+    .highlight-shadow {
+      fill: none;
+      stroke: #000;
+      stroke-width: 1;
+      stroke-opacity: 0.3;
+    }
+
+    .background {
+      stroke: #7f7e7e;
+      fill: #312d2d;
+    }
+
+    .metric-fill {
+      stroke: none;
+      fill: #a0be7e;
+      fill-opacity: 0.7;
+    }
+
+    .border {
+      fill: #03a9f4;
+      fill-opacity: 0.5;
+      stroke-width: $node-border-stroke-width;
+      transition: stroke-opacity 0.333s $base-ease, fill 0.333s $base-ease;
+    }
+
+    &.metrics .border {
+      fill: #03a9f4;
+      stroke-opacity: 0.3;
+    }
+
+    .shadow {
+      fill: none;
+      stroke: none;
+    }
+
+    .node {
+      //fill:  #fff;
+      //stroke: #1a1a1a;
+      //stroke-width: 0.05;
+    }
+  }
+
+  .stack .shape .border {
+    stroke-width: none;
+  }
+}
+
+.matched-results {
+  &-more {
+    text-transform: none;
+  }
+}
+
+.details {
+  &-wrapper {
+    top: 10px;
+    right: 0;
+    bottom: -8px;
+    animation-name: detailsslider;
+    animation-duration: 0.3s;
+  }
+}
+@keyframes detailsslider {
+  from {
+    width: 0px;
+  }
+  to {
+    width: 420px;
+  }
+}
+
+.node-details {
+  background-color: $button-background-color;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  // font-family: $open-sans;
+  color: $grey-color !important;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &-tools {
+    position: absolute;
+    top: 4px;
+    right: 10px;
+    > span {
+      color: #fff;
+      border: none;
+      span {
+        span {
+          text-transform: none;
+        }
+      }
+    }
+
+    &-wrapper {
+      .fa-info-circle {
+        display: none;
+      }
+    }
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    height: 46px;
+    padding: 0px 20px 0px 20px;
+    font-size: 16px;
+    background-color: $theme-color !important;
+
+    &-icon {
+      color: $color;
+      margin-right: 8px;
+      height: 26px;
+    }
+
+    i {
+      font-size: 20px;
+    }
+
+    &-label {
+      &-wrapper {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &-text {
+        color: $text-color;
+        font-weight: 600;
+      }
+    }
+
+    &-back-link {
+      cursor: pointer;
+
+      i {
+        margin: 0 8px;
+      }
+
+      justify-self: end;
+    }
+
+    &-close-button {
+      cursor: pointer;
+
+      i {
+        margin-left: 8px;
+      }
+
+      justify-self: end;
+    }
+  }
+
+  &-relatives {
+    &-more {
+      text-transform: none;
+    }
+  }
+
+  &-controls {
+    &-wrapper {
+      border-radius: 0px;
+
+      .pull-right {
+        width: 100%;
+
+        input {
+          padding: 9px;
+          width: 100%;
+          border-radius: 4px;
+          margin-top: 4px;
+        }
+
+        .Select__control {
+          background-color: #303030;
+        }
+      }
+      .pcap-control2-text {
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 12px;
+        // font-family: $open-sans;
+        font-weight: 600;
+      }
+      .all-containers-tab.active-option {
+        color: #fff;
+        border: 1px solid #007fff;
+        background-color: $color-primary;
+        max-width: 160px;
+        height: 40px;
+        border-radius: 4px;
+        font-size: 14px;
+        text-transform: none;
+      }
+    }
+
+    .node-control-button {
+      color: $white;
+    }
+  }
+
+  &-content {
+    &-loading {
+      color: $grey-color;
+    }
+
+    &-section {
+      &-header {
+        text-transform: capitalize;
+        color: $grey-color;
+        // font-family: $open-sans;
+      }
+    }
+  }
+
+  &-health {
+    &-overflow {
+      &-item {
+        &-value {
+          color: $grey-color;
+        }
+
+        &-label {
+          color: $grey-color;
+          text-transform: none;
+        }
+      }
+    }
+
+    &-item {
+      &-label {
+        color: $grey-color;
+        text-transform: none;
+      }
+
+      &-value {
+        color: $grey-color;
+      }
+    }
+  }
+
+  &-info {
+    &-field {
+      &-label {
+        color: $grey-color;
+        text-transform: none;
+      }
+
+      &-value {
+        color: $grey-color;
+      }
+    }
+  }
+
+  &-property-list {
+    &-field {
+      &-label {
+        color: $grey-color;
+        text-transform: none;
+      }
+
+      &-value {
+        color: $grey-color;
+      }
+    }
+  }
+
+  &-table {
+    &-header {
+      text-transform: none;
+      color: $grey-color;
+      &-sorted {
+        color: $grey-color;
+      }
+    }
+
+    &-node {
+      &:hover,
+      &.selected {
+        background-color: $grey-color;
+        color: #000;
+      }
+
+      &-value-minor,
+      &-value-unit {
+        color: $grey-color;
+      }
+    }
+  }
+}
+
+.terminal {
+  &-header {
+    background-color: #242422 !important;
+    border-radius: 0 0 0 0;
+
+    &-tools {
+      &-item,
+      &-item-icon {
+        text-transform: none;
+      }
+    }
+  }
+
+  &-status-bar {
+    .link {
+      text-transform: none;
+    }
+  }
+}
+
+.show-more {
+  text-transform: none;
+}
+
+.plugins {
+  &-label {
+    text-transform: none;
+  }
+}
+
+.plugins {
+  &-label {
+    text-transform: none;
+  }
+}
+
+.status {
+  text-transform: none;
+}
+
+.topology-option,
+.metric-selector,
+.network-selector,
+.view-mode-selector {
+  &-wrapper {
+    border-radius: 0px;
+    white-space: nowrap;
+  }
+  &-action {
+    @extend .btn-opacity;
+    padding: 6px 12px;
+    background-color: transparent;
+
+    &:first-child {
+      border-top-left-radius: 0px;
+      border-bottom-left-radius: 0px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 0px;
+      border-bottom-right-radius: 0px;
+    }
+  }
+}
+
+/* START :: VIEW MODE SELECTOR */
+.view-mode-selector {
+  &-action {
+    text-transform: none;
+    // font-family: $open-sans;
+    font-size: 15px;
+    line-height: 18px;
+    padding: 9px 14px;
+    color: #fff;
+    &-selected,
+    &:not([disabled]):hover {
+      color: #fff;
+      color: $color-primary;
+      background-color: $button-background-color;
+      border-radius: 6px !important;
+    }
+    &:hover {
+      background-color: $button-background-color;
+    }
+  }
+}
+.view-mode-selector-action:hover {
+  background-color: transparent !important;
+  color: #16c7f3;
+}
+
+.view-mode-selector-action.view-mode-selector-action-selected:hover {
+  background-color: $button-background-color !important;
+}
+
+.df-modal-form-slim {
+  .nodes-filter {
+    padding-right: 38px;
+    .nodes-filter-item {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      width: 210px;
+    }
+  }
+}
+/* END :: VIEW MODE SELECTOR */
+
+.view-mode-selector,
+.time-control {
+  .fa {
+    margin-right: 4px;
+    margin-left: 0;
+    padding-left: 5px;
+    border: none;
+    border-radius: 0px;
+    font-size: 14px;
+  }
+}
+
+/* START :: TIME CONTROL SELECTORS */
+.time-control-wrapper {
+  border-radius: 0px;
+  border: none;
+}
+
+.time-control-action {
+  &-selected {
+    background-color: $button-background-color !important;
+    color: #03b2ff !important;
+    border-radius: 6px !important;
+    // font-family: $open-sans;
+    font-size: 15px;
+    line-height: 18px;
+    padding: 9px 14px;
+  }
+  &:not([disabled]):hover {
+    color: #fff !important;
+    background-color: transparent !important;
+  }
+
+  &:first-child {
+    border-right: none;
+    border-radius: 0px;
+  }
+  &:last-child {
+    border-left: none;
+    border-radius: 0px;
+    color: #fff;
+  }
+}
+
+.time-control-action.time-control-action-selected:hover {
+  background-color: $button-background-color !important;
+  color: #03b2ff !important;
+}
+/* END :: TIME CONTROL SELECTORS */
+
+.sidebar {
+  display: none;
+}
+
+.help-panel {
+  &-header {
+    h2 {
+      text-transform: none;
+    }
+  }
+  &-main {
+    h2 {
+      text-transform: none;
+    }
+    h3 {
+      text-transform: none;
+    }
+  }
+  &-fields {
+    &-current-topology {
+      text-transform: none;
+    }
+  }
+}
+
+.nodes-grid .node-details-table-wrapper-wrapper {
+  .node-details-table-node,
+  thead tr {
+    height: 32px;
+  }
+
+  tr:nth-child(even) {
+    background: transparent;
+  }
+
+  thead tr {
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+
+  tbody tr {
+    border-radius: 0px;
+  }
+
+  tbody tr.selected,
+  tbody tr.focused {
+    background-color: #464646;
+    border: none;
+    color: $grey-color;
+  }
+}
+
+.metric-selector {
+  display: none;
+}
+
+.node-details-info-field-value.truncate {
+  white-space: normal;
+}
+
+/**
+other css added
+**/
+
+span.fa-terminal {
+  display: none;
+}
+
+.search-wrapper {
+  display: none;
+}
+
+/* Dropdown Button */
+.dropbtn {
+  color: white;
+  font-family: 'Lato', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+/* The container <div> - needed to position the
+ * dropdown content */
+.dropdown {
+  // position: relative;
+  display: inline-block;
+  // right: -270px;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #2a2a2a;
+  min-width: 120px;
+  box-shadow: 0 4px 8px 0 rgba(30, 30, 30, 0.9);
+  z-index: 1;
+  // right: -1px;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: white;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of
+ * dropdown links on
+ * hover */
+.dropdown-content a:hover {
+  background-color: #03a9f4;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+.dropdown:hover .dropdown-content {
+  // display: block;
+}
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+  background-color: #555;
+}

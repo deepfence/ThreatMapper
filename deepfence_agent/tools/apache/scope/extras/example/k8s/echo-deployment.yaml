@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: echo
+  template:
+    metadata:
+      labels:
+        name: echo
+    spec:
+      containers:
+      - name: echo
+        image: tomwilkie/echo
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80

@@ -1,0 +1,327 @@
+version: "3.7"
+services:
+
+  deepfence-postgres:
+    container_name: deepfence-postgres
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_postgres_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    restart: on-failure
+    networks:
+      - deepfence_net
+    volumes:
+      - deepfence_data:/data:rw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-redis:
+    container_name: deepfence-redis
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_redis_ce:${DF_IMG_TAG:-latest}
+    privileged: true
+    environment:
+      INITIALIZE_REDIS: "Y"
+    ulimits:
+      core: 0
+    restart: on-failure
+    networks:
+      - deepfence_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-fetcher:
+    container_name: deepfence-fetcher
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_fetcher_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    depends_on:
+      - deepfence-postgres
+    networks:
+      - deepfence_net
+    restart: on-failure
+    volumes:
+      - deepfence_data:/data:rw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-topology:
+    container_name: deepfence-topology
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_discovery_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    networks:
+      - deepfence_net
+    ports:
+      - "8004:8004"
+    restart: on-failure
+    command: topology
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-discovery:
+    container_name: deepfence-discovery
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_discovery_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    network_mode: "host"
+    pid: "host"
+    privileged: true
+    restart: on-failure
+    command: discovery localhost
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys/kernel/debug:/sys/kernel/debug:rw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-es:
+    container_name: deepfence-es-master
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_elastic_ce:${DF_IMG_TAG:-latest}
+    restart: on-failure
+    networks:
+      - deepfence_net
+    volumes:
+      - deepfence_data:/data:rw
+    environment:
+      DF_PROG_NAME: "es_master"
+    ulimits:
+      core: 0
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 2g
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-es-slave1:
+    container_name: deepfence-es-slave1
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_elastic_ce:${DF_IMG_TAG:-latest}
+    restart: on-failure
+    networks:
+      - deepfence_net
+    volumes:
+      - deepfence_data:/data:rw
+    environment:
+      DF_PROG_NAME: "es_slave1"
+      discovery.zen.ping.unicast.hosts: "deepfence-es"
+    ulimits:
+      core: 0
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 2g
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-es-slave2:
+    container_name: deepfence-es-slave2
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_elastic_ce:${DF_IMG_TAG:-latest}
+    restart: on-failure
+    networks:
+      - deepfence_net
+    volumes:
+      - deepfence_data:/data:rw
+    environment:
+      DF_PROG_NAME: "es_slave2"
+      discovery.zen.ping.unicast.hosts: "deepfence-es"
+    ulimits:
+      core: 0
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 2g
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-router:
+    container_name: deepfence-router
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_router_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    networks:
+      - deepfence_net
+    environment:
+      STREAMPROCESSOR_REPLICATION_FACTOR: 1
+      STREAMPROCESSOR_SERVICE_NAME_PREFIX: "deepfence-streamprocessor-"
+      OPERATING_MODE: "docker"
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8010:8010"
+    volumes:
+      - /etc/deepfence/certs:/etc/deepfence/certs/:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-api:
+    container_name: deepfence-api
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_api_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    tmpfs:
+      - /tmp
+    environment:
+      ANALYZER_REPLICATION_FACTOR: 1
+      ANALYZER_SERVICE_NAME_PREFIX: "deepfence-analyzer-"
+    networks:
+      - deepfence_net
+    depends_on:
+      - deepfence-es
+      - deepfence-es-slave1
+      - deepfence-es-slave2
+      - deepfence-redis
+      - deepfence-postgres
+    volumes:
+      - /etc/docker/certs.d:/etc/docker/certs.d:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: /app/code/dockerify/api/entrypoint.sh
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-celery:
+    container_name: deepfence-celery
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_api_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    entrypoint: /app/code/dockerify/celery/entrypoint.sh
+    restart: on-failure
+    environment:
+      - mapper_image_name=${IMAGE_REPOSITORY:-deepfenceio/}deepfence_vulnerability_mapper_ce
+      - image_tag=${DF_IMG_TAG:-latest}
+      - router_service=127.0.0.1
+      - VULNERABILITY_SCAN_CONCURRENCY="10"
+    networks:
+      - deepfence_net
+    depends_on:
+      - deepfence-redis
+      - deepfence-postgres
+    volumes:
+      - /etc/docker/certs.d:/etc/docker/certs.d:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-backend:
+    container_name: deepfence-backend
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_api_ce:${DF_IMG_TAG:-latest}
+    privileged: true
+    ulimits:
+      core: 0
+    entrypoint: /app/code/dockerify/backend/entrypoint.sh
+    restart: on-failure
+    networks:
+      - deepfence_net
+    depends_on:
+      - deepfence-redis
+      - deepfence-postgres
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-ui:
+    container_name: deepfence-ui
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_ui_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    networks:
+      - deepfence_net
+    restart: on-failure
+    depends_on:
+      - deepfence-topology
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-diagnosis:
+    container_name: deepfence-diagnosis
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_diagnosis_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    networks:
+      - deepfence_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-vulnerability-mapper:
+    container_name: df-vulnerability-mapper
+    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-latest}
+    ulimits:
+      core: 0
+    restart: "no"
+    networks:
+      - deepfence_net
+    entrypoint: /bin/true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+volumes:
+  deepfence_data:
+    driver: local
+
+networks:
+  deepfence_net:
+    driver: bridge

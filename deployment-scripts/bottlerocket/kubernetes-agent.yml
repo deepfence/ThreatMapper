@@ -1,0 +1,189 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: deepfence
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deepfence-agent
+  labels:
+    name: deepfence-agent
+  namespace: deepfence
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: deepfence-agent
+  labels:
+    name: deepfence-agent
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - pods/exec
+    verbs:
+      - get
+      - create
+  - apiGroups:
+      - ''
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+      - delete
+  - apiGroups:
+      - ''
+    resources:
+      - pods/log
+      - services
+      - nodes
+      - namespaces
+      - persistentvolumes
+      - persistentvolumeclaims
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - cronjobs
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - deployments
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - deployments/scale
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - storageclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - volumesnapshot.external-storage.k8s.io
+    resources:
+      - volumesnapshots
+      - volumesnapshotdatas
+    verbs:
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: deepfence-agent
+  labels:
+    name: deepfence-agent
+roleRef:
+  kind: ClusterRole
+  name: deepfence-agent
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: deepfence-agent
+    namespace: deepfence
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: deepfence-agent-daemon
+  namespace: deepfence
+spec:
+  selector:
+    matchLabels:
+      app: deepfence-agent
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: deepfence-agent
+    spec:
+      hostname: df-agent-eks
+      hostPID: true
+      hostNetwork: true
+      serviceAccountName: deepfence-agent
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+
+      volumes:
+        - name: docker-sock
+          hostPath:
+            path: /var/run/dockershim.sock
+            type: Socket
+        - name: kernel-sys
+          hostPath:
+            path: /sys/kernel/debug
+            type: Directory
+        - name: host-fs
+          hostPath:
+            path: /
+            type: Directory
+        - name: fenced-path
+          emptyDir: {}
+
+      containers:
+        - name: deepfence-agent
+          image: deepfenceio/deepfence_agent_ce:bottlerocket
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 512Mi
+            limits:
+              memory: 1024Mi
+          env:
+            - name: DF_BACKEND_IP
+              value: "<MANAGEMENT_CONSOLE_IP_ADDRESS>"
+            - name: DF_KUBERNETES_ON
+              value: "Y"
+            - name: DEEPFENCE_KEY
+              value: ""
+          volumeMounts:
+            - mountPath: /var/run/dockershim.sock
+              name: docker-sock
+            - mountPath: /sys/kernel/debug
+              name: kernel-sys
+            - mountPath: /fenced/mnt/host
+              name: host-fs
+              readOnly: true
+            - mountPath: /var/log/fenced
+              name: fenced-path
+---

@@ -1,0 +1,121 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-fetcher
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-fetcher
+  ports:
+    - name: deepfence-fetcher-port-1
+      port: 8001
+      protocol: TCP
+      targetPort: 8001
+    - name: deepfence-fetcher-port-2
+      port: 8002
+      protocol: TCP
+      targetPort: 8002
+    - name: deepfence-fetcher-port-3
+      port: 8006
+      protocol: TCP
+      targetPort: 8006
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-topology
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-topology
+  ports:
+    - name: deepfence-topology-port
+      port: 8004
+      protocol: TCP
+      targetPort: 8004
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-api
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-api
+  ports:
+    - name: deepfence-api-port
+      port: 9998
+      protocol: TCP
+      targetPort: 9998
+    - name: deepfence-internal-api-port
+      port: 9997
+      protocol: TCP
+      targetPort: 9997
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-backend
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-backend
+  ports:
+    - name: deepfence-backend-port
+      port: 4041
+      protocol: TCP
+      targetPort: 4041
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-ui
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-ui
+  ports:
+    - name: deepfence-ui-port
+      port: 4042
+      protocol: TCP
+      targetPort: 4042
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-diagnosis
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-diagnosis
+  ports:
+    - name: deepfence-diagnosis-port
+      port: 8009
+      protocol: TCP
+      targetPort: 8009
+---

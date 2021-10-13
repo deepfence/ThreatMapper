@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-cluster-agent
+  namespace: {{ .Values.namespace }}
+  labels:
+  {{- include "deepfence-cluster-agent.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+  {{- include "deepfence-cluster-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+    {{- include "deepfence-cluster-agent.selectorLabels" . | nindent 8 }}
+    spec:
+      hostNetwork: true
+      containers:
+        - name: deepfence-cluster-agent
+          image: "{{ .Values.image.clusterAgentImageName }}:{{ .Values.image.clusterAgentImageTag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - cluster-agent
+            - {{ required "managementConsoleIp is required" .Values.managementConsoleIp }}
+          env:
+            - name: DEEPFENCE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "deepfence-key"
+                  key: "deepfence-key"
+            - name: DF_CLUSTER_NAME
+              value: "{{ .Values.clusterName }}"
+            {{- if .Values.clusterName }}
+            - name: AGENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: SCOPE_HOSTNAME
+              value: "{{ .Values.clusterName }}-$(AGENT_HOSTNAME)"
+            {{- else }}
+            - name: SCOPE_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- end }}
+            - name: AGENT_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AGENT_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: {{ .Values.clusterAgentResources.requests.cpu }}
+              memory: {{ .Values.clusterAgentResources.requests.memory }}
+            limits:
+              cpu: {{ .Values.clusterAgentResources.limits.cpu }}
+              memory: {{ .Values.clusterAgentResources.limits.memory }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
