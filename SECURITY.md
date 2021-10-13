@@ -1,1 +1,1 @@
-Any vulnerabilities found in this source code may please be reporeted to productsecurity at deepfence dot io in complete confidence.
+Any vulnerabilities found in this source code may please be reported to security@deepfence.io in complete confidence.
