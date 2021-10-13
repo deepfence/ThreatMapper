@@ -10,6 +10,11 @@ Your 'Shift Left' initiatives enable you to deliver secure applications; ThreatM
 * **Discover Vulnerabilities:** ThreatMapper obtains manifests of dependencies from running pods and containers, serverless apps, applications, and operating system.  ThreatMapper matches these against vulnerability feeds to identify vulnerable components.
 * **Rank Vulnerabilities by Risk-of-Exploit:** ThreatMapper ranks discovered vulnerabilities against CVSS and other severity scores, exploit method and proximity to attack surface, in order to identify which issues pose the greatest risk of exploit.
 
+ThreatMapper discovers, annotates and displays the topology of your applications across multiple cloud environments:
+
+![Application Topology](https://github.com/deepfence/ThreatMapper/blob/master/images/df-topology-1.png)
+
+
 Get in touch:
 
 * [<img src="https://img.shields.io/badge/slack-@deepfence-brightgreen.svg?logo=slack">](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) Got a question, need some help?  Find the Deepfence team on Slack
