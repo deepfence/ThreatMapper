@@ -14,7 +14,7 @@ Get in touch:
 
 * [<img src="https://img.shields.io/badge/slack-@deepfence-brightgreen.svg?logo=slack">](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) Got a question, need some help?  Find the Deepfence team on Slack
 * https://github.com/deepfence/ThreatMapper/issues: Got a feature request or found a bug?  Raise an issue
-* security@deepfence.io: Found a security issue?  Share it in confidence
+* productsecurity at deepfence dot io: Found a security issue?  Share it in confidence
 * Read the additional documentation in the [Deepfence ThreatMapper wiki](https://github.com/deepfence/ThreatMapper/wiki)
 * Find out more at [deepfence.io](https://deepfence.io/)
 
@@ -209,7 +209,7 @@ Please share any feature requests or bug reports: https://github.com/deepfence/T
 
 # Security and Support
 
-For any security-related issues in the ThreatMapper project, contact security@deepfence.io.
+For any security-related issues in the ThreatMapper project, contact productsecurity at deepfence dot io.
 
 Please file Github issues as needed, and join the Deepfence Community [Slack channel](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ).
 
