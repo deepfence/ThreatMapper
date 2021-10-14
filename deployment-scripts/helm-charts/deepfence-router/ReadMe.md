@@ -7,7 +7,7 @@
 **Quick start**
 
 ```bash
-helm repo add deepfence https://deepfence.github.io/ThreatMapper/deployment-scripts/helm-charts
+helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 ```
 
 ```bash
@@ -21,7 +21,7 @@ helm install deepfence-router deepfence/deepfence-router
 **Detailed setup**
 
 ```bash
-helm repo add deepfence https://deepfence.github.io/ThreatMapper/deployment-scripts/helm-charts
+helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 ```
 
 - Create values file
