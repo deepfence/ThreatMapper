@@ -139,7 +139,7 @@ docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=ho
   --privileged=true -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced \
   -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
   -e USER_DEFINED_TAGS="" -e DF_BACKEND_IP="---CONSOLE-IP---" -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-  deepfenceio/deepfence_agent:latest
+  deepfenceio/deepfence_agent_ce:latest
 ```
 
 Optionally the sensor container can be tagged using `USER_DEFINED_TAGS=""` in the above command. Tags should be comma separated, for example, "`dev,front-end`".
