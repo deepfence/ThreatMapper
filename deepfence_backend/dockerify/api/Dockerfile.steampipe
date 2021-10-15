@@ -1,8 +1,6 @@
 FROM golang:1.17-bullseye
 LABEL deepfence.role=system
 
-# To build this
-# docker build -f Dockerfile.steampipe -t deepfenceio/steampipe_build:latest $DEEPFENCE_BACKEND_DIR
 WORKDIR /go
 ADD cloud_detect/steampipe-plugin-overrides/ /tmp/steampipe-plugin-overrides/
 RUN apt-get update \

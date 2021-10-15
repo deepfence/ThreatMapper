@@ -9,8 +9,7 @@ WORKDIR /go/scope_websocket_client
 RUN go build -o websocket_client websocket_client.go helper.go main.go node_utils.go \
     && go build -o websocket_server websocket_server.go helper.go main.go node_utils.go
 
-# docker build -f Dockerfile.steampipe -t deepfenceio/steampipe_build:latest $DEEPFENCE_BACKEND_DIR
-FROM deepfenceio/steampipe_build:latest AS steampipe-build
+FROM steampipe_build:latest AS steampipe-build
 
 FROM python:3.6.15-slim-bullseye
 LABEL deepfence.role=system

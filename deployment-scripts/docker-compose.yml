@@ -3,7 +3,7 @@ services:
 
   deepfence-postgres:
     container_name: deepfence-postgres
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_postgres_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     restart: on-failure
@@ -18,7 +18,7 @@ services:
 
   deepfence-redis:
     container_name: deepfence-redis
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_redis_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-latest}
     privileged: true
     environment:
       INITIALIZE_REDIS: "Y"
@@ -34,7 +34,7 @@ services:
 
   deepfence-fetcher:
     container_name: deepfence-fetcher
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_fetcher_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     depends_on:
@@ -51,7 +51,7 @@ services:
 
   deepfence-topology:
     container_name: deepfence-topology
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_discovery_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_discovery_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     networks:
@@ -67,7 +67,7 @@ services:
 
   deepfence-discovery:
     container_name: deepfence-discovery
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_discovery_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_discovery_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     network_mode: "host"
@@ -85,7 +85,7 @@ services:
 
   deepfence-es:
     container_name: deepfence-es-master
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_elastic_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-latest}
     restart: on-failure
     networks:
       - deepfence_net
@@ -119,7 +119,7 @@ services:
 
   deepfence-es-slave1:
     container_name: deepfence-es-slave1
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_elastic_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-latest}
     restart: on-failure
     networks:
       - deepfence_net
@@ -151,7 +151,7 @@ services:
 
   deepfence-es-slave2:
     container_name: deepfence-es-slave2
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_elastic_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-latest}
     restart: on-failure
     networks:
       - deepfence_net
@@ -183,20 +183,15 @@ services:
 
   deepfence-router:
     container_name: deepfence-router
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_router_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     networks:
       - deepfence_net
-    environment:
-      STREAMPROCESSOR_REPLICATION_FACTOR: 1
-      STREAMPROCESSOR_SERVICE_NAME_PREFIX: "deepfence-streamprocessor-"
-      OPERATING_MODE: "docker"
     restart: always
     ports:
       - "80:80"
       - "443:443"
-      - "8010:8010"
     volumes:
       - /etc/deepfence/certs:/etc/deepfence/certs/:ro
     logging:
@@ -206,7 +201,7 @@ services:
 
   deepfence-api:
     container_name: deepfence-api
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_api_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     tmpfs:
@@ -233,13 +228,13 @@ services:
 
   deepfence-celery:
     container_name: deepfence-celery
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_api_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     entrypoint: /app/code/dockerify/celery/entrypoint.sh
     restart: on-failure
     environment:
-      - mapper_image_name=${IMAGE_REPOSITORY:-deepfenceio/}deepfence_vulnerability_mapper_ce
+      - mapper_image_name=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce
       - image_tag=${DF_IMG_TAG:-latest}
       - router_service=127.0.0.1
       - VULNERABILITY_SCAN_CONCURRENCY="10"
@@ -258,7 +253,7 @@ services:
 
   deepfence-backend:
     container_name: deepfence-backend
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_api_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-latest}
     privileged: true
     ulimits:
       core: 0
@@ -276,7 +271,7 @@ services:
 
   deepfence-ui:
     container_name: deepfence-ui
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_ui_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_ui_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     networks:
@@ -291,7 +286,7 @@ services:
 
   deepfence-diagnosis:
     container_name: deepfence-diagnosis
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_diagnosis_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_diagnosis_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     networks:
@@ -306,7 +301,7 @@ services:
 
   deepfence-vulnerability-mapper:
     container_name: df-vulnerability-mapper
-    image: ${IMAGE_REPOSITORY:-deepfenceio/}deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-latest}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-latest}
     ulimits:
       core: 0
     restart: "no"

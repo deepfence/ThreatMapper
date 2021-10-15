@@ -29,44 +29,6 @@ if [[ "$1" = 'haproxy' ]]; then
 	set -- haproxy -W -q -db "$@"
 fi
 
-# create string for multiple sp backends
-sp_backend_str=""
-SP_REPLICAS=0
-
-if [ -z "$STREAMPROCESSOR_REPLICATION_FACTOR" ]; then
-	SP_REPLICAS=1
-else
-	SP_REPLICAS=$STREAMPROCESSOR_REPLICATION_FACTOR
-fi
-
-if [ "$SP_REPLICAS" = 0 ]; then
-	echo "Non-zero number of streamprocessor replicas required. Exiting..."
-	exit 1
-elif [ "$SP_REPLICAS" = 1 ]; then
-	if [ "$OPERATING_MODE" = "docker" ]; then
-		sp_backend_str="server s0 deepfence-streamprocessor-0:8010\n"
-	elif [ "$OPERATING_MODE" = "k8s" ]; then
-		sp_backend_str="server s0 deepfence-streamprocessor-0.deepfence-streamprocessor:8010\n"
-	else
-		echo "Set operating_mode to either 'docker' or 'k8s'. Exiting..."
-		exit 1
-	fi
-else
-	sp_backend_str="balance roundrobin\n"
-	if [ "$OPERATING_MODE" = "docker" ]; then
-		for ((i=0; i < $SP_REPLICAS; i++)); do
-			sp_backend_str+="    server s$i deepfence-streamprocessor-$i:8010 check\n"
-		done
-	elif [ "$OPERATING_MODE" = "k8s" ]; then
-		for ((i=0; i < $SP_REPLICAS; i++)); do
-			sp_backend_str+="    server s$i deepfence-streamprocessor-$i.deepfence-streamprocessor:8010 check\n"
-		done
-	else
-		echo "Set operating_mode to either 'docker' or 'k8s'. Exiting..."
-		exit 1
-	fi
-fi
-
 sed -i "s/SP_BACKEND_INFO/${sp_backend_str}/g" /usr/local/etc/haproxy/haproxy.cfg
 
 until curl -s "http://deepfence-api:9997/ping" > /dev/null; do
