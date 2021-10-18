@@ -26,7 +26,6 @@ Get in touch:
 
 # Contents
 * [What is ThreatMapper?](#what-is-threatmapper)
-* [Prerequisites](#prerequisites)
 * [ThreatMapper QuickStart](#threatmapper-quickstart)
 * [Build from Source](#building-deepfence-threatmapper-components-from-source)
 * [Next Steps](#next-steps-with-deepfence-threatmapper)
@@ -39,7 +38,7 @@ Get in touch:
 
 # What is ThreatMapper?
 
-Deepfence ThreatMapper consists of two components - the Deepfence Management Console, and a series of Deepfence Sensors.  The sensors should be deployed within your production platforms, and they forward manifests and telemetry securely to your dedicated console.  The console calculates the topology of your applications, interrogates manifests to find vulnerabilities, and displays a 'Threat Map' for your applications. 
+Deepfence ThreatMapper consists of two components - the Deepfence Management Console, and a series of Deepfence Sensors.  The console calculates the topology of your applications, interrogates manifests to find vulnerabilities, and displays a 'Threat Map' for your applications.  The sensors are be deployed within your production platforms, and they forward manifests and telemetry securely to your dedicated console.   
 
 ![Deepfence Architecture](images/threatmapper-architecture.png)
 
@@ -49,7 +48,7 @@ The Deepfence Management Console ("Console") is a standalone application, implem
 
 The console allows you to:
 
-* Manage the users who can access the console .
+* Manage the users who can access the console.
 * Visualize and drill down into Kubernetes clusters, virtual machines, containers and images, running processes, and network connections in near real time.
 * Invoke vulnerability scans on running containers and applications and review the results, ranked by risk-of-exploit.
 * Invoke vulnerability scans on infrastructure hosts, manually or automatically when they are added to a cluster.
@@ -61,37 +60,63 @@ Deepfence ThreatMapper supports multiple production deployments simultaneously, 
 
 ## Deepfence Sensors
 
-Deepfence Sensors are deployed on your production platforms.  They communicate securely with your Deepfence Management Console, taking instructions to perform scans, and forwarding telemetry data.
+Deepfence Sensors are deployed on your production platforms.  They communicate securely with your Deepfence Management Console, taking instructions to retrieve manifests, and forwarding telemetry data.
 
-The sensors support a range of production platforms:
+The sensors support the following production platforms:
 
 * **Kubernetes:** The sensors are deployed as a daemonset, similar to other kubernetes services.
 * **Docker:** The sensor is deployed as a docker container on each docker host.
 * **Bare metal and VM-based platforms:** Sensors are deployed as a Docker container on each operating system instance, using a Docker runtime. Both Windows and Linux instances are supported.
 * **AWS Fargate** The sensor is deployed as a daemon service alongside each serverless instance.
 
-# Prerequisites
 
-## Deepfence ThreatMapper Console
 
-Feature       | Requirements
-------------- | ----------------- 
-CPU: No of cores | 4
-RAM | 16 GB
-Disk space | At-least 120 GB
-Telemetry and data from Deepfence Sensors | Port 8000, firewalled
-Administrative and API access | Port 443, firewalled
-Docker binaries | *Version 18.03 or later*
-Docker-compose binary | *[Version 1.20.1](https://github.com/docker/compose/releases/tag/1.20.1)*
+# ThreatMapper QuickStart
+
+These quickstart instructions use pre-built Deepfence ThreatMapper containers from [DockerHub](https://hub.docker.com/u/deepfenceio).
+
+## The Deepfence Management Console
+
+### Prerequisites
+
+Feature       | Requirements (Docker) | Requirements (Kubernetes) 
+------------- | ----------------------| -------------------------
+CPU: No of cores | 4 | 3 nodes, 2 cores each
+RAM | 16 GB | 3 nodes, 8 GB each
+Disk space | 120 GB minimum | 120 GB minimum
+Telemetry and data from Deepfence Sensors | Port 8000, firewalled | Port 8000, firewalled
+Administrative and API access | Port 443, firewalled | Port 443, firewalled
+Docker binaries | *Version 18.03 or later* |
+Docker-compose binary | *[Version 1.20.1](https://github.com/docker/compose/releases/tag/1.20.1)* |
 
 Larger deployments, managing 250 or more production nodes, will require additional CPU and RAM resources.  For enterprise-scale deployments, managing 1000+ production nodes, the ThreatMapper Console should be deployed on a Kubernetes cluster of 3 or more nodes.
 
 You should secure (firewall) the sensor port (8000) and admin port (443) so that only authorized hosts can connect.
 
 
+### Install the Deepfence Management Console - Single Docker Host
+
+The following steps explain how to get started with a docker-based install on a single host system.
+
+1. Download the file [docker-compose.yml](deployment-scripts/docker-compose.yml) to the system that will host the Console
+2. Execute the following command to install and start the Console
+
+    ```shell script
+    docker-compose -f docker-compose.yml up -d
+    ```
+    
+3. Open the Console in a browser (https://x.x.x.x) and register a new account. Once one user has been registered, additional users are added by invitation from an admin user.
+4. Obtain the Deepfence API key from the console. Go to `Settings` -> `User Management` and make note of the API key; you will need it when deploying the Deepfence sensors. 
+
+For more details, refer to the [Installation Instructions - Docker](https://github.com/deepfence/ThreatMapper/wiki/Installing-the-Management-Console#install-the-deepfence-management-console---single-docker-host).
+
+### Install the Deepfence Management Console - Kubernetes Cluster
+
+The Console may be deployed on a Kubernetes cluster using helm charts: [Installation Instructions - Kubernetes](https://github.com/deepfence/ThreatMapper/wiki/Installing-the-Management-Console#install-the-deepfence-management-console---kubernetes-cluster)
+
 ## Deepfence Sensors
 
-Production nodes should meet the following prerequisites:
+### Prerequisites
 
 Feature       | Requirements
 ------------- | ----------------- 
@@ -102,35 +127,12 @@ Linux kernel version | >= 4.4
 Docker binaries | *Version 18.03 or later*
 Connectivity | Access to Deepfence Management Console IP address, port 8000
 
+Additionally, before you begin:
 
-# ThreatMapper QuickStart
+* Ensure you have the Deepfence API key and Deepfence Console's IP address available.  If needed, you can obtain the API key from `Settings` -> `User Management` in the Console
+* Ensure that the host systems for the sensors can connect to port 8000 on the Console's IP address.
 
-These quickstart instructions use pre-built Deepfence ThreatMapper containers from [DockerHub](https://hub.docker.com/u/deepfenceio).
-
-## Install the Deepfence Management Console
-
-The following instuctions explain how to get started with a docker-based install on a single host system.  Please verify the prerequisites before proceeding.
-
-1. Download the file [docker-compose.yml](deployment-scripts/docker-compose.yml) to the system that will host the Console
-2. Execute the following command to install and start the Console
-    ```shell script
-    docker-compose -f docker-compose.yml up -d
-    ```
-3. Open the Console in a browser (https://x.x.x.x) and register a new account. Once one user has been registered, additional users are added by invitation from an admin user.
-4. Obtain the Deepfence API key from the console. Go to `Settings` -> `User Management` and make note of the API key; you will need it when deploying the Deepfence sensors. 
-
-Once the Console has started, it will begin to acquire the Threat Intel feed data; this can take several minutes, or up to an hour.  You can check the status on the Console, at `Settings` -> `Diagnosis`; look for the **System Status** report.
-
-For more information, read the ['Advanced Installation Notes'](https://github.com/deepfence/ThreatMapper/wiki/Management-Console-Additional-Installation-notes)
-
-## Install Deepfence Sensors on the Production Hosts
-
-Do verify the prerequisites before proceeding.  Additionally, before you begin:
-
-* Ensure you have the Deepfence API key and Deepfence Console IP address available.  If needed, you can obtain the API key from `Settings` -> `User Management` in the Console
-* Ensure that the host systems for the sensors can connect to port 8000 on the Console IP address.
-
-### Installing Deepfence Sensor on a Docker Host
+### Installing the Deepfence Sensor on a Docker Host
 
 Run the following command to start the Deepfence Sensor on the Docker host:
 
@@ -144,7 +146,7 @@ docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=ho
 
 Optionally the sensor container can be tagged using `USER_DEFINED_TAGS=""` in the above command. Tags should be comma separated, for example, "`dev,front-end`".
 
-### Installing Deepfence Sensor in a Kubernetes Cluster
+### Installing Deepfence Sensors in a Kubernetes Cluster
 
 The Deepfence Sensor is most easily deployed using the Helm chart.  Use `helm version` to determine whether you are using Helm v2.x or v3.x:
 
@@ -175,19 +177,19 @@ helm delete --purge deepfence-agent
 helm delete deepfence-agent
 ```
 
-### Installing Deepfence Sensor in Amazon ECS
+### Installing Deepfence Sensors in Amazon ECS
 
 For detailed instructions to deploy agents on Amazon ECS, please refer to our [Amazon ECS](https://github.com/deepfence/ThreatMapper/wiki/Amazon-ECS-Deployment) wiki page.
 
-### Installing Deepfence Sensor in Google GKE
+### Installing Deepfence Sensors in Google GKE
 
 For detailed instructions to deploy agents on Google GKE, please refer to our [Google GKE](https://github.com/deepfence/ThreatMapper/wiki/Google-Kubernetes-Engine-Deployment) wiki page.
 
-### Installing Deepfence Sensor in Azure AKS
+### Installing Deepfence Sensors in Azure AKS
 
 For detailed instructions to deploy agents on Azure Kubernetes Service, please refer to our [Azure AKS](https://github.com/deepfence/ThreatMapper/wiki/Azure-Kubernetes-Service-Deployment) wiki page.
 
-### Installing Deepfence Sensor on a Virtual Machine or Bare Metal Server
+### Installing Deepfence Sensors on a Virtual Machine or Bare Metal Server
 
 Install an appropriate docker runtime on the host operating system (Linux and Windows are supported). You can then follow the ['Installing on a Docker Host'](#installing-on-a-docker-host) steps to manage and observe the virtual machine or bare metal server with ThreatMapper.
 
