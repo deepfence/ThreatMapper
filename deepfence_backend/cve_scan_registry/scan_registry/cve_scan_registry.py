@@ -75,7 +75,7 @@ class CveScanRegistryImages:
         self.scan_type = "base,java,python,ruby,php,nodejs,js,dotnet"
         self.scan_id = ""
         self.deepfence_key = ""
-        self.mgmt_console_ip = "127.0.0.1"
+        self.mgmt_console_url = "127.0.0.1:443"
         self.docker_registry_name = ""
         self.client_cert_file_name = ""
         self.client_key_file_name = ""
@@ -183,8 +183,8 @@ class CveScanRegistryImages:
             img_name = images_list[0]["image_name_with_tag"]
             image_path = get_tmp_path(
                 img_name + "_" + self.datetime_now.strftime("%Y-%m-%dT%H:%M:%S") + ".000") + "/layers.tar"
-            cmd_line = "{0} -mgmt-console-ip='{1}' -scan-type='{2}' -image-name='{3}' -scan-id='{4}' -image-path='{5}' -deepfence-key='{6}' -update-dependency-data='{7}' -is-image-local='{8}'".format(
-                audit_file, self.mgmt_console_ip, self.scan_type, img_name, self.scan_id, image_path,
+            cmd_line = "{0} -mgmt-console-url='{1}' -scan-type='{2}' -image-name='{3}' -scan-id='{4}' -image-path='{5}' -deepfence-key='{6}' -update-dependency-data='{7}' -is-image-local='{8}'".format(
+                audit_file, self.mgmt_console_url, self.scan_type, img_name, self.scan_id, image_path,
                 self.deepfence_key, self.update_dependency_data, self.is_image_local)
             print("Now running vulnerability scan for image {0}".format(img_name))
             pid_val = Popen(cmd_line, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True, bufsize=1,
@@ -201,8 +201,8 @@ class CveScanRegistryImages:
                 img_name = img["image_name_with_tag"]
                 image_path = get_tmp_path(
                     img_name + "_" + self.datetime_now.strftime("%Y-%m-%dT%H:%M:%S") + ".000") + "/layers.tar"
-                cmd_line = "{0} -mgmt-console-ip='{1}' -scan-type='{2}' -image-name='{3}' -scan-id='{4}' -image-path='{5}' -deepfence-key='{6}' -update-dependency-data='{7}' -is-image-local='{8}'".format(
-                    audit_file, self.mgmt_console_ip, self.scan_type, img_name, self.scan_id, image_path,
+                cmd_line = "{0} -mgmt-console-url='{1}' -scan-type='{2}' -image-name='{3}' -scan-id='{4}' -image-path='{5}' -deepfence-key='{6}' -update-dependency-data='{7}' -is-image-local='{8}'".format(
+                    audit_file, self.mgmt_console_url, self.scan_type, img_name, self.scan_id, image_path,
                     self.deepfence_key, self.update_dependency_data, self.is_image_local)
                 print("Now running vulnerability scan for image {0}".format(img_name))
                 pid_val = Popen(cmd_line, stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True, bufsize=1,
@@ -459,9 +459,12 @@ class CveScanDockerHubImages(CveScanRegistryImages):
                     created_at = datetime.strptime(result["last_updated"].split(".")[0], "%Y-%m-%dT%H:%M:%S")
                     if image_from_date > created_at:
                         continue
-                resp = requests.get(
-                    self.docker_hub_url + "/repositories/{0}/{1}/tags?page_size=100".format(
-                        result["namespace"], result["name"]), headers=req_header)
+                try:
+                    resp = requests.get(
+                        self.docker_hub_url + "/repositories/{0}/{1}/tags?page_size=100".format(
+                            result["namespace"], result["name"]), headers=req_header)
+                except:
+                    continue
                 if resp.status_code != 200:
                     continue
                 for tag_result in resp.json().get("results", []):

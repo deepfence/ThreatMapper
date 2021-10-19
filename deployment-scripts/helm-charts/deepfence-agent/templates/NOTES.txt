@@ -1,4 +1,4 @@
-Management console ip address: {{ .Values.managementConsoleIp }}
+Management console ip address: {{ .Values.managementConsoleUrl }}
 
 Check if deepfence-agent daemonset has started:
   kubectl get pods -n {{ .Values.namespace }}

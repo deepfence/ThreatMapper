@@ -6,6 +6,7 @@ LABEL deepfence.role=system
 ENV CHECKPOINT_DISABLE=true \
     DOCKERVERSION=20.10.8 \
     DF_TLS_ON="1" \
+    MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N"
 
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \

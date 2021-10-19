@@ -29,8 +29,6 @@ if [[ "$1" = 'haproxy' ]]; then
 	set -- haproxy -W -q -db "$@"
 fi
 
-sed -i "s/SP_BACKEND_INFO/${sp_backend_str}/g" /usr/local/etc/haproxy/haproxy.cfg
-
 until curl -s "http://deepfence-api:9997/ping" > /dev/null; do
   echo "Waiting for containers to start up"
   sleep 15

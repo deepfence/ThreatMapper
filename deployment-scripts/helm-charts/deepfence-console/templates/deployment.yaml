@@ -469,7 +469,7 @@ spec:
             - name: image_tag
               value: "{{ .Values.image.tag }}"
             - name: router_service
-              value: "{{ required "agentServiceName is required" .Values.agentServiceName }}"
+              value: "{{ required "agentServiceName is required" .Values.agentServiceName }}:{{ required "managementConsolePort is required" .Values.managementConsolePort }}"
             - name: k8s_image_pull_secret_name
               value: "{{ required "image.pullSecretName is required" .Values.image.pullSecretName }}"
             - name: deepfence_namespace

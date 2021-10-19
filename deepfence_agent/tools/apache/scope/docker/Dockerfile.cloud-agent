@@ -2,7 +2,7 @@ FROM alpine:3.14.2
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
 
-ENV CHECKPOINT_DISABLE=true DOCKERVERSION=20.10.8
+ENV CHECKPOINT_DISABLE=true DOCKERVERSION=20.10.8 MGMT_CONSOLE_PORT=443
 
 WORKDIR /home/deepfence
 RUN apk add --no-cache --update bash conntrack-tools iproute2 util-linux curl bind-tools grep \

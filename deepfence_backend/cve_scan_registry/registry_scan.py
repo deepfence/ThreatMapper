@@ -28,8 +28,8 @@ required_args.add_argument("--registry_type", metavar="registry_type", type=str,
 arg_parser.add_argument("--scan_type", metavar="scan_type", type=str, required=False,
                         default="base,java,python,ruby,php,nodejs,js,dotnet",
                         help="CVE scan types (comma separated): base,java,python,ruby,php,nodejs,js,dotnet. Default: base")
-arg_parser.add_argument("--mgmt_console_ip", metavar="mgmt_console_ip", type=str, required=False, default="127.0.0.1",
-                        help="Ip address of Deepfence management console. Default: 127.0.0.1")
+arg_parser.add_argument("--mgmt_console_url", metavar="mgmt_console_url", type=str, required=False, default="127.0.0.1",
+                        help="Ip address of Deepfence management console. Default: 127.0.0.1:443")
 arg_parser.add_argument("--scan_id", metavar="scan_id", type=str, required=False, default="",
                         help="Scan id (optional)")
 arg_parser.add_argument("--deepfence_key", metavar="deepfence_key", type=str, required=False, default="",
@@ -58,7 +58,7 @@ def main():
     registry_type = cmd_args.registry_type
     registry_scanner = None
     credential_id = cmd_args.credential_id
-    api_url = cmd_args.mgmt_console_ip
+    api_url = cmd_args.mgmt_console_url
     api_key = cmd_args.deepfence_key
 
     if credential_id:
@@ -307,7 +307,7 @@ def main():
             arg_parser.print_help()
     if registry_scanner:
         registry_scanner.scan_type = cmd_args.scan_type
-        registry_scanner.mgmt_console_ip = cmd_args.mgmt_console_ip
+        registry_scanner.mgmt_console_url = cmd_args.mgmt_console_url
         registry_scanner.scan_id = cmd_args.scan_id
         registry_scanner.deepfence_key = cmd_args.deepfence_key
         registry_scanner.update_dependency_data = cmd_args.update_dependency_data

@@ -1,11 +1,12 @@
 from flask import Blueprint, request
 from flask import current_app as app
 from utils.response import set_response
-from utils.custom_exception import InvalidUsage
+from utils.custom_exception import InvalidUsage, InternalError
 from datetime import datetime
 import os
 from utils.helper import rmdir_recursive
 from models.notification import RunningNotification
+from models.container_image_registry import RegistryCredential
 
 internal_api = Blueprint("internal_api", __name__)
 
@@ -44,7 +45,7 @@ def add_running_notification():
     return set_response("OK")
 
 
-@internal_api.route("/clean_agent_logs", methods=["POST"], endpoint="api_v1_5_delete_agent_logs")
+@internal_api.route("/clean_agent_logs", methods=["POST"])
 def delete_agent_logs():
     """
     Clean up agent diagnostic logs
@@ -55,3 +56,22 @@ def delete_agent_logs():
         if os.path.isdir(path):
             rmdir_recursive(path)
     return set_response(data="Ok")
+
+
+@internal_api.route("/registry_credential", methods=["POST"])
+def get_registry_credential():
+    try:
+        if not request.is_json:
+            raise InvalidUsage("Missing JSON in request")
+        if type(request.json) != dict:
+            raise InvalidUsage("Request data invalid")
+        id = request.json.get("id", None)
+        if not id:
+            raise InvalidUsage("id is required.")
+        registry_credential = RegistryCredential.query.get(id)
+        if not registry_credential:
+            raise InvalidUsage("credential not found")
+        res = {"registry_type": registry_credential.registry_type, **registry_credential.credentials}
+        return set_response(data=res)
+    except Exception as ex:
+        raise InternalError(str(ex))

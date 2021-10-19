@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # Some defaults
-LOGGER_PORT="8001"
-LOGGER_IP=${DF_BACKEND_IP:-"127.0.0.1"}
 #PUB_IP=`/usr/bin/dig TXT +short o-o.myaddr.l.google.com @ns1.google.com`
 #LOCAL_IP="127.0.0.1"
 FEATURE="appsec"
@@ -96,9 +94,9 @@ launch_deepfenced() {
         fi
         if [ "$DF_PROXY_MODE" == "1" ]; then
             # echo "App security : Active Mode, Listening on port $DF_LISTEN_PORT "
-            DOCKER_API_VERSION=$DOCKER_API_VERSION run_dind.sh -a $LOGGER_IP -s 0
+            DOCKER_API_VERSION=$DOCKER_API_VERSION run_dind.sh -a $MGMT_CONSOLE_PORT -s 0
         fi
-        envsubst '${SCOPE_HOSTNAME}:${DF_BACKEND_IP}' </home/deepfence/supervisord-temp.conf >/home/deepfence/supervisord.conf
+        envsubst '${SCOPE_HOSTNAME}:${MGMT_CONSOLE_URL}:${MGMT_CONSOLE_PORT}' </home/deepfence/supervisord-temp.conf >/home/deepfence/supervisord.conf
         unlink /var/run/supervisor.sock 2>/dev/null
         /usr/bin/supervisord -c /home/deepfence/supervisord.conf
         tail -f /dev/null

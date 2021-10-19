@@ -66,8 +66,10 @@ spec:
                   key: "deepfence-key"
             - name: USER_DEFINED_TAGS
               value: {{ .Values.userDefinedTags }}
-            - name: DF_BACKEND_IP
-              value: "{{ required "managementConsoleIp is required" .Values.managementConsoleIp }}"
+            - name: MGMT_CONSOLE_URL
+              value: "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
+            - name: MGMT_CONSOLE_PORT
+              value: "{{ required "managementConsolePort is required" .Values.managementConsolePort }}"
             - name: DF_KUBERNETES_ON
               value: "Y"
             - name: INSTANCE_ID_SUFFIX

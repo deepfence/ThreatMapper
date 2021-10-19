@@ -12,12 +12,12 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 # helm v2
 helm install deepfence/deepfence-agent \
     --name=deepfence-agent \
-    --set managementConsoleIp=40.40.40.40 \
+    --set managementConsoleUrl=40.40.40.40 \
     --set deepfenceKey=""
 
 # helm v3
 helm install deepfence-agent deepfence/deepfence-agent \
-    --set managementConsoleIp=40.40.40.40 \
+    --set managementConsoleUrl=40.40.40.40 \
     --set deepfenceKey=""
 ```
 
@@ -40,7 +40,7 @@ registry:
 ```
 - Set Deepfence management console ip address
 ```yaml
-managementConsoleIp: ""
+managementConsoleUrl: ""
 ```
 - (Optional) Set image tag
 ```yaml

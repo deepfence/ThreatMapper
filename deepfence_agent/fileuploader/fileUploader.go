@@ -43,7 +43,7 @@ var fileWalkErrStr = "no such file or directory"
 var httpOk = 200
 var hostname string
 var kubernetesClusterName string
-var serverIp string
+var mgmtConsoleUrl string
 var stopLogging chan bool
 var certPath = "/etc/filebeat/filebeat.crt"
 var httpClient *http.Client
@@ -261,7 +261,7 @@ func uploadToConsole(localFileName string, remoteFileName string, extractRemoteF
 			return
 		}
 	}()
-	httpReq, err := http.NewRequest("POST", "https://"+serverIp+"/df-api/uploadMultiPart", r)
+	httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/df-api/uploadMultiPart", r)
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func uploadToConsole(localFileName string, remoteFileName string, extractRemoteF
 	if extractRemoteFile {
 		retryCount := 0
 		for {
-			statusReq, err := http.NewRequest("GET", "https://"+serverIp+"/df-api/uploadExtractStatus", nil)
+			statusReq, err := http.NewRequest("GET", "https://"+mgmtConsoleUrl+"/df-api/uploadExtractStatus", nil)
 			if err != nil {
 				return err
 			}
@@ -609,7 +609,7 @@ func sendScanLogsToLogstash(cveScanMsg string, action string) error {
 	postReader := bytes.NewReader([]byte(scanLog))
 	retryCount := 0
 	for {
-		httpReq, err := http.NewRequest("POST", "https://"+serverIp+"/df-api/add-to-logstash", postReader)
+		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/df-api/add-to-logstash", postReader)
 		if err != nil {
 			return err
 		}
@@ -674,7 +674,7 @@ func main() {
 		return
 	}
 	hostname = scopeHostname.Get()
-	serverIp = os.Getenv("DF_BACKEND_IP")
+	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL") + ":" + os.Getenv("MGMT_CONSOLE_PORT")
 	sanitizedScanId = getTmpScanId(scanId)
 	initSkipDirs()
 	addNfsMountsToSkipDirs()
