@@ -213,8 +213,8 @@ services:
       - deepfence_net
     depends_on:
       - deepfence-es
-      - deepfence-es-slave1
-      - deepfence-es-slave2
+#      - deepfence-es-slave1
+#      - deepfence-es-slave2
       - deepfence-redis
       - deepfence-postgres
     volumes:
