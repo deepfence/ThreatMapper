@@ -81,17 +81,17 @@ These quickstart instructions use pre-built Deepfence ThreatMapper containers fr
 
 Feature       | Requirements (Docker) | Requirements (Kubernetes) 
 ------------- | ----------------------| -------------------------
-CPU: No of cores | 4 | 3 nodes, 2 cores each
+CPU: No of cores | 4 | 3 nodes, 4 cores each
 RAM | 16 GB | 3 nodes, 8 GB each
 Disk space | 120 GB minimum | 120 GB minimum
-Telemetry and data from Deepfence Sensors | Port 8000, firewalled | Port 8000, firewalled
-Administrative and API access | Port 443, firewalled | Port 443, firewalled
-Docker binaries | *Version 18.03 or later* |
-Docker-compose binary | *[Version 1.20.1](https://github.com/docker/compose/releases/tag/1.20.1)* |
+Telemetry and data from Deepfence Sensors | Port 443 (configurable), firewalled | Port 443 (configurable), firewalled
+Administrative and API access | Port 443 (configurable), firewalled | Port 443 (configurable), firewalled
+Docker binaries | *Version 20.10.8 (minimum version 18.06.0) |
+Docker-compose binary | *[Version 1.29.2](https://github.com/docker/compose/releases/tag/1.29.2)* |
 
 Larger deployments, managing 250 or more production nodes, will require additional CPU and RAM resources.  For enterprise-scale deployments, managing 1000+ production nodes, the ThreatMapper Console should be deployed on a Kubernetes cluster of 3 or more nodes.
 
-You should secure (firewall) the sensor port (8000) and admin port (443) so that only authorized hosts can connect.
+You should secure (firewall) the sensor port / admin port (443) so that only authorized hosts can connect.
 
 
 ### Install the Deepfence Management Console - Single Docker Host
@@ -125,12 +125,12 @@ RAM | 1 GB
 Disk space | At-least 30 GB
 Linux kernel version | >= 4.4
 Docker binaries | *Version 18.03 or later*
-Connectivity | Access to Deepfence Management Console IP address, port 8000
+Connectivity | Access to Deepfence Management Console IP address, port 443 (configurable)
 
 Additionally, before you begin:
 
 * Ensure you have the Deepfence API key and Deepfence Console's IP address available.  If needed, you can obtain the API key from `Settings` -> `User Management` in the Console
-* Ensure that the host systems for the sensors can connect to port 8000 on the Console's IP address.
+* Ensure that the host systems for the sensors can connect to port 443 on the Console's IP address.
 
 ### Installing the Deepfence Sensor on a Docker Host
 
