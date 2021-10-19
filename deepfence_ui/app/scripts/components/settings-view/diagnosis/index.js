@@ -76,7 +76,7 @@ class DiagnosisView extends React.PureComponent {
     const nodeIdArray = [];
     this.state.agentLogSelect.map(item => nodeIdArray.push(item.value));
     const {dispatchGetAgentDiagnosticLogs} = this.props;
-    dispatchGetAgentDiagnosticLogs(nodeIdArray);
+    dispatchGetAgentDiagnosticLogs({data: nodeIdArray});
   }
 
   agentLogDropDownChange(selected) {
@@ -179,7 +179,7 @@ class DiagnosisView extends React.PureComponent {
             </div>
           </div>
         </div>
-        <div className="col-sm-4 col-md-4 col-lg-4">
+        <div className="col-sm-4 col-md-4 col-lg-5">
           <div className="align-items-start pl-0 pt-2 pb-2 " id="system_status">
             <div className="pb-2">
               System status

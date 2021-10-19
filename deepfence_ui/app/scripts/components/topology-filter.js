@@ -58,12 +58,7 @@ const TopologyFiltersBar = props => {
           </div>
         </Tooltip>
         <div
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: '30px',
-            zIndex: 1,
-          }}
+          className="child-filter-dropdown"
         >
           {clickedIndexValue === index && showChildDropdown && (
             <OutsideClickHandler

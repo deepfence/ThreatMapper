@@ -69,7 +69,7 @@ class LoginView extends React.Component {
         </div>
         <div className="login-form-wrapper">
           <div className="form-heading">Sign in with your credentials</div>
-          <form name="form" onSubmit={this.handleSubmit}>
+          <form name="form" onSubmit={this.handleSubmit} method="post">
             <div className={'form-group' + (submitted && !username ? ' has-error' : '')}>
               <label htmlFor="username">
                 <i className="fa fa-envelope-o" aria-hidden="true"></i>
@@ -92,7 +92,7 @@ class LoginView extends React.Component {
               <Link className="other-link" to='/register'>Register</Link>
             </div>
             <div className="form-group">
-              <button className="app-btn" style={{borderRadius: '4px'}}>Login</button>
+              <button className="app-btn" disabled={submitting} style={{borderRadius: '4px'}}>Login</button>
             </div>
           </form>
         </div>

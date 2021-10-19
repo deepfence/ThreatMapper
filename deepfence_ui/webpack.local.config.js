@@ -1,7 +1,5 @@
 const webpack = require('webpack');
-const autoprefixer = require('autoprefixer');
 const path = require('path');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
@@ -21,8 +19,9 @@ try {
   commitHash = require('child_process')
     .execSync('git rev-parse --short HEAD')
     .toString();
-  // eslint-disable-next-line no-empty
-} catch (error) {}
+} catch (error) {
+  // no-op
+}
 
 module.exports = {
   // Efficiently evaluate modules with source maps
@@ -31,21 +30,7 @@ module.exports = {
   // Set entry points with hot loading
   entry: {
     app: ['./app/scripts/main', 'webpack-hot-middleware/client'],
-    'dev-app': ['./app/scripts/main.dev', 'webpack-hot-middleware/client'],
-    vendors: [
-      'classnames',
-      'filesize',
-      'immutable',
-      'moment',
-      'page',
-      'react',
-      'react-dom',
-      'react-redux',
-      'redux',
-      'redux-thunk',
-      'reqwest',
-      'webpack-hot-middleware/client',
-    ],
+    'dev-app': ['./app/scripts/main.dev', 'webpack-hot-middleware/client']
   },
 
   // Used by Webpack Dev Middleware
@@ -65,27 +50,25 @@ module.exports = {
         __BUILDVERSION__: JSON.stringify(commitHash),
       },
     }),
-    new CopyWebpackPlugin([{ from: './app/libraries', to: './libraries' }]),
+    new CopyWebpackPlugin({
+      patterns: [{ from: './app/libraries', to: './libraries' }]
+    }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    new ExtractTextPlugin('style-[name]-[chunkhash].css'),
-    new HtmlWebpackPlugin({
-      chunks: ['vendors', 'terminal-app'],
-      filename: 'terminal.html',
-      template: 'app/html/index.html',
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^\.\/locale$/,
+      contextRegExp: /moment$/,
     }),
     new HtmlWebpackPlugin({
-      chunks: ['vendors', 'dev-app', 'contrast-theme'],
+      chunks: ['dev-app'],
       template: 'app/html/index.html',
       filename: 'dev.html',
     }),
     new HtmlWebpackPlugin({
-      chunks: ['vendors', 'app', 'contrast-theme'],
+      chunks: ['app'],
       filename: 'index.html',
       template: 'app/html/index.html',
     }),
-    // new ContrastStyleCompiler()
   ],
 
   // Transform source code using Babel and React Hot Loader
@@ -103,30 +86,28 @@ module.exports = {
         enforce: 'pre',
       },
       {
-        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 10000,
-          minetype: 'application/font-woff',
-        },
-      },
-      {
-        test: /\.(jpe?g|png|gif|ttf|eot|svg|ico)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'file-loader',
+        test: /\.(jpe?g|png|gif|ttf|eot|svg|ico|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        type: 'asset/resource'
       },
       {
         test: /\.css$/,
         use: [
           { loader: 'style-loader' },
-          { loader: 'css-loader' },
+          {
+            loader: 'css-loader', options: {
+              modules: {
+                mode: "icss"
+              }
+            }
+          },
           {
             loader: 'postcss-loader',
             options: {
-              plugins: [
-                autoprefixer({
-                  browsers: ['last 2 versions'],
-                }),
-              ],
+              postcssOptions: {
+                plugins: [
+                  'autoprefixer'
+                ],
+              }
             },
           },
         ],
@@ -140,12 +121,16 @@ module.exports = {
         test: /\.scss$/,
         use: [
           { loader: 'style-loader' },
-          { loader: 'css-loader' },
           {
-            loader: 'sass-loader',
+            loader: 'css-loader',
             options: {
-              includePaths: [],
-            },
+              modules: {
+                mode: "icss"
+              }
+            }
+          },
+          {
+            loader: "sass-loader"
           },
         ],
       },

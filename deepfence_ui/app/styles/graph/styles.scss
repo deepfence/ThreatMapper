@@ -227,3 +227,11 @@
 .select__control {
   color: rgb(174, 174, 174);
 }
+
+.child-filter-dropdown {
+  position: absolute;
+  right: 0;
+  top: 30px;
+  z-index: 1;
+  padding: 7px;
+}

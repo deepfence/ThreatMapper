@@ -1,4 +1,4 @@
-@import "variables.scss";
+@import "../variables.scss";
 
 .close-cb {
   float: right;
@@ -113,7 +113,7 @@
     background-color: transparent;
     font-size: 14px;
   }
-  
+
   .cbtn:last-child {
     margin-right: 0px;
   }
