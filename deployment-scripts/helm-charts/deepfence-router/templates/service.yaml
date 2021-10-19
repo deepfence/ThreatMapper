@@ -50,7 +50,7 @@ spec:
     name: {{ .Values.service.name }}
   ports:
     - name: https-port
-      port: 443
+      port: {{ required "managementConsolePort is required" .Values.managementConsolePort }}
       protocol: TCP
       targetPort: 443
     - name: http-port
@@ -110,8 +110,12 @@ spec:
     name: {{ .Values.service.name }}
   ports:
     - name: https-port
-      port: 443
+      port: {{ required "managementConsolePort is required" .Values.managementConsolePort }}
       protocol: TCP
       targetPort: 443
+    - name: http-port
+      port: 80
+      protocol: TCP
+      targetPort: 80
 {{- end }}
 ---

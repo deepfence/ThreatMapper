@@ -53,7 +53,7 @@ var updateDepCheckData bool
 var isLocalImageScan bool
 var deepfenceKey string
 var maskedCveIds map[string]struct{}
-var managementConsoleIp string
+var managementConsoleUrl string
 
 const HTTP_OK = 200
 
@@ -366,7 +366,7 @@ func analyzeLayer(path, layerName, parentLayerName string) error {
 	}
 	retryCount := 0
 	for {
-		request, err := http.NewRequest("POST", "https://"+managementConsoleIp+postLayerURI, bytes.NewBuffer(jsonPayload))
+		request, err := http.NewRequest("POST", "https://"+managementConsoleUrl+postLayerURI, bytes.NewBuffer(jsonPayload))
 		fmt.Printf("Analyze layer. Path is %s url is %s uri is %s \n",
 			path, postLayerURI, postLayerURI)
 		if err != nil {
@@ -402,7 +402,7 @@ func getLayer(layerID string) (Layer, error) {
 	var response *http.Response
 	retryCount := 0
 	for {
-		httpReq, err := http.NewRequest("GET", "https://"+managementConsoleIp+fmt.Sprintf(getLayerFeaturesURI, layerID), nil)
+		httpReq, err := http.NewRequest("GET", "https://"+managementConsoleUrl+fmt.Sprintf(getLayerFeaturesURI, layerID), nil)
 		if err != nil {
 			return Layer{}, err
 		}
@@ -565,7 +565,7 @@ func buildClient() (*http.Client, error) {
 
 func delFromServer(fileName string) error {
 	//fmt.Printf("Now trying to delete %s from %s \n", fileName, serverIP)
-	httpReq, err := http.NewRequest("DEL", "https://"+managementConsoleIp+"/df-api/clear", nil)
+	httpReq, err := http.NewRequest("DEL", "https://"+managementConsoleUrl+"/df-api/clear", nil)
 	if err != nil {
 		//fmt.Printf("Error while deleting from server. Reason %s \n", err.Error())
 		return err
@@ -607,7 +607,7 @@ func uploadToServer(fileName string) error {
 			return
 		}
 	}()
-	httpReq, err := http.NewRequest("POST", "https://"+managementConsoleIp+"/df-api/uploadMultiPart", r)
+	httpReq, err := http.NewRequest("POST", "https://"+managementConsoleUrl+"/df-api/uploadMultiPart", r)
 	if err != nil {
 		return err
 	}
@@ -695,7 +695,7 @@ func getContainerVulnerabilities(imageName string, imageTarPath string, imageId 
 			err = uploadToServer(fileName)
 			if err != nil {
 				msg := fmt.Sprintf("Unable to upload file %s to host %s. Reason %s",
-					fileName, managementConsoleIp, err.Error())
+					fileName, managementConsoleUrl, err.Error())
 				sendScanLogsToLogstash(msg, "ERROR")
 				return
 			}
@@ -969,14 +969,14 @@ func sendCveJsonToLogstash(cveJsonStr string) error {
 		return nil
 	}
 	postReader := bytes.NewReader([]byte(cveJsonStr))
-	return sendToLogstash(postReader, "https://"+managementConsoleIp+"/df-api/add-to-logstash?doc_type=cve")
+	return sendToLogstash(postReader, "https://"+managementConsoleUrl+"/df-api/add-to-logstash?doc_type=cve")
 }
 
 func sendScanLogsToLogstash(cveScanMsg string, action string) error {
 	cveScanMsg = strings.Replace(cveScanMsg, "\n", " ", -1)
 	scanLog := fmt.Sprintf("{\"scan_id\":\"%s\",\"time_stamp\":%d,\"cve_scan_message\":\"%s\",\"action\":\"%s\",\"type\":\"cve-scan\",\"node_type\":\"%s\",\"node_id\":\"%s\",\"scan_type\":\"%s\",\"host_name\":\"%s\",\"host\":\"%s\",\"kubernetes_cluster_name\":\"%s\"}", scanId, getIntTimestamp(), cveScanMsg, action, node_type, node_id, scanTypeStr, hostName, hostName, kubernetesClusterName)
 	postReader := bytes.NewReader([]byte(scanLog))
-	return sendToLogstash(postReader, "https://"+managementConsoleIp+"/df-api/add-to-logstash?doc_type=cve-scan")
+	return sendToLogstash(postReader, "https://"+managementConsoleUrl+"/df-api/add-to-logstash?doc_type=cve-scan")
 }
 
 func downloadDependencyData() string {
@@ -1095,7 +1095,7 @@ func getCurrentlyMaskedCveIds(nodeId, nodeType string) ([]string, error) {
 	if err != nil {
 		return currentlyMaskedCveIds, err
 	}
-	httpReq, err := http.NewRequest("POST", "https://"+managementConsoleIp+"/df-api/masked-cve-id", bytes.NewBuffer(jsonPayload))
+	httpReq, err := http.NewRequest("POST", "https://"+managementConsoleUrl+"/df-api/masked-cve-id", bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return currentlyMaskedCveIds, err
 	}
@@ -1138,7 +1138,7 @@ func main() {
 	flag.StringVar(&global_container_name, "container-name", "", "\t Name of the container to be scanned")
 	flag.StringVar(&hostName, "host-name", "", "\t Name of the host for which the scan is for")
 	flag.StringVar(&kubernetesClusterName, "kubernetes-cluster-name", "", "\t Management console ip address")
-	flag.StringVar(&managementConsoleIp, "mgmt-console-ip", "127.0.0.1", "\t Management console ip address")
+	flag.StringVar(&managementConsoleUrl, "mgmt-console-url", "127.0.0.1:443", "\t Management console ip address")
 	flag.StringVar(&imageName, "image-name", "", "\t Image name to audit")
 	flag.StringVar(&imageTarPath, "image-path", "", "\t Path of image.tar file to audit")
 	flag.StringVar(&imageId, "image-id", "", "\t Docker image id")
@@ -1152,7 +1152,7 @@ func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] -image-name=<image-name> -image-id=<image-id>\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "Pass either image-name + image-id or image-path\n\n")
-		fmt.Fprintf(os.Stderr, "E.g. ./deepaudit -mgmt-console-ip=\"127.0.0.1\" -scan-type=\"all\" -image-name=\"host\" \n\n")
+		fmt.Fprintf(os.Stderr, "E.g. ./deepaudit -mgmt-console-url=\"127.0.0.1:443\" -scan-type=\"all\" -image-name=\"host\" \n\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()

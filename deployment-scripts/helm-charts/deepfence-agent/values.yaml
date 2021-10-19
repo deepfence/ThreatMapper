@@ -25,7 +25,8 @@ image:
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
-managementConsoleIp: ""
+managementConsoleUrl: ""
+managementConsolePort: "443"
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
 deepfenceKey: ""

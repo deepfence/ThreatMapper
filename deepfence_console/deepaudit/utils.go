@@ -33,7 +33,7 @@ func downloadFileFromConsole(remoteFileName string, localFileName string, maxRet
 	var httpResp *http.Response
 	retryCounter := 0
 	for {
-		httpReq, httpErr = http.NewRequest("GET", "https://"+managementConsoleIp+"/df-api/downloadFile", nil)
+		httpReq, httpErr = http.NewRequest("GET", "https://"+managementConsoleUrl+"/df-api/downloadFile", nil)
 		if httpErr != nil {
 			return httpErr
 		}

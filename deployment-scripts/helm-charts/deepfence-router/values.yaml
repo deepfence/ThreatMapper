@@ -6,6 +6,9 @@
 # cloudProvider is required to set appropriate LoadBalancer annotations
 cloudProvider: ""
 
+# Configure port for browser / agents
+managementConsolePort: "443"
+
 service:
   name: deepfence-router
   type: LoadBalancer

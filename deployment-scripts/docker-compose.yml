@@ -74,7 +74,7 @@ services:
     pid: "host"
     privileged: true
     restart: on-failure
-    command: discovery localhost
+    command: discovery localhost 8004
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /sys/kernel/debug:/sys/kernel/debug:rw
@@ -117,69 +117,69 @@ services:
       options:
         max-size: "1g"
 
-  deepfence-es-slave1:
-    container_name: deepfence-es-slave1
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-latest}
-    restart: on-failure
-    networks:
-      - deepfence_net
-    volumes:
-      - deepfence_data:/data:rw
-    environment:
-      DF_PROG_NAME: "es_slave1"
-      discovery.zen.ping.unicast.hosts: "deepfence-es"
-    ulimits:
-      core: 0
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-        reservations:
-          memory: 2g
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
-  deepfence-es-slave2:
-    container_name: deepfence-es-slave2
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-latest}
-    restart: on-failure
-    networks:
-      - deepfence_net
-    volumes:
-      - deepfence_data:/data:rw
-    environment:
-      DF_PROG_NAME: "es_slave2"
-      discovery.zen.ping.unicast.hosts: "deepfence-es"
-    ulimits:
-      core: 0
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-        reservations:
-          memory: 2g
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
+  #  deepfence-es-slave1:
+  #    container_name: deepfence-es-slave1
+  #    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-latest}
+  #    restart: on-failure
+  #    networks:
+  #      - deepfence_net
+  #    volumes:
+  #      - deepfence_data:/data:rw
+  #    environment:
+  #      DF_PROG_NAME: "es_slave1"
+  #      discovery.zen.ping.unicast.hosts: "deepfence-es"
+  #    ulimits:
+  #      core: 0
+  #      memlock:
+  #        soft: -1
+  #        hard: -1
+  #      nofile:
+  #        soft: 65536
+  #        hard: 65536
+  #    cap_add:
+  #      - IPC_LOCK
+  #    deploy:
+  #      resources:
+  #        limits:
+  #          memory: 4g
+  #        reservations:
+  #          memory: 2g
+  #    logging:
+  #      driver: "json-file"
+  #      options:
+  #        max-size: "1g"
+  #
+  #  deepfence-es-slave2:
+  #    container_name: deepfence-es-slave2
+  #    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-latest}
+  #    restart: on-failure
+  #    networks:
+  #      - deepfence_net
+  #    volumes:
+  #      - deepfence_data:/data:rw
+  #    environment:
+  #      DF_PROG_NAME: "es_slave2"
+  #      discovery.zen.ping.unicast.hosts: "deepfence-es"
+  #    ulimits:
+  #      core: 0
+  #      memlock:
+  #        soft: -1
+  #        hard: -1
+  #      nofile:
+  #        soft: 65536
+  #        hard: 65536
+  #    cap_add:
+  #      - IPC_LOCK
+  #    deploy:
+  #      resources:
+  #        limits:
+  #          memory: 4g
+  #        reservations:
+  #          memory: 2g
+  #    logging:
+  #      driver: "json-file"
+  #      options:
+  #        max-size: "1g"
 
   deepfence-router:
     container_name: deepfence-router
@@ -191,7 +191,7 @@ services:
     restart: always
     ports:
       - "80:80"
-      - "443:443"
+      - "${MGMT_CONSOLE_PORT:-443}:443"
     volumes:
       - /etc/deepfence/certs:/etc/deepfence/certs/:ro
     logging:
@@ -236,8 +236,8 @@ services:
     environment:
       - mapper_image_name=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce
       - image_tag=${DF_IMG_TAG:-latest}
-      - router_service=127.0.0.1
-      - VULNERABILITY_SCAN_CONCURRENCY="10"
+      - router_service=127.0.0.1:${MGMT_CONSOLE_PORT:-443}
+      - VULNERABILITY_SCAN_CONCURRENCY=10
     networks:
       - deepfence_net
     depends_on:

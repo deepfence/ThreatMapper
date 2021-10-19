@@ -29,6 +29,9 @@ tls:
   certFile: ""
   keyFile: ""
 
+# Configure port for browser / agents
+managementConsolePort: "443"
+
 volume:
   storageClass: openebs-hostpath
   # Change stoage class when using different PV provisioner.

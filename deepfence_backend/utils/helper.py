@@ -41,10 +41,25 @@ def validate_email(email_string: str) -> bool:
         return False
 
 
-def validate_domain(domain):
-    if not str:
+def validate_port(port):
+    if not port:
         return False
-    regex = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}"
+    regex = "^([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$"
+    if re.search(regex, port):
+        return True
+    else:
+        return False
+
+
+def validate_domain(domain):
+    if not domain:
+        return False
+    regex = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$"
+    if ":" in domain:
+        domain_split = str(domain).split(":")
+        domain = domain_split[0]
+        if not validate_port(domain_split[1]):
+            return False
     if re.search(regex, domain):
         return True
     else:
@@ -52,9 +67,14 @@ def validate_domain(domain):
 
 
 def validate_ip(ip_address):
-    if not str:
+    if not ip_address:
         return False
     regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+    if ":" in ip_address:
+        ip_address_split = str(ip_address).split(":")
+        ip_address = ip_address_split[0]
+        if not validate_port(ip_address_split[1]):
+            return False
     if re.search(regex, ip_address):
         return True
     else:
