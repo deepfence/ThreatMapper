@@ -1,4 +1,5 @@
-@import 'variables';
+@import '../variables';
+
 .table-compliance-cis {
   .ReactTable {
     .rt-table {
@@ -24,7 +25,7 @@
     }
 
     .rt-thead {
-   
+
       &.-header {
         background-color: #202020;
         border-radius: 4px 4px 0 0  ;
@@ -48,7 +49,7 @@
       }
 
       .rt-tr {
-        
+
         .rt-th {
           padding: 8px 12px;
           font-size: 14px;
@@ -97,7 +98,7 @@
             border-radius: 2px 2px 2px 0;
             box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.2);
             padding: 9px 9px 7px 9px;
-            
+
             div {
               display: inline-block;
             }
@@ -143,7 +144,7 @@
             border-radius: 2px 2px 2px 0;
             z-index: 100;
             background-color: #222222;
-            
+
             div {
               display: inline-block;
             }
@@ -235,11 +236,11 @@
           padding-left: 0px;
         }
       }
-    
+
       .rt-tr {
 
         .rt-td {
-          padding: 10px 4px; 
+          padding: 10px 4px;
           text-align: left;
           font-size: 14px;
           font-weight: normal;
@@ -262,7 +263,7 @@
 
   }
   .pagination-top, .pagination-bottom {
-    
+
     text-align: center;
     margin-bottom: 10px;
     margin-top: 10px;

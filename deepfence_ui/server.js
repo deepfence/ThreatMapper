@@ -1,4 +1,3 @@
-/* eslint no-console: 0 */
 const express = require('express');
 const http = require('http');
 const httpProxy = require('http-proxy');
@@ -16,7 +15,6 @@ const BACKEND_PORT = process.env.BACKEND_PORT || '8004';
  *   - /api -> :4040/api
  *
  *********************************************************** */
-
 const backendProxy = httpProxy.createProxy({
   ws: true,
   target: `http://${BACKEND_HOST}:${BACKEND_PORT}`,
@@ -53,10 +51,7 @@ if (process.env.NODE_ENV !== 'production') {
   const compiler = webpack(config);
 
   app.use(webpackMiddleware(compiler, {
-    // required
     publicPath: config.output.publicPath,
-    // options
-    noInfo: true,
     stats: 'errors-only',
   }));
 

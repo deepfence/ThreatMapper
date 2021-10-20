@@ -1,4 +1,4 @@
-@import 'variables';
+@import '../variables';
 
 .df-modal-form .file-upload-component.form-field {
   display: inline-flex;
@@ -38,7 +38,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-left: 5px;
-  } 
+  }
 }
 .file-upload-field-wrapper {
   // display: flex;

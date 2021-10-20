@@ -1,4 +1,4 @@
-@import "variables";
+@import "../variables";
 
 .df-modal-form {
   padding-top: 20px;
@@ -69,7 +69,7 @@
       .container:hover input ~ .check {
         background-color: gray;
       }
-      
+
       input:checked ~ .check {
         border: 2px solid $color-primary;
       }
@@ -78,11 +78,11 @@
         position: absolute;
         display: none;
       }
-      
+
       input:checked ~ .check:after {
         display: block;
       }
-      
+
       .check:after {
         top: 3px;
         left: 3px;
@@ -91,7 +91,7 @@
         border-radius: 50%;
         background: $color-primary;
       }
-      
+
     }
 
     .radio-item:last-child {
@@ -190,7 +190,7 @@
       }
 
       .Select-option.is-focused {
-        background-color: #080808; 
+        background-color: #080808;
       }
     }
     .Select {
@@ -347,7 +347,7 @@
       }
 
       .Select-option.is-focused {
-        background-color: #080808; 
+        background-color: #080808;
       }
     }
     .Select {

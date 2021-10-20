@@ -1611,10 +1611,10 @@ export function getDiagnosticLogs(params = {}) {
     });
 }
 
-export function getAgentLogs(params = {}) {
+export function getAgentLogs(params) {
   const url = `${backendElasticApiEndPoint()}/get_logs`;
   const data_list = {
-    node_id_list: params,
+    node_id_list: params.data,
     node_type: 'host',
   };
   const data = fetch(url, {

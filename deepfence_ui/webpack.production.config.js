@@ -1,20 +1,21 @@
 const webpack = require('webpack');
-const autoprefixer = require('autoprefixer');
 const path = require('path');
 const fs = require('fs');
 
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 let commitHash;
 
-fs.readFile('console_version.txt', (err, data) => {
-  if (err) throw err;
+try {
+  commitHash = fs.readFileSync('console_version.txt').toString().trim();
+} catch(e) {
+  // eslint-disable-next-line no-console
+  console.log('error reading console_version.txt');
+}
 
-  commitHash = data.toString();
-})
 const GLOBALS = {
   'process.env': {
     NODE_ENV: '"production"',
@@ -26,27 +27,12 @@ const GLOBALS = {
 const OUTPUT_PATH = 'build/';
 const PUBLIC_PATH = '';
 
-/**
- * This is the Webpack configuration file for production.
- */
 module.exports = {
   // fail on first error when building release
   bail: true,
 
-  cache: {},
-
   entry: {
     app: './app/scripts/main',
-    // keep only some in here, to make vendors and app bundles roughly same size
-    vendors: [
-      'classnames',
-      'immutable',
-      'react',
-      'react-dom',
-      'react-redux',
-      'redux',
-      'redux-thunk',
-    ],
   },
 
   mode: 'production',
@@ -58,20 +44,21 @@ module.exports = {
   },
 
   plugins: [
-    new CleanWebpackPlugin(['build']),
+    new CleanWebpackPlugin(),
     new webpack.DefinePlugin(GLOBALS),
-    new CopyWebpackPlugin([{ from: './app/libraries', to: './libraries' }]),
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    new ExtractTextPlugin('style-[name]-[chunkhash].css'),
-    new HtmlWebpackPlugin({
-      chunks: ['vendors', 'terminal-app'],
-      filename: 'terminal.html',
-      hash: true,
-      template: 'app/html/index.html',
+    new CopyWebpackPlugin({
+      patterns: [{ from: './app/libraries', to: './libraries' }]
+    }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^\.\/locale$/,
+      contextRegExp: /moment$/,
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'style-[name]-[chunkhash].css'
     }),
     new HtmlWebpackPlugin({
       hash: true,
-      chunks: ['vendors', 'app', 'contrast-theme'],
+      chunks: ['app'],
       filename: 'index.html',
       template: 'app/html/index.html',
     }),
@@ -94,16 +81,8 @@ module.exports = {
         },
       },
       {
-        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'url-loader',
-        options: {
-          limit: 10000,
-          minetype: 'application/font-woff',
-        },
-      },
-      {
-        test: /\.(jpe?g|png|gif|ttf|eot|svg|ico)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: 'url-loader',
+        test: /\.(jpe?g|png|gif|ttf|eot|svg|ico|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        type: 'asset/resource'
       },
       {
         test: /\.ico$/,
@@ -120,16 +99,22 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          { loader: 'style-loader' },
-          { loader: 'css-loader' },
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader', options: {
+              modules: {
+                mode: "icss"
+              }
+            }
+          },
           {
             loader: 'postcss-loader',
             options: {
-              plugins: [
-                autoprefixer({
-                  browsers: ['last 2 versions'],
-                }),
-              ],
+              postcssOptions: {
+                plugins: [
+                  'autoprefixer'
+                ],
+              }
             },
           },
         ],
@@ -142,14 +127,17 @@ module.exports = {
       {
         test: /\.scss$/,
         use: [
-          { loader: 'style-loader' },
-          { loader: 'css-loader' },
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              modules: {
+                mode: "icss"
+              }
+            }
+          },
           {
             loader: 'sass-loader',
-            options: {
-              // data: themeVarsAsScss(),
-              includePaths: [],
-            },
           },
         ],
       },
