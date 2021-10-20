@@ -140,7 +140,8 @@ Run the following command to start the Deepfence Sensor on the Docker host:
 docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=host --net=host \
   --privileged=true -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced \
   -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
-  -e USER_DEFINED_TAGS="" -e DF_BACKEND_IP="---CONSOLE-IP---" -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
+  -e USER_DEFINED_TAGS="" -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" \
+  -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
   deepfenceio/deepfence_agent_ce:latest
 ```
 

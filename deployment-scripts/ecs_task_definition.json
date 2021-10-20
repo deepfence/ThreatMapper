@@ -25,8 +25,12 @@
       "cpu": 200,
       "environment": [
         {
-          "name": "DF_BACKEND_IP",
-          "value": "0.0.0.0"
+          "name": "MGMT_CONSOLE_URL",
+          "value": "<MANAGEMENT_CONSOLE_IP_ADDRESS>"
+        },
+        {
+          "name": "MGMT_CONSOLE_PORT",
+          "value": "443"
         },
         {
           "name": "DEEPFENCE_KEY",
