@@ -1,11 +1,11 @@
 # docker build -t deepfenceio/alpine-node:10 -f Dockerfile.node .
-FROM deepfenceio/alpine-node:10 AS build
+FROM node:14.18.1-alpine3.14 AS build
 
 ADD . /home/deepfence/
 ENV NPM_CONFIG_LOGLEVEL=warn NPM_CONFIG_PROGRESS=false NODE_OPTIONS="--max_old_space_size=4096"
 RUN apk update \
   && apk add --no-cache git bash python2 make g++ \
-  && cd /home/deepfence && yarn add webpack-cli --dev && yarn --pure-lockfile \
+  && cd /home/deepfence && yarn --pure-lockfile \
   && cd /home/deepfence && yarn run build \
   && cd /home/deepfence \
   && rm -rf app docs test webpack.* \
@@ -22,7 +22,7 @@ LABEL deepfence.role=system
 WORKDIR /home/deepfence
 ENV BACKEND_PORT=8004 YARN_VERSION=latest NPM_CONFIG_LOGLEVEL=warn NPM_CONFIG_PROGRESS=false
 RUN apk update && apk add --no-cache yarn && rm -rf /var/cache/apk/*
-COPY --from=build /usr/bin/node /usr/bin/
+COPY --from=build /usr/local/bin/node /usr/bin/
 COPY --from=build /home/deepfence/build /home/deepfence/build
 COPY --from=build /home/deepfence/console_version.txt /home/deepfence/console_version.txt
 COPY --from=build /home/deepfence/entrypoint.sh /home/deepfence/entrypoint.sh
