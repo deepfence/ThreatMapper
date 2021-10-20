@@ -83,7 +83,7 @@ Feature       | Requirements (Docker) | Requirements (Kubernetes)
 ------------- | ----------------------| -------------------------
 CPU: No of cores | 4 | 3 nodes, 4 cores each
 RAM | 16 GB | 3 nodes, 8 GB each
-Disk space | 120 GB minimum | 120 GB minimum
+Disk space | 64 GB minimum | 64 GB minimum
 Telemetry and data from Deepfence Sensors | Port 443 (configurable), firewalled | Port 443 (configurable), firewalled
 Administrative and API access | Port 443 (configurable), firewalled | Port 443 (configurable), firewalled
 Docker binaries | *Version 20.10.8 (minimum version 18.06.0) |
