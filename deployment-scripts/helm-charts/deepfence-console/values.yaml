@@ -65,6 +65,10 @@ db:
     host: deepfence-redis
     port: "6379"
 
+# Replication factor for elasticsearch
+# Recommended: 3+ for production, 1 for dev setup, minikube
+elasticsearchReplicationFactor: 3
+
 # (Optional) Set custom name for the cluster and hostname prefix for console vm's to easily identify in Deepfence UI.
 # Example: df-console or deepfence-console
 # It will be suffixed with hostname - df-console-aks-agentpool-123456-vmss000001

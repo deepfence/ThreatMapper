@@ -24,9 +24,9 @@ entries:
   deepfence-console:
   - apiVersion: v2
     appVersion: 1.1.0
-    created: "2021-10-19T22:06:17.699042+05:30"
+    created: "2021-10-20T15:58:03.597928+05:30"
     description: Deepfence Console - Helm chart for Kubernetes
-    digest: e44ee4309bb05564a0fa61f511c447303f2df23734d10796ad5f27424ca1c437
+    digest: cea5e0c691b26bb5dc73116b92a2c226ef8b6b58bbdce52cef8285b9a2ac2ad4
     name: deepfence-console
     type: application
     urls:
@@ -45,9 +45,9 @@ entries:
   deepfence-router:
   - apiVersion: v2
     appVersion: 1.1.0
-    created: "2021-10-19T22:06:17.699633+05:30"
+    created: "2021-10-20T15:58:03.598436+05:30"
     description: Deepfence Console Router - Helm chart for Kubernetes
-    digest: 18d930f0e2a9045843bd099f6f8414e467eb6e853272e7282c607fe6b97ea699
+    digest: 89edb2872643450aaabd53a4fe8b9a476d9a19501a81509dd0d5e4d148f695f1
     name: deepfence-router
     type: application
     urls:
@@ -63,4 +63,4 @@ entries:
     urls:
     - deepfence-router-1.0.0.tgz
     version: 1.0.0
-generated: "2021-10-19T22:06:17.696809+05:30"
+generated: "2021-10-20T15:58:03.596809+05:30"

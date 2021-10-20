@@ -36,7 +36,7 @@ service:
   externalTrafficPolicy: "Cluster"
 
 # User can create separate k8s service for agents if required.
-# An use case for this is to deploy external load balancer for browser access and internal load balancer for agent access.
+# One use case for this is to deploy external load balancer for browser access and internal load balancer for agent communication.
 createSeparateServiceForAgents: "false"
 
 agentService:

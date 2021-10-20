@@ -11,7 +11,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   serviceName: deepfence-es
-  replicas: 3
+  replicas: {{ .Values.elasticsearchReplicationFactor }}
   selector:
     matchLabels:
       name: deepfence-es

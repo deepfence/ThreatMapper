@@ -7,26 +7,18 @@
 **Quick start**
 
 ```bash
-helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
-```
-
-```bash
 # helm v2
-helm install deepfence/deepfence-router --name=deepfence-router
+helm install deepfence-router --name=deepfence-router
 
 # helm v3
-helm install deepfence-router deepfence/deepfence-router
+helm install deepfence-router deepfence-router
 ```
 
 **Detailed setup**
 
-```bash
-helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
-```
-
 - Create values file
 ```bash
-helm show values deepfence/deepfence-router > deepfence_router_values.yaml
+helm show values deepfence-router > deepfence_router_values.yaml
 ```
 - Set cloud provider
 ```yaml
@@ -34,19 +26,23 @@ helm show values deepfence/deepfence-router > deepfence_router_values.yaml
 # cloudProvider is required to set appropriate LoadBalancer annotations
 cloudProvider: "aws"
 ```
+- Set management console port (default: 443)
+```yaml
+# Configure port for browser / agents
+managementConsolePort: "443"
+```
 - Static IP address is recommended in production. Static public ip should be created in the same region/zone/resource group as the cluster.
 - AWS:
-  - Use `awsEipAllocations` field. Create same number of elastic ip addresses as the number of subnets.
+    - Use `awsEipAllocations` field. Create same number of elastic ip addresses as the number of subnets.
 - Azure and Google Cloud:
-  - Use `loadBalancerIP` field.
+    - Use `loadBalancerIP` field.
 - Self managed kubernetes:
-  - Use `externalIPs`. Details [here](https://kubernetes.io/docs/concepts/services-networking/service/#external-ips).
+    - Use `externalIPs`. Details [here](https://kubernetes.io/docs/concepts/services-networking/service/#external-ips).
 - If ip address is not set, kubernetes (cloud managed) will create an ip address, which will be deleted if helm chart is deleted or if `deepfence-router` service is deleted.
 
 ##### LoadBalancer
-- By default LoadBalancer will be `external`
-- Security group in the cloud load balancer should be changed to allow only the agents to communicate to 8000-8010 ports and port 443 from user's ip address
-- This can be changed to `internal` if all agents can access management console using internal ip address and user has setup ssh tunneling for port 443 from local desktop.
+- By default, LoadBalancer will be `external`
+- This can be changed to `internal` if all agents can access management console using internal ip address and user has set up ssh tunneling for port 443 from local desktop.
 ```yaml
 service:
   name: deepfence-router
@@ -74,7 +70,12 @@ service:
   externalIPs: []
   externalTrafficPolicy: "Cluster"
 ```
-
+- Agent service
+```yaml
+# User can create separate k8s service for agents if required.
+# One use case for this is to deploy external load balancer for browser access and internal load balancer for agent communication.
+createSeparateServiceForAgents: "false"
+```
 ### Delete deepfence-router helm chart
 Deepfence router load balancer will get deleted. If static ip was not setup, load balancer ip/dns will be deleted.
 
