@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import ReactTable from 'react-table';
+import ReactTable from 'react-table-6';
 import { showTopologyPanel } from '../../actions';
 import { NODE_TYPE } from '../../constants/topology-multicloud';
 import { ShimmerLoaderRow } from '../shimmer-loader/shimmer-row';
