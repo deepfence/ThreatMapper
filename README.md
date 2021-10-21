@@ -223,25 +223,6 @@ For any security-related issues in the ThreatMapper project, contact productsecu
 
 Please file Github issues as needed, and join the Deepfence Community [Slack channel](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ).
 
-# Deepfence ThreatStryker
-
-Deepfence ThreatStryker is an extended version of ThreatMapper that provides:
-
-* Compliance Checking
-* Runtime Sensors
-* Correlation and Attack Intelligence
-* Automated Remediation (Quarantine and Firewalling)
-
-ThreatStryker is fully supported by Deepfence, Inc. For more information, check out [Deepfence ThreatStryker](https://deepfence.io/product/).
-
-# Acknowledgements
-
-The Deepfence ThreatMapper project builds on a number of open source tools.  We are particularly grateful to, and would like to acknowledge:
-
-* **WeaveWorks Weave Scope:** [Weave Scope](https://github.com/weaveworks/scope) is a visualization and monitoring tool for Docker and Kubernetes. It provides a top down view into your app, as well as your entire infrastructure.  Weave Scope provide the core of the Topology visualization in the Deepfence Management Console.
-* **Clair:** [Clair](https://github.com/quay/clair) is an open source project for the static analysis of vulnerabilities in application containers.  Clair consumes a number of vulnerability feeds and matches these against manifests from containers.  Deepfence ThreatMapper uses clair as one of the tools to locate vulnerabilities in workloads.
-* **DependencyCheck:** [DependencyCheck](https://github.com/jeremylong/DependencyCheck) is a Software Composition Analysis tool that matches an application's dependencies against various lists publically-disclosed vulnerabilities.  Deepfence ThreatMapper uses DependencyCheck as one of the tools to locate vulnerabilities in workloads.
-
 # License
 
 The Deepfence ThreatMapper project (this repository) is offered under the [Apache2 license](https://www.apache.org/licenses/LICENSE-2.0).
