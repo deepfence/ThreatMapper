@@ -8,4 +8,4 @@
 
 * [DependencyCheck](https://github.com/jeremylong/DependencyCheck)
 
-* [goobpf](https://github.com/iovisor/gobpf)
+* [gobpf](https://github.com/iovisor/gobpf)
