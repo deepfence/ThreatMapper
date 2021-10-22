@@ -196,7 +196,7 @@ Install an appropriate docker runtime on the host operating system (Linux and Wi
 
 # Building Deepfence ThreatMapper components from Source
 
-Deepfence ThreatMapper is open source.  The container repos will contain the most recent, fully-tested versions of the ThreatMpper components, but developers and early adopters can build ThreatMapper from source.
+Deepfence ThreatMapper is open source.  The container repos will contain the most recent, fully-tested versions of the ThreatMapper components, but developers and early adopters can build ThreatMapper from source.
 
 Begin with the [ThreatMapper Building from Source](https://github.com/deepfence/ThreatMapper/wiki/Building-from-Console-and-Sensors-from-Source) instructions.
 
