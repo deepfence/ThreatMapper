@@ -259,7 +259,7 @@ class HttpEndpoint(IntegrationTypes):
         notification_id = kwargs["notification_id"]
         resource_type = kwargs["resource_type"]
         from tasks.notification import send_http_endpoint_notification
-        send_http_endpoint_notification(self.pretty_print(), self.format_content(content_json), notification_id,
+        send_http_endpoint_notification(self.pretty_print(), content_json["contents"], notification_id,
                                         resource_type)
 
 
