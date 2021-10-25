@@ -1,6 +1,7 @@
 .table {
   margin-left: 25px;
   margin-right: 25px;
+  min-width: 100%;
 
   .headerCell {
     overflow: hidden;
@@ -29,6 +30,10 @@
     .sortIndicator {
       margin-left: 8px;
     }
+  }
+
+  .headerOverflowShown {
+    overflow: visible;
   }
 
   .row {

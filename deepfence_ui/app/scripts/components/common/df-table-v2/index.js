@@ -1,8 +1,9 @@
 /* eslint-disable no-nested-ternary */
 import classNames from 'classnames';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useExpanded, useFlexLayout, usePagination, useResizeColumns, useSortBy, useTable } from 'react-table';
 import Pagination from './pagination';
+import DFTriggerSelect from '../multi-select/app-trigger';
 import styles from "./index.module.scss";
 
 function getPageCount({
@@ -22,10 +23,120 @@ function getDefaultPageSize({ showPagination, inputDefaultPageSize, data }) {
   return showPagination ? (inputDefaultPageSize ?? 10) : data.length;
 }
 
+function getPersistedHiddenColumnIds(name) {
+  const strIds = localStorage.getItem(`${name}--tableColumnPreference-hiddenColumnIds`) || '[]';
+  const ids = JSON.parse(strIds);
+  return ids;
+}
+
+function setPersistedHiddenColumnIds(name, ids) {
+  localStorage.setItem(`${name}--tableColumnPreference-hiddenColumnIds`, JSON.stringify(ids ?? []));
+}
+
+const columnIdExtractor = column => column.id || column.accessor;
+
+function useColumnFilter({
+  columnCustomizable,
+  renderRowSubComponent,
+  columns,
+  name
+}) {
+
+  const [hiddenColumnIds, setHiddenColumnIds] = useState([]);
+  const [dirtyHiddenColumnIds, setDirtyHiddenColumnIds] = useState([]);
+
+
+  useEffect(() => {
+    if (columnCustomizable && name) {
+      setHiddenColumnIds(getPersistedHiddenColumnIds(name));
+    } else if (columnCustomizable && !name) {
+      console.warn('table name is not set! set table name to enable column customizations');
+    }
+  }, []);
+
+  useEffect(() => {
+    setDirtyHiddenColumnIds(hiddenColumnIds);
+  }, [hiddenColumnIds]);
+
+  const rtColumns = useMemo(() => {
+    let visibleColumns = [...columns];
+
+    if (columnCustomizable && name) {
+      const options = visibleColumns
+        .filter(col => !col.disableCustomization)
+        .map(col => ({
+          label: typeof col.Header === 'function' ? col.Header() : col.Header,
+          value: columnIdExtractor(col),
+        }));
+
+      if (hiddenColumnIds.length) {
+        visibleColumns = visibleColumns.filter((column) => {
+          const id = columnIdExtractor(column);
+          if (column.disableCustomization) {
+            return true;
+          }
+
+          return !hiddenColumnIds.includes(id);
+        })
+      }
+
+      visibleColumns.push({
+        Header: (
+          <DFTriggerSelect
+            options={options}
+            menuAlignment="left"
+            onChange={(shownOptions) => {
+              const newHiddenCols = options
+                .filter((option) => !shownOptions.some((shownOption) => option.value === shownOption.value))
+                .map((option) => option.value);
+              setDirtyHiddenColumnIds(newHiddenCols);
+            }}
+            onSave={() => {
+              setPersistedHiddenColumnIds(name, dirtyHiddenColumnIds);
+              setHiddenColumnIds(dirtyHiddenColumnIds);
+            }}
+            onClose={() => {
+              setDirtyHiddenColumnIds(hiddenColumnIds);
+            }}
+            value={options.filter(option =>
+              !dirtyHiddenColumnIds.includes(option.value)
+            )}
+            minSelectedCount={2}
+          />
+        ),
+        accessor: () => { },
+        id: '__customizationMenu',
+        disableResizing: true,
+        disableSortBy: true,
+        showOverflow: true,
+        width: '20px',
+      });
+    }
+
+    if (renderRowSubComponent) {
+      visibleColumns.unshift({
+        Header: () => null,
+        id: 'expander',
+        Cell: ({ row }) => (
+          <span className={styles.expanderCell}>
+            {row.isExpanded ? <span className="fa fa-minus" /> : <span className="fa fa-plus" />}
+          </span>
+        ),
+        width: 35,
+        disableResizing: true
+      })
+    };
+    return visibleColumns;
+  }, [hiddenColumnIds, dirtyHiddenColumnIds]);
+  return rtColumns
+};
+
+
 /**
 * Common Table component
 * @param  props
 * @param  props.columns - react-table columns config object
+* @param  props.columns[0].disableCustomization - disable customization for this column
 * @param  props.data - data is an array of row data objects
 * @param  props.renderRowSubComponent - a function that returns an react node used as sub component for a row
 * @param  props.showPagination - specifies pagination is shown or not
@@ -37,6 +148,8 @@ function getDefaultPageSize({ showPagination, inputDefaultPageSize, data }) {
 * @param  props.enableSorting - flag to enable sorting for the table
 * @param  props.onSortChange - callback notifying parent about sort state changes
 * @param  props.noDataText - no data text in case of an empty table
+* @param  props.disableResizing - columns are resizable or not
+* @param  props.columnCustomizable - columns are customizable or not
 */
 const DfTableV2 = ({
   columns,
@@ -50,7 +163,10 @@ const DfTableV2 = ({
   onPageChange,
   enableSorting,
   onSortChange,
-  noDataText
+  noDataText,
+  disableResizing,
+  columnCustomizable,
+  name
 }) => {
 
   defaultPageSize = getDefaultPageSize({
@@ -59,23 +175,12 @@ const DfTableV2 = ({
     data
   });
 
-  const rtColumns = useMemo(() => {
-    const rtColumns = [...columns];
-    if (renderRowSubComponent) {
-      rtColumns.unshift({
-        Header: () => null,
-        id: 'expander',
-        Cell: ({ row }) => (
-          <span className={styles.expanderCell}>
-            {row.isExpanded ? <span className="fa fa-minus" /> : <span className="fa fa-plus" />}
-          </span>
-        ),
-        width: 35,
-        disableResizing: true
-      })
-    };
-    return rtColumns;
-  }, []);
+  const rtColumns = useColumnFilter({
+    columns,
+    columnCustomizable,
+    renderRowSubComponent,
+    name
+  })
 
   const defaultColumn = React.useMemo(
     () => ({
@@ -112,8 +217,8 @@ const DfTableV2 = ({
         data
       })
     },
-    useFlexLayout,
     useResizeColumns,
+    useFlexLayout,
     useSortBy,
     useExpanded,
     usePagination,
@@ -163,22 +268,27 @@ const DfTableV2 = ({
                 {
                   headerGroup.headers.map(column => {
                     const { key, onClick, ...rest } = column.getHeaderProps(enableSorting ? column.getSortByToggleProps() : undefined);
-                    return <div className={styles.headerCell} key={key} {...rest}>
+                    return <div className={classNames(styles.headerCell, {
+                      [styles.headerOverflowShown]: !!column.showOverflow
+                    })} key={key} {...rest}>
                       <span className={styles.headerContent} onClick={onClick}>
                         {column.render('Header')}
-                        <span className={`${styles.sortIndicator} ${column.isSorted
-                          ? column.isSortedDesc
-                            ? 'fa fa-angle-up'
-                            : 'fa fa-angle-down'
-                          : ''
-                          }`} />
+                        {
+                          column.disableSortBy ? null : (
+                            <span className={`${styles.sortIndicator} ${column.isSorted
+                              ? column.isSortedDesc
+                                ? 'fa fa-angle-up'
+                                : 'fa fa-angle-down'
+                              : ''
+                              }`} />)
+                        }
                       </span>
-                      {column.canResize && (
+                      {column.canResize && !disableResizing ? (
                         <div
                           {...column.getResizerProps()}
                           className={styles.headerCellResizer}
                         />
-                      )}
+                      ) : null}
                     </div>
                   })}
               </div>
