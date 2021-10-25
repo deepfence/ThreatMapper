@@ -31,7 +31,6 @@ Get in touch:
 * [Next Steps](#next-steps-with-deepfence-threatmapper)
 * [Roadmap](#roadmap)
 * [Security and Support](#security-and-support)
-* [Deepfence ThreatStryker](#deepfence-threatstryker)
 * [Acknowledgements](#acknowledgements)
 * [License](#license)
 
