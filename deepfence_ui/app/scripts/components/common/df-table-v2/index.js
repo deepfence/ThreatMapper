@@ -134,22 +134,23 @@ function useColumnFilter({
 
 /**
 * Common Table component
-* @param  props
-* @param  props.columns - react-table columns config object
-* @param  props.columns[0].disableCustomization - disable customization for this column
-* @param  props.data - data is an array of row data objects
-* @param  props.renderRowSubComponent - a function that returns an react node used as sub component for a row
-* @param  props.showPagination - specifies pagination is shown or not
-* @param  props.manual - whether the pagination, sorting etc are controlled via parent
-* @param  props.totalRows - total number of rows in table, required when manual is true
-* @param  props.page - current page, required when manual is true
-* @param  props.defaultPageSize - defaults to 10 in case of pagination is shown, otherwise length of data
-* @param  props.onPageChange - in case of manual true, this will be called to notify parent about change of a page
-* @param  props.enableSorting - flag to enable sorting for the table
-* @param  props.onSortChange - callback notifying parent about sort state changes
-* @param  props.noDataText - no data text in case of an empty table
-* @param  props.disableResizing - columns are resizable or not
-* @param  props.columnCustomizable - columns are customizable or not
+* @param {Object} props
+* @param {Object[]} props.columns - react-table columns config object
+* @param {boolean} props.columns[].disableCustomization - disable customization for this column
+* @param {Object[]} props.data - data is an array of row data objects
+* @param {function} props.renderRowSubComponent - a function that returns an react node used as sub component for a row
+* @param {boolean} props.showPagination - specifies pagination is shown or not
+* @param {boolean} props.manual - whether the pagination, sorting etc are controlled via parent
+* @param {number} props.totalRows - total number of rows in table, required when manual is true
+* @param {number} props.page - current page, required when manual is true
+* @param {number} props.defaultPageSize - defaults to 10 in case of pagination is shown, otherwise length of data
+* @param {function} props.onPageChange - in case of manual true, this will be called to notify parent about change of a page
+* @param {boolean} props.enableSorting - flag to enable sorting for the table
+* @param {function} props.onSortChange - callback notifying parent about sort state changes
+* @param {string} props.noDataText - no data text in case of an empty table
+* @param {boolean} props.disableResizing - columns are resizable or not
+* @param {boolean} props.columnCustomizable - columns are customizable or not
+* @param {string} props.name - name of the table, used to save column customization preferences
 */
 const DfTableV2 = ({
   columns,
