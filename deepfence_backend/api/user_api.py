@@ -519,11 +519,13 @@ def user_update(user_id):
         if user_is_not_admin:
             raise InvalidUsage("Not Authorized")
 
-        admin_user_count = User.query.filter_by(role=admin_role, isActive=True).count()
-        if wants_to_change_role and role != admin_role and admin_user_count == 1:
-            raise InvalidUsage("There needs to be at least one admin user")
-        if user.role == admin_role and is_active is False and admin_user_count == 1:
-            raise InvalidUsage("Cannot deactivate the last admin user")
+        # Check if the role has to be changed for the only admin user
+        if user.role.name == USER_ROLES.ADMIN_USER:
+            admin_user_count = User.query.filter_by(role=admin_role, isActive=True).count()
+            if wants_to_change_role and role != admin_role and admin_user_count == 1:
+                raise InvalidUsage("There needs to be at least one admin user")
+            if user.role == admin_role and is_active is False and admin_user_count == 1:
+                raise InvalidUsage("Cannot deactivate the last admin user")
 
     to_logout = False
     user.first_name = first_name
@@ -590,7 +592,7 @@ def user_delete(user_id):
         access_expires = app.config["JWT_ACCESS_TOKEN_EXPIRES"]
         redis.set(jti, 'true', access_expires * 1.2)
     else:
-        redis.set("DELETED_USER_"+str(user_id), 'true')
+        redis.set("DELETED_USER_" + str(user_id), 'true')
     return set_response(data="ok")
 
 
