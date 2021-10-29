@@ -59,8 +59,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: discovery.zen.ping.unicast.hosts
-              value: "deepfence-es-0.deepfence-es,deepfence-es-1.deepfence-es,deepfence-es-2.deepfence-es"
+            - name: node.name
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: cluster.initial_master_nodes
+              value: deepfence-es-0
+            - name: discovery.seed_hosts
+              value: "deepfence-es"
             - name: ES_MEM
               value: "{{ .Values.elasticsearchHeapSize }}"
           ports:

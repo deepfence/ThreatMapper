@@ -92,7 +92,10 @@ services:
     volumes:
       - deepfence_data:/data:rw
     environment:
-      DF_PROG_NAME: "es_master"
+      - DF_PROG_NAME="es_master"
+      - node.name=deepfence-es
+      - discovery.seed_hosts=deepfence-es-slave1,deepfence-es-slave2
+      - cluster.initial_master_nodes=deepfence-es
     ulimits:
       core: 0
       memlock:
@@ -126,8 +129,10 @@ services:
   #    volumes:
   #      - deepfence_data:/data:rw
   #    environment:
-  #      DF_PROG_NAME: "es_slave1"
-  #      discovery.zen.ping.unicast.hosts: "deepfence-es"
+  #      - DF_PROG_NAME="es_slave1"
+  #      - node.name=deepfence-es-slave1
+  #      - discovery.seed_hosts=deepfence-es,deepfence-es-slave2
+  #      - cluster.initial_master_nodes=deepfence-es
   #    ulimits:
   #      core: 0
   #      memlock:
@@ -158,8 +163,10 @@ services:
   #    volumes:
   #      - deepfence_data:/data:rw
   #    environment:
-  #      DF_PROG_NAME: "es_slave2"
-  #      discovery.zen.ping.unicast.hosts: "deepfence-es"
+  #      - DF_PROG_NAME="es_slave2"
+  #      - node.name=deepfence-es-slave2
+  #      - discovery.seed_hosts=deepfence-es,deepfence-es-slave1
+  #      - cluster.initial_master_nodes=deepfence-es
   #    ulimits:
   #      core: 0
   #      memlock:

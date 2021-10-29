@@ -14,9 +14,7 @@ ENV ES_TARBAL="${DOWNLOAD_URL}/elasticsearch-oss-${VERSION}-no-jdk-linux-x86_64.
     TAKE_FILE_OWNERSHIP=1 \
     ES_MEM="2g" \
     DF_PROG_NAME="es_master"
-#ENV bootstrap.memory_lock true
-#ENV ES_MEM 1024
-#ENV ES_JAVA_OPTS="-Xms${ES_MEM} -Xmx${ES_MEM}"
+ENV bootstrap.memory_lock true
 ENV cluster.name=df-es-cluster
 ENV path.data=/usr/share/elasticsearch/data
 ENV path.logs=/usr/share/elasticsearch/logs
