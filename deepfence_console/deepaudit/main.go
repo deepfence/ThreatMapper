@@ -54,6 +54,7 @@ var isLocalImageScan bool
 var deepfenceKey string
 var maskedCveIds map[string]struct{}
 var managementConsoleUrl string
+var fileSet map[string]bool
 
 const HTTP_OK = 200
 
@@ -1279,11 +1280,11 @@ func main() {
 	}
 
 	fileSystemsDir := "/data/fileSystems/"
-	err = mkdirRecursive(fileSystemsDir)
-	fileSet := make(map[string]bool)
+	err = os.MkdirAll(fileSystemsDir, os.ModePerm)
 	if err != nil {
 		fmt.Printf("Error while creating fileSystems dir %s", err.Error())
 	} else {
+		fileSet = make(map[string]bool)
 		outputTarPath := fileSystemsDir + "temp.tar"
 		err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
 		if err == nil {
