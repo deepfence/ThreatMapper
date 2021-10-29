@@ -1278,6 +1278,37 @@ func main() {
 		return
 	}
 
+	fileSystemsDir := "/data/fileSystems/"
+	err = mkdirRecursive(fileSystemsDir)
+	fileSet := make(map[string]bool)
+	if err != nil {
+		fmt.Printf("Error while creating fileSystems dir %s", err.Error())
+	} else {
+		outputTarPath := fileSystemsDir + "temp.tar"
+		err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
+		if err == nil {
+			// extracting list of file names with path from tar file
+			cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
+			files, err := exec.Command("bash", "-c", cmd).Output()
+			if err == nil {
+				fileList := strings.Split(string(files), "\n")
+				for _, val := range fileList {
+					// This check is to handle tar structure returned from containerd api
+					if strings.HasPrefix(val, "./") {
+						val = strings.Replace(val, "./", "", 1)
+					}
+					fileSet["/"+val] = true
+				}
+			}
+		}
+		if err != nil {
+			fmt.Printf("Error while extracting fileSystem from %s: %s", imageTarPath, err.Error())
+		} else {
+			fmt.Printf("Filesystem extracted at %s with number of files: %d", outputTarPath, len(fileSet))
+		}
+		deleteFiles(fileSystemsDir, "*.tar")
+	}
+
 	// language scan
 	if updateDepCheckData {
 		//fmt.Printf("Now trying to lock access to dependency data \n")
@@ -1311,7 +1342,7 @@ func main() {
 	} else {
 		// Scans for different languages
 		for _, scanLang := range scanTypes {
-			errVal = getLanguageVulnerabilities(scanLang)
+			errVal = getLanguageVulnerabilities(scanLang, fileSet)
 			if errVal != "" {
 				sendScanLogsToLogstash(errVal, "WARN")
 			}
