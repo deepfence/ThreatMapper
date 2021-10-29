@@ -1290,9 +1290,9 @@ func main() {
 		if err == nil {
 			// extracting list of file names with path from tar file
 			cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
-			files, err := exec.Command("bash", "-c", cmd).Output()
+			files, err := ExecuteCommand(cmd)
 			if err == nil {
-				fileList := strings.Split(string(files), "\n")
+				fileList := strings.Split(files, "\n")
 				for _, val := range fileList {
 					// This check is to handle tar structure returned from containerd api
 					if strings.HasPrefix(val, "./") {

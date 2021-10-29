@@ -173,6 +173,19 @@ func mkdirRecursive(folderPath string) error {
 	return os.MkdirAll(folderPath, os.ModePerm)
 }
 
+func ExecuteCommand(commandStr string) (string, error) {
+	cmd := exec.Command("/bin/sh", "-c", commandStr)
+	var commandOut bytes.Buffer
+	var commandErr bytes.Buffer
+	cmd.Stdout = &commandOut
+	cmd.Stderr = &commandErr
+	err := cmd.Run()
+	if err != nil {
+		return strings.TrimSpace(commandErr.String()), err
+	}
+	return strings.TrimSpace(commandOut.String()), nil
+}
+
 // structs valid for clair v2.1.1 (https://github.com/quay/clair/tree/v2.1.1)
 
 type Layer struct {
