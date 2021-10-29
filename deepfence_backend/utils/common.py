@@ -230,7 +230,7 @@ def mask_url(url, integration):
     # https://hooks.slack.com/services/qwfknqwklfn => https://hooks.slack.com/services/qwf*****lfn
     if integration == 'slack':
         matches = re.search(
-            "https:\/\/hooks.slack.com\/services\/([0-9A-Za-z]{1,})\/([0-9A-Za-z]{1,})\/([0-9A-Za-z]{1,})$", url)
+            "https:\/\/hooks\.slack\.com\/services\/([0-9A-Za-z]{1,})\/([0-9A-Za-z]{1,})\/([0-9A-Za-z]{1,})$", url)
         if matches:
             all_matched = list(matches.groups())
             for i in range(len(all_matched)):
