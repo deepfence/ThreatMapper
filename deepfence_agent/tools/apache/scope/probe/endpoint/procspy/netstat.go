@@ -50,7 +50,7 @@ func parseDarwinNetstat(out string) []Connection {
 
 		t.LocalAddress = net.ParseIP(localAddress)
 
-		p, err := strconv.Atoi(localPort)
+		p, err := strconv.ParseUint(localPort, 10, 16)
 		if err != nil {
 			return nil
 		}
@@ -69,7 +69,7 @@ func parseDarwinNetstat(out string) []Connection {
 
 		t.RemoteAddress = net.ParseIP(remoteAddress)
 
-		p, err = strconv.Atoi(remotePort)
+		p, err = strconv.ParseUint(remotePort, 10, 16)
 		if err != nil {
 			return nil
 		}
