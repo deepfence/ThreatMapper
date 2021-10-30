@@ -161,7 +161,7 @@ func untarFiles(srcDir string, fileExtn string) (string, error) {
 	return resultDir, err
 }
 
-func getLanguageVulnerabilities(language string) string {
+func getLanguageVulnerabilities(language string, fileSet map[string]bool) string {
 	var fileExts []string
 	var extFileDirList []string
 	var cmdLine string
@@ -225,6 +225,7 @@ func getLanguageVulnerabilities(language string) string {
 	                    (language == "dotnet")) || (language == "js") ||
 	                                                   (language == "nodejs"){
 	*/
+	fmt.Printf("Number of entries in fileset %d",len(fileSet))
 	for i := 0; i < extDirLen; i++ {
 		extFileDir = extFileDirList[i]
 		if strings.HasPrefix(fileExts[i], ".") {
@@ -275,7 +276,7 @@ func getLanguageVulnerabilities(language string) string {
 		}
 	}
 	fmt.Printf("Now analysing the output file \n")
-	decodeErr = decodeDepCheckJson(language, extFileDirList)
+	decodeErr = decodeDepCheckJson(language, extFileDirList, fileSet)
 	if decodeErr != nil {
 		errMsg = fmt.Sprintf("Error while decoding file for %s. Reason =%s \n",
 			language, decodeErr.Error())

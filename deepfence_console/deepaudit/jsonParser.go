@@ -142,7 +142,7 @@ type depCheckStruct struct {
 
 var layerIdx = 3
 
-func decodeDepCheckJson(language string, extFileDirList []string) error {
+func decodeDepCheckJson(language string, extFileDirList []string, fileSet map[string]bool) error {
 	var fileName string
 	var depCheckData depCheckStruct
 
@@ -170,6 +170,7 @@ func decodeDepCheckJson(language string, extFileDirList []string) error {
 				dependencyList[i].FileName)
 			continue
 		}
+		pkgFilePath := dependencyList[i].FilePath
 		vulnerabilityList := dependencyList[i].Vulnerabilities
 		vulnerabilityCount := len(vulnerabilityList)
 		for j := 0; j < vulnerabilityCount; j++ {
@@ -206,7 +207,6 @@ func decodeDepCheckJson(language string, extFileDirList []string) error {
 				nodeData.Cve_container_image_id = global_image_id
 				nodeData.Cve_container_name = global_container_name
 			}
-			pkgFilePath := dependencyList[i].FilePath
 			for _, tmpDir := range extFileDirList {
 				if strings.HasPrefix(pkgFilePath, tmpDir) {
 					pkgFilePath = strings.Replace(pkgFilePath, tmpDir, "", 1)
@@ -215,6 +215,10 @@ func decodeDepCheckJson(language string, extFileDirList []string) error {
 			}
 			if global_image_name != "host" {
 				pkgFilePath = strings.Replace(pkgFilePath, "/"+nodeData.Cve_container_layer, "", 1)
+			}
+			if pkgFilePath != "" && fileSet[pkgFilePath] != true && len(fileSet) > 100 {
+				fmt.Printf("Skipping vulnerability of %s as absent in fileset", pkgFilePath)
+				continue
 			}
 			nodeData.Cve_caused_by_package = dependencyList[i].FileName
 			nodeData.Cve_caused_by_package_path = pkgFilePath
