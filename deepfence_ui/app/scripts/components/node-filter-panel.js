@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Select from 'react-select';
 import OutsideClickHandler from 'react-outside-click-handler';
-import { addTopologyFilter } from '../actions/app-actions';
+import { addTopologyFilter, removeTopologyFilter, setTopologyClickedNode } from '../actions/app-actions';
 import { fetchTopologyData } from './multi-cloud/topology-client';
 import TopologyFiltersBar from './topology-filter';
 
@@ -55,6 +55,15 @@ export default function NodeFiltersPanel(props) {
     setShowCloudProviderDropdown(false);
     setIndexValue(filterIndex);
   };
+
+  // remove the selected filter
+  const removeFilter = (filter) => {
+    dispatch(removeTopologyFilter(filter))
+
+    // setting last element as active node for side panel
+    const node = filter.at(-1);
+    dispatch(setTopologyClickedNode(node));
+  }
 
   const onChildFilterSelected = (e, filter) => {
     setShowChildDropDown(!showChildDropdown);
@@ -132,6 +141,7 @@ export default function NodeFiltersPanel(props) {
             setShowChildDropDown={setShowChildDropDown}
             handleOnChildFilterChange={onChildFilterSelected}
             addFilter={addChildFilter}
+            removeFilter={removeFilter}
             optionValues={optionValues}
           />
           <div>
