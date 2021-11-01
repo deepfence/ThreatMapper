@@ -1,5 +1,7 @@
 ![Deepfence Logo](images/deepfence-logo.png)
 
+[<img src="https://img.shields.io/badge/slack-@deepfence-brightgreen.svg?logo=slack">](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
+
 # Deepfence ThreatMapper
 
 Deepfence ThreatMapper helps you to monitor and secure your running applications, in Cloud, Kubernetes, Docker, and Fargate Serverless.
@@ -12,7 +14,7 @@ Your 'Shift Left' initiatives enable you to deliver secure applications; ThreatM
 
 ThreatMapper discovers, annotates and displays the topology of your applications across multiple cloud environments:
 
-![Application Topology](https://github.com/deepfence/ThreatMapper/blob/master/images/df-topology-1.png)
+![Application Topology](images/df-topology-1.png)
 
 
 Get in touch:
