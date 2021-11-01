@@ -1,10 +1,8 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import Select from 'react-select';
 import { Tooltip } from 'react-tippy';
 import 'react-tippy/dist/tippy.css';
 import OutsideClickHandler from 'react-outside-click-handler';
-import { removeTopologyFilter } from '../actions/app-actions';
 
 const frontEllipsis = text => {
   const splitText = text.split(' AND ');
@@ -21,12 +19,12 @@ const TopologyFiltersBar = props => {
     showChildDropdown,
     handleOnChildFilterChange,
     addFilter,
+    removeFilter,
     styles,
     theme,
     optionValues,
     setShowChildDropDown,
   } = props;
-  const dispatch = useDispatch();
   const filtersList = filters.map((filter, index) => {
     const currentFilter = filter.reduce(
       (accumulator, currentValue) =>
@@ -45,15 +43,15 @@ const TopologyFiltersBar = props => {
               <div
                 className="fa fa-plus filter-remove-btn"
                 aria-hidden="true"
-                style={{ paddingLeft: '5px' }}
+                style={{ paddingLeft: '5px', cursor: 'pointer' }}
                 onClick={() => addFilter(index, filter)}
               />
             </div>
             <div
               className="fa fa-times filter-remove-btn"
-              onClick={() => dispatch(removeTopologyFilter(filter))}
               aria-hidden="true"
-              style={{ paddingLeft: '5px' }}
+              style={{ paddingLeft: '5px', cursor: 'pointer' }}
+              onClick={() => removeFilter(filter)}
             />
           </div>
         </Tooltip>
