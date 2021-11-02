@@ -36,11 +36,8 @@ export function isUserSessionActive() {
     setInterval(() => {
       refreshAuthTokenIfRequired();
     }, 60 * 5 * 1000);
-  }
-  if (authToken) {
     isSessionActive = true;
-  } else {
-    isSessionActive = false;
+
   }
 
   const licenseStatus = localStorage.getItem('licenseStatus');
@@ -59,11 +56,7 @@ export async function isUserSessionActiveAsync() {
       refreshAuthTokenIfRequired();
     }, 60 * 5 * 1000);
     await refreshAuthTokenIfRequired();
-  }
-  if (authToken) {
     isSessionActive = true;
-  } else {
-    isSessionActive = false;
   }
 
   const licenseStatus = localStorage.getItem('licenseStatus');
