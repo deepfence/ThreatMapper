@@ -25,8 +25,8 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - cluster-agent
-            - {{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}
-            - {{ required "managementConsolePort is required" .Values.managementConsolePort }}
+            - "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
+            - "{{ required "managementConsolePort is required" .Values.managementConsolePort }}"
           env:
             - name: DEEPFENCE_KEY
               valueFrom:

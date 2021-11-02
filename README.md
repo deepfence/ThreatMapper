@@ -3,9 +3,9 @@
 [![GitHub license](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
-[![GitHub wiki](https://img.shields.io/badge/documentation-read-brightgreen)](https://github.com/deepfence/ThreatMapper/wiki)
-[![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
-[![Slack](https://img.shields.io/badge/slack-@deepfence-brightgreen.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
+[![GitHub wiki](https://img.shields.io/badge/documentation-read-green)](https://github.com/deepfence/ThreatMapper/wiki)
+[![Demo](https://img.shields.io/badge/threatmapper-demo-brightgreen)](https://github.com/deepfence/ThreatMapper/wiki/ThreatMapper-Demo)
+[![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
 # Deepfence ThreatMapper
@@ -17,6 +17,9 @@ Your 'Shift Left' initiatives enable you to deliver secure applications; ThreatM
 * **Discover Running Workloads:** ThreatMapper scans your platforms and identifies pods, containers, applications, and infrastructure.  Use ThreatMapper to discover the topology of your applications and attack surface.
 * **Discover Vulnerabilities:** ThreatMapper obtains manifests of dependencies from running pods and containers, serverless apps, applications, and operating system.  ThreatMapper matches these against vulnerability feeds to identify vulnerable components.
 * **Rank Vulnerabilities by Risk-of-Exploit:** ThreatMapper ranks discovered vulnerabilities against CVSS and other severity scores, exploit method and proximity to attack surface, in order to identify which issues pose the greatest risk of exploit.
+
+# Live Demo
+[https://github.com/deepfence/ThreatMapper/wiki/ThreatMapper-Demo](https://github.com/deepfence/ThreatMapper/wiki/ThreatMapper-Demo)
 
 ThreatMapper discovers, annotates and displays the topology of your applications across multiple cloud environments:
 
