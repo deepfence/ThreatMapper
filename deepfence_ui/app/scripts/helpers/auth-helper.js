@@ -34,7 +34,7 @@ export function isUserSessionActive() {
   const authToken = localStorage.getItem('authToken');
   if (authToken) {
     setInterval(() => {
-      startTimerForRefreshToken();
+      refreshAuthTokenIfRequired();
     }, 60 * 5 * 1000);
   }
   if (authToken) {
@@ -51,17 +51,39 @@ export function isUserSessionActive() {
   return isSessionActive;
 }
 
-export function startTimerForRefreshToken() {
+export async function isUserSessionActiveAsync() {
+  let isSessionActive = false;
+  const authToken = localStorage.getItem('authToken');
+  if (authToken) {
+    setInterval(() => {
+      refreshAuthTokenIfRequired();
+    }, 60 * 5 * 1000);
+    await refreshAuthTokenIfRequired();
+  }
+  if (authToken) {
+    isSessionActive = true;
+  } else {
+    isSessionActive = false;
+  }
+
+  const licenseStatus = localStorage.getItem('licenseStatus');
+  if (isSessionActive && licenseStatus === 'false') {
+    window.parent.location.hash = '/settings';
+  }
+
+  return isSessionActive;
+}
+
+
+async function refreshAuthTokenIfRequired() {
   if (localStorage.getItem('authToken')) {
     const jwt = decodeJwtToken(localStorage.getItem('authToken'));
     const currentTime = new Date();
     const authTokenExpiryTime = new Date(jwt.exp * 1000);
-    const timeDiff = Math.abs(
-      authTokenExpiryTime.getTime() - currentTime.getTime()
-    );
+    const timeDiff = authTokenExpiryTime.getTime() - currentTime.getTime();
     const minuteDiff = Math.round(timeDiff / 60000);
     if (minuteDiff < 30) {
-      refreshAuthToken();
+      await refreshAuthToken();
     }
   }
 }

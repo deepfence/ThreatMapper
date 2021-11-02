@@ -8,7 +8,7 @@ import {
   receiveDonutDetails,
   receiveNodeSpecificDetails, receiveAreaChartData,
   focusMaskedAlert, receivedThreatMetricDetails, receivedAlerts, receivedMaskAlertResponse,
-  receiveGeoMapData,receiveVulnerabilityDeleteResponse,
+  receiveGeoMapData, receiveVulnerabilityDeleteResponse,
   receiveLoginResponse, receiveLogoutResponse, receiveRegisterResponse, receiveUserProfileResponse,
   receivePasswordResetLinkResponse, receiveVerifyPasswordResponse, receiveChangePasswordResponse,
   receiveSignUpInviteResponse, receiveRegisterViaInviteResponse, receiveEulaResponse,
@@ -440,11 +440,11 @@ export function fetchAlertsData(dispatch, params) {
       type: params.typeArr
     }
   };
-  const {hideMasked = true} = params;
+  const { hideMasked = true } = params;
   if (hideMasked) {
     body.filters.masked = false;
   }
-  if (params.hasOwnProperty('activeFilter') || params.activeFilter !== undefined){
+  if (params.hasOwnProperty('activeFilter') || params.activeFilter !== undefined) {
     for (const filter in params.activeFilter) {
       body.filters[filter] = params.activeFilter[filter];
     }
@@ -567,9 +567,8 @@ export function maskAlert(dispatch, params, additionalParams = {}) {
 }
 
 export function fetchGeoMapData(dispatch, params) {
-  let url = `${backendElasticApiEndPoint()}/geo-map?number=${
-    params.number
-  }&time_unit=${params.time_unit}`;
+  let url = `${backendElasticApiEndPoint()}/geo-map?number=${params.number
+    }&time_unit=${params.time_unit}`;
   if (params.lucene_query.length > 0) {
     const luceneQuery = getLuceneQuery(params.lucene_query);
     url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
@@ -726,9 +725,8 @@ export function getUserProfile(dispatch) {
 
 export function getPasswordResetLink(dispatch, params) {
   const base_url = encodeURIComponent(getBackendBasePath());
-  const url = `${backendElasticApiEndPoint()}/users/password-reset/email?email=${
-    params.email
-  }&base_url=${base_url}`;
+  const url = `${backendElasticApiEndPoint()}/users/password-reset/email?email=${params.email
+    }&base_url=${base_url}`;
   doRequest({
     method: 'GET',
     url,
@@ -848,28 +846,33 @@ export function getEula(dispatch) {
 
 export function refreshAuthToken() {
   const url = `${backendElasticApiEndPoint()}/users/refresh/token`;
-  doRequest({
-    method: 'POST',
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getRefreshToken(),
-    },
-    success: response => {
-      if (response.success) {
-        localStorage.setItem('authToken', response.data.access_token);
-      }
-    },
-    error: error => {
-      if (error) {
-        if (localStorage.getItem('authToken') != null) {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('licenseStatus');
-          disableDashboardAccess();
+  return new Promise((resolve, reject) => {
+    doRequest({
+      method: 'POST',
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: getRefreshToken(),
+      },
+      success: response => {
+        if (response.success) {
+          localStorage.setItem('authToken', response.data.access_token);
+          return resolve();
         }
-      }
-    },
+        reject();
+      },
+      error: error => {
+        if (error) {
+          if (localStorage.getItem('authToken') != null) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('licenseStatus');
+            disableDashboardAccess();
+          }
+        }
+        reject();
+      },
+    });
   });
 }
 
@@ -1050,9 +1053,8 @@ export function notifyAlerts(dispatch, params) {
 
 /* START :: CVE VULNERABILITY */
 export function getCveSeverityChartData(dispatch, params) {
-  let url = `${backendElasticApiEndPoint()}/vulnerabilities/cve_severity_chart?number=${
-    params.number
-  }&time_unit=${params.time_unit}`;
+  let url = `${backendElasticApiEndPoint()}/vulnerabilities/cve_severity_chart?number=${params.number
+    }&time_unit=${params.time_unit}`;
   if (params.lucene_query.length !== 0) {
     const luceneQuery = getLuceneQuery(params.lucene_query);
     url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
@@ -2274,9 +2276,9 @@ export function addGlobalSettings(params = {}) {
     credentials: 'same-origin',
     method: 'POST',
     body: JSON.stringify({
-        key: params.key,
-        value: params.value
-      }),
+      key: params.key,
+      value: params.value
+    }),
     headers: {
       'Content-Type': 'application/json',
       Authorization: getAuthHeader(),
