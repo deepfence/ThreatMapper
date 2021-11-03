@@ -187,12 +187,12 @@ class EmailConfiguration extends React.Component {
 														type="password"
 														className="form-control"
 														name="password"
-														placeholder="Password"
+														placeholder="App password"
 														onChange={this.handleChange}
 													/>
 													{submitted && !this.state.password && (
 														<div className="field-error">
-															Password is required
+															App password is required
 														</div>
 													)}
 												</div>
@@ -267,12 +267,12 @@ class EmailConfiguration extends React.Component {
 														type="text"
 														className="form-control"
 														name="smtp"
-														placeholder="SMTP mail"
+														placeholder="SMTP server"
 														onChange={this.handleChange}
 													/>
 													{submitted && !this.state.smtp && (
 														<div className="field-error">
-															SMTP mail is required
+															SMTP server is required
 														</div>
 													)}
 												</div>
@@ -293,12 +293,12 @@ class EmailConfiguration extends React.Component {
 														type="number"
 														className="form-control"
 														name="port"
-														placeholder="Port"
+														placeholder="Gmail SMTP port (SSL)"
 														onChange={this.handleChange}
 													/>
 													{submitted && !this.state.port && (
 														<div className="field-error">
-															Port is required
+															Gmail SMTP port (SSL) is required
 														</div>
 													)}
 												</div>

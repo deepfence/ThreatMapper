@@ -1,5 +1,13 @@
 ![Deepfence Logo](images/deepfence-logo.png)
 
+[![GitHub license](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
+[![GitHub wiki](https://img.shields.io/badge/documentation-read-green)](https://github.com/deepfence/ThreatMapper/wiki)
+[![Demo](https://img.shields.io/badge/threatmapper-demo-brightgreen)](https://github.com/deepfence/ThreatMapper/wiki/ThreatMapper-Demo)
+[![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
+[![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
+
 # Deepfence ThreatMapper
 
 Deepfence ThreatMapper helps you to monitor and secure your running applications, in Cloud, Kubernetes, Docker, and Fargate Serverless.
@@ -10,9 +18,12 @@ Your 'Shift Left' initiatives enable you to deliver secure applications; ThreatM
 * **Discover Vulnerabilities:** ThreatMapper obtains manifests of dependencies from running pods and containers, serverless apps, applications, and operating system.  ThreatMapper matches these against vulnerability feeds to identify vulnerable components.
 * **Rank Vulnerabilities by Risk-of-Exploit:** ThreatMapper ranks discovered vulnerabilities against CVSS and other severity scores, exploit method and proximity to attack surface, in order to identify which issues pose the greatest risk of exploit.
 
+# Live Demo
+[https://github.com/deepfence/ThreatMapper/wiki/ThreatMapper-Demo](https://github.com/deepfence/ThreatMapper/wiki/ThreatMapper-Demo)
+
 ThreatMapper discovers, annotates and displays the topology of your applications across multiple cloud environments:
 
-![Application Topology](https://github.com/deepfence/ThreatMapper/blob/master/images/df-topology-1.png)
+![Application Topology](images/df-topology-1.png)
 
 
 Get in touch:
@@ -31,7 +42,6 @@ Get in touch:
 * [Next Steps](#next-steps-with-deepfence-threatmapper)
 * [Roadmap](#roadmap)
 * [Security and Support](#security-and-support)
-* [Deepfence ThreatStryker](#deepfence-threatstryker)
 * [Acknowledgements](#acknowledgements)
 * [License](#license)
 
@@ -196,7 +206,7 @@ Install an appropriate docker runtime on the host operating system (Linux and Wi
 
 # Building Deepfence ThreatMapper components from Source
 
-Deepfence ThreatMapper is open source.  The container repos will contain the most recent, fully-tested versions of the ThreatMpper components, but developers and early adopters can build ThreatMapper from source.
+Deepfence ThreatMapper is open source.  The container repos will contain the most recent, fully-tested versions of the ThreatMapper components, but developers and early adopters can build ThreatMapper from source.
 
 Begin with the [ThreatMapper Building from Source](https://github.com/deepfence/ThreatMapper/wiki/Building-from-Console-and-Sensors-from-Source) instructions.
 
@@ -222,25 +232,6 @@ Please share any feature requests or bug reports: https://github.com/deepfence/T
 For any security-related issues in the ThreatMapper project, contact productsecurity at deepfence dot io.
 
 Please file Github issues as needed, and join the Deepfence Community [Slack channel](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ).
-
-# Deepfence ThreatStryker
-
-Deepfence ThreatStryker is an extended version of ThreatMapper that provides:
-
-* Compliance Checking
-* Runtime Sensors
-* Correlation and Attack Intelligence
-* Automated Remediation (Quarantine and Firewalling)
-
-ThreatStryker is fully supported by Deepfence, Inc. For more information, check out [Deepfence ThreatStryker](https://deepfence.io/product/).
-
-# Acknowledgements
-
-The Deepfence ThreatMapper project builds on a number of open source tools.  We are particularly grateful to, and would like to acknowledge:
-
-* **WeaveWorks Weave Scope:** [Weave Scope](https://github.com/weaveworks/scope) is a visualization and monitoring tool for Docker and Kubernetes. It provides a top down view into your app, as well as your entire infrastructure.  Weave Scope provide the core of the Topology visualization in the Deepfence Management Console.
-* **Clair:** [Clair](https://github.com/quay/clair) is an open source project for the static analysis of vulnerabilities in application containers.  Clair consumes a number of vulnerability feeds and matches these against manifests from containers.  Deepfence ThreatMapper uses clair as one of the tools to locate vulnerabilities in workloads.
-* **DependencyCheck:** [DependencyCheck](https://github.com/jeremylong/DependencyCheck) is a Software Composition Analysis tool that matches an application's dependencies against various lists publically-disclosed vulnerabilities.  Deepfence ThreatMapper uses DependencyCheck as one of the tools to locate vulnerabilities in workloads.
 
 # License
 

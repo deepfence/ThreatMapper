@@ -15,9 +15,13 @@ name: "CodeQL"
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - 'deepfence_agent/tools/apache/scope/extras/example/**/*'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
+    paths-ignore:
+      - 'deepfence_agent/tools/apache/scope/extras/example/**/*'
   schedule:
     - cron: '30 1 * * 0'
 

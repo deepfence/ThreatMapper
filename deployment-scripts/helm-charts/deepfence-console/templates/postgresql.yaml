@@ -6,7 +6,7 @@ metadata:
   name: deepfence-postgres-postgresql
   labels:
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: postgresql
@@ -33,7 +33,7 @@ metadata:
   name: deepfence-postgres-pgpool
   labels:
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: pgpool
@@ -50,7 +50,7 @@ metadata:
   name: deepfence-postgres-postgresql-hooks-scripts
   labels:
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: postgresql
@@ -123,20 +123,22 @@ metadata:
   name: deepfence-postgres-postgresql-initdb-scripts
   labels:
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: postgresql
   namespace: {{ .Values.namespace }}
 data:
-  setup.sh: |
+  setup.sh: |-
     #!/bin/bash
     set -e
 
-    PGPASSWORD="${POSTGRES_PASSWORD}" psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${POSTGRES_DB}" <<-EOF
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql -v ON_ERROR_STOP=1 --username "repmgr" --dbname "${POSTGRES_DB}" <<-EOF
+        ALTER ROLE repmgr CREATEROLE;
         CREATE DATABASE ${POSTGRES_FETCHER_DB_NAME};
         CREATE USER ${POSTGRES_FETCHER_DB_USER} WITH PASSWORD '${POSTGRES_FETCHER_DB_PASSWORD}';
         GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_FETCHER_DB_NAME} TO ${POSTGRES_FETCHER_DB_USER};
+        ALTER ROLE repmgr NOCREATEROLE;
     EOF
 ---
 # Source: postgresql-ha/templates/pgpool/service.yaml
@@ -147,12 +149,14 @@ metadata:
   labels:
     app: deepfence-console
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: pgpool
   namespace: {{ .Values.namespace }}
 spec:
   type: ClusterIP
+  sessionAffinity: None
   ports:
     - name: postgresql
       port: 5432
@@ -171,7 +175,7 @@ metadata:
   labels:
     app: deepfence-console
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
   namespace: {{ .Values.namespace }}
@@ -196,7 +200,7 @@ metadata:
   labels:
     app: deepfence-console
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: postgresql
@@ -222,7 +226,7 @@ metadata:
   labels:
     app: deepfence-console
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: pgpool
@@ -238,7 +242,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: postgresql-ha
-        helm.sh/chart: postgresql-ha-3.3.1
+        helm.sh/chart: postgresql-ha-7.12.0
         app.kubernetes.io/instance: deepfence-postgres
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: pgpool
@@ -259,7 +263,7 @@ spec:
       # Auxiliary vars to populate environment variables
       containers:
         - name: pgpool
-          image: docker.io/deepfenceio/pgpool:4.2.1-debian-10-r20
+          image: docker.io/deepfenceio/pgpool:4.2.5-debian-10-r37
           imagePullPolicy: "IfNotPresent"
           securityContext:
             runAsUser: 1001
@@ -310,12 +314,16 @@ spec:
                   key: admin-password
             - name: PGPOOL_ENABLE_LOAD_BALANCING
               value: "yes"
+            - name: PGPOOL_DISABLE_LOAD_BALANCE_ON_WRITE
+              value: transaction
             - name: PGPOOL_ENABLE_LOG_CONNECTIONS
               value: "no"
             - name: PGPOOL_ENABLE_LOG_HOSTNAME
               value: "yes"
             - name: PGPOOL_ENABLE_LOG_PER_NODE_STATEMENT
               value: "no"
+            - name: PGPOOL_CHILD_LIFE_TIME
+              value: ""
             - name: PGPOOL_ENABLE_TLS
               value: "no"
           ports:
@@ -336,7 +344,7 @@ spec:
               command:
                 - bash
                 - -ec
-                - PGPASSWORD="${PGPOOL_POSTGRES_PASSWORD}" psql -U "${PGPOOL_POSTGRES_USERNAME}" -d "${PGPOOL_POSTGRES_DB}" -h 127.0.0.1 -tA -c "SELECT 1" >/dev/null
+                - PGPASSWORD="${PGPOOL_POSTGRES_PASSWORD}" psql -U "${PGPOOL_POSTGRES_USERNAME}" -d "${PGPOOL_POSTGRES_DB}" -h /opt/bitnami/pgpool/tmp -tA -c "SELECT 1" >/dev/null
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 5
@@ -360,7 +368,7 @@ metadata:
   labels:
     app: deepfence-console
     app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-3.3.1
+    helm.sh/chart: postgresql-ha-7.12.0
     app.kubernetes.io/instance: deepfence-postgres
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: postgresql
@@ -370,6 +378,7 @@ spec:
   replicas: 3
   updateStrategy:
     type: RollingUpdate
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       app.kubernetes.io/name: postgresql-ha
@@ -380,7 +389,7 @@ spec:
       labels:
         app: deepfence-console
         app.kubernetes.io/name: postgresql-ha
-        helm.sh/chart: postgresql-ha-3.3.1
+        helm.sh/chart: postgresql-ha-7.12.0
         app.kubernetes.io/instance: deepfence-postgres
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/component: postgresql
@@ -409,26 +418,6 @@ spec:
 {{- end }}
       securityContext:
         fsGroup: 1001
-      initContainers:
-        - name: init-chmod-data
-          image: docker.io/bitnami/minideb:buster
-          imagePullPolicy: "Always"
-          command:
-            - sh
-            - -c
-            - |
-              mkdir -p /bitnami/postgresql/conf /bitnami/postgresql/data
-              chmod 700 /bitnami/postgresql/conf /bitnami/postgresql/data
-              find /bitnami/postgresql -mindepth 1 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | \
-                xargs chown -R 1001:1001
-          securityContext:
-            runAsUser: 0
-          resources:
-            limits: {}
-            requests: {}
-          volumeMounts:
-            - name: data
-              mountPath: /bitnami/postgresql
       containers:
         - name: postgresql
           lifecycle:
@@ -436,7 +425,7 @@ spec:
               exec:
                 command:
                   - /pre-stop.sh
-          image: docker.io/deepfenceio/postgresql-repmgr:11.10.0-debian-10-r63
+          image: docker.io/deepfenceio/postgresql-repmgr:12.8.0-debian-10-r71
           imagePullPolicy: "IfNotPresent"
           securityContext:
             runAsUser: 1001
@@ -459,6 +448,11 @@ spec:
                 secretKeyRef:
                   name: deepfence-postgres-postgresql
                   key: postgresql-password
+            - name: POSTGRES_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: deepfence-postgres-postgresql
+                  key: postgresql-postgres-password
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
@@ -491,6 +485,8 @@ spec:
               value: "error"
             - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
               value: "pgaudit, repmgr"
+            - name: POSTGRESQL_ENABLE_TLS
+              value: "no"
             - name: POSTGRESQL_MAX_CONNECTIONS
               value: "320"
             # Repmgr configuration
@@ -540,8 +536,8 @@ spec:
           livenessProbe:
             exec:
               command:
-                - sh
-                - -c
+                - bash
+                - -ec
                 - 'PGPASSWORD="$POSTGRES_PASSWORD" psql -w -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1 -c "SELECT 1"'
             initialDelaySeconds: 30
             periodSeconds: 10
@@ -551,8 +547,8 @@ spec:
           readinessProbe:
             exec:
               command:
-                - sh
-                - -c
+                - bash
+                - -ec
                 - 'PGPASSWORD="$POSTGRES_PASSWORD" psql -w -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1 -c "SELECT 1"'
             initialDelaySeconds: 5
             periodSeconds: 10

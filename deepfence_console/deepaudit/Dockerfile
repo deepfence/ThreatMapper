@@ -6,7 +6,7 @@ WORKDIR /go/deepaudit/
 RUN go mod tidy \
     && go build -o deepaudit
 
-FROM python:3.6.15-alpine3.14
+FROM python:3.9-alpine3.14
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
 
@@ -25,7 +25,7 @@ RUN apk update --no-cache \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
     && rm docker-${DOCKERVERSION}.tgz \
     && rm -rf /var/cache/apk/* \
-    && pip3 install --no-cache-dir --upgrade pip setuptools \
+    && pip3 install --no-cache-dir --upgrade pip setuptools wheel \
     && pip3 install --no-cache-dir -r /root/cve_scan_registry/requirements.txt \
     && pip3 uninstall setuptools -y \
     && unzip /tmp/dependency-check-6.4.1-release.zip -d /tmp/ \

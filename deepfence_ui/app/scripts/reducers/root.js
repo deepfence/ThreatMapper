@@ -3,7 +3,6 @@
 import debug from 'debug';
 import moment from 'moment';
 import {
-  fromJS,
   List as makeList,
   Map as makeMap,
   OrderedMap as makeOrderedMap,
@@ -22,7 +21,6 @@ import {
   TIME_BOUNDARY_OPTIONS,
 } from '../constants/dashboard-refresh-config';
 
-const log = debug('scope:app-store');
 const error = debug('scope:error');
 
 // Initial values
@@ -1380,8 +1378,7 @@ export function rootReducer(state = initialState, action) {
 
     case ActionTypes.ADD_TOPOLOGY_FILTER: {
       const api = state.get('topologyGraphAPI');
-      // eslint-disable-next-line prefer-destructuring
-      const filter = action.filter;
+      const { filter } = action;
       const node_id = filter[filter.length - 1].id;
       setTimeout(() => api.expandNode(node_id), 0);
       return state;
@@ -1389,8 +1386,7 @@ export function rootReducer(state = initialState, action) {
 
     case ActionTypes.REMOVE_TOPOLOGY_FILTER: {
       const api = state.get('topologyGraphAPI');
-      // eslint-disable-next-line prefer-destructuring
-      const filter = action.filter;
+      const { filter } = action;
       const node_id = filter[filter.length - 1].id;
       setTimeout(() => api.collapseNode(node_id), 0);
       return state;

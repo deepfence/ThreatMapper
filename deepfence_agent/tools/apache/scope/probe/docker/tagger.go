@@ -87,7 +87,7 @@ func (t *Tagger) tag(tree process.Tree, topology *report.Topology) {
 			continue
 		}
 
-		pid, err := strconv.ParseUint(pidStr, 10, 64)
+		pid, err := strconv.ParseUint(pidStr, 10, 32)
 		if err != nil {
 			continue
 		}

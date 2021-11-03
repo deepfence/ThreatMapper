@@ -11,7 +11,7 @@ RUN go build -o websocket_client websocket_client.go helper.go main.go node_util
 
 FROM steampipe_build:latest AS steampipe-build
 
-FROM python:3.6.15-slim-bullseye
+FROM python:3.9-slim-bullseye
 LABEL deepfence.role=system
 
 ENV PYTHONUNBUFFERED=1 \
@@ -59,6 +59,7 @@ RUN mkdir -p /usr/share/man/man1 \
     && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
     && rm docker-${DOCKERVERSION}.tgz \
+    && pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt \
     && /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)" \

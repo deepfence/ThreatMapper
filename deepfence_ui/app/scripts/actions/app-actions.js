@@ -5,7 +5,6 @@ import ActionTypes from '../constants/action-types';
 import {
   disableDashboardAccess,
   enableDashboardAccess,
-  updateRoute,
 } from '../utils/router-utils';
 import {
   getTopVulnerableContainerAndHosts,
@@ -92,22 +91,20 @@ import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
 //
 
 export function setGraphView() {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     dispatch({
       type: ActionTypes.SET_VIEW_MODE,
       viewMode: GRAPH_VIEW_MODE,
     });
-    updateRoute(getState);
   };
 }
 
 export function setTableView() {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     dispatch({
       type: ActionTypes.SET_VIEW_MODE,
       viewMode: TABLE_VIEW_MODE,
     });
-    updateRoute(getState);
   };
 }
 
