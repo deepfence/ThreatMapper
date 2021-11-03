@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Route, HashRouter, Switch } from 'react-router-dom';
 
@@ -20,20 +20,36 @@ import RegisterView from './auth-module/register-view/register-view';
 import ForgotPasswordView from './auth-module/forgot-password-view/forgot-password-view';
 import ResetPasswordView from './auth-module/reset-password-view/reset-password-view';
 import RegisterViaInviteView from './auth-module/register-via-invite-view/register-via-invite-view';
-import { isUserSessionActive } from '../helpers/auth-helper';
+import { isUserSessionActive, isUserSessionActiveAsync } from '../helpers/auth-helper';
+import Loader from './loader';
 
-const PrivateRoute = ({ component: Component, ...rest }) => (
-  <Route
+const PrivateRoute = ({ component: Component, ...rest }) => {
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isUserSessionActive, setIsUserSessionActive] = useState(false);
+
+
+  useEffect(() => {
+    isUserSessionActiveAsync().then((active) => {
+      setIsUserSessionActive(active);
+      setIsAuthLoading(false);
+    });
+  }, []);
+
+  return <Route
     {...rest}
-    render={props =>
-      isUserSessionActive() ? (
+    render={props => {
+      if (isAuthLoading) {
+        return <div style={{ marginTop: '400px' }}><Loader /></div>
+      }
+
+      return isUserSessionActive ? (
         <Component {...props} />
       ) : (
         <Redirect to="/login" />
       )
-    }
+    }}
   />
-);
+}
 
 class DeepFenceApp extends React.Component {
   constructor() {
