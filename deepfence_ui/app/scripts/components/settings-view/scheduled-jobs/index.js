@@ -1,7 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {dateTimeFormat} from '../../../utils/time-utils';
-import DFTable from '../../common/df-table/index';
+import { DfTableV2 } from '../../common/df-table-v2';
 import {
   getScheduledTasksAction,
   updateScheduledTasksAction,
@@ -110,72 +110,72 @@ class ScheduledJobs extends React.Component {
     return (
       <div>
         <div className="scheduled-job-padding">
-          <DFTable
-            data={tasks}
-            columns={[
-              {
-                Header: 'Timestamp',
-                accessor: row => (
-                  dateTimeFormat(row.created_at)
-                ),
-                id: 'created',
-                maxWidth: 200,
+          <DfTableV2
+          data={tasks}
+          columns={[
+            {
+              Header: 'Timestamp',
+              accessor: row => (
+                dateTimeFormat(row.created_at)
+              ),
+              id: 'created',
+              maxWidth: 200,
+            },
+            {
+              Header: 'Node Type',
+              accessor: 'node_type',
+              maxWidth: 150,
+            },
+            {
+              Header: 'Action',
+              accessor: 'action',
+              maxWidth: 250,
+            },
+            {
+              Header: 'Cron Expression',
+              accessor: 'cron',
+              maxWidth: 150,
+            },
+            {
+              Header: 'Active',
+              accessor: 'is_enabled',
+              Cell: cell => (
+                <div>
+                  {cell.value === true ? 'Active' : 'Inactive'}
+                </div>
+              ),
+            },
+            {
+              Header: 'Nodes',
+              style: { whiteSpace: 'unset' },
+              accessor: 'node_names',
+              Cell: row => (
+                <span title={`${row.value}`}>
+                  {row.value}
+                </span>
+              ),
+              minWidth: 200,
+            },
+            {
+              Header: 'Status',
+              accessor: 'status',
+              Cell: cell => (
+                <div>
+                  {cell.value}
+                </div>
+              ),
+              minWidth: 200,
+            },
+            multiSelectColumn,
+          ]}
+          getTrProps={(state, rowInfo) => (
+            {
+              style: {
+                opacity: rowInfo?.original.is_enabled ? 1 : 0.5,
               },
-              {
-                Header: 'Node Type',
-                accessor: 'node_type',
-                maxWidth: 150,
-              },
-              {
-                Header: 'Action',
-                accessor: 'action',
-                maxWidth: 250,
-              },
-              {
-                Header: 'Cron Expression',
-                accessor: 'cron',
-                maxWidth: 150,
-              },
-              {
-                Header: 'Active',
-                accessor: 'is_enabled',
-                Cell: cell => (
-                  <div>
-                    {cell.value === true ? 'Active' : 'Inactive'}
-                  </div>
-                ),
-              },
-              {
-                Header: 'Nodes',
-                style: { whiteSpace: 'unset' },
-                accessor: 'node_names',
-                Cell: row => (
-                  <span title={`${row.value}`}>
-                    {row.value}
-                  </span>
-                ),
-                minWidth: 200,
-              },
-              {
-                Header: 'Status',
-                accessor: 'status',
-                Cell: cell => (
-                  <div>
-                    {cell.value}
-                  </div>
-                ),
-                minWidth: 200,
-              },
-              multiSelectColumn,
-            ]}
-            getTrProps={(state, rowInfo) => (
-              {
-                style: {
-                  opacity: rowInfo?.original.is_enabled ? 1 : 0.5,
-                },
-              }
-            )}
-        />
+            }
+          )}
+           /> 
         </div>
       </div>
     );
