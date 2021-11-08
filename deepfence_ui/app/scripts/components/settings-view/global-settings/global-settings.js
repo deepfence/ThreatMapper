@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import DFTable from '../../common/df-table/index';
+import { DfTableV2 } from '../../common/df-table-v2';
 import {
   getGlobalSettingsAction,
   addGlobalSettingsAction,
@@ -15,8 +15,7 @@ const GlobalSettings = () => {
     dispatch(getGlobalSettingsAction());
   }, []);
 
-  const settingsList = useSelector(state => state.get('global_settings'));
-
+  const settingsList = useSelector(state => state.get('global_settings')) || [];
   const handleEditFile = row => {
     const modalProps = {
       title: 'Edit Setting',
@@ -83,47 +82,51 @@ const GlobalSettings = () => {
 
   return (
     <div style={{ paddingTop: '40px' }}>
-      <DFTable
-        data={settingsList}
-        columns={[
-          {
-            Header: 'Setting',
-            accessor: 'setting',
-            Cell: row => (
-              <div style={{ textAlign: 'centre', textTransform: 'uppercase' }}>
-                {row.original.label}
-                <span
-                  style={{ marginLeft: '10px' }}
-                  className="label-info fa fa-info-circle"
-                  title={`${row.original.description}`}
-                />
-              </div>
-            ),
-          },
-          {
-            Header: 'Value',
-            accessor: 'value',
-            Cell: row => (
-              <div style={{ textAlign: 'centre' }}>{row.original.value}</div>
-            ),
-          },
-          {
-            Header: 'Action',
-            accessor: 'id',
-            Cell: row => (
-              <div className="action-control">
-                <i
-                  className="fa fa-pencil"
-                  style={{ cursor: 'pointer', marginRight: '10px' }}
-                  onClick={() => handleEditFile(row.original)}
-                />
-              </div>
-            ),
-            style: { textAlign: 'centre' },
-            sortable: false,
-          },
-        ]}
-      />
+      <DfTableV2
+          data={settingsList}
+          columns={[
+            {
+              Header: 'Setting',
+              accessor: 'label',
+              Cell: row => (
+                <div style={{ textAlign: 'centre', textTransform: 'uppercase' }}>
+                  {row.value}
+                  <span
+                    style={{ marginLeft: '10px' }}
+                    className="label-info fa fa-info-circle"
+                    title={`${row.description}`}
+                  />
+                </div>
+              ),
+            },
+            {
+              Header: 'Value',
+              accessor: 'value',
+              Cell: row => (
+                <div style={{ textAlign: 'centre' }}>{row.value}</div>
+              ),
+            },
+            {
+              Header: 'Action',
+              accessor: 'id',
+              Cell: row => (
+                <div className="action-control">
+                  <i
+                    className="fa fa-pencil"
+                    style={{ cursor: 'pointer', marginRight: '10px' }}
+                    onClick={() => handleEditFile(row)}
+                  />
+                </div>
+              ),
+              style: { textAlign: 'centre' },
+              sortable: false,
+            },
+          ]}
+          showPagination
+          manual
+          defaultPageSize={10}
+          enableSorting
+        />
     </div>
   );
 };
