@@ -9,7 +9,7 @@ import {
   showModal,
   toaster,
 } from '../../../actions/app-actions';
-import DFTable from '../../common/df-table/index';
+import { DfTableV2 } from '../../common/df-table-v2';
 import { getUserRole } from '../../../helpers/auth-helper';
 import NotificationToaster from '../../common/notification-toaster/notification-toaster';
 import UserForm from './user-form';
@@ -142,74 +142,62 @@ class UserList extends React.PureComponent {
     const userRole = getUserRole();
     const sumOfAgentCounts = userList
       .reduce((sum, arr) => sum + arr.count_of_hosts, 0);
+    console.log('userList', userList);
     return (
       <div>
         <div style={style}>User Accounts</div>
-        <DFTable
-          data={userList}
-          getTdProps={(state, rowInfo, columnInfo) => (
-            {
-              style: {
-                opacity: (rowInfo
-                  && rowInfo.original.isActive === false
-                  && columnInfo.id !== 'id') ? 0.5 : 1,
-              },
-            }
-          )}
-          columns={[
-            {
-              Header: 'ID',
-              accessor: 'id',
-            },
-            {
-              Header: 'First Name',
-              accessor: 'first_name',
-            },
-            {
-              Header: 'Last Name',
-              accessor: 'last_name',
-            },
-            {
-              Header: 'Email',
-              accessor: 'email',
-            },
-            {
-              Header: 'Agent Count',
-              accessor: 'count_of_hosts',
-              show: sumOfAgentCounts !== 0,
-            },
-            {
-              Header: 'Role',
-              accessor: 'role',
-            },
-            {
-              Header: 'Action',
-              accessor: 'id',
-              Cell: row => (
-                <div
-                  className="action-control"
-                >
-                  <i
-                    className="fa fa-pencil"
-                    style={{cursor: 'pointer', marginRight: '10px'}}
-                    onClick={() => this.handleEditUser(row.value)}
-                    aria-hidden="true"
-                  />
-                  {userRole === 'admin' && (
-                  <i
-                    className="fa fa-trash-o"
-                    style={{color: 'red', cursor: 'pointer'}}
-                    onClick={() => this.handleDeleteDialog(row.value)}
-                    aria-hidden="true"
-                  />
-                  )}
-                </div>
-              ),
-              style: {textAlign: 'left'},
-              sortable: false,
-            }
-          ]}
-        />
+        <DfTableV2
+        data={userList}
+        columns={[
+          {
+            Header: 'First Name',
+            accessor: 'first_name',
+          },
+          {
+            Header: 'Last Name',
+            accessor: 'last_name',
+          },
+          {
+            Header: 'Email',
+            accessor: 'email',
+          },
+          {
+            Header: 'Agent Count',
+            accessor: 'count_of_hosts',
+            show: sumOfAgentCounts !== 0,
+          },
+          {
+            Header: 'Role',
+            accessor: 'role',
+          },
+          {
+            Header: 'Action',
+            accessor: 'id',
+            Cell: row => (
+              <div
+                className="action-control"
+              >
+                <i
+                  className="fa fa-pencil"
+                  style={{cursor: 'pointer', marginRight: '10px'}}
+                  onClick={() => this.handleEditUser(row.value)}
+                  aria-hidden="true"
+                />
+                {userRole === 'admin' && (
+                <i
+                  className="fa fa-trash-o"
+                  style={{color: 'red', cursor: 'pointer'}}
+                  onClick={() => this.handleDeleteDialog(row.value)}
+                  aria-hidden="true"
+                />
+                )}
+              </div>
+            ),
+            style: {textAlign: 'left'},
+            sortable: false,
+          }
+        ]}
+         />
         { isToasterVisible && <NotificationToaster /> }
       </div>
     );
