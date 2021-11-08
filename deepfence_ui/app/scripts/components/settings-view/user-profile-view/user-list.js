@@ -142,7 +142,6 @@ class UserList extends React.PureComponent {
     const userRole = getUserRole();
     const sumOfAgentCounts = userList
       .reduce((sum, arr) => sum + arr.count_of_hosts, 0);
-    console.log('userList', userList);
     return (
       <div>
         <div style={style}>User Accounts</div>

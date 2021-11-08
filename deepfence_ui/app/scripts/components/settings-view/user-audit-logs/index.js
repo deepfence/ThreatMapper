@@ -3,7 +3,7 @@ import React from 'react';
 import { isEmpty } from 'lodash';
 import {connect} from 'react-redux';
 import {dateTimeFormat} from '../../../utils/time-utils';
-import DFTable from '../../common/df-table/index';
+import { DfTableV2 } from '../../common/df-table-v2';
 import {
   getUserAuditLogAction
 } from '../../../actions/app-actions';
@@ -68,68 +68,68 @@ class UserAuditLogs extends React.Component {
     return (
     // using the same same css class for the scheduled jobs in
     // settings page. Please check here, if any time make changes to schedule jobs.
+    // pagination does not works for table yet. 
       <div>
         <div className="scheduled-job-padding">
-          <DFTable
-            data={userAuditLogs}
-            page={page}
-            onPageChange={(newPage) => { this.setState({page: newPage, }); }}
-            columns={[
-              {
-                Header: 'Timestamp',
-                accessor: row => (
-                  dateTimeFormat(row.created_at)
-                ),
-                id: 'created',
-                maxWidth: 200,
-              },
-              {
-                Header: 'Event',
-                accessor: 'event',
-                maxWidth: 150,
-              },
-              {
-                Header: 'Action',
-                accessor: 'action',
-                maxWidth: 150,
-              },
-              {
-                Header: 'User Email',
-                accessor: 'user_email',
-                maxWidth: 250,
-              },
-              {
-                Header: 'User Role',
-                accessor: 'user_role',
-                maxWidth: 150,
-              },
-              {
-                Header: 'Resources',
-                style: { whiteSpace: 'unset' },
-                Cell: cell => (
-                  <div>
-                    {this.convertStringToJson(cell.value)}
-                  </div>
-                ),
-                accessor: 'resource',
-                minWidth: 300,
-              },
-              {
-                Header: 'Success',
-                accessor: 'success',
-                Cell: cell => (
-                  <div>
-                    {cell.value === true ? 'True' : 'False'}
-                  </div>
-                ),
-                maxWidth: 150,
-              },
-            ]}
-            showPagination
-            defaultPageSize={15}
-            pages={totalPage}
-            manual
-        />
+          <DfTableV2
+          data={userAuditLogs}
+          page={page}
+          onPageChange={(newPage) => { this.setState({page: newPage, }); }}
+          columns={[
+            {
+              Header: 'Timestamp',
+              accessor: row => (
+                dateTimeFormat(row.created_at)
+              ),
+              id: 'created',
+              maxWidth: 200,
+            },
+            {
+              Header: 'Event',
+              accessor: 'event',
+              maxWidth: 150,
+            },
+            {
+              Header: 'Action',
+              accessor: 'action',
+              maxWidth: 150,
+            },
+            {
+              Header: 'User Email',
+              accessor: 'user_email',
+              maxWidth: 250,
+            },
+            {
+              Header: 'User Role',
+              accessor: 'user_role',
+              maxWidth: 150,
+            },
+            {
+              Header: 'Resources',
+              style: { whiteSpace: 'unset' },
+              Cell: cell => (
+                <div>
+                  {this.convertStringToJson(cell.value)}
+                </div>
+              ),
+              accessor: 'resource',
+              minWidth: 300,
+            },
+            {
+              Header: 'Success',
+              accessor: 'success',
+              Cell: cell => (
+                <div>
+                  {cell.value === true ? 'True' : 'False'}
+                </div>
+              ),
+              maxWidth: 150,
+            },
+          ]}
+          showPagination
+          defaultPageSize={15}
+          pages={totalPage}
+          manual />
         </div>
       </div>
     );
