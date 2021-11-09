@@ -330,7 +330,7 @@ def send_http_endpoint_notification(self, http_endpoint_conf, payload, notificat
                 headers['Authorization'] = http_endpoint_conf['authorization_key']
 
             response = requests.post(http_endpoint_conf["api_url"], json=payload, headers=headers, verify=False)
-            if response.status_code in [200, 201]:
+            if response.status_code in [200, 201, 204]:
                 save_integrations_status(notification_id, resource_type, "")
             else:
                 save_integrations_status(notification_id, resource_type, response.text)
