@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useExpanded, useFlexLayout, usePagination, useResizeColumns, useSortBy, useTable } from 'react-table';
 import Pagination from './pagination';
 import DFTriggerSelect from '../multi-select/app-trigger';
+import AppLoader from '../../loader';
 import styles from "./index.module.scss";
 
 function getPageCount({
@@ -151,6 +152,7 @@ function useColumnFilter({
 * @param {boolean} props.disableResizing - columns are resizable or not
 * @param {boolean} props.columnCustomizable - columns are customizable or not
 * @param {string} props.name - name of the table, used to save column customization preferences
+* @param {boolean} props.loading - show loader
 */
 const DfTableV2 = ({
   columns,
@@ -167,7 +169,8 @@ const DfTableV2 = ({
   noDataText,
   disableResizing,
   columnCustomizable,
-  name
+  name,
+  loading
 }) => {
 
   defaultPageSize = getDefaultPageSize({
@@ -259,88 +262,92 @@ const DfTableV2 = ({
   }, [sortBy]);
 
   return (
-    <div>
+    <div className={styles.tableContainer}>
       <div className={styles.table} {...getTableProps()}>
-        <div>
-          {
-            headerGroups.map(headerGroup => {
-              const { key, ...rest } = headerGroup.getHeaderGroupProps();
-              return <div key={key} {...rest}>
-                {
-                  headerGroup.headers.map(column => {
-                    const { key, onClick, ...rest } = column.getHeaderProps(enableSorting ? column.getSortByToggleProps() : undefined);
-                    return <div className={classNames(styles.headerCell, {
-                      [styles.headerOverflowShown]: !!column.showOverflow
-                    })} key={key} {...rest}>
-                      <span className={styles.headerContent} onClick={onClick}>
-                        {column.render('Header')}
-                        {
-                          column.disableSortBy ? null : (
-                            <span className={`${styles.sortIndicator} ${column.isSorted
-                              ? column.isSortedDesc
-                                ? 'fa fa-angle-up'
-                                : 'fa fa-angle-down'
-                              : ''
-                              }`} />)
-                        }
-                      </span>
-                      {column.canResize && !disableResizing ? (
-                        <div
-                          {...column.getResizerProps()}
-                          className={styles.headerCellResizer}
-                        />
-                      ) : null}
-                    </div>
-                  })}
-              </div>
-            })}
-        </div>
-        <div {...getTableBodyProps()}>
-          {
-            rtPage.map((row, index) => {
-              prepareRow(row);
-              const { key, ...rest } = row.getRowProps();
-              return (
-                <React.Fragment key={key} >
-                  <div
-                    className={classNames(styles.row, {
-                      [styles.oddRow]: index % 2 !== 0,
-                      [styles.expandableRow]: !!renderRowSubComponent
-                    })}
-                    onClick={() => {
-                      if (renderRowSubComponent) {
-                        row.toggleRowExpanded();
-                      }
-                    }}
-                    {...rest}
-                  >
-                    {
-                      row.cells.map(cell => {
-                        const { key, ...rest } = cell.getCellProps();
-                        return (
-                          <div className={styles.cell} key={key} {...rest}>
-                            {
-                              cell.render('Cell')}
-                          </div>
-                        )
-                      })
-                    }
-                  </div>
-                  {
-                    row.isExpanded ? (
-                      <div>
-                        <div colSpan={visibleColumns.length}>
-                          {renderRowSubComponent({ row })}
-                        </div>
-                      </div>
-                    ) : null
-                  }
-                </React.Fragment>
-              )
-            })}
-        </div>
         {
-          !data.length ? (
+          loading ? <AppLoader small className={styles.loader} /> : <>
+            <div>
+              {
+                headerGroups.map(headerGroup => {
+                  const { key, ...rest } = headerGroup.getHeaderGroupProps();
+                  return <div key={key} {...rest}>
+                    {
+                      headerGroup.headers.map(column => {
+                        const { key, onClick, ...rest } = column.getHeaderProps(enableSorting ? column.getSortByToggleProps() : undefined);
+                        return <div className={classNames(styles.headerCell, {
+                          [styles.headerOverflowShown]: !!column.showOverflow
+                        })} key={key} {...rest}>
+                          <span className={styles.headerContent} onClick={onClick}>
+                            {column.render('Header')}
+                            {
+                              column.disableSortBy ? null : (
+                                <span className={`${styles.sortIndicator} ${column.isSorted
+                                  ? column.isSortedDesc
+                                    ? 'fa fa-angle-up'
+                                    : 'fa fa-angle-down'
+                                  : ''
+                                  }`} />)
+                            }
+                          </span>
+                          {column.canResize && !disableResizing ? (
+                            <div
+                              {...column.getResizerProps()}
+                              className={styles.headerCellResizer}
+                            />
+                          ) : null}
+                        </div>
+                      })}
+                  </div>
+                })}
+            </div>
+            <div {...getTableBodyProps()}>
+              {
+                rtPage.map((row, index) => {
+                  prepareRow(row);
+                  const { key, ...rest } = row.getRowProps();
+                  return (
+                    <React.Fragment key={key} >
+                      <div
+                        className={classNames(styles.row, {
+                          [styles.oddRow]: index % 2 !== 0,
+                          [styles.expandableRow]: !!renderRowSubComponent
+                        })}
+                        onClick={() => {
+                          if (renderRowSubComponent) {
+                            row.toggleRowExpanded();
+                          }
+                        }}
+                        {...rest}
+                      >
+                        {
+                          row.cells.map(cell => {
+                            const { key, ...rest } = cell.getCellProps();
+                            return (
+                              <div className={styles.cell} key={key} {...rest}>
+                                {
+                                  cell.render('Cell')}
+                              </div>
+                            )
+                          })
+                        }
+                      </div>
+                      {
+                        row.isExpanded ? (
+                          <div>
+                            <div colSpan={visibleColumns.length}>
+                              {renderRowSubComponent({ row })}
+                            </div>
+                          </div>
+                        ) : null
+                      }
+                    </React.Fragment>
+                  )
+                })}
+            </div>
+          </>
+        }
+        {
+          !data.length && !loading ? (
             <div className={styles.noDataPlaceholder}>
               {noDataText || 'No rows found'}
             </div>
@@ -348,7 +355,7 @@ const DfTableV2 = ({
         }
       </div>
       {
-        showPagination && data.length ? (
+        showPagination && data.length && !loading ? (
           <div className={styles.paginationWrapper}>
             <Pagination
               pageCount={getPageCount({
