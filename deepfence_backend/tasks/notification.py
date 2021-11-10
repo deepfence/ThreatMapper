@@ -26,7 +26,7 @@ def scheduler(time=None):
         if not time:
             time = arrow.now().datetime
         active_user_ids = [user.id for user in User.query.filter_by(isActive=True).all()]
- 
+
         for notification in UserActivityNotification.query.filter(
                 UserActivityNotification.user_id.in_(active_user_ids)).all():
             # if duration_in_mins is -ve, its immediate notification
@@ -341,6 +341,26 @@ def send_http_endpoint_notification(self, http_endpoint_conf, payload, notificat
 
 
 @celery_app.task(bind=True, default_retry_delay=1 * 60)
+def send_google_chronicle_notification(self, chronicle_endpoint_conf, payload, notification_id, resource_type):
+    with app.app_context():
+        try:
+            headers = {'Content-Type': 'application/json'}
+            if chronicle_endpoint_conf['authorization_key']:
+                headers['Authorization'] = chronicle_endpoint_conf['authorization_key']
+
+            response = requests.post(chronicle_endpoint_conf["api_url"], json=payload, headers=headers, verify=False)
+            if response.status_code in [200, 201, 204]:
+                save_integrations_status(notification_id, resource_type, "")
+            else:
+                save_integrations_status(notification_id, resource_type, response.text)
+        except Exception as exc:
+            app.logger.error(
+                "HTTP Endpoint notification failed. url:[{}], error:[{}]".format(chronicle_endpoint_conf["api_url"],
+                                                                                 exc))
+            save_integrations_status(notification_id, resource_type, "Error in HTTP endpoint: {0}".format(exc))
+
+
+@celery_app.task(bind=True, default_retry_delay=1 * 60)
 def send_notification_to_es(self, es_conf, payloads, notification_id, resource_type):
     with app.app_context():
         try:
@@ -392,7 +412,8 @@ def send_microsoft_teams_notification(self, team_conf, payloads, notification_id
                 else:
                     error_text = response.text
                     app.logger.error("Error sending Microsoft Teams notification [{}]".format(error_text))
-                    save_integrations_status(notification_id, resource_type, "Error in Microsoft Teams: {0}".format(error_text))
+                    save_integrations_status(notification_id, resource_type,
+                                             "Error in Microsoft Teams: {0}".format(error_text))
         except Exception as exc:
             save_integrations_status(notification_id, resource_type, "Error in Microsoft Teams: {0}".format(exc))
             app.logger.error(

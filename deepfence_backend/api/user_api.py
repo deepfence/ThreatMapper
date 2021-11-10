@@ -21,7 +21,7 @@ from models.notification import VulnerabilityNotification, UserActivityNotificat
 from utils.common import password_policy_check, unique_execution_id, \
     mask_url, mask_api_key
 from utils.custom_exception import InvalidUsage, NotFound, Forbidden, MultipleCompaniesFound, DFError
-from utils.constants import USER_ROLES, SECRET_TOKEN_LENGTH, \
+from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRET_TOKEN_LENGTH, \
     INVITE_ACCEPT_LINK, INVITE_USER_EMAIL_SUBJECT, INVITE_USER_EMAIL_HTML, PASSWORD_RESET_LINK, \
     PASSWORD_CHANGE_EMAIL_SUBJECT, PASSWORD_CHANGE_EMAIL_HTML, PASSWORD_RESET_EMAIL_HTML, PASSWORD_RESET_EMAIL_SUBJECT, \
     PASSWORD_RESET_CODE_EXPIRY, PASSWORD_RESET_SUCCESS_EMAIL_SUBJECT, PASSWORD_RESET_SUCCESS_EMAIL_HTML, \
@@ -1377,6 +1377,10 @@ class IntegrationView(MethodView):
                 for i in range(len(notifications)):
                     if notifications[i]['authorization_key'] != "":
                         notifications[i]['authorization_key'] = mask_api_key(notifications[i]['authorization_key'])
+            if integration_type == 'google_chronicle':
+                for i in range(len(notifications)):
+                    if notifications[i]['authorization_key'] != "":
+                        notifications[i]['authorization_key'] = mask_api_key(notifications[i]['authorization_key'])
             if integration_type == 's3':
                 for i in range(len(notifications)):
                     notifications[i]['aws_access_key'] = mask_api_key(notifications[i]['aws_access_key'])
@@ -1744,6 +1748,33 @@ class IntegrationView(MethodView):
             integration = Integration(
                 user=user,
                 integration_type=INTEGRATION_TYPE_HTTP,
+                config=config
+            )
+            try:
+                integration.save()
+            except sqlalchemy.exc.IntegrityError:
+                raise InvalidUsage("A similar http endpoint integration already exists")
+        return integration
+
+    def handle_google_chronicle_post(self, request_json, user):
+        api_url = request_json.get("api_url")
+        authorization_key = request_json.get("authorization_key")
+
+        if not api_url:
+            raise InvalidUsage("url is required")
+
+        try:
+            validate_url(api_url)
+        except DFError as e:
+            raise InvalidUsage(e.message)
+
+        config = json.dumps({"api_url": api_url, "authorization_key": authorization_key})
+        integration = Integration.query.filter_by(integration_type=INTEGRATION_TYPE_GOOGLE_CHRONICLE,
+                                                  config=config).one_or_none()
+        if not integration:
+            integration = Integration(
+                user=user,
+                integration_type=INTEGRATION_TYPE_GOOGLE_CHRONICLE,
                 config=config
             )
             try:

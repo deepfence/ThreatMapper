@@ -5,7 +5,7 @@ import json
 from sys import getsizeof
 from utils.constants import INTEGRATION_TYPE_EMAIL, INTEGRATION_TYPE_ES, INTEGRATION_TYPE_HTTP, INTEGRATION_TYPE_JIRA, \
     INTEGRATION_TYPE_PAGERDUTY, INTEGRATION_TYPE_S3, INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, \
-    INTEGRATION_TYPE_SUMO_LOGIC, INTEGRATION_TYPE_MICROSOFT_TEAMS
+    INTEGRATION_TYPE_SUMO_LOGIC, INTEGRATION_TYPE_MICROSOFT_TEAMS, INTEGRATION_TYPE_GOOGLE_CHRONICLE
 
 
 class IntegrationTypes(object):
@@ -41,7 +41,7 @@ class IntegrationTypes(object):
                 content += json.dumps(cnt, indent=dump_indent)
             content += "\n\n"
         return content
-    
+
     def format_content_for_sumo(self, content_json):
         data = []
         for idx, cnt in enumerate(content_json["contents"]):
@@ -130,6 +130,8 @@ class IntegrationTypes(object):
             return Slack(config)
         elif integration_type == INTEGRATION_TYPE_HTTP:
             return HttpEndpoint(config)
+        elif integration_type == INTEGRATION_TYPE_GOOGLE_CHRONICLE:
+            return GoogleChronicle(config)
         elif integration_type == INTEGRATION_TYPE_JIRA:
             return Jira(config)
         elif integration_type == INTEGRATION_TYPE_PAGERDUTY:
@@ -230,7 +232,8 @@ class SumoLogic(IntegrationTypes):
         notification_id = kwargs["notification_id"]
         resource_type = kwargs["resource_type"]
         from tasks.notification import send_sumo_logic_notification
-        send_sumo_logic_notification(self.pretty_print(), self.format_content_for_sumo(content_json), notification_id, resource_type)
+        send_sumo_logic_notification(self.pretty_print(), self.format_content_for_sumo(content_json), notification_id,
+                                     resource_type)
 
 
 class Jira(IntegrationTypes):
@@ -261,6 +264,20 @@ class HttpEndpoint(IntegrationTypes):
         from tasks.notification import send_http_endpoint_notification
         send_http_endpoint_notification(self.pretty_print(), content_json["contents"], notification_id,
                                         resource_type)
+
+
+class GoogleChronicle(IntegrationTypes):
+    integration_type = INTEGRATION_TYPE_GOOGLE_CHRONICLE
+
+    def __init__(self, config):
+        super(GoogleChronicle, self).__init__(config)
+
+    def send(self, content_json, **kwargs):
+        notification_id = kwargs["notification_id"]
+        resource_type = kwargs["resource_type"]
+        from tasks.notification import send_google_chronicle_notification
+        send_google_chronicle_notification(self.pretty_print(), content_json["contents"], notification_id,
+                                           resource_type)
 
 
 class Elasticsearch(IntegrationTypes):
