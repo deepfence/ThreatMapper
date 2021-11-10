@@ -17,6 +17,7 @@ import SplunkIntegrationView from './splunk-integration-view/index';
 import ElasticSearchIntegrationView from './elasticsearch-integration-view/index';
 import AWSS3IntegrationView from './aws-s3-integration-view/index';
 import HTTPEndpointView from './http-endpoint-view/index';
+import GoogleChronicleEndpointView from './google-chronicle-view/index';
 import JiraIntegrationView from './jira-integration-view';
 import SumoLogicView from './sumo-logic-view';
 import ReportDownload from './report-download/index';
@@ -114,6 +115,7 @@ class IntegrationView extends React.Component {
       'pagerduty':'notification',
       'email':'notification',
       'http_endpoint':'notification',
+      'google_chronicle':'notification',
       'splunk':'siem',
       'elasticsearch':'siem',
       'sumo_logic':'siem',
@@ -191,6 +193,9 @@ class IntegrationView extends React.Component {
       }
       case 'http_endpoint': {
         return <HTTPEndpointView />
+      }
+      case 'google_chronicle': {
+        return <GoogleChronicleEndpointView />
       }
       case 'jira': {
         return <JiraIntegrationView />

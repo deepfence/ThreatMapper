@@ -569,6 +569,7 @@ export function rootReducer(state = initialState, action) {
         'availableHTTPEndpoints',
         action.response.http_endpoint
       );
+      state = state.set('availableGoogleChronicleIntegrations', action.response.google_chronicle);
       state = state.set('availableJiraIntegrations', action.response.jira);
       state = state.set(
         'availableSumoLogicIntegrations',
