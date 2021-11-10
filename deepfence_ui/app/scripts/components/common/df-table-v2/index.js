@@ -209,17 +209,13 @@ const DfTableV2 = ({
       manualSortBy: !!manual,
       autoResetSortBy: false,
       disableMultiSort: true,
-      initialState: {
-        pageIndex: 0,
-        pageSize: defaultPageSize
-      },
-      pageCount: getPageCount({
+      pageCount: manual ? getPageCount({
         manual,
         showPagination,
         defaultPageSize,
         totalRows,
         data
-      })
+      }) : undefined
     },
     useResizeColumns,
     useFlexLayout,
@@ -239,7 +235,8 @@ const DfTableV2 = ({
       pageIndex,
       sortBy,
     },
-    toggleAllRowsExpanded
+    toggleAllRowsExpanded,
+    setPageSize
   } = tableInstance;
 
   useEffect(() => {
@@ -256,6 +253,12 @@ const DfTableV2 = ({
     // reset page index to 0 when number of rows shown in the page changes
     gotoPage(0);
   }, [defaultPageSize]);
+
+  useEffect(() => {
+    if (defaultPageSize !== data.length) {
+      setPageSize(defaultPageSize);
+    }
+  }, [defaultPageSize, data]);
 
   useEffect(() => {
     if (manual && onSortChange) onSortChange(sortBy);
