@@ -127,6 +127,7 @@ class UserAuditLogs extends React.Component {
             },
           ]}
           showPagination
+          totalRows={totalUserAuditLogs}
           defaultPageSize={15}
           pages={totalPage}
           manual />

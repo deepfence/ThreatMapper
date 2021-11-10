@@ -122,9 +122,6 @@ const GlobalSettings = () => {
               sortable: false,
             },
           ]}
-          showPagination
-          manual
-          defaultPageSize={10}
           enableSorting
         />
     </div>

@@ -206,7 +206,6 @@ const DfTableV2 = ({
   loading,
   multiSelectOptions
 }) => {
-
   defaultPageSize = getDefaultPageSize({
     showPagination,
     inputDefaultPageSize: defaultPageSize,
