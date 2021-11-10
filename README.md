@@ -175,7 +175,8 @@ helm install deepfence/deepfence-agent \
 # helm v3
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleIp=---CONSOLE-IP--- \
-    --set deepfenceKey=---DEEPFENCE-API-KEY---
+    --set deepfenceKey=---DEEPFENCE-API-KEY--- \
+    --set managementConsoleUrl=---CONSOLE-IP---
 ```
 
 To remove the Deepfence Sensor:
