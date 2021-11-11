@@ -51,6 +51,7 @@ class IntegrationView extends React.Component {
     this.changeComponent = this.changeComponent.bind(this);
     this.goBackToIntegrations = this.goBackToIntegrations.bind(this);
     this.breadcrumbName = this.breadcrumbName.bind(this);
+    this.renderButton = this.renderButton.bind(this);
   }
   changeComponent() {
     this.props.dispatch(integrationComponentChange());
@@ -94,6 +95,20 @@ class IntegrationView extends React.Component {
       this.setState({
         isLicenseExpiryModalVisible: false
       });
+    }
+  }
+
+  renderButton(tabname) {
+    switch (tabname) {
+      case 'xlsx':
+      case 'pdf':
+        return (
+          "Generate Report"
+        );
+      default:
+        return (
+          "Configure integration"
+        )
     }
   }
 
@@ -160,7 +175,7 @@ class IntegrationView extends React.Component {
             :
             <div></div>}
             </div>
-            <button type="button" className="btn-configure-integration" onClick={() => this.breadcrumbName(`${tabDetails.parent + ' / '+ tabDetails.displayName}`)}>Configure integration</button>
+            <button type="button" className="btn-configure-integration" onClick={() => this.breadcrumbName(`${tabDetails.parent + ' / '+ tabDetails.displayName}`)}>{this.renderButton(tabDetails.name)}</button>
           </div>
         </div>
       );
