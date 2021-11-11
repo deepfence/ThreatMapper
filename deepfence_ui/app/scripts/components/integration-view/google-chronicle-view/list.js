@@ -44,58 +44,49 @@ function isDataAvailable(data) {
   return result;
 }
 
-class GoogleChronicleList extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    this.getIntegrationTableView = this.getIntegrationTableView.bind(this);
-    this.deleteIntegration = this.deleteIntegration.bind(this);
-    this.handleDeleteDialog = this.handleDeleteDialog.bind(this);
+const GoogleChronicleList = (props) => {
+  const resetStates = () => {
+    props.dispatch(resetIntegrationStates());
   }
 
-  resetStates() {
-    this.props.dispatch(resetIntegrationStates());
-  }
-
-  getIntegrationTableView() {
-    const { googleChronicleList } = this.props;
+  const getIntegrationTableView = () => {
+    const { googleChronicleList } = props;
     return (
       <IntegrationTableView
         recordCollection={googleChronicleList}
-        onDeleteRequestCallback={record => this.handleDeleteDialog(record)}
+        onDeleteRequestCallback={record => handleDeleteDialog(record)}
       />
     );
   }
 
-  deleteIntegration(record) {
+  const deleteIntegration = (record) => {
     const params = {
       id: record.id,
       notification_type: record.notification_type,
     };
-    return this.props.dispatch(requestIntegrationDelete(params));
+    return props.dispatch(requestIntegrationDelete(params));
   }
 
-  handleDeleteDialog(record) {
+  const handleDeleteDialog = (record) => {
     const params = {
       dialogTitle: 'Delete Integration?',
       dialogBody: 'Are you sure you want to delete this Google Chronicle integration?',
       confirmButtonText: 'Yes, Delete',
       cancelButtonText: 'No, Keep',
-      onConfirmButtonClick: () => this.deleteIntegration(record),
+      onConfirmButtonClick: () => deleteIntegration(record),
     };
-    this.props.dispatch(showModal('DIALOG_MODAL', params));
-    this.resetStates();
+    props.dispatch(showModal('DIALOG_MODAL', params));
+    resetStates();
   }
 
-  render() {
-    const { googleChronicleList } = this.props;
-    return (
-      <div className="integration-list-section">
-        { isDataAvailable(googleChronicleList)
-          ? this.getIntegrationTableView()
-          : getTableEmptyState(googleChronicleList) }
-      </div>
-    );
-  }
+  const { googleChronicleList } = props;
+  return (
+    <div className="integration-list-section">
+      { isDataAvailable(googleChronicleList)
+        ? getIntegrationTableView()
+        : getTableEmptyState(googleChronicleList) }
+    </div>
+  )
 }
 
 export default GoogleChronicleList;

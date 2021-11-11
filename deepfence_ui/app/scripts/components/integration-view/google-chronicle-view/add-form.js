@@ -1,75 +1,73 @@
 /* eslint-disable react/destructuring-assignment */
-import React from 'react';
+import React, {useState} from 'react';
 import withIntegrationForm from '../../../hoc/notification-integration';
 
-class GoogleChronicleForm extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    this.handleChange = this.handleChange.bind(this);
+const GoogleChronicleForm = (props) => {
+  const [apiURL, setApiURL] = useState('');
+  const [authorizationKey, setAuthorizationKey] = useState('');
 
-    this.state = {
-      apiURL: '',
-      authorizationKey: '',
-      integration_type: 'google_chronicle',
-    };
-  }
-
-  handleChange(e) {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    this.setState({ [name]: value }, () => {
-      const state = {
-        ...this.state,
-        api_url: this.state.apiURL,
-        authorization_key: this.state.authorizationKey,
-      };
-      this.props.saveChildFormData(state);
+    switch (name) {
+      case 'apiURL':
+        setApiURL(value);
+        break;
+      case 'authorizationKey':
+        setAuthorizationKey(value);
+        break;
+      default:
+        break;
+    }
+
+    props.saveChildFormData({
+      api_url: apiURL,
+      authorization_key: authorizationKey,
+      integration_type: "google_chronicle",
+      apiURL,
+      authorizationKey,
     });
   }
 
-  render() {
-    const {apiURL, authorizationKey } = this.state;
-    const { submitted } = this.props;
-
-    return (
-      <div>
-        <div className="row">
-          <div className="col-md-4">
-            <div className={`form-group ${(submitted && !apiURL ? 'has-error' : '')}`}>
-              <label htmlFor="apiURL">
-                <i className="fa fa-link" aria-hidden="true" />
-                <input
-                  type="text"
-                  className="form-control"
-                  name="apiURL"
-                  placeholder="API URL"
-                  value={apiURL}
-                  onChange={this.handleChange}
-                  autoComplete="off"
-                />
-              </label>
-              { submitted && !apiURL && <div className="field-error">API URL is required</div> }
-            </div>
+  const { submitted } = props;
+  return (
+    <div>
+      <div className="row">
+        <div className="col-md-4">
+          <div className={`form-group ${(submitted && !apiURL ? 'has-error' : '')}`}>
+            <label htmlFor="apiURL">
+              <i className="fa fa-link" aria-hidden="true" />
+              <input
+                type="text"
+                className="form-control"
+                name="apiURL"
+                placeholder="API URL"
+                value={apiURL}
+                onChange={handleChange}
+                autoComplete="off"
+              />
+            </label>
+            { submitted && !apiURL && <div className="field-error">API URL is required</div> }
           </div>
-          <div className="col-md-4">
-            <div className="form-group">
-              <label htmlFor="authorizationKey">
-                <i className="fa fa-key" aria-hidden="true" />
-                <input
-                  type="text"
-                  className="form-control"
-                  name="authorizationKey"
-                  placeholder="Authorization Key (Optional)"
-                  value={authorizationKey}
-                  onChange={this.handleChange}
-                  autoComplete="off"
-                />
-              </label>
-            </div>
+        </div>
+        <div className="col-md-4">
+          <div className="form-group">
+            <label htmlFor="authorizationKey">
+              <i className="fa fa-key" aria-hidden="true" />
+              <input
+                type="text"
+                className="form-control"
+                name="authorizationKey"
+                placeholder="Authorization Key (Optional)"
+                value={authorizationKey}
+                onChange={handleChange}
+                autoComplete="off"
+              />
+            </label>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  )
 }
 
 const googleChronicleAdd = withIntegrationForm(GoogleChronicleForm);
