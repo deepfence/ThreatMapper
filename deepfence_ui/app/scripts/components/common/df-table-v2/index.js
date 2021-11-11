@@ -1,10 +1,14 @@
 /* eslint-disable no-nested-ternary */
 import classNames from 'classnames';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useExpanded, useFlexLayout, usePagination, useResizeColumns, useSortBy, useTable } from 'react-table';
+import { useExpanded, useFlexLayout, usePagination, useResizeColumns, useSortBy, useTable, useRowSelect } from 'react-table';
+import { useDispatch } from 'react-redux';
 import Pagination from './pagination';
 import DFTriggerSelect from '../multi-select/app-trigger';
 import AppLoader from '../../loader';
+import { getUserRole } from '../../../helpers/auth-helper';
+import { isPromise } from '../../../utils/promise-utils';
+import { showModal } from '../../../actions/app-actions';
 import styles from "./index.module.scss";
 
 function getPageCount({
@@ -40,7 +44,8 @@ function useColumnFilter({
   columnCustomizable,
   renderRowSubComponent,
   columns,
-  name
+  name,
+  multiSelectOptions
 }) {
 
   const [hiddenColumnIds, setHiddenColumnIds] = useState([]);
@@ -61,6 +66,29 @@ function useColumnFilter({
 
   const rtColumns = useMemo(() => {
     let visibleColumns = [...columns];
+
+    if (multiSelectOptions) {
+      visibleColumns.push({
+        Header: () => 'Action',
+        id: 'df-multi-select-column',
+        Cell: ({ row }) => (
+          <div
+            className="center-text"
+            onClick={ev => ev.stopPropagation()}
+            aria-hidden="true"
+          >
+            <input
+              type="checkbox"
+              {...row.getToggleRowSelectedProps()}
+            />
+          </div>
+        ),
+        disableCustomization: true,
+        width: 100,
+        disableResizing: true,
+        disableSortBy: true,
+      });
+    }
 
     if (columnCustomizable && name) {
       const options = visibleColumns
@@ -127,6 +155,7 @@ function useColumnFilter({
         disableResizing: true
       })
     };
+
     return visibleColumns;
   }, [hiddenColumnIds, dirtyHiddenColumnIds]);
   return rtColumns
@@ -153,6 +182,10 @@ function useColumnFilter({
 * @param {boolean} props.columnCustomizable - columns are customizable or not
 * @param {string} props.name - name of the table, used to save column customization preferences
 * @param {boolean} props.loading - show loader
+* @param {Object} props.multiSelectOptions - options for multi select, pass undefined if row selection is not needed
+* @param {Object[]} props.multiSelectOptions.actions - actions for multi select
+* @param {Object[]} props.multiSelectOptions.columnConfig - column config for multi select
+* @param {Object[]} props.multiSelectOptions.columnConfig.accessor - accessor property name for selection
 */
 const DfTableV2 = ({
   columns,
@@ -170,7 +203,8 @@ const DfTableV2 = ({
   disableResizing,
   columnCustomizable,
   name,
-  loading
+  loading,
+  multiSelectOptions
 }) => {
 
   defaultPageSize = getDefaultPageSize({
@@ -183,8 +217,9 @@ const DfTableV2 = ({
     columns,
     columnCustomizable,
     renderRowSubComponent,
-    name
-  })
+    name,
+    multiSelectOptions,
+  });
 
   const defaultColumn = React.useMemo(
     () => ({
@@ -215,13 +250,15 @@ const DfTableV2 = ({
         defaultPageSize,
         totalRows,
         data
-      }) : undefined
+      }) : undefined,
+      autoResetSelectedRows: false
     },
     useResizeColumns,
     useFlexLayout,
     useSortBy,
     useExpanded,
     usePagination,
+    useRowSelect
   );
   const {
     getTableProps,
@@ -236,7 +273,9 @@ const DfTableV2 = ({
       sortBy,
     },
     toggleAllRowsExpanded,
-    setPageSize
+    setPageSize,
+    toggleAllPageRowsSelected,
+    selectedFlatRows
   } = tableInstance;
 
   useEffect(() => {
@@ -246,7 +285,9 @@ const DfTableV2 = ({
 
   useEffect(() => {
     // whenever pageIndex changes, existing expanded rows should be collapsed
+    // all rows are deselected
     toggleAllRowsExpanded(false);
+    toggleAllPageRowsSelected(false);
   }, [pageIndex]);
 
   useEffect(() => {
@@ -381,8 +422,145 @@ const DfTableV2 = ({
           </div>
         ) : null
       }
+      {(multiSelectOptions && selectedFlatRows.length) ? (<div className={styles.multiSelectActions}>
+        <MultiselectActions
+          toggleAllPageRowsSelected={toggleAllPageRowsSelected}
+          selectedFlatRows={selectedFlatRows ?? []}
+          multiSelectOptions={multiSelectOptions}
+          data={data}
+        />
+      </div>) : null}
     </div>
   );
 };
+
+function MultiselectActions({
+  toggleAllPageRowsSelected,
+  selectedFlatRows,
+  multiSelectOptions,
+  data
+}) {
+  const { columnConfig, actions = [] } = multiSelectOptions;
+  const { accessor } = columnConfig;
+  const defaultActions = [{
+    name: 'Toggle All',
+    icon: <i className={classNames(styles.actionIcon, "fa fa-check-circle cursor")} />,
+    onClick: () => { toggleAllPageRowsSelected() },
+  }];
+  const allActions = [...actions, ...defaultActions];
+  const userRole = getUserRole();
+
+  const [selectedRowIndex, setSelectedRowIndex] = useState({});
+
+  useEffect(() => {
+    const newIdx = {};
+    selectedFlatRows.forEach((row) => {
+      newIdx[row.original[accessor]] = row.original;
+    });
+    setSelectedRowIndex(newIdx);
+  }, [selectedFlatRows]);
+  return allActions
+    .filter(el => el.userRole ? el.userRole === userRole : true)
+    .map((actionParam, index) =>
+      <Action
+        key={actionParam.name || index}
+        {...actionParam}
+        allRows={data}
+        selectedRowIndex={selectedRowIndex}
+        toggleAllPageRowsSelected={toggleAllPageRowsSelected}
+      />
+    );
+}
+
+function Action(props) {
+  const dispatch = useDispatch();
+  const {
+    name: actionName,
+    icon,
+    IconComponent,
+    componentParams,
+    onClick,
+    postClickSuccess,
+    showConfirmationDialog,
+    confirmationDialogParams: {
+      dialogTitle,
+      dialogBody,
+      confirmButtonText,
+      cancelButtonText,
+      contentStyles = {},
+      additionalInputs = [],
+    } = {},
+    allRows,
+    selectedRowIndex,
+    toggleAllPageRowsSelected
+  } = props;
+  if (showConfirmationDialog) {
+    return (
+      <div
+        className={styles.actionItem}
+        title={actionName}
+        onClick={() => {
+          const modalParams = {
+            dialogTitle,
+            dialogBody,
+            confirmButtonText,
+            cancelButtonText,
+            contentStyles,
+            additionalInputs,
+            onConfirmButtonClick: additionalParams => {
+              const onClickPromise = onClick(
+                selectedRowIndex,
+                allRows,
+                additionalParams
+              );
+              if (isPromise(onClickPromise)) {
+                onClickPromise.then(() => {
+                  toggleAllPageRowsSelected(false);
+                  if (typeof postClickSuccess === 'function') {
+                    postClickSuccess(selectedRowIndex);
+                  }
+                });
+              }
+              return onClickPromise;
+            },
+          };
+          dispatch(showModal('DIALOG_MODAL', modalParams));
+        }}
+      >
+        {icon}
+      </div>
+    );
+  }
+  if (IconComponent) {
+    return (
+      <IconComponent
+        {...componentParams}
+        selectedObjectIndex={selectedRowIndex}
+        className={styles.actionItem}
+      />
+    );
+  }
+  return (
+    <div
+      title={actionName}
+      className={styles.actionItem}
+      onClick={() => {
+        const onClickPromise = onClick(selectedRowIndex, allRows);
+        if (isPromise(onClickPromise)) {
+          onClickPromise.then(() => {
+            toggleAllPageRowsSelected(false);
+            if (typeof postClickSuccess === 'function') {
+              postClickSuccess();
+            }
+          });
+        }
+        return onClickPromise;
+      }}
+      aria-hidden="true"
+    >
+      {icon}
+    </div>
+  );
+}
 
 export { DfTableV2 };
