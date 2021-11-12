@@ -204,7 +204,8 @@ const DfTableV2 = ({
   columnCustomizable,
   name,
   loading,
-  multiSelectOptions
+  multiSelectOptions,
+  onRowClick,
 }) => {
   defaultPageSize = getDefaultPageSize({
     showPagination,
@@ -353,11 +354,14 @@ const DfTableV2 = ({
                       <div
                         className={classNames(styles.row, {
                           [styles.oddRow]: index % 2 !== 0,
-                          [styles.expandableRow]: !!renderRowSubComponent
+                          [styles.expandableRow]: !!renderRowSubComponent,
+                          [styles.clickableRow]: !!onRowClick
                         })}
                         onClick={() => {
                           if (renderRowSubComponent) {
                             row.toggleRowExpanded();
+                          } else if(onRowClick) {
+                            onRowClick(row);
                           }
                         }}
                         {...rest}
