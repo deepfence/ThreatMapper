@@ -6,12 +6,13 @@ from utils.helper import websocketio_channel_name_format, call_scope_control_api
 from utils.esconn import ESConn
 from utils.custom_exception import DFError, InternalError, InvalidUsage
 import json
-import re
+from utils.scope import fetch_topology_data
 import urllib
 from config.config import celery_app
 from config.redisconfig import redis
 from datetime import datetime
 import time
+import networkx as nx
 
 
 class Node(object):
@@ -198,6 +199,35 @@ class Node(object):
         else:
             stripped_doc = {k: "NOT_SCANNED" if k == "action" else "" for k in filter_keys}
         return stripped_doc
+
+    def get_attack_path(self):
+        if self.is_ui_vm or self.pseudo:
+            return {}
+        if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
+                             constants.NODE_TYPE_CONTAINER_IMAGE]:
+            raise DFError('action not supported for this node type')
+        cve_scan_doc = self.get_latest_cve_scan_doc()
+        if not cve_scan_doc:
+            return {}
+        topology_nodes = fetch_topology_data(self.type, format="scope")
+        digraph = nx.DiGraph()
+        for node_id, node_details in topology_nodes.items():
+            digraph.add_node(node_id)
+            for adj_node_id in node_details.get("adjacency", []):
+                if not digraph.has_node(adj_node_id):
+                    digraph.add_node(adj_node_id)
+                digraph.add_edge(node_id, adj_node_id)
+        shortest_paths_generator = nx.shortest_simple_paths(digraph, "in-theinternet", self.scope_id)
+        k = 5
+        shortest_paths = []
+        try:
+            for counter, path in enumerate(shortest_paths_generator):
+                shortest_paths.append(path)
+                if counter == k - 1:
+                    break
+        except:
+            pass
+        return shortest_paths
 
     def set_tags(self, tags, action):
         if self.is_ui_vm or self.pseudo:

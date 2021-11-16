@@ -695,6 +695,36 @@ def cve_status(node_id):
         raise InternalError(str(ex))
 
 
+@resource_api.route("/node/<path:node_id>/" + constants.NODE_ATTACK_PATH, methods=["GET"],
+                    endpoint="api_v1_5_attack_path")
+@jwt_required
+def get_attack_path(node_id):
+    try:
+        scope_id = request.args.get("scope_id", None)
+        node_type = request.args.get("node_type", None)
+        if node_type and not scope_id:
+            if node_type == constants.NODE_TYPE_HOST:
+                scope_id = request.args.get("host_name", "") + ";<" + constants.NODE_TYPE_HOST + ">"
+            elif node_type == constants.NODE_TYPE_CONTAINER:
+                scope_id = request.args.get("container", "") + ";<" + constants.NODE_TYPE_CONTAINER + ">"
+            elif node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
+                scope_id = request.args.get("container_image", "") + ";<" + constants.NODE_TYPE_CONTAINER_IMAGE + ">"
+        node = Node.get_node(node_id, scope_id, node_type)
+        if not node:
+            raise InvalidUsage("Node not found")
+        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or \
+                node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+            return set_response(data=node.get_attack_path())
+        else:
+            raise InvalidUsage(
+                "Control '{0}' not applicable for node type '{1}'".format(constants.NODE_ATTACK_PATH, node.type))
+    except DFError as err:
+        current_app.logger.error("NodeView: action={}; error={}".format(constants.NODE_ATTACK_PATH, err))
+        raise InvalidUsage(err.message)
+    except Exception as ex:
+        raise InternalError(str(ex))
+
+
 @resource_api.route("/node/<node_id>", methods=["GET"], endpoint="api_v1_5_node_details")
 @jwt_required
 def get_node_detail(node_id):
@@ -817,7 +847,7 @@ def enumerate_node_filters():
                 "terms": {"field": "cve_container_name.keyword", "size": constants.ES_TERMS_AGGR_SIZE}}}
             cve_filters = {"type": constants.CVE_INDEX}
             cve_aggs_query = ESConn.aggregation_helper(
-                 constants.CVE_INDEX, cve_filters, cve_aggs, number,
+                constants.CVE_INDEX, cve_filters, cve_aggs, number,
                 constants.TIME_UNIT_MAPPING.get(time_unit), lucene_query_string, get_only_query=True)
             cve_scan_aggs = {
                 "node_type": {
@@ -827,7 +857,7 @@ def enumerate_node_filters():
                 }
             }
             cve_scan_aggs_query = ESConn.aggregation_helper(
-                 constants.CVE_SCAN_LOGS_INDEX, {"action": ["COMPLETED", "ERROR"]}, cve_scan_aggs, number,
+                constants.CVE_SCAN_LOGS_INDEX, {"action": ["COMPLETED", "ERROR"]}, cve_scan_aggs, number,
                 constants.TIME_UNIT_MAPPING.get(time_unit), lucene_query_string, add_masked_filter=False,
                 get_only_query=True)
             search_queries = [
@@ -1226,7 +1256,6 @@ def node_action():
             raise InvalidUsage("resources is required for this action")
         if action == constants.NODE_ACTION_SCHEDULE_SEND_REPORT and not report_email:
             raise InvalidUsage("report_email is required for schedule_send_report action")
-
 
     node_action_details_user_activity = deepcopy(node_action_details)
     if node_type == constants.NODE_TYPE_REGISTRY_IMAGE:

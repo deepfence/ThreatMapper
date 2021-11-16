@@ -48,3 +48,4 @@ docker==5.0.3
 kubernetes==19.15.0
 pdfkit==0.6.1
 jsonschema==4.1.2
+networkx==2.6.3
