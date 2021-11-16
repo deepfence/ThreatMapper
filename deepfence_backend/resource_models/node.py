@@ -200,7 +200,7 @@ class Node(object):
             stripped_doc = {k: "NOT_SCANNED" if k == "action" else "" for k in filter_keys}
         return stripped_doc
 
-    def get_attack_path(self):
+    def get_attack_path(self, top_n=5):
         if self.is_ui_vm or self.pseudo:
             return {}
         if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
@@ -218,12 +218,11 @@ class Node(object):
                     digraph.add_node(adj_node_id)
                 digraph.add_edge(node_id, adj_node_id)
         shortest_paths_generator = nx.shortest_simple_paths(digraph, "in-theinternet", self.scope_id)
-        k = 5
         shortest_paths = []
         try:
             for counter, path in enumerate(shortest_paths_generator):
                 shortest_paths.append(path)
-                if counter == k - 1:
+                if counter == top_n - 1:
                     break
         except:
             pass
