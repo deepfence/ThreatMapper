@@ -146,6 +146,35 @@
         .ReactTable {
           padding-top: 10px;
         }
+        .charts-heading {
+          text-align: center;
+          padding: 10px;
+          font-weight: 500;
+        }
+        .charts-container {
+          display: flex;
+
+          .chart-container {
+            width: 50%;
+            padding: 40px;
+            align-items: center;
+            justify-content: center;
+
+            .dagre-graph-container {
+              display: flex;
+              justify-content: center;
+              margin-left: -150px;
+            }
+
+            .empty-data{
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 400px;
+            }
+          }
+        }
+
       }
     }
 

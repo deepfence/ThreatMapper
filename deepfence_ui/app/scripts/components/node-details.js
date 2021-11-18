@@ -10,6 +10,7 @@ import NodeDetailsGenericTable from './node-details/node-details-generic-table';
 import NodeDetailsHealth from './node-details/node-details-health';
 import NodeDetailsInfo from './node-details/node-details-info';
 import NodeDetailsTable from './node-details/node-details-table';
+import { NodeDetailsMostExploitablePathsGraph } from './node-details/node-details-exploitable-paths-graph';
 import CVESeverityChart from './node-details/node-details-cve-severity';
 import Warning from './warning';
 import DonutView from './topology-view/donut-chart-view/donut-view';
@@ -161,8 +162,8 @@ export const NodeDetails = () => {
 
   const metadata = details.metadata
     ? details.metadata.map(el => ({
-        ...el,
-      }))
+      ...el,
+    }))
     : [];
 
   if (topologyId === 'hosts') {
@@ -183,6 +184,7 @@ export const NodeDetails = () => {
     metadata.length > 0 &&
     (isHost || isContainer || isPod || isPodService || isContainerImage);
   const showCVESeverity = isHost || isContainer || isContainerImage;
+  const showTopAttackPaths = isHost || isContainer || isContainerImage;
   if (isHost) {
     details.type = 'host';
   }
@@ -265,6 +267,14 @@ export const NodeDetails = () => {
           topologyType={topologyId}
         />
         {showCVESeverity && details && <CVESeverityChart details={details} />}
+        {showTopAttackPaths && details && <div className="node-details-content-section">
+          <div className="node-details-content-section-header">
+            Top 5 Attack Paths
+          </div>
+          <NodeDetailsMostExploitablePathsGraph
+            details={details}
+          />
+        </div>}
         {details.connections &&
           details.connections
             .filter(cs => cs.connections.length > 0)

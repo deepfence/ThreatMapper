@@ -1,12 +1,14 @@
 /*eslint-disable*/
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import classnames from 'classnames';
 import JSONView from './json-view';
 import KeyValuePairTable from './key-value-pair-table';
 import { getUserRole } from "../../../helpers/auth-helper";
 import { excludeKeys } from '../../../utils/array-utils';
 import HorizontalLoader from '../app-loader/horizontal-dots-loader';
+import { DagreGraph, formatApiDataForDagreGraph } from '../../common/dagre-graph';
+import { getNodeTopAttackPathsAction } from "../../../actions/app-actions";
 
 class Tabs extends React.Component {
   constructor(props) {
@@ -30,29 +32,40 @@ class Tabs extends React.Component {
         _source: {
           resource_type: alertResourceType,
           masked: maskedStr = "false",
+          host,
+          node_type: nodeType,
+          cve_container_image
         } = {},
+        _index
       } = {},
     } = this.props;
 
     const masked = JSON.parse(maskedStr)
 
-    this.setState({showDisableRuleButton: alertResourceType === 'network' && !masked});
-    this.setState({showEnableRuleButton: alertResourceType === 'network' && masked});
-  }
+    this.setState({ showDisableRuleButton: alertResourceType === 'network' && !masked });
+    this.setState({ showEnableRuleButton: alertResourceType === 'network' && masked });
 
-  componentDidUpdate(prevProp) {
-    if (this.props.isDisabled !== prevProp.isDisabled) {
-      this.setState({showDisableRuleButton: !this.props.isDisabled});
-      this.setState({showEnableRuleButton: this.props.isDisabled});
+    if (_index === 'cve' && ['container_image', 'host'].includes(nodeType)) {
+      this.props.dispatch(getNodeTopAttackPathsAction({
+        nodeType,
+        hostName: host,
+        containerImage: cve_container_image
+      }));
     }
   }
-  // this function will be only be called/used when the component is wrapped inside 
+  componentDidUpdate(prevProp) {
+    if (this.props.isDisabled !== prevProp.isDisabled) {
+      this.setState({ showDisableRuleButton: !this.props.isDisabled });
+      this.setState({ showEnableRuleButton: this.props.isDisabled });
+    }
+  }
+  // this function will be only be called/used when the component is wrapped inside
   // onClickOutside HOC(high order component), it is react library which monitors the outside
   // div clicks and performs desired functions.
-  handleClickOutside(e){
+  handleClickOutside(e) {
     this.props.onClickClose();
   };
-  
+
   copyToClipboard() {
     const {
       data: {
@@ -63,8 +76,8 @@ class Tabs extends React.Component {
     navigator.clipboard.writeText(JSON.stringify(doc)).then(() => {
       toaster('JSON copied to clipboard');
     }, (error) => {
-        console.log(error);
-       toaster('ERROR: There was an error copying to the clipboard');
+      console.log(error);
+      toaster('ERROR: There was an error copying to the clipboard');
     });
   }
 
@@ -98,7 +111,7 @@ class Tabs extends React.Component {
       unmaskDocs,
       data: {
         _source: {
-           signature_id,
+          signature_id,
         }
       } = {},
     } = this.props;
@@ -133,12 +146,12 @@ class Tabs extends React.Component {
 
   toggleTabView(e) {
     if (e.target.innerHTML === 'table') {
-      this.setState({isTableViewVisible: true});
-      this.setState({isJSONViewVisible: false});
+      this.setState({ isTableViewVisible: true });
+      this.setState({ isJSONViewVisible: false });
     }
     else {
-      this.setState({isTableViewVisible: false});
-      this.setState({isJSONViewVisible: true});
+      this.setState({ isTableViewVisible: false });
+      this.setState({ isJSONViewVisible: true });
     }
   }
 
@@ -156,15 +169,15 @@ class Tabs extends React.Component {
   }
 
   manipulateTableResponse(responseData) {
-      const userRole = getUserRole();
-      const fieldsToBeHidden = ['type', 'resolved', 'signature_id', '@version', 'cve_overall_score'];
-      if (userRole !== 'admin') {
-        fieldsToBeHidden.push('payload_printable');
-      }
+    const userRole = getUserRole();
+    const fieldsToBeHidden = ['type', 'resolved', 'signature_id', '@version', 'cve_overall_score'];
+    if (userRole !== 'admin') {
+      fieldsToBeHidden.push('payload_printable');
+    }
     const response = {
-        ...responseData,
-        _source: excludeKeys(responseData['_source'], fieldsToBeHidden),
-      };
+      ...responseData,
+      _source: excludeKeys(responseData['_source'], fieldsToBeHidden),
+    };
     return response;
   }
 
@@ -218,27 +231,38 @@ class Tabs extends React.Component {
           resource_type: alertResourceType,
           classtype: classtype,
           masked: maskedStr = "false",
+          node_type: nodeType,
         } = {},
+        _index,
       } = {},
+      topAttackPathsForNode,
+      topAttackPathsForNodeLoading
     } = this.props;
 
     const masked = JSON.parse(maskedStr)
 
     const showGroupButton = !userDefinedClasstype && partial && !["Inbound Connection Anomaly", "Outbound Connection Anomaly", "CPU Anomaly", "Memory Anomaly", "Spike in Outbound Connection", "Spike in Inbound Connection"].includes(classtype);
 
+    const showAttackPath = (_index === 'cve')
+      && ['container_image', 'host'].includes(nodeType)
+      && topAttackPathsForNode
+      && Array.isArray(topAttackPathsForNode)
+      && topAttackPathsForNode.length
+      && !topAttackPathsForNodeLoading;
+
     return (
       <div style={tabsViewWrapper}>
         <ul className="tabs-collection" style={tabCollection}>
           <div>
-          <li className={'tab ' + (this.state.isTableViewVisible ? 'active' : 'in-active')}>
-            <span onClick={this.toggleTabView}>table</span>
-          </li>
-          <li className={'tab ' + (this.state.isJSONViewVisible ? 'active' : 'in-active')}>
-            <span onClick={this.toggleTabView}>json</span>
-          </li>
+            <li className={'tab ' + (this.state.isTableViewVisible ? 'active' : 'in-active')}>
+              <span onClick={this.toggleTabView}>table</span>
+            </li>
+            <li className={'tab ' + (this.state.isJSONViewVisible ? 'active' : 'in-active')}>
+              <span onClick={this.toggleTabView}>json</span>
+            </li>
           </div>
-          <div className="tabs-header-button" style={{display: 'flex'}}>
-          <button
+          <div className="tabs-header-button" style={{ display: 'flex' }}>
+            <button
               className="primary-btn"
               onClick={this.copyToClipboard}
               title="Copy to clipboard"
@@ -263,7 +287,7 @@ class Tabs extends React.Component {
               <i className="fa fa-eye-slash" />
               Disable Alert
               {disableAlertRuleRequestLoading &&
-                  <HorizontalLoader style={{top: '-105%', left: '40%'}}/>}
+                <HorizontalLoader style={{ top: '-105%', left: '40%' }} />}
             </button>}
             {this.state.showEnableRuleButton && <button
               className="primary-btn relative"
@@ -275,18 +299,35 @@ class Tabs extends React.Component {
 
               Enable Alert
               {enableAlertRuleRequestLoading &&
-                  <HorizontalLoader style={{top: '-105%', left: '40%'}}/>}
+                <HorizontalLoader style={{ top: '-105%', left: '40%' }} />}
             </button>}
-            <div className="close-btn" style={{cursor: 'pointer', marginLeft: '10px', marginTop: '8px'}} onClick={this.props.onClickClose}>
-                <i className="fa fa-times" aria-hidden="true" />
-          </div>
+            <div className="close-btn" style={{ cursor: 'pointer', marginLeft: '10px', marginTop: '8px' }} onClick={this.props.onClickClose}>
+              <i className="fa fa-times" aria-hidden="true" />
+            </div>
           </div>
         </ul>
         <div className="timestapmdate">
           {this.props.data._source['summary']}
         </div>
-        <div className="tab-folder">
-          {tabEle}
+        <div>
+          <div className={classnames("tab-folder", {
+            "with-attack-paths": showAttackPath
+          })}>
+            {tabEle}
+          </div>
+          {
+            showAttackPath ? (
+              <div className="vlun-path-container">
+                <div className="vlun-path-graph-title">Top 5 Attack Paths</div>
+                <DagreGraph
+                  data={formatApiDataForDagreGraph(topAttackPathsForNode)}
+                  className="dagre-graph-container"
+                  height={500}
+                />
+              </div>
+            ) : null
+          }
+
         </div>
       </div>
     );
@@ -298,6 +339,8 @@ function mapStateToProps(state) {
     disableAlertRuleRequestLoading: state.getIn(['disable_alert_rule', 'loading']),
     enableAlertRuleRequestLoading: state.getIn(['enable_alert_rule', 'loading']),
     isDisabled: state.getIn(['rule', 'isDisabled']),
+    topAttackPathsForNode: state.getIn(['topAttackPathsForNode', 'data']),
+    topAttackPathsForNodeLoading: state.getIn(['topAttackPathsForNode', 'status', 'loading'])
   };
 }
 export default connect(mapStateToProps)(Tabs);

@@ -4338,7 +4338,24 @@ input {
 
   .tab-folder {
     height: 92%;
-    padding: 0px 38px;
+    padding: 0px 0px 0px 38px;
+    &.with-attack-paths {
+      display: inline-block;
+      width: 60%;
+    }
+  }
+
+  .vlun-path-container {
+    display: inline-block;
+    vertical-align: top;
+    width: 40%;
+    .vlun-path-graph-title {
+      font-weight: 500;
+      color: $white;
+    }
+    .dagre-graph-container {
+      margin-top: 50px;
+    }
   }
 
   .tabs-collection {

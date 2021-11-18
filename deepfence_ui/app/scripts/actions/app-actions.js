@@ -60,6 +60,7 @@ import {
   listRegistryCredentials,
   deleteRegistryCredentials,
   getTopVulnerableActiveContainers,
+  getTopVulnerableAttackPaths,
   getTopVulnerableActiveHosts,
   xlsxReportDownload,
   xlsxScheduleEmail,
@@ -82,6 +83,7 @@ import {
   addMailConfiguration,
   getGlobalSettings,
   addGlobalSettings,
+  getTopAttackPathsForNode
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1371,6 +1373,19 @@ export function getTopVulnerableActiveContainersAction(params) {
   );
 }
 
+export function getTopVulnerableAttackPathsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_REQUEST,
+    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_SUCCESS,
+    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_FAILURE,
+  ];
+  return genericThunkAction(
+    actionTypes,
+    getTopVulnerableAttackPaths,
+    params
+  );
+}
+
 export function getTopVulnerableActiveHostsAction(params) {
   const actionTypes = [
     ActionTypes.GET_TOP_VULNERABLE_HOSTS_REQUEST,
@@ -1379,6 +1394,16 @@ export function getTopVulnerableActiveHostsAction(params) {
   ];
   return genericThunkAction(actionTypes, getTopVulnerableActiveHosts, params);
 }
+
+export function getNodeTopAttackPathsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_TOP_ATTACK_PATHS_PER_NODE_REQUEST,
+    ActionTypes.GET_TOP_ATTACK_PATHS_PER_NODE_SUCCESS,
+    ActionTypes.GET_TOP_ATTACK_PATHS_PER_NODE_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getTopAttackPathsForNode, params);
+}
+
 
 export function saveImageReportTableStateAction({ pageNumber = 0 }) {
   return {
