@@ -34,7 +34,7 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
     const newPath = [];
     path.forEach((node) => {
       newPath.push({
-        id: `${key}::${node}`,
+        id: node,
         label: node
       });
     });
@@ -93,7 +93,7 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
 const layoutCfg = {
   type: "dagre",
   rankdir: "LR",
-  controlPoints: true,
+  controlPoints: false,
   nodesepFunc: () => 1,
   ranksepFunc: () => 10
 };

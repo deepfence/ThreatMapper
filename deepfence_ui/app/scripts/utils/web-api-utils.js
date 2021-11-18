@@ -1729,7 +1729,6 @@ export function startCVEScan(params = {}) {
 export function getTopAttackPathsForNode(params = {}) {
   const { hostName, nodeType, scopeId, containerImage } = params;
   const url = `${backendElasticApiEndPoint()}/node/0/attack_path?node_type=${nodeType ?? ''}&host_name=${hostName ?? ''}&scope_id=${scopeId ?? ''}&container_image=${containerImage ?? ''}`;
-  debugger;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
