@@ -10,7 +10,7 @@ probe_log_level=${LOG_LEVEL:-info}
 # and will set the .env with $CONTAINER_RUNTIME and $CRI_ENDPOINT
 # TODO: Also autodetect the UDP Socket path for runtime
 # ref: https://github.com/deepfence/vessel/blob/main/cmd/vessel/main.go
-/usr/local/bin/vessel
+/usr/local/bin/vessel 2> /dev/null
 
 # Load .env
 if [ -f .env ]
