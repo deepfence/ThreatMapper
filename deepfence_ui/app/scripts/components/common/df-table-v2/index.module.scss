@@ -102,22 +102,25 @@
   display: flex;
   align-items: center;
   background-color: #202020;
+  color: #FFFFFF;
   height: 40px;
 
-  :global(.extra-options) {
-    margin-right: 10px;
-    border-radius: 6px;
-    :global(.primary-btn) {
-      min-width: 50px;
-      background-color: #007FFF;
-      color: #FFFFFF;
-      border-radius: 6px;
-      border: none;
-      padding: 3px 7px;
-    }
+  :global(.fa.active-color) {
+    background-color: #007FFF;
+    color: #FFFFFF;
+  }
+
+  :global(.fa) {
+    font-size: 20px;
+    background-color: #383838;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-right: 6px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 4px;
   }
 }
-
 .actionIcon {
   font-size: 20px;
   background-color: #383838;
