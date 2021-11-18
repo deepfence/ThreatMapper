@@ -76,11 +76,11 @@ spec:
               value: "{{ .Values.instanceIdSuffix }}"
             - name: DF_CLUSTER_NAME
               value: "{{ .Values.clusterName }}"
-            {{- if .Values.clusterName }}
             - name: AGENT_HOSTNAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            {{- if .Values.clusterName }}
             - name: SCOPE_HOSTNAME
               value: "{{ .Values.clusterName }}-$(AGENT_HOSTNAME)"
             {{- else }}

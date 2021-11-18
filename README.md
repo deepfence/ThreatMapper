@@ -5,6 +5,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
 [![GitHub wiki](https://img.shields.io/badge/documentation-read-green)](https://github.com/deepfence/ThreatMapper/wiki)
 [![Demo](https://img.shields.io/badge/threatmapper-demo-brightgreen)](https://github.com/deepfence/ThreatMapper/wiki/ThreatMapper-Demo)
+[![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
@@ -169,12 +170,12 @@ helm show values deepfence/deepfence-agent
 # helm v2
 helm install deepfence/deepfence-agent \
     --name=deepfence-agent \
-    --set managementConsoleIp=---CONSOLE-IP--- \
+    --set managementConsoleUrl=---CONSOLE-IP--- \
     --set deepfenceKey=---DEEPFENCE-API-KEY---
 
 # helm v3
 helm install deepfence-agent deepfence/deepfence-agent \
-    --set managementConsoleIp=---CONSOLE-IP--- \
+    --set managementConsoleUrl=---CONSOLE-IP--- \
     --set deepfenceKey=---DEEPFENCE-API-KEY---
 ```
 
