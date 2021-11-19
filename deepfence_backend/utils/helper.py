@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 from functools import reduce
 from jira import JIRA, JIRAError
-from collections import defaultdict, OrderedDict
+import urllib.parse
 from utils.archival_and_compression import extract_archive
 from utils.custom_exception import DFError
 from datetime import datetime
@@ -204,7 +204,7 @@ def get_process_ids_for_pod(pod_scope_id):
     """
     process_ids = []
     pod_node_details = get_node_details_for_scope_id(
-        [(TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE.get(NODE_TYPE_POD), pod_scope_id)])
+        [(TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE.get(NODE_TYPE_POD), urllib.parse.quote_plus(pod_scope_id))])
     if not pod_node_details:
         return process_ids
     pod_children_details = pod_node_details[0].get(

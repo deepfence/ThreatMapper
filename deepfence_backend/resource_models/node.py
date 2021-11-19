@@ -13,6 +13,7 @@ from config.redisconfig import redis
 from datetime import datetime
 import time
 import networkx as nx
+import urllib.parse
 
 
 class Node(object):
@@ -89,19 +90,22 @@ class Node(object):
 
     def get_detailed_info(self):
         return get_node_details_for_scope_id(
-            [(constants.TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE.get(self.type), self.scope_id)])
+            [(constants.TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE.get(self.type), urllib.parse.quote_plus(self.scope_id))])
 
     def get_live_open_ports(self):
         node_details = self.get_detailed_info()
         ports = []
-        if node_details:
-            for conn_info in node_details[0]["node"].get("connections", []):
-                if conn_info["id"] == "incoming-connections":
-                    for conn in conn_info.get("connections", []):
-                        for conn_metadata in conn["metadata"]:
-                            if conn_metadata["id"] == "port":
-                                ports.append(conn_metadata["value"])
-                                break
+        if node_details and node_details[0]:
+            try:
+                for conn_info in node_details[0]["node"].get("connections", []):
+                    if conn_info["id"] == "incoming-connections":
+                        for conn in conn_info.get("connections", []):
+                            for conn_metadata in conn["metadata"]:
+                                if conn_metadata["id"] == "port":
+                                    ports.append(conn_metadata["value"])
+                                    break
+            except:
+                pass
         return ports
 
     def cve_scan_start(self, scan_types, mask_cve_ids=""):
