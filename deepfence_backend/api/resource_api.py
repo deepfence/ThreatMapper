@@ -700,16 +700,7 @@ def cve_status(node_id):
 @jwt_required
 def get_attack_path(node_id):
     try:
-        scope_id = request.args.get("scope_id", None)
-        node_type = request.args.get("node_type", None)
-        if node_type and not scope_id:
-            if node_type == constants.NODE_TYPE_HOST:
-                scope_id = request.args.get("host_name", "") + ";<" + constants.NODE_TYPE_HOST + ">"
-            elif node_type == constants.NODE_TYPE_CONTAINER:
-                scope_id = request.args.get("container", "") + ";<" + constants.NODE_TYPE_CONTAINER + ">"
-            elif node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
-                scope_id = request.args.get("container_image", "") + ";<" + constants.NODE_TYPE_CONTAINER_IMAGE + ">"
-        node = Node.get_node(node_id, scope_id, node_type)
+        node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
         if not node:
             raise InvalidUsage("Node not found")
         if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or \
