@@ -33,9 +33,9 @@ class Tabs extends React.Component {
           resource_type: alertResourceType,
           masked: maskedStr = "false",
           node_type: nodeType,
-          doc_id: docId
+          doc_id: docId,
+          type
         } = {},
-        _index
       } = {},
     } = this.props;
 
@@ -44,7 +44,7 @@ class Tabs extends React.Component {
     this.setState({ showDisableRuleButton: alertResourceType === 'network' && !masked });
     this.setState({ showEnableRuleButton: alertResourceType === 'network' && masked });
 
-    if (_index === 'cve' && ['container_image', 'host'].includes(nodeType)) {
+    if (type === 'cve' && ['container_image', 'host'].includes(nodeType)) {
       this.props.dispatch(getDocTopAttackPathsAction({
         docId
       }));
@@ -229,8 +229,8 @@ class Tabs extends React.Component {
           classtype: classtype,
           masked: maskedStr = "false",
           node_type: nodeType,
+          type
         } = {},
-        _index,
       } = {},
       topAttackPathsForDoc,
       topAttackPathsForDocLoading
@@ -240,7 +240,7 @@ class Tabs extends React.Component {
 
     const showGroupButton = !userDefinedClasstype && partial && !["Inbound Connection Anomaly", "Outbound Connection Anomaly", "CPU Anomaly", "Memory Anomaly", "Spike in Outbound Connection", "Spike in Inbound Connection"].includes(classtype);
 
-    const showAttackPath = (_index === 'cve')
+    const showAttackPath = (type === 'cve')
       && ['container_image', 'host'].includes(nodeType)
       && topAttackPathsForDoc
       && topAttackPathsForDoc.attack_path
