@@ -8,7 +8,7 @@ import { getUserRole } from "../../../helpers/auth-helper";
 import { excludeKeys } from '../../../utils/array-utils';
 import HorizontalLoader from '../app-loader/horizontal-dots-loader';
 import { DagreGraph, formatApiDataForDagreGraph } from '../../common/dagre-graph';
-import { getNodeTopAttackPathsAction } from "../../../actions/app-actions";
+import { getDocTopAttackPathsAction } from "../../../actions/app-actions";
 
 class Tabs extends React.Component {
   constructor(props) {
@@ -32,9 +32,8 @@ class Tabs extends React.Component {
         _source: {
           resource_type: alertResourceType,
           masked: maskedStr = "false",
-          host,
           node_type: nodeType,
-          cve_container_image
+          doc_id: docId
         } = {},
         _index
       } = {},
@@ -46,10 +45,8 @@ class Tabs extends React.Component {
     this.setState({ showEnableRuleButton: alertResourceType === 'network' && masked });
 
     if (_index === 'cve' && ['container_image', 'host'].includes(nodeType)) {
-      this.props.dispatch(getNodeTopAttackPathsAction({
-        nodeType,
-        hostName: host,
-        containerImage: cve_container_image
+      this.props.dispatch(getDocTopAttackPathsAction({
+        docId
       }));
     }
   }
@@ -235,8 +232,8 @@ class Tabs extends React.Component {
         } = {},
         _index,
       } = {},
-      topAttackPathsForNode,
-      topAttackPathsForNodeLoading
+      topAttackPathsForDoc,
+      topAttackPathsForDocLoading
     } = this.props;
 
     const masked = JSON.parse(maskedStr)
@@ -245,11 +242,10 @@ class Tabs extends React.Component {
 
     const showAttackPath = (_index === 'cve')
       && ['container_image', 'host'].includes(nodeType)
-      && topAttackPathsForNode
-      && Array.isArray(topAttackPathsForNode)
-      && topAttackPathsForNode.length
-      && !topAttackPathsForNodeLoading;
-
+      && topAttackPathsForDoc
+      && topAttackPathsForDoc.attack_path
+      && topAttackPathsForDoc.attack_path.length
+      && !topAttackPathsForDocLoading;
     return (
       <div style={tabsViewWrapper}>
         <ul className="tabs-collection" style={tabCollection}>
@@ -320,7 +316,7 @@ class Tabs extends React.Component {
               <div className="vlun-path-container">
                 <div className="vlun-path-graph-title">Top 5 Attack Paths</div>
                 <DagreGraph
-                  data={formatApiDataForDagreGraph(topAttackPathsForNode)}
+                  data={formatApiDataForDagreGraph(topAttackPathsForDoc)}
                   height={500}
                 />
               </div>
@@ -338,8 +334,8 @@ function mapStateToProps(state) {
     disableAlertRuleRequestLoading: state.getIn(['disable_alert_rule', 'loading']),
     enableAlertRuleRequestLoading: state.getIn(['enable_alert_rule', 'loading']),
     isDisabled: state.getIn(['rule', 'isDisabled']),
-    topAttackPathsForNode: state.getIn(['topAttackPathsForNode', 'data']),
-    topAttackPathsForNodeLoading: state.getIn(['topAttackPathsForNode', 'status', 'loading'])
+    topAttackPathsForDoc: state.getIn(['topAttackPathsForDoc', 'data']),
+    topAttackPathsForDocLoading: state.getIn(['topAttackPathsForDoc', 'status', 'loading'])
   };
 }
 export default connect(mapStateToProps)(Tabs);

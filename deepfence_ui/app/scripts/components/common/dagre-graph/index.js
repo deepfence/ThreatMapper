@@ -12,90 +12,107 @@ function fitLabel(label) {
 
 /* Api response could be containing multiple different end nodes
  * depending upon the api call made.
- * one example where there is a single start and end node is below
- *
- * [
- *  ['in-theinternet', 'ramanan-oss-console'],
- *  ['in-theinternet', "ramanan-agent", 'ramanan-oss-console'],
- * ]
- *
- * another example is
- *
- * [
- *  ['in-theinternet', 'ramanan-oss-console'],
- *  ['in-theinternet', "ramanan-agent", 'ramanan-oss-console'],
- *  ['in-theinternet', 'ramanan-agent-2'],
- *  ['in-theinternet', "ramanan-agent", 'ramanan-oss-agent-2'],
- * ]
- *
  * we also want to highlight first edge since that would be the shortest
  */
 export const formatApiDataForDagreGraph = (apiResponse) => {
-
-  const pathsBetweenSameNodes = new Map();
-  apiResponse.forEach((path) => {
-    const len = path.length;
-    const key = `${path[0]}<->${path[len - 1]}`;
-    const newPath = [];
-    path.forEach((node) => {
-      newPath.push({
-        id: node,
-        label: node
-      });
-    });
-    if (pathsBetweenSameNodes.has(key)) {
-      pathsBetweenSameNodes.get(key).push(newPath);
-    } else {
-      pathsBetweenSameNodes.set(key, [newPath]);
-    }
-  });
-
-  const edgesData = new Map();
-  const nodesData = new Map();
-
-  [...pathsBetweenSameNodes.values()].forEach((paths) => {
-    paths.forEach((path, pathIndex) => {
-      const isShortest = pathIndex === 0;
-      path.forEach((node, nodeIndex) => {
-        if (!nodesData.has(node.id)) {
-          const truncLabel = fitLabel(node.label)
-          nodesData.set(node.id, {
-            id: node.id,
-            label: truncLabel,
-            oriLabel: node.label,
-            truncLabel,
-            style: nodeIndex === path.length - 1 ? {
-              fill: '#ff4570'
-            } : undefined
+  if (!Array.isArray(apiResponse)) {
+    apiResponse = [apiResponse];
+  }
+  const nodesMap = new Map();
+  const edgesMap = new Map();
+  apiResponse.forEach((attackPathsInfo) => {
+    const { attack_path: attackPathsBetweenNodes, ...rest } = attackPathsInfo;
+    if (!attackPathsBetweenNodes.length) return;
+    attackPathsBetweenNodes.forEach((attackPath) => {
+      attackPath.forEach((attackNode, index) => {
+        let nodeProps = {};
+        if (index === attackPath.length - 1) {
+          nodeProps = {
+            ...rest,
+            style: { fill: '#ff4570' }
+          }
+        }
+        if (nodesMap.has(attackNode)) {
+          nodesMap.set(attackNode, {
+            ...nodesMap.get(attackNode),
+            ...nodeProps
+          })
+        } else {
+          const truncatedLabel = fitLabel(attackNode);
+          nodesMap.set(attackNode, {
+            id: attackNode,
+            label: truncatedLabel,
+            truncatedLabel,
+            originalLabel: attackNode,
+            ...nodeProps
           });
         }
-        if (nodeIndex === 0) return;
-        const edgeKey = `${path[nodeIndex - 1].id}<->${node.id}`;
-        const existingEdge = edgesData.get(edgeKey);
-        if (!existingEdge) {
-          edgesData.set(edgeKey, {
-            source: path[nodeIndex - 1].id,
-            target: node.id,
-            style: isShortest ? {
-              stroke: '#ff4570'
-            } : undefined,
+
+        if (index === 0) return;
+
+        const lastNode = attackPath[index - 1];
+        const edgeKey = `${lastNode}<-->${attackNode}`;
+
+        const edgesProps = {};
+        if (rest.cve_attack_vector === 'network') {
+          edgesProps.style = { stroke: '#ff4570' };
+        }
+
+        if (edgesMap.has(edgeKey)) {
+          edgesMap.set(edgeKey, {
+            ...edgesMap.get(edgeKey),
+            ...edgesProps
           });
-        } else if (existingEdge && isShortest) {
-          edgesData.set(edgeKey, {
-            ...existingEdge,
-            style: {
-              stroke: '#ff4570'
-            }
+        } else {
+          edgesMap.set(edgeKey, {
+            source: lastNode,
+            target: attackNode,
+            ...edgesProps
           });
         }
       });
     });
   });
   return {
-    nodes: [...nodesData.values()],
-    edges: [...edgesData.values()]
-  };
+    nodes: [...nodesMap.values()],
+    edges: [...edgesMap.values()]
+  }
 };
+
+function getTooltipContent(node) {
+  if (node.cve_attack_vector) {
+    const hr = `<div style="border-bottom: 1px solid white;margin: 8px 0px;"></div>`
+
+    return `
+      <div style="max-width: 250px">
+        <strong style="overflow-wrap: break-word;">${node.originalLabel}</strong>
+        ${hr}
+        <div>
+          <strong>Attack Vector</strong>
+          <div>
+            ${node.cve_attack_vector}
+          </div>
+        </div>
+        ${hr}
+        <div>
+          <strong>CVEs</strong>
+          <div>
+          ${node.cve_id.length ? node.cve_id.join('<br />') : 'None'}
+          </div>
+        </div>
+        ${hr}
+        <div>
+          <strong>PORTS</strong>
+          <div>
+            ${node.ports?.length ? node.ports.join(', ') : 'None'}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return `<strong>${node.originalLabel}</strong>`;
+}
 
 const labelCfg = {
   position: "bottom",
@@ -121,12 +138,13 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
           const nodeType = e.item.getType();
           const outDiv = document.createElement('div');
           if (nodeType === 'node') {
-            outDiv.innerHTML = e.item.getModel().oriLabel;
+            const model = e.item.getModel();
+            outDiv.innerHTML = getTooltipContent(model);
             return outDiv
           }
         },
         itemTypes: ['node'],
-        className: 'dagre-node-tooltip'
+        className: 'dagre-node-tooltip',
       });
 
       const graph = new G6.Graph({
@@ -179,12 +197,13 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
 
   useEffect(() => {
     if (graphRef.current && initialData !== data) {
-      graphRef.current.changeData(data);
+      graphRef.current.data(data);
+      graphRef.current.render();
     }
   }, [data]);
 
   return (
-    <div style={{ position: 'relative' }} className={styles.dagreGraphContainer}>
+    <div style={{ position: 'relative', textAlign: 'left' }} className={styles.dagreGraphContainer}>
       <div style={style} className={className} ref={ref} />
     </div>
   );

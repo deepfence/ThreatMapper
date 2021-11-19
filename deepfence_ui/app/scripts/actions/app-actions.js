@@ -1404,6 +1404,15 @@ export function getNodeTopAttackPathsAction(params) {
   return genericThunkAction(actionTypes, getTopAttackPathsForNode, params);
 }
 
+export function getDocTopAttackPathsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_REQUEST,
+    ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_SUCCESS,
+    ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getTopVulnerableAttackPaths, params);
+}
+
 
 export function saveImageReportTableStateAction({ pageNumber = 0 }) {
   return {

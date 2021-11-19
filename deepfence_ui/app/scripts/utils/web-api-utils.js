@@ -1887,10 +1887,10 @@ export function getTopVulnerableActiveContainers(params = {}) {
 }
 
 export function getTopVulnerableAttackPaths(params = {}) {
-  const { number, timeUnit, luceneQuery = [] } = params;
+  const { number, timeUnit, luceneQuery = [], docId } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
 
-  const url = `${backendElasticApiEndPoint()}/vulnerabilities/attack_path?number=${number}&time_unit=${timeUnit}&lucene_query=${luceneQueryEscaped}`;
+  const url = `${backendElasticApiEndPoint()}/vulnerabilities/attack_path?number=${number}&time_unit=${timeUnit}&doc_id=${docId ?? ''}&lucene_query=${luceneQueryEscaped}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',

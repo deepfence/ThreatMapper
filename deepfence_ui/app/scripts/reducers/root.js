@@ -1426,6 +1426,25 @@ export function rootReducer(state = initialState, action) {
         'Your request to get top attack paths failed.');
     }
 
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_REQUEST: {
+      return state.setIn(['topAttackPathsForDoc', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['topAttackPathsForDoc', 'status', 'loading'], false);
+      return state.setIn(['topAttackPathsForDoc', 'data'], data);
+    }
+
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_FAILURE: {
+      state = state.setIn(['topAttackPathsForDoc', 'status', 'loading'], false);
+      state = state.setIn(['topAttackPathsForDoc', 'data'], null);
+      return state.setIn(['topAttackPathsForDoc', 'status', 'error'],
+        'Your request to get top attack paths failed.');
+    }
+
     case ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_REQUEST: {
       return state.setIn(['topAttackPaths', 'status', 'loading'], true);
     }
