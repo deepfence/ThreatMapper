@@ -268,7 +268,7 @@ class Node(object):
         shortest_paths = []
         try:
             for counter, path in enumerate(shortest_paths_generator):
-                shortest_paths.append([str(i).split(";")[0] for i in path])
+                shortest_paths.append([topology_nodes[i]["label"] for i in path])
                 if counter == top_n - 1:
                     break
         except:
