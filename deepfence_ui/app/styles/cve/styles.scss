@@ -160,18 +160,16 @@
             align-items: center;
             justify-content: center;
 
-            .dagre-graph-container {
-              display: flex;
-              justify-content: center;
-              margin-left: -150px;
-            }
-
             .empty-data{
               display: flex;
               justify-content: center;
               align-items: center;
               min-height: 400px;
             }
+          }
+
+          .dagre-chart-container {
+            padding-left: 140px;
           }
         }
 

@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { DagreGraph as AntVDagreGraph } from '@ant-design/charts';
 import G6 from "@antv/g6";
+import styles from './index.module.scss';
 
+
+function fitLabel(label) {
+  if (label.length >= 15) {
+    return `${label.substring(0, 15)}...`;
+  }
+  return label;
+}
 
 /* Api response could be containing multiple different end nodes
  * depending upon the api call made.
@@ -20,8 +27,6 @@ import G6 from "@antv/g6";
  *  ['in-theinternet', 'ramanan-agent-2'],
  *  ['in-theinternet', "ramanan-agent", 'ramanan-oss-agent-2'],
  * ]
- *
- * in this last case we need to draw multiple graphs
  *
  * we also want to highlight first edge since that would be the shortest
  */
@@ -53,9 +58,12 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
       const isShortest = pathIndex === 0;
       path.forEach((node, nodeIndex) => {
         if (!nodesData.has(node.id)) {
+          const truncLabel = fitLabel(node.label)
           nodesData.set(node.id, {
             id: node.id,
-            label: node.label,
+            label: truncLabel,
+            oriLabel: node.label,
+            truncLabel,
             style: nodeIndex === path.length - 1 ? {
               fill: '#ff4570'
             } : undefined
@@ -89,34 +97,7 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
   };
 };
 
-
-const layoutCfg = {
-  type: "dagre",
-  rankdir: "LR",
-  controlPoints: false,
-  nodesepFunc: () => 1,
-  ranksepFunc: () => 10
-};
-
-const nodeStyle = {
-  stroke: 'white',
-  fill: '#0079f2',
-  lineWidth: 1,
-};
-
-const edgeStyle = {
-  stroke: '#55c1e9',
-  lineWidth: 1,
-  opacity: 0.5,
-  endArrow: {
-    path: G6.Arrow.triangle(3, 5, 0),
-    fill: "#E6E6FA",
-    stroke: "#E6E6FA",
-  },
-  radius: 15
-};
-
-const nodeLabelCfg = {
+const labelCfg = {
   position: "bottom",
   offset: 5,
   style: {
@@ -128,42 +109,84 @@ const nodeLabelCfg = {
   },
 };
 
-const nodeAnchorPoints = [
-  [0, 0.5],
-  [1, 0.5],
-];
-
 export const DagreGraph = ({ data, height, width, style, className }) => {
-  const ref = useRef();
+  const ref = useRef(null);
+  const graphRef = useRef(null)
+
+  useEffect(() => {
+    if (!graphRef.current) {
+
+      const tooltip = new G6.Tooltip({
+        getContent(e) {
+          const nodeType = e.item.getType();
+          const outDiv = document.createElement('div');
+          if (nodeType === 'node') {
+            outDiv.innerHTML = e.item.getModel().oriLabel;
+            return outDiv
+          }
+        },
+        itemTypes: ['node'],
+        className: 'dagre-node-tooltip'
+      });
+
+      const graph = new G6.Graph({
+        container: ref.current,
+        width: width ?? 400,
+        height: height ?? 400,
+        fitView: true,
+        layout: {
+          type: "dagre",
+          rankdir: "LR",
+          controlPoints: true,
+          nodesepFunc: () => 1,
+          ranksepFunc: () => 1,
+        },
+        modes: {
+          default: [],
+        },
+        plugins: [tooltip],
+        defaultNode: {
+          type: 'circle',
+          size: 15,
+          style: {
+            stroke: 'white',
+            fill: '#0079f2',
+            lineWidth: 1,
+          },
+          labelCfg,
+        },
+        defaultEdge: {
+          type: 'line',
+          style: {
+            stroke: '#55c1e9',
+            lineWidth: 1,
+            opacity: 0.5,
+            endArrow: {
+              path: G6.Arrow.triangle(3, 5, 0),
+              fill: "#E6E6FA",
+              stroke: "#E6E6FA",
+            },
+          },
+        },
+      });
+
+      graph.read(data);
+      graphRef.current = graph;
+    }
+  }, []);
 
   const [initialData] = useState(data);
 
   useEffect(() => {
-    if (ref.current && initialData !== data) {
-      ref.current.read(data);
+    if (graphRef.current && initialData !== data) {
+      graphRef.current.changeData(data);
     }
   }, [data]);
 
   return (
-    <AntVDagreGraph
-      autoFit
-      graphRef={ref}
-      data={initialData}
-      height={height}
-      width={width}
-      style={style}
-      className={className}
-      nodeType="circle"
-      nodeStyle={nodeStyle}
-      nodeStateStyles={{}}
-      edgeType="polyline"
-      edgeStyle={edgeStyle}
-      edgeStateStyles={{}}
-      nodeAnchorPoints={nodeAnchorPoints}
-      nodeLabelCfg={nodeLabelCfg}
-      layout={layoutCfg}
-      nodeSize={15}
-      behaviors={[]}
-    />
+    <div style={{ position: 'relative' }} className={styles.dagreGraphContainer}>
+      <div style={style} className={className} ref={ref} />
+    </div>
   );
-}
+
+};

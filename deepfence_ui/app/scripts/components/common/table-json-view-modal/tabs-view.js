@@ -321,7 +321,6 @@ class Tabs extends React.Component {
                 <div className="vlun-path-graph-title">Top 5 Attack Paths</div>
                 <DagreGraph
                   data={formatApiDataForDagreGraph(topAttackPathsForNode)}
-                  className="dagre-graph-container"
                   height={500}
                 />
               </div>

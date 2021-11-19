@@ -1,0 +1,9 @@
+
+.dagreGraphContainer {
+  :global(.dagre-node-tooltip) {
+    color: #EEEEEE;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background-color: #333333;
+  }
+}
