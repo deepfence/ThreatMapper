@@ -2,7 +2,7 @@ from utils.node_utils import NodeUtils
 from utils import resource as resource_util
 from utils import constants
 from utils.helper import websocketio_channel_name_format, call_scope_control_api, async_http_post, \
-    get_host_name_probe_id_map
+    get_host_name_probe_id_map, get_node_details_for_scope_id, is_network_attack_vector
 from utils.esconn import ESConn
 from utils.custom_exception import DFError, InternalError, InvalidUsage
 import json
@@ -86,6 +86,23 @@ class Node(object):
         else:
             self.kube_service_name = ""
         self.probe_id = resource_util.get_probe_id_for_host(self.host_name)
+
+    def get_detailed_info(self):
+        return get_node_details_for_scope_id(
+            [(constants.TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE.get(self.type), self.scope_id)])
+
+    def get_live_open_ports(self):
+        node_details = self.get_detailed_info()
+        ports = []
+        if node_details:
+            for conn_info in node_details[0]["node"].get("connections", []):
+                if conn_info["id"] == "incoming-connections":
+                    for conn in conn_info.get("connections", []):
+                        for conn_metadata in conn["metadata"]:
+                            if conn_metadata["id"] == "port":
+                                ports.append(conn_metadata["value"])
+                                break
+        return ports
 
     def cve_scan_start(self, scan_types, mask_cve_ids=""):
         if self.is_ui_vm or self.pseudo:
@@ -201,6 +218,7 @@ class Node(object):
         return stripped_doc
 
     def get_attack_path(self, top_n=5):
+        severity_map = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
         if self.is_ui_vm or self.pseudo:
             return {}
         if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
@@ -209,6 +227,35 @@ class Node(object):
         cve_scan_doc = self.get_latest_cve_scan_doc()
         if not cve_scan_doc:
             return {}
+        vulnerabilities = ESConn.search_by_and_clause(
+            constants.CVE_INDEX, {'scan_id': cve_scan_doc["scan_id"], 'masked': 'false'}, 0, "desc",
+            size=constants.ES_TERMS_AGGR_SIZE)
+        if not vulnerabilities:
+            return {}
+        cve_attack_vector = "local"
+        top_cve_ids = []
+        for vulnerability in vulnerabilities.get("hits", []):
+            cve_details = {
+                "cve_id": vulnerability.get("_source", {}).get("cve_id"),
+                "cve_severity": severity_map.get(vulnerability.get("_source", {}).get("cve_severity"))
+            }
+            if is_network_attack_vector(vulnerability.get("_source", {}).get("cve_attack_vector")):
+                cve_attack_vector = "network"
+                cve_details["attack_vector"] = 0
+            else:
+                cve_details["attack_vector"] = 1
+            top_cve_ids.append(cve_details)
+        top_cve_ids = [i["cve_id"] for i in
+                       sorted(top_cve_ids, key=lambda k: (k['attack_vector'], k['cve_severity']))[:3]]
+        response = {
+            "cve_attack_vector": cve_attack_vector,
+            "attack_path": self.get_attack_path_for_node(top_n=top_n),
+            "ports": self.get_live_open_ports(),
+            "cve_id": top_cve_ids
+        }
+        return response
+
+    def get_attack_path_for_node(self, top_n=5):
         topology_nodes = fetch_topology_data(self.type, format="scope")
         digraph = nx.DiGraph()
         for node_id, node_details in topology_nodes.items():

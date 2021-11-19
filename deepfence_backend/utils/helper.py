@@ -298,6 +298,15 @@ def get_random_string(length):
     return ''.join(random.choice(letters) for i in range(length))
 
 
+def is_network_attack_vector(attack_vector):
+    if "AV:N" in attack_vector:
+        return True
+    elif attack_vector == "NETWORK":
+        return True
+    elif attack_vector == "N":
+        return True
+    return False
+
 def websocketio_channel_name_format(node_type):
     node_type_split = node_type.split("?")
     node_type = node_type_split[0]
