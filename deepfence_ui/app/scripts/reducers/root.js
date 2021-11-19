@@ -1039,7 +1039,7 @@ export function rootReducer(state = initialState, action) {
         }
         if (
           notification.source_application_id
-            === 'integration_if_any_failure_notification'
+          === 'integration_if_any_failure_notification'
           && notification.content.includes('failing')
         ) {
           return {
@@ -1049,7 +1049,7 @@ export function rootReducer(state = initialState, action) {
         }
         if (
           notification.source_application_id
-            === 'integration_if_any_failure_notification'
+          === 'integration_if_any_failure_notification'
           && notification.content.includes('okay')
         ) {
           return {
@@ -1088,7 +1088,7 @@ export function rootReducer(state = initialState, action) {
       state = state.set('policyViewList', action.payload);
       return state;
     }
-    
+
     case ActionTypes.GET_REPORT_FILTER_OPTIONS_SUCCESS: {
       const { payload: { data = {} } = {} } = action;
       state = state.set('report_filter_options', data);
@@ -1209,7 +1209,7 @@ export function rootReducer(state = initialState, action) {
     case ActionTypes.SET_INTEGRATION_NAME: {
       return state.set('integrationName', action.payload);
     }
-   
+
     case ActionTypes.PDF_REPORT_GENERATE_REQUEST: {
       state = state.setIn(['pdfReportForm', 'form', 'loading'], true);
       state = state.deleteIn(['pdfReportForm', 'form', 'error', 'message']);
@@ -1405,6 +1405,63 @@ export function rootReducer(state = initialState, action) {
       return state.update('topologyFilters', filters => filters.filterNot(
         filter => filterId(filter) === filterId(action.filter)
       ));
+    }
+
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_NODE_REQUEST: {
+      return state.setIn(['topAttackPathsForNode', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_NODE_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['topAttackPathsForNode', 'status', 'loading'], false);
+      return state.setIn(['topAttackPathsForNode', 'data'], data);
+    }
+
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_NODE_FAILURE: {
+      state = state.setIn(['topAttackPathsForNode', 'status', 'loading'], false);
+      state = state.setIn(['topAttackPathsForNode', 'data'], null);
+      return state.setIn(['topAttackPathsForNode', 'status', 'error'],
+        'Your request to get top attack paths failed.');
+    }
+
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_REQUEST: {
+      return state.setIn(['topAttackPathsForDoc', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['topAttackPathsForDoc', 'status', 'loading'], false);
+      return state.setIn(['topAttackPathsForDoc', 'data'], data);
+    }
+
+    case ActionTypes.GET_TOP_ATTACK_PATHS_PER_DOC_FAILURE: {
+      state = state.setIn(['topAttackPathsForDoc', 'status', 'loading'], false);
+      state = state.setIn(['topAttackPathsForDoc', 'data'], null);
+      return state.setIn(['topAttackPathsForDoc', 'status', 'error'],
+        'Your request to get top attack paths failed.');
+    }
+
+    case ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_REQUEST: {
+      return state.setIn(['topAttackPaths', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['topAttackPaths', 'status', 'loading'], false);
+      return state.setIn(['topAttackPaths', 'data'], data);
+    }
+
+    case ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_FAILURE: {
+      state = state.setIn(['topAttackPaths', 'status', 'loading'], false);
+      state = state.setIn(['topAttackPaths', 'data'], null);
+      return state.setIn(['topAttackPaths', 'status', 'error'],
+        'Your request to get top attack paths failed.');
     }
 
     default: {

@@ -1726,6 +1726,19 @@ export function startCVEScan(params = {}) {
   }).then(errorHandler);
 }
 
+export function getTopAttackPathsForNode(params = {}) {
+  const { hostName, nodeType, scopeId, containerImage } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/attack_path?node_type=${nodeType ?? ''}&host_name=${hostName ?? ''}&scope_id=${scopeId ?? ''}&container_image=${containerImage ?? ''}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function getNodeTags() {
   const url = `${backendElasticApiEndPoint()}/node_tags`;
   return fetch(url, {
@@ -1872,6 +1885,22 @@ export function getTopVulnerableActiveContainers(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function getTopVulnerableAttackPaths(params = {}) {
+  const { number, timeUnit, luceneQuery = [], docId } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  const url = `${backendElasticApiEndPoint()}/vulnerabilities/attack_path?number=${number}&time_unit=${timeUnit}&doc_id=${docId ?? ''}&lucene_query=${luceneQueryEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 
 export function getTopVulnerableActiveHosts(params = {}) {
   const { number, timeUnit, luceneQuery = [] } = params;

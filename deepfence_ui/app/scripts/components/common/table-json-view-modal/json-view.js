@@ -31,6 +31,7 @@ class JSONView extends React.Component {
           indentWidth={3}
           collapseStringsAfterLength={100}
           theme="colors"
+          style={{backgroundColor: '#141414'}}
         />
       </div>
     );
