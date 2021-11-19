@@ -249,13 +249,13 @@ class Node(object):
                        sorted(top_cve_ids, key=lambda k: (k['attack_vector'], k['cve_severity']))[:3]]
         response = {
             "cve_attack_vector": cve_attack_vector,
-            "attack_path": self.get_attack_path_helper(top_n=top_n),
+            "attack_path": self.get_attack_path_for_node(top_n=top_n),
             "ports": self.get_live_open_ports(),
             "cve_id": top_cve_ids
         }
         return response
 
-    def get_attack_path_helper(self, top_n=5):
+    def get_attack_path_for_node(self, top_n=5):
         topology_nodes = fetch_topology_data(self.type, format="scope")
         digraph = nx.DiGraph()
         for node_id, node_details in topology_nodes.items():
