@@ -1359,7 +1359,7 @@ class IntegrationView(MethodView):
         else:
             for notif in user.vulnerability_notifications:
                 response[notif.integration.integration_type].append(notif.pretty_print())
-            for notif in user.user_activity_notifications:
+            for notif in user.user_activity_notification:
                 response[notif.integration.integration_type].append(notif.pretty_print())
 
         for integration_type, notifications in response.items():
