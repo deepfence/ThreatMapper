@@ -242,10 +242,12 @@ class Tabs extends React.Component {
 
     const showAttackPath = (type === 'cve')
       && ['container_image', 'host'].includes(nodeType)
-      && topAttackPathsForDoc
+      && !topAttackPathsForDocLoading;
+    const attackPathDataExist =
+      topAttackPathsForDoc
       && topAttackPathsForDoc.attack_path
       && topAttackPathsForDoc.attack_path.length
-      && !topAttackPathsForDocLoading;
+
     return (
       <div style={tabsViewWrapper}>
         <ul className="tabs-collection" style={tabCollection}>
@@ -315,10 +317,16 @@ class Tabs extends React.Component {
             showAttackPath ? (
               <div className="vlun-path-container">
                 <div className="vlun-path-graph-title">Top 5 Attack Paths</div>
-                <DagreGraph
-                  data={formatApiDataForDagreGraph(topAttackPathsForDoc)}
-                  height={500}
-                />
+                {
+                  attackPathDataExist ? (
+                    <DagreGraph
+                      data={formatApiDataForDagreGraph(topAttackPathsForDoc)}
+                      height={500}
+                    />
+                  ) : (
+                    <div className="vlun-path-no-data">No attack paths exist</div>
+                  )
+                }
               </div>
             ) : null
           }
