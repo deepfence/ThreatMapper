@@ -151,7 +151,7 @@ const withIntegrationForm = WrappedComponent => {
             childValues.length - 2 === filledValues.length;
         }
       }
-      if (childPayload.integration_type === 'http_endpoint') {
+      if (childPayload.integration_type === 'http_endpoint' || childPayload.integration_type === 'google_chronicle') {
         if (!childPayload.authorizationKey) {
           childFormComplete =
             childValues.length !== 0 &&

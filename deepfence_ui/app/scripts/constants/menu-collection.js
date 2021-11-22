@@ -8,6 +8,7 @@ import JIRA_LOGO from '../../images/jira.png';
 import SUMO_LOGIC_LOGO from '../../images/sumo-logic.png';
 import XLSX_LOGO from '../../images/xls.png';
 import HTTP_LOGO from '../../images/http.png';
+import GOOGLE_CHRONICLE_LOGO from '../../images/google-chronicle.png';
 import PDF_LOGO from '../../images/pdf-logo.png';
 import MICROSOFT_LOGO from '../../images/microsoft-teams.png';
 
@@ -32,6 +33,9 @@ export const INTEGRATION_MENU_COLLECTION = [
   },
   {
     name: 'http_endpoint', isActive: true, icon: HTTP_LOGO, displayName: 'HTTP endpoint', category: 'notification', bgcolor: 'white', parent: 'Notification'
+  },
+  {
+    name: 'google_chronicle', isActive: true, icon: GOOGLE_CHRONICLE_LOGO, displayName: 'Google Chronicle', category: 'notification', bgcolor: 'white', parent: 'Notification'
   },
   {
     name: 'jira', isActive: false, icon: JIRA_LOGO, displayName: 'Jira', category: 'ticketing', bgcolor: '#A6CDFF', parent: 'Ticketing'
