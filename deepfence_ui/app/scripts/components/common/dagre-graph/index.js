@@ -29,7 +29,7 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
         if (index === attackPath.length - 1) {
           nodeProps = {
             ...rest,
-            style: { fill: '#ff4570' }
+            style: { fill: '#db2547' }
           }
         }
         if (nodesMap.has(attackNode)) {
@@ -55,7 +55,13 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
 
         const edgesProps = {};
         if (rest.cve_attack_vector === 'network') {
-          edgesProps.style = { stroke: '#ff4570' };
+          edgesProps.style = {
+            stroke: '#db2547',
+            endArrow: {
+              fill: "#db2547",
+              stroke: "#db2547",
+            },
+          };
         }
 
         if (edgesMap.has(edgeKey)) {
@@ -81,7 +87,7 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
 
 function getTooltipContent(node) {
   if (node.cve_attack_vector) {
-    const hr = `<div style="border-bottom: 1px solid white;margin: 8px 0px;"></div>`
+    const hr = `<div style="border-bottom: 1px solid rgb(166, 166, 166);margin: 8px 0px;"></div>`
 
     return `
       <div style="max-width: 250px">
@@ -95,7 +101,7 @@ function getTooltipContent(node) {
         </div>
         ${hr}
         <div>
-          <strong>CVEs</strong>
+          <strong>Top CVEs</strong>
           <div>
           ${node.cve_id.length ? node.cve_id.join('<br />') : 'None'}
           </div>
@@ -153,11 +159,11 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
         height: height ?? 400,
         fitView: true,
         layout: {
-          type: "dagre",
-          rankdir: "LR",
+          type: 'dagre',
+          rankdir: 'LR',
+          nodesepFunc: () => 0,
+          ranksepFunc: () => 0,
           controlPoints: true,
-          nodesepFunc: () => 1,
-          ranksepFunc: () => 1,
         },
         modes: {
           default: [],
@@ -167,22 +173,24 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
           type: 'circle',
           size: 15,
           style: {
+            opacity: 0.8,
             stroke: 'white',
             fill: '#0079f2',
-            lineWidth: 1,
+            lineWidth: 0.5,
           },
           labelCfg,
         },
         defaultEdge: {
-          type: 'line',
+          type: 'spline',
           style: {
             stroke: '#55c1e9',
             lineWidth: 1,
             opacity: 0.5,
             endArrow: {
+            opacity: 0.5,
               path: G6.Arrow.triangle(3, 5, 0),
-              fill: "#E6E6FA",
-              stroke: "#E6E6FA",
+              fill: "#55c1e9",
+              stroke: "#55c1e9",
             },
           },
         },
