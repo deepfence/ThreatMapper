@@ -299,11 +299,12 @@ def get_random_string(length):
 
 
 def is_network_attack_vector(attack_vector):
+    attack_vector_lower_case = str(attack_vector).lower()
     if "AV:N" in attack_vector:
         return True
-    elif attack_vector == "NETWORK":
+    elif attack_vector_lower_case == "network":
         return True
-    elif attack_vector == "N":
+    elif attack_vector_lower_case == "n":
         return True
     return False
 

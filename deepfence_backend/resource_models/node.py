@@ -236,23 +236,18 @@ class Node(object):
             size=constants.ES_TERMS_AGGR_SIZE)
         if not vulnerabilities:
             return {}
-        cve_attack_vector = "local"
         top_cve_ids = []
         for vulnerability in vulnerabilities.get("hits", []):
+            if not is_network_attack_vector(vulnerability.get("_source", {}).get("cve_attack_vector", "")):
+                continue
             cve_details = {
                 "cve_id": vulnerability.get("_source", {}).get("cve_id"),
                 "cve_severity": severity_map.get(vulnerability.get("_source", {}).get("cve_severity"))
             }
-            if is_network_attack_vector(vulnerability.get("_source", {}).get("cve_attack_vector")):
-                cve_attack_vector = "network"
-                cve_details["attack_vector"] = 0
-            else:
-                cve_details["attack_vector"] = 1
             top_cve_ids.append(cve_details)
-        top_cve_ids = [i["cve_id"] for i in
-                       sorted(top_cve_ids, key=lambda k: (k['attack_vector'], k['cve_severity']))[:3]]
+        top_cve_ids = [i["cve_id"] for i in sorted(top_cve_ids, key=lambda k: k['cve_severity'])][:3]
         response = {
-            "cve_attack_vector": cve_attack_vector,
+            "cve_attack_vector": "network",
             "attack_path": self.get_attack_path_for_node(top_n=top_n),
             "ports": self.get_live_open_ports(),
             "cve_id": top_cve_ids
