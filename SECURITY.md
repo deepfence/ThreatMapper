@@ -1,1 +1,3 @@
-Any vulnerabilities found in this source code may please be reported to productsecurity at deepfence dot io in complete confidence.
+Please report any potential security vulnerabilities to **productsecurity *at* deepfence *dot* io**. 
+
+Deepfence will endeavour to respond within 3 working days, and treats all security motifications in full confidence.
