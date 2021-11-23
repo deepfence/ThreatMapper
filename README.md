@@ -230,7 +230,7 @@ Please share any feature requests or bug reports: https://github.com/deepfence/T
 
 # Security and Support
 
-For any security-related issues in the ThreatMapper project, contact productsecurity at deepfence dot io.
+For any security-related issues in the ThreatMapper project, contact **productsecurity *at* deepfence *dot* io**.
 
 Please file Github issues as needed, and join the Deepfence Community [Slack channel](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ).
 
