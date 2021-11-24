@@ -167,6 +167,7 @@ function useColumnFilter({
 * @param {Object} props
 * @param {Object[]} props.columns - react-table columns config object
 * @param {boolean} props.columns[].disableCustomization - disable customization for this column
+* @param {boolean} props.columns[].noWrap - disable text overflow truncation for this column
 * @param {Object[]} props.data - data is an array of row data objects
 * @param {function} props.renderRowSubComponent - a function that returns an react node used as sub component for a row
 * @param {boolean} props.showPagination - specifies pagination is shown or not
@@ -177,6 +178,9 @@ function useColumnFilter({
 * @param {function} props.onPageChange - in case of manual true, this will be called to notify parent about change of a page
 * @param {boolean} props.enableSorting - flag to enable sorting for the table
 * @param {function} props.onSortChange - callback notifying parent about sort state changes
+* @param {function} props.onRowClick - callback to be called on clicking of a row
+* @param {function} props.onCellClick - callback to be called on clicking of a cell
+* @param {function} props.getCellStyle - callback to be called on clicking of a cell
 * @param {string} props.noDataText - no data text in case of an empty table
 * @param {boolean} props.disableResizing - columns are resizable or not
 * @param {boolean} props.columnCustomizable - columns are customizable or not
@@ -206,6 +210,9 @@ const DfTableV2 = ({
   loading,
   multiSelectOptions,
   onRowClick,
+  onCellClick,
+  getRowStyle,
+  getCellStyle,
 }) => {
   defaultPageSize = getDefaultPageSize({
     showPagination,
@@ -231,6 +238,18 @@ const DfTableV2 = ({
     []
   )
 
+  const additionalTableParams = {};
+
+  if (manual) {
+    additionalTableParams.pageCount = getPageCount({
+      manual,
+      showPagination,
+      defaultPageSize,
+      totalRows,
+      data
+    });
+  }
+
   const tableInstance = useTable(
     {
       columns: rtColumns,
@@ -244,14 +263,8 @@ const DfTableV2 = ({
       manualSortBy: !!manual,
       autoResetSortBy: false,
       disableMultiSort: true,
-      pageCount: manual ? getPageCount({
-        manual,
-        showPagination,
-        defaultPageSize,
-        totalRows,
-        data
-      }) : undefined,
-      autoResetSelectedRows: false
+      autoResetSelectedRows: false,
+      ...additionalTableParams
     },
     useResizeColumns,
     useFlexLayout,
@@ -268,6 +281,7 @@ const DfTableV2 = ({
     visibleColumns,
     page: rtPage,
     gotoPage,
+    pageCount,
     state: {
       pageIndex,
       sortBy,
@@ -324,7 +338,7 @@ const DfTableV2 = ({
                           <span className={styles.headerContent} onClick={onClick}>
                             {column.render('Header')}
                             {
-                              column.disableSortBy ? null : (
+                              column.disableSortBy || !enableSorting ? null : (
                                 <span className={`${styles.sortIndicator} ${column.isSorted
                                   ? column.isSortedDesc
                                     ? 'fa fa-angle-up'
@@ -348,7 +362,7 @@ const DfTableV2 = ({
               {
                 rtPage.map((row, index) => {
                   prepareRow(row);
-                  const { key, ...rest } = row.getRowProps();
+                  const { key, style, ...rest } = row.getRowProps();
                   return (
                     <React.Fragment key={key} >
                       <div
@@ -360,19 +374,33 @@ const DfTableV2 = ({
                         onClick={() => {
                           if (renderRowSubComponent) {
                             row.toggleRowExpanded();
-                          } else if(onRowClick) {
+                          } else if (onRowClick) {
                             onRowClick(row);
                           }
                         }}
+                        style={{ ...(getRowStyle ? getRowStyle(row) : {}), ...style }}
                         {...rest}
                       >
                         {
                           row.cells.map(cell => {
-                            const { key, ...rest } = cell.getCellProps();
+                            const { key, style, ...rest } = cell.getCellProps();
+                            const { column } = cell;
                             return (
-                              <div className={styles.cell} key={key} {...rest}>
+                              <div
+                                className={classNames(styles.cell, {
+                                  [styles.wrap]: !column.noWrap
+                                })}
+                                key={key}
+                                onClick={() => {
+                                  if (onCellClick) {
+                                    onCellClick(cell);
+                                  }
+                                }}
+                                style={{ ...(getCellStyle ? getCellStyle(cell) : {}), ...style }}
+                                {...rest}>
                                 {
-                                  cell.render('Cell')}
+                                  cell.render('Cell')
+                                }
                               </div>
                             )
                           })
@@ -405,13 +433,7 @@ const DfTableV2 = ({
         showPagination && data.length && !loading ? (
           <div className={styles.paginationWrapper}>
             <Pagination
-              pageCount={getPageCount({
-                manual,
-                showPagination,
-                defaultPageSize,
-                totalRows,
-                data
-              })}
+              pageCount={pageCount}
               pageIndex={pageIndex}
               onPageChange={(selectedIndex) => {
                 if (manual && onPageChange) {

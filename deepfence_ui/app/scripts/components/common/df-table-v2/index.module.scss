@@ -53,9 +53,6 @@
       font-weight: normal;
       color: #c0c0c0;
       padding: 8px 12px;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
 
       .expanderCell {
         width: 100%;
@@ -73,6 +70,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .wrap {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 }
 
