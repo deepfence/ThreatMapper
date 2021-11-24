@@ -48,6 +48,11 @@ function useColumnFilter({
   multiSelectOptions
 }) {
 
+  columns = columns.filter((column) => {
+    if (typeof column.show === 'boolean') return column.show;
+    return true;
+  });
+
   const [hiddenColumnIds, setHiddenColumnIds] = useState([]);
   const [dirtyHiddenColumnIds, setDirtyHiddenColumnIds] = useState([]);
 
@@ -168,6 +173,7 @@ function useColumnFilter({
 * @param {Object[]} props.columns - react-table columns config object
 * @param {boolean} props.columns[].disableCustomization - disable customization for this column
 * @param {boolean} props.columns[].noWrap - disable text overflow truncation for this column
+* @param {boolean} props.columns[].show - set false if don't want to show the column by default
 * @param {Object[]} props.data - data is an array of row data objects
 * @param {function} props.renderRowSubComponent - a function that returns an react node used as sub component for a row
 * @param {boolean} props.showPagination - specifies pagination is shown or not
