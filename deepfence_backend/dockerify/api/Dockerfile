@@ -37,7 +37,8 @@ ENV PYTHONUNBUFFERED=1 \
     REDIS_PORT=6379 \
     REDIS_DB_NUMBER=0 \
     PYTHONPATH=/app/code \
-    DOCKERVERSION=20.10.8
+    DOCKERVERSION=20.10.8 \
+    AUTHLIB_INSECURE_TRANSPORT=true
 
 COPY ./requirements.txt /tmp/requirements.txt
 
