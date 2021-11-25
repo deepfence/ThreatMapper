@@ -29,6 +29,15 @@ if [ ! -f "$dependency_check_file" ]; then
     fi
 fi
 
+echo "Building init container image"
+cd $DEEPFENCE_CONSOLE_DIR/init-container
+docker build -f $DEEPFENCE_CONSOLE_DIR/init-container/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-latest} .
+
+if [ ! $? -eq 0 ]; then
+    echo "Building init container image failed. Exiting"
+    exit 1
+fi
+
 echo "Building Vulnerability mapper image"
 cd $DEEPFENCE_CONSOLE_DIR
 rm -rf $DEEPAUDIT_DIR/filebeat $DEEPAUDIT_DIR/cve_scan_registry

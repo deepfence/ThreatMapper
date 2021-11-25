@@ -1,6 +1,20 @@
 version: "3.7"
 services:
 
+  deepfence-init-container:
+    container_name: df-init-container
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-latest}
+    privileged: true
+    ulimits:
+      core: 0
+    network_mode: "host"
+    pid: "host"
+    restart: "no"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
   deepfence-postgres:
     container_name: deepfence-postgres
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-latest}
@@ -19,7 +33,6 @@ services:
   deepfence-redis:
     container_name: deepfence-redis
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-latest}
-    privileged: true
     environment:
       INITIALIZE_REDIS: "Y"
     ulimits:
@@ -27,6 +40,8 @@ services:
     restart: on-failure
     networks:
       - deepfence_net
+    depends_on:
+      - deepfence-init-container
     logging:
       driver: "json-file"
       options:
@@ -261,7 +276,6 @@ services:
   deepfence-backend:
     container_name: deepfence-backend
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-latest}
-    privileged: true
     ulimits:
       core: 0
     entrypoint: /app/code/dockerify/backend/entrypoint.sh
@@ -269,6 +283,7 @@ services:
     networks:
       - deepfence_net
     depends_on:
+      - deepfence-init-container
       - deepfence-redis
       - deepfence-postgres
     logging:

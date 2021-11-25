@@ -11,9 +11,15 @@ fi
 
 #echo no > /sys/kernel/mm/transparent_hugepage/enabled
 #echo no > /sys/kernel/mm/transparent_hugepage/defrag
-sysctl -w fs.file-max=500000
-sysctl -w net.core.somaxconn=512
-sysctl vm.overcommit_memory=1
+
+# Wait till deepfence-init-container sets required file-max
+for _ in {1..5}; do
+  fileMax=$(sysctl -n fs.file-max)
+  if [[ $fileMax == "1048576" ]]; then
+    break
+  fi
+  sleep 4
+done
 
 #echo "client-output-buffer-limit pubsub 512mb 256mb 60" >> /usr/local/bin/redis.conf
 
