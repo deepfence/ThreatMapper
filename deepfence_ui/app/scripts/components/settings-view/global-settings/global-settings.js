@@ -29,7 +29,7 @@ const GlobalSettings = () => {
   };
 
   const renderFormModal = row => {
-    let domainName = row.row.value;
+    let domainName = row.row.data[0].value;
     const id = row.row.id;
     const handleEditSubmit = e => {
       e.preventDefault();
@@ -60,7 +60,7 @@ const GlobalSettings = () => {
                   id="domain_name"
                   type="text"
                   name="domain_name"
-                  defaultValue={row.row.value}
+                  defaultValue={row.row.data[0].value}
                   onChange={handleFormChange}
                 />
               </div>

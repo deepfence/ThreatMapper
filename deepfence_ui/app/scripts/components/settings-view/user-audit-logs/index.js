@@ -83,6 +83,7 @@ class UserAuditLogs extends React.Component {
               ),
               id: 'created',
               maxWidth: 200,
+              sortType: 'alphanumeric'
             },
             {
               Header: 'Event',
@@ -112,8 +113,9 @@ class UserAuditLogs extends React.Component {
                   {this.convertStringToJson(cell.value)}
                 </div>
               ),
+              noWrap: 'true',
               accessor: 'resource',
-              minWidth: 300,
+              minWidth: 600,
             },
             {
               Header: 'Success',
@@ -130,7 +132,8 @@ class UserAuditLogs extends React.Component {
           totalRows={totalUserAuditLogs}
           defaultPageSize={15}
           pages={totalPage}
-          manual />
+          manual
+          enableSorting />
         </div>
       </div>
     );
