@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: Build and push to docker
 
 on:
  schedule:
@@ -34,9 +34,20 @@ jobs:
       - run: docker logout 
       - run: docker login --username=jo19in1 --password=${{ secrets.DOCKER_PASSWORD}}
       - run: IMAGE_REPOSITORY=jo19in1 ./build.sh
-      - run: pwd
-      - run: ls
+      
       - run: docker push jo19in1/deepfence_api_ce:latest
+      - run: docker push deepfenceio/deepfence_api_ce:latest
+      - run: docker push deepfenceio/deepfence_ui_ce:latest
+      - run: docker push deepfenceio/deepfence_fetcher_ce:latest
+      - run: docker push deepfenceio/deepfence_discovery_ce:latest
+      - run: docker push deepfenceio/deepfence_elastic_ce:latest
+      - run: docker push deepfenceio/deepfence_router_ce:latest
+      - run: docker push deepfenceio/deepfence_postgres_ce:latest
+      - run: docker push deepfenceio/deepfence_redis_ce:latest
+      - run: docker push deepfenceio/deepfence_discovery_ce:latest
+      - run: docker push deepfenceio/deepfence_diagnosis_ce:latest
+      - run: docker push deepfenceio/deepfence_vulnerability_mapper_ce:latest
+      - run: docker push deepfenceio/deepfence_agent_ce:latest
       - run: docker logout 
 
     
