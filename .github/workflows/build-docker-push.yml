@@ -9,9 +9,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@main
-      - run: pwd
-      - run: date
-      - run: ls
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -22,20 +19,13 @@ jobs:
         with:
          repository: deepfence/ThreatMapper
          path: ThreatMapper
-      - run: pwd
-      - run: ls -F
 
       - run: cd ThreatMapper
-      - run: pwd
-      - run: ls -la
-      - run: cat /proc/cpuinfo | grep 'core id'
-      - run: grep MemTotal /proc/meminfo
-      - run: pwd
       - run: docker logout 
       - run: docker login --username=jo19in1 --password=${{ secrets.DOCKER_PASSWORD}}
       - run: IMAGE_REPOSITORY=jo19in1 ./build.sh
-      
-      - run: docker push jo19in1/deepfence_api_ce:latest
+
+      - run: docker push deepfenceio/deepfence_api_ce:latest
       - run: docker push deepfenceio/deepfence_api_ce:latest
       - run: docker push deepfenceio/deepfence_ui_ce:latest
       - run: docker push deepfenceio/deepfence_fetcher_ce:latest
