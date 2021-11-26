@@ -3,7 +3,7 @@
 ############################################################
 # Start Deepfence Agent Services
 ############################################################
-echo "Start Deepfence services... Console is $DF_BACKEND_IP"
+echo "Start Deepfence services... Console is $MGMT_CONSOLE_URL"
 # exec setsid /deepfence/usr/local/bin/start-df-services.sh &
 /deepfence/bin/bash /deepfence/usr/local/bin/start-df-services.sh &
 # Wait for the agent to start

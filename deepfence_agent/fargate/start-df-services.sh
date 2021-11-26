@@ -93,7 +93,7 @@ fi
 mkdir -p $DF_INSTALL_DIR/var/log/fenced/
 chmod +x $DF_INSTALL_DIR/home/deepfence/*.sh
 
-echo "Start Deepfence services... Console is $DF_BACKEND_IP"
+echo "Start Deepfence services... Console is $MGMT_CONSOLE_URL"
 check_auth
 
 echo "Starting discovery logs..." >>$DF_INSTALL_DIR/var/log/fenced/discovery.logfile
