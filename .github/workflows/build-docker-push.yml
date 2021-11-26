@@ -1,0 +1,50 @@
+name: GitHub Actions Demo
+
+on:
+ schedule:
+    - cron: '0 20 * * 6'
+jobs:
+  ThreatMapper-GitHub-Actions-Testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - run: pwd
+      - run: date
+      - run: ls
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: main
+
+      - name: Checkout ThreatMapper Repo
+        uses: actions/checkout@v2
+        with:
+         repository: deepfence/ThreatMapper
+         path: ThreatMapper
+      - run: pwd
+      - run: ls -F
+
+      - run: cd ThreatMapper
+      - run: pwd
+      - run: ls -la
+      - run: cat /proc/cpuinfo | grep 'core id'
+      - run: grep MemTotal /proc/meminfo
+      - run: pwd
+      - run: docker logout 
+      - run: docker login --username=jo19in1 --password=${{ secrets.DOCKER_PASSWORD}}
+      - run: IMAGE_REPOSITORY=jo19in1 ./build.sh
+      - run: pwd
+      - run: ls
+      - run: docker push jo19in1/deepfence_api_ce:latest
+      - run: docker logout 
+
+    
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."
