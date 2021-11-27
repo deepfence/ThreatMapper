@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -74,7 +74,7 @@ func BuildHttpClientWithCert(certPath string) (*http.Client, error) {
 	client := &http.Client{Transport: transport}
 
 	// Load our trusted certificate path
-	pemData, err := ioutil.ReadFile(certPath)
+	pemData, err := os.ReadFile(certPath)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func GetKubernetesClusterId() string {
 		if err == nil {
 			defer resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
-				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				bodyBytes, err := io.ReadAll(resp.Body)
 				if err == nil {
 					var kubeSystemNamespaceDetails k8sNamespaceDetails
 					err = json.Unmarshal(bodyBytes, &kubeSystemNamespaceDetails)
@@ -180,11 +180,11 @@ type k8sNodeInfo struct {
 }
 
 func getK8sCaCert() ([]byte, []byte, error) {
-	caCert, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+	caCert, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
 	if err != nil {
 		return nil, nil, err
 	}
-	caToken, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
+	caToken, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
 	return caCert, caToken, err
 }
 
@@ -218,7 +218,7 @@ func GetKubernetesDetails() (string, string, string, string, error) {
 		if err == nil {
 			defer resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
-				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				bodyBytes, err := io.ReadAll(resp.Body)
 				if err == nil {
 					var k8sCurrentNodeInfo k8sNodeInfo
 					err = json.Unmarshal(bodyBytes, &k8sCurrentNodeInfo)

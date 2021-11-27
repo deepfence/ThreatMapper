@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -37,7 +37,7 @@ func GetHTTPResponse(client *http.Client, method string, url string, body io.Rea
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return "", err
 		}
@@ -73,13 +73,13 @@ func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
 		if strings.HasPrefix(instanceID, "i-") && strings.HasPrefix(imageId, "ami-") {
 			return nil
 		}
-		sysVendor, err := ioutil.ReadFile("/sys/class/dmi/id/sys_vendor")
+		sysVendor, err := os.ReadFile("/sys/class/dmi/id/sys_vendor")
 		if err == nil {
 			if strings.Contains(string(sysVendor), "Amazon") {
 				return nil
 			}
 		}
-		productVersion, err := ioutil.ReadFile("/sys/class/dmi/id/product_version")
+		productVersion, err := os.ReadFile("/sys/class/dmi/id/product_version")
 		if err == nil {
 			if strings.Contains(string(productVersion), "amazon") {
 				return nil
@@ -137,7 +137,7 @@ func GetGoogleCloudMetadata(onlyValidate bool) (CloudMetadata, error) {
 		return gcpMetadata, err
 	}
 	verifyIfGcp := func() error {
-		productName, err := ioutil.ReadFile("/sys/class/dmi/id/product_name")
+		productName, err := os.ReadFile("/sys/class/dmi/id/product_name")
 		if err != nil {
 			return incorrectMetadataError
 		}
@@ -182,7 +182,7 @@ func GetAzureMetadata(onlyValidate bool) (CloudMetadata, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 	azureMetadata := CloudMetadata{CloudProvider: "azure"}
 	verifyIfAzure := func() error {
-		sysVendor, err := ioutil.ReadFile("/sys/class/dmi/id/sys_vendor")
+		sysVendor, err := os.ReadFile("/sys/class/dmi/id/sys_vendor")
 		if err != nil {
 			return incorrectMetadataError
 		}
@@ -234,7 +234,7 @@ func GetDigitalOceanMetadata(onlyValidate bool) (CloudMetadata, error) {
 		if dropletID == 0 {
 			return incorrectMetadataError
 		}
-		sysVendor, err := ioutil.ReadFile("/sys/class/dmi/id/sys_vendor")
+		sysVendor, err := os.ReadFile("/sys/class/dmi/id/sys_vendor")
 		if err != nil {
 			return incorrectMetadataError
 		}

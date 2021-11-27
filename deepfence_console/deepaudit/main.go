@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"html"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net"
@@ -385,7 +384,7 @@ func analyzeLayer(path, layerName, parentLayerName string) error {
 			break
 		} else {
 			if retryCount > 1 {
-				body, _ := ioutil.ReadAll(response.Body)
+				body, _ := io.ReadAll(response.Body)
 				statusCode := response.StatusCode
 				response.Body.Close()
 				return fmt.Errorf("got response %d with message %s", statusCode, string(body))
@@ -426,7 +425,7 @@ func getLayer(layerID string) (Layer, error) {
 			return *apiResponse.Layer, nil
 		} else {
 			if retryCount > 1 {
-				body, _ := ioutil.ReadAll(response.Body)
+				body, _ := io.ReadAll(response.Body)
 				statusCode := response.StatusCode
 				response.Body.Close()
 				err = fmt.Errorf("got response %d with message %s", statusCode, string(body))
@@ -552,7 +551,7 @@ func buildClient() (*http.Client, error) {
 	} else {
 		certPath = "/etc/filebeat/filebeat.crt"
 	}
-	pemData, err := ioutil.ReadFile(certPath)
+	pemData, err := os.ReadFile(certPath)
 	if err != nil {
 		return nil, err
 	}
@@ -1109,7 +1108,7 @@ func getCurrentlyMaskedCveIds(nodeId, nodeType string) ([]string, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == HTTP_OK {
-		maskedCveIdStr, err := ioutil.ReadAll(resp.Body)
+		maskedCveIdStr, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return currentlyMaskedCveIds, err
 		}

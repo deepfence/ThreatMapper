@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -152,7 +151,7 @@ func decodeDepCheckJson(language string, extFileDirList []string, fileSet map[st
 	} else {
 		fileName = fmt.Sprintf("/tmp/output_" + start_time + ".json")
 	}
-	fileBuff, err := ioutil.ReadFile(fileName)
+	fileBuff, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}

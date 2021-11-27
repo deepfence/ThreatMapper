@@ -20,7 +20,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -81,7 +80,7 @@ func (u *updater) processFile(filename string) {
 
 	// find hash of file contents as part of checking for changes
 	file_hasher := sha256.New()
-	fileContents, err := ioutil.ReadAll(response.Body)
+	fileContents, err := io.ReadAll(response.Body)
 	file_hasher.Write([]byte(fileContents[:]))
 
 	// Must be a better way to achieve this...
@@ -148,7 +147,7 @@ func (u *updater) getVulnFiles(repoPath, tempDirPrefix string) (commit string, e
 
 	// Set up temporary location for downlaods
 	if repoPath == "" {
-		u.repositoryLocalPath, err = ioutil.TempDir(os.TempDir(), tempDirPrefix)
+		u.repositoryLocalPath, err = os.MkdirTemp(os.TempDir(), tempDirPrefix)
 		if err != nil {
 			return
 		}
@@ -328,7 +327,7 @@ type secDBFile struct {
 
 func parseYAML(r io.Reader) (vulns []database.Vulnerability, err error) {
 	var rBytes []byte
-	rBytes, err = ioutil.ReadAll(r)
+	rBytes, err = io.ReadAll(r)
 	if err != nil {
 		return
 	}

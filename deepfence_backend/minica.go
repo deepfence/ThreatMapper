@@ -13,7 +13,6 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math"
 	"math/big"
@@ -37,8 +36,8 @@ type issuer struct {
 }
 
 func getIssuer(keyFile, certFile string) (*issuer, error) {
-	keyContents, keyErr := ioutil.ReadFile(keyFile)
-	certContents, certErr := ioutil.ReadFile(certFile)
+	keyContents, keyErr := os.ReadFile(keyFile)
+	certContents, certErr := os.ReadFile(certFile)
 	if os.IsNotExist(keyErr) && os.IsNotExist(certErr) {
 		err := makeIssuer(keyFile, certFile)
 		if err != nil {

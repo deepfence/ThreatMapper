@@ -16,7 +16,7 @@ package main
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"time"
 
@@ -84,7 +84,7 @@ func LoadConfig(path string) (config *Config, err error) {
 	}
 	defer f.Close()
 
-	d, err := ioutil.ReadAll(f)
+	d, err := io.ReadAll(f)
 	if err != nil {
 		return
 	}

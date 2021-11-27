@@ -18,8 +18,8 @@ package pgsql
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -170,7 +170,7 @@ func openDatabase(registrableComponentConfig database.RegistrableComponentConfig
 	if pg.config.FixturePath != "" {
 		log.Info("pgsql: loading fixtures")
 
-		d, err := ioutil.ReadFile(pg.config.FixturePath)
+		d, err := os.ReadFile(pg.config.FixturePath)
 		if err != nil {
 			pg.Close()
 			return nil, fmt.Errorf("pgsql: could not open fixture file: %v", err)

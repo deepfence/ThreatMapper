@@ -16,7 +16,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -124,7 +123,7 @@ func addNfsMountsToSkipDirs() {
 	outputFileName := "/tmp/nfs-mounts.txt"
 	cmdFileName := "/tmp/get-nfs.sh"
 	nfsCmd := fmt.Sprintf("/bin/findmnt -l -t nfs4 -n --output=TARGET > %s", outputFileName)
-	errVal := ioutil.WriteFile(cmdFileName, []byte(nfsCmd), 0600)
+	errVal := os.WriteFile(cmdFileName, []byte(nfsCmd), 0600)
 	if errVal != nil {
 		fmt.Printf("Error while writing nfs command %s \n", errVal.Error())
 		return
@@ -230,7 +229,7 @@ func buildClient() (*http.Client, error) {
 	}
 
 	// Load our trusted certificate path
-	pemData, err := ioutil.ReadFile(certPath)
+	pemData, err := os.ReadFile(certPath)
 	if err != nil {
 		return nil, err
 	}
@@ -374,31 +373,31 @@ func buildFileList(sourceDir string) error {
 	if err != nil {
 		return err
 	}
-	writeErr := ioutil.WriteFile(javaFiles, []byte(javaNames), 0600)
+	writeErr := os.WriteFile(javaFiles, []byte(javaNames), 0600)
 	if writeErr != nil {
 		fmt.Printf("Error while writing java files list %s\n", writeErr.Error())
 	}
-	writeErr = ioutil.WriteFile(jsFiles, []byte(jsNames), 0600)
+	writeErr = os.WriteFile(jsFiles, []byte(jsNames), 0600)
 	if writeErr != nil {
 		fmt.Printf("Error while writing js files list %s\n", writeErr.Error())
 	}
-	writeErr = ioutil.WriteFile(rubyFiles, []byte(rubyNames), 0600)
+	writeErr = os.WriteFile(rubyFiles, []byte(rubyNames), 0600)
 	if writeErr != nil {
 		fmt.Printf("Error while writing ruby files list %s\n", writeErr.Error())
 	}
-	writeErr = ioutil.WriteFile(pythonFiles, []byte(pythonNames), 0600)
+	writeErr = os.WriteFile(pythonFiles, []byte(pythonNames), 0600)
 	if writeErr != nil {
 		fmt.Printf("Error while writing python files list %s\n", writeErr.Error())
 	}
-	writeErr = ioutil.WriteFile(phpFiles, []byte(phpNames), 0600)
+	writeErr = os.WriteFile(phpFiles, []byte(phpNames), 0600)
 	if writeErr != nil {
 		fmt.Printf("Error while writing php files list %s\n", writeErr.Error())
 	}
-	writeErr = ioutil.WriteFile(nodejsFiles, []byte(nodejsNames), 0600)
+	writeErr = os.WriteFile(nodejsFiles, []byte(nodejsNames), 0600)
 	if writeErr != nil {
 		fmt.Printf("Error while writing nodejs files list %s\n", writeErr.Error())
 	}
-	writeErr = ioutil.WriteFile(dotnetFiles, []byte(dotnetNames), 0600)
+	writeErr = os.WriteFile(dotnetFiles, []byte(dotnetNames), 0600)
 	if writeErr != nil {
 		fmt.Printf("Error while writing dotnet files list %s\n", writeErr.Error())
 	}
@@ -448,7 +447,7 @@ func createAndUploadLanguageFiles(dstPath string, language string) error {
 		srcFileName = dotnetFiles
 	}
 	tarCmd := fmt.Sprintf("/bin/tar -rf %s -P --transform='s,%s,,' --files-from %s ", localFileName, mountPoint, srcFileName)
-	errVal := ioutil.WriteFile(tmpTarFile, []byte(tarCmd), 0600)
+	errVal := os.WriteFile(tmpTarFile, []byte(tarCmd), 0600)
 	if errVal != nil {
 		fmt.Println(errVal.Error())
 		return errVal
@@ -481,7 +480,7 @@ func getTmpScanId(scanId string) string {
 func uploadImageData(imageName string) (string, error) {
 	var errVal error
 	destFileName := "/data/cve-scan-upload/" + hostname + "/" + sanitizedScanId + "/layer.tar"
-	outputDir, outputErr := ioutil.TempDir("", sanitizedScanId)
+	outputDir, outputErr := os.MkdirTemp("", sanitizedScanId)
 	if outputErr != nil {
 		return outputDir, errVal
 	}
