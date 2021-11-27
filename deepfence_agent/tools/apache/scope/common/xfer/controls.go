@@ -29,16 +29,16 @@ type Response struct {
 	ResizeTTYControl string `json:"resize_tty_control,omitempty"`
 
 	// Remove specific fields
-	RemovedNode             string                   `json:"removedNode,omitempty"` // Set if node was removed
-	CVEInfo                 string                   `json:"cve,omitempty"`
-	AgentLogs               []map[string]string      `json:"agent_logs,omitempty"`
-	KubeClusterNodes        []string                 `json:"kube_cluster_nodes,omitempty"`
-	PodsList                map[string]string        `json:"pods_list,omitempty"`
-	CNIPlugin               string                   `json:"cni_plugin,omitempty"`
-	NodesList               []string                 `json:"nodes_list,omitempty"`
-	LoadBalancerIp          string                   `json:"load_balancer_ip,omitempty"`
-	TagsInfo                string                   `json:"tags,omitempty"`
-	ImagesList              []string                 `json:"images_list,omitempty"`
+	RemovedNode      string              `json:"removedNode,omitempty"` // Set if node was removed
+	CVEInfo          string              `json:"cve,omitempty"`
+	AgentLogs        []map[string]string `json:"agent_logs,omitempty"`
+	KubeClusterNodes []string            `json:"kube_cluster_nodes,omitempty"`
+	PodsList         map[string]string   `json:"pods_list,omitempty"`
+	CNIPlugin        string              `json:"cni_plugin,omitempty"`
+	NodesList        []string            `json:"nodes_list,omitempty"`
+	LoadBalancerIp   string              `json:"load_balancer_ip,omitempty"`
+	TagsInfo         string              `json:"tags,omitempty"`
+	ImagesList       []string            `json:"images_list,omitempty"`
 }
 
 // Message is the unions of Request, Response and arbitrary Value.

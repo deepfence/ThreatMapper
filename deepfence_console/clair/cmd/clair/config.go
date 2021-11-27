@@ -22,11 +22,11 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/fernet/fernet-go"
 	"github.com/quay/clair/v2"
 	"github.com/quay/clair/v2/api"
 	"github.com/quay/clair/v2/database"
 	"github.com/quay/clair/v2/ext/notification"
-	"github.com/fernet/fernet-go"
 )
 
 // ErrDatasourceNotLoaded is returned when the datasource variable in the

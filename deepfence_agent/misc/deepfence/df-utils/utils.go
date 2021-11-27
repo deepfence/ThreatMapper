@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/weaveworks/scope/common/hostname"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/weaveworks/scope/common/hostname"
 )
 
 type PktDirection string
@@ -85,39 +86,39 @@ func BuildHttpClientWithCert(certPath string) (*http.Client, error) {
 }
 
 func GetKubernetesClusterId() string {
-        var kubeSystemNamespaceUid string
-        serviceHost := os.Getenv("KUBERNETES_SERVICE_HOST")
-        servicePort := os.Getenv("KUBERNETES_SERVICE_PORT")
-        caCertPool := x509.NewCertPool()
-        caCert, caToken, err := getK8sCaCert()
-        if err != nil {
-                return ""
-        }
-        caCertPool.AppendCertsFromPEM(caCert)
-        client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{RootCAs: caCertPool}}}
+	var kubeSystemNamespaceUid string
+	serviceHost := os.Getenv("KUBERNETES_SERVICE_HOST")
+	servicePort := os.Getenv("KUBERNETES_SERVICE_PORT")
+	caCertPool := x509.NewCertPool()
+	caCert, caToken, err := getK8sCaCert()
+	if err != nil {
+		return ""
+	}
+	caCertPool.AppendCertsFromPEM(caCert)
+	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{RootCAs: caCertPool}}}
 
-        // Get kubeSystemNamespaceUid
-        url := fmt.Sprintf("https://%s:%s/api/v1/namespaces/kube-system", serviceHost, servicePort)
-        req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
-        if err == nil {
-                req.Header.Add("Content-Type", "application/json")
-                req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(caToken)))
-                resp, err := client.Do(req)
-                if err == nil {
-                        defer resp.Body.Close()
-                        if resp.StatusCode == http.StatusOK {
-                                bodyBytes, err := ioutil.ReadAll(resp.Body)
-                                if err == nil {
-                                        var kubeSystemNamespaceDetails k8sNamespaceDetails
-                                        err = json.Unmarshal(bodyBytes, &kubeSystemNamespaceDetails)
-                                        if err == nil {
-                                                kubeSystemNamespaceUid = kubeSystemNamespaceDetails.Metadata.UID
-                                        }
-                                }
-                        }
-                }
-        }
-        return kubeSystemNamespaceUid
+	// Get kubeSystemNamespaceUid
+	url := fmt.Sprintf("https://%s:%s/api/v1/namespaces/kube-system", serviceHost, servicePort)
+	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBuffer([]byte{}))
+	if err == nil {
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(caToken)))
+		resp, err := client.Do(req)
+		if err == nil {
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				if err == nil {
+					var kubeSystemNamespaceDetails k8sNamespaceDetails
+					err = json.Unmarshal(bodyBytes, &kubeSystemNamespaceDetails)
+					if err == nil {
+						kubeSystemNamespaceUid = kubeSystemNamespaceDetails.Metadata.UID
+					}
+				}
+			}
+		}
+	}
+	return kubeSystemNamespaceUid
 }
 
 func GetAllLocalIps() []string {

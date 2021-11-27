@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	dfUtils "github.com/deepfence/df-utils"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	dfUtils "github.com/deepfence/df-utils"
 )
 
 const (
