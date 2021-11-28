@@ -22,6 +22,7 @@ import JiraIntegrationView from './jira-integration-view';
 import SumoLogicView from './sumo-logic-view';
 import ReportDownload from './report-download/index';
 import PdfReportDownload from './pdf-report-download/index';
+import Reports from './reports/reports';
 import { getIntegrations } from '../../utils/web-api-utils';
 
 
@@ -103,6 +104,7 @@ class IntegrationView extends React.Component {
     switch (tabname) {
       case 'xlsx':
       case 'pdf':
+      case 'reports':
         return (
           "Generate Report"
         );
@@ -223,6 +225,9 @@ class IntegrationView extends React.Component {
       }
       case 'pdf': {
         return <PdfReportDownload />
+      }
+      case 'reports': {
+        return <Reports />
       }
       case 'microsoft_teams': {
         return <MicrosoftTeamsIntegrationView />

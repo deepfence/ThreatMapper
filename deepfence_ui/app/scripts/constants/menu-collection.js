@@ -50,6 +50,9 @@ export const INTEGRATION_MENU_COLLECTION = [
     name: 'pdf', isActive: true, icon: PDF_LOGO, displayName: 'PDF', category: 'report', bgcolor: '#FFFFFF', parent: 'Reports'
   },
   {
+    name: 'reports', isActive: true, icon: PDF_LOGO, displayName: 'PDF/XLSX', category: 'report', bgcolor: '#FFFFFF', parent: 'Reports'
+  },
+  {
     name: 'microsoft_teams', isActive: false, icon: MICROSOFT_LOGO, displayName: 'Microsoft Teams', category: 'notification', bgcolor: '#0E0E0E', parent: 'Notification'
   },
 ];
