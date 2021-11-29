@@ -8,7 +8,7 @@ import {
   updateTableJSONModalView,
 } from '../../../actions/app-actions';
 import { fetchNodeSpecificDetails } from '../../../utils/web-api-utils';
-import { DfTableV2 } from  '../../common/df-table-v2/index';
+import { DfTableV2 } from '../../common/df-table-v2/index';
 
 class DonutDetailsModal extends React.Component {
   constructor(props) {
@@ -257,7 +257,7 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
 
   const onFetchData = useCallback(
     state => {
-      onPageChange({ selected: state.page });
+      onPageChange({ selected: state });
     },
     [onPageChange]
   );
@@ -267,67 +267,65 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
   }
 
   return (
-    <>
     <DfTableV2
-    onRowClick = {(row) => onRowClick(row)}
-    manual
-    data={rows}
-    defaultPageSize={pageSize}
-    totalRows={numPages * pageSize}
-    columns={[
-      {
-        Header: 'CVE ID',
-        accessor: 'cve_id',
-        maxWidth: 200,
-        Cell: row => (
-          <div className="truncate" title={row.value}>
-            {row.value}
-          </div>
-        ),
-      },
-      {
-        Header: 'Severity',
-        accessor: 'cve_severity',
-        maxWidth: 150,
-        Cell: row => (
-          <div className={`${row.value}-severity`}>{row.value}</div>
-        ),
-      },
-      {
-        Header: 'Package',
-        accessor: 'cve_caused_by_package',
-        maxWidth: 200,
-        Cell: row => (
-          <div className="truncate" title={row.value}>
-            {row.value}
-          </div>
-        ),
-      },
-      {
-        Header: 'Description',
-        accessor: 'cve_description',
-        Cell: row => (
-          <div className="truncate" title={row.value}>
-            {row.value}
-          </div>
-        ),
-        minWidth: 450,
-      },
-      {
-        Header: 'Link',
-        accessor: 'cve_link',
-        Cell: row => (
-          <div className="truncate" title={row.value}>
-            <a href={row.value} target="_blank" rel="noreferrer">
+      onRowClick={(row) => onRowClick(row)}
+      manual
+      data={rows}
+      defaultPageSize={pageSize}
+      totalRows={numPages * pageSize}
+      columns={[
+        {
+          Header: 'CVE ID',
+          accessor: 'cve_id',
+          maxWidth: 200,
+          Cell: row => (
+            <div className="truncate" title={row.value}>
               {row.value}
-            </a>
-          </div>
-        ),
-      },
-    ]}
-    showPagination
-    onPageChange={onFetchData}
-     />
-    </>
+            </div>
+          ),
+        },
+        {
+          Header: 'Severity',
+          accessor: 'cve_severity',
+          maxWidth: 150,
+          Cell: row => (
+            <div className={`${row.value}-severity`}>{row.value}</div>
+          ),
+        },
+        {
+          Header: 'Package',
+          accessor: 'cve_caused_by_package',
+          maxWidth: 200,
+          Cell: row => (
+            <div className="truncate" title={row.value}>
+              {row.value}
+            </div>
+          ),
+        },
+        {
+          Header: 'Description',
+          accessor: 'cve_description',
+          Cell: row => (
+            <div className="truncate" title={row.value}>
+              {row.value}
+            </div>
+          ),
+          minWidth: 450,
+        },
+        {
+          Header: 'Link',
+          accessor: 'cve_link',
+          Cell: row => (
+            <div className="truncate" title={row.value}>
+              <a href={row.value} target="_blank" rel="noreferrer">
+                {row.value}
+              </a>
+            </div>
+          ),
+        },
+      ]}
+      showPagination
+      onPageChange={onFetchData}
+    />
   );
 };
