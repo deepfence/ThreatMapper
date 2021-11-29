@@ -47,5 +47,8 @@ RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bi
     && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.2.1/vessel-v0.2.1-linux-amd-x86_64.tar.gz \
     && tar -xzf vessel-v0.2.1-linux-amd-x86_64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel-v0.2.1-linux-amd-x86_64.tar.gz
+    && rm -rf vessel-v0.2.1-linux-amd-x86_64.tar.gz \
+    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v0.14.0/nerdctl-0.14.0-linux-amd64.tar.gz \
+    && tar Cxzvvf /usr/local/bin nerdctl-0.14.0-linux-amd64.tar.gz \
+    && rm nerdctl-0.14.0-linux-amd64.tar.gz
 ENTRYPOINT ["/usr/local/bin/start_services"]

@@ -37,9 +37,9 @@ RUN apk update --no-cache \
     && rm -rf /usr/lib/python*/ensurepip /usr/local/lib/python*/ensurepip \
     && rm -rf /root/.cache && apk del unzip \
     && rm -f /root/cve_scan_registry/ReadMe.md /root/cve_scan_registry/requirements.txt \
-    && wget https://github.com/containerd/nerdctl/releases/download/v0.11.2/nerdctl-0.11.2-linux-amd64.tar.gz \
-    && tar Cxzvvf /usr/local/bin nerdctl-0.11.2-linux-amd64.tar.gz \
-    && rm nerdctl-0.11.2-linux-amd64.tar.gz
+    && wget https://github.com/containerd/nerdctl/releases/download/v0.14.0/nerdctl-0.14.0-linux-amd64.tar.gz \
+    && tar Cxzvvf /usr/local/bin nerdctl-0.14.0-linux-amd64.tar.gz \
+    && rm nerdctl-0.14.0-linux-amd64.tar.gz
 COPY dependencycheck-base-suppression.xml /usr/local/bin/dependency-check/
 
 WORKDIR /root/cve_scan_registry
