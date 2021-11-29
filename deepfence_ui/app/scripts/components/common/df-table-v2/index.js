@@ -342,16 +342,18 @@ const DfTableV2 = ({
                           [styles.headerOverflowShown]: !!column.showOverflow
                         })} key={key} {...rest}>
                           <span className={styles.headerContent} onClick={onClick}>
-                            {column.render('Header')}
-                            {
-                              column.disableSortBy || !enableSorting ? null : (
-                                <span className={`${styles.sortIndicator} ${column.isSorted
+                            <span>
+                              {column.render('Header')}
+                            </span>
+                            <span className={`${styles.sortIndicator}`}>
+                              {
+                                column.isSorted
                                   ? column.isSortedDesc
-                                    ? 'fa fa-angle-up'
-                                    : 'fa fa-angle-down'
-                                  : ''
-                                  }`} />)
-                            }
+                                    ? <i className="fa fa-angle-up" />
+                                    : <i className="fa fa-angle-down" />
+                                  : null
+                              }
+                            </span>
                           </span>
                           {column.canResize && !disableResizing ? (
                             <div
