@@ -17,6 +17,7 @@ package rpm
 
 import (
 	"bufio"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -47,14 +48,14 @@ func (l lister) ListFeatures(files tarutil.FilesMap) ([]database.FeatureVersion,
 	packagesMap := make(map[string]database.FeatureVersion)
 
 	// Write the required "Packages" file to disk
-	tmpDir, err := os.MkdirTemp(os.TempDir(), "rpm")
+	tmpDir, err := ioutil.TempDir(os.TempDir(), "rpm")
 	defer os.RemoveAll(tmpDir)
 	if err != nil {
 		log.WithError(err).Error("could not create temporary folder for RPM detection")
 		return []database.FeatureVersion{}, commonerr.ErrFilesystem
 	}
 
-	err = os.WriteFile(tmpDir+"/Packages", f, 0700)
+	err = ioutil.WriteFile(tmpDir+"/Packages", f, 0700)
 	if err != nil {
 		log.WithError(err).Error("could not create temporary file for RPM detection")
 		return []database.FeatureVersion{}, commonerr.ErrFilesystem

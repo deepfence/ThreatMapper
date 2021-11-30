@@ -1,4 +1,3 @@
-//go:build darwin || arm || arm64
 // +build darwin arm arm64
 
 // Cross-compiling the snooper requires having pcap binaries,

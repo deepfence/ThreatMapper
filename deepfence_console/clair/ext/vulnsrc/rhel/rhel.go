@@ -281,9 +281,9 @@ func toFeatureVersions(criteria criteria) []database.FeatureVersion {
 		for _, c := range criterions {
 			if strings.Contains(c.Comment, " is installed") && strings.HasPrefix(c.Comment, rhelPrefix) {
 				const prefixLen = len(rhelPrefix)
-				idxVal := strings.Index(c.Comment[prefixLen:], " ")
-				if idxVal == -1 {
-					log.WithField("Inside RHEL ", c.Comment).Warning("Index value is -1")
+				idxVal := strings.Index(c.Comment[prefixLen:]," ")
+				if (idxVal == -1) {
+					log.WithField("Inside RHEL ",c.Comment).Warning("Index value is -1")
 					continue
 				}
 				osVersion, err = strconv.Atoi(strings.TrimSpace(c.Comment[prefixLen : prefixLen+idxVal]))
@@ -293,8 +293,8 @@ func toFeatureVersions(criteria criteria) []database.FeatureVersion {
 			} else if strings.Contains(c.Comment, " is earlier than ") {
 				const prefixLen = len(" is earlier than ")
 				idxVal := strings.Index(c.Comment, " is earlier than ")
-				if idxVal == -1 {
-					log.WithField("Inside RHEL ", c.Comment).Warning("Index value is -1")
+				if (idxVal == -1) {
+					log.WithField("Inside RHEL ",c.Comment).Warning("Index value is -1")
 					continue
 				}
 				featureVersion.Feature.Name = strings.TrimSpace(c.Comment[:idxVal])

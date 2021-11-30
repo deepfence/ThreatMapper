@@ -22,9 +22,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -148,7 +148,7 @@ func loadTLSClientConfig(cfg *Config) (*tls.Config, error) {
 
 	var caCertPool *x509.CertPool
 	if cfg.CAFile != "" {
-		caCert, err := os.ReadFile(cfg.CAFile)
+		caCert, err := ioutil.ReadFile(cfg.CAFile)
 		if err != nil {
 			return nil, err
 		}

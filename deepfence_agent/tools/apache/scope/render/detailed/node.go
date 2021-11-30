@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	cloudProvidersID     = "cloud-providers"
-	cloudRegionsID       = "cloud-regions"
-	kubernetesClustersID = "kubernetes-clusters"
+	cloudProvidersID       = "cloud-providers"
+	cloudRegionsID         = "cloud-regions"
+	kubernetesClustersID   = "kubernetes-clusters"
 )
 
 // Node is the data type that's yielded to the JavaScript layer when

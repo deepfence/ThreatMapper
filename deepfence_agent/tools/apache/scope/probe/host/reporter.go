@@ -32,32 +32,32 @@ var (
 
 // Keys for use in Node.Latest.
 const (
-	Timestamp         = report.Timestamp
-	HostName          = report.HostName
-	LocalNetworks     = report.HostLocalNetworks
-	OS                = report.OS
-	KernelVersion     = report.KernelVersion
-	Uptime            = report.Uptime
-	Load1             = report.Load1
-	CPUUsage          = report.HostCPUUsage
-	MemoryUsage       = report.HostMemoryUsage
-	InterfaceNames    = "interfaceNames"
-	ProbeId           = "probeId"
-	InterfaceIPs      = "interface_ips"
-	CloudProvider     = report.CloudProvider
-	CloudRegion       = report.CloudRegion
-	CloudMetadata     = "cloud_metadata"
-	k8sClusterId      = report.KubernetesClusterId
-	k8sClusterName    = report.KubernetesClusterName
-	UserDfndTags      = "user_defined_tags"
-	AgentVersion      = "version"
-	IsUiVm            = "is_ui_vm"
-	AgentRunning      = "agent_running"
-	nodeTypeHost      = "host"
-	nodeTypeContainer = "container"
-	nodeTypeImage     = "container_image"
-	Name              = "name"
-	Label             = "label"
+	Timestamp           = report.Timestamp
+	HostName            = report.HostName
+	LocalNetworks       = report.HostLocalNetworks
+	OS                  = report.OS
+	KernelVersion       = report.KernelVersion
+	Uptime              = report.Uptime
+	Load1               = report.Load1
+	CPUUsage            = report.HostCPUUsage
+	MemoryUsage         = report.HostMemoryUsage
+	InterfaceNames      = "interfaceNames"
+	ProbeId             = "probeId"
+	InterfaceIPs        = "interface_ips"
+	CloudProvider       = report.CloudProvider
+	CloudRegion         = report.CloudRegion
+	CloudMetadata       = "cloud_metadata"
+	k8sClusterId        = report.KubernetesClusterId
+	k8sClusterName      = report.KubernetesClusterName
+	UserDfndTags        = "user_defined_tags"
+	AgentVersion        = "version"
+	IsUiVm              = "is_ui_vm"
+	AgentRunning        = "agent_running"
+	nodeTypeHost        = "host"
+	nodeTypeContainer   = "container"
+	nodeTypeImage       = "container_image"
+	Name                = "name"
+	Label               = "label"
 )
 
 // Exposed for testing.
@@ -80,16 +80,16 @@ var (
 		//PublicIpAddr:   {ID: PublicIpAddr, Label: "Public IP Address", From: report.FromLatest, Priority: 16},
 		ProbeId: {ID: ProbeId, Label: "Probe ID", From: report.FromLatest, Priority: 17},
 		//ScopeVersion:  {ID: ScopeVersion, Label: "Scope version", From: report.FromLatest, Priority: 14},
-		InterfaceIPs:   {ID: InterfaceIPs, Label: "All Interface IP's", From: report.FromLatest, Priority: 21},
-		CloudProvider:  {ID: CloudProvider, Label: "Cloud Provider", From: report.FromLatest, Priority: 22},
-		CloudRegion:    {ID: CloudRegion, Label: "Cloud Region", From: report.FromLatest, Priority: 23},
-		CloudMetadata:  {ID: CloudMetadata, Label: "Cloud Metadata", From: report.FromLatest, Priority: 24},
-		k8sClusterId:   {ID: k8sClusterId, Label: "Kubernetes Cluster Id", From: report.FromLatest, Priority: 25},
-		k8sClusterName: {ID: k8sClusterName, Label: "Kubernetes Cluster Name", From: report.FromLatest, Priority: 26},
-		UserDfndTags:   {ID: UserDfndTags, Label: "User Defined Tags", From: report.FromLatest, Priority: 27},
-		AgentVersion:   {ID: AgentVersion, Label: "Agent Version", From: report.FromLatest, Priority: 28},
-		IsUiVm:         {ID: IsUiVm, Label: "UI vm", From: report.FromLatest, Priority: 29},
-		AgentRunning:   {ID: AgentRunning, Label: "Agent", From: report.FromLatest, Priority: 33},
+		InterfaceIPs:        {ID: InterfaceIPs, Label: "All Interface IP's", From: report.FromLatest, Priority: 21},
+		CloudProvider:       {ID: CloudProvider, Label: "Cloud Provider", From: report.FromLatest, Priority: 22},
+		CloudRegion:         {ID: CloudRegion, Label: "Cloud Region", From: report.FromLatest, Priority: 23},
+		CloudMetadata:       {ID: CloudMetadata, Label: "Cloud Metadata", From: report.FromLatest, Priority: 24},
+		k8sClusterId:        {ID: k8sClusterId, Label: "Kubernetes Cluster Id", From: report.FromLatest, Priority: 25},
+		k8sClusterName:      {ID: k8sClusterName, Label: "Kubernetes Cluster Name", From: report.FromLatest, Priority: 26},
+		UserDfndTags:        {ID: UserDfndTags, Label: "User Defined Tags", From: report.FromLatest, Priority: 27},
+		AgentVersion:        {ID: AgentVersion, Label: "Agent Version", From: report.FromLatest, Priority: 28},
+		IsUiVm:              {ID: IsUiVm, Label: "UI vm", From: report.FromLatest, Priority: 29},
+		AgentRunning:        {ID: AgentRunning, Label: "Agent", From: report.FromLatest, Priority: 33},
 	}
 
 	MetricTemplates = report.MetricTemplates{
@@ -240,10 +240,10 @@ type UserDefinedTags struct {
 }
 
 type HostDetailsEveryMinute struct {
-	Uptime         string
-	InterfaceNames string
-	InterfaceIPs   string
-	LocalCIDRs     []string
+	Uptime              string
+	InterfaceNames      string
+	InterfaceIPs        string
+	LocalCIDRs          []string
 	sync.RWMutex
 }
 
@@ -366,7 +366,7 @@ func NewReporter(hostID, hostName, probeID, version string, pipes controls.PipeC
 		userDefinedTags: UserDefinedTags{
 			tags: make([]string, 0),
 		},
-		hostDetailsMinute: HostDetailsEveryMinute{},
+		hostDetailsMinute:  HostDetailsEveryMinute{},
 	}
 	if r.k8sClusterId != "" {
 		r.k8sClusterNodeId = report.MakeKubernetesClusterNodeID(r.k8sClusterId)

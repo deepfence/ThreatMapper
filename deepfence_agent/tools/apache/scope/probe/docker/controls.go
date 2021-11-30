@@ -14,7 +14,7 @@ const (
 	ContainerDeleteUserDefinedTags = "container_delete_user_defined_tags"
 	ImageAddUserDefinedTags        = "image_add_user_defined_tags"
 	ImageDeleteUserDefinedTags     = "image_delete_user_defined_tags"
-	waitTime                       = 10
+	waitTime = 10
 )
 
 func (r *registry) addContainerUserDefinedTags(containerID string, req xfer.Request) xfer.Response {
