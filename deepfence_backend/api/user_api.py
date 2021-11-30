@@ -1617,15 +1617,18 @@ class IntegrationView(MethodView):
             if response.status_code != 200:
                 raise InvalidUsage("Looks like no user own this Authentication token provided")
             else:
+                service_key_found = False
                 for data in response.json()["services"]:
                     if data["integrations"]:
                         for integrations in data["integrations"]:
                             if integrations.get("integration_key", ""):
                                 integration_key = integrations.get("integration_key", "")
-                                break
-                    if integration_key == service_key:
+                                if integration_key == service_key:
+                                    service_key_found = True
+                                    break
+                    if service_key_found:
                         break
-                if not integration_key or integration_key != service_key:
+                if not integration_key or not service_key_found:
                     raise InvalidUsage("Looks like integration key provided is not valid")
         except Exception as e:
             raise InvalidUsage(e)
