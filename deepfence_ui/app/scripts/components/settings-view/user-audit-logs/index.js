@@ -1,9 +1,8 @@
-/* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import { isEmpty } from 'lodash';
-import {connect} from 'react-redux';
-import {dateTimeFormat} from '../../../utils/time-utils';
-import DFTable from '../../common/df-table/index';
+import { connect } from 'react-redux';
+import { dateTimeFormat } from '../../../utils/time-utils';
+import { DfTableV2 } from '../../common/df-table-v2';
 import {
   getUserAuditLogAction
 } from '../../../actions/app-actions';
@@ -66,14 +65,14 @@ class UserAuditLogs extends React.Component {
     // this has to come from API, Change it once added in the API.
     const totalPage = totalUserAuditLogs;
     return (
-    // using the same same css class for the scheduled jobs in
-    // settings page. Please check here, if any time make changes to schedule jobs.
+      // using the same same css class for the scheduled jobs in
+      // settings page. Please check here, if any time make changes to schedule jobs.
       <div>
         <div className="scheduled-job-padding">
-          <DFTable
+          <DfTableV2
             data={userAuditLogs}
             page={page}
-            onPageChange={(newPage) => { this.setState({page: newPage, }); }}
+            onPageChange={(newPage) => { this.setState({ page: newPage, }); }}
             columns={[
               {
                 Header: 'Timestamp',
@@ -111,8 +110,9 @@ class UserAuditLogs extends React.Component {
                     {this.convertStringToJson(cell.value)}
                   </div>
                 ),
+                noWrap: 'true',
                 accessor: 'resource',
-                minWidth: 300,
+                minWidth: 600,
               },
               {
                 Header: 'Success',
@@ -126,10 +126,11 @@ class UserAuditLogs extends React.Component {
               },
             ]}
             showPagination
+            totalRows={totalUserAuditLogs}
             defaultPageSize={15}
             pages={totalPage}
             manual
-        />
+          />
         </div>
       </div>
     );

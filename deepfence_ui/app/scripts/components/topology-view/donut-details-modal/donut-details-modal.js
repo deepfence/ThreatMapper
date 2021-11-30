@@ -8,7 +8,7 @@ import {
   updateTableJSONModalView,
 } from '../../../actions/app-actions';
 import { fetchNodeSpecificDetails } from '../../../utils/web-api-utils';
-import DFTable from '../../common/df-table/index';
+import { DfTableV2 } from '../../common/df-table-v2/index';
 
 class DonutDetailsModal extends React.Component {
   constructor(props) {
@@ -250,14 +250,14 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
 
   const onRowClick = useCallback(
     doc => {
-      dispatch(updateTableJSONModalView({ data: { _source: doc } }));
+      dispatch(updateTableJSONModalView({ data: { _source: doc.original } }));
     },
     [dispatch]
   );
 
   const onFetchData = useCallback(
     state => {
-      onPageChange({ selected: state.page });
+      onPageChange({ selected: state });
     },
     [onPageChange]
   );
@@ -267,21 +267,12 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
   }
 
   return (
-    <DFTable
-      getTdProps={(state, rowInfo) => ({
-        onClick: () => onRowClick(rowInfo.original),
-        style: {
-          cursor: 'pointer',
-        },
-      })}
+    <DfTableV2
+      onRowClick={(row) => onRowClick(row)}
       manual
       data={rows}
-      minRows={0}
-      showPagination
       defaultPageSize={pageSize}
-      pages={numPages * pageSize}
-      onFetchData={onFetchData}
-      sortable={false}
+      totalRows={numPages * pageSize}
       columns={[
         {
           Header: 'CVE ID',
@@ -319,6 +310,7 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
               {row.value}
             </div>
           ),
+          minWidth: 350,
         },
         {
           Header: 'Link',
@@ -330,8 +322,11 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
               </a>
             </div>
           ),
+          minWidth: 350
         },
       ]}
+      showPagination
+      onPageChange={onFetchData}
     />
   );
 };
