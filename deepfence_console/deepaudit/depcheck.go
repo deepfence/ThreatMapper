@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -26,7 +25,7 @@ func untarHostFiles(sourceDir string, fileExtn string, language string) (string,
 	} else {
 		tmpExtn = "tmp" + "-" + fileExtn
 	}
-	resultDir, tmpErrVal = ioutil.TempDir("", tmpExtn)
+	resultDir, tmpErrVal = os.MkdirTemp("", tmpExtn)
 	if tmpErrVal != nil {
 		return "", tmpErrVal
 	}
@@ -86,12 +85,12 @@ func untarFiles(srcDir string, fileExtn string) (string, error) {
 		tmpExtn = "tmp" + "-" + fileExtn
 	}
 	if runtime.GOOS == "windows" {
-		resultDir, errVal = ioutil.TempDir("C:/ProgramData/Deepfence/temp", tmpExtn)
+		resultDir, errVal = os.MkdirTemp("C:/ProgramData/Deepfence/temp", tmpExtn)
 		if errVal != nil {
 			return "", errVal
 		}
 	} else {
-		resultDir, errVal = ioutil.TempDir("", tmpExtn)
+		resultDir, errVal = os.MkdirTemp("", tmpExtn)
 		if errVal != nil {
 			return "", errVal
 		}
@@ -225,7 +224,7 @@ func getLanguageVulnerabilities(language string, fileSet map[string]bool) string
 	                    (language == "dotnet")) || (language == "js") ||
 	                                                   (language == "nodejs"){
 	*/
-	fmt.Printf("Number of entries in fileset %d",len(fileSet))
+	fmt.Printf("Number of entries in fileset %d", len(fileSet))
 	for i := 0; i < extDirLen; i++ {
 		extFileDir = extFileDirList[i]
 		if strings.HasPrefix(fileExts[i], ".") {

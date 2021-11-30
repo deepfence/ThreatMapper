@@ -126,4 +126,3 @@ func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
 		return xfer.Response{CVEInfo: "Image upload started"}
 	}
 }
-

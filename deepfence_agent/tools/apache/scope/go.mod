@@ -5,12 +5,11 @@ go 1.13
 require (
 	camlistore.org v0.0.0-20171230002226-a5a65f0d8b22
 	github.com/NYTimes/gziphandler v1.0.2-0.20180227021810-5032c8878b9d
-	github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878
 	github.com/armon/go-radix v0.0.0-20160115234725-4239b77079c7
 	github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go v1.15.78
+	github.com/aws/aws-sdk-go v1.40.43
 	github.com/bluele/gcache v0.0.0-20150827032927-fb6c0b0e1ff0
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/bradfitz/gomemcache v0.0.0-20160117192205-fb1f79c6b65a
@@ -20,15 +19,12 @@ require (
 	github.com/coocood/freecache v0.0.0-20150903053832-a27035d5537f
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deepfence/df-utils v1.2.3
-	github.com/deepfence/procspy v0.0.0-00010101000000-000000000000
-	github.com/docker/docker v1.4.2-0.20180827131323-0c5f8d2b9b23
+	github.com/docker/docker v1.4.2-0.20180827131323-0c5f8d2b9b23 // indirect
 	github.com/dustin/go-humanize v0.0.0-20160923163517-bd88f87ad3a4
 	github.com/fsouza/go-dockerclient v1.3.0
-	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gogo/protobuf v1.3.0
 	github.com/goji/httpauth v0.0.0-20160601135302-2da839ab0f4d
-	github.com/golang/groupcache v0.0.0-20171101203131-84a468cf14b4 // indirect
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.4.3
 	github.com/gomodule/redigo v1.8.5
 	github.com/google/btree v0.0.0-20180124185431-e89373fe6b4a // indirect
 	github.com/google/gopacket v1.1.17
@@ -50,24 +46,21 @@ require (
 	github.com/nats-io/gnatsd v0.8.1-0.20160607194326-f2c17eb159e1 // indirect
 	github.com/nats-io/nats v1.2.1-0.20160607194537-ce9cdc9addff
 	github.com/nats-io/nuid v0.0.0-20160402145409-a5152d67cf63 // indirect
+	github.com/olivere/elastic/v7 v7.0.29
 	github.com/opencontainers/runc v1.0.0-rc5 // indirect
 	github.com/openebs/k8s-snapshot-client v0.0.0-20180831100134-a6506305fb16
-	github.com/opentracing/opentracing-go v1.1.0
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/paypal/ionet v0.0.0-20130919195445-ed0aaebc5417
 	github.com/pborman/uuid v0.0.0-20150824212802-cccd189d45f7
 	github.com/peterbourgon/diskv v2.0.2-0.20171120014656-2973218375c3+incompatible // indirect
 	github.com/peterbourgon/runsvinit v2.0.0+incompatible
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.5.0
 	github.com/richo/GOSHOUT v0.0.0-20190205170632-a1a6db7f26e9
-	github.com/romana/ipset v1.0.0
-	github.com/romana/rlog v0.0.0-20171115192701-f018bc92e7d7 // indirect
-	github.com/shirou/gopsutil v3.21.2+incompatible
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spaolacci/murmur3 v0.0.0-20150829172844-0d12bf811670
 	github.com/spf13/pflag v1.0.1-0.20171106142849-4c012f6dcd95 // indirect
-	github.com/stretchr/testify v1.5.1
-	github.com/tklauser/go-sysconf v0.3.5 // indirect
+	github.com/stretchr/testify v1.6.1
 	github.com/tylerb/graceful v1.2.13
 	github.com/typetypetype/conntrack v1.0.1-0.20181112022515-9d9dd841d4eb
 	github.com/uber/jaeger-client-go v2.22.1+incompatible // indirect
@@ -78,17 +71,15 @@ require (
 	github.com/weaveworks/billing-client v0.5.0
 	github.com/weaveworks/common v0.0.0-20200310113808-2708ba4e60a4
 	github.com/weaveworks/go-checkpoint v0.0.0-20160428112813-62324982ab51
-	github.com/weaveworks/procspy v0.0.0-20150706124340-cb970aa190c3 // indirect
 	github.com/weaveworks/ps v0.0.0-20160725183535-70d17b2d6f76
 	github.com/weaveworks/tcptracer-bpf v0.0.0-20200114145059-84a08fc667c0
 	github.com/weaveworks/weave v2.3.1-0.20180427133448-4da998ab4507+incompatible
 	github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c
-	golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
-	golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa
-	golang.org/x/text v0.3.1-0.20171227012246-e19ae1496984 // indirect
+	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
+	golang.org/x/sys v0.0.0-20210423082822-04245dca01da
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
-	golang.org/x/tools v0.0.0-20190424220101-1e8e1cfdf96b
-	google.golang.org/grpc v1.19.0
+	golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135
+	google.golang.org/grpc v1.33.2
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/inf.v0 v0.9.0 // indirect
 	k8s.io/api v0.0.0-20181204000039-89a74a8d264d

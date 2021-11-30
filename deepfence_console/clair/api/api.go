@@ -17,9 +17,9 @@ package api
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -133,7 +133,7 @@ func tlsClientConfig(caPath string) (*tls.Config, error) {
 		return nil, nil
 	}
 
-	caCert, err := ioutil.ReadFile(caPath)
+	caCert, err := os.ReadFile(caPath)
 	if err != nil {
 		return nil, err
 	}
