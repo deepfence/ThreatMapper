@@ -2,10 +2,9 @@ package procspy
 
 import (
 	"bytes"
+	dfUtils "github.com/deepfence/df-utils"
 	"net"
 	"reflect"
-
-	dfUtils "github.com/deepfence/df-utils"
 )
 
 // ProcNet is an iterator to parse /proc/net/tcp{,6} files.

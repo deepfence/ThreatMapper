@@ -281,3 +281,4 @@ func signum(a int) int {
 func init() {
 	versionfmt.RegisterParser(ParserName, parser{})
 }
+

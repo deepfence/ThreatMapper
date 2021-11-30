@@ -12,10 +12,10 @@ import (
 
 // Control IDs used by the host integration.
 const (
-	GetLogsFromAgent      = "get_logs_from_agent"
-	UploadData            = "uploadData"
-	AddUserDefinedTags    = "host_add_user_defined_tags"
-	DeleteUserDefinedTags = "host_delete_user_defined_tags"
+	GetLogsFromAgent            = "get_logs_from_agent"
+	UploadData                  = "uploadData"
+	AddUserDefinedTags          = "host_add_user_defined_tags"
+	DeleteUserDefinedTags       = "host_delete_user_defined_tags"
 )
 
 func (r *Reporter) registerControls() {

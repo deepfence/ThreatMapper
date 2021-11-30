@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -300,7 +300,7 @@ func (wsCli *WebsocketClient) updateNodeCount() error {
 		return err
 	}
 	if resp.StatusCode == http.StatusOK {
-		bodyBytes, err := io.ReadAll(resp.Body)
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			return err

@@ -18,6 +18,7 @@
 package amzn
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -40,10 +41,10 @@ func TestAmazonLinux1(t *testing.T) {
 	_, filename, _, _ := runtime.Caller(0)
 	path := filepath.Join(filepath.Dir(filename))
 
-	expectedDescription0Bytes, _ := os.ReadFile(path + "/testdata/amazon_linux_1_description_0.txt")
+	expectedDescription0Bytes, _ := ioutil.ReadFile(path + "/testdata/amazon_linux_1_description_0.txt")
 	expectedDescription0 := string(expectedDescription0Bytes)
 
-	expectedDescription1Bytes, _ := os.ReadFile(path + "/testdata/amazon_linux_1_description_1.txt")
+	expectedDescription1Bytes, _ := ioutil.ReadFile(path + "/testdata/amazon_linux_1_description_1.txt")
 	expectedDescription1 := string(expectedDescription1Bytes)
 
 	updateInfoXml, _ := os.Open(path + "/testdata/amazon_linux_1_updateinfo.xml")
@@ -133,10 +134,10 @@ func TestAmazonLinux2(t *testing.T) {
 	_, filename, _, _ := runtime.Caller(0)
 	path := filepath.Join(filepath.Dir(filename))
 
-	expectedDescription0Bytes, _ := os.ReadFile(path + "/testdata/amazon_linux_2_description_0.txt")
+	expectedDescription0Bytes, _ := ioutil.ReadFile(path + "/testdata/amazon_linux_2_description_0.txt")
 	expectedDescription0 := string(expectedDescription0Bytes)
 
-	expectedDescription1Bytes, _ := os.ReadFile(path + "/testdata/amazon_linux_2_description_1.txt")
+	expectedDescription1Bytes, _ := ioutil.ReadFile(path + "/testdata/amazon_linux_2_description_1.txt")
 	expectedDescription1 := string(expectedDescription1Bytes)
 
 	updateInfoXml, _ := os.Open(path + "/testdata/amazon_linux_2_updateinfo.xml")

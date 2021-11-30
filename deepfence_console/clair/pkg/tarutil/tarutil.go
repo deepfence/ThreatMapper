@@ -23,6 +23,7 @@ import (
 	"compress/gzip"
 	"errors"
 	"io"
+	"io/ioutil"
 	"os/exec"
 	"strings"
 )
@@ -91,7 +92,7 @@ func ExtractFiles(r io.Reader, filenames []string) (FilesMap, error) {
 
 			// Extract the element
 			if hdr.Typeflag == tar.TypeSymlink || hdr.Typeflag == tar.TypeLink || hdr.Typeflag == tar.TypeReg {
-				d, _ := io.ReadAll(tr)
+				d, _ := ioutil.ReadAll(tr)
 				data[filename] = d
 			}
 		}
@@ -173,7 +174,7 @@ func NewTarReadCloser(r io.Reader) (*TarReadCloser, error) {
 			}
 			return &TarReadCloser{tar.NewReader(gr), gr}, nil
 		case bytes.HasPrefix(header, bzip2Header):
-			bzip2r := io.NopCloser(bzip2.NewReader(br))
+			bzip2r := ioutil.NopCloser(bzip2.NewReader(br))
 			return &TarReadCloser{tar.NewReader(bzip2r), bzip2r}, nil
 		case bytes.HasPrefix(header, xzHeader):
 			xzr, err := NewXzReader(br)
@@ -184,6 +185,6 @@ func NewTarReadCloser(r io.Reader) (*TarReadCloser, error) {
 		}
 	}
 
-	dr := io.NopCloser(br)
+	dr := ioutil.NopCloser(br)
 	return &TarReadCloser{tar.NewReader(dr), dr}, nil
 }

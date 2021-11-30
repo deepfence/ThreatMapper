@@ -16,17 +16,17 @@ package main
 
 import (
 	"errors"
-	"io"
+	"io/ioutil"
 	"os"
 	"time"
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/fernet/fernet-go"
 	"github.com/quay/clair/v2"
 	"github.com/quay/clair/v2/api"
 	"github.com/quay/clair/v2/database"
 	"github.com/quay/clair/v2/ext/notification"
+	"github.com/fernet/fernet-go"
 )
 
 // ErrDatasourceNotLoaded is returned when the datasource variable in the
@@ -84,7 +84,7 @@ func LoadConfig(path string) (config *Config, err error) {
 	}
 	defer f.Close()
 
-	d, err := io.ReadAll(f)
+	d, err := ioutil.ReadAll(f)
 	if err != nil {
 		return
 	}

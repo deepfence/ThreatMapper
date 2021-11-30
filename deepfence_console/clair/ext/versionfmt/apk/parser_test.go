@@ -197,3 +197,4 @@ func TestParseAndCompare(t *testing.T) {
 		assert.Equal(t, -c.expected, cmp, "%s vs. %s, = %d, expected %d", c.v2, c.v1, cmp, -c.expected)
 	}
 }
+

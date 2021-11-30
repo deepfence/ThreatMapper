@@ -12,25 +12,25 @@ import (
 // about a given node in a given topology, along with the edges (aka
 // adjacency) emanating from the node.
 type Node struct {
-	ID        string          `json:"id,omitempty"`
-	Topology  string          `json:"topology,omitempty"`
-	Sets      Sets            `json:"sets,omitempty"`
-	Adjacency IDList          `json:"adjacency,omitempty"`
-	Latest    StringLatestMap `json:"latest,omitempty"`
-	Metrics   Metrics         `json:"metrics,omitempty" deepequal:"nil==empty"`
-	Parents   Sets            `json:"parents,omitempty"`
-	Children  NodeSet         `json:"children,omitempty"`
+	ID             string          `json:"id,omitempty"`
+	Topology       string          `json:"topology,omitempty"`
+	Sets           Sets            `json:"sets,omitempty"`
+	Adjacency      IDList          `json:"adjacency,omitempty"`
+	Latest         StringLatestMap `json:"latest,omitempty"`
+	Metrics        Metrics         `json:"metrics,omitempty" deepequal:"nil==empty"`
+	Parents        Sets            `json:"parents,omitempty"`
+	Children       NodeSet         `json:"children,omitempty"`
 }
 
 // MakeNode creates a new Node with no initial metadata.
 func MakeNode(id string) Node {
 	return Node{
-		ID:        id,
-		Sets:      MakeSets(),
-		Adjacency: MakeIDList(),
-		Latest:    MakeStringLatestMap(),
-		Metrics:   Metrics{},
-		Parents:   MakeSets(),
+		ID:             id,
+		Sets:           MakeSets(),
+		Adjacency:      MakeIDList(),
+		Latest:         MakeStringLatestMap(),
+		Metrics:        Metrics{},
+		Parents:        MakeSets(),
 	}
 }
 
@@ -189,14 +189,14 @@ func (n Node) Merge(other Node) Node {
 		panic("Cannot merge nodes with different topology types: " + topology + " != " + other.Topology)
 	}
 	return Node{
-		ID:        id,
-		Topology:  topology,
-		Sets:      n.Sets.Merge(other.Sets),
-		Adjacency: n.Adjacency.Merge(other.Adjacency),
-		Latest:    n.Latest.Merge(other.Latest),
-		Metrics:   n.Metrics.Merge(other.Metrics),
-		Parents:   n.Parents.Merge(other.Parents),
-		Children:  n.Children.Merge(other.Children),
+		ID:             id,
+		Topology:       topology,
+		Sets:           n.Sets.Merge(other.Sets),
+		Adjacency:      n.Adjacency.Merge(other.Adjacency),
+		Latest:         n.Latest.Merge(other.Latest),
+		Metrics:        n.Metrics.Merge(other.Metrics),
+		Parents:        n.Parents.Merge(other.Parents),
+		Children:       n.Children.Merge(other.Children),
 	}
 }
 
