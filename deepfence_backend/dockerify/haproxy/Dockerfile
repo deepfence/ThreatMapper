@@ -1,7 +1,8 @@
-FROM golang:1.14.3-buster AS minica-builder
+FROM golang:1.17-alpine3.14 AS minica-builder
 COPY minica.go /go
 COPY genCert.sh /go
 WORKDIR /go
+RUN apk add --no-cache bash
 RUN /bin/bash /go/genCert.sh
 
 
