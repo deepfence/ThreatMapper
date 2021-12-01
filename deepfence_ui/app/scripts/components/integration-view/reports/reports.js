@@ -17,6 +17,7 @@ import {
   downloadPdfReportAction,
 } from '../../../actions/app-actions';
 
+// Defining the options for all the dropdowns
 const config = [
   {
     label: 'Alerts',
@@ -147,6 +148,7 @@ const durationOption = [
   },
 ];
 
+// A validate function to check if the user has selected atleast one option from the dropdowns
 const validate = (values) => {
   const errors = {};
   if (values && values.get('node_type', '').length === 0) {
@@ -184,7 +186,6 @@ const Reports = props => {
     submitting,
     loading,
     info,
-    dead_nodes_toggle,
     tableItems =[],
   } = props;
   const showEmailField = schedule_interval;
@@ -194,6 +195,7 @@ const Reports = props => {
 
   const [showModal, setShowModal] = useState(false);
 
+// A hook to check for the report generation status by initiating a pollable request 
   useEffect(() => {
     const {
       registerPolling,
@@ -203,6 +205,7 @@ const Reports = props => {
     startPolling();
   }, [])
 
+// A function to initiate the report generation
   useEffect(() => {
     console.log('Reports props', props);
     if (resource_type && node_type) {
@@ -217,8 +220,9 @@ const Reports = props => {
     }
   }, [resource_type, node_type]);
 
+
+// Function used to display the NodeType dropdown
   const renderOne = filter => {
-    console.log('renderOne is called!');
     return (
       <div
         className="nodes-filter-item"
@@ -262,7 +266,7 @@ const Reports = props => {
     );
   };
 
-  const renderCveSeverityDropdown = () => {
+  const renderCVESeverityDropdown = () => {
     return (
       <div
         className="nodes-filter-item"
@@ -302,6 +306,7 @@ const Reports = props => {
     );
   };
 
+// Function used to display the ResourceType dropdown
   const renderField = ({
     input,
     type,
@@ -396,9 +401,10 @@ const Reports = props => {
   //   return null;
   // }
 
+// Function that creates the params that need to be 
+// sent to the API call to generate the report 
   const submitClickHandler = (e, props) => {
     e.preventDefault();
-    console.log('submitClickHandler is called!');
     console.log('props', props);
     if (resource_type && node_type) {
       const {
@@ -482,7 +488,6 @@ const Reports = props => {
           type: [node_type.value],
           image_name_with_tag: imageName,
         };
-        console.log('CONTAINER IMAGE', 'image_name_with_tag: ', imageName);
       } else if (node_type.value === 'pod') {
         const k8sClusterName =
           kubernetes_cluster_name && kubernetes_cluster_name.map(v => v.value);
@@ -497,10 +502,10 @@ const Reports = props => {
         globalFilter = {};
       }
       const scheduleInterval = schedule_interval;
+      // Checking for the dead nodes toggle value by checking if the host name selceted or is empty
       let deadNodes;
       if (node_type.value === 'host' || node_type.value === 'container') {
         let lenHostName = 0;
-        console.log(lenHostName);
         globalFilter.host_name &&
           globalFilter.host_name.map(x => (lenHostName = lenHostName + 1));
         deadNodes = dead_nodes_toggle ? true : false;
@@ -509,6 +514,7 @@ const Reports = props => {
         }
       }
       let params = {};
+      // API params for schedule report generation
       if (scheduleInterval) {
         const emailAddress = email_address;
         console.log(
@@ -559,6 +565,7 @@ const Reports = props => {
         'download Type',
         downloadTypeOption
       );
+      // API params for report generation
       params = {
         action: 'download_report',
         file_type: downloadTypeOption,
@@ -611,7 +618,7 @@ const Reports = props => {
           </div>
           <div>
             {checkIfResourceSelected('cve') && (
-              <div>{renderCveSeverityDropdown()}</div>
+              <div>{renderCVESeverityDropdown()}</div>
             )}
           </div>
           <div>
@@ -837,8 +844,8 @@ const mapStateToProps = state => ({
   kubernetes_cluster_name: selector(state, 'kubernetes_cluster_name'),
   kubernetes_namespace: selector(state, 'kubernetes_namespace'),
 
-  loading: state.getIn(['report_download', 'xlsx', 'loading']),
-  info: state.getIn(['report_download', 'xlsx', 'info']),
+  loading: state.getIn(['reportForm', 'form', 'loading']),
+  info: state.getIn(['reportForm', 'form', 'error', 'message']),
 
   topologyFilters: state.getIn(['nodesView', 'topologyFilters']),
 

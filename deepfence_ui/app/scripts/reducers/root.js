@@ -1211,40 +1211,40 @@ export function rootReducer(state = initialState, action) {
       return state.set('integrationName', action.payload);
     }
 
-    // case ActionTypes.REPORT_GENERATION_REQUEST: {
-    //   state = state.setIn(['reportForm', 'form', 'loading'], true);
-    //   state = state.deleteIn(['reportForm', 'form', 'error', 'message']);
-    //   state = state.deleteIn(['reportForm', 'form', 'info']);
-    //   return state;
-    // }
+    case ActionTypes.REPORT_GENERATION_REQUEST: {
+      state = state.setIn(['reportForm', 'form', 'loading'], true);
+      state = state.deleteIn(['reportForm', 'form', 'error', 'message']);
+      state = state.deleteIn(['reportForm', 'form', 'info']);
+      return state;
+    }
 
-    // case ActionTypes.REPORT_GENERATION_SUCCESS: {
-    //   const { payload } = action;
+    case ActionTypes.REPORT_GENERATION_SUCCESS: {
+      const { payload } = action;
 
-    //   state = state.setIn(['reportForm', 'form', 'loading'], false);
-    //   if (payload.error) {
-    //     const errorMessage = payload.error.message;
-    //     state = state.setIn(
-    //       ['reportForm', 'form', 'error', 'message'],
-    //       errorMessage
-    //     );
-    //   } else {
-    //     state = state.setIn(
-    //       ['reportForm', 'form', 'info'],
-    //       'Report Generation has started'
-    //     );
-    //   }
-    //   return state;
-    // }
+      state = state.setIn(['reportForm', 'form', 'loading'], false);
+      if (payload.error) {
+        const errorMessage = payload.error.message;
+        state = state.setIn(
+          ['reportForm', 'form', 'error', 'message'],
+          errorMessage
+        );
+      } else {
+        state = state.setIn(
+          ['reportForm', 'form', 'info'],
+          'Report Generation has started'
+        );
+      }
+      return state;
+    }
 
-    // case ActionTypes.REPORT_GENERATION_FAILURE: {
-    //   state = state.setIn(['reportForm', 'form', 'loading'], false);
-    //   state = state.setIn(
-    //     ['reportForm', 'form', 'error', 'message'],
-    //     'Something went wrong'
-    //   );
-    //   return state;
-    // }
+    case ActionTypes.REPORT_GENERATION_FAILURE: {
+      state = state.setIn(['reportForm', 'form', 'loading'], false);
+      state = state.setIn(
+        ['reportForm', 'form', 'error', 'message'],
+        'Something went wrong'
+      );
+      return state;
+    }
 
     case ActionTypes.REPORT_STATUS_REQUEST: {
       state = state.setIn(['reportForm', 'status', 'loading'], true);
