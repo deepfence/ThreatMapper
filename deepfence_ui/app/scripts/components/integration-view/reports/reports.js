@@ -3,18 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form/immutable';
 import { Map } from 'immutable';
+import moment from 'moment';
 import DFSearchableSelectField from '../../common/multi-select/app-searchable-field';
 import ToggleSwitchField from '../../common/toggle-switch/redux-form-field';
-import DFSelect from '../../common/multi-select/app';
+import pollable from '../../common/header-view/pollable';
 import injectModalTrigger from '../../common/generic-modal/modal-trigger-hoc';
 import Loader from '../../loader';
 import {
   enumerateFiltersAction,
   clearScheduledReportFormAction,
-  xlsxReportDownloadAction,
-  xlsxScheduleEmailAction,
-  getPDFReportAction,
-  getPdfDownloadStatusAction,
+  reportGenerateAction,
+  reportDownloadStatusAction,
   downloadPdfReportAction,
 } from '../../../actions/app-actions';
 
@@ -148,6 +147,32 @@ const durationOption = [
   },
 ];
 
+const validate = (values) => {
+  const errors = {};
+  if (values && values.get('node_type', '').length === 0) {
+    errors.node_type = 'Select one node type';
+  }
+  if (values && values.get('duration', '').length === 0) {
+    errors.duration = 'Choose a duration';
+  }
+  if (values && values.get('resource_type', []).length === 0) {
+    errors.resource_type = 'Select atleast one resource';
+  }
+  if (values && values.get('schedule_interval', '').length !== 0) {
+    if (parseInt(values.get('schedule_interval'), 10) < 1) {
+      errors.schedule_interval = 'Schedule interval must be > 0';
+    }
+    if (isNaN(parseInt(values.get('schedule_interval'), 10))
+        || values.get('schedule_interval').indexOf('.') > -1) {
+      errors.schedule_interval = 'Schedule interval has to be an integer';
+    }
+    if (values.get('email_address', '').length === 0) {
+      errors.email_address = 'Enter email address to send scheduled reports';
+    }
+  }
+  return errors;
+};
+
 const Reports = props => {
   const {
     resource_type,
@@ -160,6 +185,7 @@ const Reports = props => {
     loading,
     info,
     dead_nodes_toggle,
+    tableItems =[],
   } = props;
   const showEmailField = schedule_interval;
   const downloadButtonLabel = schedule_interval
@@ -167,6 +193,16 @@ const Reports = props => {
     : 'Download';
 
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const {
+      registerPolling,
+      startPolling,
+    } = props;
+    registerPolling(reportDownloadStatus);
+    startPolling();
+  }, [])
+
   useEffect(() => {
     console.log('Reports props', props);
     if (resource_type && node_type) {
@@ -303,6 +339,63 @@ const Reports = props => {
     label: el.display,
   }));
 
+  const reportDownloadStatus = (pollParams) => {
+    const {
+      reportDownloadStatusAction: action,
+    } = props;
+
+    const {
+      initiatedByPollable,
+    } = pollParams;
+
+    const params = {
+      initiatedByPollable,
+    };
+    return action(params);
+  }
+
+
+  // const downloadReportFile = (path) => {
+  //   const {
+  //     downloadPdfReportAction: action,
+  //   } = props;
+
+  //   const params = {
+  //     path,
+  //   };
+
+  //   return action(params);
+  // }
+
+  // const renderDownloadLink = (pdfStatus = {}) => {
+  //   const {
+  //     status,
+  //     file_path: filePath,
+  //   } = pdfStatus;
+
+  //   const {
+  //     fileDownloadStatusIm = Map(),
+  //   } = props;
+
+  //   const loading = fileDownloadStatusIm.getIn([filePath, 'loading']);
+
+  //   if (status === 'Completed' && filePath) {
+  //     return (
+  //       <div>
+  //         <span
+  //           className={classnames('fa fa-download', { disabled: loading})}
+  //           title="download"
+  //           style={{cursor: 'pointer'}}
+  //           onClick={() => { if (!loading) downloadReportFile(filePath)}}
+  //         />
+  //         {loading}
+  //         {loading && <Loader style={{top: '25%', fontSize: '2.0rem'}} />}
+  //       </div>
+  //     );
+  //   }
+  //   return null;
+  // }
+
   const submitClickHandler = (e, props) => {
     e.preventDefault();
     console.log('submitClickHandler is called!');
@@ -311,7 +404,6 @@ const Reports = props => {
       const {
         resource_type,
         node_type,
-        topologyFilters,
         duration,
         schedule_interval,
         email_address,
@@ -325,26 +417,26 @@ const Reports = props => {
         alert_severity,
         cve_severity,
         compliance_severity,
-        xlsxReportDownloadAction,
-        xlsxScheduleEmailAction,
+        downloadType,
+        reportGenerateAction: actionDownload,
       } = props;
 
       const resourceTypeText = resource_type.map(el => el.value).join(',');
 
       const resourceData = [];
-      if (resourceTypeText.includes('alert')) {
+      if (resourceTypeText && resourceTypeText.includes('alert')) {
         resourceData.push({
           type: 'alert',
           filter: { severity: alert_severity.map(el => el.value).join(',') },
         });
       }
-      if (resourceTypeText.includes('cve')) {
+      if (resourceTypeText && resourceTypeText.includes('cve')) {
         resourceData.push({
           type: 'cve',
           filter: { cve_severity: cve_severity.map(el => el.value).join(',') },
         });
       }
-      if (resourceTypeText.includes('compliance')) {
+      if (resourceTypeText && resourceTypeText.includes('compliance')) {
         resourceData.push({
           type: 'compliance',
           filter: {
@@ -356,6 +448,7 @@ const Reports = props => {
       }
       let globalFilter;
       const durationValues = duration.value;
+      const downloadTypeOption = downloadType.value;
       if (node_type.value === 'host') {
         const hostName = host_name && host_name.map(v => v.value);
         const os = operating_system && operating_system.map(v => v.value);
@@ -437,6 +530,7 @@ const Reports = props => {
         );
         params = {
           action: 'schedule_send_report',
+          file_type: downloadTypeOption,
           node_type: node_type,
           include_dead_nodes: deadNodes,
           action_args: {
@@ -448,7 +542,7 @@ const Reports = props => {
             durationValues,
           },
         };
-        // return actionScheduleEmail(params);
+        // return xlsxScheduleEmailAction(params);
       }
       console.log(
         'download_report',
@@ -461,19 +555,22 @@ const Reports = props => {
         'filters: ',
         globalFilter,
         'duration: ',
-        durationValues
+        durationValues,
+        'download Type',
+        downloadTypeOption
       );
       params = {
         action: 'download_report',
-        node_type: node_type,
+        file_type: downloadTypeOption,
+        node_type: node_type.value,
         include_dead_nodes: deadNodes,
         action_args: {
-          resources,
+          resources: resourceData,
           filters: globalFilter,
           durationValues,
         },
       };
-      // return actionDownload(params);
+      return actionDownload(params);
     }
   };
 
@@ -695,7 +792,7 @@ const Reports = props => {
             <th> Status </th>
             <th> Download </th>
           </thead>
-          {/* <tbody>
+          <tbody>
             {tableItems &&
               tableItems.map(key => (
                 <tr>
@@ -711,10 +808,10 @@ const Reports = props => {
                   </td>
                   <td>{key.filters}</td>
                   <td>{key.status}</td>
-                  <td>{this.renderDownloadLink(key)}</td>
+                  {/* <td>{renderDownloadLink(key)}</td> */}
                 </tr>
               ))}
-          </tbody> */}
+          </tbody>
         </table>
       </div>
     </div>
@@ -731,7 +828,7 @@ const mapStateToProps = state => ({
   duration: selector(state, 'duration'),
   schedule_interval: selector(state, 'schedule_interval'),
   dead_nodes_toggle: selector(state, 'toggle'),
-  download: selector(state, 'download'),
+  downloadType: selector(state, 'download'),
 
   host_name: selector(state, 'host_name'),
   container_name: selector(state, 'container_name'),
@@ -744,6 +841,10 @@ const mapStateToProps = state => ({
   info: state.getIn(['report_download', 'xlsx', 'info']),
 
   topologyFilters: state.getIn(['nodesView', 'topologyFilters']),
+
+  // fileDownloadStatusIm: state.getIn(['pdfReportForm', 'fileDownload']),
+  tableItems: state.getIn(['reportForm', 'status', 'data']),
+  initiatedByPollable: state.getIn(['reportForm', 'status', 'initiatedByPollable']),
 });
 
 let initialValues = Map({});
@@ -751,22 +852,19 @@ initialValues = initialValues.set('node_type', {
   label: 'Node Type',
   value: 'host',
 });
-// initialValues = initialValues.set('resource_type', {
-//   label: 'Alerts',
-//   value: 'alert',
-// });
 initialValues = initialValues.set('toggle', true);
-// initialValues = initialValues.set('download', {
-//   label: 'XLSX',
-//   value: 'xlsx',
-// });
 
 export default connect(mapStateToProps, {
   enumerateFiltersAction,
+  reportGenerateAction,
+  reportDownloadStatusAction,
   clearScheduledReportFormAction,
 })(
   reduxForm({
     form: 'report-download-form',
     initialValues,
-  })(injectModalTrigger(Reports))
+    validate,
+  })(injectModalTrigger(pollable({
+    pollingIntervalInSecs: 5,
+  })(Reports)))
 );

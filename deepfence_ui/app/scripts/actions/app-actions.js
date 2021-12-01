@@ -62,6 +62,8 @@ import {
   getTopVulnerableActiveContainers,
   getTopVulnerableAttackPaths,
   getTopVulnerableActiveHosts,
+  reportGenerate,
+  reportDownloadStatus,
   xlsxReportDownload,
   xlsxScheduleEmail,
   getPDFReport,
@@ -1459,6 +1461,24 @@ export function getTopVulnerableContainerAndHostsAction(params) {
     getTopVulnerableContainerAndHosts,
     params
   );
+}
+
+export function reportGenerateAction(params) {
+  const actionTypes = [
+    ActionTypes.REPORT_GENERATION_REQUEST,
+    ActionTypes.REPORT_GENERATION_SUCCESS,
+    ActionTypes.REPORT_GENERATION_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, reportGenerate, params);
+}
+
+export function reportDownloadStatusAction(params) {
+  const actionTypes = [
+    ActionTypes.REPORT_STATUS_REQUEST,
+    ActionTypes.REPORT_STATUS_SUCCESS,
+    ActionTypes.REPORT_STATUS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, reportDownloadStatus, params);
 }
 
 export function xlsxReportDownloadAction(params) {

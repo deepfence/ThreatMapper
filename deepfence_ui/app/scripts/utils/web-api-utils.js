@@ -1918,6 +1918,31 @@ export function getTopVulnerableActiveHosts(params = {}) {
   }).then(errorHandler);
 }
 
+export function reportGenerate(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/node_action`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function reportDownloadStatus(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/detailed_report_status`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function xlsxReportDownload(params = {}) {
   const url = `${backendElasticApiEndPoint()}/node_action`;
   return fetch(url, {
