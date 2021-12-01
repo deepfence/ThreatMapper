@@ -1,12 +1,11 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {dateTimeFormat} from '../../../utils/time-utils';
-import DFTable from '../../common/df-table/index';
+import { connect } from 'react-redux';
+import { dateTimeFormat } from '../../../utils/time-utils';
+import { DfTableV2 } from '../../common/df-table-v2';
 import {
   getScheduledTasksAction,
   updateScheduledTasksAction,
 } from '../../../actions/app-actions';
-import withMultiSelectColumn from '../../common/df-table/with-multi-select-column';
 
 class ScheduledJobs extends React.Component {
   constructor(props) {
@@ -16,76 +15,6 @@ class ScheduledJobs extends React.Component {
 
   componentDidMount() {
     this.getScheduledJobs();
-    const {
-      registerActions,
-    } = this.props;
-
-    const actionList = [
-      {
-        name: 'Disable',
-        userRole: 'admin',
-        icon: (<i className="fa fa-eye-slash red cursor" />),
-        onClick: (selectedDocIndex) => {
-          const params = {
-            action: 'disable',
-            scheduled_task_id_list: Object.keys(selectedDocIndex),
-          };
-          return this.updateTasks(params);
-        },
-        postClickSuccess: this.getScheduledJobs,
-        showConfirmationDialog: true,
-        confirmationDialogParams: {
-          dialogTitle: 'Disabled these records?',
-          dialogBody: 'Are you sure you want to disable the selected records?',
-          confirmButtonText: 'Yes, Disable',
-          cancelButtonText: 'No, Keep',
-          contentStyles: {
-            height: '230px',
-          },
-        },
-      },
-      {
-        name: 'Enable',
-        userRole: 'admin',
-        icon: (<i className="fa fa-eye cursor" />),
-        onClick: (selectedDocIndex) => {
-          const params = {
-            action: 'enable',
-            scheduled_task_id_list: Object.keys(selectedDocIndex),
-          };
-          return this.updateTasks(params);
-        },
-        postClickSuccess: this.getScheduledJobs,
-        showConfirmationDialog: true,
-        confirmationDialogParams: {
-          dialogTitle: 'Enable these records?',
-          dialogBody: 'Are you sure you want to enable the selected records?',
-          confirmButtonText: 'Yes, Enable',
-          cancelButtonText: 'No, Keep',
-        },
-      },
-      {
-        name: 'Delete',
-        userRole: 'admin',
-        icon: (<i className="fa fa-trash-o red cursor" />),
-        onClick: (selectedDocIndex) => {
-          const params = {
-            action: 'delete',
-            scheduled_task_id_list: Object.keys(selectedDocIndex),
-          };
-          return this.updateTasks(params);
-        },
-        postClickSuccess: this.getScheduledJobs,
-        showConfirmationDialog: true,
-        confirmationDialogParams: {
-          dialogTitle: 'Delete these records?',
-          dialogBody: 'Are you sure you want to Delete the selected records?',
-          confirmButtonText: 'Yes, Delete',
-          cancelButtonText: 'No, Keep',
-        },
-      },
-    ];
-    registerActions(actionList);
   }
 
   updateTasks(params) {
@@ -105,13 +34,13 @@ class ScheduledJobs extends React.Component {
   render() {
     const {
       tasks = [],
-      multiSelectColumn,
     } = this.props;
     return (
       <div>
         <div className="scheduled-job-padding">
-          <DFTable
+          <DfTableV2
             data={tasks}
+            enableSorting
             columns={[
               {
                 Header: 'Timestamp',
@@ -119,22 +48,22 @@ class ScheduledJobs extends React.Component {
                   dateTimeFormat(row.created_at)
                 ),
                 id: 'created',
-                maxWidth: 200,
+                width: 100
               },
               {
                 Header: 'Node Type',
                 accessor: 'node_type',
-                maxWidth: 150,
+                width: 70
               },
               {
                 Header: 'Action',
                 accessor: 'action',
-                maxWidth: 250,
+                width: 100,
               },
               {
                 Header: 'Cron Expression',
                 accessor: 'cron',
-                maxWidth: 150,
+                width: 100,
               },
               {
                 Header: 'Active',
@@ -144,6 +73,7 @@ class ScheduledJobs extends React.Component {
                     {cell.value === true ? 'Active' : 'Inactive'}
                   </div>
                 ),
+                width: 80,
               },
               {
                 Header: 'Nodes',
@@ -154,7 +84,7 @@ class ScheduledJobs extends React.Component {
                     {row.value}
                   </span>
                 ),
-                minWidth: 200,
+                width: 160,
               },
               {
                 Header: 'Status',
@@ -164,18 +94,84 @@ class ScheduledJobs extends React.Component {
                     {cell.value}
                   </div>
                 ),
-                minWidth: 200,
               },
-              multiSelectColumn,
             ]}
-            getTrProps={(state, rowInfo) => (
+            getRowStyle={(rowInfo) => (
               {
-                style: {
-                  opacity: rowInfo?.original.is_enabled ? 1 : 0.5,
-                },
+                opacity: rowInfo?.original.is_enabled ? 1 : 0.5,
               }
             )}
-        />
+            multiSelectOptions={{
+              actions: [
+                {
+                  name: 'Disable',
+                  userRole: 'admin',
+                  icon: (<i className="fa fa-eye-slash red cursor" />),
+                  onClick: (selectedDocIndex) => {
+                    const params = {
+                      action: 'disable',
+                      scheduled_task_id_list: Object.keys(selectedDocIndex),
+                    };
+                    return this.updateTasks(params);
+                  },
+                  postClickSuccess: this.getScheduledJobs,
+                  showConfirmationDialog: true,
+                  confirmationDialogParams: {
+                    dialogTitle: 'Disabled these records?',
+                    dialogBody: 'Are you sure you want to disable the selected records?',
+                    confirmButtonText: 'Yes, Disable',
+                    cancelButtonText: 'No, Keep',
+                    contentStyles: {
+                      height: '230px',
+                    },
+                  },
+                },
+                {
+                  name: 'Enable',
+                  userRole: 'admin',
+                  icon: (<i className="fa fa-eye cursor" />),
+                  onClick: (selectedDocIndex) => {
+                    const params = {
+                      action: 'enable',
+                      scheduled_task_id_list: Object.keys(selectedDocIndex),
+                    };
+                    return this.updateTasks(params);
+                  },
+                  postClickSuccess: this.getScheduledJobs,
+                  showConfirmationDialog: true,
+                  confirmationDialogParams: {
+                    dialogTitle: 'Enable these records?',
+                    dialogBody: 'Are you sure you want to enable the selected records?',
+                    confirmButtonText: 'Yes, Enable',
+                    cancelButtonText: 'No, Keep',
+                  },
+                },
+                {
+                  name: 'Delete',
+                  userRole: 'admin',
+                  icon: (<i className="fa fa-trash-o red cursor" />),
+                  onClick: (selectedDocIndex) => {
+                    const params = {
+                      action: 'delete',
+                      scheduled_task_id_list: Object.keys(selectedDocIndex),
+                    };
+                    return this.updateTasks(params);
+                  },
+                  postClickSuccess: this.getScheduledJobs,
+                  showConfirmationDialog: true,
+                  confirmationDialogParams: {
+                    dialogTitle: 'Delete these records?',
+                    dialogBody: 'Are you sure you want to Delete the selected records?',
+                    confirmButtonText: 'Yes, Delete',
+                    cancelButtonText: 'No, Keep',
+                  },
+                },
+              ],
+              columnConfig: {
+                accessor: 'id'
+              }
+            }}
+          />
         </div>
       </div>
     );
@@ -189,10 +185,4 @@ const mapStateToProps = state => ({
 export default connect(mapStateToProps, {
   getScheduledTasksAction,
   updateScheduledTasksAction,
-})(withMultiSelectColumn({
-  name: 'schedule-tasks',
-  column: {
-    name: 'Action',
-    accessor: 'id',
-  },
-})(ScheduledJobs));
+})(ScheduledJobs);

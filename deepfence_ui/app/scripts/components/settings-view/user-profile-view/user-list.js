@@ -1,7 +1,6 @@
-/* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import { connect } from 'react-redux';
-import {Map} from 'immutable';
+import { Map } from 'immutable';
 import {
   getAllUsersAction,
   deleteUserAction,
@@ -9,7 +8,7 @@ import {
   showModal,
   toaster,
 } from '../../../actions/app-actions';
-import DFTable from '../../common/df-table/index';
+import { DfTableV2 } from '../../common/df-table-v2';
 import { getUserRole } from '../../../helpers/auth-helper';
 import NotificationToaster from '../../common/notification-toaster/notification-toaster';
 import UserForm from './user-form';
@@ -31,8 +30,8 @@ class UserList extends React.PureComponent {
   }
 
   UNSAFE_componentWillReceiveProps(newProps) {
-    const {deleteError: newDeleteError} = newProps;
-    const {dispatch, deleteError: oldDeleteError = Map()} = this.props;
+    const { deleteError: newDeleteError } = newProps;
+    const { dispatch, deleteError: oldDeleteError = Map() } = this.props;
     if (newDeleteError && newDeleteError.get('timestamp') !== oldDeleteError.get('timestamp')) {
       dispatch(toaster(newDeleteError.get('message')));
     }
@@ -49,11 +48,11 @@ class UserList extends React.PureComponent {
       return acc;
     }, {});
     return dispatch(userUpdateAction(modifiedValues)).then(() => {
-      this.getAllUsers({reload: true});
+      this.getAllUsers({ reload: true });
     });
   }
 
-  renderUserModalContent({userId} = {}) {
+  renderUserModalContent({ userId } = {}) {
     const {
       userList,
     } = this.props;
@@ -101,8 +100,8 @@ class UserList extends React.PureComponent {
     this.props.dispatch(showModal('GENERIC_MODAL', modalProps));
   }
 
-  getAllUsers({reload} = {}) {
-    const {dispatch} = this.props;
+  getAllUsers({ reload } = {}) {
+    const { dispatch } = this.props;
     dispatch(getAllUsersAction()).then((response) => {
       if (reload && response.msg === 'Token has been revoked') {
         window.location.reload(false);
@@ -145,21 +144,21 @@ class UserList extends React.PureComponent {
     return (
       <div>
         <div style={style}>User Accounts</div>
-        <DFTable
+        <DfTableV2
           data={userList}
-          getTdProps={(state, rowInfo, columnInfo) => (
-            {
-              style: {
-                opacity: (rowInfo
-                  && rowInfo.original.isActive === false
-                  && columnInfo.id !== 'id') ? 0.5 : 1,
-              },
+          enableSorting
+          getRowStyle={(row) => {
+            const { isActive } = row.original;
+            return {
+              opacity: isActive ? 1 : 0.5
             }
-          )}
+          }}
           columns={[
             {
               Header: 'ID',
-              accessor: 'id',
+              accessor: (row) => row.id,
+              Cell: (row) => row.value,
+              sortType: 'number'
             },
             {
               Header: 'First Name',
@@ -176,6 +175,7 @@ class UserList extends React.PureComponent {
             {
               Header: 'Agent Count',
               accessor: 'count_of_hosts',
+              sortType: 'number',
               show: sumOfAgentCounts !== 0,
             },
             {
@@ -191,26 +191,25 @@ class UserList extends React.PureComponent {
                 >
                   <i
                     className="fa fa-pencil"
-                    style={{cursor: 'pointer', marginRight: '10px'}}
+                    style={{ cursor: 'pointer', marginRight: '10px' }}
                     onClick={() => this.handleEditUser(row.value)}
                     aria-hidden="true"
                   />
                   {userRole === 'admin' && (
-                  <i
-                    className="fa fa-trash-o"
-                    style={{color: 'red', cursor: 'pointer'}}
-                    onClick={() => this.handleDeleteDialog(row.value)}
-                    aria-hidden="true"
-                  />
+                    <i
+                      className="fa fa-trash-o"
+                      style={{ color: 'red', cursor: 'pointer' }}
+                      onClick={() => this.handleDeleteDialog(row.value)}
+                      aria-hidden="true"
+                    />
                   )}
                 </div>
               ),
-              style: {textAlign: 'left'},
-              sortable: false,
+              disableSortBy: true,
             }
           ]}
         />
-        { isToasterVisible && <NotificationToaster /> }
+        {isToasterVisible && <NotificationToaster />}
       </div>
     );
   }
