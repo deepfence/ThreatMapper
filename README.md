@@ -34,7 +34,7 @@ Deepfence ThreatMapper hunts for vulnerabilities in your production platforms, a
 
 # Getting Started with ThreatMapper
 
-https://user-images.githubusercontent.com/3711627/144278842-f6166b84-7893-4483-a83a-323223ad7672.mov
+https://user-images.githubusercontent.com/1436408/144302426-733a062c-5f56-4404-9c37-547452a6b75b.mp4
 
 ## Planning your Deployment
 
