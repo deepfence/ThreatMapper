@@ -48,22 +48,22 @@ class ScheduledJobs extends React.Component {
                   dateTimeFormat(row.created_at)
                 ),
                 id: 'created',
-                maxWidth: 200,
+                width: 100
               },
               {
                 Header: 'Node Type',
                 accessor: 'node_type',
-                maxWidth: 150,
+                width: 70
               },
               {
                 Header: 'Action',
                 accessor: 'action',
-                maxWidth: 250,
+                width: 100,
               },
               {
                 Header: 'Cron Expression',
                 accessor: 'cron',
-                maxWidth: 150,
+                width: 100,
               },
               {
                 Header: 'Active',
@@ -73,6 +73,7 @@ class ScheduledJobs extends React.Component {
                     {cell.value === true ? 'Active' : 'Inactive'}
                   </div>
                 ),
+                width: 80,
               },
               {
                 Header: 'Nodes',
@@ -83,7 +84,7 @@ class ScheduledJobs extends React.Component {
                     {row.value}
                   </span>
                 ),
-                minWidth: 200,
+                width: 160,
               },
               {
                 Header: 'Status',
@@ -93,7 +94,6 @@ class ScheduledJobs extends React.Component {
                     {cell.value}
                   </div>
                 ),
-                minWidth: 200,
               },
             ]}
             getRowStyle={(rowInfo) => (
