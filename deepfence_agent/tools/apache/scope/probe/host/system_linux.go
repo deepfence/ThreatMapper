@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -15,7 +17,23 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-const kb = 1024
+// agent is something
+const (
+	DockerSockPath = "/var/run/docker.sock"
+	HostMountDir   = "/fenced/mnt/host/"
+	kb             = 1024
+)
+
+// FileExists something
+func FileExists(name string) bool {
+	// Reports whether the named file or directory exists.
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
 
 // Uname is swappable for mocking in tests.
 var Uname = unix.Uname
@@ -27,6 +45,15 @@ var GetKernelReleaseAndVersion = func() (string, string, error) {
 		return "unknown", "unknown", err
 	}
 	release := utsname.Release[:bytes.IndexByte(utsname.Release[:], 0)]
+	if !FileExists(HostMountDir) {
+		versionBytes, err := exec.Command("grep", "^PRETTY_NAME=", `/etc/os-release`).CombinedOutput()
+		if err != nil {
+			return string(release), "unknown", err
+		}
+		version := strings.Trim(string(versionBytes), " \n")
+		version = version[13 : len(version)-1]
+		return string(release), version, nil
+	}
 	version := utsname.Version[:bytes.IndexByte(utsname.Version[:], 0)]
 	return string(release), string(version), nil
 }
