@@ -15,15 +15,15 @@ Deepfence ThreatMapper hunts for vulnerabilities in your production platforms, a
 
 <table width="100%">
   <tr>
-  <td align="center" width="33%"><a href="../../raw/master/images/readme/threatmapper-topology-full.jpg"><img src="images/readme/threatmapper-topology-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-topology-full.jpg"><img src="images/readme/threatmapper-topology-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Learn the Topology
   </td>
-  <td align="center" width="33%"><a href="../../raw/master/images/readme/threatmapper-vulnerabilities-full.jpg"><img src="images/readme/threatmapper-vulnerabilities-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-vulnerabilities-full.jpg"><img src="images/readme/threatmapper-vulnerabilities-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Identify Vulner&shy;abilities
   </td>
-  <td align="center" width="33%"><a href="../../raw/master/images/readme/threatmapper-exploits-full.jpg"><img src="images/readme/threatmapper-exploits-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-exploits-full.jpg"><img src="images/readme/threatmapper-exploits-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Discover Attack Paths
   </td>
