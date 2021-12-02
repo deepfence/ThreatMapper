@@ -239,7 +239,7 @@ const DfTableV2 = ({
     () => ({
       // When using the useFlexLayout:
       minWidth: 30, // minWidth is only used as a limit for resizing
-      width: 150, // width is used for both the flex-basis and flex-grow
+      width: 100, // width is used for both the flex-basis and flex-grow
       maxWidth: 500, // maxWidth is only used as a limit for resizing
     }),
     []

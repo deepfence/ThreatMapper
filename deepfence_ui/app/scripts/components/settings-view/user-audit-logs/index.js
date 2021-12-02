@@ -80,27 +80,27 @@ class UserAuditLogs extends React.Component {
                   dateTimeFormat(row.created_at)
                 ),
                 id: 'created',
-                maxWidth: 200,
+                width: 120,
               },
               {
                 Header: 'Event',
                 accessor: 'event',
-                maxWidth: 150,
+                width: 80,
               },
               {
                 Header: 'Action',
                 accessor: 'action',
-                maxWidth: 150,
+                width: 80,
               },
               {
                 Header: 'User Email',
                 accessor: 'user_email',
-                maxWidth: 250,
+                width: 130,
               },
               {
                 Header: 'User Role',
                 accessor: 'user_role',
-                maxWidth: 150,
+                width: 100,
               },
               {
                 Header: 'Resources',
@@ -112,7 +112,7 @@ class UserAuditLogs extends React.Component {
                 ),
                 noWrap: 'true',
                 accessor: 'resource',
-                minWidth: 600,
+                width: 500,
               },
               {
                 Header: 'Success',
@@ -122,7 +122,7 @@ class UserAuditLogs extends React.Component {
                     {cell.value === true ? 'True' : 'False'}
                   </div>
                 ),
-                maxWidth: 150,
+                width: 60,
               },
             ]}
             showPagination
