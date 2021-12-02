@@ -164,8 +164,24 @@ def get_nodes_list(params):
 
         except:
             pass
+    result_nodes = []
+    registry_images = {}
+    for node in filtered_node_list:
+        if node["type"] == NODE_TYPE_REGISTRY_IMAGE:
+            if registry_images.get(node.get("image_name")):
+                registry_images[node["image_name"]]["tags"].append(node)
+            else:
+                registry_images[node["image_name"]] = {
+                    "image_name": node["image_name"],
+                    "type": NODE_TYPE_REGISTRY_IMAGE,
+                    "tags": [node],
+                }
+        else:
+            result_nodes.append(node)
+    if registry_images:
+        result_nodes.extend(list(registry_images.values()))
     resp = {
-        "data": filtered_node_list[params["start_index"]:params["start_index"] + params["size"]],
+        "data": result_nodes[params["start_index"]:params["start_index"] + params["size"]],
         "total": len(filtered_node_list),
         **additional_resp
     }
@@ -371,4 +387,5 @@ def get_active_node_images_count(node_filters):
                     not node_details.get("pseudo", False):
                 if node_details["image_name_with_tag"] not in active_images:
                     active_images.append(node_details["image_name_with_tag"])
-    return {"hosts": len(active_hosts), "host_names": active_hosts, "images": len(active_images), "image_names": active_images, "clusters": active_cluster}
+    return {"hosts": len(active_hosts), "host_names": active_hosts, "images": len(active_images),
+            "image_names": active_images, "clusters": active_cluster}
