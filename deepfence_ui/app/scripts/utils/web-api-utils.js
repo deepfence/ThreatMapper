@@ -1943,6 +1943,59 @@ export function reportDownloadStatus(params = {}) {
   }).then(errorHandler);
 }
 
+export function downloadReport(params = {}) {
+  const { path = '' } = params;
+  const splitPath = path.split('/');
+  let filename = splitPath[splitPath.length - 1];
+  const url = `${downloadApiEndPoint()}/downloadFile`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'deepfence-key': localStorage.getItem('dfApiKey'),
+      DF_FILE_NAME: path,
+    },
+  })
+    .then(response => {
+      return new Promise((resolve, reject) => {
+        if (response.ok) {
+          resolve(response.blob());
+        } else {
+          if (response.status === 400) {
+            response.json().then(
+              jObj => {
+                reject({
+                  ...jObj.error,
+                  code: response.status,
+                });
+              },
+              error => {
+                reject({
+                  message: 'Failed to decode',
+                  code: 'FTDJ',
+                });
+              }
+            );
+          } else {
+            reject({
+              message: 'Failed to fetch file',
+              code: 'FFEF',
+            });
+          }
+        }
+      });
+    })
+    .then(blob => {
+      const fileURL = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = fileURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+}
+
 export function xlsxReportDownload(params = {}) {
   const url = `${backendElasticApiEndPoint()}/node_action`;
   return fetch(url, {

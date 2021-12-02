@@ -1271,36 +1271,36 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
-    // case ActionTypes.DOWNLOAD_REPORT_REQUEST: {
-    //   const { input: { path } = {} } = action;
-    //   state = state.setIn(
-    //     ['reportForm', 'fileDownload', path, 'loading'],
-    //     true
-    //   );
-    //   return state;
-    // }
+    case ActionTypes.DOWNLOAD_REPORT_REQUEST: {
+      const { input: { path } = {} } = action;
+      state = state.setIn(
+        ['reportForm', 'fileDownload', path, 'loading'],
+        true
+      );
+      return state;
+    }
 
-    // case ActionTypes.DOWNLOAD_REPORT_SUCCESS: {
-    //   const { input: { path } = {} } = action;
-    //   state = state.setIn(
-    //     ['reportForm', 'fileDownload', path, 'loading'],
-    //     false
-    //   );
-    //   return state;
-    // }
+    case ActionTypes.DOWNLOAD_REPORT_SUCCESS: {
+      const { input: { path } = {} } = action;
+      state = state.setIn(
+        ['reportForm', 'fileDownload', path, 'loading'],
+        false
+      );
+      return state;
+    }
 
-    // case ActionTypes.DOWNLOAD_REPORT_FAILURE: {
-    //   const { input: { path } = {}, payload: { message } = {} } = action;
-    //   state = state.setIn(
-    //     ['reportForm', 'fileDownload', path, 'loading'],
-    //     false
-    //   );
-    //   state = state.setIn(
-    //     ['reportForm', 'fileDownload', path, 'error', 'message'],
-    //     message
-    //   );
-    //   return state;
-    // }
+    case ActionTypes.DOWNLOAD_REPORT_FAILURE: {
+      const { input: { path } = {}, payload: { message } = {} } = action;
+      state = state.setIn(
+        ['reportForm', 'fileDownload', path, 'loading'],
+        false
+      );
+      state = state.setIn(
+        ['reportForm', 'fileDownload', path, 'error', 'message'],
+        message
+      );
+      return state;
+    }
 
     case ActionTypes.PDF_REPORT_GENERATE_REQUEST: {
       state = state.setIn(['pdfReportForm', 'form', 'loading'], true);

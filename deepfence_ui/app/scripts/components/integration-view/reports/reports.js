@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form/immutable';
 import { Map } from 'immutable';
 import moment from 'moment';
+import classnames from 'classnames';
 import DFSearchableSelectField from '../../common/multi-select/app-searchable-field';
 import ToggleSwitchField from '../../common/toggle-switch/redux-form-field';
 import pollable from '../../common/header-view/pollable';
@@ -14,7 +15,7 @@ import {
   clearScheduledReportFormAction,
   reportGenerateAction,
   reportDownloadStatusAction,
-  downloadPdfReportAction,
+  downloadReportAction,
 } from '../../../actions/app-actions';
 
 // Defining the options for all the dropdowns
@@ -187,6 +188,7 @@ const Reports = props => {
     loading,
     info,
     tableItems =[],
+    downloadType
   } = props;
   const showEmailField = schedule_interval;
   const downloadButtonLabel = schedule_interval
@@ -360,46 +362,48 @@ const Reports = props => {
   }
 
 
-  // const downloadReportFile = (path) => {
-  //   const {
-  //     downloadPdfReportAction: action,
-  //   } = props;
+  const downloadReportFile = (path) => {
+    const {
+      downloadReportAction: action,
+    } = props;
 
-  //   const params = {
-  //     path,
-  //   };
+    const params = {
+      path,
+    };
 
-  //   return action(params);
-  // }
+    return action(params);
+  }
 
-  // const renderDownloadLink = (pdfStatus = {}) => {
-  //   const {
-  //     status,
-  //     file_path: filePath,
-  //   } = pdfStatus;
+  const renderDownloadLink = (reportStatus = {}) => {
+    const {
+      status,
+      report_path: filePath,
+    } = reportStatus;
+    console.log('reportStatus', reportStatus);
 
-  //   const {
-  //     fileDownloadStatusIm = Map(),
-  //   } = props;
+    const {
+      fileDownloadStatusIm = Map(),
+    } = props;
 
-  //   const loading = fileDownloadStatusIm.getIn([filePath, 'loading']);
+    const loading = fileDownloadStatusIm.getIn([filePath, 'loading']);
 
-  //   if (status === 'Completed' && filePath) {
-  //     return (
-  //       <div>
-  //         <span
-  //           className={classnames('fa fa-download', { disabled: loading})}
-  //           title="download"
-  //           style={{cursor: 'pointer'}}
-  //           onClick={() => { if (!loading) downloadReportFile(filePath)}}
-  //         />
-  //         {loading}
-  //         {loading && <Loader style={{top: '25%', fontSize: '2.0rem'}} />}
-  //       </div>
-  //     );
-  //   }
-  //   return null;
-  // }
+    if (status === 'Completed' && filePath) {
+      console.log('filePath', filePath);
+      return (
+        <div>
+          <span
+            className={classnames('fa fa-download', { disabled: loading})}
+            title="download"
+            style={{cursor: 'pointer'}}
+            onClick={() => { if (!loading) downloadReportFile(filePath)}}
+          />
+          {loading}
+          {loading && <Loader style={{top: '25%', fontSize: '2.0rem'}} />}
+        </div>
+      );
+    }
+    return null;
+  }
 
 // Function that creates the params that need to be 
 // sent to the API call to generate the report 
@@ -430,19 +434,31 @@ const Reports = props => {
       const resourceTypeText = resource_type.map(el => el.value).join(',');
 
       const resourceData = [];
-      if (resourceTypeText && resourceTypeText.includes('alert')) {
+      if (resourceTypeText && resourceTypeText.includes('alert') && alert_severity) {
         resourceData.push({
           type: 'alert',
           filter: { severity: alert_severity.map(el => el.value).join(',') },
         });
       }
-      if (resourceTypeText && resourceTypeText.includes('cve')) {
+      if (resourceTypeText && resourceTypeText.includes('alert') && !alert_severity) { 
+        resourceData.push({
+          type: 'alert',
+          filter: {},
+        });
+      }
+      if (resourceTypeText && resourceTypeText.includes('cve') && cve_severity) {
         resourceData.push({
           type: 'cve',
           filter: { cve_severity: cve_severity.map(el => el.value).join(',') },
         });
       }
-      if (resourceTypeText && resourceTypeText.includes('compliance')) {
+      if (resourceTypeText && resourceTypeText.includes('alert') && !cve_severity) { 
+        resourceData.push({
+          type: 'cve',
+          filter: {},
+        });
+      }
+      if (resourceTypeText && resourceTypeText.includes('compliance') && compliance_severity) {
         resourceData.push({
           type: 'compliance',
           filter: {
@@ -452,9 +468,15 @@ const Reports = props => {
           },
         });
       }
+      if (resourceTypeText && resourceTypeText.includes('alert') && !compliance_severity) { 
+        resourceData.push({
+          type: 'compliance',
+          filter: {},
+        });
+      }
       let globalFilter;
-      const durationValues = duration.value;
-      const downloadTypeOption = downloadType.value;
+      const durationValues = duration && duration.value;
+      const downloadTypeOption = downloadType && downloadType.value;
       if (node_type.value === 'host') {
         const hostName = host_name && host_name.map(v => v.value);
         const os = operating_system && operating_system.map(v => v.value);
@@ -659,6 +681,7 @@ const Reports = props => {
               placeholder="Select Duration"
             />
           </div>
+          {!duration && <div className="error-message">Choose a duration</div>}
           <Field
             component={renderField}
             type="text"
@@ -765,6 +788,7 @@ const Reports = props => {
               placeholder="Select download type"
             />
           </div>
+          {!downloadType && <div className="error-message">Choose a download type</div>}
           <div className="form-field relative">
             <button
               className="primary-btn"
@@ -809,13 +833,11 @@ const Reports = props => {
                     )}
                   </td>
                   <td>
-                    {key.report_type === 'cve'
-                      ? 'vulnerability'
-                      : key.report_type}
+                    {key.file_type}
                   </td>
                   <td>{key.filters}</td>
                   <td>{key.status}</td>
-                  {/* <td>{renderDownloadLink(key)}</td> */}
+                  <td>{renderDownloadLink(key)}</td>
                 </tr>
               ))}
           </tbody>
@@ -849,7 +871,7 @@ const mapStateToProps = state => ({
 
   topologyFilters: state.getIn(['nodesView', 'topologyFilters']),
 
-  // fileDownloadStatusIm: state.getIn(['pdfReportForm', 'fileDownload']),
+  fileDownloadStatusIm: state.getIn(['reportForm', 'fileDownload']),
   tableItems: state.getIn(['reportForm', 'status', 'data']),
   initiatedByPollable: state.getIn(['reportForm', 'status', 'initiatedByPollable']),
 });
@@ -865,12 +887,13 @@ export default connect(mapStateToProps, {
   enumerateFiltersAction,
   reportGenerateAction,
   reportDownloadStatusAction,
+  downloadReportAction,
   clearScheduledReportFormAction,
 })(
   reduxForm({
     form: 'report-download-form',
-    initialValues,
     validate,
+    initialValues,
   })(injectModalTrigger(pollable({
     pollingIntervalInSecs: 5,
   })(Reports)))

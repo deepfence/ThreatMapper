@@ -64,6 +64,7 @@ import {
   getTopVulnerableActiveHosts,
   reportGenerate,
   reportDownloadStatus,
+  downloadReport,
   xlsxReportDownload,
   xlsxScheduleEmail,
   getPDFReport,
@@ -1479,6 +1480,15 @@ export function reportDownloadStatusAction(params) {
     ActionTypes.REPORT_STATUS_FAILURE,
   ];
   return genericThunkAction(actionTypes, reportDownloadStatus, params);
+}
+
+export function downloadReportAction(params) {
+  const actionTypes = [
+    ActionTypes.DOWNLOAD_REPORT_REQUEST,
+    ActionTypes.DOWNLOAD_REPORT_SUCCESS,
+    ActionTypes.DOWNLOAD_REPORT_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, downloadReport, params);
 }
 
 export function xlsxReportDownloadAction(params) {
