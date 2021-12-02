@@ -20,7 +20,7 @@ func buildHttpClient() *http.Client {
 	transport := &http.Transport{
 		MaxIdleConnsPerHost: maxIdleConnsPerHost,
 		DialContext: (&net.Dialer{
-			Timeout: 10 * time.Second,
+			Timeout:   10 * time.Second,
 			KeepAlive: 30 * time.Second,
 		}).DialContext,
 		TLSHandshakeTimeout: 30 * time.Second,

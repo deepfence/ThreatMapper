@@ -365,6 +365,11 @@ func DetectCloudServiceProvider() string {
 	if err == nil {
 		return "digital_ocean"
 	}
+	// Check if AWS ECS / Fargate
+	_, err = GetAWSFargateMetadata(true)
+	if err == nil {
+		return "aws_fargate"
+	}
 	// Check if Softlayer
 	_, err = GetSoftlayerMetadata(true)
 	if err == nil {
