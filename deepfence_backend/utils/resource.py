@@ -166,18 +166,23 @@ def get_nodes_list(params):
             pass
     result_nodes = []
     registry_images = {}
+    counter = 0
     for node in filtered_node_list:
         if node["type"] == NODE_TYPE_REGISTRY_IMAGE:
-            if registry_images.get(node.get("image_name")):
-                registry_images[node["image_name"]]["tags"].append(node)
-            else:
-                registry_images[node["image_name"]] = {
+            image_index = registry_images.get(node.get("image_name"), None)
+            if image_index is None:
+                result_nodes.append({
                     "image_name": node["image_name"],
                     "type": NODE_TYPE_REGISTRY_IMAGE,
                     "tags": [node],
-                }
+                })
+                registry_images[node["image_name"]] = counter
+                counter += 1
+            else:
+                result_nodes[image_index]["tags"].append(node)
         else:
             result_nodes.append(node)
+            counter += 1
     if registry_images:
         result_nodes.extend(list(registry_images.values()))
     resp = {
