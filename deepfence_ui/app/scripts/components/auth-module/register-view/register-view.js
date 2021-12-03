@@ -4,6 +4,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import ReactTooltip from 'react-tooltip';
 
 // Images imports
 import  brandLogo  from '../../../../images/deepfence-logo.png';
@@ -104,14 +105,20 @@ class RegisterView extends React.Component {
               <label htmlFor="password">
                 <i className="fa fa-key" aria-hidden="true"></i>
                 <input type="password" className="form-control" name="password" placeholder="Password*" value={password} onChange={this.handleChange} />
-                <span style={{marginLeft: '330px'}}
-                className="label-info fa fa-info-circle"
-                title="Minimum password length is 5 characters.
-                Password should contain at least 1 uppercase character (A-Z),
-                at least 1 lowercase character (a-z),
-                at least 1 digit (0-9) and
-                at least 1 special character (punctuation)"
+                <span
+                data-tip
+                data-event='click focus'
+                data-for="password-info"
+                style={{marginLeft: '330px'}}
+                className="fa fa-info-circle"
                 />
+                <ReactTooltip globalEventOff='click' id="password-info" type= 'dark' effect= 'solid' place= 'right'>
+                Minimum password length is 5 characters.<br />
+                Password should contain at least 1 uppercase character (A-Z),<br />
+                at least 1 lowercase character (a-z),<br />
+                at least 1 digit (0-9) and<br />
+                at least 1 special character (punctuation)<br />
+                </ReactTooltip>
               </label>
               {submitted && !password && <div className="field-error">Password is required</div>}
             </div>
