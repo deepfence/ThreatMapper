@@ -1349,6 +1349,14 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
+    case ActionTypes.ADD_MAIL_CONFIGURATION_SUCCESS: {
+      const {
+        payload: { error },
+      } = action;
+      state = state.set('mail_configurations_error', error.message);
+      return state;
+    }
+
     case ActionTypes.DELETE_MAIL_CONFIGURATION_SUCCESS: {
       const {
         payload: { data },
