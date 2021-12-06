@@ -452,7 +452,7 @@ const Reports = props => {
           filter: { cve_severity: cve_severity.map(el => el.value).join(',') },
         });
       }
-      if (resourceTypeText && resourceTypeText.includes('alert') && !cve_severity) { 
+      if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) { 
         resourceData.push({
           type: 'cve',
           filter: {},
@@ -468,7 +468,7 @@ const Reports = props => {
           },
         });
       }
-      if (resourceTypeText && resourceTypeText.includes('alert') && !compliance_severity) { 
+      if (resourceTypeText && resourceTypeText.includes('compliance') && !compliance_severity) { 
         resourceData.push({
           type: 'compliance',
           filter: {},
