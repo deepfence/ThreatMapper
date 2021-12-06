@@ -39,7 +39,7 @@ def decrypt(cipher_text):
     return aes_obj.decrypt(codecs.decode(cipher_text, "hex")).decode("utf-8")
 
 
-def get_scan_status_for_registry_images(registry_image_list):
+def get_scan_status_for_registry_images(registry_image_list, image_cve_status=None):
     total_scanned = 0
     scan_in_progress = 0
     if not registry_image_list:
@@ -49,11 +49,12 @@ def get_scan_status_for_registry_images(registry_image_list):
         "COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "UPLOADING_IMAGE": "in_progress",
         "UPLOAD_COMPLETE": "in_progress"}
     cve_never_scanned = "never_scanned"
-    image_index = get_image_cve_status()
+    if not image_cve_status:
+        image_cve_status = get_image_cve_status()
     # merge registry_image_list and image index
     registry_image_list_with_status = []
     for reg_image in registry_image_list:
-        cve_status = image_index.get(reg_image["image_name_with_tag"], {})
+        cve_status = image_cve_status.get(reg_image["image_name_with_tag"], {})
         if cve_status:
             reg_image["vulnerability_scan_status"] = cve_status_map.get(
                 cve_status["action"], cve_never_scanned)
@@ -87,8 +88,7 @@ def get_nodes_list(params):
                                      for img in image_list_details["image_list"]}
                     additional_resp["unique_images"] = len(unique_images)
                     images_list, additional_resp["total_scanned"], additional_resp["scan_in_progress"] = \
-                        get_scan_status_for_registry_images(
-                            image_list_details["image_list"])
+                        get_scan_status_for_registry_images(image_list_details["image_list"])
                     node_list += images_list
         else:
             formatted_data = redis.get(websocketio_channel_name_format(
@@ -175,16 +175,16 @@ def get_nodes_list(params):
                     "image_name": node["image_name"],
                     "type": NODE_TYPE_REGISTRY_IMAGE,
                     "tags": [node],
+                    "total_tags": 1
                 })
                 registry_images[node["image_name"]] = counter
                 counter += 1
             else:
                 result_nodes[image_index]["tags"].append(node)
+                result_nodes[image_index]["total_tags"] += 1
         else:
             result_nodes.append(node)
             counter += 1
-    if registry_images:
-        result_nodes.extend(list(registry_images.values()))
     resp = {
         "data": result_nodes[params["start_index"]:params["start_index"] + params["size"]],
         "total": len(filtered_node_list),
