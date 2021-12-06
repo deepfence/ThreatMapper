@@ -43,7 +43,7 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
     total_scanned = 0
     scan_in_progress = 0
     if not registry_image_list:
-        return [], 0, 0
+        return [], 0, 0, 0
     cve_status_map = {
         "QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
         "COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "UPLOADING_IMAGE": "in_progress",
@@ -53,7 +53,9 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
         image_cve_status = get_image_cve_status()
     # merge registry_image_list and image index
     registry_image_list_with_status = []
+    unique_images = set()
     for reg_image in registry_image_list:
+        unique_images.add(reg_image["image_name"])
         cve_status = image_cve_status.get(reg_image["image_name_with_tag"], {})
         if cve_status:
             reg_image["vulnerability_scan_status"] = cve_status_map.get(
@@ -69,7 +71,7 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
             reg_image["vulnerability_scan_status_time"] = ""
             reg_image["vulnerability_scan_status_msg"] = ""
         registry_image_list_with_status.append(reg_image)
-    return registry_image_list_with_status, total_scanned, scan_in_progress
+    return registry_image_list_with_status, total_scanned, scan_in_progress, len(unique_images)
 
 
 def get_nodes_list(params):
@@ -87,7 +89,7 @@ def get_nodes_list(params):
                     unique_images = {img["image_name"]
                                      for img in image_list_details["image_list"]}
                     additional_resp["unique_images"] = len(unique_images)
-                    images_list, additional_resp["total_scanned"], additional_resp["scan_in_progress"] = \
+                    images_list, additional_resp["total_scanned"], additional_resp["scan_in_progress"], _ = \
                         get_scan_status_for_registry_images(image_list_details["image_list"])
                     node_list += images_list
         else:
