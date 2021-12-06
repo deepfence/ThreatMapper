@@ -29,10 +29,10 @@ generate: build
 		./tests/escaping.go
 	bin/easyjson -all \
 		./tests/data.go \
- 		./tests/nothing.go \
- 		./tests/errors.go \
- 		./tests/html.go \
- 		./tests/type_declaration_skip.go
+		./tests/nothing.go \
+		./tests/errors.go \
+		./tests/html.go \
+		./tests/type_declaration_skip.go
 	bin/easyjson \
 		./tests/nested_easy.go \
 		./tests/named_type.go \

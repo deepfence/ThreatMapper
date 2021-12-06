@@ -5,7 +5,7 @@ the outside' via environment variables and/or config file and has no
 dependencies other than the standard Golang library.
 
 It is called "rlog", because it was originally written for the
-[Romana project](https://github.com/romana/romana). 
+[Romana project](https://github.com/romana/romana).
 
 
 ## Features
@@ -289,13 +289,13 @@ trace level.
     import "github.com/romana/rlog"
 
     func main() {
- 	   rlog.Debug("A debug message: For the developer")
- 	   rlog.Info("An info message: Normal operation messages")
- 	   rlog.Warn("A warning message: Intermittent issues, high load, etc.")
- 	   rlog.Error("An error message: An error occurred, I will recover.")
- 	   rlog.Critical("A critical message: That's it! I give up!")
- 	   rlog.Trace(2, "A trace message")
- 	   rlog.Trace(3, "An even deeper trace message")
+	   rlog.Debug("A debug message: For the developer")
+	   rlog.Info("An info message: Normal operation messages")
+	   rlog.Warn("A warning message: Intermittent issues, high load, etc.")
+	   rlog.Error("An error message: An error occurred, I will recover.")
+	   rlog.Critical("A critical message: That's it! I give up!")
+	   rlog.Trace(2, "A trace message")
+	   rlog.Trace(3, "An even deeper trace message")
     }
 
 For a more interesting example, please check out 'examples/example.go'.

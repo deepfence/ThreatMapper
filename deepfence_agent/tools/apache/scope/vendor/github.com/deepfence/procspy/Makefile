@@ -1,7 +1,7 @@
 .PHONY: all build buildall test install bench
 all: test build buildall install
 
-build: 
+build:
 	go build
 	go vet
 	golint .
