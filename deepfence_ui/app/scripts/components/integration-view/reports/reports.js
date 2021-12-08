@@ -16,6 +16,7 @@ import {
   reportGenerateAction,
   reportDownloadStatusAction,
   downloadReportAction,
+  reportScheduleEmailAction,
 } from '../../../actions/app-actions';
 
 // Defining the options for all the dropdowns
@@ -329,6 +330,7 @@ const Reports = props => {
         cve_severity,
         downloadType,
         reportGenerateAction: actionDownload,
+        reportScheduleEmailAction: actionEmail,
       } = props;
 
       const resourceTypeText = resource_type.map(el => el.value).join(',');
@@ -425,7 +427,7 @@ const Reports = props => {
             durationValues,
           },
         };
-        // return xlsxScheduleEmailAction(params);
+        return actionEmail(params);
       }
       // API params for report generation
       params = {
@@ -716,6 +718,7 @@ export default connect(mapStateToProps, {
   reportGenerateAction,
   reportDownloadStatusAction,
   downloadReportAction,
+  reportScheduleEmailAction,
   clearScheduledReportFormAction,
 })(
   reduxForm({

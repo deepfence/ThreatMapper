@@ -1996,6 +1996,19 @@ export function downloadReport(params = {}) {
     });
 }
 
+export function reportScheduleEmail(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/node_action`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function xlsxReportDownload(params = {}) {
   const url = `${backendElasticApiEndPoint()}/node_action`;
   return fetch(url, {

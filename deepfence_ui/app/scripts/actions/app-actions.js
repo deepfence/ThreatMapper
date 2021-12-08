@@ -65,6 +65,7 @@ import {
   reportGenerate,
   reportDownloadStatus,
   downloadReport,
+  reportScheduleEmail,
   xlsxReportDownload,
   xlsxScheduleEmail,
   getPDFReport,
@@ -1489,6 +1490,15 @@ export function downloadReportAction(params) {
     ActionTypes.DOWNLOAD_REPORT_FAILURE,
   ];
   return genericThunkAction(actionTypes, downloadReport, params);
+}
+
+export function reportScheduleEmailAction(params) {
+  const actionTypes = [
+    ActionTypes.REPORT_EMAIL_SCHEDULE_REQUEST,
+    ActionTypes.REPORT_EMAIL_SCHEDULE_SUCCESS,
+    ActionTypes.REPORT_EMAIL_SCHEDULE_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, reportScheduleEmail, params);
 }
 
 export function xlsxReportDownloadAction(params) {

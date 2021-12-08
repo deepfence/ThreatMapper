@@ -1301,6 +1301,24 @@ export function rootReducer(state = initialState, action) {
       );
       return state;
     }
+    
+    case ActionTypes.REPORT_EMAIL_SCHEDULE_REQUEST: {
+      state = state.setIn(['report', 'loading'], true);
+      state = state.deleteIn(['report', 'info']);
+      return state;
+    }
+
+    case ActionTypes.REPORT_EMAIL_SCHEDULE_SUCCESS: {
+      state = state.setIn(['report', 'loading'], false);
+      state = state.setIn(['report', 'info'], 'Schedule for email reports set successfully');
+      return state;
+    }
+
+    case ActionTypes.REPORT_EMAIL_SCHEDULE_FAILURE: {
+      state = state.setIn(['report', 'loading'], false);
+      state = state.setIn(['report', 'info'], 'Error in scheduling email reports');
+      return state;
+    }
 
     case ActionTypes.PDF_REPORT_GENERATE_REQUEST: {
       state = state.setIn(['pdfReportForm', 'form', 'loading'], true);
