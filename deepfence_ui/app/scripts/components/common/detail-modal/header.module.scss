@@ -1,0 +1,58 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: $flex-head-background;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.tabsWrapper {
+  display: flex;
+  align-self: stretch;
+}
+.controlsWrapper {
+  display: flex;
+  padding: 13px;
+
+  :global(button) {
+    margin-left: 6px;
+    border: none;
+    border-radius: 4px;
+    background-color: #2e2e2e;
+    padding: 10px;
+    outline: none;
+
+    :global(i) {
+      margin-right: 5px;
+    }
+  }
+}
+.closeButton {
+  cursor: pointer;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+}
+.tab {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-bottom: none;
+  padding-left: 27px;
+  padding-right: 27px;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-size: 14px;
+  color: #fff;
+  line-height: 17px;
+  font-weight: 500;
+
+  transition: border-width 0.1s linear;
+}
+.tabActive {
+  border-bottom: 5px solid $color-primary;
+}

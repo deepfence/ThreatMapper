@@ -1,0 +1,29 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.wrapper {
+  padding: 20px;
+  display: flex;
+  color: $nav-menu-color;
+  text-align: left;
+  width: 100%;
+}
+
+.keyValueRow {
+  padding: 20px 5px;
+  font-size: 14px;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+}
+
+.detailsKey {
+  width: 100%;
+  font-size: 18px;
+  color: white;
+}
+
+.detailsValue {
+  width: 80%;
+  color: white;
+  font-size: 18px;
+}
