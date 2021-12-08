@@ -21,35 +21,8 @@ import {
 // Defining the options for all the dropdowns
 const config = [
   {
-    label: 'Alerts',
-    value: 'alert',
-  },
-  {
     label: 'Vulnerabilities',
     value: 'cve',
-  },
-  {
-    label: 'Compliance',
-    value: 'compliance',
-  },
-];
-
-const alertSeverityOptions = [
-  {
-    label: 'Critical',
-    value: 'critical',
-  },
-  {
-    label: 'High',
-    value: 'high',
-  },
-  {
-    label: 'Medium',
-    value: 'medium',
-  },
-  {
-    label: 'Low',
-    value: 'low',
   },
 ];
 
@@ -69,33 +42,6 @@ const cveSeverityOptions = [
   {
     label: 'Low',
     value: 'low',
-  },
-];
-
-const complianceSeverityOptions = [
-  {
-    label: 'Standard',
-    value: 'standard',
-  },
-  {
-    label: 'CIS',
-    value: 'cis',
-  },
-  {
-    label: 'NIST Master',
-    value: 'nist_master',
-  },
-  {
-    label: 'NIST Slave',
-    value: 'nist_slave',
-  },
-  {
-    label: 'HIPAA',
-    value: 'hipaa',
-  },
-  {
-    label: 'PCI-DSS',
-    value: 'pcidss',
   },
 ];
 
@@ -209,7 +155,6 @@ const Reports = props => {
 
 // A function to initiate the report generation
   useEffect(() => {
-    console.log('Reports props', props);
     if (resource_type && node_type) {
       const resourceTypeText = resource_type.map(el => el.value).join(',');
       const nodeTypeText = node_type.value;
@@ -248,26 +193,6 @@ const Reports = props => {
     );
   };
 
-  const renderAlertSeverityDropdown = () => {
-    return (
-      <div
-        className="nodes-filter-item"
-        style={{ marginLeft: '0px', width: '400px' }}
-      >
-        <Field
-          name="alert_severity"
-          rootClassName="form-field dir-column"
-          component={DFSearchableSelectField}
-          options={alertSeverityOptions}
-          buttonLabel="Alert Severity"
-          clearable={false}
-          placeholder="Select alert severity"
-          isMulti
-        />
-      </div>
-    );
-  };
-
   const renderCVESeverityDropdown = () => {
     return (
       <div
@@ -282,26 +207,6 @@ const Reports = props => {
           buttonLabel="CVE Severity"
           clearable={false}
           placeholder="Select cve severity"
-          isMulti
-        />
-      </div>
-    );
-  };
-
-  const renderComplianceSeverityDropdown = () => {
-    return (
-      <div
-        className="nodes-filter-item"
-        style={{ marginLeft: '0px', width: '400px' }}
-      >
-        <Field
-          name="compliance_severity"
-          rootClassName="form-field dir-column"
-          component={DFSearchableSelectField}
-          options={complianceSeverityOptions}
-          buttonLabel="Compliance Severity"
-          clearable={false}
-          placeholder="Select compliance severity"
           isMulti
         />
       </div>
@@ -379,7 +284,6 @@ const Reports = props => {
       status,
       report_path: filePath,
     } = reportStatus;
-    console.log('reportStatus', reportStatus);
 
     const {
       fileDownloadStatusIm = Map(),
@@ -388,7 +292,6 @@ const Reports = props => {
     const loading = fileDownloadStatusIm.getIn([filePath, 'loading']);
 
     if (status === 'Completed' && filePath) {
-      console.log('filePath', filePath);
       return (
         <div>
           <span
@@ -409,7 +312,6 @@ const Reports = props => {
 // sent to the API call to generate the report 
   const submitClickHandler = (e, props) => {
     e.preventDefault();
-    console.log('props', props);
     if (resource_type && node_type) {
       const {
         resource_type,
@@ -424,9 +326,7 @@ const Reports = props => {
         operating_system,
         kubernetes_cluster_name,
         kubernetes_namespace,
-        alert_severity,
         cve_severity,
-        compliance_severity,
         downloadType,
         reportGenerateAction: actionDownload,
       } = props;
@@ -434,18 +334,6 @@ const Reports = props => {
       const resourceTypeText = resource_type.map(el => el.value).join(',');
 
       const resourceData = [];
-      if (resourceTypeText && resourceTypeText.includes('alert') && alert_severity) {
-        resourceData.push({
-          type: 'alert',
-          filter: { severity: alert_severity.map(el => el.value).join(',') },
-        });
-      }
-      if (resourceTypeText && resourceTypeText.includes('alert') && !alert_severity) { 
-        resourceData.push({
-          type: 'alert',
-          filter: {},
-        });
-      }
       if (resourceTypeText && resourceTypeText.includes('cve') && cve_severity) {
         resourceData.push({
           type: 'cve',
@@ -455,22 +343,6 @@ const Reports = props => {
       if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) { 
         resourceData.push({
           type: 'cve',
-          filter: {},
-        });
-      }
-      if (resourceTypeText && resourceTypeText.includes('compliance') && compliance_severity) {
-        resourceData.push({
-          type: 'compliance',
-          filter: {
-            compliance_check_type: compliance_severity
-              .map(el => el.value)
-              .join(','),
-          },
-        });
-      }
-      if (resourceTypeText && resourceTypeText.includes('compliance') && !compliance_severity) { 
-        resourceData.push({
-          type: 'compliance',
           filter: {},
         });
       }
@@ -539,23 +411,6 @@ const Reports = props => {
       // API params for schedule report generation
       if (scheduleInterval) {
         const emailAddress = email_address;
-        console.log(
-          'scheduleInterval',
-          'node_type: ',
-          node_type,
-          'include_dead_nodes: ',
-          deadNodes,
-          'report_email: ',
-          emailAddress,
-          'node_type: ',
-          node_type,
-          'resources :',
-          resourceData,
-          'filters: ',
-          globalFilter,
-          'duration: ',
-          durationValues
-        );
         params = {
           action: 'schedule_send_report',
           file_type: downloadTypeOption,
@@ -572,21 +427,6 @@ const Reports = props => {
         };
         // return xlsxScheduleEmailAction(params);
       }
-      console.log(
-        'download_report',
-        'node_type: ',
-        node_type.value,
-        'include_dead_nodes: ',
-        deadNodes,
-        'resources :',
-        resourceData,
-        'filters: ',
-        globalFilter,
-        'duration: ',
-        durationValues,
-        'download Type',
-        downloadTypeOption
-      );
       // API params for report generation
       params = {
         action: 'download_report',
@@ -634,18 +474,8 @@ const Reports = props => {
             </div>
           </div>
           <div>
-            {checkIfResourceSelected('alert') && (
-              <div>{renderAlertSeverityDropdown()}</div>
-            )}
-          </div>
-          <div>
             {checkIfResourceSelected('cve') && (
               <div>{renderCVESeverityDropdown()}</div>
-            )}
-          </div>
-          <div>
-            {checkIfResourceSelected('compliance') && (
-              <div>{renderComplianceSeverityDropdown()}</div>
             )}
           </div>
           <div className="resource-option-wrapper">
@@ -851,9 +681,7 @@ const selector = formValueSelector('report-download-form');
 const mapStateToProps = state => ({
   resource_type: selector(state, 'resource_type'),
   node_type: selector(state, 'node_type'),
-  alert_severity: selector(state, 'alert_severity'),
   cve_severity: selector(state, 'cve_severity'),
-  compliance_severity: selector(state, 'compliance_severity'),
   duration: selector(state, 'duration'),
   schedule_interval: selector(state, 'schedule_interval'),
   dead_nodes_toggle: selector(state, 'toggle'),
