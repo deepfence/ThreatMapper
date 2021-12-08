@@ -6,7 +6,6 @@ import ELASTICSEARCH_LOGO from '../../images/elasticsearch-logo.png';
 import AWS_S3_LOGO from '../../images/aws-s3-logo.png';
 import JIRA_LOGO from '../../images/jira.png';
 import SUMO_LOGIC_LOGO from '../../images/sumo-logic.png';
-import XLSX_LOGO from '../../images/xls.png';
 import HTTP_LOGO from '../../images/http.png';
 import GOOGLE_CHRONICLE_LOGO from '../../images/google-chronicle.png';
 import PDF_LOGO from '../../images/pdf-logo.png';
@@ -42,12 +41,6 @@ export const INTEGRATION_MENU_COLLECTION = [
   },
   {
     name: 'sumo_logic', isActive: true, icon: SUMO_LOGIC_LOGO, displayName: 'Sumo Logic', category: 'siem', bgcolor: 'black', parent: 'SIEM'
-  },
-  {
-    name: 'xlsx', isActive: true, icon: XLSX_LOGO, displayName: 'XLSX', category: 'report', bgcolor: '#C5FFB3', parent: 'Reports'
-  },
-  {
-    name: 'pdf', isActive: true, icon: PDF_LOGO, displayName: 'PDF', category: 'report', bgcolor: '#FFFFFF', parent: 'Reports'
   },
   {
     name: 'reports', isActive: true, icon: PDF_LOGO, displayName: 'PDF/XLSX', category: 'report', bgcolor: '#FFFFFF', parent: 'Reports'

@@ -20,8 +20,6 @@ import HTTPEndpointView from './http-endpoint-view/index';
 import GoogleChronicleEndpointView from './google-chronicle-view/index';
 import JiraIntegrationView from './jira-integration-view';
 import SumoLogicView from './sumo-logic-view';
-import ReportDownload from './report-download/index';
-import PdfReportDownload from './pdf-report-download/index';
 import Reports from './reports/reports';
 import { getIntegrations } from '../../utils/web-api-utils';
 
@@ -102,8 +100,6 @@ class IntegrationView extends React.Component {
 
   renderButton(tabname) {
     switch (tabname) {
-      case 'xlsx':
-      case 'pdf':
       case 'reports':
         return (
           "Generate Report"
@@ -219,12 +215,6 @@ class IntegrationView extends React.Component {
       }
       case 'sumo_logic': {
         return <SumoLogicView />
-      }
-      case 'xlsx': {
-        return <ReportDownload />
-      }
-      case 'pdf': {
-        return <PdfReportDownload />
       }
       case 'reports': {
         return <Reports />
