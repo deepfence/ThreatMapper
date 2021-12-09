@@ -20,8 +20,6 @@ require (
 	github.com/coocood/freecache v0.0.0-20150903053832-a27035d5537f
 	github.com/cpuguy83/go-md2man v1.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1
-	github.com/deepfence/df-utils v1.2.3
-	github.com/deepfence/procspy v0.0.0-00010101000000-000000000000
 	github.com/docker/docker v1.4.2-0.20180827131323-0c5f8d2b9b23
 	github.com/dustin/go-humanize v0.0.0-20160923163517-bd88f87ad3a4
 	github.com/evanphx/json-patch v0.0.0-20170719203123-944e07253867 // indirect

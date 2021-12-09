@@ -102,16 +102,8 @@ github.com/cpuguy83/go-md2man/md2man
 ## explicit
 github.com/davecgh/go-spew/spew
 # github.com/deepfence/df-utils => ./vendor/github.com/deepfence/df-utils
-## explicit
-github.com/deepfence/df-utils
-# github.com/deepfence/df-utils v1.2.3 => ./vendor/github.com/deepfence/df-utils
-## explicit
 github.com/deepfence/df-utils
 # github.com/deepfence/procspy => ./vendor/github.com/deepfence/procspy
-## explicit
-github.com/deepfence/procspy
-# github.com/deepfence/procspy v0.0.0-00010101000000-000000000000 => ./vendor/github.com/deepfence/procspy
-## explicit
 github.com/deepfence/procspy
 # github.com/docker/docker v1.4.2-0.20180827131323-0c5f8d2b9b23
 ## explicit
