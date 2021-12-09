@@ -26,6 +26,11 @@ func GetCloudMetadata() cloud_metadata.CloudMetadata {
 	if err == nil {
 		return cloudMetadata
 	}
+	// Check if AWS ECS / Fargate
+	cloudMetadata, err = cloud_metadata.GetAWSFargateMetadata(false)
+	if err == nil {
+		return cloudMetadata
+	}
 	// Check if Softlayer
 	cloudMetadata, err = cloud_metadata.GetSoftlayerMetadata(false)
 	if err == nil {

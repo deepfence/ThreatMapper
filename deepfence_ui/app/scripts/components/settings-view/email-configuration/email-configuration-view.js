@@ -118,6 +118,7 @@ class EmailConfiguration extends React.Component {
 
 	EmailConfigurationFormView() {
 		const { submitted } = this.state;
+		const { addMailConfigurationError } = this.props;
 		const columnStyle = {
 			padding: '0px 60px',
 		};
@@ -371,9 +372,9 @@ class EmailConfiguration extends React.Component {
 									{this.getEnabledBtnView()}
 								</div>
 								<div className="error-msg-container">
-									{this.state.isSuccess && (
-										<div className="auth-success-msg">
-											{this.state.integrationAddResponse}
+									{addMailConfigurationError && (
+										<div className="message error-message">
+											{addMailConfigurationError}
 										</div>
 									)}
 								</div>
@@ -472,6 +473,7 @@ function mapStateToProps(state) {
 		isSuccess: state.get('isSuccess'),
 		isError: state.get('isError'),
 		mailConfigurationList: state.get('mail_configurations'),
+		addMailConfigurationError: state.get('mail_configurations_error'),
 	};
 }
 

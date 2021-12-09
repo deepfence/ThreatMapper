@@ -2,7 +2,7 @@ from utils.node_utils import NodeUtils
 from utils import resource as resource_util
 from utils import constants
 from utils.helper import websocketio_channel_name_format, call_scope_control_api, async_http_post, \
-    get_host_name_probe_id_map, get_node_details_for_scope_id, is_network_attack_vector
+    get_host_name_probe_id_map, get_node_details_for_scope_id, is_network_attack_vector, get_topology_network_graph
 from utils.esconn import ESConn
 from utils.custom_exception import DFError, InternalError, InvalidUsage
 import json
@@ -102,7 +102,8 @@ class Node(object):
                         for conn in conn_info.get("connections", []):
                             for conn_metadata in conn["metadata"]:
                                 if conn_metadata["id"] == "port":
-                                    ports.append(conn_metadata["value"])
+                                    if conn_metadata["value"] not in ports:
+                                        ports.append(conn_metadata["value"])
                                     break
             except:
                 pass
@@ -256,13 +257,7 @@ class Node(object):
 
     def get_attack_path_for_node(self, top_n=5):
         topology_nodes = fetch_topology_data(self.type, format="scope")
-        digraph = nx.DiGraph()
-        for node_id, node_details in topology_nodes.items():
-            digraph.add_node(node_id)
-            for adj_node_id in node_details.get("adjacency", []):
-                if not digraph.has_node(adj_node_id):
-                    digraph.add_node(adj_node_id)
-                digraph.add_edge(node_id, adj_node_id)
+        digraph = get_topology_network_graph(topology_nodes)
         shortest_paths_generator = nx.shortest_simple_paths(digraph, "in-theinternet", self.scope_id)
         shortest_paths = []
         try:

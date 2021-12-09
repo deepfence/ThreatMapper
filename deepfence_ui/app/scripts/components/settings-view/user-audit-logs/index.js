@@ -1,9 +1,8 @@
-/* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import { isEmpty } from 'lodash';
-import {connect} from 'react-redux';
-import {dateTimeFormat} from '../../../utils/time-utils';
-import DFTable from '../../common/df-table/index';
+import { connect } from 'react-redux';
+import { dateTimeFormat } from '../../../utils/time-utils';
+import { DfTableV2 } from '../../common/df-table-v2';
 import {
   getUserAuditLogAction
 } from '../../../actions/app-actions';
@@ -66,14 +65,14 @@ class UserAuditLogs extends React.Component {
     // this has to come from API, Change it once added in the API.
     const totalPage = totalUserAuditLogs;
     return (
-    // using the same same css class for the scheduled jobs in
-    // settings page. Please check here, if any time make changes to schedule jobs.
+      // using the same same css class for the scheduled jobs in
+      // settings page. Please check here, if any time make changes to schedule jobs.
       <div>
         <div className="scheduled-job-padding">
-          <DFTable
+          <DfTableV2
             data={userAuditLogs}
             page={page}
-            onPageChange={(newPage) => { this.setState({page: newPage, }); }}
+            onPageChange={(newPage) => { this.setState({ page: newPage, }); }}
             columns={[
               {
                 Header: 'Timestamp',
@@ -81,27 +80,27 @@ class UserAuditLogs extends React.Component {
                   dateTimeFormat(row.created_at)
                 ),
                 id: 'created',
-                maxWidth: 200,
+                width: 120,
               },
               {
                 Header: 'Event',
                 accessor: 'event',
-                maxWidth: 150,
+                width: 80,
               },
               {
                 Header: 'Action',
                 accessor: 'action',
-                maxWidth: 150,
+                width: 80,
               },
               {
                 Header: 'User Email',
                 accessor: 'user_email',
-                maxWidth: 250,
+                width: 130,
               },
               {
                 Header: 'User Role',
                 accessor: 'user_role',
-                maxWidth: 150,
+                width: 100,
               },
               {
                 Header: 'Resources',
@@ -111,8 +110,9 @@ class UserAuditLogs extends React.Component {
                     {this.convertStringToJson(cell.value)}
                   </div>
                 ),
+                noWrap: 'true',
                 accessor: 'resource',
-                minWidth: 300,
+                width: 500,
               },
               {
                 Header: 'Success',
@@ -122,14 +122,15 @@ class UserAuditLogs extends React.Component {
                     {cell.value === true ? 'True' : 'False'}
                   </div>
                 ),
-                maxWidth: 150,
+                width: 60,
               },
             ]}
             showPagination
+            totalRows={totalUserAuditLogs}
             defaultPageSize={15}
             pages={totalPage}
             manual
-        />
+          />
         </div>
       </div>
     );

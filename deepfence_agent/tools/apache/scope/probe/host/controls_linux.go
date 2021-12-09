@@ -118,6 +118,7 @@ func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
 		scanId = scanIdArg
 	}
 
+	log.Infof("uploading %s tar to console...", imageName)
 	command := fmt.Sprintf("bash %s/home/deepfence/uploadFile.sh '%s' '%s' '%s' '%s' '%s'", shellescape.Quote(getDfInstallDir()), shellescape.Quote(imageName), shellescape.Quote(scanType), shellescape.Quote(scanId), shellescape.Quote(imageId), shellescape.Quote(kubernetesClusterName))
 	err := dfUtils.ExecuteCommandInBackground(command)
 	if err != nil {
@@ -126,4 +127,3 @@ func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
 		return xfer.Response{CVEInfo: "Image upload started"}
 	}
 }
-

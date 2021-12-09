@@ -2,6 +2,8 @@ package cri
 
 import (
 	"context"
+	dfUtils "github.com/deepfence/df-utils"
+	"os"
 	"strings"
 	"time"
 
@@ -11,17 +13,33 @@ import (
 	"github.com/weaveworks/scope/report"
 )
 
+const (
+	k8sClusterId   = report.KubernetesClusterId
+	k8sClusterName = report.KubernetesClusterName
+	IsUiVm         = "is_ui_vm"
+)
+
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
-	cri            client.RuntimeServiceClient
-	criImageClient client.ImageServiceClient
+	isUIvm                string
+	cri                   client.RuntimeServiceClient
+	criImageClient        client.ImageServiceClient
+	kubernetesClusterId   string
+	kubernetesClusterName string
 }
 
 // NewReporter makes a new Reporter
 func NewReporter(cri client.RuntimeServiceClient, criImageClient client.ImageServiceClient) *Reporter {
+	isUIvm := "false"
+	if dfUtils.IsThisHostUIMachine() {
+		isUIvm = "true"
+	}
 	reporter := &Reporter{
-		cri:            cri,
-		criImageClient: criImageClient,
+		cri:                   cri,
+		criImageClient:        criImageClient,
+		isUIvm:                isUIvm,
+		kubernetesClusterName: os.Getenv(k8sClusterName),
+		kubernetesClusterId:   os.Getenv(k8sClusterId),
 	}
 
 	return reporter
@@ -50,8 +68,8 @@ func (r *Reporter) Report() (report.Report, error) {
 
 func (r *Reporter) containerTopology() (report.Topology, error) {
 	result := report.MakeTopology().
-		WithMetadataTemplates(docker.ContainerImageMetadataTemplates).
-		WithTableTemplates(docker.ContainerImageTableTemplates)
+		WithMetadataTemplates(docker.ContainerMetadataTemplates).
+		WithTableTemplates(docker.ContainerTableTemplates)
 
 	ctx := context.Background()
 	resp, err := r.cri.ListContainers(ctx, &client.ListContainersRequest{})
@@ -60,21 +78,29 @@ func (r *Reporter) containerTopology() (report.Topology, error) {
 	}
 
 	for _, c := range resp.Containers {
-		result.AddNode(getNode(c))
+		result.AddNode(r.getNode(c))
 	}
 
 	return result, nil
 }
 
-func getNode(c *client.Container) report.Node {
-	result := report.MakeNodeWith(report.MakeContainerNodeID(c.Id), map[string]string{
+func (r *Reporter) getNode(c *client.Container) report.Node {
+	latests := map[string]string{
 		docker.ContainerName:       c.Metadata.Name,
 		docker.ContainerID:         c.Id,
 		docker.ContainerState:      getState(c),
 		docker.ContainerStateHuman: getState(c),
 		//docker.ContainerRestartCount: fmt.Sprintf("%v", c.Metadata.Attempt),
 		docker.ImageID: trimImageID(c.ImageRef),
-	}).WithParents(report.MakeSets().
+		IsUiVm:         r.isUIvm,
+	}
+	if r.kubernetesClusterName != "" {
+		latests[k8sClusterName] = r.kubernetesClusterName
+	}
+	if r.kubernetesClusterId != "" {
+		latests[k8sClusterId] = r.kubernetesClusterId
+	}
+	result := report.MakeNodeWith(report.MakeContainerNodeID(c.Id), latests).WithParents(report.MakeSets().
 		Add(report.ContainerImage, report.MakeStringSet(report.MakeContainerImageNodeID(c.ImageRef))),
 	)
 	result = result.AddPrefixPropertyList(docker.LabelPrefix, c.Labels)

@@ -1,0 +1,27 @@
+FROM scratch
+
+MAINTAINER Deepfence Inc
+LABEL deepfence.role=system
+
+WORKDIR /
+
+COPY tools/apache/scope/docker/deepfence_exe deepfence/usr/local/discovery/deepfence-discovery
+COPY fargate/bin/ deepfence/bin/
+COPY etc/certs/* deepfence/etc/filebeat/
+
+COPY run_discovery.sh /deepfence/home/deepfence/
+COPY fargate/run_discovery_loop.sh /deepfence/home/deepfence/
+
+COPY tools/apache/scope/docker/uploadFile.sh deepfence/home/deepfence/uploadFile.sh
+COPY fileUploader deepfence/usr/local/bin/fileUploader
+
+COPY misc/deepfence/df-utils/agent_auth/agentAuth /deepfence/usr/local/bin/agentAuth
+COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /deepfence/usr/local/bin/getCloudInstanceId
+COPY tools/apache/scope/docker/deepfenceutil /deepfence/usr/bin/deepfenceutil
+
+COPY fargate/deepfence-entry-point-scratch.sh deepfence/usr/local/bin/deepfence-entry-point-scratch.sh
+COPY fargate/start-df-services.sh deepfence/usr/local/bin/start-df-services.sh
+
+ENTRYPOINT ["/deepfence/bin/ls"]
+
+VOLUME ["/deepfence"]

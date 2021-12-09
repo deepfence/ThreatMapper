@@ -48,7 +48,10 @@ var stopLogging chan bool
 var certPath = "/etc/filebeat/filebeat.crt"
 var httpClient *http.Client
 var deepfenceKey string
-var mountPoint = "/fenced/mnt/host"
+
+// Host mount dir for scanning host ("/" for serverless or fargate)
+var mountPoint = "/fenced/mnt/host" // "/"
+var dfInstallDir string = ""
 
 var javaExt = []string{".jar", ".war"}
 var pythonExt = []string{".pyc", ".whl", ".egg", "METADATA", "PKG-INFO"}
@@ -121,15 +124,15 @@ func initSkipDirs() {
 
 func addNfsMountsToSkipDirs() {
 
-	outputFileName := "/tmp/nfs-mounts.txt"
-	cmdFileName := "/tmp/get-nfs.sh"
-	nfsCmd := fmt.Sprintf("/bin/findmnt -l -t nfs4 -n --output=TARGET > %s", outputFileName)
+	outputFileName := dfInstallDir + "/tmp/nfs-mounts.txt"
+	cmdFileName := dfInstallDir + "/tmp/get-nfs.sh"
+	nfsCmd := fmt.Sprintf("findmnt -l -t nfs4 -n --output=TARGET > %s", outputFileName)
 	errVal := ioutil.WriteFile(cmdFileName, []byte(nfsCmd), 0600)
 	if errVal != nil {
 		fmt.Printf("Error while writing nfs command %s \n", errVal.Error())
 		return
 	}
-	cmdOutput, cmdErr := exec.Command("/bin/bash", cmdFileName).CombinedOutput()
+	cmdOutput, cmdErr := exec.Command("bash", cmdFileName).CombinedOutput()
 	if cmdErr != nil {
 		fileSize, _ := os.Stat(outputFileName)
 		if (string(cmdOutput) == "") && (fileSize.Size() == 0) {
@@ -349,7 +352,7 @@ func buildFileList(sourceDir string) error {
 		if fileInfo == nil {
 			return nil
 		}
-		if (fileInfo.IsDir()) && (checkSkipDir(fileNamePath) == true) {
+		if (fileInfo.IsDir()) && (checkSkipDir(fileNamePath) == true || (fileInfo.Name() == "/tmp")) {
 			return filepath.SkipDir
 		}
 		if !fileInfo.IsDir() {
@@ -447,13 +450,13 @@ func createAndUploadLanguageFiles(dstPath string, language string) error {
 	} else if language == "dotnet" {
 		srcFileName = dotnetFiles
 	}
-	tarCmd := fmt.Sprintf("/bin/tar -rf %s -P --transform='s,%s,,' --files-from %s ", localFileName, mountPoint, srcFileName)
+	tarCmd := fmt.Sprintf("%s/bin/tar -rf %s -P --transform='s,%s,,' --files-from %s ", dfInstallDir, localFileName, mountPoint, srcFileName)
 	errVal := ioutil.WriteFile(tmpTarFile, []byte(tarCmd), 0600)
 	if errVal != nil {
 		fmt.Println(errVal.Error())
 		return errVal
 	}
-	cmdOutput, cmdErr := exec.Command("/bin/bash", tmpTarFile).CombinedOutput()
+	cmdOutput, cmdErr := exec.Command("bash", tmpTarFile).CombinedOutput()
 	if cmdErr != nil {
 		fmt.Printf("Error while creating tar %s. %s \n", cmdErr.Error(), string(cmdOutput))
 		return cmdErr
@@ -541,7 +544,8 @@ func sendError(path string, err error, action string) {
 }
 
 func uploadHostData() (string, error) {
-	var path = "/tmp/analyze-local-host"
+	// Append DF Install Dir in case serverless container is not writable
+	var path = dfInstallDir + "/tmp/analyze-local-host"
 	path = path + "-" + hostname
 	deleteFiles(path+"/", "*")
 	os.Remove(path)
@@ -637,8 +641,8 @@ func sendScanLogsToLogstash(cveScanMsg string, action string) error {
 }
 
 func main() {
-	usage := "Usage: <program name> <image name> <scan type> <scan id> <image id> <kubernetes cluster name>"
-	if len(os.Args) != 6 {
+	usage := "Usage: <program name> <image name> <scan type> <scan id> <image id> <kubernetes cluster name> <host mount dir (/ for fargate)>"
+	if len(os.Args) < 6 {
 		fmt.Println(usage)
 		return
 	}
@@ -648,6 +652,25 @@ func main() {
 	scanId = os.Args[3]
 	imageId := os.Args[4]
 	kubernetesClusterName = os.Args[5]
+	// Set the host mount dir appropriately, if there is a 6th parameter for host mount dir
+	// Used to set base scan dir for serverless or fargate
+	if len(os.Args) == 7 && os.Args[6] != "" {
+		mountPoint = os.Args[6]
+	}
+
+	installDir, exists := os.LookupEnv("DF_INSTALL_DIR")
+	if exists {
+		dfInstallDir = installDir
+	}
+	fmt.Println("DF installation directory: ", dfInstallDir)
+	certPath = dfInstallDir + certPath
+	javaFiles = dfInstallDir + javaFiles
+	pythonFiles = dfInstallDir + pythonFiles
+	rubyFiles = dfInstallDir + rubyFiles
+	phpFiles = dfInstallDir + phpFiles
+	nodejsFiles = dfInstallDir + nodejsFiles
+	jsFiles = dfInstallDir + jsFiles
+	dotnetFiles = dfInstallDir + dotnetFiles
 
 	if imageName == "" || scanType == "" || scanId == "" {
 		fmt.Println(usage)

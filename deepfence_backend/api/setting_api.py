@@ -85,7 +85,8 @@ def setting_update(setting_id):
     setting.value = {
         "value": value,
         "label": setting.value["label"],
-        "description": setting.value["description"]
+        "description": setting.value["description"],
+        "is_visible_on_ui": setting.value["is_visible_on_ui"],
     }
     setting.save()
     return set_response(data="ok")
