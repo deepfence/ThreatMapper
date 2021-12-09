@@ -6,6 +6,7 @@ import {
   modelNodeTypeToTopologyChildrenTypes,
   modelNodeTypeToTopologyType,
 } from '../multi-cloud/LiveTopologyGraph';
+import 'react-table-6/react-table.css';
 import { TopologyClient } from '../multi-cloud/topology-client-2';
 import { NestedTable } from './nested-table';
 import './styles.scss';
