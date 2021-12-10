@@ -76,6 +76,9 @@ func MakeReduce(renderers ...Renderer) Renderer {
 
 // Render produces a set of Nodes given a Report.
 func (r Reduce) Render(ctx context.Context, rpt report.Report) Nodes {
+	if ctx.Err() != nil {
+		return Nodes{}
+	}
 	span, ctx := opentracing.StartSpanFromContext(ctx, "Reduce.Render")
 	defer span.Finish()
 	l := len(r)
@@ -116,6 +119,9 @@ func MakeMap(f MapFunc, r Renderer) Renderer {
 // Render transforms a set of Nodes produces by another Renderer.
 // using a map function
 func (m Map) Render(ctx context.Context, rpt report.Report) Nodes {
+	if ctx.Err() != nil {
+		return Nodes{}
+	}
 	span, ctx := opentracing.StartSpanFromContext(ctx, "Map.Render:"+functionName(m.MapFunc))
 	defer span.Finish()
 	var (

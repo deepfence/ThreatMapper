@@ -1,6 +1,7 @@
 package multitenant
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"flag"
@@ -9,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"context"
 	log "github.com/sirupsen/logrus"
 	billing "github.com/weaveworks/billing-client"
 
@@ -119,6 +119,38 @@ func (e *BillingEmitter) Add(ctx context.Context, rep report.Report, buf []byte)
 	return e.Collector.Add(ctx, rep, buf)
 }
 
+func commandParameter(cmd, flag string) (string, bool) {
+	i := strings.Index(cmd, flag)
+	if i != -1 {
+		// here we expect the command looks like `-foo=bar` or `-foo bar`
+		aft := strings.Fields(cmd[i+len(flag):])
+		if len(aft) > 0 && len(aft[0]) > 0 {
+			if aft[0][0] == '=' {
+				return aft[0][1:], true
+			}
+			return aft[0], true
+		}
+	}
+	return "", false
+}
+
+func intervalFromCommand(cmd string) string {
+	if strings.Contains(cmd, "deepfence-discovery") {
+		if publishInterval, ok := commandParameter(cmd, "probe.publish.interval"); ok {
+			// If spy interval is higher than publish interval, some reports will have no process data
+			if spyInterval, ok := commandParameter(cmd, "spy.interval"); ok {
+				pubDuration, err1 := time.ParseDuration(publishInterval)
+				spyDuration, err2 := time.ParseDuration(spyInterval)
+				if err1 == nil && err2 == nil && spyDuration > pubDuration {
+					return spyInterval
+				}
+			}
+			return publishInterval
+		}
+	}
+	return ""
+}
+
 // reportInterval tries to find the custom report interval of this report. If
 // it is malformed, or not set, it returns zero.
 func (e *BillingEmitter) reportInterval(r report.Report) time.Duration {
@@ -126,21 +158,20 @@ func (e *BillingEmitter) reportInterval(r report.Report) time.Duration {
 		return r.Window
 	}
 	var inter string
-	for _, c := range r.Process.Nodes {
-		cmd, ok := c.Latest.Lookup("cmdline")
-		if !ok {
-			continue
-		}
-		if strings.Contains(cmd, "deepfence-discovery") &&
-			strings.Contains(cmd, "probe.publish.interval") {
-			cmds := strings.SplitAfter(cmd, "probe.publish.interval")
-			aft := strings.Split(cmds[1], " ")
-			if aft[0] == "" {
-				inter = aft[1]
-			} else {
-				inter = aft[0][1:]
+	for _, c := range r.Container.Nodes {
+		if cmd, ok := c.Latest.Lookup(report.DockerContainerCommand); ok {
+			if inter = intervalFromCommand(cmd); inter != "" {
+				break
 			}
-
+		}
+	}
+	if inter == "" { // not found in containers: look in processes
+		for _, c := range r.Process.Nodes {
+			if cmd, ok := c.Latest.Lookup(report.Cmdline); ok {
+				if inter = intervalFromCommand(cmd); inter != "" {
+					break
+				}
+			}
 		}
 	}
 	if inter == "" {

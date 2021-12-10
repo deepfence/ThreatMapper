@@ -1,6 +1,6 @@
 module github.com/weaveworks/scope
 
-go 1.13
+go 1.16
 
 require (
 	camlistore.org v0.0.0-20171230002226-a5a65f0d8b22
@@ -18,11 +18,12 @@ require (
 	github.com/certifi/gocertifi v0.0.0-20150906030631-84c0a38a18fc
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/coocood/freecache v0.0.0-20150903053832-a27035d5537f
+	github.com/cpuguy83/go-md2man v1.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1
-	github.com/deepfence/df-utils v1.2.3
-	github.com/deepfence/procspy v0.0.0-00010101000000-000000000000
 	github.com/docker/docker v1.4.2-0.20180827131323-0c5f8d2b9b23
 	github.com/dustin/go-humanize v0.0.0-20160923163517-bd88f87ad3a4
+	github.com/evanphx/json-patch v0.0.0-20170719203123-944e07253867 // indirect
+	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fsouza/go-dockerclient v1.3.0
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gogo/protobuf v1.3.0
@@ -43,10 +44,13 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/serf v0.7.1-0.20160225025727-b00b7b98ce2b // indirect
 	github.com/imdario/mergo v0.3.5 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/iovisor/gobpf v0.0.0-20180826141936-4ece6c56f936 // indirect
 	github.com/k-sone/critbitgo v1.2.0
+	github.com/kr/pty v1.1.1
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 	github.com/miekg/dns v0.0.0-20160129163459-3d66e3747d22
+	github.com/mjibson/esc v0.2.0
 	github.com/nats-io/gnatsd v0.8.1-0.20160607194326-f2c17eb159e1 // indirect
 	github.com/nats-io/nats v1.2.1-0.20160607194537-ce9cdc9addff
 	github.com/nats-io/nuid v0.0.0-20160402145409-a5152d67cf63 // indirect
@@ -59,12 +63,15 @@ require (
 	github.com/peterbourgon/runsvinit v2.0.0+incompatible
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.5.0
-	github.com/richo/GOSHOUT v0.0.0-20190205170632-a1a6db7f26e9
+	github.com/richo/GOSHOUT v0.0.0-20210103052837-9a2e452d4c18
 	github.com/romana/ipset v1.0.0
 	github.com/romana/rlog v0.0.0-20171115192701-f018bc92e7d7 // indirect
 	github.com/shirou/gopsutil v3.21.2+incompatible
+	github.com/russross/blackfriday v0.0.0-20151020174500-a18a46c9b943 // indirect
+	github.com/shurcooL/sanitized_anchor_name v0.0.0-20150822220530-244f5ac324cb // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spaolacci/murmur3 v0.0.0-20150829172844-0d12bf811670
+	github.com/spf13/cobra v0.0.0-20151013225139-8b2293c74173 // indirect
 	github.com/spf13/pflag v1.0.1-0.20171106142849-4c012f6dcd95 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
@@ -84,6 +91,7 @@ require (
 	github.com/weaveworks/weave v2.3.1-0.20180427133448-4da998ab4507+incompatible
 	github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c
 	golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa
 	golang.org/x/text v0.3.1-0.20171227012246-e19ae1496984 // indirect
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
@@ -93,8 +101,12 @@ require (
 	gopkg.in/inf.v0 v0.9.0 // indirect
 	k8s.io/api v0.0.0-20181204000039-89a74a8d264d
 	k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
+	k8s.io/cli-runtime v0.0.0-20181204004549-a04da5c88c07 // indirect
 	k8s.io/client-go v10.0.0+incompatible
 	k8s.io/klog v0.1.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20180108222231-a07b7bbb58e7 // indirect
+	k8s.io/kubernetes v1.13.0
+	k8s.io/utils v0.0.0-20200414100711-2df71ebbae66 // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
 

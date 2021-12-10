@@ -91,8 +91,9 @@ func (r *Reporter) getNode(c *client.Container) report.Node {
 		docker.ContainerState:      getState(c),
 		docker.ContainerStateHuman: getState(c),
 		//docker.ContainerRestartCount: fmt.Sprintf("%v", c.Metadata.Attempt),
-		docker.ImageID: trimImageID(c.ImageRef),
-		IsUiVm:         r.isUIvm,
+		docker.ImageID:   trimImageID(c.ImageRef),
+		docker.ImageName: c.Image.Image,
+		IsUiVm:           r.isUIvm,
 	}
 	if r.kubernetesClusterName != "" {
 		latests[k8sClusterName] = r.kubernetesClusterName
