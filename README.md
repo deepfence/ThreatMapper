@@ -9,6 +9,9 @@
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
+###
+###CVE-2021-44228 Log4j2 vulnerability affects elasticsearch. Please upgrade elasticsearch image. More details [here](https://github.com/deepfence/ThreatMapper/wiki/CVE%E2%80%902021%E2%80%9044228-Log4j2-vulnerability-Impact)
+
 # Deepfence ThreatMapper
 
 Deepfence ThreatMapper hunts for vulnerabilities in your production platforms, and ranks these vulnerabilities based on their risk-of-exploit. You can then prioritize the issues that present the greatest risk to the security of your applications - [read more](https://github.com/deepfence/ThreatMapper/wiki/Introduction).
