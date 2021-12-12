@@ -71,6 +71,7 @@
 -Dlog4j.shutdownHookEnabled=false
 -Dlog4j2.disable.jmx=true
 -Dlog4j.skipJansi=true
+-Dlog4j2.formatMsgNoLookups=true
 
 ## heap dumps
 
