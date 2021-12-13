@@ -12,7 +12,7 @@
 ###
 ### CVE-2021-44228 Log4j2 vulnerability affects elasticsearch. Please upgrade elasticsearch image. More details [here](https://github.com/deepfence/ThreatMapper/wiki/CVE%E2%80%902021%E2%80%9044228-Log4j2-vulnerability-Impact)
 
-# ThreatMapper - Runtime Vulnerability Management and Attack Path Enumeration
+# ThreatMapper - Runtime Vulnerability Management and Attack Path Enumeration for Cloud Native
 
 Deepfence ThreatMapper hunts for vulnerabilities in your production platforms, and ranks these vulnerabilities based on their risk-of-exploit. You can then prioritize the issues that present the greatest risk to the security of your applications - [read more](https://github.com/deepfence/ThreatMapper/wiki/Introduction).
 
