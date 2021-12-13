@@ -149,7 +149,11 @@ function useColumnFilter({
 
     if (renderRowSubComponent) {
       visibleColumns.unshift({
-        Header: () => null,
+        Header: ({ getToggleAllRowsExpandedProps, isAllRowsExpanded }) => (
+          <span className={styles.expanderCell} {...getToggleAllRowsExpandedProps()}>
+            {isAllRowsExpanded ? <span className="fa fa-minus" /> : <span className="fa fa-plus" />}
+          </span>
+        ),
         id: 'expander',
         Cell: ({ row }) => (
           <span className={styles.expanderCell}>
