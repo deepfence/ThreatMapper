@@ -216,7 +216,7 @@ func decodeDepCheckJson(language string, extFileDirList []string, fileSet map[st
 			if global_image_name != "host" {
 				pkgFilePath = strings.Replace(pkgFilePath, "/"+nodeData.Cve_container_layer, "", 1)
 			}
-			if pkgFilePath != "" && fileSet[pkgFilePath] != true && len(fileSet) > 100 {
+			if pkgFilePath != "" && len(fileSet) > 100 && excludeVulnerability(pkgFilePath, fileSet) {
 				fmt.Printf("Skipping vulnerability of %s as absent in fileset", pkgFilePath)
 				continue
 			}
@@ -239,4 +239,21 @@ func decodeDepCheckJson(language string, extFileDirList []string, fileSet map[st
 		}
 	}
 	return sendCveJsonToLogstash("[" + trimSuffix(cveJsonList, ",") + "]")
+}
+
+func excludeVulnerability(pkgFilePath string, fileSet map[string]bool) bool {
+	if fileSet[pkgFilePath] == true {
+		return false
+	}
+
+	includingSplitStrings := []string{":", ".jar", ".war", ".pyc", ".whl", ".egg", "METADATA", "PKG-INFO", ".gemspec", "Rakefile", "composer.lock", "package.json", ".js", ".dll", ".exe"}
+	for _, splitString := range includingSplitStrings {
+		splits := strings.Split(pkgFilePath, splitString)
+		if len(splits) > 1 {
+			if fileSet[splits[0]] == true || fileSet[splits[0] + splitString] == true {
+				return false
+			}
+		}
+	}
+	return true
 }
