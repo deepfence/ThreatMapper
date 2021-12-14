@@ -8,6 +8,7 @@ type Process struct {
 	Name              string
 	Cmdline           string
 	Threads           int
+	OpenFiles         []string
 	Jiffies           uint64
 	RSSBytes          uint64
 	RSSBytesLimit     uint64

@@ -12,11 +12,12 @@ const (
 	ConnectionCount = "conn_count"
 
 	// probe/process
-	PID     = "pid"
-	Name    = "name" // also used by probe/docker
-	PPID    = "ppid"
-	Cmdline = "cmdline"
-	Threads = "threads"
+	PID       = "pid"
+	Name      = "name" // also used by probe/docker
+	PPID      = "ppid"
+	Cmdline   = "cmdline"
+	Threads   = "threads"
+	OpenFiles = "OpenFiles"
 	// probe/docker
 	DockerContainerID            = "docker_container_id"
 	DockerImageID                = "docker_image_id"
@@ -161,11 +162,12 @@ var commonKeys = map[string]string{
 	SnoopedDNSNames: SnoopedDNSNames,
 	CopyOf:          CopyOf,
 
-	PID:     PID,
-	Name:    Name,
-	PPID:    PPID,
-	Cmdline: Cmdline,
-	Threads: Threads,
+	PID:       PID,
+	Name:      Name,
+	PPID:      PPID,
+	Cmdline:   Cmdline,
+	Threads:   Threads,
+	OpenFiles: OpenFiles,
 
 	DockerContainerID:            DockerContainerID,
 	DockerImageID:                DockerImageID,
