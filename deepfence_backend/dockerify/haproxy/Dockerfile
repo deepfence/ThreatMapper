@@ -6,7 +6,7 @@ RUN apk add --no-cache bash
 RUN /bin/bash /go/genCert.sh
 
 
-FROM haproxy:2.5-alpine3.15
+FROM haproxy:2.4-alpine3.15
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
