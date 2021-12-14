@@ -84,7 +84,7 @@ class HeaderView extends React.Component {
       this.props.dispatch(selectAlertHistoryBound(TIME_BOUNDARY_OPTIONS[7]));
     }
     if (!this.props.refreshInterval) {
-      this.props.dispatch(selectRefreshInterval(REFRESH_INTERVALS_OPTIONS[0]));
+      this.props.dispatch(selectRefreshInterval(REFRESH_INTERVALS_OPTIONS[2]));
     }
     if (this.props.searchQuery.length > 0) {
 

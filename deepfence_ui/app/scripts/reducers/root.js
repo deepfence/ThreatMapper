@@ -83,7 +83,7 @@ export const initialState = makeMap({
   isToasterVisible: false,
   globalSearchQuery: [],
   alertPanelHistoryBound: TIME_BOUNDARY_OPTIONS[7],
-  refreshInterval: REFRESH_INTERVALS_OPTIONS[0],
+  refreshInterval: REFRESH_INTERVALS_OPTIONS[2],
   navigate: makeMap(),
   toggleFullWindow: false,
   policyViewList: [],
