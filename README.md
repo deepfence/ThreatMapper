@@ -49,7 +49,7 @@ ThreatMapper then monitors your development or production workloads using Sensor
 
 ## Install the Management Console
 
-Installating the management console on a Docker host (4 cores, 16Gb) is as straightforward as:
+Installing the management console on a Docker host (4 cores, 16Gb) is as straightforward as:
 
 ```shell script
 wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/docker-compose.yml
@@ -91,7 +91,7 @@ When the console first starts up, it will begin to acquire the Threat Intel feed
 
 ## Install the ThreatMapper Sensor Agents
 
-Install the Sensor Agents on your production or development platforms.  The Sensor Agents report to the Management Console; they tell it what services they discover, provide telemetry and generate manifests of software dependencies.
+Install the Sensor Agents on your production or development platforms. The Sensor Agents report to the Management Console; they tell it what services they discover, provide telemetry and generate manifests of software dependencies.
 
 The following production platforms are supported by ThreatMapper sensors:
 
@@ -154,7 +154,7 @@ Check out the [Deepfence ThreatMapper wiki](https://github.com/deepfence/ThreatM
 
 For any security-related issues in the ThreatMapper project, contact **productsecurity *at* deepfence *dot* io**.
 
-Please file Github issues as needed, and join the Deepfence Community [Slack channel](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ).
+Please file GitHub issues as needed, and join the Deepfence Community [Slack channel](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ).
 
 # License
 
