@@ -109,7 +109,6 @@ export const CVE_SCAN_TYPE_OPTIONS = [
   {
     value: 'java',
     label: 'Java',
-    defaultChecked: true,
   },
   {
     value: 'js',
