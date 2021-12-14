@@ -86,7 +86,7 @@ class IntegrationView extends React.Component {
     }
   }
   UNSAFE_componentWillReceiveProps(newProps) {
-    if ((newProps.isLicenseActive && !newProps.isLicenseExpired) && 
+    if ((newProps.isLicenseActive && !newProps.isLicenseExpired) &&
     (newProps.licenseResponse.license_status == 'expired' || newProps.licenseResponse.license_status == 'hosts_exceeded')) {
       this.setState({
         licenseResponse: newProps.licenseResponse,
@@ -130,7 +130,7 @@ class IntegrationView extends React.Component {
       'pagerduty':'notification',
       'email':'notification',
       'http_endpoint':'notification',
-      'google_chronicle':'notification',
+      'google_chronicle':'siem',
       'splunk':'siem',
       'elasticsearch':'siem',
       'sumo_logic':'siem',
@@ -297,7 +297,7 @@ class IntegrationView extends React.Component {
                         <div></div>
                       )
                     }
-                    
+
                   </li>
                 )
                   /* eslint-enable */
