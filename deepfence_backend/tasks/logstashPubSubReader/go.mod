@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/gocelery/gocelery v0.0.0-20201111034804-825d89059344
 	github.com/gomodule/redigo v2.0.0+incompatible
-	github.com/lib/pq v1.10.3
+	github.com/lib/pq v1.10.4
 )
 
 require (
