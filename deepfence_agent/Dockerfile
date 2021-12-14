@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 
-MAINTAINER Deepfence Inc 
+MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \
@@ -37,6 +37,7 @@ COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
+COPY tools/deepfence/open_tracer /home/deepfence/
 
 RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
