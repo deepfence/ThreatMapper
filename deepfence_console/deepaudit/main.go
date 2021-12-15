@@ -1280,6 +1280,37 @@ func main() {
 		manifestItem = saveContainerImage(imageName, imageTarPath, imageId)
 	}
 
+	fileSystemsDir := "/data/fileSystems/"
+	err = os.MkdirAll(fileSystemsDir, os.ModePerm)
+	if err != nil {
+		fmt.Printf("Error while creating fileSystems dir %s", err.Error())
+	} else {
+		fileSet = make(map[string]bool)
+		outputTarPath := fileSystemsDir + "temp.tar"
+		err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
+		if err == nil {
+			// extracting list of file names with path from tar file
+			cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
+			files, err := ExecuteCommand(cmd)
+			if err == nil {
+				fileList := strings.Split(files, "\n")
+				for _, val := range fileList {
+					// This check is to handle tar structure returned from containerd api
+					if strings.HasPrefix(val, "./") {
+						val = strings.Replace(val, "./", "", 1)
+					}
+					fileSet["/"+val] = true
+				}
+			}
+		}
+		if err != nil {
+			fmt.Printf("Error while extracting fileSystem from %s: %s", imageTarPath, err.Error())
+		} else {
+			fmt.Printf("Filesystem extracted at %s with number of files: %d", outputTarPath, len(fileSet))
+		}
+		deleteFiles(fileSystemsDir, "*.tar")
+	}
+
 	// language scan
 	if len(scanTypes) != 0 {
 		if updateDepCheckData {
@@ -1320,37 +1351,6 @@ func main() {
 		getHostVulnerabilities(hostName, imageTarPath)
 	} else {
 		getContainerVulnerabilities(imageName, imageTarPath, imageId, manifestItem)
-	}
-
-	fileSystemsDir := "/data/fileSystems/"
-	err = os.MkdirAll(fileSystemsDir, os.ModePerm)
-	if err != nil {
-		fmt.Printf("Error while creating fileSystems dir %s", err.Error())
-	} else {
-		fileSet = make(map[string]bool)
-		outputTarPath := fileSystemsDir + "temp.tar"
-		err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
-		if err == nil {
-			// extracting list of file names with path from tar file
-			cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
-			files, err := ExecuteCommand(cmd)
-			if err == nil {
-				fileList := strings.Split(files, "\n")
-				for _, val := range fileList {
-					// This check is to handle tar structure returned from containerd api
-					if strings.HasPrefix(val, "./") {
-						val = strings.Replace(val, "./", "", 1)
-					}
-					fileSet["/"+val] = true
-				}
-			}
-		}
-		if err != nil {
-			fmt.Printf("Error while extracting fileSystem from %s: %s", imageTarPath, err.Error())
-		} else {
-			fmt.Printf("Filesystem extracted at %s with number of files: %d", outputTarPath, len(fileSet))
-		}
-		deleteFiles(fileSystemsDir, "*.tar")
 	}
 
 	completeScan()
