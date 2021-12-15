@@ -613,7 +613,7 @@ func sendScanLogsToLogstash(cveScanMsg string, action string) error {
 	postReader := bytes.NewReader([]byte(scanLog))
 	retryCount := 0
 	for {
-		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/df-api/add-to-logstash", postReader)
+		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/df-api/add-to-logstash?doc_type=cve-scan", postReader)
 		if err != nil {
 			return err
 		}
