@@ -311,16 +311,16 @@ def is_network_attack_vector(attack_vector):
 
 
 def get_topology_network_graph(topology_nodes):
-    digraph = nx.DiGraph()
+    graph = nx.Graph()
     if not topology_nodes:
-        return digraph
+        return graph
     for node_id, node_details in topology_nodes.items():
-        digraph.add_node(node_id)
+        graph.add_node(node_id)
         for adj_node_id in node_details.get("adjacency", []):
-            if not digraph.has_node(adj_node_id):
-                digraph.add_node(adj_node_id)
-            digraph.add_edge(node_id, adj_node_id)
-    return digraph
+            if not graph.has_node(adj_node_id):
+                graph.add_node(adj_node_id)
+            graph.add_edge(node_id, adj_node_id)
+    return graph
 
 
 def websocketio_channel_name_format(node_type):
