@@ -3,7 +3,7 @@ module github.com/deepfence/deepfence_agent/fileuploader
 go 1.17
 
 require (
-	github.com/deepfence/vessel v0.5.0
+	github.com/deepfence/vessel v0.5.1
 	github.com/weaveworks/scope v1.13.2
 )
 
