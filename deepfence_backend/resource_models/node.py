@@ -245,7 +245,8 @@ class Node(object):
                 "cve_cvss_score": vulnerability.get("_source", {}).get("cve_cvss_score", 0)
             }
             top_cve_ids.append(cve_details)
-        top_cve_ids = [i["cve_id"] for i in sorted(top_cve_ids, key=lambda k: k['cve_cvss_score'], reverse=True)][:3]
+        top_cve_ids = list(set(
+            [i["cve_id"] for i in sorted(top_cve_ids, key=lambda k: k['cve_cvss_score'], reverse=True)]))[:3]
         response = {
             "cve_attack_vector": "network",
             "attack_path": self.get_attack_path_for_node(top_n=top_n),
