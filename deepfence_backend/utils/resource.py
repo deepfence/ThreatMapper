@@ -170,7 +170,7 @@ def get_nodes_list(params):
     registry_images = {}
     counter = 0
     for node in filtered_node_list:
-        if node["type"] == NODE_TYPE_REGISTRY_IMAGE:
+        if node.get("type") == NODE_TYPE_REGISTRY_IMAGE:
             image_index = registry_images.get(node.get("image_name"), None)
             if image_index is None:
                 result_nodes.append({
