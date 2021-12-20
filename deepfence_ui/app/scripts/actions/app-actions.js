@@ -654,11 +654,15 @@ export function sendSignUpInvite(params) {
   };
 }
 
-export function receiveSignUpInviteResponse(response) {
+export function receiveSignUpInviteResponse(response, params) {
   if (response.success) {
     response.isSuccess = true;
     response.isError = false;
-    response.message = response.data;
+    if (params.action === 'get_invite_link') {
+      response.message = `Invite URL: ${response.data.invite_url}, invite will expire after ${response.data?.invite_expiry_hours} hours.`;
+    } else {
+      response.message = response.data.message;
+    }
   } else {
     response.isSuccess = false;
     response.isError = true;
