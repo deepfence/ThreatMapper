@@ -30,7 +30,8 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPE_HTTP, INTEGRATION_TYPE_JIRA, INTEGRATION_TYPE_PAGERDUTY, INTEGRATION_TYPE_S3, \
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
-    TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, INVITE_EXPIRY
+    TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
+    INVITE_EXPIRY
 from utils import constants
 from config.redisconfig import redis
 from utils.response import set_response
@@ -848,6 +849,7 @@ def send_invite():
         raise InvalidUsage("Request data invalid")
     email = request.json.get("email")
     role_name = request.json.get("role")
+    action = request.json.get("action", "send_invite_email")
 
     if not email:
         raise InvalidUsage("Email is required.")
@@ -870,6 +872,13 @@ def send_invite():
         raise InvalidUsage("Email is already registered")
     if not console_url or not console_url.value or not console_url.value.get("value", None):
         raise InvalidUsage("Deepfence Console URL is not set in settings.")
+
+    if action == "send_invite_email":
+        # Send email with the random code.
+        from models.email_configuration import EmailConfiguration
+        email_configuration = EmailConfiguration.query.filter().first()
+        if not email_configuration:
+            raise InvalidUsage("Not configured to send emails. Please configure it in Settings->Email Configuration")
 
     invite = Invite.query.filter_by(
         email=email,
@@ -902,17 +911,13 @@ def send_invite():
     subject = INVITE_USER_EMAIL_SUBJECT.format(company=admin_company.name)
     html = INVITE_USER_EMAIL_HTML.format(registration_url=invite_accept_link)
 
-    # Send email with the random code.
-    from models.email_configuration import EmailConfiguration
-    email_configuration = EmailConfiguration.query.filter().first()
-    if not email_configuration:
-        return set_response(data="Not configured to send emails. Please configure it in Settings->Email Configuration")
-    from tasks.email_sender import send_email
-    send_email.delay([email], subject=subject, html=html)
-    return set_response(
-        data="Invite sent. Invite url: {0}. Invite will expire after {1} hours.".format(
-            invite_accept_link, int(INVITE_EXPIRY / 60 / 60)))
-
+    response = {"invite_url": invite_accept_link, "invite_expiry_hours": int(INVITE_EXPIRY / 60 / 60)}
+    if action == "send_invite_email":
+        from tasks.email_sender import send_email
+        send_email.delay([email], subject=subject, html=html)
+        return set_response(data={"message": "Invite sent", **response})
+    elif action == "get_invite_link":
+        return set_response(data={"message": "Invite URL generated", **response})
 
 
 @user_api.route("/users/invite/accept", methods=["POST"])
@@ -1185,7 +1190,8 @@ class ResetPasswordEmail(MethodView):
 
         user = User.query.filter_by(email=email).one_or_none()
         if not user:
-            return set_response(data="A password reset email will be sent if a user exists with the provided email id, and platform is configured to send emails")
+            return set_response(
+                data="A password reset email will be sent if a user exists with the provided email id, and platform is configured to send emails")
 
         console_url = Setting.query.filter_by(key="console_url").one_or_none()
         if not console_url or not console_url.value or not console_url.value.get("value", None):
@@ -1201,7 +1207,8 @@ class ResetPasswordEmail(MethodView):
         html = PASSWORD_RESET_EMAIL_HTML.format(password_reset_link=password_reset_link)
         from tasks.email_sender import send_email
         send_email.delay([user.email], subject=subject, html=html)
-        return set_response(data="A password reset email will be sent if a user exists with the provided email id, and platform is configured to send emails")
+        return set_response(
+            data="A password reset email will be sent if a user exists with the provided email id, and platform is configured to send emails")
 
     def _generate_password_reset(self, email, random_code):
         # Remove any existing password reset objects for the same email.
@@ -1294,7 +1301,8 @@ class ResetPasswordVerify(MethodView):
         from models.email_configuration import EmailConfiguration
         email_configuration = EmailConfiguration.query.filter().first()
         if not email_configuration:
-            return set_response(data="Not configured to send emails. Please configure it in Settings->Email Configuration")
+            return set_response(
+                data="Not configured to send emails. Please configure it in Settings->Email Configuration")
         from tasks.email_sender import send_email
         send_email.delay([email], subject=subject, html=html)
         return set_response(data="Password reset successful.")
