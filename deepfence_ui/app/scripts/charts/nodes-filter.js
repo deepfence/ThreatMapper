@@ -1,17 +1,19 @@
 /* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import { connect } from 'react-redux';
-import {reduxForm, Field} from 'redux-form/immutable';
+import { reduxForm, Field } from 'redux-form/immutable';
 import DFSelectField from '../components/common/multi-select/app-searchable-field';
 import {
   enumerateFiltersAction,
 } from '../actions/app-actions';
 
 const visibleFiltersPerType = {
-  host: 'host_name,vulnerability_scan_status,kubernetes_cluster_name,pseudo',
-  container: 'docker_container_state,vulnerability_scan_status,host_name,pseudo',
-  container_image: 'vulnerability_scan_status,image_name,image_tag,pseudo',
+  host: 'host_name,vulnerability_scan_status,compliance_scan_status,kubernetes_cluster_name,pseudo',
+  container: 'docker_container_state,vulnerability_scan_status,compliance_scan_status,host_name,pseudo',
+  container_image: 'vulnerability_scan_status,compliance_scan_status,image_name,image_tag,pseudo',
 };
+
+const DEFAULT_FORM_ID = 'nodes-filter';
 
 class NodesFilter extends React.Component {
   constructor(props, context) {
@@ -26,6 +28,7 @@ class NodesFilter extends React.Component {
       // extraArgs are used to pass some specific information to the
       // API query params.
       extraArgs,
+      formId
     } = this.props;
 
     const topologyId = params.currentTopologyNodeType || this.props.currentTopologyNodeType;
@@ -34,7 +37,8 @@ class NodesFilter extends React.Component {
     let apiparams = {
       node_type: topologyId,
       filters: visibleFiltersPerType[type],
-      ...extraArgs
+      ...extraArgs,
+      formId
     };
     // override node_type if resourceType is passed explicitly
     if (resourceType) {
@@ -42,6 +46,7 @@ class NodesFilter extends React.Component {
         ...apiparams,
         node_type: '',
         resource_type: resourceType,
+        formId
       };
     }
     return action(apiparams);
@@ -112,11 +117,13 @@ class NodesFilter extends React.Component {
       topologyFilters: allFilters,
       currentTopologyNodeType,
       resourceType,
+      formId
     } = this.props;
 
     const type = resourceType || currentTopologyNodeType;
 
-    const topologyFilters = allFilters.get(type, []);
+    const topologyFilters = formId ? allFilters.getIn([type, formId], []) : allFilters.getIn([type], []);
+
     return (
       <div className="df-modal-form-slim">
         <form onSubmit={this.submitClickHandler}>
@@ -133,12 +140,11 @@ function mapStateToProps(state, ownProps) {
   return {
     topologyFilters: state.getIn(['nodesView', 'topologyFilters']),
     currentTopologyNodeType: ownProps.nodeType || state.get('currentTopologyNodeType'),
+    form: ownProps.formId ?? DEFAULT_FORM_ID,
   };
 }
 
 
 export default connect(mapStateToProps, {
   enumerateFiltersAction,
-})(reduxForm({
-  form: 'nodes-filter',
-})(NodesFilter));
+})(reduxForm({})(NodesFilter));

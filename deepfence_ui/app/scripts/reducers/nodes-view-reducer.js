@@ -52,10 +52,15 @@ function topologyFiltersReducer(state = initialState, action) {
         input: {
           node_type: nodeType,
           resource_type: resourceType,
+          formId
         },
       } = action;
       const type = resourceType || nodeType;
-      state = state.setIn([type], filters);
+      if (formId) {
+        state = state.setIn([type, formId], filters);
+      } else {
+        state = state.setIn([type], filters);
+      }
       return state;
     }
     default:
