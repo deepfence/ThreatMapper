@@ -810,7 +810,7 @@ export function inviteForSignUp(dispatch, params) {
     success: res => {
       if (res.success) {
         const signUpInviteResponse = res;
-        dispatch(receiveSignUpInviteResponse(signUpInviteResponse));
+        dispatch(receiveSignUpInviteResponse(signUpInviteResponse, params));
       }
     },
     error: error => {
@@ -818,7 +818,7 @@ export function inviteForSignUp(dispatch, params) {
         // dispatch(receiveLogoutResponse());
         refreshAuthToken();
       } else {
-        dispatch(receiveSignUpInviteResponse(JSON.parse(error.response)));
+        dispatch(receiveSignUpInviteResponse(JSON.parse(error.response), params));
         log(`Error in api sign up invite ${error}`);
       }
     },
