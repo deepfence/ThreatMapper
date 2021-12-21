@@ -259,6 +259,10 @@ const DfTableV2 = ({
       totalRows,
       data
     });
+  } else if (showPagination) {
+    additionalTableParams.initialState = {
+      pageSize: defaultPageSize
+    };
   }
 
   const tableInstance = useTable(

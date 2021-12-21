@@ -2016,11 +2016,13 @@ export function getReportFilterOptions() {
 }
 
 export function enumerateFilters(params = {}) {
-  const { node_type: nodeType = '', resourceType = '', filters = '' } = params;
   const url = `${backendElasticApiEndPoint()}/enumerate_filters?`;
   const urlWithQueryParams = Object.keys(params).reduce((acc, key) => {
     const value = params[key];
-    if (value !== '' && value !== undefined && value !== null) {
+    if (key === 'formId' || key === "dispatch") {
+      // do not pass formId/dispatch to api
+      return acc;
+    } else if (value !== '' && value !== undefined && value !== null) {
       acc += `${key}=${value}&`;
     }
     return acc;
