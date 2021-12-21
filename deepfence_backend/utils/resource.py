@@ -81,17 +81,23 @@ def get_nodes_list(params):
     for node_type in node_types:
         if node_type == NODE_TYPE_REGISTRY_IMAGE:
             for registry_id in params.get("registry_id"):
-                image_list_details_str = redis.get("{0}:{1}".format(
-                    REGISTRY_IMAGES_CACHE_KEY_PREFIX, registry_id))
+                image_list_details_str = redis.get("{0}:{1}".format(REGISTRY_IMAGES_CACHE_KEY_PREFIX, registry_id))
                 if image_list_details_str:
                     image_list_details = json.loads(image_list_details_str)
                     additional_resp["last_updated"] = image_list_details["last_updated"]
+                    additional_resp["registry_update_in_progress"] = False
                     unique_images = {img["image_name"]
                                      for img in image_list_details["image_list"]}
                     additional_resp["unique_images"] = len(unique_images)
                     images_list, additional_resp["total_scanned"], additional_resp["scan_in_progress"], _ = \
                         get_scan_status_for_registry_images(image_list_details["image_list"])
                     node_list += images_list
+                else:
+                    additional_resp = {
+                        "last_updated": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        "unique_images": 0, "total_scanned": 0, "scan_in_progress": 0,
+                        "registry_update_in_progress": True
+                    }
         else:
             formatted_data = redis.get(websocketio_channel_name_format(
                 node_type + "?format=deepfence")[1])
