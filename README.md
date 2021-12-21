@@ -1,4 +1,4 @@
-![Deepfence Logo](images/readme/deepfence-logo.jpg)
+![Deepfence Logo](images/readme/deepfence-logo.png)
 
 [![GitHub license](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers)
