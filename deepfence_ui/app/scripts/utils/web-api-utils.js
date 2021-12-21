@@ -508,7 +508,7 @@ export function maskDocs(params) {
 export function unmaskDocs(params, additionalParams = {}) {
   const url = `${backendElasticApiEndPoint()}/unmask-doc`;
   let body = {};
-  body.docs = params;
+  body.docs = params.docs;
   if (additionalParams) {
     body = {
       ...body,
