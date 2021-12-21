@@ -8,9 +8,9 @@ import {
 } from '../actions/app-actions';
 
 const visibleFiltersPerType = {
-  host: 'host_name,vulnerability_scan_status,compliance_scan_status,kubernetes_cluster_name,pseudo',
-  container: 'docker_container_state,vulnerability_scan_status,compliance_scan_status,host_name,pseudo',
-  container_image: 'vulnerability_scan_status,compliance_scan_status,image_name,image_tag,pseudo',
+  host: 'host_name,vulnerability_scan_status,kubernetes_cluster_name,pseudo',
+  container: 'docker_container_state,vulnerability_scan_status,host_name,pseudo',
+  container_image: 'vulnerability_scan_status,image_name,image_tag,pseudo',
 };
 
 const DEFAULT_FORM_ID = 'nodes-filter';
