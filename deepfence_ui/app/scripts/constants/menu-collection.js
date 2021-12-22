@@ -8,7 +8,6 @@ import JIRA_LOGO from '../../images/jira.png';
 import SUMO_LOGIC_LOGO from '../../images/sumo-logic.png';
 import HTTP_LOGO from '../../images/http.png';
 import GOOGLE_CHRONICLE_LOGO from '../../images/google-chronicle.png';
-// import PDF_LOGO from '../../images/pdf-logo.png';
 import REPORTS from '../../images/reports.png';
 import MICROSOFT_LOGO from '../../images/microsoft-teams.png';
 
