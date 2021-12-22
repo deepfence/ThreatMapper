@@ -2,7 +2,7 @@ from utils.node_utils import NodeUtils
 from utils import resource as resource_util
 from utils import constants
 from utils.helper import websocketio_channel_name_format, call_scope_control_api, async_http_post, \
-    get_host_name_probe_id_map, get_node_details_for_scope_id, is_network_attack_vector
+    get_host_name_probe_id_map, get_node_details_for_scope_id, is_network_attack_vector, get_topology_network_graph
 from utils.esconn import ESConn
 from utils.custom_exception import DFError, InternalError, InvalidUsage
 import json
@@ -102,7 +102,8 @@ class Node(object):
                         for conn in conn_info.get("connections", []):
                             for conn_metadata in conn["metadata"]:
                                 if conn_metadata["id"] == "port":
-                                    ports.append(conn_metadata["value"])
+                                    if conn_metadata["value"] not in ports:
+                                        ports.append(conn_metadata["value"])
                                     break
             except:
                 pass
@@ -222,7 +223,6 @@ class Node(object):
         return stripped_doc
 
     def get_attack_path(self, top_n=5):
-        severity_map = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
         if self.is_ui_vm or self.pseudo:
             return {}
         if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
@@ -242,10 +242,11 @@ class Node(object):
                 continue
             cve_details = {
                 "cve_id": vulnerability.get("_source", {}).get("cve_id"),
-                "cve_severity": severity_map.get(vulnerability.get("_source", {}).get("cve_severity"))
+                "cve_cvss_score": vulnerability.get("_source", {}).get("cve_cvss_score", 0)
             }
             top_cve_ids.append(cve_details)
-        top_cve_ids = [i["cve_id"] for i in sorted(top_cve_ids, key=lambda k: k['cve_severity'])][:3]
+        top_cve_ids = list(set(
+            [i["cve_id"] for i in sorted(top_cve_ids, key=lambda k: k['cve_cvss_score'], reverse=True)]))[:3]
         response = {
             "cve_attack_vector": "network",
             "attack_path": self.get_attack_path_for_node(top_n=top_n),
@@ -256,19 +257,17 @@ class Node(object):
 
     def get_attack_path_for_node(self, top_n=5):
         topology_nodes = fetch_topology_data(self.type, format="scope")
-        digraph = nx.DiGraph()
-        for node_id, node_details in topology_nodes.items():
-            digraph.add_node(node_id)
-            for adj_node_id in node_details.get("adjacency", []):
-                if not digraph.has_node(adj_node_id):
-                    digraph.add_node(adj_node_id)
-                digraph.add_edge(node_id, adj_node_id)
-        shortest_paths_generator = nx.shortest_simple_paths(digraph, "in-theinternet", self.scope_id)
+        graph = get_topology_network_graph(topology_nodes)
+        shortest_paths_generator_in = nx.shortest_simple_paths(graph, "in-theinternet", self.scope_id)
+        shortest_paths_generator_out = nx.shortest_simple_paths(graph, "out-theinternet", self.scope_id)
         shortest_paths = []
         try:
-            for counter, path in enumerate(shortest_paths_generator):
-                shortest_paths.append([topology_nodes[i]["label"] for i in path])
-                if counter == top_n - 1:
+            for shortest_paths_generator in [shortest_paths_generator_in, shortest_paths_generator_out]:
+                for counter, path in enumerate(shortest_paths_generator):
+                    shortest_paths.append([topology_nodes[i]["label"] for i in path])
+                    if counter == top_n - 1:
+                        break
+                if shortest_paths:
                     break
         except:
             pass

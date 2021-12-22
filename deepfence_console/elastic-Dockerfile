@@ -83,7 +83,10 @@ USER root
 #COPY --from=build /go/check-postgres /usr/local/bin/check-postgres
 RUN mkdir /data \
     && chmod 755 /usr/bin/startEs.sh \
-    && chown -R elasticsearch:elasticsearch /data
+    && chown -R elasticsearch:elasticsearch /data \
+    && apk add --no-cache zip \
+    && zip -q -d /usr/share/elasticsearch/lib/log4j-core-2.11.1.jar org/apache/logging/log4j/core/lookup/JndiLookup.class \
+    && apk del --purge zip
 #&& chmod 755 /usr/local/bin/check-postgres
 EXPOSE 9200 9300
 ENTRYPOINT ["/usr/bin/startEs.sh"]

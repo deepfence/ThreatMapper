@@ -637,7 +637,7 @@ func logErrorAndExit(errMsg string) {
 	os.Exit(1)
 }
 
-func getContainerVulnerabilities(imageName string, imageTarPath string, imageId string) {
+func saveContainerImage(imageName string, imageTarPath string, imageId string) *manifestItem {
 	global_image_id = imageId
 	path, err := save(imageName, global_image_id, imageTarPath)
 	if err != nil {
@@ -652,17 +652,17 @@ func getContainerVulnerabilities(imageName string, imageTarPath string, imageId 
 	if err != nil {
 		msg := fmt.Sprintf("Could not read image manifest: %s", err.Error())
 		logErrorAndExit(msg)
-		return
+		return manifestItem
 	}
 	layerIDs := manifestItem.LayerIds
 	layerPaths := manifestItem.Layers
 	if len(layerPaths) == 0 {
 		logErrorAndExit("Image layer path is empty")
-		return
+		return manifestItem
 	}
 	if len(layerIDs) == 0 {
 		logErrorAndExit("Image layer id is empty")
-		return
+		return manifestItem
 	}
 	if imageId == "" {
 		// reading image id from manifest file json path and tripping off extension
@@ -698,16 +698,26 @@ func getContainerVulnerabilities(imageName string, imageTarPath string, imageId 
 				msg := fmt.Sprintf("Unable to upload file %s to host %s. Reason %s",
 					fileName, managementConsoleUrl, err.Error())
 				sendScanLogsToLogstash(msg, "ERROR")
-				return
+				return manifestItem
 			}
 		}
 	}
+	return manifestItem
+}
+
+func getContainerVulnerabilities(imageName string, imageTarPath string, imageId string, manifestItem *manifestItem) {
+	path := tmp_path
+	// Retrieve history.
+	layerIDs := manifestItem.LayerIds
+	layerPaths := manifestItem.Layers
+	var fileName string
+	loopCntr := len(layerPaths)
 	if runtime.GOOS == "windows" {
 		fileName = path + "\\" + layerPaths[0]
 	} else {
 		fileName = path + "/" + layerPaths[0]
 	}
-	err = analyzeLayer(fileName, layerIDs[0], "")
+	err := analyzeLayer(fileName, layerIDs[0], "")
 	if err != nil {
 		msg := fmt.Sprintf("Could not analyze layer %s, moving on: %v", layerIDs[0], err)
 		sendScanLogsToLogstash(msg, "WARN")
@@ -1265,18 +1275,9 @@ func main() {
 		}
 	}()
 
-	// base scan
-	if imageName == "host" {
-		isHostScan = true
-		hostMountPath = strings.Replace(imageTarPath, "layer.tar", "", -1)
-		getHostVulnerabilities(hostName, imageTarPath)
-	} else {
-		getContainerVulnerabilities(imageName, imageTarPath, imageId)
-	}
-
-	if len(scanTypes) == 0 {
-		completeScan()
-		return
+	var manifestItem *manifestItem
+	if imageName != "host" {
+		manifestItem = saveContainerImage(imageName, imageTarPath, imageId)
 	}
 
 	fileSystemsDir := "/data/fileSystems/"
@@ -1311,43 +1312,46 @@ func main() {
 	}
 
 	// language scan
-	if updateDepCheckData {
-		//fmt.Printf("Now trying to lock access to dependency data \n")
-		//if runtime.GOOS == "windows" {
-		//	lockFileName = windowsSysTempDir + "/depcheck-download.lock"
-		//}
-		//lock := fslock.New(lockFileName)
-		//if lock.Lock() != nil {
-		//	return
-		//}
-		depCheckErrMsg := checkDependencyData()
-		//lock.Unlock()
-		if depCheckErrMsg != "" {
-			logErrorAndExit(depCheckErrMsg)
+	if len(scanTypes) != 0 {
+		if updateDepCheckData {
+			depCheckErrMsg := checkDependencyData()
+			if depCheckErrMsg != "" {
+				logErrorAndExit(depCheckErrMsg)
+			}
+			fmt.Printf("Dependency data downloaded. Proceeding\n")
 		}
-		fmt.Printf("Dependency data downloaded. Proceeding\n")
-	}
 
-	vulnerabilityDataPresent := true
-	fileFd, err := os.Open(depcheckDataDir)
-	if err != nil {
-		vulnerabilityDataPresent = false
-	} else {
-		_, err := fileFd.Readdir(1)
-		if err == io.EOF {
+		vulnerabilityDataPresent := true
+		fileFd, err := os.Open(depcheckDataDir)
+		if err != nil {
 			vulnerabilityDataPresent = false
+		} else {
+			_, err := fileFd.Readdir(1)
+			if err == io.EOF {
+				vulnerabilityDataPresent = false
+			}
 		}
-	}
-	if !vulnerabilityDataPresent {
-		sendScanLogsToLogstash("Language vulnerability database not yet updated. Results may be incomplete", "WARN")
-	} else {
-		// Scans for different languages
-		for _, scanLang := range scanTypes {
-			errVal = getLanguageVulnerabilities(scanLang, fileSet)
-			if errVal != "" {
-				sendScanLogsToLogstash(errVal, "WARN")
+		if !vulnerabilityDataPresent {
+			sendScanLogsToLogstash("Language vulnerability database not yet updated. Results may be incomplete", "WARN")
+		} else {
+			// Scans for different languages
+			for _, scanLang := range scanTypes {
+				errVal = getLanguageVulnerabilities(scanLang, fileSet)
+				if errVal != "" {
+					sendScanLogsToLogstash(errVal, "WARN")
+				}
 			}
 		}
 	}
+
+	// base scan
+	if imageName == "host" {
+		isHostScan = true
+		hostMountPath = strings.Replace(imageTarPath, "layer.tar", "", -1)
+		getHostVulnerabilities(hostName, imageTarPath)
+	} else {
+		getContainerVulnerabilities(imageName, imageTarPath, imageId, manifestItem)
+	}
+
 	completeScan()
 }

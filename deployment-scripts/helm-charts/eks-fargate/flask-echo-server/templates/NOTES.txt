@@ -1,0 +1,5 @@
+Management console ip address: {{ .Values.managementConsoleIp }}
+
+Check if application has started:
+  kubectl get pods -n {{ .Values.namespace }}
+  kubectl describe deployment -n {{ .Values.namespace }}

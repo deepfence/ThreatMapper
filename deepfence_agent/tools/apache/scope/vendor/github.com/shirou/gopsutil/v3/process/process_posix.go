@@ -158,4 +158,3 @@ func (p *Process) UsernameWithContext(ctx context.Context) (string, error) {
 	}
 	return "", nil
 }
-

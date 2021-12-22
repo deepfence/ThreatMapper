@@ -83,7 +83,7 @@ export const initialState = makeMap({
   isToasterVisible: false,
   globalSearchQuery: [],
   alertPanelHistoryBound: TIME_BOUNDARY_OPTIONS[7],
-  refreshInterval: REFRESH_INTERVALS_OPTIONS[0],
+  refreshInterval: REFRESH_INTERVALS_OPTIONS[2],
   navigate: makeMap(),
   toggleFullWindow: false,
   policyViewList: [],
@@ -1364,6 +1364,14 @@ export function rootReducer(state = initialState, action) {
         payload: { data },
       } = action;
       state = state.set('mail_configurations', data);
+      return state;
+    }
+
+    case ActionTypes.ADD_MAIL_CONFIGURATION_SUCCESS: {
+      const {
+        payload: { error },
+      } = action;
+      state = state.set('mail_configurations_error', error.message);
       return state;
     }
 

@@ -1,0 +1,40 @@
+namespace: default
+
+# Set this value to false if using external secrets file
+createDeepfenceNamespace: "true"
+
+managementConsoleUrl: ""
+managementConsolePort: "443"
+
+deepfenceAgentImage:
+  name: deepfenceio/deepfence_agent_ce
+  tag: fargate
+
+# Auth: Get deepfence api key from UI -> Settings -> User Management
+deepfenceKey: ""
+# If kubernetes secret is already defined externally, change following value to false
+createDeepfenceKeySecret: "true"
+
+# Suffix cloud instance id to hostnames
+instanceIdSuffix: "N"
+
+# comma separated list of tags (labels) to set for all agents
+userDefinedTags: ""
+
+enableGraphReport: "true"
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 512Mi
+  limits:
+    cpu: 1500m
+    memory: 1536Mi
+
+clusterAgentResources:
+  requests:
+    cpu: 25m
+    memory: 80Mi
+  limits:
+    cpu: 1500m
+    memory: 1536Mi

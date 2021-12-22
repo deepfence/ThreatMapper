@@ -2,11 +2,10 @@ import debug from 'debug';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { isGenericTable } from '../utils/node-details-utils';
 
 import ActionTabGroup from './node-details/action-tab-group';
 
-import NodeDetailsGenericTable from './node-details/node-details-generic-table';
+import { formatDataType } from '../utils/string-utils';
 import NodeDetailsHealth from './node-details/node-details-health';
 import NodeDetailsInfo from './node-details/node-details-info';
 import NodeDetailsTable from './node-details/node-details-table';
@@ -336,9 +335,29 @@ export const NodeDetails = () => {
 };
 
 const Table = ({ table }) => {
-  if (isGenericTable(table)) {
+  if (table) {
     return (
-      <NodeDetailsGenericTable rows={table.rows} columns={table.columns} />
+      <div>
+        {table.rows.map(field => {
+            const { title } = formatDataType(field);
+            return (
+              <div className="node-details-info-field" key={field.id}>
+                <div
+                  className="node-details-info-field-label truncate"
+                  title={field.entries.label}
+                >
+                  {field.entries.label}
+                </div>
+                <div
+                  className="node-details-info-field-value truncate"
+                  title={title}
+                >
+                  {field.entries.value}
+                </div>
+              </div>
+            );
+          })}
+      </div>
     );
   }
   log(`Undefined type '${table.type}' for table ${table.id}`);

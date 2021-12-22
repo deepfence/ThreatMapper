@@ -662,6 +662,9 @@ func (r *Registry) renderTopologies(ctx context.Context, rpt report.Report, req 
 	topologies := []APITopologyDesc{}
 	req.ParseForm()
 	r.walk(func(desc APITopologyDesc) {
+		if ctx.Err() != nil {
+			return
+		}
 		renderer, filter, _ := r.RendererForTopology(desc.id, req.Form, rpt)
 		desc.Stats = computeStats(ctx, rpt, renderer, filter)
 		for i, sub := range desc.SubTopologies {

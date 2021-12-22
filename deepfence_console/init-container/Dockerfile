@@ -1,4 +1,4 @@
-FROM alpine:3.14.2
+FROM alpine:3.15
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
 

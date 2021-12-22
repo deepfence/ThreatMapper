@@ -4,9 +4,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { sendSignUpInvite } from '../../../actions/app-actions';
-import { getBackendBasePath} from '../../../utils/web-api-utils';
 
-const availableRoles = [{id: 1, role: 'admin', label: 'admin'}, {id: 2, role: 'user', label: 'user'}, {id: 3, role: 'read_only_user', label: 'read only user'}];
+const availableRoles = [{ id: 1, role: 'admin', label: 'admin' }, { id: 2, role: 'user', label: 'user' }, { id: 3, role: 'read_only_user', label: 'read only user' }];
 
 class InviteView extends React.Component {
   constructor() {
@@ -50,7 +49,7 @@ class InviteView extends React.Component {
       let params = {
         email: email,
         role: selectedRole,
-        base_url: getBackendBasePath(),
+        action: e?.nativeEvent?.submitter?.value ?? 'send_invite_email'
       }
       this.props.dispatch(sendSignUpInvite(params));
     }
@@ -77,15 +76,23 @@ class InviteView extends React.Component {
               </label>
               {submitted && !email && <div className="field-error">Email is required</div>}
             </div>
-            <div className={'form-group' + (submitted && !selectedRole ? ' has-error': '')}>
+            <div className={'form-group' + (submitted && !selectedRole ? ' has-error' : '')}>
               <select value={selectedRole} onChange={this.handleDropDownChange} className="form-select">
                 {availableRoles.map(option => {
                   return (<option key={option.id} value={option.role}>{option.label}</option>);
                 })}
               </select>
             </div>
+            <div className="form-group" style={{ marginBottom: '0px' }}>
+              <button className="app-btn" value="send_invite_email">
+                Send sign up request
+              </button>
+            </div>
+            <div style={{ textAlign: 'center' }}>OR</div>
             <div className="form-group">
-              <button className="app-btn">Send Sign Up Request</button>
+              <button className="app-btn" value="get_invite_link">
+                Get an invite link
+              </button>
             </div>
             <div className="error-msg-container">
               {this.state.isError && <div className="auth-error-msg">{this.state.responseMsg}</div>}

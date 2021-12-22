@@ -20,7 +20,7 @@ func buildHttpClient() *http.Client {
 	transport := &http.Transport{
 		MaxIdleConnsPerHost: maxIdleConnsPerHost,
 		DialContext: (&net.Dialer{
-			Timeout: 10 * time.Second,
+			Timeout:   10 * time.Second,
 			KeepAlive: 30 * time.Second,
 		}).DialContext,
 		TLSHandshakeTimeout: 30 * time.Second,
@@ -49,7 +49,7 @@ func authenticateAgentWithConsole(httpClient *http.Client, scopeApiUrl, authKey 
 
 func main() {
 	authKey := os.Getenv("DEEPFENCE_KEY")
-	scopeApiUrl := fmt.Sprintf("https://%s/topology-api", os.Getenv("DF_BACKEND_IP"))
+	scopeApiUrl := fmt.Sprintf("https://%s:%s/topology-api", os.Getenv("MGMT_CONSOLE_URL"), os.Getenv("MGMT_CONSOLE_PORT"))
 	var httpClient *http.Client
 	for {
 		if httpClient == nil {

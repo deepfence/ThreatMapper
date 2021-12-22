@@ -508,7 +508,7 @@ export function maskDocs(params) {
 export function unmaskDocs(params, additionalParams = {}) {
   const url = `${backendElasticApiEndPoint()}/unmask-doc`;
   let body = {};
-  body.docs = params;
+  body.docs = params.docs;
   if (additionalParams) {
     body = {
       ...body,
@@ -810,7 +810,7 @@ export function inviteForSignUp(dispatch, params) {
     success: res => {
       if (res.success) {
         const signUpInviteResponse = res;
-        dispatch(receiveSignUpInviteResponse(signUpInviteResponse));
+        dispatch(receiveSignUpInviteResponse(signUpInviteResponse, params));
       }
     },
     error: error => {
@@ -818,7 +818,7 @@ export function inviteForSignUp(dispatch, params) {
         // dispatch(receiveLogoutResponse());
         refreshAuthToken();
       } else {
-        dispatch(receiveSignUpInviteResponse(JSON.parse(error.response)));
+        dispatch(receiveSignUpInviteResponse(JSON.parse(error.response), params));
         log(`Error in api sign up invite ${error}`);
       }
     },
@@ -2107,11 +2107,13 @@ export function getReportFilterOptions() {
 }
 
 export function enumerateFilters(params = {}) {
-  const { node_type: nodeType = '', resourceType = '', filters = '' } = params;
   const url = `${backendElasticApiEndPoint()}/enumerate_filters?`;
   const urlWithQueryParams = Object.keys(params).reduce((acc, key) => {
     const value = params[key];
-    if (value !== '' && value !== undefined && value !== null) {
+    if (key === 'formId' || key === "dispatch") {
+      // do not pass formId/dispatch to api
+      return acc;
+    } else if (value !== '' && value !== undefined && value !== null) {
       acc += `${key}=${value}&`;
     }
     return acc;

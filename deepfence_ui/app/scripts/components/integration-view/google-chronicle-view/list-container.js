@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import GoogleChronicleList from './list';
 
 const GoogleChronicleListContainer = (props) => {
-  const googleChronicleList = useSelector(state => state.availableGoogleChronicleIntegrations)
+  const googleChronicleList = useSelector(state => state.get('availableGoogleChronicleIntegrations'))
   return (
     <GoogleChronicleList
       {...props}

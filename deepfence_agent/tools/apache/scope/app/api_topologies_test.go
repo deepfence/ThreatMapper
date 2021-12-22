@@ -185,7 +185,7 @@ func getTestContainerLabelFilterTopologySummary(t *testing.T, exclude bool) (det
 	}
 
 	ctx := context.Background()
-	return detailed.Summaries(ctx, detailed.RenderContext{Report: fixture.Report}, render.Render(ctx, fixture.Report, renderer, filter).Nodes), nil
+	return detailed.Summaries(ctx, detailed.RenderContext{Report: fixture.Report}, render.Render(ctx, fixture.Report, renderer, filter).Nodes, false), nil
 }
 
 func TestAPITopologyAddsKubernetes(t *testing.T) {

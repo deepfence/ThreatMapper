@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	dfUtils "github.com/deepfence/df-utils"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	dfUtils "github.com/deepfence/df-utils"
 )
 
 const (
@@ -18,6 +19,7 @@ const (
 	googleCloudMetadataBaseUrl = "http://metadata.google.internal/computeMetadata/v1"
 	azureMetadataBaseUrl       = "http://169.254.169.254/metadata"
 	softlayerMetadataBaseUrl   = "https://api.service.softlayer.com/rest/v3.1/SoftLayer_Resource_Metadata"
+	awsECSMetaDataURL          = "http://169.254.170.2/v2/metadata"
 	digitalOceanMetadaBaseUrl  = "http://169.254.169.254/metadata"
 )
 
@@ -43,6 +45,39 @@ func GetHTTPResponse(client *http.Client, method string, url string, body io.Rea
 		return string(bodyBytes), nil
 	}
 	return "", errors.New(fmt.Sprintf("StatusCode: %d", resp.StatusCode))
+}
+
+// GetAWSFargateMetadata returns fargate meta data from the ecs instances
+func GetAWSFargateMetadata(onlyValidate bool) (CloudMetadata, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	awsFargateMetadata := CloudMetadata{CloudProvider: "aws_fargate", Label: "AWS Fargate"}
+	httpResp, err := GetHTTPResponse(client, "GET", awsECSMetaDataURL, nil, nil)
+	if onlyValidate == true {
+		// Only check if cloud provider is AWS_Fargate, don't need metadata
+		return awsFargateMetadata, err
+	}
+	if err != nil {
+		return awsFargateMetadata, err
+	}
+	var result map[string]interface{}
+	err = json.Unmarshal([]byte(httpResp), &result)
+	if err != nil {
+		return awsFargateMetadata, err
+	}
+	awsFargateMetadata.TaskARN = result["TaskARN"].(string)
+	awsFargateMetadata.Family = result["Family"].(string)
+	awsFargateMetadata.Zone = result["AvailabilityZone"].(string)
+	awsFargateMetadata.Region = dfUtils.RemoveLastCharacter(awsFargateMetadata.Zone)
+	containers := result["Containers"].([]interface{})
+	for _, value := range containers {
+		val := value.(map[string]interface{})
+		if val["Type"] == "NORMAL" && !strings.Contains(strings.ToLower(val["Name"].(string)), "agent") {
+			awsFargateMetadata.Hostname = val["Name"].(string)
+			awsFargateMetadata.NetworkMode = val["Networks"].([]interface{})[0].(map[string]interface{})["NetworkMode"].(string)
+			awsFargateMetadata.PrivateIP = []string{val["Networks"].([]interface{})[0].(map[string]interface{})["IPv4Addresses"].([]interface{})[0].(string)}
+		}
+	}
+	return awsFargateMetadata, nil
 }
 
 func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
@@ -335,6 +370,11 @@ func DetectCloudServiceProvider() string {
 	if err == nil {
 		return "digital_ocean"
 	}
+	// Check if AWS ECS / Fargate
+	_, err = GetAWSFargateMetadata(true)
+	if err == nil {
+		return "aws_fargate"
+	}
 	// Check if Softlayer
 	_, err = GetSoftlayerMetadata(true)
 	if err == nil {
@@ -345,9 +385,12 @@ func DetectCloudServiceProvider() string {
 
 type CloudMetadata struct {
 	CloudProvider     string   `json:"cloud_provider"`
+	TaskARN           string   `json:"task_arn,omitempty"`
+	Family            string   `json:"family,omitempty"`
 	InstanceID        string   `json:"instance_id,omitempty"`
 	PublicIP          []string `json:"public_ip"`
 	PrivateIP         []string `json:"private_ip"`
+	NetworkMode       string   `json:"network_mode,omitempty"`
 	InstanceType      string   `json:"instance_type,omitempty"`
 	Hostname          string   `json:"hostname,omitempty"`
 	KernelId          string   `json:"kernel_id,omitempty"`

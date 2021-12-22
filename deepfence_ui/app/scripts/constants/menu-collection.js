@@ -34,13 +34,13 @@ export const INTEGRATION_MENU_COLLECTION = [
     name: 'http_endpoint', isActive: true, icon: HTTP_LOGO, displayName: 'HTTP endpoint', category: 'notification', bgcolor: 'white', parent: 'Notification'
   },
   {
-    name: 'google_chronicle', isActive: true, icon: GOOGLE_CHRONICLE_LOGO, displayName: 'Google Chronicle', category: 'notification', bgcolor: 'white', parent: 'Notification'
-  },
-  {
     name: 'jira', isActive: false, icon: JIRA_LOGO, displayName: 'Jira', category: 'ticketing', bgcolor: '#A6CDFF', parent: 'Ticketing'
   },
   {
     name: 'sumo_logic', isActive: true, icon: SUMO_LOGIC_LOGO, displayName: 'Sumo Logic', category: 'siem', bgcolor: 'black', parent: 'SIEM'
+  },
+  {
+    name: 'google_chronicle', isActive: true, icon: GOOGLE_CHRONICLE_LOGO, displayName: 'Google Chronicle', category: 'siem', bgcolor: 'white', parent: 'SIEM'
   },
   {
     name: 'reports', isActive: true, icon: REPORTS, displayName: 'PDF/XLSX', category: 'report', bgcolor: '#7ec359', parent: 'Reports'

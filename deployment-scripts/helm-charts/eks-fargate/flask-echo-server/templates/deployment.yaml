@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-echo-server
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: flask-echo-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask-echo-server
+  template:
+    metadata:
+      labels:
+        app: flask-echo-server
+    spec:
+      volumes:
+        - name: deepfence-volume
+          emptyDir: {}
+
+      initContainers:
+      - name: deepfence-agent
+        image: "{{ .Values.deepfenceAgentImage.name }}:{{ .Values.deepfenceAgentImage.tag }}"
+        command: ["/deepfence/bin/bash", "-c"]
+        args: ["/deepfence/bin/cp -r /deepfence/* /deepfence-mount"]
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: deepfence-volume
+          mountPath: /deepfence-mount
+
+      containers:
+        - name: flask
+          image: deepfenceio/flask-echo-server:latest
+          ports:
+          - containerPort: 5000
+          command: ["/deepfence/usr/local/bin/deepfence-entry-point-scratch.sh"]
+          args: ["/app/entrypoint.sh"]
+          volumeMounts:
+          - name: deepfence-volume
+            mountPath: /deepfence
+          env:
+          - name: DEEPFENCE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: "deepfence-key"
+                key: "deepfence-key"
+          - name: USER_DEFINED_TAGS
+            value: {{ .Values.userDefinedTags }}
+          - name: DF_ENABLE_PROCESS_REPORT
+            value: "{{ .Values.enableGraphReport }}"
+          - name: DF_ENABLE_CONNECTIONS_REPORT
+            value: "{{ .Values.enableGraphReport }}"
+          - name: MGMT_CONSOLE_URL
+            value: "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
+          - name: MGMT_CONSOLE_PORT
+            value: "{{ required "managementConsolePort is required" .Values.managementConsolePort }}"
+          - name: DF_INSTALL_DIR
+            value: "/deepfence"
+          - name: DF_SERVERLESS
+            value: "true"
+          - name: INSTANCE_ID_SUFFIX
+            value: "{{ .Values.instanceIdSuffix }}"
+          - name: SCOPE_HOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: AGENT_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: AGENT_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}

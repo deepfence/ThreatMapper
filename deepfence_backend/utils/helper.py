@@ -25,6 +25,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from config.redisconfig import redis
 import shutil
+import networkx as nx
 
 requests.packages.urllib3.disable_warnings()
 
@@ -307,6 +308,20 @@ def is_network_attack_vector(attack_vector):
     elif attack_vector_lower_case == "n":
         return True
     return False
+
+
+def get_topology_network_graph(topology_nodes):
+    graph = nx.Graph()
+    if not topology_nodes:
+        return graph
+    for node_id, node_details in topology_nodes.items():
+        graph.add_node(node_id)
+        for adj_node_id in node_details.get("adjacency", []):
+            if not graph.has_node(adj_node_id):
+                graph.add_node(adj_node_id)
+            graph.add_edge(node_id, adj_node_id)
+    return graph
+
 
 def websocketio_channel_name_format(node_type):
     node_type_split = node_type.split("?")
