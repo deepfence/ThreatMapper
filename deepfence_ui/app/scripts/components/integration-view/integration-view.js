@@ -167,7 +167,7 @@ class IntegrationView extends React.Component {
         <div className={"tab-container " + activeClass} key={tab} onClick={() => this.handleOnClick(tabDetails)}>
           <div className="integration-box" title={tabDetails.displayName}>
             {tabDetails.icon &&
-              <div className="integration-logo" style={{backgroundColor: tabDetails.bgcolor}}> <img style={imgIcon} src={tabDetails.icon} /></div>}
+              <div className="integration-logo" style={{backgroundColor: tabDetails.bgcolor}}> <img className="img-fluid p-2" src={tabDetails.icon} /></div>}
             {tabDetails.iconClassName && <span className={tabDetails.iconClassName} />}
             <div className="integration-name" style={{marginTop: '80px'}}> {tabDetails.displayName}
             {errorFlag ?
