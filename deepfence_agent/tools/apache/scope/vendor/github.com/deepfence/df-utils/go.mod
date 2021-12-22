@@ -1,3 +1,5 @@
-module github.com/deepfence/deepfence_agent/tools/apache/scope/vendor/github.com/deepfence/df-utils
+module github.com/deepfence/ThreatMapper/deepfence_agent/misc/deepfence/df-utils
 
-go 1.15
+go 1.17
+
+require github.com/weaveworks/scope v1.13.2
