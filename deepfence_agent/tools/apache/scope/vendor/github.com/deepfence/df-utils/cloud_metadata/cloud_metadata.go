@@ -50,7 +50,7 @@ func GetHTTPResponse(client *http.Client, method string, url string, body io.Rea
 // GetAWSFargateMetadata returns fargate meta data from the ecs instances
 func GetAWSFargateMetadata(onlyValidate bool) (CloudMetadata, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
-	awsFargateMetadata := CloudMetadata{CloudProvider: "aws_fargate"}
+	awsFargateMetadata := CloudMetadata{CloudProvider: "aws_fargate", Label: "AWS Fargate"}
 	httpResp, err := GetHTTPResponse(client, "GET", awsECSMetaDataURL, nil, nil)
 	if onlyValidate == true {
 		// Only check if cloud provider is AWS_Fargate, don't need metadata
@@ -60,9 +60,14 @@ func GetAWSFargateMetadata(onlyValidate bool) (CloudMetadata, error) {
 		return awsFargateMetadata, err
 	}
 	var result map[string]interface{}
-	json.Unmarshal([]byte(httpResp), &result)
+	err = json.Unmarshal([]byte(httpResp), &result)
+	if err != nil {
+		return awsFargateMetadata, err
+	}
 	awsFargateMetadata.TaskARN = result["TaskARN"].(string)
 	awsFargateMetadata.Family = result["Family"].(string)
+	awsFargateMetadata.Zone = result["AvailabilityZone"].(string)
+	awsFargateMetadata.Region = dfUtils.RemoveLastCharacter(awsFargateMetadata.Zone)
 	containers := result["Containers"].([]interface{})
 	for _, value := range containers {
 		val := value.(map[string]interface{})
