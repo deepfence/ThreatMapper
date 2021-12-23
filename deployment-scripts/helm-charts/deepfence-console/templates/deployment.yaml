@@ -316,6 +316,10 @@ spec:
           hostPath:
             path: /etc/containerd/certs.d
             type: ""
+        - name: containerd-sock
+          hostPath:
+            path: /run/containerd/containerd.sock
+            type: Socket
 {{ end }}
       containers:
         - name: deepfence-api
@@ -385,6 +389,8 @@ spec:
 {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
             - mountPath: /etc/containerd/certs.d
               name: containerd-certs
+            - mountPath: /run/containerd/containerd.sock
+              name: containerd-sock
 {{ end }}
           resources:
             requests:
@@ -455,6 +461,10 @@ spec:
           hostPath:
             path: /etc/containerd/certs.d
             type: ""
+        - name: containerd-sock
+          hostPath:
+            path: /run/containerd/containerd.sock
+            type: Socket
 {{ end }}
         - name: data
           emptyDir: {}
@@ -536,6 +546,8 @@ spec:
 {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
             - mountPath: /etc/containerd/certs.d
               name: containerd-certs
+            - mountPath: /run/containerd/containerd.sock
+              name: containerd-sock
 {{ end }}
             - mountPath: /data
               name: data
