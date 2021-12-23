@@ -19,7 +19,7 @@ type InfoTracer struct {
 
 const (
 	ebpf_socket   = "/tmp/ss.sock"
-	ebpf_exe_path = "/home/deepfence/open_tracer"
+	ebpf_exe_path = "/home/deepfence/bin/open_tracer"
 	ebpf_port     = "--socket-path=" + ebpf_socket
 	mem_lock_size = "--memlock=67108864"
 )
