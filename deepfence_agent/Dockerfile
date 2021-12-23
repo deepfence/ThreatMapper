@@ -38,7 +38,6 @@ COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/bin /home/deepfence/bin
-RUN  cp /home/deepfence/bin/* /home/deepfence/ || echo 'No plugins found'
 
 RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
