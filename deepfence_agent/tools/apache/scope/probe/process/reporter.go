@@ -73,7 +73,8 @@ func StartOpenFilesTracing() *InfoTracer {
 }
 
 // NewReporter makes a new Reporter.
-func NewReporter(walker Walker, scope string, jiffies Jiffies, noCommandLineArguments bool) *Reporter {
+func NewReporter(walker Walker, scope string, jiffies Jiffies, noCommandLineArguments, trackProcDeploads bool) *Reporter {
+
 	r := &Reporter{
 		scope:                  scope,
 		walker:                 walker,
@@ -81,8 +82,13 @@ func NewReporter(walker Walker, scope string, jiffies Jiffies, noCommandLineArgu
 		noCommandLineArguments: noCommandLineArguments,
 		reportCacheData:        reportCache{},
 		hostName:               hostname.Get(),
-		ptracer:                StartOpenFilesTracing(),
+		ptracer:                nil,
 	}
+
+	if trackProcDeploads {
+		r.ptracer = StartOpenFilesTracing()
+	}
+
 	go r.updateProcessCache()
 
 	return r

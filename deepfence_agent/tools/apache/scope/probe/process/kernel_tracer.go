@@ -18,8 +18,9 @@ type InfoTracer struct {
 }
 
 const (
+	ebpf_socket   = "/tmp/ss.sock"
 	ebpf_exe_path = "/home/deepfence/open_tracer"
-	ebpf_port     = "--port=50051"
+	ebpf_port     = "--socket-path=" + ebpf_socket
 	mem_lock_size = "--memlock=67108864"
 )
 
@@ -30,7 +31,7 @@ func NewInfoTracer() (*InfoTracer, error) {
 		return nil, err
 	}
 
-	conn, err := grpc.Dial("[::1]:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("unix://"+ebpf_socket, grpc.WithAuthority("dummy"), grpc.WithInsecure())
 	if err != nil {
 		command.Process.Kill()
 		return nil, err

@@ -1,0 +1,4 @@
+[submodule "deepfence_agent/plugins/open-tracer"]
+	path = deepfence_agent/plugins/open-tracer
+	url = https://github.com/noboruma/open-tracer
+	branch = open_tracer

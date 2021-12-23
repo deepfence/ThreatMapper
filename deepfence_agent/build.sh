@@ -4,6 +4,16 @@ IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-deepfenceio}
 
 building_image(){
 
+    echo "Building Scope plugins"
+    cd plugins
+    make realclean && make
+    build_result=$?
+    if [ $build_result -ne 0 ]
+    then
+        echo "Plugin build failed, proceeding with build nonetheless"
+    fi
+    cd -
+
     echo "Building Scope"
     cd tools/apache/scope
     make realclean && make scope.tar
