@@ -17,7 +17,7 @@ class NotificationToaster extends React.Component {
   hide() {
     setTimeout(()=> {
       this.props.dispatch(hideToaster());
-    }, 10000);
+    }, 3000);
   }
 
   render() {
