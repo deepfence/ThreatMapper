@@ -3,9 +3,9 @@ import traceback
 from config.app import celery_app, app as flask_app
 
 from tasks.task_scheduler import run_node_task
-from utils.constants import NETWORK_POLICY_WHITELIST, REPORT_INDEX, \
+from utils.constants import REPORT_INDEX, \
     NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, \
-    PDF_REPORT_MAX_DOCS, COMPLIANCE_INDEX
+    PDF_REPORT_MAX_DOCS
 import pandas as pd
 import requests
 from utils.constants import CVE_INDEX, MAX_TOTAL_SEVERITY_SCORE
@@ -14,11 +14,10 @@ import jinja2
 import numpy as np
 import itertools
 from datetime import datetime, date
-from utils.esconn import ESConn, ALERTS_INDEX
+from utils.esconn import ESConn
 from utils.helper import mkdir_recursive, split_list_into_chunks, rmdir_recursive
 from utils.reports import prepare_report_download, prepare_report_email_body
-from utils.resource import get_active_node_images_count, filter_node_for_alerts, \
-    filter_node_for_compliance
+from utils.resource import get_active_node_images_count
 from utils.common import get_rounding_time_unit
 from copy import deepcopy
 from dateutil.relativedelta import relativedelta
