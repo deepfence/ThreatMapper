@@ -311,7 +311,7 @@ def is_network_attack_vector(attack_vector):
 
 
 def get_topology_network_graph(topology_nodes):
-    graph = nx.Graph()
+    graph = nx.DiGraph()
     if not topology_nodes:
         return graph
     for node_id, node_details in topology_nodes.items():
