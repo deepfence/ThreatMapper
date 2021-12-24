@@ -7,7 +7,7 @@ from models.notification import RunningNotification, VulnerabilityNotification
 from datetime import datetime, timedelta
 from utils.esconn import ESConn
 from utils.constants import CVE_SCAN_LOGS_INDEX, NODE_TYPE_HOST, \
-    CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_QUEUED, CVE_SCAN_STATUS_ERROR, DEEPFENCE_KEY, PDF_REPORT_INDEX, \
+    CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_QUEUED, CVE_SCAN_STATUS_ERROR, DEEPFENCE_KEY, REPORT_INDEX, \
     CVE_INDEX
 from utils.scope import fetch_topology_data
 import time
@@ -123,7 +123,7 @@ def delete_old_agent_logs(self, path):
 @celery_app.task(bind=True, default_retry_delay=1)
 def pdf_report_fix(*args):
     es_response = ESConn.search_by_and_clause(
-        PDF_REPORT_INDEX, {}, 0, size=10000)
+        REPORT_INDEX, {}, 0, size=10000)
     for ele in es_response['hits']:
         doc_id = ele["_id"]
         date = ele["_source"]["@timestamp"]
@@ -132,15 +132,15 @@ def pdf_report_fix(*args):
         date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f')
         time_elapsed = ((datetime.utcnow() - date).seconds // 60)
         if time_elapsed > 60 and ele["_source"]["status"].lower() == 'completed':
-            headers = {'DF_FILE_NAME': ele['_source']['pdf_path']}
+            headers = {'DF_FILE_NAME': ele['_source']['report_path']}
             try:
                 res = requests.request(
                     "DEL", "https://deepfence-fetcher:8006/df-api/clear", headers=headers, verify=False)
             except:
                 pass
-            ESConn.delete_docs([doc_id], PDF_REPORT_INDEX)
+            ESConn.delete_docs([doc_id], REPORT_INDEX)
         if time_elapsed >= 10 and ele["_source"]["status"].lower() != 'completed':
-            ESConn.delete_docs([doc_id], PDF_REPORT_INDEX)
+            ESConn.delete_docs([doc_id], REPORT_INDEX)
 
 
 @celery_app.task(bind=True, default_retry_delay=1)

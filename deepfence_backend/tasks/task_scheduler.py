@@ -2,6 +2,7 @@ import arrow
 from config.app import celery_app, app
 from models.container_image_registry import RegistryCredential
 from models.scheduler import Scheduler
+from models.setting import Setting
 from croniter import croniter
 from utils import constants
 import time
@@ -11,8 +12,10 @@ from config.redisconfig import redis
 from utils.esconn import ESConn
 from resource_models.node import Node
 from utils.reports import prepare_report_download, prepare_report_email_body
+from utils.response import set_response
 from flask import make_response
 import json
+import uuid
 from copy import deepcopy
 from utils.helper import get_all_scanned_node
 
@@ -213,37 +216,64 @@ def run_node_task(action, node_action_details, scheduler_id=None):
                     except Exception as ex:
                         save_scheduled_task_status("Error: " + str(ex))
                         app.logger.error(ex)
-        elif action in [constants.NODE_ACTION_DOWNLOAD_REPORT, constants.NODE_ACTION_SCHEDULE_SEND_REPORT]:
-            action_details = deepcopy(node_action_details)
-            if action_details.get('include_dead_nodes') is True:
+        elif action == constants.NODE_ACTION_SCHEDULE_SEND_REPORT:
+            domain_name = ""
+            console_url_setting = Setting.query.filter_by(key="console_url").one_or_none()
+            if console_url_setting and console_url_setting.value:
+                domain_name = console_url_setting.value.get("value")
+            report_id = uuid.uuid4()
+            body = {
+                "type": constants.REPORT_INDEX,
+                "report_id": report_id,
+                "status": "started",
+                "masked": "false",
+                "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            }
+            ESConn.create_doc(constants.REPORT_INDEX, body, refresh="wait_for")
+            if node_action_details.get('include_dead_nodes') is True:
                 if node_type == 'host':
-                    if len(action_details['filters']['host_name']) == 0:
-                        action_details['filters']['host_name'] = get_all_scanned_node()
-            xlsx_buffer = prepare_report_download(
-                node_type, action_details.get("filters", {}), action_details.get("resources", []),
-                action_details.get("duration", {}), action_details.get("include_dead_nodes", False))
-            xlsx_obj = xlsx_buffer.getvalue()
-            if node_action_details.get("report_email") and xlsx_obj:
-                action_details_copy = deepcopy(node_action_details)
-                email_html = prepare_report_email_body(
-                    node_type, action_details_copy.get("filters", {}), action_details_copy.get("resources", []),
-                    action_details_copy.get("duration", {}))
-                    
-                from tasks.email_sender import send_email_with_attachment
-                send_email_with_attachment(
-                    recipients=[node_action_details["report_email"]], attachment=xlsx_obj,
-                    attachment_file_name="deepfence-report.xlsx", subject='Deepfence Report', html=email_html,
-                    attachment_content_type="application/vnd.ms-excel; charset=UTF-8")
-
-                # from tasks.email_sender import send_email_with_attachment_smtp_1
-                # print("email has been sent ")
-                # send_email_with_attachment_smtp_1(
-                #     recipients=[node_action_details["report_email"]], attachment=xlsx_obj,
-                #     attachment_file_name="deepfence-report.xlsx", subject='Deepfence Report', html=email_html,
-                #     attachment_content_type="application/vnd.ms-excel; charset=UTF-8")
-            if action == constants.NODE_ACTION_DOWNLOAD_REPORT:
-                response = make_response(xlsx_obj)
-                response.headers['Content-Disposition'] = 'attachment; filename=deepfence-report.xlsx'
-                response.headers['Content-type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                return response
+                    if len(node_action_details['filters'].get('host_name', [])) == 0:
+                        node_action_details['filters']['host_name'] = get_all_scanned_node()
+            from config.app import celery_app
+            celery_app.send_task(
+                'tasks.common_worker.generate_report', args=(),
+                kwargs={"report_id": report_id, "filters": node_action_details.get("filters", {}),
+                        "lucene_query_string": "",
+                        "number": node_action_details.get("duration", {}).get("number", 0),
+                        "time_unit": node_action_details.get("duration", {}).get("time_unit", "day"),
+                        "domain_name": domain_name, "resources": node_action_details.get("resources", {}),
+                        "file_type": node_action_details.get("file_type", "xlsx"), "node_type": node_type,
+                        "include_dead_nodes": node_action_details.get("include_dead_nodes", False),
+                        "report_email": node_action_details["report_email"]})
+            return set_response(data="Started")
+        elif action == constants.NODE_ACTION_DOWNLOAD_REPORT:
+            domain_name = ""
+            console_url_setting = Setting.query.filter_by(key="console_url").one_or_none()
+            if console_url_setting and console_url_setting.value:
+                domain_name = console_url_setting.value.get("value")
+            report_id = uuid.uuid4()
+            body = {
+                "type": constants.REPORT_INDEX,
+                "report_id": report_id,
+                "status": "started",
+                "masked": "false",
+                "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            }
+            ESConn.create_doc(constants.REPORT_INDEX, body, refresh="wait_for")
+            if node_action_details.get('include_dead_nodes') is True:
+                if node_type == 'host':
+                    if len(node_action_details['filters'].get('host_name', [])) == 0:
+                        node_action_details['filters']['host_name'] = get_all_scanned_node()
+            from config.app import celery_app
+            celery_app.send_task(
+                'tasks.common_worker.generate_report', args=(),
+                kwargs={"report_id": report_id, "filters": node_action_details.get("filters", {}),
+                        "lucene_query_string": "",
+                        "number": node_action_details.get("duration", {}).get("number", 0),
+                        "time_unit": node_action_details.get("duration", {}).get("time_unit", "day"),
+                        "domain_name": domain_name, "resources": node_action_details.get("resources", {}),
+                        "file_type": node_action_details.get("file_type", "xlsx"), "node_type": node_type,
+                        "include_dead_nodes": node_action_details.get("include_dead_nodes", False),
+                        "report_email": ""})
+            return set_response(data="Started")
         save_scheduled_task_status("Success")

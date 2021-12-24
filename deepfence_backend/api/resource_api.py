@@ -1148,7 +1148,8 @@ def node_action():
     df_id_to_scope_id_map = {}
     topology_data_df_format = {}
     include_dead_nodes = bool(post_data.get("include_dead_nodes", False))
-    node_action_details = {"node_type": node_type, "include_dead_nodes": include_dead_nodes}
+    node_action_details = {"node_type": node_type, "include_dead_nodes": include_dead_nodes,
+                           "file_type": post_data.get("file_type", "xlsx")}
 
     action_args = post_data.get("action_args", {})
     if action_args and type(action_args) != dict:
