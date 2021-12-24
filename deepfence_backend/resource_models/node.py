@@ -259,15 +259,27 @@ class Node(object):
         topology_nodes = fetch_topology_data(self.type, format="scope")
         graph = get_topology_network_graph(topology_nodes)
         shortest_paths_generator_in = nx.shortest_simple_paths(graph, "in-theinternet", self.scope_id)
-        shortest_paths_generator_out = nx.shortest_simple_paths(graph, "out-theinternet", self.scope_id)
         shortest_paths = []
+        counter = 0
         try:
-            for shortest_paths_generator in [shortest_paths_generator_in, shortest_paths_generator_out]:
-                for counter, path in enumerate(shortest_paths_generator):
-                    shortest_paths.append([topology_nodes[i]["label"] for i in path])
-                    if counter == top_n - 1:
-                        break
-                if shortest_paths:
+            for _, path in enumerate(shortest_paths_generator_in):
+                shortest_paths.append([topology_nodes[i]["label"] for i in path])
+                counter += 1
+                if counter == top_n:
+                    break
+        except:
+            pass
+        if len(shortest_paths) >= top_n:
+            return shortest_paths
+        shortest_paths_generator_out = nx.shortest_simple_paths(graph, self.scope_id, "out-theinternet")
+        try:
+            for _, path in enumerate(shortest_paths_generator_out):
+                tmp_path = []
+                for i in path:
+                    tmp_path.insert(0, topology_nodes[i]["label"])
+                shortest_paths.append(tmp_path)
+                counter += 1
+                if counter == top_n:
                     break
         except:
             pass
