@@ -5,14 +5,14 @@ export const makeCancellable = (promise) => {
     promise.then(
       (val) => {
         if (hasCancelled) {
-          reject({isCancelled: true});
+          reject({ isCancelled: true });
         } else {
           resolve(val);
         }
       },
       (error) => {
         if (hasCancelled) {
-          reject({isCancelled: true});
+          reject({ isCancelled: true });
         } else {
           reject(error);
         }
@@ -27,6 +27,10 @@ export const makeCancellable = (promise) => {
     },
   };
 };
+
+export const waitAsync = (delayInMs = 0) => new Promise((resolve) => {
+  setTimeout(resolve, delayInMs);
+});
 
 export const isPromise = param => (
   // TODO: check why above logic is not working with Reqwest lib.

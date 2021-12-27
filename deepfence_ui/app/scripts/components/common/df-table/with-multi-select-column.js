@@ -11,7 +11,7 @@ import {
   showModal,
 } from '../../../actions/app-actions';
 import { excludeKeys } from '../../../utils/array-utils';
-import { isPromise } from '../../../utils/promise-utils';
+import { isPromise, waitAsync } from '../../../utils/promise-utils';
 import { getUserRole } from '../../../helpers/auth-helper';
 
 const withMultiSelectColumn = columnConfig => WrappedComponent => {
@@ -98,6 +98,7 @@ const withMultiSelectColumn = columnConfig => WrappedComponent => {
         componentParams,
         onClick,
         postClickSuccess,
+        postClickSuccessDelayInMs,
         showConfirmationDialog,
         confirmationDialogParams: {
           dialogTitle,
@@ -128,8 +129,9 @@ const withMultiSelectColumn = columnConfig => WrappedComponent => {
                     additionalParams
                   );
                   if (isPromise(onClickPromise)) {
-                    onClickPromise.then(() => {
+                    onClickPromise.then(async () => {
                       this.resetSelection();
+                      await waitAsync(postClickSuccessDelayInMs);
                       if (typeof postClickSuccess === 'function') {
                         postClickSuccess(selectedRowIndex);
                       }
