@@ -79,7 +79,7 @@
     "json-loader": "^0.5.7",
     "mini-css-extract-plugin": "^2.4.2",
     "mockdate": "^2.0.1",
-    "node-sass": "^4.14.0",
+    "node-sass": "^7.0.0",
     "postcss": "^8.3.9",
     "postcss-loader": "^6.1.1",
     "redux-devtools-extension": "2.13.9",
@@ -92,7 +92,7 @@
   },
   "optionalDependencies": {
     "express": "^4.16.4",
-    "http-proxy": "1.16.2",
+    "http-proxy": "^1.18.1",
     "webpack-dev-middleware": "^5.2.1",
     "webpack-hot-middleware": "^2.22.2"
   },
