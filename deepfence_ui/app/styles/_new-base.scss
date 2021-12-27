@@ -5448,6 +5448,15 @@ input {
   height: 40px;
 }
 
+.btn-download:disabled,
+.btn-download[disabled]{
+  cursor: not-allowed;
+  border-radius: 4px;
+  color: $grey-color;
+  background-color: $bg-off-color;
+  border: 1px solid $grey-color;
+}
+
 .scheduled-job-padding {
   padding-top: 40px;
 }

@@ -2,7 +2,7 @@
 /* eslint-disable react/no-unused-state */
 /* eslint-disable no-unused-vars */
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import DFSelect from '../../common/multi-select/app';
 import {
   getDiagnosticLogsAction,
@@ -48,11 +48,8 @@ class DiagnosisView extends React.PureComponent {
       },
       size: 10000,
       start_index: 0,
-      fields: [
-        'host_name',
-        'kubernetes_cluster_name',
-      ],
-      ...extraArgs
+      fields: ['host_name', 'kubernetes_cluster_name'],
+      ...extraArgs,
     };
     // override node_type if resourceType is passed explicitly
     return action(apiparams);
@@ -63,20 +60,20 @@ class DiagnosisView extends React.PureComponent {
   }
 
   componentWillUnmount() {
-    const {dispatchClearState} = this.props;
+    const { dispatchClearState } = this.props;
     dispatchClearState();
   }
 
   handleDownloadLogs() {
-    const {dispatchGetDiagnosticLogs} = this.props;
+    const { dispatchGetDiagnosticLogs } = this.props;
     dispatchGetDiagnosticLogs();
   }
 
   handleAgentDownloadLogs() {
     const nodeIdArray = [];
     this.state.agentLogSelect.map(item => nodeIdArray.push(item.value));
-    const {dispatchGetAgentDiagnosticLogs} = this.props;
-    dispatchGetAgentDiagnosticLogs({data: nodeIdArray});
+    const { dispatchGetAgentDiagnosticLogs } = this.props;
+    dispatchGetAgentDiagnosticLogs({ data: nodeIdArray });
   }
 
   agentLogDropDownChange(selected) {
@@ -86,13 +83,9 @@ class DiagnosisView extends React.PureComponent {
   }
 
   renderOne(filter) {
-    const {
-      something = '',
-    } = this.props;
+    const { something = '' } = this.props;
     const fieldName = 'host_name';
-    const {
-      multi_select: isMulti = true,
-    } = filter;
+    const { multi_select: isMulti = true } = filter;
     filter = filter.filter(el => el.host_name !== 'The Internet');
     return (
       <div className="nodes-filter-item" key="host_name">
@@ -113,26 +106,22 @@ class DiagnosisView extends React.PureComponent {
               isMulti={isMulti}
               isSearchable
             />
-          )
-          }
+          )}
         </div>
       </div>
     );
   }
 
-
   render() {
-    const {
-      loading = false,
-      info,
-    } = this.props;
+    const { loading = false, info } = this.props;
     return (
       <div className="container-fluid diagnosis-view row">
         <div className="col-sm-4 col-md-4 col-lg-4">
-          <div className="align-items-start pl-0 pt-2 pb-2 " id="diagnostic_logs">
-            <div className="col pb-2">
-              Diagnostic Logs
-            </div>
+          <div
+            className="align-items-start pl-0 pt-2 pb-2 "
+            id="diagnostic_logs"
+          >
+            <div className="col pb-2">Diagnostic Logs</div>
             <div className="w-100" />
             <div className="col">
               <button
@@ -140,16 +129,14 @@ class DiagnosisView extends React.PureComponent {
                 className="btn-download"
                 onClick={this.handleDownloadLogs}
                 disabled={loading}
-            >
+              >
                 Download
                 {loading && <HorizontalLoader style={loaderStyle} />}
               </button>
             </div>
           </div>
           <div className="align-items-start pl-0 pt-2 pb-2" id="agent_logs">
-            <div className="col pb-2">
-              Agent Logs
-            </div>
+            <div className="col pb-2">Agent Logs</div>
             <div className="w-100" />
             <div className="col">
               {this.props.nodesIndex && this.renderOne(this.props.nodesIndex)}
@@ -160,8 +147,12 @@ class DiagnosisView extends React.PureComponent {
                 type="button"
                 className="btn-download"
                 onClick={this.handleAgentDownloadLogs}
-                disabled={loading}
-            >
+                disabled={
+                  this.state.agentLogSelect === undefined ||
+                  this.state.agentLogSelect.length === 0 ||
+                  loading
+                }
+              >
                 Download
                 {loading && <HorizontalLoader style={loaderStyle} />}
               </button>
@@ -169,21 +160,13 @@ class DiagnosisView extends React.PureComponent {
 
             <div className="w-100" />
             <div className="col">
-              {info && (
-              <div className="error-message">
-                {' '}
-                {info}
-                {' '}
-              </div>
-              )}
+              {info && <div className="error-message"> {info} </div>}
             </div>
           </div>
         </div>
         <div className="col-sm-4 col-md-4 col-lg-6">
           <div className="align-items-start pl-0 pt-2 pb-2 " id="system_status">
-            <div className="pb-2">
-              System status
-            </div>
+            <div className="pb-2">System status</div>
             <RunningNotification />
           </div>
         </div>
