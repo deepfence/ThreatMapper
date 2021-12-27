@@ -21,7 +21,7 @@ const (
 	ebpf_socket   = "/tmp/ss.sock"
 	ebpf_exe_path = "/home/deepfence/bin/open_tracer"
 	ebpf_port     = "--socket-path=" + ebpf_socket
-	mem_lock_size = "--memlock=67108864"
+	mem_lock_size = "--memlock=8388608"
 )
 
 func NewInfoTracer() (*InfoTracer, error) {
