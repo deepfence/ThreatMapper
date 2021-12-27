@@ -311,12 +311,6 @@ func save(imageName, imageId, imageTarPath string) (string, error) {
 			return "", err
 		}
 	} else {
-		if !fileExists(imageTarPath) {
-			err := downloadFileFromConsole(imageTarPath, imageTarPath, 1)
-			if err != nil {
-				return path, err
-			}
-		}
 		_, stdErr, retVal := runCommand("tar", "-xf", imageTarPath, "--warning=none", "-C"+path)
 		if retVal != 0 {
 			return "", errors.New(stdErr)
@@ -833,15 +827,6 @@ func getHostVulnerabilities(hostName string, hostTarFile string) {
 	//path := "/tmp/" + hostName
 	global_host_name = hostName
 	global_image_id = hostName
-	if !fileExists(hostTarFile) {
-		// hostTarFile = /data/cve-scan-upload/ramanan-dev-3/ramanan-dev-3_2020-04-23T11:41:14.000/layer.tar
-		// In k8s console, hostTarFile will be present on the fetcher container, since there is no global
-		// /data volume like docker UI. So download it from fetcher.
-		err := downloadFileFromConsole(hostTarFile, hostTarFile, 1)
-		if err != nil {
-			logErrorAndExit(fmt.Sprintf("Error: %s", err))
-		}
-	}
 	layerName, err := md5HashForFile(hostTarFile)
 	if err != nil {
 		logErrorAndExit(fmt.Sprintf("Error: %s", err))
@@ -1189,7 +1174,7 @@ func main() {
 	// image id is used to in docker save command
 	// If user has already provided imageTarPath, there is no need to save the image
 	// and hence image id not required.
-	// For scenarios where imageTarPath is provide,  read from manifest file
+	// For scenarios where imageTarPath is provided,  read from manifest file
 	if imageName != "host" && imageId == "" && len(imageTarPath) == 0 {
 		// strip image name with, docker.io and docker.io/library
 		// kludge: could be done better
@@ -1238,6 +1223,8 @@ func main() {
 	if imageName == "host" {
 		node_id = hostName
 		node_type = "host"
+		isHostScan = true
+		hostMountPath = strings.Replace(imageTarPath, "layer.tar", "", -1)
 	} else {
 		node_id = imageName
 		node_type = "container_image"
@@ -1275,40 +1262,53 @@ func main() {
 		}
 	}()
 
+	// hostTarFile = /data/cve-scan-upload/dev-3/dev-3_2020-04-23T11:41:14.000/layer.tar
+	// In k8s console, layer.tar will be present on the fetcher container, since there is no global
+	// volume. So download it from fetcher.
+	if imageTarPath != "" && !fileExists(imageTarPath) {
+		err := downloadFileFromConsole(imageTarPath, imageTarPath, 1)
+		if err != nil {
+			logErrorAndExit(fmt.Sprintf("Error: %s", err))
+		}
+	}
+
 	var manifestItem *manifestItem
 	if imageName != "host" {
 		manifestItem = saveContainerImage(imageName, imageTarPath, imageId)
 	}
 
-	fileSystemsDir := "/data/fileSystems/"
-	err = os.MkdirAll(fileSystemsDir, os.ModePerm)
-	if err != nil {
-		fmt.Printf("Error while creating fileSystems dir %s", err.Error())
-	} else {
-		fileSet = make(map[string]bool)
-		outputTarPath := fileSystemsDir + "temp.tar"
-		err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
-		if err == nil {
-			// extracting list of file names with path from tar file
-			cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
-			files, err := ExecuteCommand(cmd)
+	if !isHostScan {
+		// Remove vulnerabilities from intermediate layers
+		fileSystemsDir := "/data/fileSystems/"
+		err = os.MkdirAll(fileSystemsDir, os.ModePerm)
+		if err != nil {
+			fmt.Printf("Error while creating fileSystems dir %s\n", err.Error())
+		} else {
+			fileSet = make(map[string]bool)
+			outputTarPath := fileSystemsDir + "temp.tar"
+			err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
 			if err == nil {
-				fileList := strings.Split(files, "\n")
-				for _, val := range fileList {
-					// This check is to handle tar structure returned from containerd api
-					if strings.HasPrefix(val, "./") {
-						val = strings.Replace(val, "./", "", 1)
+				// extracting list of file names with path from tar file
+				cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
+				files, err := ExecuteCommand(cmd)
+				if err == nil {
+					fileList := strings.Split(files, "\n")
+					for _, val := range fileList {
+						// This check is to handle tar structure returned from containerd api
+						if strings.HasPrefix(val, "./") {
+							val = strings.Replace(val, "./", "", 1)
+						}
+						fileSet["/"+val] = true
 					}
-					fileSet["/"+val] = true
 				}
 			}
+			if err != nil {
+				fmt.Printf("Error while extracting fileSystem from %s: %s\n", imageTarPath, err.Error())
+			} else {
+				fmt.Printf("Filesystem extracted at %s with number of files: %d\n", outputTarPath, len(fileSet))
+			}
+			deleteFiles(fileSystemsDir, "*.tar")
 		}
-		if err != nil {
-			fmt.Printf("Error while extracting fileSystem from %s: %s", imageTarPath, err.Error())
-		} else {
-			fmt.Printf("Filesystem extracted at %s with number of files: %d", outputTarPath, len(fileSet))
-		}
-		deleteFiles(fileSystemsDir, "*.tar")
 	}
 
 	// language scan
@@ -1345,9 +1345,7 @@ func main() {
 	}
 
 	// base scan
-	if imageName == "host" {
-		isHostScan = true
-		hostMountPath = strings.Replace(imageTarPath, "layer.tar", "", -1)
+	if isHostScan {
 		getHostVulnerabilities(hostName, imageTarPath)
 	} else {
 		getContainerVulnerabilities(imageName, imageTarPath, imageId, manifestItem)
