@@ -1,6 +1,7 @@
 /* eslint-disable */
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import ReactTooltip from 'react-tooltip';
 import { DfTableV2 } from '../../common/df-table-v2';
 import {
   getGlobalSettingsAction,
@@ -93,10 +94,15 @@ const GlobalSettings = () => {
                 <div style={{ textAlign: 'centre', textTransform: 'uppercase' }}>
                   {row.value}
                   <span
+                    data-tip
+                    data-event='click focus'
+                    data-for="settings-info"
                     style={{ marginLeft: '10px' }}
                     className="label-info fa fa-info-circle"
-                    title={`${row.row.original.description}`}
                   />
+                  <ReactTooltip globalEventOff='click' id="settings-info" type= 'dark' effect= 'solid' place= 'bottom'>
+                    {`${row.row.original.description}`}
+                  </ReactTooltip>
                 </div>
               );
             },
