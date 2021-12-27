@@ -225,7 +225,7 @@ func getLanguageVulnerabilities(language string, fileSet map[string]bool) string
 	                    (language == "dotnet")) || (language == "js") ||
 	                                                   (language == "nodejs"){
 	*/
-	fmt.Printf("Number of entries in fileset %d",len(fileSet))
+	fmt.Printf("Number of entries in fileset %d\n\n", len(fileSet))
 	for i := 0; i < extDirLen; i++ {
 		extFileDir = extFileDirList[i]
 		if strings.HasPrefix(fileExts[i], ".") {
