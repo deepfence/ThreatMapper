@@ -632,7 +632,6 @@ func logErrorAndExit(errMsg string) {
 }
 
 func saveContainerImage(imageName string, imageTarPath string, imageId string) *manifestItem {
-	global_image_id = imageId
 	path, err := save(imageName, global_image_id, imageTarPath)
 	if err != nil {
 		msg := fmt.Sprintf("Could not save image: %s", err.Error())
@@ -825,8 +824,6 @@ func getContainerVulnerabilities(imageName string, imageTarPath string, imageId 
 
 func getHostVulnerabilities(hostName string, hostTarFile string) {
 	//path := "/tmp/" + hostName
-	global_host_name = hostName
-	global_image_id = hostName
 	layerName, err := md5HashForFile(hostTarFile)
 	if err != nil {
 		logErrorAndExit(fmt.Sprintf("Error: %s", err))
@@ -1218,13 +1215,16 @@ func main() {
 
 	//fmt.Printf("Base Image scan started\n")
 	// ---------
-	node_id = ""
 	node_type = ""
+	global_host_name = hostName
+	global_image_name = imageName
+	global_image_id = imageId
 	if imageName == "host" {
 		node_id = hostName
 		node_type = "host"
 		isHostScan = true
 		hostMountPath = strings.Replace(imageTarPath, "layer.tar", "", -1)
+		global_image_id = hostName
 	} else {
 		node_id = imageName
 		node_type = "container_image"
@@ -1247,7 +1247,6 @@ func main() {
 	if scanId == "" || !strings.Contains(scanId, node_id) {
 		scanId = node_id + "_" + getDatetimeNow()
 	}
-	global_image_name = imageName
 
 	go func() {
 		sendScanLogsToLogstash("", "STARTED")
@@ -1273,7 +1272,7 @@ func main() {
 	}
 
 	var manifestItem *manifestItem
-	if imageName != "host" {
+	if !isHostScan {
 		manifestItem = saveContainerImage(imageName, imageTarPath, imageId)
 	}
 
