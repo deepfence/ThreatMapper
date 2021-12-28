@@ -50,7 +50,7 @@ var httpClient *http.Client
 var deepfenceKey string
 
 // Host mount dir for scanning host ("/" for serverless or fargate)
-var mountPoint = "/fenced/mnt/host" // "/"
+var mountPoint = "/fenced/mnt/host/" // "/"
 var dfInstallDir string = ""
 
 var javaExt = []string{".jar", ".war"}
@@ -109,16 +109,16 @@ func initSkipDirs() {
 		skipDirs = append(skipDirs, "C:\\Program Files\\Java")
 		skipDirs = append(skipDirs, "C:\\Program Files\\Hyper-V")
 	} else {
-		skipDirs = append(skipDirs, mountPoint+"/usr/local/bin/dependency-check")
-		skipDirs = append(skipDirs, mountPoint+"/var/lib/docker")
-		skipDirs = append(skipDirs, mountPoint+"/mnt")
-		skipDirs = append(skipDirs, mountPoint+"/run")
-		skipDirs = append(skipDirs, mountPoint+"/proc")
-		skipDirs = append(skipDirs, mountPoint+"/dev")
-		skipDirs = append(skipDirs, mountPoint+"/boot")
-		skipDirs = append(skipDirs, mountPoint+"/etc")
-		skipDirs = append(skipDirs, mountPoint+"/sys")
-		skipDirs = append(skipDirs, mountPoint+"/lost+found")
+		skipDirs = append(skipDirs, mountPoint+"usr/local/bin/dependency-check")
+		skipDirs = append(skipDirs, mountPoint+"var/lib/docker")
+		skipDirs = append(skipDirs, mountPoint+"mnt")
+		skipDirs = append(skipDirs, mountPoint+"run")
+		skipDirs = append(skipDirs, mountPoint+"proc")
+		skipDirs = append(skipDirs, mountPoint+"dev")
+		skipDirs = append(skipDirs, mountPoint+"boot")
+		skipDirs = append(skipDirs, mountPoint+"etc")
+		skipDirs = append(skipDirs, mountPoint+"sys")
+		skipDirs = append(skipDirs, mountPoint+"lost+found")
 	}
 	skipDirLen = len(skipDirs)
 }
