@@ -1,15 +1,20 @@
-all: bin/open_tracer localinit
+all: localinit go bin/open_tracer
 
 localinit:
 	$(PWD)/bootstrap.sh
 
 bin/open_tracer: ./open-tracer/**/*.rs
-	(cd open-tracer && cargo xtask build-ebpf --release)
-	(cd open-tracer && OPEN_TRACER_EBPF_BIN_ABS_PATH=$(PWD)/open-tracer/target/4.11/bpfel-unknown-none/release/echo cargo build --release)
-	cp $(PWD)/open-tracer/target/release/echo $(PWD)/bin/open_tracer
+	(cd open-tracer/open-tracer-ebpf && cargo build --release)
+	(cd open-tracer/open-tracer-usr && OPEN_TRACER_EBPF_BIN_ABS_PATH=$(PWD)/open-tracer/target/bpfel-unknown-none/release/open-tracer-ebpf cargo build --release)
+	cp $(PWD)/open-tracer/target/release/open-tracer $(PWD)/bin
+
+go: ./agent-plugins-grpc/proto/*.proto
+	(cd agent-plugins-grpc && make go)
+	cp agent-plugins-grpc/proto/*.go $(PWD)/proto
 
 clean:
 	-rm $(PWD)/bin/open_tracer
 	cargo clean --manifest-path=./open-tracer/Cargo.toml
+	(cd agent-plugins-grpc && make clean)
 
 .PHONY: clean localinit

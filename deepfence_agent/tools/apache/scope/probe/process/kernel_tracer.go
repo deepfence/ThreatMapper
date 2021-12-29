@@ -7,19 +7,19 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	pb "github.com/weaveworks/scope/probe/proto"
+	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 )
 
 type InfoTracer struct {
 	conn    *grpc.ClientConn
-	client  pb.KernelTracerClient
+	client  pb.KernelOpenTracerClient
 	command *exec.Cmd
 }
 
 const (
 	ebpf_socket   = "/tmp/ss.sock"
-	ebpf_exe_path = "/home/deepfence/bin/open_tracer"
+	ebpf_exe_path = "/home/deepfence/bin/open-tracer"
 	ebpf_port     = "--socket-path=" + ebpf_socket
 	mem_lock_size = "--memlock=8388608"
 )
@@ -36,7 +36,7 @@ func NewInfoTracer() (*InfoTracer, error) {
 		command.Process.Kill()
 		return nil, err
 	}
-	client := pb.NewKernelTracerClient(conn)
+	client := pb.NewKernelOpenTracerClient(conn)
 	return &InfoTracer{
 		conn:    conn,
 		client:  client,
@@ -52,7 +52,7 @@ func (it *InfoTracer) Stop() {
 func (it *InfoTracer) GetOpenFileList(pidstr string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	stream, err := it.client.GetPIDTraceInfo(ctx, &pb.PIDTraceInfoRequest{Pid: pidstr})
+	stream, err := it.client.GetTraceInfo(ctx, &pb.TraceInfoRequest{Pid: pidstr})
 	if err != nil {
 		return nil, err
 	}
