@@ -314,9 +314,34 @@ def get_topology_network_graph(topology_nodes):
     graph = nx.DiGraph()
     if not topology_nodes:
         return graph
+    needed_nodes = {}
     for node_id, node_details in topology_nodes.items():
+        if "is_ui_vm" in node_details:
+            if node_details.get("is_ui_vm") is True:
+                continue
+        else:
+            is_ui_vm = False
+            for metadata in node_details.get("metadata", []):
+                if metadata["id"] == "is_ui_vm":
+                    if metadata["value"] == "true":
+                        is_ui_vm = True
+                    break
+            if is_ui_vm:
+                continue
+        node_name = node_details.get("name", node_details.get("label"))
+        if node_details.get("pseudo", False):
+            if node_name != "The Internet":
+                continue
+        needed_nodes[node_id] = node_name
+    for node_id, node_details in topology_nodes.items():
+        if node_id not in needed_nodes:
+            continue
         graph.add_node(node_id)
         for adj_node_id in node_details.get("adjacency", []):
+            if adj_node_id == node_id:
+                continue
+            if adj_node_id not in needed_nodes:
+                continue
             if not graph.has_node(adj_node_id):
                 graph.add_node(adj_node_id)
             graph.add_edge(node_id, adj_node_id)
