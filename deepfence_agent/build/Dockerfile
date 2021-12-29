@@ -1,7 +1,7 @@
 FROM golang:1.17-bullseye
 
 RUN apt-get update
-RUN apt-get install -y bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils
+RUN apt-get install -y bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils protobuf-compiler
 RUN wget https://apt.llvm.org/llvm.sh
 RUN chmod +x llvm.sh
 RUN ./llvm.sh 12
@@ -14,6 +14,8 @@ RUN rustup default nightly
 RUN chmod +x llvm.sh
 RUN ./llvm.sh 12
 RUN cargo install bpf-linker
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 RUN mkdir /home/deepfence
 COPY build/*.sh /home/deepfence/
 

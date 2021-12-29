@@ -20,8 +20,19 @@ building_image(){
         exit 1
     fi
 
-    echo "Building Scope Plugins binaries"
+    echo "Prepare plugins"
     (cd plugins && make localinit)
+
+    echo "Building Scope Plugins protobuf"
+    docker run --rm -it -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/grpccode-build.sh
+    build_result=$?
+    if [ $build_result -ne 0 ]
+    then
+        echo "Scope plugins gRPC code compilation failed, bailing out"
+        exit 1
+    fi
+
+    echo "Building Scope Plugins binaries"
     docker run --rm -it -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/plugincode-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
