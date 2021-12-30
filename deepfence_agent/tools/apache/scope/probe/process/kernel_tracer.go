@@ -5,6 +5,8 @@ import (
 	"io"
 	"os/exec"
 	"time"
+	"fmt"
+	"math/rand"
 
 	"github.com/sirupsen/logrus"
 	pb "github.com/weaveworks/scope/proto"
@@ -18,14 +20,22 @@ type InfoTracer struct {
 }
 
 const (
-	ebpf_socket   = "/tmp/ss.sock"
-	ebpf_exe_path = "/home/deepfence/bin/open-tracer"
-	ebpf_port     = "--socket-path=" + ebpf_socket
-	mem_lock_size = "--memlock=8388608"
+	ebpf_socket_format = "/tmp/%d.sock"
+	ebpf_exe_path      = "/home/deepfence/bin/open-tracer"
+	ebpf_opt_format    = "--socket-path=%s"
+	mem_lock_size      = "--memlock=8388608"
 )
 
+func generateSocketString() string {
+	rand.Seed(time.Now().UnixNano())
+	min := 1000
+	max := 9999
+	return fmt.Sprintf(ebpf_socket_format, rand.Intn(max - min + 1) + min)
+}
+
 func NewInfoTracer() (*InfoTracer, error) {
-	command := exec.Command("prlimit", mem_lock_size, ebpf_exe_path, ebpf_port)
+	ebpf_socket := generateSocketString()
+	command := exec.Command("prlimit", mem_lock_size, ebpf_exe_path, fmt.Sprintf(ebpf_opt_format, ebpf_socket))
 	err := command.Start()
 	if err != nil {
 		return nil, err
