@@ -108,6 +108,9 @@ const validate = (values) => {
   if (values && values.get('resource_type', []).length === 0) {
     errors.resource_type = 'Select atleast one resource';
   }
+  if (values && values.get('download', '').length === 0) {
+    errors.download_type = 'Select a download type';
+  }
   if (values && values.get('schedule_interval', '').length !== 0) {
     if (parseInt(values.get('schedule_interval'), 10) < 1) {
       errors.schedule_interval = 'Schedule interval must be > 0';
@@ -123,6 +126,25 @@ const validate = (values) => {
   return errors;
 };
 
+// Function used to display the Scheduled Report Form
+const renderField = ({
+  input,
+  type,
+  label,
+  meta: { touched, error, warning },
+  disabled = false,
+}) => (
+  <div className="form-field">
+    <span className="label">{label}</span>
+    <br />
+    <input {...input} type={type} disabled={disabled} />
+    {touched && warning && (
+      <div className="message warning-message">{warning}</div>
+    )}
+    {touched && error && <div className="message error-message">{error}</div>}
+  </div>
+);
+
 const Reports = props => {
   const {
     resource_type,
@@ -135,7 +157,8 @@ const Reports = props => {
     loading,
     info,
     tableItems =[],
-    downloadType
+    download_type,
+    errors,
   } = props;
   const showEmailField = schedule_interval;
   const downloadButtonLabel = schedule_interval
@@ -213,25 +236,6 @@ const Reports = props => {
       </div>
     );
   };
-
-// Function used to display the ResourceType dropdown
-  const renderField = ({
-    input,
-    type,
-    label,
-    meta: { touched, error, warning },
-    disabled = false,
-  }) => (
-    <div className="form-field">
-      <span className="label">{label}</span>
-      <br />
-      <input {...input} type={type} disabled={disabled} />
-      {touched && warning && (
-        <div className="message warning-message">{warning}</div>
-      )}
-      {touched && error && <div className="message error-message">{error}</div>}
-    </div>
-  );
 
   const checkIfResourceSelected = resourceValue => {
     let selected = false;
@@ -328,7 +332,7 @@ const Reports = props => {
         kubernetes_cluster_name,
         kubernetes_namespace,
         cve_severity,
-        downloadType,
+        download_type,
         reportGenerateAction: actionDownload,
         reportScheduleEmailAction: actionEmail,
       } = props;
@@ -350,7 +354,7 @@ const Reports = props => {
       }
       let globalFilter;
       const durationValues = duration && duration.value;
-      const downloadTypeOption = downloadType && downloadType.value;
+      const downloadTypeOption = download_type && download_type.value;
       if (node_type.value === 'host') {
         const hostName = host_name && host_name.map(v => v.value);
         const os = operating_system && operating_system.map(v => v.value);
@@ -473,6 +477,7 @@ const Reports = props => {
                 placeholder="Select resource type"
                 isMulti
               />
+              {errors && errors.resource_type && <div className="error-message">{errors.resource_type}</div>}
             </div>
           </div>
           <div>
@@ -513,7 +518,7 @@ const Reports = props => {
               placeholder="Select Duration"
             />
           </div>
-          {!duration && <div className="error-message">Choose a duration</div>}
+          {errors && errors.duration && <div className="error-message">{errors.duration}</div>}
           <Field
             component={renderField}
             type="text"
@@ -620,12 +625,12 @@ const Reports = props => {
               placeholder="Select download type"
             />
           </div>
-          {!downloadType && <div className="error-message">Choose a download type</div>}
+          {errors && errors.download_type && <div className="error-message">{errors.download_type}</div>}
           <div className="form-field relative">
             <button
               className="primary-btn"
               type="submit"
-              disabled={submitting || pristine}
+              disabled={!duration || !download_type || submitting || pristine}
             >
               {downloadButtonLabel}
             </button>
@@ -687,7 +692,8 @@ const mapStateToProps = state => ({
   duration: selector(state, 'duration'),
   schedule_interval: selector(state, 'schedule_interval'),
   dead_nodes_toggle: selector(state, 'toggle'),
-  downloadType: selector(state, 'download'),
+  download_type: selector(state, 'download'),
+  errors: state.getIn(['form', 'report-download-form', 'syncErrors']),
 
   host_name: selector(state, 'host_name'),
   container_name: selector(state, 'container_name'),
