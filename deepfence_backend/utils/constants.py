@@ -147,7 +147,7 @@ SCOPE_KUBE_CONTROLLER_API_CONTROL_URL = "http://deepfence-topology:8004/topology
 
 CVE_INDEX = "cve"
 CVE_SCAN_LOGS_INDEX = "cve-scan"
-PDF_REPORT_INDEX = "pdf-report"
+REPORT_INDEX = "report"
 VULNERABILITY_LOG_PATH = "/var/log/vulnerability_scan_logs/"
 ALL_INDICES = [
     CVE_INDEX, CVE_SCAN_LOGS_INDEX

@@ -1211,94 +1211,112 @@ export function rootReducer(state = initialState, action) {
       return state.set('integrationName', action.payload);
     }
 
-    case ActionTypes.PDF_REPORT_GENERATE_REQUEST: {
-      state = state.setIn(['pdfReportForm', 'form', 'loading'], true);
-      state = state.deleteIn(['pdfReportForm', 'form', 'error', 'message']);
-      state = state.deleteIn(['pdfReportForm', 'form', 'info']);
+    case ActionTypes.REPORT_GENERATION_REQUEST: {
+      state = state.setIn(['reportForm', 'form', 'loading'], true);
+      state = state.deleteIn(['reportForm', 'form', 'error', 'message']);
+      state = state.deleteIn(['reportForm', 'form', 'info']);
       return state;
     }
 
-    case ActionTypes.PDF_REPORT_GENERATE_SUCCESS: {
+    case ActionTypes.REPORT_GENERATION_SUCCESS: {
       const { payload } = action;
 
-      state = state.setIn(['pdfReportForm', 'form', 'loading'], false);
+      state = state.setIn(['reportForm', 'form', 'loading'], false);
       if (payload.error) {
         const errorMessage = payload.error.message;
         state = state.setIn(
-          ['pdfReportForm', 'form', 'error', 'message'],
+          ['reportForm', 'form', 'error', 'message'],
           errorMessage
         );
       } else {
         state = state.setIn(
-          ['pdfReportForm', 'form', 'info'],
-          'PDF Report Generation has started'
+          ['reportForm', 'form', 'info'],
+          'Report Generation has started'
         );
       }
       return state;
     }
 
-    case ActionTypes.PDF_REPORT_GENERATE_FAILURE: {
-      state = state.setIn(['pdfReportForm', 'form', 'loading'], false);
+    case ActionTypes.REPORT_GENERATION_FAILURE: {
+      state = state.setIn(['reportForm', 'form', 'loading'], false);
       state = state.setIn(
-        ['pdfReportForm', 'form', 'error', 'message'],
+        ['reportForm', 'form', 'error', 'message'],
         'Something went wrong'
       );
       return state;
     }
 
-    case ActionTypes.GET_PDF_REPORT_STATUS_REQUEST: {
-      state = state.setIn(['pdfReportForm', 'status', 'loading'], true);
+    case ActionTypes.REPORT_STATUS_REQUEST: {
+      state = state.setIn(['reportForm', 'status', 'loading'], true);
       return state;
     }
 
-    case ActionTypes.GET_PDF_REPORT_STATUS_SUCCESS: {
+    case ActionTypes.REPORT_STATUS_SUCCESS: {
       const {
         payload: { data = [] } = {},
         input: { initiatedByPollable } = {},
       } = action;
 
-      state = state.setIn(['pdfReportForm', 'status', 'loading'], false);
-      state = state.setIn(['pdfReportForm', 'status', 'data'], data);
+      state = state.setIn(['reportForm', 'status', 'loading'], false);
+      state = state.setIn(['reportForm', 'status', 'data'], data);
       state = state.setIn(
-        ['pdfReportForm', 'status', 'initiatedByPollable'],
+        ['reportForm', 'status', 'initiatedByPollable'],
         initiatedByPollable
       );
       return state;
     }
 
-    case ActionTypes.GET_PDF_REPORT_STATUS_FAILURE: {
-      state = state.setIn(['pdfReportForm', 'status', 'loading'], false);
+    case ActionTypes.REPORT_STATUS_FAILURE: {
+      state = state.setIn(['reportForm', 'status', 'loading'], false);
       return state;
     }
 
-    case ActionTypes.DOWNLOAD_PDF_REPORT_REQUEST: {
+    case ActionTypes.DOWNLOAD_REPORT_REQUEST: {
       const { input: { path } = {} } = action;
       state = state.setIn(
-        ['pdfReportForm', 'fileDownload', path, 'loading'],
+        ['reportForm', 'fileDownload', path, 'loading'],
         true
       );
       return state;
     }
 
-    case ActionTypes.DOWNLOAD_PDF_REPORT_SUCCESS: {
+    case ActionTypes.DOWNLOAD_REPORT_SUCCESS: {
       const { input: { path } = {} } = action;
       state = state.setIn(
-        ['pdfReportForm', 'fileDownload', path, 'loading'],
+        ['reportForm', 'fileDownload', path, 'loading'],
         false
       );
       return state;
     }
 
-    case ActionTypes.DOWNLOAD_PDF_REPORT_FAILURE: {
+    case ActionTypes.DOWNLOAD_REPORT_FAILURE: {
       const { input: { path } = {}, payload: { message } = {} } = action;
       state = state.setIn(
-        ['pdfReportForm', 'fileDownload', path, 'loading'],
+        ['reportForm', 'fileDownload', path, 'loading'],
         false
       );
       state = state.setIn(
-        ['pdfReportForm', 'fileDownload', path, 'error', 'message'],
+        ['reportForm', 'fileDownload', path, 'error', 'message'],
         message
       );
+      return state;
+    }
+    
+    case ActionTypes.REPORT_EMAIL_SCHEDULE_REQUEST: {
+      state = state.setIn(['report', 'loading'], true);
+      state = state.deleteIn(['report', 'info']);
+      return state;
+    }
+
+    case ActionTypes.REPORT_EMAIL_SCHEDULE_SUCCESS: {
+      state = state.setIn(['report', 'loading'], false);
+      state = state.setIn(['report', 'info'], 'Schedule for email reports set successfully');
+      return state;
+    }
+
+    case ActionTypes.REPORT_EMAIL_SCHEDULE_FAILURE: {
+      state = state.setIn(['report', 'loading'], false);
+      state = state.setIn(['report', 'info'], 'Error in scheduling email reports');
       return state;
     }
 

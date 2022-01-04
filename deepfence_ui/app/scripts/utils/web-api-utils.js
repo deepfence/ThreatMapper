@@ -1918,6 +1918,97 @@ export function getTopVulnerableActiveHosts(params = {}) {
   }).then(errorHandler);
 }
 
+export function reportGenerate(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/node_action`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function reportDownloadStatus(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/detailed_report_status`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function downloadReport(params = {}) {
+  const { path = '' } = params;
+  const splitPath = path.split('/');
+  let filename = splitPath[splitPath.length - 1];
+  const url = `${downloadApiEndPoint()}/downloadFile`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'deepfence-key': localStorage.getItem('dfApiKey'),
+      DF_FILE_NAME: path,
+    },
+  })
+    .then(response => {
+      return new Promise((resolve, reject) => {
+        if (response.ok) {
+          resolve(response.blob());
+        } else {
+          if (response.status === 400) {
+            response.json().then(
+              jObj => {
+                reject({
+                  ...jObj.error,
+                  code: response.status,
+                });
+              },
+              error => {
+                reject({
+                  message: 'Failed to decode',
+                  code: 'FTDJ',
+                });
+              }
+            );
+          } else {
+            reject({
+              message: 'Failed to fetch file',
+              code: 'FFEF',
+            });
+          }
+        }
+      });
+    })
+    .then(blob => {
+      const fileURL = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = fileURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+}
+
+export function reportScheduleEmail(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/node_action`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function xlsxReportDownload(params = {}) {
   const url = `${backendElasticApiEndPoint()}/node_action`;
   return fetch(url, {
@@ -2114,128 +2205,6 @@ export function deleteScans(params = {}) {
       Authorization: getAuthHeader(),
     },
   }).then(errorHandler);
-}
-
-export function getPDFReport(params = {}) {
-  const {
-    dispatch,
-    lucene_query = [],
-    cve_container_image,
-    scan_id,
-    node_filters,
-    start_index,
-    size,
-    number,
-    time_unit,
-    resource_type,
-  } = params;
-  let domain_name = getBackendBasePath();
-  let url = `${backendElasticApiEndPoint()}/detailed_report?lucene_query=${getLuceneQuery(
-    lucene_query
-  )}`;
-  if (number && time_unit && domain_name) {
-    url = `${url}&number=${number}&time_unit=${time_unit}&domain_name=${domain_name}&resource_type=${resource_type}`;
-  }
-  let body = {
-    node_filters,
-    start_index,
-    size,
-  };
-  if (cve_container_image) {
-    body.filters = {
-      cve_container_image,
-      scan_id,
-    };
-  }
-  return doRequest({
-    url,
-    method: 'POST',
-    data: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-      'cache-control': 'no-cache',
-    },
-    error: error => {
-      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
-        // dispatch(receiveLogoutResponse());
-        refreshAuthToken();
-      } else if (error.status === 403) {
-        dispatch(receiveClearDashBoardResponse());
-      } else {
-        log(`Error in api modal details request: ${error}`);
-      }
-    },
-  });
-}
-
-export function getPdfDownloadStatus(params = {}) {
-  const url = `${backendElasticApiEndPoint()}/detailed_report_status`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'GET',
-    // body: JSON.stringify(params),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  }).then(errorHandler);
-}
-
-export function downloadPdfReport(params = {}) {
-  const { path = '' } = params;
-  const splitPath = path.split('/');
-  let filename = splitPath[splitPath.length - 1];
-  // if (splitPath.length === 5) {
-  //   filename = `${splitPath[3]}.${splitPath[4]}.bin`;
-  // }
-  const url = `${downloadApiEndPoint()}/downloadFile`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'GET',
-    headers: {
-      'deepfence-key': localStorage.getItem('dfApiKey'),
-      DF_FILE_NAME: path,
-    },
-  })
-    .then(response => {
-      return new Promise((resolve, reject) => {
-        if (response.ok) {
-          resolve(response.blob());
-        } else {
-          if (response.status === 400) {
-            response.json().then(
-              jObj => {
-                reject({
-                  ...jObj.error,
-                  code: response.status,
-                });
-              },
-              error => {
-                reject({
-                  message: 'Failed to decode',
-                  code: 'FTDJ',
-                });
-              }
-            );
-          } else {
-            reject({
-              message: 'Failed to fetch file',
-              code: 'FFEF',
-            });
-          }
-        }
-      });
-    })
-    .then(blob => {
-      const fileURL = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = fileURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
 }
 
 export function getUserAuditLog(params = {}) {
