@@ -14,7 +14,7 @@ ENV PYTHONPATH=/root/cve_scan_registry \
     DOCKERVERSION=20.10.8
 
 COPY --from=build /go/deepaudit/deepaudit /usr/local/bin/deepaudit
-COPY dependency-check-6.5.0-release.zip /tmp/
+COPY dependency-check-6.5.2-release.zip /tmp/
 COPY filebeat /etc/filebeat
 COPY cve_scan_registry /root/cve_scan_registry
 COPY entrypoint.sh /root/entrypoint.sh
@@ -28,11 +28,11 @@ RUN apk update --no-cache \
     && pip3 install --no-cache-dir --upgrade pip setuptools wheel \
     && pip3 install --no-cache-dir -r /root/cve_scan_registry/requirements.txt \
     && pip3 uninstall setuptools -y \
-    && unzip /tmp/dependency-check-6.5.0-release.zip -d /tmp/ \
+    && unzip /tmp/dependency-check-6.5.2-release.zip -d /tmp/ \
     && mkdir -p /tmp/dependency-check/data/ \
     && mv /tmp/dependency-check /usr/local/bin/ \
     && chmod -R +x /usr/local/bin/dependency-check \
-    && rm /tmp/dependency-check-6.5.0-release.zip \
+    && rm /tmp/dependency-check-6.5.2-release.zip \
     && chmod +x /root/entrypoint.sh \
     && rm -rf /usr/lib/python*/ensurepip /usr/local/lib/python*/ensurepip \
     && rm -rf /root/.cache && apk del unzip \
