@@ -167,7 +167,7 @@ class Tabs extends React.Component {
 
   manipulateTableResponse(responseData) {
     const userRole = getUserRole();
-    const fieldsToBeHidden = ['type', 'resolved', 'signature_id', '@version', 'cve_overall_score'];
+    const fieldsToBeHidden = ['type', 'resolved', 'signature_id', '@version', 'cve_overall_score', 'cve_id_cve_severity_cve_container_image'];
     if (userRole !== 'admin') {
       fieldsToBeHidden.push('payload_printable');
     }
