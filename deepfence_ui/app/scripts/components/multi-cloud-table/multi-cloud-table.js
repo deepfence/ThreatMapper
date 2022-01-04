@@ -12,6 +12,7 @@ import { NestedTable } from './nested-table';
 import './styles.scss';
 import { MultiCloudTable } from './table';
 import { topologyDataToTableDelta } from './utils';
+import {useSocketDisconnectHandler} from './../multi-cloud/hooks';
 
 export const MultiCloudTreeTable = ({
   apiKey,
@@ -24,6 +25,7 @@ export const MultiCloudTreeTable = ({
   const table = useRef(null);
   const [metadata, setMetadata] = useState({});
   const [, setReRender] = useState(0);
+  const triggerSocketDisconnectHandler = useSocketDisconnectHandler();
 
   useEffect(() => {
     table.current = new MultiCloudTable(
@@ -44,6 +46,9 @@ export const MultiCloudTreeTable = ({
             table.current.updateData(parent_id, nodes_delta[parent_id]);
           }
         }
+      },
+      () => {
+        triggerSocketDisconnectHandler();
       }
     );
 
