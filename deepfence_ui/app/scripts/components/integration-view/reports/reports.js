@@ -426,7 +426,7 @@ const Reports = props => {
             cron: `0 4 */${scheduleInterval} * *`,
             report_email: emailAddress,
             node_type: node_type.value,
-            resources,
+            resources: resourceData,
             filters: globalFilter,
             durationValues,
           },
