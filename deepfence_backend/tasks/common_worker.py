@@ -1,3 +1,4 @@
+import json
 import traceback
 
 from config.app import celery_app, app as flask_app
@@ -17,7 +18,7 @@ from datetime import datetime, date
 from utils.esconn import ESConn
 from utils.helper import mkdir_recursive, split_list_into_chunks, rmdir_recursive
 from utils.reports import prepare_report_download, prepare_report_email_body
-from utils.resource import get_active_node_images_count
+from utils.resource import filter_node_for_vulnerabilities, get_active_node_images_count
 from utils.common import get_rounding_time_unit
 from copy import deepcopy
 from dateutil.relativedelta import relativedelta
@@ -65,10 +66,22 @@ def convert_time_unit_to_date(number, time_unit):
 
 
 def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, resource):
-    filters = deepcopy(filters)
+    if len(resource.get("cve_severity", "")) > 0:
+        resource["cve_severity"] = resource.get("cve_severity", "").split(",")
+    else:
+        resource["cve_severity"] = []
+    node_filters = deepcopy(filters)
+    filters_applied = deepcopy(node_filters)
+    del node_filters["type"]
+    filters_cve_scan = {"action": "COMPLETED"}
     filters["type"] = CVE_INDEX
     node_filters_for_cve_scan_index = {}
 
+    if node_filters:
+        node_filters_for_cve_index, node_filters_for_cve_scan_index = filter_node_for_vulnerabilities(node_filters)
+        if node_filters_for_cve_index:
+            filters = {**filters, **node_filters_for_cve_index}
+            filters_cve_scan = {**filters_cve_scan, **node_filters_for_cve_scan_index}
     and_terms = []
     for key, value in filters.items():
         if type(value) is not list:
@@ -80,7 +93,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
         if type(value) is not list:
             value = [value]
         if value and len(value) != 0:
-            if key == "severity":
+            if key == "cve_severity":
                 and_terms.append({"terms": {"cve_severity": value}})
             else:
                 and_terms.append({"terms": {key: value}})
@@ -91,6 +104,10 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             number, time_unit, rounding_time_unit)}}})
 
     query_body = {"query": {"bool": {"must": and_terms}}, "sort": [{"@timestamp": {"order": "desc"}}]}
+
+    filters_applied = {**filters_applied, **resource}
+    filters_applied = {k: v for k, v in filters_applied.items() if v}
+    filters_applied_str = json.dumps(filters_applied) if filters_applied else "None"
 
     template_loader = jinja2.FileSystemLoader(searchpath="/app/code/config/templates/")
     template_env = jinja2.Environment(loader=template_loader)
@@ -114,7 +131,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
         }
     }
     cve_scan_aggs_response = ESConn.aggregation_helper(
-        CVE_SCAN_LOGS_INDEX, filters, cve_scan_aggs, number, time_unit,
+        CVE_SCAN_LOGS_INDEX, filters_cve_scan, cve_scan_aggs, number, time_unit,
         lucene_query_string, add_masked_filter=False)
     recent_scan_ids = []
     for node_id_bkt in cve_scan_aggs_response.get("aggregations", {}).get("node_id", {}).get("buckets", []):
@@ -133,7 +150,8 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
         doc_count += ESConn.count(CVE_INDEX, tmp_filters, number=number, time_unit=time_unit,
                                   lucene_query_string=lucene_query_string)
         if doc_count > PDF_REPORT_MAX_DOCS:
-            return "Error, please use filters to reduce the number of documents to download."
+            return "<div>Error while fetching vulnerabilities, please use filters to reduce the number of documents " \
+                   "to download.</div> "
 
     cve_data = []
     for scan_id_chunk in recent_scan_id_chunks:
@@ -146,18 +164,18 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
                 if doc.get("_source"):
                     cve_data.append(doc["_source"])
     if not cve_data:
-        return "<div>No vulnerabilities found for the applied filters</div>"
+        return "<div>No vulnerabilities found for the applied filter</div>"
     df = pd.json_normalize(cve_data)
     cve_count = {}
     severity_types = ["critical", "high", "medium", "low"]
 
-    if len(resource.get("severity", [])) != 0:
-        applied_severity = resource.get("severity", [])
+    if len(resource.get("cve_severity", [])) != 0:
+        applied_severity = resource.get("cve_severity", [])
     else:
         applied_severity = deepcopy(severity_types)
 
     cve_table_html = ""
-    active_node_images_count = get_active_node_images_count(filters)
+    active_node_images_count = get_active_node_images_count(node_filters)
     node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE] if i in df.node_type.unique()]
     for node_type in node_types:
         for severity_type in severity_types:
@@ -186,16 +204,14 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             scanned_dead_host_count = scanned_host - scanned_host_names_active_count
 
             final_string = ""
-            if "kubernetes_cluster_name" in filters:
-                k8_summary_str = "{total_cluster_count} kubernetes clusters - scanned {" \
-                                 "total_worker_node_count_scanned} out of {total_worker_node_count} worker nodes. " \
-                                 "".format(
+            if "kubernetes_cluster_name" in filters_applied:
+                k8_summary_str = "{total_cluster_count} kubernetes clusters - scanned {total_worker_node_count_scanned} out of {total_worker_node_count} worker nodes. ".format(
                     total_cluster_count=total_cluster_count,
                     total_worker_node_count_scanned=total_worker_node_count - not_scanned_k8_worker_node,
                     total_worker_node_count=total_worker_node_count)
                 final_string += k8_summary_str
 
-            if "host_name" in filters:
+            if "host_name" in filters_applied:
                 host_summary_str = "scanned {scanned_host_names_active_count} out of {active_hosts_count} hosts. ".format(
                     scanned_host_names_active_count=scanned_host_names_active_count,
                     active_hosts_count=count_data["active"])
@@ -385,7 +401,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     header_html = template_env.get_template('detailed_report_summary_report_header.html').render(
         start_time_str=start_time_str, end_time_str=end_time_str, heading="Vulnerability Report")
     applied_filters_html = template_env.get_template('detailed_report_applied_filter.html').render(
-        applied_filter="Applied Filters" if filters else "Filters Not Applied", data=filters)
+        applied_filter="Applied Filters" if filters_applied else "Filters Not Applied", data=filters_applied)
 
     report_dict = {
         "cve_table_html": cve_table_html,
