@@ -1309,8 +1309,15 @@ export function rootReducer(state = initialState, action) {
     }
 
     case ActionTypes.REPORT_EMAIL_SCHEDULE_SUCCESS: {
+      const {payload} = action;
       state = state.setIn(['report', 'loading'], false);
       state = state.setIn(['report', 'info'], 'Schedule for email reports set successfully');
+      if (action.payload && payload.error) {
+        state = state.setIn(['report', 'info'], payload.error);
+      }
+      else {
+        state = state.setIn(['report', 'info'], 'Schedule for email reports set successfully');
+      }
       return state;
     }
 

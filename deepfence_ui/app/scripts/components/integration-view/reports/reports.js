@@ -156,6 +156,7 @@ const Reports = props => {
     submitting,
     loading,
     info,
+    schedule_info,
     tableItems =[],
     download_type,
     errors,
@@ -420,12 +421,11 @@ const Reports = props => {
         params = {
           action: 'schedule_send_report',
           file_type: downloadTypeOption,
-          node_type: node_type,
+          node_type: node_type.value,
           include_dead_nodes: deadNodes,
           action_args: {
             cron: `0 4 */${scheduleInterval} * *`,
             report_email: emailAddress,
-            node_type: node_type.value,
             resources: resourceData,
             filters: globalFilter,
             durationValues,
@@ -649,6 +649,7 @@ const Reports = props => {
             )}
           </div>
           {info && <span className="message error-message"> {info} </span>}
+          {schedule_info && <span className="message error-message"> {schedule_info} </span>}
         </form>
       </div>
       <div className="email-integration-collection-wrapper">
@@ -691,6 +692,7 @@ const mapStateToProps = state => ({
   cve_severity: selector(state, 'cve_severity'),
   duration: selector(state, 'duration'),
   schedule_interval: selector(state, 'schedule_interval'),
+  email_address: selector(state, 'email_address'),
   dead_nodes_toggle: selector(state, 'toggle'),
   download_type: selector(state, 'download'),
   errors: state.getIn(['form', 'report-download-form', 'syncErrors']),
@@ -704,6 +706,7 @@ const mapStateToProps = state => ({
 
   loading: state.getIn(['reportForm', 'form', 'loading']),
   info: state.getIn(['reportForm', 'form', 'error', 'message']),
+  schedule_info: state.getIn(['report', 'info']),
 
   topologyFilters: state.getIn(['nodesView', 'topologyFilters']),
 
