@@ -1307,7 +1307,7 @@ def node_action():
                 nodes=node_action_details, is_enabled=True, node_names=node_names, status="")
             scheduled_action.save()
         except Exception as exc:
-            raise DFError("Could not save scheduled task", error=exc)
+            return set_response(error="Could not save scheduled task: {}".format(exc), status=400)
         return set_response("Ok")
     return set_response("Ok")
 
