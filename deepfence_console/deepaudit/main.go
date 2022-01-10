@@ -1283,14 +1283,15 @@ func main() {
 		if err != nil {
 			fmt.Printf("Error while creating fileSystems dir %s\n", err.Error())
 		} else {
+			fmt.Println("Extracting final file system of the image")
 			fileSet = make(map[string]bool)
 			outputTarPath := fileSystemsDir + "temp.tar"
 			err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
 			if err == nil {
 				// extracting list of file names with path from tar file
 				cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
-				files, err := ExecuteCommand(cmd)
-				if err == nil {
+				files, execErr := ExecuteCommand(cmd)
+				if execErr == nil {
 					fileList := strings.Split(files, "\n")
 					for _, val := range fileList {
 						// This check is to handle tar structure returned from containerd api
@@ -1299,6 +1300,8 @@ func main() {
 						}
 						fileSet["/"+val] = true
 					}
+				} else {
+					fmt.Printf("Error extracting list of file names with path from tar file %s\n", execErr.Error())
 				}
 			}
 			if err != nil {
