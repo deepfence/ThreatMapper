@@ -52,4 +52,7 @@ RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bi
     && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v0.14.0/nerdctl-0.14.0-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-0.14.0-linux-amd64.tar.gz \
     && rm nerdctl-0.14.0-linux-amd64.tar.gz
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
+
 ENTRYPOINT ["/usr/local/bin/start_services"]
