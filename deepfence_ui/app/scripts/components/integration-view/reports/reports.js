@@ -438,6 +438,7 @@ const Reports = props => {
         action: 'download_report',
         file_type: downloadTypeOption,
         node_type: node_type.value,
+        add_hist: true,
         include_dead_nodes: deadNodes,
         action_args: {
           resources: resourceData,
