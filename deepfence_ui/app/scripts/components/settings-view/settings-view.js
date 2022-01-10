@@ -24,11 +24,11 @@ import {
 } from '../../constants/menu-collection';
 
 const SettingsView = props => {
-  const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection[0]);
-  const [activeTab, setActiveTab] = useState(adminTabList[0]);
+  let sideNavMenuCollection = (getUserRole() == 'admin') ? ADMIN_SIDE_NAV_MENU_COLLECTION : USER_SIDE_NAV_MENU_COLLECTION;
   let adminTabList = ADMIN_SETTINGS_MENU_COLLECTION;
   let userTabList = USER_SETTINGS_MUNU_COLLECTION;
-  let sideNavMenuCollection = (getUserRole() == 'admin') ? ADMIN_SIDE_NAV_MENU_COLLECTION : USER_SIDE_NAV_MENU_COLLECTION;
+  const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection && sideNavMenuCollection[0]);
+  const [activeTab, setActiveTab] = useState(adminTabList && adminTabList[0]);
 
   useEffect(() => {
     parent.location.hash = 'settings';
@@ -53,8 +53,10 @@ const SettingsView = props => {
     }
     for (let tab = 0; tab < tabList.length; tab++) {
       let tabDetails = tabList[tab];
+      console.log(tabDetails);
+      console.log(activeTab);
       const activeClass =
-        tabDetails.name === activeTab.name ? 'active-tab' : '';
+        tabDetails && tabDetails.name === activeTab.name ? 'active-tab' : '';
       tabs.push(
         <div
           className={'tab-container ' + activeClass}
@@ -100,7 +102,7 @@ const SettingsView = props => {
   return (
     <div>
       <SideNavigation
-        navMenuCollection={sideNavMenuCollection()}
+        navMenuCollection={sideNavMenuCollection}
         activeMenu={activeMenu}
       />
       {/* // make genralised css */}
