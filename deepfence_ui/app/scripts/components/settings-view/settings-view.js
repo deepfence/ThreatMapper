@@ -1,7 +1,7 @@
 /*eslint-disable*/
 
 // React imports
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 // Custom component imports
@@ -14,121 +14,111 @@ import GlobalSettings from './global-settings/global-settings';
 import ScheduledJobs from './scheduled-jobs/index';
 import UserAuditLogs from './user-audit-logs/index';
 
-import { removeUnderscore } from "../../utils/string-utils";
-import { getUserRole} from "../../helpers/auth-helper";
+import { removeUnderscore } from '../../utils/string-utils';
+import { getUserRole } from '../../helpers/auth-helper';
 import {
-  ADMIN_SETTINGS_MENU_COLLECTION, ADMIN_SIDE_NAV_MENU_COLLECTION,
-  USER_SIDE_NAV_MENU_COLLECTION, USER_SETTINGS_MUNU_COLLECTION
-} from "../../constants/menu-collection";
+  ADMIN_SETTINGS_MENU_COLLECTION,
+  ADMIN_SIDE_NAV_MENU_COLLECTION,
+  USER_SIDE_NAV_MENU_COLLECTION,
+  USER_SETTINGS_MUNU_COLLECTION,
+} from '../../constants/menu-collection';
 
-class SettingsView extends React.Component {
-  constructor() {
-    super();
-    this.sideNavMenuCollection = (getUserRole() == 'admin') ? ADMIN_SIDE_NAV_MENU_COLLECTION : USER_SIDE_NAV_MENU_COLLECTION;
-    this.adminTabList = ADMIN_SETTINGS_MENU_COLLECTION;
-    this.userTabList = USER_SETTINGS_MUNU_COLLECTION;
-    this.state = {
-      activeMenu: this.sideNavMenuCollection[0],
-      activeTab: this.adminTabList[0]
-    };
-    this.handleOnClick = this.handleOnClick.bind(this);
-  }
+const SettingsView = props => {
+  const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection[0]);
+  const [activeTab, setActiveTab] = useState(adminTabList[0]);
+  let adminTabList = ADMIN_SETTINGS_MENU_COLLECTION;
+  let userTabList = USER_SETTINGS_MUNU_COLLECTION;
+  let sideNavMenuCollection = (getUserRole() == 'admin') ? ADMIN_SIDE_NAV_MENU_COLLECTION : USER_SIDE_NAV_MENU_COLLECTION;
 
-  componentDidMount() {
+  useEffect(() => {
     parent.location.hash = 'settings';
-  }
+    return () => {
+      if (this.state.intervalObj) {
+        clearInterval(this.state.intervalObj);
+      }
+    };
+  }, []);
 
+  const handleOnClick = tab => {
+    setActiveTab(tab);
+  };
 
-  componentWillUnmount(){
-    if(this.state.intervalObj){
-      clearInterval(this.state.intervalObj);
-    }
-  }
-
-
-  handleOnClick(tab) {
-    this.setState({activeTab: tab});
-  }
-
-  renderTabsList() {
-    const {isLicenseActive} = this.props;
+  const renderTabsList = () => {
     const tabs = [];
     let tabList;
     if (getUserRole() == 'admin') {
-      tabList = this.adminTabList;
+      tabList = adminTabList;
     } else {
-      tabList = this.userTabList;
+      tabList = userTabList;
     }
     for (let tab = 0; tab < tabList.length; tab++) {
       let tabDetails = tabList[tab];
-      const activeClass = tabDetails.name === this.state.activeTab.name ? "active-tab" : "";
+      const activeClass =
+        tabDetails.name === activeTab.name ? 'active-tab' : '';
       tabs.push(
-        <div className={"tab-container " + activeClass}
-             key={tab} onClick={()=> this.handleOnClick(tabDetails)}>
+        <div
+          className={'tab-container ' + activeClass}
+          key={tab}
+          onClick={() => handleOnClick(tabDetails)}
+        >
           <div className="tab">{removeUnderscore(tabDetails.name)}</div>
         </div>
       );
     }
     return tabs;
-  }
+  };
 
-  renderActiveTabContent() {
-    const activeTab  = this.state.activeTab;
+  const renderActiveTabContent = () => {
     switch (activeTab.name) {
       case 'user_management': {
-        return <UserProfileView />
+        return <UserProfileView />;
       }
       case 'alerts_&_logs_management': {
-        return <VulnerabilityManagementView />
+        return <VulnerabilityManagementView />;
       }
       case 'diagnosis': {
-        return <DiagnosisView />
-      } 
+        return <DiagnosisView />;
+      }
       case 'scheduled_jobs': {
-        return <ScheduledJobs />
+        return <ScheduledJobs />;
       }
       case 'user_audit_logs': {
-        return  <UserAuditLogs />
+        return <UserAuditLogs />;
       }
       case 'email_configuration': {
-        return  <EmailConfiguration />
+        return <EmailConfiguration />;
       }
       case 'global_settings': {
-        return  <GlobalSettings />
+        return <GlobalSettings />;
       }
       default: {
         null;
       }
     }
-  }
-
-  render() {
-
-    return (
-      <div>
-        <SideNavigation navMenuCollection={this.sideNavMenuCollection} activeMenu={this.state.activeMenu} />
-        {/* // make genralised css */}
-        <div className={`alerts-view-switcher-wrapper ${this.props.isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'}`}>
-            <div className="tabs-wrapper tabheading">
-              {this.renderTabsList()}
-            </div>
-            <div className="settings-wrapper">
-              {this.renderActiveTabContent()}
-            </div>
-        </div>
-
-      </div>
-    );
-  }
-}
-
-function mapStateToProps(state) {
-  return {
-    isSideNavCollapsed: state.get('isSideNavCollapsed'),
-    hosts: state.get('hosts'),
   };
-}
 
-export default connect(
-  mapStateToProps
-)(SettingsView);
+  return (
+    <div>
+      <SideNavigation
+        navMenuCollection={sideNavMenuCollection()}
+        activeMenu={activeMenu}
+      />
+      {/* // make genralised css */}
+      <div
+        className={`alerts-view-switcher-wrapper ${
+          props.isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'
+        }`}
+      >
+        <div className="tabs-wrapper tabheading">{renderTabsList()}</div>
+        <div className="settings-wrapper">{renderActiveTabContent()}</div>
+      </div>
+    </div>
+  );
+};
+
+const mapStateToProps = state => ({
+  isSideNavCollapsed: state.get('isSideNavCollapsed'),
+  hosts: state.get('hosts'),
+});
+
+export default connect(mapStateToProps)(SettingsView);

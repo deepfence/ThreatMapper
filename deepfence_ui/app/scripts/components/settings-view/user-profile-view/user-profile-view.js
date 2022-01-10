@@ -1,9 +1,9 @@
 /*eslint-disable*/
 
 // React imports
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
-import {Map} from 'immutable';
+import { Map } from 'immutable';
 
 // Custom component imports
 import ChangePasswordView from './change-password-view';
@@ -18,177 +18,201 @@ import { EMPTY_STATE_TEXT } from '../../../constants/naming';
 import AppLoader from '../../common/app-loader/app-loader';
 import Loader from '../../loader';
 
-class UserProfileView extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      isUserProfileFlow: false,
-      isChangePasswordFlow: false,
-      isInviteFlow: false,
-      isEyeHidden: true
-    };
-    this.resetButtonHandler = this.resetButtonHandler.bind(this);
-  }
+const UserProfileView = props => {
+  const [isUserProfileFlow, setIsUserProfileFlow] = useState(false);
+  const [isChangePasswordFlow, setIsChangePasswordFlow] = useState(false);
+  const [isInviteFlow, setIsInviteFlow] = useState(false);
+  const [isEyeHidden, setIsEyeHidden] = useState(true);
 
-  componentDidMount() {
-    this.props.dispatch(fetchUserProfile());
-    this.toggleView('profileView');
-  }
+  useEffect(() => {
+    props.dispatch(fetchUserProfile());
+    toggleView('profileView');
+  }, []);
 
-  UNSAFE_componentWillReceiveProps(newProps) {
-    if (newProps.userProfile) {
-      this.setState({
-        userProfile: newProps.userProfile || this.props.userProfile
-      });
-    }
-  }
+  const resetButtonHandler = () => {
+    props.dispatch(resetAPIKeyAction());
+  };
 
-  resetButtonHandler() {
-    this.props.dispatch(resetAPIKeyAction()); 
-  }
-
-  toggleView(view) {
+  const toggleView = view => {
     if (view == 'profileView') {
-      this.setState({
-        isUserProfileFlow: true,
-        isChangePasswordFlow: false,
-        isInviteFlow: false
-      });
+      setIsUserProfileFlow(true);
+      setIsChangePasswordFlow(false);
+      setIsInviteFlow(false);
     } else if (view == 'changePasswordFlow') {
-      this.setState({
-        isUserProfileFlow: false,
-        isChangePasswordFlow: true,
-        isInviteFlow: false
-      });
+      setIsUserProfileFlow(false);
+      setIsChangePasswordFlow(true);
+      setIsInviteFlow(false);
     } else if (view == 'inviteFlow') {
-      this.setState({
-        isUserProfileFlow: false,
-        isChangePasswordFlow: false,
-        isInviteFlow: true
-      });
+      setIsUserProfileFlow(false);
+      setIsChangePasswordFlow(false);
+      setIsInviteFlow(true);
     }
-  }
+  };
 
-  renderAPIKeyColumn() {
-    const {userProfileMeta=Map(), userProfile} = this.props;
+  const renderAPIKeyColumn = () => {
+    const { userProfileMeta = Map(), userProfile } = props;
     if (userProfileMeta.get('loading')) {
       return (
         <div>
-          <Loader small/>
+          <Loader small />
         </div>
-      )
+      );
     }
     return (
       <div>
-          <div>
-            <span> 
-              {this.state.isEyeHidden ? "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" : userProfile.api_key}
-            </span>
-            <i className="fa fa-eye cursor ml-2" onClick = { () => this.setState(prevState => ({isEyeHidden: !prevState.isEyeHidden}))} />
-            {!this.state.isEyeHidden && <button
+        <div>
+          <span>
+            {isEyeHidden
+              ? '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *'
+              : userProfile.api_key}
+          </span>
+          <i
+            className="fa fa-eye cursor ml-2"
+            onClick={() => setIsEyeHidden(!isEyeHidden)}
+          />
+          {!isEyeHidden && (
+            <button
               className="df-btn danger-btn pull-right mr-2"
-              onClick={this.resetButtonHandler}
+              onClick={() => resetButtonHandler()}
             >
               Reset Key
-           </button>}
-           {!this.state.isEyeHidden && <button
+            </button>
+          )}
+          {!isEyeHidden && (
+            <button
               className="df-btn primary-btn pull-right mr-2"
-              onClick={ () =>  navigator.clipboard.writeText(userProfile.api_key)}
+              onClick={() => navigator.clipboard.writeText(userProfile.api_key)}
             >
               Copy Key
-           </button>}
-          </div>
-        {userProfileMeta.get('error') && 
+            </button>
+          )}
+        </div>
+        {userProfileMeta.get('error') && (
           <div className="error-message-small">
             {userProfileMeta.get('error')}
           </div>
-        }
+        )}
       </div>
-    )
-  }
+    );
+  };
 
-  getUserProfileView() {
+  const getUserProfileView = () => {
     return (
-      <div className="user-details-wrapper">      
+      <div className="user-details-wrapper">
         <div className="col-sm-6 col-md-6 col-lg-6">
           <div className="user-details-row">
             <div className="user-details-key">First name</div>
-            <div className="user-details-value">{this.state.userProfile.first_name}</div>
+            <div className="user-details-value">
+              {props.userProfile.first_name}
+            </div>
           </div>
           <div className="user-details-row">
             <div className="user-details-key">Last name</div>
-            <div className="user-details-value">{this.state.userProfile.last_name}</div>
+            <div className="user-details-value">
+              {props.userProfile.last_name}
+            </div>
           </div>
           <div className="user-details-row">
             <div className="user-details-key">Email</div>
-            <div className="user-details-value">{this.state.userProfile.email}</div>
+            <div className="user-details-value">{props.userProfile.email}</div>
           </div>
-            <div className="user-details-row">
+          <div className="user-details-row">
             <div className="user-details-key">Company</div>
-            <div className="user-details-value">{this.state.userProfile.company}</div>
+            <div className="user-details-value">
+              {props.userProfile.company}
+            </div>
           </div>
           <div className="user-details-row">
             <div className="user-details-key">Role</div>
-            <div className="user-details-value">{this.state.userProfile.role}</div>
+            <div className="user-details-value">{props.userProfile.role}</div>
           </div>
           <div className="user-details-row">
             <div className="user-details-key">API Key</div>
-            <div className="user-details-value">
-            {this.renderAPIKeyColumn()}
-            </div>
+            <div className="user-details-value">{renderAPIKeyColumn()}</div>
           </div>
         </div>
       </div>
     );
-  }
+  };
 
-  getProfileView() {
-    return(
+  const getProfileView = () => {
+    return (
       <div className="user-profile-view-wrapper">
         <div className="profile-container">
           <div className="btn-container">
             <div className="col-md-6 col-lg-6 no-padding">
-              <div className="btn-wrapper" style={{justifyContent: 'left'}}>
-                { !this.state.isUserProfileFlow && <div className="go-back-btn" onClick={()=> this.toggleView('profileView')}>
-                  <i className="fa fa-arrow-left" aria-hidden="true"></i> <span style={{paddingLeft: '5px', color: '#0276C9', fontSize: '15px'}}> Go Back</span>
-                </div>}
+              <div className="btn-wrapper" style={{ justifyContent: 'left' }}>
+                {!isUserProfileFlow && (
+                  <div
+                    className="go-back-btn"
+                    onClick={() => toggleView('profileView')}
+                  >
+                    <i className="fa fa-arrow-left" aria-hidden="true"></i>{' '}
+                    <span
+                      style={{
+                        paddingLeft: '5px',
+                        color: '#0276C9',
+                        fontSize: '15px',
+                      }}
+                    >
+                      {' '}
+                      Go Back
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="col-md-6 col-lg-6 no-padding">
-              {this.state.isUserProfileFlow &&
-              <div className="btn-wrapper">
-                <div className="u-m-btn-change-password change-password-user-management" onClick={()=> this.toggleView('changePasswordFlow')}>Change Password</div>
-                {this.state.userProfile.role == 'admin' && <div className="u-m-btn-send-invite" onClick={()=> this.toggleView('inviteFlow')}>Send Invite</div>}
-              </div>}
+              {isUserProfileFlow && (
+                <div className="btn-wrapper">
+                  <div
+                    className="u-m-btn-change-password change-password-user-management"
+                    onClick={() => toggleView('changePasswordFlow')}
+                  >
+                    Change Password
+                  </div>
+                  {props.userProfile.role == 'admin' && (
+                    <div
+                      className="u-m-btn-send-invite"
+                      onClick={() => toggleView('inviteFlow')}
+                    >
+                      Send Invite
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          { this.state.isUserProfileFlow && this.getUserProfileView() }
+          {isUserProfileFlow && getUserProfileView()}
 
-          { this.state.isChangePasswordFlow && <ChangePasswordView /> }
+          {isChangePasswordFlow && <ChangePasswordView />}
 
-          { this.state.isInviteFlow && <InviteView /> }
-
+          {isInviteFlow && <InviteView />}
         </div>
       </div>
     );
-  }
+  };
 
-  getEmptyState(response) {
+  const getEmptyState = response => {
     const emptyStateWrapper = {
       height: '400px',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     };
-    return(
+    return (
       <div style={emptyStateWrapper}>
-        { (response == undefined) ? <AppLoader /> : <div className='empty-state-text'>{ EMPTY_STATE_TEXT }</div> }
+        {response == undefined ? (
+          <AppLoader />
+        ) : (
+          <div className="empty-state-text">{EMPTY_STATE_TEXT}</div>
+        )}
       </div>
     );
-  }
+  };
 
-  checkDataAvailabilityStatus(data) {
+  const checkDataAvailabilityStatus = data => {
     let isAvailable;
     if (data && typeof data == 'object') {
       isAvailable = true;
@@ -196,25 +220,21 @@ class UserProfileView extends React.Component {
       isAvailable = false;
     }
     return isAvailable;
-  }
-
-  render() {
-    return (
-      <div>
-        { this.checkDataAvailabilityStatus(this.state.userProfile) ? this.getProfileView() : this.getEmptyState(this.state.userProfile) }
-        <UserList />
-      </div>
-    );
-  }
-}
-
-function mapStateToProps(state) {
-  return {
-    userProfile: state.get('userProfile'),
-    userProfileMeta: state.get('userProfileMeta'),
   };
-}
 
-export default connect(
-  mapStateToProps
-)(UserProfileView);
+  return (
+    <div>
+      {checkDataAvailabilityStatus(props.userProfile)
+        ? getProfileView()
+        : getEmptyState(props.userProfile)}
+      <UserList />
+    </div>
+  );
+};
+
+const mapStateToProps = state => ({
+  userProfile: state.get('userProfile'),
+  userProfileMeta: state.get('userProfileMeta'),
+});
+
+export default connect(mapStateToProps)(UserProfileView);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { Map } from 'immutable';
 import {
@@ -13,34 +13,24 @@ import { getUserRole } from '../../../helpers/auth-helper';
 import NotificationToaster from '../../common/notification-toaster/notification-toaster';
 import UserForm from './user-form';
 
+const UserList = (props) => {
 
-class UserList extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    this.handleDeleteDialog = this.handleDeleteDialog.bind(this);
-    this.deleteUser = this.deleteUser.bind(this);
-    this.getAllUsers = this.getAllUsers.bind(this);
-    this.handleEditUser = this.handleEditUser.bind(this);
-    this.renderUserModalContent = this.renderUserModalContent.bind(this);
-    this.saveUser = this.saveUser.bind(this);
-  }
+  useEffect(() => {
+    getAllUsers();
+  }, [])
 
-  componentDidMount() {
-    this.getAllUsers();
-  }
+  const oldProps = useRef(props);
 
-  UNSAFE_componentWillReceiveProps(newProps) {
-    const { deleteError: newDeleteError } = newProps;
-    const { dispatch, deleteError: oldDeleteError = Map() } = this.props;
-    if (newDeleteError && newDeleteError.get('timestamp') !== oldDeleteError.get('timestamp')) {
+  useEffect(() => {
+    const {deleteError : newDeleteError, dispatch} = props;
+    if(newDeleteError && newDeleteError.get('timestamp') !== oldProps.current.deleteError.get('timestamp')) {
       dispatch(toaster(newDeleteError.get('message')));
     }
-  }
+    oldProps.current = props;
+  }, [props])
 
-  saveUser(valuesIm) {
-    const {
-      dispatch
-    } = this.props;
+  const saveUser = valuesIm => {
+    const { dispatch } = props;
     const values = valuesIm.toJS();
     const modifiedValues = Object.keys(values).reduce((acc, key) => {
       const value = values[key];
@@ -48,14 +38,12 @@ class UserList extends React.PureComponent {
       return acc;
     }, {});
     return dispatch(userUpdateAction(modifiedValues)).then(() => {
-      this.getAllUsers({ reload: true });
+      getAllUsers({ reload: true });
     });
-  }
+  };
 
-  renderUserModalContent({ userId } = {}) {
-    const {
-      userList,
-    } = this.props;
+  const renderUserModalContent = ({ userId } = {}) => {
+    const { userList } = props;
     const userIndex = userList.reduce((acc, user) => {
       acc[user.id] = user;
       return acc;
@@ -79,16 +67,16 @@ class UserList extends React.PureComponent {
         <UserForm
           userId={userId}
           initialValues={initialValues}
-          onSubmit={this.saveUser}
+          onSubmit={(valuesIm) => saveUser(valuesIm)}
         />
       </div>
     );
-  }
+  };
 
-  handleEditUser(userId) {
+  const handleEditUser = userId => {
     const modalProps = {
       title: 'User Profile',
-      modalContent: this.renderUserModalContent,
+      modalContent: () => renderUserModalContent(),
       modalContentProps: {
         userId,
       },
@@ -97,132 +85,124 @@ class UserList extends React.PureComponent {
         height: '300px',
       },
     };
-    this.props.dispatch(showModal('GENERIC_MODAL', modalProps));
-  }
+    props.dispatch(showModal('GENERIC_MODAL', modalProps));
+  };
 
-  getAllUsers({ reload } = {}) {
-    const { dispatch } = this.props;
-    dispatch(getAllUsersAction()).then((response) => {
+  const getAllUsers = ({ reload } = {}) => {
+    const { dispatch } = props;
+    dispatch(getAllUsersAction()).then(response => {
       if (reload && response.msg === 'Token has been revoked') {
         window.location.reload(false);
       }
     });
-  }
+  };
 
-  deleteUser(userId) {
+  const deleteUser = userId => {
     const params = {
       userId,
     };
-    return this.props.dispatch(deleteUserAction(params));
-  }
+    return props.dispatch(deleteUserAction(params));
+  };
 
-  handleDeleteDialog(userId) {
+  const handleDeleteDialog = userId => {
     const params = {
       dialogTitle: 'Delete user?',
-      dialogBody: 'Are you sure you want to delete? Deleting a user will delete all policies and rules created by the user.',
+      dialogBody:
+        'Are you sure you want to delete? Deleting a user will delete all policies and rules created by the user.',
       confirmButtonText: 'Yes, delete user',
       cancelButtonText: 'No, keep user',
-      onConfirmButtonClick: () => this.deleteUser(userId),
+      onConfirmButtonClick: () => deleteUser(userId),
     };
-    this.props.dispatch(showModal('DIALOG_MODAL', params));
-  }
+    props.dispatch(showModal('DIALOG_MODAL', params));
+  };
 
-  render() {
-    const {
-      userList = [],
-      isToasterVisible,
-    } = this.props;
-    const style = {
-      fontSize: '25px',
-      padding: '10px',
-      color: 'white',
-      marginLeft: '27px'
-    };
-    const userRole = getUserRole();
-    const sumOfAgentCounts = userList
-      .reduce((sum, arr) => sum + arr.count_of_hosts, 0);
-    return (
-      <div>
-        <div style={style}>User Accounts</div>
-        <DfTableV2
-          data={userList}
-          enableSorting
-          getRowStyle={(row) => {
-            const { isActive } = row.original;
-            return {
-              opacity: isActive ? 1 : 0.5
-            }
-          }}
-          columns={[
-            {
-              Header: 'ID',
-              accessor: (row) => row.id,
-              Cell: (row) => row.value,
-              sortType: 'number'
-            },
-            {
-              Header: 'First Name',
-              accessor: 'first_name',
-            },
-            {
-              Header: 'Last Name',
-              accessor: 'last_name',
-            },
-            {
-              Header: 'Email',
-              accessor: 'email',
-            },
-            {
-              Header: 'Agent Count',
-              accessor: 'count_of_hosts',
-              sortType: 'number',
-              show: sumOfAgentCounts !== 0,
-            },
-            {
-              Header: 'Role',
-              accessor: 'role',
-            },
-            {
-              Header: 'Action',
-              accessor: 'id',
-              Cell: row => (
-                <div
-                  className="action-control"
-                >
+  const { userList = [], isToasterVisible } = props;
+  const style = {
+    fontSize: '25px',
+    padding: '10px',
+    color: 'white',
+    marginLeft: '27px',
+  };
+  const userRole = getUserRole();
+  const sumOfAgentCounts = userList.reduce(
+    (sum, arr) => sum + arr.count_of_hosts,
+    0
+  );
+  return (
+    <div>
+      <div style={style}>User Accounts</div>
+      <DfTableV2
+        data={userList}
+        enableSorting
+        getRowStyle={row => {
+          const { isActive } = row.original;
+          return {
+            opacity: isActive ? 1 : 0.5,
+          };
+        }}
+        columns={[
+          {
+            Header: 'ID',
+            accessor: row => row.id,
+            Cell: row => row.value,
+            sortType: 'number',
+          },
+          {
+            Header: 'First Name',
+            accessor: 'first_name',
+          },
+          {
+            Header: 'Last Name',
+            accessor: 'last_name',
+          },
+          {
+            Header: 'Email',
+            accessor: 'email',
+          },
+          {
+            Header: 'Agent Count',
+            accessor: 'count_of_hosts',
+            sortType: 'number',
+            show: sumOfAgentCounts !== 0,
+          },
+          {
+            Header: 'Role',
+            accessor: 'role',
+          },
+          {
+            Header: 'Action',
+            accessor: 'id',
+            Cell: row => (
+              <div className="action-control">
+                <i
+                  className="fa fa-pencil"
+                  style={{ cursor: 'pointer', marginRight: '10px' }}
+                  onClick={() => handleEditUser(row.value)}
+                  aria-hidden="true"
+                />
+                {userRole === 'admin' && (
                   <i
-                    className="fa fa-pencil"
-                    style={{ cursor: 'pointer', marginRight: '10px' }}
-                    onClick={() => this.handleEditUser(row.value)}
+                    className="fa fa-trash-o"
+                    style={{ color: 'red', cursor: 'pointer' }}
+                    onClick={() => handleDeleteDialog(row.value)}
                     aria-hidden="true"
                   />
-                  {userRole === 'admin' && (
-                    <i
-                      className="fa fa-trash-o"
-                      style={{ color: 'red', cursor: 'pointer' }}
-                      onClick={() => this.handleDeleteDialog(row.value)}
-                      aria-hidden="true"
-                    />
-                  )}
-                </div>
-              ),
-              disableSortBy: true,
-            }
-          ]}
-        />
-        {isToasterVisible && <NotificationToaster />}
-      </div>
-    );
-  }
-}
+                )}
+              </div>
+            ),
+            disableSortBy: true,
+          },
+        ]}
+      />
+      {isToasterVisible && <NotificationToaster />}
+    </div>
+  );
+};
 
-function mapStateToProps(state) {
-  return {
-    userList: state.get('user_list'),
-    deleteError: state.getIn(['user_delete_response', 'error']),
-    isToasterVisible: state.get('isToasterVisible'),
-  };
-}
+const mapStateToProps = state => ({
+  userList: state.get('user_list'),
+  deleteError: state.getIn(['user_delete_response', 'error']),
+  isToasterVisible: state.get('isToasterVisible'),
+});
 
-export default connect(
-  mapStateToProps
-)(UserList);
+export default connect(mapStateToProps)(UserList);
