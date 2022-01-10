@@ -1,7 +1,7 @@
 FROM golang:1.17-bullseye
 
 RUN apt-get update
-RUN apt-get install -y bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils protobuf-compiler
+RUN apt-get install -y --no-install-recommends bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils protobuf-compiler
 RUN wget https://apt.llvm.org/llvm.sh
 RUN chmod +x llvm.sh
 RUN ./llvm.sh 12
