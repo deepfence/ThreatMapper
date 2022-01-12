@@ -21,9 +21,9 @@ else
     echo "SSL certificate found"
 fi
 
-dependency_check_file=$(pwd)/clair/dependency-check-6.5.2-release.zip
+dependency_check_file=$(pwd)/clair/dependency-check-6.5.3-release.zip
 if [ ! -f "$dependency_check_file" ]; then
-    wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.2/dependency-check-6.5.2-release.zip -P "$(pwd)/clair/"
+    wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.3/dependency-check-6.5.3-release.zip -P "$(pwd)/clair/"
     if [ ! $? -eq 0 ]; then
         exit 1
     fi
@@ -43,7 +43,7 @@ cd $DEEPFENCE_CONSOLE_DIR
 rm -rf $DEEPAUDIT_DIR/filebeat $DEEPAUDIT_DIR/cve_scan_registry
 cp -r filebeat $DEEPAUDIT_DIR
 rm -rf $DEEPAUDIT_DIR/filebeat/filebeat.yml
-cp clair/dependency-check-6.5.2-release.zip $DEEPAUDIT_DIR
+cp clair/dependency-check-6.5.3-release.zip $DEEPAUDIT_DIR
 cp -r $DEEPFENCE_BACKEND_DIR/cve_scan_registry $DEEPAUDIT_DIR
 docker build -f $DEEPAUDIT_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-latest} $DEEPAUDIT_DIR
 
