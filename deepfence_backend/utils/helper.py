@@ -4,7 +4,7 @@ from utils.constants import NODE_TYPE_CONTAINER, NODE_TYPE_PROCESS_BY_NAME, NODE
     SCOPE_POD_API_CONTROL_URL, SCOPE_BASE_URL, TOPOLOGY_ID_HOST, DEEPFENCE_DIAGNOSIS_LOGS_URL, TOPOLOGY_ID_PROCESS, \
     DEEPFENCE_CONTAINER_STATE_URL, TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE, NODE_TYPE_SWARM_SERVICE, \
     DEEPFENCE_CONSOLE_CPU_MEMORY_STATE_URL, REDIS_KEY_PREFIX_CLUSTER_AGENT_PROBE_ID, EMPTY_POD_SCOPE_ID, \
-    ES_TERMS_AGGR_SIZE, SENSITIVE_KEYS, REDACT_STRING, VULNERABILITY_LOG_PATH, TIME_UNIT_MAPPING,CVE_SCAN_LOGS_INDEX, \
+    ES_TERMS_AGGR_SIZE, SENSITIVE_KEYS, REDACT_STRING, VULNERABILITY_LOG_PATH, TIME_UNIT_MAPPING, CVE_SCAN_LOGS_INDEX, \
     CVE_INDEX
 import hashlib
 import requests
@@ -26,8 +26,33 @@ from urllib.parse import urlparse
 from config.redisconfig import redis
 import shutil
 import networkx as nx
+import time
 
 requests.packages.urllib3.disable_warnings()
+
+
+def get_postgres_uri():
+    import os
+    return 'postgresql://{}:{}@{}:{}/{}'.format(
+        os.environ.get("POSTGRES_USER_DB_USER"),
+        os.environ.get("POSTGRES_USER_DB_PASSWORD"),
+        os.environ.get("POSTGRES_USER_DB_HOST"),
+        os.environ.get("POSTGRES_USER_DB_PORT"),
+        os.environ.get("POSTGRES_USER_DB_NAME")
+    )
+
+
+def wait_for_postgres_table(table_name):
+    from sqlalchemy import inspect, create_engine
+    try:
+        while True:
+            engine = create_engine(get_postgres_uri())
+            inspector = inspect(engine)
+            if inspector.has_table(table_name=table_name) is True:
+                break
+            time.sleep(5)
+    except:
+        pass
 
 
 def validate_email(email_string: str) -> bool:
@@ -636,7 +661,7 @@ def get_image_cve_status(required_fields=None):
     from utils.esconn import ESConn
     try:
         aggs_response = ESConn.aggregation_helper(
-             CVE_SCAN_LOGS_INDEX, {"node_type": NODE_TYPE_CONTAINER_IMAGE}, aggs, None, None, None,
+            CVE_SCAN_LOGS_INDEX, {"node_type": NODE_TYPE_CONTAINER_IMAGE}, aggs, None, None, None,
             add_masked_filter=False)
         node_buckets = aggs_response.get("aggregations", {}).get(
             "node_id", {}).get('buckets', [])
