@@ -64,8 +64,8 @@ var pathErrMsg = "The system cannot find the path specified"
 
 /* Four hours in nanoseconds */
 var fourHourNanoSec = 14400000000000
-var lockFileName = "/tmp/depcheck-download.lock"
-var tmpDepcheckDataFile = "/tmp/depcheck-data.tar.bz2"
+var lockFileName = "/root/depcheck-download.lock"
+var tmpDepcheckDataFile = "/root/depcheck-data.tar.bz2"
 var cveCounter CveCounter
 var failCVECount int64          // if no of cve >= this, fail the scan
 var failCVEScore float64        // if score of cve >= this, fail the scan
@@ -998,10 +998,16 @@ func downloadDependencyData() string {
 			return unzipErr.Error()
 		}
 	} else {
-		untarCmd := fmt.Sprintf("/bin/tar -jxf %s -C %s",
-			tmpDepcheckDataFile, depcheckDataDir)
-		_, cmdErr := exec.Command("/bin/sh", "-c", untarCmd).Output()
+		unTarCmd := fmt.Sprintf("-jxf %s -C %s",
+		tmpDepcheckDataFile, depcheckDataDir)
+		unTarArgs := strings.Split(unTarCmd, " ")
+		fmt.Printf("Tar arguments: %s \n", unTarCmd)
+		cmdOut, cmdErr := exec.Command("/bin/tar", unTarArgs...).CombinedOutput()
+		if cmdOut != nil {
+			fmt.Printf("Tar cmd stdout: %s \n", string(cmdOut))
+		}
 		if cmdErr != nil {
+			fmt.Printf("Tar cmd stderr: %s \n", cmdErr.Error())
 			return cmdErr.Error()
 		}
 	}
@@ -1210,7 +1216,7 @@ func main() {
 	if runtime.GOOS == "windows" {
 		dependency_check_cmd = "C:/'Program Files'/dependency-check/bin/dependency-check.bat --noupdate --data " + depcheckDataDir + " --suppression C:/'Program Files'/Deepfence/dependencycheck-base-suppression.xml --enableExperimental --project random --out " + filepath.Join(windowsTempDir, "output_"+start_time+".json") + " -f JSON %s"
 	} else {
-		dependency_check_cmd = "/usr/local/bin/dependency-check/bin/dependency-check.sh --noupdate --data " + depcheckDataDir + " --suppression /usr/local/bin/dependency-check/dependencycheck-base-suppression.xml --enableExperimental --project random --out /tmp/output_" + start_time + ".json -f JSON %s"
+		dependency_check_cmd = "/usr/local/bin/dependency-check/bin/dependency-check.sh --noupdate --data " + depcheckDataDir + " --suppression /usr/local/bin/dependency-check/dependencycheck-base-suppression.xml --enableExperimental --project random --out /root/output_" + start_time + ".json -f JSON %s"
 	}
 
 	//fmt.Printf("Base Image scan started\n")
