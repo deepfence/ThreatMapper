@@ -234,7 +234,7 @@ class Node(object):
         vulnerabilities = ESConn.search_by_and_clause(
             constants.CVE_INDEX, {'scan_id': cve_scan_doc["scan_id"], 'masked': 'false'}, 0, "desc",
             size=constants.ES_TERMS_AGGR_SIZE)
-        if not vulnerabilities:
+        if not vulnerabilities.get("hits", []):
             return {}
         top_cve_ids = []
         for vulnerability in vulnerabilities.get("hits", []):
