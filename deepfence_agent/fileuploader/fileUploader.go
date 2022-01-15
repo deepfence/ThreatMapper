@@ -111,6 +111,7 @@ func initSkipDirs() {
 	} else {
 		skipDirs = append(skipDirs, mountPoint+"usr/local/bin/dependency-check")
 		skipDirs = append(skipDirs, mountPoint+"var/lib/docker")
+		skipDirs = append(skipDirs, mountPoint+"var/lib/containerd")
 		skipDirs = append(skipDirs, mountPoint+"mnt")
 		skipDirs = append(skipDirs, mountPoint+"run")
 		skipDirs = append(skipDirs, mountPoint+"proc")
