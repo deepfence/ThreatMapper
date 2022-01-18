@@ -6,6 +6,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"net/url"
+	"os"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -60,6 +61,9 @@ func router(collector app.Collector, controlRouter app.ControlRouter, pipeRouter
 	router := mux.NewRouter().SkipClean(true)
 
 	// We pull in the http.DefaultServeMux to get the pprof routes
+	if os.Getenv("DEBUG") == "true" {
+		router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
+	}
 	router.Path("/metrics").Handler(promhttp.Handler())
 
 	app.RegisterReportPostHandler(collector, router)
