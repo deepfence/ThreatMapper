@@ -33,7 +33,7 @@ resource_api = Blueprint("resource_api", __name__)
 
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_ADD_TAGS, methods=["POST"],
                     endpoint="api_v1_5_add_tags")
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def add_tags(node_id):
     """
@@ -180,7 +180,7 @@ def set_node_tags_in_db(node, tags, action):
 
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_DELETE_TAGS, methods=["POST"],
                     endpoint="api_v1_5_delete_tags")
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def delete_tags(node_id):
     """
@@ -264,7 +264,7 @@ def delete_tags(node_id):
 
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_CVE_SCAN_START, methods=["POST"],
                     endpoint="api_v1_5_start_cve")
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def start_cve(node_id):
     """
@@ -491,7 +491,7 @@ def start_cve(node_id):
 
 
 @resource_api.route("/get_logs", methods=["POST"], endpoint="api_v1_5_get_logs_from_agents")
-@jwt_required
+@jwt_required()
 @admin_user_only
 def get_logs_from_agents():
     """
@@ -579,7 +579,7 @@ def get_logs_from_agents():
 
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_CVE_SCAN_STOP, methods=["POST"],
                     endpoint="api_v1_5_stop_cve")
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def stop_cve(node_id):
     """
@@ -643,7 +643,7 @@ def stop_cve(node_id):
 
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_CVE_SCAN_STATUS, methods=["GET"],
                     endpoint="api_v1_5_cve_status")
-@jwt_required
+@jwt_required()
 def cve_status(node_id):
     """
     Node Control API - CVE Status
@@ -697,7 +697,7 @@ def cve_status(node_id):
 
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ATTACK_PATH, methods=["GET"],
                     endpoint="api_v1_5_attack_path")
-@jwt_required
+@jwt_required()
 def get_attack_path(node_id):
     try:
         node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
@@ -717,7 +717,7 @@ def get_attack_path(node_id):
 
 
 @resource_api.route("/node/<node_id>", methods=["GET"], endpoint="api_v1_5_node_details")
-@jwt_required
+@jwt_required()
 def get_node_detail(node_id):
     """
     Node Details API
@@ -760,7 +760,7 @@ def get_node_detail(node_id):
 
 
 @resource_api.route("/enumerate_filters", methods=["GET"], endpoint="api_v1_5_enumerate_filters")
-@jwt_required
+@jwt_required()
 def enumerate_node_filters():
     """
     Enumerate Filters API
@@ -970,7 +970,7 @@ def enumerate_node_filters():
 
 
 @resource_api.route("/scheduled_tasks", methods=["GET"], endpoint="api_v1_5_scheduled_tasks_list")
-@jwt_required
+@jwt_required()
 def list_scheduled_tasks():
     """
     Scheduled Tasks API
@@ -1012,7 +1012,7 @@ def list_scheduled_tasks():
 
 
 @resource_api.route("/scheduled_tasks/update", methods=["POST"], endpoint="api_v1_5_scheduled_tasks_update")
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def update_scheduled_tasks():
     """
@@ -1072,7 +1072,7 @@ def update_scheduled_tasks():
 
 
 @resource_api.route("/node_action", methods=["POST"], endpoint="api_v1_5_node_action")
-@jwt_required
+@jwt_required()
 def node_action():
     """
     Node Action API
@@ -1313,7 +1313,7 @@ def node_action():
 
 
 @resource_api.route("/enumerate", methods=["POST"], endpoint="api_v1_5_enumerate")
-@jwt_required
+@jwt_required()
 def enumerate_node():
     """
     Enumerate API
@@ -1498,7 +1498,7 @@ def enumerate_node():
 
 
 @resource_api.route("/status", methods=["POST"], endpoint="api_v1_5_status_api")
-@jwt_required
+@jwt_required()
 def status_api():
     """
     Status API
@@ -1572,7 +1572,7 @@ def status_api():
 
 
 @resource_api.route("/data", methods=["POST"], endpoint="api_v1_5_data_api")
-@jwt_required
+@jwt_required()
 def data_api():
     """
     Data API
