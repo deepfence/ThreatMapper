@@ -1,0 +1,85 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.headerContainer {
+  position: sticky;
+  top: 0;
+  background-color: inherit;
+  padding: 10px 20px;
+  z-index: 1;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.controlsWrapper {
+  display: flex;
+  align-items: center;
+  padding: 13px;
+
+  :global(button) {
+    margin-left: 6px;
+    border: none;
+    border-radius: 4px;
+    background-color: #2e2e2e;
+    padding: 10px;
+    outline: none;
+
+    :global(i) {
+      margin-right: 5px;
+    }
+  }
+}
+.closeButton {
+  cursor: pointer;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+}
+
+.contentWrapper {
+  display: flex;
+  flex: 1;
+  gap: 80px;
+}
+
+.alertSummaryItem {
+  display: flex;
+  flex-direction: column;
+  max-width: 30%;
+
+  .alertSummaryItemTitle {
+    color: $text-secondary;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .alertSummaryItemContent {
+    color: $text-primary;
+    font-weight: bold;
+    font-size: 28px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-top: -6px;
+  }
+}
+
+.actionButton {
+  padding: 6px 8px !important;
+  font-size: 12px;
+  min-width: 80px;
+  height: 32px;
+}
+
+
+.hr {
+  border: 0;
+  height: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 10px;
+  margin-bottom: 0px;
+}

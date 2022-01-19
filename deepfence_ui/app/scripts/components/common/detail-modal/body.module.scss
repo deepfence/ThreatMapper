@@ -1,0 +1,89 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.modalBodyWrapper {
+  margin: 0 20px 20px 20px;
+}
+
+.kvPairsWrapper {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+
+.kvPairWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  flex-basis: 33.33%;
+  // min-width: fit-content;
+  // max-width: 100%;
+  overflow: hidden;
+  padding-right: 24px;
+  margin: 0;
+
+  transition: flex-basis 0.5s ease;
+}
+
+
+.kvPairTitle {
+  font-weight: 500;
+  color: $text-secondary;
+  font-size: 14px;
+  margin-top: 32px;
+
+  :global(.fa) {
+    cursor: pointer;
+    margin-left: 8px;
+  }
+}
+
+.kvPairValue {
+  margin-top: 6px;
+  color: $text-primary;
+  font-weight: 600;
+  font-size: 18px;
+
+  overflow-wrap: break-word;
+
+
+  :global(.fa) {
+    display: none;
+  }
+
+  &:hover {
+    :global(.fa) {
+      display: inline-block;
+      margin-left: 6px;
+      cursor: pointer;
+    }
+  }
+
+  &.codeValue {
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-weight: 500;
+    background-color: black;
+    border-radius: 8px;
+  }
+}
+
+.severiety {
+  text-transform: uppercase;
+  &:global(.modal-info) {
+    color: $info-main;
+  }
+  &:global(.modal-low) {
+    color: $low-main;
+  }
+  &:global(.modal-medium) {
+    color: $medium-main;
+  }
+  &:global(.modal-high) {
+    color: $high-main;
+  }
+  &:global(.modal-critical) {
+    color: $critical-main;
+  }
+}
