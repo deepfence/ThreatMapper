@@ -9,7 +9,7 @@ reports_api = Blueprint("reports_api", __name__)
 
 
 @reports_api.route('/detailed_report_status', methods=['GET'], endpoint="api_v1_5_get_detailed_report_api_status")
-@jwt_required
+@jwt_required()
 def get_detailed_report_api_status():
     param = GroupByParams(REPORT_INDEX)
     param.add_agg_field_generic('report_id.keyword', 'terms', "status", size=ES_TERMS_AGGR_SIZE)
