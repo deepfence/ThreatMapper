@@ -108,8 +108,7 @@ def configure_jwt():
     @jwt.token_in_blocklist_loader
     def check_if_token_is_revoked(jwt_headers={}, jwt_payload={}):
         jti = jwt_payload['jti']
-        identity_key = app.config.identity_claim_key
-        user_id = jwt_payload.get(identity_key).get("id") if jwt_payload.get(identity_key) else None
+        user_id = jwt_payload.get("sub").get("id") if jwt_payload.get("sub") else None
         if user_id:
             if redis.get("DELETED_USER_"+str(user_id)) == "true":
                 return True

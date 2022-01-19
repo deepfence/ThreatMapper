@@ -574,7 +574,7 @@ def get_logs_from_agents():
     rmdir_recursive(download_path)
     # from tasks.reaper_tasks import delete_old_agent_logs
     # delete_old_agent_logs.delay(zip_path)
-    return send_from_directory(zip_path, filename="deepfence-agent-logs.tar.gz", as_attachment=True), 200
+    return send_from_directory(zip_path, path="deepfence-agent-logs.tar.gz", as_attachment=True), 200
 
 
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_CVE_SCAN_STOP, methods=["POST"],
