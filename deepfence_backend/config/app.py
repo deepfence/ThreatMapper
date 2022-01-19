@@ -92,7 +92,7 @@ def register_commands(app):
 
 def configure_jwt():
     @jwt.expired_token_loader
-    def my_expired_token_callback(jwt_headers={}, jwt_payload={}):
+    def my_expired_token_callback(jwt_headers=None, jwt_payload=None):
         return set_response(error={
             'code': 'token_expired',
             'message': 'The token has expired'
@@ -106,8 +106,10 @@ def configure_jwt():
         }, status=401)
 
     @jwt.token_in_blocklist_loader
-    def check_if_token_is_revoked(jwt_headers={}, jwt_payload={}):
-        jti = jwt_payload['jti']
+    def check_if_token_is_revoked(jwt_headers=None, jwt_payload=None):
+        if not jwt_payload:
+            jwt_payload = {}
+        jti = jwt_payload.get("jti", "")
         user_id = jwt_payload.get("sub").get("id") if jwt_payload.get("sub") else None
         if user_id:
             if redis.get("DELETED_USER_"+str(user_id)) == "true":
