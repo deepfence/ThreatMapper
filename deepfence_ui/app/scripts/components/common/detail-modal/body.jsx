@@ -31,6 +31,9 @@ const stringifyValue = (value) => {
     if (!value.length) return '-';
     return value;
   }
+  if (typeof value === 'undefined') {
+    return '-';
+  }
   // try to stringify the value
   try {
     return JSON.stringify(value, null, 2);
@@ -41,7 +44,7 @@ const stringifyValue = (value) => {
 
 }
 
-const MAX_VAL_LEN = 25;
+const MAX_VAL_LEN = 40;
 const KVPair = (props) => {
   const dispatch = useDispatch;
   const { k } = props;
@@ -69,7 +72,7 @@ const KVPair = (props) => {
 
   return (
     <div className={styles.kvPairWrapper} style={{
-      flexBasis: isExpanded ? '100%' : undefined
+      gridColumn: isTruncated ? '1/4' : undefined
     }}>
       <div className={styles.kvPairTitle}>
         {processKey(k)}

@@ -6,31 +6,25 @@
 }
 
 .kvPairsWrapper {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: row dense;
 }
 
 
 .kvPairWrapper {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  flex-basis: 33.33%;
-  // min-width: fit-content;
-  // max-width: 100%;
   overflow: hidden;
   padding-right: 24px;
   margin: 0;
-
-  transition: flex-basis 0.5s ease;
 }
 
 
 .kvPairTitle {
-  font-weight: 500;
+  font-weight: 600;
   color: $text-secondary;
-  font-size: 14px;
+  font-size: 13px;
   margin-top: 32px;
 
   :global(.fa) {
@@ -66,6 +60,7 @@
     font-weight: 500;
     background-color: black;
     border-radius: 8px;
+    padding: 8px;
   }
 }
 

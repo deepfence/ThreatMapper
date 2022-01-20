@@ -7,17 +7,19 @@
   background-color: inherit;
   padding: 10px 20px;
   z-index: 1;
+  width: 100%;
 }
 
 .wrapper {
   display: flex;
-  justify-content: space-between;
 }
 
 .controlsWrapper {
   display: flex;
   align-items: center;
   padding: 13px;
+  justify-self: flex-end;
+  margin-left: auto;
 
   :global(button) {
     margin-left: 6px;
@@ -43,6 +45,7 @@
   display: flex;
   flex: 1;
   gap: 80px;
+  max-width: 80%;
 }
 
 .alertSummaryItem {
