@@ -1284,7 +1284,7 @@ func main() {
 
 	if !isHostScan {
 		// Remove vulnerabilities from intermediate layers
-		fileSystemsDir := "/data/fileSystems/"
+		fileSystemsDir := "/root/fileSystems/"
 		err = os.MkdirAll(fileSystemsDir, os.ModePerm)
 		if err != nil {
 			fmt.Printf("Error while creating fileSystems dir %s\n", err.Error())
