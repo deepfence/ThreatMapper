@@ -87,9 +87,9 @@ var (
 		k8sClusterId:   {ID: k8sClusterId, Label: "Kubernetes Cluster Id", From: report.FromLatest, Priority: 25},
 		k8sClusterName: {ID: k8sClusterName, Label: "Kubernetes Cluster Name", From: report.FromLatest, Priority: 26},
 		UserDfndTags:   {ID: UserDfndTags, Label: "User Defined Tags", From: report.FromLatest, Priority: 27},
-		AgentVersion:   {ID: AgentVersion, Label: "Agent Version", From: report.FromLatest, Priority: 28},
+		AgentVersion:   {ID: AgentVersion, Label: "Sensor Version", From: report.FromLatest, Priority: 28},
 		IsUiVm:         {ID: IsUiVm, Label: "UI vm", From: report.FromLatest, Priority: 29},
-		AgentRunning:   {ID: AgentRunning, Label: "Agent", From: report.FromLatest, Priority: 33},
+		AgentRunning:   {ID: AgentRunning, Label: "Sensor", From: report.FromLatest, Priority: 33},
 	}
 
 	MetricTemplates = report.MetricTemplates{
