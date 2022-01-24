@@ -14,14 +14,13 @@ export const ModalBody = ({ children }) => {
 }
 
 const processKey = (key) => {
-  const firstLetter = key[0];
   key = key.replaceAll('@', '').replaceAll('_', ' ').split(' ').map((word) => {
     if (['cve', 'cvss', 'id'].includes(word.toLowerCase())) {
       return word.toUpperCase();
     }
     return word;
   }).join(' ');
-
+  const firstLetter = key[0];
   return `${firstLetter.toUpperCase()}${key.slice(1)}`;
 }
 
@@ -72,7 +71,7 @@ const KVPair = (props) => {
 
   return (
     <div className={styles.kvPairWrapper} style={{
-      gridColumn: isTruncated ? '1/4' : undefined
+      gridColumn: isTruncated ? '1 / span 3' : undefined
     }}>
       <div className={styles.kvPairTitle}>
         {processKey(k)}
@@ -99,7 +98,7 @@ const KVPair = (props) => {
 
 
 // data is an array of keys and values
-export const KeyValueContent = ({ data }) => {
+export const KeyValueContent = ({ data, topRightVisualization }) => {
   return (
     <div className={styles.kvPairsWrapper}>
       {
@@ -108,6 +107,14 @@ export const KeyValueContent = ({ data }) => {
             // eslint-disable-next-line react/jsx-no-duplicate-props
             return <KVPair k={kvPair.key} value={kvPair.value} key={kvPair.key} />
           })
+        ) : null
+      }
+      {
+        topRightVisualization ? (
+          <div className={styles.topRightVisualizationWrapper}>
+            <div className={styles.kvPairTitle}>{topRightVisualization.title}</div>
+            <div>{topRightVisualization.visualization}</div>
+          </div>
         ) : null
       }
     </div>

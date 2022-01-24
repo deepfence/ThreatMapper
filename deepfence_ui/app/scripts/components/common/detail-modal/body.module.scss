@@ -7,10 +7,10 @@
 
 .kvPairsWrapper {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, 300px);
   grid-auto-flow: row dense;
+  justify-content: space-between;
 }
-
 
 .kvPairWrapper {
   display: flex;
@@ -19,7 +19,6 @@
   padding-right: 24px;
   margin: 0;
 }
-
 
 .kvPairTitle {
   font-weight: 600;
@@ -40,7 +39,6 @@
   font-size: 18px;
 
   overflow-wrap: break-word;
-
 
   :global(.fa) {
     display: none;
@@ -81,4 +79,9 @@
   &:global(.modal-critical) {
     color: $critical-main;
   }
+}
+
+.topRightVisualizationWrapper {
+  grid-column: span 1 / -1;
+  grid-row: 1 / span 3;
 }
