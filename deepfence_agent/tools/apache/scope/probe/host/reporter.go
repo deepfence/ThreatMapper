@@ -144,7 +144,7 @@ func getCloudMetadata(cloudProvider string) (string, string, string, string) {
 	}
 	cloudMetadataJson, err := json.Marshal(cloudMetadata)
 	if err != nil {
-		return cloudProvider, "Unknown", "unknown", "{}"
+		return cloudProvider, "Private Cloud", "zone", "{}"
 	}
 	return cloudProvider, cloudMetadata.Label, cloudMetadata.Region, string(cloudMetadataJson)
 }
@@ -476,8 +476,8 @@ func (r *Reporter) Report() (report.Report, error) {
 	cloudRegion := r.cloudMeta.cloudRegion
 	r.cloudMeta.mtx.RUnlock()
 	if cloudProvider == "" {
-		cloudProvider = "unknown"
-		cloudProviderLabel = "Unknown"
+		cloudProvider = "private_cloud"
+		cloudProviderLabel = "Private Cloud"
 	}
 	if cloudMetadata == "" {
 		cloudMetadata = "{}"
