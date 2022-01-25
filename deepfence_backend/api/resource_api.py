@@ -682,7 +682,8 @@ def cve_status(node_id):
         node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
         if not node:
             raise InvalidUsage("Node not found")
-        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or \
+                node.type == constants.NODE_TYPE_CONTAINER_IMAGE or node.type == constants.NODE_TYPE_POD:
             return set_response(data=node.get_cve_status())
         else:
             raise InvalidUsage(
