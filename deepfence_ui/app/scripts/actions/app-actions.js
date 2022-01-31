@@ -84,7 +84,8 @@ import {
   addMailConfiguration,
   getGlobalSettings,
   addGlobalSettings,
-  getTopAttackPathsForNode
+  getTopAttackPathsForNode,
+  getRuntimeBomData
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1819,4 +1820,16 @@ export function topologyFilterRemoved(filter) {
     type: ActionTypes.TOPOLOGY_FILTER_REMOVED,
     filter,
   };
+}
+
+
+
+export function getRuntimeBomAction(params) {
+  
+  const actionTypes = [
+    ActionTypes.GET_RUNTIME_BOM_REQUEST,
+    ActionTypes.GET_RUNTIME_BOM_SUCCESS,
+    ActionTypes.GET_RUNTIME_BOM_FAILURE
+  ];
+  return genericThunkAction(actionTypes, getRuntimeBomData, params);
 }

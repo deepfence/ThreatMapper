@@ -1498,6 +1498,15 @@ export function rootReducer(state = initialState, action) {
         'Your request to get top attack paths failed.');
     }
 
+
+    case ActionTypes.GET_RUNTIME_BOM_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('runtime_bom', data);
+      return state;
+    }
+
     default: {
       // forwarding unknown action types to redux-form reducer.
       state = state.set('form', formReducer(state.get('form'), action));
