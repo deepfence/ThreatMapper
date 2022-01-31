@@ -29,12 +29,13 @@ const SettingsView = props => {
   let userTabList = USER_SETTINGS_MUNU_COLLECTION;
   const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection && sideNavMenuCollection[0]);
   const [activeTab, setActiveTab] = useState(adminTabList && adminTabList[0]);
+  const [intervalObj, setIntervalObj] = useState(null);
 
   useEffect(() => {
     parent.location.hash = 'settings';
     return () => {
-      if (this.state.intervalObj) {
-        clearInterval(this.state.intervalObj);
+      if (intervalObj) {
+        clearInterval(intervalObj);
       }
     };
   }, []);
@@ -53,8 +54,6 @@ const SettingsView = props => {
     }
     for (let tab = 0; tab < tabList.length; tab++) {
       let tabDetails = tabList[tab];
-      console.log(tabDetails);
-      console.log(activeTab);
       const activeClass =
         tabDetails && tabDetails.name === activeTab.name ? 'active-tab' : '';
       tabs.push(
