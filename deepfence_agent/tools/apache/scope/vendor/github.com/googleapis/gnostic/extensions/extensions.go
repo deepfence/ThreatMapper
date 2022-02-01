@@ -16,7 +16,7 @@ package openapiextension_v1
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/golang/protobuf/proto"
@@ -27,7 +27,7 @@ type documentHandler func(version string, extensionName string, document string)
 type extensionHandler func(name string, yamlInput string) (bool, proto.Message, error)
 
 func forInputYamlFromOpenapic(handler documentHandler) {
-	data, err := ioutil.ReadAll(os.Stdin)
+	data, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		fmt.Println("File error:", err.Error())
 		os.Exit(1)

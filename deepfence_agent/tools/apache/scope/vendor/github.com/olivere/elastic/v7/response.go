@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -50,7 +49,7 @@ func (c *Client) newResponse(res *http.Response, maxBodySize int64, stream bool)
 			}
 			body = io.LimitReader(body, maxBodySize+1)
 		}
-		slurp, err := ioutil.ReadAll(body)
+		slurp, err := io.ReadAll(body)
 		if err != nil {
 			return nil, err
 		}

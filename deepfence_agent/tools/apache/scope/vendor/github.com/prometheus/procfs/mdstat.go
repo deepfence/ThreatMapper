@@ -15,7 +15,7 @@ package procfs
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -50,7 +50,7 @@ type MDStat struct {
 // structs containing the relevant info.  More information available here:
 // https://raid.wiki.kernel.org/index.php/Mdstat
 func (fs FS) MDStat() ([]MDStat, error) {
-	data, err := ioutil.ReadFile(fs.proc.Path("mdstat"))
+	data, err := os.ReadFile(fs.proc.Path("mdstat"))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing mdstat %s: %s", fs.proc.Path("mdstat"), err)
 	}

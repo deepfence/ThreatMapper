@@ -3,7 +3,6 @@ package ini
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 )
@@ -57,7 +56,7 @@ type iniLexer struct{}
 // Tokenize will return a list of tokens during lexical analysis of the
 // io.Reader.
 func (l *iniLexer) Tokenize(r io.Reader) ([]Token, error) {
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, awserr.New(ErrCodeUnableToReadFile, "unable to read file", err)
 	}

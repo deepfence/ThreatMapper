@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -26,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	if *flagFile != "" {
-		data, err := ioutil.ReadFile(*flagFile)
+		data, err := os.ReadFile(*flagFile)
 		if err != nil {
 			panic(err)
 		}

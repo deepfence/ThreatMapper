@@ -18,8 +18,8 @@ package rest
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -80,7 +80,7 @@ type fileTokenSource struct {
 var _ = oauth2.TokenSource(&fileTokenSource{})
 
 func (ts *fileTokenSource) Token() (*oauth2.Token, error) {
-	tokb, err := ioutil.ReadFile(ts.path)
+	tokb, err := os.ReadFile(ts.path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read token file %q: %v", ts.path, err)
 	}

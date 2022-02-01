@@ -2,7 +2,6 @@ package process
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -316,7 +315,7 @@ func Test_Process_Name(t *testing.T) {
 	}
 }
 func Test_Process_Long_Name(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "")
+	tmpdir, err := os.MkdirTemp("", "")
 	if err != nil {
 		t.Fatalf("unable to create temp dir %v", err)
 	}

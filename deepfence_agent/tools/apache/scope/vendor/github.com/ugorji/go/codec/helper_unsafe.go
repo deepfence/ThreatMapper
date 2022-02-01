@@ -396,7 +396,7 @@ func (f *decFnInfo) kUint64(rv reflect.Value) {
 // 		[4]uint64{1, 2, 3, 4},
 // 		(chan<- int)(nil), // chan,
 // 		rv2i,              // func
-// 		io.Writer(ioutil.Discard),
+// 		io.Writer(io.Discard),
 // 		make(map[string]uint),
 // 		(map[string]uint)(nil),
 // 		staticM0,

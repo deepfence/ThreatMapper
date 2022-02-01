@@ -7,7 +7,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -86,7 +86,7 @@ func UsersWithContext(ctx context.Context) ([]UserStat, error) {
 	}
 	defer file.Close()
 
-	buf, err := ioutil.ReadAll(file)
+	buf, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
@@ -388,13 +388,13 @@ func SensorsTemperaturesWithContext(ctx context.Context) ([]TemperatureStat, err
 		}
 		for _, file := range files {
 			// Get the name of the temperature you are reading
-			name, err := ioutil.ReadFile(filepath.Join(file, "type"))
+			name, err := os.ReadFile(filepath.Join(file, "type"))
 			if err != nil {
 				warns.Add(err)
 				continue
 			}
 			// Get the temperature reading
-			current, err := ioutil.ReadFile(filepath.Join(file, "temp"))
+			current, err := os.ReadFile(filepath.Join(file, "temp"))
 			if err != nil {
 				warns.Add(err)
 				continue
@@ -428,21 +428,21 @@ func SensorsTemperaturesWithContext(ctx context.Context) ([]TemperatureStat, err
 
 		// Get the label of the temperature you are reading
 		var label string
-		c, _ := ioutil.ReadFile(filepath.Join(filepath.Dir(file), filename[0]+"_label"))
+		c, _ := os.ReadFile(filepath.Join(filepath.Dir(file), filename[0]+"_label"))
 		if c != nil {
 			//format the label from "Core 0" to "core0_"
 			label = fmt.Sprintf("%s_", strings.Join(strings.Split(strings.TrimSpace(strings.ToLower(string(c))), " "), ""))
 		}
 
 		// Get the name of the temperature you are reading
-		name, err := ioutil.ReadFile(filepath.Join(filepath.Dir(file), "name"))
+		name, err := os.ReadFile(filepath.Join(filepath.Dir(file), "name"))
 		if err != nil {
 			warns.Add(err)
 			continue
 		}
 
 		// Get the temperature reading
-		current, err := ioutil.ReadFile(file)
+		current, err := os.ReadFile(file)
 		if err != nil {
 			warns.Add(err)
 			continue

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 )
@@ -39,7 +39,7 @@ func UPCASE(THING_TO_YELL string) (string, error) {
 
 	defer RESP.Body.Close()
 
-	BODYBYTES, ERR := ioutil.ReadAll(RESP.Body)
+	BODYBYTES, ERR := io.ReadAll(RESP.Body)
 	if ERR != nil {
 		return "", errors.New("COULDN'T READ BODY HALP")
 	}

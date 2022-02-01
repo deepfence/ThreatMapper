@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -152,7 +151,7 @@ func Run(conf *Config, out io.Writer) error {
 				sort.Strings(dir.ChildFileNames)
 				directories = append(directories, dir)
 			} else if includeRegexp == nil || includeRegexp.MatchString(fname) {
-				b, err := ioutil.ReadAll(f)
+				b, err := io.ReadAll(f)
 				if err != nil {
 					return errors.Wrap(err, "readAll return err")
 				}
@@ -253,7 +252,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -311,7 +310,7 @@ func (_escStaticFS) prepare(name string) (*_escFile, error) {
 		if err != nil {
 			return
 		}
-		f.data, err = ioutil.ReadAll(gr)
+		f.data, err = io.ReadAll(gr)
 	})
 	if err != nil {
 		return nil, err
@@ -422,7 +421,7 @@ func {{.FunctionPrefix}}FSByte(useLocal bool, name string) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		b, err := ioutil.ReadAll(f)
+		b, err := io.ReadAll(f)
 		_ = f.Close()
 		return b, err
 	}

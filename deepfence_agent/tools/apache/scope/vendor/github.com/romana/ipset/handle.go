@@ -19,7 +19,7 @@ import (
 	"context"
 	"encoding/xml"
 	"io"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -498,7 +498,7 @@ func Load(ctx context.Context, options ...OptFunc) (*Ipset, error) {
 func LoadFromFile(filename string) (*Ipset, error) {
 	rlog.Tracef(3, "loading ipset configuration form file %s", filename)
 
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load ipset config from file")
 	}

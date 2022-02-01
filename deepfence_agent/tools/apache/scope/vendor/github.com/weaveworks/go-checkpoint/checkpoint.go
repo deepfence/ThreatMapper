@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"golang.org/x/crypto/scrypt"
 	"io"
-	"io/ioutil"
 	mrand "math/rand"
 	"net/http"
 	"net/url"
@@ -340,9 +339,9 @@ func checkResult(r io.Reader) (*CheckResponse, error) {
 // /sys/class/dmi/id/product_uuid, or, if that is not available,
 // sys/hypervisor/uuid.
 func getSystemUUID() (string, error) {
-	uuid, err := ioutil.ReadFile("/sys/class/dmi/id/product_uuid")
+	uuid, err := os.ReadFile("/sys/class/dmi/id/product_uuid")
 	if os.IsNotExist(err) {
-		uuid, err = ioutil.ReadFile("/sys/hypervisor/uuid")
+		uuid, err = os.ReadFile("/sys/hypervisor/uuid")
 	}
 	if err != nil {
 		return "", err
@@ -361,7 +360,7 @@ func checkSignature(path string) (string, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		// The file exists, read it out
-		sigBytes, err := ioutil.ReadFile(path)
+		sigBytes, err := os.ReadFile(path)
 		if err != nil {
 			return "", err
 		}
@@ -398,7 +397,7 @@ func checkSignature(path string) (string, error) {
 	}
 
 	// Write the signature
-	if err := ioutil.WriteFile(path, []byte(signature+"\n\n"+userMessage+"\n"), 0644); err != nil {
+	if err := os.WriteFile(path, []byte(signature+"\n\n"+userMessage+"\n"), 0644); err != nil {
 		return "", err
 	}
 

@@ -2,7 +2,7 @@ package query
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"io"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -26,7 +26,7 @@ var UnmarshalErrorHandler = request.NamedHandler{Name: "awssdk.query.UnmarshalEr
 func UnmarshalError(r *request.Request) {
 	defer r.HTTPResponse.Body.Close()
 
-	bodyBytes, err := ioutil.ReadAll(r.HTTPResponse.Body)
+	bodyBytes, err := io.ReadAll(r.HTTPResponse.Body)
 	if err != nil {
 		r.Error = awserr.NewRequestFailure(
 			awserr.New("SerializationError", "failed to read from query HTTP response body", err),

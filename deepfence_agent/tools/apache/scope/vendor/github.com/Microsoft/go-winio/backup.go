@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"syscall"
@@ -82,7 +81,7 @@ func (r *BackupStreamReader) Next() (*BackupHeader, error) {
 				r.bytesLeft = 0
 			}
 		}
-		if _, err := io.Copy(ioutil.Discard, r); err != nil {
+		if _, err := io.Copy(io.Discard, r); err != nil {
 			return nil, err
 		}
 	}

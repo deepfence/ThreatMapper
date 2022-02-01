@@ -2,7 +2,7 @@ package s3
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -11,7 +11,7 @@ import (
 )
 
 func copyMultipartStatusOKUnmarhsalError(r *request.Request) {
-	b, err := ioutil.ReadAll(r.HTTPResponse.Body)
+	b, err := io.ReadAll(r.HTTPResponse.Body)
 	if err != nil {
 		r.Error = awserr.NewRequestFailure(
 			awserr.New("SerializationError", "unable to read response body", err),
@@ -21,7 +21,7 @@ func copyMultipartStatusOKUnmarhsalError(r *request.Request) {
 		return
 	}
 	body := bytes.NewReader(b)
-	r.HTTPResponse.Body = ioutil.NopCloser(body)
+	r.HTTPResponse.Body = io.NopCloser(body)
 	defer body.Seek(0, sdkio.SeekStart)
 
 	if body.Len() == 0 {

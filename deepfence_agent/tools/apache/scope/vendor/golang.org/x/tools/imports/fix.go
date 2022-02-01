@@ -12,7 +12,6 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -100,7 +99,7 @@ func parseOtherFiles(fset *token.FileSet, srcDir, filename string) []*ast.File {
 	considerTests := strings.HasSuffix(filename, "_test.go")
 
 	fileBase := filepath.Base(filename)
-	packageFileInfos, err := ioutil.ReadDir(srcDir)
+	packageFileInfos, err := os.ReadDir(srcDir)
 	if err != nil {
 		return nil
 	}
@@ -970,11 +969,11 @@ func loadExports(ctx context.Context, env *fixEnv, expectPackage string, pkg *pk
 	exports := make(map[string]bool)
 
 	// Look for non-test, buildable .go files which could provide exports.
-	all, err := ioutil.ReadDir(pkg.dir)
+	all, err := os.ReadDir(pkg.dir)
 	if err != nil {
 		return nil, err
 	}
-	var files []os.FileInfo
+	var files []os.DirEntry
 	for _, fi := range all {
 		name := fi.Name()
 		if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {

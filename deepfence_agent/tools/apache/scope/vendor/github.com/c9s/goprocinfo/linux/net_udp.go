@@ -1,7 +1,7 @@
 package linux
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -17,7 +17,7 @@ type NetUDPSocket struct {
 
 func ReadNetUDPSockets(path string, ip NetIPDecoder) (*NetUDPSockets, error) {
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, err

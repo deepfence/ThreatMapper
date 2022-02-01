@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -158,7 +157,7 @@ func (t *Transport) RoundTrip(req *http.Request) (res *http.Response, err error)
 		}:
 			freq.Payload = b.Bytes()
 		default:
-			freq.Payload, err = ioutil.ReadAll(req.Body)
+			freq.Payload, err = io.ReadAll(req.Body)
 			if err != nil {
 				return nil, err
 			}

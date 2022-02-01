@@ -15,7 +15,7 @@
 package numcpus
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -24,7 +24,7 @@ import (
 const sysfsCPUBasePath = "/sys/devices/system/cpu"
 
 func readCPURange(file string) (int, error) {
-	buf, err := ioutil.ReadFile(filepath.Join(sysfsCPUBasePath, file))
+	buf, err := os.ReadFile(filepath.Join(sysfsCPUBasePath, file))
 	if err != nil {
 		return 0, err
 	}
@@ -56,7 +56,7 @@ func parseCPURange(cpus string) (int, error) {
 }
 
 func getKernelMax() (int, error) {
-	buf, err := ioutil.ReadFile(filepath.Join(sysfsCPUBasePath, "kernel_max"))
+	buf, err := os.ReadFile(filepath.Join(sysfsCPUBasePath, "kernel_max"))
 	if err != nil {
 		return 0, err
 	}

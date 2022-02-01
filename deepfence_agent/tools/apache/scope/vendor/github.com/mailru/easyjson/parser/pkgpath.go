@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/build"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -111,7 +110,7 @@ func getModulePath(goModPath string) string {
 		pkgPathFromGoModCache.Unlock()
 	}()
 
-	data, err := ioutil.ReadFile(goModPath)
+	data, err := os.ReadFile(goModPath)
 	if err != nil {
 		return ""
 	}

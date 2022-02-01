@@ -5,7 +5,7 @@
 package windowsconsole // import "github.com/docker/docker/pkg/term/windows"
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"sync"
 
@@ -18,7 +18,7 @@ var initOnce sync.Once
 
 func initLogger() {
 	initOnce.Do(func() {
-		logFile := ioutil.Discard
+		logFile := io.Discard
 
 		if isDebugEnv := os.Getenv(ansiterm.LogEnv); isDebugEnv == "1" {
 			logFile, _ = os.Create("ansiReaderWriter.log")

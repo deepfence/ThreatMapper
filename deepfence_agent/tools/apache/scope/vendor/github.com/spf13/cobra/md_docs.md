@@ -8,7 +8,7 @@ This program can actually generate docs for the kubectl command in the kubernete
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/kubectl/cmd"
@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	kubectl := cmd.NewFactory(nil).NewKubectlCommand(os.Stdin, ioutil.Discard, ioutil.Discard)
+	kubectl := cmd.NewFactory(nil).NewKubectlCommand(os.Stdin, io.Discard, io.Discard)
 	cobra.GenMarkdownTree(kubectl, "./")
 }
 ```

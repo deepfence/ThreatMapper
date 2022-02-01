@@ -1,7 +1,7 @@
 package linux
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -27,7 +27,7 @@ type NetworkStat struct {
 }
 
 func ReadNetworkStat(path string) ([]NetworkStat, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, err

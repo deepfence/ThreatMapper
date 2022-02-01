@@ -9,7 +9,6 @@ package main
 import (
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"runtime"
@@ -35,7 +34,7 @@ func gensysconf(in, out string) error {
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(out, b, 0644); err != nil {
+	if err := os.WriteFile(out, b, 0644); err != nil {
 		return err
 	}
 	return nil

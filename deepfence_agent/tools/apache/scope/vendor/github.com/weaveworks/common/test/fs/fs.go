@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"syscall"
@@ -232,7 +231,7 @@ func (p File) ReadFile(path string) ([]byte, error) {
 		return nil, fmt.Errorf("I'm a file")
 	}
 	if p.FReader != nil {
-		return ioutil.ReadAll(p.FReader)
+		return io.ReadAll(p.FReader)
 	}
 	return []byte(p.FContents), nil
 }
@@ -266,7 +265,7 @@ func (p File) Open(path string) (io.ReadWriteCloser, error) {
 		io.Writer
 		io.Closer
 	}{
-		buf, buf, ioutil.NopCloser(nil),
+		buf, buf, io.NopCloser(nil),
 	}
 	if p.FReader != nil {
 		s.Reader = p.FReader

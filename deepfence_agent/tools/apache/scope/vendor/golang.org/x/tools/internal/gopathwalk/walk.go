@@ -11,7 +11,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/build"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -127,7 +126,7 @@ func (w *walker) init() {
 // The provided path is one of the $GOPATH entries with "src" appended.
 func (w *walker) getIgnoredDirs(path string) []string {
 	file := filepath.Join(path, ".goimportsignore")
-	slurp, err := ioutil.ReadFile(file)
+	slurp, err := os.ReadFile(file)
 	if w.opts.Debug {
 		if err != nil {
 			log.Print(err)

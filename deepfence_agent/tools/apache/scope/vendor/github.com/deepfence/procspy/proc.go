@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"syscall"
 	"strings"
-	"io/ioutil"
 )
 
 var (
@@ -112,7 +111,7 @@ func walkProcPid(buf *bytes.Buffer) (map[uint64]Proc, error) {
 
 // procCmdname does a pid->cmdname(binary/app) lookup.
 func procCmdname(base string) string {
-	cmdline, err := ioutil.ReadFile(filepath.Join(base, "/cmdline"))
+	cmdline, err := os.ReadFile(filepath.Join(base, "/cmdline"))
 	if err != nil {
 		return ""
 	}

@@ -18,7 +18,7 @@ package elf
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -63,7 +63,7 @@ func currentVersionUname() (uint32, error) {
 }
 
 func currentVersionUbuntu() (uint32, error) {
-	procVersion, err := ioutil.ReadFile("/proc/version_signature")
+	procVersion, err := os.ReadFile("/proc/version_signature")
 	if err != nil {
 		return 0, err
 	}
@@ -78,7 +78,7 @@ func currentVersionUbuntu() (uint32, error) {
 var debianVersionRegex = regexp.MustCompile(`.* SMP Debian (\d+\.\d+.\d+-\d+) .*`)
 
 func currentVersionDebian() (uint32, error) {
-	procVersion, err := ioutil.ReadFile("/proc/version")
+	procVersion, err := os.ReadFile("/proc/version")
 	if err != nil {
 		return 0, err
 	}

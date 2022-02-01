@@ -3,10 +3,10 @@
 package benchmark
 
 import (
-	"io/ioutil"
+	"os"
 )
 
-var largeStructText, _ = ioutil.ReadFile("example.json")
+var largeStructText, _ = os.ReadFile("example.json")
 var xlStructData XLStruct
 
 func init() {

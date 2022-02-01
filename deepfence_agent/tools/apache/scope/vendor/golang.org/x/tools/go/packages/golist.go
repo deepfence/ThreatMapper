@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/types"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -308,7 +307,7 @@ func runNamedQueries(cfg *Config, driver driver, response *responseDeduper, quer
 			panic(err) // See above.
 		}
 
-		files, err := ioutil.ReadDir(modRoot)
+		files, err := os.ReadDir(modRoot)
 		for _, f := range files {
 			if strings.HasSuffix(f.Name(), ".go") {
 				simpleMatches = append(simpleMatches, rel)
@@ -379,13 +378,13 @@ func runNamedQueries(cfg *Config, driver driver, response *responseDeduper, quer
 		tmpCfg.Env = append(append([]string{"GOPROXY=off"}, cfg.Env...))
 
 		var err error
-		tmpCfg.Dir, err = ioutil.TempDir("", "gopackages-modquery")
+		tmpCfg.Dir, err = os.MkdirTemp("", "gopackages-modquery")
 		if err != nil {
 			return err
 		}
 		defer os.RemoveAll(tmpCfg.Dir)
 
-		if err := ioutil.WriteFile(filepath.Join(tmpCfg.Dir, "go.mod"), gomod.Bytes(), 0777); err != nil {
+		if err := os.WriteFile(filepath.Join(tmpCfg.Dir, "go.mod"), gomod.Bytes(), 0777); err != nil {
 			return fmt.Errorf("writing go.mod for module cache query: %v", err)
 		}
 

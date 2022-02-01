@@ -1,7 +1,7 @@
 package cpu
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -36,7 +36,7 @@ func TestParseISAInfo(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		content, err := ioutil.ReadFile(filepath.Join("testdata", "solaris", tc.filename))
+		content, err := os.ReadFile(filepath.Join("testdata", "solaris", tc.filename))
 		if err != nil {
 			t.Errorf("cannot read test case: %s", err)
 		}
@@ -96,7 +96,7 @@ func TestParseProcessorInfo(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		content, err := ioutil.ReadFile(filepath.Join("testdata", "solaris", tc.filename))
+		content, err := os.ReadFile(filepath.Join("testdata", "solaris", tc.filename))
 		if err != nil {
 			t.Errorf("cannot read test case: %s", err)
 		}

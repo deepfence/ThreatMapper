@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
@@ -65,7 +64,7 @@ func HostIDWithContext(ctx context.Context) (string, error) {
 
 // Count number of processes based on the number of entries in /proc
 func numProcs(ctx context.Context) (uint64, error) {
-	dirs, err := ioutil.ReadDir("/proc")
+	dirs, err := os.ReadDir("/proc")
 	if err != nil {
 		return 0, err
 	}
@@ -115,7 +114,7 @@ func VirtualizationWithContext(ctx context.Context) (string, string, error) {
 
 // Find distribution name from /etc/release
 func parseReleaseFile() (string, error) {
-	b, err := ioutil.ReadFile("/etc/release")
+	b, err := os.ReadFile("/etc/release")
 	if err != nil {
 		return "", err
 	}

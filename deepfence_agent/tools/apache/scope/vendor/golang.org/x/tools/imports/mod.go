@@ -3,7 +3,6 @@ package imports
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -105,7 +104,7 @@ func (r *moduleResolver) findPackage(importPath string) (*moduleJSON, string) {
 			continue
 		}
 
-		pkgFiles, err := ioutil.ReadDir(pkgDir)
+		pkgFiles, err := os.ReadDir(pkgDir)
 		if err != nil {
 			continue
 		}
@@ -285,7 +284,7 @@ func (r *moduleResolver) scan(_ references) ([]*pkg, error) {
 				modFile = findModFile(dir)
 			}
 
-			modBytes, err := ioutil.ReadFile(modFile)
+			modBytes, err := os.ReadFile(modFile)
 			if err == nil && !strings.HasPrefix(importPath, modulePath(modBytes)) {
 				// The module's declared path does not match
 				// its expected path. It probably needs a

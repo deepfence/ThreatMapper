@@ -16,7 +16,7 @@ package procfs
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 
@@ -52,7 +52,7 @@ type Crypto struct {
 // structs containing the relevant info.  More information available here:
 // https://kernel.readthedocs.io/en/sphinx-samples/crypto-API.html
 func (fs FS) Crypto() ([]Crypto, error) {
-	data, err := ioutil.ReadFile(fs.proc.Path("crypto"))
+	data, err := os.ReadFile(fs.proc.Path("crypto"))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing crypto %s: %s", fs.proc.Path("crypto"), err)
 	}

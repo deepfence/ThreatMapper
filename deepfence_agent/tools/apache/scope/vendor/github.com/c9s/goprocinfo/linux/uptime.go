@@ -1,7 +1,7 @@
 package linux
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -27,7 +27,7 @@ func (self *Uptime) CalculateIdle() float64 {
 }
 
 func ReadUptime(path string) (*Uptime, error) {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

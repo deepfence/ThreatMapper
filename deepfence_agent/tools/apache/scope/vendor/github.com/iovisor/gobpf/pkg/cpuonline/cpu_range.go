@@ -1,7 +1,7 @@
 package cpuonline
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -35,7 +35,7 @@ func readCPURange(cpuRangeStr string) ([]uint, error) {
 
 // Get returns a slice with the online CPUs, for example `[0, 2, 3]`
 func Get() ([]uint, error) {
-	buf, err := ioutil.ReadFile(cpuOnline)
+	buf, err := os.ReadFile(cpuOnline)
 	if err != nil {
 		return nil, err
 	}

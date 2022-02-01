@@ -15,7 +15,7 @@ package procfs
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -37,7 +37,7 @@ type SoftnetEntry struct {
 // GatherSoftnetStats reads /proc/net/softnet_stat, parse the relevant columns,
 // and then return a slice of SoftnetEntry's.
 func (fs FS) GatherSoftnetStats() ([]SoftnetEntry, error) {
-	data, err := ioutil.ReadFile(fs.proc.Path("net/softnet_stat"))
+	data, err := os.ReadFile(fs.proc.Path("net/softnet_stat"))
 	if err != nil {
 		return nil, fmt.Errorf("error reading softnet %s: %s", fs.proc.Path("net/softnet_stat"), err)
 	}

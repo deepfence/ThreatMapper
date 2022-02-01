@@ -3,7 +3,6 @@ package easyjson
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"unsafe"
@@ -104,7 +103,7 @@ func Unmarshal(data []byte, v Unmarshaler) error {
 
 // UnmarshalFromReader reads all the data in the reader and decodes as JSON into the object.
 func UnmarshalFromReader(r io.Reader, v Unmarshaler) error {
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}

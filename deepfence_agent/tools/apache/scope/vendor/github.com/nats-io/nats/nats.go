@@ -11,10 +11,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/url"
+	"os"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -331,7 +331,7 @@ func RootCAs(file ...string) Option {
 	return func(o *Options) error {
 		pool := x509.NewCertPool()
 		for _, f := range file {
-			rootPEM, err := ioutil.ReadFile(f)
+			rootPEM, err := os.ReadFile(f)
 			if err != nil || rootPEM == nil {
 				return fmt.Errorf("nats: error loading or parsing rootCA file: %v", err)
 			}

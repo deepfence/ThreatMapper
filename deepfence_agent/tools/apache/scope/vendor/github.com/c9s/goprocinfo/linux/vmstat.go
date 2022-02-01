@@ -1,7 +1,7 @@
 package linux
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -124,7 +124,7 @@ type VMStat struct {
 }
 
 func ReadVMStat(path string) (*VMStat, error) {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

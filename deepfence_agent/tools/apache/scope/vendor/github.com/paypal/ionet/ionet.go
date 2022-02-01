@@ -15,7 +15,6 @@ package ionet
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"sync"
 	"time"
@@ -23,7 +22,7 @@ import (
 
 // Conn is a net.Conn backed by an io.Reader and an io.Writer.
 // The zero value for Conn uses a reader that always returns EOF
-// and ioutil.Discard as a writer.
+// and io.Discard as a writer.
 //
 // "Reader" and "Writer" are relative to which half of
 // the connection you are on. R and W in Conn are named from
@@ -118,7 +117,7 @@ func (c *Conn) Read(b []byte) (int, error) {
 func (c *Conn) Write(b []byte) (int, error) {
 	if c.W == nil {
 		// all writes to Discard succeed, so there's no need to wrap errors
-		return ioutil.Discard.Write(b)
+		return io.Discard.Write(b)
 	}
 
 	c.initClosing()

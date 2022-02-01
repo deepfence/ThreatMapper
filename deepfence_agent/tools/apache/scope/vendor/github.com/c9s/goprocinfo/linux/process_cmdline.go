@@ -1,13 +1,13 @@
 package linux
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 )
 
 func ReadProcessCmdline(path string) (string, error) {
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 
 	if err != nil {
 		return "", err

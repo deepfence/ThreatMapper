@@ -228,12 +228,12 @@ func Generate(outfile, buildTag, codecPkgPath string, uid int64, goRunTag string
 		return
 	}
 
-	// we cannot use ioutil.TempFile, because we cannot guarantee the file suffix (.go).
+	// we cannot use os.CreateTemp, because we cannot guarantee the file suffix (.go).
 	// Also, we cannot create file in temp directory,
 	// because go run will not work (as it needs to see the types here).
 	// Consequently, create the temp file in the current directory, and remove when done.
 
-	// frun, err = ioutil.TempFile("", "codecgen-")
+	// frun, err = os.CreateTemp("", "codecgen-")
 	// frunName := filepath.Join(os.TempDir(), "codecgen-"+strconv.FormatInt(time.Now().UnixNano(), 10)+".go")
 
 	frunMainName := "codecgen-main-" + tv.RandString + ".generated.go"

@@ -3,7 +3,6 @@
 package system // import "github.com/docker/docker/pkg/system"
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -24,7 +23,7 @@ func IsAbs(path string) bool {
 	return filepath.IsAbs(path)
 }
 
-// The functions below here are wrappers for the equivalents in the os and ioutils packages.
+// The functions below here are wrappers for the equivalents in the os and io packages.
 // They are passthrough on Unix platforms, and only relevant on Windows.
 
 // CreateSequential creates the named file with mode 0666 (before umask), truncating
@@ -63,5 +62,5 @@ func OpenFileSequential(name string, flag int, perm os.FileMode) (*os.File, erro
 // to find the pathname of the file. It is the caller's responsibility
 // to remove the file when no longer needed.
 func TempFileSequential(dir, prefix string) (f *os.File, err error) {
-	return ioutil.TempFile(dir, prefix)
+	return os.CreateTemp(dir, prefix)
 }

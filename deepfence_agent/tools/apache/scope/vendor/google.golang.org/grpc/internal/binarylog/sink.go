@@ -23,7 +23,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 
@@ -154,7 +154,7 @@ func newBufWriteCloserSink(o io.WriteCloser) Sink {
 // NewTempFileSink creates a temp file and returns a Sink that writes to this
 // file.
 func NewTempFileSink() (Sink, error) {
-	tempFile, err := ioutil.TempFile("/tmp", "grpcgo_binarylog_*.txt")
+	tempFile, err := os.CreateTemp("/tmp", "grpcgo_binarylog_*.txt")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %v", err)
 	}

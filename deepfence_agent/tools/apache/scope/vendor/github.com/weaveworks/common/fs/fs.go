@@ -2,7 +2,6 @@ package fs
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"syscall"
 )
@@ -24,7 +23,19 @@ type realFS struct{}
 var fs Interface = realFS{}
 
 func (realFS) ReadDir(path string) ([]os.FileInfo, error) {
-	return ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return []os.FileInfo{}, err
+	}
+	fileInfos := make([]os.FileInfo, len(files), len(files))
+	for _, file := range files {
+		fileInfo, _ := file.Info()
+		if err != nil {
+			continue
+		}
+		fileInfos = append(fileInfos, fileInfo)
+	}
+	return fileInfos, nil
 }
 
 func (realFS) ReadDirNames(path string) ([]string, error) {
@@ -37,7 +48,7 @@ func (realFS) ReadDirNames(path string) ([]string, error) {
 }
 
 func (realFS) ReadFile(path string) ([]byte, error) {
-	return ioutil.ReadFile(path)
+	return os.ReadFile(path)
 }
 
 func (realFS) Lstat(path string, stat *syscall.Stat_t) error {
@@ -54,7 +65,7 @@ func (realFS) Open(path string) (io.ReadWriteCloser, error) {
 
 // trampolines here to allow users to do fs.ReadDir etc
 
-// ReadDir see ioutil.ReadDir
+// ReadDir see os.ReadDir
 func ReadDir(path string) ([]os.FileInfo, error) {
 	return fs.ReadDir(path)
 }
@@ -69,7 +80,7 @@ func ReadDirCount(path string) (int, error) {
 	return fs.ReadDirCount(path)
 }
 
-// ReadFile see ioutil.ReadFile
+// ReadFile see os.ReadFile
 func ReadFile(path string) ([]byte, error) {
 	return fs.ReadFile(path)
 }

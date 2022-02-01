@@ -2,7 +2,6 @@ package protocol
 
 import (
 	"io"
-	"io/ioutil"
 
 	"github.com/aws/aws-sdk-go/aws/request"
 )
@@ -16,6 +15,6 @@ func UnmarshalDiscardBody(r *request.Request) {
 		return
 	}
 
-	io.Copy(ioutil.Discard, r.HTTPResponse.Body)
+	io.Copy(io.Discard, r.HTTPResponse.Body)
 	r.HTTPResponse.Body.Close()
 }

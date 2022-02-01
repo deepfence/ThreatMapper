@@ -2,7 +2,6 @@ package net
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -15,7 +14,7 @@ import (
 
 func TestIOCountersByFileParsing(t *testing.T) {
 	// Prpare a temporary file, which will be read during the test
-	tmpfile, err := ioutil.TempFile("", "proc_dev_net")
+	tmpfile, err := os.CreateTemp("", "proc_dev_net")
 	defer os.Remove(tmpfile.Name()) // clean up
 
 	assert.Nil(t, err, "Temporary file creation failed: ", err)
@@ -182,7 +181,7 @@ func TestReverse(t *testing.T) {
 }
 
 func TestConntrackStatFileParsing(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("", "proc_net_stat_conntrack")
+	tmpfile, err := os.CreateTemp("", "proc_net_stat_conntrack")
 	defer os.Remove(tmpfile.Name())
 	assert.Nil(t, err, "Temporary file creation failed: ", err)
 

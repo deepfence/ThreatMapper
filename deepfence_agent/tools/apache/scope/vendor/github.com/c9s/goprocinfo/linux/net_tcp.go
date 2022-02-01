@@ -1,7 +1,7 @@
 package linux
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -22,7 +22,7 @@ type NetTCPSocket struct {
 
 func ReadNetTCPSockets(path string, ip NetIPDecoder) (*NetTCPSockets, error) {
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, err

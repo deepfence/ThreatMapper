@@ -23,7 +23,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -70,7 +69,7 @@ func WriteCert(certPath string, data []byte) error {
 	if err := os.MkdirAll(filepath.Dir(certPath), os.FileMode(0755)); err != nil {
 		return err
 	}
-	return ioutil.WriteFile(certPath, data, os.FileMode(0644))
+	return os.WriteFile(certPath, data, os.FileMode(0644))
 }
 
 // WriteKey writes the pem-encoded key data to keyPath.
@@ -81,13 +80,13 @@ func WriteKey(keyPath string, data []byte) error {
 	if err := os.MkdirAll(filepath.Dir(keyPath), os.FileMode(0755)); err != nil {
 		return err
 	}
-	return ioutil.WriteFile(keyPath, data, os.FileMode(0600))
+	return os.WriteFile(keyPath, data, os.FileMode(0600))
 }
 
 // LoadOrGenerateKeyFile looks for a key in the file at the given path. If it
 // can't find one, it will generate a new key and store it there.
 func LoadOrGenerateKeyFile(keyPath string) (data []byte, wasGenerated bool, err error) {
-	loadedData, err := ioutil.ReadFile(keyPath)
+	loadedData, err := os.ReadFile(keyPath)
 	// Call verifyKeyData to ensure the file wasn't empty/corrupt.
 	if err == nil && verifyKeyData(loadedData) {
 		return loadedData, false, err
@@ -144,7 +143,7 @@ func NewPool(filename string) (*x509.CertPool, error) {
 // CertsFromFile returns the x509.Certificates contained in the given PEM-encoded file.
 // Returns an error if the file could not be read, a certificate could not be parsed, or if the file does not contain any certificates
 func CertsFromFile(file string) ([]*x509.Certificate, error) {
-	pemBlock, err := ioutil.ReadFile(file)
+	pemBlock, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +157,7 @@ func CertsFromFile(file string) ([]*x509.Certificate, error) {
 // PrivateKeyFromFile returns the private key in rsa.PrivateKey or ecdsa.PrivateKey format from a given PEM-encoded file.
 // Returns an error if the file could not be read or if the private key could not be parsed.
 func PrivateKeyFromFile(file string) (interface{}, error) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +171,7 @@ func PrivateKeyFromFile(file string) (interface{}, error) {
 // PublicKeysFromFile returns the public keys in rsa.PublicKey or ecdsa.PublicKey format from a given PEM-encoded file.
 // Reads public keys from both public and private key files.
 func PublicKeysFromFile(file string) ([]interface{}, error) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}

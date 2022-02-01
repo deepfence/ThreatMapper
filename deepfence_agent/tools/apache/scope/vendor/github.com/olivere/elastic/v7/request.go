@@ -9,7 +9,6 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -106,7 +105,7 @@ func (r *Request) setBodyGzip(body interface{}) error {
 func (r *Request) setBodyReader(body io.Reader) error {
 	rc, ok := body.(io.ReadCloser)
 	if !ok && body != nil {
-		rc = ioutil.NopCloser(body)
+		rc = io.NopCloser(body)
 	}
 	r.Body = rc
 	if body != nil {

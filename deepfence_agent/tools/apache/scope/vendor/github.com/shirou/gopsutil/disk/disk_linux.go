@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -460,7 +459,7 @@ func GetDiskSerialNumberWithContext(ctx context.Context, name string) string {
 
 	// Try to get the serial from udev data
 	udevDataPath := common.HostRun(fmt.Sprintf("udev/data/b%d:%d", major, minor))
-	if udevdata, err := ioutil.ReadFile(udevDataPath); err == nil {
+	if udevdata, err := os.ReadFile(udevDataPath); err == nil {
 		scanner := bufio.NewScanner(bytes.NewReader(udevdata))
 		for scanner.Scan() {
 			values := strings.Split(scanner.Text(), "=")
@@ -473,8 +472,8 @@ func GetDiskSerialNumberWithContext(ctx context.Context, name string) string {
 	// Try to get the serial from sysfs, look at the disk device (minor 0) directly
 	// because if it is a partition it is not going to contain any device information
 	devicePath := common.HostSys(fmt.Sprintf("dev/block/%d:0/device", major))
-	model, _ := ioutil.ReadFile(filepath.Join(devicePath, "model"))
-	serial, _ := ioutil.ReadFile(filepath.Join(devicePath, "serial"))
+	model, _ := os.ReadFile(filepath.Join(devicePath, "model"))
+	serial, _ := os.ReadFile(filepath.Join(devicePath, "serial"))
 	if len(model) > 0 && len(serial) > 0 {
 		return fmt.Sprintf("%s_%s", string(model), string(serial))
 	}
@@ -493,7 +492,7 @@ func GetLabel(name string) string {
 		return ""
 	}
 
-	dmname, err := ioutil.ReadFile(dmname_filename)
+	dmname, err := os.ReadFile(dmname_filename)
 	if err != nil {
 		return ""
 	} else {

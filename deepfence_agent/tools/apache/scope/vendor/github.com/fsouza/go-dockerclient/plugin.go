@@ -7,7 +7,7 @@ package docker
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -344,7 +344,7 @@ func (c *Client) CreatePlugin(opts CreatePluginOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	containerNameBytes, err := ioutil.ReadAll(resp.Body)
+	containerNameBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}

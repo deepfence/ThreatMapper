@@ -6,7 +6,6 @@ package sysconf
 
 import (
 	"bufio"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strconv"
@@ -24,7 +23,7 @@ const (
 )
 
 func readProcFsInt64(path string, fallback int64) int64 {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return fallback
 	}

@@ -19,7 +19,7 @@ import (
 	"go/printer"
 	"go/token"
 	"io"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -55,7 +55,7 @@ func process(filename string, src []byte, opt *Options, env *fixEnv) ([]byte, er
 		opt = &Options{Comments: true, TabIndent: true, TabWidth: 8}
 	}
 	if src == nil {
-		b, err := ioutil.ReadFile(filename)
+		b, err := os.ReadFile(filename)
 		if err != nil {
 			return nil, err
 		}

@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -45,7 +45,7 @@ func createResponseError(res *http.Response) error {
 	if res.Body == nil {
 		return &Error{Status: res.StatusCode}
 	}
-	data, err := ioutil.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		return &Error{Status: res.StatusCode}
 	}

@@ -1,7 +1,6 @@
 package linux
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -10,7 +9,7 @@ import (
 
 func ReadMaxPID(path string) (uint64, error) {
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 
 	if err != nil {
 		return 0, err

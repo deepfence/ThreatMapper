@@ -3,7 +3,6 @@ package exec
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 
 	"github.com/weaveworks/common/exec"
 )
@@ -20,7 +19,7 @@ func NewMockCmdString(s string) exec.Cmd {
 			io.Closer
 		}{
 			bytes.NewBufferString(s),
-			ioutil.NopCloser(nil),
+			io.NopCloser(nil),
 		},
 	}
 }
@@ -45,7 +44,7 @@ func (c *mockCmd) StdoutPipe() (io.ReadCloser, error) {
 }
 
 func (c *mockCmd) StderrPipe() (io.ReadCloser, error) {
-	return ioutil.NopCloser(bytes.NewReader(nil)), nil
+	return io.NopCloser(bytes.NewReader(nil)), nil
 }
 
 func (c *mockCmd) Kill() error {
@@ -53,7 +52,7 @@ func (c *mockCmd) Kill() error {
 }
 
 func (c *mockCmd) Output() ([]byte, error) {
-	return ioutil.ReadAll(c.ReadCloser)
+	return io.ReadAll(c.ReadCloser)
 }
 
 func (c *mockCmd) Run() error {

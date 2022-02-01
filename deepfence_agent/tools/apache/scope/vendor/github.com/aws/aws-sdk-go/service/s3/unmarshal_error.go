@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -21,7 +20,7 @@ type xmlErrorResponse struct {
 
 func unmarshalError(r *request.Request) {
 	defer r.HTTPResponse.Body.Close()
-	defer io.Copy(ioutil.Discard, r.HTTPResponse.Body)
+	defer io.Copy(io.Discard, r.HTTPResponse.Body)
 
 	// Bucket exists in a different region, and request needs
 	// to be made to the correct region.

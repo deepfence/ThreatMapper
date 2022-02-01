@@ -18,10 +18,11 @@ import (
 	"errors"
 	"fmt"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -65,7 +66,7 @@ func FetchFile(fileurl string) ([]byte, error) {
 		return nil, errors.New(fmt.Sprintf("Error downloading %s: %s", fileurl, response.Status))
 	}
 	defer response.Body.Close()
-	bytes, err = ioutil.ReadAll(response.Body)
+	bytes, err = io.ReadAll(response.Body)
 	if err == nil {
 		fileCache[fileurl] = bytes
 	}
@@ -85,7 +86,7 @@ func ReadBytesForFile(filename string) ([]byte, error) {
 		return bytes, nil
 	}
 	// no, it's a local filename
-	bytes, err := ioutil.ReadFile(filename)
+	bytes, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}

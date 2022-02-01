@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"reflect"
 	"regexp"
@@ -1969,7 +1968,7 @@ func genInternalGoFile(r io.Reader, w io.Writer) (err error) {
 
 	t := template.New("").Funcs(genInternalTmplFuncs)
 
-	tmplstr, err := ioutil.ReadAll(r)
+	tmplstr, err := io.ReadAll(r)
 	if err != nil {
 		return
 	}

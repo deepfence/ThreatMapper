@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"strconv"
@@ -1706,7 +1705,7 @@ func LinkDeserialize(hdr *unix.NlMsghdr, m []byte) (Link, error) {
 
 func readSysPropAsInt64(ifname, prop string) (int64, error) {
 	fname := fmt.Sprintf("/sys/class/net/%s/%s", ifname, prop)
-	contents, err := ioutil.ReadFile(fname)
+	contents, err := os.ReadFile(fname)
 	if err != nil {
 		return 0, err
 	}

@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -156,7 +155,7 @@ func (c *HTTPTransport) send(spans []*j.Span) error {
 	if err != nil {
 		return err
 	}
-	io.Copy(ioutil.Discard, resp.Body)
+	io.Copy(io.Discard, resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode >= http.StatusBadRequest {
 		return fmt.Errorf("error from collector: %d", resp.StatusCode)

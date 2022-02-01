@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -189,7 +188,7 @@ func writeKprobeEvent(probeType, eventName, funcName, maxactiveStr string) (int,
 	}
 
 	kprobeIdFile := fmt.Sprintf("/sys/kernel/debug/tracing/events/kprobes/%s/id", eventName)
-	kprobeIdBytes, err := ioutil.ReadFile(kprobeIdFile)
+	kprobeIdBytes, err := os.ReadFile(kprobeIdFile)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return -1, kprobeIDNotExist
@@ -268,7 +267,7 @@ func (b *Module) EnableKprobe(secName string, maxactive int) error {
 
 func writeTracepointEvent(category, name string) (int, error) {
 	tracepointIdFile := fmt.Sprintf("/sys/kernel/debug/tracing/events/%s/%s/id", category, name)
-	tracepointIdBytes, err := ioutil.ReadFile(tracepointIdFile)
+	tracepointIdBytes, err := os.ReadFile(tracepointIdFile)
 	if err != nil {
 		return -1, fmt.Errorf("cannot read tracepoint id %q: %v", tracepointIdFile, err)
 	}

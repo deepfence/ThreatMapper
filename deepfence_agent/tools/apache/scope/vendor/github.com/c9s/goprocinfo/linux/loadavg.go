@@ -2,7 +2,7 @@ package linux
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -18,7 +18,7 @@ type LoadAvg struct {
 
 func ReadLoadAvg(path string) (*LoadAvg, error) {
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, err

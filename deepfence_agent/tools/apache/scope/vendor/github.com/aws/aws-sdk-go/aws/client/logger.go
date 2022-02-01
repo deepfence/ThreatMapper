@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http/httputil"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -138,7 +137,7 @@ func logResponse(r *request.Request) {
 			req.ClientInfo.ServiceName, req.Operation.Name, string(b)))
 
 		if logBody {
-			b, err := ioutil.ReadAll(lw.buf)
+			b, err := io.ReadAll(lw.buf)
 			if err != nil {
 				lw.Logger.Log(fmt.Sprintf(logRespErrMsg,
 					req.ClientInfo.ServiceName, req.Operation.Name, err))

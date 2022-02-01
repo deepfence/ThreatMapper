@@ -4,7 +4,7 @@
 package test
 
 import (
-	"io/ioutil"
+	"io"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -43,7 +43,7 @@ func NewLocal(logger *logrus.Logger) *Hook {
 func NewNullLogger() (*logrus.Logger, *Hook) {
 
 	logger := logrus.New()
-	logger.Out = ioutil.Discard
+	logger.Out = io.Discard
 
 	return logger, NewLocal(logger)
 

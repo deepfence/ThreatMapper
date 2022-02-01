@@ -1,7 +1,7 @@
 package linux
 
 import (
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -67,7 +67,7 @@ var processStatRegExp = regexp.MustCompile("^(\\d+)( \\(.*?\\) )(.*)$")
 
 func ReadProcessStat(path string) (*ProcessStat, error) {
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, err

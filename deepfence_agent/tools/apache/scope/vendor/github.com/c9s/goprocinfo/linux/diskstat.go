@@ -1,7 +1,7 @@
 package linux
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -39,7 +39,7 @@ type DiskStat struct {
 // Note:
 // * Assumes a well formed file and will panic if it isn't.
 func ReadDiskStats(path string) ([]DiskStat, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

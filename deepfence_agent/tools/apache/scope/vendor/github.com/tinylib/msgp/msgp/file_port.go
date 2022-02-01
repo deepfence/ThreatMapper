@@ -3,7 +3,7 @@
 package msgp
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -20,7 +20,7 @@ func ReadFile(dst Unmarshaler, file *os.File) error {
 		return u.DecodeMsg(NewReader(file))
 	}
 
-	data, err := ioutil.ReadAll(file)
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return err
 	}
