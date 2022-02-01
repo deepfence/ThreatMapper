@@ -135,7 +135,7 @@ func getCloudMetadata(cloudProvider string) (string, string, string, string) {
 		var err error
 		cloudMetadata, err = cloud_metadata.GetGenericMetadata(false)
 		if err == nil {
-			if !dfUtils.FileExists("/var/run/docker.sock") && !dfUtils.FileExists("/run/containerd/containerd.sock") {
+			if !dfUtils.FileExists("/var/run/docker.sock") && !dfUtils.FileExists("/run/containerd/containerd.sock") && !dfUtils.FileExists("/run/k3s/containerd/containerd.sock") {
 				cloudProvider = report.CloudProviderServerless
 				cloudMetadata.CloudProvider = report.CloudProviderServerless
 				cloudMetadata.Region = report.CloudProviderServerless
