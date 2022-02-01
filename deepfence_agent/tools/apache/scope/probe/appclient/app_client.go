@@ -3,7 +3,6 @@ package appclient
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -308,7 +307,7 @@ func (c *appClient) publish(r io.Reader) error {
 		{Name: "status", Value: fmt.Sprint(resp.StatusCode)},
 	})
 	if resp.StatusCode != http.StatusOK {
-		text, _ := ioutil.ReadAll(resp.Body)
+		text, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf(resp.Status + ": " + string(text))
 	}
 	return nil

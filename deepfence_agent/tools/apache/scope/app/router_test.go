@@ -2,7 +2,7 @@ package app_test
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -63,7 +63,7 @@ func TestReportPostHandler(t *testing.T) {
 			t.Fatalf("Error posting report %v", err)
 		}
 
-		_, err = ioutil.ReadAll(resp.Body)
+		_, err = io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			t.Fatalf("Error posting report: %v", err)

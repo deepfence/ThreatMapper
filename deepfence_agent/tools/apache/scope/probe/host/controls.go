@@ -2,7 +2,6 @@ package host
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -82,7 +81,7 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 }
 
 func readFile(filepath string) ([]byte, error) {
-	return ioutil.ReadFile(filepath)
+	return os.ReadFile(filepath)
 }
 
 func getDfInstallDir() string {

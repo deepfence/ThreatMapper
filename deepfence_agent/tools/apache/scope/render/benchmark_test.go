@@ -3,7 +3,7 @@ package render_test
 import (
 	"context"
 	"flag"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/ugorji/go/codec"
@@ -64,7 +64,7 @@ func loadReport() (report.Report, error) {
 		return fixture.Report, nil
 	}
 
-	b, err := ioutil.ReadFile(*benchReportFile)
+	b, err := os.ReadFile(*benchReportFile)
 	if err != nil {
 		return rpt, err
 	}

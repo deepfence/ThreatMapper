@@ -3,13 +3,13 @@ package plugins
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 )
 
 func TestMaxBytesReaderReturnsAllDataIfSmaller(t *testing.T) {
-	result, err := ioutil.ReadAll(MaxBytesReader(ioutil.NopCloser(strings.NewReader("some data")), 1024, errors.New("test error")))
+	result, err := io.ReadAll(MaxBytesReader(io.NopCloser(strings.NewReader("some data")), 1024, errors.New("test error")))
 	if err != nil {
 		t.Error(err)
 	}
@@ -31,7 +31,7 @@ func TestMaxBytesReaderReturnsErrorIfLarger(t *testing.T) {
 		input.WriteByte(byte(i))
 	}
 
-	result, err := ioutil.ReadAll(MaxBytesReader(ioutil.NopCloser(input), 1024, errors.New("test error")))
+	result, err := io.ReadAll(MaxBytesReader(io.NopCloser(input), 1024, errors.New("test error")))
 	if err.Error() != "test error" {
 		t.Errorf("Expected error to be %q, got: %q", "test error", err.Error())
 	}
@@ -47,7 +47,7 @@ func TestMaxBytesReaderReturnsErrorIfLargerAndMassiveBufferGiven(t *testing.T) {
 	}
 
 	buffer := make([]byte, 1024+2)
-	reader := MaxBytesReader(ioutil.NopCloser(input), 1024, errors.New("test error"))
+	reader := MaxBytesReader(io.NopCloser(input), 1024, errors.New("test error"))
 
 	// First read is scoped down to the maximum
 	readCount, err := reader.Read(buffer)

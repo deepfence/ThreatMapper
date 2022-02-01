@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 	"testing"
 
@@ -22,11 +21,11 @@ func TestLogReadCloser(t *testing.T) {
 	longestlabelLength := len(label0)
 
 	readClosersWithLabel := map[io.ReadCloser]string{}
-	r0 := ioutil.NopCloser(bytes.NewReader(data0))
+	r0 := io.NopCloser(bytes.NewReader(data0))
 	readClosersWithLabel[r0] = label0
-	r1 := ioutil.NopCloser(bytes.NewReader(data1))
+	r1 := io.NopCloser(bytes.NewReader(data1))
 	readClosersWithLabel[r1] = label1
-	r2 := ioutil.NopCloser(bytes.NewReader(data2))
+	r2 := io.NopCloser(bytes.NewReader(data2))
 	readClosersWithLabel[r2] = label2
 
 	l := kubernetes.NewLogReadCloser(readClosersWithLabel)

@@ -89,7 +89,7 @@ func inspectMain() {
 //		if err != nil {
 //			panic(err)
 //		}
-//		logBytes, err := ioutil.ReadAll(logs)
+//		logBytes, err := io.ReadAll(logs)
 //		if err != nil {
 //			panic(err)
 //		}

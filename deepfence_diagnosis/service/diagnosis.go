@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -154,7 +153,7 @@ func addVulnerabilityLogsDocker(container types.Container, tarWriter *tar.Writer
 		if err != nil {
 			break
 		}
-		logBytes, err := ioutil.ReadAll(tr)
+		logBytes, err := io.ReadAll(tr)
 		if err != nil {
 			break
 		}
@@ -199,7 +198,7 @@ func addSupervisorLogsDocker(container types.Container, tarWriter *tar.Writer) e
 		if err != nil {
 			break
 		}
-		logBytes, err := ioutil.ReadAll(tr)
+		logBytes, err := io.ReadAll(tr)
 		if err != nil {
 			break
 		}
@@ -275,7 +274,7 @@ func (t *diagnosisT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("error in opening stream", err)
 				continue
 			}
-			logBytes, err := ioutil.ReadAll(podLogs)
+			logBytes, err := io.ReadAll(podLogs)
 			if err != nil {
 				continue
 			}
@@ -334,7 +333,7 @@ func (t *diagnosisT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				continue
 			}
-			logBytes, err := ioutil.ReadAll(logs)
+			logBytes, err := io.ReadAll(logs)
 			if err != nil {
 				continue
 			}

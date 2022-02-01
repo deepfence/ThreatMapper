@@ -3,7 +3,6 @@ package app_test
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -60,7 +59,7 @@ func checkRequest(t *testing.T, ts *httptest.Server, method, path string, body [
 		t.Fatalf("Error getting %s %s: %s", method, path, err)
 	}
 
-	body, err = ioutil.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		t.Fatalf("%s %s body read error: %s", method, path, err)

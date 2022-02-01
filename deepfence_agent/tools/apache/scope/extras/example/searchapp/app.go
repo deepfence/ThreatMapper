@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -72,7 +71,7 @@ func get(target string) {
 	}
 	defer resp.Body.Close()
 	log.Printf("%s: %s", target, resp.Status)
-	if _, err := io.Copy(ioutil.Discard, resp.Body); err != nil {
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
 		log.Printf("%s: %v", target, err)
 		return
 	}

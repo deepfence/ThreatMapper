@@ -5,9 +5,9 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/ugorji/go/codec"
@@ -36,7 +36,7 @@ func main() {
 	if *useFixture {
 		fixedReport = fixture.Report
 	} else {
-		b, err := ioutil.ReadFile(flag.Arg(0))
+		b, err := os.ReadFile(flag.Arg(0))
 		if err != nil {
 			log.Fatal(err)
 		}

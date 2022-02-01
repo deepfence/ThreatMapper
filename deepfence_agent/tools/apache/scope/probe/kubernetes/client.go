@@ -654,7 +654,7 @@ func (c *client) GetLogs(namespaceID, podID string, containerNames []string) (io
 //	if err != nil {
 //		return nil, err
 //	}
-//	formattedObj := ioutil.NopCloser(bytes.NewReader([]byte(obj)))
+//	formattedObj := io.NopCloser(bytes.NewReader([]byte(obj)))
 //	readClosersWithLabel[formattedObj] = "describe"
 //
 //	return NewLogReadCloser(readClosersWithLabel), nil
