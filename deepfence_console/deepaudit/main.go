@@ -109,7 +109,7 @@ func init() {
 	scanLanguages = []string{"java", "python", "ruby", "php", "nodejs", "js", "dotnet"}
 
 	// Auto-detect underlying container runtime
-	containerRuntime, _, err := vessel.AutoDetectRuntime()
+	containerRuntime, err := vessel.AutoDetectRuntime()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

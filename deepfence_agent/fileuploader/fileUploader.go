@@ -756,7 +756,7 @@ func main() {
 		}
 	} else {
 		// Auto-detect underlying container runtime
-		activeRuntime, _, err = vessel.AutoDetectRuntime()
+		activeRuntime, err = vessel.AutoDetectRuntime()
 		if err != nil {
 			stopLogging <- true
 			time.Sleep(3 * time.Second)
