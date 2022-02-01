@@ -14,7 +14,56 @@ export const useGraph = (el, data) => {
     const width = el.offsetWidth;
     const height = el.offsetHeight;
 
+
+    const toolbar = new G6.ToolBar({
+      className: 'g6-df-toolbar',
+      getContent: () => {
+        const outDiv = document.createElement('div');
+        outDiv.innerHTML = `<ul>
+            <li code="zoom-out" title="Zoom Out"><i class="fa fa-lg fa-search-plus"></i></li>
+            <li code="zoom-in" title="Zoom In"><i class="fa fa-lg fa-search-minus"></i></li>
+            <li code="actual-size" title="Re-center"><i class="fa fa-lg fa-compress"></i></li>
+          </ul>`
+        return outDiv
+      },
+      handleClick: (code, graph) => {
+        const sensitivity = 2;
+        const DELTA = 0.05;
+        if (code === 'zoom-out') {
+          const currentZoom = graph.getZoom();
+          const height = graph.getHeight();
+          const width = graph.getWidth();
+          const ratioOut = 1 / (1 - DELTA * sensitivity);
+          const maxZoom = graph.get('maxZoom');
+          if (ratioOut * currentZoom > maxZoom) {
+            return;
+          }
+          graph.zoomTo(currentZoom * ratioOut, {
+            x: width / 2,
+            y: height / 2
+          });
+        } else if (code === 'zoom-in') {
+          const currentZoom = graph.getZoom();
+          const height = graph.getHeight();
+          const width = graph.getWidth();
+          const ratioIn = 1 - DELTA * sensitivity;
+          const minZoom = graph.get('minZoom');
+          if (ratioIn * currentZoom < minZoom) {
+            return;
+          }
+          graph.zoomTo(currentZoom * ratioIn, {
+            x: width / 2,
+            y: height / 2
+          });
+        } else if (code === 'actual-size') {
+          graph.fitView();
+        }
+      }
+    });
+
     const graph = new G6.Graph({
+      plugins: [toolbar],
+
       animate: false,
 
       container: el,

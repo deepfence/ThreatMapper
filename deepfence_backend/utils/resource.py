@@ -86,17 +86,13 @@ def get_nodes_list(params):
                     image_list_details = json.loads(image_list_details_str)
                     additional_resp["last_updated"] = image_list_details["last_updated"]
                     additional_resp["registry_update_in_progress"] = False
-                    unique_images = {img["image_name"]
-                                     for img in image_list_details["image_list"]}
-                    additional_resp["unique_images"] = len(unique_images)
                     images_list, additional_resp["total_scanned"], additional_resp["scan_in_progress"], _ = \
                         get_scan_status_for_registry_images(image_list_details["image_list"])
                     node_list += images_list
                 else:
                     additional_resp = {
                         "last_updated": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        "unique_images": 0, "total_scanned": 0, "scan_in_progress": 0,
-                        "registry_update_in_progress": True
+                        "total_scanned": 0, "scan_in_progress": 0, "registry_update_in_progress": True
                     }
         else:
             formatted_data = redis.get(websocketio_channel_name_format(
@@ -196,6 +192,7 @@ def get_nodes_list(params):
     resp = {
         "data": result_nodes[params["start_index"]:params["start_index"] + params["size"]],
         "total": len(filtered_node_list),
+        "unique_images": len(registry_images),
         **additional_resp
     }
     return resp

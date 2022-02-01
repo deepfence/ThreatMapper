@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gocelery/gocelery"
 	"github.com/gomodule/redigo/redis"
@@ -53,6 +54,19 @@ func init() {
 	err = postgresDb.Ping()
 	if err != nil {
 		gracefulExit(err)
+	}
+	time.Sleep(10 * time.Second)
+	tablesToCheck := []string{"vulnerability_notification"}
+	for _, tableName := range tablesToCheck {
+		var tableExists bool
+		row := postgresDb.QueryRow("SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1)", tableName)
+		err := row.Scan(&tableExists)
+		if err != nil {
+			gracefulExit(err)
+		}
+		if tableExists == false {
+			gracefulExit(errors.New("table " + tableName + " does not exist"))
+		}
 	}
 	vulnerabilityTaskQueue = make(chan []byte, 10000)
 	resourcePubsubToChanMap = map[string]chan []byte{

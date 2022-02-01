@@ -238,20 +238,36 @@ class CveScanRegistryImages:
 
 
 class CveScanECRImages(CveScanRegistryImages):
-    def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region_name, registry_id, use_iam_role):
+    def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region_name, registry_id, target_account_role_arn,
+                 use_iam_role):
         super().__init__()
         self.use_iam_role = str(use_iam_role).lower()
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_region_name = aws_region_name
+        self.target_account_role_arn = target_account_role_arn
         if self.use_iam_role == "true":
             try:
-                provider = InstanceMetadataProvider(
-                    iam_role_fetcher=InstanceMetadataFetcher(timeout=1, num_attempts=2))
-                creds = provider.load().get_frozen_credentials()
-                self.ecr_client = boto3.client(
-                    REGISTRY_TYPE_ECR, region_name=aws_region_name, aws_access_key_id=creds.access_key,
-                    aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
+                if target_account_role_arn:
+                    sts_client = boto3.client('sts')
+                    assumed_role_object = sts_client.assume_role(
+                        RoleArn=target_account_role_arn,
+                        RoleSessionName="Deepfence-Console"
+                    )
+                    credentials = assumed_role_object['Credentials']
+                    session = boto3.Session(
+                        aws_access_key_id=credentials['AccessKeyId'],
+                        aws_secret_access_key=credentials['SecretAccessKey'],
+                        aws_session_token=credentials['SessionToken']
+                    )
+                    self.ecr_client = session.client(REGISTRY_TYPE_ECR, region_name=aws_region_name)
+                else:
+                    provider = InstanceMetadataProvider(
+                        iam_role_fetcher=InstanceMetadataFetcher(timeout=1, num_attempts=2))
+                    creds = provider.load().get_frozen_credentials()
+                    self.ecr_client = boto3.client(
+                        REGISTRY_TYPE_ECR, region_name=aws_region_name, aws_access_key_id=creds.access_key,
+                        aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
             except:
                 raise DFError("Error: Could not assume instance role")
         else:

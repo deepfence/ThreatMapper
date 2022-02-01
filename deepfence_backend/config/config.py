@@ -29,8 +29,7 @@ class ProdConfig:
     JWT_PRIVATE_KEY = open('/app/code/rs256.pem').read()
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=24)
     JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(days=30)
-    JWT_BLACKLIST_ENABLED = True
-    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+    JWT_ENCODE_NBF = False
 
     # celery
     CELERY_BROKER_URL = 'redis://{host}:{port}/{db_number}'.format(

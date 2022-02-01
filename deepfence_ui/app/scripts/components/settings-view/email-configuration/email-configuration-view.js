@@ -17,14 +17,18 @@ import AppLoader from '../../common/app-loader/app-loader';
 import { NO_MAIL_CONFIGURATIONS_MESSAGE } from '../../../constants/visualization-config';
 
 const resourceCollection = [
-  {
-    name: 'Google SMTP',
-    value: 'smtp',
-  },
-  {
-    name: 'Amazon SES',
-    value: 'amazon_ses',
-  },
+	{
+		name: 'Google SMTP',
+		value: 'smtp',
+	},
+	{
+		name: 'Amazon SES',
+		value: 'amazon_ses',
+	},
+	{
+		name: 'SMTP',
+		value: 'simple_smtp',
+	},
 ];
 
 const EmailConfiguration = props => {
@@ -93,15 +97,25 @@ const EmailConfiguration = props => {
     let params;
     let flag = true;
 
-    if (emailProvider.value === 'smtp') {
-      params = {
-        email_provider: emailProvider.value,
-        email: email_smtp,
-        smtp: smtp,
-        port: port,
-        password: password,
-      };
-    }
+		if (emailProvider.value === 'smtp' || emailProvider.value === 'simple_smtp') {
+			params = {
+				email_provider: emailProvider.value,
+				email: email_smtp,
+				smtp: smtp,
+				port: port,
+				password: password,
+			};
+		}
+
+		if (emailProvider.value === 'simple_smtp') {
+			params = {
+				email_provider: 'smtp',
+				email: email_smtp,
+				smtp: smtp,
+				port: port,
+				password: password,
+			};
+		}
 
     if (emailProvider.value === 'amazon_ses') {
       params = {
@@ -159,7 +173,7 @@ const EmailConfiguration = props => {
                   </div>
                   <br />
                   <div className="row">
-                    {emailProvider.value === 'smtp' && (
+                    {(emailProvider.value === 'smtp' || emailProvider.value === 'simple_smtp' ) && (
                       <div className="col-md-6">
                         <div
                           className={
@@ -180,7 +194,7 @@ const EmailConfiguration = props => {
                         </div>
                       </div>
                     )}
-                    {emailProvider.value === 'smtp' && (
+                    {(emailProvider.value === 'smtp' || emailProvider.value === 'simple_smtp' ) && (
                       <div className="col-md-6">
                         <div
                           className={
@@ -250,7 +264,7 @@ const EmailConfiguration = props => {
                     )}
                   </div>
                   <div className="row">
-                    {emailProvider.value === 'smtp' && (
+                    {(emailProvider.value === 'smtp' || emailProvider.value === 'simple_smtp' ) && (
                       <div className="col">
                         <div
                           className={
@@ -297,6 +311,31 @@ const EmailConfiguration = props => {
                         </div>
                       </div>
                     )}
+                    {(emailProvider.value === 'simple_smtp' ) && (
+											<div className="col">
+												<div
+													className={
+														'form-group' +
+														(submitted && !port
+															? ' has-error'
+															: '')
+													}
+												>
+													<input
+														type="number"
+														className="form-control"
+														name="port"
+														placeholder="SMTP port (SSL)"
+														onChange={e => handleChange(e)}
+													/>
+													{submitted && !port && (
+														<div className="field-error">
+															SMTP port (SSL) is required
+														</div>
+													)}
+												</div>
+											</div>
+										)}
                     {emailProvider.value === 'amazon_ses' && (
                       <div className="col">
                         <div
