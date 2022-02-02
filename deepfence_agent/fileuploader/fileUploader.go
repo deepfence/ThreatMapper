@@ -756,7 +756,7 @@ func main() {
 		}
 	} else {
 		// Auto-detect underlying container runtime
-		activeRuntime, err = vessel.AutoDetectRuntime()
+		activeRuntime, endpoint, err = vessel.AutoDetectRuntime()
 		if err != nil {
 			stopLogging <- true
 			time.Sleep(3 * time.Second)
@@ -770,7 +770,7 @@ func main() {
 		case vesselConstants.DOCKER:
 			containerRuntimeInterface = dockerRuntime.New()
 		case vesselConstants.CONTAINERD:
-			containerRuntimeInterface = containerdRuntime.New()
+			containerRuntimeInterface = containerdRuntime.New(endpoint)
 		}
 		if containerRuntimeInterface == nil {
 			stopLogging <- true
