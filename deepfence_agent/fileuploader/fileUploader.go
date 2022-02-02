@@ -756,6 +756,7 @@ func main() {
 		}
 	} else {
 		// Auto-detect underlying container runtime
+		var endpoint string
 		activeRuntime, endpoint, err = vessel.AutoDetectRuntime()
 		if err != nil {
 			stopLogging <- true
