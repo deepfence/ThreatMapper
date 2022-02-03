@@ -56,11 +56,11 @@ const VulnerabilityManagementView = props => {
 
   useEffect(() => {
     return () => {
-      setSelectedSeverity(undefined);
-      setSelectedDuration(undefined);
-      setAlertsDeleteResponse(undefined);
-      setIsSuccess(undefined);
-      setIsError(undefined);
+      setSelectedSeverity(null);
+      setSelectedDuration(null);
+      setAlertsDeleteResponse(null);
+      setIsSuccess(null);
+      setIsError(null);
     };
   }, []);
 
@@ -98,8 +98,7 @@ const VulnerabilityManagementView = props => {
   };
 
   const handleSeverityDeletionSubmit = () => {
-    setSelectedDuration(({ value: selectedDurationStr } = {}));
-    const duration = JSON.parse(selectedDurationStr);
+    const duration = JSON.parse(selectedDuration.value);
     let params = {
       number: duration.number,
       severity: selectedSeverity,
@@ -173,7 +172,7 @@ const VulnerabilityManagementView = props => {
             <div className="duration-container df-select-field">
               <DFSelect
                 options={durationOptions}
-                onChange={() => handleDropDownChange()}
+                onChange={(selected) => handleDropDownChange(selected)}
                 value={selectedDuration}
                 clearable={false}
                 simpleValue
