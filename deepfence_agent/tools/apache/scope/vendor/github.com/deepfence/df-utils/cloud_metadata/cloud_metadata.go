@@ -335,7 +335,7 @@ func GetSoftlayerMetadata(onlyValidate bool) (CloudMetadata, error) {
 }
 
 func GetGenericMetadata(onlyValidate bool) (CloudMetadata, error) {
-	genericMetadata := CloudMetadata{CloudProvider: "unknown", Region: "unknown", Label: "Unknown"}
+	genericMetadata := CloudMetadata{CloudProvider: "private_cloud", Region: "zone", Label: "Private Cloud"}
 	if onlyValidate == true {
 		return genericMetadata, nil
 	}
@@ -380,7 +380,7 @@ func DetectCloudServiceProvider() string {
 	if err == nil {
 		return "softlayer"
 	}
-	return "unknown"
+	return "private_cloud"
 }
 
 type CloudMetadata struct {

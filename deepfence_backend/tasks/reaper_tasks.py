@@ -11,12 +11,13 @@ from utils.constants import CVE_SCAN_LOGS_INDEX, NODE_TYPE_HOST, \
     CVE_INDEX
 from utils.scope import fetch_topology_data
 import time
-from utils.helper import get_cve_scan_tmp_folder, rmdir_recursive
+from utils.helper import get_cve_scan_tmp_folder, rmdir_recursive, wait_for_postgres_table
 import requests
 
 
 @celery_app.task(bind=True, default_retry_delay=60)
 def update_deepfence_key_in_redis(*args):
+    wait_for_postgres_table("user")
     with app.app_context():
         users = User.query.all()
         from config.redisconfig import redis
@@ -209,7 +210,7 @@ def tag_k8s_cluster_name_in_docs(*args):
         return {**hit,
                 **{'_source': {'kubernetes_cluster_name': host_name_k8s_map.get(scan_data.get("host_name", ""), "")}}}
 
-    for total_pages, page_count, page_items, page_data in ESConn.scroll(CVE_INDEX, body,page_size=10):
+    for total_pages, page_count, page_items, page_data in ESConn.scroll(CVE_INDEX, body, page_size=10):
         hits = page_data.get('hits', {}).get('hits', [])
         docs_for_update = map(map_function, host_name_k8s_map, hits)
         try:

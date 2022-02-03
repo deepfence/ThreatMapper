@@ -1,7 +1,6 @@
 import React from 'react';
 import Select from 'react-select';
-import { Tooltip } from 'react-tippy';
-import 'react-tippy/dist/tippy.css';
+import Tippy from '@tippyjs/react';
 import OutsideClickHandler from 'react-outside-click-handler';
 
 const frontEllipsis = text => {
@@ -35,8 +34,8 @@ const TopologyFiltersBar = props => {
     );
     return (
       // eslint-disable-next-line react/no-array-index-key
-      <div key={index} style={{ position: 'relative', display: 'flex' }}>
-        <Tooltip title={currentFilter} position="bottom" trigger="mouseenter">
+      <div key={index} style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
+        <Tippy content={currentFilter} placement="bottom" trigger="mouseenter">
           <div className="filter" title={currentFilter}>
             <div className="filter-name">{frontEllipsis(currentFilter)}</div>
             <div style={{ marginTop: '3px' }}>
@@ -54,7 +53,7 @@ const TopologyFiltersBar = props => {
               onClick={() => removeFilter(filter)}
             />
           </div>
-        </Tooltip>
+        </Tippy>
         <div
           className="child-filter-dropdown"
         >

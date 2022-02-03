@@ -44,18 +44,18 @@ COPY filebeat.crt /etc/filebeat/
 COPY filebeat.key /etc/filebeat/
 COPY config.yml /etc/fetcher/config-temp.yml
 COPY clear-cache.sh /usr/local/bin/clear-cache.sh
-COPY dependency-check-6.5.2-release.zip /tmp/dependency-check-6.5.2-release.zip
+COPY dependency-check-6.5.3-release.zip /tmp/dependency-check-6.5.3-release.zip
 
 RUN apk add --no-cache git rpm xz bash py3-pip openjdk8-jre curl zip unzip gettext tar postgresql-client \
     && mkdir -p /var/log/supervisor /var/log/supervisord /etc/supervisor/conf.d/ \
     && pip3 install --no-cache-dir --upgrade pip setuptools supervisor==4.2.2 \
     && rm -rf /usr/lib/python*/ensurepip /usr/local/lib/python*/ensurepip \
     && rm -rf /var/cache/apk/* \
-    && unzip /tmp/dependency-check-6.5.2-release.zip -d /tmp/ \
+    && unzip /tmp/dependency-check-6.5.3-release.zip -d /tmp/ \
     && mkdir -p /tmp/dependency-check/data/ \
     && mv /tmp/dependency-check /usr/local/bin/ \
     && chmod -R +x /usr/local/bin/dependency-check \
-    && rm /tmp/dependency-check-6.5.2-release.zip \
+    && rm /tmp/dependency-check-6.5.3-release.zip \
     && apk del curl \
     && chmod 755 /usr/local/bin/clear-cache.sh /usr/local/bin/check-postgres /usr/local/bin/update-owasp.sh /usr/local/bin/cve-server \
     && chmod 755 /usr/bin/cvecheck /usr/bin/start_fetcher.sh

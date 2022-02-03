@@ -24,7 +24,7 @@ import (
 
 // Agent version to dispay in metadata
 var (
-	agentVersionNo = "1.1.1"
+	agentVersionNo = "1.2.0"
 	agentCommitID  = "Unknown"
 	agentBuildTime = "0"
 	agentRunning   = "yes"
@@ -87,9 +87,9 @@ var (
 		k8sClusterId:   {ID: k8sClusterId, Label: "Kubernetes Cluster Id", From: report.FromLatest, Priority: 25},
 		k8sClusterName: {ID: k8sClusterName, Label: "Kubernetes Cluster Name", From: report.FromLatest, Priority: 26},
 		UserDfndTags:   {ID: UserDfndTags, Label: "User Defined Tags", From: report.FromLatest, Priority: 27},
-		AgentVersion:   {ID: AgentVersion, Label: "Agent Version", From: report.FromLatest, Priority: 28},
+		AgentVersion:   {ID: AgentVersion, Label: "Sensor Version", From: report.FromLatest, Priority: 28},
 		IsUiVm:         {ID: IsUiVm, Label: "UI vm", From: report.FromLatest, Priority: 29},
-		AgentRunning:   {ID: AgentRunning, Label: "Agent", From: report.FromLatest, Priority: 33},
+		AgentRunning:   {ID: AgentRunning, Label: "Sensor", From: report.FromLatest, Priority: 33},
 	}
 
 	MetricTemplates = report.MetricTemplates{
@@ -135,7 +135,7 @@ func getCloudMetadata(cloudProvider string) (string, string, string, string) {
 		var err error
 		cloudMetadata, err = cloud_metadata.GetGenericMetadata(false)
 		if err == nil {
-			if !dfUtils.FileExists("/var/run/docker.sock") && !dfUtils.FileExists("/run/containerd/containerd.sock") {
+			if !dfUtils.FileExists("/var/run/docker.sock") && !dfUtils.FileExists("/run/containerd/containerd.sock") && !dfUtils.FileExists("/run/k3s/containerd/containerd.sock") {
 				cloudProvider = report.CloudProviderServerless
 				cloudMetadata.CloudProvider = report.CloudProviderServerless
 				cloudMetadata.Region = report.CloudProviderServerless
@@ -144,7 +144,7 @@ func getCloudMetadata(cloudProvider string) (string, string, string, string) {
 	}
 	cloudMetadataJson, err := json.Marshal(cloudMetadata)
 	if err != nil {
-		return cloudProvider, "Unknown", "unknown", "{}"
+		return cloudProvider, "Private Cloud", "zone", "{}"
 	}
 	return cloudProvider, cloudMetadata.Label, cloudMetadata.Region, string(cloudMetadataJson)
 }
@@ -476,8 +476,8 @@ func (r *Reporter) Report() (report.Report, error) {
 	cloudRegion := r.cloudMeta.cloudRegion
 	r.cloudMeta.mtx.RUnlock()
 	if cloudProvider == "" {
-		cloudProvider = "unknown"
-		cloudProviderLabel = "Unknown"
+		cloudProvider = "private_cloud"
+		cloudProviderLabel = "Private Cloud"
 	}
 	if cloudMetadata == "" {
 		cloudMetadata = "{}"

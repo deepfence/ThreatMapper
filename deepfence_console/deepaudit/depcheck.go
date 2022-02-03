@@ -263,7 +263,7 @@ func getLanguageVulnerabilities(language string, fileSet map[string]bool) string
 		fmt.Printf(errMsg)
 		// if output file is present,
 		// parse it for vulnerabilities, as a best-case scenario
-		vulnOutputFileName := "/tmp/output_" + start_time + ".json"
+		vulnOutputFileName := "/root/output_" + start_time + ".json"
 		_, errStat := os.Stat(vulnOutputFileName)
 		if errStat != nil {
 			if os.IsNotExist(errStat) {
@@ -287,7 +287,7 @@ func getLanguageVulnerabilities(language string, fileSet map[string]bool) string
 		tmpDir := "C:/ProgramData/Deepfence/temp"
 		os.Remove(filepath.Join(tmpDir, "output_"+start_time+".json"))
 	} else {
-		os.Remove("/tmp/output_" + start_time + ".json")
+		os.Remove("/root/output_" + start_time + ".json")
 	}
 	//os.Remove("/tmp/depcheck_"+start_time+".log")
 	/*} else if (language == "js") {

@@ -111,6 +111,7 @@ func initSkipDirs() {
 	} else {
 		skipDirs = append(skipDirs, mountPoint+"usr/local/bin/dependency-check")
 		skipDirs = append(skipDirs, mountPoint+"var/lib/docker")
+		skipDirs = append(skipDirs, mountPoint+"var/lib/containerd")
 		skipDirs = append(skipDirs, mountPoint+"mnt")
 		skipDirs = append(skipDirs, mountPoint+"run")
 		skipDirs = append(skipDirs, mountPoint+"proc")
@@ -755,7 +756,8 @@ func main() {
 		}
 	} else {
 		// Auto-detect underlying container runtime
-		activeRuntime, _, err = vessel.AutoDetectRuntime()
+		var endpoint string
+		activeRuntime, endpoint, err = vessel.AutoDetectRuntime()
 		if err != nil {
 			stopLogging <- true
 			time.Sleep(3 * time.Second)
@@ -769,7 +771,7 @@ func main() {
 		case vesselConstants.DOCKER:
 			containerRuntimeInterface = dockerRuntime.New()
 		case vesselConstants.CONTAINERD:
-			containerRuntimeInterface = containerdRuntime.New()
+			containerRuntimeInterface = containerdRuntime.New(endpoint)
 		}
 		if containerRuntimeInterface == nil {
 			stopLogging <- true

@@ -150,7 +150,7 @@ func decodeDepCheckJson(language string, extFileDirList []string, fileSet map[st
 		tmpDir := "C:/ProgramData/Deepfence/temp" //windows result dir
 		fileName = fmt.Sprintf(filepath.Join(tmpDir, "output_"+start_time+".json"))
 	} else {
-		fileName = fmt.Sprintf("/tmp/output_" + start_time + ".json")
+		fileName = fmt.Sprintf("/root/output_" + start_time + ".json")
 	}
 	fileBuff, err := ioutil.ReadFile(fileName)
 	if err != nil {

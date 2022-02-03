@@ -89,6 +89,7 @@ def run_node_task(action, node_action_details, scheduler_id=None):
                     time.sleep(10)
         if action in [constants.NODE_ACTION_CVE_SCAN_START, constants.NODE_ACTION_SCHEDULE_CVE_SCAN]:
             if node_type == constants.NODE_TYPE_REGISTRY_IMAGE:
+                from config.app import celery_app
                 redis_lock_keys = []
                 redis_pipe = redis.pipeline()
                 for image_name_with_tag in node_action_details["registry_images"]["image_name_with_tag_list"]:
@@ -176,6 +177,7 @@ def run_node_task(action, node_action_details, scheduler_id=None):
                 redis_pipe.execute()
         elif action == constants.NODE_ACTION_CVE_SCAN_STOP:
             if node_type == constants.NODE_TYPE_REGISTRY_IMAGE:
+                from config.app import celery_app
                 for image_name_with_tag in node_action_details["registry_images"]["image_name_with_tag_list"]:
                     try:
                         es_response = ESConn.search_by_and_clause(constants.CVE_SCAN_LOGS_INDEX,
