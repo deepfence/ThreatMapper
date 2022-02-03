@@ -1327,6 +1327,32 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
+    case ActionTypes.GET_DIAGNOSTIC_LOGS_REQUEST: {
+      state = state.setIn(['diagnostic_logs', 'download', 'loading'], true);
+      state = state.setIn(['diagnostic_logs', 'download', 'info'], '');
+      return state;
+    }
+
+    case ActionTypes.GET_DIAGNOSTIC_LOGS_SUCCESS: {
+      state = state.setIn(['diagnostic_logs', 'download', 'loading'], false);
+      state = state.setIn(['diagnostic_logs', 'download', 'info'], '');
+      return state;
+    }
+
+    case ActionTypes.GET_DIAGNOSTIC_LOGS_FAILURE: {
+      state = state.setIn(['diagnostic_logs', 'download', 'loading'], false);
+      state = state.setIn(
+        ['diagnostic_logs', 'download', 'info'],
+        'Download failed'
+      );
+      return state;
+    }
+
+    case ActionTypes.RESET_DIAGNOSTIC_LOGS_DOWNLOAD_STATE: {
+      state = state.deleteIn(['diagnostic_logs', 'download']);
+      return state;
+    }
+
     case ActionTypes.BREADCRUMB_CHANGE: {
       return state.set('breadcrumb', action.payload);
     }
