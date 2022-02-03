@@ -49,7 +49,9 @@ clusterName: ""
 # Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
 mountContainerRuntimeSocket:
   dockerSock: "true"
+  dockerSockPath: "/var/run/docker.sock"
   containerdSock: "true"
+  containerdSockPath: "/run/containerd/containerd.sock"
 
 resources:
   requests:

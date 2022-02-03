@@ -3,7 +3,7 @@ module github.com/deepfence/deepfence_console/deepaudit
 go 1.17
 
 require (
-	github.com/deepfence/vessel v0.5.2
+	github.com/deepfence/vessel v0.5.7
 	github.com/juju/fslock v0.0.0-20160525022230-4d5c94c67b4b
 )
 
