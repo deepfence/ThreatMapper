@@ -164,7 +164,7 @@ func newEbpfTracker() (*EbpfTracker, error) {
 func (t *EbpfTracker) TCPEventV4(e tracer.TcpV4) {
 	if t.debugBPF {
 		debugBPFFile := "/var/run/scope/debug-bpf"
-		b, err := io.ReadFile("/var/run/scope/debug-bpf")
+		b, err := os.ReadFile("/var/run/scope/debug-bpf")
 		if err == nil && strings.TrimSpace(string(b[:])) == "stop" {
 			os.Remove(debugBPFFile)
 			log.Warnf("ebpf tracker stopped as requested by user")
