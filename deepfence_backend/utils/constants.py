@@ -80,6 +80,7 @@ PASSWORD_RESET_CODE_EXPIRY = 3600
 MAX_TOTAL_SEVERITY_SCORE = 500.0  # match this value with deepfence_console/deepaudit/main.go constant
 MAX_TOP_EXPLOITABLE_VULNERABILITIES = 1000
 VULNERABILITY_SCAN_QUEUE = "celery_vulnerability_scan_queue"
+VULNERABILITY_SCAN_PRIORITY_QUEUE = "celery_vulnerability_scan_priority_queue"
 CELERY_NODE_ACTION_QUEUE = "celery_node_action_queue"
 
 INTEGRATION_TYPE_EMAIL = "email"
