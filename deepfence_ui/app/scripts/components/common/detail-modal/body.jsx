@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { toaster } from "../../../actions/app-actions";
 import styles from './body.module.scss';
 
@@ -96,6 +97,45 @@ const KVPair = (props) => {
   );
 }
 
+const LinksKVPair = ({ k, value }) => {
+  if (!value) return null;
+  return (<div className={styles.kvPairWrapper} style={{
+    gridColumn: '1 / span 3'
+  }}>
+    <div className={styles.kvPairTitle}>
+      {processKey(k)}
+    </div>
+    <div className={classNames(styles.kvPairValue, {
+      [styles.codeValue]: true
+    })}>
+      {value}
+    </div>
+  </div>);
+}
+
+
+export const renderCorrelatedAlertLink = minimalAlert => {
+  const docId = minimalAlert.doc_id;
+  // check id docId present to make it into a link
+  // else return the object as it is
+  if (docId) {
+    return (
+      <div key={docId}>
+        <Link className="link" target="_blank" to={`/alert/${docId}`}>
+          {docId}
+        </Link>
+      </div>
+    );
+  }
+  return null;
+};
+
+export const renderAlertLink = link => (
+  <a href={`${link}`} className="link" target="_blank" rel="noreferrer" >
+    {link}
+  </a>
+);
+
 
 // data is an array of keys and values
 export const KeyValueContent = ({ data, topRightVisualization }) => {
@@ -104,6 +144,8 @@ export const KeyValueContent = ({ data, topRightVisualization }) => {
       {
         data && data.length ? (
           data.map((kvPair) => {
+            if (kvPair.key === 'correlated_alerts') return <LinksKVPair k={kvPair.key} value={kvPair.value?.length ? kvPair.value.map((minimalAlert) => renderCorrelatedAlertLink(minimalAlert)) : '-'} key={kvPair.key} />;
+            if (kvPair.key === 'ip_reputation') return <LinksKVPair k={kvPair.key} value={kvPair.value ? renderAlertLink(kvPair.value) : '-'} key={kvPair.key} />;
             // eslint-disable-next-line react/jsx-no-duplicate-props
             return <KVPair k={kvPair.key} value={kvPair.value} key={kvPair.key} />
           })
@@ -123,7 +165,8 @@ export const KeyValueContent = ({ data, topRightVisualization }) => {
 
 
 export const Severiety = ({
-  severiety
+  severiety,
+  text
 }) => {
-  return <div className={classNames(styles.severiety, `modal-${severiety}`)}>{severiety}</div>
+  return <div className={classNames(styles.severiety, `modal-${severiety}`)}>{text ?? severiety}</div>
 }

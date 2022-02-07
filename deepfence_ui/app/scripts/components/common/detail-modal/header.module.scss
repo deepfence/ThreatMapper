@@ -5,7 +5,7 @@
   position: sticky;
   top: 0;
   background-color: inherit;
-  padding: 10px 20px;
+  padding: 10px 50px;
   z-index: 1;
   width: 100%;
 }
@@ -39,6 +39,7 @@
   padding: 4px 12px;
   display: flex;
   align-items: center;
+  margin-right: -24px;
 }
 
 .contentWrapper {
