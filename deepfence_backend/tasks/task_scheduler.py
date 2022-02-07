@@ -164,7 +164,12 @@ def run_node_task(action, node_action_details, scheduler_id=None,cron_expr=None)
                             "registry_type": registry_credential.registry_type, "scan_id": scan_id,
                             "credential_id": registry_credential.id}
                         celery_task_id = "cve_scan:" + scan_id
-                        celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
+                        if node_action_details["registry_images"].get("priority", False):
+                            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
+                                             task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                             queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
+                        else:
+                            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
                                              task_id=celery_task_id, kwargs={"scan_details": scan_details},
                                              queue=constants.VULNERABILITY_SCAN_QUEUE)
                     except Exception as ex:
