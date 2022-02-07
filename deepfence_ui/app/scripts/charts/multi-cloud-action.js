@@ -2,7 +2,7 @@ import { fromJS, Map } from 'immutable';
 import React from 'react';
 import { scanRegistryImagesAction, toaster } from '../actions/app-actions';
 import { nodeListWithType } from '../components/multi-cloud-table/utils';
-import { NodeActionModal } from './node-action-modal';
+import NodeActionModal from './node-action-modal';
 
 const actionOptionsIndex = fromJS({
   start_vulnerability_scan: {
