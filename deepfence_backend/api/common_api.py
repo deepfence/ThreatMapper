@@ -1422,8 +1422,7 @@ def user_activity_log():
         raise InvalidUsage()
 
 @common_api.route("/registry_images_tags", methods=["POST"])
-@jwt_required
-@non_read_only_user
+@jwt_required()
 def registry_images_tags():
     if not request.is_json:
         raise InvalidUsage("Missing JSON post data in request")
