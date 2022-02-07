@@ -1301,7 +1301,7 @@ export function rootReducer(state = initialState, action) {
       );
       return state;
     }
-    
+
     case ActionTypes.REPORT_EMAIL_SCHEDULE_REQUEST: {
       state = state.setIn(['report', 'loading'], true);
       state = state.deleteIn(['report', 'info']);
@@ -1522,6 +1522,14 @@ export function rootReducer(state = initialState, action) {
       state = state.setIn(['topAttackPaths', 'data'], null);
       return state.setIn(['topAttackPaths', 'status', 'error'],
         'Your request to get top attack paths failed.');
+    }
+
+    case ActionTypes.GET_REGISTRY_IMAGES_TAGS_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('registry_images_tags', data);
+      return state;
     }
 
     default: {

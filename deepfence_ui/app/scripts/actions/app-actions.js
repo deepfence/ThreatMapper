@@ -82,6 +82,7 @@ import {
   addMailConfiguration,
   getGlobalSettings,
   addGlobalSettings,
+  getRegistryImagesTags,
   getTopAttackPathsForNode
 } from '../utils/web-api-utils';
 
@@ -1736,6 +1737,15 @@ export function addGlobalSettingsAction(params) {
     ActionTypes.ADD_GLOBAL_SETTINGS_FAILURE,
   ];
   return genericThunkAction(actionTypes, addGlobalSettings, params);
+}
+
+export function getRegistryImagesTagsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_REGISTRY_IMAGES_TAGS_REQUEST,
+    ActionTypes.GET_REGISTRY_IMAGES_TAGS_SUCCESS,
+    ActionTypes.GET_REGISTRY_IMAGES_TAGS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getRegistryImagesTags, params);
 }
 
 // multi cloud
