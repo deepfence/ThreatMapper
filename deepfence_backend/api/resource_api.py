@@ -682,7 +682,8 @@ def cve_status(node_id):
         node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
         if not node:
             raise InvalidUsage("Node not found")
-        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or \
+                node.type == constants.NODE_TYPE_CONTAINER_IMAGE or node.type == constants.NODE_TYPE_POD:
             return set_response(data=node.get_cve_status())
         else:
             raise InvalidUsage(
@@ -700,7 +701,21 @@ def cve_status(node_id):
 @jwt_required()
 def get_attack_path(node_id):
     try:
-        node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+        if node_id and node_id != "0":
+            node = Node(node_id)
+        else:
+            scope_id = request.args.get("scope_id", "")
+            node_type = request.args.get("node_type", "")
+            if not scope_id:
+                if node_type == constants.NODE_TYPE_HOST:
+                    scope_id = request.args.get("host_name", "") + ";<" + node_type + ">"
+                elif node_type == constants.NODE_TYPE_CONTAINER:
+                    scope_id = request.args.get("container_id", "") + ";<" + node_type + ">"
+                elif node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
+                    scope_id = request.args.get("container_image", "") + ";<" + node_type + ">"
+                elif node_type == constants.NODE_TYPE_POD:
+                    scope_id = request.args.get("pod_name", "") + ";<" + node_type + ">"
+            node = Node.get_node(node_id, scope_id, node_type)
         if not node:
             raise InvalidUsage("Node not found")
         if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or \

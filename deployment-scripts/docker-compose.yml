@@ -326,10 +326,11 @@ services:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-1.2.0}
     ulimits:
       core: 0
-    restart: "no"
+    restart: always
     networks:
       - deepfence_net
-    entrypoint: /bin/true
+    entrypoint: tail
+    command: ["-f","/dev/null"]
     logging:
       driver: "json-file"
       options:

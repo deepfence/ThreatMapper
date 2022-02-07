@@ -66,8 +66,6 @@ import {
   reportDownloadStatus,
   downloadReport,
   reportScheduleEmail,
-  xlsxReportDownload,
-  xlsxScheduleEmail,
   getReportFilterOptions,
   enumerateFilters,
   enumerateNodes,
@@ -1500,31 +1498,6 @@ export function reportScheduleEmailAction(params) {
     ActionTypes.REPORT_EMAIL_SCHEDULE_FAILURE,
   ];
   return genericThunkAction(actionTypes, reportScheduleEmail, params);
-}
-
-export function xlsxReportDownloadAction(params) {
-  const actionTypes = [
-    // Repeating action names, as we not dependent on it for download
-    ActionTypes.XLSX_REPORT_DOWNLOAD_REQUEST,
-    ActionTypes.XLSX_REPORT_DOWNLOAD_SUCCESS,
-    ActionTypes.XLSX_REPORT_DOWNLOAD_FAILURE,
-  ];
-  return genericThunkAction(actionTypes, xlsxReportDownload, params);
-}
-
-export function xlsxScheduleEmailAction(params) {
-  const actionTypes = [
-    ActionTypes.XLSX_EMAIL_SCHEDULE_REQUEST,
-    ActionTypes.XLSX_EMAIL_SCHEDULE_SUCCESS,
-    ActionTypes.XLSX_EMAIL_SCHEDULE_FAILURE,
-  ];
-  return genericThunkAction(actionTypes, xlsxScheduleEmail, params);
-}
-
-export function clearScheduledReportFormAction() {
-  return {
-    type: ActionTypes.XLSX_CLEAR_FORM_INFO_MESSAGE,
-  };
 }
 
 export function getReportFilterOptionsAction() {

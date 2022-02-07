@@ -12,7 +12,6 @@ import injectModalTrigger from '../../common/generic-modal/modal-trigger-hoc';
 import Loader from '../../loader';
 import {
   enumerateFiltersAction,
-  clearScheduledReportFormAction,
   reportGenerateAction,
   reportDownloadStatusAction,
   downloadReportAction,
@@ -729,7 +728,6 @@ export default connect(mapStateToProps, {
   reportDownloadStatusAction,
   downloadReportAction,
   reportScheduleEmailAction,
-  clearScheduledReportFormAction,
 })(
   reduxForm({
     form: 'report-download-form',
