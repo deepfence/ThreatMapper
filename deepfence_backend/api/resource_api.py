@@ -1172,6 +1172,7 @@ def node_action():
         raise InvalidUsage("action_args should be in json format")
     if not action_args:
         action_args = {}
+    node_action_details["priority"] = action_args.get("priority", False)
     accepted_action_args = ["cron", "description", "scan_type", "filters", "resources",
                             "report_email", "duration", "registry_credentials", "delete_resources"]
     action_args = {k: v for k, v in action_args.items() if k in accepted_action_args}
@@ -1282,7 +1283,7 @@ def node_action():
     from tasks.user_activity import create_user_activity
     create_user_activity.delay(current_user["id"], constants.ACTION_BULK, action,
                                resources=[node_action_details_user_activity], success=True)
-    if action in [constants.NODE_ACTION_CVE_SCAN_START]:
+    if action in [constants.NODE_ACTION_CVE_SCAN_START,constants.NODE_ACTION_CVE_SCAN_STOP]:
         from config.app import celery_app
         celery_app.send_task(
             'tasks.common_worker.common_worker', args=(), queue=constants.CELERY_NODE_ACTION_QUEUE,
