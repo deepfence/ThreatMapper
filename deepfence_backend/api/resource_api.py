@@ -319,6 +319,7 @@ def start_cve(node_id):
         if request.is_json:
             post_data = request.json
         node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+        priority = request.args.get("priority", False)
         if not node:
             raise InvalidUsage("Node not found")
         if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
@@ -409,7 +410,7 @@ def start_cve(node_id):
                     if redis_resp[i] != 1:
                         continue
                     try:
-                        tmp_node.cve_scan_start(scan_types)
+                        tmp_node.cve_scan_start(scan_types, priority=priority)
                     except:
                         continue
                 time.sleep(1)
@@ -449,7 +450,7 @@ def start_cve(node_id):
                     if redis_resp[i] != 1:
                         continue
                     try:
-                        tmp_node.cve_scan_start(scan_types)
+                        tmp_node.cve_scan_start(scan_types, priority=priority)
                     except:
                         continue
                 time.sleep(1)
@@ -469,7 +470,7 @@ def start_cve(node_id):
                     raise DFError("CVE scan on this node is already in progress")
                 resp = False
                 try:
-                    resp = node.cve_scan_start(scan_types, ",".join(mask_cve_ids))
+                    resp = node.cve_scan_start(scan_types, priority=priority,mask_cve_ids=",".join(mask_cve_ids))
                 except Exception as ex:
                     redis.delete(lock_key)
                     raise ex
@@ -1171,6 +1172,7 @@ def node_action():
         raise InvalidUsage("action_args should be in json format")
     if not action_args:
         action_args = {}
+    node_action_details["priority"] = action_args.get("priority", False)
     accepted_action_args = ["cron", "description", "scan_type", "filters", "resources",
                             "report_email", "duration", "registry_credentials", "delete_resources"]
     action_args = {k: v for k, v in action_args.items() if k in accepted_action_args}
@@ -1210,8 +1212,6 @@ def node_action():
             raise InvalidUsage("registry_images is required for node_type registry_image")
         if not registry_images.get("registry_id") or type(registry_images["registry_id"]) != int:
             raise InvalidUsage("registry_id is required in registry_images key")
-        if not filters and not registry_images.get("image_name_with_tag_list"):
-            raise InvalidUsage("image_name_with_tag_list is required in registry_images key")
         if registry_images.get("image_name_with_tag_list") and type(
                 registry_images["image_name_with_tag_list"]) != list:
             raise InvalidUsage("image_name_with_tag_list must be a list")
@@ -1283,7 +1283,7 @@ def node_action():
     from tasks.user_activity import create_user_activity
     create_user_activity.delay(current_user["id"], constants.ACTION_BULK, action,
                                resources=[node_action_details_user_activity], success=True)
-    if action in [constants.NODE_ACTION_CVE_SCAN_START]:
+    if action in [constants.NODE_ACTION_CVE_SCAN_START,constants.NODE_ACTION_CVE_SCAN_STOP]:
         from config.app import celery_app
         celery_app.send_task(
             'tasks.common_worker.common_worker', args=(), queue=constants.CELERY_NODE_ACTION_QUEUE,

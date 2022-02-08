@@ -734,3 +734,36 @@ def get_all_scanned_node() -> list:
         if datum.get('key'):
             host_names.append(datum.get('key'))
     return host_names
+
+
+def get_all_scanned_images(days) -> list:
+    from utils.esconn import ESConn, INDEX_NAME
+    query_agg = {
+        "query": {
+            "bool" : {
+                "must" :{
+                    "term" : { "node_type" : "container_image" }
+                },
+                "must" :{
+                    "range" : {
+                        "@timestamp" : { "gte" : "now-{0}d/d".format(days) }
+                    }
+                }
+            }
+        },
+        "aggs": {
+            "images": {
+            "terms": { 
+                "field": "cve_container_image.keyword",
+                "size" : ES_TERMS_AGGR_SIZE
+                }
+            }
+        }
+    }
+    scanned_images = ESConn.search(CVE_INDEX, query_agg, 0, 0)
+
+    image_names = []
+    for datum in scanned_images['aggregations']['images']['buckets']:
+        if datum.get('key'):
+            image_names.append(datum.get('key'))
+    return set(image_names)

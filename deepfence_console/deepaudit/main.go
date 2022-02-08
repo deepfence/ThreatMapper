@@ -101,6 +101,7 @@ const MAX_SEVERITY_SCORE = 10 * CRITICAL_WEIGHTAGE // * AV_NETWORK_WEIGHTAGE * A
 const MAX_TOTAL_SEVERITY_SCORE = 500               // match this value with deepfence_backend/utils/constants.py constant
 
 var containerRuntimeInterface vessel.Runtime
+var containerRuntimeEndpoint string
 
 func init() {
 	cveCounter = CveCounter{}
@@ -109,7 +110,8 @@ func init() {
 	scanLanguages = []string{"java", "python", "ruby", "php", "nodejs", "js", "dotnet"}
 
 	// Auto-detect underlying container runtime
-	containerRuntime, _, err := vessel.AutoDetectRuntime()
+	containerRuntime, endpoint, err := vessel.AutoDetectRuntime()
+	containerRuntimeEndpoint = endpoint
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -118,7 +120,7 @@ func init() {
 	case vesselConstants.DOCKER:
 		containerRuntimeInterface = dockerRuntime.New()
 	case vesselConstants.CONTAINERD:
-		containerRuntimeInterface = containerdRuntime.New()
+		containerRuntimeInterface = containerdRuntime.New(endpoint)
 	}
 	if containerRuntimeInterface == nil {
 		fmt.Println("Error: Could not detect container runtime")
@@ -1292,7 +1294,7 @@ func main() {
 			fmt.Println("Extracting final file system of the image")
 			fileSet = make(map[string]bool)
 			outputTarPath := fileSystemsDir + "temp.tar"
-			err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
+			err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName, containerRuntimeEndpoint)
 			if err == nil {
 				// extracting list of file names with path from tar file
 				cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
