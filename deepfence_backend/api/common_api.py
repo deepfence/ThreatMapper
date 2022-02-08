@@ -1421,6 +1421,22 @@ def user_activity_log():
         print(ex)
         raise InvalidUsage()
 
+@common_api.route("/registry_images_tags", methods=["POST"])
+@jwt_required()
+def registry_images_tags():
+    if not request.is_json:
+        raise InvalidUsage("Missing JSON post data in request")
+    post_data = request.json
+    if not post_data.get("registry_id", None):
+        raise InvalidUsage("registry id is required")
+    image_list_details_str = redis.get("{0}:{1}".format(REGISTRY_IMAGES_CACHE_KEY_PREFIX, post_data.get("registry_id")))
+    if not image_list_details_str:
+        return set_response([])
+    image_dict = json.loads(image_list_details_str)
+    images_set = set()
+    for image in image_dict['image_list']:
+        images_set.add(image["image_tag"])
+    return set_response(list(images_set))
 
 class EmailConfigurationView(MethodView):
     @jwt_required()

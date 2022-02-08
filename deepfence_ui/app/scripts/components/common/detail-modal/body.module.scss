@@ -1,0 +1,87 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.modalBodyWrapper {
+  margin: 0 50px 40px 50px;
+}
+
+.kvPairsWrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 300px);
+  grid-auto-flow: row dense;
+  justify-content: space-between;
+}
+
+.kvPairWrapper {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-right: 24px;
+  margin: 0;
+}
+
+.kvPairTitle {
+  font-weight: 600;
+  color: $text-secondary;
+  font-size: 13px;
+  margin-top: 32px;
+
+  :global(.fa) {
+    cursor: pointer;
+    margin-left: 8px;
+  }
+}
+
+.kvPairValue {
+  margin-top: 6px;
+  color: $text-primary;
+  font-weight: 600;
+  font-size: 18px;
+
+  overflow-wrap: break-word;
+
+  :global(.fa) {
+    display: none;
+  }
+
+  &:hover {
+    :global(.fa) {
+      display: inline-block;
+      margin-left: 6px;
+      cursor: pointer;
+    }
+  }
+
+  &.codeValue {
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-weight: 500;
+    background-color: black;
+    border-radius: 8px;
+    padding: 8px;
+  }
+}
+
+.severiety {
+  text-transform: uppercase;
+  &:global(.modal-info) {
+    color: $info-main;
+  }
+  &:global(.modal-low) {
+    color: $low-main;
+  }
+  &:global(.modal-medium) {
+    color: $medium-main;
+  }
+  &:global(.modal-high) {
+    color: $high-main;
+  }
+  &:global(.modal-critical) {
+    color: $critical-main;
+  }
+}
+
+.topRightVisualizationWrapper {
+  grid-column: span 1 / -1;
+  grid-row: 1 / span 3;
+}

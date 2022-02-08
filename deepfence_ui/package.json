@@ -88,6 +88,7 @@
     "url": "0.11.0",
     "url-loader": "^4.1.1",
     "webpack": "^5.58.1",
+    "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.0"
   },
   "optionalDependencies": {
@@ -101,7 +102,9 @@
     "start": "node --max_old_space_size=4096 server.js",
     "start-production": "NODE_ENV=production node server.js",
     "lint": "eslint app server.js",
-    "clean": "rm build/app.js"
+    "clean": "rm build/app.js",
+    "generate-bundle-stats": "webpack --profile --json --config webpack.production.config.js > bundle-stats.json",
+    "analyze-bundle": "yarn generate-bundle-stats && webpack-bundle-analyzer bundle-stats.json build"
   },
   "engines": {
     "node": "^14.0.0"

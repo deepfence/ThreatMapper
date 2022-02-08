@@ -109,7 +109,7 @@ class Node(object):
                 pass
         return ports
 
-    def cve_scan_start(self, scan_types, mask_cve_ids=""):
+    def cve_scan_start(self, scan_types, priority=False, mask_cve_ids=""):
         if self.is_ui_vm or self.pseudo:
             return False
         if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
@@ -149,7 +149,11 @@ class Node(object):
         scan_details = {"cve_node_id": cve_node_id, "scan_types": scan_types, "node_id": self.node_id,
                         "scan_id": scan_id, "mask_cve_ids": mask_cve_ids}
         celery_task_id = "cve_scan:" + scan_id
-        celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(), task_id=celery_task_id,
+        if priority:
+            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                             queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
+        else:
+            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(), task_id=celery_task_id,
                              kwargs={"scan_details": scan_details}, queue=constants.VULNERABILITY_SCAN_QUEUE)
         return True
 
