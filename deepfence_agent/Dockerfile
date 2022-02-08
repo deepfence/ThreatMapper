@@ -9,6 +9,8 @@ ENV CHECKPOINT_DISABLE=true \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N"
 
+FROM deepfenceio/deepfence-scanning:latest AS scanner-build
+
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \
     && echo "Installing some basic stuff" \
@@ -24,7 +26,8 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /etc/license/ /usr/local/bin /usr/local/lib \
         /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
-    && mkdir /usr/local/discovery
+    && mkdir /usr/local/discovery \
+    && mkdir /usr/local/SecretScanner
 COPY fileUploader /usr/local/bin/fileUploader
 COPY misc/deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
 COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
@@ -37,6 +40,8 @@ COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
+COPY --chown=ubuntu:root --from=scanner-build /home/deepfence/usr/SecretScanner /usr/local/bin/SecretScanner
+COPY --chown=ubuntu:root --from=scanner-build /home/deepfence/usr/SecretScanner/config.yaml /usr/local/SecretScanner/config.yaml
 
 RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \

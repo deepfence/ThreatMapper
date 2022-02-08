@@ -103,6 +103,10 @@ launch_deepfenced() {
     fi
 }
 
+start_secret_scanner() {
+    /usr/local/bin/SecretScanner -config-path  "/usr/local/SecretScanner" -socket-path /tmp/secretScanner.sock
+}
+
 create_cgroups() {
 
     #    echo "creating cgroups to perform resource-control"
