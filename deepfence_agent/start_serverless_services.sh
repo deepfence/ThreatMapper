@@ -117,6 +117,7 @@ main() {
     sudo ln -sf bash /bin/sh
     check_options "$@"
     launch_deepfenced
+    start_secret_scanner
 }
 pidVal=$(/bin/pidof /usr/local/discovery/deepfence-discovery)
 if [ -n "$pidVal" ]; then
