@@ -2,6 +2,8 @@ package host
 
 import (
 	"fmt"
+	"github.com/weaveworks/scope/probe/secret_scanner"
+	"google.golang.org/grpc"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -16,6 +18,7 @@ const (
 	UploadData            = "uploadData"
 	AddUserDefinedTags    = "host_add_user_defined_tags"
 	DeleteUserDefinedTags = "host_delete_user_defined_tags"
+	StartSecretsScan      = "start_secrets_scan"
 )
 
 func (r *Reporter) registerControls() {
@@ -23,6 +26,7 @@ func (r *Reporter) registerControls() {
 	r.handlerRegistry.Register(UploadData, r.uploadData)
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
 	r.handlerRegistry.Register(DeleteUserDefinedTags, r.deleteUserDefinedTags)
+	r.handlerRegistry.Register(StartSecretsScan, r.startSecretsScan)
 }
 
 func (r *Reporter) deregisterControls() {
@@ -79,6 +83,27 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 		fileInfo = append(fileInfo, data)
 	}
 	return xfer.Response{AgentLogs: fileInfo}
+}
+
+func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
+	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
+	secret_scanner.NewSecretScannerClient()
+	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithDialer(dailer))
+	if nodeType == nodeTypeContainer {
+		containerID := fmt.Sprintf("%s", req.ControlArgs["container_id"])
+		if containerID == "" {
+			return xfer.ResponseErrorf("container_id is required")
+		}
+	} else if nodeType == nodeTypeImage {
+		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
+		if imageId == "" {
+			return xfer.ResponseErrorf("image_id is required")
+		}
+	} else if nodeType == nodeTypeHost {
+		//HostMountDir
+	}
+	//containerTarFile = vessel.ExtractFileSystem(req.Get("container_name"))
+	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
 }
 
 func readFile(filepath string) ([]byte, error) {
