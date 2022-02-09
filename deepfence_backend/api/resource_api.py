@@ -1174,7 +1174,7 @@ def node_action():
         action_args = {}
     node_action_details["priority"] = action_args.get("priority", False)
     accepted_action_args = ["cron", "description", "scan_type", "filters", "resources",
-                            "report_email", "duration", "registry_credentials", "delete_resources"]
+                            "report_email", "durationValues", "registry_credentials", "delete_resources"]
     action_args = {k: v for k, v in action_args.items() if k in accepted_action_args}
     filters = action_args.get("filters", {})
     if type(filters) != dict:
@@ -1191,7 +1191,11 @@ def node_action():
     report_email = action_args.get("report_email", "")
     if report_email:
         node_action_details["report_email"] = str(report_email)
-    report_duration = action_args.get('duration', {})
+    
+    report_duration = action_args.get('durationValues', {})
+
+    if type(report_duration) == str:
+        report_duration = json.loads(report_duration)
     if report_duration and type(report_duration) != dict:
         raise InvalidUsage("action_args.duration must be json")
     if report_duration:
