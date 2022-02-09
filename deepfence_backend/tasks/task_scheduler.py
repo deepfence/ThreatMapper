@@ -310,6 +310,7 @@ def run_node_task(action, node_action_details, scheduler_id=None,cron_expr=None)
                 "report_id": report_id,
                 "status": "started",
                 "masked": "false",
+                "duration" : "",
                 "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             }
             ESConn.create_doc(constants.REPORT_INDEX, body, refresh="wait_for")
@@ -323,7 +324,7 @@ def run_node_task(action, node_action_details, scheduler_id=None,cron_expr=None)
                 kwargs={"report_id": report_id, "filters": node_action_details.get("filters", {}),
                         "lucene_query_string": "",
                         "number": node_action_details.get("duration", {}).get("number", 0),
-                        "time_unit": node_action_details.get("duration", {}).get("time_unit", "day"),
+                        "time_unit": node_action_details.get("duration", {}).get("time_unit", "d"),
                         "domain_name": domain_name, "resources": node_action_details.get("resources", {}),
                         "file_type": node_action_details.get("file_type", "xlsx"), "node_type": node_type,
                         "include_dead_nodes": node_action_details.get("include_dead_nodes", False),
