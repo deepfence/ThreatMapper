@@ -2200,3 +2200,16 @@ export function addGlobalSettings(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function getRegistryImagesTags(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/registry_images_tags`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
