@@ -2,20 +2,19 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
 import React from 'react';
-import { useDispatch, connect } from 'react-redux';
-import {formValueSelector} from 'redux-form/immutable';
+import { useDispatch } from 'react-redux';
 import {
   scanRegistryImagesAction,
 } from '../actions/app-actions';
 import CVEScanForm from '../components/vulnerability-view/registry-scan/cve-scan-form';
 import { nodeListWithType } from '../components/multi-cloud-table/utils';
 
-const NodeActionModal = (props) => {
-  const {selectedDocIndex = {}, resetSelection, isCVE, priorityValue} = props
+export const NodeActionModal = ({selectedDocIndex = {}, resetSelection, isCVE}) => {
   const dispatch = useDispatch();
 
   const startBulkCVEScan = (params) => {
-    const priorityValueCheck = !!(priorityValue && priorityValue[0] === 'priority');
+    const { priority } = params;
+    const priorityValueCheck = !!(priority && priority.length > 0);
     const nodeListObject = nodeListWithType(params.selectedDocIndex);
 
     let apiAction = 'cve_scan_start';
@@ -57,12 +56,14 @@ const NodeActionModal = (props) => {
             const {
               scanType,
               scheduleInterval,
+              priority
             } = valuesIm.toJS();
             const params = {
               selectedDocIndex,
               resetSelection,
               scanType,
               scheduleInterval,
+              priority
             };
             startBulkCVEScan(params);
           }}
@@ -71,9 +72,3 @@ const NodeActionModal = (props) => {
     </div>
   );
 };
-
-const cveScanFormSelector = formValueSelector('cve-scan');
-const mapStateToProps = state => ({
-  priorityValue: cveScanFormSelector(state, 'priority'),
-});
-export default connect(mapStateToProps)(NodeActionModal);
