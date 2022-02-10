@@ -21,7 +21,7 @@ import './styles.scss';
 import { getWebsocketUrl } from '../../../utils/web-api-utils';
 import { showTopologyPanel } from '../../../actions';
 
-export const ScopeView = () => {
+export const ScopeView = (props) => {
   const dispatch = useDispatch();
 
   const wsURL = `${getWebsocketUrl()}/topology-api`;
@@ -71,7 +71,7 @@ export const ScopeView = () => {
             {isDonutDetailsModalVisible && <DonutDetailsModal />}
           </div>
 
-          {isGraphViewMode && apiKey && (
+          {(isGraphViewMode || isTableViewMode) && apiKey && (
             <NodeFiltersPanel
               apiKey={apiKey}
               apiUrl={wsURL}
@@ -81,7 +81,13 @@ export const ScopeView = () => {
             <ViewModeSelector />
             <i className="fa fa-bars hamburger-icon" onClick={toggleSidePanel}></i>
           </div>
-          <Nodes />
+          {/* {isGraphViewMode && apiKey && (
+            <NodeFiltersPanel
+              apiKey={apiKey}
+              apiUrl={wsURL}
+            />
+          )} */}
+          <Nodes match={props.match} />
         </div>
       </div>
     </div>

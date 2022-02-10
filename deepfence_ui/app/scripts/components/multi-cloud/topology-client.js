@@ -9,8 +9,8 @@ export class TopologyClient {
     this.node_sockets = {};
   }
 
-  openRootSocket() {
-    const url = this.topologyUrl(TopologyNodeType.CLOUD_PROVIDER);
+  openRootSocket(view_type) {
+    const url = this.topologyUrl(TopologyNodeType[view_type]);
 
     const socket = this.openSocket(url);
     socket.onopen = () => {
@@ -138,6 +138,7 @@ export class TopologyClient {
 export const TopologyNodeType = {
   CLOUD_PROVIDER: "cloud-providers",
   REGION: "cloud-regions",
+  KUBERNETES_CLUSTER: "kubernetes-clusters",
   HOST: "hosts",
   POD: "pods",
   CONTAINER: "containers",
@@ -154,6 +155,7 @@ export const topologyNodeTypeToQueryType = (type) => {
     [TopologyNodeType.HOST]: "host_name",
     [TopologyNodeType.POD]: "pod",
     [TopologyNodeType.CONTAINER]: "container",
+    [TopologyNodeType.KUBERNETES_CLUSTER]: "kubernetes-clusters",
   };
 
   const ret = types[type];
@@ -169,6 +171,7 @@ export const fetchTopologyData = (
   api_url,
   api_key,
   node_id,
+  view_type,
   node_label,
   node_type,
   children_type
@@ -181,9 +184,11 @@ export const fetchTopologyData = (
       }
     });
     if (node_id !== null) {
+      console.log('Filters data', node_id, node_label, node_type, children_type);
       client.openNodeSocket(node_id, node_label, node_type, children_type);
     } else {
-      client.openRootSocket();
+      console.log('CLient View',view_type);
+      client.openRootSocket(view_type);
     }
   });
 };

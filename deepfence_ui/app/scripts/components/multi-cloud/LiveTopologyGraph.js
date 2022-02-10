@@ -19,13 +19,13 @@ export const LiveTopologyGraph = forwardRef(
       onNodeClicked,
       onFilterAdded,
       onFilterRemoved,
+      viewType
     },
     ref
   ) => {
     const graph = useRef(null);
     const nodes_client = useRef(null);
     const triggerSocketDisconnectHandler = useSocketDisconnectHandler();
-
     useEffect(() => {
       if (!ref) {
         return;
@@ -47,6 +47,7 @@ export const LiveTopologyGraph = forwardRef(
         apiURL,
         apiKey,
         refreshInterval,
+        viewType,
         (data) => {
           const edges_delta = topologyEdgesToDelta(data.edges);
           const nodes_delta = topologyNodesToDelta(graph.current, data.nodes);

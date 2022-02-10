@@ -2,6 +2,7 @@
 import React, {
   useCallback, useEffect, useRef, useState
 } from 'react';
+import { withRouter } from 'react-router';
 import {
   modelNodeTypeToTopologyChildrenTypes,
   modelNodeTypeToTopologyType,
@@ -13,8 +14,12 @@ import './styles.scss';
 import { MultiCloudTable } from './table';
 import { topologyDataToTableDelta } from './utils';
 import {useSocketDisconnectHandler} from './../multi-cloud/hooks';
+import AppLoader from '../common/app-loader/app-loader';
 
-export const MultiCloudTreeTable = ({
+export const MultiCloudTreeTable = withRouter(({
+  match,
+  history,
+  location,
   apiKey,
   apiURL,
   refreshInterval,
@@ -25,7 +30,35 @@ export const MultiCloudTreeTable = ({
   const table = useRef(null);
   const [metadata, setMetadata] = useState({});
   const [, setReRender] = useState(0);
+  let viewType = '';
   const triggerSocketDisconnectHandler = useSocketDisconnectHandler();
+  
+  useEffect(() => {
+    const url = location.pathname;
+    if (url.includes('cloud')) {
+      viewType = 'cloud-providers'
+    } else if (url.includes('hosts')){
+      viewType = 'hosts'
+    } else if( url.includes('k8s')) {
+      viewType = 'kubernetes-clusters'
+    } else {
+      viewType = 'cloud-providers'
+    }
+  }, []);
+
+
+  useEffect(() =>{
+    const pathname = history.location.pathname;
+    if (pathname.includes('cloud')) {
+      viewType = 'cloud-providers'
+    } else if (pathname.includes('hosts')){
+      viewType = 'hosts'
+    } else if( pathname.includes('k8s')) {
+      viewType = 'kubernetes-clusters'
+    } else {
+      viewType = 'cloud-providers'
+    }
+  }, [history.location.pathname]);
 
   useEffect(() => {
     table.current = new MultiCloudTable(
@@ -33,11 +66,11 @@ export const MultiCloudTreeTable = ({
       () => setReRender(count => count + 1),
       {}
     );
-
     client.current = new TopologyClient(
       apiURL,
       apiKey,
       refreshInterval,
+      viewType,
       (data) => {
         setMetadata(data.metadata);
         const nodes_delta = topologyDataToTableDelta(data.nodes);
@@ -57,7 +90,7 @@ export const MultiCloudTreeTable = ({
     return () => {
       client.current.close();
     };
-  }, [table]);
+  }, [table, history.location.pathname]);
 
   const onNodeExpanded = useCallback(
     (node) => {
@@ -105,13 +138,15 @@ export const MultiCloudTreeTable = ({
 
   const data = table.current?.getTableTreeData() || [];
   return (
-    <NestedTable
+    <>{ (data.length === 0)  ?  <div className="absolute-center">No Data Available</div> :
+     <NestedTable
       metadata={metadata}
       data={data}
       onRowExpand={onNodeExpanded}
       onRowCollapse={onNodeCollapsed}
       onNodeClicked={onNodeClicked}
       setAction={setAction}
-    />
+    />}
+    </>
   );
-};
+});

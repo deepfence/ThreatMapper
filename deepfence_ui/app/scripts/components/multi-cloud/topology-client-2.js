@@ -1,9 +1,10 @@
 /* eslint-disable */
 export class TopologyClient {
-  constructor(base_url, api_key, refresh_interval, onDataReceived, onInvalidSocketRefrence) {
+  constructor(base_url, api_key, refresh_interval, view_type, onDataReceived, onInvalidSocketRefrence) {
     this.base_url = base_url;
     this.api_key = api_key;
     this.refresh_interval = refresh_interval;
+    this.view_type = view_type;
     this.onDataReceived = onDataReceived;
     this.onInvalidSocketRefrence = onInvalidSocketRefrence;
     this.socket = null;
@@ -73,11 +74,12 @@ export class TopologyClient {
   }
 
   sendInitialMessage() {
+    const VIEW = this.view_type;
     const message = {
       add: {
         topology_id: "",
         node_id: "",
-        children: [{ topology_id: TopologyNodeType.CLOUD_PROVIDER }],
+        children: [{ topology_id: this.view_type }],
       },
     };
     this.send(message);

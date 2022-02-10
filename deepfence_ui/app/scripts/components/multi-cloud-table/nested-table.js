@@ -81,9 +81,9 @@ const RecursiveTable = ({
             }
             return onNodeClicked({ id: rowInfo.original.id, label: rowInfo.original.label });
           },
-          style: {
-            cursor: 'pointer',
-          },
+          // style: {
+          //   cursor: 'pointer',
+          // },
         }
       )}
       SubComponent={nodeTypes.has('process') ? null : row => (

@@ -72,7 +72,7 @@ class TopologyView extends React.Component {
             <HeaderView />
             {/* <TopStatsPanelView /> */}
         </div>
-        <ScopeView />
+        <ScopeView match={this.props.match} />
         { isToasterVisible && <NotificationToaster /> }
       </div>
     );
