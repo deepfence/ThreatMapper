@@ -22,6 +22,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/docker v1.4.2-0.20180827131323-0c5f8d2b9b23
 	github.com/dustin/go-humanize v0.0.0-20160923163517-bd88f87ad3a4
+	github.com/olivere/elastic/v7 v7.0.29
 	github.com/evanphx/json-patch v0.0.0-20170719203123-944e07253867 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fsouza/go-dockerclient v1.3.0

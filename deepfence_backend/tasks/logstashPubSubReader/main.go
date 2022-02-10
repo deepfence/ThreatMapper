@@ -17,6 +17,7 @@ import (
 
 type NotificationSettings struct {
 	vulnerabilityNotificationsSet bool
+	secretScanNotificationSet bool
 	sync.RWMutex
 }
 
@@ -26,6 +27,7 @@ var (
 	postgresDb              *sql.DB
 	redisAddr               string
 	vulnerabilityTaskQueue  chan []byte
+	secretScanTaskQueue		chan []byte
 	celeryCli               *gocelery.CeleryClient
 	resourcePubsubToChanMap map[string]chan []byte
 	notificationSettings    NotificationSettings
@@ -69,17 +71,20 @@ func init() {
 		}
 	}
 	vulnerabilityTaskQueue = make(chan []byte, 10000)
+	secretScanTaskQueue = make(chan []byte, 10000)
 	resourcePubsubToChanMap = map[string]chan []byte{
 		vulnerabilityRedisPubsubName: vulnerabilityTaskQueue,
+		secretScanRedisPubsubName: secretScanTaskQueue,
 	}
 	notificationSettings = NotificationSettings{
 		vulnerabilityNotificationsSet: false,
+		secretScanNotificationSet: false
 	}
 }
 
 func initRedisPubsub() {
 	redisPubSub = &redis.PubSubConn{Conn: redisPool.Get()}
-	err := redisPubSub.Subscribe(vulnerabilityRedisPubsubName)
+	err := redisPubSub.Subscribe(vulnerabilityRedisPubsubName, secretScanRedisPubsubName)
 	if err != nil {
 		gracefulExit(err)
 	}
@@ -145,6 +150,13 @@ func batchMessages(resourceType string, resourceChan *chan []byte, batchSize int
 					if vulnerabilityNotificationsSet == true {
 						createNotificationCeleryTask(resourceType, messages)
 					}
+				}  else if resourceType == resourceTypeSecretScan {
+					notificationSettings.RLock()
+					secretScanNotificationsSet := notificationSettings.secretScanNotificationSet
+					notificationSettings.RUnlock()
+					if secretScanNotificationsSet == true {
+						createNotificationCeleryTask(resourceType, messages)
+					}
 				}
 			}()
 		}
@@ -161,5 +173,6 @@ func main() {
 	}
 	go syncPoliciesAndNotifications()
 	go batchMessages(resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
+	go batchMessages(resourceTypeSecretScan, &secretScanTaskQueue, 100)
 	receiveMessagesFromRedisPubsub()
 }

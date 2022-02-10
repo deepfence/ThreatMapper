@@ -9,7 +9,8 @@ ENV CHECKPOINT_DISABLE=true \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N"
 
-FROM deepfenceio/deepfence-scanning:latest AS scanner-build
+# TODO: change to latest tag from saurabh-tm
+FROM deepfenceio/deepfence-scanning:saurabh-tm AS scanner-build
 
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \

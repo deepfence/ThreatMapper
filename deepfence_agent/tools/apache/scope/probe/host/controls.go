@@ -2,14 +2,11 @@ package host
 
 import (
 	"fmt"
-	"github.com/weaveworks/scope/probe/secret_scanner"
-	"google.golang.org/grpc"
+	dfUtils "github.com/deepfence/df-utils"
+	"github.com/weaveworks/scope/common/xfer"
 	"io/ioutil"
 	"os"
 	"strings"
-
-	dfUtils "github.com/deepfence/df-utils"
-	"github.com/weaveworks/scope/common/xfer"
 )
 
 // Control IDs used by the host integration.
@@ -19,6 +16,9 @@ const (
 	AddUserDefinedTags    = "host_add_user_defined_tags"
 	DeleteUserDefinedTags = "host_delete_user_defined_tags"
 	StartSecretsScan      = "start_secrets_scan"
+	secretScanSocket	  = "/tmp/secretScanner.sock"
+	unixProtocol 		  = "unix"
+	tcpProtocol  		  = "tcp"
 )
 
 func (r *Reporter) registerControls() {
@@ -83,27 +83,6 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 		fileInfo = append(fileInfo, data)
 	}
 	return xfer.Response{AgentLogs: fileInfo}
-}
-
-func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
-	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
-	secret_scanner.NewSecretScannerClient()
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithDialer(dailer))
-	if nodeType == nodeTypeContainer {
-		containerID := fmt.Sprintf("%s", req.ControlArgs["container_id"])
-		if containerID == "" {
-			return xfer.ResponseErrorf("container_id is required")
-		}
-	} else if nodeType == nodeTypeImage {
-		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
-		if imageId == "" {
-			return xfer.ResponseErrorf("image_id is required")
-		}
-	} else if nodeType == nodeTypeHost {
-		//HostMountDir
-	}
-	//containerTarFile = vessel.ExtractFileSystem(req.Get("container_name"))
-	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
 }
 
 func readFile(filepath string) ([]byte, error) {
