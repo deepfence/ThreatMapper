@@ -1,14 +1,14 @@
 // React imports
-import React, { useCallback, useMemo } from 'react';
-import { connect, useDispatch } from 'react-redux';
+import React, { useCallback, useMemo, useState } from 'react';
+import { connect } from 'react-redux';
 
 import {
   closeDonutDetailsModal,
   getVulnerabilitiesAction,
-  updateTableJSONModalView,
 } from '../../../actions/app-actions';
 import { fetchNodeSpecificDetails } from '../../../utils/web-api-utils';
 import { DfTableV2 } from '../../common/df-table-v2/index';
+import { VulnerabilityModal } from '../../vulnerability-view/vulnerability-modal';
 
 class DonutDetailsModal extends React.Component {
   constructor(props) {
@@ -244,15 +244,22 @@ function mapStateToProps(state) {
 export default connect(mapStateToProps)(DonutDetailsModal);
 
 const Table = ({ data, numPages, pageSize, onPageChange }) => {
-  const dispatch = useDispatch();
 
   const rows = useMemo(() => data?.map(doc => doc._source), [data]);
 
+  const [modalState, setModalState] = useState({
+    isVulnerabilityModalOpen: false,
+    cveData: null
+  });
+
   const onRowClick = useCallback(
     doc => {
-      dispatch(updateTableJSONModalView({ data: { _source: doc.original } }));
+      setModalState({
+        isVulnerabilityModalOpen: true,
+        cveData: { _source: doc.original }
+      })
     },
-    [dispatch]
+    []
   );
 
   const onFetchData = useCallback(
@@ -267,66 +274,81 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
   }
 
   return (
-    <DfTableV2
-      onRowClick={(row) => onRowClick(row)}
-      manual
-      data={rows}
-      defaultPageSize={pageSize}
-      totalRows={numPages * pageSize}
-      columns={[
-        {
-          Header: 'CVE ID',
-          accessor: 'cve_id',
-          maxWidth: 200,
-          Cell: row => (
-            <div className="truncate" title={row.value}>
-              {row.value}
-            </div>
-          ),
-        },
-        {
-          Header: 'Severity',
-          accessor: 'cve_severity',
-          maxWidth: 150,
-          Cell: row => (
-            <div className={`${row.value}-severity`}>{row.value}</div>
-          ),
-        },
-        {
-          Header: 'Package',
-          accessor: 'cve_caused_by_package',
-          maxWidth: 200,
-          Cell: row => (
-            <div className="truncate" title={row.value}>
-              {row.value}
-            </div>
-          ),
-        },
-        {
-          Header: 'Description',
-          accessor: 'cve_description',
-          Cell: row => (
-            <div className="truncate" title={row.value}>
-              {row.value}
-            </div>
-          ),
-          minWidth: 350,
-        },
-        {
-          Header: 'Link',
-          accessor: 'cve_link',
-          Cell: row => (
-            <div className="truncate" title={row.value}>
-              <a href={row.value} target="_blank" rel="noreferrer">
+    <>
+      <DfTableV2
+        onRowClick={(row) => onRowClick(row)}
+        manual
+        data={rows}
+        defaultPageSize={pageSize}
+        totalRows={numPages * pageSize}
+        columns={[
+          {
+            Header: 'CVE ID',
+            accessor: 'cve_id',
+            maxWidth: 200,
+            Cell: row => (
+              <div className="truncate" title={row.value}>
                 {row.value}
-              </a>
-            </div>
-          ),
-          minWidth: 350
-        },
-      ]}
-      showPagination
-      onPageChange={onFetchData}
-    />
+              </div>
+            ),
+          },
+          {
+            Header: 'Severity',
+            accessor: 'cve_severity',
+            maxWidth: 150,
+            Cell: row => (
+              <div className={`${row.value}-severity`}>{row.value}</div>
+            ),
+          },
+          {
+            Header: 'Package',
+            accessor: 'cve_caused_by_package',
+            maxWidth: 200,
+            Cell: row => (
+              <div className="truncate" title={row.value}>
+                {row.value}
+              </div>
+            ),
+          },
+          {
+            Header: 'Description',
+            accessor: 'cve_description',
+            Cell: row => (
+              <div className="truncate" title={row.value}>
+                {row.value}
+              </div>
+            ),
+            minWidth: 350,
+          },
+          {
+            Header: 'Link',
+            accessor: 'cve_link',
+            Cell: row => (
+              <div className="truncate" title={row.value}>
+                <a href={row.value} target="_blank" rel="noreferrer">
+                  {row.value}
+                </a>
+              </div>
+            ),
+            minWidth: 350
+          },
+        ]}
+        showPagination
+        onPageChange={onFetchData}
+      />
+      {
+        modalState.isVulnerabilityModalOpen && modalState.cveData ? (
+          <VulnerabilityModal
+            data={modalState.cveData}
+            onRequestClose={() => {
+              setModalState({
+                isVulnerabilityModalOpen: false,
+                cveData: null
+              });
+            }}
+          />
+        ) : null
+      }
+    </>
   );
 };

@@ -1,5 +1,8 @@
+/* eslint-disable arrow-body-style */
 import React, { useState, useEffect, useRef } from 'react';
 import G6 from "@antv/g6";
+import { AutoSizer } from 'react-virtualized';
+import { isNil } from 'lodash';
 import styles from './index.module.scss';
 
 
@@ -155,8 +158,8 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
 
       const graph = new G6.Graph({
         container: ref.current,
-        width: width ?? 400,
-        height: height ?? 400,
+        width: width ?? 0,
+        height: height ?? 0,
         fitView: true,
         layout: {
           type: 'dagre',
@@ -187,7 +190,7 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
             lineWidth: 1,
             opacity: 0.5,
             endArrow: {
-            opacity: 0.5,
+              opacity: 0.5,
               path: G6.Arrow.triangle(3, 5, 0),
               fill: "#55c1e9",
               stroke: "#55c1e9",
@@ -210,9 +213,18 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
     }
   }, [data]);
 
+
   return (
     <div style={{ position: 'relative', textAlign: 'left' }} className={styles.dagreGraphContainer}>
-      <div style={style} className={className} ref={ref} />
+      <AutoSizer>
+        {({ height: calculatedHeight, width: calculatedWidth }) => {
+          if ((isNil(height) || isNil(width)) && graphRef.current) {
+            graphRef.current.changeSize(width ?? calculatedWidth, height ?? calculatedHeight);
+            graphRef.current.render();
+          }
+          return (<div style={style} className={className} ref={ref} />);
+        }}
+      </AutoSizer>
     </div>
   );
 

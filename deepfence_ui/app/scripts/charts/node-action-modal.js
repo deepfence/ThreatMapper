@@ -13,10 +13,13 @@ export const NodeActionModal = ({selectedDocIndex = {}, resetSelection, isCVE}) 
   const dispatch = useDispatch();
 
   const startBulkCVEScan = (params) => {
+    const { priority } = params;
+    const priorityValueCheck = !!(priority && priority.length > 0);
     const nodeListObject = nodeListWithType(params.selectedDocIndex);
 
     let apiAction = 'cve_scan_start';
     let actionArgs = {
+      priority: priorityValueCheck,
       scan_type: params.scanType,
       resources: [],
     };
@@ -24,6 +27,7 @@ export const NodeActionModal = ({selectedDocIndex = {}, resetSelection, isCVE}) 
       apiAction = 'schedule_vulnerability_scan';
       actionArgs = {
         cron: `0 0 */${params.scheduleInterval} * *`,
+        priority: priorityValueCheck,
         scan_type: params.scanType,
         resources: [],
       };
@@ -52,12 +56,14 @@ export const NodeActionModal = ({selectedDocIndex = {}, resetSelection, isCVE}) 
             const {
               scanType,
               scheduleInterval,
+              priority
             } = valuesIm.toJS();
             const params = {
               selectedDocIndex,
               resetSelection,
               scanType,
               scheduleInterval,
+              priority
             };
             startBulkCVEScan(params);
           }}
