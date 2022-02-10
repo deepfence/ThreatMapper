@@ -168,7 +168,11 @@
           }
 
           .dagre-chart-container {
-            padding-left: 140px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            margin-left: 50px;
+            min-height: 500px;
           }
         }
 
