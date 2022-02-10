@@ -32,6 +32,12 @@ def common_worker(self, **kwargs):
 
 
 def add_report_status_in_es(report_id, status, filters_applied_str, file_type, duration="None",report_path=None):
+    if duration:
+        if "d" in duration:
+            duration = "Last "+duration.replace("d", " days")
+        elif "all" in duration:
+            duration = "All Documents"
+
     body = {
         "type": REPORT_INDEX,
         "report_id": report_id,
@@ -416,8 +422,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
 
 def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resources,
                          include_dead_nodes, report_email):
-    add_report_status_in_es(report_id=report_id, status="In Progress",
-                            filters_applied_str=str({"filters": filters, "resources": resources}), file_type="xlsx",duration=f"{number}{time_unit}s")
+    add_report_status_in_es(report_id=report_id, status="In Progress",filters_applied_str=str({"filters": filters, "resources": resources}), file_type="xlsx",duration=f"{number}{time_unit}")
     xlsx_buffer = prepare_report_download(
         node_type, filters, resources,
         {"duration": {"number": number, "time_unit": time_unit}}, include_dead_nodes)
@@ -430,13 +435,12 @@ def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resou
             add_report_status_in_es(
                 report_id=report_id, status="Completed",
                 filters_applied_str=str({"filters": filters, "resources": resources}),
-                file_type="xlsx", duration=f"{number}{time_unit}s", report_path=report_file_name)
+                file_type="xlsx", duration=f"{number}{time_unit}", report_path=report_file_name)
         else:
             add_report_status_in_es(
                 report_id=report_id, status="Error. Please try again later.",
                 filters_applied_str=str(
-                    {"filters": {"filters": filters, "resources": resources}, "resources": resources}),
-                file_type="xlsx",duration=f"{number}{time_unit}s")
+                    {"filters": {"filters": filters, "resources": resources}, "resources": resources}),file_type="xlsx",duration=f"{number}{time_unit}")
     else:
         from tasks.email_sender import send_email_with_attachment
         email_html = prepare_report_email_body(
@@ -450,8 +454,8 @@ def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resou
 
 def generate_pdf_report(report_id, filters, node_type,
                         lucene_query_string, number, time_unit, resources, domain_name, report_email):
-    add_report_status_in_es(report_id=report_id, status="In Progress",
-                            filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf", duration=f"{number}{time_unit}s")
+    add_report_status_in_es(report_id=report_id, status="In Progress",filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf", duration=f"{number}{time_unit}")
+
     final_html = ""
     for resource in resources:
         resource_type = resource.get('type')
@@ -482,12 +486,11 @@ def generate_pdf_report(report_id, filters, node_type,
             if res.status_code == 200:
                 add_report_status_in_es(
                     report_id=report_id, status="Completed",
-                    filters_applied_str=str({"filters": filters, "resources": resources}),
-                    file_type="pdf", report_path=report_file_name,duration=f"{number}{time_unit}s")
+                    filters_applied_str=str({"filters": filters, "resources": resources}),file_type="pdf", report_path=report_file_name,duration=f"{number}{time_unit}")
             else:
                 add_report_status_in_es(
                     report_id=report_id, status="Error. Please try again later.",
-                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",duration=f"{number}{time_unit}s")
+                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",duration=f"{number}{time_unit}")
     else:
         from tasks.email_sender import send_email_with_attachment
         email_html = prepare_report_email_body(
@@ -528,4 +531,5 @@ def generate_report(self, **kwargs):
         flask_app.logger.error("Error creating report: {0} stackTrace: {1}".format(ex, traceback.format_exc()))
         add_report_status_in_es(
             report_id=report_id, status="Error. Please contact deepfence support",
-            filters_applied_str=str({"filters": filters, "resources": resources}), file_type=file_type,duration=f"{number}{time_unit}s")
+            filters_applied_str=str({"filters": filters, "resources": resources}), file_type=file_type,duration=f"{number}{time_unit}")
+
