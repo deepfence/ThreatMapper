@@ -34,7 +34,7 @@ def common_worker(self, **kwargs):
 def add_report_status_in_es(report_id, status, filters_applied_str, file_type, duration="None",report_path=None):
     if duration:
         if "d" in duration:
-            duration = duration.replace("d", "days")
+            duration = "Last "+duration.replace("d", " days")
         elif "all" in duration:
             duration = "All Documents"
     body = {
