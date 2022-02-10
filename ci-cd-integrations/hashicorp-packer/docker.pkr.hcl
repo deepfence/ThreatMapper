@@ -32,6 +32,54 @@ build {
     tag        = ["${var.image_tag}"]
   }
 
+  variable "DEEPFENCE_DOCKER_USERNAME" {
+  type      = string
+  default   = "mukulietlucknow"
+  sensitive = true
+}
+
+variable "DEEPFENCE_DOCKER_PASSWORD" {
+  type      = string
+  default   = "a501881f-ff58-4179-acde-05a453d7b756"
+  sensitive = true
+}
+
+variable "DEEPFENCE_CONSOLE_IP" {
+  type      = string
+  default   = "137.184.52.247"
+  sensitive = false
+}
+
+variable "DEEPFENCE_KEY" {
+  type      = string
+  default   = "3da75d80-eb42-4918-914b-2b811cf26e43"
+  sensitive = true
+}
+
+variable "FAIL_CVE_COUNT" {
+  type      = string
+  default   = "100"
+  sensitive = false
+}
+
+variable "FAIL_CVE_SCORE" {
+  type      = string
+  default   = "8"
+  sensitive = false
+}
+
+variable "image_name" {
+  type      = string
+  default   = "deepfenceio/deepfence_vulnerability_mapper_ce"
+  sensitive = false
+}
+
+variable "image_tag" {
+  type      = string
+  default   = "latest"
+  sensitive = false
+}
+
   post-processor "shell-local" {
     inline = [
       "rm -rf deepfence_docker && mkdir deepfence_docker",
