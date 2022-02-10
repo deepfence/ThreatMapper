@@ -1,0 +1,8 @@
+DEEPFENCE_DOCKER_USERNAME = "docker user_name"
+DEEPFENCE_DOCKER_PASSWORD = "docker secret key"
+DEEPFENCE_CONSOLE_URL = "console_url"
+DEEPFENCE_KEY = "api_key"
+FAIL_CVE_COUNT = "8"
+FAIL_CVE_SCORE = "100"
+image_name = "ubuntu"
+image_tag = "latest"
