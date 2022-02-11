@@ -167,7 +167,7 @@ const Reports = props => {
 
   const [showModal, setShowModal] = useState(false);
 
-// A hook to check for the report generation status by initiating a pollable request 
+// A hook to check for the report generation status by initiating a pollable request
   useEffect(() => {
     const {
       registerPolling,
@@ -313,8 +313,8 @@ const Reports = props => {
     return null;
   }
 
-// Function that creates the params that need to be 
-// sent to the API call to generate the report 
+// Function that creates the params that need to be
+// sent to the API call to generate the report
   const submitClickHandler = (e, props) => {
     e.preventDefault();
     if (resource_type && node_type) {
@@ -346,7 +346,7 @@ const Reports = props => {
           filter: { cve_severity: cve_severity.map(el => el.value).join(',') },
         });
       }
-      if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) { 
+      if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) {
         resourceData.push({
           type: 'cve',
           filter: {},
@@ -658,6 +658,7 @@ const Reports = props => {
             <th> Timestamp </th>
             <th> Report Type </th>
             <th> Filters Used </th>
+            <th> Duration </th>
             <th> Status </th>
             <th> Download </th>
           </thead>
@@ -674,6 +675,7 @@ const Reports = props => {
                     {key.file_type}
                   </td>
                   <td>{key.filters}</td>
+                  <td>{key.duration}</td>
                   <td>{key.status}</td>
                   <td>{renderDownloadLink(key)}</td>
                 </tr>
