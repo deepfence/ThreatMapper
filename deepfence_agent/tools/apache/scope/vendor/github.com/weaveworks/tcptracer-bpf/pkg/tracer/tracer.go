@@ -4,9 +4,12 @@ package tracer
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"os"
 	"unsafe"
 
+	log "github.com/sirupsen/logrus"
 	bpflib "github.com/iovisor/gobpf/elf"
 )
 
@@ -51,6 +54,12 @@ func NewTracer(cb Callback) (*Tracer, error) {
 	}
 
 	err = m.EnableKprobes(maxActive)
+
+	if errors.Is(err, os.ErrExist) {
+		log.Warnf("eBPF tracker entry was already set, restarting")
+		m.CloseExt(nil)
+		err = m.EnableKprobes(maxActive)
+	}
 	if err != nil {
 		return nil, err
 	}
