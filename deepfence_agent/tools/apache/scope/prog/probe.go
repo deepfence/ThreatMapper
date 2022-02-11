@@ -90,6 +90,11 @@ func maybeExportProfileData(flags probeFlags) {
 	if flags.httpListen != "" {
 		go func() {
 			http.Handle("/metrics", promhttp.Handler())
+			if os.Getenv("DEBUG") == "true" {
+				log.Infof("Profiling data being exported to %s", flags.httpListen)
+				log.Infof("go tool pprof http://%s/debug/pprof/{profile,heap,block}", flags.httpListen)
+				log.Infof("Profiling endpoint %s terminated: %v", flags.httpListen, http.ListenAndServe(flags.httpListen, nil))
+			}
 		}()
 	}
 }

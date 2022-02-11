@@ -25,13 +25,13 @@ spec:
         {{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
         - name: docker-sock
           hostPath:
-            path: /var/run/docker.sock
+            path: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
             type: Socket
         {{- end }}
         {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
         - name: containerd-sock
           hostPath:
-            path: /run/containerd/containerd.sock
+            path: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
             type: Socket
         {{- end }}
         - name: kernel-sys
@@ -99,11 +99,11 @@ spec:
                   fieldPath: metadata.namespace
           volumeMounts:
             {{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
-            - mountPath: /var/run/docker.sock
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
               name: docker-sock
             {{ end }}
             {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
-            - mountPath: /run/containerd/containerd.sock
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
               name: containerd-sock
             {{ end }}
             - mountPath: /sys/kernel/debug

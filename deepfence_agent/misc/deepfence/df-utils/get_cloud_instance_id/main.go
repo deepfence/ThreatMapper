@@ -36,7 +36,7 @@ func GetCloudMetadata() cloud_metadata.CloudMetadata {
 	if err == nil {
 		return cloudMetadata
 	}
-	return cloud_metadata.CloudMetadata{InstanceID: "", CloudProvider: "unknown"}
+	return cloud_metadata.CloudMetadata{InstanceID: "", CloudProvider: "private_cloud"}
 }
 
 func main() {

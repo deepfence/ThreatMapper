@@ -1,15 +1,14 @@
 /* eslint-disable */
 import React, {
-  Component,
   forwardRef,
   useCallback,
   useEffect,
-  useImperativeHandle,
   useRef,
 } from "react";
 import { TopologyGraph } from "./TopologyGraph";
 import { getNodeIcon } from "./node-icons";
 import { TopologyClient, TopologyNodeType } from "./topology-client-2";
+import { useSocketDisconnectHandler } from './hooks';
 
 export const LiveTopologyGraph = forwardRef(
   (
@@ -25,6 +24,7 @@ export const LiveTopologyGraph = forwardRef(
   ) => {
     const graph = useRef(null);
     const nodes_client = useRef(null);
+    const triggerSocketDisconnectHandler = useSocketDisconnectHandler();
 
     useEffect(() => {
       if (!ref) {
@@ -83,6 +83,9 @@ export const LiveTopologyGraph = forwardRef(
           if (edges_delta !== null) {
             graph.current.updateEdges({ add: edges_delta.add });
           }
+        },
+        () => {
+          triggerSocketDisconnectHandler();
         }
       );
 

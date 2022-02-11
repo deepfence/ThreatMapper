@@ -159,7 +159,7 @@ add_index() {
   }'
   echo ""
 
-  declare -a index_arr=("pdf-report")
+  declare -a index_arr=("report")
   for index_name in "${index_arr[@]}"
   do
       curl -X PUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/${index_name}" -H 'Content-Type: application/json' -d'

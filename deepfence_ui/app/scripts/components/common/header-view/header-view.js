@@ -4,7 +4,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Tooltip } from 'react-tippy';
+import Tippy from '@tippyjs/react';
 
 
 // Custom components imports
@@ -97,7 +97,7 @@ class HeaderView extends React.Component {
 
   populateLuceneFilters() {
     const filtersList = this.props.searchQuery.map((filter, index) => (
-      <Tooltip title={filter} position="bottom" trigger="mouseenter" key={index}>
+      <Tippy content={filter} placement="bottom" trigger="mouseenter" key={index}>
         <div className="filter">
           <div className="filter-name truncate">{filter}</div>
           <div
@@ -106,7 +106,7 @@ class HeaderView extends React.Component {
             aria-hidden="true"
             style={{paddingLeft: '5px'}} />
         </div>
-      </Tooltip>
+      </Tippy>
     ));
     return filtersList;
   }

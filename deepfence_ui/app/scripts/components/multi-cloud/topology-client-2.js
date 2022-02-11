@@ -1,10 +1,11 @@
 /* eslint-disable */
 export class TopologyClient {
-  constructor(base_url, api_key, refresh_interval, onDataReceived) {
+  constructor(base_url, api_key, refresh_interval, onDataReceived, onInvalidSocketRefrence) {
     this.base_url = base_url;
     this.api_key = api_key;
     this.refresh_interval = refresh_interval;
     this.onDataReceived = onDataReceived;
+    this.onInvalidSocketRefrence = onInvalidSocketRefrence;
     this.socket = null;
   }
 
@@ -83,7 +84,12 @@ export class TopologyClient {
   }
 
   send(message) {
-    this.socket.send(JSON.stringify(message));
+    if (this.socket) {
+      this.socket.send(JSON.stringify(message));
+    } else if (this.onInvalidSocketRefrence) {
+      // inform consumer about trying to send message after socket close.
+      this.onInvalidSocketRefrence();
+    }
   }
 
   buildUrl(type, query_args = {}) {

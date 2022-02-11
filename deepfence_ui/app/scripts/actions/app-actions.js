@@ -62,11 +62,10 @@ import {
   getTopVulnerableActiveContainers,
   getTopVulnerableAttackPaths,
   getTopVulnerableActiveHosts,
-  xlsxReportDownload,
-  xlsxScheduleEmail,
-  getPDFReport,
-  getPdfDownloadStatus,
-  downloadPdfReport,
+  reportGenerate,
+  reportDownloadStatus,
+  downloadReport,
+  reportScheduleEmail,
   getReportFilterOptions,
   enumerateFilters,
   enumerateNodes,
@@ -83,6 +82,7 @@ import {
   addMailConfiguration,
   getGlobalSettings,
   addGlobalSettings,
+  getRegistryImagesTags,
   getTopAttackPathsForNode
 } from '../utils/web-api-utils';
 
@@ -1465,57 +1465,40 @@ export function getTopVulnerableContainerAndHostsAction(params) {
   );
 }
 
-export function xlsxReportDownloadAction(params) {
+export function reportGenerateAction(params) {
   const actionTypes = [
-    // Repeating action names, as we not dependent on it for download
-    ActionTypes.XLSX_REPORT_DOWNLOAD_REQUEST,
-    ActionTypes.XLSX_REPORT_DOWNLOAD_SUCCESS,
-    ActionTypes.XLSX_REPORT_DOWNLOAD_FAILURE,
+    ActionTypes.REPORT_GENERATION_REQUEST,
+    ActionTypes.REPORT_GENERATION_SUCCESS,
+    ActionTypes.REPORT_GENERATION_FAILURE,
   ];
-  return genericThunkAction(actionTypes, xlsxReportDownload, params);
+  return genericThunkAction(actionTypes, reportGenerate, params);
 }
 
-export function xlsxScheduleEmailAction(params) {
+export function reportDownloadStatusAction(params) {
   const actionTypes = [
-    ActionTypes.XLSX_EMAIL_SCHEDULE_REQUEST,
-    ActionTypes.XLSX_EMAIL_SCHEDULE_SUCCESS,
-    ActionTypes.XLSX_EMAIL_SCHEDULE_FAILURE,
+    ActionTypes.REPORT_STATUS_REQUEST,
+    ActionTypes.REPORT_STATUS_SUCCESS,
+    ActionTypes.REPORT_STATUS_FAILURE,
   ];
-  return genericThunkAction(actionTypes, xlsxScheduleEmail, params);
+  return genericThunkAction(actionTypes, reportDownloadStatus, params);
 }
 
-export function getPDFReportAction(params) {
+export function downloadReportAction(params) {
   const actionTypes = [
-    // Repeating action names, as we not dependent on it for download
-    ActionTypes.PDF_REPORT_GENERATE_REQUEST,
-    ActionTypes.PDF_REPORT_GENERATE_SUCCESS,
-    ActionTypes.PDF_REPORT_GENERATE_FAILURE,
+    ActionTypes.DOWNLOAD_REPORT_REQUEST,
+    ActionTypes.DOWNLOAD_REPORT_SUCCESS,
+    ActionTypes.DOWNLOAD_REPORT_FAILURE,
   ];
-  return genericThunkAction(actionTypes, getPDFReport, params);
+  return genericThunkAction(actionTypes, downloadReport, params);
 }
 
-export function getPdfDownloadStatusAction(params) {
+export function reportScheduleEmailAction(params) {
   const actionTypes = [
-    ActionTypes.GET_PDF_REPORT_STATUS_REQUEST,
-    ActionTypes.GET_PDF_REPORT_STATUS_SUCCESS,
-    ActionTypes.GET_PDF_REPORT_STATUS_FAILURE,
+    ActionTypes.REPORT_EMAIL_SCHEDULE_REQUEST,
+    ActionTypes.REPORT_EMAIL_SCHEDULE_SUCCESS,
+    ActionTypes.REPORT_EMAIL_SCHEDULE_FAILURE,
   ];
-  return genericThunkAction(actionTypes, getPdfDownloadStatus, params);
-}
-
-export function downloadPdfReportAction(params) {
-  const actionTypes = [
-    ActionTypes.DOWNLOAD_PDF_REPORT_REQUEST,
-    ActionTypes.DOWNLOAD_PDF_REPORT_SUCCESS,
-    ActionTypes.DOWNLOAD_PDF_REPORT_FAILURE,
-  ];
-  return genericThunkAction(actionTypes, downloadPdfReport, params);
-}
-
-export function clearScheduledReportFormAction() {
-  return {
-    type: ActionTypes.XLSX_CLEAR_FORM_INFO_MESSAGE,
-  };
+  return genericThunkAction(actionTypes, reportScheduleEmail, params);
 }
 
 export function getReportFilterOptionsAction() {
@@ -1754,6 +1737,15 @@ export function addGlobalSettingsAction(params) {
     ActionTypes.ADD_GLOBAL_SETTINGS_FAILURE,
   ];
   return genericThunkAction(actionTypes, addGlobalSettings, params);
+}
+
+export function getRegistryImagesTagsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_REGISTRY_IMAGES_TAGS_REQUEST,
+    ActionTypes.GET_REGISTRY_IMAGES_TAGS_SUCCESS,
+    ActionTypes.GET_REGISTRY_IMAGES_TAGS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getRegistryImagesTags, params);
 }
 
 // multi cloud

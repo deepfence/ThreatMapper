@@ -40,7 +40,7 @@ class RegistryCredential(db.Model):
         REGISTRY_TYPE_DOCKER_HUB: ["docker_hub_namespace", "docker_hub_username", "docker_hub_password"],
         REGISTRY_TYPE_QUAY: ["quay_registry_url", "quay_namespace", "quay_access_token"],
         REGISTRY_TYPE_ECR: ["aws_access_key_id", "aws_secret_access_key", "aws_region_name", "registry_id",
-                            "use_iam_role"],
+                            "use_iam_role", "target_account_role_arn"],
         REGISTRY_TYPE_HARBOR: ["harbor_registry_url", "harbor_username", "harbor_password"],
         REGISTRY_TYPE_AZURE: ["azure_registry_url", "azure_registry_username", "azure_registry_password"],
         REGISTRY_TYPE_GITLAB: ["gitlab_server_url", "gitlab_registry_url", "gitlab_access_token"],
@@ -51,7 +51,7 @@ class RegistryCredential(db.Model):
         REGISTRY_TYPE_DOCKER_PVT: [],
         REGISTRY_TYPE_DOCKER_HUB: [],
         REGISTRY_TYPE_QUAY: ["quay_access_token"],
-        REGISTRY_TYPE_ECR: ["aws_access_key_id", "aws_secret_access_key", "registry_id"],
+        REGISTRY_TYPE_ECR: ["aws_access_key_id", "aws_secret_access_key", "registry_id", "target_account_role_arn"],
         REGISTRY_TYPE_HARBOR: [],
         REGISTRY_TYPE_AZURE: [],
         REGISTRY_TYPE_GITLAB: [],
@@ -161,6 +161,7 @@ class RegistryCredential(db.Model):
                                             credentials.get('aws_secret_access_key'),
                                             credentials.get('aws_region_name'),
                                             credentials.get('registry_id'),
+                                            credentials.get('target_account_role_arn'),
                                             str(credentials.get('use_iam_role')).lower())
         elif registry_type == REGISTRY_TYPE_HARBOR:
             self._client = CveScanHarborRegistryImages(credentials.get('harbor_registry_url'),

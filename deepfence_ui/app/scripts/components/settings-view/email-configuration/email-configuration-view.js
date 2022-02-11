@@ -25,6 +25,10 @@ const resourceCollection = [
 		name: 'Amazon SES',
 		value: 'amazon_ses',
 	},
+	{
+		name: 'SMTP',
+		value: 'simple_smtp',
+	},
 ];
 
 class EmailConfiguration extends React.Component {
@@ -82,9 +86,19 @@ class EmailConfiguration extends React.Component {
 		let params;
 		let flag = true;
 
-		if (emailProvider.value === 'smtp') {
+		if (emailProvider.value === 'smtp' || emailProvider.value === 'simple_smtp') {
 			params = {
 				email_provider: emailProvider.value,
+				email: email_smtp,
+				smtp: smtp,
+				port: port,
+				password: password,
+			};
+		}
+		
+		if (emailProvider.value === 'simple_smtp') {
+			params = {
+				email_provider: 'smtp',
 				email: email_smtp,
 				smtp: smtp,
 				port: port,
@@ -149,7 +163,7 @@ class EmailConfiguration extends React.Component {
 									</div>
 									<br />
 									<div className="row">
-										{this.state.emailProvider.value === 'smtp' && (
+										{(this.state.emailProvider.value === 'smtp' || this.state.emailProvider.value === 'simple_smtp' ) && (
 											<div className="col-md-6">
 												<div
 													className={
@@ -174,7 +188,7 @@ class EmailConfiguration extends React.Component {
 												</div>
 											</div>
 										)}
-										{this.state.emailProvider.value === 'smtp' && (
+										{(this.state.emailProvider.value === 'smtp' || this.state.emailProvider.value === 'simple_smtp' ) && (
 											<div className="col-md-6">
 												<div
 													className={
@@ -254,7 +268,7 @@ class EmailConfiguration extends React.Component {
 										)}
 									</div>
 									<div className="row">
-										{this.state.emailProvider.value === 'smtp' && (
+										{(this.state.emailProvider.value === 'smtp' || this.state.emailProvider.value === 'simple_smtp' ) && (
 											<div className="col">
 												<div
 													className={
@@ -280,7 +294,7 @@ class EmailConfiguration extends React.Component {
 											</div>
 										)}
 
-										{this.state.emailProvider.value === 'smtp' && (
+										{(this.state.emailProvider.value === 'smtp' ) && (
 											<div className="col">
 												<div
 													className={
@@ -300,6 +314,31 @@ class EmailConfiguration extends React.Component {
 													{submitted && !this.state.port && (
 														<div className="field-error">
 															Gmail SMTP port (SSL) is required
+														</div>
+													)}
+												</div>
+											</div>
+										)}
+										{(this.state.emailProvider.value === 'simple_smtp' ) && (
+											<div className="col">
+												<div
+													className={
+														'form-group' +
+														(submitted && !this.state.port
+															? ' has-error'
+															: '')
+													}
+												>
+													<input
+														type="number"
+														className="form-control"
+														name="port"
+														placeholder="SMTP port (SSL)"
+														onChange={this.handleChange}
+													/>
+													{submitted && !this.state.port && (
+														<div className="field-error">
+															SMTP port (SSL) is required
 														</div>
 													)}
 												</div>

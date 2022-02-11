@@ -109,7 +109,7 @@ class Node(object):
                 pass
         return ports
 
-    def cve_scan_start(self, scan_types, mask_cve_ids=""):
+    def cve_scan_start(self, scan_types, priority=False, mask_cve_ids=""):
         if self.is_ui_vm or self.pseudo:
             return False
         if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
@@ -149,7 +149,11 @@ class Node(object):
         scan_details = {"cve_node_id": cve_node_id, "scan_types": scan_types, "node_id": self.node_id,
                         "scan_id": scan_id, "mask_cve_ids": mask_cve_ids}
         celery_task_id = "cve_scan:" + scan_id
-        celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(), task_id=celery_task_id,
+        if priority:
+            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                             queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
+        else:
+            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(), task_id=celery_task_id,
                              kwargs={"scan_details": scan_details}, queue=constants.VULNERABILITY_SCAN_QUEUE)
         return True
 
@@ -192,9 +196,32 @@ class Node(object):
         if self.is_ui_vm or self.pseudo:
             return {}
         if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
-                             constants.NODE_TYPE_CONTAINER_IMAGE]:
+                             constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_POD]:
             raise DFError('action not supported for this node type')
-        if self.type == constants.NODE_TYPE_HOST:
+        if self.type == constants.NODE_TYPE_POD:
+            image_name_tag = ""
+            topology_containers_data = redis.get(
+                websocketio_channel_name_format(constants.NODE_TYPE_CONTAINER + "?format=deepfence")[1])
+            if not topology_containers_data:
+                topology_containers_data = "{}"
+            topology_containers_data = json.loads(topology_containers_data)
+            for container_node_id, container_details in topology_containers_data.items():
+                if container_details.get("pseudo", False):
+                    continue
+                if not container_details.get("kubernetes_cluster_id"):
+                    continue
+                container_found = False
+                for parent in container_details.get("parents", []):
+                    if parent["type"] == constants.NODE_TYPE_POD and parent["id"] == self.node_id:
+                        image_name_tag = container_details.get("image_name_with_tag", "")
+                        container_found = True
+                        break
+                if container_found:
+                    break
+            if not image_name_tag:
+                raise DFError('no container found in the pod')
+            node_id = image_name_tag
+        elif self.type == constants.NODE_TYPE_HOST:
             node_id = self.host_name
         else:
             node_id = self.image_name_tag
@@ -211,7 +238,7 @@ class Node(object):
         if self.is_ui_vm or self.pseudo:
             return {}
         if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
-                             constants.NODE_TYPE_CONTAINER_IMAGE]:
+                             constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_POD]:
             raise DFError('action not supported for this node type')
         cve_scan_doc = self.get_latest_cve_scan_doc()
         filter_keys = ["scan_type", "cve_scan_message", "node_type", "@timestamp", "action", "scan_id", "host_name",
@@ -226,7 +253,7 @@ class Node(object):
         if self.is_ui_vm or self.pseudo:
             return {}
         if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
-                             constants.NODE_TYPE_CONTAINER_IMAGE]:
+                             constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_POD]:
             raise DFError('action not supported for this node type')
         cve_scan_doc = self.get_latest_cve_scan_doc()
         if not cve_scan_doc:
@@ -234,7 +261,7 @@ class Node(object):
         vulnerabilities = ESConn.search_by_and_clause(
             constants.CVE_INDEX, {'scan_id': cve_scan_doc["scan_id"], 'masked': 'false'}, 0, "desc",
             size=constants.ES_TERMS_AGGR_SIZE)
-        if not vulnerabilities:
+        if not vulnerabilities.get("hits", []):
             return {}
         top_cve_ids = []
         for vulnerability in vulnerabilities.get("hits", []):
@@ -259,15 +286,27 @@ class Node(object):
         topology_nodes = fetch_topology_data(self.type, format="scope")
         graph = get_topology_network_graph(topology_nodes)
         shortest_paths_generator_in = nx.shortest_simple_paths(graph, "in-theinternet", self.scope_id)
-        shortest_paths_generator_out = nx.shortest_simple_paths(graph, "out-theinternet", self.scope_id)
         shortest_paths = []
+        counter = 0
         try:
-            for shortest_paths_generator in [shortest_paths_generator_in, shortest_paths_generator_out]:
-                for counter, path in enumerate(shortest_paths_generator):
-                    shortest_paths.append([topology_nodes[i]["label"] for i in path])
-                    if counter == top_n - 1:
-                        break
-                if shortest_paths:
+            for _, path in enumerate(shortest_paths_generator_in):
+                shortest_paths.append([topology_nodes[i]["label"] for i in path])
+                counter += 1
+                if counter == top_n:
+                    break
+        except:
+            pass
+        if len(shortest_paths) >= top_n:
+            return shortest_paths
+        shortest_paths_generator_out = nx.shortest_simple_paths(graph, self.scope_id, "out-theinternet")
+        try:
+            for _, path in enumerate(shortest_paths_generator_out):
+                tmp_path = []
+                for i in path:
+                    tmp_path.insert(0, topology_nodes[i]["label"])
+                shortest_paths.append(tmp_path)
+                counter += 1
+                if counter == top_n:
                     break
         except:
             pass

@@ -10,8 +10,8 @@ import json
 from flask import Blueprint, request, redirect, session
 from flask import current_app as app
 from flask.views import MethodView
-from flask_jwt_extended import get_jti, get_raw_jwt, jwt_required, get_jwt_identity, create_access_token, \
-    create_refresh_token, jwt_refresh_token_required
+from flask_jwt_extended import get_jti, get_jwt, jwt_required, get_jwt_identity, create_access_token, \
+    create_refresh_token
 from elasticsearch import exceptions
 from models.user import User, Role, Company, Invite, PasswordReset
 from models.user_activity_log import UserActivityLog
@@ -345,7 +345,7 @@ def api_auth():
 
 
 @user_api.route("/users/me", methods=["GET"], endpoint='api_v1_5_user_details')
-@jwt_required
+@jwt_required()
 def user_details():
     """
     User details.
@@ -386,7 +386,7 @@ def user_details():
 
 
 @user_api.route("/users/refresh/token", methods=["POST"], endpoint='api_v1_5_refresh_jwt_token')
-@jwt_refresh_token_required
+@jwt_required(refresh=True)
 def refresh_jwt_token():
     """
     Generate a new access token using refresh token
@@ -450,7 +450,7 @@ def refresh_jwt_token():
 
 
 @user_api.route("/users", methods=["GET"], endpoint='api_v1_5_users')
-@jwt_required
+@jwt_required()
 def user_list():
     current_user = get_jwt_identity()
     current_user_obj = User.query.filter_by(id=current_user["id"]).one_or_none()
@@ -473,7 +473,7 @@ def user_list():
 
 
 @user_api.route("/user/<int:user_id>", methods=["POST"], endpoint='api_v1_5_user_update')
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def user_update(user_id):
     current_user = get_jwt_identity()
@@ -540,14 +540,14 @@ def user_update(user_id):
     user.isActive = is_active
     user.save()
     if to_logout:
-        jti = get_raw_jwt().get("jti", "")
+        jti = get_jwt().get("jti", "")
         access_expires = app.config["JWT_ACCESS_TOKEN_EXPIRES"]
         redis.set(jti, 'true', access_expires * 1.2)
     return set_response(data="ok")
 
 
 @user_api.route("/user/<int:user_id>", methods=["DELETE"], endpoint='api_v1_5_users_delete')
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def user_delete(user_id):
     current_user = get_jwt_identity()
@@ -589,7 +589,7 @@ def user_delete(user_id):
     user.delete()
     redis.hdel(DEEPFENCE_KEY, api_key)
     if to_logout:
-        jti = get_raw_jwt().get("jti", "")
+        jti = get_jwt().get("jti", "")
         access_expires = app.config["JWT_ACCESS_TOKEN_EXPIRES"]
         redis.set(jti, 'true', access_expires * 1.2)
     else:
@@ -598,7 +598,7 @@ def user_delete(user_id):
 
 
 @user_api.route("/users/reset-api-key", methods=["POST"], endpoint='api_v1_5_api_key_reset')
-@jwt_required
+@jwt_required()
 def api_key_reset():
     """
     Reset API Key
@@ -753,7 +753,7 @@ def login():
 
 
 @user_api.route("/users/logout", methods=["POST"])
-@jwt_required
+@jwt_required()
 def logout():
     """
     Logout.
@@ -789,7 +789,7 @@ def logout():
     )
     ual.save()
 
-    jti = get_raw_jwt()['jti']
+    jti = get_jwt()['jti']
     access_expires = app.config["JWT_ACCESS_TOKEN_EXPIRES"]
     redis.set(jti, 'true', access_expires * 1.2)
     try:
@@ -800,7 +800,7 @@ def logout():
 
 
 @user_api.route("/users/invite/send", methods=["POST"])
-@jwt_required
+@jwt_required()
 @user_permission(USER_ROLES.ADMIN_USER)
 def send_invite():
     """
@@ -1071,7 +1071,7 @@ def accept_invite():
 
 
 @user_api.route("/users/password/change", methods=["POST"])
-@jwt_required
+@jwt_required()
 def password_change():
     """
     Password change api.
@@ -1331,7 +1331,7 @@ user_api.add_url_rule('/users/password-reset/verify', view_func=ResetPasswordVer
 
 class IntegrationView(MethodView):
 
-    @jwt_required
+    @jwt_required()
     def get(self):
         """
         Get all integrations created by the logged in user.
@@ -1404,7 +1404,7 @@ class IntegrationView(MethodView):
 
         return set_response(data=response)
 
-    @jwt_required
+    @jwt_required()
     @non_read_only_user
     def delete(self):
         """
@@ -1998,7 +1998,7 @@ class IntegrationView(MethodView):
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             create_notification(UserActivityNotification)
 
-    @jwt_required
+    @jwt_required()
     @non_read_only_user
     def post(self):
         """
@@ -2076,7 +2076,7 @@ user_api.add_url_rule('/users/integrations', view_func=IntegrationView.as_view('
 
 
 @user_api.route("/integrations/notify", methods=["POST"])
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def notify_to_integrations():
     """

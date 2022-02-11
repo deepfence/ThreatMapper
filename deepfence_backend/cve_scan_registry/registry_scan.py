@@ -75,6 +75,7 @@ def main():
                     scan_details.get("aws_secret_access_key", ""),
                     scan_details["aws_region_name"],
                     scan_details.get("registry_id", ""),
+                    scan_details.get("target_account_role_arn", ""),
                     str(scan_details.get("use_iam_role", "false")).lower())
             except Exception as ex:
                 print("Error: {}\n".format(ex))
@@ -165,13 +166,15 @@ def main():
                                   help="AWS region name")
             ecr_args.add_argument("--registry_id", metavar="registry_id", type=str, required=False,
                                   help="ECR Registry Account Id")
+            ecr_args.add_argument("--target_account_role_arn", metavar="target_account_role_arn", type=str,
+                                  required=False, help="Role ARN in target Account to assume in the console")
             ecr_args.add_argument("--use_iam_role", metavar="use_iam_role", type=str, required=True,
                                   help="Use IAM Role instead of credentials")
             cmd_args = arg_parser.parse_args()
             try:
                 registry_scanner = CveScanECRImages(
                     cmd_args.aws_access_key_id, cmd_args.aws_secret_access_key, cmd_args.aws_region_name,
-                    cmd_args.registry_id, cmd_args.use_iam_role)
+                    cmd_args.registry_id, cmd_args.target_account_role_arn, cmd_args.use_iam_role)
             except Exception as ex:
                 print("Error: {}\n".format(ex))
                 arg_parser.print_help()

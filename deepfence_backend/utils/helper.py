@@ -4,7 +4,7 @@ from utils.constants import NODE_TYPE_CONTAINER, NODE_TYPE_PROCESS_BY_NAME, NODE
     SCOPE_POD_API_CONTROL_URL, SCOPE_BASE_URL, TOPOLOGY_ID_HOST, DEEPFENCE_DIAGNOSIS_LOGS_URL, TOPOLOGY_ID_PROCESS, \
     DEEPFENCE_CONTAINER_STATE_URL, TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE, NODE_TYPE_SWARM_SERVICE, \
     DEEPFENCE_CONSOLE_CPU_MEMORY_STATE_URL, REDIS_KEY_PREFIX_CLUSTER_AGENT_PROBE_ID, EMPTY_POD_SCOPE_ID, \
-    ES_TERMS_AGGR_SIZE, SENSITIVE_KEYS, REDACT_STRING, VULNERABILITY_LOG_PATH, TIME_UNIT_MAPPING,CVE_SCAN_LOGS_INDEX, \
+    ES_TERMS_AGGR_SIZE, SENSITIVE_KEYS, REDACT_STRING, VULNERABILITY_LOG_PATH, TIME_UNIT_MAPPING, CVE_SCAN_LOGS_INDEX, \
     CVE_INDEX
 import hashlib
 import requests
@@ -26,8 +26,33 @@ from urllib.parse import urlparse
 from config.redisconfig import redis
 import shutil
 import networkx as nx
+import time
 
 requests.packages.urllib3.disable_warnings()
+
+
+def get_postgres_uri():
+    import os
+    return 'postgresql://{}:{}@{}:{}/{}'.format(
+        os.environ.get("POSTGRES_USER_DB_USER"),
+        os.environ.get("POSTGRES_USER_DB_PASSWORD"),
+        os.environ.get("POSTGRES_USER_DB_HOST"),
+        os.environ.get("POSTGRES_USER_DB_PORT"),
+        os.environ.get("POSTGRES_USER_DB_NAME")
+    )
+
+
+def wait_for_postgres_table(table_name):
+    from sqlalchemy import inspect, create_engine
+    try:
+        while True:
+            engine = create_engine(get_postgres_uri())
+            inspector = inspect(engine)
+            if inspector.has_table(table_name=table_name) is True:
+                break
+            time.sleep(5)
+    except:
+        pass
 
 
 def validate_email(email_string: str) -> bool:
@@ -311,12 +336,37 @@ def is_network_attack_vector(attack_vector):
 
 
 def get_topology_network_graph(topology_nodes):
-    graph = nx.Graph()
+    graph = nx.DiGraph()
     if not topology_nodes:
         return graph
+    needed_nodes = {}
     for node_id, node_details in topology_nodes.items():
+        if "is_ui_vm" in node_details:
+            if node_details.get("is_ui_vm") is True:
+                continue
+        else:
+            is_ui_vm = False
+            for metadata in node_details.get("metadata", []):
+                if metadata["id"] == "is_ui_vm":
+                    if metadata["value"] == "true":
+                        is_ui_vm = True
+                    break
+            if is_ui_vm:
+                continue
+        node_name = node_details.get("name", node_details.get("label"))
+        if node_details.get("pseudo", False):
+            if node_name != "The Internet":
+                continue
+        needed_nodes[node_id] = node_name
+    for node_id, node_details in topology_nodes.items():
+        if node_id not in needed_nodes:
+            continue
         graph.add_node(node_id)
         for adj_node_id in node_details.get("adjacency", []):
+            if adj_node_id == node_id:
+                continue
+            if adj_node_id not in needed_nodes:
+                continue
             if not graph.has_node(adj_node_id):
                 graph.add_node(adj_node_id)
             graph.add_edge(node_id, adj_node_id)
@@ -611,7 +661,7 @@ def get_image_cve_status(required_fields=None):
     from utils.esconn import ESConn
     try:
         aggs_response = ESConn.aggregation_helper(
-             CVE_SCAN_LOGS_INDEX, {"node_type": NODE_TYPE_CONTAINER_IMAGE}, aggs, None, None, None,
+            CVE_SCAN_LOGS_INDEX, {"node_type": NODE_TYPE_CONTAINER_IMAGE}, aggs, None, None, None,
             add_masked_filter=False)
         node_buckets = aggs_response.get("aggregations", {}).get(
             "node_id", {}).get('buckets', [])
@@ -684,3 +734,36 @@ def get_all_scanned_node() -> list:
         if datum.get('key'):
             host_names.append(datum.get('key'))
     return host_names
+
+
+def get_all_scanned_images(days) -> list:
+    from utils.esconn import ESConn, INDEX_NAME
+    query_agg = {
+        "query": {
+            "bool" : {
+                "must" :{
+                    "term" : { "node_type" : "container_image" }
+                },
+                "must" :{
+                    "range" : {
+                        "@timestamp" : { "gte" : "now-{0}d/d".format(days) }
+                    }
+                }
+            }
+        },
+        "aggs": {
+            "images": {
+            "terms": { 
+                "field": "cve_container_image.keyword",
+                "size" : ES_TERMS_AGGR_SIZE
+                }
+            }
+        }
+    }
+    scanned_images = ESConn.search(CVE_INDEX, query_agg, 0, 0)
+
+    image_names = []
+    for datum in scanned_images['aggregations']['images']['buckets']:
+        if datum.get('key'):
+            image_names.append(datum.get('key'))
+    return set(image_names)
