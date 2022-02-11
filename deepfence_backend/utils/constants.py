@@ -148,6 +148,8 @@ SCOPE_KUBE_CONTROLLER_API_CONTROL_URL = "http://deepfence-topology:8004/topology
 
 CVE_INDEX = "cve"
 CVE_SCAN_LOGS_INDEX = "cve-scan"
+SECRET_SCAN_INDEX = "secret-scan"
+SECRET_SCAN_LOGS_INDEX = "secret-scan-logs"
 REPORT_INDEX = "report"
 VULNERABILITY_LOG_PATH = "/var/log/vulnerability_scan_logs/"
 ALL_INDICES = [
@@ -204,6 +206,8 @@ NODE_ATTACK_PATH = "attack_path"
 NODE_ACTION_CVE_SCAN_START = "cve_scan_start"
 NODE_ACTION_CVE_SCAN_STOP = "cve_scan_stop"
 NODE_ACTION_CVE_SCAN_STATUS = "cve_scan_status"
+NODE_ACTION_SECRET_START_SCAN = "start_secrets_scan"
+NODE_ACTION_SECRET_SCAN_START = "secret_scan_start"
 NODE_ACTION_PAUSE_CONTAINER = "pause_container"
 NODE_ACTION_UNPAUSE_CONTAINER = "unpause_container"
 NODE_ACTION_RESTART_CONTAINER = "restart_container"
@@ -309,6 +313,7 @@ TABLE_COLUMN_NON_TEXT_FIELD = [
 
 # user activity related consts
 EVENT_VULNERABILITY_SCAN = "vulnerability_scan"
+EVENT_SECRET_SCAN = "secret_scan"
 EVENT_INTEGRATION = "integration"
 EVENT_AUTH_LOGIN = "auth"
 ACTION_START = "start"

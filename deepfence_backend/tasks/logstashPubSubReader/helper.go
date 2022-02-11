@@ -12,8 +12,6 @@ import (
 const (
 	resourceTypeVulnerability    = "vulnerability"
 	vulnerabilityRedisPubsubName = "vulnerability_task_queue"
-	resourceTypeSecretScan       = "secret-scan"
-	secretScanRedisPubsubName    = "secret_scan_task_queue"
 	celeryNotificationTask       = "tasks.notification_worker.notification_task"
 )
 

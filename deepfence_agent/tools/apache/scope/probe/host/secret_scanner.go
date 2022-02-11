@@ -11,13 +11,12 @@ import (
 	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/probe/secret_scanner"
 	"google.golang.org/grpc"
-	"github.com/gomodule/redigo/redis"
-	elastic "github.com/olivere/elastic/v7"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -25,7 +24,6 @@ import (
 const (
 	secretScanIndexName     = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
-	redisSecretScanChannel  = "secret_scan_task_queue"
 )
 var certPath = "/etc/filebeat/filebeat.crt"
 var httpClient *http.Client
@@ -57,22 +55,49 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	if err != nil {
 		return xfer.Response{SecretsScanInfo: "Error creating ss client"}
 	}
-	go getAndPublishSecretScanResults(client, greq)
+	go getAndPublishSecretScanResults(client, greq, req.ControlArgs)
 	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
 }
 
-func getAndPublishSecretScanResults(client secret_scanner.SecretScannerClient, req secret_scanner.FindRequest) {
-	// TODO get scan id from df-backend
+func getAndPublishSecretScanResults(client secret_scanner.SecretScannerClient, req secret_scanner.FindRequest, controlArgs map[string]string) {
 	res, err := client.FindSecretInfo(context.Background(), req)
-	if err != nil {
-		scanLog := fmt.Sprintf("{\"scan_id\":\"%d\",\"time_stamp\":%d,\"secret_scan_message\":\"%s\",\"action\":\"%s\",\"type\":\"secret-scan\",}", getTimestamp(), getTimestamp(), err.Error(), "ERROR")
-		sendSecretScanDataToLogstash(scanLog, secretScanLogsIndexName)
-	}
+	timestamp := getTimestamp()
 	for _, secret := range res.Secrets {
-		// TODO handle marshal error
-		secretString, _ := json.Marshal(secret)
-		scanLog := fmt.Sprintf("{\"scan_id\":\"%d\",\"time_stamp\":%d,\"secret_scan_data\":\"%s\"}", getTimestamp(), getTimestamp(), string(secretString))
-		sendSecretScanDataToLogstash(scanLog, secretScanIndexName)
+		var secretScanDoc map[string]interface{}
+		secretScanDoc["node_id"] = controlArgs["node_id"]
+		secretScanDoc["scan_id"] = controlArgs["scan_id"]
+		secretScanDoc["scan_status"] = controlArgs["COMPLETE"]
+		secretScanDoc["time_stamp"] = timestamp
+		values := reflect.ValueOf(secret)
+		typeOfS := values.Type()
+		for index := 0; index < values.NumField(); index++ {
+			secretScanDoc[typeOfS.Field(index).Name] = values.Field(index).Interface()
+		}
+		byteJson, err := json.Marshal(secretScanDoc)
+		if err != nil {
+			fmt.Println("Error in marshalling secret result object to json:" + err.Error())
+			return
+		}
+		err = sendSecretScanDataToLogstash(string(byteJson), secretScanIndexName)
+		if err != nil {
+			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
+		}
+	}
+	if err != nil {
+		var secretScanLogDoc map[string]interface{}
+		secretScanLogDoc["node_id"] = controlArgs["node_id"]
+		secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
+		secretScanLogDoc["scan_status"] = controlArgs["COMPLETE"]
+		secretScanLogDoc["time_stamp"] = timestamp
+		byteJson, err := json.Marshal(secretScanLogDoc)
+		if err != nil {
+			fmt.Println("Error in marshalling secretScanLogDoc to json:" + err.Error())
+			return
+		}
+		err = sendSecretScanDataToLogstash(string(byteJson) , secretScanLogsIndexName)
+		if err != nil {
+			fmt.Println("Error in sending data to secretScanLogsIndex:" + err.Error())
+		}
 	}
 
 }
