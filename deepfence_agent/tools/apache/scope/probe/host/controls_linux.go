@@ -12,7 +12,6 @@ import (
 	"github.com/weaveworks/scope/common/xfer"
 
 	"github.com/willdonnelly/passwd"
-	"gopkg.in/alessio/shellescape.v1"
 )
 
 func getHostShellCmd() []string {
@@ -110,7 +109,7 @@ func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
 	if imageName != "host" && imageId == "" {
 		return xfer.ResponseErrorf("image_id is required for container/image vulnerability scan")
 	}
-	scanType := "all"
+	// scanType := "all"
 	if scanTypeArg, ok := req.ControlArgs["scan_type"]; ok {
 		scanType = scanTypeArg
 	}
@@ -119,7 +118,13 @@ func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
 	}
 
 	log.Infof("uploading %s tar to console...", imageName)
-	command := fmt.Sprintf("bash %s/home/deepfence/uploadFile.sh '%s' '%s' '%s' '%s' '%s'", shellescape.Quote(getDfInstallDir()), shellescape.Quote(imageName), shellescape.Quote(scanType), shellescape.Quote(scanId), shellescape.Quote(imageId), shellescape.Quote(kubernetesClusterName))
+	// call syft plugin
+	bomClient := NewSBOMGen(imageName)
+	sbom := bomClient.GetSBOM()
+	sbomString := string(sbom)
+
+	// TODO: call console api with json bom
+
 	err := dfUtils.ExecuteCommandInBackground(command)
 	if err != nil {
 		return xfer.ResponseErrorf(fmt.Sprintf("%s", err))
