@@ -12,9 +12,9 @@ go: ./agent-plugins-grpc/proto/*.proto
 	(cd agent-plugins-grpc && make go)
 	cp agent-plugins-grpc/proto/*.go $(PWD)/proto
 
-bin/vulnerability_sbom_plugin: ./vulnerability_sbom_plugin/proto/*.proto
-	(cd vulnerability_sbom_plugin && make go)
-	cp vulnerability_sbom_plugin/proto/*.go $(PWD)/proto
+bin/vulnerability_sbom_plugin: ./vulnerability-sbom-plugin/agent-plugins-grpc/proto/*.proto
+	(cd vulnerability-sbom-plugin && make)
+	cp vulnerability-sbom-plugin/agent-plugins-grpc/proto/*.go $(PWD)/proto
 
 clean:
 	-rm $(PWD)/bin/open_tracer
