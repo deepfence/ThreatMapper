@@ -34,7 +34,7 @@ class IntegrationTableView extends React.Component {
         { record.service_key && <th>Integration key</th> }
         { record.access_token && <th>Access Token</th> }
         { record.node_type &&  <th>Node Type</th> }
-        { record.alert_level != undefined && <th>Alert level</th> }
+        { record.alert_level != undefined && <th>Severity</th> }
         { record.action && <th>Operation</th> }
         { record.api_url && <th>API Endpoint</th> }
         { record.es_url && <th>ES Endpoint</th> }
