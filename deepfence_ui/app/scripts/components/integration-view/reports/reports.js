@@ -477,7 +477,7 @@ const Reports = props => {
                 placeholder="Select resource type"
                 isMulti
               />
-              {errors && errors.resource_type && <div className="error-message">{errors.resource_type}</div>}
+              {errors && errors.resource_type && <div className="error-message-reports">{errors.resource_type}</div>}
             </div>
           </div>
           <div>
@@ -518,7 +518,7 @@ const Reports = props => {
               placeholder="Select Duration"
             />
           </div>
-          {errors && errors.duration && <div className="error-message">{errors.duration}</div>}
+          {errors && errors.duration && <div className="error-message-reports">{errors.duration}</div>}
           <Field
             component={renderField}
             type="text"
@@ -625,7 +625,7 @@ const Reports = props => {
               placeholder="Select download type"
             />
           </div>
-          {errors && errors.download_type && <div className="error-message">{errors.download_type}</div>}
+          {errors && errors.download_type && <div className="error-message-reports">{errors.download_type}</div>}
           <div className="form-field relative">
             <button
               className="primary-btn"
