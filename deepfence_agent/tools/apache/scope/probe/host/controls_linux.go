@@ -2,12 +2,10 @@ package host
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"strings"
 	"syscall"
 
-	dfUtils "github.com/deepfence/df-utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
 
@@ -91,7 +89,7 @@ func isProbeContainerized() bool {
 	return selfMountNamespaceID != statT.Ino
 }
 
-func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
+func (r *Reporter) handleGenerateVulnerabilitySBOM(req xfer.Request) xfer.Response {
 	var imageName = "host"
 	var imageId = ""
 	var scanId = ""
@@ -109,7 +107,7 @@ func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
 	if imageName != "host" && imageId == "" {
 		return xfer.ResponseErrorf("image_id is required for container/image vulnerability scan")
 	}
-	// scanType := "all"
+	scanType := "all"
 	if scanTypeArg, ok := req.ControlArgs["scan_type"]; ok {
 		scanType = scanTypeArg
 	}
@@ -119,16 +117,9 @@ func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
 
 	log.Infof("uploading %s tar to console...", imageName)
 	// call syft plugin
-	bomClient := NewSBOMGen(imageName)
-	sbom := bomClient.GetSBOM()
-	sbomString := string(sbom)
-
-	// TODO: call console api with json bom
-
-	err := dfUtils.ExecuteCommandInBackground(command)
-	if err != nil {
-		return xfer.ResponseErrorf(fmt.Sprintf("%s", err))
-	} else {
-		return xfer.Response{CVEInfo: "Image upload started"}
-	}
+	go func() {
+		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, scanType)
+		log.Errorf("GenerateVulnerabilitySBOM: %s", err)
+	}()
+	return xfer.Response{CVEInfo: "Image upload started"}
 }

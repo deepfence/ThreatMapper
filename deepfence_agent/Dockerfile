@@ -25,21 +25,19 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
         /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
     && mkdir /usr/local/discovery
-COPY fileUploader /usr/local/bin/fileUploader
 COPY misc/deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
 COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
 COPY start_serverless_services.sh /usr/local/bin/start_services
 COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-discovery
-COPY tools/apache/scope/docker/uploadFile.sh /home/deepfence/uploadFile.sh
 COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/docker_bin /home/deepfence/bin
 
-RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
+RUN chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
     && chmod +x /home/deepfence/*.sh \
     && cd /tmp \

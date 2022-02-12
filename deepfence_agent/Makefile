@@ -30,9 +30,6 @@ all:: gocode
 gocode:
 	# go build -o tools/apache/licensegen/licensegen tools/apache/licensegen/licensegen.go
 
-	echo "Building uploader for CVE scans..."
-	$(CD) fileuploader/ && go mod tidy && env CGO_ENABLED=0 go build -o ../fileUploader $(GOFLAGS)
-
 	echo "Building agent authenticator..."
 	$(CD) misc/deepfence/df-utils/agent_auth && env CGO_ENABLED=0 go build -o agentAuth $(GOFLAGS) .
 
@@ -42,7 +39,6 @@ gocode:
 install:
 
 clean:
-	$(RM) fileUploader
 	$(RM) misc/deepfence/df-utils/agentAuth
 	$(RM) misc/deepfence/df-utils/getCloudInstanceId
 	cd tools/apache/scope && make realclean
