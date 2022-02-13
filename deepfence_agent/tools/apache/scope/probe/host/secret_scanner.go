@@ -36,8 +36,8 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 		if containerID == "" {
 			return xfer.ResponseErrorf("container_id is required")
 		}
-		greq = secret_scanner.FindRequest{Input: secret_scanner.FindRequest_Container{
-			Container: secret_scanner.Container{Id: containerID},
+		greq = secret_scanner.FindRequest{Input: &secret_scanner.FindRequest_Container{
+			Container: &secret_scanner.Container{Id: containerID},
 		}}
 	} else if nodeType == nodeTypeImage {
 		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
@@ -45,11 +45,11 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 			return xfer.ResponseErrorf("image_id is required")
 		}
 		imageName := fmt.Sprintf("%s", req.ControlArgs["image_id"])
-		greq = secret_scanner.FindRequest{Input: secret_scanner.FindRequest_Image{
-			Image: secret_scanner.DockerImage{Id: imageId, Name: imageName},
+		greq = secret_scanner.FindRequest{Input: &secret_scanner.FindRequest_Image{
+			Image: &secret_scanner.DockerImage{Id: imageId, Name: imageName},
 		}}
 	} else if nodeType == nodeTypeHost {
-		greq = secret_scanner.FindRequest{Input: secret_scanner.FindRequest_Path{Path: HostMountDir}}
+		greq = secret_scanner.FindRequest{Input: &secret_scanner.FindRequest_Path{Path: HostMountDir}}
 	}
 	client, err := newSecretScannerClient()
 	if err != nil {
@@ -60,7 +60,7 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 }
 
 func getAndPublishSecretScanResults(client secret_scanner.SecretScannerClient, req secret_scanner.FindRequest, controlArgs map[string]string) {
-	res, err := client.FindSecretInfo(context.Background(), req)
+	res, err := client.FindSecretInfo(context.Background(), &req)
 	timestamp := getTimestamp()
 	currTime := getCurrentTime()
 	for _, secret := range res.Secrets {
