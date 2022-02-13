@@ -97,7 +97,7 @@ require (
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
 	golang.org/x/tools v0.0.0-20190424220101-1e8e1cfdf96b
 	google.golang.org/grpc v1.19.0
-	google.golang.org/protobuf v1.27.1
+	// google.golang.org/protobuf v1.27.1
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/inf.v0 v0.9.0 // indirect
 	k8s.io/api v0.0.0-20181204000039-89a74a8d264d
