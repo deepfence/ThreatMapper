@@ -7,7 +7,7 @@ import Pagination from './pagination';
 import DFTriggerSelect from '../multi-select/app-trigger';
 import AppLoader from '../../loader';
 import { getUserRole } from '../../../helpers/auth-helper';
-import { isPromise } from '../../../utils/promise-utils';
+import { isPromise, waitAsync } from '../../../utils/promise-utils';
 import { showModal } from '../../../actions/app-actions';
 import styles from "./index.module.scss";
 
@@ -259,6 +259,10 @@ const DfTableV2 = ({
       totalRows,
       data
     });
+  } else if (showPagination) {
+    additionalTableParams.initialState = {
+      pageSize: defaultPageSize
+    };
   }
 
   const tableInstance = useTable(
@@ -520,6 +524,7 @@ function Action(props) {
     onClick,
     postClickSuccess,
     showConfirmationDialog,
+    postClickSuccessDelayInMs,
     confirmationDialogParams: {
       dialogTitle,
       dialogBody,
@@ -552,8 +557,9 @@ function Action(props) {
                 additionalParams
               );
               if (onClickPromise && isPromise(onClickPromise)) {
-                onClickPromise.then(() => {
+                onClickPromise.then(async () => {
                   toggleAllPageRowsSelected(false);
+                  await waitAsync(postClickSuccessDelayInMs);
                   if (typeof postClickSuccess === 'function') {
                     postClickSuccess(selectedRowIndex);
                   }

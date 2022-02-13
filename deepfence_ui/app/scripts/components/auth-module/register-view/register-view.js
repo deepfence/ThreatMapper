@@ -132,7 +132,7 @@ class RegisterView extends React.Component {
             <div className='form-group'>
               <label htmlFor="phoneNumber">
                 <i className="fa fa-phone" aria-hidden="true"></i>
-                <input type="tel" className="form-control" name="phoneNumber" placeholder="     Phone Number (Optional)" value={phoneNumber} onChange={this.handleChange} />
+                <input type="number" className="form-control" name="phoneNumber" placeholder="Phone Number (Optional)" value={phoneNumber} onChange={this.handleChange} />
               </label>
             </div>
             <div className={'form-group' + (submitted && !company ? ' has-error' : '')}>

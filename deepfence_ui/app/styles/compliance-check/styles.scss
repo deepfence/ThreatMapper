@@ -533,6 +533,27 @@
   justify-content: space-between;
 }
 
+.table-row-actions-target {
+  width: 30px;
+  padding: 8px;
+  height: 100%;
+  border-radius: 4px;
+  &:hover {
+    background-color: $background-lighter-color;
+  }
+}
+
+.table-row-actions-popup {
+  display: flex;
+  right: 0;
+  justify-content: space-between;
+
+  i {
+    padding: 10px;
+    cursor: pointer;
+  }
+}
+
 .compliance-check-view {
   .rt-table {
     margin-top: 10px;

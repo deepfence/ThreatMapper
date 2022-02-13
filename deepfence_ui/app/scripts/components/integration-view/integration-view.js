@@ -20,8 +20,7 @@ import HTTPEndpointView from './http-endpoint-view/index';
 import GoogleChronicleEndpointView from './google-chronicle-view/index';
 import JiraIntegrationView from './jira-integration-view';
 import SumoLogicView from './sumo-logic-view';
-import ReportDownload from './report-download/index';
-import PdfReportDownload from './pdf-report-download/index';
+import Reports from './reports/reports';
 import { getIntegrations } from '../../utils/web-api-utils';
 
 
@@ -101,8 +100,7 @@ class IntegrationView extends React.Component {
 
   renderButton(tabname) {
     switch (tabname) {
-      case 'xlsx':
-      case 'pdf':
+      case 'reports':
         return (
           "Generate Report"
         );
@@ -169,7 +167,7 @@ class IntegrationView extends React.Component {
         <div className={"tab-container " + activeClass} key={tab} onClick={() => this.handleOnClick(tabDetails)}>
           <div className="integration-box" title={tabDetails.displayName}>
             {tabDetails.icon &&
-              <div className="integration-logo" style={{backgroundColor: tabDetails.bgcolor}}> <img style={imgIcon} src={tabDetails.icon} /></div>}
+              <div className="integration-logo" style={{backgroundColor: tabDetails.bgcolor}}> <img className="img-fluid p-2" src={tabDetails.icon} /></div>}
             {tabDetails.iconClassName && <span className={tabDetails.iconClassName} />}
             <div className="integration-name" style={{marginTop: '80px'}}> {tabDetails.displayName}
             {errorFlag ?
@@ -218,11 +216,8 @@ class IntegrationView extends React.Component {
       case 'sumo_logic': {
         return <SumoLogicView />
       }
-      case 'xlsx': {
-        return <ReportDownload />
-      }
-      case 'pdf': {
-        return <PdfReportDownload />
+      case 'reports': {
+        return <Reports />
       }
       case 'microsoft_teams': {
         return <MicrosoftTeamsIntegrationView />

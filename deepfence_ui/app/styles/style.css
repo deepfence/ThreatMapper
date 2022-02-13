@@ -197,7 +197,7 @@ input:checked + .slider:before {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;  
+    user-select: none;
 }
 
 .df-generic-modal .modal-body .port-check-container input[type=checkbox]:before {
@@ -283,7 +283,7 @@ input:checked + .slider:before {
 }
 .pcap-border {
   font-size: 14px;
-	
+
 }
 
 .port-value-container {
@@ -295,7 +295,7 @@ input:checked + .slider:before {
 .port-value-container .fa {
   cursor: pointer;
 }
-    
+
 .pcap-select{
   border:solid 1px #999999;
   background-color:#303030;
@@ -322,7 +322,7 @@ input:checked + .slider:before {
   height: 65px;
   left: 50%;
   position:absolute;
-  
+
 }
 .sk-circle .sk-child {
   width: 100%;
@@ -431,7 +431,7 @@ input:checked + .slider:before {
 	position: relative;
 }
 .cve-status .stop-play{
-    font-size: 20px;	
+    font-size: 20px;
 }
 @-webkit-keyframes sk-circleBounceDelay {
   0%, 80%, 100% {
@@ -459,12 +459,19 @@ input:checked + .slider:before {
   display: block;
 }
 
+.error-message-reports {
+  color: #ff5286;
+  font-size: 12px;
+  display: block;
+  margin: -10px 0 20px 0;
+}
+
 .error-message-small  {
 	color: #ff5286;
 	font-size: 12px;
 	line-height: 11px;
 	display: block;
 	margin-top: 5px;
-	height:25px; 
+	height:25px;
 }
 /* --  ------------------   Packet Capture Panel Ends -----------------------  ---  */

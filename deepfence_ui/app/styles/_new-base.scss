@@ -1,4 +1,4 @@
-@import '../../node_modules/react-tippy/dist/tippy.css';
+@import '../../node_modules/tippy.js/dist/tippy.css';
 
 /* START :: APP SCROLL BAR STYLES */
 ::-webkit-scrollbar-track {
@@ -4692,28 +4692,6 @@ input {
   text-transform: lowercase;
 }
 
-.integration-icon-xlsx:before {
-  content: 'XLSX';
-}
-
-.integration-icon-xlsx {
-  font-size: 20px;
-  font-weight: bold;
-  color: #ffffff;
-  text-transform: lowercase;
-}
-
-.integration-icon-pdf:before {
-  content: 'PDF';
-}
-
-.integration-icon-pdf {
-  font-size: 20px;
-  font-weight: bold;
-  color: #ffffff;
-  text-transform: lowercase;
-}
-
 .alert-detail-view {
   .content-wrapper {
     padding-top: 50px;
@@ -5446,6 +5424,15 @@ input {
   border-radius: 4px;
   width: 146px;
   height: 40px;
+}
+
+.btn-download:disabled,
+.btn-download[disabled]{
+  cursor: not-allowed;
+  border-radius: 4px;
+  color: $grey-color;
+  background-color: $bg-off-color;
+  border: 1px solid $grey-color;
 }
 
 .scheduled-job-padding {

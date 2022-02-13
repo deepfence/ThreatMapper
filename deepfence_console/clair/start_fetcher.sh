@@ -5,22 +5,6 @@ if [ ! -v DF_PROG_NAME ]; then
   exit 0
 fi
 
-pg_running=1
-
-if [ -v DF_HA_MODE ]; then
-  pg_running=0
-fi
-
-while [ $pg_running != 0 ]; do
-  echo "Running the postgres check"
-  /usr/local/bin/check-postgres
-  pg_running=$(echo $?)
-  echo "Return value is " $pg_running
-  if [ $pg_running != 0 ]; then
-    sleep 5
-  fi
-done
-
 if [ -d "/data" ]; then
   mkdir -p /data/$DF_PROG_NAME/data
   rm -rf /tmp
@@ -37,6 +21,19 @@ fi
 rm -rf /data/owasp-data/
 
 /usr/local/bin/update-owasp.sh &
+
+sleep 30
+pg_running=1
+
+while [ $pg_running != 0 ]; do
+  echo "Running the postgres check"
+  /usr/local/bin/check-postgres
+  pg_running=$(echo $?)
+  echo "Return value is " $pg_running
+  if [ $pg_running != 0 ]; then
+    sleep 5
+  fi
+done
 
 /usr/bin/supervisord
 

@@ -4,10 +4,13 @@ from threading import Thread
 from tasks.registry_images import update_all_registry_images
 from models.setting import Setting
 from utils.constants import AES_SETTING_KEY, CLOUD_CREDENTIAL_AES_SETTING_KEY
+from utils.helper import wait_for_postgres_table
 import secrets
 import string
 
+
 def update_all_registry_images_in_redis():
+    wait_for_postgres_table("registry_credential")
     with flask_app.app_context():
         update_all_registry_images()
 
@@ -17,6 +20,7 @@ def generate_random_alphanumeric_string(length):
 
 
 def generate_aes_settings():
+    wait_for_postgres_table("setting")
     with flask_app.app_context():
         try:
             aes_setting_val = {

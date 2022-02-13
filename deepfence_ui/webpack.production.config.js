@@ -13,7 +13,7 @@ try {
   commitHash = fs.readFileSync('console_version.txt').toString().trim();
 } catch (e) {
   // eslint-disable-next-line no-console
-  console.log('error reading console_version.txt');
+  console.error('error reading console_version.txt');
 }
 
 const GLOBALS = {

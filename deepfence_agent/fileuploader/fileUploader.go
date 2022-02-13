@@ -50,7 +50,7 @@ var httpClient *http.Client
 var deepfenceKey string
 
 // Host mount dir for scanning host ("/" for serverless or fargate)
-var mountPoint = "/fenced/mnt/host" // "/"
+var mountPoint = "/fenced/mnt/host/" // "/"
 var dfInstallDir string = ""
 
 var javaExt = []string{".jar", ".war"}
@@ -109,15 +109,17 @@ func initSkipDirs() {
 		skipDirs = append(skipDirs, "C:\\Program Files\\Java")
 		skipDirs = append(skipDirs, "C:\\Program Files\\Hyper-V")
 	} else {
-		skipDirs = append(skipDirs, mountPoint+"/usr/local/bin/dependency-check")
-		skipDirs = append(skipDirs, mountPoint+"/var/lib/docker")
-		skipDirs = append(skipDirs, mountPoint+"/mnt")
-		skipDirs = append(skipDirs, mountPoint+"/proc")
-		skipDirs = append(skipDirs, mountPoint+"/dev")
-		skipDirs = append(skipDirs, mountPoint+"/boot")
-		skipDirs = append(skipDirs, mountPoint+"/etc")
-		skipDirs = append(skipDirs, mountPoint+"/sys")
-		skipDirs = append(skipDirs, mountPoint+"/lost+found")
+		skipDirs = append(skipDirs, mountPoint+"usr/local/bin/dependency-check")
+		skipDirs = append(skipDirs, mountPoint+"var/lib/docker")
+		skipDirs = append(skipDirs, mountPoint+"var/lib/containerd")
+		skipDirs = append(skipDirs, mountPoint+"mnt")
+		skipDirs = append(skipDirs, mountPoint+"run")
+		skipDirs = append(skipDirs, mountPoint+"proc")
+		skipDirs = append(skipDirs, mountPoint+"dev")
+		skipDirs = append(skipDirs, mountPoint+"boot")
+		skipDirs = append(skipDirs, mountPoint+"etc")
+		skipDirs = append(skipDirs, mountPoint+"sys")
+		skipDirs = append(skipDirs, mountPoint+"lost+found")
 	}
 	skipDirLen = len(skipDirs)
 }
@@ -754,7 +756,8 @@ func main() {
 		}
 	} else {
 		// Auto-detect underlying container runtime
-		activeRuntime, _, err = vessel.AutoDetectRuntime()
+		var endpoint string
+		activeRuntime, endpoint, err = vessel.AutoDetectRuntime()
 		if err != nil {
 			stopLogging <- true
 			time.Sleep(3 * time.Second)
@@ -768,7 +771,7 @@ func main() {
 		case vesselConstants.DOCKER:
 			containerRuntimeInterface = dockerRuntime.New()
 		case vesselConstants.CONTAINERD:
-			containerRuntimeInterface = containerdRuntime.New()
+			containerRuntimeInterface = containerdRuntime.New(endpoint)
 		}
 		if containerRuntimeInterface == nil {
 			stopLogging <- true

@@ -25,6 +25,11 @@ const (
 	maxIdleConnsPerHost = 1024
 )
 
+func RemoveLastCharacter(s string) string {
+	r := []rune(s)
+	return string(r[:len(r)-1])
+}
+
 func GetUserDefinedTagsForGivenHost(hostName string, nodeType string, consoleServer string, certPath string, deepfenceKey string) (map[string][]string, error) {
 	type TagsResponse struct {
 		NodeName string   `json:"node_name"`

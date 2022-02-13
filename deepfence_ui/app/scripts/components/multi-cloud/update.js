@@ -47,7 +47,7 @@ const cloudInfo = () => {
       fill: color || COLORS.NODE,
     },
     edgeStyle: {
-      stroke: color || COLORS.EDGE,
+      stroke: COLORS.EDGE,
     },
   };
 };

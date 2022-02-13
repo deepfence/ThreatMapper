@@ -38,7 +38,7 @@ var (
 	// MaxExtractableFileSize enforces the maximum size of a single file within a
 	// tarball that will be extracted. This protects against malicious files that
 	// may used in an attempt to perform a Denial of Service attack.
-	MaxExtractableFileSize int64 = 200 * 1024 * 1024 // 200 MiB
+	MaxExtractableFileSize int64 = 1024 * 1024 * 1024 // 1024 MiB
 
 	readLen     = 6 // max bytes to sniff
 	gzipHeader  = []byte{0x1f, 0x8b}

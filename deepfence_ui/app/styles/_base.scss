@@ -2287,9 +2287,8 @@ a {
     padding-left: 2px;
     padding-right: 4px;
 
-    .Select__input {
-      height: 0px;
-      color: #999999;
+    .Select__input-container {
+      color: $text-tertiary-color;
     }
 
     .Select__value-container {

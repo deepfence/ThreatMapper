@@ -508,7 +508,7 @@ export function maskDocs(params) {
 export function unmaskDocs(params, additionalParams = {}) {
   const url = `${backendElasticApiEndPoint()}/unmask-doc`;
   let body = {};
-  body.docs = params;
+  body.docs = params.docs;
   if (additionalParams) {
     body = {
       ...body,
@@ -1918,7 +1918,7 @@ export function getTopVulnerableActiveHosts(params = {}) {
   }).then(errorHandler);
 }
 
-export function xlsxReportDownload(params = {}) {
+export function reportGenerate(params = {}) {
   const url = `${backendElasticApiEndPoint()}/node_action`;
   return fetch(url, {
     credentials: 'same-origin',
@@ -1928,69 +1928,75 @@ export function xlsxReportDownload(params = {}) {
       'Content-Type': 'application/json',
       Authorization: getAuthHeader(),
     },
+  }).then(errorHandler);
+}
+
+export function reportDownloadStatus(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/detailed_report_status`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function downloadReport(params = {}) {
+  const { path = '' } = params;
+  const splitPath = path.split('/');
+  let filename = splitPath[splitPath.length - 1];
+  const url = `${downloadApiEndPoint()}/downloadFile`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'deepfence-key': localStorage.getItem('dfApiKey'),
+      DF_FILE_NAME: path,
+    },
   })
-    .then(response => response.blob())
+    .then(response => {
+      return new Promise((resolve, reject) => {
+        if (response.ok) {
+          resolve(response.blob());
+        } else {
+          if (response.status === 400) {
+            response.json().then(
+              jObj => {
+                reject({
+                  ...jObj.error,
+                  code: response.status,
+                });
+              },
+              error => {
+                reject({
+                  message: 'Failed to decode',
+                  code: 'FTDJ',
+                });
+              }
+            );
+          } else {
+            reject({
+              message: 'Failed to fetch file',
+              code: 'FFEF',
+            });
+          }
+        }
+      });
+    })
     .then(blob => {
-      /* eslint-enable */
       const fileURL = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      const {
-        action_args: {
-          resources = [],
-          filters: {
-            host_name: hostnameListIm = List(),
-            image_name_with_tag: imageNameListIm = List(),
-          },
-        } = {},
-      } = params;
-      let filename = 'deepfence-reports.xlsx';
-      if (resources.length > 0) {
-        const { type, filter: { scan_id: scanIdList = [] } = {} } =
-          resources[0];
-        let reportType = type;
-        if (reportType === 'cve') {
-          reportType = 'Vulnerability';
-        }
-
-        // This will handle XLSX report download on CVE and Compliance page
-        // We pick the scan id (if present) and use that to name the downloaded file
-        if (scanIdList.length > 0) {
-          const scannedID = scanIdList[0];
-          const scanID = scannedID;
-          const lastUnderscoreIndex = scanID.lastIndexOf('_');
-          const slicedScanID = scanID.substring(0, lastUnderscoreIndex);
-          const timeStamp = scanID.substring(
-            lastUnderscoreIndex,
-            scanID.length
-          );
-          const replacedtimeStamp = timeStamp.replace('T', '_');
-          const replacedscanID = slicedScanID.concat(replacedtimeStamp);
-          const changedscanID = replacedscanID.replace(/[^a-zA-Z0-9]/g, '_');
-          filename = `${reportType}_report_${changedscanID}.xlsx`;
-        } else if (resources.length === 1 && imageNameListIm.size === 1) {
-          // If it doesn't have scan id (i.e. not initiated from CVE or compliance page)
-          // check if there is a single resource, either alert, cve or compliance and
-          // from that check if there is a single imagename or hostname and then
-          // derive the filename from it. If it has multiple, just use the generic name
-          const imageName = imageNameListIm.get(0);
-          const changedImageName = imageName.replace(/[^a-zA-Z0-9]/g, '_');
-          filename = `${reportType}_report_${changedImageName}.xlsx`;
-        } else if (resources.length === 1 && hostnameListIm.size === 1) {
-          const hostname = hostnameListIm.get(0);
-          const changedHostName = hostname.replace(/[^a-zA-Z0-9]/g, '_');
-          filename = `${reportType}_report_${changedHostName}.xlsx`;
-        }
-      }
       link.download = filename;
       link.href = fileURL;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     });
-  /* eslint-disable */
 }
 
-export function xlsxScheduleEmail(params = {}) {
+export function reportScheduleEmail(params = {}) {
   const url = `${backendElasticApiEndPoint()}/node_action`;
   return fetch(url, {
     credentials: 'same-origin',
@@ -2016,11 +2022,13 @@ export function getReportFilterOptions() {
 }
 
 export function enumerateFilters(params = {}) {
-  const { node_type: nodeType = '', resourceType = '', filters = '' } = params;
   const url = `${backendElasticApiEndPoint()}/enumerate_filters?`;
   const urlWithQueryParams = Object.keys(params).reduce((acc, key) => {
     const value = params[key];
-    if (value !== '' && value !== undefined && value !== null) {
+    if (key === 'formId' || key === "dispatch") {
+      // do not pass formId/dispatch to api
+      return acc;
+    } else if (value !== '' && value !== undefined && value !== null) {
       acc += `${key}=${value}&`;
     }
     return acc;
@@ -2114,128 +2122,6 @@ export function deleteScans(params = {}) {
   }).then(errorHandler);
 }
 
-export function getPDFReport(params = {}) {
-  const {
-    dispatch,
-    lucene_query = [],
-    cve_container_image,
-    scan_id,
-    node_filters,
-    start_index,
-    size,
-    number,
-    time_unit,
-    resource_type,
-  } = params;
-  let domain_name = getBackendBasePath();
-  let url = `${backendElasticApiEndPoint()}/detailed_report?lucene_query=${getLuceneQuery(
-    lucene_query
-  )}`;
-  if (number && time_unit && domain_name) {
-    url = `${url}&number=${number}&time_unit=${time_unit}&domain_name=${domain_name}&resource_type=${resource_type}`;
-  }
-  let body = {
-    node_filters,
-    start_index,
-    size,
-  };
-  if (cve_container_image) {
-    body.filters = {
-      cve_container_image,
-      scan_id,
-    };
-  }
-  return doRequest({
-    url,
-    method: 'POST',
-    data: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-      'cache-control': 'no-cache',
-    },
-    error: error => {
-      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
-        // dispatch(receiveLogoutResponse());
-        refreshAuthToken();
-      } else if (error.status === 403) {
-        dispatch(receiveClearDashBoardResponse());
-      } else {
-        log(`Error in api modal details request: ${error}`);
-      }
-    },
-  });
-}
-
-export function getPdfDownloadStatus(params = {}) {
-  const url = `${backendElasticApiEndPoint()}/detailed_report_status`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'GET',
-    // body: JSON.stringify(params),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  }).then(errorHandler);
-}
-
-export function downloadPdfReport(params = {}) {
-  const { path = '' } = params;
-  const splitPath = path.split('/');
-  let filename = splitPath[splitPath.length - 1];
-  // if (splitPath.length === 5) {
-  //   filename = `${splitPath[3]}.${splitPath[4]}.bin`;
-  // }
-  const url = `${downloadApiEndPoint()}/downloadFile`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'GET',
-    headers: {
-      'deepfence-key': localStorage.getItem('dfApiKey'),
-      DF_FILE_NAME: path,
-    },
-  })
-    .then(response => {
-      return new Promise((resolve, reject) => {
-        if (response.ok) {
-          resolve(response.blob());
-        } else {
-          if (response.status === 400) {
-            response.json().then(
-              jObj => {
-                reject({
-                  ...jObj.error,
-                  code: response.status,
-                });
-              },
-              error => {
-                reject({
-                  message: 'Failed to decode',
-                  code: 'FTDJ',
-                });
-              }
-            );
-          } else {
-            reject({
-              message: 'Failed to fetch file',
-              code: 'FFEF',
-            });
-          }
-        }
-      });
-    })
-    .then(blob => {
-      const fileURL = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = fileURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-}
-
 export function getUserAuditLog(params = {}) {
   const url = `${backendElasticApiEndPoint()}/user-activity-log`;
   return fetch(url, {
@@ -2311,6 +2197,19 @@ export function addGlobalSettings(params = {}) {
     headers: {
       'Content-Type': 'application/json',
       Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getRegistryImagesTags(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/registry_images_tags`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': getAuthHeader(),
     },
   }).then(errorHandler);
 }

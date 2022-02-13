@@ -1,22 +1,23 @@
 import json
+import traceback
+
 from config.app import celery_app, app as flask_app
+
 from tasks.task_scheduler import run_node_task
-from utils.constants import PDF_REPORT_INDEX, \
+from utils.constants import REPORT_INDEX, \
     NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, \
     PDF_REPORT_MAX_DOCS
-from utils.helper import call_scope_control_api
-from utils.resource import get_probe_id_for_host
 import pandas as pd
 import requests
 from utils.constants import CVE_INDEX, MAX_TOTAL_SEVERITY_SCORE
 import pdfkit
 import jinja2
-import re
 import numpy as np
 import itertools
 from datetime import datetime, date
 from utils.esconn import ESConn
 from utils.helper import mkdir_recursive, split_list_into_chunks, rmdir_recursive
+from utils.reports import prepare_report_download, prepare_report_email_body
 from utils.resource import filter_node_for_vulnerabilities, get_active_node_images_count
 from utils.common import get_rounding_time_unit
 from copy import deepcopy
@@ -30,19 +31,25 @@ def common_worker(self, **kwargs):
             run_node_task(kwargs["action"], kwargs["node_action_details"])
 
 
-def add_pdf_report_status_in_es(pdf_report_id, status, filters_applied_str, resource_type, pdf_path=None):
+def add_report_status_in_es(report_id, status, filters_applied_str, file_type, duration="None",report_path=None):
+    if duration:
+        if "d" in duration:
+            duration = "Last "+duration.replace("d", " days")
+        elif "all" in duration:
+            duration = "All Documents"
     body = {
-        "type": PDF_REPORT_INDEX,
-        "pdf_report_id": pdf_report_id,
+        "type": REPORT_INDEX,
+        "report_id": report_id,
         "status": status,
         "masked": 'false',
         "filters": filters_applied_str,
-        "report_type": resource_type,
+        "file_type": file_type,
+        "duration" : duration,
         "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     }
-    if pdf_path:
-        body["pdf_path"] = pdf_path
-    ESConn.create_doc(PDF_REPORT_INDEX, body, refresh="wait_for")
+    if report_path:
+        body["report_path"] = report_path
+    ESConn.create_doc(REPORT_INDEX, body, refresh="wait_for")
 
 
 def convert_time_unit_to_date(number, time_unit):
@@ -64,9 +71,15 @@ def convert_time_unit_to_date(number, time_unit):
     return start_time_str, end_time_str
 
 
-def vulnerability_pdf_report(pdf_report_id, filters, filters_cve_scan, node_filters, filters_applied,
-                             lucene_query_string, number, time_unit, resource_type, resources):
-    filters_cve_scan["action"] = "COMPLETED"
+def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, resource):
+    if len(resource.get("cve_severity", "")) > 0:
+        resource["cve_severity"] = resource.get("cve_severity", "").split(",")
+    else:
+        resource["cve_severity"] = []
+    node_filters = deepcopy(filters)
+    filters_applied = deepcopy(node_filters)
+    del node_filters["type"]
+    filters_cve_scan = {"action": "COMPLETED"}
     filters["type"] = CVE_INDEX
     node_filters_for_cve_scan_index = {}
 
@@ -82,11 +95,11 @@ def vulnerability_pdf_report(pdf_report_id, filters, filters_cve_scan, node_filt
         if value:
             and_terms.append({"terms": {key + ".keyword": value}})
 
-    for key, value in resources.items():
+    for key, value in resource.items():
         if type(value) is not list:
             value = [value]
         if value and len(value) != 0:
-            if key == "severity":
+            if key == "cve_severity":
                 and_terms.append({"terms": {"cve_severity": value}})
             else:
                 and_terms.append({"terms": {key: value}})
@@ -98,12 +111,9 @@ def vulnerability_pdf_report(pdf_report_id, filters, filters_cve_scan, node_filt
 
     query_body = {"query": {"bool": {"must": and_terms}}, "sort": [{"@timestamp": {"order": "desc"}}]}
 
-    filters_applied = {**filters_applied, **resources}
+    filters_applied = {**filters_applied, **resource}
     filters_applied = {k: v for k, v in filters_applied.items() if v}
     filters_applied_str = json.dumps(filters_applied) if filters_applied else "None"
-
-    add_pdf_report_status_in_es(pdf_report_id=pdf_report_id, status="In Progress",
-                                filters_applied_str=filters_applied_str, resource_type=resource_type)
 
     template_loader = jinja2.FileSystemLoader(searchpath="/app/code/config/templates/")
     template_env = jinja2.Environment(loader=template_loader)
@@ -134,10 +144,7 @@ def vulnerability_pdf_report(pdf_report_id, filters, filters_cve_scan, node_filt
         if node_id_bkt.get("docs", {}).get("hits", {}).get("hits", []):
             recent_scan_ids.append(node_id_bkt["docs"]["hits"]["hits"][0]["_source"]["scan_id"])
     if not recent_scan_ids:
-        add_pdf_report_status_in_es(
-            pdf_report_id=pdf_report_id, status="No vulnerabilities found for the applied filters",
-            filters_applied_str=filters_applied_str, resource_type=resource_type)
-        return
+        return "<div>No vulnerabilities found for the applied filters</div>"
 
     recent_scan_id_chunks = split_list_into_chunks(recent_scan_ids, ES_MAX_CLAUSE)
 
@@ -146,13 +153,11 @@ def vulnerability_pdf_report(pdf_report_id, filters, filters_cve_scan, node_filt
     for scan_id_chunk in recent_scan_id_chunks:
         tmp_filters = deepcopy(filters)
         tmp_filters["scan_id"] = scan_id_chunk
-        doc_count += ESConn.count( CVE_INDEX, tmp_filters, number=number, time_unit=time_unit, lucene_query_string=lucene_query_string)
+        doc_count += ESConn.count(CVE_INDEX, tmp_filters, number=number, time_unit=time_unit,
+                                  lucene_query_string=lucene_query_string)
         if doc_count > PDF_REPORT_MAX_DOCS:
-            add_pdf_report_status_in_es(
-                pdf_report_id=pdf_report_id,
-                status="Error, please use filters to reduce the number of documents to download.",
-                filters_applied_str=filters_applied_str, resource_type=resource_type)
-            # return
+            return "<div>Error while fetching vulnerabilities, please use filters to reduce the number of documents " \
+                   "to download.</div> "
 
     cve_data = []
     for scan_id_chunk in recent_scan_id_chunks:
@@ -165,16 +170,13 @@ def vulnerability_pdf_report(pdf_report_id, filters, filters_cve_scan, node_filt
                 if doc.get("_source"):
                     cve_data.append(doc["_source"])
     if not cve_data:
-        add_pdf_report_status_in_es(
-            pdf_report_id=pdf_report_id, status="No vulnerabilities found for the applied filters",
-            filters_applied_str=filters_applied_str, resource_type=resource_type)
-        return
+        return "<div>No vulnerabilities found for the applied filter</div>"
     df = pd.json_normalize(cve_data)
     cve_count = {}
     severity_types = ["critical", "high", "medium", "low"]
 
-    if len(resources.get("severity", [])) != 0:
-        applied_severity = resources.get("severity", [])
+    if len(resource.get("cve_severity", [])) != 0:
+        applied_severity = resource.get("cve_severity", [])
     else:
         applied_severity = deepcopy(severity_types)
 
@@ -413,6 +415,53 @@ def vulnerability_pdf_report(pdf_report_id, filters, filters_cve_scan, node_filt
         "header_html": header_html,
         "applied_filters_html": applied_filters_html
     }
+    final_html = template_env.get_template('detailed_report_summary_report.html').render(**report_dict)
+    return final_html
+
+
+def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resources,
+                         include_dead_nodes, report_email):
+    add_report_status_in_es(report_id=report_id, status="In Progress",filters_applied_str=str({"filters": filters, "resources": resources}), file_type="xlsx",duration=f"{number}{time_unit}")
+    xlsx_buffer = prepare_report_download(
+        node_type, filters, resources,
+        {"duration": {"number": number, "time_unit": time_unit}}, include_dead_nodes)
+    if report_email == "":
+        report_file_name = "/data/xlsx-report/" + report_id + "/report.xlsx"
+        headers = {"DF_FILE_NAME": report_file_name}
+        res = requests.post("https://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
+                            files={"DF_MULTIPART_BOUNDARY": xlsx_buffer}, verify=False)
+        if res.status_code == 200:
+            add_report_status_in_es(
+                report_id=report_id, status="Completed",
+                filters_applied_str=str({"filters": filters, "resources": resources}),
+                file_type="xlsx", duration=f"{number}{time_unit}", report_path=report_file_name)
+        else:
+            add_report_status_in_es(
+                report_id=report_id, status="Error. Please try again later.",
+                filters_applied_str=str({"filters": {"filters": filters, "resources": resources}, "resources": resources}),file_type="xlsx",duration=f"{number}{time_unit}")
+    else:
+        from tasks.email_sender import send_email_with_attachment
+        email_html = prepare_report_email_body(
+            node_type, filters, resources,
+            {"duration": {"number": number, "time_unit": time_unit}})
+        send_email_with_attachment(
+            recipients=[report_email], attachment=xlsx_buffer.getvalue(),
+            attachment_file_name="deepfence-report.xlsx", subject='Deepfence Report', html=email_html,
+            attachment_content_type="application/vnd.ms-excel; charset=UTF-8")
+
+
+def generate_pdf_report(report_id, filters, node_type,
+                        lucene_query_string, number, time_unit, resources, domain_name, report_email):
+    add_report_status_in_es(report_id=report_id, status="In Progress",filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf", duration=f"{number}{time_unit}")
+    final_html = ""
+    for resource in resources:
+        resource_type = resource.get('type')
+        if resource_type == CVE_INDEX:
+            flask_app.logger.error("resources:{0}, resource:{1}, filters:{2}".format(str(resources), str(resource),
+                                                                                     str(filters)))
+            final_html += vulnerability_pdf_report(filters=filters, lucene_query_string=lucene_query_string,
+                                                   number=number, time_unit=time_unit,
+                                                   resource=resource.get("filter", {}))
     options = {
         'page-size': 'Letter',
         'margin-top': '0.5in',
@@ -422,65 +471,61 @@ def vulnerability_pdf_report(pdf_report_id, filters, filters_cve_scan, node_filt
         'encoding': "UTF-8",
         'no-outline': None
     }
-    final_html = template_env.get_template('detailed_report_summary_report.html').render(**report_dict)
-    report_file_dir = "/data/pdf-report/" + pdf_report_id
+    report_file_dir = "/data/pdf-report/" + report_id
     mkdir_recursive(report_file_dir)
-
-    if filters_applied:
-        if filters_applied.get("kubernetes_cluster_name", None):
-            filter_name = "_".join(filters_applied.get("kubernetes_cluster_name", None)[:1])
-        elif filters_applied.get("host_name", None):
-            filter_name = "_".join(filters_applied.get("host_name", None)[:1])
-        elif filters_applied.get("severity", None):
-            filter_name = "_".join(filters_applied.get("severity", None)[:1])
-        else:
-            filter_name = ""
-        filter_name = re.sub('[^a-zA-Z0-9\.]', '_', filter_name)
-        report_file_name = report_file_dir + "/vulnerability_report_" + filter_name + ".pdf"
-    else:
-        report_file_name = report_file_dir + "/vulnerability_report.pdf"
-
+    report_file_name = "/data/pdf-report/" + report_id + "/report.pdf"
     pdfkit.from_string(final_html, report_file_name, options=options)
-    headers = {"DF_FILE_NAME": report_file_name}
-    with open(report_file_name, 'rb') as f:
-        res = requests.post("https://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
-                            files={"DF_MULTIPART_BOUNDARY": f}, verify=False)
-        if res.status_code == 200:
-            add_pdf_report_status_in_es(
-                pdf_report_id=pdf_report_id, status="Completed", filters_applied_str=filters_applied_str,
-                resource_type=resource_type, pdf_path=report_file_name)
-        else:
-            add_pdf_report_status_in_es(
-                pdf_report_id=pdf_report_id, status="Error. Please try again later.",
-                filters_applied_str=filters_applied_str, resource_type=resource_type)
-
+    if report_email == "":
+        headers = {"DF_FILE_NAME": report_file_name}
+        with open(report_file_name, 'rb') as f:
+            res = requests.post("https://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
+                                files={"DF_MULTIPART_BOUNDARY": f}, verify=False)
+            if res.status_code == 200:
+                add_report_status_in_es(
+                    report_id=report_id, status="Completed",
+                    filters_applied_str=str({"filters": filters, "resources": resources}),file_type="pdf", report_path=report_file_name,duration=f"{number}{time_unit}")
+            else:
+                add_report_status_in_es(
+                    report_id=report_id, status="Error. Please try again later.",
+                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",duration=f"{number}{time_unit}")
+    else:
+        from tasks.email_sender import send_email_with_attachment
+        email_html = prepare_report_email_body(
+            node_type, filters, resources,
+            {"duration": {"number": number, "time_unit": time_unit}})
+        send_email_with_attachment(
+            recipients=[report_email], attachment=open(report_file_name, 'rb'),
+            attachment_file_name="deepfence-report.pdf", subject='Deepfence Report', html=email_html,
+            attachment_content_type="application/pdf; charset=UTF-8")
     rmdir_recursive(report_file_dir)
 
 
 @celery_app.task(serializer='json', bind=True, default_retry_delay=60)
-def generate_pdf_report(self, **kwargs):
-    pdf_report_id = kwargs["pdf_report_id"]
+def generate_report(self, **kwargs):
+    report_id = kwargs["report_id"]
     filters = deepcopy(kwargs["filters"])
-    node_filters = deepcopy(kwargs["node_filters"])
-    filters_applied = deepcopy(kwargs["node_filters"])
     lucene_query_string = kwargs["lucene_query_string"]
     number = kwargs["number"]
     time_unit = kwargs["time_unit"]
-    resource_type = kwargs['resource_type']
     domain_name = kwargs['domain_name']
     resources = kwargs["resources"]
+    file_type = kwargs["file_type"]
+    node_type = kwargs["node_type"]
+    include_dead_nodes = kwargs["include_dead_nodes"]
+    report_email = kwargs["report_email"]
 
     try:
-        if resource_type == "cve":
-            vulnerability_pdf_report(pdf_report_id=pdf_report_id, filters=filters,
-                                     filters_cve_scan=deepcopy(kwargs["filters"]), node_filters=node_filters,
-                                     filters_applied=filters_applied, lucene_query_string=lucene_query_string,
-                                     number=number, time_unit=time_unit, resource_type=resource_type,
-                                     resources=resources)
+        if file_type == "xlsx":
+            generate_xlsx_report(report_id=report_id, filters=filters, number=number, time_unit=time_unit,
+                                 node_type=node_type, resources=resources,
+                                 include_dead_nodes=include_dead_nodes, report_email=report_email)
+        elif file_type == "pdf":
+            generate_pdf_report(report_id=report_id, filters=filters,
+                                lucene_query_string=lucene_query_string, number=number, time_unit=time_unit,
+                                resources=resources, domain_name=domain_name, report_email=report_email,
+                                node_type=node_type)
     except Exception as ex:
-        flask_app.logger.error("Error creating report: {0}".format(ex))
-        filters_applied = {k: v for k, v in filters_applied.items() if v}
-        filters_applied_str = json.dumps(filters_applied) if filters_applied else "None"
-        add_pdf_report_status_in_es(
-            pdf_report_id=pdf_report_id, status="Error. Please contact deepfence support",
-            filters_applied_str=filters_applied_str, resource_type=resource_type)
+        flask_app.logger.error("Error creating report: {0} stackTrace: {1}".format(ex, traceback.format_exc()))
+        add_report_status_in_es(
+            report_id=report_id, status="Error. Please contact deepfence support",
+            filters_applied_str=str({"filters": filters, "resources": resources}), file_type=file_type,duration=f"{number}{time_unit}")

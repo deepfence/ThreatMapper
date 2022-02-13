@@ -64,8 +64,8 @@ var pathErrMsg = "The system cannot find the path specified"
 
 /* Four hours in nanoseconds */
 var fourHourNanoSec = 14400000000000
-var lockFileName = "/tmp/depcheck-download.lock"
-var tmpDepcheckDataFile = "/tmp/depcheck-data.tar.bz2"
+var lockFileName = "/root/depcheck-download.lock"
+var tmpDepcheckDataFile = "/root/depcheck-data.tar.bz2"
 var cveCounter CveCounter
 var failCVECount int64          // if no of cve >= this, fail the scan
 var failCVEScore float64        // if score of cve >= this, fail the scan
@@ -101,6 +101,7 @@ const MAX_SEVERITY_SCORE = 10 * CRITICAL_WEIGHTAGE // * AV_NETWORK_WEIGHTAGE * A
 const MAX_TOTAL_SEVERITY_SCORE = 500               // match this value with deepfence_backend/utils/constants.py constant
 
 var containerRuntimeInterface vessel.Runtime
+var containerRuntimeEndpoint string
 
 func init() {
 	cveCounter = CveCounter{}
@@ -109,7 +110,8 @@ func init() {
 	scanLanguages = []string{"java", "python", "ruby", "php", "nodejs", "js", "dotnet"}
 
 	// Auto-detect underlying container runtime
-	containerRuntime, _, err := vessel.AutoDetectRuntime()
+	containerRuntime, endpoint, err := vessel.AutoDetectRuntime()
+	containerRuntimeEndpoint = endpoint
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -118,7 +120,7 @@ func init() {
 	case vesselConstants.DOCKER:
 		containerRuntimeInterface = dockerRuntime.New()
 	case vesselConstants.CONTAINERD:
-		containerRuntimeInterface = containerdRuntime.New()
+		containerRuntimeInterface = containerdRuntime.New(endpoint)
 	}
 	if containerRuntimeInterface == nil {
 		fmt.Println("Error: Could not detect container runtime")
@@ -311,12 +313,6 @@ func save(imageName, imageId, imageTarPath string) (string, error) {
 			return "", err
 		}
 	} else {
-		if !fileExists(imageTarPath) {
-			err := downloadFileFromConsole(imageTarPath, imageTarPath, 1)
-			if err != nil {
-				return path, err
-			}
-		}
 		_, stdErr, retVal := runCommand("tar", "-xf", imageTarPath, "--warning=none", "-C"+path)
 		if retVal != 0 {
 			return "", errors.New(stdErr)
@@ -638,7 +634,6 @@ func logErrorAndExit(errMsg string) {
 }
 
 func saveContainerImage(imageName string, imageTarPath string, imageId string) *manifestItem {
-	global_image_id = imageId
 	path, err := save(imageName, global_image_id, imageTarPath)
 	if err != nil {
 		msg := fmt.Sprintf("Could not save image: %s", err.Error())
@@ -831,17 +826,6 @@ func getContainerVulnerabilities(imageName string, imageTarPath string, imageId 
 
 func getHostVulnerabilities(hostName string, hostTarFile string) {
 	//path := "/tmp/" + hostName
-	global_host_name = hostName
-	global_image_id = hostName
-	if !fileExists(hostTarFile) {
-		// hostTarFile = /data/cve-scan-upload/ramanan-dev-3/ramanan-dev-3_2020-04-23T11:41:14.000/layer.tar
-		// In k8s console, hostTarFile will be present on the fetcher container, since there is no global
-		// /data volume like docker UI. So download it from fetcher.
-		err := downloadFileFromConsole(hostTarFile, hostTarFile, 1)
-		if err != nil {
-			logErrorAndExit(fmt.Sprintf("Error: %s", err))
-		}
-	}
 	layerName, err := md5HashForFile(hostTarFile)
 	if err != nil {
 		logErrorAndExit(fmt.Sprintf("Error: %s", err))
@@ -1016,10 +1000,16 @@ func downloadDependencyData() string {
 			return unzipErr.Error()
 		}
 	} else {
-		untarCmd := fmt.Sprintf("/bin/tar -jxf %s -C %s",
-			tmpDepcheckDataFile, depcheckDataDir)
-		_, cmdErr := exec.Command("/bin/sh", "-c", untarCmd).Output()
+		unTarCmd := fmt.Sprintf("-jxf %s -C %s",
+		tmpDepcheckDataFile, depcheckDataDir)
+		unTarArgs := strings.Split(unTarCmd, " ")
+		fmt.Printf("Tar arguments: %s \n", unTarCmd)
+		cmdOut, cmdErr := exec.Command("/bin/tar", unTarArgs...).CombinedOutput()
+		if cmdOut != nil {
+			fmt.Printf("Tar cmd stdout: %s \n", string(cmdOut))
+		}
 		if cmdErr != nil {
+			fmt.Printf("Tar cmd stderr: %s \n", cmdErr.Error())
 			return cmdErr.Error()
 		}
 	}
@@ -1189,7 +1179,7 @@ func main() {
 	// image id is used to in docker save command
 	// If user has already provided imageTarPath, there is no need to save the image
 	// and hence image id not required.
-	// For scenarios where imageTarPath is provide,  read from manifest file
+	// For scenarios where imageTarPath is provided,  read from manifest file
 	if imageName != "host" && imageId == "" && len(imageTarPath) == 0 {
 		// strip image name with, docker.io and docker.io/library
 		// kludge: could be done better
@@ -1228,16 +1218,21 @@ func main() {
 	if runtime.GOOS == "windows" {
 		dependency_check_cmd = "C:/'Program Files'/dependency-check/bin/dependency-check.bat --noupdate --data " + depcheckDataDir + " --suppression C:/'Program Files'/Deepfence/dependencycheck-base-suppression.xml --enableExperimental --project random --out " + filepath.Join(windowsTempDir, "output_"+start_time+".json") + " -f JSON %s"
 	} else {
-		dependency_check_cmd = "/usr/local/bin/dependency-check/bin/dependency-check.sh --noupdate --data " + depcheckDataDir + " --suppression /usr/local/bin/dependency-check/dependencycheck-base-suppression.xml --enableExperimental --project random --out /tmp/output_" + start_time + ".json -f JSON %s"
+		dependency_check_cmd = "/usr/local/bin/dependency-check/bin/dependency-check.sh --noupdate --data " + depcheckDataDir + " --suppression /usr/local/bin/dependency-check/dependencycheck-base-suppression.xml --enableExperimental --project random --out /root/output_" + start_time + ".json -f JSON %s"
 	}
 
 	//fmt.Printf("Base Image scan started\n")
 	// ---------
-	node_id = ""
 	node_type = ""
+	global_host_name = hostName
+	global_image_name = imageName
+	global_image_id = imageId
 	if imageName == "host" {
 		node_id = hostName
 		node_type = "host"
+		isHostScan = true
+		hostMountPath = strings.Replace(imageTarPath, "layer.tar", "", -1)
+		global_image_id = hostName
 	} else {
 		node_id = imageName
 		node_type = "container_image"
@@ -1260,7 +1255,6 @@ func main() {
 	if scanId == "" || !strings.Contains(scanId, node_id) {
 		scanId = node_id + "_" + getDatetimeNow()
 	}
-	global_image_name = imageName
 
 	go func() {
 		sendScanLogsToLogstash("", "STARTED")
@@ -1275,40 +1269,56 @@ func main() {
 		}
 	}()
 
+	// hostTarFile = /data/cve-scan-upload/dev-3/dev-3_2020-04-23T11:41:14.000/layer.tar
+	// In k8s console, layer.tar will be present on the fetcher container, since there is no global
+	// volume. So download it from fetcher.
+	if imageTarPath != "" && !fileExists(imageTarPath) {
+		err := downloadFileFromConsole(imageTarPath, imageTarPath, 1)
+		if err != nil {
+			logErrorAndExit(fmt.Sprintf("Error: %s", err))
+		}
+	}
+
 	var manifestItem *manifestItem
-	if imageName != "host" {
+	if !isHostScan {
 		manifestItem = saveContainerImage(imageName, imageTarPath, imageId)
 	}
 
-	fileSystemsDir := "/data/fileSystems/"
-	err = os.MkdirAll(fileSystemsDir, os.ModePerm)
-	if err != nil {
-		fmt.Printf("Error while creating fileSystems dir %s", err.Error())
-	} else {
-		fileSet = make(map[string]bool)
-		outputTarPath := fileSystemsDir + "temp.tar"
-		err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName)
-		if err == nil {
-			// extracting list of file names with path from tar file
-			cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
-			files, err := ExecuteCommand(cmd)
+	if !isHostScan {
+		// Remove vulnerabilities from intermediate layers
+		fileSystemsDir := "/root/fileSystems/"
+		err = os.MkdirAll(fileSystemsDir, os.ModePerm)
+		if err != nil {
+			fmt.Printf("Error while creating fileSystems dir %s\n", err.Error())
+		} else {
+			fmt.Println("Extracting final file system of the image")
+			fileSet = make(map[string]bool)
+			outputTarPath := fileSystemsDir + "temp.tar"
+			err = containerRuntimeInterface.ExtractFileSystem(imageTarPath, outputTarPath, imageName, containerRuntimeEndpoint)
 			if err == nil {
-				fileList := strings.Split(files, "\n")
-				for _, val := range fileList {
-					// This check is to handle tar structure returned from containerd api
-					if strings.HasPrefix(val, "./") {
-						val = strings.Replace(val, "./", "", 1)
+				// extracting list of file names with path from tar file
+				cmd := "tar tf " + outputTarPath + " | grep -e [^/]$"
+				files, execErr := ExecuteCommand(cmd)
+				if execErr == nil {
+					fileList := strings.Split(files, "\n")
+					for _, val := range fileList {
+						// This check is to handle tar structure returned from containerd api
+						if strings.HasPrefix(val, "./") {
+							val = strings.Replace(val, "./", "", 1)
+						}
+						fileSet["/"+val] = true
 					}
-					fileSet["/"+val] = true
+				} else {
+					fmt.Printf("Error extracting list of file names with path from tar file %s\n", execErr.Error())
 				}
 			}
+			if err != nil {
+				fmt.Printf("Error while extracting fileSystem from %s: %s\n", imageTarPath, err.Error())
+			} else {
+				fmt.Printf("Filesystem extracted at %s with number of files: %d\n", outputTarPath, len(fileSet))
+			}
+			deleteFiles(fileSystemsDir, "*.tar")
 		}
-		if err != nil {
-			fmt.Printf("Error while extracting fileSystem from %s: %s", imageTarPath, err.Error())
-		} else {
-			fmt.Printf("Filesystem extracted at %s with number of files: %d", outputTarPath, len(fileSet))
-		}
-		deleteFiles(fileSystemsDir, "*.tar")
 	}
 
 	// language scan
@@ -1345,9 +1355,7 @@ func main() {
 	}
 
 	// base scan
-	if imageName == "host" {
-		isHostScan = true
-		hostMountPath = strings.Replace(imageTarPath, "layer.tar", "", -1)
+	if isHostScan {
 		getHostVulnerabilities(hostName, imageTarPath)
 	} else {
 		getContainerVulnerabilities(imageName, imageTarPath, imageId, manifestItem)
