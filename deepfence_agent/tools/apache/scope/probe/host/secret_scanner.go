@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/weaveworks/scope/common/xfer"
-	"github.com/weaveworks/scope/probe/secret_scanner"
+	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 	"io/ioutil"
 	"net"
@@ -30,14 +30,14 @@ var httpClient *http.Client
 
 func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
-	var greq secret_scanner.FindRequest
+	var greq pb.FindRequest
 	if nodeType == nodeTypeContainer {
 		containerID := fmt.Sprintf("%s", req.ControlArgs["container_id"])
 		if containerID == "" {
 			return xfer.ResponseErrorf("container_id is required")
 		}
-		greq = secret_scanner.FindRequest{Input: &secret_scanner.FindRequest_Container{
-			Container: &secret_scanner.Container{Id: containerID},
+		greq = pb.FindRequest{Input: &pb.FindRequest_Container{
+			Container: &pb.Container{Id: containerID},
 		}}
 	} else if nodeType == nodeTypeImage {
 		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
@@ -45,11 +45,11 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 			return xfer.ResponseErrorf("image_id is required")
 		}
 		imageName := fmt.Sprintf("%s", req.ControlArgs["image_id"])
-		greq = secret_scanner.FindRequest{Input: &secret_scanner.FindRequest_Image{
-			Image: &secret_scanner.DockerImage{Id: imageId, Name: imageName},
+		greq = pb.FindRequest{Input: &pb.FindRequest_Image{
+			Image: &pb.DockerImage{Id: imageId, Name: imageName},
 		}}
 	} else if nodeType == nodeTypeHost {
-		greq = secret_scanner.FindRequest{Input: &secret_scanner.FindRequest_Path{Path: HostMountDir}}
+		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: HostMountDir}}
 	}
 	client, err := newSecretScannerClient()
 	if err != nil {
@@ -59,7 +59,7 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
 }
 
-func getAndPublishSecretScanResults(client secret_scanner.SecretScannerClient, req secret_scanner.FindRequest, controlArgs map[string]string) {
+func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string) {
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	timestamp := getTimestamp()
 	currTime := getCurrentTime()
@@ -183,7 +183,7 @@ func buildClient() (*http.Client, error) {
 	return client, nil
 }
 
-func newSecretScannerClient() (secret_scanner.SecretScannerClient, error) {
+func newSecretScannerClient() (pb.SecretScannerClient, error) {
 	addr, dailer, err := getAddressAndDialer(secretScanSocket)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func newSecretScannerClient() (secret_scanner.SecretScannerClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return secret_scanner.NewSecretScannerClient(conn), nil
+	return pb.NewSecretScannerClient(conn), nil
 }
 
 func dial(addr string, timeout time.Duration) (net.Conn, error) {
