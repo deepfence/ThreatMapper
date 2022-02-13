@@ -97,5 +97,6 @@ var SecretScanner_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "secret_scanner.proto",
+	// TODO: remove this temp fix
+	Metadata: "secret_scanner1.proto",
 }
