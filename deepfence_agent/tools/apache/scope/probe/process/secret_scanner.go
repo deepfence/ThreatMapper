@@ -2,7 +2,7 @@ package process
 
 import (
 	"fmt"
-	"github.com/weaveworks/scope/probe/secret_scanner"
+	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 	"os/exec"
 )
@@ -13,7 +13,7 @@ const (
 
 type SecretScanner struct {
 	conn    *grpc.ClientConn
-	client  secret_scanner.SecretScannerClient
+	client  pb.SecretScannerClient
 	command *exec.Cmd
 }
 
@@ -30,7 +30,7 @@ func NewSecretScanner() (*SecretScanner, error) {
 		command.Process.Kill()
 		return nil, err
 	}
-	client := secret_scanner.NewSecretScannerClient(conn)
+	client := pb.NewSecretScannerClient(conn)
 	return &SecretScanner{
 		conn:    conn,
 		client:  client,
