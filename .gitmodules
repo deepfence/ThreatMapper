@@ -5,6 +5,8 @@
 [submodule "deepfence_agent/plugins/agent-plugins-grpc"]
 	path = deepfence_agent/plugins/agent-plugins-grpc
 	url = https://github.com/deepfence/agent-plugins-grpc
+	branch = master
 [submodule "deepfence_agent/plugins/vulnerability-sbom-plugin"]
 	path = deepfence_agent/plugins/vulnerability-sbom-plugin
 	url = https://github.com/deepfence/vulnerability-sbom-plugin
+	branch = main
