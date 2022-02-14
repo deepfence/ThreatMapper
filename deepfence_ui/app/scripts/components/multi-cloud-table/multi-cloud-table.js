@@ -14,7 +14,7 @@ import './styles.scss';
 import { MultiCloudTable } from './table';
 import { topologyDataToTableDelta } from './utils';
 import {useSocketDisconnectHandler} from './../multi-cloud/hooks';
-import AppLoader from '../common/app-loader/app-loader';
+import { ShimmerLoaderRow } from '../shimmer-loader/shimmer-row';
 
 export const MultiCloudTreeTable = withRouter(({
   match,
@@ -137,8 +137,9 @@ export const MultiCloudTreeTable = withRouter(({
   );
 
   const data = table.current?.getTableTreeData() || [];
+
   return (
-    <>{ (data.length === 0)  ?  <div className="absolute-center">No Data Available</div> :
+    <>{ (table.current === null)  ?  <ShimmerLoaderRow numberOfRows={3} />:
      <NestedTable
       metadata={metadata}
       data={data}

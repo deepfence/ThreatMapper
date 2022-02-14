@@ -179,7 +179,7 @@ function NodeFiltersPanel(props) {
           <div>
             <div className="filter">
               <Link to="/topology/cloud">
-                <div className="filter-name">Cloud view</div>{' '}
+                <div className="filter-name"  style={{ color: '#abb2b7'}}>Cloud view</div>{' '}
               </Link>
             { isGraphViewMode && viewUrl.includes('cloud') && <div
                 className="fa fa-plus filter-remove-btn"
@@ -197,7 +197,7 @@ function NodeFiltersPanel(props) {
           <div>
             <div
               className="filter"
-              style={{ backgroundColor: '#2962ff', color: 'black' }}
+              style={{ backgroundColor: '#2962ff', color: 'black', opacity: 0.6 }}
             >
               <Link to="/topology/k8s">
                 {' '}
@@ -221,7 +221,7 @@ function NodeFiltersPanel(props) {
           <div>
             <div
               className="filter"
-              style={{ backgroundColor: '#f8cd39', color: 'black' }}
+              style={{ backgroundColor: '#f8cd39', color: 'black', opacity: 0.6 }}
             >
               <Link to="/topology/hosts">
                 {' '}

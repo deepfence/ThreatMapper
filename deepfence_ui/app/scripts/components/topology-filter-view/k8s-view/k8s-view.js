@@ -37,7 +37,6 @@ export const K8sView = ({ onNodeClicked, showPanelForNode }) => {
     },
     [onNodeClicked]
   );
-
   return (
     <div className="nodes-chart">
       {apiKey && (

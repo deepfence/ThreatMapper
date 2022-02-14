@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useRef,
+  useState,
 } from "react";
 import { TopologyGraph } from "./TopologyGraph";
 import { getNodeIcon } from "./node-icons";
@@ -25,6 +26,7 @@ export const LiveTopologyGraph = forwardRef(
   ) => {
     const graph = useRef(null);
     const nodes_client = useRef(null);
+    const [count, setCount] = useState('');
     const triggerSocketDisconnectHandler = useSocketDisconnectHandler();
     useEffect(() => {
       if (!ref) {
@@ -51,7 +53,7 @@ export const LiveTopologyGraph = forwardRef(
         (data) => {
           const edges_delta = topologyEdgesToDelta(data.edges);
           const nodes_delta = topologyNodesToDelta(graph.current, data.nodes);
-
+          setCount(data.metadata.children_count[""][viewType]);
           if (edges_delta != null || nodes_delta != null) {
             //
           }
@@ -168,9 +170,10 @@ export const LiveTopologyGraph = forwardRef(
     const onHover = useCallback((item, hover) => {
       hoverNode(item, hover);
     }, []);
-
     return (
-      <TopologyGraph
+      count === 0 ? <div className="absolute-center" style={{fontSize: '35px'}}>
+      No Nodes Available
+    </div> : <TopologyGraph
         ref={graph}
         onNodeExpanded={onNodeExpanded}
         onNodeCollapsed={onNodeCollapsed}
