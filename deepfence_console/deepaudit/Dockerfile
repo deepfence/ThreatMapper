@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine3.14 AS build
+FROM golang:1.17-alpine3.15 AS build
 RUN apk add --no-cache git \
     && apk add gcc libc-dev libffi-dev
 ADD . /go/deepaudit/
@@ -6,7 +6,7 @@ WORKDIR /go/deepaudit/
 RUN go mod tidy \
     && go build -o deepaudit
 
-FROM python:3.9-alpine3.14
+FROM python:3.9-alpine3.15
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
 
@@ -21,6 +21,7 @@ COPY entrypoint.sh /root/entrypoint.sh
 
 RUN apk update --no-cache \
     && apk add --no-cache curl openjdk8-jre bash unzip tar jq p7zip perl-utils skopeo \
+    && apk upgrade \
     && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
     && rm docker-${DOCKERVERSION}.tgz \
