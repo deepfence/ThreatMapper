@@ -1,4 +1,4 @@
-all: localinit proto/*.go bin/SecretScanner bin/open-tracer bin/vulnerability_sbom_plugin
+all: localinit proto bin/SecretScanner bin/open-tracer bin/vulnerability_sbom_plugin
 
 localinit:
 	$(PWD)/bootstrap.sh
@@ -17,7 +17,7 @@ bin/vulnerability_sbom_plugin:
 	(cd vulnerability-sbom-plugin && make)
 	cp $(PWD)/vulnerability-sbom-plugin/vulnerability-sbom-plugin $(PWD)/bin
 
-proto/*.go: $(PWD)/agent-plugins-grpc/proto/*.proto
+proto: $(PWD)/agent-plugins-grpc/proto/*.proto
 	(cd agent-plugins-grpc && make go)
 	cp agent-plugins-grpc/proto/*.go $(PWD)/proto
 
