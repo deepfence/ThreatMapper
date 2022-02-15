@@ -492,7 +492,7 @@ def start_cve(node_id):
 
 
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_SECRET_SCAN_START, methods=["GET"],
-                    endpoint="api_v1_5_start_secret_scan")
+                    endpoint="api_v1_5_secret_scan_start")
 @jwt_required()
 @non_read_only_user
 def start_secret(node_id):
@@ -516,10 +516,10 @@ def start_secret(node_id):
         else:
             raise InvalidUsage(
                 "Control '{0}' not applicable for node type '{1}'".format(
-                    constants.NODE_ACTION_SECRET_START_SCAN, node.type))
+                    constants.NODE_ACTION_SECRET_SCAN_START, node.type))
     except DFError as err:
         current_app.logger.error(
-            "NodeView: action={}; error={}".format(constants.NODE_ACTION_SECRET_START_SCAN, err))
+            "NodeView: action={}; error={}".format(constants.NODE_ACTION_SECRET_SCAN_START, err))
         raise InvalidUsage(err.message)
     except Exception as ex:
         raise InternalError(str(ex))

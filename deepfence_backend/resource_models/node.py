@@ -223,7 +223,7 @@ class Node(object):
             post_data["image_id"] = self.image_id
             post_data["image_name"] = self.image_name_tag
         start_scan_api_url = constants.SCOPE_HOST_API_CONTROL_URL.format(
-            probe_id=self.probe_id, host_name=self.host_name, action=constants.NODE_ACTION_SECRET_START_SCAN)
+            probe_id=self.probe_id, host_name=self.host_name, action=constants.NODE_ACTION_SECRET_SCAN_START)
         return self.__secret_helper(start_scan_api_url, post_data)
 
     def __secret_helper(self, url, payload):

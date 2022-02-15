@@ -15,7 +15,7 @@ const (
 	UploadData            = "uploadData"
 	AddUserDefinedTags    = "host_add_user_defined_tags"
 	DeleteUserDefinedTags = "host_delete_user_defined_tags"
-	StartSecretsScan      = "start_secrets_scan"
+	StartSecretsScan      = "secret_scan_start"
 	secretScanSocket	  = "/tmp/secretScanner.sock"
 	unixProtocol 		  = "unix"
 	tcpProtocol  		  = "tcp"
