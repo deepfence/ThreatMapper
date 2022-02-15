@@ -9,12 +9,6 @@ if [ $build_result -ne 0 ]
 then
     exit 1
 fi
-make bin/SecretScanner
-build_result=$?
-if [ $build_result -ne 0 ]
-then
-    exit 1
-fi
 make bin/vulnerability_sbom_plugin
 build_result=$?
 if [ $build_result -ne 0 ]
