@@ -1,6 +1,5 @@
 FROM golang:1.17-bullseye
 
-RUN go install google.golang.org/protobuf@v1.27.1
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils protobuf-compiler
 RUN wget https://apt.llvm.org/llvm.sh
