@@ -5,7 +5,6 @@ import { Link, withRouter } from 'react-router-dom';
 import OutsideClickHandler from 'react-outside-click-handler';
 
 import {
-  // isTableViewModeSelector,
   isGraphViewModeSelector,
 } from '../selectors/topology';
 import {
@@ -43,7 +42,6 @@ function NodeFiltersPanel(props) {
     return ids;
   }, [topologyFilters]);
 
-  // const isTableViewMode = useSelector(state => isTableViewModeSelector(state));
   const isGraphViewMode = useSelector(state => isGraphViewModeSelector(state));
 
   // filters out the pseudo nodes

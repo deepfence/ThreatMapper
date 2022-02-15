@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React  from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import { CloudView } from '../components/topology-filter-view/cloud-view/cloud-view';
@@ -23,8 +22,7 @@ const menu = [
   },
 ];
 
-const NodesChart = ({ onNodeClicked, match }) => { 
-  return (
+const NodesChart = ({ onNodeClicked, match }) => (
     <div className="">
           {menu.map(menuItem => (
             <Route
@@ -50,8 +48,7 @@ const NodesChart = ({ onNodeClicked, match }) => {
         path={match.path}
         render={() => <Redirect to={`${match.url}/${menu[0].id}`} />}
       />
-    </div>)
-};
+    </div>);
 
 const showPanelForNode = node => {
   const type = node.id.split(';', 2)[1];
