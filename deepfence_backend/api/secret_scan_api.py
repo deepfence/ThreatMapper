@@ -4,20 +4,11 @@ import urllib.parse
 from utils.response import set_response
 from utils.custom_exception import InvalidUsage
 from utils.decorators import valid_license_required
-from utils.scope import fetch_topology_data
-from utils.helper import async_http_post
-from config.redisconfig import redis
+from utils.resource import filter_node_for_secret_scan
 from utils.constants import TIME_UNIT_MAPPING, SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, \
-    ES_TERMS_AGGR_SIZE, NODE_TYPE_HOST, SCOPE_TOPOLOGY_COUNT, \
-    NODE_TYPE_CONTAINER, DF_ID_TO_SCOPE_ID_REDIS_KEY_PREFIX, TOPOLOGY_HOSTS_PROBE_MAP_REDIS_KEY, \
-    NODE_TYPE_CONTAINER_IMAGE, SCOPE_HOST_API_CONTROL_URL
+    ES_TERMS_AGGR_SIZE
 from utils.esconn import ESConn
-from collections import defaultdict
 from resource_models.node import Node
-import time
-import json
-from datetime import datetime, timedelta
-import hashlib
 
 secret_api = Blueprint("secret_api", __name__)
 
@@ -53,7 +44,7 @@ def secret_scanned_nodes():
         page_size = request.json.get("size", page_size)
         start_index = request.json.get("start_index", start_index)
     if node_filters:
-        tmp_filters = filter_node_for_secret(node_filters)
+        tmp_filters = filter_node_for_secret_scan(node_filters)
         if tmp_filters:
             filters = {**filters, **tmp_filters}
     lucene_query_string = request.args.get("lucene_query")
@@ -257,7 +248,43 @@ def secret_scan_results():
         es_resp = ESConn.search_by_and_clause(
             SECRET_SCAN_INDEX, filters, req_json.get("start_index", 0),
             req_json.get("sort_order", "desc"), size=req_json.get("size", 10), _source=["_id"])
-        no_of_docs_to_be_masked = mask_scan_results(es_resp["hits"])
-        return set_response(data={"message": "deleted {0} scan results".format(no_of_docs_to_be_masked)})
+        # no_of_docs_to_be_masked = mask_scan_results(es_resp["hits"])
+        # no_of_docs_to_be_masked parameter of format func
+        return set_response(data={"message": "deleted {0} scan results".format(0)})
     else:
         raise InvalidUsage("Unsupported action: {0}".format(action))
+
+
+@secret_api.route("/secret-scan/<path:node_id>", methods=["GET"])
+@jwt_required()
+def secret_scan_detail(node_id):
+    """
+    Get the latest secret-scan document from Elasticserach for a given node_id
+    ---
+    security:
+      - Bearer: []
+    parameters:
+      - name: node_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Returns the latest document for the requested node_id
+      400:
+        description: bad request (like missing text data)
+    """
+
+    if request.method == "GET":
+        es_response = ESConn.search_by_and_clause(
+            SECRET_SCAN_LOGS_INDEX,
+            {"node_id": node_id},
+            0
+        )
+        latest_cve_scan = {}
+        cve_scan_list = es_response.get("hits", [])
+        if len(cve_scan_list) > 0:
+            latest_cve_scan = cve_scan_list[0].get('_source', {})
+            latest_cve_scan.update({'_id': cve_scan_list[0].get('_id', "")})
+
+        return set_response(data=latest_cve_scan)
