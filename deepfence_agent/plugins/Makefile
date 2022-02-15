@@ -1,4 +1,4 @@
-all: localinit proto/*.go bin/SecretScanner bin/open-tracer
+all: localinit proto bin/SecretScanner bin/open-tracer
 
 localinit:
 	$(PWD)/bootstrap.sh
@@ -13,7 +13,7 @@ bin/SecretScanner: $(PWD)/SecretScanner/**/*.go
 	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin
 	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin
 
-proto/*.go: $(PWD)/agent-plugins-grpc/proto/*.proto
+proto: $(PWD)/agent-plugins-grpc/proto/*.proto
 	(cd agent-plugins-grpc && make go)
 	cp agent-plugins-grpc/proto/*.go $(PWD)/proto
 

@@ -3,7 +3,7 @@
 cp -R plugins /tmp
 cd /tmp/plugins
 make clean
-make "proto/*.go"
+make proto
 build_result=$?
 if [ $build_result -ne 0 ]
 then
