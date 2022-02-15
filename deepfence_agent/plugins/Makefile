@@ -1,4 +1,4 @@
-all: localinit go bin/open_tracer bin/vulnerability_sbom_plugin bin/SecretScanner
+all: localinit proto/*.go bin/SecretScanner bin/open-tracer bin/vulnerability_sbom_plugin
 
 localinit:
 	$(PWD)/bootstrap.sh
