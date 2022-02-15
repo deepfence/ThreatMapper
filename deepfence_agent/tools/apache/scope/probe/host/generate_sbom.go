@@ -26,11 +26,15 @@ const (
 var (
 	mgmtConsoleUrl string
 	deepfenceKey   string
+	scanPath       = "dir:/fenced/mnt/host/"
 )
 
 func init() {
 	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL") + ":" + os.Getenv("MGMT_CONSOLE_PORT")
 	deepfenceKey = os.Getenv("DEEPFENCE_KEY")
+	if os.Getenv("DF_SERVERLESS") == "true" {
+		scanPath = "dir:/"
+	}
 }
 
 func createSyftClient() (pb.SyftPluginClient, error) {
@@ -114,7 +118,14 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 	if err != nil {
 		return err
 	}
-	res, err := syftClient.GetVulnerabilitySBOM(ctx, &pb.SBOMRequest{UserInput: imageName})
+	var res *pb.SBOMResult
+	var source string
+	if imageName == "host" {
+		source = scanPath
+	} else {
+		source = imageName
+	}
+	res, err = syftClient.GetVulnerabilitySBOM(ctx, &pb.SBOMRequest{Source: source, ScanType: scanType})
 	if err != nil {
 		return err
 	}
