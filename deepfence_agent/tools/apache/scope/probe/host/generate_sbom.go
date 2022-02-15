@@ -111,7 +111,10 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	syftClient, err := createSyftClient()
-	res, err := syftClient.GetSBOMJSON(ctx, &pb.SBOMRequest{UserInput: imageName})
+	if err != nil {
+		return err
+	}
+	res, err := syftClient.GetVulnerabilitySBOM(ctx, &pb.SBOMRequest{UserInput: imageName})
 	if err != nil {
 		return err
 	}

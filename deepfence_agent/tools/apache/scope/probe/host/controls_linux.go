@@ -119,7 +119,9 @@ func (r *Reporter) handleGenerateVulnerabilitySBOM(req xfer.Request) xfer.Respon
 	// call syft plugin
 	go func() {
 		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, scanType)
-		log.Errorf("GenerateVulnerabilitySBOM: %s", err)
+		if err != nil {
+			log.Errorf("GenerateVulnerabilitySBOM: %s", err)
+		}
 	}()
 	return xfer.Response{CVEInfo: "Image upload started"}
 }
