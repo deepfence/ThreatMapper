@@ -84,7 +84,7 @@ async function refreshAuthTokenIfRequired() {
 export function getUserRole() {
   if (localStorage.getItem('authToken')) {
     const jwt = decodeJwtToken(localStorage.getItem('authToken'));
-    return jwt.identity.role;
+    return jwt.sub.role;
   }
   return null;
 }
