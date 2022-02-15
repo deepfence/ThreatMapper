@@ -4,6 +4,7 @@ cp -R plugins /tmp
 cd /tmp/plugins
 make clean
 make bin/open_tracer
+make bin/SecretScanner
 build_result=$?
 if [ $build_result -ne 0 ]
 then

@@ -51,4 +51,7 @@ RUN chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && tar Cxzvvf /usr/local/bin nerdctl-0.14.0-linux-amd64.tar.gz \
     && rm nerdctl-0.14.0-linux-amd64.tar.gz \
     && curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
+
 ENTRYPOINT ["/usr/local/bin/start_services"]
