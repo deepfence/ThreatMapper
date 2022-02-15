@@ -29,7 +29,7 @@ require (
 	github.com/gogo/protobuf v1.3.0
 	github.com/goji/httpauth v0.0.0-20160601135302-2da839ab0f4d
 	github.com/golang/groupcache v0.0.0-20171101203131-84a468cf14b4 // indirect
-	github.com/golang/protobuf v1.3.3
+	github.com/golang/protobuf v1.3.2
 	github.com/gomodule/redigo v1.8.5
 	github.com/google/btree v0.0.0-20180124185431-e89373fe6b4a // indirect
 	github.com/google/gopacket v1.1.17
@@ -66,8 +66,8 @@ require (
 	github.com/richo/GOSHOUT v0.0.0-20210103052837-9a2e452d4c18
 	github.com/romana/ipset v1.0.0
 	github.com/romana/rlog v0.0.0-20171115192701-f018bc92e7d7 // indirect
-	github.com/russross/blackfriday v0.0.0-20151020174500-a18a46c9b943 // indirect
 	github.com/shirou/gopsutil v3.21.2+incompatible
+	github.com/russross/blackfriday v0.0.0-20151020174500-a18a46c9b943 // indirect
 	github.com/shurcooL/sanitized_anchor_name v0.0.0-20150822220530-244f5ac324cb // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spaolacci/murmur3 v0.0.0-20150829172844-0d12bf811670
@@ -95,8 +95,8 @@ require (
 	golang.org/x/sys v0.0.0-20210316164454-77fc1eacc6aa
 	golang.org/x/text v0.3.1-0.20171227012246-e19ae1496984 // indirect
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
-	golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135
-	google.golang.org/grpc v1.32.0
+	golang.org/x/tools v0.0.0-20190424220101-1e8e1cfdf96b
+	google.golang.org/grpc v1.19.0
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/inf.v0 v0.9.0 // indirect
 	k8s.io/api v0.0.0-20181204000039-89a74a8d264d
