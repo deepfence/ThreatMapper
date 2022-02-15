@@ -14,7 +14,7 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
     CVE_SCAN_LOGS_INDEX, SCOPE_TOPOLOGY_COUNT, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, NODE_TYPE_POD, ES_MAX_CLAUSE, \
     TOPOLOGY_ID_CONTAINER, TOPOLOGY_ID_CONTAINER_IMAGE, TOPOLOGY_ID_HOST, NODE_TYPE_CONTAINER_IMAGE, \
     TOPOLOGY_ID_KUBE_SERVICE, NODE_TYPE_KUBE_CLUSTER, ES_TERMS_AGGR_SIZE, \
-    REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE
+    REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta
@@ -1042,6 +1042,41 @@ def cve_scan_detail(node_id):
             latest_cve_scan.update({'_id': cve_scan_list[0].get('_id', "")})
 
         return set_response(data=latest_cve_scan)
+
+
+@common_api.route("/secret-scan/<path:node_id>", methods=["GET"])
+@jwt_required()
+def secret_scan_detail(node_id):
+    """
+    Get the latest secret-scan document from Elasticserach for a given node_id
+    ---
+    security:
+      - Bearer: []
+    parameters:
+      - name: node_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Returns the latest document for the requested node_id
+      400:
+        description: bad request (like missing text data)
+    """
+
+    if request.method == "GET":
+        es_response = ESConn.search_by_and_clause(
+            SECRET_SCAN_LOGS_INDEX,
+            {"node_id": node_id},
+            0
+        )
+        latest_secret_scan = {}
+        secret_scan_list = es_response.get("hits", [])
+        if len(secret_scan_list) > 0:
+            latest_cve_scan = secret_scan_list[0].get('_source', {})
+            latest_cve_scan.update({'_id': secret_scan_list[0].get('_id', "")})
+
+        return set_response(data=latest_secret_scan)
 
 
 @common_api.route("/docs/delete_by_id", methods=["POST"])
