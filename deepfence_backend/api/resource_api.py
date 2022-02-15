@@ -491,7 +491,7 @@ def start_cve(node_id):
         raise InternalError(str(ex))
 
 
-@resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_SECRET_SCAN_START, methods=["GET"],
+@resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_SECRET_SCAN_START, methods=["GET", "POST"],
                     endpoint="api_v1_5_secret_scan_start")
 @jwt_required()
 @non_read_only_user
