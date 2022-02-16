@@ -588,7 +588,7 @@ const Reports = props => {
                         onClick={() => setShowModal(false)}
                       />
                     </div>
-                    <div className="modal-body">
+                    <div className="modal-body" style={{ paddingBottom: '100px' }}>
                       <div>
                         {resource_type &&
                           node_type &&
