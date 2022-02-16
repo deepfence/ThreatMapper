@@ -1,2 +1,4 @@
 .idea
 .DS_Store
+deepfence_agent/tools/apache/scope/proto/
+deepfence_agent/plugins/proto/
