@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -76,7 +77,7 @@ func buildClient() (*http.Client, error) {
 	return client, nil
 }
 
-func sendSBOMtoConsole(sbomStr string) error {
+func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanType, sbomStr string) error {
 	httpClient, err := buildClient()
 	if err != nil {
 		return err
@@ -84,7 +85,13 @@ func sendSBOMtoConsole(sbomStr string) error {
 	postReader := bytes.NewReader([]byte(sbomStr))
 	retryCount := 0
 	for {
-		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/mapper-api/find-vulnerabilities", postReader)
+		urlValues := url.Values{}
+		urlValues.Set("image_name", imageName)
+		urlValues.Set("image_id", imageId)
+		urlValues.Set("scan_id", scanId)
+		urlValues.Set("kubernetes_cluster_name", kubernetesClusterName)
+		requestUrl := fmt.Sprintf("https://"+mgmtConsoleUrl+"/mapper-api/vulnerability-scan?%s", urlValues.Encode())
+		httpReq, err := http.NewRequest("POST", requestUrl, postReader)
 		if err != nil {
 			return err
 		}
@@ -129,5 +136,5 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 	if err != nil {
 		return err
 	}
-	return sendSBOMtoConsole(res.String())
+	return sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanType, res.String())
 }

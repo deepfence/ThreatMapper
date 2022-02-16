@@ -89,7 +89,7 @@ func isProbeContainerized() bool {
 	return selfMountNamespaceID != statT.Ino
 }
 
-func (r *Reporter) handleGenerateVulnerabilitySBOM(req xfer.Request) xfer.Response {
+func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	var imageName = "host"
 	var imageId = ""
 	var scanId = ""

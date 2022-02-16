@@ -12,22 +12,22 @@ import (
 
 // Control IDs used by the host integration.
 const (
-	GetLogsFromAgent          = "get_logs_from_agent"
-	GenerateVulnerabilitySBOM = "uploadData"
-	AddUserDefinedTags        = "host_add_user_defined_tags"
-	DeleteUserDefinedTags     = "host_delete_user_defined_tags"
+	GetLogsFromAgent      = "get_logs_from_agent"
+	GenerateSBOM          = "generate_sbom"
+	AddUserDefinedTags    = "host_add_user_defined_tags"
+	DeleteUserDefinedTags = "host_delete_user_defined_tags"
 )
 
 func (r *Reporter) registerControls() {
 	r.handlerRegistry.Register(GetLogsFromAgent, r.getLogsFromAgent)
-	r.handlerRegistry.Register(GenerateVulnerabilitySBOM, r.handleGenerateVulnerabilitySBOM)
+	r.handlerRegistry.Register(GenerateSBOM, r.handleGenerateSBOM)
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
 	r.handlerRegistry.Register(DeleteUserDefinedTags, r.deleteUserDefinedTags)
 }
 
 func (r *Reporter) deregisterControls() {
 	r.handlerRegistry.Rm(GetLogsFromAgent)
-	r.handlerRegistry.Rm(GenerateVulnerabilitySBOM)
+	r.handlerRegistry.Rm(GenerateSBOM)
 	r.handlerRegistry.Rm(AddUserDefinedTags)
 	r.handlerRegistry.Rm(DeleteUserDefinedTags)
 }
