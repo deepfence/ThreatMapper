@@ -3,7 +3,7 @@
 cp -R plugins /tmp
 cd /tmp/plugins
 make clean
-make proto
+make proto -B
 build_result=$?
 if [ $build_result -ne 0 ]
 then

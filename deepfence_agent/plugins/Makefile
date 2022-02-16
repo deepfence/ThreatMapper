@@ -3,17 +3,17 @@ all: localinit proto bin/SecretScanner bin/open-tracer
 localinit:
 	$(PWD)/bootstrap.sh
 
-bin/open-tracer: $(PWD)/open-tracer/**/*.rs
+bin/open-tracer: ./open-tracer/**/*.rs
 	(cd open-tracer/open-tracer-ebpf && cargo build --release)
 	(cd open-tracer/open-tracer-usr && OPEN_TRACER_EBPF_BIN_ABS_PATH=$(PWD)/open-tracer/target/bpfel-unknown-none/release/open-tracer-ebpf cargo build --release)
 	cp $(PWD)/open-tracer/target/release/open-tracer $(PWD)/bin
 
-bin/SecretScanner: $(PWD)/SecretScanner/**/*.go
+bin/SecretScanner: ./SecretScanner/**/*.go
 	(cd SecretScanner && go mod vendor && go build)
 	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin
 	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin
 
-proto: $(PWD)/agent-plugins-grpc/proto/*.proto
+proto: ./agent-plugins-grpc/proto/*.proto
 	(cd agent-plugins-grpc && make go)
 	cp agent-plugins-grpc/proto/*.go $(PWD)/proto
 
