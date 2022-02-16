@@ -1,4 +1,4 @@
-all: localinit proto bin/SecretScanner bin/open-tracer bin/vulnerability_sbom_plugin
+all: localinit proto bin/SecretScanner bin/open-tracer bin/package-scanner
 
 localinit:
 	$(PWD)/bootstrap.sh
@@ -13,9 +13,9 @@ bin/SecretScanner: ./SecretScanner/**/*.go
 	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin
 	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin
 
-bin/vulnerability_sbom_plugin:
-	(cd vulnerability-sbom-plugin && make)
-	cp $(PWD)/vulnerability-sbom-plugin/vulnerability-sbom-plugin $(PWD)/bin
+bin/package-scanner:
+	(cd package-scanner && make)
+	cp $(PWD)/package-scanner/package-scanner $(PWD)/bin
 
 proto: ./agent-plugins-grpc/proto/*.proto
 	(cd agent-plugins-grpc && make go)
@@ -24,6 +24,7 @@ proto: ./agent-plugins-grpc/proto/*.proto
 clean:
 	-rm $(PWD)/bin/open-tracer
 	-rm $(PWD)/bin/SecretScanner
+	-rm $(PWD)/bin/package-scanner
 	cargo clean --manifest-path=./open-tracer/Cargo.toml
 	(cd agent-plugins-grpc && make clean)
 

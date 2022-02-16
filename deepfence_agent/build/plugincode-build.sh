@@ -9,7 +9,7 @@ if [ $build_result -ne 0 ]
 then
     exit 1
 fi
-make bin/vulnerability_sbom_plugin
+make bin/package-scanner
 build_result=$?
 if [ $build_result -ne 0 ]
 then

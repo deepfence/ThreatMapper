@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	syftClientSocket = "/tmp/vulnerability_sbom_plugin.sock"
+	syftClientSocket = "/tmp/package-scanner.sock"
 	certPath         = "/etc/filebeat/filebeat.crt"
 	httpOk           = 200
 )
