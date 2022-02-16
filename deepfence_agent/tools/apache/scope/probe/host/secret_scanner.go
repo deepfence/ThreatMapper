@@ -3,12 +3,17 @@ package host
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/weaveworks/scope/common/xfer"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
+	"io/ioutil"
+	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -18,9 +23,12 @@ import (
 )
 
 const (
-	secretScanIndexName     = "secret-scan"
+	ebpfSocketFormat    = "/tmp/%d.sock"
+	secretScanIndexName = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
 	ssEbpfExePath = "/home/deepfence/bin/SecretScanner"
+	memLockSize   = "--memlock=8388608"
+	ebpfOptFormat = "--socket-path=%s"
 )
 var certPath = "/etc/filebeat/filebeat.crt"
 var httpClient *http.Client
@@ -47,9 +55,6 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 		}}
 	} else if nodeType == nodeTypeHost {
 		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: HostMountDir}}
-	}
-	if err != nil {
-		return xfer.Response{SecretsScanInfo: "Error creating ss client"}
 	}
 	go getAndPublishSecretScanResults(r.secretScanner.client, greq, req.ControlArgs)
 	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
@@ -160,7 +165,7 @@ type SecretScanner struct {
 
 func NewSecretScanner() (*SecretScanner, error) {
 	ebpfSocket := generateSocketString()
-	command := exec.Command("prlimit", mem_lock_size, ssEbpfExePath, fmt.Sprintf(ebpf_opt_format, ebpfSocket))
+	command := exec.Command("prlimit", memLockSize, ssEbpfExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
 	err := command.Start()
 	if err != nil {
 		return nil, err
@@ -177,6 +182,44 @@ func NewSecretScanner() (*SecretScanner, error) {
 		client:  client,
 		command: command,
 	}, nil
+}
+
+func buildClient() (*http.Client, error) {
+	// Set up our own certificate pool
+	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig:     tlsConfig,
+			DisableKeepAlives:   false,
+			MaxIdleConnsPerHost: 1024,
+			DialContext: (&net.Dialer{
+				Timeout:   15 * time.Minute,
+				KeepAlive: 15 * time.Minute,
+			}).DialContext,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ResponseHeaderTimeout: 5 * time.Minute,
+		},
+		Timeout: 15 * time.Minute,
+	}
+
+	// Load our trusted certificate path
+	pemData, err := ioutil.ReadFile(certPath)
+	if err != nil {
+		return nil, err
+	}
+	ok := tlsConfig.RootCAs.AppendCertsFromPEM(pemData)
+	if !ok {
+		return nil, errors.New("unable to append certificates to PEM")
+	}
+
+	return client, nil
+}
+
+func generateSocketString() string {
+	rand.Seed(time.Now().UnixNano())
+	min := 1000
+	max := 9999
+	return fmt.Sprintf(ebpfSocketFormat, rand.Intn(max - min + 1) + min)
 }
 
 func (it *SecretScanner) Stop() {
