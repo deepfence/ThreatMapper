@@ -63,6 +63,10 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	timestamp := getTimestamp()
 	currTime := getCurrentTime()
+	if err != nil {
+		fmt.Println("Error from secretScan grpc server:" + err.Error())
+		return
+	}
 	for _, secret := range res.Secrets {
 		var secretScanDoc map[string]interface{}
 		secretScanDoc["node_id"] = controlArgs["node_id"]
