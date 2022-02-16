@@ -90,7 +90,7 @@ func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanTy
 		urlValues.Set("image_id", imageId)
 		urlValues.Set("scan_id", scanId)
 		urlValues.Set("kubernetes_cluster_name", kubernetesClusterName)
-		requestUrl := fmt.Sprintf("https://"+mgmtConsoleUrl+"/mapper-api/vulnerability-scan?%s", urlValues.Encode())
+		requestUrl := fmt.Sprintf("https://"+mgmtConsoleUrl+"/vulnerability-mapper-api/vulnerability-scan?%s", urlValues.Encode())
 		httpReq, err := http.NewRequest("POST", requestUrl, postReader)
 		if err != nil {
 			return err
