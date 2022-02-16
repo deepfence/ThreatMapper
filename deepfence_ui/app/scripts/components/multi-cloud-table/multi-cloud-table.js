@@ -7,6 +7,7 @@ import {
   modelNodeTypeToTopologyChildrenTypes,
   modelNodeTypeToTopologyType,
 } from '../multi-cloud/LiveTopologyGraph';
+import Select from 'react-select';
 import 'react-table-6/react-table.css';
 import { TopologyClient } from '../multi-cloud/topology-client-2';
 import { NestedTable } from './nested-table';
@@ -15,6 +16,42 @@ import { MultiCloudTable } from './table';
 import { topologyDataToTableDelta } from './utils';
 import {useSocketDisconnectHandler} from './../multi-cloud/hooks';
 import { ShimmerLoaderRow } from '../shimmer-loader/shimmer-row';
+
+
+
+const themeCb = theme => ({
+  ...theme,
+  borderRadius: 5,
+  colors: {
+    ...theme.colors,
+    primary25: '#1c1c1c', // hover
+    neutral20: '#c0c0c0', // border
+    primary: '#000',
+    neutral0: '#1c1c1c', // '#22252b', // background
+    neutral80: '#bfbfbf', // placeholder
+    neutral90: 'white',
+  },
+});
+
+const styles = {
+  option: (provided, state) => ({
+    ...provided,
+    color: state.isSelected ? '#0080ff' : '#999999',
+    backgroundColor: state.isSelected ? '#1c1c1c' : provided.backgroundColor,
+    '&:hover': {
+      backgroundColor: '#333333',
+    },
+  }),
+  control: provided => ({
+    ...provided,
+    width: 160,
+    borderColor: '#1c1c1c',
+  }),
+  container: provided => ({
+    ...provided,
+    width: 120
+  })
+};
 
 export const MultiCloudTreeTable = withRouter(({
   match,
@@ -29,10 +66,23 @@ export const MultiCloudTreeTable = withRouter(({
   const client = useRef(null);
   const table = useRef(null);
   const [metadata, setMetadata] = useState({});
+  const [vulnerabilityfilter, setVulerabilityfilter] = useState("");
   const [, setReRender] = useState(0);
   let viewType = '';
   const triggerSocketDisconnectHandler = useSocketDisconnectHandler();
+
+  const options = [
+    { label: 'Complete', value: 'complete' },
+    { label: 'Show all', value: '' },
+    { label: 'Never Scanned', value: 'never_scanned' }
+  ]
   
+
+  const addVulnerabilityFilter = e => {
+      setVulerabilityfilter(e.value);
+  }
+
+
   useEffect(() => {
     const url = location.pathname;
     if (url.includes('cloud')) {
@@ -70,7 +120,8 @@ export const MultiCloudTreeTable = withRouter(({
       apiURL,
       apiKey,
       refreshInterval,
-      viewType,
+      viewType || 'hosts',
+      vulnerabilityfilter,
       (data) => {
         setMetadata(data.metadata);
         const nodes_delta = topologyDataToTableDelta(data.nodes);
@@ -90,7 +141,7 @@ export const MultiCloudTreeTable = withRouter(({
     return () => {
       client.current.close();
     };
-  }, [table, history.location.pathname]);
+  }, [table, history.location.pathname, vulnerabilityfilter]);
 
   const onNodeExpanded = useCallback(
     (node) => {
@@ -139,7 +190,24 @@ export const MultiCloudTreeTable = withRouter(({
   const data = table.current?.getTableTreeData() || [];
 
   return (
-    <>{ (table.current === null)  ?  <ShimmerLoaderRow numberOfRows={3} />:
+    <div>
+   {history.location.pathname.includes('hosts') && <div style={{margin: '25px'}}>
+    <Select
+    components={{
+      IndicatorSeparator: null,
+    }}
+    styles={styles}
+    theme={themeCb}
+    placeholder="Vulnerability Status"
+    options={options}
+    value={options.value}
+    classNamePrefix="select"
+    className="select-filter"
+    onChange={addVulnerabilityFilter}
+  /> 
+    </div>}  
+    {(table.current === null)  ?  <ShimmerLoaderRow numberOfRows={3} />:
+
      <NestedTable
       metadata={metadata}
       data={data}
@@ -148,6 +216,6 @@ export const MultiCloudTreeTable = withRouter(({
       onNodeClicked={onNodeClicked}
       setAction={setAction}
     />}
-    </>
+    </div>
   );
 });

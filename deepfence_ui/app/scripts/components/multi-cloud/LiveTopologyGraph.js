@@ -20,7 +20,8 @@ export const LiveTopologyGraph = forwardRef(
       onNodeClicked,
       onFilterAdded,
       onFilterRemoved,
-      viewType
+      viewType,
+      vulnerabilityfilter,
     },
     ref
   ) => {
@@ -50,6 +51,7 @@ export const LiveTopologyGraph = forwardRef(
         apiKey,
         refreshInterval,
         viewType,
+        vulnerabilityfilter,
         (data) => {
           const edges_delta = topologyEdgesToDelta(data.edges);
           const nodes_delta = topologyNodesToDelta(graph.current, data.nodes);

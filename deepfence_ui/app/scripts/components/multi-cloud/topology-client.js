@@ -184,10 +184,8 @@ export const fetchTopologyData = (
       }
     });
     if (node_id !== null) {
-      console.log('Filters data', node_id, node_label, node_type, children_type);
       client.openNodeSocket(node_id, node_label, node_type, children_type);
     } else {
-      console.log('CLient View',view_type);
       client.openRootSocket(view_type);
     }
   });
