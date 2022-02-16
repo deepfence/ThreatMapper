@@ -3,19 +3,15 @@ package host
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/weaveworks/scope/common/xfer"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
-	"io/ioutil"
-	"net"
 	"net/http"
-	"net/url"
 	"os"
+	"os/exec"
 	"reflect"
 	"strings"
 	"time"
@@ -24,6 +20,7 @@ import (
 const (
 	secretScanIndexName     = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
+	ssEbpfExePath = "/home/deepfence/bin/SecretScanner"
 )
 var certPath = "/etc/filebeat/filebeat.crt"
 var httpClient *http.Client
@@ -51,11 +48,10 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	} else if nodeType == nodeTypeHost {
 		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: HostMountDir}}
 	}
-	client, err := newSecretScannerClient()
 	if err != nil {
 		return xfer.Response{SecretsScanInfo: "Error creating ss client"}
 	}
-	go getAndPublishSecretScanResults(client, greq, req.ControlArgs)
+	go getAndPublishSecretScanResults(r.secretScanner.client, greq, req.ControlArgs)
 	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
 }
 
@@ -156,97 +152,34 @@ func sendSecretScanDataToLogstash(secretScanMsg string, index string) error {
 	return nil
 }
 
-func buildClient() (*http.Client, error) {
-	// Set up our own certificate pool
-	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig:     tlsConfig,
-			DisableKeepAlives:   false,
-			MaxIdleConnsPerHost: 1024,
-			DialContext: (&net.Dialer{
-				Timeout:   15 * time.Minute,
-				KeepAlive: 15 * time.Minute,
-			}).DialContext,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ResponseHeaderTimeout: 5 * time.Minute,
-		},
-		Timeout: 15 * time.Minute,
-	}
+type SecretScanner struct {
+	conn    *grpc.ClientConn
+	client  pb.SecretScannerClient
+	command *exec.Cmd
+}
 
-	// Load our trusted certificate path
-	pemData, err := ioutil.ReadFile(certPath)
+func NewSecretScanner() (*SecretScanner, error) {
+	ebpfSocket := generateSocketString()
+	command := exec.Command("prlimit", mem_lock_size, ssEbpfExePath, fmt.Sprintf(ebpf_opt_format, ebpfSocket))
+	err := command.Start()
 	if err != nil {
 		return nil, err
 	}
-	ok := tlsConfig.RootCAs.AppendCertsFromPEM(pemData)
-	if !ok {
-		return nil, errors.New("Unable to append certificates to PEM")
-	}
 
-	return client, nil
-}
-
-func newSecretScannerClient() (pb.SecretScannerClient, error) {
-	addr, dailer, err := getAddressAndDialer(secretScanSocket)
+	conn, err := grpc.Dial("unix://"+ebpfSocket, grpc.WithAuthority("dummy"), grpc.WithInsecure())
 	if err != nil {
+		command.Process.Kill()
 		return nil, err
 	}
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithDialer(dailer))
-	if err != nil {
-		return nil, err
-	}
-	return pb.NewSecretScannerClient(conn), nil
+	client := pb.NewSecretScannerClient(conn)
+	return &SecretScanner{
+		conn:    conn,
+		client:  client,
+		command: command,
+	}, nil
 }
 
-func dial(addr string, timeout time.Duration) (net.Conn, error) {
-	return net.DialTimeout(unixProtocol, addr, timeout)
-}
-
-func getAddressAndDialer(endpoint string) (string, func(addr string, timeout time.Duration) (net.Conn, error), error) {
-	addr, err := parseEndpointWithFallbackProtocol(endpoint, unixProtocol)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return addr, dial, nil
-}
-
-func parseEndpointWithFallbackProtocol(endpoint string, fallbackProtocol string) (addr string, err error) {
-	var protocol string
-
-	protocol, addr, err = parseEndpoint(endpoint)
-
-	if err != nil {
-		return "", err
-	}
-
-	if protocol == "" {
-		fallbackEndpoint := fallbackProtocol + "://" + endpoint
-		_, addr, err = parseEndpoint(fallbackEndpoint)
-
-		if err != nil {
-			return "", err
-		}
-	}
-	return addr, err
-}
-
-func parseEndpoint(endpoint string) (string, string, error) {
-	u, err := url.Parse(endpoint)
-
-	if err != nil {
-		return "", "", err
-	}
-
-	switch u.Scheme {
-	case tcpProtocol:
-		return tcpProtocol, u.Host, fmt.Errorf("endpoint was not unix socket %v", u.Scheme)
-	case unixProtocol:
-		return unixProtocol, u.Path, nil
-	case "":
-		return "", "", nil
-	default:
-		return u.Scheme, "", fmt.Errorf("protocol %q not supported", u.Scheme)
-	}
+func (it *SecretScanner) Stop() {
+	it.command.Process.Kill()
+	it.conn.Close()
 }
