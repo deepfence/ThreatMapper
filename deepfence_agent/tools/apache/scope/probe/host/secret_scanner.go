@@ -62,6 +62,23 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 }
 
 func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string, hostName string) {
+	var secretScanLogDoc = make(map[string]interface{})
+	secretScanLogDoc["node_id"] = controlArgs["node_id"]
+	secretScanLogDoc["node_type"] = controlArgs["node_type"]
+	secretScanLogDoc["host_name"] = hostName
+	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
+	secretScanLogDoc["scan_status"] = "IN_PROGRESS"
+	secretScanLogDoc["time_stamp"] = getTimestamp()
+	secretScanLogDoc["@timestamp"] = getCurrentTime()
+	byteJson, err := json.Marshal(secretScanLogDoc)
+	if err != nil {
+		fmt.Println("Error in marshalling in progress secretScanLogDoc to json:" + err.Error())
+		return
+	}
+	err = sendSecretScanDataToLogstash(string(byteJson) , secretScanLogsIndexName)
+	if err != nil {
+		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
+	}
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	timestamp := getTimestamp()
 	currTime := getCurrentTime()
@@ -97,11 +114,6 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
 		}
 	}
-	var secretScanLogDoc = make(map[string]interface{})
-	secretScanLogDoc["node_id"] = controlArgs["node_id"]
-	secretScanLogDoc["node_type"] = controlArgs["node_type"]
-	secretScanLogDoc["host_name"] = hostName
-	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
 	if err == nil {
 		secretScanLogDoc["scan_status"] = "COMPLETE"
 	} else {
@@ -110,7 +122,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	}
 	secretScanLogDoc["time_stamp"] = timestamp
 	secretScanLogDoc["@timestamp"] = currTime
-	byteJson, err := json.Marshal(secretScanLogDoc)
+	byteJson, err = json.Marshal(secretScanLogDoc)
 	if err != nil {
 		fmt.Println("Error in marshalling secretScanLogDoc to json:" + err.Error())
 		return
