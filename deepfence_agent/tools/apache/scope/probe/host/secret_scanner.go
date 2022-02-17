@@ -18,6 +18,7 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -68,10 +69,10 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		fmt.Println("Error from secretScan grpc server:" + err.Error())
 		return
 	} else {
-		fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + string(len(res.Secrets)))
+		fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
 	}
 	for _, secret := range res.Secrets {
-		var secretScanDoc map[string]interface{}
+		var secretScanDoc = make(map[string]interface{})
 		secretScanDoc["node_id"] = controlArgs["node_id"]
 		secretScanDoc["scan_id"] = controlArgs["scan_id"]
 		secretScanDoc["scan_status"] = controlArgs["COMPLETE"]
@@ -92,7 +93,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
 		}
 	}
-	var secretScanLogDoc map[string]interface{}
+	var secretScanLogDoc = make(map[string]interface{})
 	secretScanLogDoc["node_id"] = controlArgs["node_id"]
 	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
 	if err == nil {
