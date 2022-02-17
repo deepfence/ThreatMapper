@@ -7,11 +7,15 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
+	scopeHostname "github.com/weaveworks/scope/common/hostname"
 	"google.golang.org/grpc"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	pb "github.com/weaveworks/scope/proto"
@@ -66,7 +70,7 @@ func buildHttpClient() (*http.Client, error) {
 	return client, nil
 }
 
-func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanType, sbomStr string) error {
+func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, hostName, nodeId, nodeType, scanType, sbomStr string) error {
 	httpClient, err := buildHttpClient()
 	if err != nil {
 		return err
@@ -79,6 +83,10 @@ func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanTy
 		urlValues.Set("image_id", imageId)
 		urlValues.Set("scan_id", scanId)
 		urlValues.Set("kubernetes_cluster_name", kubernetesClusterName)
+		urlValues.Set("host_name", hostName)
+		urlValues.Set("node_id", nodeId)
+		urlValues.Set("node_type", nodeType)
+		urlValues.Set("scan_type", scanType)
 		requestUrl := fmt.Sprintf("https://"+mgmtConsoleUrl+"/vulnerability-mapper-api/vulnerability-scan?%s", urlValues.Encode())
 		httpReq, err := http.NewRequest("POST", requestUrl, postReader)
 		if err != nil {
@@ -107,12 +115,56 @@ func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanTy
 	return nil
 }
 
-func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, scanType string) error {
+func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, scanType string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Minute)
 	defer cancel()
+
+	hostName := scopeHostname.Get()
+	stopLogging := make(chan bool)
+	var nodeId string
+	var nodeType string
+	if imageName == "host" {
+		nodeId = hostName
+		nodeType = "host"
+	} else {
+		nodeId = imageName
+		nodeType = "container_image"
+	}
+
+	go func() {
+		err := IngestScanStatus("", "UPLOADING_IMAGE", scanId, nodeType, nodeId, scanType, hostName, kubernetesClusterName)
+		if err != nil {
+			fmt.Println(scanId, err.Error())
+		}
+		ticker := time.NewTicker(2 * time.Minute)
+		for {
+			select {
+			case <-ticker.C:
+				err = IngestScanStatus("", "UPLOADING_IMAGE", scanId, nodeType, nodeId, scanType, hostName, kubernetesClusterName)
+				if err != nil {
+					fmt.Println(scanId, err.Error())
+				}
+			case <-stopLogging:
+				fmt.Println("After - " + time.Now().String())
+				return
+			}
+		}
+	}()
+
+	logError := func(errMsg string) {
+		logrus.Error(errMsg)
+		stopLogging <- true
+		time.Sleep(3 * time.Second)
+		err := IngestScanStatus(errMsg, "ERROR", scanId, nodeType, nodeId, scanType, hostName, k8sClusterName)
+		if err != nil {
+			logrus.Errorf("Error while ingesting: %s", err)
+		}
+	}
+
 	packageScannerClient, err := createPackageScannerClient()
 	if err != nil {
-		return err
+		logError(err.Error())
+		return
 	}
 	var source string
 	if imageName == "host" {
@@ -123,7 +175,60 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 	var res *pb.SBOMResult
 	res, err = packageScannerClient.GenerateSBOM(ctx, &pb.SBOMRequest{Source: source, ScanType: scanType})
 	if err != nil {
+		logError(err.Error())
+		return
+	}
+	stopLogging <- true
+	err = sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, hostName, nodeId, nodeType, scanType, res.Sbom)
+	if err != nil {
+		logrus.Error(err.Error())
+		return
+	}
+}
+
+func callAPI(postReader io.Reader, urlPath string) error {
+	// Send  data to cve server, which will put it in a redis pub-sub read by logstash
+	retryCount := 0
+	httpClient, err := buildHttpClient()
+	if err != nil {
 		return err
 	}
-	return sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanType, res.Sbom)
+	for {
+		httpReq, err := http.NewRequest("POST", urlPath, postReader)
+		if err != nil {
+			return err
+		}
+		httpReq.Close = true
+		httpReq.Header.Add("deepfence-key", deepfenceKey)
+		resp, err := httpClient.Do(httpReq)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode == 200 {
+			resp.Body.Close()
+			break
+		} else {
+			if retryCount > 2 {
+				errMsg := fmt.Sprintf("Unable to complete request. Got %d ", resp.StatusCode)
+				resp.Body.Close()
+				return errors.New(errMsg)
+			}
+			resp.Body.Close()
+			retryCount += 1
+			time.Sleep(5 * time.Second)
+		}
+	}
+	return nil
+}
+
+func IngestScanStatus(vulnerabilityScanMsg, action, scanId, nodeType, nodeId, scanTypeStr, hostName, kubernetesClusterName string) error {
+	vulnerabilityScanMsg = strings.Replace(vulnerabilityScanMsg, "\n", " ", -1)
+	scanLog := fmt.Sprintf("{\"scan_id\":\"%s\",\"time_stamp\":%d,\"cve_scan_message\":\"%s\",\"action\":\"%s\",\"type\":\"cve-scan\",\"node_type\":\"%s\",\"node_id\":\"%s\",\"scan_type\":\"%s\",\"host_name\":\"%s\",\"host\":\"%s\",\"kubernetes_cluster_name\":\"%s\"}", scanId, getIntTimestamp(), vulnerabilityScanMsg, action, nodeType, nodeId, scanTypeStr, hostName, hostName, kubernetesClusterName)
+	postReader := bytes.NewReader([]byte(scanLog))
+	ingestScanStatusAPI := fmt.Sprintf("https://" + mgmtConsoleUrl + "/df-api/ingest?doc_type=cve-scan")
+	return callAPI(postReader, ingestScanStatusAPI)
+}
+
+func getIntTimestamp() int64 {
+	return time.Now().UTC().UnixNano() / 1000000
 }
