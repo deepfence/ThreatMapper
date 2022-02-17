@@ -81,7 +81,9 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		values := reflect.ValueOf(*secret)
 		typeOfS := values.Type()
 		for index := 0; index < values.NumField(); index++ {
-			secretScanDoc[typeOfS.Field(index).Name] = values.Field(index).Interface()
+			if values.Field(index).CanInterface() {
+				secretScanDoc[typeOfS.Field(index).Name] = values.Field(index).Interface()
+			}
 		}
 		byteJson, err := json.Marshal(secretScanDoc)
 		if err != nil {
