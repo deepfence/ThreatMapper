@@ -116,7 +116,7 @@ func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	}
 
 	log.Infof("uploading %s tar to console...", imageName)
-	// call syft plugin
+	// call package scanner plugin
 	go func() {
 		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, scanType)
 		if err != nil {

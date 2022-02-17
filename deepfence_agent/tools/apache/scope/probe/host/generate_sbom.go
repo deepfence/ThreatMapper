@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"google.golang.org/grpc"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -19,9 +18,8 @@ import (
 )
 
 const (
-	syftClientSocket = "/tmp/package-scanner.sock"
-	certPath         = "/etc/filebeat/filebeat.crt"
-	httpOk           = 200
+	packageScannerSocket = "/tmp/package-scanner.sock"
+	httpOk               = 200
 )
 
 var (
@@ -38,12 +36,12 @@ func init() {
 	}
 }
 
-func createSyftClient() (pb.SyftPluginClient, error) {
-	conn, err := grpc.Dial("unix://"+syftClientSocket, grpc.WithAuthority("dummy"), grpc.WithInsecure())
+func createPackageScannerClient() (pb.PackageScannerClient, error) {
+	conn, err := grpc.Dial("unix://"+packageScannerSocket, grpc.WithAuthority("dummy"), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
-	return pb.NewSyftPluginClient(conn), nil
+	return pb.NewPackageScannerClient(conn), nil
 }
 
 func buildClient() (*http.Client, error) {
@@ -63,17 +61,6 @@ func buildClient() (*http.Client, error) {
 		},
 		Timeout: 15 * time.Minute,
 	}
-
-	// Load our trusted certificate path
-	pemData, err := ioutil.ReadFile(certPath)
-	if err != nil {
-		return nil, err
-	}
-	ok := tlsConfig.RootCAs.AppendCertsFromPEM(pemData)
-	if !ok {
-		return nil, errors.New("Unable to append certificates to PEM")
-	}
-
 	return client, nil
 }
 
@@ -119,9 +106,9 @@ func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanTy
 }
 
 func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, scanType string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
-	syftClient, err := createSyftClient()
+	packageScannerClient, err := createPackageScannerClient()
 	if err != nil {
 		return err
 	}
@@ -132,7 +119,7 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 	} else {
 		source = imageName
 	}
-	res, err = syftClient.GetVulnerabilitySBOM(ctx, &pb.SBOMRequest{Source: source, ScanType: scanType})
+	res, err = packageScannerClient.GenerateSBOM(ctx, &pb.SBOMRequest{Source: source, ScanType: scanType})
 	if err != nil {
 		return err
 	}
