@@ -57,11 +57,11 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	} else if nodeType == nodeTypeHost {
 		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: HostMountDir}}
 	}
-	go getAndPublishSecretScanResults(r.secretScanner.client, greq, req.ControlArgs)
+	go getAndPublishSecretScanResults(r.secretScanner.client, greq, req.ControlArgs, r.hostName)
 	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
 }
 
-func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string) {
+func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string, hostName string) {
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	timestamp := getTimestamp()
 	currTime := getCurrentTime()
@@ -74,6 +74,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	for _, secret := range res.Secrets {
 		var secretScanDoc = make(map[string]interface{})
 		secretScanDoc["node_id"] = controlArgs["node_id"]
+		secretScanDoc["node_type"] = controlArgs["node_type"]
+		secretScanDoc["host_name"] = hostName
 		secretScanDoc["scan_id"] = controlArgs["scan_id"]
 		secretScanDoc["scan_status"] = controlArgs["COMPLETE"]
 		secretScanDoc["time_stamp"] = timestamp
@@ -97,6 +99,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	}
 	var secretScanLogDoc = make(map[string]interface{})
 	secretScanLogDoc["node_id"] = controlArgs["node_id"]
+	secretScanLogDoc["node_type"] = controlArgs["node_type"]
+	secretScanLogDoc["host_name"] = hostName
 	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
 	if err == nil {
 		secretScanLogDoc["scan_status"] = "COMPLETE"
