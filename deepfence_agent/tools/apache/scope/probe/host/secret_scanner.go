@@ -67,6 +67,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	if err != nil {
 		fmt.Println("Error from secretScan grpc server:" + err.Error())
 		return
+	} else {
+		fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + string(len(res.Secrets)))
 	}
 	for _, secret := range res.Secrets {
 		var secretScanDoc map[string]interface{}
@@ -90,22 +92,25 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
 		}
 	}
+	var secretScanLogDoc map[string]interface{}
+	secretScanLogDoc["node_id"] = controlArgs["node_id"]
+	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
+	if err == nil {
+		secretScanLogDoc["scan_status"] = "COMPLETE"
+	} else {
+		secretScanLogDoc["scan_status"] = "ERROR"
+		secretScanLogDoc["scan_message"] = err.Error()
+	}
+	secretScanLogDoc["time_stamp"] = timestamp
+	secretScanLogDoc["@timestamp"] = currTime
+	byteJson, err := json.Marshal(secretScanLogDoc)
 	if err != nil {
-		var secretScanLogDoc map[string]interface{}
-		secretScanLogDoc["node_id"] = controlArgs["node_id"]
-		secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
-		secretScanLogDoc["scan_status"] = controlArgs["COMPLETE"]
-		secretScanLogDoc["time_stamp"] = timestamp
-		secretScanLogDoc["@timestamp"] = currTime
-		byteJson, err := json.Marshal(secretScanLogDoc)
-		if err != nil {
-			fmt.Println("Error in marshalling secretScanLogDoc to json:" + err.Error())
-			return
-		}
-		err = sendSecretScanDataToLogstash(string(byteJson) , secretScanLogsIndexName)
-		if err != nil {
-			fmt.Println("Error in sending data to secretScanLogsIndex:" + err.Error())
-		}
+		fmt.Println("Error in marshalling secretScanLogDoc to json:" + err.Error())
+		return
+	}
+	err = sendSecretScanDataToLogstash(string(byteJson) , secretScanLogsIndexName)
+	if err != nil {
+		fmt.Println("Error in sending data to secretScanLogsIndex:" + err.Error())
 	}
 
 }
