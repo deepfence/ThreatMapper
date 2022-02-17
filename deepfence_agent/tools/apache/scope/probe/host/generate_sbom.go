@@ -37,14 +37,16 @@ func init() {
 }
 
 func createPackageScannerClient() (pb.PackageScannerClient, error) {
-	conn, err := grpc.Dial("unix://"+packageScannerSocket, grpc.WithAuthority("dummy"), grpc.WithInsecure())
+	maxMsgSize := 1024 * 1024 * 20 // 20 mb
+	conn, err := grpc.Dial("unix://"+packageScannerSocket, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize)),
+		grpc.WithAuthority("dummy"), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
 	return pb.NewPackageScannerClient(conn), nil
 }
 
-func buildClient() (*http.Client, error) {
+func buildHttpClient() (*http.Client, error) {
 	// Set up our own certificate pool
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
 	client := &http.Client{
@@ -65,7 +67,7 @@ func buildClient() (*http.Client, error) {
 }
 
 func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanType, sbomStr string) error {
-	httpClient, err := buildClient()
+	httpClient, err := buildHttpClient()
 	if err != nil {
 		return err
 	}
@@ -112,13 +114,13 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 	if err != nil {
 		return err
 	}
-	var res *pb.SBOMResult
 	var source string
 	if imageName == "host" {
 		source = scanPath
 	} else {
 		source = imageName
 	}
+	var res *pb.SBOMResult
 	res, err = packageScannerClient.GenerateSBOM(ctx, &pb.SBOMRequest{Source: source, ScanType: scanType})
 	if err != nil {
 		return err
