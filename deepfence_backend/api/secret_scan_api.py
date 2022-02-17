@@ -3,7 +3,6 @@ from flask_jwt_extended import jwt_required
 import urllib.parse
 from utils.response import set_response
 from utils.custom_exception import InvalidUsage
-from utils.decorators import valid_license_required
 from utils.resource import filter_node_for_secret_scan
 from utils.constants import TIME_UNIT_MAPPING, SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, \
     ES_TERMS_AGGR_SIZE
@@ -15,7 +14,6 @@ secret_api = Blueprint("secret_api", __name__)
 
 @secret_api.route("/secret/node_report", methods=["GET", "POST"])
 @jwt_required()
-@valid_license_required
 def secret_scanned_nodes():
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
@@ -131,7 +129,6 @@ def secret_scanned_nodes():
 @secret_api.route("/secret/scan_results", methods=["POST"],
                   endpoint="api_v1_5_secret_scan_results")
 @jwt_required()
-@valid_license_required
 def secret_scan_results():
     """
     Secret API - Get/Delete Secret Scan Results with filters
