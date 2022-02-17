@@ -78,7 +78,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		secretScanDoc["scan_status"] = controlArgs["COMPLETE"]
 		secretScanDoc["time_stamp"] = timestamp
 		secretScanDoc["@timestamp"] = currTime
-		values := reflect.ValueOf(secret)
+		values := reflect.ValueOf(*secret)
 		typeOfS := values.Type()
 		for index := 0; index < values.NumField(); index++ {
 			secretScanDoc[typeOfS.Field(index).Name] = values.Field(index).Interface()
