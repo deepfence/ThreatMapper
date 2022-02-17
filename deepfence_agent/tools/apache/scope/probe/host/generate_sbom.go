@@ -70,7 +70,7 @@ func buildHttpClient() (*http.Client, error) {
 	return client, nil
 }
 
-func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, hostName, nodeId, nodeType, scanType, sbomStr string) error {
+func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, hostName, nodeId, nodeType, scanType, containerName, sbomStr string) error {
 	httpClient, err := buildHttpClient()
 	if err != nil {
 		return err
@@ -87,6 +87,7 @@ func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, hostNa
 		urlValues.Set("node_id", nodeId)
 		urlValues.Set("node_type", nodeType)
 		urlValues.Set("scan_type", scanType)
+		urlValues.Set("container_name", containerName)
 		requestUrl := fmt.Sprintf("https://"+mgmtConsoleUrl+"/vulnerability-mapper-api/vulnerability-scan?%s", urlValues.Encode())
 		httpReq, err := http.NewRequest("POST", requestUrl, postReader)
 		if err != nil {
@@ -115,7 +116,7 @@ func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, hostNa
 	return nil
 }
 
-func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, scanType string) {
+func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, containerName, scanType string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Minute)
 	defer cancel()
 
@@ -179,7 +180,7 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 		return
 	}
 	stopLogging <- true
-	err = sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, hostName, nodeId, nodeType, scanType, res.Sbom)
+	err = sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, hostName, nodeId, nodeType, scanType, containerName, res.Sbom)
 	if err != nil {
 		logrus.Error(err.Error())
 		return
