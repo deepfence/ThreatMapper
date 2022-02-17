@@ -7,7 +7,7 @@ DEEPFENCE_BACKEND_DIR=$(pwd)/deepfence_backend
 DEEPFENCE_UI_DIR=$(pwd)/deepfence_ui
 DEEPFENCE_DIAG_DIR=$(pwd)/deepfence_diagnosis
 DEEPFENCE_FETCHER_DIR=$DEEPFENCE_CONSOLE_DIR/clair
-VULNERABILITY_MAPPER_DIR=$DEEPFENCE_CONSOLE_DIR/vulnerability_mapper
+VULNERABILITY_MAPPER_DIR=$(pwd)/vulnerability_mapper
 
 cd $DEEPFENCE_CONSOLE_DIR
 

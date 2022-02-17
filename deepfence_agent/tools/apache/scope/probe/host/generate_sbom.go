@@ -106,7 +106,7 @@ func sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanTy
 }
 
 func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, scanType string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Minute)
 	defer cancel()
 	packageScannerClient, err := createPackageScannerClient()
 	if err != nil {
@@ -123,5 +123,5 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 	if err != nil {
 		return err
 	}
-	return sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanType, res.String())
+	return sendSBOMtoConsole(imageName, imageId, scanId, kubernetesClusterName, scanType, res.Sbom)
 }
