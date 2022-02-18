@@ -41,7 +41,7 @@ func init() {
 }
 
 func createPackageScannerClient() (pb.PackageScannerClient, error) {
-	maxMsgSize := 1024 * 1024 * 20 // 20 mb
+	maxMsgSize := 1024 * 1024 * 100 // 100 mb
 	conn, err := grpc.Dial("unix://"+packageScannerSocket, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize)),
 		grpc.WithAuthority("dummy"), grpc.WithInsecure())
 	if err != nil {
