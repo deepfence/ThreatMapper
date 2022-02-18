@@ -482,10 +482,6 @@ class ESConn:
                 sort_expr = sort_item.split(":")
                 query["sort"].append({sort_expr[0]: {"order": sort_expr[1]}})
             return query
-        file1 = open("/var/log/esQuery.log", "a")  # append mode
-        file1.write("Query search_by_and_clause: \n")
-        file1.write(repr(query) + "\n")
-        file1.close()
         res = EL_CLIENT.search(index=index_name, body=query, sort=sort, ignore=[400],
                                _source=_source)
 
@@ -1199,10 +1195,6 @@ class ESConn:
             "aggs": aggs,
             "size": 0
         }
-        file1 = open("/var/log/esQuery1.log", "a")  # append mode
-        file1.write("aggregation query in helper: \n")
-        file1.write(repr(aggs_query) + "\n")
-        file1.close()
         if get_only_query:
             return aggs_query
         else:

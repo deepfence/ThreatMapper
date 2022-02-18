@@ -1066,25 +1066,16 @@ def secret_scan_detail(node_id):
     """
 
     if request.method == "GET":
-        file1 = open("/var/log/esQuery1.log", "a")  # append mode
-        file1.write("node_id: \n")
-        file1.write(node_id + "\n")
-        file1.close()
         es_response = ESConn.search_by_and_clause(
             SECRET_SCAN_LOGS_INDEX,
             {"node_id": urllib.parse.unquote(node_id)},
             0
         )
-        file1 = open("/var/log/esRes.log", "a")  # append mode
-        file1.write("response: \n")
-        file1.write(repr(es_response) + "\n")
-        print(repr(es_response))
-        file1.close()
         latest_secret_scan = {}
         secret_scan_list = es_response.get("hits", [])
         if len(secret_scan_list) > 0:
-            latest_cve_scan = secret_scan_list[0].get('_source', {})
-            latest_cve_scan.update({'_id': secret_scan_list[0].get('_id', "")})
+            latest_secret_scan = secret_scan_list[0].get('_source', {})
+            latest_secret_scan.update({'_id': secret_scan_list[0].get('_id', "")})
 
         return set_response(data=latest_secret_scan)
 
