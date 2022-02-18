@@ -206,7 +206,7 @@ class Node(object):
             "result": {},
             "node_id": self.scope_id,
             "node_type": self.type,
-            "node_name": "",
+            "node_name": self.host_name,
             "host_name": self.host_name,
             "type": constants.SECRET_SCAN_LOGS_INDEX,
             "scan_status": "QUEUED",

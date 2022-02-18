@@ -482,6 +482,8 @@ class ESConn:
                 sort_expr = sort_item.split(":")
                 query["sort"].append({sort_expr[0]: {"order": sort_expr[1]}})
             return query
+        print("Query search_by_and_clause:")
+        print(repr(query))
         res = EL_CLIENT.search(index=index_name, body=query, sort=sort, ignore=[400],
                                _source=_source)
 
@@ -1195,6 +1197,7 @@ class ESConn:
             "aggs": aggs,
             "size": 0
         }
+        print("aggregation query in helper:" + repr(aggs_query))
         if get_only_query:
             return aggs_query
         else:
