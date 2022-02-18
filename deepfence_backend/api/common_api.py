@@ -5,6 +5,7 @@ from flask import Blueprint, request, make_response
 from flask import current_app as app
 from flask_jwt_extended import jwt_required
 from models.notification import RunningNotification
+import urllib.parse
 from utils.response import set_response
 from utils.helper import split_list_into_chunks, get_deepfence_logs, get_process_ids_for_pod, md5_hash
 from utils.esconn import ESConn, GroupByParams
@@ -1067,7 +1068,7 @@ def secret_scan_detail(node_id):
     if request.method == "GET":
         es_response = ESConn.search_by_and_clause(
             SECRET_SCAN_LOGS_INDEX,
-            {"node_id": node_id},
+            {"node_id": urllib.parse.unquote(node_id)},
             0
         )
         latest_secret_scan = {}
