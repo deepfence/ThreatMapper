@@ -1075,6 +1075,11 @@ def secret_scan_detail(node_id):
             {"node_id": urllib.parse.unquote(node_id)},
             0
         )
+        file1 = open("/var/log/esRes.log", "a")  # append mode
+        file1.write("response: \n")
+        file1.write(repr(es_response) + "\n")
+        print(repr(es_response))
+        file1.close()
         latest_secret_scan = {}
         secret_scan_list = es_response.get("hits", [])
         if len(secret_scan_list) > 0:
