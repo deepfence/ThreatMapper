@@ -1066,6 +1066,10 @@ def secret_scan_detail(node_id):
     """
 
     if request.method == "GET":
+        file1 = open("/var/log/esQuery1.log", "a")  # append mode
+        file1.write("node_id: \n")
+        file1.write(node_id + "\n")
+        file1.close()
         es_response = ESConn.search_by_and_clause(
             SECRET_SCAN_LOGS_INDEX,
             {"node_id": urllib.parse.unquote(node_id)},
