@@ -68,6 +68,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	secretScanLogDoc["node_name"] = hostName
 	secretScanLogDoc["host_name"] = hostName
 	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
+	secretScanLogDoc["masked"] = "false"
 	secretScanLogDoc["scan_status"] = "IN_PROGRESS"
 	secretScanLogDoc["time_stamp"] = getTimestamp()
 	secretScanLogDoc["@timestamp"] = getCurrentTime()
@@ -94,6 +95,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		secretScanDoc["node_id"] = controlArgs["node_id"]
 		secretScanDoc["node_type"] = controlArgs["node_type"]
 		secretScanDoc["node_name"] = hostName
+		secretScanDoc["masked"] = "false"
 		secretScanDoc["host_name"] = hostName
 		secretScanDoc["scan_id"] = controlArgs["scan_id"]
 		secretScanDoc["time_stamp"] = timestamp

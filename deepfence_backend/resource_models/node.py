@@ -203,7 +203,7 @@ class Node(object):
         scan_id = self.scope_id + "_" + datetime.now().strftime(
                 "%Y-%m-%dT%H:%M:%S") + ".000"
         es_doc = {
-            "result": {},
+            "masked": "false",
             "node_id": self.scope_id,
             "node_type": self.type,
             "node_name": self.host_name,
