@@ -9,7 +9,7 @@ bin/open-tracer: ./open-tracer/**/*.rs
 	cp $(PWD)/open-tracer/target/release/open-tracer $(PWD)/bin
 
 bin/SecretScanner: ./SecretScanner/**/*.go
-	(cd SecretScanner && go mod vendor && go build)
+	(cd SecretScanner && make)
 	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin
 	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin
 
