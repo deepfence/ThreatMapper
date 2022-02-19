@@ -122,7 +122,10 @@ func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	log.Infof("uploading %s tar to console...", imageName)
 	// call package scanner plugin
 	go func() {
-		GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, containerName, scanType)
+		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, containerName, scanType)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}()
 	return xfer.Response{CVEInfo: "Image upload started"}
 }

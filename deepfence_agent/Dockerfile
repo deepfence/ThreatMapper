@@ -49,8 +49,7 @@ RUN chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && rm -rf vessel-v0.5.7-linux-amd64.tar.gz \
     && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v0.14.0/nerdctl-0.14.0-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-0.14.0-linux-amd64.tar.gz \
-    && rm nerdctl-0.14.0-linux-amd64.tar.gz \
-    && curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+    && rm nerdctl-0.14.0-linux-amd64.tar.gz
 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
 
