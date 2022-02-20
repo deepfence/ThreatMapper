@@ -3,11 +3,9 @@ package host
 import (
 	"context"
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
+	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 	"os"
-	"time"
-
-	pb "github.com/weaveworks/scope/proto"
 )
 
 const (
@@ -35,8 +33,7 @@ func createPackageScannerClient() (pb.PackageScannerClient, error) {
 }
 
 func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, containerName, scanType string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	defer cancel()
+	ctx := context.Background()
 
 	hostName := scopeHostname.Get()
 	var nodeType string

@@ -82,8 +82,8 @@ func init() {
 		NodeTypeProcessByName, NodeTypePod, NodeTypeKubeController, NodeTypeKubeService, NodeTypeSwarmService}
 	vulnerabilityStatusMap = map[string]string{
 		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
-		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "UPLOADING_IMAGE": "in_progress",
-		"UPLOAD_COMPLETE": "in_progress"}
+		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
+		"GENERATED_SBOM": "in_progress"}
 	RedisAddr = fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
 	ScopeWebSocketUrl = map[string]url.URL{
 		NodeTypeHost:            {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/hosts/ws", RawQuery: "t=5s"},
