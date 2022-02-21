@@ -259,8 +259,7 @@ def secret_scan_results():
         raise InvalidUsage("Unsupported action: {0}".format(action))
 
 
-@secret_api.route("/secret/scan_registry", methods=["POST"],
-                  endpoint="api_v1_5_secret_scan_results")
+@secret_api.route("/secret/scan_registry", methods=["POST"])
 @jwt_required()
 def secret_scan_results():
     post_data = request.json
