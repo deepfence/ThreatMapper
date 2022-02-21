@@ -346,8 +346,8 @@ services:
       - deepfence_net
     ports:
       - "8011:8011"
-    environment:
-      http-port: "8011"
+    entrypoint: /home/deepfence/usr/SecretScanner
+    command: [ "-config-path","/home/deepfence/usr", "-http-port", "8011" ]
     logging:
       driver: "json-file"
       options:
