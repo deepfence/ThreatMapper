@@ -6,7 +6,7 @@ import NodesGrid from '../charts/nodes-grid';
 import { setTopologyClickedNode } from '../actions/app-actions';
 import { GRAPH_VIEW_MODE } from '../constants/naming';
 
-export const Nodes = (props) => {
+export const Nodes = () => {
   const dispatch = useDispatch();
 
   const onNodeClicked = useCallback(node => {
@@ -20,7 +20,7 @@ export const Nodes = (props) => {
   return (
     <div>
       {isGraphView ? (
-        <NodesChart onNodeClicked={onNodeClicked} match={props.match}/>
+        <NodesChart onNodeClicked={onNodeClicked} />
       ) : (
         <NodesGrid onNodeClicked={onNodeClicked} />
       )}

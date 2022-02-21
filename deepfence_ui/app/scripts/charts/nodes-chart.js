@@ -1,5 +1,5 @@
 import React  from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import { Route, Redirect, withRouter } from 'react-router-dom';
 import { CloudView } from '../components/topology-filter-view/cloud-view/cloud-view';
 import { HostView } from '../components/topology-filter-view/host-view/host-view';
 import { K8sView } from '../components/topology-filter-view/k8s-view/k8s-view';
@@ -22,7 +22,7 @@ const menu = [
   },
 ];
 
-const NodesChart = ({ onNodeClicked, match }) => (
+const NodesChart = withRouter(({ onNodeClicked, match }) => (
     <div className="">
           {menu.map(menuItem => (
             <Route
@@ -48,7 +48,7 @@ const NodesChart = ({ onNodeClicked, match }) => (
         path={match.path}
         render={() => <Redirect to={`${match.url}/${menu[0].id}`} />}
       />
-    </div>);
+    </div>));
 
 const showPanelForNode = node => {
   const type = node.id.split(';', 2)[1];

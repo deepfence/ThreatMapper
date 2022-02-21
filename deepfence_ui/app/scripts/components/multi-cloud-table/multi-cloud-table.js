@@ -83,20 +83,6 @@ export const MultiCloudTreeTable = withRouter(({
   }
 
 
-  useEffect(() => {
-    const url = location.pathname;
-    if (url.includes('cloud')) {
-      viewType = 'cloud-providers'
-    } else if (url.includes('hosts')){
-      viewType = 'hosts'
-    } else if( url.includes('k8s')) {
-      viewType = 'kubernetes-clusters'
-    } else {
-      viewType = 'cloud-providers'
-    }
-  }, []);
-
-
   useEffect(() =>{
     const pathname = history.location.pathname;
     if (pathname.includes('cloud')) {
@@ -198,7 +184,7 @@ export const MultiCloudTreeTable = withRouter(({
     }}
     styles={styles}
     theme={themeCb}
-    placeholder="Vulnerability Status"
+    placeholder={vulnerabilityfilter || "Vulnerability Status"}
     options={options}
     value={options.value}
     classNamePrefix="select"

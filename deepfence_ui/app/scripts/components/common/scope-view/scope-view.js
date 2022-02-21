@@ -71,23 +71,17 @@ export const ScopeView = (props) => {
             {isDonutDetailsModalVisible && <DonutDetailsModal />}
           </div>
 
-          {(isGraphViewMode || isTableViewMode) && apiKey && (
+          {apiKey && 
             <NodeFiltersPanel
               apiKey={apiKey}
               apiUrl={wsURL}
             />
-          )}
+          }
           <div className="multi-cloud-view-selector">
             <ViewModeSelector />
             <i className="fa fa-bars hamburger-icon" onClick={toggleSidePanel}></i>
           </div>
-          {/* {isGraphViewMode && apiKey && (
-            <NodeFiltersPanel
-              apiKey={apiKey}
-              apiUrl={wsURL}
-            />
-          )} */}
-          <Nodes match={props.match} />
+          <Nodes />
         </div>
       </div>
     </div>

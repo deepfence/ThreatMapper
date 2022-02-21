@@ -55,7 +55,7 @@ export const LiveTopologyGraph = forwardRef(
         (data) => {
           const edges_delta = topologyEdgesToDelta(data.edges);
           const nodes_delta = topologyNodesToDelta(graph.current, data.nodes);
-          setCount(data.metadata.children_count[""][viewType]);
+          setCount(data.metadata?.children_count?.[""]?.[viewType]);
           if (edges_delta != null || nodes_delta != null) {
             //
           }

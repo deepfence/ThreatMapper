@@ -71,7 +71,7 @@ class TopologyView extends React.Component {
         <div ref={'resizeRef'} style={{overflow: 'hidden'}}>
             <HeaderView />
         </div>
-        <ScopeView match={this.props.match} />
+        <ScopeView />
         { isToasterVisible && <NotificationToaster /> }
       </div>
     );
