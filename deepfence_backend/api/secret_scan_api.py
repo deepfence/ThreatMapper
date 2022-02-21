@@ -235,7 +235,7 @@ def secret_scan_results():
     action = req_json.get("action", "get")
     filters = req_json.get("filters", {})
     if not filters:
-        filters = {"type": SECRET_SCAN_INDEX}
+        filters = {}
     filters["masked"] = "false"
     if "node_id" in filters:
         scope_ids = []
@@ -246,7 +246,7 @@ def secret_scan_results():
     if action == "get":
         es_resp = ESConn.search_by_and_clause(
             SECRET_SCAN_INDEX, filters, req_json.get("start_index", 0),
-            req_json.get("sort_order", "desc"), size=req_json.get("size", 10), _source=es_source)
+            req_json.get("sort_order", "desc"), size=req_json.get("size", 10))
         return set_response(data=es_resp["hits"])
     elif action == "delete":
         es_resp = ESConn.search_by_and_clause(
