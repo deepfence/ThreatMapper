@@ -1045,41 +1045,6 @@ def cve_scan_detail(node_id):
         return set_response(data=latest_cve_scan)
 
 
-@common_api.route("/secret-scan/<path:node_id>", methods=["GET"])
-@jwt_required()
-def secret_scan_detail(node_id):
-    """
-    Get the latest secret-scan document from Elasticserach for a given node_id
-    ---
-    security:
-      - Bearer: []
-    parameters:
-      - name: node_id
-        in: path
-        type: string
-        required: true
-    responses:
-      200:
-        description: Returns the latest document for the requested node_id
-      400:
-        description: bad request (like missing text data)
-    """
-
-    if request.method == "GET":
-        es_response = ESConn.search_by_and_clause(
-            SECRET_SCAN_LOGS_INDEX,
-            {"node_id": urllib.parse.unquote(node_id)},
-            0
-        )
-        latest_secret_scan = {}
-        secret_scan_list = es_response.get("hits", [])
-        if len(secret_scan_list) > 0:
-            latest_secret_scan = secret_scan_list[0].get('_source', {})
-            latest_secret_scan.update({'_id': secret_scan_list[0].get('_id', "")})
-
-        return set_response(data=latest_secret_scan)
-
-
 @common_api.route("/docs/delete_by_id", methods=["POST"])
 @jwt_required()
 @user_permission(USER_ROLES.ADMIN_USER)

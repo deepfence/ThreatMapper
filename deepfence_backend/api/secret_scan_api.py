@@ -1,13 +1,20 @@
+from datetime import datetime
+
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 import urllib.parse
+
+from models.container_image_registry import RegistryCredential
+from utils import constants
 from utils.response import set_response
-from utils.custom_exception import InvalidUsage
+from utils.custom_exception import InvalidUsage, InternalError
 from utils.resource import filter_node_for_secret_scan
 from utils.constants import TIME_UNIT_MAPPING, SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, \
     ES_TERMS_AGGR_SIZE
 from utils.esconn import ESConn
 from resource_models.node import Node
+import requests
+import time
 
 secret_api = Blueprint("secret_api", __name__)
 
@@ -251,3 +258,84 @@ def secret_scan_results():
     else:
         raise InvalidUsage("Unsupported action: {0}".format(action))
 
+
+@secret_api.route("/secret/scan_registry", methods=["POST"],
+                  endpoint="api_v1_5_secret_scan_results")
+@jwt_required()
+def secret_scan_results():
+    post_data = request.json
+    registry_images = post_data.get("registry_images", {})
+    if type(registry_images) != dict:
+        raise InvalidUsage("registry_images is required for scanning registry_image")
+    if not registry_images.get("registry_id") or type(registry_images["registry_id"]) != int:
+        raise InvalidUsage("registry_id is required in registry_images key")
+    if registry_images.get("image_name_with_tag_list") and type(
+            registry_images["image_name_with_tag_list"]) != list:
+        raise InvalidUsage("image_name_with_tag_list must be a list")
+    for img in registry_images["image_name_with_tag_list"]:
+        if not img:
+            raise InvalidUsage("image_name_with_tag_list must not have empty values")
+    try:
+        registry_credential = RegistryCredential.query.get(
+            registry_images["registry_id"])
+    except Exception as ex:
+        raise InternalError("Failed to get registry credential {}".format(registry_images["registry_id"]))
+    datetime_now = datetime.now()
+    scan_id_list = []
+    for image_name_with_tag in registry_images.get("image_name_with_tag_list"):
+        scan_id = image_name_with_tag + "_" + datetime_now.strftime("%Y-%m-%dT%H:%M:%S") + ".000"
+        scan_id_list.append(scan_id)
+        body = {
+            "masked": "false", "type": constants.SECRET_SCAN_LOGS_INDEX, "scan_id": scan_id, "host": "",
+            "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "scan_message": "",
+            "scan_status": constants.CVE_SCAN_STATUS_QUEUED, "host_name": "", "node_id": image_name_with_tag,
+            "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE,
+            "node_name": image_name_with_tag
+        }
+        ESConn.create_doc(constants.SECRET_SCAN_LOGS_INDEX, body)
+
+    scan_details = {
+        "registry_type": registry_credential.registry_type, "scan_id_list": scan_id_list,
+        "credential_id": registry_credential.id, "masked": "false", "host_name": "",
+        "node_type": constants.NODE_TYPE_CONTAINER_IMAGE,
+        "image_name_with_tag_list": registry_images["image_name_with_tag_list"]}
+    response = requests.post(constants.SECRET_SCAN_API_URL, data=scan_details)
+    status_code = response.status_code
+    if status_code != 200:
+        InternalError(response.text)
+    return set_response("Ok")
+
+
+@secret_api.route("/secret-scan/<path:node_id>", methods=["GET"])
+@jwt_required()
+def secret_scan_detail(node_id):
+    """
+    Get the latest secret-scan document from Elasticsearch for a given node_id
+    ---
+    security:
+      - Bearer: []
+    parameters:
+      - name: node_id
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: Returns the latest document for the requested node_id
+      400:
+        description: bad request (like missing text data)
+    """
+
+    if request.method == "GET":
+        es_response = ESConn.search_by_and_clause(
+            SECRET_SCAN_LOGS_INDEX,
+            {"node_id": urllib.parse.unquote(node_id)},
+            0
+        )
+        latest_secret_scan = {}
+        secret_scan_list = es_response.get("hits", [])
+        if len(secret_scan_list) > 0:
+            latest_secret_scan = secret_scan_list[0].get('_source', {})
+            latest_secret_scan.update({'_id': secret_scan_list[0].get('_id', "")})
+
+        return set_response(data=latest_secret_scan)

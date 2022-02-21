@@ -336,6 +336,23 @@ services:
       options:
         max-size: "1g"
 
+  deepfence-secret-scanner:
+    container_name: deepfence-secret-scanner
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_secret_scanner_ce:${DF_IMG_TAG:-1.2.0}
+    ulimits:
+      core: 0
+    restart: always
+    networks:
+      - deepfence_net
+    ports:
+      - "8011:8011"
+    environment:
+      http-port: "8011"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
 volumes:
   deepfence_data:
     driver: local
