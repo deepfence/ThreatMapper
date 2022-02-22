@@ -117,8 +117,8 @@ def secret_scanned_nodes():
                     "node_type": node_type}
                 if scan_id_aggr["node_name"]["buckets"]:
                     scan_details["node_name"] = scan_id_aggr["node_name"]["buckets"][0]["key"]
-                for status_aggr in scan_id_aggr["status"]["buckets"]:
-                    scan_details["status"][status_aggr["key"]] = status_aggr["doc_count"]
+                for status_aggr in scan_id_aggr["severity"]["buckets"]:
+                    scan_details["severity"][status_aggr["key"]] = status_aggr["doc_count"]
                 scan_list.append(scan_details)
             scan_list = sorted(scan_list, key=lambda k: k["time_stamp"], reverse=True)
             if not scan_list:
