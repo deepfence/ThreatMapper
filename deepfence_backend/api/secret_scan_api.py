@@ -1,11 +1,16 @@
+import json
 from datetime import datetime
 
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
 import urllib.parse
 
+from collections import defaultdict
+
+from config.redisconfig import redis
 from models.container_image_registry import RegistryCredential
 from utils import constants
+from utils.helper import websocketio_channel_name_format
 from utils.response import set_response
 from utils.custom_exception import InvalidUsage, InternalError
 from utils.resource import filter_node_for_secret_scan
@@ -104,6 +109,48 @@ def secret_scanned_nodes():
         lucene_query_string
     )
     response = []
+    active_containers = defaultdict(int)
+    containers_topology_data = redis.get(
+        websocketio_channel_name_format("{0}?format=deepfence".format(constants.NODE_TYPE_CONTAINER))[1])
+    if containers_topology_data:
+        containers_topology_data = json.loads(containers_topology_data)
+        for df_id, container in containers_topology_data.items():
+            if container.get("image_name"):
+                if container.get("docker_container_state") != "running":
+                    continue
+                active_containers[
+                    "{0}:{1}".format(container.get("image_name", ""), container.get("image_tag", ""))] += 1
+    scan_aggs = {
+        "node_id": {
+            "terms": {
+                "field": "node_id.keyword",
+                "size": ES_TERMS_AGGR_SIZE
+            },
+            "aggs": {
+                "scan_status": {
+                    "terms": {
+                        "field": "scan_status.keyword",
+                        "size": ES_TERMS_AGGR_SIZE
+                    }
+                }
+            }
+        }
+    }
+    scan_aggs_response = ESConn.aggregation_helper(
+        SECRET_SCAN_INDEX,
+        {},
+        scan_aggs
+    )
+    status_map = {}
+    for node in scan_aggs_response["aggregations"]["node_id"]["buckets"]:
+        status_map[node["key"]] = {"error_count":0, "total_count":0}
+        for status_bucket in node["scan_status"]["buckets"]:
+            if status_bucket["key"] == constants.SECRET_SCAN_STATUS_COMPLETED or \
+                    status_bucket["key"] == constants.CVE_SCAN_STATUS_ERROR:
+                status_map[node["key"]]["total_count"] += status_bucket["doc_count"]
+            if status_bucket["key"] == constants.CVE_SCAN_STATUS_ERROR:
+                status_map[node["key"]]["error_count"] += status_bucket["doc_count"]
+
     if "aggregations" in aggs_response:
         for node_id_aggr in aggs_response["aggregations"]["node_id"]["buckets"]:
             node_type = ""
@@ -123,12 +170,17 @@ def secret_scanned_nodes():
             scan_list = sorted(scan_list, key=lambda k: k["time_stamp"], reverse=True)
             if not scan_list:
                 continue
-            response.append({
+            node_data = {
                 "node_name": scan_list[0]["node_name"],
                 "node_type": scan_list[0]["node_type"],
                 "scans": scan_list,
                 "time_stamp": scan_list[0]["time_stamp"],
-            })
+            }
+            if node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
+                node_data["active_containers"] = active_containers.get(node_data["node_name"].split(";")[0], 0)
+            node_data["total_count"] = status_map.get(node_data["node_name"], {}).get("total_count", 0)
+            node_data["error_count"] = status_map.get(node_data["node_name"], {}).get("error_count", 0)
+            response.append(node_data)
     response = sorted(response, key=lambda k: k["time_stamp"], reverse=True)
     return set_response(data={"data": response[start_index:(start_index + page_size)], "total": len(response)})
 
