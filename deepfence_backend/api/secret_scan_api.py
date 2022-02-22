@@ -70,7 +70,7 @@ def secret_scanned_nodes():
                     "aggs": {
                         "status": {
                             "terms": {
-                                "field": "status.keyword",
+                                "field": "scan_status.keyword",
                                 "size": 25
                             }
                         },
