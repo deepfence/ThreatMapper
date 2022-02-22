@@ -15,7 +15,7 @@ from utils.response import set_response
 from utils.custom_exception import InvalidUsage, InternalError
 from utils.resource import filter_node_for_secret_scan
 from utils.constants import TIME_UNIT_MAPPING, SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, \
-    ES_TERMS_AGGR_SIZE
+    ES_TERMS_AGGR_SIZE, ES_MAX_CLAUSE
 from utils.esconn import ESConn
 from resource_models.node import Node
 import requests
@@ -118,7 +118,8 @@ def secret_scanned_nodes():
             if container.get("image_name"):
                 if container.get("docker_container_state") != "running":
                     continue
-                active_containers["{0}:{1}".format(container.get("image_name", ""), container.get("image_tag", ""))] += 1
+                active_containers[
+                    "{0}:{1}".format(container.get("image_name", ""), container.get("image_tag", ""))] += 1
 
     scan_aggs = {
         "node_id": {
@@ -143,7 +144,7 @@ def secret_scanned_nodes():
     )
     status_map = {}
     for node in scan_aggs_response["aggregations"]["node_id"]["buckets"]:
-        status_map[node["key"]] = {"error_count":0, "total_count":0}
+        status_map[node["key"]] = {"error_count": 0, "total_count": 0}
         for status_bucket in node["scan_status"]["buckets"]:
             if status_bucket["key"] == constants.SECRET_SCAN_STATUS_COMPLETED or \
                     status_bucket["key"] == constants.CVE_SCAN_STATUS_ERROR:
@@ -391,3 +392,108 @@ def secret_scan_detail(node_id):
             latest_secret_scan.update({'_id': secret_scan_list[0].get('_id', "")})
 
         return set_response(data=latest_secret_scan)
+
+
+@secret_api.route("/secret/top_exposing_nodes", methods=["GET"])
+@jwt_required()
+def secret_exposing_nodes():
+    number = request.args.get("number")
+    time_unit = request.args.get("time_unit")
+
+    if number:
+        try:
+            number = int(number)
+        except ValueError:
+            raise InvalidUsage("Number should be an integer value.")
+
+    if bool(number is not None) ^ bool(time_unit):
+        raise InvalidUsage("Require both number and time_unit or ignore both of them.")
+
+    if time_unit and time_unit not in TIME_UNIT_MAPPING.keys():
+        raise InvalidUsage("time_unit should be one of these, month/day/hour/minute")
+    lucene_query_string = request.args.get("lucene_query")
+    if lucene_query_string:
+        lucene_query_string = urllib.parse.unquote(lucene_query_string)
+    else:
+        lucene_query_string = ""
+    active_hosts = []
+    active_images = []
+    nodes_data = redis.mget(
+        websocketio_channel_name_format(constants.NODE_TYPE_HOST + "?format=deepfence")[1],
+        websocketio_channel_name_format(constants.NODE_TYPE_CONTAINER + "?format=deepfence")[1])
+    if nodes_data[0]:
+        hosts_topology_data = json.loads(nodes_data[0])
+        for node_id, node_details in hosts_topology_data.items():
+            if node_details.get("host_name") and not node_details.get("is_ui_vm", False) and not node_details.get(
+                    "pseudo", False):
+                active_hosts.append(node_details["host_name"] + ";<host>")
+    if nodes_data[1]:
+        containers_topology_data = json.loads(nodes_data[1])
+        for node_id, node_details in containers_topology_data.items():
+            if node_details.get("image_name_with_tag") and not node_details.get("is_ui_vm", False) and \
+                    not node_details.get("pseudo", False) and node_details.get("docker_container_state") == "running":
+                if node_details["image_name_with_tag"] not in active_images:
+                    active_images.append(node_details["image_name_with_tag"] + ";<container_image>")
+    # TODO: es max clause
+    active_hosts = active_hosts[:ES_MAX_CLAUSE]
+    active_images = active_images[:ES_MAX_CLAUSE]
+    aggs = {
+        "node_id": {
+            "terms": {
+                "field": "node_id.keyword",
+                "size": 5
+            },
+            "aggs": {
+                "scan_id": {
+                    "terms": {
+                        "field": "scan_id.keyword",
+                        "size": 1,
+                        "order": {"recent_scan_aggr": "desc"}
+                    },
+                    "aggs": {
+                        "recent_scan_aggr": {
+                            "max": {
+                                "field": "@timestamp"
+                            }
+                        },
+                        "severity": {
+                            "terms": {
+                                "field": "Severity.level.keyword",
+                                "size": ES_TERMS_AGGR_SIZE
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    host_filters = {"node_type": constants.NODE_TYPE_HOST, "node_id": active_hosts}
+    host_query = ESConn.aggregation_helper(constants.SECRET_SCAN_INDEX, host_filters, aggs, number,
+                                           TIME_UNIT_MAPPING.get(time_unit), lucene_query_string, get_only_query=True)
+    container_filters = {"node_type": constants.NODE_TYPE_CONTAINER_IMAGE, "node_id": active_images}
+    container_query = ESConn.aggregation_helper(constants.SECRET_SCAN_INDEX, container_filters, aggs, number,
+                                                TIME_UNIT_MAPPING.get(time_unit), lucene_query_string,
+                                                get_only_query=True)
+    search_queries = [
+        {"index": constants.SECRET_SCAN_INDEX}, host_query,
+        {"index": constants.SECRET_SCAN_INDEX}, container_query
+    ]
+    aggs_responses = ESConn.msearch(search_queries).get("responses", [])
+    response = {constants.NODE_TYPE_HOST: [], constants.NODE_TYPE_CONTAINER_IMAGE: []}
+
+    if "aggregations" in aggs_responses[0]:
+        for host_aggs in aggs_responses[0]["aggregations"]["node_id"]["buckets"]:
+            for scan_id_bkt in host_aggs["scan_id"]["buckets"]:
+                for severity_bkt in scan_id_bkt["severity"]["buckets"]:
+                    host_data = {"node": host_aggs["key"], "type": severity_bkt["key"],
+                                 "value": severity_bkt["doc_count"]}
+                    response[constants.NODE_TYPE_HOST].append(host_data)
+
+    if "aggregations" in aggs_responses[1]:
+        for image_aggs in aggs_responses[1]["aggregations"]["node_id"]["buckets"]:
+            for scan_id_bkt in image_aggs["scan_id"]["buckets"]:
+                for severity_bkt in scan_id_bkt["severity"]["buckets"]:
+                    image_data = {"node": image_aggs["key"], "type": severity_bkt["key"],
+                                  "value": severity_bkt["doc_count"]}
+                    response[constants.NODE_TYPE_CONTAINER_IMAGE].append(image_data)
+    return set_response(data=response)
