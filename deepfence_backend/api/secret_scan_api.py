@@ -118,8 +118,8 @@ def secret_scanned_nodes():
             if container.get("image_name"):
                 if container.get("docker_container_state") != "running":
                     continue
-                active_containers[
-                    "{0}:{1}".format(container.get("image_name", ""), container.get("image_tag", ""))] += 1
+                active_containers["{0}:{1}".format(container.get("image_name", ""), container.get("image_tag", ""))] += 1
+
     scan_aggs = {
         "node_id": {
             "terms": {
@@ -137,7 +137,7 @@ def secret_scanned_nodes():
         }
     }
     scan_aggs_response = ESConn.aggregation_helper(
-        SECRET_SCAN_INDEX,
+        SECRET_SCAN_LOGS_INDEX,
         {},
         scan_aggs
     )
@@ -172,14 +172,15 @@ def secret_scanned_nodes():
                 continue
             node_data = {
                 "node_name": scan_list[0]["node_name"],
+                "node_id": scan_list[0]["node_id"],
                 "node_type": scan_list[0]["node_type"],
                 "scans": scan_list,
                 "time_stamp": scan_list[0]["time_stamp"],
             }
             if node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
                 node_data["active_containers"] = active_containers.get(node_data["node_name"].split(";")[0], 0)
-            node_data["total_count"] = status_map.get(node_data["node_name"], {}).get("total_count", 0)
-            node_data["error_count"] = status_map.get(node_data["node_name"], {}).get("error_count", 0)
+            node_data["total_count"] = status_map.get(node_data["node_id"], {}).get("total_count", 0)
+            node_data["error_count"] = status_map.get(node_data["node_id"], {}).get("error_count", 0)
             response.append(node_data)
     response = sorted(response, key=lambda k: k["time_stamp"], reverse=True)
     return set_response(data={"data": response[start_index:(start_index + page_size)], "total": len(response)})
