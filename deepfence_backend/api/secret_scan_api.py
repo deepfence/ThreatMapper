@@ -112,7 +112,7 @@ def secret_scanned_nodes():
             scan_list = []
             for scan_id_aggr in node_id_aggr["scan_id"]["buckets"]:
                 scan_details = {
-                    "time_stamp": scan_id_aggr["scan_recent_timestamp"]["value_as_string"], "status": {},
+                    "time_stamp": scan_id_aggr["scan_recent_timestamp"]["value_as_string"], "severity": {},
                     "node_name": "", "node_id": node_id_aggr["key"], "scan_id": scan_id_aggr["key"],
                     "node_type": node_type}
                 if scan_id_aggr["node_name"]["buckets"]:
