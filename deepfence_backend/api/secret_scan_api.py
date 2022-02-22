@@ -10,13 +10,15 @@ from collections import defaultdict
 from config.redisconfig import redis
 from models.container_image_registry import RegistryCredential
 from utils import constants
+from utils.common import calculate_interval
+from utils.es_query_utils import get_latest_secret_scan_id
 from utils.helper import websocketio_channel_name_format
 from utils.response import set_response
 from utils.custom_exception import InvalidUsage, InternalError
 from utils.resource import filter_node_for_secret_scan
 from utils.constants import TIME_UNIT_MAPPING, SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, \
     ES_TERMS_AGGR_SIZE, ES_MAX_CLAUSE
-from utils.esconn import ESConn
+from utils.esconn import ESConn, GroupByParams
 from resource_models.node import Node
 import requests
 import time
@@ -497,3 +499,135 @@ def secret_exposing_nodes():
                                   "value": severity_bkt["doc_count"]}
                     response[constants.NODE_TYPE_CONTAINER_IMAGE].append(image_data)
     return set_response(data=response)
+
+
+@secret_api.route("/secret/report", methods=["GET"])
+@jwt_required()
+def secret_report():
+    number = request.args.get("number")
+    time_unit = request.args.get("time_unit")
+
+    if number:
+        try:
+            number = int(number)
+        except ValueError:
+            raise InvalidUsage("Number should be an integer value.")
+
+    if bool(number is not None) ^ bool(time_unit):
+        raise InvalidUsage("Require both number and time_unit or ignore both of them.")
+
+    if time_unit and time_unit not in TIME_UNIT_MAPPING.keys():
+        raise InvalidUsage("time_unit should be one of these, month/day/hour/minute")
+
+    lucene_query_string = request.args.get("lucene_query")
+    if lucene_query_string:
+        lucene_query_string = urllib.parse.unquote(lucene_query_string)
+
+    scan_ids = get_latest_secret_scan_id()
+
+    filters = {}
+    if request.is_json:
+        if type(request.json) != dict:
+            raise InvalidUsage("Request data invalid")
+        filters = request.json.get("filters", {})
+    filters["scan_id"] = scan_ids[:ES_MAX_CLAUSE]
+    aggs = {
+        "severity": {
+            "terms": {
+                "field": "Severity.level.keyword",
+                "size": ES_TERMS_AGGR_SIZE
+            },
+            "aggs": {
+                "rule_name": {
+                    "terms": {
+                        "field": "Rule.name.keyword",
+                        "size": ES_TERMS_AGGR_SIZE
+                    }
+                }
+            }
+        }
+    }
+    aggs_response = ESConn.aggregation_helper(
+        SECRET_SCAN_INDEX,
+        filters,
+        aggs,
+        number,
+        TIME_UNIT_MAPPING.get(time_unit),
+        lucene_query_string
+    )
+
+    response = []
+    if "aggregations" in aggs_response:
+        for bucket in aggs_response["aggregations"]["severity"]["buckets"]:
+            sub_buckets = bucket.get("rule_name", []).get("buckets", [])
+            for sub_bucket in sub_buckets:
+                info = {'severity': bucket.get("key"), 'value': sub_bucket.get('doc_count', 0),
+                        'rule_name': sub_bucket.get("key")}
+                response.append(info)
+
+    return set_response(data=response)
+
+
+@secret_api.route("/secret/secret_severity_chart", methods=["GET", "POST"])
+@jwt_required()
+def secret_severity_chart():
+    number = request.args.get("number")
+    time_unit = request.args.get("time_unit")
+    lucene_query_string = request.args.get("lucene_query")
+    if lucene_query_string:
+        lucene_query_string = urllib.parse.unquote(lucene_query_string)
+
+    if number is None:
+        raise InvalidUsage("Number parameter is required.")
+
+    try:
+        number = int(number)
+    except ValueError:
+        raise InvalidUsage("Number should be an integer value.")
+
+    try:
+        number = int(number)
+    except ValueError:
+        raise InvalidUsage("Number should be an integer value.")
+
+    if bool(number is not None) ^ bool(time_unit):
+        raise InvalidUsage("Require both number and time_unit or ignore both of them.")
+
+    interval = calculate_interval(number, time_unit)
+    if not interval:
+        raise InvalidUsage("Unsupported number and time_unit combination")
+
+    filters = {}
+    if request.is_json:
+        if type(request.json) != dict:
+            raise InvalidUsage("Request data invalid")
+        filters = request.json.get("filters", {})
+
+    params = GroupByParams(constants.SECRET_SCAN_INDEX)
+    params.addrelativetimerange(number, time_unit)
+    params.addlucenequery(lucene_query_string)
+    params.add_agg_field('Severity.level.keyword', 'terms', order={"_count": "desc"})
+    params.add_sub_agg_field('Rule.name.keyword', 'terms', order={"_count": "desc"})
+    aggs_name = 'by_severity'
+    sub_aggs_name = 'by_type'
+
+    for key, value in filters.items():
+        params.add_filter('term', "{0}.keyword".format(key), value)
+
+    secret_aggs = ESConn.group_by(params, aggs_name, sub_aggs_name=sub_aggs_name)
+
+    data = {"name": "Secrets", "children": []}
+    inner_children = []
+    secrets_by_severity = secret_aggs.get(aggs_name, {}).get('buckets', [])
+    for bucket in secrets_by_severity:
+        by_severity = {"name": bucket.get('key'), "children": []}
+        total_count = 0
+        for inner_bucket in bucket.get(sub_aggs_name, {}).get('buckets', []):
+            total_count += inner_bucket.get("doc_count")
+            child = {"name": inner_bucket.get("key"), "value": inner_bucket.get("doc_count")}
+            by_severity["children"].append(child)
+        by_severity["value"] = total_count
+        inner_children.append(by_severity)
+    data["children"] = inner_children
+
+    return set_response(data=data)
