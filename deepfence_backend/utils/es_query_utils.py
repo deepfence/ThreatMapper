@@ -73,6 +73,7 @@ def get_latest_secret_scan_id():
     }
     aggs_response = ESConn.aggregation_helper(
         SECRET_SCAN_INDEX,
+        {},
         aggs,
         add_masked_filter=False,
     )
