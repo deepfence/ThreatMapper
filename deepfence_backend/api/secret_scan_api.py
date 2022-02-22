@@ -68,9 +68,9 @@ def secret_scanned_nodes():
                         "size": ES_TERMS_AGGR_SIZE
                     },
                     "aggs": {
-                        "status": {
+                        "severity": {
                             "terms": {
-                                "field": "scan_status.keyword",
+                                "field": "Severity.level.keyword",
                                 "size": 25
                             }
                         },
