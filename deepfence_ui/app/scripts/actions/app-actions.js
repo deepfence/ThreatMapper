@@ -86,7 +86,12 @@ import {
   getTopAttackPathsForNode,
   getSecretScanStatus,
   startSecretScan,
-  secretsScanRegistryImages
+  secretsScanRegistryImages,
+  getSecretScanData,
+  getSecretScanResults,
+  getTopSecretScanContainerAndHosts,
+  getSecretScanReportChart,
+  getSecretScanChartData
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1777,6 +1782,51 @@ export function getRegistryImagesTagsAction(params) {
     ActionTypes.GET_REGISTRY_IMAGES_TAGS_FAILURE,
   ];
   return genericThunkAction(actionTypes, getRegistryImagesTags, params);
+}
+
+export function getSecretScanDataAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_SECRET_SCAN_DATA_REQUEST,
+    ActionTypes.GET_SECRET_SCAN_DATA_SUCCESS,
+    ActionTypes.GET_SECRET_SCAN_DATA_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getSecretScanData, params);
+}
+
+export function getSecretScanResultsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_SECRET_SCAN_RESULTS_REQUEST,
+    ActionTypes.GET_SECRET_SCAN_RESULTS_SUCCESS,
+    ActionTypes.GET_SECRET_SCAN_RESULTS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getSecretScanResults, params);
+}
+
+export function getTopSecretScanContainerAndHostsAction(params) {
+  const actionTypes = [
+    ActionTypes.TOP_SECRET_SCAN_NODES_REQUEST,
+    ActionTypes.TOP_SECRET_SCAN_NODES_SUCCESS,
+    ActionTypes.TOP_SECRET_SCAN_NODES_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getTopSecretScanContainerAndHosts, params);
+}
+
+export function getSecretScanReportChartAction(params) {
+  const actionTypes = [
+    ActionTypes.TOP_SECRET_SCAN_REPORT_REQUEST,
+    ActionTypes.TOP_SECRET_SCAN_REPORT_SUCCESS,
+    ActionTypes.TOP_SECRET_SCAN_REPORT_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getSecretScanReportChart, params);
+}
+
+export function getSecretScanChartDataAction(params) {
+  const actionTypes = [
+    ActionTypes.SECRET_SCAN_CHART_REQUEST,
+    ActionTypes.SECRET_SCAN_CHART_SUCCESS,
+    ActionTypes.SECRET_SCAN_CHART_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getSecretScanChartData, params);
 }
 
 // multi cloud
