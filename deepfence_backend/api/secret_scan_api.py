@@ -169,6 +169,10 @@ def secret_scanned_nodes():
                     scan_details["node_name"] = scan_id_aggr["node_name"]["buckets"][0]["key"]
                 for status_aggr in scan_id_aggr["severity"]["buckets"]:
                     scan_details["severity"][status_aggr["key"]] = status_aggr["doc_count"]
+                scan_details["total"] = 0
+                for severity in scan_details["severity"]:
+                    scan_details["total"] += scan_details["severity"][severity]
+                scan_details["active_containers"] = active_containers.get(scan_details["node_name"].split(";")[0], 0)
                 scan_list.append(scan_details)
             scan_list = sorted(scan_list, key=lambda k: k["time_stamp"], reverse=True)
             if not scan_list:
@@ -180,8 +184,6 @@ def secret_scanned_nodes():
                 "scans": scan_list,
                 "time_stamp": scan_list[0]["time_stamp"],
             }
-            if node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
-                node_data["active_containers"] = active_containers.get(node_data["node_name"].split(";")[0], 0)
             node_data["total_count"] = status_map.get(node_data["node_id"], {}).get("total_count", 0)
             node_data["error_count"] = status_map.get(node_data["node_id"], {}).get("error_count", 0)
             response.append(node_data)
@@ -282,9 +284,6 @@ def secret_scan_results():
       401:
         description: Unauthorized
     """
-    es_source = [
-        "@timestamp", "host_name", "type", "node_name",
-        "node_type", "status", "scan_id"]
     if not request.is_json:
         raise InvalidUsage("Missing JSON in request")
     req_json = request.json
@@ -302,8 +301,9 @@ def secret_scan_results():
     if action == "get":
         es_resp = ESConn.search_by_and_clause(
             SECRET_SCAN_INDEX, filters, req_json.get("start_index", 0),
-            req_json.get("sort_order", "desc"), size=req_json.get("size", 10))
-        return set_response(data=es_resp["hits"])
+            req_json.get("sort_order", "desc"), size=req_json.get("size", 10),
+            sort_by="Severity.score", unmapped_type="long")
+        return set_response(data={"rows": es_resp["hits"], "total": es_resp.get("total", {}).get("value", 0)})
     elif action == "delete":
         es_resp = ESConn.search_by_and_clause(
             SECRET_SCAN_INDEX, filters, req_json.get("start_index", 0),
