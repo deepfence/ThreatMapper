@@ -1402,6 +1402,21 @@ export function deleteDocsById(params = {}) {
   });
 }
 
+
+export function getSecretScanStatus(params = {}) {
+  const { imageId } = params;
+  const imageIdEscaped = encodeURIComponent(imageId);
+  const url = `${backendElasticApiEndPoint()}/secret-scan/${imageIdEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function saveGceCredentialKey({
   dispatch,
   credentials_key,
@@ -1709,16 +1724,32 @@ export function getRunningNotification() {
 }
 
 export function startCVEScan(params = {}) {
-  const { nodeId, nodeType, taglist, scanType } = params;
-  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
+  const { nodeId, nodeType, taglist, scanType, scanThisCluster, scanThisNamespace, priority = '' } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_start?scope_id=${nodeId}&node_type=${nodeType}&priority=${priority}`;
   const data = {
     user_defined_tags: taglist,
     scanType,
+    scan_type: scanType,
+    "scan_this_cluster": scanThisCluster,
+    "scan_this_namespace": scanThisNamespace,
   };
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
     body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function startSecretScan(params = {}) {
+  const { nodeId, nodeType } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/secret_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: getAuthHeader(),
@@ -1798,6 +1829,20 @@ export function scanRegistryImages(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function secretsScanRegistryImages(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/secret/scan_registry`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 
 export function saveRegistryCredentials(params = {}) {
   const url = `${backendElasticApiEndPoint()}/vulnerability/container_image_registry`;

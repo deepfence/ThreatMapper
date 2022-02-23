@@ -20,6 +20,7 @@ import {
   REFRESH_INTERVALS_OPTIONS,
   TIME_BOUNDARY_OPTIONS,
 } from '../constants/dashboard-refresh-config';
+import { SecretScannerReducer } from './secret-scanner-reducer';
 
 const error = debug('scope:error');
 
@@ -1536,6 +1537,7 @@ export function rootReducer(state = initialState, action) {
       // forwarding unknown action types to redux-form reducer.
       state = state.set('form', formReducer(state.get('form'), action));
       state = state.set('cve', CVEReducer(state.get('cve'), action));
+      state = state.set('secretScanner', SecretScannerReducer(state.get('secretScanner'), action));
 
       const dfTableMultiSelectColumnCurrentState = state.get(
         'df_table_multi_select_column'

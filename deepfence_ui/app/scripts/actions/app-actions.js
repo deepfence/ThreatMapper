@@ -83,7 +83,10 @@ import {
   getGlobalSettings,
   addGlobalSettings,
   getRegistryImagesTags,
-  getTopAttackPathsForNode
+  getTopAttackPathsForNode,
+  getSecretScanStatus,
+  startSecretScan,
+  secretsScanRegistryImages
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -900,6 +903,25 @@ export function resetNodePolicyLogSelection() {
   };
 }
 
+export function getSecretScanStatusAction(imageId) {
+  const actionTypes = [
+    ActionTypes.SECRET_SCAN_STATUS_REQUEST,
+    ActionTypes.SECRET_SCAN_STATUS_SUCCESS,
+    ActionTypes.SECRET_SCAN_STATUS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getSecretScanStatus, { imageId });
+}
+
+
+export function startSecretScanAction(params) {
+  const actionTypes = [
+    ActionTypes.START_SECRET_SCAN_REQUEST,
+    ActionTypes.START_SECRET_SCAN_SUCCESS,
+    ActionTypes.START_SECRET_SCAN_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, startSecretScan, params);
+}
+
 export function getCVEScanStatusAction(imageId) {
   return dispatch => {
     dispatch({
@@ -1322,6 +1344,15 @@ export function scanRegistryImagesAction(params) {
     ActionTypes.SCAN_REGISTRY_IMAGES_FAILURE,
   ];
   return genericThunkAction(actionTypes, scanRegistryImages, params);
+}
+
+export function secretsScanRegistryImagesAction(params) {
+  const actionTypes = [
+    ActionTypes.SECRETS_SCAN_REGISTRY_IMAGES_REQUEST,
+    ActionTypes.SECRETS_SCAN_REGISTRY_IMAGES_SUCCESS,
+    ActionTypes.SECRETS_SCAN_REGISTRY_IMAGES_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, secretsScanRegistryImages, params);
 }
 
 export function saveRegistryCredentialAction(params) {
