@@ -401,7 +401,7 @@ class ESConn:
     def search_by_and_clause(index_name, filters, start_index=0, sort_order="desc", number=None,
                              time_unit=None, lucene_query_string=None, size=10, _source=None, must_not_filters=None,
                              custom_sort_expression=None, get_only_query=False, sort_by="@timestamp",
-                             scripted_sort=None, unmapped_type=None):
+                             scripted_sort=None):
         """
         filters = {
             "container_name": ["container1", "container2"],
@@ -480,10 +480,7 @@ class ESConn:
             query["sort"] = []
             for sort_item in sort.split(","):
                 sort_expr = sort_item.split(":")
-                if unmapped_type:
-                    query["sort"].append({sort_expr[0]: {"order": sort_expr[1], "unmapped_type": unmapped_type}})
-                else:
-                    query["sort"].append({sort_expr[0]: {"order": sort_expr[1]}})
+                query["sort"].append({sort_expr[0]: {"order": sort_expr[1]}})
             return query
         res = EL_CLIENT.search(index=index_name, body=query, sort=sort, ignore=[400],
                                _source=_source)
