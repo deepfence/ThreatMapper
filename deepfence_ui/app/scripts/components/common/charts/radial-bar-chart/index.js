@@ -1,10 +1,14 @@
 /* eslint-disable react/destructuring-assignment */
 import React from 'react';
+import dfStyles from '@deepfence-theme';
 import { RadialBar } from '@ant-design/charts';
 
 const RadialBarChart = props => {
   const {
     data,
+    xFieldName,
+    yFieldName,
+    colorFieldType,
     onSectionClick = () => {},
     colorCb = () => {},
     colorShadeCb = () => {},
@@ -16,9 +20,9 @@ const RadialBarChart = props => {
     data,
     width: chartWidth,
     height: chartHeight,
-    xField: 'cve_type',
-    yField: 'value',
-    colorField: 'type',
+    xField: xFieldName,
+    yField: yFieldName,
+    colorField: colorFieldType,
     animation: false,
     xAxis: {
       label: {
@@ -39,6 +43,9 @@ const RadialBarChart = props => {
     },
     isStack: stacking,
     theme: 'dark',
+    barStyle: {
+      stroke: dfStyles.background,
+    },
     maxAngle: 270,
     radius: 0.8,
     innerRadius: 0.2,

@@ -11,6 +11,8 @@ import EULAView from './common/eula-view/eula-view';
 import TopologyView from './topology-view/topology-view';
 import VulnerabilityView from './vulnerability-view/index';
 import CVEDetailsView from './vulnerability-view/vulnerability-view';
+import SecretScanHome from './secret-scan-view/index';
+import SecretScanResultsView from './secret-scan-view/secret-scan-results-view';
 import NotificationsView from './notification-view/notification-view';
 import SettingsView from './settings-view/settings-view';
 import RegistryVulnerabilityScan from './vulnerability-view/registry-scan/index';
@@ -124,7 +126,12 @@ class DeepFenceApp extends React.Component {
               path="/vulnerability/details/:scanId"
               component={CVEDetailsView}
             />
+            <PrivateRoute
+              path="/secret-scan/details/:scanId"
+              component={SecretScanResultsView}
+            />
             <PrivateRoute path="/vulnerability" component={VulnerabilityView} />
+            <PrivateRoute path="/secret-scan" component={SecretScanHome} />
             <PrivateRoute
               path="/registry_vulnerability_scan"
               component={RegistryVulnerabilityScan}

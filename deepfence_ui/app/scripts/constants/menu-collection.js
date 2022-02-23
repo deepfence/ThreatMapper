@@ -58,6 +58,9 @@ export const ADMIN_SIDE_NAV_MENU_COLLECTION = [
     name: 'Vulnerabilities', menuIcon: 'icon-biohazard', isActive: false, link: '/vulnerability'
   },
   {
+    name: 'Secret Scan', menuIcon: 'icon-biohazard', isActive: false, link: '/secret-scan'
+  },
+  {
     name: 'Registries', menuIcon: 'icon-containers', isActive: false, link: '/registry_vulnerability_scan'
   },
   {

@@ -1532,6 +1532,101 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
+    case ActionTypes.GET_SECRET_SCAN_DATA_REQUEST: {
+      return state.setIn(['secretScan', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.GET_SECRET_SCAN_DATA_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['secretScan', 'status', 'loading'], false);
+      return state.setIn(['secretScan', 'data'], data);
+    }
+
+    case ActionTypes.GET_SECRET_SCAN_DATA_FAILURE: {
+      state = state.setIn(['secretScan', 'status', 'loading'], false);
+      state = state.setIn(['secretScan', 'data'], null);
+      return state.setIn(['secretScan', 'status', 'error'],
+        'No data available');
+    }
+    
+    case ActionTypes.GET_SECRET_SCAN_RESULTS_REQUEST: {
+      return state.setIn(['secretScanResults', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.GET_SECRET_SCAN_RESULTS_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['secretScanResults', 'status', 'loading'], false);
+      return state.setIn(['secretScanResults', 'data'], data.rows);
+    }
+
+    case ActionTypes.GET_SECRET_SCAN_RESULTS_FAILURE: {
+      state = state.setIn(['secretScanResults', 'status', 'loading'], false);
+      state = state.setIn(['secretScanResults', 'data'], null);
+      return state.setIn(['secretScanResults', 'status', 'error'],
+        'No data available');
+    }
+    
+    case ActionTypes.TOP_SECRET_SCAN_NODES_REQUEST: {
+      return state.setIn(['secretScanNodes', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.TOP_SECRET_SCAN_NODES_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['secretScanNodes', 'status', 'loading'], false);
+      return state.setIn(['secretScanNodes', 'data'], data);
+    }
+
+    case ActionTypes.TOP_SECRET_SCAN_NODES_FAILURE: {
+      state = state.setIn(['secretScanNodes', 'status', 'loading'], false);
+      state = state.setIn(['secretScanNodes', 'data'], null);
+      return state.setIn(['secretScanNodes', 'status', 'error'],
+        'No data available');
+    }
+    
+    case ActionTypes.TOP_SECRET_SCAN_REPORT_REQUEST: {
+      return state.setIn(['secretScanReport', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.TOP_SECRET_SCAN_REPORT_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['secretScanReport', 'status', 'loading'], false);
+      return state.setIn(['secretScanReport', 'data'], data);
+    }
+
+    case ActionTypes.TOP_SECRET_SCAN_REPORT_FAILURE: {
+      state = state.setIn(['secretScanReport', 'status', 'loading'], false);
+      state = state.setIn(['secretScanReport', 'data'], null);
+      return state.setIn(['secretScanReport', 'status', 'error'],
+        'No data available');
+    }
+    
+    case ActionTypes.SECRET_SCAN_CHART_REQUEST: {
+      return state.setIn(['secretScanChart', 'status', 'loading'], true);
+    }
+
+    case ActionTypes.SECRET_SCAN_CHART_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.setIn(['secretScanChart', 'status', 'loading'], false);
+      return state.setIn(['secretScanChart', 'data'], data);
+    }
+
+    case ActionTypes.SECRET_SCAN_CHART_FAILURE: {
+      state = state.setIn(['secretScanChart', 'status', 'loading'], false);
+      state = state.setIn(['secretScanChart', 'data'], null);
+      return state.setIn(['secretScanChart', 'status', 'error'],
+        'No data available');
+    }
+
     default: {
       // forwarding unknown action types to redux-form reducer.
       state = state.set('form', formReducer(state.get('form'), action));
