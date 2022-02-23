@@ -1362,6 +1362,22 @@ def node_action():
         except Exception as exc:
             return set_response(error="Could not save scheduled task: {}".format(exc), status=400)
         return set_response("Ok")
+    elif action in [constants.NODE_ACTION_SECRET_SCAN_START]:
+        for node_id in node_ids:
+            node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+            if not node:
+                raise InvalidUsage("Node not found")
+            if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+                node_json = node.pretty_print()
+                resources = [{
+                    node_json["node_type"]: node_json,
+                }]
+                from tasks.user_activity import create_user_activity
+                jwt_identity = get_jwt_identity()
+                create_user_activity.delay(jwt_identity["id"], constants.ACTION_START, constants.EVENT_SECRET_SCAN,
+                                           resources=resources, success=True)
+                node.secret_start_scan()
+
     return set_response("Ok")
 
 
