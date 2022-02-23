@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 
-MAINTAINER Deepfence Inc 
+MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \
@@ -37,6 +37,7 @@ COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
+COPY plugins/docker_bin /home/deepfence/bin
 
 RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
@@ -51,4 +52,7 @@ RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bi
     && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v0.14.0/nerdctl-0.14.0-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-0.14.0-linux-amd64.tar.gz \
     && rm nerdctl-0.14.0-linux-amd64.tar.gz
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
+
 ENTRYPOINT ["/usr/local/bin/start_services"]

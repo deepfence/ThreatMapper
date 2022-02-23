@@ -115,10 +115,11 @@ type probeFlags struct {
 	useConntrack           bool // Use conntrack for endpoint topo
 	conntrackBufferSize    int  // Sie of kernel buffer for conntrack
 
-	spyProcs    bool // Associate endpoints with processes (must be root)
-	procEnabled bool // Produce process topology & process nodes in endpoint
-	useEbpfConn bool // Enable connection tracking with eBPF
-	procRoot    string
+	spyProcs          bool // Associate endpoints with processes (must be root)
+	procEnabled       bool // Produce process topology & process nodes in endpoint
+	useEbpfConn       bool // Enable connection tracking with eBPF
+	procRoot          string
+	trackProcDeploads bool // Track process dependency loading at runtime
 
 	dockerEnabled  bool
 	dockerInterval time.Duration
@@ -316,6 +317,7 @@ func setupFlags(flags *flags) {
 	flag.BoolVar(&flags.probe.spyProcs, "probe.proc.spy", true, "associate endpoints with processes (needs root)")
 	flag.StringVar(&flags.probe.procRoot, "probe.proc.root", "/proc", "location of the proc filesystem")
 	flag.BoolVar(&flags.probe.procEnabled, "probe.processes", true, "produce process topology & include procspied connections")
+	flag.BoolVar(&flags.probe.trackProcDeploads, "probe.track.deploads", false, "Enable dependency open runtime tracing")
 	flag.BoolVar(&flags.probe.useEbpfConn, "probe.ebpf.connections", true, "enable connection tracking with eBPF")
 
 	// Docker
