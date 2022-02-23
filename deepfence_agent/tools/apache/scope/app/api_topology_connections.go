@@ -318,7 +318,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 						if !ok {
 							vulnerabilityScanStatus = scanStatusNeverScanned
 						}
-						secretScanStatus, ok = nodeIdSecretStatusMap[v.Label]
+						secretScanStatus, ok = nodeIdSecretStatusMap[v.ID]
 						if !ok {
 							secretScanStatus = scanStatusNeverScanned
 						}
@@ -328,7 +328,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 						if !ok {
 							vulnerabilityScanStatus = scanStatusNeverScanned
 						}
-						secretScanStatus, ok = nodeIdSecretStatusMap[v.Label]
+						secretScanStatus, ok = nodeIdSecretStatusMap[v.ID]
 						if !ok {
 							secretScanStatus = scanStatusNeverScanned
 						}
