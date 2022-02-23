@@ -44,12 +44,12 @@ const styles = {
   }),
   control: provided => ({
     ...provided,
-    width: 160,
+    width: 200,
     borderColor: '#1c1c1c',
   }),
   container: provided => ({
     ...provided,
-    width: 120
+    width: 200
   })
 };
 
@@ -62,13 +62,14 @@ export const MultiCloudTreeTable = withRouter(({
   refreshInterval,
   onNodeClicked,
   setAction,
+  viewType,
 }) => {
   const client = useRef(null);
   const table = useRef(null);
   const [metadata, setMetadata] = useState({});
+  const [count, setCount] = useState('');
   const [vulnerabilityfilter, setVulerabilityfilter] = useState("");
   const [, setReRender] = useState(0);
-  let viewType = '';
   const triggerSocketDisconnectHandler = useSocketDisconnectHandler();
 
   const options = [
@@ -81,20 +82,6 @@ export const MultiCloudTreeTable = withRouter(({
   const addVulnerabilityFilter = e => {
       setVulerabilityfilter(e.value);
   }
-
-
-  useEffect(() =>{
-    const pathname = history.location.pathname;
-    if (pathname.includes('cloud')) {
-      viewType = 'cloud-providers'
-    } else if (pathname.includes('hosts')){
-      viewType = 'hosts'
-    } else if( pathname.includes('k8s')) {
-      viewType = 'kubernetes-clusters'
-    } else {
-      viewType = 'cloud-providers'
-    }
-  }, [history.location.pathname]);
 
   useEffect(() => {
     table.current = new MultiCloudTable(
@@ -111,6 +98,7 @@ export const MultiCloudTreeTable = withRouter(({
       (data) => {
         setMetadata(data.metadata);
         const nodes_delta = topologyDataToTableDelta(data.nodes);
+        setCount(data.metadata?.children_count?.[""]?.[viewType]);
         if (nodes_delta !== null) {
           for (const parent_id of Object.keys(nodes_delta)) {
             table.current.updateData(parent_id, nodes_delta[parent_id]);
@@ -127,7 +115,7 @@ export const MultiCloudTreeTable = withRouter(({
     return () => {
       client.current.close();
     };
-  }, [table, history.location.pathname, vulnerabilityfilter]);
+  }, [table, vulnerabilityfilter]);
 
   const onNodeExpanded = useCallback(
     (node) => {
@@ -174,7 +162,6 @@ export const MultiCloudTreeTable = withRouter(({
   );
 
   const data = table.current?.getTableTreeData() || [];
-
   return (
     <div>
    {history.location.pathname.includes('hosts') && <div style={{margin: '25px'}}>
@@ -192,8 +179,9 @@ export const MultiCloudTreeTable = withRouter(({
     onChange={addVulnerabilityFilter}
   /> 
     </div>}  
-    {(table.current === null)  ?  <ShimmerLoaderRow numberOfRows={3} />:
-
+    {count === 0 ? <div className="absolute-center" style={{fontSize: '25px'}}>
+      No Rows Available
+    </div> : (table.current === null)  ?  <ShimmerLoaderRow numberOfRows={3} />:
      <NestedTable
       metadata={metadata}
       data={data}

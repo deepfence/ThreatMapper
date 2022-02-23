@@ -4,9 +4,7 @@ import Select from 'react-select';
 import { Link, withRouter } from 'react-router-dom';
 import OutsideClickHandler from 'react-outside-click-handler';
 
-import {
-  isGraphViewModeSelector,
-} from '../selectors/topology';
+import { isGraphViewModeSelector } from '../selectors/topology';
 import {
   addTopologyFilter,
   removeTopologyFilter,
@@ -28,7 +26,6 @@ function NodeFiltersPanel(props) {
   const { apiKey, apiUrl, history } = props;
   let viewType = '';
   const viewUrl = history.location.pathname;
-
 
   const filterIds = useMemo(() => {
     const ids = new Set();
@@ -54,22 +51,22 @@ function NodeFiltersPanel(props) {
   };
 
   const renderChildFilterComponent = () => (
-      <>
+    <>
       <TopologyFiltersBar
-      filters={topologyFilters}
-      clickedIndexValue={clickedIndexValue}
-      styles={styles}
-      theme={themeCb}
-      showChildDropdown={showChildDropdown}
-      setShowChildDropDown={setShowChildDropDown}
-      handleOnChildFilterChange={onChildFilterSelected}
-      addFilter={addChildFilter}
-      removeFilter={removeFilter}
-      optionValues={optionValues}
-      viewUrl={viewUrl}
-    />
+        filters={topologyFilters}
+        clickedIndexValue={clickedIndexValue}
+        styles={styles}
+        theme={themeCb}
+        showChildDropdown={showChildDropdown}
+        setShowChildDropDown={setShowChildDropDown}
+        handleOnChildFilterChange={onChildFilterSelected}
+        addFilter={addChildFilter}
+        removeFilter={removeFilter}
+        optionValues={optionValues}
+        viewUrl={viewUrl}
+      />
     </>
-    )
+  );
 
   // adds children filter like cloud regions, hosts,
   const addChildFilter = (filterIndex, filter) => {
@@ -177,25 +174,33 @@ function NodeFiltersPanel(props) {
           <div>
             <div className="filter">
               <Link to="/topology/cloud">
-                <div className="filter-name"  style={{ color: '#abb2b7'}}>Cloud view</div>{' '}
+                <div className="filter-name" style={{ color: '#abb2b7' }}>
+                  Cloud view
+                </div>{' '}
               </Link>
-            { isGraphViewMode && viewUrl.includes('cloud') && <div
-                className="fa fa-plus filter-remove-btn"
-                aria-hidden="true"
-                style={{
-                  color: 'white',
-                  marginLeft: '7px',
-                  fontSize: '15px',
-                }}
-                onClick={() => addCloudProviderFilter()}
-              />}
+              {isGraphViewMode && viewUrl.includes('cloud') && (
+                <div
+                  className="fa fa-plus filter-remove-btn"
+                  aria-hidden="true"
+                  style={{
+                    color: 'white',
+                    marginLeft: '7px',
+                    fontSize: '15px',
+                  }}
+                  onClick={() => addCloudProviderFilter()}
+                />
+              )}
             </div>
           </div>
           {viewUrl.includes('cloud') && renderChildFilterComponent()}
           <div>
             <div
               className="filter"
-              style={{ backgroundColor: '#2962ff', color: 'black', opacity: 0.6 }}
+              style={{
+                backgroundColor: '#2962ff',
+                color: 'black',
+                opacity: 0.8,
+              }}
             >
               <Link to="/topology/k8s">
                 {' '}
@@ -203,23 +208,29 @@ function NodeFiltersPanel(props) {
                   K8s view
                 </div>{' '}
               </Link>
-              { isGraphViewMode &&  viewUrl.includes('k8s') && <div
-                className="fa fa-plus filter-remove-btn"
-                aria-hidden="true"
-                style={{
-                  color: 'white',
-                  marginLeft: '7px',
-                  fontSize: '15px',
-                }}
-                onClick={() => addCloudProviderFilter()}
-              />}
+              {isGraphViewMode && viewUrl.includes('k8s') && (
+                <div
+                  className="fa fa-plus filter-remove-btn"
+                  aria-hidden="true"
+                  style={{
+                    color: 'white',
+                    marginLeft: '7px',
+                    fontSize: '15px',
+                  }}
+                  onClick={() => addCloudProviderFilter()}
+                />
+              )}
             </div>
           </div>
           {viewUrl.includes('k8s') && renderChildFilterComponent()}
           <div>
             <div
               className="filter"
-              style={{ backgroundColor: '#f8cd39', color: 'black', opacity: 0.6 }}
+              style={{
+                backgroundColor: '#f8cd39',
+                color: 'black',
+                opacity: 0.8,
+              }}
             >
               <Link to="/topology/hosts">
                 {' '}
@@ -227,16 +238,18 @@ function NodeFiltersPanel(props) {
                   Host view
                 </div>
               </Link>
-              {isGraphViewMode && viewUrl.includes('hosts') && <div
-                className="fa fa-plus filter-remove-btn"
-                aria-hidden="true"
-                style={{
-                  color: 'black',
-                  marginLeft: '7px',
-                  fontSize: '15px',
-                }}
-                onClick={() => addCloudProviderFilter()}
-              />}
+              {isGraphViewMode && viewUrl.includes('hosts') && (
+                <div
+                  className="fa fa-plus filter-remove-btn"
+                  aria-hidden="true"
+                  style={{
+                    color: 'black',
+                    marginLeft: '7px',
+                    fontSize: '15px',
+                  }}
+                  onClick={() => addCloudProviderFilter()}
+                />
+              )}
             </div>
           </div>
           {viewUrl.includes('hosts') && renderChildFilterComponent()}

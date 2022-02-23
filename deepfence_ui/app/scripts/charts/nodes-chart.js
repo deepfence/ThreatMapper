@@ -24,12 +24,6 @@ const menu = [
 
 const NodesChart = withRouter(({ onNodeClicked, match }) => (
     <div className="">
-          {menu.map(menuItem => (
-            <Route
-              key={menuItem.id}
-              path={`${match.path}/${menuItem.id}`}
-            />
-          ))}
       {menu.map(menuItem => (
         <Route
           key={menuItem.id}

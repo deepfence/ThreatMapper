@@ -48,7 +48,7 @@ const TopologyFiltersBar = props => {
       // eslint-disable-next-line react/no-array-index-key
       <div key={index} style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
         <Tippy content={currentFilter} placement="bottom" trigger="mouseenter">
-          <div className="filter" title={currentFilter} style={{backgroundColor: bgcolor, opacity: 0.6}}>
+          <div className="filter" title={currentFilter} style={{backgroundColor: bgcolor, opacity: 0.8}}>
             <div className="filter-name" style={{color: fontColor}}>{frontEllipsis(currentFilter)}</div>
             <div style={{ marginTop: '3px' }}>
               <div

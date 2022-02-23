@@ -80,7 +80,7 @@ export class TopologyClient {
         topology_id: "",
         node_id: "",
         children: [{ topology_id: this.view_type,  filters: {
-          vulnerability_scan_status: this.vulnerability_filter
+          vulnerability_scan_status: this.vulnerability_filter,
       }
     }],
       },
