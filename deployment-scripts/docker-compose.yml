@@ -259,7 +259,6 @@ services:
       - mapper_image_name=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce
       - image_tag=${DF_IMG_TAG:-1.2.0}
       - router_service=127.0.0.1:${MGMT_CONSOLE_PORT:-443}
-      - VULNERABILITY_SCAN_CONCURRENCY=10
     networks:
       - deepfence_net
     depends_on:
@@ -322,15 +321,13 @@ services:
         max-size: "1g"
 
   deepfence-vulnerability-mapper:
-    container_name: df-vulnerability-mapper
+    container_name: deepfence-vulnerability-mapper
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-1.2.0}
     ulimits:
       core: 0
     restart: always
     networks:
       - deepfence_net
-    entrypoint: tail
-    command: ["-f","/dev/null"]
     logging:
       driver: "json-file"
       options:

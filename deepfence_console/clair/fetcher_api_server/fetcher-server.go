@@ -33,11 +33,10 @@ const (
 )
 
 var (
-	cveCheckerFile = "/data/nvd-data/completed.txt"
-	postgresDb     *sql.DB
-	psqlInfo       string
-	redisPool      *redis.Pool
-	esClient       *elastic.Client
+	postgresDb *sql.DB
+	psqlInfo   string
+	redisPool  *redis.Pool
+	esClient   *elastic.Client
 )
 
 func runCommand(name string, args ...string) (stdout string, stderr string, exitCode int) {
@@ -571,7 +570,7 @@ type dfCveStruct struct {
 	Cve_attack_vector          string  `json:"cve_attack_vector"`
 }
 
-func addToLogstashInBackground(docType string, body []byte) error {
+func ingestInBackground(docType string, body []byte) error {
 	redisConn := redisPool.Get()
 	defer redisConn.Close()
 	currTime := getCurrentTime()
@@ -636,8 +635,8 @@ func addToLogstashInBackground(docType string, body []byte) error {
 	return nil
 }
 
-func addToLogstash(respWrite http.ResponseWriter, req *http.Request) {
-	// Send data to logstash through redis pub-sub
+func ingest(respWrite http.ResponseWriter, req *http.Request) {
+	// Send data to elasticsearch
 	defer req.Body.Close()
 	if req.Method != "POST" {
 		http.Error(respWrite, "invalid request", http.StatusInternalServerError)
@@ -649,7 +648,7 @@ func addToLogstash(respWrite http.ResponseWriter, req *http.Request) {
 		return
 	}
 	docType := req.URL.Query().Get("doc_type")
-	go addToLogstashInBackground(docType, body)
+	go ingestInBackground(docType, body)
 	respWrite.WriteHeader(http.StatusOK)
 	fmt.Fprintf(respWrite, "Ok")
 }
@@ -835,7 +834,8 @@ func main() {
 	httpMux.HandleFunc("/df-api/downloadFile", handleFileDownload)
 	httpMux.HandleFunc("/df-api/registry-credential", registryCredential)
 	httpMux.HandleFunc("/df-api/packet-capture-config", packetCaptureConfig)
-	httpMux.HandleFunc("/df-api/add-to-logstash", addToLogstash)
+	httpMux.HandleFunc("/df-api/add-to-logstash", ingest) // depreciated
+	httpMux.HandleFunc("/df-api/ingest", ingest)
 	httpMux.HandleFunc("/df-api/masked-cve-id", maskedCveId)
 	// Get user defined tags for a host
 	httpMux.HandleFunc("/df-api/user-defined-tags", handleUserDefinedTags)
@@ -844,9 +844,9 @@ func main() {
 
 	fmt.Println("vulnerability container is starting")
 
-	logger := log.New(os.Stdout, "cve-server: ", log.LstdFlags)
+	logger := log.New(os.Stdout, "fetcher-server: ", log.LstdFlags)
 	logger.Println("Server is starting at 8006")
-	errorLogger := log.New(os.Stderr, "cve-server: ", log.LstdFlags)
+	errorLogger := log.New(os.Stderr, "fetcher-server: ", log.LstdFlags)
 	server := &http.Server{
 		Addr:              ":8006",
 		Handler:           logging(logger)(httpMux),

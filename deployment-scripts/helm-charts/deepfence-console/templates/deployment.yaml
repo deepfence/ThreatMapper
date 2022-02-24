@@ -484,8 +484,6 @@ spec:
               value: "{{ required "image.pullSecretName is required" .Values.image.pullSecretName }}"
             - name: deepfence_namespace
               value: "{{ .Values.namespace }}"
-            - name: VULNERABILITY_SCAN_CONCURRENCY
-              value: "{{ .Values.vulnerabilityScanConcurrency }}"
             - name: POSTGRES_FETCHER_DB_HOST
               value: "{{ .Values.db.postgresFetcherDb.host }}"
             - name: POSTGRES_FETCHER_DB_PORT

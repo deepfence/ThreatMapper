@@ -46,8 +46,8 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
         return [], 0, 0, 0
     cve_status_map = {
         "QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
-        "COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "UPLOADING_IMAGE": "in_progress",
-        "UPLOAD_COMPLETE": "in_progress"}
+        "COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
+        "GENERATED_SBOM": "in_progress"}
     cve_never_scanned = "never_scanned"
     if not image_cve_status:
         image_cve_status = get_image_cve_status()
