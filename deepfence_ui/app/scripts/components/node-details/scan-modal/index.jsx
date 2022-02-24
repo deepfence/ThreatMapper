@@ -16,7 +16,7 @@ const scans = [
 // 1. normal scan
 // 2. scan that was started with tags
 const ScanModal = (props) => {
-  const { details, imageId, registerPolling, startPolling, updatePollParams } = props;
+  const { details, imageId, registerPolling, startPolling, stopPolling } = props;
   const { id } = details;
   const dispatch = useDispatch();
 
@@ -30,11 +30,10 @@ const ScanModal = (props) => {
   useEffect(() => {
     registerPolling(pollingFunction);
     startPolling({ imageId });
+    return () => {
+      stopPolling();
+    }
   }, []);
-
-  useEffect(() => {
-    updatePollParams({ imageId });
-  }, [imageId]);
 
   return (
     <div className='scan-modal'>
