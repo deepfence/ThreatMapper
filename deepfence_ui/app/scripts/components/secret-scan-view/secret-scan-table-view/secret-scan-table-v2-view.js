@@ -218,16 +218,37 @@ class SecretScanTableV2 extends React.Component {
       {
         Header: 'Id',
         accessor: '_id',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
         Header: 'Filename',
         accessor: '_source.Match.full_filename',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
         Header: 'Matched content',
         accessor: '_source.Match.matched_content',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
@@ -243,12 +264,26 @@ class SecretScanTableV2 extends React.Component {
       {
         Header: 'Rule name',
         accessor: '_source.Rule.name',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         minWidth: 100,
         width: 150,
       },
       {
         Header: 'Signature to match',
         accessor: '_source.Rule.signature_to_match',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         minWidth: 100,
         width: 300,
       },
@@ -264,11 +299,12 @@ class SecretScanTableV2 extends React.Component {
 
         {secretScanResults && (
           <DfTableV2
+            className="truncate"
             columns={columns}
             showPagination
             defaultPageSize={20}
             totalRows={total}
-            name="cve-table"
+            name="secrets-scan-details-table"
             manual
             data={secretScanResults}
             getRowStyle={(row) => ({
@@ -276,20 +312,14 @@ class SecretScanTableV2 extends React.Component {
             })}
             onRowClick={(row) => this.handleRowClick(row)}
             columnCustomizable
-            enableSorting
             onPageChange={this.handlePageChange}
-            onSortChange={(sorted) => {
-              this.tableChangeHandler({
-                sorted
-              })
-            }}
             multiSelectOptions={{
               actions: [
-                {
-                  name: 'Notify',
-                  icon: (<i className="fa fa-bell-o active-color cursor" />),
-                  onClick: this.handleNotify,
-                },
+                // {
+                //   name: 'Notify',
+                //   icon: (<i className="fa fa-bell-o active-color cursor" />),
+                //   onClick: this.handleNotify,
+                // },
                 {
                   name: 'mask',
                   userRole: 'admin',
@@ -319,7 +349,7 @@ class SecretScanTableV2 extends React.Component {
                     ],
                     confirmButtonText: 'Yes, mask',
                     cancelButtonText: 'No, Keep',
-                  },
+                  }
                 },
                 {
                   name: 'Unmask',
