@@ -294,7 +294,7 @@ def start_cve(node_id):
               example: ["base"]
               items:
                 type: string
-                enum: [base, java, python, ruby, php, nodejs, js, dotnet]
+                enum: [base, java, python, ruby, php, javascript, rust, golang, dotnet]
     responses:
       200:
         description: Request success

@@ -72,7 +72,7 @@ class CveScanRegistryImages:
         self.registry_type = ""
         self.docker_config_path = ""
         self.docker_config_file = ""
-        self.scan_type = "base,java,python,ruby,php,nodejs,js,dotnet"
+        self.scan_type = "base,java,python,ruby,php,javascript,rust,golang,dotnet"
         self.scan_id = ""
         self.deepfence_key = ""
         self.mgmt_console_url = "127.0.0.1:443"

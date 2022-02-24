@@ -104,12 +104,16 @@ export const CVE_SCAN_TYPE_OPTIONS = [
     label: 'Java',
   },
   {
-    value: 'js',
+    value: 'javascript',
     label: 'Javascript',
   },
   {
-    value: 'nodejs',
-    label: 'NodeJS',
+    value: 'rust',
+    label: 'Rust',
+  },
+  {
+    value: 'golang',
+    label: 'GoLang',
   },
   {
     value: 'ruby',

@@ -157,7 +157,7 @@ VULNERABILITY_LOG_PATH = "/var/log/vulnerability_scan_logs/"
 ALL_INDICES = [
     CVE_INDEX, CVE_SCAN_LOGS_INDEX
 ]
-CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "nodejs", "js", "dotnet"]
+CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "javascript", "rust", "golang", "dotnet"]
 AES_SETTING_KEY = "aes_secret"
 CLOUD_CREDENTIAL_AES_SETTING_KEY = "cloud_credential_secret"
 

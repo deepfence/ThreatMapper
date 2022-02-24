@@ -1,3 +1,11 @@
+FROM golang:1.17-bullseye AS build
+RUN apt-get update \
+    && apt-get install -y bash make git gcc \
+    && cd /go \
+    && git clone https://github.com/deepfence/syft \
+    && cd /go/syft \
+    && go build -v -o syftCli .
+
 FROM debian:bullseye-slim
 
 MAINTAINER Deepfence Inc
@@ -36,6 +44,8 @@ COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/docker_bin /home/deepfence/bin
+
+COPY --from=build /go/syft/syftCli /usr/local/bin/syft
 
 RUN chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
