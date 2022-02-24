@@ -5,8 +5,8 @@ import codecs
 from utils.constants import NODE_TYPE_HOST, TOPOLOGY_HOSTS_PROBE_MAP_REDIS_KEY, NODE_TYPE_CONTAINER, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_POD, NODE_TYPE_REGISTRY_IMAGE, \
     REGISTRY_IMAGES_CACHE_KEY_PREFIX, CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_COMPLETED, AES_SETTING_KEY, \
-    CLOUD_CREDENTIAL_AES_SETTING_KEY
-from utils.helper import websocketio_channel_name_format, get_image_cve_status
+    CLOUD_CREDENTIAL_AES_SETTING_KEY, SECRET_SCAN_STATUS_COMPLETED
+from utils.helper import websocketio_channel_name_format, get_image_cve_status, get_image_secret_status
 from utils.custom_exception import InvalidUsage
 from operator import itemgetter
 from datetime import datetime, timedelta
@@ -44,21 +44,23 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
     scan_in_progress = 0
     if not registry_image_list:
         return [], 0, 0, 0
-    cve_status_map = {
+    status_map = {
         "QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
         "COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
-        "GENERATED_SBOM": "in_progress"}
+        "GENERATED_SBOM": "in_progress", "COMPLETE": "complete", "IN_PROGRESS": "in_progress"}
     cve_never_scanned = "never_scanned"
     if not image_cve_status:
         image_cve_status = get_image_cve_status()
+    image_secret_status = get_image_secret_status()
     # merge registry_image_list and image index
     registry_image_list_with_status = []
     unique_images = set()
     for reg_image in registry_image_list:
         unique_images.add(reg_image["image_name"])
         cve_status = image_cve_status.get(reg_image["image_name_with_tag"], {})
+        secret_status = image_secret_status.get(reg_image["image_name_with_tag"], {})
         if cve_status:
-            reg_image["vulnerability_scan_status"] = cve_status_map.get(
+            reg_image["vulnerability_scan_status"] = status_map.get(
                 cve_status["action"], cve_never_scanned)
             reg_image["vulnerability_scan_status_time"] = cve_status["@timestamp"]
             reg_image["vulnerability_scan_status_msg"] = cve_status["cve_scan_message"]
@@ -70,6 +72,18 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
             reg_image["vulnerability_scan_status"] = cve_never_scanned
             reg_image["vulnerability_scan_status_time"] = ""
             reg_image["vulnerability_scan_status_msg"] = ""
+        if secret_status:
+            reg_image["secret_scan_status"] = status_map.get(
+                secret_status["scan_status"], cve_never_scanned)
+            reg_image["secret_scan_status_time"] = secret_status["@timestamp"]
+            if secret_status["scan_status"] == SECRET_SCAN_STATUS_COMPLETED:
+                total_scanned += 1
+            elif secret_status["scan_status"] in "IN_PROGRESS":
+                scan_in_progress += 1
+        else:
+            reg_image["secret_scan_status"] = cve_never_scanned
+            reg_image["secret_scan_status_time"] = ""
+            reg_image["secret_scan_status_msg"] = ""
         registry_image_list_with_status.append(reg_image)
     return registry_image_list_with_status, total_scanned, scan_in_progress, len(unique_images)
 

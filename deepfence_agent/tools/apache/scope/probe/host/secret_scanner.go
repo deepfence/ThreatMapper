@@ -86,6 +86,10 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	currTime := getCurrentTime()
 	if err != nil {
 		fmt.Println("Error from secretScan grpc server:" + err.Error())
+		secretScanLogDoc["scan_status"] = "ERROR"
+		secretScanLogDoc["scan_message"] = err.Error()
+		byteJson, _ = json.Marshal(secretScanLogDoc)
+		sendSecretScanDataToLogstash(string(byteJson) , secretScanLogsIndexName)
 		return
 	} else {
 		fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))

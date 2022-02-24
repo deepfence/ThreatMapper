@@ -1195,7 +1195,6 @@ class ESConn:
             "aggs": aggs,
             "size": 0
         }
-        print("aggs_query:" + repr(aggs_query))
         if get_only_query:
             return aggs_query
         else:
