@@ -127,15 +127,12 @@ fi
 
 echo "Building Secret Scanner Image"
 cd $DEEPFENCE_AGENT_DIR/plugins
-sh bootstrap.sh
-cd -
+bash bootstrap.sh
 cd $SECRET_SCANNER_DIR
-sh bootstrap.sh
+bash bootstrap.sh
 docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_secret_scanner_ce:${DF_IMG_TAG:-latest} -f $SECRET_SCANNER_DIR/Dockerfile $SECRET_SCANNER_DIR
-
 if [ ! $? -eq 0 ]; then
     echo "Building secret scanner image failed. Exiting"
-    cd -
     exit 1
 fi
-cd -
+cd $DEEPFENCE_CONSOLE_DIR
