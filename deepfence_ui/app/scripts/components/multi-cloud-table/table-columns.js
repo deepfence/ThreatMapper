@@ -65,6 +65,19 @@ const hostColumns = [
   },
 },
 {
+  Header: 'secrets scan',
+  accessor: 'secret_scan_status',
+  Cell: ({ original }) => {
+
+    const { secret_scan_status, is_ui_vm } = original;
+    // for UI VMs, secrets scan is not available
+    if (is_ui_vm === 'true') {
+      return <span className="scan-status not-available">Not Applicable</span>;
+    }
+    return scanStatusCallback(secret_scan_status);
+  },
+},
+{
   Header: 'OS',
   accessor: 'os',
   maxWidth: 60
@@ -111,6 +124,14 @@ const containerColumns = [{
   Cell: ({ original }) => {
     const { vulnerability_scan_status } = original;
     return scanStatusCallback(vulnerability_scan_status);
+  },
+},
+{
+  Header: 'secrets scan',
+  accessor: 'secret_scan_status',
+  Cell: ({ original }) => {
+    const { secret_scan_status } = original;
+    return scanStatusCallback(secret_scan_status);
   },
 }];
 
