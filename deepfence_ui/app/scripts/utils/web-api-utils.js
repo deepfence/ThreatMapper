@@ -1174,30 +1174,6 @@ export function deleteCredential(dispatch, params) {
   });
 }
 
-export function QueueCVEScan(image_name, action, cve_scan_message = '') {
-  const url = `${getApiPath()}/deepfence/v1.5/add-cve-scan-log`;
-  const now = new Date();
-  return doRequest({
-    url,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader()
-    },
-    data: JSON.stringify({
-      node_id: image_name,
-      '@timestamp': now.toISOString(),
-      type: 'cve-scan',
-      action,
-      cve_scan_message,
-    }),
-    success: (response) => {
-    },
-    error: (error) => {
-    }
-  });
-}
-
 export function resetAPIKey() {
   const url = `${backendElasticApiEndPoint()}/users/reset-api-key`;
   return doRequest({
