@@ -24,8 +24,8 @@ const (
 )
 
 var (
-	vulnerabilityStatusMap map[string]string
-	nStatus                *Status
+	statusMap map[string]string
+	nStatus   *Status
 )
 
 type Status struct {
@@ -165,7 +165,7 @@ func (st *Status) updateScanStatusData() error {
 				}
 			}
 		}
-		latestStatus, ok = vulnerabilityStatusMap[latestStatus]
+		latestStatus, ok = statusMap[latestStatus]
 		if !ok {
 			latestStatus = scanStatusNeverScanned
 		}
@@ -208,12 +208,12 @@ func (st *Status) updateScanStatusData() error {
 				}
 			}
 		}
-		latestStatus, ok = vulnerabilityStatusMap[latestStatus]
+		latestStatus, ok = statusMap[latestStatus]
 		if !ok {
 			latestStatus = scanStatusNeverScanned
 		}
-		nodeIdSecretStatusMap[nodeIdAggs.Key.(string)] = latestStatus
-		nodeIdSecretStatusTimeMap[nodeIdAggs.Key.(string)] = latestScanTimeStr
+		nodeIdSecretStatusMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestStatus
+		nodeIdSecretStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
 	}
 	st.nodeStatus.Lock()
 	st.nodeStatus.SecretScanStatus = nodeIdSecretStatusMap
@@ -304,10 +304,10 @@ func formatComplianceStatus(count int, status string) string {
 }
 
 func NewStatus() (*Status, error) {
-	vulnerabilityStatusMap = map[string]string{
+	statusMap = map[string]string{
 		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
 		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
-		"GENERATED_SBOM": "in_progress"}
+		"GENERATED_SBOM": "in_progress", "IN_PROGRESS": "in_progress", "COMPLETE": "complete"}
 
 	esHost := os.Getenv("ELASTICSEARCH_HOST")
 	if esHost == "" {
