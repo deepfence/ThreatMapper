@@ -66,9 +66,6 @@ export const ADMIN_SIDE_NAV_MENU_COLLECTION = [
   {
     name: 'Integrations', menuIcon: 'icon-notification', isActive: false, link: '/notification'
   },
-  {
-    name: 'Settings', menuIcon: 'icon-settings', isActive: false, link: '/settings'
-  },
 ];
 
 export const USER_SIDE_NAV_MENU_COLLECTION = [
@@ -83,9 +80,6 @@ export const USER_SIDE_NAV_MENU_COLLECTION = [
   },
   {
     name: 'Integrations', menuIcon: 'icon-notification', isActive: false, link: '/notification'
-  },
-  {
-    name: 'Settings', menuIcon: 'icon-settings', isActive: false, link: '/settings'
   },
 ];
 

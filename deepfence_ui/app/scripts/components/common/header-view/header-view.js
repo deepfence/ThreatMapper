@@ -1,7 +1,7 @@
 // React imports
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Tippy from '@tippyjs/react';
 
 
@@ -28,6 +28,7 @@ class HeaderView extends React.Component {
     this.setHistoryBound = this.setHistoryBound.bind(this);
     this.goBackToIntegrations = this.goBackToIntegrations.bind(this);
     this.logout = this.logout.bind(this);
+    this.goToSettings = this.goToSettings.bind(this);
   }
 
   setHistoryBound(dayObj) {
@@ -125,6 +126,11 @@ class HeaderView extends React.Component {
     this.props.dispatch(logoutUser());
   }
 
+  goToSettings() {
+    const { history } = this.props;
+    history.push('/settings');
+  }
+
   render() {
     return (
       <div className={`header-view ${this.props.isSideNavCollapsed ? 'collapse-fixed-panel' : 'expand-fixed-panel'}`}>
@@ -149,7 +155,15 @@ class HeaderView extends React.Component {
           <div className="user-menu">
             <Tippy content={
               <div className="user-menu-dropdown-wrapper">
-                <div className="user-menu-dropdown-item" onClick={() => {this.logout()}}>
+                <div className="user-menu-dropdown-item" onClick={() => { this.goToSettings() }}>
+                  <div className="user-menu-item-icon">
+                    <i className="fa fa-cog" aria-hidden="true" />
+                  </div>
+                  <div className="user-menu-item-text">
+                    Settings
+                  </div>
+                </div>
+                <div className="user-menu-dropdown-item" onClick={() => { this.logout() }}>
                   <div className="user-menu-item-icon">
                     <i className="fa fa-sign-out" aria-hidden="true" />
                   </div>
@@ -187,4 +201,4 @@ function mapStateToProps(state) {
 
 export default connect(
   mapStateToProps
-)(HeaderView);
+)(withRouter(HeaderView));
