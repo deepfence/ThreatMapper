@@ -10,7 +10,6 @@ import { DfTableV2 } from '../../common/df-table-v2'
 import pollable from '../../common/header-view/pollable';
 import {
   getSecretScanResultsAction,
-  // getAlertsV2Action,
   deleteDocsByIdAction,
   unmaskDocsAction,
   genericMaskDocsAction,
@@ -214,9 +213,7 @@ class SecretScanTableV2 extends React.Component {
 
   render() {
     const {
-      // alerts = [],
       secretScanResults = [],
-      // total,
       updatePollParams
     } = this.props;
     // eslint-disable-next-line prefer-destructuring
@@ -226,16 +223,37 @@ class SecretScanTableV2 extends React.Component {
       {
         Header: 'Id',
         accessor: '_id',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
         Header: 'Filename',
         accessor: '_source.Match.full_filename',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
         Header: 'Matched content',
         accessor: '_source.Match.matched_content',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
@@ -251,31 +269,29 @@ class SecretScanTableV2 extends React.Component {
       {
         Header: 'Rule name',
         accessor: '_source.Rule.name',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         minWidth: 100,
         width: 150,
       },
       {
         Header: 'Signature to match',
         accessor: '_source.Rule.signature_to_match',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         minWidth: 100,
         width: 300,
       },
-      // {
-      //   Header: 'CVE Link',
-      //   accessor: 'cve_link',
-      //   Cell: cell => (
-      //     <div className="truncate">
-      //       <a
-      //         href={cell.value}
-      //         target="_blank"
-      //         rel="noopener noreferrer"
-      //         onClick={e => e.stopPropagation()}
-      //       >
-      //         {cell.value}
-      //       </a>
-      //     </div>
-      //   )
-      // },
     ];
 
     return (
@@ -288,20 +304,20 @@ class SecretScanTableV2 extends React.Component {
 
         { secretScanResults && (
           <DfTableV2
+          className="truncate"
           columns={columns}
           showPagination
           defaultPageSize={20}
           totalRows={total}
           name="cve-table"
           manual
-          // data={alerts}
           data={secretScanResults}
           getRowStyle={(row) => ({
             opacity: row.original.masked === 'true' ? 0.5 : 1
           })}
           onRowClick={(row) => this.handleRowClick(row)}
           columnCustomizable
-          enableSorting
+          // enableSorting
           onPageChange={this.handlePageChange}
           onSortChange={(sorted) => {
             this.tableChangeHandler({
@@ -310,11 +326,11 @@ class SecretScanTableV2 extends React.Component {
           }}
           multiSelectOptions={{
             actions: [
-              {
-                name: 'Notify',
-                icon: (<i className="fa fa-bell-o active-color cursor" />),
-                onClick: this.handleNotify,
-              },
+              // {
+              //   name: 'Notify',
+              //   icon: (<i className="fa fa-bell-o active-color cursor" />),
+              //   onClick: this.handleNotify,
+              // },
               {
                 name: 'mask',
                 userRole: 'admin',
@@ -404,8 +420,6 @@ const maskFormSelector = formValueSelector('cve-mask-form');
 function mapStateToProps(state) {
   return {
     secretScanResults: state.getIn(['secretScanResults', 'data']),
-    // alerts: state.getIn(['alertsView', 'data']),
-    // total: state.getIn(['alertsView', 'total']),
     filterValues: nodeFilterValueSelector(state),
     hideMasked: maskFormSelector(state, 'hideMasked'),
     maskDocs: state.getIn(['form', 'dialogConfirmation', 'values', 'masking_docs']),
@@ -414,7 +428,6 @@ function mapStateToProps(state) {
 
 const connectedTable = connect(mapStateToProps, {
   getSecretScanResultsAction,
-  // getAlertsV2Action,
   deleteDocsByIdAction,
   unmaskDocsAction,
   genericMaskDocsAction,

@@ -69,7 +69,7 @@ const SecretScanReport = props => {
 
   return (
     <div>
-      <div className="unique-vulnerabilities">Unique Vulnerabilities</div>
+      <div className="unique-vulnerabilities" />
       {summaryStats && (
         <RadialBarChart
           data={summaryStats}
