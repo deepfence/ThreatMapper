@@ -202,33 +202,6 @@
     }
   }
 
-  .collapse-expand-btn-wrapper,
-  .logout-btn-wrapper {
-    display: flex;
-    justify-content: center;
-
-    .collapse-btn-container {
-      width: 20px;
-      height: 20px;
-      border: 1px solid $border-color;
-      font-size: 12px;
-      text-align: center;
-      cursor: pointer;
-      position: absolute;
-      bottom: 14px;
-    }
-
-    .logout-btn-container {
-      width: 30px;
-      height: 30px;
-      color: $nav-menu-color;
-      font-size: 18px;
-      text-align: center;
-      cursor: pointer;
-      position: absolute;
-      bottom: 40px;
-    }
-  }
 }
 /* END :: STYLES FOR SIDE NAVIGATION */
 
@@ -1396,6 +1369,7 @@
   min-width: 100px;
 }
 .medium-severity,
+.Medium-severity,
 .status-Failed,
 .status-failed,
 .status-expired {
@@ -1408,6 +1382,7 @@
   min-width: 100px;
 }
 .low-severity,
+.Low-severity,
 .status-Success,
 .status-success,
 .status-active {
@@ -4993,6 +4968,38 @@ input {
     }
     @media screen and (min-width: 768px) and (max-width: 1024px) {
       float: right;
+    }
+  }
+  .user-menu {
+    min-width: 42px;
+    margin-left: 16px;
+    margin-right: 8px;
+    cursor: pointer;
+    .user-icon {
+      font-size: 24px;
+      margin-right: 8px;
+    }
+    .user-menu-dropdown-wrapper {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .tippy-content {
+      padding: 0;
+    }
+    .user-menu-dropdown-item {
+      color: $text-primary;
+      display: flex;
+      padding: 4px 8px;
+      .user-menu-item-icon {
+        margin-right: 8px;
+      }
+      .user-menu-item-text {
+        font-weight: 600;
+      }
+
+      &:hover {
+        background-color: $color-secondary-shade;
+      }
     }
   }
 }

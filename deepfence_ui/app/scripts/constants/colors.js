@@ -5,16 +5,22 @@ import dfStyle from '../../styles/_deepfence.scss';
 export const SEVERITY = {
   CRITICAL: 'critical',
   HIGH: 'high',
+  High: 'High',
   MEDIUM: 'medium',
+  Medium: 'Medium',
   LOW: 'low',
+  Low: 'Low',
   INFO: 'info',
 };
 
 export const sevColors = {
   critical: dfStyle.severityColorCritical,
   high: dfStyle.severityColorHigh,
+  High: dfStyle.severityColorHigh,
   medium: dfStyle.severityColorMedium,
+  Medium: dfStyle.severityColorMedium,
   low: dfStyle.severityColorLow,
+  Low: dfStyle.severityColorLow,
   info: dfStyle.severityColorInfo,
   pass: dfStyle.passColor,
 };
@@ -22,8 +28,11 @@ export const sevColors = {
 export const sevColorsShade = {
   critical: dfStyle.severityColorCriticalShade,
   high: dfStyle.severityColorHighShade,
+  High: dfStyle.severityColorHighShade,
   medium: dfStyle.severityColorMediumShade,
+  Medium: dfStyle.severityColorMediumShade,
   low: dfStyle.severityColorLowShade,
+  Low: dfStyle.severityColorLowShade,
   info: dfStyle.severityColorInfoShade,
   pass: dfStyle.passColorShade,
 };
@@ -65,10 +74,16 @@ export const severityColorsSunBurst = ({ path }) => {
     return sevColors[SEVERITY.CRITICAL];
   } if (path.startsWith(SEVERITY.HIGH)) {
     return sevColors[SEVERITY.HIGH];
+  }  if (path.startsWith(SEVERITY.High)) {
+    return sevColors[SEVERITY.High];
   } if (path.startsWith(SEVERITY.MEDIUM)) {
     return sevColors[SEVERITY.MEDIUM];
+  }  if (path.startsWith(SEVERITY.Medium)) {
+    return sevColors[SEVERITY.Medium];
   } if (path.startsWith(SEVERITY.LOW)) {
     return sevColors[SEVERITY.LOW];
+  } if (path.startsWith(SEVERITY.Low)) {
+    return sevColors[SEVERITY.Low];
   }
   return sevColors[SEVERITY.INFO];
 };
@@ -91,10 +106,16 @@ export const severityColorsSunBurstShade = (path) => {
     return sevColorsShade[SEVERITY.CRITICAL];
   } if (path.startsWith(SEVERITY.HIGH)) {
     return sevColorsShade[SEVERITY.HIGH];
+  }  if (path.startsWith(SEVERITY.High)) {
+    return sevColorsShade[SEVERITY.High];
   } if (path.startsWith(SEVERITY.MEDIUM)) {
     return sevColorsShade[SEVERITY.MEDIUM];
+  }  if (path.startsWith(SEVERITY.Medium)) {
+    return sevColorsShade[SEVERITY.Medium];
   } if (path.startsWith(SEVERITY.LOW)) {
     return sevColorsShade[SEVERITY.LOW];
+  } if (path.startsWith(SEVERITY.Low)) {
+    return sevColorsShade[SEVERITY.Low];
   }
   return sevColorsShade[SEVERITY.INFO];
 };

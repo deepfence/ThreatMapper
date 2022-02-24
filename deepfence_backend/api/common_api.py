@@ -5,6 +5,7 @@ from flask import Blueprint, request, make_response
 from flask import current_app as app
 from flask_jwt_extended import jwt_required
 from models.notification import RunningNotification
+import urllib.parse
 from utils.response import set_response
 from utils.helper import split_list_into_chunks, get_deepfence_logs, get_process_ids_for_pod, md5_hash
 from utils.esconn import ESConn, GroupByParams
@@ -14,7 +15,7 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
     CVE_SCAN_LOGS_INDEX, SCOPE_TOPOLOGY_COUNT, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, NODE_TYPE_POD, ES_MAX_CLAUSE, \
     TOPOLOGY_ID_CONTAINER, TOPOLOGY_ID_CONTAINER_IMAGE, TOPOLOGY_ID_HOST, NODE_TYPE_CONTAINER_IMAGE, \
     TOPOLOGY_ID_KUBE_SERVICE, NODE_TYPE_KUBE_CLUSTER, ES_TERMS_AGGR_SIZE, \
-    REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE
+    REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta

@@ -470,7 +470,7 @@ def start_cve(node_id):
                     raise DFError("CVE scan on this node is already in progress")
                 resp = False
                 try:
-                    resp = node.cve_scan_start(scan_types, priority=priority,mask_cve_ids=",".join(mask_cve_ids))
+                    resp = node.cve_scan_start(scan_types, priority=priority, mask_cve_ids=",".join(mask_cve_ids))
                 except Exception as ex:
                     redis.delete(lock_key)
                     raise ex
@@ -488,6 +488,40 @@ def start_cve(node_id):
         # import traceback
         # track = traceback.format_exc()
         # print(track)
+        raise InternalError(str(ex))
+
+
+@resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_SECRET_SCAN_START, methods=["GET", "POST"],
+                    endpoint="api_v1_5_secret_scan_start")
+@jwt_required()
+@non_read_only_user
+def start_secret(node_id):
+    try:
+        if not request.is_json:
+            raise InvalidUsage("Missing JSON post data in request")
+        node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+        if not node:
+            raise InvalidUsage("Node not found")
+        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+            node_json = node.pretty_print()
+            resources = [{
+                node_json["node_type"]: node_json,
+            }]
+            from tasks.user_activity import create_user_activity
+            jwt_identity = get_jwt_identity()
+            create_user_activity.delay(jwt_identity["id"], constants.ACTION_START, constants.EVENT_SECRET_SCAN,
+                                       resources=resources, success=True)
+            return set_response(data=node.secret_start_scan())
+
+        else:
+            raise InvalidUsage(
+                "Control '{0}' not applicable for node type '{1}'".format(
+                    constants.NODE_ACTION_SECRET_SCAN_START, node.type))
+    except DFError as err:
+        current_app.logger.error(
+            "NodeView: action={}; error={}".format(constants.NODE_ACTION_SECRET_SCAN_START, err))
+        raise InvalidUsage(err.message)
+    except Exception as ex:
         raise InternalError(str(ex))
 
 
@@ -1191,7 +1225,7 @@ def node_action():
     report_email = action_args.get("report_email", "")
     if report_email:
         node_action_details["report_email"] = str(report_email)
-    
+
     report_duration = action_args.get('durationValues', {})
 
     if type(report_duration) == str:
@@ -1287,7 +1321,7 @@ def node_action():
     from tasks.user_activity import create_user_activity
     create_user_activity.delay(current_user["id"], constants.ACTION_BULK, action,
                                resources=[node_action_details_user_activity], success=True)
-    if action in [constants.NODE_ACTION_CVE_SCAN_START,constants.NODE_ACTION_CVE_SCAN_STOP]:
+    if action in [constants.NODE_ACTION_CVE_SCAN_START, constants.NODE_ACTION_CVE_SCAN_STOP]:
         from config.app import celery_app
         celery_app.send_task(
             'tasks.common_worker.common_worker', args=(), queue=constants.CELERY_NODE_ACTION_QUEUE,
@@ -1328,6 +1362,22 @@ def node_action():
         except Exception as exc:
             return set_response(error="Could not save scheduled task: {}".format(exc), status=400)
         return set_response("Ok")
+    elif action in [constants.NODE_ACTION_SECRET_SCAN_START]:
+        for node_id in node_ids:
+            node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+            if not node:
+                raise InvalidUsage("Node not found")
+            if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+                node_json = node.pretty_print()
+                resources = [{
+                    node_json["node_type"]: node_json,
+                }]
+                from tasks.user_activity import create_user_activity
+                jwt_identity = get_jwt_identity()
+                create_user_activity.delay(jwt_identity["id"], constants.ACTION_START, constants.EVENT_SECRET_SCAN,
+                                           resources=resources, success=True)
+                node.secret_start_scan()
+
     return set_response("Ok")
 
 

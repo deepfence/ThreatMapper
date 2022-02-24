@@ -631,6 +631,12 @@ func ingestInBackground(docType string, body []byte) error {
 			}
 		}
 		bulkService.Do(context.Background())
+	} else {
+		bulkService := elastic.NewBulkService(esClient)
+		bulkIndexReq := elastic.NewBulkIndexRequest()
+		bulkIndexReq.Index(docType).Doc(string(body))
+		bulkService.Add(bulkIndexReq)
+		bulkService.Do(context.Background())
 	}
 	return nil
 }

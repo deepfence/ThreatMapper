@@ -1340,6 +1340,7 @@ export function getCVEImageReport(params = {}) {
     start_index,
     size,
   } = params;
+  console.log('image report', params);
   let url = `${backendElasticApiEndPoint()}/vulnerabilities/image_report?lucene_query=${getLuceneQuery(
     lucene_query
   )}`;
@@ -1400,6 +1401,21 @@ export function deleteDocsById(params = {}) {
       }
     },
   });
+}
+
+
+export function getSecretScanStatus(params = {}) {
+  const { imageId } = params;
+  const imageIdEscaped = encodeURIComponent(imageId);
+  const url = `${backendElasticApiEndPoint()}/secret-scan/${imageIdEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
 }
 
 export function saveGceCredentialKey({
@@ -1709,16 +1725,32 @@ export function getRunningNotification() {
 }
 
 export function startCVEScan(params = {}) {
-  const { nodeId, nodeType, taglist, scanType } = params;
-  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
+  const { nodeId, nodeType, taglist, scanType, scanThisCluster, scanThisNamespace, priority = '' } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_start?scope_id=${nodeId}&node_type=${nodeType}&priority=${priority}`;
   const data = {
     user_defined_tags: taglist,
     scanType,
+    scan_type: scanType,
+    "scan_this_cluster": scanThisCluster,
+    "scan_this_namespace": scanThisNamespace,
   };
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
     body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function startSecretScan(params = {}) {
+  const { nodeId, nodeType } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/secret_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: getAuthHeader(),
@@ -1798,6 +1830,20 @@ export function scanRegistryImages(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function secretsScanRegistryImages(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/secret/scan_registry`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 
 export function saveRegistryCredentials(params = {}) {
   const url = `${backendElasticApiEndPoint()}/vulnerability/container_image_registry`;
@@ -2212,4 +2258,137 @@ export function getRegistryImagesTags(params = {}) {
       'Authorization': getAuthHeader(),
     },
   }).then(errorHandler);
+}
+
+export function getSecretScanData(params = {}) {
+  const {
+    dispatch,
+    filters,
+    start_index,
+    size,
+  } = params;
+  let url = `${backendElasticApiEndPoint()}/secret/node_report`;
+  const body = {
+    filters,
+    start_index,
+    size,
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
+export function getSecretScanResults(params = {}) {
+  const {
+    dispatch,
+    filters,
+    start_index,
+    size,
+  } = params;
+  let url = `${backendElasticApiEndPoint()}/secret/scan_results`;
+  const body = {
+    filters,
+    start_index,
+    size,
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
+export function getTopSecretScanContainerAndHosts() {
+
+  const url = `${backendElasticApiEndPoint()}/secret/top_exposing_nodes`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getSecretScanReportChart() {
+
+  const url = `${backendElasticApiEndPoint()}/secret/report`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      // 'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getSecretScanChartData(params, dispatch) {
+  console.log('API PARAMS', params);
+  let url = `${backendElasticApiEndPoint()}/secret/secret_severity_chart?number=${params.number
+    }&time_unit=${params.time_unit}`;
+  if (params.lucene_query.length !== 0) {
+    const luceneQuery = getLuceneQuery(params.lucene_query);
+    url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
+  }
+  let body = {};
+  const { scan_id } = params;
+  body = {
+    filters: {
+      scan_id,
+    },
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
 }

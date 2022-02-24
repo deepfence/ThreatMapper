@@ -75,15 +75,15 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader',
-      },
-      {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules|vendor/,
         loader: 'eslint-loader',
         enforce: 'pre',
+      },
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules|vendor/,
+        loader: 'babel-loader'
       },
       {
         test: /\.(jpe?g|png|gif|ttf|eot|svg|ico|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -105,11 +105,6 @@ module.exports = {
             },
           },
         ],
-      },
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: ['babel-loader'],
       },
       {
         test: /\.scss$/i,

@@ -2,12 +2,11 @@ package host
 
 import (
 	"fmt"
+	dfUtils "github.com/deepfence/df-utils"
+	"github.com/weaveworks/scope/common/xfer"
 	"io/ioutil"
 	"os"
 	"strings"
-
-	dfUtils "github.com/deepfence/df-utils"
-	"github.com/weaveworks/scope/common/xfer"
 )
 
 // Control IDs used by the host integration.
@@ -16,6 +15,10 @@ const (
 	GenerateSBOM          = "generate_sbom"
 	AddUserDefinedTags    = "host_add_user_defined_tags"
 	DeleteUserDefinedTags = "host_delete_user_defined_tags"
+	StartSecretsScan      = "secret_scan_start"
+	secretScanSocket	  = "/tmp/secretScanner.sock"
+	unixProtocol 		  = "unix"
+	tcpProtocol  		  = "tcp"
 )
 
 func (r *Reporter) registerControls() {
@@ -23,6 +26,7 @@ func (r *Reporter) registerControls() {
 	r.handlerRegistry.Register(GenerateSBOM, r.handleGenerateSBOM)
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
 	r.handlerRegistry.Register(DeleteUserDefinedTags, r.deleteUserDefinedTags)
+	r.handlerRegistry.Register(StartSecretsScan, r.startSecretsScan)
 }
 
 func (r *Reporter) deregisterControls() {

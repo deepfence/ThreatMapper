@@ -63,6 +63,8 @@
     "operator-linebreak": 0,
     "function-paren-newline": 0,
     "no-shadow": 0,
-    "no-underscore-dangle": 0
+    "no-underscore-dangle": 0,
+    "no-unused-vars": "warn",
+    "arrow-body-style": 0
   }
 }

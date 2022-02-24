@@ -31,9 +31,9 @@ export default class HorizontalLoader extends React.PureComponent {
     };
     return (
       <span className="active-color" style={spanStyle}>
-        <Dot>.</Dot>
-        <Dot>.</Dot>
-        <Dot>.</Dot>
+        <Dot>&middot;</Dot>
+        <Dot>&middot;</Dot>
+        <Dot>&middot;</Dot>
       </span>
     );
   }
