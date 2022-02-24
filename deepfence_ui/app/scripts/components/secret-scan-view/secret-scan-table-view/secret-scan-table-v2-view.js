@@ -10,7 +10,6 @@ import { DfTableV2 } from '../../common/df-table-v2'
 import pollable from '../../common/header-view/pollable';
 import {
   getSecretScanResultsAction,
-  // getAlertsV2Action,
   deleteDocsByIdAction,
   unmaskDocsAction,
   genericMaskDocsAction,
@@ -31,8 +30,8 @@ class SecretScanTableV2 extends React.Component {
     this.maskDocs = this.maskDocs.bind(this);
     this.handleNotify = this.handleNotify.bind(this);
     this.state = {
-      isVulnerabilityModalOpen: false,
-      cveData: null
+      isSecretsModalOpen: false,
+      secretsData: null
     }
   }
 
@@ -49,8 +48,8 @@ class SecretScanTableV2 extends React.Component {
       _type: row.type,
     };
     this.setState({
-      isVulnerabilityModalOpen: true,
-      cveData: modalData
+      isSecretsModalOpen: true,
+      secretsData: modalData
     });
   }
 
@@ -112,7 +111,6 @@ class SecretScanTableV2 extends React.Component {
       // _index: selectedDocIndex[key].doc_index,
     }));
 
-    console.log("maskDocs", params);
     const {
       genericMaskDocsAction: action,
       maskDocs
@@ -161,7 +159,6 @@ class SecretScanTableV2 extends React.Component {
   getVulnerabilities(params) {
     const {
       getSecretScanResultsAction: action,
-      // getAlertsV2Action: action,
       filterValues = {},
     } = this.props;
 
@@ -207,35 +204,51 @@ class SecretScanTableV2 extends React.Component {
       node_filters: nodeFilters,
       size: pageSize,
     };
-    console.log('apiParams', apiParams);
-    // return dispatch(getCVEImageReportAction(params));
     return action(apiParams);
   }
 
   render() {
     const {
-      // alerts = [],
       secretScanResults = [],
-      // total,
+      total,
       updatePollParams
     } = this.props;
-    // eslint-disable-next-line prefer-destructuring
-    const total = secretScanResults && secretScanResults.total;
 
     const columns = [
       {
         Header: 'Id',
         accessor: '_id',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
         Header: 'Filename',
         accessor: '_source.Match.full_filename',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
         Header: 'Matched content',
         accessor: '_source.Match.matched_content',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         width: 100,
       },
       {
@@ -251,31 +264,29 @@ class SecretScanTableV2 extends React.Component {
       {
         Header: 'Rule name',
         accessor: '_source.Rule.name',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         minWidth: 100,
         width: 150,
       },
       {
         Header: 'Signature to match',
         accessor: '_source.Rule.signature_to_match',
+        Cell: row => (
+          <div
+            className="truncate"
+            title={row.value}>
+            {row.value}
+          </div>
+        ),
         minWidth: 100,
         width: 300,
       },
-      // {
-      //   Header: 'CVE Link',
-      //   accessor: 'cve_link',
-      //   Cell: cell => (
-      //     <div className="truncate">
-      //       <a
-      //         href={cell.value}
-      //         target="_blank"
-      //         rel="noopener noreferrer"
-      //         onClick={e => e.stopPropagation()}
-      //       >
-      //         {cell.value}
-      //       </a>
-      //     </div>
-      //   )
-      // },
     ];
 
     return (
@@ -286,110 +297,104 @@ class SecretScanTableV2 extends React.Component {
           <MaskForm />
         </div>
 
-        { secretScanResults && (
+        {secretScanResults && (
           <DfTableV2
-          columns={columns}
-          showPagination
-          defaultPageSize={20}
-          totalRows={total}
-          name="cve-table"
-          manual
-          // data={alerts}
-          data={secretScanResults}
-          getRowStyle={(row) => ({
-            opacity: row.original.masked === 'true' ? 0.5 : 1
-          })}
-          onRowClick={(row) => this.handleRowClick(row)}
-          columnCustomizable
-          enableSorting
-          onPageChange={this.handlePageChange}
-          onSortChange={(sorted) => {
-            this.tableChangeHandler({
-              sorted
-            })
-          }}
-          multiSelectOptions={{
-            actions: [
-              {
-                name: 'Notify',
-                icon: (<i className="fa fa-bell-o active-color cursor" />),
-                onClick: this.handleNotify,
-              },
-              {
-                name: 'mask',
-                userRole: 'admin',
-                icon: (<i className="fa fa-eye-slash cursor" />),
-                onClick: this.maskDocs,
-                postClickSuccess: updatePollParams,
-                showConfirmationDialog: true,
-                confirmationDialogParams: {
-                  dialogTitle: 'Mask these records?',
-                  dialogBody: 'Are you sure you want to mask the selected records?',
-                  additionalInputs: [
-                    {
-                      type: 'radio',
-                      id: 'mask_all_images',
-                      name: 'masking_docs',
-                      label: 'Mask across all images',
-                      value: 'true',
-                    },
-                    {
-                      type: 'radio',
-                      id: 'mask_this_image',
-                      name: 'masking_docs',
-                      label: 'Mask only on this image',
-                      value: 'false',
-                      defaultValue: 'false',
-                    },
-                  ],
-                  confirmButtonText: 'Yes, mask',
-                  cancelButtonText: 'No, Keep',
+            className="truncate"
+            columns={columns}
+            showPagination
+            defaultPageSize={20}
+            totalRows={total}
+            name="secrets-scan-details-table"
+            manual
+            data={secretScanResults}
+            getRowStyle={(row) => ({
+              opacity: row.original.masked === 'true' ? 0.5 : 1
+            })}
+            onRowClick={(row) => this.handleRowClick(row)}
+            columnCustomizable
+            onPageChange={this.handlePageChange}
+            multiSelectOptions={{
+              actions: [
+                // {
+                //   name: 'Notify',
+                //   icon: (<i className="fa fa-bell-o active-color cursor" />),
+                //   onClick: this.handleNotify,
+                // },
+                {
+                  name: 'mask',
+                  userRole: 'admin',
+                  icon: (<i className="fa fa-eye-slash cursor" />),
+                  onClick: this.maskDocs,
+                  postClickSuccess: updatePollParams,
+                  showConfirmationDialog: true,
+                  confirmationDialogParams: {
+                    dialogTitle: 'Mask these records?',
+                    dialogBody: 'Are you sure you want to mask the selected records?',
+                    additionalInputs: [
+                      {
+                        type: 'radio',
+                        id: 'mask_all_images',
+                        name: 'masking_docs',
+                        label: 'Mask across all images',
+                        value: 'true',
+                      },
+                      {
+                        type: 'radio',
+                        id: 'mask_this_image',
+                        name: 'masking_docs',
+                        label: 'Mask only on this image',
+                        value: 'false',
+                        defaultValue: 'false',
+                      },
+                    ],
+                    confirmButtonText: 'Yes, mask',
+                    cancelButtonText: 'No, Keep',
+                  }
                 },
-              },
-              {
-                name: 'Unmask',
-                userRole: 'admin',
-                icon: (<i className="fa fa-eye cursor" />),
-                onClick: this.unmaskDocs,
-                postClickSuccess: updatePollParams,
-                showConfirmationDialog: true,
-                confirmationDialogParams: {
-                  dialogTitle: 'Unmask these records?',
-                  dialogBody: 'Are you sure you want to unmask the selected records?',
-                  confirmButtonText: 'Yes, Unmask',
-                  cancelButtonText: 'No, Keep',
+                {
+                  name: 'Unmask',
+                  userRole: 'admin',
+                  icon: (<i className="fa fa-eye cursor" />),
+                  onClick: this.unmaskDocs,
+                  postClickSuccess: updatePollParams,
+                  showConfirmationDialog: true,
+                  confirmationDialogParams: {
+                    dialogTitle: 'Unmask these records?',
+                    dialogBody: 'Are you sure you want to unmask the selected records?',
+                    confirmButtonText: 'Yes, Unmask',
+                    cancelButtonText: 'No, Keep',
+                  },
                 },
-              },
-              {
-                name: 'Delete',
-                icon: (<i className="fa fa-trash-o red cursor" />),
-                onClick: this.deleteDocs,
-                postClickSuccessTODO: this.removeDocs,
-                postClickSuccess: updatePollParams,
-                showConfirmationDialog: true,
-                postClickSuccessDelayInMs: 2000,
-                confirmationDialogParams: {
-                  dialogTitle: 'Delete these records?',
-                  dialogBody: 'Are you sure you want to Delete the selected records?',
-                  confirmButtonText: 'Yes, Delete',
-                  cancelButtonText: 'No, Keep',
+                {
+                  name: 'Delete',
+                  icon: (<i className="fa fa-trash-o red cursor" />),
+                  onClick: this.deleteDocs,
+                  postClickSuccessTODO: this.removeDocs,
+                  postClickSuccess: updatePollParams,
+                  showConfirmationDialog: true,
+                  postClickSuccessDelayInMs: 2000,
+                  confirmationDialogParams: {
+                    dialogTitle: 'Delete these records?',
+                    dialogBody: 'Are you sure you want to Delete the selected records?',
+                    confirmButtonText: 'Yes, Delete',
+                    cancelButtonText: 'No, Keep',
+                  },
                 },
-              },
-            ],
-            columnConfig: {
-              accessor: 'doc_id'
-            }
-          }}
-        />
+              ],
+              columnConfig: {
+                accessor: 'doc_id'
+              }
+            }}
+          />
         )}
         {
-          this.state.isVulnerabilityModalOpen && this.state.cveData ? (
+          this.state.isSecretsModalOpen && this.state.secretsData ? (
             <SecretScanModal
-              data={this.state.cveData}
+              data={this.state.secretsData}
               onRequestClose={() => {
                 this.setState({
-                  isVulnerabilityModalOpen: false,
-                  cveData: null
+                  isSecretsModalOpen: false,
+                  secretsData: null
                 });
               }}
             />
@@ -400,12 +405,11 @@ class SecretScanTableV2 extends React.Component {
   }
 }
 
-const maskFormSelector = formValueSelector('cve-mask-form');
+const maskFormSelector = formValueSelector('secrets-mask-form');
 function mapStateToProps(state) {
   return {
     secretScanResults: state.getIn(['secretScanResults', 'data']),
-    // alerts: state.getIn(['alertsView', 'data']),
-    // total: state.getIn(['alertsView', 'total']),
+    total: state.getIn(['secretScanResults', 'total']),
     filterValues: nodeFilterValueSelector(state),
     hideMasked: maskFormSelector(state, 'hideMasked'),
     maskDocs: state.getIn(['form', 'dialogConfirmation', 'values', 'masking_docs']),
@@ -414,7 +418,6 @@ function mapStateToProps(state) {
 
 const connectedTable = connect(mapStateToProps, {
   getSecretScanResultsAction,
-  // getAlertsV2Action,
   deleteDocsByIdAction,
   unmaskDocsAction,
   genericMaskDocsAction,

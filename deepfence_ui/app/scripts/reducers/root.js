@@ -1551,7 +1551,7 @@ export function rootReducer(state = initialState, action) {
       return state.setIn(['secretScan', 'status', 'error'],
         'No data available');
     }
-    
+
     case ActionTypes.GET_SECRET_SCAN_RESULTS_REQUEST: {
       return state.setIn(['secretScanResults', 'status', 'loading'], true);
     }
@@ -1561,16 +1561,18 @@ export function rootReducer(state = initialState, action) {
         payload: { data },
       } = action;
       state = state.setIn(['secretScanResults', 'status', 'loading'], false);
-      return state.setIn(['secretScanResults', 'data'], data.rows);
+      state = state.setIn(['secretScanResults', 'data'], data.rows);
+      return state.setIn(['secretScanResults', 'total'], data.total);
     }
 
     case ActionTypes.GET_SECRET_SCAN_RESULTS_FAILURE: {
       state = state.setIn(['secretScanResults', 'status', 'loading'], false);
       state = state.setIn(['secretScanResults', 'data'], null);
+      state = state.setIn(['secretScanResults', 'total'], 0)
       return state.setIn(['secretScanResults', 'status', 'error'],
         'No data available');
     }
-    
+
     case ActionTypes.TOP_SECRET_SCAN_NODES_REQUEST: {
       return state.setIn(['secretScanNodes', 'status', 'loading'], true);
     }
@@ -1589,7 +1591,7 @@ export function rootReducer(state = initialState, action) {
       return state.setIn(['secretScanNodes', 'status', 'error'],
         'No data available');
     }
-    
+
     case ActionTypes.TOP_SECRET_SCAN_REPORT_REQUEST: {
       return state.setIn(['secretScanReport', 'status', 'loading'], true);
     }
@@ -1608,7 +1610,7 @@ export function rootReducer(state = initialState, action) {
       return state.setIn(['secretScanReport', 'status', 'error'],
         'No data available');
     }
-    
+
     case ActionTypes.SECRET_SCAN_CHART_REQUEST: {
       return state.setIn(['secretScanChart', 'status', 'loading'], true);
     }

@@ -22,6 +22,10 @@ const resourceCollection = [
     name: 'Vulnerabilities',
     value: 'cve',
   },
+  {
+    name: 'Secrets',
+    value: 'secret-scan',
+  },
 ];
 
 const durationOption = [
@@ -132,8 +136,8 @@ const VulnerabilityManagementView = props => {
             {resourceCollection.map(option => {
               return (
                 <div key={option.value} className="severity-option">
-                  <input type="radio" value={option.value} name="docType" />
-                  <label htmlFor={option.name} className="radio-label">
+                  <input type="radio" value={option.value} name="docType" id={`delete-severity-doctype-${option.value}`} />
+                  <label htmlFor={`delete-severity-doctype-${option.value}`} className="radio-label">
                     {option.name}
                   </label>
                 </div>
@@ -155,8 +159,9 @@ const VulnerabilityManagementView = props => {
                       value={option.value}
                       name="severity"
                       checked={option.value === selectedSeverity}
+                      id={`delete-severity-${option.value}`}
                     />
-                    <label htmlFor={option.name} className="radio-label">
+                    <label htmlFor={`delete-severity-${option.value}`} className="radio-label">
                       {option.name}
                     </label>
                   </div>
