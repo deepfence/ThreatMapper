@@ -1560,7 +1560,6 @@ export function rootReducer(state = initialState, action) {
       const {
         payload: { data },
       } = action;
-      debugger;
       state = state.setIn(['secretScanResults', 'status', 'loading'], false);
       state = state.setIn(['secretScanResults', 'data'], data.rows);
       return state.setIn(['secretScanResults', 'total'], data.total);
