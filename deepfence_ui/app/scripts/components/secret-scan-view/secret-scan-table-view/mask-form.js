@@ -10,7 +10,7 @@ const MaskForm = () => (
 );
 
 export default reduxForm({
-  form: 'cve-mask-form',
+  form: 'secrets-mask-form',
   initialValues: {
     hideMasked: true,
   },
