@@ -1,6 +1,7 @@
 package host
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -8,9 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/weaveworks/scope/common/xfer"
-	pb "github.com/weaveworks/scope/proto"
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"math/rand"
 	"net"
@@ -21,6 +19,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/weaveworks/scope/common/xfer"
+	pb "github.com/weaveworks/scope/proto"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -28,6 +30,7 @@ const (
 	secretScanIndexName = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
 	ssEbpfExePath = "/home/deepfence/bin/SecretScanner"
+	ssEbpfLogPath = "/var/log/ss.log"
 	memLockSize   = "--memlock=8388608"
 	ebpfOptFormat = "--socket-path=%s"
 )
@@ -197,7 +200,21 @@ type SecretScanner struct {
 func NewSecretScanner() (*SecretScanner, error) {
 	ebpfSocket := generateSocketString()
 	command := exec.Command("prlimit", memLockSize, ssEbpfExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
-	err := command.Start()
+
+	cmdReader, err := command.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	scanner := bufio.NewScanner(cmdReader)
+	go func() {
+		f, _ := os.Create(ssEbpfLogPath)
+		defer f.Close()
+		for scanner.Scan() {
+			f.WriteString(scanner.Text()+"\n")
+		}
+	}()
+	err = command.Start()
 	if err != nil {
 		return nil, err
 	}
