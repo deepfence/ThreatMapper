@@ -615,16 +615,21 @@ def secret_report():
         lucene_query_string
     )
 
-    response = []
-    if "aggregations" in aggs_response:
-        for bucket in aggs_response["aggregations"]["severity"]["buckets"]:
-            sub_buckets = bucket.get("rule_name", []).get("buckets", [])
-            for sub_bucket in sub_buckets:
-                info = {'severity': bucket.get("key"), 'value': sub_bucket.get('doc_count', 0),
-                        'rule_name': sub_bucket.get("key")}
-                response.append(info)
+    data = {"name": "Secrets", "children": []}
+    inner_children = []
+    secrets_by_severity = aggs_response.get("aggregations", {}).get("severity", {}).get('buckets', [])
+    for bucket in secrets_by_severity:
+        by_severity = {"name": bucket.get('key'), "children": []}
+        total_count = 0
+        for inner_bucket in bucket.get("rule_name", {}).get('buckets', []):
+            total_count += inner_bucket.get("doc_count")
+            child = {"name": inner_bucket.get("key"), "value": inner_bucket.get("doc_count")}
+            by_severity["children"].append(child)
+        by_severity["value"] = total_count
+        inner_children.append(by_severity)
+    data["children"] = inner_children
 
-    return set_response(data=response)
+    return set_response(data=data)
 
 
 @secret_api.route("/secret/secret_severity_chart", methods=["GET", "POST"])

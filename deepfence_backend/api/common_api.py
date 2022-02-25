@@ -15,7 +15,7 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
     CVE_SCAN_LOGS_INDEX, SCOPE_TOPOLOGY_COUNT, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, NODE_TYPE_POD, ES_MAX_CLAUSE, \
     TOPOLOGY_ID_CONTAINER, TOPOLOGY_ID_CONTAINER_IMAGE, TOPOLOGY_ID_HOST, NODE_TYPE_CONTAINER_IMAGE, \
     TOPOLOGY_ID_KUBE_SERVICE, NODE_TYPE_KUBE_CLUSTER, ES_TERMS_AGGR_SIZE, \
-    REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX
+    REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX, SECRET_SCAN_INDEX
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta
@@ -983,6 +983,12 @@ def delete_resources():
             for delete_node_name_chunk in split_list_into_chunks(image_names_to_delete, ES_MAX_CLAUSE):
                 ESConn.bulk_delete(CVE_INDEX, {
                     **filters, "cve_container_image": delete_node_name_chunk, "node_type": NODE_TYPE_CONTAINER_IMAGE})
+        elif index_name == SECRET_SCAN_INDEX:
+            filters = {}
+            if scan_id:
+                filters["scan_id"] = scan_id
+                ESConn.bulk_delete(SECRET_SCAN_INDEX, filters)
+                ESConn.bulk_delete(SECRET_SCAN_LOGS_INDEX, filters)
         else:
             ESConn.bulk_delete(CVE_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
 
