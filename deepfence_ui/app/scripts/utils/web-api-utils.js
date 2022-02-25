@@ -2242,8 +2242,11 @@ export function getSecretScanData(params = {}) {
     filters,
     start_index,
     size,
+    lucene_query: luceneQuery = []
   } = params;
-  let url = `${backendElasticApiEndPoint()}/secret/node_report`;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  let url = `${backendElasticApiEndPoint()}/secret/node_report?lucene_query=${luceneQueryEscaped}`;
   const body = {
     filters,
     start_index,
@@ -2277,8 +2280,10 @@ export function getSecretScanResults(params = {}) {
     filters,
     start_index,
     size,
+    lucene_query: luceneQuery = [],
   } = params;
-  let url = `${backendElasticApiEndPoint()}/secret/scan_results`;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  let url = `${backendElasticApiEndPoint()}/secret/scan_results?lucene_query=${luceneQueryEscaped}`;
   const body = {
     filters,
     start_index,
