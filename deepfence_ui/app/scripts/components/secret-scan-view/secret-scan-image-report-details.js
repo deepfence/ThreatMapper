@@ -120,7 +120,7 @@ const SecretScanImageReportDetails = props => {
           },
           {
             Header: 'Medium',
-            accessor: 'severity.Medium',
+            accessor: 'severity.medium',
             Cell: row => (
               <div>
                 <div className="cve-severity-box-wrap-medium value">
@@ -133,7 +133,7 @@ const SecretScanImageReportDetails = props => {
           },
           {
             Header: 'Low',
-            accessor: 'severity.Low',
+            accessor: 'severity.low',
             Cell: row => (
               <div>
                 <div className="cve-severity-box-wrap-low value">

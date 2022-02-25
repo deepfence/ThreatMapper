@@ -40,8 +40,8 @@ const SecretScanStatsPerImage = (props) => {
     data.data.map(d => {
     d.scans.map( s => {
       if(s?.scan_id === props?.scanId){
-        low = s?.severity?.Low
-        medium = s?.severity?.Medium
+        low = s?.severity?.low
+        medium = s?.severity?.medium
         high = s?.severity?.high
         activeContainers = s?.active_containers
         total = s?.total

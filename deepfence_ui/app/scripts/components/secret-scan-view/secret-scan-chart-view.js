@@ -17,7 +17,7 @@ class SecretScanChartView extends React.Component {
   constructor() {
     super();
     this.state = {};
-    this.onCVETypeClickHandler = this.onCVETypeClickHandler.bind(this);
+    this.sectionClickHandler = this.sectionClickHandler.bind(this);
   }
 
   componentDidMount() {
@@ -93,7 +93,7 @@ class SecretScanChartView extends React.Component {
     }
   }
 
-  onCVETypeClickHandler(point) {
+  sectionClickHandler(point) {
     const { globalSearchQuery: existingQuery = [], dispatch } = this.props;
     let searchQuery = existingQuery;
 
@@ -140,7 +140,7 @@ class SecretScanChartView extends React.Component {
             chartWidth={600}
             chartHeight={600}
             colors={severityColorsSunBurst}
-            onSectionClick={this.onCVETypeClickHandler}
+            onSectionClick={this.sectionClickHandler}
           />
         </div>
       </div>
