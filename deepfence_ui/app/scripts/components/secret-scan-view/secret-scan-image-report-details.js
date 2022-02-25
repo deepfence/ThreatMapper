@@ -5,6 +5,7 @@ import Tippy from '@tippyjs/react';
 import { dateTimeFormat } from '../../utils/time-utils';
 import { DfTableV2 } from '../common/df-table-v2';
 import {
+  deleteScanActions,
   showModal,
   toaster,
 } from '../../actions/app-actions';
@@ -20,7 +21,7 @@ const SecretScanImageReportDetails = props => {
       dialogBody: 'Are you sure you want to delete?',
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
-      onConfirmButtonClick: () => deleteScanActions(scanId),
+      onConfirmButtonClick: () => deleteScan(scanId),
       contentStyles: {
         width: '375px',
       },
@@ -28,10 +29,10 @@ const SecretScanImageReportDetails = props => {
     dispatch(showModal('DIALOG_MODAL', params));
   };
 
-  const deleteScanActions = scanId => {
+  const deleteScan = scanId => {
     const params = {
       scan_id: scanId,
-      doc_type: 'cve',
+      doc_type: 'secret-scan',
       time_unit: 'all',
       number: '0',
     };
