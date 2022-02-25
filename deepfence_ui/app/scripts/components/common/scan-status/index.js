@@ -8,8 +8,7 @@ export const ScanStatus = ({ status, tooltipText }) => {
   if (status) {
     switch (status) {
       case 'running':
-        label = <span className="scan-status running">{humanString}</span>;
-        break;
+      case 'queued':
       case 'in_progress':
         label = <span className="scan-status running">{humanString}</span>;
         break;
