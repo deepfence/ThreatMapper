@@ -2374,3 +2374,53 @@ export function getSecretScanChartData(params, dispatch) {
     },
   });
 }
+
+export function secretScanMaskDocs(dispatch, params) {
+  let url = `${backendElasticApiEndPoint()}/secret/mask-doc`;
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(params),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};
+
+export function secretScanUnmaskDocs(dispatch, params) {
+  let url = `${backendElasticApiEndPoint()}/secret/unmask-doc`;
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(params),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};

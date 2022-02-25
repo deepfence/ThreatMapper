@@ -6,7 +6,6 @@ import { constructGlobalSearchQuery } from '../../utils/search-utils';
 import { severityColorsSunBurst } from '../../constants/colors';
 
 const SecretScanReport = props => {
-
   const sectionClickHandler = point => {
     const { globalSearchQuery: existingQuery = [] } = props;
 
@@ -42,13 +41,13 @@ const SecretScanReport = props => {
       <div className="unique-vulnerabilities" />
       {summaryStats && (
         <SunburstChart
-        data={summaryStats}
-        name="Secret scan details"
-        chartWidth={600}
-        chartHeight={600}
-        colors={severityColorsSunBurst}
-        onSectionClick={(point) => sectionClickHandler(point)}
-      />
+          data={summaryStats}
+          name="Secret scan details"
+          chartWidth={600}
+          chartHeight={600}
+          colors={severityColorsSunBurst}
+          onSectionClick={point => sectionClickHandler(point)}
+        />
       )}
     </div>
   );

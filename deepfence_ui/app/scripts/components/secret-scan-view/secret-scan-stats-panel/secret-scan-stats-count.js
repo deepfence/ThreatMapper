@@ -1,4 +1,4 @@
-import { connect, useDispatch, useSelector } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import React from 'react';
 import { constructGlobalSearchQuery } from '../../../utils/search-utils';
 import { setSearchQuery } from '../../../actions/app-actions';
@@ -25,7 +25,6 @@ const SecretScanStatsCount = props => {
   let high = 0;
   let medium = 0;
   let low = 0;
-  
 
   if (summaryStats) {
     const { children } = summaryStats;
@@ -33,12 +32,12 @@ const SecretScanStatsCount = props => {
     children?.map(child => {
       if (child.name === 'high') {
         high += child.value;
-      } else if (child.name=== 'medium') {
+      } else if (child.name === 'medium') {
         medium += child.value;
       } else if (child.name === 'low') {
         low += child.value;
       }
-    })
+    });
     total = low + medium + high;
   }
 

@@ -891,6 +891,7 @@ def delete_resources():
     if dead_nodes_since_days < 0:
         dead_nodes_since_days = 0
     dead_nodes_since_dt = datetime.now() - timedelta(days=dead_nodes_since_days)
+    message = ""
 
     if not number:
         raise InvalidUsage("number is required")
@@ -983,12 +984,6 @@ def delete_resources():
             for delete_node_name_chunk in split_list_into_chunks(image_names_to_delete, ES_MAX_CLAUSE):
                 ESConn.bulk_delete(CVE_INDEX, {
                     **filters, "cve_container_image": delete_node_name_chunk, "node_type": NODE_TYPE_CONTAINER_IMAGE})
-        elif index_name == SECRET_SCAN_INDEX:
-            filters = {}
-            if scan_id:
-                filters["scan_id"] = scan_id
-                ESConn.bulk_delete(SECRET_SCAN_INDEX, filters)
-                ESConn.bulk_delete(SECRET_SCAN_LOGS_INDEX, filters)
         else:
             ESConn.bulk_delete(CVE_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
 
@@ -1008,6 +1003,13 @@ def delete_resources():
                                    TIME_UNIT_MAPPING[time_unit])
         message = "Successfully scheduled deletion of selected vulnerabilities"
 
+    elif index_name == SECRET_SCAN_INDEX:
+        filters = {}
+        if scan_id:
+            filters["scan_id"] = scan_id
+            ESConn.bulk_delete(SECRET_SCAN_INDEX, filters)
+            ESConn.bulk_delete(SECRET_SCAN_LOGS_INDEX, filters)
+            message = "Successfully deleted scan id"
     else:
         raise InvalidUsage("doc_type is invalid")
 

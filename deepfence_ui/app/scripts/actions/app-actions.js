@@ -91,7 +91,9 @@ import {
   getSecretScanResults,
   getTopSecretScanContainerAndHosts,
   getSecretScanReportChart,
-  getSecretScanChartData
+  getSecretScanChartData,
+  secretScanMaskDocs,
+  secretScanUnmaskDocs,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1827,6 +1829,14 @@ export function getSecretScanChartDataAction(params) {
     ActionTypes.SECRET_SCAN_CHART_FAILURE,
   ];
   return genericThunkAction(actionTypes, getSecretScanChartData, params);
+}
+
+export function secretScanMaskDocsAction(params) {
+  return (dispatch) => secretScanMaskDocs(dispatch, params);
+}
+
+export function secretScanUnmaskDocsAction(params) {
+  return (dispatch) => secretScanUnmaskDocs(dispatch, params);
 }
 
 // multi cloud

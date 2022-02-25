@@ -16,7 +16,7 @@ const SecretScanImageReport = props => {
     stopPolling,
     registerPolling,
     updatePollParams,
-    filterValues = {}
+    filterValues = {},
   } = props;
   const dispatch = useDispatch();
   const [redirect, setRedirect] = useState(false);
@@ -72,9 +72,7 @@ const SecretScanImageReport = props => {
 
   useEffect(() => {
     // pollable: register the function which needs to be polled
-    const {
-      urlLocation: { search = '' } = {},
-    } = props;
+    const { urlLocation: { search = '' } = {} } = props;
     registerPolling(getSecretScanImageReport);
     startPolling();
     if (search.length === 0) {
@@ -87,7 +85,7 @@ const SecretScanImageReport = props => {
 
     return () => {
       stopPolling();
-    }
+    };
   }, []);
 
   const rowClickHandler = scanId => {
@@ -209,7 +207,7 @@ const SecretScanImageReport = props => {
             {' Entries'}
           </label>
         </div>
-        <NodesFilter resourceType="cve" />
+        <NodesFilter resourceType="secret-scan" />
       </div>
       <DfTableV2
         data={data}

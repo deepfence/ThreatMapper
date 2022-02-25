@@ -1,6 +1,3 @@
-/* eslint-disable react/no-unused-state */
-/* eslint-disable consistent-return */
-/* eslint-disable react/no-string-refs */
 import React from 'react';
 import SecretScanReportContainer from './secret-scan-report-container';
 import SecretScanImageReportContainer from './secret-scan-image-report-container';

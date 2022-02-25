@@ -560,6 +560,32 @@ def secret_exposing_nodes():
     return set_response(data=response)
 
 
+@secret_api.route("/secret/mask-doc", methods=["POST"])
+@jwt_required()
+def mask_secret_doc():
+    doc_ids_to_be_masked = request.json.get("docs", [])
+    if not doc_ids_to_be_masked:
+        raise InvalidUsage("Missing docs value")
+    docs_to_be_masked = []
+    for doc_id in doc_ids_to_be_masked:
+        docs_to_be_masked.append({"_id": doc_id, "_index": SECRET_SCAN_INDEX})
+    ESConn.bulk_mask_docs(docs_to_be_masked)
+    return set_response(status=200)
+
+
+@secret_api.route("/secret/unmask-doc", methods=["POST"])
+@jwt_required()
+def unmask_secret_doc():
+    doc_ids_to_be_masked = request.json.get("docs", [])
+    if not doc_ids_to_be_masked:
+        raise InvalidUsage("Missing docs value")
+    docs_to_be_masked = []
+    for doc_id in doc_ids_to_be_masked:
+        docs_to_be_masked.append({"_id": doc_id, "_index": SECRET_SCAN_INDEX})
+    ESConn.bulk_unmask_docs(docs_to_be_masked)
+    return set_response(status=200)
+
+
 @secret_api.route("/secret/report", methods=["GET"])
 @jwt_required()
 def secret_report():
