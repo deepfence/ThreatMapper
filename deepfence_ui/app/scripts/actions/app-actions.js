@@ -94,6 +94,7 @@ import {
   getSecretScanChartData,
   secretScanMaskDocs,
   secretScanUnmaskDocs,
+  stopCVEScan,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1315,6 +1316,15 @@ export function startCVEScanAction(params) {
     ActionTypes.START_CVE_SCAN_FAILURE,
   ];
   return genericThunkAction(actionTypes, startCVEScan, params);
+}
+
+export function stopCVEScanAction(params) {
+  const actionTypes = [
+    ActionTypes.STOP_CVE_SCAN_REQUEST,
+    ActionTypes.STOP_CVE_SCAN_SUCCESS,
+    ActionTypes.STOP_CVE_SCAN_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, stopCVEScan, params);
 }
 
 export function getNodeTagsAction(params) {
