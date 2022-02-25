@@ -44,6 +44,9 @@ const SecretScanHome = props => {
   const isFiltersViewVisible = useSelector(state =>
     state.get('isFiltersViewVisible')
   );
+  const globalSearchQuery = useSelector(state =>
+    state.get('globalSearchQuery')
+  );
   const ref = useRef('vulnerabilityResizeRef');
 
   useEffect(() => {
@@ -52,6 +55,11 @@ const SecretScanHome = props => {
     startPolling();
     dispatch(breadcrumbChange([{ name: 'Secret Scan' }]));
   }, []);
+
+  useEffect(() => {
+    dispatch(getSecretScanReportChartAction({ luceneQuery: globalSearchQuery}));
+  }, [globalSearchQuery])
+  
 
   useEffect(() => {
     if (
@@ -76,7 +84,7 @@ const SecretScanHome = props => {
   );
 
   const getReport = () => {
-    dispatch(getSecretScanReportChartAction());
+    dispatch(getSecretScanReportChartAction({luceneQuery: globalSearchQuery}));
   };
 
   const { match } = props;

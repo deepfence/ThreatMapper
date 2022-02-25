@@ -104,11 +104,11 @@ class SecretScanChartView extends React.Component {
 
     switch (paths.length) {
       case 1:
-        newSearchParams.cve_severity = paths[0];
+        newSearchParams["Severity.level"] = paths[0];
         break;
       case 2:
-        newSearchParams.cve_severity = paths[0];
-        newSearchParams.cve_type = paths[1];
+        newSearchParams["Severity.level"] = paths[0];
+        newSearchParams["Rule.name"] = paths[1];
         break;
       default:
         return;

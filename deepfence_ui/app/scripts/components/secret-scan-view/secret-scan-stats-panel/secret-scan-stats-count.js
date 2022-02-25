@@ -10,7 +10,7 @@ const SecretScanStatsCount = props => {
     const { globalSearchQuery: existingQuery = [] } = props;
 
     const searchQuery = constructGlobalSearchQuery(existingQuery, {
-      cve_severity: severity,
+      "Severity.level" : severity,
     });
 
     const globalSearchQuery = {

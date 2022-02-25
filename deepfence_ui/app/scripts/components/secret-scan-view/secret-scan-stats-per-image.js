@@ -20,7 +20,7 @@ const SecretScanStatsPerImage = props => {
     const { globalSearchQuery: existingQuery = [] } = props;
 
     const searchQuery = constructGlobalSearchQuery(existingQuery, {
-      cve_severity: cveSeverity,
+      "Severity.level": cveSeverity,
     });
 
     const globalSearchQuery = {

@@ -1,3 +1,5 @@
+/* eslint-disable guard-for-in */
+/* eslint-disable prefer-destructuring */
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import SunburstChart from '../common/charts/sunburst-chart/index';
@@ -6,32 +8,36 @@ import { constructGlobalSearchQuery } from '../../utils/search-utils';
 import { severityColorsSunBurst } from '../../constants/colors';
 
 const SecretScanReport = props => {
-  const sectionClickHandler = point => {
+  const dispatch = useDispatch();
+
+  const sectionClickHandler = (point) => {
     const { globalSearchQuery: existingQuery = [] } = props;
+    let searchQuery = existingQuery;
 
-    const dispatch = useDispatch();
+    const newSearchParams = {};
+    if (point.path === '') return;
 
-    let searchQuery = [];
-    if (point.type) {
-      const severityParams = {
-        cve_severity: point.type,
-      };
-      searchQuery = constructGlobalSearchQuery(existingQuery, severityParams);
+    const paths = point.path.split(' / ');
+
+    switch (paths.length) {
+      case 1:
+        newSearchParams["Severity.level"] = paths[0];
+        break;
+      case 2:
+        newSearchParams["Severity.level"] = paths[0];
+        newSearchParams["Rule.name"] = paths[1];
+        break;
+      default:
+        return;
     }
-
-    if (point.cve_type) {
-      const cveTypeParams = {
-        cve_type: point.cve_type,
-      };
-      searchQuery = constructGlobalSearchQuery(searchQuery, cveTypeParams);
+    for (const param in newSearchParams) {
+      const newParam = {};
+      newParam[param] = newSearchParams[param];
+      searchQuery = constructGlobalSearchQuery(searchQuery, newParam);
     }
-
-    const globalSearchQuery = {
-      searchQuery,
-    };
-    dispatch(setSearchQuery(globalSearchQuery));
-  };
-
+    dispatch(setSearchQuery({ searchQuery }));
+  }
+  
   const summaryStats = useSelector(state =>
     state.getIn(['secretScanReport', 'data'])
   );
