@@ -53,7 +53,7 @@ const SecretScanImageReportDetails = props => {
     );
   };
 
-  const { data, rowClickHandler, handleDownload, isToasterVisible } = props;
+  const { data, rowClickHandler, isToasterVisible } = props;
 
   return (
     <div>
@@ -160,13 +160,6 @@ const SecretScanImageReportDetails = props => {
                 allowHTML
                 content={
                   <div className="table-row-actions-popup">
-                    <i
-                      className="fa fa-lg fa-download "
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleDownload(cell.value, cell.row.original.node_type);
-                      }}
-                    />
                     <i
                       className="fa fa-lg fa-trash-o"
                       style={{ color: 'red' }}

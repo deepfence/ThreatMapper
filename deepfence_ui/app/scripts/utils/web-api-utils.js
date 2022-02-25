@@ -2306,9 +2306,13 @@ export function getSecretScanResults(params = {}) {
   });
 }
 
-export function getTopSecretScanContainerAndHosts() {
+export function getTopSecretScanContainerAndHosts(params) {
 
-  const url = `${backendElasticApiEndPoint()}/secret/top_exposing_nodes`;
+  const { luceneQuery = [] } = params;
+
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  const url = `${backendElasticApiEndPoint()}/secret/top_exposing_nodes?lucene_query=${luceneQueryEscaped}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
@@ -2319,9 +2323,12 @@ export function getTopSecretScanContainerAndHosts() {
   }).then(errorHandler);
 }
 
-export function getSecretScanReportChart() {
+export function getSecretScanReportChart(params) {
+  const { luceneQuery = [] } = params;
 
-  const url = `${backendElasticApiEndPoint()}/secret/report`;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  const url = `${backendElasticApiEndPoint()}/secret/report?lucene_query=${luceneQueryEscaped}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
@@ -2333,7 +2340,6 @@ export function getSecretScanReportChart() {
 }
 
 export function getSecretScanChartData(params, dispatch) {
-  console.log('API PARAMS', params);
   let url = `${backendElasticApiEndPoint()}/secret/secret_severity_chart?number=${params.number
     }&time_unit=${params.time_unit}`;
   if (params.lucene_query.length !== 0) {

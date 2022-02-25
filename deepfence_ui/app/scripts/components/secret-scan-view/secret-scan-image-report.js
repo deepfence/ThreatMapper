@@ -101,16 +101,6 @@ const SecretScanImageReport = props => {
     []
   );
 
-  // const handleDownload = (scanId, nodeType) => {
-  //   const {
-  //     handleDownload,
-  //   } = props;
-  //   return handleDownload({
-  //     scanId,
-  //     nodeType,
-  //   });
-  // }
-
   const rowClickHandler = scanId => {
     setRedirect(true);
     setLink(`/secret-scan/details/${encodeURIComponent(scanId)}`);
@@ -174,7 +164,6 @@ const SecretScanImageReport = props => {
     <SecretScanImageReportDetails
       data={row.original.scans}
       rowClickHandler={scanId => rowClickHandler(scanId)}
-      // handleDownload={() => handleDownload()}
       isToasterVisible={props.isToasterVisible}
       onDelete={() => getSecretScanImageReport()}
     />
@@ -237,6 +226,7 @@ const SecretScanImageReport = props => {
       <DfTableV2
         data={data}
         columns={columns}
+        name="secrets-scan-table"
         renderRowSubComponent={({ row }) => renderSubComponent({ row })}
         showPagination
         manual

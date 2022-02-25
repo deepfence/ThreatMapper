@@ -136,7 +136,7 @@ class SecretScanChartView extends React.Component {
         <div className="cve-severity-chart-wrapper">
           <SunburstChart
             data={cveSeverityChartData}
-            name="CVE Languages"
+            name="Secret scan details"
             chartWidth={600}
             chartHeight={600}
             colors={severityColorsSunBurst}

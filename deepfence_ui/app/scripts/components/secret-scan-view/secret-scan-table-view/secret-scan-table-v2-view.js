@@ -82,7 +82,6 @@ class SecretScanTableV2 extends React.Component {
       ];
       return acc;
     }, { ids: [] });
-    console.log("deleteDocs", params);
 
     const {
       deleteDocsByIdAction: action,
