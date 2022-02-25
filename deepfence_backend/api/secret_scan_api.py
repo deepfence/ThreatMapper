@@ -54,7 +54,12 @@ def secret_scanned_nodes():
     if request.is_json:
         if type(request.json) != dict:
             raise InvalidUsage("Request data invalid")
-        filters = request.json.get("filters", {})
+        req_filters = request.json.get("filters", {})
+        node_ids = []
+        node_ids.extend(req_filters.get("image_name_with_tag", []))
+        node_ids.extend(req_filters.get("host_name", []))
+        node_ids.extend(req_filters.get("container_name", []))
+        filters["node_id"] = node_ids
         node_filters = request.json.get("node_filters", {})
         page_size = request.json.get("size", page_size)
         start_index = request.json.get("start_index", start_index)
@@ -647,12 +652,20 @@ def secret_report():
     for bucket in secrets_by_severity:
         by_severity = {"name": bucket.get('key'), "children": []}
         total_count = 0
+        max_count = 0
+        buckets_inserted = 0
         for inner_bucket in bucket.get("rule_name", {}).get('buckets', []):
             total_count += inner_bucket.get("doc_count")
             child = {"name": inner_bucket.get("key"), "value": inner_bucket.get("doc_count")}
             by_severity["children"].append(child)
+            buckets_inserted += 1
+            if buckets_inserted >= 6:
+                break
         by_severity["value"] = total_count
-        inner_children.append(by_severity)
+        if max_count < total_count:
+            max_count = total_count
+        if not (max_count > 10 and total_count == 1):
+            inner_children.append(by_severity)
     data["children"] = inner_children
 
     return set_response(data=data)
