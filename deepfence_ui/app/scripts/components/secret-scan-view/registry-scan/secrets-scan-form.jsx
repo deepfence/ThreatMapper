@@ -1,10 +1,8 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {reduxForm, Field, formValueSelector} from 'redux-form/immutable';
-import {Map} from 'immutable';
-import {CVE_SCAN_TYPE_OPTIONS} from '../../../constants/menu-collection';
+import { connect } from 'react-redux';
+import { reduxForm, Field, formValueSelector } from 'redux-form/immutable';
+import { Map } from 'immutable';
 import Loader from '../../common/app-loader/horizontal-dots-loader';
-import ToggleSwitchField from '../../common/toggle-switch/redux-form-field';
 import DFSearchableSelectField from '../../common/multi-select/app-searchable-field';
 import {
   clearScanContainerImageRegistryAction,
@@ -15,13 +13,6 @@ const ScheduleOption = [
   {
     value: 'schedule',
     label: 'Check and scan for new images everyday',
-  },
-];
-
-const priorityOption = [
-  {
-    value: 'priority',
-    label: 'Priority Scan',
   },
 ];
 
@@ -46,12 +37,12 @@ const ScanAllTagsOption = [
   },
 ];
 
-const renderCheckboxGroupField = ({input, meta, options}) => {
-  const {name, onChange} = input;
-  const {touched, error} = meta;
+const renderCheckboxGroupField = ({ input, meta, options }) => {
+  const { name, onChange } = input;
+  const { touched, error } = meta;
   const inputValue = input.value;
 
-  const checkboxes = options.map(({label, value, disabled}, index) => {
+  const checkboxes = options.map(({ label, value, disabled }, index) => {
     const handleChange = (event) => {
       const arr = [...inputValue];
       if (event.target.checked) {
@@ -137,26 +128,19 @@ class RegistryScanForm extends React.PureComponent {
     const registryIdValue = registryValues.map(el => el[1].id);
     const registryId = registryIdValue[0];
     clearAction();
-    getTagsAction({registry_id: registryId});
-  }
-
-  UNSAFE_componentWillReceiveProps(newProps) {
-    const {
-      change,
-      toggleAll,
-    } = this.props;
-    if (toggleAll !== newProps.toggleAll) {
-      if (newProps.toggleAll) {
-        change('scanType', CVE_SCAN_TYPE_OPTIONS.map(el => el.value));
-      } else {
-        change('scanType', ['base']);
-      }
-    }
+    getTagsAction({ registry_id: registryId });
   }
 
   submitClickHandler(values) {
-    const {handleSubmit} = this.props;
+    const { handleSubmit } = this.props;
     return handleSubmit(values);
+  }
+
+  toggleState() {
+    const { showAdvancedOptions } = this.state;
+    this.setState(
+      { showAdvancedOptions: !showAdvancedOptions },
+    );
   }
 
   render() {
@@ -182,7 +166,6 @@ class RegistryScanForm extends React.PureComponent {
       showAdvancedOptions,
     } = this.state;
     const scanButtonLabel = scheduleInterval?.length || scheduleScan?.length ? 'Schedule Scan' : 'Scan Now';
-    const languageOptions = CVE_SCAN_TYPE_OPTIONS;
     const registryImageTagsOptions = registryImagesTags ? registryImagesTags.map(el => ({
       label: el,
       value: el,
@@ -194,26 +177,6 @@ class RegistryScanForm extends React.PureComponent {
             Start a new scan
           </div>
           <form onSubmit={this.submitClickHandler} autoComplete="off">
-            <Field
-              name="toggle"
-              component={ToggleSwitchField}
-              label="Select All"
-            />
-            <div className="form-field">
-              <input
-                type="checkbox"
-                checked
-                disabled
-              />
-              <span className="label">
-                OS Packages
-              </span>
-            </div>
-            <Field
-              component={renderCheckboxGroupField}
-              options={languageOptions}
-              name="scanType"
-            />
             {showAdvancedOptionsLink && <div className="form-field">
               <span
                 onClick={this.toggleState}
@@ -228,18 +191,8 @@ class RegistryScanForm extends React.PureComponent {
                 component={renderCheckboxGroupField}
                 options={tagOptions}
                 name="taglist"
-               />
+              />
             </div>}
-            {/* <br /> */}
-           {(scanRegistryType && scanRegistryType !== 'scanAll') &&
-              <div style={{marginTop: '10px', marginBottom: '10px'}}>
-                <Field
-                  component={renderCheckboxGroupField}
-                  options={priorityOption}
-                  name="priority"
-                />
-              </div>
-            }
             <Field
               name="scanRegistryType"
               component={renderRadioButtonGroup}
@@ -286,10 +239,10 @@ class RegistryScanForm extends React.PureComponent {
                 className="primary-btn full-width relative"
                 type="submit"
                 disabled={submitting}
-               >
+              >
                 {scanButtonLabel}
               </button>
-              {loading && <Loader style={{ right: '4%', top: '0%'}} />}
+              {loading && <Loader style={{ right: '4%', top: '0%' }} />}
             </div>
             <div>
               {message &&
@@ -310,12 +263,11 @@ class RegistryScanForm extends React.PureComponent {
   }
 }
 
-const cveScanFormSelector = formValueSelector('cve-scan');
+const cveScanFormSelector = formValueSelector('registry-secrets-scan');
 const mapStateToProps = state => ({
   loading: state.getIn(['cve', 'container_image_registry', 'scan_registry', 'loading']),
   errorMessage: state.getIn(['cve', 'container_image_registry', 'scan_registry', 'error', 'message']),
   message: state.getIn(['cve', 'container_image_registry', 'scan_registry', 'message']),
-  toggleAll: cveScanFormSelector(state, 'toggle'),
   scheduleInterval: cveScanFormSelector(state, 'scheduleInterval'),
   scheduleScan: cveScanFormSelector(state, 'scheduleScan'),
   registryImagesTags: state.getIn(['registry_images_tags']),
@@ -323,9 +275,8 @@ const mapStateToProps = state => ({
 });
 
 export default reduxForm({
-  form: 'cve-scan',
+  form: 'registry-secrets-scan',
   initialValues: Map({
-    scanType: ['base'],
     scanRegistryType: 'latest_timestamp',
   }),
 })(connect(mapStateToProps, {

@@ -91,7 +91,10 @@ import {
   getSecretScanResults,
   getTopSecretScanContainerAndHosts,
   getSecretScanReportChart,
-  getSecretScanChartData
+  getSecretScanChartData,
+  secretScanMaskDocs,
+  secretScanUnmaskDocs,
+  stopCVEScan,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1315,6 +1318,15 @@ export function startCVEScanAction(params) {
   return genericThunkAction(actionTypes, startCVEScan, params);
 }
 
+export function stopCVEScanAction(params) {
+  const actionTypes = [
+    ActionTypes.STOP_CVE_SCAN_REQUEST,
+    ActionTypes.STOP_CVE_SCAN_SUCCESS,
+    ActionTypes.STOP_CVE_SCAN_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, stopCVEScan, params);
+}
+
 export function getNodeTagsAction(params) {
   const actionTypes = [
     ActionTypes.GET_NODE_TAGS_REQUEST,
@@ -1827,6 +1839,14 @@ export function getSecretScanChartDataAction(params) {
     ActionTypes.SECRET_SCAN_CHART_FAILURE,
   ];
   return genericThunkAction(actionTypes, getSecretScanChartData, params);
+}
+
+export function secretScanMaskDocsAction(params) {
+  return (dispatch) => secretScanMaskDocs(dispatch, params);
+}
+
+export function secretScanUnmaskDocsAction(params) {
+  return (dispatch) => secretScanUnmaskDocs(dispatch, params);
 }
 
 // multi cloud

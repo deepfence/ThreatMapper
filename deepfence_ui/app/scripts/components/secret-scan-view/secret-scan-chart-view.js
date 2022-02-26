@@ -17,7 +17,7 @@ class SecretScanChartView extends React.Component {
   constructor() {
     super();
     this.state = {};
-    this.onCVETypeClickHandler = this.onCVETypeClickHandler.bind(this);
+    this.sectionClickHandler = this.sectionClickHandler.bind(this);
   }
 
   componentDidMount() {
@@ -93,7 +93,7 @@ class SecretScanChartView extends React.Component {
     }
   }
 
-  onCVETypeClickHandler(point) {
+  sectionClickHandler(point) {
     const { globalSearchQuery: existingQuery = [], dispatch } = this.props;
     let searchQuery = existingQuery;
 
@@ -104,11 +104,11 @@ class SecretScanChartView extends React.Component {
 
     switch (paths.length) {
       case 1:
-        newSearchParams.cve_severity = paths[0];
+        newSearchParams["Severity.level"] = paths[0];
         break;
       case 2:
-        newSearchParams.cve_severity = paths[0];
-        newSearchParams.cve_type = paths[1];
+        newSearchParams["Severity.level"] = paths[0];
+        newSearchParams["Rule.name"] = paths[1];
         break;
       default:
         return;
@@ -136,11 +136,11 @@ class SecretScanChartView extends React.Component {
         <div className="cve-severity-chart-wrapper">
           <SunburstChart
             data={cveSeverityChartData}
-            name="CVE Languages"
+            name="Secret scan details"
             chartWidth={600}
             chartHeight={600}
             colors={severityColorsSunBurst}
-            onSectionClick={this.onCVETypeClickHandler}
+            onSectionClick={this.sectionClickHandler}
           />
         </div>
       </div>

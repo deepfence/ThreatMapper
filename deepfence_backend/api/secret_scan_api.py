@@ -9,10 +9,11 @@ from collections import defaultdict
 
 from config.redisconfig import redis
 from models.container_image_registry import RegistryCredential
+from models.scheduler import Scheduler
 from utils import constants
 from utils.common import calculate_interval
 from utils.es_query_utils import get_latest_secret_scan_id
-from utils.helper import websocketio_channel_name_format
+from utils.helper import websocketio_channel_name_format, get_all_secret_scanned_images
 from utils.response import set_response
 from utils.custom_exception import InvalidUsage, InternalError
 from utils.resource import filter_node_for_secret_scan
@@ -20,6 +21,8 @@ from utils.constants import TIME_UNIT_MAPPING, SECRET_SCAN_INDEX, SECRET_SCAN_LO
     ES_TERMS_AGGR_SIZE, ES_MAX_CLAUSE
 from utils.esconn import ESConn, GroupByParams
 from resource_models.node import Node
+import pandas as pd
+import re
 import requests
 import time
 
@@ -51,7 +54,12 @@ def secret_scanned_nodes():
     if request.is_json:
         if type(request.json) != dict:
             raise InvalidUsage("Request data invalid")
-        filters = request.json.get("filters", {})
+        req_filters = request.json.get("filters", {})
+        node_ids = []
+        node_ids.extend(req_filters.get("image_name_with_tag", []))
+        node_ids.extend(req_filters.get("host_name", []))
+        node_ids.extend(req_filters.get("container_name", []))
+        filters["node_id"] = node_ids
         node_filters = request.json.get("node_filters", {})
         page_size = request.json.get("size", page_size)
         start_index = request.json.get("start_index", start_index)
@@ -320,6 +328,8 @@ def secret_scan_results():
 def secret_scan_results():
     post_data = request.json
     registry_images = post_data.get("registry_images", {})
+    action = post_data.get("", constants.NODE_ACTION_SECRET_SCAN_START)
+    cron_expr = post_data.get("action_args", {}).get("cron", "")
     if type(registry_images) != dict:
         raise InvalidUsage("registry_images is required for scanning registry_image")
     if not registry_images.get("registry_id") or type(registry_images["registry_id"]) != int:
@@ -337,6 +347,60 @@ def secret_scan_results():
         raise InternalError("Failed to get registry credential {}".format(registry_images["registry_id"]))
     datetime_now = datetime.now()
     scan_id_list = []
+    image_list_details_str = redis.get("{0}:{1}".format(constants.REGISTRY_IMAGES_CACHE_KEY_PREFIX,
+                                                        registry_images["registry_id"]))
+    if action == constants.NODE_ACTION_SCHEDULE_SECRET_SCAN:
+        try:
+            node_action_details = {"action": action, "registry_images": registry_images,
+                                   "action_args":  post_data.get("action_args", {})}
+            check_existing = Scheduler.query.filter_by(action=action, nodes=node_action_details).all()
+            if check_existing:
+                raise InvalidUsage("A similar schedule already exists")
+            scheduled_action = Scheduler(
+                action=action, description=str(node_action_details["action_args"].get("description", "")),
+                cron_expr=cron_expr, nodes=node_action_details, is_enabled=True, node_names=repr(node_action_details),
+                status="")
+            scheduled_action.save()
+        except Exception as exc:
+            return set_response(error="Could not save scheduled task: {}".format(exc), status=400)
+
+    if registry_images.get("all_registry_images", False):
+        image_dict = json.loads(image_list_details_str)
+        image_df = pd.DataFrame(image_dict['image_list'])
+        image_df['timestamp'] = pd.to_datetime(image_df.pushed_at)
+        sorted_df = image_df.sort_values(by=['timestamp'], ascending=False)
+        df_unique_list = sorted_df["image_tag"].unique()
+        df_unique = pd.DataFrame(data=df_unique_list, columns=["image_tag"])
+        sorted_df_by_image_tag = image_df.sort_values("image_tag")
+        images_by_tags = df_unique.merge(sorted_df_by_image_tag, on=["image_tag"], how="outer")["image_name_with_tag"]
+        registry_images["image_name_with_tag_list"] = images_by_tags
+    elif registry_images.get("only_new_images", False):
+        image_dict = json.loads(image_list_details_str)
+        all_registry_images = set([image["image_name_with_tag"] for image in image_dict['image_list']])
+        if cron_expr:
+            pattern = '^0.*?\*/(\d).*?$'
+            match = re.search(pattern, cron_expr)
+            if match:
+                days_interval = int(match.group(1))
+            else:
+                days_interval = 1
+        images_need_to_be_scanned = all_registry_images - get_all_secret_scanned_images(days_interval)
+        registry_images["image_name_with_tag_list"] = list(images_need_to_be_scanned)
+    elif registry_images.get("registry_scan_type", None) == "latest_timestamp":
+        image_dict = json.loads(image_list_details_str)
+        image_df = pd.DataFrame(image_dict['image_list'])
+        image_df['timestamp'] = pd.to_datetime(image_df.pushed_at)
+        grouped = image_df.groupby(['image_name']).agg({"timestamp": max}).reset_index()
+        latest_images_by_tags = image_df.merge(grouped, on=["image_name", "timestamp"], how="inner")[
+            'image_name_with_tag']
+        registry_images["image_name_with_tag_list"] = latest_images_by_tags
+    elif registry_images.get("registry_scan_type", None) == "image_tags":
+        if registry_images.get("image_tags", []):
+            image_tags = registry_images.get("image_tags", [])
+            image_dict = json.loads(image_list_details_str)
+            image_df = pd.DataFrame(image_dict['image_list'])
+            images_by_tags = image_df[image_df["image_tag"].isin(image_tags)]["image_name_with_tag"]
+            registry_images["image_name_with_tag_list"] = images_by_tags
     for image_name_with_tag in registry_images.get("image_name_with_tag_list"):
         scan_id = image_name_with_tag + "_" + datetime_now.strftime("%Y-%m-%dT%H:%M:%S") + ".000"
         scan_id_list.append(scan_id)
@@ -501,6 +565,32 @@ def secret_exposing_nodes():
     return set_response(data=response)
 
 
+@secret_api.route("/secret/mask-doc", methods=["POST"])
+@jwt_required()
+def mask_secret_doc():
+    doc_ids_to_be_masked = request.json.get("docs", [])
+    if not doc_ids_to_be_masked:
+        raise InvalidUsage("Missing docs value")
+    docs_to_be_masked = []
+    for doc_id in doc_ids_to_be_masked:
+        docs_to_be_masked.append({"_id": doc_id, "_index": SECRET_SCAN_INDEX})
+    ESConn.bulk_mask_docs(docs_to_be_masked)
+    return set_response(status=200)
+
+
+@secret_api.route("/secret/unmask-doc", methods=["POST"])
+@jwt_required()
+def unmask_secret_doc():
+    doc_ids_to_be_masked = request.json.get("docs", [])
+    if not doc_ids_to_be_masked:
+        raise InvalidUsage("Missing docs value")
+    docs_to_be_masked = []
+    for doc_id in doc_ids_to_be_masked:
+        docs_to_be_masked.append({"_id": doc_id, "_index": SECRET_SCAN_INDEX})
+    ESConn.bulk_unmask_docs(docs_to_be_masked)
+    return set_response(status=200)
+
+
 @secret_api.route("/secret/report", methods=["GET"])
 @jwt_required()
 def secret_report():
@@ -556,16 +646,29 @@ def secret_report():
         lucene_query_string
     )
 
-    response = []
-    if "aggregations" in aggs_response:
-        for bucket in aggs_response["aggregations"]["severity"]["buckets"]:
-            sub_buckets = bucket.get("rule_name", []).get("buckets", [])
-            for sub_bucket in sub_buckets:
-                info = {'severity': bucket.get("key"), 'value': sub_bucket.get('doc_count', 0),
-                        'rule_name': sub_bucket.get("key")}
-                response.append(info)
+    data = {"name": "Secrets", "children": []}
+    inner_children = []
+    secrets_by_severity = aggs_response.get("aggregations", {}).get("severity", {}).get('buckets', [])
+    for bucket in secrets_by_severity:
+        by_severity = {"name": bucket.get('key'), "children": []}
+        total_count = 0
+        max_count = 0
+        buckets_inserted = 0
+        for inner_bucket in bucket.get("rule_name", {}).get('buckets', []):
+            total_count += inner_bucket.get("doc_count")
+            child = {"name": inner_bucket.get("key"), "value": inner_bucket.get("doc_count")}
+            by_severity["children"].append(child)
+            buckets_inserted += 1
+            if buckets_inserted >= 6:
+                break
+        by_severity["value"] = total_count
+        if max_count < total_count:
+            max_count = total_count
+        if not (max_count > 10 and total_count == 1):
+            inner_children.append(by_severity)
+    data["children"] = inner_children
 
-    return set_response(data=response)
+    return set_response(data=data)
 
 
 @secret_api.route("/secret/secret_severity_chart", methods=["GET", "POST"])

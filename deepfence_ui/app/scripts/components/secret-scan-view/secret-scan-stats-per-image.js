@@ -1,57 +1,56 @@
 /* eslint-disable react/destructuring-assignment */
-import React, {useEffect} from 'react';
-import {useDispatch} from 'react-redux';
-import {
-  setSearchQuery,
-} from '../../actions/app-actions';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { setSearchQuery } from '../../actions/app-actions';
 import pollable from '../common/header-view/pollable';
 import { constructGlobalSearchQuery } from '../../utils/search-utils';
 
-const SecretScanStatsPerImage = (props) => {
-
+const SecretScanStatsPerImage = props => {
   const dispatch = useDispatch();
 
-  useEffect(() => () => {
+  useEffect(
+    () => () => {
       const { stopPolling } = props;
       stopPolling();
-    }, []);
+    },
+    []
+  );
 
-  const statsClickHandler = (cveSeverity) => {
+  const statsClickHandler = cveSeverity => {
     const { globalSearchQuery: existingQuery = [] } = props;
 
     const searchQuery = constructGlobalSearchQuery(existingQuery, {
-      cve_severity: cveSeverity,
+      "Severity.level": cveSeverity,
     });
 
     const globalSearchQuery = {
       searchQuery,
     };
     dispatch(setSearchQuery(globalSearchQuery));
-  }
+  };
 
   const { data } = props;
-  let low = 0
-  let medium = 0
-  let high = 0
-  let total = 0
-  let activeContainers = 0
+  let low = 0;
+  let medium = 0;
+  let high = 0;
+  let total = 0;
+  let activeContainers = 0;
 
-  if(data && data.data){
+  if (data && data.data) {
     data.data.map(d => {
-    d.scans.map( s => {
-      if(s?.scan_id === props?.scanId){
-        low = s?.severity?.Low
-        medium = s?.severity?.Medium
-        high = s?.severity?.high
-        activeContainers = s?.active_containers
-        total = s?.total
-      }
+      d.scans.map(s => {
+        if (s?.scan_id === props?.scanId) {
+          low = s?.severity?.low;
+          medium = s?.severity?.medium;
+          high = s?.severity?.high;
+          activeContainers = s?.active_containers;
+          total = s?.total;
+        }
+        return 0;
+      });
       return 0;
-    })
-    return 0;
-  })
+    });
   }
-
 
   return (
     <div>
@@ -104,6 +103,6 @@ const SecretScanStatsPerImage = (props) => {
       </div>
     </div>
   );
-}
+};
 
 export default pollable()(SecretScanStatsPerImage);

@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import {
@@ -12,13 +11,14 @@ import NodesFilter from '../../charts/nodes-filter';
 import { DfTableV2 } from '../common/df-table-v2';
 
 const SecretScanImageReport = props => {
-  const arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const defaultExpandedRows = arr.reduce((acc, el) => {
-    acc[el] = {};
-    return acc;
-  }, {});
+  const {
+    startPolling,
+    stopPolling,
+    registerPolling,
+    updatePollParams,
+    filterValues = {},
+  } = props;
   const dispatch = useDispatch();
-  const oldProps = useRef(props);
   const [redirect, setRedirect] = useState(false);
   const [link, setLink] = useState('');
   const [rowCountValue, setRowCountValue] = useState(10);
@@ -64,24 +64,16 @@ const SecretScanImageReport = props => {
   ];
 
   useEffect(() => {
-    const { filterValues: currentFiltervalues } = oldProps.current;
-    if (props.filterValues && currentFiltervalues !== props.filterValues) {
-      getSecretScanImageReport({
-        filters: props.filterValues,
-      });
-      handlePageChange(0);
-    }
-    oldProps.current = props;
-  }, [props]);
+    getSecretScanImageReport({
+      filters: props.filterValues,
+    });
+    handlePageChange(0);
+  }, [filterValues]);
 
   useEffect(() => {
     // pollable: register the function which needs to be polled
-    const {
-      registerPolling,
-      startPolling,
-      urlLocation: { search = '' } = {},
-    } = props;
-    getSecretScanImageReport();
+    const { urlLocation: { search = '' } = {} } = props;
+    registerPolling(getSecretScanImageReport);
     startPolling();
     if (search.length === 0) {
       // set save table page number to 0 if there is no search query
@@ -90,26 +82,11 @@ const SecretScanImageReport = props => {
       // and the page number is not reset. it will should previous page number.
       dispatch(saveImageReportTableStateAction({ pageNumber: 0 }));
     }
-  }, []);
 
-  useEffect(
-    () => () => {
-      // pollable: stop polling on unmount
-      const { stopPolling } = props;
+    return () => {
       stopPolling();
-    },
-    []
-  );
-
-  // const handleDownload = (scanId, nodeType) => {
-  //   const {
-  //     handleDownload,
-  //   } = props;
-  //   return handleDownload({
-  //     scanId,
-  //     nodeType,
-  //   });
-  // }
+    };
+  }, []);
 
   const rowClickHandler = scanId => {
     setRedirect(true);
@@ -117,15 +94,10 @@ const SecretScanImageReport = props => {
   };
 
   const tableChangeHandler = (params = {}) => {
-    // pollable: on any change in the DF Table params, update the polling params,
-    // which will update and restart polling with new params.
-    const { updatePollParams } = props;
     updatePollParams(params);
   };
 
   const getSecretScanImageReport = (pollParams = {}) => {
-    const { filterValues = {} } = props;
-
     const {
       page = 0,
       pageSize = 10,
@@ -170,11 +142,14 @@ const SecretScanImageReport = props => {
     setRowCountValue(rowCount);
   };
 
+  useEffect(() => {
+    updatePollParams({ pageSize: rowCountValue });
+  }, [rowCountValue]);
+
   const renderSubComponent = ({ row }) => (
     <SecretScanImageReportDetails
       data={row.original.scans}
       rowClickHandler={scanId => rowClickHandler(scanId)}
-      // handleDownload={() => handleDownload()}
       isToasterVisible={props.isToasterVisible}
       onDelete={() => getSecretScanImageReport()}
     />
@@ -232,11 +207,12 @@ const SecretScanImageReport = props => {
             {' Entries'}
           </label>
         </div>
-        <NodesFilter resourceType="cve" />
+        <NodesFilter resourceType="secret-scan" />
       </div>
       <DfTableV2
         data={data}
         columns={columns}
+        name="secrets-scan-table"
         renderRowSubComponent={({ row }) => renderSubComponent({ row })}
         showPagination
         manual

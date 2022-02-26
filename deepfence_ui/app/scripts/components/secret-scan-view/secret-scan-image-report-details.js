@@ -5,6 +5,7 @@ import Tippy from '@tippyjs/react';
 import { dateTimeFormat } from '../../utils/time-utils';
 import { DfTableV2 } from '../common/df-table-v2';
 import {
+  deleteScanActions,
   showModal,
   toaster,
 } from '../../actions/app-actions';
@@ -20,7 +21,7 @@ const SecretScanImageReportDetails = props => {
       dialogBody: 'Are you sure you want to delete?',
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
-      onConfirmButtonClick: () => deleteScanActions(scanId),
+      onConfirmButtonClick: () => deleteScan(scanId),
       contentStyles: {
         width: '375px',
       },
@@ -28,10 +29,10 @@ const SecretScanImageReportDetails = props => {
     dispatch(showModal('DIALOG_MODAL', params));
   };
 
-  const deleteScanActions = scanId => {
+  const deleteScan = scanId => {
     const params = {
       scan_id: scanId,
-      doc_type: 'cve',
+      doc_type: 'secret-scan',
       time_unit: 'all',
       number: '0',
     };
@@ -53,7 +54,7 @@ const SecretScanImageReportDetails = props => {
     );
   };
 
-  const { data, rowClickHandler, handleDownload, isToasterVisible } = props;
+  const { data, rowClickHandler, isToasterVisible } = props;
 
   return (
     <div>
@@ -120,7 +121,7 @@ const SecretScanImageReportDetails = props => {
           },
           {
             Header: 'Medium',
-            accessor: 'severity.Medium',
+            accessor: 'severity.medium',
             Cell: row => (
               <div>
                 <div className="cve-severity-box-wrap-medium value">
@@ -133,7 +134,7 @@ const SecretScanImageReportDetails = props => {
           },
           {
             Header: 'Low',
-            accessor: 'severity.Low',
+            accessor: 'severity.low',
             Cell: row => (
               <div>
                 <div className="cve-severity-box-wrap-low value">
@@ -160,13 +161,6 @@ const SecretScanImageReportDetails = props => {
                 allowHTML
                 content={
                   <div className="table-row-actions-popup">
-                    <i
-                      className="fa fa-lg fa-download "
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleDownload(cell.value, cell.row.original.node_type);
-                      }}
-                    />
                     <i
                       className="fa fa-lg fa-trash-o"
                       style={{ color: 'red' }}

@@ -1721,6 +1721,19 @@ export function startCVEScan(params = {}) {
   }).then(errorHandler);
 }
 
+export function stopCVEScan(params = {}) {
+  const { nodeId, nodeType } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_stop?scope_id=${nodeId}&node_type=${nodeType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function startSecretScan(params = {}) {
   const { nodeId, nodeType } = params;
   const url = `${backendElasticApiEndPoint()}/node/0/secret_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
@@ -2242,8 +2255,11 @@ export function getSecretScanData(params = {}) {
     filters,
     start_index,
     size,
+    lucene_query: luceneQuery = []
   } = params;
-  let url = `${backendElasticApiEndPoint()}/secret/node_report`;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  let url = `${backendElasticApiEndPoint()}/secret/node_report?lucene_query=${luceneQueryEscaped}`;
   const body = {
     filters,
     start_index,
@@ -2277,8 +2293,10 @@ export function getSecretScanResults(params = {}) {
     filters,
     start_index,
     size,
+    lucene_query: luceneQuery = [],
   } = params;
-  let url = `${backendElasticApiEndPoint()}/secret/scan_results`;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  let url = `${backendElasticApiEndPoint()}/secret/scan_results?lucene_query=${luceneQueryEscaped}`;
   const body = {
     filters,
     start_index,
@@ -2306,9 +2324,13 @@ export function getSecretScanResults(params = {}) {
   });
 }
 
-export function getTopSecretScanContainerAndHosts() {
+export function getTopSecretScanContainerAndHosts(params) {
 
-  const url = `${backendElasticApiEndPoint()}/secret/top_exposing_nodes`;
+  const { luceneQuery = [] } = params;
+
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  const url = `${backendElasticApiEndPoint()}/secret/top_exposing_nodes?lucene_query=${luceneQueryEscaped}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
@@ -2319,9 +2341,12 @@ export function getTopSecretScanContainerAndHosts() {
   }).then(errorHandler);
 }
 
-export function getSecretScanReportChart() {
+export function getSecretScanReportChart(params) {
+  const { luceneQuery = [] } = params;
 
-  const url = `${backendElasticApiEndPoint()}/secret/report`;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  const url = `${backendElasticApiEndPoint()}/secret/report?lucene_query=${luceneQueryEscaped}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
@@ -2333,7 +2358,6 @@ export function getSecretScanReportChart() {
 }
 
 export function getSecretScanChartData(params, dispatch) {
-  console.log('API PARAMS', params);
   let url = `${backendElasticApiEndPoint()}/secret/secret_severity_chart?number=${params.number
     }&time_unit=${params.time_unit}`;
   if (params.lucene_query.length !== 0) {
@@ -2368,3 +2392,53 @@ export function getSecretScanChartData(params, dispatch) {
     },
   });
 }
+
+export function secretScanMaskDocs(dispatch, params) {
+  let url = `${backendElasticApiEndPoint()}/secret/mask-doc`;
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(params),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};
+
+export function secretScanUnmaskDocs(dispatch, params) {
+  let url = `${backendElasticApiEndPoint()}/secret/unmask-doc`;
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(params),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};

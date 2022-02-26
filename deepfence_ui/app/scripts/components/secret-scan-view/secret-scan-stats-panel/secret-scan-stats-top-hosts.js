@@ -10,10 +10,6 @@ import { constructGlobalSearchQuery } from '../../../utils/search-utils';
 import StackedChart from '../../common/charts/stacked-chart/index';
 import pollable from '../../common/header-view/pollable';
 
-// HACK-NOTE: This component relies on data fetched by vulnerability-stats-top-containers.js
-// Make sure not to deploy this as a standalone component. It should always
-// accompany the other component.
-// This hack saves use from writing a new API call
 const SecretScanStatsTopHosts = props => {
   const oldProps = useRef(props);
   const dispatch = useDispatch();
@@ -23,23 +19,21 @@ const SecretScanStatsTopHosts = props => {
     registerPolling(() => getTopVulnerableHostStats());
     startPolling();
   }, []);
-
+  
   useEffect(() => {
-    const { alertPanelHistoryBound: newBounds, globalSearchQuery: newQuery } =
+    const { globalSearchQuery: newQuery } =
       props;
     const {
-      alertPanelHistoryBound: currentBounds,
       globalSearchQuery: currentQuery,
     } = oldProps.current;
 
-    if (currentBounds !== newBounds || currentQuery !== newQuery) {
+    if (currentQuery !== newQuery) {
       getTopVulnerableHostStats({
-        alertPanelHistoryBound: newBounds,
         globalSearchQuery: newQuery,
       });
     }
     oldProps.current = props;
-  }, []);
+  }, [props]);
 
   const getTopVulnerableHostStats = (params = {}) => {
     const {
@@ -72,7 +66,7 @@ const SecretScanStatsTopHosts = props => {
     let searchQuery = [];
     if (point.type) {
       const severityParams = {
-        cve_severity: point.type,
+        "Severity.level": point.type,
       };
       searchQuery = constructGlobalSearchQuery(existingQuery, severityParams);
     }

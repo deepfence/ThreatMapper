@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 
 // React imports
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import classnames from 'classnames';
 import { Redirect } from 'react-router-dom';
@@ -18,62 +18,75 @@ import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
 
 import {
   IS_NOTIFICATION_CHECK_ENABLE,
-  NOTIFICATION_POLLING_DURATION
+  NOTIFICATION_POLLING_DURATION,
 } from '../../constants/visualization-config';
+import { setActiveFilters, breadcrumbChange } from '../../actions/app-actions';
 import {
-  setActiveFilters,
-  breadcrumbChange
-} from '../../actions/app-actions';
-import { ADMIN_SIDE_NAV_MENU_COLLECTION, USER_SIDE_NAV_MENU_COLLECTION } from '../../constants/menu-collection';
+  ADMIN_SIDE_NAV_MENU_COLLECTION,
+  USER_SIDE_NAV_MENU_COLLECTION,
+} from '../../constants/menu-collection';
 import { getUserRole } from '../../helpers/auth-helper';
 
-const SecretScanResultsView = (props) => {
-
+const SecretScanResultsView = props => {
   const dispatch = useDispatch();
-  const sideNavMenuCollection = (getUserRole() === 'admin') ? ADMIN_SIDE_NAV_MENU_COLLECTION : USER_SIDE_NAV_MENU_COLLECTION;
+  const sideNavMenuCollection =
+    getUserRole() === 'admin'
+      ? ADMIN_SIDE_NAV_MENU_COLLECTION
+      : USER_SIDE_NAV_MENU_COLLECTION;
   const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection[0]);
   const [redirectBack, setRedirectBack] = useState(false);
   const [link, setLink] = useState('');
   const [intervalObj, setIntervalObj] = useState(null);
   const [licenseResponse, setLicenseResponse] = useState(null);
-  const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] = useState(false);
+  const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] =
+    useState(false);
 
   const hosts = useSelector(state => state.get('hosts'));
   const isToasterVisible = useSelector(state => state.get('isToasterVisible'));
-  const isSideNavCollapsed = useSelector(state => state.get('isSideNavCollapsed'));
-  const isFiltersViewVisible = useSelector(state => state.get('isFiltersViewVisible'));
+  const isSideNavCollapsed = useSelector(state =>
+    state.get('isSideNavCollapsed')
+  );
+  const isFiltersViewVisible = useSelector(state =>
+    state.get('isFiltersViewVisible')
+  );
 
   const handleBackButton = () => {
     setRedirectBack(true);
     setLink('/secret-scan/scans?b');
-  }
+  };
 
   useEffect(() => {
-    const {
-      match: {
-        params: {
-          scanId,
-        } = {},
-      } = {},
-    } = props;
+    const { match: { params: { scanId } = {} } = {} } = props;
     const unEscapedScanId = decodeURIComponent(scanId);
     const lastUnderscoreIndex = unEscapedScanId.lastIndexOf('_');
-    const unEscapedImageName = unEscapedScanId.substring(0, lastUnderscoreIndex);
+    const unEscapedImageName = unEscapedScanId.substring(
+      0,
+      lastUnderscoreIndex
+    );
     let changedImageName = unEscapedImageName;
     if (unEscapedImageName.length > 20) {
-      changedImageName = `${unEscapedImageName.substring(0, 19)  }...`;
+      changedImageName = `${unEscapedImageName.substring(0, 19)}...`;
     }
-    dispatch(breadcrumbChange([{name: 'Secret Scan', link: '/secret-scan/scans'}, {name: changedImageName}]));
-    if(IS_NOTIFICATION_CHECK_ENABLE){
-      const interval = setInterval(()=>{
-      }, NOTIFICATION_POLLING_DURATION * 1000);
+    dispatch(
+      breadcrumbChange([
+        { name: 'Secret Scan', link: '/secret-scan/scans' },
+        { name: changedImageName },
+      ])
+    );
+    if (IS_NOTIFICATION_CHECK_ENABLE) {
+      const interval = setInterval(() => {},
+      NOTIFICATION_POLLING_DURATION * 1000);
       setIntervalObj(interval);
     }
   }, []);
 
   useEffect(() => {
-    if ((props.isLicenseActive && !props.isLicenseExpired) && 
-    (props.licenseResponse.license_status === 'expired' || props.licenseResponse.license_status === 'hosts_exceeded')) {
+    if (
+      props.isLicenseActive &&
+      !props.isLicenseExpired &&
+      (props.licenseResponse.license_status === 'expired' ||
+        props.licenseResponse.license_status === 'hosts_exceeded')
+    ) {
       setIsLicenseExpiryModalVisible(true);
       setLicenseResponse(props.licenseResponse);
     } else {
@@ -81,25 +94,21 @@ const SecretScanResultsView = (props) => {
     }
   }, [props]);
 
-  useEffect(() => () => {
-      if(intervalObj){
+  useEffect(
+    () => () => {
+      if (intervalObj) {
         clearInterval(intervalObj);
       }
       // Resetting table filters.
       dispatch(setActiveFilters(undefined, undefined));
-    }, []);
-  
+    },
+    []
+  );
 
   if (redirectBack) {
-    return (<Redirect to={link} />);
+    return <Redirect to={link} />;
   }
-  const {
-    match: {
-      params: {
-        scanId,
-      } = {},
-    } = {},
-  } = props;
+  const { match: { params: { scanId } = {} } = {} } = props;
   const unEscapedScanId = decodeURIComponent(scanId);
 
   const lastUnderscoreIndex = unEscapedScanId.lastIndexOf('_');
@@ -108,27 +117,29 @@ const SecretScanResultsView = (props) => {
   const timeOfScan = moment.utc(timeOfScanStr);
 
   const divClassName = classnames(
-    {'collapse-side-nav': isSideNavCollapsed},
-    {'expand-side-nav': !isSideNavCollapsed});
-  const contentClassName = classnames(
-    'content-header',
-    {'with-filters': isFiltersViewVisible},
+    { 'collapse-side-nav': isSideNavCollapsed },
+    { 'expand-side-nav': !isSideNavCollapsed }
   );
+  const contentClassName = classnames('content-header', {
+    'with-filters': isFiltersViewVisible,
+  });
   let changedImageName;
   if (unEscapedImageName.length > 10) {
-    changedImageName = `${unEscapedImageName.substring(0, 9)  }...`;
+    changedImageName = `${unEscapedImageName.substring(0, 9)}...`;
   }
   return (
     <div>
-
-      <SideNavigation navMenuCollection={sideNavMenuCollection} activeMenu={activeMenu} />
+      <SideNavigation
+        navMenuCollection={sideNavMenuCollection}
+        activeMenu={activeMenu}
+      />
 
       <div className={`vulnerability-view-wrapper cve-details ${divClassName}`}>
         <HeaderView />
-        <div className={("vulnerability-table-scan-wrapper", contentClassName)}>
-          <div className=''>
+        <div className={('vulnerability-table-scan-wrapper', contentClassName)}>
+          <div className="">
             <div className="title vulnerability-scan-wrapper">
-                Secret scan
+              Secret scan
               <div className="sub-title">
                 {unEscapedImageName} (scanned {timeOfScan.fromNow()})
               </div>
@@ -152,10 +163,9 @@ const SecretScanResultsView = (props) => {
         </div>
       </div>
 
-      { isToasterVisible && <NotificationToaster /> }
-
+      {isToasterVisible && <NotificationToaster />}
     </div>
   );
-}
+};
 
-export default (injectModalTrigger(SecretScanResultsView));
+export default injectModalTrigger(SecretScanResultsView);
