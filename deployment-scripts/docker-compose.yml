@@ -349,6 +349,21 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
+        
+  deepfence-package-scanner:
+    container_name: deepfence-package-scanner
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-1.2.0}
+    ulimits:
+      core: 0
+    restart: always
+    networks:
+    - deepfence_net
+    ports:
+    - "8002:8002"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
 
 volumes:
   deepfence_data:
