@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import { useUpdateEffect } from 'react-use';
 import {
   getSecretScanDataAction,
   saveImageReportTableStateAction,
@@ -63,11 +64,12 @@ const SecretScanImageReport = props => {
     },
   ];
 
-  useEffect(() => {
-    getSecretScanImageReport({
-      filters: props.filterValues,
+  useUpdateEffect(() => {
+    updatePollParams({
+      filters: filterValues,
+      page: 0
     });
-    handlePageChange(0);
+    dispatch(saveImageReportTableStateAction({ pageNumber: 0 }));
   }, [filterValues]);
 
   useEffect(() => {
@@ -142,7 +144,7 @@ const SecretScanImageReport = props => {
     setRowCountValue(rowCount);
   };
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     updatePollParams({ pageSize: rowCountValue });
   }, [rowCountValue]);
 

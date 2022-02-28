@@ -39,6 +39,7 @@
     "react-table": "^7.7.0",
     "react-table-6": "^6.11.0",
     "react-tooltip": "4.2.21",
+    "react-use": "^17.3.2",
     "react-virtualized": "9.22.3",
     "redux": "^4.0.4",
     "redux-form": "8.3.7",
