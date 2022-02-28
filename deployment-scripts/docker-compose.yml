@@ -359,7 +359,9 @@ services:
     networks:
     - deepfence_net
     ports:
-    - "8002:8002"
+    - "8005:8005"
+    entrypoint: /usr/local/bin/package-scanner
+    command: [ "-mode", "http-server", "-port", "8005" ]
     logging:
       driver: "json-file"
       options:

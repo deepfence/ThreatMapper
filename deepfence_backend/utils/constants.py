@@ -147,6 +147,7 @@ SCOPE_KUBE_SERVICE_API_CONTROL_URL = "http://deepfence-topology:8004/topology-ap
 SCOPE_KUBE_CONTROLLER_API_CONTROL_URL = "http://deepfence-topology:8004/topology-api/control/{probe_id}/{kube_controller_id}/{action}"
 
 SECRET_SCAN_API_URL = "http://deepfence-secret-scanner:8011/secret-scan"
+PACKAGE_SCANNER_REGISTRY_API_URL = "http://deepfence-package-scanner:8005/registry"
 
 CVE_INDEX = "cve"
 CVE_SCAN_LOGS_INDEX = "cve-scan"
