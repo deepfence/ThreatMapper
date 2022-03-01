@@ -388,7 +388,7 @@ services:
     ports:
     - "8005:8005"
     environment:
-      MGMT_CONSOLE_URL: "deepfence-router"
+      MGMT_CONSOLE_URL: "deepfence-internal-router"
       MGMT_CONSOLE_PORT: "443"
     entrypoint: /usr/local/bin/package-scanner
     command: [ "-mode", "http-server", "-port", "8005" ]
