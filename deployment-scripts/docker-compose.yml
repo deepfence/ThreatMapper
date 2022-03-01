@@ -390,6 +390,7 @@ services:
     environment:
       MGMT_CONSOLE_URL: "deepfence-internal-router"
       MGMT_CONSOLE_PORT: "443"
+      PACKAGE_SCAN_CONCURRENCY: "5"
     entrypoint: /usr/local/bin/package-scanner
     command: [ "-mode", "http-server", "-port", "8005" ]
     logging:
