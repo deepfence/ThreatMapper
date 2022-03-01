@@ -2342,9 +2342,9 @@ export function getTopSecretScanContainerAndHosts(params) {
 }
 
 export function getSecretScanReportChart(params) {
-  const { luceneQuery = [] } = params;
+  const { globalSearchQuery = [] } = params;
 
-  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(globalSearchQuery));
 
   const url = `${backendElasticApiEndPoint()}/secret/report?lucene_query=${luceneQueryEscaped}`;
   return fetch(url, {
