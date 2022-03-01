@@ -823,6 +823,45 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-secret-scanner
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: deepfence-secret-scanner
+  template:
+    metadata:
+      labels:
+        name: deepfence-secret-scanner
+        app: deepfence-console
+    spec:
+      containers:
+        - name: deepfence-secret-scanner
+          image: "{{ .Values.image.repository }}deepfence_secret_scanner_ce:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8011
+          command: [ "/home/deepfence/usr/SecretScanner" ]
+          args: ["-config-path","/home/deepfence/usr", "-http-port", "8011"]
+          resources:
+            requests:
+              memory: {{ .Values.defaultResourceLimits.requests.memory }}
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+            limits:
+              memory: 4Gi
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+---
 apiVersion:  apps/v1
 kind: Deployment
 metadata:

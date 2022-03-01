@@ -119,3 +119,21 @@ spec:
       protocol: TCP
       targetPort: 8009
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-secret-scanner
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-secret-scanner
+  ports:
+    - name: deepfence-secret-scanner-port
+      port: 8011
+      protocol: TCP
+      targetPort: 8011
+---
