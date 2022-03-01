@@ -1,6 +1,4 @@
-/* eslint-disable react/destructuring-assignment */
-// TODO: Rewrite this component
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { connect, useDispatch } from 'react-redux';
 import {
   getTopSecretScanContainerAndHostsAction,
@@ -11,34 +9,18 @@ import StackedChart from '../../common/charts/stacked-chart/index';
 import pollable from '../../common/header-view/pollable';
 
 const SecretScanStatsTopHosts = props => {
-  const oldProps = useRef(props);
   const dispatch = useDispatch();
+  const { registerPolling, startPolling } = props;
 
   useEffect(() => {
-    const { registerPolling, startPolling } = props;
-    registerPolling(() => getTopVulnerableHostStats());
+    registerPolling(getTopVulnerableHostStats);
     startPolling();
   }, []);
-  
-  useEffect(() => {
-    const { globalSearchQuery: newQuery } =
-      props;
-    const {
-      globalSearchQuery: currentQuery,
-    } = oldProps.current;
-
-    if (currentQuery !== newQuery) {
-      getTopVulnerableHostStats({
-        globalSearchQuery: newQuery,
-      });
-    }
-    oldProps.current = props;
-  }, [props]);
 
   const getTopVulnerableHostStats = (params = {}) => {
     const {
       alertPanelHistoryBound = props.alertPanelHistoryBound || [],
-      globalSearchQuery = props.globalSearchQuery || [],
+      globalSearchQuery
     } = params;
 
     const { getTopSecretScanContainerAndHostsAction: action } = props;
