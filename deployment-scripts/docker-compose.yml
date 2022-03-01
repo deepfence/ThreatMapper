@@ -91,10 +91,6 @@ services:
           cpus: ".2"
     restart: on-failure
     environment:
-    - DF_ENABLE_PROCESS_REPORT=true
-    - DF_ENABLE_CONNECTIONS_REPORT=true
-    - INSTANCE_ID_SUFFIX=${INSTANCE_ID_SUFFIX:-N}
-    - USER_DEFINED_TAGS=${USER_DEFINED_TAGS:-}
     - MGMT_CONSOLE_URL=deepfence-internal-router
     - MGMT_CONSOLE_PORT=443
     - SCOPE_HOSTNAME=deepfence-management-console
