@@ -15,7 +15,8 @@ ENV CHECKPOINT_DISABLE=true \
     DOCKERVERSION=20.10.8 \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
-    DF_KUBERNETES_ON="N"
+    DF_KUBERNETES_ON="N" \
+    PACKAGE_SCAN_CONCURRENCY=1
 
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \
