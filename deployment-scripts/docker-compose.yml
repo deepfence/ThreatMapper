@@ -80,19 +80,33 @@ services:
       options:
         max-size: "1g"
 
-  deepfence-discovery:
-    container_name: deepfence-discovery
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_discovery_ce:${DF_IMG_TAG:-1.2.0}
+  deepfence-console-agent:
+    container_name: deepfence-console-agent
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-1.2.0}
     ulimits:
       core: 0
-    network_mode: "host"
-    pid: "host"
-    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: ".2"
     restart: on-failure
-    command: discovery localhost 8004
+    environment:
+    - DF_ENABLE_PROCESS_REPORT=true
+    - DF_ENABLE_CONNECTIONS_REPORT=true
+    - INSTANCE_ID_SUFFIX=${INSTANCE_ID_SUFFIX:-N}
+    - USER_DEFINED_TAGS=${USER_DEFINED_TAGS:-}
+    - MGMT_CONSOLE_URL=deepfence-internal-router
+    - MGMT_CONSOLE_PORT=443
+    - SCOPE_HOSTNAME=deepfence-management-console
+    networks:
+    - deepfence_net
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /sys/kernel/debug:/sys/kernel/debug:rw
+    - /sys/kernel/debug:/sys/kernel/debug:rw
+    - /var/log/fenced
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw
+    - /:/fenced/mnt/host/:ro
+    privileged: true
     logging:
       driver: "json-file"
       options:
@@ -216,6 +230,23 @@ services:
       - "${MGMT_CONSOLE_PORT:-443}:443"
     volumes:
       - /etc/deepfence/certs:/etc/deepfence/certs/:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-internal-router:
+    container_name: deepfence-internal-router
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-1.2.0}
+    ulimits:
+      core: 0
+    networks:
+      - deepfence_net
+    environment:
+      ENABLE_AUTH: "false"
+    restart: always
+    volumes:
+    - /etc/deepfence/certs:/etc/deepfence/certs/:ro
     logging:
       driver: "json-file"
       options:
