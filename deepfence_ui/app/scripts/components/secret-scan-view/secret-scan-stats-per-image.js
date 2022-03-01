@@ -62,20 +62,22 @@ const SecretScanStatsPerImage = props => {
               <div className="name">Total</div>
             </div>
           </div>
-          <div className="vulnerability-details high-alert">
+          <div className="vulnerability-details high-alert"
+            onClick={() => statsClickHandler('high')}
+          >
             <div
               className="vulnerability-details-container"
-              onClick={() => statsClickHandler('high')}
               aria-hidden="true"
             >
               <div className="count">{high}</div>
               <div className="name">High</div>
             </div>
           </div>
-          <div className="vulnerability-details medium-alert">
+          <div className="vulnerability-details medium-alert"
+              onClick={() => statsClickHandler('medium')}
+          >
             <div
               className="vulnerability-details-container"
-              onClick={() => statsClickHandler('medium')}
               aria-hidden="true"
             >
               <div className="count">{medium}</div>
@@ -83,10 +85,11 @@ const SecretScanStatsPerImage = props => {
             </div>
           </div>
           <div className="line-break" />
-          <div className="vulnerability-details low-alert">
+          <div className="vulnerability-details low-alert"
+              onClick={() => statsClickHandler('low')}
+          >
             <div
               className="vulnerability-details-container"
-              onClick={() => statsClickHandler('low')}
               aria-hidden="true"
             >
               <div className="count">{low}</div>

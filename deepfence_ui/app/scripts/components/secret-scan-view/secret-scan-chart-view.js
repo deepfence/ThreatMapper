@@ -1,9 +1,8 @@
-/*eslint-disable*/
+/* eslint-disable prefer-destructuring */
+/* eslint-disable guard-for-in */
 
-// React imports
 import React from 'react';
 import { connect } from 'react-redux';
-
 import SunburstChart from '../common/charts/sunburst-chart/index';
 
 import {
@@ -36,7 +35,7 @@ class SecretScanChartView extends React.Component {
   UNSAFE_componentWillReceiveProps(newProps) {
     if (
       newProps.refreshInterval &&
-      this.props.refreshInterval != newProps.refreshInterval
+      this.props.refreshInterval !== newProps.refreshInterval
     ) {
       const interval = setInterval(() => {
         this.getCveSeverityChartData();
@@ -48,27 +47,27 @@ class SecretScanChartView extends React.Component {
     }
     if (newProps.searchQuery !== this.props.searchQuery) {
       this.setState(
-        { display: undefined, number: undefined, time_unit: undefined },
-        function stateUpdateComplete() {
+        { number: undefined, time_unit: undefined },
+        () => {
           const activeDuration = newProps.days.value;
           this.getCveSeverityChartData(
             activeDuration.number,
             activeDuration.time_unit,
             newProps.searchQuery
           );
-        }.bind(this)
+        }
       );
-    } else if (newProps.days != this.props.days) {
+    } else if (newProps.days !== this.props.days) {
       this.setState(
-        { display: undefined, number: undefined, time_unit: undefined },
-        function stateUpdateComplete() {
+        { number: undefined, time_unit: undefined },
+        () => {
           const activeDuration = newProps.days.value;
           this.getCveSeverityChartData(
             activeDuration.number,
             activeDuration.time_unit,
             newProps.searchQuery
           );
-        }.bind(this)
+        }
       );
     }
   }
@@ -114,7 +113,7 @@ class SecretScanChartView extends React.Component {
         return;
     }
     for (const param in newSearchParams) {
-      let newParam = {};
+      const newParam = {};
       newParam[param] = newSearchParams[param];
       searchQuery = constructGlobalSearchQuery(searchQuery, newParam);
     }

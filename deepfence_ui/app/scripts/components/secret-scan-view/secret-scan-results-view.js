@@ -1,20 +1,14 @@
-/* eslint-disable no-unused-vars */
-
-// React imports
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import classnames from 'classnames';
 import { Redirect } from 'react-router-dom';
 import moment from 'moment';
-
-// Custom component imports
 import HeaderView from '../common/header-view/header-view';
 import SideNavigation from '../common/side-navigation/side-navigation';
 import NotificationToaster from '../common/notification-toaster/notification-toaster';
 import SecretScanChartView from './secret-scan-chart-view';
 import SecretScanTableV2 from './secret-scan-table-view/secret-scan-table-v2-view';
 import SecretScanImageStatsContainer from './secret-scan-stats-per-image-container';
-import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
 
 import {
   IS_NOTIFICATION_CHECK_ENABLE,
@@ -74,8 +68,8 @@ const SecretScanResultsView = props => {
       ])
     );
     if (IS_NOTIFICATION_CHECK_ENABLE) {
-      const interval = setInterval(() => {},
-      NOTIFICATION_POLLING_DURATION * 1000);
+      const interval = setInterval(() => { },
+        NOTIFICATION_POLLING_DURATION * 1000);
       setIntervalObj(interval);
     }
   }, []);
@@ -123,10 +117,7 @@ const SecretScanResultsView = props => {
   const contentClassName = classnames('content-header', {
     'with-filters': isFiltersViewVisible,
   });
-  let changedImageName;
-  if (unEscapedImageName.length > 10) {
-    changedImageName = `${unEscapedImageName.substring(0, 9)}...`;
-  }
+
   return (
     <div>
       <SideNavigation
@@ -168,4 +159,4 @@ const SecretScanResultsView = props => {
   );
 };
 
-export default injectModalTrigger(SecretScanResultsView);
+export default SecretScanResultsView;

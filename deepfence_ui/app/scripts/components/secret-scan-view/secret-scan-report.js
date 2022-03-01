@@ -37,7 +37,7 @@ const SecretScanReport = props => {
     }
     dispatch(setSearchQuery({ searchQuery }));
   }
-  
+
   const summaryStats = useSelector(state =>
     state.getIn(['secretScanReport', 'data'])
   );

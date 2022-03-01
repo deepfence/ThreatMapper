@@ -18,7 +18,7 @@ import { SecretScanModal } from '../secret-scan-modal';
 class SecretScanTableV2 extends React.Component {
   constructor(props) {
     super(props);
-    this.getVulnerabilities = this.getVulnerabilities.bind(this);
+    this.getSecrets = this.getSecrets.bind(this);
     this.tableChangeHandler = this.tableChangeHandler.bind(this);
     this.handlePageChange = this.handlePageChange.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
@@ -103,7 +103,7 @@ class SecretScanTableV2 extends React.Component {
 
   componentDidMount() {
     const { registerPolling } = this.props;
-    registerPolling(this.getVulnerabilities);
+    registerPolling(this.getSecrets);
   }
 
   componentDidUpdate(oldProps) {
@@ -119,11 +119,11 @@ class SecretScanTableV2 extends React.Component {
       options.hideMasked = newProps.hideMasked;
     }
     if (Object.keys(options).length > 0) {
-      this.getVulnerabilities(options);
+      this.getSecrets(options);
     }
   }
 
-  getVulnerabilities(params) {
+  getSecrets(params) {
     const { getSecretScanResultsAction: action, filterValues = {} } =
       this.props;
 
