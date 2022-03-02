@@ -24,7 +24,7 @@ import (
 
 // Agent version to dispay in metadata
 var (
-	agentVersionNo = "1.2.0"
+	agentVersionNo = "1.3.0"
 	agentCommitID  = "Unknown"
 	agentBuildTime = "0"
 	agentRunning   = "yes"
@@ -370,7 +370,7 @@ func NewReporter(hostID, hostName, probeID, version string, pipes controls.PipeC
 			tags: make([]string, 0),
 		},
 		hostDetailsMinute: HostDetailsEveryMinute{},
-		secretScanner:   nil,
+		secretScanner:     nil,
 	}
 	if r.k8sClusterId != "" {
 		r.k8sClusterNodeId = report.MakeKubernetesClusterNodeID(r.k8sClusterId)

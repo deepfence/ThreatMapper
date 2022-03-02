@@ -15,7 +15,7 @@ registry:
 
 image:
   repository: "deepfenceio/"
-  tag: 1.2.0
+  tag: 1.3.0
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
