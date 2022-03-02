@@ -10,7 +10,8 @@ FROM alpine:3.15.0
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
-ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
+ENV DF_PROG_NAME="fetcher" \
+    POSTGRES_USER_DB_HOST=deepfence-postgres \
     POSTGRES_USER_DB_PORT=5432 \
     POSTGRES_USER_DB_USER=cve \
     POSTGRES_USER_DB_PASSWORD=cve \
