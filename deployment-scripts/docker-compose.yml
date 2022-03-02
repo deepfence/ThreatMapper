@@ -282,10 +282,6 @@ services:
       core: 0
     entrypoint: /app/code/dockerify/celery/entrypoint.sh
     restart: on-failure
-    environment:
-      - mapper_image_name=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce
-      - image_tag=${DF_IMG_TAG:-1.2.0}
-      - router_service=127.0.0.1:${MGMT_CONSOLE_PORT:-443}
     networks:
       - deepfence_net
     depends_on:
@@ -368,10 +364,8 @@ services:
     restart: always
     networks:
       - deepfence_net
-    ports:
-      - "8011:8011"
     entrypoint: /home/deepfence/usr/SecretScanner
-    command: [ "-config-path","/home/deepfence/usr", "-http-port", "8011" ]
+    command: ["-config-path","/home/deepfence/usr", "-http-port", "8011"]
     logging:
       driver: "json-file"
       options:
@@ -385,14 +379,12 @@ services:
     restart: always
     networks:
     - deepfence_net
-    ports:
-    - "8005:8005"
     environment:
       MGMT_CONSOLE_URL: "deepfence-internal-router"
       MGMT_CONSOLE_PORT: "443"
       PACKAGE_SCAN_CONCURRENCY: "5"
     entrypoint: /usr/local/bin/package-scanner
-    command: [ "-mode", "http-server", "-port", "8005" ]
+    command: ["-mode", "http-server", "-port", "8005"]
     logging:
       driver: "json-file"
       options:
