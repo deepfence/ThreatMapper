@@ -736,26 +736,24 @@ def get_all_scanned_node() -> list:
     return host_names
 
 
-def get_all_scanned_images(days) -> list:
-    from utils.esconn import ESConn, INDEX_NAME
+def get_all_scanned_images(days) -> set:
+    from utils.esconn import ESConn
     query_agg = {
         "query": {
-            "bool" : {
-                "must" :{
-                    "term" : { "node_type" : "container_image" }
-                },
-                "must" :{
-                    "range" : {
-                        "@timestamp" : { "gte" : "now-{0}d/d".format(days) }
+            "bool": {
+                "must": {
+                    "term": {"node_type": NODE_TYPE_CONTAINER_IMAGE},
+                    "range": {
+                        "@timestamp": {"gte": "now-{0}d/d".format(days)}
                     }
-                }
+                },
             }
         },
         "aggs": {
             "images": {
-            "terms": { 
-                "field": "cve_container_image.keyword",
-                "size" : ES_TERMS_AGGR_SIZE
+                "terms": {
+                    "field": "cve_container_image.keyword",
+                    "size": ES_TERMS_AGGR_SIZE
                 }
             }
         }
