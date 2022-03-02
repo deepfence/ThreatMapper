@@ -1,12 +1,18 @@
 /* eslint-disable react/destructuring-assignment */
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setSearchQuery } from '../../actions/app-actions';
+import { getSecretScanDataAction, setSearchQuery } from '../../actions/app-actions';
 import pollable from '../common/header-view/pollable';
 import { constructGlobalSearchQuery } from '../../utils/search-utils';
 
 const SecretScanStatsPerImage = props => {
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const {registerPolling, startPolling} = props;
+    registerPolling(getSecretScanImageReport);
+    startPolling();
+  }, [])
 
   useEffect(
     () => () => {
@@ -15,6 +21,16 @@ const SecretScanStatsPerImage = props => {
     },
     []
   );
+
+  const getSecretScanImageReport = (pollParams) => {
+    const {
+      globalSearchQuery,
+    } = pollParams;
+    const params = {
+      lucene_query: globalSearchQuery,
+    };
+    return dispatch(getSecretScanDataAction(params));
+  }
 
   const statsClickHandler = severity => {
     const { globalSearchQuery: existingQuery = [] } = props;
