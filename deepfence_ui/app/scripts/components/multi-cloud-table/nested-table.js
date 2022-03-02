@@ -33,7 +33,7 @@ const RecursiveTable = ({
   const dispatch = useDispatch();
   const nodeTypes = new Set(data.map(node => node.node_type));
   const cols = getColumnsForTypes(nodeTypes, depth);
-  const emptyHeaderTables = [NODE_TYPE.REGION, NODE_TYPE.KUBERNETES_CLUSTER];
+  const emptyHeaderTables = [NODE_TYPE.REGION];
   const columns = addCheckbox(cols, selectedItems, (row) => {
     if (selectedItems.indexOf(row.original.id) > -1) {
       selectedItems.splice(selectedItems.indexOf(row.original.id), 1);
@@ -80,9 +80,6 @@ const RecursiveTable = ({
               dispatch(showTopologyPanel(true));
             }
             return onNodeClicked({ id: rowInfo.original.id, label: rowInfo.original.label });
-          },
-          style: {
-            cursor: 'pointer',
           },
         }
       )}

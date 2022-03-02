@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import NodesChart from '../charts/nodes-chart';
-import NodesGrid from '../charts/nodes-grid';
+import { NodesGrid } from '../charts/nodes-grid';
 import { setTopologyClickedNode } from '../actions/app-actions';
 import { GRAPH_VIEW_MODE } from '../constants/naming';
 

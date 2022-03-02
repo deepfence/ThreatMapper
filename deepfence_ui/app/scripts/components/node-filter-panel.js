@@ -1,12 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Select from 'react-select';
+import { Link, withRouter } from 'react-router-dom';
 import OutsideClickHandler from 'react-outside-click-handler';
-import { addTopologyFilter, removeTopologyFilter, setTopologyClickedNode } from '../actions/app-actions';
+
+import { isGraphViewModeSelector } from '../selectors/topology';
+import {
+  addTopologyFilter,
+  removeTopologyFilter,
+  setTopologyClickedNode,
+} from '../actions/app-actions';
 import { fetchTopologyData } from './multi-cloud/topology-client';
 import TopologyFiltersBar from './topology-filter';
 
-export default function NodeFiltersPanel(props) {
+function NodeFiltersPanel(props) {
   // state constants for toggle switchs
   const [showCloudProviderDropdown, setShowCloudProviderDropdown] =
     useState(false);
@@ -16,7 +23,9 @@ export default function NodeFiltersPanel(props) {
   const topologyFilters =
     useSelector(state => state.get('topologyFilters')) || [];
   const dispatch = useDispatch();
-  const { apiKey, apiUrl } = props;
+  const { apiKey, apiUrl, history } = props;
+  let viewType = '';
+  const viewUrl = history.location.pathname;
 
   const filterIds = useMemo(() => {
     const ids = new Set();
@@ -30,6 +39,8 @@ export default function NodeFiltersPanel(props) {
     return ids;
   }, [topologyFilters]);
 
+  const isGraphViewMode = useSelector(state => isGraphViewModeSelector(state));
+
   // filters out the pseudo nodes
   const setMenuValues = options => {
     const filteredMenuValue = options.filter(
@@ -39,6 +50,24 @@ export default function NodeFiltersPanel(props) {
     setOptionValues(filteredMenuValue);
   };
 
+  const renderChildFilterComponent = () => (
+    <>
+      <TopologyFiltersBar
+        filters={topologyFilters}
+        clickedIndexValue={clickedIndexValue}
+        styles={styles}
+        theme={themeCb}
+        showChildDropdown={showChildDropdown}
+        setShowChildDropDown={setShowChildDropDown}
+        handleOnChildFilterChange={onChildFilterSelected}
+        addFilter={addChildFilter}
+        removeFilter={removeFilter}
+        optionValues={optionValues}
+        viewUrl={viewUrl}
+      />
+    </>
+  );
+
   // adds children filter like cloud regions, hosts,
   const addChildFilter = (filterIndex, filter) => {
     const selectedFilter = filter[filter.length - 1];
@@ -47,6 +76,7 @@ export default function NodeFiltersPanel(props) {
       apiUrl,
       apiKey,
       selectedFilter.id,
+      viewUrl,
       selectedFilter.label,
       selectedFilter.topo_node_type,
       selectedFilter.topo_children_types[0]
@@ -57,23 +87,37 @@ export default function NodeFiltersPanel(props) {
   };
 
   // remove the selected filter
-  const removeFilter = (filter) => {
-    dispatch(removeTopologyFilter(filter))
+  const removeFilter = filter => {
+    dispatch(removeTopologyFilter(filter));
 
     // setting last element as active node for side panel
     const node = filter.at(-1);
     dispatch(setTopologyClickedNode(node));
-  }
+  };
 
   const onChildFilterSelected = (e, filter) => {
     setShowChildDropDown(!showChildDropdown);
     dispatch(addTopologyFilter([...filter, { id: e.id }]));
   };
 
+  const setViewType = () => {
+    const url2 = history.location.pathname;
+    if (url2.includes('cloud')) {
+      viewType = 'CLOUD_PROVIDER';
+    } else if (url2.includes('hosts')) {
+      viewType = 'HOST';
+    } else if (url2.includes('k8s')) {
+      viewType = 'KUBERNETES_CLUSTER';
+    } else {
+      viewType = 'CLOUD_PROVIDER';
+    }
+  };
+
   // This can be generic function.
   const addCloudProviderFilter = () => {
     setOptionValues([]);
-    fetchTopologyData(apiUrl, apiKey, null).then(data => {
+    setViewType();
+    fetchTopologyData(apiUrl, apiKey, null, viewType).then(data => {
       setMenuValues(data);
     });
     setShowCloudProviderDropdown(!showCloudProviderDropdown);
@@ -94,8 +138,8 @@ export default function NodeFiltersPanel(props) {
       color: state.isSelected ? '#0080ff' : '#999999',
       backgroundColor: state.isSelected ? '#1c1c1c' : provided.backgroundColor,
       '&:hover': {
-        backgroundColor: '#333333'
-      }
+        backgroundColor: '#333333',
+      },
     }),
     control: provided => ({
       ...provided,
@@ -129,50 +173,113 @@ export default function NodeFiltersPanel(props) {
         >
           <div>
             <div className="filter">
-              <div className="filter-name">Cloud Providers</div>
-            </div>
-          </div>
-          <TopologyFiltersBar
-            filters={topologyFilters}
-            clickedIndexValue={clickedIndexValue}
-            styles={styles}
-            theme={themeCb}
-            showChildDropdown={showChildDropdown}
-            setShowChildDropDown={setShowChildDropDown}
-            handleOnChildFilterChange={onChildFilterSelected}
-            addFilter={addChildFilter}
-            removeFilter={removeFilter}
-            optionValues={optionValues}
-          />
-          <div>
-            <div
-              className="fa fa-plus filter-remove-btn"
-              aria-hidden="true"
-              style={{ color: 'white', marginTop: '11px', fontSize: '15px' }}
-              onClick={() => addCloudProviderFilter()}
-            />
-            <OutsideClickHandler
-              onOutsideClick={() => setShowCloudProviderDropdown(false)}
-            >
-              {showCloudProviderDropdown && (
-                <Select
-                  components={{
-                    IndicatorSeparator: null,
+              <Link to="/topology/cloud">
+                <div className="filter-name" style={{ color: '#abb2b7' }}>
+                  Cloud view
+                </div>{' '}
+              </Link>
+              {isGraphViewMode && viewUrl.includes('cloud') && (
+                <div
+                  className="fa fa-plus filter-remove-btn"
+                  aria-hidden="true"
+                  style={{
+                    color: 'white',
+                    marginLeft: '7px',
+                    fontSize: '15px',
                   }}
-                  styles={styles}
-                  theme={themeCb}
-                  placeholder="Search filter"
-                  options={optionValues}
-                  value={optionValues.id}
-                  classNamePrefix="select"
-                  className="select-filter"
-                  onChange={onCloudProviderFilterSelected}
+                  onClick={() => addCloudProviderFilter()}
                 />
               )}
-            </OutsideClickHandler>
+            </div>
           </div>
+          {viewUrl.includes('cloud') && renderChildFilterComponent()}
+          <div>
+            <div
+              className="filter"
+              style={{
+                backgroundColor: '#2962ff',
+                color: 'black',
+                opacity: 0.8,
+              }}
+            >
+              <Link to="/topology/k8s">
+                {' '}
+                <div className="filter-name" style={{ color: 'white' }}>
+                  K8s view
+                </div>{' '}
+              </Link>
+              {isGraphViewMode && viewUrl.includes('k8s') && (
+                <div
+                  className="fa fa-plus filter-remove-btn"
+                  aria-hidden="true"
+                  style={{
+                    color: 'white',
+                    marginLeft: '7px',
+                    fontSize: '15px',
+                  }}
+                  onClick={() => addCloudProviderFilter()}
+                />
+              )}
+            </div>
+          </div>
+          {viewUrl.includes('k8s') && renderChildFilterComponent()}
+          <div>
+            <div
+              className="filter"
+              style={{
+                backgroundColor: '#f8cd39',
+                color: 'black',
+                opacity: 0.8,
+              }}
+            >
+              <Link to="/topology/hosts">
+                {' '}
+                <div className="filter-name" style={{ color: 'black' }}>
+                  Host view
+                </div>
+              </Link>
+              {isGraphViewMode && viewUrl.includes('hosts') && (
+                <div
+                  className="fa fa-plus filter-remove-btn"
+                  aria-hidden="true"
+                  style={{
+                    color: 'black',
+                    marginLeft: '7px',
+                    fontSize: '15px',
+                  }}
+                  onClick={() => addCloudProviderFilter()}
+                />
+              )}
+            </div>
+          </div>
+          {viewUrl.includes('hosts') && renderChildFilterComponent()}
+          {isGraphViewMode && (
+            <div>
+              <OutsideClickHandler
+                onOutsideClick={() => setShowCloudProviderDropdown(false)}
+              >
+                {showCloudProviderDropdown && (
+                  <Select
+                    components={{
+                      IndicatorSeparator: null,
+                    }}
+                    styles={styles}
+                    theme={themeCb}
+                    placeholder="Search filter"
+                    options={optionValues}
+                    value={optionValues.id}
+                    classNamePrefix="select"
+                    className="select-filter"
+                    onChange={onCloudProviderFilterSelected}
+                  />
+                )}
+              </OutsideClickHandler>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
+export default withRouter(NodeFiltersPanel);
