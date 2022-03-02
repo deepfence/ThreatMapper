@@ -5,7 +5,7 @@ import { toaster } from '../../actions/app-actions';
 import SecretScanImageReport from './secret-scan-image-report';
 
 const SecretScanImageReportContainer = props => {
-  const { reportView, secretScanData, ...rest } = props;
+  const { secretScanData, ...rest } = props;
   const data = secretScanData && secretScanData.data;
   const total = secretScanData && secretScanData.total;
   const { isToasterVisible } = props;
@@ -22,18 +22,9 @@ const SecretScanImageReportContainer = props => {
 };
 
 const mapStateToProps = state => {
-  const reportView = state.getIn(['cve', 'image_report_view']);
   const secretScanData = state.getIn(['secretScan', 'data']);
-  const savedTablePageNumber = state.getIn([
-    'cve',
-    'image_report_table',
-    'state',
-    'page_number',
-  ]);
   return {
-    reportView,
     secretScanData,
-    savedTablePageNumber,
     filterValues: nodeFilterValueSelector(state),
     isToasterVisible: state.get('isToasterVisible'),
   };

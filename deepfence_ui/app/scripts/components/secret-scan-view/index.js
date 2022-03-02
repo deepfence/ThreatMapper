@@ -31,7 +31,7 @@ const SecretScanHome = props => {
     getUserRole() === 'admin'
       ? ADMIN_SIDE_NAV_MENU_COLLECTION
       : USER_SIDE_NAV_MENU_COLLECTION;
-  const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection[0]);
+  const [activeMenu] = useState(sideNavMenuCollection[0]);
   const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] =
     useState(false);
   const [licenseResponse, setLicenseResponse] = useState(null);

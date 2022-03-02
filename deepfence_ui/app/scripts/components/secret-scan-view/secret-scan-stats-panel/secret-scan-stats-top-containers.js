@@ -17,7 +17,7 @@ const SecretScanStatsTopContainers = props => {
     let searchQuery = [];
     if (point.type) {
       const severityParams = {
-        cve_severity: point.type,
+        "Severity.level": point.type,
       };
       searchQuery = constructGlobalSearchQuery(existingQuery, severityParams);
     }

@@ -13,11 +13,11 @@ const SecretScanStatsTopHosts = props => {
   const { registerPolling, startPolling } = props;
 
   useEffect(() => {
-    registerPolling(getTopVulnerableHostStats);
+    registerPolling(getTopSecretHostStats);
     startPolling();
   }, []);
 
-  const getTopVulnerableHostStats = (params = {}) => {
+  const getTopSecretHostStats = (params = {}) => {
     const {
       alertPanelHistoryBound = props.alertPanelHistoryBound || [],
       globalSearchQuery

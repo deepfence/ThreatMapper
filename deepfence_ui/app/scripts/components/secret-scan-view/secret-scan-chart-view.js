@@ -21,12 +21,12 @@ class SecretScanChartView extends React.Component {
 
   componentDidMount() {
     // Initial api call to get data
-    this.getCveSeverityChartData();
+    this.getSecretSeverityChartData();
 
     // Calls on the basis of active time interval
     if (this.props.refreshInterval) {
       const interval = setInterval(() => {
-        this.getCveSeverityChartData();
+        this.getSecretSeverityChartData();
       }, this.props.refreshInterval.value * 1000);
       this.setState({ intervalObj: interval });
     }
@@ -38,7 +38,7 @@ class SecretScanChartView extends React.Component {
       this.props.refreshInterval !== newProps.refreshInterval
     ) {
       const interval = setInterval(() => {
-        this.getCveSeverityChartData();
+        this.getSecretSeverityChartData();
       }, newProps.refreshInterval.value * 1000);
       if (this.state.intervalObj) {
         clearInterval(this.state.intervalObj);
@@ -50,7 +50,7 @@ class SecretScanChartView extends React.Component {
         { number: undefined, time_unit: undefined },
         () => {
           const activeDuration = newProps.days.value;
-          this.getCveSeverityChartData(
+          this.getSecretSeverityChartData(
             activeDuration.number,
             activeDuration.time_unit,
             newProps.searchQuery
@@ -62,7 +62,7 @@ class SecretScanChartView extends React.Component {
         { number: undefined, time_unit: undefined },
         () => {
           const activeDuration = newProps.days.value;
-          this.getCveSeverityChartData(
+          this.getSecretSeverityChartData(
             activeDuration.number,
             activeDuration.time_unit,
             newProps.searchQuery
@@ -79,7 +79,7 @@ class SecretScanChartView extends React.Component {
     }
   }
 
-  getCveSeverityChartData(number, time_unit, lucene_query) {
+  getSecretSeverityChartData(number, time_unit, lucene_query) {
     if (this.props.days || number) {
       const params = {
         number: number || this.state.number || this.props.days.value.number,
@@ -121,10 +121,10 @@ class SecretScanChartView extends React.Component {
   }
 
   render() {
-    const { cveSeverityChartData = [] } = this.props;
+    const { secretSeverityChartData = [] } = this.props;
     let allEmpty = false;
-    if (cveSeverityChartData && cveSeverityChartData.children) {
-      if (cveSeverityChartData.children.length === 0) {
+    if (secretSeverityChartData && secretSeverityChartData.children) {
+      if (secretSeverityChartData.children.length === 0) {
         allEmpty = true;
       }
     }
@@ -134,7 +134,7 @@ class SecretScanChartView extends React.Component {
         {emptyData && <div className="absolute-center">No Data Available</div>}
         <div className="cve-severity-chart-wrapper">
           <SunburstChart
-            data={cveSeverityChartData}
+            data={secretSeverityChartData}
             name="Secret scan details"
             chartWidth={600}
             chartHeight={600}
@@ -153,7 +153,7 @@ function mapStateToProps(state) {
     searchQuery: state.get('globalSearchQuery'),
     days: state.get('alertPanelHistoryBound'),
     refreshInterval: state.get('refreshInterval'),
-    cveSeverityChartData: state.getIn(['secretScanChart', 'data']),
+    secretSeverityChartData: state.getIn(['secretScanChart', 'data']),
   };
 }
 

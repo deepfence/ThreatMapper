@@ -16,11 +16,11 @@ const SecretScanStatsPerImage = props => {
     []
   );
 
-  const statsClickHandler = cveSeverity => {
+  const statsClickHandler = severity => {
     const { globalSearchQuery: existingQuery = [] } = props;
 
     const searchQuery = constructGlobalSearchQuery(existingQuery, {
-      "Severity.level": cveSeverity,
+      "Severity.level": severity,
     });
 
     const globalSearchQuery = {
