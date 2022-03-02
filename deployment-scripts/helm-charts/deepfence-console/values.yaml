@@ -51,13 +51,6 @@ db:
     password: "KeTn4LA4SBN2"
     dbname: "users"
     sslmode: "disable"
-  postgresFetcherDb:
-    host: deepfence-postgres
-    port: "5432"
-    user: "deepfence"
-    password: "KeTn4LA4SBN2"
-    dbname: "cve"
-    sslmode: "disable"
   elasticsearch:
     host: deepfence-es
     port: "9200"
