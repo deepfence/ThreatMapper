@@ -130,7 +130,7 @@ export const getColumnsForType = (type, depth) => {
   const columns = {
     cloud: [...setNameColumnWidth(commonColumnsDefault, depth, type)],
     region: [...setNameColumnWidth(commonColumnsRestOfTable, depth, type)],
-    kubernetes_cluster: [...setNameColumnWidth(commonColumnsRestOfTable, depth, type)],
+    kubernetes_cluster: [...setNameColumnWidth(commonColumnsDefault, depth, type)],
     host: [...setNameColumnWidth(commonColumnsRestOfTable, depth, type), ...hostColumns],
     process: [...setNameColumnWidth(commonColumnsRestOfTable, depth, type), ...processColumns],
     container: [...setNameColumnWidth(commonColumnsRestOfTable, depth, type), ...containerColumns],
