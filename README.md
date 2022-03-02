@@ -67,7 +67,7 @@ helm install openebs --namespace openebs --repo "https://openebs.github.io/chart
 kubectl get pods -o wide --namespace openebs -w
 
 # Install the Kubernetes metrics service (if not already installed)
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.0/components.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.1/components.yaml
 
 # Configure the Deepfence ThreatMapper Helm Chart
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
