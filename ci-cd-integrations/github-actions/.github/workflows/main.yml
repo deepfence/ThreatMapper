@@ -1,0 +1,62 @@
+name: ci
+
+on:
+  push:
+    branches:
+    - "*"  # run for branches
+    tags:
+    - "*"  # run for tags
+  pull_request:
+    branches:
+    - "*"  # run for branches
+    tags:
+    - "*"  # run for tags
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GROUP: deepfence
+      COMMIT: ${{ github.sha }}
+      REPO: demo-app
+      DEEPFENCE_CONSOLE_IP: 1.1.1.1
+    steps:
+    - uses: actions/checkout@v2
+
+    # Build docker image for service
+    - name: Build docker image
+      uses: docker/build-push-action@v1
+      with:
+        push: false
+        repository: ${{ env.GROUP }}/${{ env.REPO }}
+        tag_with_ref: true
+        tag_with_sha: true
+        tags: ${{ github.sha }}
+
+    # Run Deepfence Vulnerability Mapper to check for vulnerabilities in image
+    - name: Run Deepfence Vulnerability Mapper
+      env:
+        DEEPFENCE_CONSOLE_IP: ${{ env.DEEPFENCE_CONSOLE_IP }}
+        DEEPFENCE_KEY: ${{ env.GROUP }}
+        FULL_IMAGE_NAME: ${{ env.GROUP }}/${{ env.REPO }}:${{ github.sha }}
+        FAIL_CVE_COUNT: 100 # Fail build if number of vulnerabilities found is >= this number. Set -1 to pass regardless of vulnerabilities.
+        FAIL_CVE_SCORE: 8 # Fail build if cumulative CVE score is >= this value. Set -1 to pass regardless of cve score.
+      run: |
+        mkdir deepfence_docker
+        docker_config_path="$(pwd)/deepfence_docker"
+        docker_creds=$(echo -n "${{ secrets.DOCKER_USER }}:${{ secrets.DOCKER_PASS }}" | base64)
+        echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$docker_creds\"}}}" > "$docker_config_path/config.json"
+        docker --config "$docker_config_path" pull deepfenceio/deepfence_vulnerability_mapper:latest
+        rm -rf deepfence_docker
+        docker run --rm --net=host --privileged=true --cpus='0.3' -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_vulnerability_mapper_ce:latest -mgmt-console-ip=$DEEPFENCE_CONSOLE_IP -deepfence-key="$DEEPFENCE_KEY" -image-name="$FULL_IMAGE_NAME" -fail-cve-count=$FAIL_CVE_COUNT -fail-cve-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
+
+    # Push to dockerhub
+    - name: Push to Docker Hub
+      uses: docker/build-push-action@v1
+      if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'
+      with:
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PASS }}
+        repository: ${{ env.GROUP }}/${{ env.REPO }}
+        tag_with_ref: true
+        tag_with_sha: true
