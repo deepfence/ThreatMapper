@@ -127,7 +127,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
 	res, err := client.FindSecretInfo(context.Background(), &req)
-	if req.GetPath()  != "" {
+	if req.GetPath()  != "" && err == nil && res != nil {
 		for _, secret := range res.Secrets {
 			secret.GetMatch().FullFilename = strings.Replace(secret.GetMatch().GetFullFilename(), HostMountDir, "", 1)
 		}
