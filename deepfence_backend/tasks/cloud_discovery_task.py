@@ -23,7 +23,7 @@ def fetch_vm_resources(cloud_discovery, cloud_provider):
         return
     if not cloud_data:
         return
-    probe_version = "1.2.0"
+    probe_version = "1.3.0"
     probe_report = {
         "Host": {
             "shape": "circle", "label": "host", "label_plural": "hosts", "nodes": {}, "controls": {},

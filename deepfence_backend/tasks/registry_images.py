@@ -68,6 +68,9 @@ def update_registry_images(self, registry_id):
                 "label": "Vulnerability Scan Status", "name": "vulnerability_scan_status",
                 "options": ["queued", "in_progress", "complete", "error", "never_scanned"], "type": "string"})
             filters.append({
+                "label": "Secret Scan Status", "name": "secret_scan_status",
+                "options": ["queued", "in_progress", "complete", "error", "never_scanned"], "type": "string"})
+            filters.append({
                 "label": "Pushed At", "name": "pushed_at", "type": "date", "multi_select": False,
                 "options": ["Past 1 day", "Past 7 days", "Past 1 month", "Past 3 months", "Past 6 months", "Show all"]})
         if filters_image_tag:

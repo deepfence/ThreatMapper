@@ -58,13 +58,13 @@ export const ADMIN_SIDE_NAV_MENU_COLLECTION = [
     name: 'Vulnerabilities', menuIcon: 'icon-biohazard', isActive: false, link: '/vulnerability'
   },
   {
+    name: 'Secrets', menuIcon: "nav-icon-secret", isActive: false, link: '/secret-scan'
+  },
+  {
     name: 'Registries', menuIcon: 'icon-containers', isActive: false, link: '/registry_vulnerability_scan'
   },
   {
     name: 'Integrations', menuIcon: 'icon-notification', isActive: false, link: '/notification'
-  },
-  {
-    name: 'Settings', menuIcon: 'icon-settings', isActive: false, link: '/settings'
   },
 ];
 
@@ -76,13 +76,13 @@ export const USER_SIDE_NAV_MENU_COLLECTION = [
     name: 'Vulnerabilities', menuIcon: 'icon-biohazard', isActive: false, link: '/vulnerability'
   },
   {
+    name: 'Secrets', menuIcon: "nav-icon-secret", isActive: false, link: '/secret-scan'
+  },
+  {
     name: 'Registries', menuIcon: 'icon-containers', isActive: false, link: '/registry_vulnerability_scan'
   },
   {
     name: 'Integrations', menuIcon: 'icon-notification', isActive: false, link: '/notification'
-  },
-  {
-    name: 'Settings', menuIcon: 'icon-settings', isActive: false, link: '/settings'
   },
 ];
 
@@ -107,12 +107,16 @@ export const CVE_SCAN_TYPE_OPTIONS = [
     label: 'Java',
   },
   {
-    value: 'js',
+    value: 'javascript',
     label: 'Javascript',
   },
   {
-    value: 'nodejs',
-    label: 'NodeJS',
+    value: 'rust',
+    label: 'Rust',
+  },
+  {
+    value: 'golang',
+    label: 'GoLang',
   },
   {
     value: 'ruby',

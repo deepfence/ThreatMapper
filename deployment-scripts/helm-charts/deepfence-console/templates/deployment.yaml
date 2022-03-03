@@ -37,27 +37,6 @@ spec:
           image: "{{ .Values.image.repository }}deepfence_fetcher_ce:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: POSTGRES_FETCHER_DB_HOST
-              value: "{{ .Values.db.postgresFetcherDb.host }}"
-            - name: POSTGRES_FETCHER_DB_PORT
-              value: "{{ .Values.db.postgresFetcherDb.port }}"
-            - name: POSTGRES_FETCHER_DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-username
-            - name: POSTGRES_FETCHER_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-password
-            - name: POSTGRES_FETCHER_DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-name
-            - name: POSTGRES_FETCHER_DB_SSLMODE
-              value: "{{ .Values.db.postgresFetcherDb.sslmode }}"
             - name: POSTGRES_USER_DB_HOST
               value: "{{ .Values.db.postgresUserDb.host }}"
             - name: POSTGRES_USER_DB_PORT
@@ -327,27 +306,6 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/app/code/dockerify/api/entrypoint.sh"]
           env:
-            - name: POSTGRES_FETCHER_DB_HOST
-              value: "{{ .Values.db.postgresFetcherDb.host }}"
-            - name: POSTGRES_FETCHER_DB_PORT
-              value: "{{ .Values.db.postgresFetcherDb.port }}"
-            - name: POSTGRES_FETCHER_DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-username
-            - name: POSTGRES_FETCHER_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-password
-            - name: POSTGRES_FETCHER_DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-name
-            - name: POSTGRES_FETCHER_DB_SSLMODE
-              value: "{{ .Values.db.postgresFetcherDb.sslmode }}"
             - name: POSTGRES_USER_DB_HOST
               value: "{{ .Values.db.postgresUserDb.host }}"
             - name: POSTGRES_USER_DB_PORT
@@ -474,39 +432,6 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/app/code/dockerify/celery/entrypoint.sh"]
           env:
-            - name: mapper_image_name
-              value: "{{ .Values.image.repository }}deepfence_vulnerability_mapper_ce"
-            - name: image_tag
-              value: "{{ .Values.image.tag }}"
-            - name: router_service
-              value: "{{ required "agentServiceName is required" .Values.agentServiceName }}:{{ required "managementConsolePort is required" .Values.managementConsolePort }}"
-            - name: k8s_image_pull_secret_name
-              value: "{{ required "image.pullSecretName is required" .Values.image.pullSecretName }}"
-            - name: deepfence_namespace
-              value: "{{ .Values.namespace }}"
-            - name: VULNERABILITY_SCAN_CONCURRENCY
-              value: "{{ .Values.vulnerabilityScanConcurrency }}"
-            - name: POSTGRES_FETCHER_DB_HOST
-              value: "{{ .Values.db.postgresFetcherDb.host }}"
-            - name: POSTGRES_FETCHER_DB_PORT
-              value: "{{ .Values.db.postgresFetcherDb.port }}"
-            - name: POSTGRES_FETCHER_DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-username
-            - name: POSTGRES_FETCHER_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-password
-            - name: POSTGRES_FETCHER_DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-name
-            - name: POSTGRES_FETCHER_DB_SSLMODE
-              value: "{{ .Values.db.postgresFetcherDb.sslmode }}"
             - name: POSTGRES_USER_DB_HOST
               value: "{{ .Values.db.postgresUserDb.host }}"
             - name: POSTGRES_USER_DB_PORT
@@ -644,27 +569,6 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/app/code/dockerify/backend/entrypoint.sh"]
           env:
-            - name: POSTGRES_FETCHER_DB_HOST
-              value: "{{ .Values.db.postgresFetcherDb.host }}"
-            - name: POSTGRES_FETCHER_DB_PORT
-              value: "{{ .Values.db.postgresFetcherDb.port }}"
-            - name: POSTGRES_FETCHER_DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-username
-            - name: POSTGRES_FETCHER_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-password
-            - name: POSTGRES_FETCHER_DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-name
-            - name: POSTGRES_FETCHER_DB_SSLMODE
-              value: "{{ .Values.db.postgresFetcherDb.sslmode }}"
             - name: POSTGRES_USER_DB_HOST
               value: "{{ .Values.db.postgresUserDb.host }}"
             - name: POSTGRES_USER_DB_PORT
@@ -825,6 +729,45 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-secret-scanner
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: deepfence-secret-scanner
+  template:
+    metadata:
+      labels:
+        name: deepfence-secret-scanner
+        app: deepfence-console
+    spec:
+      containers:
+        - name: deepfence-secret-scanner
+          image: "{{ .Values.image.repository }}deepfence_secret_scanner_ce:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8011
+          command: ["/home/deepfence/usr/SecretScanner"]
+          args: ["-config-path", "/home/deepfence/usr", "-http-port", "8011"]
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+            limits:
+              memory: 4Gi
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+---
 apiVersion:  apps/v1
 kind: Deployment
 metadata:
@@ -930,4 +873,216 @@ spec:
 {{- end }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
+---
+apiVersion:  apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-internal-router
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: deepfence-internal-router
+  template:
+    metadata:
+      labels:
+        name: deepfence-internal-router
+        app: deepfence-console
+    spec:
+{{- if .Values.topologyNodeAffinityHostName }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
+      {{- if and .Values.tls.certFile .Values.tls.keyFile }}
+      volumes:
+      - name: deepfence-ui-ssl-cert-file
+        configMap:
+          name: deepfence-ui-ssl-cert
+      - name: deepfence-ui-ssl-key-file
+        configMap:
+          name: deepfence-ui-ssl-cert
+      {{- end }}
+      containers:
+      - image: "{{ .Values.image.repository }}deepfence_router_ce:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: deepfence-internal-router
+        env:
+        - name: ENABLE_AUTH
+          value: "false"
+        - name: POSTGRES_USER_DB_HOST
+          value: "{{ .Values.db.postgresUserDb.host }}"
+        - name: POSTGRES_USER_DB_PORT
+          value: "{{ .Values.db.postgresUserDb.port }}"
+        - name: POSTGRES_USER_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: deepfence-postgres-postgresql
+              key: postgresql-username
+        - name: POSTGRES_USER_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: deepfence-postgres-postgresql
+              key: postgresql-password
+        - name: POSTGRES_USER_DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: deepfence-postgres-postgresql
+              key: postgresql-db-name
+        - name: POSTGRES_USER_DB_SSLMODE
+          value: "{{ .Values.db.postgresUserDb.sslmode }}"
+        - name: OPERATING_MODE
+          value: "k8s"
+        - name: DNS_RESOLVER
+          value: "{{ .Values.dnsResolver }}"
+        - name: SERVICE_NAME_SUFFIX
+          value: ".{{ .Values.namespace }}.svc.cluster.local"
+        ports:
+        - containerPort: 443
+          {{- if and .Values.tls.certFile .Values.tls.keyFile }}
+        volumeMounts:
+        - name: deepfence-ui-ssl-cert-file
+          mountPath: /etc/deepfence/certs/deepfence.crt
+          subPath: deepfence.crt
+          readOnly: true
+        - name: deepfence-ui-ssl-key-file
+          mountPath: /etc/deepfence/certs/deepfence.key
+          subPath: deepfence.key
+          readOnly: true
+          {{- end }}
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+          limits:
+            cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+            memory: {{ .Values.defaultResourceLimits.limits.memory }}
+{{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecretName }}
+---
+apiVersion:  apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-vulnerability-mapper
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: deepfence-vulnerability-mapper
+  template:
+    metadata:
+      labels:
+        name: deepfence-vulnerability-mapper
+        app: deepfence-console
+    spec:
+{{- if .Values.topologyNodeAffinityHostName }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
+      containers:
+      - image: "{{ .Values.image.repository }}deepfence_vulnerability_mapper_ce:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: deepfence-vulnerability-mapper
+        ports:
+        - containerPort: 8001
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+          limits:
+            cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+            memory: {{ .Values.defaultResourceLimits.limits.memory }}
+{{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecretName }}
+---
+apiVersion:  apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-package-scanner
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: deepfence-package-scanner
+  template:
+    metadata:
+      labels:
+        name: deepfence-package-scanner
+        app: deepfence-console
+    spec:
+{{- if .Values.topologyNodeAffinityHostName }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: name
+                operator: In
+                values:
+                - deepfence-package-scanner
+            topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
+      containers:
+      - image: "{{ .Values.image.repository }}deepfence_package_scanner_ce:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: deepfence-package-scanner
+        command: ["/usr/local/bin/package-scanner"]
+        args: ["-mode", "http-server", "-port", "8005"]
+        env:
+        - name: MGMT_CONSOLE_URL
+          value: "deepfence-internal-router"
+        - name: MGMT_CONSOLE_PORT
+          value: "443"
+        - name: PACKAGE_SCAN_CONCURRENCY
+          value: "5"
+        ports:
+        - containerPort: 8005
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+          limits:
+            cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+            memory: {{ .Values.defaultResourceLimits.limits.memory }}
+{{- end }}
+      imagePullSecrets:
+      - name: {{ .Values.image.pullSecretName }}
 ---

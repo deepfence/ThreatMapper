@@ -84,6 +84,10 @@
   text-transform: capitalize;
   padding: 0 20px 0 20px;
   min-width: 135px;
+
+  &.error {
+    border: 1px solid $color-error-outline;
+  }
 }
 .never-scanned {
   color: $text-secondary;

@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 /* eslint-disable react/destructuring-assignment */
 import React from 'react';
+import { ScanStatus } from '../common/scan-status';
 
 // offset in px, depends on padding-left of the table
 const COLUMN_OFFSET = 25;
@@ -8,29 +9,6 @@ const COLUMN_WIDTH = 250;
 // inset in px, because processes don't have expand buttons
 const PROCESS_INSET = 32;
 
-const humanizeString = str => str.replace(/(_)/g, ' ').replace(/^./, st => st.toUpperCase());
-
-const scanStatusCallback = (status) => {
-  const humanString = status ? humanizeString(status) : '';
-  if (status) {
-    switch (status) {
-      case 'running':
-        return <span className="scan-status running">{humanString}</span>;
-      case 'in_progress':
-        return <span className="scan-status running">{humanString}</span>;
-      case 'never_scanned':
-        return <span className="scan-status never-scanned ">{humanString}</span>;
-      case 'error':
-        return <span className="scan-status error">{humanString}</span>;
-      case 'complete':
-        return <span className="scan-status complete">{humanString}</span>;
-      default:
-        return <span className="scan-status error">{humanString}</span>;
-    }
-  } else {
-    return '';
-  }
-};
 
 const commonColumnsDefault = [{
   Header: 'name',
@@ -61,7 +39,20 @@ const hostColumns = [
     if (is_ui_vm === 'true') {
       return <span className="scan-status not-available">Not Applicable</span>;
     }
-    return scanStatusCallback(vulnerability_scan_status);
+    return <ScanStatus status={vulnerability_scan_status} />;
+  },
+},
+{
+  Header: 'secrets scan',
+  accessor: 'secret_scan_status',
+  Cell: ({ original }) => {
+
+    const { secret_scan_status, is_ui_vm } = original;
+    // for UI VMs, secrets scan is not available
+    if (is_ui_vm === 'true') {
+      return <span className="scan-status not-available">Not Applicable</span>;
+    }
+    return <ScanStatus status={secret_scan_status} />;
   },
 },
 {
@@ -110,7 +101,15 @@ const containerColumns = [{
   accessor: 'vulnerability_scan_status',
   Cell: ({ original }) => {
     const { vulnerability_scan_status } = original;
-    return scanStatusCallback(vulnerability_scan_status);
+    return <ScanStatus status={vulnerability_scan_status} />;
+  },
+},
+{
+  Header: 'secrets scan',
+  accessor: 'secret_scan_status',
+  Cell: ({ original }) => {
+    const { secret_scan_status } = original;
+    return <ScanStatus status={secret_scan_status} />;
   },
 }];
 

@@ -6,8 +6,10 @@ DOCKER_BUILD_LOG="docker-build.log"
 DEEPFENCE_BACKEND_DIR=$(pwd)/deepfence_backend
 DEEPFENCE_UI_DIR=$(pwd)/deepfence_ui
 DEEPFENCE_DIAG_DIR=$(pwd)/deepfence_diagnosis
-DEEPFENCE_FETCHER_DIR=$DEEPFENCE_CONSOLE_DIR/clair
-DEEPAUDIT_DIR=$DEEPFENCE_CONSOLE_DIR/deepaudit
+DEEPFENCE_FETCHER_DIR=$DEEPFENCE_CONSOLE_DIR/fetcher
+VULNERABILITY_MAPPER_DIR=$(pwd)/vulnerability_mapper
+SECRET_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/SecretScanner/
+PACKAGE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/package-scanner/
 
 cd $DEEPFENCE_CONSOLE_DIR
 
@@ -21,14 +23,6 @@ else
     echo "SSL certificate found"
 fi
 
-dependency_check_file=$(pwd)/clair/dependency-check-6.5.3-release.zip
-if [ ! -f "$dependency_check_file" ]; then
-    wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.3/dependency-check-6.5.3-release.zip -P "$(pwd)/clair/"
-    if [ ! $? -eq 0 ]; then
-        exit 1
-    fi
-fi
-
 echo "Building init container image"
 cd $DEEPFENCE_CONSOLE_DIR/init-container
 docker build -f $DEEPFENCE_CONSOLE_DIR/init-container/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-latest} .
@@ -40,12 +34,7 @@ fi
 
 echo "Building Vulnerability mapper image"
 cd $DEEPFENCE_CONSOLE_DIR
-rm -rf $DEEPAUDIT_DIR/filebeat $DEEPAUDIT_DIR/cve_scan_registry
-cp -r filebeat $DEEPAUDIT_DIR
-rm -rf $DEEPAUDIT_DIR/filebeat/filebeat.yml
-cp clair/dependency-check-6.5.3-release.zip $DEEPAUDIT_DIR
-cp -r $DEEPFENCE_BACKEND_DIR/cve_scan_registry $DEEPAUDIT_DIR
-docker build -f $DEEPAUDIT_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-latest} $DEEPAUDIT_DIR
+docker build -f $VULNERABILITY_MAPPER_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-latest} $VULNERABILITY_MAPPER_DIR
 
 if [ ! $? -eq 0 ]; then
     echo "Building vulnerability mapper image failed. Exiting"
@@ -136,3 +125,24 @@ if [ ! $? -eq 0 ]; then
     echo "Building agent image failed. Exiting"
     exit 1
 fi
+
+echo "Building Secret Scanner Image"
+cd $DEEPFENCE_AGENT_DIR/plugins
+bash bootstrap.sh
+cd $SECRET_SCANNER_DIR
+bash bootstrap.sh
+docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_secret_scanner_ce:${DF_IMG_TAG:-latest} -f $SECRET_SCANNER_DIR/Dockerfile $SECRET_SCANNER_DIR
+if [ ! $? -eq 0 ]; then
+    echo "Building secret scanner image failed. Exiting"
+    exit 1
+fi
+
+echo "Building Package Scanner Image"
+cd $PACKAGE_SCANNER_DIR
+docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-latest} -f $PACKAGE_SCANNER_DIR/Dockerfile $PACKAGE_SCANNER_DIR
+if [ ! $? -eq 0 ]; then
+    echo "Building secret scanner image failed. Exiting"
+    exit 1
+fi
+
+cd $DEEPFENCE_CONSOLE_DIR
