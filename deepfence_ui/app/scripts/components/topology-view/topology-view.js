@@ -70,7 +70,6 @@ class TopologyView extends React.Component {
       <div className="topology-view-wrapper">
         <div ref={'resizeRef'} style={{overflow: 'hidden'}}>
             <HeaderView />
-            {/* <TopStatsPanelView /> */}
         </div>
         <ScopeView />
         { isToasterVisible && <NotificationToaster /> }

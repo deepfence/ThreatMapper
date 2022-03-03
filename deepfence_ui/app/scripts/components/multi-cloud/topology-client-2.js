@@ -1,9 +1,11 @@
 /* eslint-disable */
 export class TopologyClient {
-  constructor(base_url, api_key, refresh_interval, onDataReceived, onInvalidSocketRefrence) {
+  constructor(base_url, api_key, refresh_interval, view_type, vulnerability_filter, onDataReceived, onInvalidSocketRefrence) {
     this.base_url = base_url;
     this.api_key = api_key;
     this.refresh_interval = refresh_interval;
+    this.view_type = view_type;
+    this.vulnerability_filter = vulnerability_filter;
     this.onDataReceived = onDataReceived;
     this.onInvalidSocketRefrence = onInvalidSocketRefrence;
     this.socket = null;
@@ -77,7 +79,10 @@ export class TopologyClient {
       add: {
         topology_id: "",
         node_id: "",
-        children: [{ topology_id: TopologyNodeType.CLOUD_PROVIDER }],
+        children: [{ topology_id: this.view_type,  filters: {
+          vulnerability_scan_status: this.vulnerability_filter,
+      }
+    }],
       },
     };
     this.send(message);

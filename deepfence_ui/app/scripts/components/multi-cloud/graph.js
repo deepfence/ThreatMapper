@@ -90,9 +90,9 @@ export const useGraph = (el, data) => {
           lineWidth: 1,
           opacity: 0.5,
           endArrow: {
-            path: G6.Arrow.triangle(7, 10, 0),
-            fill: "#E6E6FA",
-            stroke: "#E6E6FA",
+            path: G6.Arrow.triangle(6, 9, 0),
+            fill: "#13F4EF",
+            stroke: "#13F4EF",
           },
         },
       },
