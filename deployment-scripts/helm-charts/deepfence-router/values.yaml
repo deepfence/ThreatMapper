@@ -11,7 +11,12 @@ managementConsolePort: "443"
 
 service:
   name: deepfence-router
-  type: LoadBalancer
+  # Select the type of service to be used. 
+  # When exposing the service in an on premisses Kubernetes cluster, select NodePort as type
+  type: LoadBalancer # NodePort 
+  # Nodeport configuration. Only used when selecting NodePort in the service type
+  nodePortHttps: ""
+  nodePortHttp: ""
   #  Using static ip address for load balancer
   # - Google Cloud: https://cloud.google.com/kubernetes-engine/docs/tutorials/configuring-domain-name-static-ip
   # loadBalancerIP: "1.2.3.4"
