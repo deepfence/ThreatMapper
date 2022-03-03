@@ -297,9 +297,9 @@ def secret_scan_results():
     req_json = request.json
     action = req_json.get("action", "get")
     filters = req_json.get("filters", {})
+    lucene_query = request.args.get("lucene_query", None)
     if not filters:
         filters = {}
-    filters["masked"] = "false"
     if "node_id" in filters:
         scope_ids = []
         for node_id in filters["node_id"]:
@@ -310,7 +310,8 @@ def secret_scan_results():
         es_resp = ESConn.search_by_and_clause(
             SECRET_SCAN_INDEX, filters, req_json.get("start_index", 0),
             req_json.get("sort_order", "desc"), size=req_json.get("size", 10),
-            scripted_sort=[{"Severity.score": {"order": "desc", "unmapped_type": "double"}}])
+            scripted_sort=[{"Severity.score": {"order": "desc", "unmapped_type": "double"}}],
+            lucene_query_string=lucene_query)
         return set_response(data={"rows": es_resp["hits"], "total": es_resp.get("total", {}).get("value", 0)})
     elif action == "delete":
         es_resp = ESConn.search_by_and_clause(
