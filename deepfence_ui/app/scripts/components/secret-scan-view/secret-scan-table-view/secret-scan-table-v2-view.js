@@ -257,7 +257,7 @@ class SecretScanTableV2 extends React.Component {
             manual
             data={secretScanResults}
             getRowStyle={row => ({
-              opacity: row.original.masked === 'true' ? 0.5 : 1,
+              opacity: row.original._source.masked === 'true' ? 0.5 : 1,
             })}
             onRowClick={row => this.handleRowClick(row)}
             columnCustomizable

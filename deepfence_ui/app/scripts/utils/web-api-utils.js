@@ -1316,7 +1316,6 @@ export function getCVEImageReport(params = {}) {
     start_index,
     size,
   } = params;
-  console.log('image report', params);
   let url = `${backendElasticApiEndPoint()}/vulnerabilities/image_report?lucene_query=${getLuceneQuery(
     lucene_query
   )}`;
