@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Jeffail/tunny"
 	"github.com/weaveworks/scope/common/xfer"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
@@ -34,9 +35,32 @@ const (
 	memLockSize   = "--memlock=8388608"
 	ebpfOptFormat = "--socket-path=%s"
 	serverRestartAttempts = 1
+	defaultScanConcurrency = 5
 )
 var certPath = "/etc/filebeat/filebeat.crt"
 var httpClient *http.Client
+
+var (
+	scanConcurrency    int
+	grpcScanWorkerPool *tunny.Pool
+)
+
+type secretScanParameters struct {
+	client pb.SecretScannerClient
+	req pb.FindRequest
+	controlArgs map[string]string
+	hostName string
+	r *Reporter
+}
+
+func init() {
+	var err error
+	scanConcurrency, err = strconv.Atoi(os.Getenv("SECRET_SCAN_CONCURRENCY"))
+	if err != nil {
+		scanConcurrency = defaultScanConcurrency
+	}
+	grpcScanWorkerPool = tunny.NewFunc(scanConcurrency, getAndPublishSecretScanResultsWrapper)
+}
 
 func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
@@ -61,8 +85,25 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	} else if nodeType == nodeTypeHost {
 		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: HostMountDir}}
 	}
-	go getAndPublishSecretScanResults(r.secretScanner.client, greq, req.ControlArgs, r.hostName, r)
+	go grpcScanWorkerPool.Process(secretScanParameters{
+		client: r.secretScanner.client,
+		req: greq,
+		controlArgs: req.ControlArgs,
+		hostName: r.hostName,
+		r: r,
+	})
 	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
+}
+
+func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) interface{} {
+	scanParameters, ok := scanParametersInterface.(secretScanParameters)
+	if !ok {
+		fmt.Println("Error reading input from grpc API")
+		return nil
+	}
+	getAndPublishSecretScanResults(scanParameters.client, scanParameters.req, scanParameters.controlArgs,
+		scanParameters.hostName, scanParameters.r)
+	return nil
 }
 
 func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string, hostName string, r *Reporter) {

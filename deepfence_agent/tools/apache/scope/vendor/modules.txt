@@ -4,6 +4,9 @@ camlistore.org/pkg/lru
 # github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
 github.com/Azure/go-ansiterm
 github.com/Azure/go-ansiterm/winterm
+# github.com/Jeffail/tunny v0.1.4
+## explicit
+github.com/Jeffail/tunny
 # github.com/Microsoft/go-winio v0.4.11
 github.com/Microsoft/go-winio
 # github.com/NYTimes/gziphandler v1.0.2-0.20180227021810-5032c8878b9d
