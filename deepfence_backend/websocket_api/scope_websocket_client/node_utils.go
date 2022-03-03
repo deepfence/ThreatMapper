@@ -692,6 +692,8 @@ func (wsCli *WebsocketClient) formatProcessNodeDetail(scopeTopology ScopeTopolog
 			dfTopology.Ppid, _ = strconv.Atoi(metadata.Value)
 		case "threads":
 			dfTopology.Threads, _ = strconv.Atoi(metadata.Value)
+		case "OpenFiles":
+			dfTopology.OpenFiles = metadata.Value
 		}
 	}
 	dfTopology.Parents = wsCli.formatParentNodes(scopeTopology.Parents)
