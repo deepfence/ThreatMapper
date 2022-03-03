@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from utils.esconn import ESConn
 from utils.constants import CVE_SCAN_LOGS_INDEX, NODE_TYPE_HOST, \
     CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_QUEUED, CVE_SCAN_STATUS_ERROR, DEEPFENCE_KEY, REPORT_INDEX, \
-    CVE_INDEX
+    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX
 from utils.scope import fetch_topology_data
 import time
 from utils.helper import get_cve_scan_tmp_folder, rmdir_recursive, wait_for_postgres_table
@@ -56,6 +56,16 @@ def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_s
     rmdir_recursive(image_file_folder)
 
 
+def insert_secret_error_doc(status, datetime_now, host_name, node_id, scan_message):
+    body = {
+        "masked": "false", "scan_id": status["scan_id"], "node_type": status["node_type"],
+        "scan_message": scan_message, "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "time_stamp": int(time.time() * 1000.0), "host": host_name, "action": CVE_SCAN_STATUS_ERROR,
+        "host_name": host_name, "node_id": node_id, "node_name": host_name
+    }
+    ESConn.create_doc(SECRET_SCAN_LOGS_INDEX, body)
+
+
 @celery_app.task(bind=True, default_retry_delay=60)
 def cve_fix_interrupted(*args):
     """
@@ -98,6 +108,45 @@ def cve_fix_interrupted(*args):
                 if total_diff_minutes >= 10:
                     insert_cve_error_doc(cve_status, datetime_now, host, cve_node_id,
                                          "Scan was interrupted. Please restart.")
+
+
+@celery_app.task(bind=True, default_retry_delay=60)
+def secret_fix_interrupted(*args):
+    """
+    Secret scans, if interrupted/killed, there not be any status update in es regarding failure.
+    This task will query all cve scan's in progress (from es), update es that cve was interrupted if scan failed.
+    """
+    hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
+    windows_hosts = []
+    all_host_names = []
+    for node_id, node in hosts.items():
+        all_host_names.append(node.get("host_name", ""))
+        if node.get("os", "") == "windows":
+            windows_hosts.append(node.get("host_name", ""))
+    secret_in_progress = ESConn.get_node_wise_secret_status()
+    for host, host_secrets in secret_in_progress.items():
+        if host and host not in all_host_names:
+            # In case the agent itself is not connected, don't act now, wait till agent reconnects
+            continue
+        if host in windows_hosts:
+            continue
+        for node_id, status in host_secrets.items():
+            last_status_timestamp = datetime.fromtimestamp(
+                status["timestamp"] / 1000)
+            datetime_now = datetime.now()
+            total_diff_minutes = int(
+                round((datetime_now - last_status_timestamp).total_seconds() / 60))
+            if status["scan_status"] == CVE_SCAN_STATUS_QUEUED:
+                # If scan is in QUEUED state for 7 days, then it has failed
+                if total_diff_minutes >= 10080:
+                    insert_secret_error_doc(status, datetime_now, host, node_id,
+                                            "Scan was stopped because it was in queued state for a week. Please start "
+                                            "again.")
+            elif status["scan_status"] in SECRET_SCAN_STATUS_IN_PROGRESS:
+                # If scan was started 40 minutes ago, still no updated status found, then it has failed
+                if total_diff_minutes >= 40:
+                    insert_secret_error_doc(status, datetime_now, host, node_id,
+                                            "Scan was interrupted. Please restart.")
 
 
 @celery_app.task(bind=True, default_retry_delay=60)
