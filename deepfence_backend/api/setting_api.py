@@ -11,7 +11,7 @@ setting_api = Blueprint("setting_api", __name__)
 
 
 @setting_api.route("/settings", methods=["GET"], endpoint='api_v1_5_settings')
-@jwt_required
+@jwt_required()
 def settings():
     all_settings = Setting.query.filter(Setting.value['is_visible_on_ui'].as_boolean()).all()
     result = []
@@ -27,7 +27,7 @@ def settings():
 
 
 @setting_api.route("/settings/<int:setting_id>", methods=["POST"], endpoint='api_v1_5_user_update')
-@jwt_required
+@jwt_required()
 @non_read_only_user
 def setting_update(setting_id):
     """

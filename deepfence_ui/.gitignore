@@ -54,3 +54,5 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# Webpack bundle stats
+bundle-stats.json

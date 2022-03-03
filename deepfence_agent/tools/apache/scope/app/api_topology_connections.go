@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 )
@@ -334,8 +335,17 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 					}
 				}
 				v.ImmediateParentID = nodeFilter.NodeId
-				newTopo[k] = v
-				counter += 1
+				filterOut := false
+				if c.TopologyID == hostsID {
+					filterOut = filterOnVulnStatus(vulnerabilityScanStatus, c.Filters[vulnerabilityScanStatusKey])
+					filterOut = filterOut || filterOnComplianceStatus(complianceScanStatus, c.Filters[complianceScanStatusKey])
+				} else if c.TopologyID == containersID {
+					filterOut = filterOnVulnStatus(vulnerabilityScanStatus, c.Filters[vulnerabilityScanStatusKey])
+				}
+				if !filterOut {
+					newTopo[k] = v
+					counter += 1
+				}
 			}
 			nodeChildrenCount[c.TopologyID] = counter
 		}
@@ -409,4 +419,34 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func filterOnVulnStatus(nodeValue string, filterValue string) bool {
+	filterOut := false
+	if filterValue != "" {
+		vals := strings.Split(filterValue, ",")
+		foundInFilterVal := false
+		for _, filterValue := range vals {
+			if filterValue == nodeValue {
+				foundInFilterVal = true
+			}
+		}
+		filterOut = !foundInFilterVal
+	}
+	return filterOut
+}
+
+func filterOnComplianceStatus(nodeValue string, filterValue string) bool {
+	filterOut := false
+	if filterValue != "" {
+		vals := strings.Split(filterValue, ",")
+		foundInFilterVal := false
+		for _, filterValue := range vals {
+			if strings.Contains(nodeValue, filterValue) {
+				foundInFilterVal = true
+			}
+		}
+		filterOut = !foundInFilterVal
+	}
+	return filterOut
 }

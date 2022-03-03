@@ -1,12 +1,15 @@
 package process
 
 import (
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/common/mtime"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/report"
-	"strconv"
-	"sync"
-	"time"
 )
 
 // We use these keys in node metadata
@@ -16,6 +19,7 @@ const (
 	PPID           = report.PPID
 	Cmdline        = report.Cmdline
 	Threads        = report.Threads
+	OpenFiles      = report.OpenFiles
 	CPUUsage       = "process_cpu_usage_percent"
 	MemoryUsage    = "process_memory_usage_bytes"
 	OpenFilesCount = "open_files_count"
@@ -24,10 +28,11 @@ const (
 // Exposed for testing
 var (
 	MetadataTemplates = report.MetadataTemplates{
-		PID:     {ID: PID, Label: "PID", From: report.FromLatest, Datatype: report.Number, Priority: 1},
-		Cmdline: {ID: Cmdline, Label: "Command", From: report.FromLatest, Priority: 2},
-		PPID:    {ID: PPID, Label: "Parent PID", From: report.FromLatest, Datatype: report.Number, Priority: 3},
-		Threads: {ID: Threads, Label: "# Threads", From: report.FromLatest, Datatype: report.Number, Priority: 4},
+		PID:       {ID: PID, Label: "PID", From: report.FromLatest, Datatype: report.Number, Priority: 1},
+		Cmdline:   {ID: Cmdline, Label: "Command", From: report.FromLatest, Priority: 2},
+		PPID:      {ID: PPID, Label: "Parent PID", From: report.FromLatest, Datatype: report.Number, Priority: 3},
+		Threads:   {ID: Threads, Label: "# Threads", From: report.FromLatest, Datatype: report.Number, Priority: 4},
+		OpenFiles: {ID: OpenFiles, Label: "Open File Names", From: report.FromLatest, Priority: 5},
 	}
 
 	MetricTemplates = report.MetricTemplates{
@@ -50,13 +55,26 @@ type Reporter struct {
 	noCommandLineArguments bool
 	reportCacheData        reportCache
 	hostName               string
+	ptracer                *InfoTracer
 }
 
 // Jiffies is the type for the function used to fetch the elapsed jiffies.
 type Jiffies func() (uint64, float64, error)
 
+// Setup & Start open files tracing
+func StartOpenFilesTracing() *InfoTracer {
+	ptracer, err := NewInfoTracer()
+	if err != nil {
+		logrus.Error("Failed to start eBPF process")
+		return nil
+	}
+	logrus.Info("started eBPF process")
+	return ptracer
+}
+
 // NewReporter makes a new Reporter.
-func NewReporter(walker Walker, scope string, jiffies Jiffies, noCommandLineArguments bool) *Reporter {
+func NewReporter(walker Walker, scope string, jiffies Jiffies, noCommandLineArguments, trackProcDeploads bool) *Reporter {
+
 	r := &Reporter{
 		scope:                  scope,
 		walker:                 walker,
@@ -64,8 +82,15 @@ func NewReporter(walker Walker, scope string, jiffies Jiffies, noCommandLineArgu
 		noCommandLineArguments: noCommandLineArguments,
 		reportCacheData:        reportCache{},
 		hostName:               hostname.Get(),
+		ptracer:                nil,
 	}
+
+	if trackProcDeploads {
+		r.ptracer = StartOpenFilesTracing()
+	}
+
 	go r.updateProcessCache()
+
 	return r
 }
 
@@ -127,6 +152,14 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 		node = node.WithLatest("host_name", now, r.hostName)
 		node = node.WithLatest(PID, now, pidstr)
 		node = node.WithLatest(Threads, now, strconv.Itoa(p.Threads))
+
+		if r.ptracer != nil {
+			paths, err := r.ptracer.GetOpenFileList(pidstr)
+			if err == nil {
+				node = node.WithLatest(OpenFiles, now, strings.Join(paths, ","))
+			}
+		}
+
 		if p.Name != "" {
 			node = node.WithLatest(Name, now, p.Name)
 		}

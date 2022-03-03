@@ -1,74 +1,47 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import React from 'react';
-import { connect } from 'react-redux';
+import { Route, withRouter, Redirect } from 'react-router';
+import { CloudTableView } from '../components/topology-filter-view/cloud-view/cloud-view-table';
+import { HostTableView } from '../components/topology-filter-view/host-view/host-table-view';
+import { K8sTableView } from '../components/topology-filter-view/k8s-view/k8s-table-view';
 
-import { MultiCloudTreeTable } from '../components/multi-cloud-table/multi-cloud-table';
-import { DfDropDownMenu } from '../components/common/df-dropdown';
-import { actionDropdownOptions } from './multi-cloud-action';
-import { funnyTopologyTypeToModelType } from '../components/multi-cloud/LiveTopologyGraph';
-import injectModalTrigger from '../components/common/generic-modal/modal-trigger-hoc';
-import { getWebsocketUrl } from '../utils/web-api-utils';
+const menu = [
+  {
+    id: 'cloud',
+    displayName: 'Multi Cloud view',
+    component: CloudTableView,
+  },
+  {
+    id: 'hosts',
+    displayName: 'Host View',
+    component: HostTableView,
+  },
+  {
+    id: 'k8s',
+    displayName: 'K8s View',
+    component: K8sTableView,
+  },
+];
 
-class NodesGrid extends React.Component {
-  constructor(props, context) {
-    super(props, context);
-    this.state = {
-      showActions: false,
-      items: [],
-      options: [],
-    };
-
-    this.setAction = this.setAction.bind(this);
-  }
-
-  setAction(items) {
-    const node_types = [];
-    items.forEach(item => {
-      const type = item.split(';', 2)[1];
-      node_types.push(funnyTopologyTypeToModelType(type));
-    });
-    this.setState({
-      showActions: items.length > 0,
-      items,
-      options: actionDropdownOptions(node_types),
-    });
-  }
-
-  render() {
-    const wsURL = `${getWebsocketUrl()}/topology-api`;
-    const { showActions } = this.state;
-    const { userProfile } = this.props;
-    const apiKey = userProfile?.api_key;
-    return (
-      <div className="nodes-grid">
-        {apiKey && (
-          <div>
-            <div className="multiselect-actions">
-              <DfDropDownMenu
-                selectedObjectIndex={this.state.items}
-                options={this.state.options}
-                label="Actions"
-                triggerModal={this.props.triggerModal}
-                alignment="right"
-                dispatch={this.props.dispatch}
-                disabled={!showActions}
-              />
-            </div>
-            <MultiCloudTreeTable
-              apiURL={wsURL}
-              apiKey={apiKey}
-              refreshInterval="5s"
-              onNodeClicked={this.props.onNodeClicked}
-              setAction={this.setAction}
-            />
-          </div>
+export const NodesGrid = withRouter(({ onNodeClicked, match }) => (
+  <div className="">
+    {menu.map(menuItem => (
+      <Route
+        key={menuItem.id}
+        exact
+        path={`${match.path}/${menuItem.id}`}
+        render={() => (
+          <menuItem.component
+            onNodeClicked={onNodeClicked}
+            //  showPanelForNode={showPanelForNode}
+          />
         )}
-      </div>
-    );
-  }
-}
-function mapStateToProps(state) {
-  return {
-    userProfile: state.get('userProfile'),
-  };
-}
-export default injectModalTrigger(connect(mapStateToProps)(NodesGrid));
+      />
+    ))}
+    <Route
+      exact
+      path={match.path}
+      render={() => <Redirect to={`${match.url}/${menu[0].id}`} />}
+    />
+  </div>
+));

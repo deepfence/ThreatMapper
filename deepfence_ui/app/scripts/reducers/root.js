@@ -1301,7 +1301,7 @@ export function rootReducer(state = initialState, action) {
       );
       return state;
     }
-    
+
     case ActionTypes.REPORT_EMAIL_SCHEDULE_REQUEST: {
       state = state.setIn(['report', 'loading'], true);
       state = state.deleteIn(['report', 'info']);
@@ -1324,6 +1324,32 @@ export function rootReducer(state = initialState, action) {
     case ActionTypes.REPORT_EMAIL_SCHEDULE_FAILURE: {
       state = state.setIn(['report', 'loading'], false);
       state = state.setIn(['report', 'info'], 'Error in scheduling email reports');
+      return state;
+    }
+
+    case ActionTypes.GET_DIAGNOSTIC_LOGS_REQUEST: {
+      state = state.setIn(['diagnostic_logs', 'download', 'loading'], true);
+      state = state.setIn(['diagnostic_logs', 'download', 'info'], '');
+      return state;
+    }
+
+    case ActionTypes.GET_DIAGNOSTIC_LOGS_SUCCESS: {
+      state = state.setIn(['diagnostic_logs', 'download', 'loading'], false);
+      state = state.setIn(['diagnostic_logs', 'download', 'info'], '');
+      return state;
+    }
+
+    case ActionTypes.GET_DIAGNOSTIC_LOGS_FAILURE: {
+      state = state.setIn(['diagnostic_logs', 'download', 'loading'], false);
+      state = state.setIn(
+        ['diagnostic_logs', 'download', 'info'],
+        'Download failed'
+      );
+      return state;
+    }
+
+    case ActionTypes.RESET_DIAGNOSTIC_LOGS_DOWNLOAD_STATE: {
+      state = state.deleteIn(['diagnostic_logs', 'download']);
       return state;
     }
 
@@ -1504,6 +1530,13 @@ export function rootReducer(state = initialState, action) {
         payload: { data },
       } = action;
       state = state.set('runtime_bom', data);
+      return state;
+    }
+    case ActionTypes.GET_REGISTRY_IMAGES_TAGS_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('registry_images_tags', data);
       return state;
     }
 

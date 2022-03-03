@@ -1,0 +1,36 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.modalBodyColumnsWrapper {
+  display: flex;
+}
+
+.modalBodyColumn {
+  flex: 10;
+}
+
+.attackPathWrapper {
+  flex: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.attackPathGraph {
+  padding-right: 20px;
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
+}
+
+.attackPathNoDataText {
+  color: $text-secondary;
+  margin-top: 20px;
+}
+
+.attackPathTitle {
+  color: $text-primary;
+  font-size: 18px;
+  font-weight: bold;
+}

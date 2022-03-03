@@ -339,7 +339,7 @@ func (wsCli *WebsocketClient) formatTopologyHostData() {
 		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "user_defined_tags", Label: "User Defined Tags", Type: filterTypeStr, Options: filtersUserDefinedTags, NumberOptions: nil})
 	}
 	if len(filtersAgentVersion) > 0 {
-		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "version", Label: "Agent Version", Type: filterTypeStr, Options: filtersAgentVersion, NumberOptions: nil})
+		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "version", Label: "Sensor Version", Type: filterTypeStr, Options: filtersAgentVersion, NumberOptions: nil})
 	}
 	topologyFiltersJson, _ := JsonEncode(topologyFilters)
 	_, err = redisConn.Do("SETEX", wsCli.filterRedisKey, RedisExpiryTime, string(topologyFiltersJson))

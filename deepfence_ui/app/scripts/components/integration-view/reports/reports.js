@@ -12,7 +12,6 @@ import injectModalTrigger from '../../common/generic-modal/modal-trigger-hoc';
 import Loader from '../../loader';
 import {
   enumerateFiltersAction,
-  clearScheduledReportFormAction,
   reportGenerateAction,
   reportDownloadStatusAction,
   downloadReportAction,
@@ -112,14 +111,10 @@ const validate = (values) => {
     errors.download_type = 'Select a download type';
   }
   if (values && values.get('schedule_interval', '').length !== 0) {
-    if (parseInt(values.get('schedule_interval'), 10) < 1) {
-      errors.schedule_interval = 'Schedule interval must be > 0';
+    if (!/^[0-9]{0,10}$/i.test(values.get('schedule_interval', ''))) {
+      errors.schedule_interval = 'Schedule interval must be > 0 and less than 10 digits long';
     }
-    if (isNaN(parseInt(values.get('schedule_interval'), 10))
-        || values.get('schedule_interval').indexOf('.') > -1) {
-      errors.schedule_interval = 'Schedule interval has to be an integer';
-    }
-    if (values.get('email_address', '').length === 0) {
+    if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.get('email_address', ''))) {
       errors.email_address = 'Enter email address to send scheduled reports';
     }
   }
@@ -160,6 +155,7 @@ const Reports = props => {
     tableItems =[],
     download_type,
     errors,
+    valid,
   } = props;
   const showEmailField = schedule_interval;
   const downloadButtonLabel = schedule_interval
@@ -168,7 +164,7 @@ const Reports = props => {
 
   const [showModal, setShowModal] = useState(false);
 
-// A hook to check for the report generation status by initiating a pollable request 
+// A hook to check for the report generation status by initiating a pollable request
   useEffect(() => {
     const {
       registerPolling,
@@ -314,8 +310,8 @@ const Reports = props => {
     return null;
   }
 
-// Function that creates the params that need to be 
-// sent to the API call to generate the report 
+// Function that creates the params that need to be
+// sent to the API call to generate the report
   const submitClickHandler = (e, props) => {
     e.preventDefault();
     if (resource_type && node_type) {
@@ -334,9 +330,14 @@ const Reports = props => {
         kubernetes_namespace,
         cve_severity,
         download_type,
+        valid,
         reportGenerateAction: actionDownload,
         reportScheduleEmailAction: actionEmail,
       } = props;
+
+      if (!valid) {
+        return;
+      }
 
       const resourceTypeText = resource_type.map(el => el.value).join(',');
 
@@ -347,7 +348,7 @@ const Reports = props => {
           filter: { cve_severity: cve_severity.map(el => el.value).join(',') },
         });
       }
-      if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) { 
+      if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) {
         resourceData.push({
           type: 'cve',
           filter: {},
@@ -417,7 +418,7 @@ const Reports = props => {
       let params = {};
       // API params for schedule report generation
       if (scheduleInterval) {
-        const emailAddress = email_address;
+        const emailAddress = email_address && email_address;
         params = {
           action: 'schedule_send_report',
           file_type: downloadTypeOption,
@@ -478,7 +479,7 @@ const Reports = props => {
                 placeholder="Select resource type"
                 isMulti
               />
-              {errors && errors.resource_type && <div className="error-message">{errors.resource_type}</div>}
+              {errors && errors.resource_type && <div className="error-message-reports">{errors.resource_type}</div>}
             </div>
           </div>
           <div>
@@ -519,10 +520,10 @@ const Reports = props => {
               placeholder="Select Duration"
             />
           </div>
-          {errors && errors.duration && <div className="error-message">{errors.duration}</div>}
+          {errors && errors.duration && <div className="error-message-reports">{errors.duration}</div>}
           <Field
             component={renderField}
-            type="text"
+            type="number"
             label="Schedule Interval in days (optional)"
             name="schedule_interval"
           />
@@ -587,7 +588,7 @@ const Reports = props => {
                         onClick={() => setShowModal(false)}
                       />
                     </div>
-                    <div className="modal-body">
+                    <div className="modal-body" style={{ paddingBottom: '100px' }}>
                       <div>
                         {resource_type &&
                           node_type &&
@@ -626,12 +627,12 @@ const Reports = props => {
               placeholder="Select download type"
             />
           </div>
-          {errors && errors.download_type && <div className="error-message">{errors.download_type}</div>}
+          {errors && errors.download_type && <div className="error-message-reports">{errors.download_type}</div>}
           <div className="form-field relative">
             <button
               className="primary-btn"
               type="submit"
-              disabled={!duration || !download_type || submitting || pristine}
+              disabled={!duration || !download_type || submitting || pristine || !valid}
             >
               {downloadButtonLabel}
             </button>
@@ -659,6 +660,7 @@ const Reports = props => {
             <th> Timestamp </th>
             <th> Report Type </th>
             <th> Filters Used </th>
+            <th> Duration </th>
             <th> Status </th>
             <th> Download </th>
           </thead>
@@ -675,6 +677,7 @@ const Reports = props => {
                     {key.file_type}
                   </td>
                   <td>{key.filters}</td>
+                  <td>{key.duration}</td>
                   <td>{key.status}</td>
                   <td>{renderDownloadLink(key)}</td>
                 </tr>
@@ -729,7 +732,6 @@ export default connect(mapStateToProps, {
   reportDownloadStatusAction,
   downloadReportAction,
   reportScheduleEmailAction,
-  clearScheduledReportFormAction,
 })(
   reduxForm({
     form: 'report-download-form',

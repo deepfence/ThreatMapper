@@ -90,7 +90,24 @@ func maybeExportProfileData(flags probeFlags) {
 	if flags.httpListen != "" {
 		go func() {
 			http.Handle("/metrics", promhttp.Handler())
+			if os.Getenv("DEBUG") == "true" {
+				log.Infof("Profiling data being exported to %s", flags.httpListen)
+				log.Infof("go tool pprof http://%s/debug/pprof/{profile,heap,block}", flags.httpListen)
+				log.Infof("Profiling endpoint %s terminated: %v", flags.httpListen, http.ListenAndServe(flags.httpListen, nil))
+			}
 		}()
+	}
+}
+
+func checkFlagsRequiringRoot(flags probeFlags) {
+	if os.Getegid() != 0 {
+		if flags.spyProcs {
+			log.Warn("--probe.proc.spy=true, but that requires root to find everything")
+		}
+
+		if flags.trackProcDeploads {
+			log.Warn("--probe.proc.track-deploads=true, but that requires root to find everything")
+		}
 	}
 }
 
@@ -147,9 +164,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		log.Warnf("unrecognized --probe.kubernetes.role: %s", flags.kubernetesRole)
 	}
 
-	if flags.spyProcs && os.Getegid() != 0 {
-		log.Warn("--probe.proc.spy=true, but that requires root to find everything")
-	}
+	checkFlagsRequiringRoot(flags)
 
 	rand.Seed(time.Now().UnixNano())
 	var (
@@ -308,7 +323,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		if flags.procEnabled {
 			processCache = process.NewCachingWalker(process.NewWalker(flags.procRoot, false))
 			p.AddTicker(processCache)
-			p.AddReporter(process.NewReporter(processCache, hostID, process.GetDeltaTotalJiffies, flags.noCommandLineArguments))
+			p.AddReporter(process.NewReporter(processCache, hostID, process.GetDeltaTotalJiffies, flags.noCommandLineArguments, flags.trackProcDeploads))
 		}
 
 		if flags.endpointEnabled {

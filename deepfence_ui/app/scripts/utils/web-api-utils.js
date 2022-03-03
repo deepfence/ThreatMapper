@@ -2009,91 +2009,6 @@ export function reportScheduleEmail(params = {}) {
   }).then(errorHandler);
 }
 
-export function xlsxReportDownload(params = {}) {
-  const url = `${backendElasticApiEndPoint()}/node_action`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'POST',
-    body: JSON.stringify(params),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  })
-    .then(response => response.blob())
-    .then(blob => {
-      /* eslint-enable */
-      const fileURL = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const {
-        action_args: {
-          resources = [],
-          filters: {
-            host_name: hostnameListIm = List(),
-            image_name_with_tag: imageNameListIm = List(),
-          },
-        } = {},
-      } = params;
-      let filename = 'deepfence-reports.xlsx';
-      if (resources.length > 0) {
-        const { type, filter: { scan_id: scanIdList = [] } = {} } =
-          resources[0];
-        let reportType = type;
-        if (reportType === 'cve') {
-          reportType = 'Vulnerability';
-        }
-
-        // This will handle XLSX report download on CVE and Compliance page
-        // We pick the scan id (if present) and use that to name the downloaded file
-        if (scanIdList.length > 0) {
-          const scannedID = scanIdList[0];
-          const scanID = scannedID;
-          const lastUnderscoreIndex = scanID.lastIndexOf('_');
-          const slicedScanID = scanID.substring(0, lastUnderscoreIndex);
-          const timeStamp = scanID.substring(
-            lastUnderscoreIndex,
-            scanID.length
-          );
-          const replacedtimeStamp = timeStamp.replace('T', '_');
-          const replacedscanID = slicedScanID.concat(replacedtimeStamp);
-          const changedscanID = replacedscanID.replace(/[^a-zA-Z0-9]/g, '_');
-          filename = `${reportType}_report_${changedscanID}.xlsx`;
-        } else if (resources.length === 1 && imageNameListIm.size === 1) {
-          // If it doesn't have scan id (i.e. not initiated from CVE or compliance page)
-          // check if there is a single resource, either alert, cve or compliance and
-          // from that check if there is a single imagename or hostname and then
-          // derive the filename from it. If it has multiple, just use the generic name
-          const imageName = imageNameListIm.get(0);
-          const changedImageName = imageName.replace(/[^a-zA-Z0-9]/g, '_');
-          filename = `${reportType}_report_${changedImageName}.xlsx`;
-        } else if (resources.length === 1 && hostnameListIm.size === 1) {
-          const hostname = hostnameListIm.get(0);
-          const changedHostName = hostname.replace(/[^a-zA-Z0-9]/g, '_');
-          filename = `${reportType}_report_${changedHostName}.xlsx`;
-        }
-      }
-      link.download = filename;
-      link.href = fileURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-  /* eslint-disable */
-}
-
-export function xlsxScheduleEmail(params = {}) {
-  const url = `${backendElasticApiEndPoint()}/node_action`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'POST',
-    body: JSON.stringify(params),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  }).then(errorHandler);
-}
-
 export function getReportFilterOptions() {
   const url = `${backendElasticApiEndPoint()}/report_filter_options`;
   return fetch(url, {
@@ -2295,6 +2210,18 @@ export function getRuntimeBomData() {
     headers: {
       'Content-Type': 'application/json',
       Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+export function getRegistryImagesTags(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/registry_images_tags`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': getAuthHeader(),
     },
   }).then(errorHandler);
 }

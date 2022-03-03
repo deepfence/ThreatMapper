@@ -23,12 +23,12 @@ def fetch_vm_resources(cloud_discovery, cloud_provider):
         return
     if not cloud_data:
         return
-    probe_version = "3.3.19"
+    probe_version = "1.2.0"
     probe_report = {
         "Host": {
             "shape": "circle", "label": "host", "label_plural": "hosts", "nodes": {}, "controls": {},
             "metadata_templates": {
-                "version": {"id": "version", "label": "Agent Version", "priority": 27.0, "from": "latest"},
+                "version": {"id": "version", "label": "Sensor Version", "priority": 27.0, "from": "latest"},
                 "kubernetes_cluster_name": {"id": "kubernetes_cluster_name", "label": "Kubernetes Cluster Name",
                                             "priority": 25.0, "from": "latest"},
                 "interfaceNames": {"id": "interfaceNames", "label": "Interface Names", "priority": 15.0,
@@ -54,7 +54,7 @@ def fetch_vm_resources(cloud_discovery, cloud_provider):
                 "user_defined_tags": {"id": "user_defined_tags", "label": "User Defined Tags", "priority": 26.0,
                                       "from": "latest"},
                 "cloud_tags": {"id": "cloud_tags", "label": "Cloud Tags", "priority": 32.0, "from": "latest"},
-                "agent_running": {"id": "agent_running", "label": "Agent", "priority": 33.0, "from": "latest"},
+                "agent_running": {"id": "agent_running", "label": "Sensor", "priority": 33.0, "from": "latest"},
             },
             "metric_templates": {}
         }

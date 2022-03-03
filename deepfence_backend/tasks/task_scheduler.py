@@ -17,7 +17,9 @@ from flask import make_response
 import json
 import uuid
 from copy import deepcopy
-from utils.helper import get_all_scanned_node
+from utils.helper import get_all_scanned_node, get_all_scanned_images
+import pandas as pd
+import re
 
 
 @celery_app.task
@@ -29,10 +31,10 @@ def task_scheduler():
             return
         for scheduled_task in scheduled_tasks:
             if croniter.match(scheduled_task.cron_expr, curr_time):
-                run_node_task(scheduled_task.action, scheduled_task.nodes, scheduled_task.id)
+                run_node_task(scheduled_task.action, scheduled_task.nodes, scheduled_task.id, scheduled_task.cron_expr)
 
 
-def run_node_task(action, node_action_details, scheduler_id=None):
+def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None):
     with app.app_context():
         curr_time = arrow.now(tz="+00:00").datetime
         if scheduler_id:
@@ -92,6 +94,51 @@ def run_node_task(action, node_action_details, scheduler_id=None):
                 from config.app import celery_app
                 redis_lock_keys = []
                 redis_pipe = redis.pipeline()
+                image_list_details_str = redis.get("{0}:{1}".format(constants.REGISTRY_IMAGES_CACHE_KEY_PREFIX,
+                                                                    node_action_details["registry_images"][
+                                                                        "registry_id"]))
+                if image_list_details_str:
+                    if node_action_details["registry_images"].get("all_registry_images", False):
+                        image_dict = json.loads(image_list_details_str)
+                        image_df = pd.DataFrame(image_dict['image_list'])
+                        image_df['timestamp'] = pd.to_datetime(image_df.pushed_at)
+                        sorted_df = image_df.sort_values(by=['timestamp'], ascending=False)
+                        df_unique_list = sorted_df["image_tag"].unique()
+                        df_unique = pd.DataFrame(data=df_unique_list, columns=["image_tag"])
+                        sorted_df_by_image_tag = image_df.sort_values("image_tag")
+                        images_by_tags = df_unique.merge(sorted_df_by_image_tag, on=["image_tag"], how="outer")[
+                            "image_name_with_tag"]
+                        node_action_details["registry_images"]["image_name_with_tag_list"] = images_by_tags
+                    elif node_action_details["registry_images"].get("only_new_images", False):
+                        image_dict = json.loads(image_list_details_str)
+                        all_registry_images = set([image["image_name_with_tag"] for image in image_dict['image_list']])
+                        if cron_expr:
+                            pattern = '^0.*?\*/(\d).*?$'
+                            match = re.search(pattern, cron_expr)
+                            if match:
+                                days_interval = int(match.group(1))
+                            else:
+                                days_interval = 1
+                        images_need_to_be_scanned = all_registry_images - get_all_scanned_images(days_interval)
+                        node_action_details["registry_images"]["image_name_with_tag_list"] = list(
+                            images_need_to_be_scanned)
+                    elif node_action_details["registry_images"].get("registry_scan_type", None) == "latest_timestamp":
+                        image_dict = json.loads(image_list_details_str)
+                        image_df = pd.DataFrame(image_dict['image_list'])
+                        image_df['timestamp'] = pd.to_datetime(image_df.pushed_at)
+                        grouped = image_df.groupby(['image_name']).agg({"timestamp": max}).reset_index()
+                        latest_images_by_tags = image_df.merge(grouped, on=["image_name", "timestamp"], how="inner")[
+                            'image_name_with_tag']
+                        node_action_details["registry_images"]["image_name_with_tag_list"] = latest_images_by_tags
+                    elif node_action_details["registry_images"].get("registry_scan_type", None) == "image_tags":
+                        if node_action_details["registry_images"].get("image_tags", []):
+                            image_tags = node_action_details["registry_images"].get("image_tags", [])
+                            image_dict = json.loads(image_list_details_str)
+                            image_df = pd.DataFrame(image_dict['image_list'])
+                            images_by_tags = image_df[image_df["image_tag"].isin(image_tags)]["image_name_with_tag"]
+                            node_action_details["registry_images"]["image_name_with_tag_list"] = images_by_tags
+                else:
+                    node_action_details["registry_images"]["image_name_with_tag_list"] = []
                 for image_name_with_tag in node_action_details["registry_images"]["image_name_with_tag_list"]:
                     lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, image_name_with_tag)
                     redis_pipe.incr(lock_key)
@@ -122,9 +169,14 @@ def run_node_task(action, node_action_details, scheduler_id=None):
                             "registry_type": registry_credential.registry_type, "scan_id": scan_id,
                             "credential_id": registry_credential.id}
                         celery_task_id = "cve_scan:" + scan_id
-                        celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
-                                             task_id=celery_task_id, kwargs={"scan_details": scan_details},
-                                             queue=constants.VULNERABILITY_SCAN_QUEUE)
+                        if node_action_details["registry_images"].get("priority", False):
+                            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
+                                                 task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                                 queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
+                        else:
+                            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
+                                                 task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                                 queue=constants.VULNERABILITY_SCAN_QUEUE)
                     except Exception as ex:
                         save_scheduled_task_status("Error: " + str(ex))
                         app.logger.error(ex)
@@ -166,7 +218,8 @@ def run_node_task(action, node_action_details, scheduler_id=None):
                     if redis_resp[i] != 1:
                         continue
                     try:
-                        node.cve_scan_start(node_action_details["scan_type"])
+                        node.cve_scan_start(node_action_details["scan_type"],
+                                            priority=node_action_details.get("priority", False))
                     except Exception as ex:
                         save_scheduled_task_status("Error: " + str(ex))
                         app.logger.error(ex)
@@ -178,6 +231,14 @@ def run_node_task(action, node_action_details, scheduler_id=None):
         elif action == constants.NODE_ACTION_CVE_SCAN_STOP:
             if node_type == constants.NODE_TYPE_REGISTRY_IMAGE:
                 from config.app import celery_app
+                if node_action_details["registry_images"].get("all_registry_images", False):
+                    image_list_details_str = redis.get("{0}:{1}".format(constants.REGISTRY_IMAGES_CACHE_KEY_PREFIX,
+                                                                        node_action_details["registry_images"][
+                                                                            "registry_id"]))
+                    image_dict = json.loads(image_list_details_str)
+                    node_action_details["registry_images"]["image_name_with_tag_list"] = [image["image_name_with_tag"]
+                                                                                          for image in
+                                                                                          image_dict['image_list']]
                 for image_name_with_tag in node_action_details["registry_images"]["image_name_with_tag_list"]:
                     try:
                         es_response = ESConn.search_by_and_clause(constants.CVE_SCAN_LOGS_INDEX,
@@ -259,6 +320,7 @@ def run_node_task(action, node_action_details, scheduler_id=None):
                 "report_id": report_id,
                 "status": "started",
                 "masked": "false",
+                "duration": "",
                 "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             }
             ESConn.create_doc(constants.REPORT_INDEX, body, refresh="wait_for")
@@ -272,7 +334,7 @@ def run_node_task(action, node_action_details, scheduler_id=None):
                 kwargs={"report_id": report_id, "filters": node_action_details.get("filters", {}),
                         "lucene_query_string": "",
                         "number": node_action_details.get("duration", {}).get("number", 0),
-                        "time_unit": node_action_details.get("duration", {}).get("time_unit", "day"),
+                        "time_unit": node_action_details.get("duration", {}).get("time_unit", "d"),
                         "domain_name": domain_name, "resources": node_action_details.get("resources", {}),
                         "file_type": node_action_details.get("file_type", "xlsx"), "node_type": node_type,
                         "include_dead_nodes": node_action_details.get("include_dead_nodes", False),

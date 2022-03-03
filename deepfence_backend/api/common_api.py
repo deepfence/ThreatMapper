@@ -36,7 +36,7 @@ common_api = Blueprint("common_api", __name__)
 
 
 @common_api.route("/topology-metrics", methods=["GET"])
-@jwt_required
+@jwt_required()
 def topology_metrics():
     count = redis.hgetall(SCOPE_TOPOLOGY_COUNT)
     if not count:
@@ -62,7 +62,7 @@ def topology_metrics():
 
 
 @common_api.route("/stats", methods=["GET"])
-@jwt_required
+@jwt_required()
 def stats():
     """
     Provides data for stats panel.
@@ -164,7 +164,7 @@ def stats():
 
 
 @common_api.route("/search", methods=["POST"])
-@jwt_required
+@jwt_required()
 def search():
     """
     EL Search.
@@ -405,7 +405,7 @@ def search():
 
 
 @common_api.route("/search_corelation", methods=["POST"])
-@jwt_required
+@jwt_required()
 def search_corelation():
     from_arg = request.args.get("from", 0)
     size_arg = request.args.get("size", 50)
@@ -570,7 +570,7 @@ def search_corelation():
 
 
 @common_api.route("/unmask-doc", methods=["POST"])
-@jwt_required
+@jwt_required()
 @user_permission(USER_ROLES.ADMIN_USER)
 def unmask_doc():
     """
@@ -691,7 +691,7 @@ def unmask_doc():
 
 
 @common_api.route("/mask-doc", methods=["POST"])
-@jwt_required
+@jwt_required()
 @user_permission(USER_ROLES.ADMIN_USER)
 def mask_doc():
     """
@@ -819,7 +819,7 @@ def mask_doc():
 
 
 @common_api.route("/docs/delete", methods=["POST"])
-@jwt_required
+@jwt_required()
 @user_permission(USER_ROLES.ADMIN_USER)
 def delete_resources():
     """
@@ -1008,7 +1008,7 @@ def delete_resources():
 
 
 @common_api.route("/cve-scan/<path:node_id>", methods=["GET"])
-@jwt_required
+@jwt_required()
 def cve_scan_detail(node_id):
     """
     Get the latest cve-scan document from Elasticserach for a given node_id
@@ -1045,7 +1045,7 @@ def cve_scan_detail(node_id):
 
 
 @common_api.route("/docs/delete_by_id", methods=["POST"])
-@jwt_required
+@jwt_required()
 @user_permission(USER_ROLES.ADMIN_USER)
 def delete_docs_by_id():
     """
@@ -1080,7 +1080,7 @@ def delete_docs_by_id():
 
 
 @common_api.route("/groupby", methods=["POST"])
-@jwt_required
+@jwt_required()
 def groupby():
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
@@ -1177,7 +1177,7 @@ def groupby():
 
 
 @common_api.route("/top_affected_node", methods=["POST"])
-@jwt_required
+@jwt_required()
 def top_affected_node():
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
@@ -1271,7 +1271,7 @@ def top_affected_node():
 
 
 @common_api.route("/node_status", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_node_status():
     node_type = request.args.get('node_type', default='all')
     if len(node_type) == 0:
@@ -1295,7 +1295,7 @@ def get_node_status():
 
 
 @common_api.route("/running_notification", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_running_notification():
     try:
         notifications = RunningNotification.query.all()
@@ -1307,7 +1307,7 @@ def get_running_notification():
 
 
 @common_api.route("/diagnosis/logs", methods=["GET"])
-@jwt_required
+@jwt_required()
 @admin_user_only
 def diagnosis_logs():
     try:
@@ -1325,7 +1325,7 @@ def diagnosis_logs():
 
 
 @common_api.route("/enumerate_kube_services/<host_name>", methods=["GET"])
-@jwt_required
+@jwt_required()
 def enumerate_kube_services_api(host_name):
     # Enumerate all Kubernetes services with optional filters
     # {
@@ -1369,7 +1369,7 @@ def enumerate_kube_services_api(host_name):
 
 
 @common_api.route("/node_tags", methods=["GET"])
-@jwt_required
+@jwt_required()
 def get_node_tags():
     try:
         results = NodeTags.query.with_entities(NodeTags.tags).distinct().all()
@@ -1391,7 +1391,7 @@ def sync_deepfence_key_in_redis():
 
 
 @common_api.route("/user-activity-log", methods=["POST"])
-@jwt_required
+@jwt_required()
 @admin_user_only
 def user_activity_log():
     try:
@@ -1421,9 +1421,25 @@ def user_activity_log():
         print(ex)
         raise InvalidUsage()
 
+@common_api.route("/registry_images_tags", methods=["POST"])
+@jwt_required()
+def registry_images_tags():
+    if not request.is_json:
+        raise InvalidUsage("Missing JSON post data in request")
+    post_data = request.json
+    if not post_data.get("registry_id", None):
+        raise InvalidUsage("registry id is required")
+    image_list_details_str = redis.get("{0}:{1}".format(REGISTRY_IMAGES_CACHE_KEY_PREFIX, post_data.get("registry_id")))
+    if not image_list_details_str:
+        return set_response([])
+    image_dict = json.loads(image_list_details_str)
+    images_set = set()
+    for image in image_dict['image_list']:
+        images_set.add(image["image_tag"])
+    return set_response(list(images_set))
 
 class EmailConfigurationView(MethodView):
-    @jwt_required
+    @jwt_required()
     @admin_user_only
     def post(self, config_id=None):
         if not request.is_json:
@@ -1481,7 +1497,7 @@ class EmailConfigurationView(MethodView):
             raise InvalidUsage("error saving email configuration")
         return set_response(data="email configuration saved", status=201)
 
-    @jwt_required
+    @jwt_required()
     @non_read_only_user
     def get(self, config_id=None):
         if config_id is not None:
@@ -1493,7 +1509,7 @@ class EmailConfigurationView(MethodView):
         else:
             return set_response(data=[email_config.pretty_print() for email_config in EmailConfiguration.query.all()])
 
-    @jwt_required
+    @jwt_required()
     @admin_user_only
     def delete(self, config_id):
         email_config = EmailConfiguration.query.get(config_id)
