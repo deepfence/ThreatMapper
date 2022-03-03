@@ -4,8 +4,8 @@
 
 * [Scope](https://github.com/weaveworks/scope)
 
-* [Clair](https://github.com/quay/clair)
+* [Syft](https://github.com/anchore/syft)
 
-* [DependencyCheck](https://github.com/jeremylong/DependencyCheck)
+* [Grype](https://github.com/anchore/grype)
 
 * [gobpf](https://github.com/iovisor/gobpf)

@@ -15,7 +15,7 @@ registry:
 
 image:
   repository: "deepfenceio/"
-  tag: 1.2.0
+  tag: 1.3.0
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
@@ -50,13 +50,6 @@ db:
     user: "deepfence"
     password: "KeTn4LA4SBN2"
     dbname: "users"
-    sslmode: "disable"
-  postgresFetcherDb:
-    host: deepfence-postgres
-    port: "5432"
-    user: "deepfence"
-    password: "KeTn4LA4SBN2"
-    dbname: "cve"
     sslmode: "disable"
   elasticsearch:
     host: deepfence-es

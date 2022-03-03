@@ -2,17 +2,14 @@ package host
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"strings"
 	"syscall"
 
-	dfUtils "github.com/deepfence/df-utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
 
 	"github.com/willdonnelly/passwd"
-	"gopkg.in/alessio/shellescape.v1"
 )
 
 func getHostShellCmd() []string {
@@ -92,14 +89,18 @@ func isProbeContainerized() bool {
 	return selfMountNamespaceID != statT.Ino
 }
 
-func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
+func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	var imageName = "host"
 	var imageId = ""
 	var scanId = ""
 	var kubernetesClusterName = ""
+	var containerName = ""
 
 	if imageNameArg, ok := req.ControlArgs["image_name"]; ok {
 		imageName = imageNameArg
+	}
+	if containerNameArg, ok := req.ControlArgs["container_name"]; ok {
+		containerName = containerNameArg
 	}
 	if kubernetesClusterNameArg, ok := req.ControlArgs["kubernetes_cluster_name"]; ok {
 		kubernetesClusterName = kubernetesClusterNameArg
@@ -119,11 +120,12 @@ func (r *Reporter) uploadData(req xfer.Request) xfer.Response {
 	}
 
 	log.Infof("uploading %s tar to console...", imageName)
-	command := fmt.Sprintf("bash %s/home/deepfence/uploadFile.sh '%s' '%s' '%s' '%s' '%s'", shellescape.Quote(getDfInstallDir()), shellescape.Quote(imageName), shellescape.Quote(scanType), shellescape.Quote(scanId), shellescape.Quote(imageId), shellescape.Quote(kubernetesClusterName))
-	err := dfUtils.ExecuteCommandInBackground(command)
-	if err != nil {
-		return xfer.ResponseErrorf(fmt.Sprintf("%s", err))
-	} else {
-		return xfer.Response{CVEInfo: "Image upload started"}
-	}
+	// call package scanner plugin
+	go func() {
+		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, containerName, scanType)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}()
+	return xfer.Response{CVEInfo: "Image upload started"}
 }

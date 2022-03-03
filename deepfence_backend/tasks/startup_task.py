@@ -1,5 +1,6 @@
 from config.app import app as flask_app
 from tasks.reaper_tasks import cve_fix_interrupted_at_start, update_deepfence_key_in_redis
+from tasks.running_notification import set_db_update_notification
 from threading import Thread
 from tasks.registry_images import update_all_registry_images
 from models.setting import Setting
@@ -7,6 +8,7 @@ from utils.constants import AES_SETTING_KEY, CLOUD_CREDENTIAL_AES_SETTING_KEY
 from utils.helper import wait_for_postgres_table
 import secrets
 import string
+import arrow
 
 
 def update_all_registry_images_in_redis():
@@ -64,6 +66,7 @@ def generate_aes_setting(key, value):
 
 def main():
     update_deepfence_key_in_redis.delay()
+    set_db_update_notification(arrow.now().format('Do MMM, hh:mm A ZZ'))
     process1 = Thread(target=cve_fix_interrupted_at_start)
     process2 = Thread(target=update_all_registry_images_in_redis)
     process3 = Thread(target=generate_aes_settings)

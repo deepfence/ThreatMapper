@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	camlistore.org v0.0.0-20171230002226-a5a65f0d8b22
+	github.com/Jeffail/tunny v0.1.4
 	github.com/NYTimes/gziphandler v1.0.2-0.20180227021810-5032c8878b9d
 	github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
@@ -97,6 +98,7 @@ require (
 	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
 	golang.org/x/tools v0.0.0-20190424220101-1e8e1cfdf96b
 	google.golang.org/grpc v1.19.0
+	// google.golang.org/protobuf v1.27.1
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	gopkg.in/inf.v0 v0.9.0 // indirect
 	k8s.io/api v0.0.0-20181204000039-89a74a8d264d

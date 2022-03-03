@@ -96,12 +96,12 @@ export function removeUnderscore(label) {
   let result = '';
   if (label !== undefined || label !== null) {
     if (label === 'alerts_&_logs_management') {
-      result = 'vulnerability management'
+      result = 'vulnerability & secret management'
     } else {
       result = label.split('_').join(' ');
     }
   } else {
-    result = label; 
+    result = label;
   }
   return result;
 }

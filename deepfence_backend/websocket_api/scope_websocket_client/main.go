@@ -47,6 +47,8 @@ type TopologyStats struct {
 type NodeStatus struct {
 	VulnerabilityScanStatus     map[string]string
 	VulnerabilityScanStatusTime map[string]string
+	SecretScanStatus     map[string]string
+	SecretScanStatusTime map[string]string
 	sync.RWMutex
 }
 
@@ -63,7 +65,7 @@ func (wsCli *WebsocketClient) Init(nodeType string) {
 	wsCli.topologyScope = make(map[string]ScopeTopology)
 	wsCli.topologyDf = make(map[string]DeepfenceTopology)
 	wsCli.dfIdToScopeIdMap = make(map[string]string)
-	wsCli.nodeStatus = NodeStatus{VulnerabilityScanStatus: make(map[string]string)}
+	wsCli.nodeStatus = NodeStatus{VulnerabilityScanStatus: make(map[string]string), SecretScanStatus: make(map[string]string)}
 	wsCli.topologyStats = TopologyStats{NodeCount: 0, EdgeCount: 0}
 }
 
@@ -239,6 +241,14 @@ func (wsCli *WebsocketClient) updateScanStatusData(esClient *elastic.Client) err
 	esQuery := elastic.NewSearchRequest().Index(cveScanLogsEsIndex).Query(elastic.NewMatchAllQuery()).Size(0).Aggregation("node_id", nodeIdAggs)
 	mSearch.Add(esQuery)
 
+	nodeIdAggs = elastic.NewTermsAggregation().Field("node_id.keyword").Size(esAggsSize)
+	statusAggs = elastic.NewTermsAggregation().Field("scan_status.keyword").Size(50)
+	recentTimestampAggs = elastic.NewMaxAggregation().Field("@timestamp")
+	statusAggs.SubAggregation("secret_scan_timestamp", recentTimestampAggs)
+	nodeIdAggs.SubAggregation("secret_scan_status", statusAggs)
+	esQuery = elastic.NewSearchRequest().Index(secretScanLogsEsIndex).Query(elastic.NewMatchAllQuery()).Size(0).Aggregation("node_id", nodeIdAggs)
+	mSearch.Add(esQuery)
+
 	mSearchResult, err := mSearch.Do(context.Background())
 	if err != nil {
 		return err
@@ -274,7 +284,7 @@ func (wsCli *WebsocketClient) updateScanStatusData(esClient *elastic.Client) err
 				}
 			}
 		}
-		latestStatus, ok = vulnerabilityStatusMap[latestStatus]
+		latestStatus, ok = statusMap[latestStatus]
 		if !ok {
 			latestStatus = scanStatusNeverScanned
 		}
@@ -284,6 +294,49 @@ func (wsCli *WebsocketClient) updateScanStatusData(esClient *elastic.Client) err
 	wsCli.nodeStatus.Lock()
 	wsCli.nodeStatus.VulnerabilityScanStatus = nodeIdVulnerabilityStatusMap
 	wsCli.nodeStatus.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap
+	wsCli.nodeStatus.Unlock()
+
+	nodeIdSecretStatusMap := make(map[string]string)
+	nodeIdSecretStatusTimeMap := make(map[string]string)
+	secretResp := mSearchResult.Responses[1]
+	nodeIdAggsBkt, ok = secretResp.Aggregations.Terms("node_id")
+	if !ok {
+		return nil
+	}
+	for _, nodeIdAggs := range nodeIdAggsBkt.Buckets {
+		if nodeIdAggs.Key.(string) == "" {
+			continue
+		}
+		latestScanTime := 0.0
+		var latestStatus, latestScanTimeStr string
+		scanStatusBkt, ok := nodeIdAggs.Aggregations.Terms("secret_scan_status")
+		if !ok {
+			continue
+		}
+		for _, scanStatusAggs := range scanStatusBkt.Buckets {
+			recentTimestampBkt, ok := scanStatusAggs.Aggregations.Max("secret_scan_timestamp")
+			if !ok || recentTimestampBkt == nil || recentTimestampBkt.Value == nil {
+				continue
+			}
+			if *recentTimestampBkt.Value > latestScanTime {
+				latestScanTime = *recentTimestampBkt.Value
+				latestStatus = scanStatusAggs.Key.(string)
+				valueAsStr, ok := recentTimestampBkt.Aggregations["value_as_string"]
+				if ok {
+					latestScanTimeStr = strings.ReplaceAll(string(valueAsStr), "\"", "")
+				}
+			}
+		}
+		latestStatus, ok = statusMap[latestStatus]
+		if !ok {
+			latestStatus = scanStatusNeverScanned
+		}
+		nodeIdSecretStatusMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestStatus
+		nodeIdSecretStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
+	}
+	wsCli.nodeStatus.Lock()
+	wsCli.nodeStatus.SecretScanStatus = nodeIdSecretStatusMap
+	wsCli.nodeStatus.SecretScanStatusTime = nodeIdSecretStatusTimeMap
 	wsCli.nodeStatus.Unlock()
 	return nil
 }

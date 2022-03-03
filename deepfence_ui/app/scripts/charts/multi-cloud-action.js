@@ -16,12 +16,18 @@ const actionOptionsIndex = fromJS({
       triggerStopCVEScanModal(param, triggerModal, dispatch),
     enabled: false,
   },
+  start_secrets_scan: {
+    label: 'Start secrets scan',
+    onClick: (param, triggerModal, dispatch) =>
+      triggerStartSecretsScanModal(param, triggerModal, dispatch),
+    enabled: false,
+  },
 });
 
 const actionOptionsByType = {
-  host: ['start_vulnerability_scan', 'stop_vulnerability_scan'],
-  container: ['start_vulnerability_scan', 'stop_vulnerability_scan'],
-  container_image: ['start_vulnerability_scan', 'stop_vulnerability_scan'],
+  host: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
+  container: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
+  container_image: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
 };
 
 const getIntersection = (array1, array2) =>
@@ -95,10 +101,51 @@ const triggerStopCVEScanModal = (selectedDocIndex, triggerModal, dispatch) => {
   return triggerModal('DIALOG_MODAL', modalProps);
 };
 
-const bulkStopCVEScan = (selectedDocIndex = [], paramsIm = Map(), dispatch) => {
+const triggerStartSecretsScanModal = (selectedDocIndex, triggerModal, dispatch) => {
+  const modalProps = {
+    dialogTitle: 'Start Secrets Scan',
+    dialogBody:
+      'Start secrets scan on all selected nodes?',
+    confirmButtonText: 'Start Scan',
+    cancelButtonText: 'Cancel',
+    onConfirmButtonClick: () =>
+      bulkStartSecretsScan(selectedDocIndex, dispatch),
+  };
+  return triggerModal('DIALOG_MODAL', modalProps);
+};
+
+const bulkStartSecretsScan = async (selectedDocIndex, dispatch) => {
+  const nodeListObject = nodeListWithType(selectedDocIndex);
+  let successCount = 0;
+  let errorCount = 0;
+  // eslint-disable-next-line no-unused-vars
+  for (const [node_type, node_id_list] of Object.entries(nodeListObject)) {
+    const apiParams = {
+      action: 'secret_scan_start',
+      node_type,
+      node_id_list,
+    };
+    try{
+      // eslint-disable-next-line no-await-in-loop
+      const response = await dispatch(scanRegistryImagesAction(apiParams));
+      const { success } = response;
+      if (success) {
+        successCount += node_id_list.length;
+      } else {
+        errorCount += node_id_list.length;
+      }
+    } catch (e) {
+      errorCount += node_id_list.length;
+    }
+  }
+  dispatch(toaster(`Request to start secrets scan on ${successCount} nodes queued successfully${errorCount ? ` , failed on ${errorCount} nodes.` : '.'}`));
+}
+
+const bulkStopCVEScan = async (selectedDocIndex = [], paramsIm = Map(), dispatch) => {
   const params = paramsIm.toJS();
   const nodeListObject = nodeListWithType(selectedDocIndex);
-
+  let successCount = 0;
+  let errorCount = 0;
   // eslint-disable-next-line no-unused-vars
   for (const [node_type, node_id_list] of Object.entries(nodeListObject)) {
     const apiParams = {
@@ -109,14 +156,18 @@ const bulkStopCVEScan = (selectedDocIndex = [], paramsIm = Map(), dispatch) => {
         ...params,
       },
     };
-    return dispatch(scanRegistryImagesAction(apiParams)).then(response => {
-      const { success, error: apiError } = response;
+    try{
+      // eslint-disable-next-line no-await-in-loop
+      const response = await dispatch(scanRegistryImagesAction(apiParams));
+      const { success } = response;
       if (success) {
-        toaster('Request to stop vulnerability scan successfully queued');
+        successCount += node_id_list.length;
       } else {
-        toaster(`ERROR: ${apiError.message}`);
+        errorCount += node_id_list.length;
       }
-    });
+    } catch (e) {
+      errorCount += node_id_list.length;
+    }
   }
-  return nodeListObject;
+  dispatch(toaster(`Request to stop vulnerability scan on ${successCount} nodes queued successfully${errorCount ? ` , failed on ${errorCount} nodes.` : '.'}`));
 };
