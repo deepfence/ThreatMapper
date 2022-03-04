@@ -88,7 +88,7 @@ class RegistryCredential(db.Model):
             # The validating API can send the friendly message to user,
             # while the actual error can used for logging, for debugging.
             actual_error = DFError("non_secret is mandatory")
-            raise DFError("Invalid credentials", error=actual_error)
+            raise DFError("Please provide the required information", error=actual_error)
         if type(non_secret) != dict:
             actual_error = DFError("non_secret should be of type dict")
             raise DFError("Invalid credentials", error=actual_error)
