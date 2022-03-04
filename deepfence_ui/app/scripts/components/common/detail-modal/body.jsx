@@ -34,6 +34,9 @@ const stringifyValue = (value) => {
   if (typeof value === 'undefined') {
     return '-';
   }
+  if (Array.isArray(value) && (value.length === 1) && (typeof value[0] === 'string')) {
+    return value[0];
+  }
   // try to stringify the value
   try {
     return JSON.stringify(value, null, 2);
@@ -44,21 +47,49 @@ const stringifyValue = (value) => {
 
 }
 
-const MAX_VAL_LEN = 40;
+const MAX_VAL_LEN = 120;
+const MIN_CODE_LEN = 40;
+function truncateValue(value) {
+  let isTruncated = false;
+  let isCode = false;
+  let truncatedValue = value;
+
+  if (typeof value !== 'string') return {isTruncated, value, isCode };
+
+  const lines = value.split('\n');
+
+  if (value.length >= MIN_CODE_LEN) isCode = true;
+
+
+  if (lines.length > 1) {
+    isTruncated = true;
+    truncatedValue = `${lines[0]}\n${lines[1]}...`
+  } else if ((lines.length === 1) && (lines[0].length > MAX_VAL_LEN)) {
+    truncatedValue = `${value.substring(0, MAX_VAL_LEN - 3)}...`;
+    isTruncated = true;
+  }
+
+  return {
+    isTruncated,
+    value: truncatedValue,
+    isCode
+  }
+}
+
 const KVPair = (props) => {
-  const dispatch = useDispatch;
+  const dispatch = useDispatch();
   const { k } = props;
   let { value } = props;
   value = stringifyValue(value);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCode, setIsCode] = useState(false);
 
   const truncatedValue = useMemo(() => {
-    if (value.length >= MAX_VAL_LEN) {
-      setIsTruncated(true);
-      return `${value.substring(0, MAX_VAL_LEN - 3)}...`;
-    }
-    return value;
+    const {isTruncated, value: truncatedValue, isCode} = truncateValue(value);
+    setIsTruncated(isTruncated);
+    setIsCode(isCode);
+    return truncatedValue;
   }, [value]);
 
   const copyToClipboard = useCallback(() => {
@@ -72,7 +103,7 @@ const KVPair = (props) => {
 
   return (
     <div className={styles.kvPairWrapper} style={{
-      gridColumn: isTruncated ? '1 / span 3' : undefined
+      gridColumn: isCode ? '1 / span 3' : undefined
     }}>
       <div className={styles.kvPairTitle}>
         {processKey(k)}
@@ -88,7 +119,7 @@ const KVPair = (props) => {
         }
       </div>
       <div className={classNames(styles.kvPairValue, {
-        [styles.codeValue]: isTruncated
+        [styles.codeValue]: isCode
       })}>
         {(isTruncated && isExpanded) || !isTruncated ? value : truncatedValue}
         <i className="fa fa-copy" onClick={copyToClipboard} />

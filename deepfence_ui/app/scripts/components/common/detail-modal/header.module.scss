@@ -8,6 +8,7 @@
   padding: 10px 50px;
   z-index: 1;
   width: 100%;
+  overflow: hidden;
 }
 
 .wrapper {
@@ -46,7 +47,7 @@
   display: flex;
   flex: 1;
   gap: 80px;
-  max-width: 80%;
+  max-width: 75%;
 }
 
 .alertSummaryItem {
