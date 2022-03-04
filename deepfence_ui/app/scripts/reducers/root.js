@@ -1525,6 +1525,14 @@ export function rootReducer(state = initialState, action) {
         'Your request to get top attack paths failed.');
     }
 
+
+    case ActionTypes.GET_RUNTIME_BOM_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('runtime_bom', data);
+      return state;
+    }
     case ActionTypes.GET_REGISTRY_IMAGES_TAGS_SUCCESS: {
       const {
         payload: { data },

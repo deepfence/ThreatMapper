@@ -10,6 +10,7 @@ imports = (
     'tasks.registry_images',
     'tasks.running_notification',
     'tasks.user_activity',
+    'tasks.open_files',
 )
 
 task_create_missing_queues = True

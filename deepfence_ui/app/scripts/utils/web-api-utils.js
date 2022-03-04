@@ -2235,6 +2235,18 @@ export function addGlobalSettings(params = {}) {
   }).then(errorHandler);
 }
 
+
+export function getRuntimeBomData() {
+  const url = `${backendElasticApiEndPoint()}/vulnerabilities/runtime_bom`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
 export function getRegistryImagesTags(params = {}) {
   const url = `${backendElasticApiEndPoint()}/registry_images_tags`;
   return fetch(url, {
