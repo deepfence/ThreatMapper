@@ -85,7 +85,6 @@ import {
   getTopAttackPathsForNode,
   getRuntimeBomData,
   getRegistryImagesTags,
-  getTopAttackPathsForNode,
   getSecretScanStatus,
   startSecretScan,
   secretsScanRegistryImages,
