@@ -19,7 +19,8 @@ const HeaderControlAction = ({
   title,
   label,
   icon,
-  onClick
+  onClick,
+  loading
 }) => {
   return (
     <button
@@ -27,6 +28,7 @@ const HeaderControlAction = ({
       className={classNames("primary-btn", styles.actionButton)}
       onClick={onClick}
       title={title}
+      disabled={loading}
     >
       {icon}
       {label}
@@ -60,6 +62,7 @@ export const DetailModalHeader = ({
                 onClick={action.onClick}
                 title={action.title}
                 key={action.label}
+                loading={action.loading}
               />
             })
           ) : null}
