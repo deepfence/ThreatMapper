@@ -151,6 +151,7 @@ PACKAGE_SCANNER_REGISTRY_API_URL = "http://deepfence-package-scanner:8005/regist
 
 CVE_INDEX = "cve"
 CVE_SCAN_LOGS_INDEX = "cve-scan"
+SBOM_INDEX = "sbom-cve-scan"
 SECRET_SCAN_INDEX = "secret-scan"
 SECRET_SCAN_LOGS_INDEX = "secret-scan-logs"
 REPORT_INDEX = "report"
