@@ -1010,6 +1010,11 @@ def delete_resources():
             ESConn.bulk_delete(SECRET_SCAN_INDEX, filters)
             ESConn.bulk_delete(SECRET_SCAN_LOGS_INDEX, filters)
             message = "Successfully deleted scan id"
+        else:
+            if severity:
+                filters["Severity.level"] = severity
+            ESConn.bulk_delete(SECRET_SCAN_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
+            ESConn.bulk_delete(SECRET_SCAN_LOGS_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
     else:
         raise InvalidUsage("doc_type is invalid")
 

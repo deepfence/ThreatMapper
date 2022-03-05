@@ -208,17 +208,21 @@ class Node(object):
             "node_type": self.type,
             "node_name": self.host_name,
             "host_name": self.host_name,
-            "type": constants.SECRET_SCAN_LOGS_INDEX,
             "scan_status": "QUEUED",
             "scan_message": "",
             "scan_id": scan_id,
             "time_stamp": int(time_time * 1000.0),
+            "container_name": "" if self.type != constants.NODE_TYPE_CONTAINER else
+            self.host_name + "/" + self.container_name,
+            "kubernetes_cluster_name": self.kubernetes_cluster_name,
             "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] + "Z"
         }
         ESConn.create_doc(constants.SECRET_SCAN_LOGS_INDEX, es_doc)
-        post_data = {"node_type": self.type, "scan_id": scan_id, "node_id": self.scope_id}
+        post_data = {"node_type": self.type, "scan_id": scan_id, "node_id": self.scope_id,
+                     "kubernetes_cluster_name": self.kubernetes_cluster_name, "container_name": ""}
         if self.type == constants.NODE_TYPE_CONTAINER:
             post_data["container_id"] = self.docker_container_id
+            post_data["container_name"] = self.host_name + "/" + self.container_name
         elif self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
             post_data["image_id"] = self.image_id
             post_data["image_name"] = self.image_name_tag

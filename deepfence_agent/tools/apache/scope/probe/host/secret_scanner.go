@@ -115,6 +115,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	secretScanLogDoc["node_id"] = controlArgs["node_id"]
 	secretScanLogDoc["node_type"] = controlArgs["node_type"]
 	secretScanLogDoc["node_name"] = hostName
+	secretScanLogDoc["container_name"] = controlArgs["container_name"]
+	secretScanLogDoc["kubernetes_cluster_name"] = controlArgs["kubernetes_cluster_name"]
 	secretScanLogDoc["host_name"] = hostName
 	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
 	secretScanLogDoc["masked"] = "false"
@@ -170,6 +172,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		secretScanDoc["masked"] = "false"
 		secretScanDoc["host_name"] = hostName
 		secretScanDoc["scan_id"] = controlArgs["scan_id"]
+		secretScanDoc["container_name"] = controlArgs["container_name"]
+		secretScanDoc["kubernetes_cluster_name"] = controlArgs["kubernetes_cluster_name"]
 		secretScanDoc["time_stamp"] = timestamp
 		secretScanDoc["@timestamp"] = currTime
 		values := reflect.ValueOf(*secret)

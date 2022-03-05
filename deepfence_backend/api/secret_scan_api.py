@@ -58,8 +58,11 @@ def secret_scanned_nodes():
         node_ids = []
         node_ids.extend(req_filters.get("image_name_with_tag", []))
         node_ids.extend(req_filters.get("host_name", []))
-        node_ids.extend(req_filters.get("container_name", []))
         filters["node_id"] = node_ids
+        if len(req_filters.get("container_name", [])) > 0:
+            filters["container_name"] = req_filters.get("container_name", [])
+        if len(req_filters.get("kubernetes_cluster_name", [])) > 0:
+            filters["kubernetes_cluster_name"] = req_filters.get("kubernetes_cluster_name", [])
         node_filters = request.json.get("node_filters", {})
         page_size = request.json.get("size", page_size)
         start_index = request.json.get("start_index", start_index)
@@ -97,6 +100,11 @@ def secret_scanned_nodes():
                         "node_name": {
                             "terms": {
                                 "field": "node_name.keyword"
+                            }
+                        },
+                        "container_name": {
+                            "terms": {
+                                "field": "container_name.keyword"
                             }
                         }
                     }
@@ -174,7 +182,10 @@ def secret_scanned_nodes():
                     "node_name": "", "node_id": node_id_aggr["key"], "scan_id": scan_id_aggr["key"],
                     "node_type": node_type, "scan_status": constants.SECRET_SCAN_STATUS_COMPLETED}
                 if scan_id_aggr["node_name"]["buckets"]:
-                    scan_details["node_name"] = scan_id_aggr["node_name"]["buckets"][0]["key"]
+                    scan_details["node_name"] = node_id_aggr["key"].split(";")[0]
+                if scan_id_aggr["container_name"]["buckets"] and scan_id_aggr["container_name"]["buckets"][0]["key"] != "":
+                    scan_details["container_name"] = scan_id_aggr["container_name"]["buckets"][0]["key"]
+                    scan_details["node_name"] = scan_details["container_name"]
                 for status_aggr in scan_id_aggr["severity"]["buckets"]:
                     scan_details["severity"][status_aggr["key"]] = status_aggr["doc_count"]
                 scan_details["total"] = 0
@@ -186,7 +197,7 @@ def secret_scanned_nodes():
             if not scan_list:
                 continue
             node_data = {
-                "node_name": scan_list[0]["node_name"],
+                "node_name": scan_list[0].get("container_name", "") if scan_list[0]["node_type"] == constants.NODE_TYPE_CONTAINER else scan_list[0]["node_name"],
                 "node_id": scan_list[0]["node_id"],
                 "node_type": scan_list[0]["node_type"],
                 "scans": scan_list,

@@ -957,7 +957,16 @@ def enumerate_node_filters():
             scan_aggs = {
                 "node_type": {
                     "terms": {"field": "node_type.keyword", "size": 10},
-                    "aggs": {"node_id": {"terms": {"field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE}}}
+                    "aggs": {"node_id": {
+                        "terms": {"field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE},
+                        "aggs": {
+                            "container_name": {
+                                "terms": {
+                                    "field": "container_name.keyword"
+                                }
+                            }
+                        }
+                    }}
                 }
             }
             secret_scan_aggs = ESConn.aggregation_helper(
@@ -978,7 +987,7 @@ def enumerate_node_filters():
                         if node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
                             images.append(node_id)
                         if node_type == constants.NODE_TYPE_CONTAINER:
-                            containers.append(node_id)
+                            containers.append(bucket.get("container_name", {}).get("buckets", [{}])[0].get("key", ""))
                         if node_type == constants.NODE_TYPE_HOST:
                             hosts.append(node_id)
                 if len(containers) > 0:
