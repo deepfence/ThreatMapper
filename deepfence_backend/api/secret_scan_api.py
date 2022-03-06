@@ -512,6 +512,7 @@ def secret_exposing_nodes():
                     not node_details.get("pseudo", False) and node_details.get("docker_container_state") == "running":
                 if node_details["image_name_with_tag"] not in active_images:
                     active_images.append(node_details["image_name_with_tag"] + ";<container_image>")
+                    active_images.append(node_details["scope_id"])
     # TODO: es max clause
     active_hosts = active_hosts[:ES_MAX_CLAUSE]
     active_images = active_images[:ES_MAX_CLAUSE]
@@ -539,6 +540,17 @@ def secret_exposing_nodes():
                                 "field": "Severity.level.keyword",
                                 "size": ES_TERMS_AGGR_SIZE
                             }
+                        },
+                        "container_name": {
+                            "terms": {
+                                "field": "container_name.keyword"
+                            }
+                        }
+                        ,
+                        "node_type": {
+                            "terms": {
+                                "field": "node_type.keyword"
+                            }
                         }
                     }
                 }
@@ -548,7 +560,7 @@ def secret_exposing_nodes():
     host_filters = {"node_type": constants.NODE_TYPE_HOST, "node_id": active_hosts}
     host_query = ESConn.aggregation_helper(constants.SECRET_SCAN_INDEX, host_filters, aggs, number,
                                            TIME_UNIT_MAPPING.get(time_unit), lucene_query_string, get_only_query=True)
-    container_filters = {"node_type": constants.NODE_TYPE_CONTAINER_IMAGE, "node_id": active_images}
+    container_filters = {"node_type": [constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_CONTAINER], "node_id": active_images}
     container_query = ESConn.aggregation_helper(constants.SECRET_SCAN_INDEX, container_filters, aggs, number,
                                                 TIME_UNIT_MAPPING.get(time_unit), lucene_query_string,
                                                 get_only_query=True)
@@ -573,6 +585,8 @@ def secret_exposing_nodes():
                 for severity_bkt in scan_id_bkt["severity"]["buckets"]:
                     image_data = {"node": image_aggs["key"], "type": severity_bkt["key"],
                                   "value": severity_bkt["doc_count"]}
+                    if scan_id_bkt["node_type"]["buckets"][0]["key"] == constants.NODE_TYPE_CONTAINER:
+                        image_data["node"] = scan_id_bkt["container_name"]["buckets"][0]["key"]
                     response[constants.NODE_TYPE_CONTAINER_IMAGE].append(image_data)
     return set_response(data=response)
 
