@@ -3,6 +3,11 @@
   margin-right: 25px;
   overflow-x: auto;
 
+  &.noMargin {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+
   .headerCell {
     overflow: hidden;
     text-overflow: ellipsis;

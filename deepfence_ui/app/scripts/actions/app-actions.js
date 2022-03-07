@@ -95,6 +95,7 @@ import {
   secretScanMaskDocs,
   secretScanUnmaskDocs,
   stopCVEScan,
+  getSBOMByScanId,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1520,6 +1521,15 @@ export function reportGenerateAction(params) {
     ActionTypes.REPORT_GENERATION_FAILURE,
   ];
   return genericThunkAction(actionTypes, reportGenerate, params);
+}
+
+export function getSBOMByScanIdAction(params) {
+  const actionTypes = [
+    ActionTypes.SBOM_BY_SCAN_ID_REQUEST,
+    ActionTypes.SBOM_BY_SCAN_ID_SUCCESS,
+    ActionTypes.SBOM_BY_SCAN_ID_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getSBOMByScanId, params);
 }
 
 export function reportDownloadStatusAction(params) {
