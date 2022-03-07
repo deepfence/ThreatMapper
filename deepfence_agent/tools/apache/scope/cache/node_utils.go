@@ -220,17 +220,17 @@ func (r *RedisCache) formatTopologyHostData(nodeSummaries detailed.NodeSummaries
 	redisConn := r.redisPool.Get()
 	defer redisConn.Close()
 	localNetworksAllHosts = uniqueSlice(localNetworksAllHosts)
-	localNetworksAllHostsJson, _ := JsonEncode(localNetworksAllHosts)
+	localNetworksAllHostsJson, _ := CodecEncode(localNetworksAllHosts)
 	_, err := redisConn.Do("SETEX", topologyLocalNetworksRedisKey, RedisExpiryTime, string(localNetworksAllHostsJson))
 	if err != nil {
 		log.Println("Error: SETEX "+topologyLocalNetworksRedisKey, err)
 	}
-	hostNameProbeIdMapJson, _ := JsonEncode(hostNameProbeIdMap)
+	hostNameProbeIdMapJson, _ := CodecEncode(hostNameProbeIdMap)
 	_, err = redisConn.Do("SETEX", topologyHostsProbeMapRedisKey, RedisExpiryTime, string(hostNameProbeIdMapJson))
 	if err != nil {
 		log.Println("Error: SETEX "+topologyHostsProbeMapRedisKey, err)
 	}
-	countOfHostsByUserJson, _ := JsonEncode(countOfHostsByUser)
+	countOfHostsByUserJson, _ := CodecEncode(countOfHostsByUser)
 	_, err = redisConn.Do("SETEX", countOfHostsByUserKey, RedisExpiryTime, string(countOfHostsByUserJson))
 	if err != nil {
 		log.Println("Error: SETEX "+countOfHostsByUserKey, err)
@@ -288,7 +288,7 @@ func (r *RedisCache) formatTopologyHostData(nodeSummaries detailed.NodeSummaries
 	if len(filtersAgentVersion) > 0 {
 		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "version", Label: "Sensor Version", Type: filterTypeStr, Options: filtersAgentVersion, NumberOptions: nil})
 	}
-	topologyFiltersJson, _ := JsonEncode(topologyFilters)
+	topologyFiltersJson, _ := CodecEncode(topologyFilters)
 	_, err = redisConn.Do("SETEX", r.filterRedisKey, RedisExpiryTime, string(topologyFiltersJson))
 	if err != nil {
 		log.Println("Error: SETEX "+r.filterRedisKey, err)
@@ -470,7 +470,7 @@ func (r *RedisCache) formatTopologyContainerData(nodeSummaries detailed.NodeSumm
 	if len(filtersKubernetesClusterName) > 0 {
 		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "kubernetes_cluster_name", Label: "Kubernetes Cluster Name", Type: filterTypeStr, Options: filtersKubernetesClusterName, NumberOptions: nil})
 	}
-	topologyFiltersJson, _ := JsonEncode(topologyFilters)
+	topologyFiltersJson, _ := CodecEncode(topologyFilters)
 	_, err = redisConn.Do("SETEX", r.filterRedisKey, RedisExpiryTime, string(topologyFiltersJson))
 	if err != nil {
 		log.Println("Error: SETEX "+r.filterRedisKey, err)
@@ -578,7 +578,7 @@ func (r *RedisCache) formatTopologyContainerImageData(nodeSummaries detailed.Nod
 	if len(filtersUserDefinedTags) > 0 {
 		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "user_defined_tags", Label: "User Defined Tags", Type: filterTypeStr, Options: filtersUserDefinedTags, NumberOptions: nil})
 	}
-	topologyFiltersJson, _ := JsonEncode(topologyFilters)
+	topologyFiltersJson, _ := CodecEncode(topologyFilters)
 	_, err = redisConn.Do("SETEX", r.filterRedisKey, RedisExpiryTime, string(topologyFiltersJson))
 	if err != nil {
 		log.Println("Error: SETEX "+r.filterRedisKey, err)
@@ -769,7 +769,7 @@ func (r *RedisCache) formatTopologyPodData(nodeSummaries detailed.NodeSummaries)
 		dfIdToScopeIdMap[dfTopology.ID] = scopeTopology.ID
 	}
 	localNetworksK8s = uniqueSlice(localNetworksK8s)
-	localNetworksK8sJson, _ := JsonEncode(localNetworksK8s)
+	localNetworksK8sJson, _ := CodecEncode(localNetworksK8s)
 	_, err := redisConn.Do("SETEX", topologyLocalNetworksK8sRedisKey, RedisExpiryTime, string(localNetworksK8sJson))
 	if err != nil {
 		log.Println("Error: SETEX "+topologyLocalNetworksRedisKey, err)
@@ -790,7 +790,7 @@ func (r *RedisCache) formatTopologyPodData(nodeSummaries detailed.NodeSummaries)
 	if len(filtersKubernetesNamespace) > 0 {
 		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "kubernetes_namespace", Label: "Namespace", Type: filterTypeStr, Options: filtersKubernetesNamespace, NumberOptions: nil})
 	}
-	topologyFiltersJson, _ := JsonEncode(topologyFilters)
+	topologyFiltersJson, _ := CodecEncode(topologyFilters)
 	_, err = redisConn.Do("SETEX", r.filterRedisKey, RedisExpiryTime, string(topologyFiltersJson))
 	if err != nil {
 		log.Println("Error: SETEX "+r.filterRedisKey, err)
@@ -872,7 +872,7 @@ func (r *RedisCache) formatTopologyKubeServiceData(nodeSummaries detailed.NodeSu
 		dfIdToScopeIdMap[dfTopology.ID] = scopeTopology.ID
 	}
 	k8sIps = uniqueSlice(k8sIps)
-	k8sIpsJson, _ := JsonEncode(k8sIps)
+	k8sIpsJson, _ := CodecEncode(k8sIps)
 	redisConn := r.redisPool.Get()
 	defer redisConn.Close()
 	_, err := redisConn.Do("SETEX", topologyLocalServicesK8sRedisKey, RedisExpiryTime, string(k8sIpsJson))
@@ -891,7 +891,7 @@ func (r *RedisCache) formatTopologyKubeServiceData(nodeSummaries detailed.NodeSu
 	if len(filtersKubernetesNamespace) > 0 {
 		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "kubernetes_namespace", Label: "Namespace", Type: filterTypeStr, Options: filtersKubernetesNamespace, NumberOptions: nil})
 	}
-	topologyFiltersJson, _ := JsonEncode(topologyFilters)
+	topologyFiltersJson, _ := CodecEncode(topologyFilters)
 	_, err = redisConn.Do("SETEX", r.filterRedisKey, RedisExpiryTime, string(topologyFiltersJson))
 	if err != nil {
 		log.Println("Error: SETEX "+r.filterRedisKey, err)
@@ -967,7 +967,7 @@ func (r *RedisCache) formatTopologyKubeControllerData(nodeSummaries detailed.Nod
 	if len(filtersKubernetesNamespace) > 0 {
 		topologyFilters = append(topologyFilters, TopologyFilterOption{Name: "kubernetes_namespace", Label: "Namespace", Type: filterTypeStr, Options: filtersKubernetesNamespace, NumberOptions: nil})
 	}
-	topologyFiltersJson, _ := JsonEncode(topologyFilters)
+	topologyFiltersJson, _ := CodecEncode(topologyFilters)
 	redisConn := r.redisPool.Get()
 	defer redisConn.Close()
 	_, err := redisConn.Do("SETEX", r.filterRedisKey, RedisExpiryTime, string(topologyFiltersJson))

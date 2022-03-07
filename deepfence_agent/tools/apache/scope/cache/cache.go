@@ -63,7 +63,7 @@ func (r *RedisCache) Update(nodeSummaries detailed.NodeSummaries) {
 	}
 	redisConn := r.redisPool.Get()
 	defer redisConn.Close()
-	topologyScopeJson, _ := JsonEncode(nodeSummaries)
+	topologyScopeJson, _ := CodecEncode(nodeSummaries)
 	_, err = redisConn.Do("SETEX", r.topologyOptionsScope.Key, RedisExpiryTime, string(topologyScopeJson))
 	if err != nil {
 		log.Printf("Error: SETEX %s: %v\n", r.topologyOptionsScope.Key, err)
@@ -97,7 +97,7 @@ func (r *RedisCache) Update(nodeSummaries detailed.NodeSummaries) {
 	//
 	// Set current df format data
 	//
-	topologyDfJson, _ := JsonEncode(topologyDf)
+	topologyDfJson, _ := CodecEncode(topologyDf)
 	_, err = redisConn.Do("SETEX", r.topologyOptionsDf.Key, RedisExpiryTime, string(topologyDfJson))
 	if err != nil {
 		log.Println(fmt.Sprintf("Error: SETEX %s:", r.topologyOptionsDf.Key), err)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ugorji/go/codec"
 	"github.com/weaveworks/scope/report"
 	"os"
 	"os/exec"
@@ -152,6 +153,15 @@ func JsonEncode(data interface{}) ([]byte, error) {
 	enc := json.NewEncoder(buf)
 	enc.SetEscapeHTML(false)
 	err := enc.Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func CodecEncode(data interface{}) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := codec.NewEncoder(buf, &codec.JsonHandle{}).Encode(data)
 	if err != nil {
 		return nil, err
 	}
