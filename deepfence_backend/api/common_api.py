@@ -988,7 +988,7 @@ def delete_resources():
             ESConn.bulk_delete(CVE_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
 
         if (not only_masked and not severity) or scan_id or only_dead_nodes:
-            scan_log_filters = {"type": CVE_SCAN_LOGS_INDEX}
+            scan_log_filters = {}
             if scan_id:
                 scan_log_filters["scan_id"] = scan_id
             if only_dead_nodes:
