@@ -986,8 +986,6 @@ def delete_resources():
                     **filters, "cve_container_image": delete_node_name_chunk, "node_type": NODE_TYPE_CONTAINER_IMAGE})
         else:
             ESConn.bulk_delete(CVE_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
-            if severity is None:
-                ESConn.bulk_delete(SBOM_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
 
         if (not only_masked and not severity) or scan_id or only_dead_nodes:
             scan_log_filters = {"type": CVE_SCAN_LOGS_INDEX}
@@ -997,11 +995,17 @@ def delete_resources():
                 for delete_node_name_chunk in split_list_into_chunks(host_names_to_delete, ES_MAX_CLAUSE):
                     ESConn.bulk_delete(CVE_SCAN_LOGS_INDEX, {
                         **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_HOST})
+                    ESConn.bulk_delete(SBOM_INDEX, {
+                        **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_HOST})
                 for delete_node_name_chunk in split_list_into_chunks(image_names_to_delete, ES_MAX_CLAUSE):
                     ESConn.bulk_delete(CVE_SCAN_LOGS_INDEX, {
                         **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_CONTAINER_IMAGE})
+                    ESConn.bulk_delete(SBOM_INDEX, {
+                        **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_CONTAINER_IMAGE})
             else:
                 ESConn.bulk_delete(CVE_SCAN_LOGS_INDEX, scan_log_filters, number,
+                                   TIME_UNIT_MAPPING[time_unit])
+                ESConn.bulk_delete(SBOM_INDEX, scan_log_filters, number,
                                    TIME_UNIT_MAPPING[time_unit])
         message = "Successfully scheduled deletion of selected vulnerabilities"
 
