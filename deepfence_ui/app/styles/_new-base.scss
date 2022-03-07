@@ -671,6 +671,12 @@
       text-align: left;
       margin-top: 10px;
       font-weight: 400;
+
+      .sbom-link {
+        color: $color-primary;
+        cursor: pointer;
+        font-weight: bold;
+      }
     }
   }
 }
@@ -5002,6 +5008,41 @@ input {
     }
   }
 }
+
+
+.row-action-menu {
+  min-width: 42px;
+  margin-left: 16px;
+  margin-right: 8px;
+  cursor: pointer;
+  .user-icon {
+    font-size: 24px;
+    margin-right: 8px;
+  }
+  .row-action-dropdown-wrapper {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .tippy-content {
+    padding: 0;
+  }
+  .row-action-dropdown-item {
+    color: $text-primary;
+    display: flex;
+    padding: 4px 12px;
+    .row-action-item-icon {
+      margin-right: 8px;
+    }
+    .row-action-item-text {
+      font-weight: 600;
+    }
+
+    &:hover {
+      background-color: $color-secondary-shade;
+    }
+  }
+}
+
 
 .green-dot {
   height: 8px;

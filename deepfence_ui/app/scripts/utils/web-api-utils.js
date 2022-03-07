@@ -1424,7 +1424,7 @@ export function saveGceCredentialKey({
   });
 }
 
-const errorHandler = (response, dispatch) => {
+const errorHandler = (response, dispatch, skipJsonParsing) => {
   if (!response.ok) {
     if (response.status === 401 || response.statusText === 'UNAUTHORIZED') {
       refreshAuthToken();
@@ -1433,6 +1433,9 @@ const errorHandler = (response, dispatch) => {
     } else {
       log(`Error in api modal details request: ${response}`);
     }
+  }
+  if (skipJsonParsing) {
+    return response;
   }
   return response.json();
 };
@@ -1963,6 +1966,25 @@ export function reportGenerate(params = {}) {
       Authorization: getAuthHeader(),
     },
   }).then(errorHandler);
+}
+
+export function getSBOMByScanId(params = {}) {
+  const {scanId, action = 'get', dispatch} = params;
+  const url = `${backendElasticApiEndPoint()}/vulnerability/sbom`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify({
+      action,
+      filters: {
+        scan_id: scanId
+      }
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then((response) => errorHandler(response, dispatch, action === 'download'));
 }
 
 export function reportDownloadStatus(params = {}) {
