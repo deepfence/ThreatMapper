@@ -170,6 +170,7 @@ REGISTRY_IMAGES_CACHE_EXPIRY_TIME = datetime.timedelta(days=2)
 
 OPEN_FILES_CACHE_KEY = 'OPEN_FILES_LIST'
 OPEN_FILES_CACHE_EXPIRY_TIME = datetime.timedelta(days=2)
+SECRET_SCANNER_FILE_PREFIX = '/tmp/Deepfence/SecretScanning'
 
 DURATION_IN_MINS = [
     (-1, 'immediate'),

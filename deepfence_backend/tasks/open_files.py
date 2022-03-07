@@ -1,5 +1,5 @@
 from config.app import celery_app, app
-from utils.constants import OPEN_FILES_CACHE_KEY, OPEN_FILES_CACHE_EXPIRY_TIME, CVE_INDEX
+from utils.constants import OPEN_FILES_CACHE_KEY, OPEN_FILES_CACHE_EXPIRY_TIME, CVE_INDEX, SECRET_SCANNER_FILE_PREFIX
 import json
 from utils.scope import fetch_topology_processes
 import os
@@ -33,6 +33,8 @@ def list_all_open_files():
                     (item for item in process_data.get("parents", []) if item["topologyId"] == "hosts"), {})
                 process_file_list = open_files_metadata["value"].split(",")
                 for process_open_file in process_file_list:
+                    if process_open_file.starts_with(SECRET_SCANNER_FILE_PREFIX):
+                        continue
                     if open_files_list.get(process_open_file, None):
                         process_open_file_details = open_files_list[process_open_file]
                         host_details = next((item for item in process_open_file_details["hosts"] if
@@ -137,7 +139,26 @@ def set_vulnerability_status_for_packages(open_files_list):
             "bool": {
                 "should": package_queries
             }
-        }
+        },
+        "sort": [
+            {
+                "cve_caused_by_package_path.keyword": "asc"
+            },
+            {
+                "_script": {
+                    "type": "number",
+                    "script": {
+                        "lang": "painless",
+                        "source": "params.sortOrder.indexOf(doc['cve_severity.keyword'].value)",
+                        "params": {"sortOrder": ["info", "low", "medium", "high", "critical"]}
+                    },
+                    "order": "desc"
+                }
+            },
+            {
+                "cve_overall_score": "desc"
+            }
+        ]
     }
     cve_es_list = ESConn.search(CVE_INDEX, query, 0, 49999)
     cve_hits = []
