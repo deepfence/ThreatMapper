@@ -13,7 +13,7 @@ SEVERITY_RANK = {
     "medium": 2,
     "low": 3,
     "info": 4,
-    "unknown": 5
+    "never_scanned": 5
 }
 
 
@@ -90,7 +90,7 @@ def list_all_open_files():
                         file_data = {
                             "package": package,
                             "filepath": process_open_file,
-                            "vulnerability_status": "Unknown",
+                            "vulnerability_status": "never_scanned",
                             "hosts": [{
                                 "host_name": process_host_data["label"],
                                 "processes": [process_info]
