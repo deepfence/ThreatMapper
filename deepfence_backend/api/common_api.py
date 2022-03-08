@@ -2,8 +2,11 @@ import math
 import os
 from urllib.parse import unquote
 from flask import Blueprint, request, make_response
+from collections import defaultdict
 from flask import current_app as app
 from flask_jwt_extended import jwt_required
+import networkx as nx
+from api.vulnerability_api import get_top_vulnerable_nodes_helper
 from models.notification import RunningNotification
 from utils.response import set_response
 from utils.helper import split_list_into_chunks, get_deepfence_logs, get_process_ids_for_pod, md5_hash
@@ -18,6 +21,8 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta
+from utils.helper import is_network_attack_vector, get_topology_network_graph
+from utils.node_utils import NodeUtils
 from flask.views import MethodView
 from utils.custom_exception import InvalidUsage, InternalError, DFError, NotFound
 from models.node_tags import NodeTags
@@ -31,6 +36,7 @@ import json
 from flask_jwt_extended import get_jwt_identity
 from utils.resource import filter_node_for_vulnerabilities, get_default_params
 from utils.resource import encrypt_cloud_credential
+from resource_models.node import Node
 
 common_api = Blueprint("common_api", __name__)
 
@@ -1437,6 +1443,287 @@ def registry_images_tags():
     for image in image_dict['image_list']:
         images_set.add(image["image_tag"])
     return set_response(list(images_set))
+
+@common_api.route("/attack-path", methods=["GET"])
+@jwt_required()
+def alerts_attack_path():
+    number = request.args.get("number")
+    time_unit = request.args.get("time_unit")
+
+    if number:
+        try:
+            number = int(number)
+        except ValueError:
+            raise InvalidUsage("Number should be an integer value.")
+
+    if bool(number is not None) ^ bool(time_unit):
+        raise InvalidUsage("Require both number and time_unit or ignore both of them.")
+
+    if time_unit and time_unit not in TIME_UNIT_MAPPING.keys():
+        raise InvalidUsage("time_unit should be one of these, month/day/hour/minute")
+    lucene_query_string = request.args.get("lucene_query")
+    if lucene_query_string:
+        lucene_query_string = unquote(lucene_query_string)
+    else:
+        lucene_query_string = ""
+
+    graph_type = request.args.get("graph_type")
+    if graph_type not in ["most_vulnerable_attack_paths", "direct_internet_exposure", "indirect_internet_exposure",
+                          "most_attacked"]:
+        raise InvalidUsage("invalid type")
+
+    top_attack_paths = {}
+    node_utils = NodeUtils()
+    top_vulnerablities = get_top_vulnerable_nodes_helper(
+        number, time_unit, lucene_query_string, size=ES_TERMS_AGGR_SIZE)
+    if not top_vulnerablities:
+        return set_response(data=[])
+    top_nodes = {}
+    top_node_cves = defaultdict(list)
+    ignore_nodes = {}
+    for vulnerability in top_vulnerablities:
+        cve_doc = vulnerability.get("_source", {})
+        cve_container_image = cve_doc.get("cve_container_image")
+        node_type = cve_doc.get("node_type")
+        scope_id = cve_container_image + ";<" + node_type + ">"
+        if cve_doc.get("cve_id") not in top_node_cves[scope_id]:
+            top_node_cves[scope_id].append(cve_doc.get("cve_id"))
+        if len(top_nodes) >= 10:
+            continue
+        if ignore_nodes.get(scope_id):
+            continue
+        if cve_container_image in top_nodes:
+            continue
+        if not is_network_attack_vector(cve_doc.get("cve_attack_vector", "")):
+            continue
+        node = Node.get_node("", scope_id, node_type)
+        attack_path = node.get_attack_path_for_node(top_n=1)
+        if not attack_path:
+            ignore_nodes[node.scope_id] = True
+            continue
+        top_attack_paths[node.node_id] = attack_path
+        top_nodes[node.node_id] = True
+
+    if graph_type == "most_vulnerable_attack_paths":
+        response = []
+        for node_id in top_nodes.keys():
+            node = Node(node_id)
+            response.append(
+                {
+                    "cve_attack_vector": "network",
+                    "attack_path": top_attack_paths.get(node_id, []),
+                    "ports": node.get_live_open_ports(),
+                    "cve_id": top_node_cves.get(node.scope_id, [])[:3]
+                }
+            )
+        return set_response(data=response)
+    elif graph_type == "direct_internet_exposure":
+        top_attack_paths = {}
+        topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
+        hosts_graph = get_topology_network_graph(topology_hosts)
+        incoming_internet_host_id = "in-theinternet"
+        outgoing_internet_host_id = "out-theinternet"
+        incoming_host_paths = {}
+        try:
+            incoming_host_paths = nx.shortest_path(hosts_graph, source=incoming_internet_host_id)
+        except nx.exception.NodeNotFound:
+            pass
+
+        for scope_id, shortest_path in incoming_host_paths.items():
+            if scope_id == "in-theinternet" or scope_id == "out-theinternet":
+                continue
+            if len(shortest_path) == 2:
+                labelled_path = [topology_hosts[i]["label"] for i in shortest_path]
+                top_attack_paths[scope_id] = [labelled_path]
+
+        outgoing_host_paths = {}
+        try:
+            outgoing_host_paths = nx.shortest_path(hosts_graph, target=outgoing_internet_host_id)
+        except nx.exception.NodeNotFound:
+            pass
+
+        for scope_id, shortest_path in outgoing_host_paths.items():
+            if scope_id == "out-theinternet" or scope_id == "in-theinternet":
+                continue
+            if len(shortest_path) == 2:
+                labelled_path = [topology_hosts[i]["label"] for i in shortest_path]
+                labelled_path.reverse()
+                top_attack_paths[scope_id] = [labelled_path]
+
+        topology_containers = fetch_topology_data(NODE_TYPE_CONTAINER, format="scope")
+        containers_graph = get_topology_network_graph(topology_containers)
+        incoming_internet_container_id = "in-theinternet"
+        outgoing_internet_container_id = "out-theinternet"
+        incoming_container_paths = {}
+        try:
+            incoming_container_paths = nx.shortest_path(containers_graph, source=incoming_internet_container_id)
+        except nx.exception.NodeNotFound:
+            pass
+
+        for scope_id, shortest_path in incoming_container_paths.items():
+            if scope_id == "in-theinternet" or scope_id == "out-theinternet":
+                continue
+            if len(shortest_path) == 2:
+                labelled_path = []
+                for i in shortest_path:
+                    labelled_element = ""
+                    if i not in [incoming_internet_container_id, outgoing_internet_container_id]:
+                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                    if not labelled_element:
+                        labelled_element = topology_containers[i]["label"]
+                    labelled_path.append(labelled_element)
+                top_attack_paths[scope_id] = [labelled_path]
+
+        outgoing_container_paths = {}
+        try:
+            outgoing_container_paths = nx.shortest_path(containers_graph, target=outgoing_internet_container_id)
+        except nx.exception.NodeNotFound:
+            pass
+
+        for scope_id, shortest_path in outgoing_container_paths.items():
+            if scope_id == "out-theinternet" or scope_id == "in-theinternet":
+                continue
+            if len(shortest_path) == 2:
+                labelled_path = []
+                for i in shortest_path:
+                    labelled_element = ""
+                    if i not in [incoming_internet_container_id, outgoing_internet_container_id]:
+                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                    if not labelled_element:
+                        labelled_element = topology_containers[i]["label"]
+                    labelled_path.append(labelled_element)
+                labelled_path.reverse()
+                top_attack_paths[scope_id] = [labelled_path]
+
+        response = []
+        count = 0
+        for scope_id in top_attack_paths.keys():
+            if count == 5:
+                break
+            node_type = NODE_TYPE_HOST
+            node_scope_id = ""
+            if not scope_id.endswith(NODE_TYPE_HOST, 0, -1):
+                node_type = NODE_TYPE_CONTAINER
+                node_scope_id = next((x["id"] for x in topology_containers[scope_id]["parents"] if x["topologyId"] == "containers-by-image"), "")
+            node_id = node_utils.get_df_id_from_scope_id(scope_id, node_type)
+            node = Node(node_id)
+            if not node:
+                continue
+            if not node_scope_id:
+                node_scope_id = node.scope_id
+            response.append(
+                {
+                    "cve_attack_vector": "network",
+                    "attack_path": top_attack_paths.get(scope_id, []),
+                    "ports": node.get_live_open_ports(),
+                    "cve_id": top_node_cves.get(node_scope_id, [])[:3]
+                }
+            )
+            count += 1
+        return set_response(data=response)
+    elif graph_type == "indirect_internet_exposure":
+        top_attack_paths = {}
+        topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
+        hosts_graph = get_topology_network_graph(topology_hosts)
+        incoming_internet_host_id = "in-theinternet"
+        outgoing_internet_host_id = "out-theinternet"
+        incoming_host_paths = {}
+        try:
+            incoming_host_paths = nx.shortest_path(hosts_graph, source=incoming_internet_host_id)
+        except nx.exception.NodeNotFound:
+            pass
+
+        for scope_id, shortest_path in incoming_host_paths.items():
+            if scope_id == "in-theinternet" or scope_id == "out-theinternet":
+                continue
+            if len(shortest_path) > 2:
+                labelled_path = [topology_hosts[i]["label"] for i in shortest_path]
+                top_attack_paths[scope_id] = [labelled_path]
+        outgoing_host_paths = {}
+        try:
+            outgoing_host_paths = nx.shortest_path(hosts_graph, target=outgoing_internet_host_id)
+        except nx.exception.NodeNotFound:
+            pass
+
+        for scope_id, shortest_path in outgoing_host_paths.items():
+            if scope_id == "out-theinternet" or scope_id == "in-theinternet":
+                continue
+            if len(shortest_path) > 2:
+                labelled_path = [topology_hosts[i]["label"] for i in shortest_path]
+                labelled_path.reverse()
+                top_attack_paths[scope_id] = [labelled_path]
+
+        topology_containers = fetch_topology_data(NODE_TYPE_CONTAINER, format="scope")
+        containers_graph = get_topology_network_graph(topology_containers)
+        incoming_internet_container_id = "in-theinternet"
+        outgoing_internet_container_id = "out-theinternet"
+        incoming_container_paths = {}
+        try:
+            incoming_container_paths = nx.shortest_path(containers_graph, source=incoming_internet_container_id)
+        except nx.exception.NodeNotFound:
+            pass
+
+        for scope_id, shortest_path in incoming_container_paths.items():
+            if scope_id == "in-theinternet" or scope_id == "out-theinternet":
+                continue
+            if len(shortest_path) > 2:
+                labelled_path = []
+                for i in shortest_path:
+                    labelled_element = ""
+                    if i not in [incoming_internet_container_id, outgoing_internet_container_id]:
+                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                    if not labelled_element:
+                        labelled_element = topology_containers[i]["label"]
+                    labelled_path.append(labelled_element)
+                top_attack_paths[scope_id] = [labelled_path]
+
+        outgoing_container_paths = {}
+        try:
+            outgoing_container_paths = nx.shortest_path(containers_graph, target=outgoing_internet_container_id)
+        except nx.exception.NodeNotFound:
+            pass
+
+        for scope_id, shortest_path in outgoing_container_paths.items():
+            if scope_id == "out-theinternet" or scope_id == "in-theinternet":
+                continue
+            if len(shortest_path) > 2:
+                labelled_path = []
+                for i in shortest_path:
+                    labelled_element = ""
+                    if i not in [incoming_internet_container_id, outgoing_internet_container_id]:
+                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                    if not labelled_element:
+                        labelled_element = topology_containers[i]["label"]
+                    labelled_path.append(labelled_element)
+                labelled_path.reverse()
+                top_attack_paths[scope_id] = [labelled_path]
+
+        response = []
+        count = 0
+        for scope_id in top_attack_paths.keys():
+            if count == 5:
+                break
+            node_type = NODE_TYPE_HOST
+            node_scope_id = ""
+            if not scope_id.endswith(NODE_TYPE_HOST, 0, -1):
+                node_type = NODE_TYPE_CONTAINER
+                node_scope_id = next((x["id"] for x in topology_containers[scope_id]["parents"] if x["topologyId"] == "containers-by-image"), "")
+            node_id = node_utils.get_df_id_from_scope_id(scope_id, node_type)
+            node = Node(node_id)
+            if not node:
+                continue
+            if not node_scope_id:
+                node_scope_id = node.scope_id
+            response.append(
+                {
+                    "cve_attack_vector": "network",
+                    "attack_path": top_attack_paths.get(scope_id, []),
+                    "ports": node.get_live_open_ports(),
+                    "cve_id": top_node_cves.get(node_scope_id, [])[:3]
+                }
+            )
+            count += 1
+        return set_response(data=response)
 
 class EmailConfigurationView(MethodView):
     @jwt_required()
