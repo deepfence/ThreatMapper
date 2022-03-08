@@ -15,7 +15,8 @@ import { toaster } from '../../../actions/app-actions';
 import { convertDocumentToKeyValuePairs } from '../../common/detail-modal/utils';
 
 export const SecretScanModal = ({ data, onRequestClose }) => {
-  const source = data._source;
+  let source = data?._source?._source;
+  source = { ...source, ...source?.Match, severity_level: source?.Severity?.level, severity_score: source?.Severity?.score }
   const dispatch = useDispatch();
 
   const copyToClipboard = useCallback(() => {
@@ -36,29 +37,29 @@ export const SecretScanModal = ({ data, onRequestClose }) => {
         onRequestClose={onRequestClose}
         data={[
           {
-            key: <div>ID</div>,
-            value: <div className="truncate">{source?._id}</div>,
-            valueAsText: source?._id ?? '',
+            key: <div>Rule</div>,
+            value: <div className="truncate">{source?.Rule?.name ?? ''}</div>,
+            valueAsText: source?.Rule?.name ?? '',
           },
           {
             key: <div>Severity</div>,
             value: (
               <Severiety
-                severiety={source?._source.Severity.level.toLowerCase()}
+                severiety={source?.Severity?.level?.toLowerCase?.() ?? ''}
               />
             ),
-            valueAsText: source?._source.Severity.level ?? '',
+            valueAsText: source?.Severity?.level?.toLowerCase?.() ?? '',
           },
           {
             key: <div>Last Seen At</div>,
             value: (
               <div>
-                {source?._source['@timestamp']
-                  ? moment(source?._source['@timestamp']).fromNow()
+                {source['@timestamp']
+                  ? moment(source['@timestamp']).fromNow()
                   : ''}
               </div>
             ),
-            valueAsText: source?._source['@timestamp'] ?? '',
+            valueAsText: source?.['@timestamp'] ?? '',
           },
         ]}
         actions={[
@@ -76,8 +77,26 @@ export const SecretScanModal = ({ data, onRequestClose }) => {
             <KeyValueContent
               data={convertDocumentToKeyValuePairs(
                 source,
-                ['@timestamp', '_type', '_score', 'sort'],
-                []
+                [
+                  '@timestamp',
+                  'time_stamp',
+                  'relative_ending_index',
+                  'relative_starting_index',
+                  'starting_index',
+                  'Severity'
+                ],
+                [
+                  'host_name',
+                  'node_type',
+                  'node_name',
+                  'full_filename',
+                  'matched_content',
+                  'severity_level',
+                  'severity_score',
+                  'Rule',
+                  'node_id',
+                  'scan_id'
+                ]
               )}
             />
           </div>
