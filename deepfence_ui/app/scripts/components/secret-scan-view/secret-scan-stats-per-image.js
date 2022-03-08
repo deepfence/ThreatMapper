@@ -56,11 +56,11 @@ const SecretScanStatsPerImage = props => {
     data.data.map(d => {
       d.scans.map(s => {
         if (s?.scan_id === props?.scanId) {
-          low = s?.severity?.low;
-          medium = s?.severity?.medium;
-          high = s?.severity?.high;
-          activeContainers = s?.active_containers;
-          total = s?.total;
+          low = s?.severity?.low ?? low;
+          medium = s?.severity?.medium ?? medium;
+          high = s?.severity?.high ?? high;
+          activeContainers = s?.active_containers ?? activeContainers;
+          total = s?.total ?? total;
         }
         return 0;
       });
