@@ -33,7 +33,7 @@ def list_all_open_files():
                     (item for item in process_data.get("parents", []) if item["topologyId"] == "hosts"), {})
                 process_file_list = open_files_metadata["value"].split(",")
                 for process_open_file in process_file_list:
-                    if process_open_file.starts_with(SECRET_SCANNER_FILE_PREFIX):
+                    if process_open_file.startswith(SECRET_SCANNER_FILE_PREFIX):
                         continue
                     if open_files_list.get(process_open_file, None):
                         process_open_file_details = open_files_list[process_open_file]
