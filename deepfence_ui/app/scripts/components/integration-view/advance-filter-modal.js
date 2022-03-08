@@ -3,14 +3,10 @@ import React, { useCallback, useState } from 'react';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
 import DFSelect from '../common/multi-select/app';
 
-class AdvanceFilterOption extends React.Component {
-  constructor() {
-    super();
-    this.openFilterModal = this.openFilterModal.bind(this);
-  }
+const AdvanceFilterOption = (props) => {
 
-  openFilterModal() {
-    const { modalContent } = this.props;
+  const openFilterModal = () => {
+    const { modalContent } = props;
     const modalProps = {
       title: 'Filters',
       modalContent,
@@ -19,17 +15,16 @@ class AdvanceFilterOption extends React.Component {
       },
       showClosebutton: true,
     };
-    const { triggerModal } = this.props;
+    const { triggerModal } = props;
     triggerModal('GENERIC_MODAL', modalProps);
   }
 
-  render() {
     const advanceVar = 'Advanced';
-    const { filters = [] } = this.props;
+    const { filters = [] } = props;
     if (filters.length > 0) {
       return (
         <span
-          onClick={this.openFilterModal}
+          onClick={openFilterModal}
           className="link"
           style={{ cursor: 'pointer', color: '#007FFF' }}
           aria-hidden="true"
@@ -39,7 +34,6 @@ class AdvanceFilterOption extends React.Component {
       );
     }
     return null;
-  }
 }
 
 export default injectModalTrigger(AdvanceFilterOption);

@@ -1,14 +1,11 @@
-
-/*eslint-disable*/
+/* eslint-disable no-unused-vars */
 
 // React imports
-import React from 'react';
-import { connect } from 'react-redux';
-import { Route, Link, Redirect } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import classnames from 'classnames';
 
 // Custom component imports
-import SideNavigation from '../common/side-navigation/side-navigation';
 import EmailIntegrationView from './email-integration-view/email-integration-view';
 import SlackIntegrationView from './slack-integration-view/slack-integration-view';
 import MicrosoftTeamsIntegrationView from './microsoft-teams-integration-view/microsoft-teams-integration-view';
@@ -27,78 +24,63 @@ import { getIntegrations } from '../../utils/web-api-utils';
 import { integrationComponentChange, noIntegrationComponentChange,
   setIntegrationName
 } from '../../actions/app-actions';
-import {
-  IS_NOTIFICATION_CHECK_ENABLE,
-  NOTIFICATION_POLLING_DURATION
-} from '../../constants/visualization-config';
 import { INTEGRATION_MENU_COLLECTION, ADMIN_SIDE_NAV_MENU_COLLECTION, USER_SIDE_NAV_MENU_COLLECTION } from '../../constants/menu-collection';
 import { getUserRole } from "../../helpers/auth-helper";
 
-class IntegrationView extends React.Component {
-  constructor() {
-    super();
-    this.sideNavMenuCollection = (getUserRole() == 'admin') ? ADMIN_SIDE_NAV_MENU_COLLECTION : USER_SIDE_NAV_MENU_COLLECTION;
-    this.tabList = INTEGRATION_MENU_COLLECTION;
-    this.state = {
-      activeMenu: this.sideNavMenuCollection[0],
-      activeTab: this.tabList[0],
-      tabCategory: 'notification',
-      filteredTabs: INTEGRATION_MENU_COLLECTION.filter(el => el.category === 'notification'),
-      erroredCatagories: [],
-    };
-    this.handleOnClick = this.handleOnClick.bind(this);
-    this.handleTabCategoryClick = this.handleTabCategoryClick.bind(this);
-    this.changeComponent = this.changeComponent.bind(this);
-    this.goBackToIntegrations = this.goBackToIntegrations.bind(this);
-    this.breadcrumbName = this.breadcrumbName.bind(this);
-    this.renderButton = this.renderButton.bind(this);
+const IntegrationView = (props) => {
+
+  const dispatch = useDispatch();
+  const isSideNavCollapsed = useSelector(state => state.get('isSideNavCollapsed'));
+  const changeIntegration = useSelector(state => state.get('changeIntegration'));
+  const isFiltersViewVisible = useSelector(state => state.get('isFiltersViewVisible'));
+  const integrationName = useSelector(state => state.get('integrationName'));
+  const IntegrationStatus = useSelector(state => state.get('IntegrationStatus'));
+  const hosts = useSelector(state => state.get('hosts'));
+
+
+  const sideNavMenuCollection = (getUserRole() === 'admin') ? ADMIN_SIDE_NAV_MENU_COLLECTION : USER_SIDE_NAV_MENU_COLLECTION;
+  const tabList = INTEGRATION_MENU_COLLECTION;
+  const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection[0]);
+  const [intervalObj, setIntervalObj] = useState(null);
+  const [licenseResponse, setLicenseResponse] = useState(null);
+  const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState(tabList[0]);
+  const [tabCategory, setTabCategory] = useState('notification');
+  const [filteredTabs, setFilteredTabs] = useState(INTEGRATION_MENU_COLLECTION.filter(el => el.category === 'notification'));
+  const [erroredCatagories, setErroredCatagories] = useState([]);
+
+
+  const changeComponent = () => {
+    dispatch(integrationComponentChange());
   }
-  changeComponent() {
-    this.props.dispatch(integrationComponentChange());
+  const goBackToIntegrations = () => {
+    dispatch(noIntegrationComponentChange());
   }
-  goBackToIntegrations() {
-    this.props.dispatch(noIntegrationComponentChange());
+  const breadcrumbName = (name) => {
+    dispatch(setIntegrationName(name));
+    changeComponent();
   }
-  breadcrumbName(name) {
-    this.props.dispatch(setIntegrationName(name));
-    this.changeComponent();
-  }
-  fetchIntegrationList() {
-    getIntegrations(this.props.dispatch);
+  const fetchIntegrationList = () => {
+    getIntegrations(dispatch);
   }
 
-  componentDidMount() {
-    this.fetchIntegrationList();
-    this.props.dispatch(noIntegrationComponentChange());
-  }
-
-  componentWillUnmount() {
-    if (this.state.intervalObj) {
-      clearInterval(this.state.intervalObj);
+  useEffect(() => {
+    fetchIntegrationList();
+    dispatch(noIntegrationComponentChange());
+    return () => {
+      if (intervalObj) {
+        clearInterval(intervalObj);
+      }
     }
-  }
+  }, [])
 
-  componentDidUpdate(){
-    const { changeIntegration} = this.props;
+  useEffect(() => {
     if(changeIntegration === false){
-      this.props.dispatch(setIntegrationName(null));
+      dispatch(setIntegrationName(null));
     }
-  }
-  UNSAFE_componentWillReceiveProps(newProps) {
-    if ((newProps.isLicenseActive && !newProps.isLicenseExpired) &&
-    (newProps.licenseResponse.license_status == 'expired' || newProps.licenseResponse.license_status == 'hosts_exceeded')) {
-      this.setState({
-        licenseResponse: newProps.licenseResponse,
-        isLicenseExpiryModalVisible: true
-      });
-    } else {
-      this.setState({
-        isLicenseExpiryModalVisible: false
-      });
-    }
-  }
+  }, [changeIntegration])
 
-  renderButton(tabname) {
+  const renderButton = (tabname) => {
     switch (tabname) {
       case 'reports':
         return (
@@ -111,11 +93,11 @@ class IntegrationView extends React.Component {
     }
   }
 
-  handleOnClick(tab) {
-    this.setState({ activeTab: tab });
+  const handleOnClick = (tab) => {
+    setActiveTab(tab);
   }
 
-  renderTabsList() {
+  const renderTabsList = () => {
     const imgIcon = {
       height: '65px',
       marginLeft: '15px',
@@ -135,28 +117,24 @@ class IntegrationView extends React.Component {
       'jira':'ticketing',
       's3':'archival',
     }
-    const {
-      tabCategory,
-      filteredTabs,
-    } = this.state;
-          /* eslint-disable */
+    /* eslint-disable */
     for (let tab = 0; tab < filteredTabs.length; tab++) {
       let tabDetails = filteredTabs[tab];
-      const activeClass = tabDetails.name === this.state.activeTab.name ? "active-tab" : "";
+      const activeClass = tabDetails.name === activeTab.name ? "active-tab" : "";
       let errorFlag = false;
-      if (this.props.IntegrationStatus) {
-        for (let x in this.props.IntegrationStatus) {
-          const integrationDetails = this.props.IntegrationStatus[x]
+      if (IntegrationStatus) {
+        for (let x in IntegrationStatus) {
+          const integrationDetails = IntegrationStatus[x]
           integrationDetails && integrationDetails.map(item => {
             if(item.error_msg){
               let errorCatagory =categoryFinder[item.integration_type];
-              if (this.state.erroredCatagories.indexOf(errorCatagory) === -1){
-                this.state.erroredCatagories.push(errorCatagory)
+              if (erroredCatagories.indexOf(errorCatagory) === -1){
+                erroredCatagories.push(errorCatagory)
               }
             }
           })
         }
-        const integrationStatus = this.props.IntegrationStatus[tabDetails.name];
+        const integrationStatus = IntegrationStatus[tabDetails.name];
         integrationStatus && integrationStatus.map(item => {
           if(item.error_msg){
             errorFlag = true;
@@ -164,7 +142,7 @@ class IntegrationView extends React.Component {
         })
       }
       tabs.push(
-        <div className={"tab-container " + activeClass} key={tab} onClick={() => this.handleOnClick(tabDetails)}>
+        <div className={"tab-container " + activeClass} key={tab} onClick={() => handleOnClick(tabDetails)}>
           <div className="integration-box" title={tabDetails.displayName}>
             {tabDetails.icon &&
               <div className="integration-logo" style={{backgroundColor: tabDetails.bgcolor}}> <img className="img-fluid p-2" src={tabDetails.icon} /></div>}
@@ -175,7 +153,7 @@ class IntegrationView extends React.Component {
             :
             <div></div>}
             </div>
-            <button type="button" className="btn-configure-integration" onClick={() => this.breadcrumbName(`${tabDetails.parent + ' / '+ tabDetails.displayName}`)}>{this.renderButton(tabDetails.name)}</button>
+            <button type="button" className="btn-configure-integration" onClick={() => breadcrumbName(`${tabDetails.parent + ' / '+ tabDetails.displayName}`)}>{renderButton(tabDetails.name)}</button>
           </div>
         </div>
       );
@@ -183,8 +161,7 @@ class IntegrationView extends React.Component {
     return tabs;
   }
 
-  renderActiveTabContent() {
-    const activeTab = this.state.activeTab;
+  const renderActiveTabContent = () => {
     switch (activeTab.name) {
       case 'email': {
         return <EmailIntegrationView />
@@ -229,113 +206,88 @@ class IntegrationView extends React.Component {
   }
 
 
-  handleTabCategoryClick(categoryId) {
-    const params = {
-      tabCategory: categoryId,
-    }
-    const allTabs = this.tabList.map(el => ({ ...el }));
+  const handleTabCategoryClick = (categoryId) => {
+    setTabCategory(categoryId);
+    const allTabs = tabList.map(el => ({ ...el }));
     const filteredTabs = allTabs.filter(tabDetails => tabDetails.category === categoryId);
     if (filteredTabs.length > 0) {
-      const activeTab = filteredTabs[0];
-      params['activeTab'] = activeTab;
-      params['filteredTabs'] = filteredTabs;
+      setActiveTab(filteredTabs[0]);
+      setFilteredTabs(filteredTabs);
     }
-    this.setState(params);
   }
 
-  render() {
-    const { isLicenseExpiryModalVisible, tabCategory } = this.state;
-    const { changeIntegration } = this.props;
-    const activeTab = this.state.activeTab;
-    const tabCategoryList = [
-      {
-        id: 'notification',
-        displayName: 'Notification',
-      },
-      {
-        id: 'siem',
-        displayName: 'SIEM',
-      },
-      {
-        id: 'ticketing',
-        displayName: 'Ticketing',
-      },
-      {
-        id: 'archival',
-        displayName: 'Archival',
-      },
-      {
-        id: 'report',
-        displayName: 'Reports',
-      },
-    ];
-    if (changeIntegration === false) {
-      return (
-        <div>
-          <div className="alerts-view-switcher-wrapper">
-            <div className="df-tabs" style={{marginTop: '55px'}}>
-              <div className="tabs-wrapper tabheading" style={{ color: 'white', display: 'flex', fontSize: '20px' }}>
+  const tabCategoryList = [
+    {
+      id: 'notification',
+      displayName: 'Notification',
+    },
+    {
+      id: 'siem',
+      displayName: 'SIEM',
+    },
+    {
+      id: 'ticketing',
+      displayName: 'Ticketing',
+    },
+    {
+      id: 'archival',
+      displayName: 'Archival',
+    },
+    {
+      id: 'report',
+      displayName: 'Reports',
+    },
+  ];
+  if (changeIntegration === false) {
+    return (
+      <div>
+        <div className="alerts-view-switcher-wrapper">
+          <div className="df-tabs" style={{marginTop: '55px'}}>
+            <div className="tabs-wrapper tabheading" style={{ color: 'white', display: 'flex', fontSize: '20px' }}>
 
-                {tabCategoryList.map(el => (
-                  /* eslint-disable react/no-children-prop */
-                  <li
-                    key={el.id}
-                    className={classnames('tab', { active: el.id === tabCategory })}
-                    onClick={() => this.handleTabCategoryClick(el.id)}
-                  >
-                    {el.displayName}
-                    {
-                      this.state.erroredCatagories.indexOf(el.id) !== -1 ?
-                      (
-                        <div className= 'red-dot' style = {{marginLeft: '8px', marginRight: '0px'}}></div>
-                      ):(
-                        <div></div>
-                      )
-                    }
+              {tabCategoryList.map(el => (
+                /* eslint-disable react/no-children-prop */
+                <li
+                  key={el.id}
+                  className={classnames('tab', { active: el.id === tabCategory })}
+                  onClick={() => handleTabCategoryClick(el.id)}
+                >
+                  {el.displayName}
+                  {
+                    erroredCatagories.indexOf(el.id) !== -1 ?
+                    (
+                      <div className= 'red-dot' style = {{marginLeft: '8px', marginRight: '0px'}} />
+                    ):(
+                      <div />
+                    )
+                  }
 
-                  </li>
-                )
-                  /* eslint-enable */
-                // eslint-disable-next-line function-paren-newline
-                )}
+                </li>
+              )
+                /* eslint-enable */
+              // eslint-disable-next-line function-paren-newline
+              )}
 
-              </div>
-            </div>
-            <div className="intergation-inner-wrapper">
-              {this.renderTabsList()}
             </div>
           </div>
-        </div>
-      );
-    }
-    return (
-      <div style={{marginTop: '53px'}}>
-        <div className="chart-wrapper">
-          <div className="integration-container">
-            <div className="tabs-content-wrapper">
-              {this.renderActiveTabContent()}
-            </div>
+          <div className="intergation-inner-wrapper">
+            {renderTabsList()}
           </div>
         </div>
       </div>
     );
   }
+  return (
+    <div style={{marginTop: '53px'}}>
+      <div className="chart-wrapper">
+        <div className="integration-container">
+          <div className="tabs-content-wrapper">
+            {renderActiveTabContent()}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function mapStateToProps(state) {
-  return {
-    isSideNavCollapsed: state.get('isSideNavCollapsed'),
-    hosts: state.get('hosts'),
-    changeIntegration: state.get('changeIntegration'),
-    // eslint-disable-next-line no-dupe-keys
-    isSideNavCollapsed: state.get('isSideNavCollapsed'),
-    isFiltersViewVisible: state.get('isFiltersViewVisible'),
-    integrationName: state.get('integrationName'),
-    IntegrationStatus: state.get('IntegrationStatus')
-
-  };
-}
-
-export default connect(
-  mapStateToProps
-)(IntegrationView);
+export default IntegrationView;
