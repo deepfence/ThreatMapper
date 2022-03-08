@@ -1446,7 +1446,7 @@ def registry_images_tags():
 
 @common_api.route("/attack-path", methods=["GET"])
 @jwt_required()
-def alerts_attack_path():
+def attack_path():
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
 
