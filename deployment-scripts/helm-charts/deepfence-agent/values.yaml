@@ -46,9 +46,11 @@ userDefinedTags: ""
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
 clusterName: ""
 
+enableGraphReport: "true"
+
 # Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
 mountContainerRuntimeSocket:
-  dockerSock: "true"
+  dockerSock: "false"
   dockerSockPath: "/var/run/docker.sock"
   containerdSock: "true"
   containerdSockPath: "/run/containerd/containerd.sock"

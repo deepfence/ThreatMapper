@@ -79,7 +79,7 @@ dnsResolver: "kube-dns.kube-system.svc.cluster.local"
 
 # Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
 mountContainerRuntimeSocket:
-  dockerSock: "true"
+  dockerSock: "false"
   dockerSockPath: "/var/run/docker.sock"
   containerdSock: "true"
   containerdSockPath: "/run/containerd/containerd.sock"
