@@ -1468,8 +1468,7 @@ def attack_path():
         lucene_query_string = ""
 
     graph_type = request.args.get("graph_type")
-    if graph_type not in ["most_vulnerable_attack_paths", "direct_internet_exposure", "indirect_internet_exposure",
-                          "most_attacked"]:
+    if graph_type not in ["most_vulnerable_attack_paths", "direct_internet_exposure", "indirect_internet_exposure"]:
         raise InvalidUsage("invalid type")
 
     top_attack_paths = {}
