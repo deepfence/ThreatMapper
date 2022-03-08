@@ -66,6 +66,10 @@ spec:
                   key: "deepfence-key"
             - name: USER_DEFINED_TAGS
               value: {{ .Values.userDefinedTags }}
+            - name: DF_ENABLE_PROCESS_REPORT
+              value: "{{ .Values.enableGraphReport }}"
+            - name: DF_ENABLE_CONNECTIONS_REPORT
+              value: "{{ .Values.enableGraphReport }}"
             - name: MGMT_CONSOLE_URL
               value: "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
             - name: MGMT_CONSOLE_PORT
