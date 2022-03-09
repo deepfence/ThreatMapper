@@ -1506,22 +1506,29 @@ export function rootReducer(state = initialState, action) {
         'Your request to get top attack paths failed.');
     }
 
-    case ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_REQUEST: {
-      return state.setIn(['topAttackPaths', 'status', 'loading'], true);
+    case ActionTypes.GET_ATTACK_PATHS_REQUEST: {
+      const {
+        input: { graphType },
+      } = action;
+      return state.setIn(['topAttackPaths', 'status', 'loading', graphType], true);
     }
 
-    case ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_SUCCESS: {
+    case ActionTypes.GET_ATTACK_PATHS_SUCCESS: {
       const {
         payload: { data },
+        input: { graphType },
       } = action;
-      state = state.setIn(['topAttackPaths', 'status', 'loading'], false);
-      return state.setIn(['topAttackPaths', 'data'], data);
+      state = state.setIn(['topAttackPaths', 'status', 'loading', graphType], false);
+      return state.setIn(['topAttackPaths', 'data', graphType], data);
     }
 
-    case ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_FAILURE: {
-      state = state.setIn(['topAttackPaths', 'status', 'loading'], false);
-      state = state.setIn(['topAttackPaths', 'data'], null);
-      return state.setIn(['topAttackPaths', 'status', 'error'],
+    case ActionTypes.GET_ATTACK_PATHS_FAILURE: {
+      const {
+        input: { graphType },
+      } = action;
+      state = state.setIn(['topAttackPaths', 'status', 'loading', graphType], false);
+      state = state.setIn(['topAttackPaths', 'data', graphType], null);
+      return state.setIn(['topAttackPaths', 'status', 'error', graphType],
         'Your request to get top attack paths failed.');
     }
 

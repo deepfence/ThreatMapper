@@ -83,7 +83,7 @@ import {
   getGlobalSettings,
   addGlobalSettings,
   getTopAttackPathsForNode,
-  getRuntimeBomData,
+  getAttackPaths,
   getRegistryImagesTags,
   getSecretScanStatus,
   startSecretScan,
@@ -1422,15 +1422,6 @@ export function getTopVulnerableActiveContainersAction(params) {
   );
 }
 
-export function getTopVulnerableAttackPathsAction(params) {
-  const actionTypes = [
-    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_REQUEST,
-    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_SUCCESS,
-    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_FAILURE,
-  ];
-  return genericThunkAction(actionTypes, getTopVulnerableAttackPaths, params);
-}
-
 export function getTopVulnerableActiveHostsAction(params) {
   const actionTypes = [
     ActionTypes.GET_TOP_VULNERABLE_HOSTS_REQUEST,
@@ -1910,4 +1901,13 @@ export function getRuntimeBomAction(params) {
     ActionTypes.GET_RUNTIME_BOM_FAILURE,
   ];
   return genericThunkAction(actionTypes, getRuntimeBomData, params);
+}
+
+export function getAttackPathsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_ATTACK_PATHS_REQUEST,
+    ActionTypes.GET_ATTACK_PATHS_SUCCESS,
+    ActionTypes.GET_ATTACK_PATHS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getAttackPaths, params);
 }

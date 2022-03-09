@@ -1762,6 +1762,23 @@ export function getTopAttackPathsForNode(params = {}) {
   }).then(errorHandler);
 }
 
+export function getAttackPaths(params = {}) {
+  const { number, time_unit, lucene_query = [], docId, graphType, timeUnit } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(lucene_query));
+
+  const url = `${backendElasticApiEndPoint()}/attack-path?number=${number}&time_unit=${time_unit ?? timeUnit}&doc_id=${
+    docId ?? ''
+  }&lucene_query=${luceneQueryEscaped}&graph_type=${graphType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function getNodeTags() {
   const url = `${backendElasticApiEndPoint()}/node_tags`;
   return fetch(url, {
