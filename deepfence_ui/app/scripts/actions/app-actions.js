@@ -97,6 +97,7 @@ import {
   secretScanUnmaskDocs,
   stopCVEScan,
   getSBOMByScanId,
+  getRuntimeBomData,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
