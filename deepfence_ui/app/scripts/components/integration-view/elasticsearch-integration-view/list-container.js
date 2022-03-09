@@ -1,28 +1,20 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import ElasticsearchIntegrationList from './list';
 
-class ElasticsearchIntegrationListContainer extends React.PureComponent {
-  render() {
-    const { elasticsearchIntegrationList } = this.props;
+const ElasticsearchIntegrationListContainer = props => {
+  const elasticsearchIntegrationList = useSelector(state =>
+    state.get('availableElasticsearchIntegrations')
+  );
 
-    return (
-      <ElasticsearchIntegrationList
-        {...this.props}
-        elasticsearchIntegrationList={elasticsearchIntegrationList}
-      />
-    );
-  }
-}
-
-function mapStateToProps(state) {
-  return {
-    elasticsearchIntegrationList: state.get('availableElasticsearchIntegrations'),
-  };
-}
-
-const connectedElasticsearchIntegrationListContainer = connect(mapStateToProps)(
-  ElasticsearchIntegrationListContainer
-);
+  return (
+    <ElasticsearchIntegrationList
+      {...props}
+      elasticsearchIntegrationList={elasticsearchIntegrationList}
+    />
+  );
+};
+const connectedElasticsearchIntegrationListContainer =
+  ElasticsearchIntegrationListContainer;
 
 export default connectedElasticsearchIntegrationListContainer;
