@@ -3,53 +3,46 @@ import { connect } from 'react-redux';
 import { formValueSelector } from 'redux-form/immutable';
 
 import MaskForm from './mask-form';
-import {
-  nodeFilterValueSelector,
-} from '../../../selectors/node-filters';
-import { DfTableV2 } from '../../common/df-table-v2'
+import { nodeFilterValueSelector } from '../../../selectors/node-filters';
+import { DfTableV2 } from '../../common/df-table-v2';
 import pollable from '../../common/header-view/pollable';
 import {
   getSecretScanResultsAction,
+  secretScanMaskDocsAction,
+  secretScanUnmaskDocsAction,
   deleteDocsByIdAction,
-  unmaskDocsAction,
-  genericMaskDocsAction,
   requestManualAlertNotification,
 } from '../../../actions/app-actions';
 import { SecretScanModal } from '../secret-scan-modal';
 
-
 class SecretScanTableV2 extends React.Component {
   constructor(props) {
     super(props);
-    this.getVulnerabilities = this.getVulnerabilities.bind(this);
+    this.getSecrets = this.getSecrets.bind(this);
     this.tableChangeHandler = this.tableChangeHandler.bind(this);
     this.handlePageChange = this.handlePageChange.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
     this.deleteDocs = this.deleteDocs.bind(this);
     this.unmaskDocs = this.unmaskDocs.bind(this);
     this.maskDocs = this.maskDocs.bind(this);
-    this.handleNotify = this.handleNotify.bind(this);
     this.state = {
       isSecretsModalOpen: false,
-      secretsData: null
-    }
+      secretsData: null,
+    };
   }
 
-
   handleRowClick(rowInfo) {
-    const {
-      original: row,
-    } = rowInfo;
+    const { original: row } = rowInfo;
     const modalData = {
       _source: {
-        ...row
+        ...row,
       },
       _id: row.doc_id,
       _type: row.type,
     };
     this.setState({
       isSecretsModalOpen: true,
-      secretsData: modalData
+      secretsData: modalData,
     });
   }
 
@@ -62,105 +55,77 @@ class SecretScanTableV2 extends React.Component {
 
   handlePageChange(pageNumber) {
     this.tableChangeHandler({
-      page: pageNumber
-    })
+      page: pageNumber,
+    });
   }
 
   deleteDocs(selectedDocIndex = {}) {
-    /* eslint-disable no-underscore-dangle */
     const paramList = Object.keys(selectedDocIndex).map(key => ({
       _id: selectedDocIndex[key]._id,
-      // _type: selectedDocIndex[key].type,
-      // _index: selectedDocIndex[key].doc_index,
+      _index: selectedDocIndex[key]._index,
     }));
-    const params = paramList.reduce((acc, param) => {
-      // acc.index_name = param._index;
-      // acc.doc_type = param._type;
-      acc.ids = [
-        ...acc.ids,
-        param._id,
-      ];
-      return acc;
-    }, { ids: [] });
-    console.log("deleteDocs", params);
+    const params = paramList.reduce(
+      (acc, param) => {
+        acc.index_name = param._index;
+        acc.ids = [...acc.ids, param._id];
+        return acc;
+      },
+      { ids: [] }
+    );
 
-    const {
-      deleteDocsByIdAction: action,
-    } = this.props;
+    const { deleteDocsByIdAction: action } = this.props;
     return action(params);
   }
 
   unmaskDocs(selectedDocIndex = {}) {
-    const params = {
-      docs: Object.keys(selectedDocIndex).map(key => ({
-        _id: selectedDocIndex[key]._id,
-        // _index: selectedDocIndex[key].doc_index,
-      }))
-    };
+    const value = {};
+    Object.keys(selectedDocIndex).forEach(key => {
+      value[key] = selectedDocIndex[key]._id;
+    });
+    const idValue = Object.keys(value).map(key => value[key]);
 
-    const {
-      unmaskDocsAction: action,
-    } = this.props;
-    return action(params);
+    const { secretScanUnmaskDocsAction: action } = this.props;
+    return action({ docs: idValue });
   }
 
   maskDocs(selectedDocIndex = {}) {
-    /* eslint-disable no-underscore-dangle */
-    const params = Object.keys(selectedDocIndex).map(key => ({
-      _id: selectedDocIndex[key]._id,
-      // _index: selectedDocIndex[key].doc_index,
-    }));
+    const value = {};
+    Object.keys(selectedDocIndex).forEach(key => {
+      value[key] = selectedDocIndex[key]._id;
+    });
+    const idValue = Object.keys(value).map(key => value[key]);
 
-    const {
-      genericMaskDocsAction: action,
-      maskDocs
-    } = this.props;
+    const { secretScanMaskDocsAction: action } = this.props;
     return action({
-      docs: params,
-      mask_across_images: maskDocs === 'true'
+      docs: idValue,
     });
   }
 
-  handleNotify(selectedDocIndex = {}) {
-    /* eslint-disable no-underscore-dangle */
-    const params = Object.keys(selectedDocIndex).map(key => ({
-      _id: selectedDocIndex[key].doc_id,
-      _type: selectedDocIndex[key].type,
-      _index: selectedDocIndex[key].doc_index,
-    }));
-    /* eslint-enable */
-    const {
-      requestManualAlertNotification: action,
-    } = this.props;
-    return action(params);
-  }
-
   componentDidMount() {
-    const {
-      registerPolling,
-    } = this.props;
-    registerPolling(this.getVulnerabilities);
+    const { registerPolling } = this.props;
+    registerPolling(this.getSecrets);
   }
 
   componentDidUpdate(oldProps) {
     const newProps = this.props;
     const options = {};
-    if (newProps.filterValues && oldProps.filterValues !== newProps.filterValues) {
+    if (
+      newProps.filterValues &&
+      oldProps.filterValues !== newProps.filterValues
+    ) {
       options.filters = newProps.filterValues;
     }
     if (newProps.hideMasked !== oldProps.hideMasked) {
       options.hideMasked = newProps.hideMasked;
     }
     if (Object.keys(options).length > 0) {
-      this.getVulnerabilities(options);
+      this.getSecrets(options);
     }
   }
 
-  getVulnerabilities(params) {
-    const {
-      getSecretScanResultsAction: action,
-      filterValues = {},
-    } = this.props;
+  getSecrets(params) {
+    const { getSecretScanResultsAction: action, filterValues = {} } =
+      this.props;
 
     const hideMasked = params.hideMasked || this.props.hideMasked;
 
@@ -172,13 +137,13 @@ class SecretScanTableV2 extends React.Component {
     } = params;
 
     const tableFilters = params.filters || filterValues;
-    const nonEmptyFilters = Object.keys(tableFilters).filter(
-      key => tableFilters[key].length
-    ).reduce((acc, key) => {
-      // replacing back the dot which was removed redux-form as it considers that a nested field.
-      acc[[key.replace('-', '.')]] = tableFilters[key];
-      return acc;
-    }, {});
+    const nonEmptyFilters = Object.keys(tableFilters)
+      .filter(key => tableFilters[key].length)
+      .reduce((acc, key) => {
+        // replacing back the dot which was removed redux-form as it considers that a nested field.
+        acc[[key.replace('-', '.')]] = tableFilters[key];
+        return acc;
+      }, {});
 
     const {
       masked,
@@ -196,9 +161,11 @@ class SecretScanTableV2 extends React.Component {
       lucene_query: globalSearchQuery,
       // Conditionally adding number and time_unit fields
       ...(alertPanelHistoryBound.value
-        ? { number: alertPanelHistoryBound.value.number } : {}),
+        ? { number: alertPanelHistoryBound.value.number }
+        : {}),
       ...(alertPanelHistoryBound.value
-        ? { time_unit: alertPanelHistoryBound.value.time_unit } : {}),
+        ? { time_unit: alertPanelHistoryBound.value.time_unit }
+        : {}),
       filters,
       start_index: page ? page * pageSize : page,
       node_filters: nodeFilters,
@@ -208,20 +175,14 @@ class SecretScanTableV2 extends React.Component {
   }
 
   render() {
-    const {
-      secretScanResults = [],
-      total,
-      updatePollParams
-    } = this.props;
+    const { secretScanResults = [], total, updatePollParams } = this.props;
 
     const columns = [
       {
         Header: 'Id',
         accessor: '_id',
         Cell: row => (
-          <div
-            className="truncate"
-            title={row.value}>
+          <div className="truncate" title={row.value}>
             {row.value}
           </div>
         ),
@@ -231,9 +192,7 @@ class SecretScanTableV2 extends React.Component {
         Header: 'Filename',
         accessor: '_source.Match.full_filename',
         Cell: row => (
-          <div
-            className="truncate"
-            title={row.value}>
+          <div className="truncate" title={row.value}>
             {row.value}
           </div>
         ),
@@ -243,9 +202,7 @@ class SecretScanTableV2 extends React.Component {
         Header: 'Matched content',
         accessor: '_source.Match.matched_content',
         Cell: row => (
-          <div
-            className="truncate"
-            title={row.value}>
+          <div className="truncate" title={row.value}>
             {row.value}
           </div>
         ),
@@ -255,19 +212,15 @@ class SecretScanTableV2 extends React.Component {
         Header: 'Severity',
         accessor: '_source.Severity.level',
         Cell: cell => (
-          <div className={`${cell.value}-severity`}>
-            {cell.value}
-          </div>
+          <div className={`${cell.value}-severity`}>{cell.value}</div>
         ),
-        width: 90
+        width: 90,
       },
       {
         Header: 'Rule name',
         accessor: '_source.Rule.name',
         Cell: row => (
-          <div
-            className="truncate"
-            title={row.value}>
+          <div className="truncate" title={row.value}>
             {row.value}
           </div>
         ),
@@ -278,9 +231,7 @@ class SecretScanTableV2 extends React.Component {
         Header: 'Signature to match',
         accessor: '_source.Rule.signature_to_match',
         Cell: row => (
-          <div
-            className="truncate"
-            title={row.value}>
+          <div className="truncate" title={row.value}>
             {row.value}
           </div>
         ),
@@ -290,9 +241,7 @@ class SecretScanTableV2 extends React.Component {
     ];
 
     return (
-      <div
-        className="alert-table-view"
-      >
+      <div className="alert-table-view">
         <div className="mask-filter vulnerability-filter">
           <MaskForm />
         </div>
@@ -307,67 +256,47 @@ class SecretScanTableV2 extends React.Component {
             name="secrets-scan-details-table"
             manual
             data={secretScanResults}
-            getRowStyle={(row) => ({
-              opacity: row.original.masked === 'true' ? 0.5 : 1
+            getRowStyle={row => ({
+              opacity: row.original._source.masked === 'true' ? 0.5 : 1,
             })}
-            onRowClick={(row) => this.handleRowClick(row)}
+            onRowClick={row => this.handleRowClick(row)}
             columnCustomizable
             onPageChange={this.handlePageChange}
             multiSelectOptions={{
               actions: [
-                // {
-                //   name: 'Notify',
-                //   icon: (<i className="fa fa-bell-o active-color cursor" />),
-                //   onClick: this.handleNotify,
-                // },
                 {
                   name: 'mask',
                   userRole: 'admin',
-                  icon: (<i className="fa fa-eye-slash cursor" />),
+                  icon: <i className="fa fa-eye-slash cursor" />,
                   onClick: this.maskDocs,
                   postClickSuccess: updatePollParams,
                   showConfirmationDialog: true,
                   confirmationDialogParams: {
                     dialogTitle: 'Mask these records?',
-                    dialogBody: 'Are you sure you want to mask the selected records?',
-                    additionalInputs: [
-                      {
-                        type: 'radio',
-                        id: 'mask_all_images',
-                        name: 'masking_docs',
-                        label: 'Mask across all images',
-                        value: 'true',
-                      },
-                      {
-                        type: 'radio',
-                        id: 'mask_this_image',
-                        name: 'masking_docs',
-                        label: 'Mask only on this image',
-                        value: 'false',
-                        defaultValue: 'false',
-                      },
-                    ],
+                    dialogBody:
+                      'Are you sure you want to mask the selected records?',
                     confirmButtonText: 'Yes, mask',
                     cancelButtonText: 'No, Keep',
-                  }
+                  },
                 },
                 {
                   name: 'Unmask',
                   userRole: 'admin',
-                  icon: (<i className="fa fa-eye cursor" />),
+                  icon: <i className="fa fa-eye cursor" />,
                   onClick: this.unmaskDocs,
                   postClickSuccess: updatePollParams,
                   showConfirmationDialog: true,
                   confirmationDialogParams: {
                     dialogTitle: 'Unmask these records?',
-                    dialogBody: 'Are you sure you want to unmask the selected records?',
+                    dialogBody:
+                      'Are you sure you want to unmask the selected records?',
                     confirmButtonText: 'Yes, Unmask',
                     cancelButtonText: 'No, Keep',
                   },
                 },
                 {
                   name: 'Delete',
-                  icon: (<i className="fa fa-trash-o red cursor" />),
+                  icon: <i className="fa fa-trash-o red cursor" />,
                   onClick: this.deleteDocs,
                   postClickSuccessTODO: this.removeDocs,
                   postClickSuccess: updatePollParams,
@@ -375,31 +304,30 @@ class SecretScanTableV2 extends React.Component {
                   postClickSuccessDelayInMs: 2000,
                   confirmationDialogParams: {
                     dialogTitle: 'Delete these records?',
-                    dialogBody: 'Are you sure you want to Delete the selected records?',
+                    dialogBody:
+                      'Are you sure you want to Delete the selected records?',
                     confirmButtonText: 'Yes, Delete',
                     cancelButtonText: 'No, Keep',
                   },
                 },
               ],
               columnConfig: {
-                accessor: 'doc_id'
-              }
+                accessor: '_id',
+              },
             }}
           />
         )}
-        {
-          this.state.isSecretsModalOpen && this.state.secretsData ? (
-            <SecretScanModal
-              data={this.state.secretsData}
-              onRequestClose={() => {
-                this.setState({
-                  isSecretsModalOpen: false,
-                  secretsData: null
-                });
-              }}
-            />
-          ) : null
-        }
+        {this.state.isSecretsModalOpen && this.state.secretsData ? (
+          <SecretScanModal
+            data={this.state.secretsData}
+            onRequestClose={() => {
+              this.setState({
+                isSecretsModalOpen: false,
+                secretsData: null,
+              });
+            }}
+          />
+        ) : null}
       </div>
     );
   }
@@ -412,16 +340,21 @@ function mapStateToProps(state) {
     total: state.getIn(['secretScanResults', 'total']),
     filterValues: nodeFilterValueSelector(state),
     hideMasked: maskFormSelector(state, 'hideMasked'),
-    maskDocs: state.getIn(['form', 'dialogConfirmation', 'values', 'masking_docs']),
+    maskDocs: state.getIn([
+      'form',
+      'dialogConfirmation',
+      'values',
+      'masking_docs',
+    ]),
   };
 }
 
 const connectedTable = connect(mapStateToProps, {
   getSecretScanResultsAction,
+  secretScanMaskDocsAction,
+  secretScanUnmaskDocsAction,
   deleteDocsByIdAction,
-  unmaskDocsAction,
-  genericMaskDocsAction,
   requestManualAlertNotification,
 })(SecretScanTableV2);
 
-export default pollable()(connectedTable);;
+export default pollable()(connectedTable);

@@ -1,9 +1,60 @@
 /* eslint-disable arrow-body-style */
+/* eslint-disable no-plusplus */
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from 'react';
 import G6 from "@antv/g6";
 import { AutoSizer } from 'react-virtualized';
 import { isNil } from 'lodash';
 import styles from './index.module.scss';
+
+G6.registerEdge(
+  'circles-running',
+  {
+    afterDraw(_, group) {
+      const circleCount = 4;
+      const shape = group.get('children')[0];
+
+
+      const _loop = function _loop(i) {
+        const circle = group.addShape('circle', {
+          attrs: {
+            x: 0,
+            y: 0,
+            r: 0.6,
+            opacity: 1,
+            fill: '#db2547',
+          },
+          name: 'circle-shape',
+        });
+        circle.animate(
+          (ratio) => {
+            ratio += i / circleCount;
+            if (ratio > 1) {
+              ratio %= 1;
+            }
+            const tmpPoint = shape.getPoint(ratio);
+
+            return {
+              x: tmpPoint.x,
+              y: tmpPoint.y,
+              fillOpacity: 1
+            };
+          },
+          {
+            repeat: true,
+            duration: 10 * 1000,
+            easing: 'easeLinear',
+          },
+        );
+      };
+
+      for (let i = 0; i < circleCount; i++) {
+        _loop(i);
+      }
+    },
+  },
+  'spline',
+);
 
 
 function fitLabel(label) {
@@ -17,7 +68,7 @@ function fitLabel(label) {
  * depending upon the api call made.
  * we also want to highlight first edge since that would be the shortest
  */
-export const formatApiDataForDagreGraph = (apiResponse) => {
+export const formatApiDataForDagreGraph = (apiResponse, highlightTarget) => {
   if (!Array.isArray(apiResponse)) {
     apiResponse = [apiResponse];
   }
@@ -29,7 +80,12 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
     attackPathsBetweenNodes.forEach((attackPath) => {
       attackPath.forEach((attackNode, index) => {
         let nodeProps = {};
-        if (index === attackPath.length - 1) {
+        if (highlightTarget && highlightTarget === attackNode) {
+          nodeProps = {
+            ...rest,
+            style: { fill: '#db2547' }
+          }
+        } else if (!highlightTarget && (index === attackPath.length - 1)) {
           nodeProps = {
             ...rest,
             style: { fill: '#db2547' }
@@ -53,13 +109,20 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
 
         if (index === 0) return;
 
-        const lastNode = attackPath[index - 1];
-        const edgeKey = `${lastNode}<-->${attackNode}`;
+        const prevNode = attackPath[index - 1];
+        const lastNode = attackPath[attackPath.length - 1];
+        const edgeKey = `${prevNode}<-->${attackNode}`;
 
         const edgesProps = {};
-        if (rest.cve_attack_vector === 'network') {
+        if (
+          (highlightTarget && highlightTarget === lastNode && rest.cve_attack_vector === 'network')
+          || (!highlightTarget && rest.cve_attack_vector === 'network')
+        ) {
+          edgesProps.type = 'circles-running';
           edgesProps.style = {
             stroke: '#db2547',
+            opacity: 0.6,
+            shadowColor: 'white',
             endArrow: {
               fill: "#db2547",
               stroke: "#db2547",
@@ -74,7 +137,7 @@ export const formatApiDataForDagreGraph = (apiResponse) => {
           });
         } else {
           edgesMap.set(edgeKey, {
-            source: lastNode,
+            source: prevNode,
             target: attackNode,
             ...edgesProps
           });
@@ -129,7 +192,7 @@ const labelCfg = {
   style: {
     stroke: "black",
     lineWidth: 0,
-    fill: 'white',
+    fill: 'rgb(192, 192, 192)',
     fontFamily: "Source Sans Pro",
     fontSize: 8,
   },
@@ -177,9 +240,9 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
           size: 15,
           style: {
             opacity: 0.8,
-            stroke: 'white',
+            stroke: 'rgb(192, 192, 192)',
             fill: '#0079f2',
-            lineWidth: 0.5,
+            lineWidth: 0.7,
           },
           labelCfg,
         },
@@ -187,11 +250,12 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
           type: 'spline',
           style: {
             stroke: '#55c1e9',
-            lineWidth: 1,
-            opacity: 0.5,
+            lineWidth: 1.2,
+            opacity: 0.4,
             endArrow: {
-              opacity: 0.5,
-              path: G6.Arrow.triangle(3, 5, 0),
+              opacity: 0.9,
+              shadowBlur: 0,
+              path: G6.Arrow.triangle(2, 3, 0),
               fill: "#55c1e9",
               stroke: "#55c1e9",
             },

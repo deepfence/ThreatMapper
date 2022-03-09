@@ -54,7 +54,15 @@ def secret_scanned_nodes():
     if request.is_json:
         if type(request.json) != dict:
             raise InvalidUsage("Request data invalid")
-        filters = request.json.get("filters", {})
+        req_filters = request.json.get("filters", {})
+        node_ids = []
+        node_ids.extend(req_filters.get("image_name_with_tag", []))
+        node_ids.extend(req_filters.get("host_name", []))
+        filters["node_id"] = node_ids
+        if len(req_filters.get("container_name", [])) > 0:
+            filters["container_name"] = req_filters.get("container_name", [])
+        if len(req_filters.get("kubernetes_cluster_name", [])) > 0:
+            filters["kubernetes_cluster_name"] = req_filters.get("kubernetes_cluster_name", [])
         node_filters = request.json.get("node_filters", {})
         page_size = request.json.get("size", page_size)
         start_index = request.json.get("start_index", start_index)
@@ -92,6 +100,11 @@ def secret_scanned_nodes():
                         "node_name": {
                             "terms": {
                                 "field": "node_name.keyword"
+                            }
+                        },
+                        "container_name": {
+                            "terms": {
+                                "field": "container_name.keyword"
                             }
                         }
                     }
@@ -169,7 +182,10 @@ def secret_scanned_nodes():
                     "node_name": "", "node_id": node_id_aggr["key"], "scan_id": scan_id_aggr["key"],
                     "node_type": node_type, "scan_status": constants.SECRET_SCAN_STATUS_COMPLETED}
                 if scan_id_aggr["node_name"]["buckets"]:
-                    scan_details["node_name"] = scan_id_aggr["node_name"]["buckets"][0]["key"]
+                    scan_details["node_name"] = node_id_aggr["key"].split(";")[0]
+                if scan_id_aggr["container_name"]["buckets"] and scan_id_aggr["container_name"]["buckets"][0]["key"] != "":
+                    scan_details["container_name"] = scan_id_aggr["container_name"]["buckets"][0]["key"]
+                    scan_details["node_name"] = scan_details["container_name"]
                 for status_aggr in scan_id_aggr["severity"]["buckets"]:
                     scan_details["severity"][status_aggr["key"]] = status_aggr["doc_count"]
                 scan_details["total"] = 0
@@ -181,7 +197,7 @@ def secret_scanned_nodes():
             if not scan_list:
                 continue
             node_data = {
-                "node_name": scan_list[0]["node_name"],
+                "node_name": scan_list[0].get("container_name", "") if scan_list[0]["node_type"] == constants.NODE_TYPE_CONTAINER else scan_list[0]["node_name"],
                 "node_id": scan_list[0]["node_id"],
                 "node_type": scan_list[0]["node_type"],
                 "scans": scan_list,
@@ -292,9 +308,9 @@ def secret_scan_results():
     req_json = request.json
     action = req_json.get("action", "get")
     filters = req_json.get("filters", {})
+    lucene_query = request.args.get("lucene_query", None)
     if not filters:
         filters = {}
-    filters["masked"] = "false"
     if "node_id" in filters:
         scope_ids = []
         for node_id in filters["node_id"]:
@@ -305,7 +321,8 @@ def secret_scan_results():
         es_resp = ESConn.search_by_and_clause(
             SECRET_SCAN_INDEX, filters, req_json.get("start_index", 0),
             req_json.get("sort_order", "desc"), size=req_json.get("size", 10),
-            scripted_sort=[{"Severity.score": {"order": "desc", "unmapped_type": "double"}}])
+            scripted_sort=[{"Severity.score": {"order": "desc", "unmapped_type": "double"}}],
+            lucene_query_string=lucene_query)
         return set_response(data={"rows": es_resp["hits"], "total": es_resp.get("total", {}).get("value", 0)})
     elif action == "delete":
         es_resp = ESConn.search_by_and_clause(
@@ -495,6 +512,7 @@ def secret_exposing_nodes():
                     not node_details.get("pseudo", False) and node_details.get("docker_container_state") == "running":
                 if node_details["image_name_with_tag"] not in active_images:
                     active_images.append(node_details["image_name_with_tag"] + ";<container_image>")
+                    active_images.append(node_details["scope_id"])
     # TODO: es max clause
     active_hosts = active_hosts[:ES_MAX_CLAUSE]
     active_images = active_images[:ES_MAX_CLAUSE]
@@ -522,6 +540,17 @@ def secret_exposing_nodes():
                                 "field": "Severity.level.keyword",
                                 "size": ES_TERMS_AGGR_SIZE
                             }
+                        },
+                        "container_name": {
+                            "terms": {
+                                "field": "container_name.keyword"
+                            }
+                        }
+                        ,
+                        "node_type": {
+                            "terms": {
+                                "field": "node_type.keyword"
+                            }
                         }
                     }
                 }
@@ -531,7 +560,7 @@ def secret_exposing_nodes():
     host_filters = {"node_type": constants.NODE_TYPE_HOST, "node_id": active_hosts}
     host_query = ESConn.aggregation_helper(constants.SECRET_SCAN_INDEX, host_filters, aggs, number,
                                            TIME_UNIT_MAPPING.get(time_unit), lucene_query_string, get_only_query=True)
-    container_filters = {"node_type": constants.NODE_TYPE_CONTAINER_IMAGE, "node_id": active_images}
+    container_filters = {"node_type": [constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_CONTAINER], "node_id": active_images}
     container_query = ESConn.aggregation_helper(constants.SECRET_SCAN_INDEX, container_filters, aggs, number,
                                                 TIME_UNIT_MAPPING.get(time_unit), lucene_query_string,
                                                 get_only_query=True)
@@ -556,8 +585,36 @@ def secret_exposing_nodes():
                 for severity_bkt in scan_id_bkt["severity"]["buckets"]:
                     image_data = {"node": image_aggs["key"], "type": severity_bkt["key"],
                                   "value": severity_bkt["doc_count"]}
+                    if scan_id_bkt["node_type"]["buckets"][0]["key"] == constants.NODE_TYPE_CONTAINER:
+                        image_data["node"] = scan_id_bkt["container_name"]["buckets"][0]["key"]
                     response[constants.NODE_TYPE_CONTAINER_IMAGE].append(image_data)
     return set_response(data=response)
+
+
+@secret_api.route("/secret/mask-doc", methods=["POST"])
+@jwt_required()
+def mask_secret_doc():
+    doc_ids_to_be_masked = request.json.get("docs", [])
+    if not doc_ids_to_be_masked:
+        raise InvalidUsage("Missing docs value")
+    docs_to_be_masked = []
+    for doc_id in doc_ids_to_be_masked:
+        docs_to_be_masked.append({"_id": doc_id, "_index": SECRET_SCAN_INDEX})
+    ESConn.bulk_mask_docs(docs_to_be_masked)
+    return set_response(status=200)
+
+
+@secret_api.route("/secret/unmask-doc", methods=["POST"])
+@jwt_required()
+def unmask_secret_doc():
+    doc_ids_to_be_masked = request.json.get("docs", [])
+    if not doc_ids_to_be_masked:
+        raise InvalidUsage("Missing docs value")
+    docs_to_be_masked = []
+    for doc_id in doc_ids_to_be_masked:
+        docs_to_be_masked.append({"_id": doc_id, "_index": SECRET_SCAN_INDEX})
+    ESConn.bulk_unmask_docs(docs_to_be_masked)
+    return set_response(status=200)
 
 
 @secret_api.route("/secret/report", methods=["GET"])
@@ -615,16 +672,29 @@ def secret_report():
         lucene_query_string
     )
 
-    response = []
-    if "aggregations" in aggs_response:
-        for bucket in aggs_response["aggregations"]["severity"]["buckets"]:
-            sub_buckets = bucket.get("rule_name", []).get("buckets", [])
-            for sub_bucket in sub_buckets:
-                info = {'severity': bucket.get("key"), 'value': sub_bucket.get('doc_count', 0),
-                        'rule_name': sub_bucket.get("key")}
-                response.append(info)
+    data = {"name": "Secrets", "children": []}
+    inner_children = []
+    secrets_by_severity = aggs_response.get("aggregations", {}).get("severity", {}).get('buckets', [])
+    for bucket in secrets_by_severity:
+        by_severity = {"name": bucket.get('key'), "children": []}
+        total_count = 0
+        max_count = 0
+        buckets_inserted = 0
+        for inner_bucket in bucket.get("rule_name", {}).get('buckets', []):
+            total_count += inner_bucket.get("doc_count")
+            child = {"name": inner_bucket.get("key"), "value": inner_bucket.get("doc_count")}
+            by_severity["children"].append(child)
+            buckets_inserted += 1
+            if buckets_inserted >= 6:
+                break
+        by_severity["value"] = total_count
+        if max_count < total_count:
+            max_count = total_count
+        if not (max_count > 10 and total_count == 1):
+            inner_children.append(by_severity)
+    data["children"] = inner_children
 
-    return set_response(data=response)
+    return set_response(data=data)
 
 
 @secret_api.route("/secret/secret_severity_chart", methods=["GET", "POST"])

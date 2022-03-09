@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	camlistore.org v0.0.0-20171230002226-a5a65f0d8b22
+	github.com/Jeffail/tunny v0.1.4
 	github.com/NYTimes/gziphandler v1.0.2-0.20180227021810-5032c8878b9d
 	github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect

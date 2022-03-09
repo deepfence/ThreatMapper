@@ -2,6 +2,24 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: deepfence-internal-router
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-internal-router
+  ports:
+  - name: https-port
+    port: 443
+    protocol: TCP
+    targetPort: 443
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: deepfence-fetcher
   labels:
     app: deepfence-console
@@ -118,4 +136,58 @@ spec:
       port: 8009
       protocol: TCP
       targetPort: 8009
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-secret-scanner
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-secret-scanner
+  ports:
+    - name: deepfence-secret-scanner-port
+      port: 8011
+      protocol: TCP
+      targetPort: 8011
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-vulnerability-mapper
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-vulnerability-mapper
+  ports:
+  - name: deepfence-vulnerability-mapper-port
+    port: 8001
+    protocol: TCP
+    targetPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-package-scanner
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-package-scanner
+  ports:
+  - name: deepfence-package-scanner-port
+    port: 8005
+    protocol: TCP
+    targetPort: 8005
 ---

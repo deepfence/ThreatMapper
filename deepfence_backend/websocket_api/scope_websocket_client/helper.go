@@ -433,6 +433,7 @@ type DeepfenceTopology struct {
 	PodName                      string              `json:"pod_name,omitempty"`
 	Pid                          int                 `json:"pid,omitempty"`
 	Cmdline                      string              `json:"cmdline,omitempty"`
+	OpenFiles                    string              `json:"OpenFiles,omitempty"`
 	Ppid                         int                 `json:"ppid,omitempty"`
 	Threads                      int                 `json:"threads,omitempty"`
 	Process                      string              `json:"process,omitempty"`

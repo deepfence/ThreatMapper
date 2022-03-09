@@ -147,9 +147,12 @@ SCOPE_KUBE_SERVICE_API_CONTROL_URL = "http://deepfence-topology:8004/topology-ap
 SCOPE_KUBE_CONTROLLER_API_CONTROL_URL = "http://deepfence-topology:8004/topology-api/control/{probe_id}/{kube_controller_id}/{action}"
 
 SECRET_SCAN_API_URL = "http://deepfence-secret-scanner:8011/secret-scan"
+PACKAGE_SCANNER_REGISTRY_API_URL = "http://deepfence-package-scanner:8005/registry"
 
 CVE_INDEX = "cve"
 CVE_SCAN_LOGS_INDEX = "cve-scan"
+SBOM_INDEX = "sbom-cve-scan"
+SBOM_DEFAULT_FIELDS = ["artifacts.name", "artifacts.version", "artifacts.licenses"]
 SECRET_SCAN_INDEX = "secret-scan"
 SECRET_SCAN_LOGS_INDEX = "secret-scan-logs"
 REPORT_INDEX = "report"
@@ -164,6 +167,10 @@ CLOUD_CREDENTIAL_AES_SETTING_KEY = "cloud_credential_secret"
 PDF_REPORT_MAX_DOCS = 75000
 REGISTRY_IMAGES_CACHE_KEY_PREFIX = 'REGISTRY_IMAGES_LIST'
 REGISTRY_IMAGES_CACHE_EXPIRY_TIME = datetime.timedelta(days=2)
+
+OPEN_FILES_CACHE_KEY = 'OPEN_FILES_LIST'
+OPEN_FILES_CACHE_EXPIRY_TIME = datetime.timedelta(days=2)
+SECRET_SCANNER_FILE_PREFIX = '/tmp/Deepfence/SecretScanning'
 
 DURATION_IN_MINS = [
     (-1, 'immediate'),
@@ -258,6 +265,7 @@ CVE_SCAN_RUNNING_STATUS = [CVE_SCAN_STATUS_STARTED, CVE_SCAN_STATUS_IN_PROGRESS,
 CVE_SCAN_NOT_RUNNING_STATUS = [CVE_SCAN_STATUS_COMPLETED, CVE_SCAN_STATUS_ERROR, CVE_SCAN_STATUS_STOPPED]
 
 SECRET_SCAN_STATUS_COMPLETED = "COMPLETE"
+SECRET_SCAN_STATUS_IN_PROGRESS = "IN_PROGRESS"
 
 TOPOLOGY_ID_CONTAINER = "containers"
 TOPOLOGY_ID_CONTAINER_IMAGE = "containers-by-image"

@@ -82,8 +82,9 @@ import {
   addMailConfiguration,
   getGlobalSettings,
   addGlobalSettings,
-  getRegistryImagesTags,
   getTopAttackPathsForNode,
+  getRuntimeBomData,
+  getRegistryImagesTags,
   getSecretScanStatus,
   startSecretScan,
   secretsScanRegistryImages,
@@ -91,7 +92,11 @@ import {
   getSecretScanResults,
   getTopSecretScanContainerAndHosts,
   getSecretScanReportChart,
-  getSecretScanChartData
+  getSecretScanChartData,
+  secretScanMaskDocs,
+  secretScanUnmaskDocs,
+  stopCVEScan,
+  getSBOMByScanId,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -101,7 +106,7 @@ import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
 //
 
 export function setGraphView() {
-  return (dispatch) => {
+  return dispatch => {
     dispatch({
       type: ActionTypes.SET_VIEW_MODE,
       viewMode: GRAPH_VIEW_MODE,
@@ -110,7 +115,7 @@ export function setGraphView() {
 }
 
 export function setTableView() {
-  return (dispatch) => {
+  return dispatch => {
     dispatch({
       type: ActionTypes.SET_VIEW_MODE,
       viewMode: TABLE_VIEW_MODE,
@@ -132,14 +137,13 @@ export function receivedAlerts(alertsCollection) {
     const isAlertMasked = state.get('isAlertMasked');
     dispatch({
       type: ActionTypes.RECEIVE_ALERTS,
-      alertsCollection
+      alertsCollection,
     });
     if (isAlertMasked) {
       dispatch(unFocusMaskedAlert());
     }
-  }
+  };
 }
-
 
 //
 // New Actions
@@ -157,7 +161,6 @@ export function collapseSideNavbar() {
   };
 }
 
-
 export function receiveVulnerabilityStats(vulnerabilityStats) {
   return {
     type: ActionTypes.RECEIVE_VULNERABILITY_STATS,
@@ -171,7 +174,6 @@ export function receiveAreaChartData(areaChartData) {
     areaChartData,
   };
 }
-
 
 export function selectRefreshInterval(data) {
   return {
@@ -383,7 +385,6 @@ export function receiveNodeSpecificDetails(nodeSpecificDetails) {
     }
   };
 }
-
 
 export function fetchTopologyMetrics() {
   return dispatch => getTopologyMetrics(dispatch);
@@ -704,7 +705,6 @@ export function receiveEulaResponse(response) {
   };
 }
 /* END :: EULA */
-
 
 /* START :: NOTIFICATION */
 
@@ -1216,7 +1216,7 @@ export function getKubernetesCNIPluginAction(params) {
 }
 
 export function genericMaskDocsAction(params) {
-  return (dispatch) => genericMaskDocs(dispatch, params)
+  return dispatch => genericMaskDocs(dispatch, params);
 }
 export function doNotChangeComponent() {
   return {
@@ -1313,6 +1313,15 @@ export function startCVEScanAction(params) {
     ActionTypes.START_CVE_SCAN_FAILURE,
   ];
   return genericThunkAction(actionTypes, startCVEScan, params);
+}
+
+export function stopCVEScanAction(params) {
+  const actionTypes = [
+    ActionTypes.STOP_CVE_SCAN_REQUEST,
+    ActionTypes.STOP_CVE_SCAN_SUCCESS,
+    ActionTypes.STOP_CVE_SCAN_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, stopCVEScan, params);
 }
 
 export function getNodeTagsAction(params) {
@@ -1419,11 +1428,7 @@ export function getTopVulnerableAttackPathsAction(params) {
     ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_SUCCESS,
     ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_FAILURE,
   ];
-  return genericThunkAction(
-    actionTypes,
-    getTopVulnerableAttackPaths,
-    params
-  );
+  return genericThunkAction(actionTypes, getTopVulnerableAttackPaths, params);
 }
 
 export function getTopVulnerableActiveHostsAction(params) {
@@ -1452,7 +1457,6 @@ export function getDocTopAttackPathsAction(params) {
   ];
   return genericThunkAction(actionTypes, getTopVulnerableAttackPaths, params);
 }
-
 
 export function saveImageReportTableStateAction({ pageNumber = 0 }) {
   return {
@@ -1508,6 +1512,15 @@ export function reportGenerateAction(params) {
     ActionTypes.REPORT_GENERATION_FAILURE,
   ];
   return genericThunkAction(actionTypes, reportGenerate, params);
+}
+
+export function getSBOMByScanIdAction(params) {
+  const actionTypes = [
+    ActionTypes.SBOM_BY_SCAN_ID_REQUEST,
+    ActionTypes.SBOM_BY_SCAN_ID_SUCCESS,
+    ActionTypes.SBOM_BY_SCAN_ID_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getSBOMByScanId, params);
 }
 
 export function reportDownloadStatusAction(params) {
@@ -1568,7 +1581,6 @@ export function enumerateFiltersAction(params) {
   return genericThunkAction(actionTypes, enumerateFilters, params);
 }
 
-
 export function enumerateNodesAction(params) {
   const actionTypes = [
     ActionTypes.ENUMERATE_NODES_REQUEST,
@@ -1604,7 +1616,6 @@ export function triggerRegistryRefreshAction(params) {
   ];
   return genericThunkAction(actionTypes, triggerRegistryRefresh, params);
 }
-
 
 export function getAlertsV2Action(params) {
   const actionTypes = [
@@ -1712,7 +1723,6 @@ export function getUserAuditLogAction(params) {
   ];
   return genericThunkAction(actionTypes, getUserAuditLog, params);
 }
-
 
 export function changeToGlobalConfig(params) {
   const actionTypes = [
@@ -1829,6 +1839,14 @@ export function getSecretScanChartDataAction(params) {
   return genericThunkAction(actionTypes, getSecretScanChartData, params);
 }
 
+export function secretScanMaskDocsAction(params) {
+  return (dispatch) => secretScanMaskDocs(dispatch, params);
+}
+
+export function secretScanUnmaskDocsAction(params) {
+  return (dispatch) => secretScanUnmaskDocs(dispatch, params);
+}
+
 // multi cloud
 export function setTopologyGraphAPI(api) {
   return {
@@ -1883,4 +1901,13 @@ export function topologyFilterRemoved(filter) {
     type: ActionTypes.TOPOLOGY_FILTER_REMOVED,
     filter,
   };
+}
+
+export function getRuntimeBomAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_RUNTIME_BOM_REQUEST,
+    ActionTypes.GET_RUNTIME_BOM_SUCCESS,
+    ActionTypes.GET_RUNTIME_BOM_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getRuntimeBomData, params);
 }

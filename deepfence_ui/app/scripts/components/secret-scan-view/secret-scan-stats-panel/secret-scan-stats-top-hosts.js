@@ -1,6 +1,4 @@
-/* eslint-disable react/destructuring-assignment */
-// TODO: Rewrite this component
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { connect, useDispatch } from 'react-redux';
 import {
   getTopSecretScanContainerAndHostsAction,
@@ -10,41 +8,19 @@ import { constructGlobalSearchQuery } from '../../../utils/search-utils';
 import StackedChart from '../../common/charts/stacked-chart/index';
 import pollable from '../../common/header-view/pollable';
 
-// HACK-NOTE: This component relies on data fetched by vulnerability-stats-top-containers.js
-// Make sure not to deploy this as a standalone component. It should always
-// accompany the other component.
-// This hack saves use from writing a new API call
 const SecretScanStatsTopHosts = props => {
-  const oldProps = useRef(props);
   const dispatch = useDispatch();
+  const { registerPolling, startPolling } = props;
 
   useEffect(() => {
-    const { registerPolling, startPolling } = props;
-    registerPolling(() => getTopVulnerableHostStats());
+    registerPolling(getTopSecretHostStats);
     startPolling();
   }, []);
 
-  useEffect(() => {
-    const { alertPanelHistoryBound: newBounds, globalSearchQuery: newQuery } =
-      props;
-    const {
-      alertPanelHistoryBound: currentBounds,
-      globalSearchQuery: currentQuery,
-    } = oldProps.current;
-
-    if (currentBounds !== newBounds || currentQuery !== newQuery) {
-      getTopVulnerableHostStats({
-        alertPanelHistoryBound: newBounds,
-        globalSearchQuery: newQuery,
-      });
-    }
-    oldProps.current = props;
-  }, []);
-
-  const getTopVulnerableHostStats = (params = {}) => {
+  const getTopSecretHostStats = (params = {}) => {
     const {
       alertPanelHistoryBound = props.alertPanelHistoryBound || [],
-      globalSearchQuery = props.globalSearchQuery || [],
+      globalSearchQuery
     } = params;
 
     const { getTopSecretScanContainerAndHostsAction: action } = props;
@@ -72,7 +48,7 @@ const SecretScanStatsTopHosts = props => {
     let searchQuery = [];
     if (point.type) {
       const severityParams = {
-        cve_severity: point.type,
+        "Severity.level": point.type,
       };
       searchQuery = constructGlobalSearchQuery(existingQuery, severityParams);
     }

@@ -16,14 +16,11 @@ data:
   postgresql-username: "{{ .Values.db.postgresUserDb.user | b64enc }}"
   postgresql-password: "{{ .Values.db.postgresUserDb.password | b64enc }}"
   postgresql-db-name: "{{ .Values.db.postgresUserDb.dbname | b64enc }}"
-  postgresql-fetcher-db-username: "{{ .Values.db.postgresFetcherDb.user | b64enc }}"
-  postgresql-fetcher-db-password: "{{ .Values.db.postgresFetcherDb.password | b64enc }}"
-  postgresql-fetcher-db-name: "{{ .Values.db.postgresFetcherDb.dbname | b64enc }}"
   postgresql-postgres-password: "TVA1ZkZiYllxUw=="
   repmgr-password: "{{ .Values.db.postgresUserDb.password | b64enc }}"
 {{- end }}
 ---
-{{- if or (eq "deepfence-postgres" .Values.db.postgresUserDb.host) (eq "deepfence-postgres" .Values.db.postgresFetcherDb.host) }}
+{{- if eq "deepfence-postgres" .Values.db.postgresUserDb.host }}
 ---
 {{- if eq "true" .Values.db.createDbSecret }}
 # Source: postgresql-ha/templates/pgpool/secrets.yaml
@@ -115,31 +112,6 @@ data:
     else
         info "Standby node doesn't need to wait, leaving the cluster."
     fi
----
-# Source: postgresql-ha/templates/postgresql/initdb-scripts-configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: deepfence-postgres-postgresql-initdb-scripts
-  labels:
-    app.kubernetes.io/name: postgresql-ha
-    helm.sh/chart: postgresql-ha-7.12.0
-    app.kubernetes.io/instance: deepfence-postgres
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: postgresql
-  namespace: {{ .Values.namespace }}
-data:
-  setup.sh: |-
-    #!/bin/bash
-    set -e
-
-    PGPASSWORD="${POSTGRES_PASSWORD}" psql -v ON_ERROR_STOP=1 --username "repmgr" --dbname "${POSTGRES_DB}" <<-EOF
-        ALTER ROLE repmgr CREATEROLE;
-        CREATE DATABASE ${POSTGRES_FETCHER_DB_NAME};
-        CREATE USER ${POSTGRES_FETCHER_DB_USER} WITH PASSWORD '${POSTGRES_FETCHER_DB_PASSWORD}';
-        GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_FETCHER_DB_NAME} TO ${POSTGRES_FETCHER_DB_USER};
-        ALTER ROLE repmgr NOCREATEROLE;
-    EOF
 ---
 # Source: postgresql-ha/templates/pgpool/service.yaml
 apiVersion: v1
@@ -458,21 +430,6 @@ spec:
                 secretKeyRef:
                   name: deepfence-postgres-postgresql
                   key: postgresql-db-name
-            - name: POSTGRES_FETCHER_DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-username
-            - name: POSTGRES_FETCHER_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-password
-            - name: POSTGRES_FETCHER_DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: deepfence-postgres-postgresql
-                  key: postgresql-fetcher-db-name
             - name: POSTGRESQL_LOG_HOSTNAME
               value: "true"
             - name: POSTGRESQL_LOG_CONNECTIONS
@@ -565,8 +522,6 @@ spec:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
           volumeMounts:
-            - name: custom-init-scripts
-              mountPath: /docker-entrypoint-initdb.d/
             - name: data
               mountPath: /bitnami/postgresql
             - name: hooks-scripts
@@ -577,9 +532,6 @@ spec:
           configMap:
             name: deepfence-postgres-postgresql-hooks-scripts
             defaultMode: 0755
-        - name: custom-init-scripts
-          configMap:
-            name: deepfence-postgres-postgresql-initdb-scripts
   volumeClaimTemplates:
     - metadata:
         name: data

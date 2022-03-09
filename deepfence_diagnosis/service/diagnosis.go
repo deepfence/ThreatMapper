@@ -34,7 +34,7 @@ const (
 )
 
 func init() {
-	supervisorContainers = []string{"deepfence-fetcher", "deepfence-analyzer-0", "deepfence-analyzer-1", "deepfence-analyzer-2", "deepfence-celery", "deepfence-backend", "deepfence-api"}
+	supervisorContainers = []string{"deepfence-analyzer-0", "deepfence-analyzer-1", "deepfence-analyzer-2", "deepfence-celery", "deepfence-backend", "deepfence-api"}
 }
 
 func addSupervisorLogsKubernetes(pod v1.Pod, tarWriter *tar.Writer) error {

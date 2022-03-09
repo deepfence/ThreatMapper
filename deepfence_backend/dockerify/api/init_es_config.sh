@@ -159,6 +159,39 @@ add_index() {
   }'
   echo ""
 
+   curl -X PUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/sbom-cve-scan" -H 'Content-Type: application/json' -d'
+    {
+      "mappings": {
+        "properties": {
+          "@timestamp": {
+            "type": "date"
+          },
+          "scan_id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "node_id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "time_stamp": {
+            "type": "long"
+          }
+        }
+      }
+    }'
+    echo ""
+
   declare -a index_arr=("report")
   for index_name in "${index_arr[@]}"
   do

@@ -24,6 +24,7 @@ const (
 	ebpf_exe_path      = "/home/deepfence/bin/open-tracer"
 	ebpf_opt_format    = "--socket-path=%s"
 	mem_lock_size      = "--memlock=8388608"
+	file_suffixes      = "--match-suffixes=\".so,.jar,.war,.pyc,.whl,.egg,METADATA,PKG-INFO,.gemspec,Rakefile,composer.lock,package.json,.js,.dll,.exe\""
 )
 
 func generateSocketString() string {
@@ -35,7 +36,7 @@ func generateSocketString() string {
 
 func NewInfoTracer() (*InfoTracer, error) {
 	ebpf_socket := generateSocketString()
-	command := exec.Command("prlimit", mem_lock_size, ebpf_exe_path, fmt.Sprintf(ebpf_opt_format, ebpf_socket))
+	command := exec.Command("prlimit", mem_lock_size, ebpf_exe_path, fmt.Sprintf(ebpf_opt_format, ebpf_socket), file_suffixes)
 	err := command.Start()
 	if err != nil {
 		return nil, err

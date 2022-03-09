@@ -1,7 +1,4 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/destructuring-assignment */
-/* eslint-disable react/no-string-refs */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Route, Link, Redirect } from 'react-router-dom';
 import classnames from 'classnames';
@@ -29,11 +26,12 @@ const menu = [
 ];
 
 const SecretScanHome = props => {
+  const { registerPolling, startPolling } = props;
   const sideNavMenuCollection =
     getUserRole() === 'admin'
       ? ADMIN_SIDE_NAV_MENU_COLLECTION
       : USER_SIDE_NAV_MENU_COLLECTION;
-  const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection[0]);
+  const [activeMenu] = useState(sideNavMenuCollection[0]);
   const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] =
     useState(false);
   const [licenseResponse, setLicenseResponse] = useState(null);
@@ -44,12 +42,13 @@ const SecretScanHome = props => {
   const isFiltersViewVisible = useSelector(state =>
     state.get('isFiltersViewVisible')
   );
-  const ref = useRef('vulnerabilityResizeRef');
+  const globalSearchQuery = useSelector(state =>
+    state.get('globalSearchQuery')
+  );
 
   useEffect(() => {
-    const { registerPolling, startPolling } = props;
     registerPolling(getReport);
-    startPolling();
+    startPolling({ luceneQuery: globalSearchQuery });
     dispatch(breadcrumbChange([{ name: 'Secret Scan' }]));
   }, []);
 
@@ -75,8 +74,8 @@ const SecretScanHome = props => {
     []
   );
 
-  const getReport = () => {
-    dispatch(getSecretScanReportChartAction());
+  const getReport = (params = {}) => {
+    dispatch(getSecretScanReportChartAction(params));
   };
 
   const { match } = props;
@@ -87,20 +86,19 @@ const SecretScanHome = props => {
     'show-filters-view': isFiltersViewVisible,
     'hide-filters-view': !isFiltersViewVisible,
   });
-  const contentClassName = classnames('summary');
   return (
     <div className="cve-summary-view">
       <SideNavigation
         navMenuCollection={sideNavMenuCollection}
         activeMenu={activeMenu}
       />
-      <div ref={ref} style={{ overflow: 'hidden' }}>
+      <div style={{ overflow: 'hidden' }}>
         <HeaderView />
         <div className={divClassName}>
           <SecretScanStatsView />
         </div>
       </div>
-      <div className={contentClassName}>
+      <div className="summary">
         <div className="tab-links">
           <div className="df-tabs">
             <div className="tabheading">

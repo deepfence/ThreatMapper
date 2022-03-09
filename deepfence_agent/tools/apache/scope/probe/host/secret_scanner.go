@@ -1,6 +1,7 @@
 package host
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -8,9 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/weaveworks/scope/common/xfer"
-	pb "github.com/weaveworks/scope/proto"
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"math/rand"
 	"net"
@@ -21,18 +19,52 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Jeffail/tunny"
+	"github.com/weaveworks/scope/common/xfer"
+	pb "github.com/weaveworks/scope/proto"
+	"google.golang.org/grpc"
 )
 
 const (
-	ebpfSocketFormat    = "/tmp/%d.sock"
-	secretScanIndexName = "secret-scan"
+	ebpfSocketFormat        = "/tmp/%d.sock"
+	secretScanIndexName     = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
-	ssEbpfExePath = "/home/deepfence/bin/SecretScanner"
-	memLockSize   = "--memlock=8388608"
-	ebpfOptFormat = "--socket-path=%s"
+	ssEbpfExePath           = "/home/deepfence/bin/SecretScanner"
+	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
+	memLockSize             = "--memlock=8388608"
+	ebpfOptFormat           = "--socket-path=%s"
+	serverRestartAttempts   = 1
+	defaultScanConcurrency  = 5
 )
+
 var certPath = "/etc/filebeat/filebeat.crt"
-var httpClient *http.Client
+
+var (
+	scanConcurrency    int
+	grpcScanWorkerPool *tunny.Pool
+	mgmtConsoleUrl     string
+	deepfenceKey       string
+)
+
+type secretScanParameters struct {
+	client      pb.SecretScannerClient
+	req         pb.FindRequest
+	controlArgs map[string]string
+	hostName    string
+	r           *Reporter
+}
+
+func init() {
+	var err error
+	scanConcurrency, err = strconv.Atoi(os.Getenv("SECRET_SCAN_CONCURRENCY"))
+	if err != nil {
+		scanConcurrency = defaultScanConcurrency
+	}
+	grpcScanWorkerPool = tunny.NewFunc(scanConcurrency, getAndPublishSecretScanResultsWrapper)
+	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL") + ":" + os.Getenv("MGMT_CONSOLE_PORT")
+	deepfenceKey = os.Getenv("DEEPFENCE_KEY")
+}
 
 func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
@@ -57,15 +89,34 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	} else if nodeType == nodeTypeHost {
 		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: HostMountDir}}
 	}
-	go getAndPublishSecretScanResults(r.secretScanner.client, greq, req.ControlArgs, r.hostName)
+	go grpcScanWorkerPool.Process(secretScanParameters{
+		client:      r.secretScanner.client,
+		req:         greq,
+		controlArgs: req.ControlArgs,
+		hostName:    r.hostName,
+		r:           r,
+	})
 	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
 }
 
-func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string, hostName string) {
+func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) interface{} {
+	scanParameters, ok := scanParametersInterface.(secretScanParameters)
+	if !ok {
+		fmt.Println("Error reading input from grpc API")
+		return nil
+	}
+	getAndPublishSecretScanResults(scanParameters.client, scanParameters.req, scanParameters.controlArgs,
+		scanParameters.hostName, scanParameters.r)
+	return nil
+}
+
+func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string, hostName string, r *Reporter) {
 	var secretScanLogDoc = make(map[string]interface{})
 	secretScanLogDoc["node_id"] = controlArgs["node_id"]
 	secretScanLogDoc["node_type"] = controlArgs["node_type"]
 	secretScanLogDoc["node_name"] = hostName
+	secretScanLogDoc["container_name"] = controlArgs["container_name"]
+	secretScanLogDoc["kubernetes_cluster_name"] = controlArgs["kubernetes_cluster_name"]
 	secretScanLogDoc["host_name"] = hostName
 	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
 	secretScanLogDoc["masked"] = "false"
@@ -77,20 +128,39 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		fmt.Println("Error in marshalling in progress secretScanLogDoc to json:" + err.Error())
 		return
 	}
-	err = sendSecretScanDataToLogstash(string(byteJson) , secretScanLogsIndexName)
+	err = ingestScanData(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
 	res, err := client.FindSecretInfo(context.Background(), &req)
+	if req.GetPath() != "" && err == nil && res != nil {
+		for _, secret := range res.Secrets {
+			secret.GetMatch().FullFilename = strings.Replace(secret.GetMatch().GetFullFilename(), HostMountDir, "", 1)
+		}
+	}
 	timestamp := getTimestamp()
 	currTime := getCurrentTime()
 	if err != nil {
+		var attemptNumber = 1
 		fmt.Println("Error from secretScan grpc server:" + err.Error())
-		secretScanLogDoc["scan_status"] = "ERROR"
-		secretScanLogDoc["scan_message"] = err.Error()
-		byteJson, _ = json.Marshal(secretScanLogDoc)
-		sendSecretScanDataToLogstash(string(byteJson) , secretScanLogsIndexName)
-		return
+		for attemptNumber <= serverRestartAttempts {
+			fmt.Println("Attempting grpc server restart:" + strconv.Itoa(attemptNumber))
+			client = r.secretScanner.client
+			AttachSecretScanner(r)
+			res, err = client.FindSecretInfo(context.Background(), &req)
+			if err == nil {
+				fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
+				break
+			}
+			attemptNumber++
+		}
+		if attemptNumber > serverRestartAttempts {
+			secretScanLogDoc["scan_status"] = "ERROR"
+			secretScanLogDoc["scan_message"] = err.Error()
+			byteJson, _ = json.Marshal(secretScanLogDoc)
+			ingestScanData(string(byteJson), secretScanLogsIndexName)
+			return
+		}
 	} else {
 		fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
 	}
@@ -102,6 +172,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		secretScanDoc["masked"] = "false"
 		secretScanDoc["host_name"] = hostName
 		secretScanDoc["scan_id"] = controlArgs["scan_id"]
+		secretScanDoc["container_name"] = controlArgs["container_name"]
+		secretScanDoc["kubernetes_cluster_name"] = controlArgs["kubernetes_cluster_name"]
 		secretScanDoc["time_stamp"] = timestamp
 		secretScanDoc["@timestamp"] = currTime
 		values := reflect.ValueOf(*secret)
@@ -116,7 +188,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 			fmt.Println("Error in marshalling secret result object to json:" + err.Error())
 			return
 		}
-		err = sendSecretScanDataToLogstash(string(byteJson), secretScanIndexName)
+		err = ingestScanData(string(byteJson), secretScanIndexName)
 		if err != nil {
 			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
 		}
@@ -134,7 +206,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		fmt.Println("Error in marshalling secretScanLogDoc to json:" + err.Error())
 		return
 	}
-	err = sendSecretScanDataToLogstash(string(byteJson) , secretScanLogsIndexName)
+	err = ingestScanData(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex:" + err.Error())
 	}
@@ -149,9 +221,7 @@ func getCurrentTime() string {
 	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
 }
 
-func sendSecretScanDataToLogstash(secretScanMsg string, index string) error {
-	mgmtConsoleUrl := os.Getenv("MGMT_CONSOLE_URL") + ":" + os.Getenv("MGMT_CONSOLE_PORT")
-	deepfenceKey := os.Getenv("DEEPFENCE_KEY")
+func ingestScanData(secretScanMsg string, index string) error {
 	secretScanMsg = strings.Replace(secretScanMsg, "\n", " ", -1)
 	postReader := bytes.NewReader([]byte(secretScanMsg))
 	retryCount := 0
@@ -161,7 +231,7 @@ func sendSecretScanDataToLogstash(secretScanMsg string, index string) error {
 		return err
 	}
 	for {
-		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/df-api/add-to-logstash?doc_type=" + index, postReader)
+		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/df-api/ingest?doc_type="+index, postReader)
 		if err != nil {
 			return err
 		}
@@ -197,7 +267,21 @@ type SecretScanner struct {
 func NewSecretScanner() (*SecretScanner, error) {
 	ebpfSocket := generateSocketString()
 	command := exec.Command("prlimit", memLockSize, ssEbpfExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
-	err := command.Start()
+
+	cmdReader, err := command.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	scanner := bufio.NewScanner(cmdReader)
+	go func() {
+		f, _ := os.Create(ssEbpfLogPath)
+		defer f.Close()
+		for scanner.Scan() {
+			f.WriteString(scanner.Text() + "\n")
+		}
+	}()
+	err = command.Start()
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +334,7 @@ func generateSocketString() string {
 	rand.Seed(time.Now().UnixNano())
 	min := 1000
 	max := 9999
-	return fmt.Sprintf(ebpfSocketFormat, rand.Intn(max - min + 1) + min)
+	return fmt.Sprintf(ebpfSocketFormat, rand.Intn(max-min+1)+min)
 }
 
 func (it *SecretScanner) Stop() {

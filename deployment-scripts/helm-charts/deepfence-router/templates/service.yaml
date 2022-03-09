@@ -44,7 +44,9 @@ spec:
   loadBalancerSourceRanges:
 {{ toYaml .Values.service.loadBalancerSourceRanges | indent 4 }}
 {{- end }}
+  {{- if  eq "LoadBalancer" .Values.service.type   }}
   externalTrafficPolicy: "{{ .Values.service.externalTrafficPolicy }}"
+  {{- end }}
   type: {{ .Values.service.type }}
   selector:
     name: {{ .Values.service.name }}
@@ -52,11 +54,29 @@ spec:
     - name: https-port
       port: {{ required "managementConsolePort is required" .Values.managementConsolePort }}
       protocol: TCP
+      {{- if eq .Values.service.type "LoadBalancer" }}
       targetPort: 443
+      {{- end }}
+      {{- if eq .Values.service.type "NodePort"}}
+      {{- if .Values.service.nodePortHttps }}
+      nodePort: {{ .Values.service.nodePortHttps }}
+      {{- else }}
+      nodePort: 30007
+      {{- end }}
+      {{- end }}
     - name: http-port
       port: 80
       protocol: TCP
+      {{- if eq .Values.service.type "LoadBalancer" }}
       targetPort: 80
+      {{- end }}
+      {{- if eq .Values.service.type "NodePort" }}
+      {{- if .Values.service.nodePortHttp }}
+      nodePort: {{ .Values.service.nodePortHttp }}
+      {{- else }}
+      nodePort: 30008
+      {{- end }}
+      {{- end }}
 ---
 {{- if eq "true" .Values.createSeparateServiceForAgents }}
 apiVersion: v1

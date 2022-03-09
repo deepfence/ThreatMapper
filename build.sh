@@ -6,9 +6,10 @@ DOCKER_BUILD_LOG="docker-build.log"
 DEEPFENCE_BACKEND_DIR=$(pwd)/deepfence_backend
 DEEPFENCE_UI_DIR=$(pwd)/deepfence_ui
 DEEPFENCE_DIAG_DIR=$(pwd)/deepfence_diagnosis
-DEEPFENCE_FETCHER_DIR=$DEEPFENCE_CONSOLE_DIR/clair
+DEEPFENCE_FETCHER_DIR=$DEEPFENCE_CONSOLE_DIR/fetcher
 VULNERABILITY_MAPPER_DIR=$(pwd)/vulnerability_mapper
 SECRET_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/SecretScanner/
+PACKAGE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/package-scanner/
 
 cd $DEEPFENCE_CONSOLE_DIR
 
@@ -135,4 +136,13 @@ if [ ! $? -eq 0 ]; then
     echo "Building secret scanner image failed. Exiting"
     exit 1
 fi
+
+echo "Building Package Scanner Image"
+cd $PACKAGE_SCANNER_DIR
+docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-latest} -f $PACKAGE_SCANNER_DIR/Dockerfile $PACKAGE_SCANNER_DIR
+if [ ! $? -eq 0 ]; then
+    echo "Building secret scanner image failed. Exiting"
+    exit 1
+fi
+
 cd $DEEPFENCE_CONSOLE_DIR

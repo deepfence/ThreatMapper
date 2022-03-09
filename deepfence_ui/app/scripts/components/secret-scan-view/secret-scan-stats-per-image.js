@@ -1,57 +1,72 @@
 /* eslint-disable react/destructuring-assignment */
-import React, {useEffect} from 'react';
-import {useDispatch} from 'react-redux';
-import {
-  setSearchQuery,
-} from '../../actions/app-actions';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { getSecretScanDataAction, setSearchQuery } from '../../actions/app-actions';
 import pollable from '../common/header-view/pollable';
 import { constructGlobalSearchQuery } from '../../utils/search-utils';
 
-const SecretScanStatsPerImage = (props) => {
-
+const SecretScanStatsPerImage = props => {
   const dispatch = useDispatch();
 
-  useEffect(() => () => {
+  useEffect(() => {
+    const {registerPolling, startPolling} = props;
+    registerPolling(getSecretScanImageReport);
+    startPolling();
+  }, [])
+
+  useEffect(
+    () => () => {
       const { stopPolling } = props;
       stopPolling();
-    }, []);
+    },
+    []
+  );
 
-  const statsClickHandler = (cveSeverity) => {
+  const getSecretScanImageReport = (pollParams) => {
+    const {
+      globalSearchQuery,
+    } = pollParams;
+    const params = {
+      lucene_query: globalSearchQuery,
+    };
+    return dispatch(getSecretScanDataAction(params));
+  }
+
+  const statsClickHandler = severity => {
     const { globalSearchQuery: existingQuery = [] } = props;
 
     const searchQuery = constructGlobalSearchQuery(existingQuery, {
-      cve_severity: cveSeverity,
+      "Severity.level": severity,
     });
 
     const globalSearchQuery = {
       searchQuery,
     };
     dispatch(setSearchQuery(globalSearchQuery));
-  }
+  };
 
   const { data } = props;
-  let low = 0
-  let medium = 0
-  let high = 0
-  let total = 0
-  let activeContainers = 0
+  let low = 0;
+  let medium = 0;
+  let high = 0;
+  let total = 0;
+  let activeContainers = 0;
 
-  if(data && data.data){
+  if (data && data.data) {
     data.data.map(d => {
-    d.scans.map( s => {
-      if(s?.scan_id === props?.scanId){
-        low = s?.severity?.Low
-        medium = s?.severity?.Medium
-        high = s?.severity?.high
-        activeContainers = s?.active_containers
-        total = s?.total
-      }
+      d.scans.map(s => {
+        if (s?.scan_id === props?.scanId) {
+          low = s?.severity?.low ?? low;
+          medium = s?.severity?.medium ?? medium;
+          high = s?.severity?.high ?? high;
+          activeContainers = s?.active_containers ?? activeContainers;
+          total = s?.total ?? total;
+        }
+        return 0;
+      });
       return 0;
-    })
-    return 0;
-  })
+    });
   }
-
 
   return (
     <div>
@@ -63,20 +78,22 @@ const SecretScanStatsPerImage = (props) => {
               <div className="name">Total</div>
             </div>
           </div>
-          <div className="vulnerability-details high-alert">
+          <div className="vulnerability-details high-alert"
+            onClick={() => statsClickHandler('high')}
+          >
             <div
               className="vulnerability-details-container"
-              onClick={() => statsClickHandler('high')}
               aria-hidden="true"
             >
               <div className="count">{high}</div>
               <div className="name">High</div>
             </div>
           </div>
-          <div className="vulnerability-details medium-alert">
+          <div className="vulnerability-details medium-alert"
+              onClick={() => statsClickHandler('medium')}
+          >
             <div
               className="vulnerability-details-container"
-              onClick={() => statsClickHandler('medium')}
               aria-hidden="true"
             >
               <div className="count">{medium}</div>
@@ -84,10 +101,11 @@ const SecretScanStatsPerImage = (props) => {
             </div>
           </div>
           <div className="line-break" />
-          <div className="vulnerability-details low-alert">
+          <div className="vulnerability-details low-alert"
+              onClick={() => statsClickHandler('low')}
+          >
             <div
               className="vulnerability-details-container"
-              onClick={() => statsClickHandler('low')}
               aria-hidden="true"
             >
               <div className="count">{low}</div>
@@ -104,6 +122,6 @@ const SecretScanStatsPerImage = (props) => {
       </div>
     </div>
   );
-}
+};
 
 export default pollable()(SecretScanStatsPerImage);

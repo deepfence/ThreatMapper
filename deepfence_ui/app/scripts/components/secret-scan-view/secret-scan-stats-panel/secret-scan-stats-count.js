@@ -10,7 +10,7 @@ const SecretScanStatsCount = props => {
     const { globalSearchQuery: existingQuery = [] } = props;
 
     const searchQuery = constructGlobalSearchQuery(existingQuery, {
-      cve_severity: severity,
+      "Severity.level" : severity,
     });
 
     const globalSearchQuery = {
@@ -26,25 +26,20 @@ const SecretScanStatsCount = props => {
   let medium = 0;
   let low = 0;
 
-  if (summaryStats !== undefined) {
+  if (summaryStats) {
+    const { children } = summaryStats;
     // eslint-disable-next-line array-callback-return
-    summaryStats.map(s => {
-      switch (s.severity.toLowerCase()) {
-        case 'medium':
-          medium += s.value;
-          break;
-        case 'low':
-          low += s.value;
-          break;
-        case 'high':
-          high += s.value;
-          break;
-        default:
-          break;
+    children?.map(child => {
+      if (child.name === 'high') {
+        high += child.value;
+      } else if (child.name === 'medium') {
+        medium += child.value;
+      } else if (child.name === 'low') {
+        low += child.value;
       }
     });
+    total = low + medium + high;
   }
-  total = low + medium + high;
 
   return (
     <div className="compliance-stats-count flex-item">

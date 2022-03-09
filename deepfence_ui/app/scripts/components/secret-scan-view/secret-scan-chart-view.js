@@ -1,9 +1,8 @@
-/*eslint-disable*/
+/* eslint-disable prefer-destructuring */
+/* eslint-disable guard-for-in */
 
-// React imports
 import React from 'react';
 import { connect } from 'react-redux';
-
 import SunburstChart from '../common/charts/sunburst-chart/index';
 
 import {
@@ -17,17 +16,17 @@ class SecretScanChartView extends React.Component {
   constructor() {
     super();
     this.state = {};
-    this.onCVETypeClickHandler = this.onCVETypeClickHandler.bind(this);
+    this.sectionClickHandler = this.sectionClickHandler.bind(this);
   }
 
   componentDidMount() {
     // Initial api call to get data
-    this.getCveSeverityChartData();
+    this.getSecretSeverityChartData();
 
     // Calls on the basis of active time interval
     if (this.props.refreshInterval) {
       const interval = setInterval(() => {
-        this.getCveSeverityChartData();
+        this.getSecretSeverityChartData();
       }, this.props.refreshInterval.value * 1000);
       this.setState({ intervalObj: interval });
     }
@@ -36,10 +35,10 @@ class SecretScanChartView extends React.Component {
   UNSAFE_componentWillReceiveProps(newProps) {
     if (
       newProps.refreshInterval &&
-      this.props.refreshInterval != newProps.refreshInterval
+      this.props.refreshInterval !== newProps.refreshInterval
     ) {
       const interval = setInterval(() => {
-        this.getCveSeverityChartData();
+        this.getSecretSeverityChartData();
       }, newProps.refreshInterval.value * 1000);
       if (this.state.intervalObj) {
         clearInterval(this.state.intervalObj);
@@ -48,27 +47,27 @@ class SecretScanChartView extends React.Component {
     }
     if (newProps.searchQuery !== this.props.searchQuery) {
       this.setState(
-        { display: undefined, number: undefined, time_unit: undefined },
-        function stateUpdateComplete() {
+        { number: undefined, time_unit: undefined },
+        () => {
           const activeDuration = newProps.days.value;
-          this.getCveSeverityChartData(
+          this.getSecretSeverityChartData(
             activeDuration.number,
             activeDuration.time_unit,
             newProps.searchQuery
           );
-        }.bind(this)
+        }
       );
-    } else if (newProps.days != this.props.days) {
+    } else if (newProps.days !== this.props.days) {
       this.setState(
-        { display: undefined, number: undefined, time_unit: undefined },
-        function stateUpdateComplete() {
+        { number: undefined, time_unit: undefined },
+        () => {
           const activeDuration = newProps.days.value;
-          this.getCveSeverityChartData(
+          this.getSecretSeverityChartData(
             activeDuration.number,
             activeDuration.time_unit,
             newProps.searchQuery
           );
-        }.bind(this)
+        }
       );
     }
   }
@@ -80,7 +79,7 @@ class SecretScanChartView extends React.Component {
     }
   }
 
-  getCveSeverityChartData(number, time_unit, lucene_query) {
+  getSecretSeverityChartData(number, time_unit, lucene_query) {
     if (this.props.days || number) {
       const params = {
         number: number || this.state.number || this.props.days.value.number,
@@ -93,7 +92,7 @@ class SecretScanChartView extends React.Component {
     }
   }
 
-  onCVETypeClickHandler(point) {
+  sectionClickHandler(point) {
     const { globalSearchQuery: existingQuery = [], dispatch } = this.props;
     let searchQuery = existingQuery;
 
@@ -104,17 +103,17 @@ class SecretScanChartView extends React.Component {
 
     switch (paths.length) {
       case 1:
-        newSearchParams.cve_severity = paths[0];
+        newSearchParams["Severity.level"] = paths[0];
         break;
       case 2:
-        newSearchParams.cve_severity = paths[0];
-        newSearchParams.cve_type = paths[1];
+        newSearchParams["Severity.level"] = paths[0];
+        newSearchParams["Rule.name"] = paths[1];
         break;
       default:
         return;
     }
     for (const param in newSearchParams) {
-      let newParam = {};
+      const newParam = {};
       newParam[param] = newSearchParams[param];
       searchQuery = constructGlobalSearchQuery(searchQuery, newParam);
     }
@@ -122,10 +121,10 @@ class SecretScanChartView extends React.Component {
   }
 
   render() {
-    const { cveSeverityChartData = [] } = this.props;
+    const { secretSeverityChartData = [] } = this.props;
     let allEmpty = false;
-    if (cveSeverityChartData && cveSeverityChartData.children) {
-      if (cveSeverityChartData.children.length === 0) {
+    if (secretSeverityChartData && secretSeverityChartData.children) {
+      if (secretSeverityChartData.children.length === 0) {
         allEmpty = true;
       }
     }
@@ -135,12 +134,12 @@ class SecretScanChartView extends React.Component {
         {emptyData && <div className="absolute-center">No Data Available</div>}
         <div className="cve-severity-chart-wrapper">
           <SunburstChart
-            data={cveSeverityChartData}
-            name="CVE Languages"
+            data={secretSeverityChartData}
+            name="Secret scan details"
             chartWidth={600}
             chartHeight={600}
             colors={severityColorsSunBurst}
-            onSectionClick={this.onCVETypeClickHandler}
+            onSectionClick={this.sectionClickHandler}
           />
         </div>
       </div>
@@ -154,7 +153,7 @@ function mapStateToProps(state) {
     searchQuery: state.get('globalSearchQuery'),
     days: state.get('alertPanelHistoryBound'),
     refreshInterval: state.get('refreshInterval'),
-    cveSeverityChartData: state.getIn(['secretScanChart', 'data']),
+    secretSeverityChartData: state.getIn(['secretScanChart', 'data']),
   };
 }
 
