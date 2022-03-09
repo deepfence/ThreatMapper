@@ -1,7 +1,5 @@
-/* eslint-disable no-unused-vars */
-
 // React imports
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import classnames from 'classnames';
 
@@ -20,49 +18,44 @@ import SumoLogicView from './sumo-logic-view';
 import Reports from './reports/reports';
 import { getIntegrations } from '../../utils/web-api-utils';
 
-
-import { integrationComponentChange, noIntegrationComponentChange,
-  setIntegrationName
+import {
+  integrationComponentChange,
+  noIntegrationComponentChange,
+  setIntegrationName,
 } from '../../actions/app-actions';
-import { INTEGRATION_MENU_COLLECTION, ADMIN_SIDE_NAV_MENU_COLLECTION, USER_SIDE_NAV_MENU_COLLECTION } from '../../constants/menu-collection';
-import { getUserRole } from "../../helpers/auth-helper";
+import { INTEGRATION_MENU_COLLECTION } from '../../constants/menu-collection';
 
-const IntegrationView = (props) => {
-
+const IntegrationView = () => {
   const dispatch = useDispatch();
-  const isSideNavCollapsed = useSelector(state => state.get('isSideNavCollapsed'));
-  const changeIntegration = useSelector(state => state.get('changeIntegration'));
-  const isFiltersViewVisible = useSelector(state => state.get('isFiltersViewVisible'));
-  const integrationName = useSelector(state => state.get('integrationName'));
-  const IntegrationStatus = useSelector(state => state.get('IntegrationStatus'));
-  const hosts = useSelector(state => state.get('hosts'));
+  const changeIntegration = useSelector(state =>
+    state.get('changeIntegration')
+  );
+  const IntegrationStatus = useSelector(state =>
+    state.get('IntegrationStatus')
+  );
 
-
-  const sideNavMenuCollection = (getUserRole() === 'admin') ? ADMIN_SIDE_NAV_MENU_COLLECTION : USER_SIDE_NAV_MENU_COLLECTION;
   const tabList = INTEGRATION_MENU_COLLECTION;
-  const [activeMenu, setActiveMenu] = useState(sideNavMenuCollection[0]);
-  const [intervalObj, setIntervalObj] = useState(null);
-  const [licenseResponse, setLicenseResponse] = useState(null);
-  const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] = useState(false);
+
+  const [intervalObj] = useState(null);
   const [activeTab, setActiveTab] = useState(tabList[0]);
   const [tabCategory, setTabCategory] = useState('notification');
-  const [filteredTabs, setFilteredTabs] = useState(INTEGRATION_MENU_COLLECTION.filter(el => el.category === 'notification'));
-  const [erroredCatagories, setErroredCatagories] = useState([]);
-
+  const [filteredTabs, setFilteredTabs] = useState(
+    INTEGRATION_MENU_COLLECTION.filter(el => el.category === 'notification')
+  );
+  const [erroredCatagories] = useState([]);
 
   const changeComponent = () => {
     dispatch(integrationComponentChange());
-  }
-  const goBackToIntegrations = () => {
-    dispatch(noIntegrationComponentChange());
-  }
-  const breadcrumbName = (name) => {
+  };
+
+  const breadcrumbName = name => {
     dispatch(setIntegrationName(name));
     changeComponent();
-  }
+  };
+
   const fetchIntegrationList = () => {
     getIntegrations(dispatch);
-  }
+  };
 
   useEffect(() => {
     fetchIntegrationList();
@@ -71,150 +64,174 @@ const IntegrationView = (props) => {
       if (intervalObj) {
         clearInterval(intervalObj);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
-    if(changeIntegration === false){
+    if (changeIntegration === false) {
       dispatch(setIntegrationName(null));
     }
-  }, [changeIntegration])
+  }, [changeIntegration]);
 
-  const renderButton = (tabname) => {
+  const renderButton = tabname => {
     switch (tabname) {
       case 'reports':
-        return (
-          "Generate Report"
-        );
+        return 'Generate Report';
       default:
-        return (
-          "Configure integration"
-        )
+        return 'Configure integration';
     }
-  }
+  };
 
-  const handleOnClick = (tab) => {
+  const handleOnClick = tab => {
     setActiveTab(tab);
-  }
+  };
 
   const renderTabsList = () => {
-    const imgIcon = {
-      height: '65px',
-      marginLeft: '15px',
-      marginTop: '10px'
-    }
     const tabs = [];
     const categoryFinder = {
-      'slack':'notification',
-      'microsoft_teams':'notification',
-      'pagerduty':'notification',
-      'email':'notification',
-      'http_endpoint':'notification',
-      'google_chronicle':'siem',
-      'splunk':'siem',
-      'elasticsearch':'siem',
-      'sumo_logic':'siem',
-      'jira':'ticketing',
-      's3':'archival',
-    }
+      slack: 'notification',
+      microsoft_teams: 'notification',
+      pagerduty: 'notification',
+      email: 'notification',
+      http_endpoint: 'notification',
+      google_chronicle: 'siem',
+      splunk: 'siem',
+      elasticsearch: 'siem',
+      sumo_logic: 'siem',
+      jira: 'ticketing',
+      s3: 'archival',
+    };
     /* eslint-disable */
     for (let tab = 0; tab < filteredTabs.length; tab++) {
       let tabDetails = filteredTabs[tab];
-      const activeClass = tabDetails.name === activeTab.name ? "active-tab" : "";
+      const activeClass =
+        tabDetails.name === activeTab.name ? 'active-tab' : '';
       let errorFlag = false;
       if (IntegrationStatus) {
         for (let x in IntegrationStatus) {
-          const integrationDetails = IntegrationStatus[x]
-          integrationDetails && integrationDetails.map(item => {
-            if(item.error_msg){
-              let errorCatagory =categoryFinder[item.integration_type];
-              if (erroredCatagories.indexOf(errorCatagory) === -1){
-                erroredCatagories.push(errorCatagory)
+          const integrationDetails = IntegrationStatus[x];
+          integrationDetails &&
+            integrationDetails.map(item => {
+              if (item.error_msg) {
+                let errorCatagory = categoryFinder[item.integration_type];
+                if (erroredCatagories.indexOf(errorCatagory) === -1) {
+                  erroredCatagories.push(errorCatagory);
+                }
               }
-            }
-          })
+            });
         }
         const integrationStatus = IntegrationStatus[tabDetails.name];
-        integrationStatus && integrationStatus.map(item => {
-          if(item.error_msg){
-            errorFlag = true;
-          }
-        })
+        integrationStatus &&
+          integrationStatus.map(item => {
+            if (item.error_msg) {
+              errorFlag = true;
+            }
+          });
       }
       tabs.push(
-        <div className={"tab-container " + activeClass} key={tab} onClick={() => handleOnClick(tabDetails)}>
+        <div
+          className={'tab-container ' + activeClass}
+          key={tab}
+          onClick={() => handleOnClick(tabDetails)}
+        >
           <div className="integration-box" title={tabDetails.displayName}>
-            {tabDetails.icon &&
-              <div className="integration-logo" style={{backgroundColor: tabDetails.bgcolor}}> <img className="img-fluid p-2" src={tabDetails.icon} /></div>}
-            {tabDetails.iconClassName && <span className={tabDetails.iconClassName} />}
-            <div className="integration-name" style={{marginTop: '80px'}}> {tabDetails.displayName}
-            {errorFlag ?
-            <div className= 'red-dot' style = {{marginLeft: '8px', marginRight: '0px'}}></div>
-            :
-            <div></div>}
+            {tabDetails.icon && (
+              <div
+                className="integration-logo"
+                style={{ backgroundColor: tabDetails.bgcolor }}
+              >
+                {' '}
+                <img className="img-fluid p-2" src={tabDetails.icon} />
+              </div>
+            )}
+            {tabDetails.iconClassName && (
+              <span className={tabDetails.iconClassName} />
+            )}
+            <div className="integration-name" style={{ marginTop: '80px' }}>
+              {' '}
+              {tabDetails.displayName}
+              {errorFlag ? (
+                <div
+                  className="red-dot"
+                  style={{ marginLeft: '8px', marginRight: '0px' }}
+                ></div>
+              ) : (
+                <div></div>
+              )}
             </div>
-            <button type="button" className="btn-configure-integration" onClick={() => breadcrumbName(`${tabDetails.parent + ' / '+ tabDetails.displayName}`)}>{renderButton(tabDetails.name)}</button>
+            <button
+              type="button"
+              className="btn-configure-integration"
+              onClick={() =>
+                breadcrumbName(
+                  `${tabDetails.parent + ' / ' + tabDetails.displayName}`
+                )
+              }
+            >
+              {renderButton(tabDetails.name)}
+            </button>
           </div>
         </div>
       );
     }
     return tabs;
-  }
+  };
 
   const renderActiveTabContent = () => {
     switch (activeTab.name) {
       case 'email': {
-        return <EmailIntegrationView />
+        return <EmailIntegrationView />;
       }
       case 'slack': {
-        return <SlackIntegrationView />
+        return <SlackIntegrationView />;
       }
       case 'pagerduty': {
-        return <PagerDutyIntegrationView />
+        return <PagerDutyIntegrationView />;
       }
       case 'splunk': {
-        return <SplunkIntegrationView />
+        return <SplunkIntegrationView />;
       }
       case 'elasticsearch': {
-        return <ElasticSearchIntegrationView />
+        return <ElasticSearchIntegrationView />;
       }
       case 's3': {
-        return <AWSS3IntegrationView />
+        return <AWSS3IntegrationView />;
       }
       case 'http_endpoint': {
-        return <HTTPEndpointView />
+        return <HTTPEndpointView />;
       }
       case 'google_chronicle': {
-        return <GoogleChronicleEndpointView />
+        return <GoogleChronicleEndpointView />;
       }
       case 'jira': {
-        return <JiraIntegrationView />
+        return <JiraIntegrationView />;
       }
       case 'sumo_logic': {
-        return <SumoLogicView />
+        return <SumoLogicView />;
       }
       case 'reports': {
-        return <Reports />
+        return <Reports />;
       }
       case 'microsoft_teams': {
-        return <MicrosoftTeamsIntegrationView />
+        return <MicrosoftTeamsIntegrationView />;
       }
       default: {
         null;
       }
     }
-  }
+  };
 
-
-  const handleTabCategoryClick = (categoryId) => {
+  const handleTabCategoryClick = categoryId => {
     setTabCategory(categoryId);
     const allTabs = tabList.map(el => ({ ...el }));
-    const filteredTabs = allTabs.filter(tabDetails => tabDetails.category === categoryId);
+    const filteredTabs = allTabs.filter(
+      tabDetails => tabDetails.category === categoryId
+    );
     if (filteredTabs.length > 0) {
       setActiveTab(filteredTabs[0]);
       setFilteredTabs(filteredTabs);
     }
-  }
+  };
 
   const tabCategoryList = [
     {
@@ -242,52 +259,50 @@ const IntegrationView = (props) => {
     return (
       <div>
         <div className="alerts-view-switcher-wrapper">
-          <div className="df-tabs" style={{marginTop: '55px'}}>
-            <div className="tabs-wrapper tabheading" style={{ color: 'white', display: 'flex', fontSize: '20px' }}>
-
-              {tabCategoryList.map(el => (
-                /* eslint-disable react/no-children-prop */
-                <li
-                  key={el.id}
-                  className={classnames('tab', { active: el.id === tabCategory })}
-                  onClick={() => handleTabCategoryClick(el.id)}
-                >
-                  {el.displayName}
-                  {
-                    erroredCatagories.indexOf(el.id) !== -1 ?
-                    (
-                      <div className= 'red-dot' style = {{marginLeft: '8px', marginRight: '0px'}} />
-                    ):(
+          <div className="df-tabs" style={{ marginTop: '55px' }}>
+            <div
+              className="tabs-wrapper tabheading"
+              style={{ color: 'white', display: 'flex', fontSize: '20px' }}
+            >
+              {tabCategoryList.map(
+                el => (
+                  /* eslint-disable react/no-children-prop */
+                  <li
+                    key={el.id}
+                    className={classnames('tab', {
+                      active: el.id === tabCategory,
+                    })}
+                    onClick={() => handleTabCategoryClick(el.id)}
+                  >
+                    {el.displayName}
+                    {erroredCatagories.indexOf(el.id) !== -1 ? (
+                      <div
+                        className="red-dot"
+                        style={{ marginLeft: '8px', marginRight: '0px' }}
+                      />
+                    ) : (
                       <div />
-                    )
-                  }
-
-                </li>
-              )
+                    )}
+                  </li>
+                )
                 /* eslint-enable */
-              // eslint-disable-next-line function-paren-newline
               )}
-
             </div>
           </div>
-          <div className="intergation-inner-wrapper">
-            {renderTabsList()}
-          </div>
+          <div className="intergation-inner-wrapper">{renderTabsList()}</div>
         </div>
       </div>
     );
   }
   return (
-    <div style={{marginTop: '53px'}}>
+    <div style={{ marginTop: '53px' }}>
       <div className="chart-wrapper">
         <div className="integration-container">
-          <div className="tabs-content-wrapper">
-            {renderActiveTabContent()}
-          </div>
+          <div className="tabs-content-wrapper">{renderActiveTabContent()}</div>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default IntegrationView;
