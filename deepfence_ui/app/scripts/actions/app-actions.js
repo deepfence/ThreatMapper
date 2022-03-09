@@ -83,7 +83,8 @@ import {
   getGlobalSettings,
   addGlobalSettings,
   getRegistryImagesTags,
-  getTopAttackPathsForNode
+  getTopAttackPathsForNode,
+  getAttackPaths
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1377,19 +1378,6 @@ export function getTopVulnerableActiveContainersAction(params) {
   );
 }
 
-export function getTopVulnerableAttackPathsAction(params) {
-  const actionTypes = [
-    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_REQUEST,
-    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_SUCCESS,
-    ActionTypes.GET_TOP_VULNERABLE_ATTACK_PATHS_FAILURE,
-  ];
-  return genericThunkAction(
-    actionTypes,
-    getTopVulnerableAttackPaths,
-    params
-  );
-}
-
 export function getTopVulnerableActiveHostsAction(params) {
   const actionTypes = [
     ActionTypes.GET_TOP_VULNERABLE_HOSTS_REQUEST,
@@ -1802,4 +1790,13 @@ export function topologyFilterRemoved(filter) {
     type: ActionTypes.TOPOLOGY_FILTER_REMOVED,
     filter,
   };
+}
+
+export function getAttackPathsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_ATTACK_PATHS_REQUEST,
+    ActionTypes.GET_ATTACK_PATHS_SUCCESS,
+    ActionTypes.GET_ATTACK_PATHS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getAttackPaths, params);
 }
