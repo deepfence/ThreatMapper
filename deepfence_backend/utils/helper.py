@@ -29,6 +29,14 @@ import networkx as nx
 import time
 
 requests.packages.urllib3.disable_warnings()
+SEVERITY_RANK = {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 3,
+    "info": 4,
+    "never_scanned": 5
+}
 
 
 def get_postgres_uri():
@@ -837,3 +845,84 @@ def get_all_secret_scanned_images(days) -> list:
         if datum.get('key'):
             image_names.append(datum.get('key').split(";")[0])
     return set(image_names)
+
+
+def set_vulnerability_status_for_packages(open_files_list):
+    from utils.esconn import ESConn
+    file_severity_map = {}
+    package_queries = []
+    for package_key, open_files in open_files_list.items():
+        package_subqueries = [{
+            "terms": {
+                "cve_caused_by_package.keyword": [open_files["package"]]
+            }
+        },
+        {
+            "terms": {
+                "cve_caused_by_package_path.keyword": [open_files["filepath"]]
+            }
+        }]
+        container_image_names = set()
+        host_names = []
+        for file_host_detail in open_files["hosts"]:
+            host_names.append(file_host_detail["host_name"])
+            container_image_names.add(file_host_detail["host_name"])
+            container_image_names.update({container_detail["image_name"] for container_detail in file_host_detail["containers"]})
+        package_subqueries.append({
+            "terms": {
+                "host_name.keyword": host_names
+            }
+        })
+        package_subqueries.append({
+            "terms": {
+                "cve_container_image.keyword": list(container_image_names)
+            }
+        })
+        package_queries.append({
+            "bool": {
+                "must": package_subqueries,
+                "_name": package_key
+            }
+        })
+    query = {
+        "query": {
+            "bool": {
+                "should": package_queries
+            }
+        },
+        "sort": [
+            {
+                "cve_caused_by_package.keyword": "asc"
+            },
+            {
+                "_script": {
+                    "type": "number",
+                    "script": {
+                        "lang": "painless",
+                        "source": "params.sortOrder.indexOf(doc['cve_severity.keyword'].value)",
+                        "params": {"sortOrder": ["info", "low", "medium", "high", "critical"]}
+                    },
+                    "order": "desc"
+                }
+            },
+            {
+                "cve_overall_score": "desc"
+            }
+        ]
+    }
+    cve_es_list = ESConn.search(CVE_INDEX, query, 0, 49999)
+    cve_hits = []
+    if cve_es_list.get('hits', {}).get('total', {}).get('value', 0) != 0:
+        cve_hits = cve_es_list['hits']['hits']
+    for cve_hit in cve_hits:
+        new_severity = cve_hit["_source"]["cve_severity"]
+        for package_key in cve_hit["matched_queries"]:
+            if file_severity_map.get(package_key, None):
+                existing_severity = file_severity_map[package_key]
+                if SEVERITY_RANK[existing_severity] > SEVERITY_RANK[new_severity]:
+                    file_severity_map[package_key] = new_severity
+            else:
+                file_severity_map[package_key] = new_severity
+    for package_key, open_files in open_files_list.items():
+        if file_severity_map.get(package_key):
+            open_files_list[package_key]["vulnerability_status"] = file_severity_map[package_key]
