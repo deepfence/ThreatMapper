@@ -9,7 +9,6 @@ imports = (
     'tasks.registry_images',
     'tasks.running_notification',
     'tasks.user_activity',
-    'tasks.open_files'
 )
 
 beat_schedule = {
@@ -83,12 +82,6 @@ beat_schedule = {
         'schedule': timedelta(days=1),
         'args': [],
         'relative': True,
-    },
-    'list_all_open_files': {
-        'task': 'tasks.open_files.list_all_open_files',
-        'schedule': timedelta(seconds=60),
-        'args': [],
-        'relative': False,
     },
 }
 
