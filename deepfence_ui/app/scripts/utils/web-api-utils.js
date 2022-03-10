@@ -2275,8 +2275,10 @@ export function addGlobalSettings(params = {}) {
 }
 
 
-export function getRuntimeBomData() {
-  const url = `${backendElasticApiEndPoint()}/vulnerabilities/runtime_bom`;
+export function getRuntimeBomData(params = {}) {
+  const { lucene_query: luceneQuery = [] } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  const url = `${backendElasticApiEndPoint()}/vulnerabilities/runtime_bom?lucene_query=${luceneQueryEscaped}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
@@ -2286,6 +2288,7 @@ export function getRuntimeBomData() {
     },
   }).then(errorHandler);
 }
+
 export function getRegistryImagesTags(params = {}) {
   const url = `${backendElasticApiEndPoint()}/registry_images_tags`;
   return fetch(url, {
