@@ -3,7 +3,7 @@ import React from 'react';
 import { connect, useDispatch } from 'react-redux';
 import { setSearchQuery } from '../../../actions/app-actions';
 import { constructGlobalSearchQuery } from '../../../utils/search-utils';
-import StackedChart from '../../common/charts/stacked-chart/index';
+import StackedChart, { sortChartNodes } from '../../common/charts/stacked-chart/index';
 
 const SecretScanStatsTopContainers = props => {
   const dispatch = useDispatch();
@@ -42,7 +42,7 @@ const SecretScanStatsTopContainers = props => {
       <div className="name heading">Top Running Containers</div>
       {isDataAvailable && (
         <StackedChart
-          data={data}
+          data={sortChartNodes(data)}
           chartHeight={200}
           onSectionClick={point => sectionClickHandler(point)}
         />
