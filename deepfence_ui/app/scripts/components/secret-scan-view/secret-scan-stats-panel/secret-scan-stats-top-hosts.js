@@ -5,7 +5,7 @@ import {
   setSearchQuery,
 } from '../../../actions/app-actions';
 import { constructGlobalSearchQuery } from '../../../utils/search-utils';
-import StackedChart from '../../common/charts/stacked-chart/index';
+import StackedChart, { sortChartNodes } from '../../common/charts/stacked-chart/index';
 import pollable from '../../common/header-view/pollable';
 
 const SecretScanStatsTopHosts = props => {
@@ -73,7 +73,7 @@ const SecretScanStatsTopHosts = props => {
       )}
       {isDataAvailable && (
         <StackedChart
-          data={data}
+          data={sortChartNodes(data)}
           chartHeight={200}
           onSectionClick={point => sectionClickHandler(point)}
         />
