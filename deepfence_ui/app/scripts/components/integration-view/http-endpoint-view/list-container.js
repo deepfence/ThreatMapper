@@ -1,28 +1,15 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import HTTPEndpointList from './list';
 
-class HTTPEndpointListContainer extends React.PureComponent {
-  render() {
-    const { httpEndpointList } = this.props;
+const HTTPEndpointListContainer = props => {
+  const httpEndpointList = useSelector(state =>
+    state.get('availableHTTPEndpoints')
+  );
 
-    return (
-      <HTTPEndpointList
-        {...this.props}
-        httpEndpointList={httpEndpointList}
-      />
-    );
-  }
-}
+  return <HTTPEndpointList {...props} httpEndpointList={httpEndpointList} />;
+};
 
-function mapStateToProps(state) {
-  return {
-    httpEndpointList: state.get('availableHTTPEndpoints'),
-  };
-}
-
-const connectedHTTPEndpointListContainer = connect(mapStateToProps)(
-  HTTPEndpointListContainer
-);
+const connectedHTTPEndpointListContainer = HTTPEndpointListContainer;
 
 export default connectedHTTPEndpointListContainer;
