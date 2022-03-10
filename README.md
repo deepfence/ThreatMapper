@@ -52,6 +52,8 @@ ThreatMapper then monitors your development or production workloads using Sensor
 Installing the management console on a Docker host (4 cores, 16Gb) is as straightforward as:
 
 ```shell script
+sysctl -w vm.max_map_count=262144 # see https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
+
 wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/docker-compose.yml
 docker-compose -f docker-compose.yml up --detach
 ```
