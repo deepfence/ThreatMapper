@@ -1,28 +1,15 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import JiraIntegrationList from './list';
 
-class JiraIntegrationListContainer extends React.PureComponent {
-  render() {
-    const { httpEndpointList } = this.props;
+const JiraIntegrationListContainer = props => {
+  const httpEndpointList = useSelector(state =>
+    state.get('availableJiraIntegrations')
+  );
 
-    return (
-      <JiraIntegrationList
-        {...this.props}
-        httpEndpointList={httpEndpointList}
-      />
-    );
-  }
-}
+  return <JiraIntegrationList {...props} httpEndpointList={httpEndpointList} />;
+};
 
-function mapStateToProps(state) {
-  return {
-    httpEndpointList: state.get('availableJiraIntegrations'),
-  };
-}
-
-const connectedJiraIntegrationListContainer = connect(mapStateToProps)(
-  JiraIntegrationListContainer
-);
+const connectedJiraIntegrationListContainer = JiraIntegrationListContainer;
 
 export default connectedJiraIntegrationListContainer;
