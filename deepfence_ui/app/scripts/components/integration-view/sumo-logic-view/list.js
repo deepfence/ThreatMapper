@@ -1,6 +1,5 @@
-/* eslint-disable import/no-cycle */
-/* eslint-disable react/destructuring-assignment */
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import IntegrationTableView from '../../common/integration-table-view/integration-table-view';
 import AppLoader from '../../common/app-loader/app-loader';
 import {
@@ -8,14 +7,12 @@ import {
   showModal,
   resetIntegrationStates,
 } from '../../../actions/app-actions';
-import {
-  NO_INTEGRATION_FOUND_ALERT_MESSAGE
-} from '../../../constants/visualization-config';
+import { NO_INTEGRATION_FOUND_ALERT_MESSAGE } from '../../../constants/visualization-config';
 
 function getEmptyStateView() {
   return (
     <div className="empty-state-wrapper">
-      { NO_INTEGRATION_FOUND_ALERT_MESSAGE.message }
+      {NO_INTEGRATION_FOUND_ALERT_MESSAGE.message}
     </div>
   );
 }
@@ -26,11 +23,11 @@ function getTableEmptyState(data) {
     width: '100%',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   };
   return (
     <div style={emptyStateWrapper}>
-      { (data === undefined) ? <AppLoader /> : getEmptyStateView() }
+      {data === undefined ? <AppLoader /> : getEmptyStateView()}
     </div>
   );
 }
@@ -45,59 +42,52 @@ function isDataAvailable(data) {
   return result;
 }
 
-class SumoLogicList extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    this.getIntegrationTableView = this.getIntegrationTableView.bind(this);
-    this.deleteIntegration = this.deleteIntegration.bind(this);
-    this.handleDeleteDialog = this.handleDeleteDialog.bind(this);
-  }
+const SumoLogicList = props => {
+  const dispatch = useDispatch();
 
-  resetStates() {
-    this.props.dispatch(resetIntegrationStates());
-  }
+  const resetStates = () => {
+    dispatch(resetIntegrationStates());
+  };
 
-
-  getIntegrationTableView() {
-    const { sumoLogicList } = this.props;
+  const getIntegrationTableView = () => {
+    const { sumoLogicList } = props;
     return (
       <IntegrationTableView
         recordCollection={sumoLogicList}
-        onDeleteRequestCallback={record => this.handleDeleteDialog(record)}
+        onDeleteRequestCallback={record => handleDeleteDialog(record)}
       />
     );
-  }
+  };
 
-  deleteIntegration(record) {
+  const deleteIntegration = record => {
     const params = {
       id: record.id,
       notification_type: record.notification_type,
     };
-    return this.props.dispatch(requestIntegrationDelete(params));
-  }
+    return dispatch(requestIntegrationDelete(params));
+  };
 
-  handleDeleteDialog(record) {
+  const handleDeleteDialog = record => {
     const params = {
       dialogTitle: 'Delete Integration?',
-      dialogBody: 'Are you sure you want to delete this Sumo logic integration?',
+      dialogBody:
+        'Are you sure you want to delete this Sumo logic integration?',
       confirmButtonText: 'Yes, Delete',
       cancelButtonText: 'No, Keep',
-      onConfirmButtonClick: () => this.deleteIntegration(record),
+      onConfirmButtonClick: () => deleteIntegration(record),
     };
-    this.props.dispatch(showModal('DIALOG_MODAL', params));
-    this.resetStates();
-  }
+    dispatch(showModal('DIALOG_MODAL', params));
+    resetStates();
+  };
 
-  render() {
-    const { sumoLogicList } = this.props;
-    return (
-      <div className="integration-list-section">
-        { isDataAvailable(sumoLogicList)
-          ? this.getIntegrationTableView()
-          : getTableEmptyState(sumoLogicList) }
-      </div>
-    );
-  }
-}
+  const { sumoLogicList } = props;
+  return (
+    <div className="integration-list-section">
+      {isDataAvailable(sumoLogicList)
+        ? getIntegrationTableView()
+        : getTableEmptyState(sumoLogicList)}
+    </div>
+  );
+};
 
 export default SumoLogicList;
