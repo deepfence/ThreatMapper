@@ -1,28 +1,20 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import SplunkIntegrationList from './list';
 
-class SplunkIntegrationListContainer extends React.PureComponent {
-  render() {
-    const { splunkIntegrationList } = this.props;
+const SplunkIntegrationListContainer = props => {
+  const splunkIntegrationList = useSelector(state =>
+    state.get('availableSplunkIntegrations')
+  );
 
-    return (
-      <SplunkIntegrationList
-        {...this.props}
-        splunkIntegrationList={splunkIntegrationList}
-      />
-    );
-  }
-}
+  return (
+    <SplunkIntegrationList
+      {...props}
+      splunkIntegrationList={splunkIntegrationList}
+    />
+  );
+};
 
-function mapStateToProps(state) {
-  return {
-    splunkIntegrationList: state.get('availableSplunkIntegrations'),
-  };
-}
-
-const connectedSplunkIntegrationListContainer = connect(mapStateToProps)(
-  SplunkIntegrationListContainer
-);
+const connectedSplunkIntegrationListContainer = SplunkIntegrationListContainer;
 
 export default connectedSplunkIntegrationListContainer;
