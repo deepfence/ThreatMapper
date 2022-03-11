@@ -328,7 +328,11 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 						if !ok {
 							vulnerabilityScanStatus = scanStatusNeverScanned
 						}
-						secretScanStatus, ok = nodeIdSecretStatusMap[v.Label]
+						if c.TopologyID == containersID {
+							secretScanStatus, ok = nodeIdSecretStatusMap[strings.Split(v.ID, ";")[0]]
+						} else {
+							secretScanStatus, ok = nodeIdSecretStatusMap[v.Label]
+						}
 						if !ok {
 							secretScanStatus = scanStatusNeverScanned
 						}
