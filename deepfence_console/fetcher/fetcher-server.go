@@ -636,7 +636,18 @@ func ingestInBackground(docType string, body []byte) error {
 		bulkIndexReq := elastic.NewBulkIndexRequest()
 		bulkIndexReq.Index(docType).Doc(string(body))
 		bulkService.Add(bulkIndexReq)
-		bulkService.Do(context.Background())
+		res, _ := bulkService.Do(context.Background())
+		if res.Errors {
+			for _, item := range res.Items {
+				resItem := item["index"]
+				if resItem != nil {
+					fmt.Println(resItem.Index)
+					fmt.Println("status:" + strconv.Itoa(resItem.Status))
+					fmt.Println("Error Type:" + resItem.Error.Type)
+					fmt.Println("Error Reason: " + resItem.Error.Reason)
+				}
+			}
+		}
 	}
 	return nil
 }
