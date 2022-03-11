@@ -154,7 +154,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 			}
 			attemptNumber++
 		}
-		if attemptNumber > serverRestartAttempts {
+		if err != nil {
 			secretScanLogDoc["scan_status"] = "ERROR"
 			secretScanLogDoc["scan_message"] = err.Error()
 			byteJson, _ = json.Marshal(secretScanLogDoc)
