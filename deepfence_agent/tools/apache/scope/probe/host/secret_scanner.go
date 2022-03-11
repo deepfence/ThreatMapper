@@ -157,6 +157,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		if err != nil {
 			secretScanLogDoc["scan_status"] = "ERROR"
 			secretScanLogDoc["scan_message"] = err.Error()
+			secretScanLogDoc["time_stamp"] = getTimestamp()
+			secretScanLogDoc["@timestamp"] = getCurrentTime()
 			byteJson, _ = json.Marshal(secretScanLogDoc)
 			ingestScanData(string(byteJson), secretScanLogsIndexName)
 			return
