@@ -270,7 +270,7 @@ func NewSecretScanner() (*SecretScanner, error) {
 	ebpfSocket := generateSocketString()
 	command := exec.Command("prlimit", memLockSize, ssEbpfExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
 
-	cmdReader, err := command.StdoutPipe()
+	cmdReader, err := command.StderrPipe()
 	if err != nil {
 		return nil, err
 	}

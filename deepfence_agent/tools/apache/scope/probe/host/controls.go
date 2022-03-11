@@ -63,24 +63,21 @@ func (r *Reporter) deleteUserDefinedTags(req xfer.Request) xfer.Response {
 
 func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 	//logTypes := fmt.Sprintf("%s", req.ControlArgs["log_types"])
-	discoveryLogFile := getDfInstallDir() + "/var/log/fenced/discovery.logfile"
-	vulnerabilityUploaderLogFile := getDfInstallDir() + "/var/log/fenced/cve_upload_file.logfile"
-	var fileInfo []map[string]string
-	dat, err := readFile(discoveryLogFile)
-	if err == nil {
-		data := map[string]string{
-			"file_name": "discovery.logfile",
-			"data":      string(dat),
-		}
-		fileInfo = append(fileInfo, data)
+	var logFileNameLocMap = map[string]string{
+		"discovery.logfile": getDfInstallDir() + "/var/log/fenced/discovery.logfile",
+		"secretScanner.log": getDfInstallDir() + "/var/log/fenced/secretScanner.log",
+		"cve_upload_file.logfile": getDfInstallDir() + "/var/log/fenced/cve_upload_file.logfile",
 	}
-	dat, err = readFile(vulnerabilityUploaderLogFile)
-	if err == nil {
-		data := map[string]string{
-			"file_name": "cve_upload_file.logfile",
-			"data":      string(dat),
+	var fileInfo []map[string]string
+	for logFile, logLocation := range logFileNameLocMap {
+		dat, err := readFile(logLocation)
+		if err == nil {
+			data := map[string]string{
+				"file_name": logFile,
+				"data":      string(dat),
+			}
+			fileInfo = append(fileInfo, data)
 		}
-		fileInfo = append(fileInfo, data)
 	}
 	return xfer.Response{AgentLogs: fileInfo}
 }
