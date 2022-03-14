@@ -166,6 +166,9 @@ add_index() {
           "@timestamp": {
             "type": "date"
           },
+          "artifacts": {
+            "type": "nested"
+          },
           "scan_id": {
             "type": "text",
             "fields": {
