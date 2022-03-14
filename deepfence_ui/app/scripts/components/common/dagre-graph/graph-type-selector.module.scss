@@ -1,0 +1,45 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.graphSelectContainer {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  min-width: 400px;
+  font-weight: 500;
+  border: 1px solid black;
+}
+
+.graphSelectItem {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 500;
+
+  input {
+    display: none;
+  }
+  label {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  &.selected {
+    border-color: $color-primary-outline;
+    color: $color-primary;
+    font-weight: bold;
+    transition: color linear 200ms;
+  }
+
+  &.option_most_vulnerable_attack_paths {
+    color: $color-error;
+  }
+  &.option_direct_internet_exposure {
+    color: $critical-main;
+  }
+  &.option_indirect_internet_exposure {
+    color: $high-main;
+  }
+  &.option_most_attacked {
+    color: $critical-main;
+  }
+}
