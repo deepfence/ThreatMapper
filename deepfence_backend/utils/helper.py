@@ -31,6 +31,16 @@ import time
 requests.packages.urllib3.disable_warnings()
 
 
+SEVERITY_RANK = {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 3,
+    "info": 4,
+    "not_vulnerable": 5
+}
+
+
 def get_postgres_uri():
     import os
     return 'postgresql://{}:{}@{}:{}/{}'.format(
@@ -837,3 +847,92 @@ def get_all_secret_scanned_images(days) -> list:
         if datum.get('key'):
             image_names.append(datum.get('key').split(";")[0])
     return set(image_names)
+
+
+def set_vulnerability_status_for_packages(open_files_list):
+    from utils.esconn import ESConn
+    file_severity_map = {}
+    package_queries = []
+    for node_info in open_files_list:
+        node_type = node_info["node_type"]
+        node_name = node_info["node_name"]
+        for package_info in node_info["packages"]:
+            package_key = "{}:{}:{}:{}".format(node_type, node_name, package_info["filepath"], package_info["package_name"])
+            package_subqueries = [
+                {
+                    "terms": {
+                        "cve_caused_by_package.keyword": [package_info["package_name"]]
+                    }
+                },
+                {
+                    "terms": {
+                        "cve_caused_by_package_path.keyword": [package_info["filepath"]]
+                    }
+                },
+                {
+                    "terms": {
+                        "cve_container_image.keyword": [node_name]
+                    }
+                },
+                {
+                    "terms": {
+                        "node_type.keyword": [node_type]
+                    }
+                }
+            ]
+            package_queries.append({
+                "bool": {
+                    "must": package_subqueries,
+                    "_name": package_key
+                }
+            })
+    query = {
+        "query": {
+            "bool": {
+                "should": package_queries
+            }
+        },
+        "sort": [
+            {
+                "cve_caused_by_package.keyword": "asc"
+            },
+            {
+                "_script": {
+                    "type": "number",
+                    "script": {
+                        "lang": "painless",
+                        "source": "params.sortOrder.indexOf(doc['cve_severity.keyword'].value)",
+                        "params": {"sortOrder": ["info", "low", "medium", "high", "critical"]}
+                    },
+                    "order": "desc"
+                }
+            },
+            {
+                "cve_overall_score": "desc"
+            }
+        ]
+    }
+    cve_es_list = ESConn.search(CVE_INDEX, query, 0, 49999)
+    cve_hits = []
+    if cve_es_list.get('hits', {}).get('total', {}).get('value', 0) != 0:
+        cve_hits = cve_es_list['hits']['hits']
+    top_cve = {}
+    for cve_hit in cve_hits:
+        source = cve_hit["_source"]
+        new_severity = source["cve_severity"]
+        for package_key in cve_hit["matched_queries"]:
+            if top_cve.get(package_key, None):
+                existing_severity = top_cve[package_key]["severity"]
+                if SEVERITY_RANK[existing_severity] > SEVERITY_RANK[new_severity]:
+                    top_cve[package_key] = { "severity": new_severity, "cve_id": source["cve_id"] }
+            else:
+                top_cve[package_key] = { "severity": new_severity, "cve_id": source["cve_id"] }
+    for node_info in open_files_list:
+        node_type = node_info["node_type"]
+        node_name = node_info["node_name"]
+        for package_info in node_info["packages"]:
+            package_key = "{}:{}:{}:{}".format(node_type, node_name, package_info["filepath"], package_info["package_name"])
+            if top_cve.get(package_key, None):
+                package_info["vulnerability_status"] = top_cve[package_key]["severity"]
+                package_info["cve_id"] = top_cve[package_key]["cve_id"]
+
