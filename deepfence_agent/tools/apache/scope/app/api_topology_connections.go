@@ -23,6 +23,8 @@ const (
 	connectionWebsocketLoop      = 5 * time.Second
 	vulnerabilityScanStatusKey   = "vulnerability_scan_status"
 	vulnerabilityScanStatusLabel = "Vulnerability Scan Status"
+	secretScanStatusKey          = "secret_scan_status"
+	secretScanStatusLabel        = "Secret Scan Status"
 	complianceScanStatusKey      = "compliance_scan_status"
 	complianceScanStatusLabel    = "Compliance Scan Status"
 	nodeSeverityKey              = "node_severity"
@@ -263,9 +265,9 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 		}
 	}
 
-	var nodeIdVulnerabilityStatusMap, nodeIdComplianceStatusMap, nodeSeverityMap map[string]string
+	var nodeIdVulnerabilityStatusMap, nodeIdComplianceStatusMap, nodeSeverityMap, nodeIdSecretStatusMap map[string]string
 	if ignoreMetadata == false {
-		nodeIdVulnerabilityStatusMap, _, nodeIdComplianceStatusMap, _, nodeSeverityMap = nStatus.getNodeStatus()
+		nodeIdVulnerabilityStatusMap, _, nodeIdComplianceStatusMap, _, nodeSeverityMap, nodeIdSecretStatusMap, _ = nStatus.getNodeStatus()
 	}
 	childrenCount := make(map[string]map[string]int)
 
@@ -299,7 +301,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 				),
 				wc.censorCfg,
 			)
-			var vulnerabilityScanStatus, complianceScanStatus, nodeSeverity string
+			var vulnerabilityScanStatus, complianceScanStatus, nodeSeverity, secretScanStatus string
 			var ok bool
 			counter := 0
 			for k, v := range nodeSummaries {
@@ -310,16 +312,29 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 					vulnerabilityScanStatus = ""
 					complianceScanStatus = ""
 					nodeSeverity = ""
+					secretScanStatus = ""
 					if c.TopologyID == hostsID && v.Pseudo == false {
 						vulnerabilityScanStatus, ok = nodeIdVulnerabilityStatusMap[v.Label]
 						if !ok {
 							vulnerabilityScanStatus = scanStatusNeverScanned
+						}
+						secretScanStatus, ok = nodeIdSecretStatusMap[v.Label]
+						if !ok {
+							secretScanStatus = scanStatusNeverScanned
 						}
 						nodeSeverity, _ = nodeSeverityMap[v.Label]
 					} else if (c.TopologyID == containersID || c.TopologyID == containersByImageID) && v.Pseudo == false {
 						vulnerabilityScanStatus, ok = nodeIdVulnerabilityStatusMap[v.Image]
 						if !ok {
 							vulnerabilityScanStatus = scanStatusNeverScanned
+						}
+						if c.TopologyID == containersID {
+							secretScanStatus, ok = nodeIdSecretStatusMap[strings.Split(v.ID, ";")[0]]
+						} else {
+							secretScanStatus, ok = nodeIdSecretStatusMap[v.Label]
+						}
+						if !ok {
+							secretScanStatus = scanStatusNeverScanned
 						}
 					}
 					if c.TopologyID == hostsID || c.TopologyID == containersID || c.TopologyID == containersByImageID {
@@ -331,6 +346,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 							{ID: vulnerabilityScanStatusKey, Label: vulnerabilityScanStatusLabel, Value: vulnerabilityScanStatus, Priority: 50.0},
 							{ID: complianceScanStatusKey, Label: complianceScanStatusLabel, Value: complianceScanStatus, Priority: 51.0},
 							{ID: nodeSeverityKey, Label: nodeSeverityLabel, Value: nodeSeverity, Priority: 52.0},
+							{ID: secretScanStatusKey, Label: secretScanStatusLabel, Value: secretScanStatus, Priority: 50.0},
 						}...)
 					}
 				}

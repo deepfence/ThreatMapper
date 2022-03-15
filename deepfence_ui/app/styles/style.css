@@ -33,6 +33,17 @@
 .icon-biohazard:before {
   content: "\e908";
 }
+
+.nav-icon-secret {
+  height: 32px;
+}
+.nav-icon-secret:before {
+  content: "\f023";
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 28px;
+}
 .icon-webhook:before {
   content: "\e909";
 }

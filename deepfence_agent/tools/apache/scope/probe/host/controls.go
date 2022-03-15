@@ -2,32 +2,36 @@ package host
 
 import (
 	"fmt"
+	dfUtils "github.com/deepfence/df-utils"
+	"github.com/weaveworks/scope/common/xfer"
 	"io/ioutil"
 	"os"
 	"strings"
-
-	dfUtils "github.com/deepfence/df-utils"
-	"github.com/weaveworks/scope/common/xfer"
 )
 
 // Control IDs used by the host integration.
 const (
 	GetLogsFromAgent      = "get_logs_from_agent"
-	UploadData            = "uploadData"
+	GenerateSBOM          = "generate_sbom"
 	AddUserDefinedTags    = "host_add_user_defined_tags"
 	DeleteUserDefinedTags = "host_delete_user_defined_tags"
+	StartSecretsScan      = "secret_scan_start"
+	secretScanSocket	  = "/tmp/secretScanner.sock"
+	unixProtocol 		  = "unix"
+	tcpProtocol  		  = "tcp"
 )
 
 func (r *Reporter) registerControls() {
 	r.handlerRegistry.Register(GetLogsFromAgent, r.getLogsFromAgent)
-	r.handlerRegistry.Register(UploadData, r.uploadData)
+	r.handlerRegistry.Register(GenerateSBOM, r.handleGenerateSBOM)
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
 	r.handlerRegistry.Register(DeleteUserDefinedTags, r.deleteUserDefinedTags)
+	r.handlerRegistry.Register(StartSecretsScan, r.startSecretsScan)
 }
 
 func (r *Reporter) deregisterControls() {
 	r.handlerRegistry.Rm(GetLogsFromAgent)
-	r.handlerRegistry.Rm(UploadData)
+	r.handlerRegistry.Rm(GenerateSBOM)
 	r.handlerRegistry.Rm(AddUserDefinedTags)
 	r.handlerRegistry.Rm(DeleteUserDefinedTags)
 }
@@ -59,24 +63,21 @@ func (r *Reporter) deleteUserDefinedTags(req xfer.Request) xfer.Response {
 
 func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 	//logTypes := fmt.Sprintf("%s", req.ControlArgs["log_types"])
-	discoveryLogFile := getDfInstallDir() + "/var/log/fenced/discovery.logfile"
-	vulnerabilityUploaderLogFile := getDfInstallDir() + "/var/log/fenced/cve_upload_file.logfile"
-	var fileInfo []map[string]string
-	dat, err := readFile(discoveryLogFile)
-	if err == nil {
-		data := map[string]string{
-			"file_name": "discovery.logfile",
-			"data":      string(dat),
-		}
-		fileInfo = append(fileInfo, data)
+	var logFileNameLocMap = map[string]string{
+		"discovery.logfile": getDfInstallDir() + "/var/log/fenced/discovery.logfile",
+		"secretScanner.log": getDfInstallDir() + "/var/log/fenced/secretScanner.log",
+		"cve_upload_file.logfile": getDfInstallDir() + "/var/log/fenced/cve_upload_file.logfile",
 	}
-	dat, err = readFile(vulnerabilityUploaderLogFile)
-	if err == nil {
-		data := map[string]string{
-			"file_name": "cve_upload_file.logfile",
-			"data":      string(dat),
+	var fileInfo []map[string]string
+	for logFile, logLocation := range logFileNameLocMap {
+		dat, err := readFile(logLocation)
+		if err == nil {
+			data := map[string]string{
+				"file_name": logFile,
+				"data":      string(dat),
+			}
+			fileInfo = append(fileInfo, data)
 		}
-		fileInfo = append(fileInfo, data)
 	}
 	return xfer.Response{AgentLogs: fileInfo}
 }

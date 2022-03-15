@@ -65,6 +65,7 @@ const (
 	filterTypeNumber                 = "number"
 	filterTypeBool                   = "bool"
 	cveScanLogsEsIndex               = "cve-scan"
+	secretScanLogsEsIndex			 = "secret-scan-logs"
 	scanStatusNeverScanned           = "never_scanned"
 	esAggsSize                       = 50000
 )
@@ -73,17 +74,17 @@ var (
 	ScopeWebSocketUrl      map[string]url.URL
 	TopologyIdNodeTypeMap  map[string]string
 	RedisAddr              string
-	AllNodeTypes           []string
-	vulnerabilityStatusMap map[string]string
+	AllNodeTypes []string
+	statusMap    map[string]string
 )
 
 func init() {
 	AllNodeTypes = []string{NodeTypeHost, NodeTypeContainer, NodeTypeContainerByName, NodeTypeContainerImage, NodeTypeProcess,
 		NodeTypeProcessByName, NodeTypePod, NodeTypeKubeController, NodeTypeKubeService, NodeTypeSwarmService}
-	vulnerabilityStatusMap = map[string]string{
+	statusMap = map[string]string{
 		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
-		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "UPLOADING_IMAGE": "in_progress",
-		"UPLOAD_COMPLETE": "in_progress"}
+		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
+		"GENERATED_SBOM": "in_progress", "IN_PROGRESS": "in_progress", "COMPLETE": "complete"}
 	RedisAddr = fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
 	ScopeWebSocketUrl = map[string]url.URL{
 		NodeTypeHost:            {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/hosts/ws", RawQuery: "t=5s"},
@@ -432,6 +433,7 @@ type DeepfenceTopology struct {
 	PodName                      string              `json:"pod_name,omitempty"`
 	Pid                          int                 `json:"pid,omitempty"`
 	Cmdline                      string              `json:"cmdline,omitempty"`
+	OpenFiles                    string              `json:"OpenFiles,omitempty"`
 	Ppid                         int                 `json:"ppid,omitempty"`
 	Threads                      int                 `json:"threads,omitempty"`
 	Process                      string              `json:"process,omitempty"`
@@ -477,6 +479,8 @@ type DeepfenceTopology struct {
 	ScopeId                      string              `json:"scope_id,omitempty"`
 	VulnerabilityScanStatus      string              `json:"vulnerability_scan_status,omitempty"`
 	VulnerabilityScanStatusTime  string              `json:"vulnerability_scan_status_time,omitempty"`
+	SecretScanStatus             string              `json:"secret_scan_status,omitempty"`
+	SecretScanStatusTime         string              `json:"secret_scan_status_time,omitempty"`
 }
 
 type TopologyFilterNumberOption struct {

@@ -5,7 +5,7 @@ from utils.constants import NODE_TYPE_CONTAINER, NODE_TYPE_PROCESS_BY_NAME, NODE
     DEEPFENCE_CONTAINER_STATE_URL, TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE, NODE_TYPE_SWARM_SERVICE, \
     DEEPFENCE_CONSOLE_CPU_MEMORY_STATE_URL, REDIS_KEY_PREFIX_CLUSTER_AGENT_PROBE_ID, EMPTY_POD_SCOPE_ID, \
     ES_TERMS_AGGR_SIZE, SENSITIVE_KEYS, REDACT_STRING, VULNERABILITY_LOG_PATH, TIME_UNIT_MAPPING, CVE_SCAN_LOGS_INDEX, \
-    CVE_INDEX
+    CVE_INDEX, SECRET_SCAN_LOGS_INDEX
 import hashlib
 import requests
 import string
@@ -682,6 +682,45 @@ def get_image_cve_status(required_fields=None):
     return image_index
 
 
+def get_image_secret_status(required_fields=None):
+    if not required_fields:
+        required_fields = ["@timestamp", "scan_status"]
+    aggs = {
+        "node_id": {
+            "terms": {"field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE},
+            "aggs": {"recent_status": {
+                "top_hits": {
+                    "sort": [{"@timestamp": {"order": "desc"}}],
+                    "_source": {"includes": required_fields}, "size": 1
+                }
+            }}
+        }
+    }
+    image_index = {}
+    from utils.esconn import ESConn
+    try:
+        aggs_response = ESConn.aggregation_helper(
+            SECRET_SCAN_LOGS_INDEX, {"node_type": NODE_TYPE_CONTAINER_IMAGE}, aggs, None, None, None,
+            add_masked_filter=False)
+        node_buckets = aggs_response.get("aggregations", {}).get(
+            "node_id", {}).get('buckets', [])
+
+        # create an index for mapping image name and cve status details
+
+        def image_index_handler(acc, node):
+            hits = node.get("recent_status", {}).get(
+                'hits', {}).get('hits', {})
+            if len(hits) > 0:
+                acc[node.get('key')] = {k: v for k, v in hits[0].get(
+                    "_source", {}).items() if k in required_fields}
+            return acc
+
+        image_index = reduce(image_index_handler, node_buckets, {})
+    except:
+        pass
+    return image_index
+
+
 # redact_sensitivie_info removes the SENSITIVE_KEYS and
 # replaces it with REDACT_STRING
 def redact_sensitive_info(obj=None):
@@ -765,3 +804,127 @@ def get_all_scanned_images(days) -> set:
         if datum.get('key'):
             image_names.append(datum.get('key'))
     return set(image_names)
+
+
+def get_all_secret_scanned_images(days) -> list:
+    from utils.esconn import ESConn
+    query_agg = {
+        "query": {
+            "bool": {
+                "must": [{
+                    "term": {"node_type": "container_image" }
+                },
+                    {
+                    "range": {
+                        "@timestamp": {"gte": "now-{0}d/d".format(days)}
+                    }
+                }]
+            }
+        },
+        "aggs": {
+            "images": {
+                "terms": {
+                    "field": "node_id.keyword",
+                    "size": ES_TERMS_AGGR_SIZE
+                }
+            }
+        }
+    }
+    scanned_images = ESConn.search(SECRET_SCAN_LOGS_INDEX, query_agg, 0, 0)
+
+    image_names = []
+    for datum in scanned_images['aggregations']['images']['buckets']:
+        if datum.get('key'):
+            image_names.append(datum.get('key').split(";")[0])
+    return set(image_names)
+
+
+def set_vulnerability_status_for_packages(open_files_list, number, time_unit, lucene_query_string):
+    from utils.esconn import ESConn
+    cve_aggs = {
+        "node_type": {
+            "terms": {
+                "field": "node_type.keyword",
+                "exclude": [""],
+                "size": ES_TERMS_AGGR_SIZE
+            },
+            "aggs": {
+                "node_name": {
+                    "terms": {
+                        "field": "cve_container_image.keyword",
+                        "exclude": [""],
+                        "size": ES_TERMS_AGGR_SIZE
+                    },
+                    "aggs": {
+                        "package_name": {
+                            "terms": {
+                                "field": "cve_caused_by_package.keyword",
+                                "size": ES_TERMS_AGGR_SIZE
+                            },
+                            "aggs": {
+                                "top_cves": {
+                                    "top_hits": {
+                                        "sort": [
+                                            {
+                                                "_script": {
+                                                    "type": "number",
+                                                    "script": {
+                                                        "lang": "painless",
+                                                        "source": "params.sortOrder.indexOf(doc['cve_severity.keyword'].value)",
+                                                        "params": {"sortOrder": ["info", "low", "medium", "high", "critical"]}
+                                                    },
+                                                    "order": "desc"
+                                                }
+                                            },
+                                            {
+                                                "cve_cvss_score": "desc"
+                                            },
+                                            {
+                                                "cve_overall_score": "desc"
+                                            }
+                                        ],
+                                        "_source": {
+                                            "includes": ["cve_severity", "cve_id"]
+                                        },
+                                        "size": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    node_types = {node_info["node_type"] for node_info in open_files_list}
+    node_names = {node_info["node_name"] for node_info in open_files_list}
+    cve_filters = { "node_type": list(node_types), "cve_container_image": list(node_names) }
+    cve_aggs_response = ESConn.aggregation_helper(CVE_INDEX, cve_filters, cve_aggs, number,
+                                                   TIME_UNIT_MAPPING.get(time_unit), lucene_query_string)
+
+    top_cve = {}
+    if "aggregations" in cve_aggs_response:
+        for node_type_aggr in cve_aggs_response["aggregations"]["node_type"]["buckets"]:
+            node_type = node_type_aggr["key"]
+            for node_name_aggr in node_type_aggr["node_name"]["buckets"]:
+                node_name = node_name_aggr["key"]
+                for package_name_aggr in node_name_aggr["package_name"]["buckets"]:
+                    package_name = package_name_aggr["key"]
+                    package_key = "{}:{}:{}".format(node_type, node_name, package_name)
+                    top_cve_list = package_name_aggr.get("top_cves", {}).get("hits", {}).get("hits", [])
+                    if top_cve_list:
+                        top_vuln = top_cve_list[0]
+                        cve_id = top_vuln["_source"]["cve_id"]
+                        cve_severity = top_vuln["_source"]["cve_severity"]
+                        top_cve[package_key] = {"severity": cve_severity, "cve_id": cve_id}
+
+    for node_info in open_files_list:
+        node_type = node_info["node_type"]
+        node_name = node_info["node_name"]
+        for package_info in node_info["packages"]:
+            package_key = "{}:{}:{}".format(node_type, node_name, package_info["package_name"])
+            if top_cve.get(package_key, None):
+                package_info["vulnerability_status"] = top_cve[package_key]["severity"]
+                package_info["cve_id"] = top_cve[package_key]["cve_id"]
+

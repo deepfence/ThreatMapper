@@ -1,0 +1,45 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.headingDetails {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+
+  .headingContent {
+    .heading {
+      font-size: 18px;
+      font-weight: 500;
+      color: $text-color;
+    }
+    .status {
+      font-size: 12px;
+      font-weight: 500;
+      &.error {
+        color: #ff5286;
+      }
+    }
+  }
+  .headingControl {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.accordianWrapper {
+  .accordianHeader {
+    font-size: 14px;
+    color: $color-primary;
+    cursor: pointer;
+
+    :global(.fa) {
+      margin-right: 8px;
+    }
+  }
+}
+
+.devider {
+  margin-top: 14px;
+  margin-bottom: -20px;
+  border-top: 2px solid $background-average-color;
+}

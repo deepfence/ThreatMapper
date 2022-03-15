@@ -6,6 +6,22 @@ import {
   getComplianceColorActive,
 } from '../../../../constants/colors';
 
+export function sortChartNodes(nodes) {
+  const results = {
+    critical: [],
+    high: [],
+    medium: [],
+    low: [],
+    info: [],
+  };
+
+  nodes.forEach(node => {
+    results[node.type].push(node);
+  });
+
+  return [...results.info, ...results.low, ...results.medium, ...results.high, ...results.critical];
+}
+
 const StackedChart = props => {
   const { onSectionClick = () => {}, data, chartHeight } = props;
 

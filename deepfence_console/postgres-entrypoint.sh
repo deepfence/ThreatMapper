@@ -2,16 +2,7 @@
 
 echoerr() { echo "$@" 1>&2; }
 
-if [[ "$POSTGRES_USER_DB_USER" != "$POSTGRES_FETCHER_DB_USER" ]]; then
-  echoerr "Error: usernames for user_db and fetcher_db should be same. Different names not supported."
-  exit 1
-fi
-if [[ "$POSTGRES_USER_DB_PASSWORD" != "$POSTGRES_FETCHER_DB_PASSWORD" ]]; then
-  echoerr "Error: passwords for user_db and fetcher_db should be same. Different passwords not supported."
-  exit 1
-fi
-
-export POSTGRES_MULTIPLE_DATABASES="$POSTGRES_USER_DB_NAME,$POSTGRES_FETCHER_DB_NAME"
+export POSTGRES_MULTIPLE_DATABASES="$POSTGRES_USER_DB_NAME"
 export POSTGRES_USER=$POSTGRES_USER_DB_USER
 export POSTGRES_PASSWORD=$POSTGRES_USER_DB_PASSWORD
 export PGPASSWORD=$POSTGRES_USER_DB_PASSWORD

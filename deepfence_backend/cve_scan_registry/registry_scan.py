@@ -26,8 +26,8 @@ required_args = arg_parser.add_argument_group('required arguments')
 required_args.add_argument("--registry_type", metavar="registry_type", type=str, required=True,
                            help="Docker registry type: ecr | docker_hub | docker_private_registry | harbor | azure_container_registry | quay | gitlab")
 arg_parser.add_argument("--scan_type", metavar="scan_type", type=str, required=False,
-                        default="base,java,python,ruby,php,nodejs,js,dotnet",
-                        help="CVE scan types (comma separated): base,java,python,ruby,php,nodejs,js,dotnet. Default: base")
+                        default="base,java,python,ruby,php,javascript,rust,golang,dotnet",
+                        help="CVE scan types (comma separated): base,java,python,ruby,php,javascript,rust,golang,dotnet. Default: base")
 arg_parser.add_argument("--mgmt_console_url", metavar="mgmt_console_url", type=str, required=False, default="127.0.0.1",
                         help="Ip address of Deepfence management console. Default: 127.0.0.1:443")
 arg_parser.add_argument("--scan_id", metavar="scan_id", type=str, required=False, default="",

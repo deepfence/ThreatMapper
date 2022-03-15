@@ -193,11 +193,14 @@ func (wsCli *WebsocketClient) formatTopologyHostData() {
 		{Name: "is_ui_vm", Label: "Console VM", Type: filterTypeBool, Options: []string{}, NumberOptions: nil},
 		{Name: "pseudo", Label: "Pseudo", Type: filterTypeBool, Options: []string{}, NumberOptions: nil},
 		{Name: "vulnerability_scan_status", Label: "Vulnerability Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
+		{Name: "secret_scan_status", Label: "Secret Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
 	}
-	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap map[string]string
+	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap map[string]string
 	wsCli.nodeStatus.RLock()
 	nodeIdVulnerabilityStatusMap = wsCli.nodeStatus.VulnerabilityScanStatus
 	nodeIdVulnerabilityStatusTimeMap = wsCli.nodeStatus.VulnerabilityScanStatusTime
+	nodeIdSecretStatusMap = wsCli.nodeStatus.SecretScanStatus
+	nodeIdSecretStatusTimeMap = wsCli.nodeStatus.SecretScanStatusTime
 	wsCli.nodeStatus.RUnlock()
 	var filtersHostName, filtersKernelVersion, filtersOs, filtersCloudProvider, filtersInstanceType []string
 	var filtersAvailabilityZone, filtersDataCenter, filtersZone, filtersLocation, filtersSKU []string
@@ -211,6 +214,11 @@ func (wsCli *WebsocketClient) formatTopologyHostData() {
 			dfTopology.VulnerabilityScanStatus = scanStatusNeverScanned
 		}
 		dfTopology.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap[dfTopology.HostName]
+		dfTopology.SecretScanStatus = nodeIdSecretStatusMap[dfTopology.HostName]
+		if dfTopology.SecretScanStatus == "" {
+			dfTopology.SecretScanStatus = scanStatusNeverScanned
+		}
+		dfTopology.SecretScanStatusTime = nodeIdSecretStatusTimeMap[dfTopology.HostName]
 		if dfTopology.AgentRunning == "no" {
 			noOfUnprotectedHosts += 1
 		}
@@ -435,11 +443,15 @@ func (wsCli *WebsocketClient) formatTopologyContainerData() {
 		{Name: "pseudo", Label: "Pseudo", Type: filterTypeBool, Options: []string{}, NumberOptions: nil},
 		{Name: "docker_container_state", Label: "Container State", Type: filterTypeStr, Options: []string{dockerStateStopped, dockerStatePaused, dockerStateRunning}, NumberOptions: nil},
 		{Name: "vulnerability_scan_status", Label: "Vulnerability Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
+		{Name: "secret_scan_status", Label: "Secret Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
 	}
 	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap map[string]string
+	var nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap map[string]string
 	wsCli.nodeStatus.RLock()
 	nodeIdVulnerabilityStatusMap = wsCli.nodeStatus.VulnerabilityScanStatus
 	nodeIdVulnerabilityStatusTimeMap = wsCli.nodeStatus.VulnerabilityScanStatusTime
+	nodeIdSecretStatusMap = wsCli.nodeStatus.SecretScanStatus
+	nodeIdSecretStatusTimeMap = wsCli.nodeStatus.SecretScanStatusTime
 	wsCli.nodeStatus.RUnlock()
 	var filtersHostName, filtersUserDefinedTags, filtersImageName, filtersImageTag, filtersImageNameWithTag, filtersContainerName, filtersKubernetesClusterId, filtersKubernetesClusterName []string
 	for _, scopeTopology := range wsCli.topologyScope {
@@ -449,6 +461,11 @@ func (wsCli *WebsocketClient) formatTopologyContainerData() {
 			dfTopology.VulnerabilityScanStatus = scanStatusNeverScanned
 		}
 		dfTopology.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap[dfTopology.ImageNameWithTag]
+		dfTopology.SecretScanStatus = nodeIdSecretStatusMap[dfTopology.ImageNameWithTag]
+		if dfTopology.SecretScanStatus == "" {
+			dfTopology.SecretScanStatus = scanStatusNeverScanned
+		}
+		dfTopology.SecretScanStatusTime = nodeIdSecretStatusTimeMap[dfTopology.ImageNameWithTag]
 		if dfTopology.Pseudo == false && dfTopology.IsUiVm == false {
 			cnameSplit := strings.Split(dfTopology.ContainerName, "/")
 			if len(cnameSplit) > 1 {
@@ -571,20 +588,28 @@ func (wsCli *WebsocketClient) formatTopologyContainerImageData() {
 	topologyFilters := []TopologyFilterOption{
 		{Name: "pseudo", Label: "Pseudo", Type: filterTypeBool, Options: []string{}, NumberOptions: nil},
 		{Name: "vulnerability_scan_status", Label: "Vulnerability Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
+		{Name: "secret_scan_status", Label: "Secret Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
 	}
-	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap map[string]string
+	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap map[string]string
 	wsCli.nodeStatus.RLock()
 	nodeIdVulnerabilityStatusMap = wsCli.nodeStatus.VulnerabilityScanStatus
 	nodeIdVulnerabilityStatusTimeMap = wsCli.nodeStatus.VulnerabilityScanStatusTime
+	nodeIdSecretStatusMap = wsCli.nodeStatus.SecretScanStatus
+	nodeIdSecretStatusTimeMap = wsCli.nodeStatus.SecretScanStatusTime
 	wsCli.nodeStatus.RUnlock()
 	var filtersUserDefinedTags, filtersImageName, filtersImageTag, filtersImageNameWithTag []string
 	for _, scopeTopology := range wsCli.topologyScope {
 		dfTopology := wsCli.formatContainerImageNodeDetail(scopeTopology)
 		dfTopology.VulnerabilityScanStatus = nodeIdVulnerabilityStatusMap[dfTopology.ImageNameWithTag]
+		dfTopology.SecretScanStatus = nodeIdSecretStatusMap[dfTopology.ImageNameWithTag]
 		if dfTopology.VulnerabilityScanStatus == "" {
 			dfTopology.VulnerabilityScanStatus = scanStatusNeverScanned
 		}
+		if dfTopology.SecretScanStatus == "" {
+			dfTopology.SecretScanStatus = scanStatusNeverScanned
+		}
 		dfTopology.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap[dfTopology.ImageNameWithTag]
+		dfTopology.SecretScanStatusTime = nodeIdSecretStatusTimeMap[dfTopology.ImageNameWithTag]
 		if dfTopology.Pseudo == false {
 			noOfImages += 1
 			if dfTopology.ImageName != "" && !InArray(dfTopology.ImageName, filtersImageName) {
@@ -667,6 +692,8 @@ func (wsCli *WebsocketClient) formatProcessNodeDetail(scopeTopology ScopeTopolog
 			dfTopology.Ppid, _ = strconv.Atoi(metadata.Value)
 		case "threads":
 			dfTopology.Threads, _ = strconv.Atoi(metadata.Value)
+		case "OpenFiles":
+			dfTopology.OpenFiles = metadata.Value
 		}
 	}
 	dfTopology.Parents = wsCli.formatParentNodes(scopeTopology.Parents)

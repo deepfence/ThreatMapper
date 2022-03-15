@@ -23,6 +23,16 @@ export const DetailModal = ({ children, isOpen, onRequestClose }) => (
       }
     }}
     onRequestClose={onRequestClose}
+    onAfterClose={
+      () => {
+        document.body.style.overflow = 'unset';
+      }
+    }
+    onAfterOpen={
+      () => {
+        document.body.style.overflow = 'hidden';
+      }
+    }
     ariaHideApp={false}
   >
     {children}

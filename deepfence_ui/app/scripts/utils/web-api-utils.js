@@ -1174,30 +1174,6 @@ export function deleteCredential(dispatch, params) {
   });
 }
 
-export function QueueCVEScan(image_name, action, cve_scan_message = '') {
-  const url = `${getApiPath()}/deepfence/v1.5/add-cve-scan-log`;
-  const now = new Date();
-  return doRequest({
-    url,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader()
-    },
-    data: JSON.stringify({
-      node_id: image_name,
-      '@timestamp': now.toISOString(),
-      type: 'cve-scan',
-      action,
-      cve_scan_message,
-    }),
-    success: (response) => {
-    },
-    error: (error) => {
-    }
-  });
-}
-
 export function resetAPIKey() {
   const url = `${backendElasticApiEndPoint()}/users/reset-api-key`;
   return doRequest({
@@ -1402,6 +1378,21 @@ export function deleteDocsById(params = {}) {
   });
 }
 
+
+export function getSecretScanStatus(params = {}) {
+  const { imageId } = params;
+  const imageIdEscaped = encodeURIComponent(imageId);
+  const url = `${backendElasticApiEndPoint()}/secret-scan/${imageIdEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function saveGceCredentialKey({
   dispatch,
   credentials_key,
@@ -1433,7 +1424,7 @@ export function saveGceCredentialKey({
   });
 }
 
-const errorHandler = (response, dispatch) => {
+const errorHandler = (response, dispatch, skipJsonParsing) => {
   if (!response.ok) {
     if (response.status === 401 || response.statusText === 'UNAUTHORIZED') {
       refreshAuthToken();
@@ -1442,6 +1433,9 @@ const errorHandler = (response, dispatch) => {
     } else {
       log(`Error in api modal details request: ${response}`);
     }
+  }
+  if (skipJsonParsing) {
+    return response;
   }
   return response.json();
 };
@@ -1709,16 +1703,45 @@ export function getRunningNotification() {
 }
 
 export function startCVEScan(params = {}) {
-  const { nodeId, nodeType, taglist, scanType } = params;
-  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
+  const { nodeId, nodeType, taglist, scanType, scanThisCluster, scanThisNamespace, priority = '' } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_start?scope_id=${nodeId}&node_type=${nodeType}&priority=${priority}`;
   const data = {
     user_defined_tags: taglist,
     scanType,
+    scan_type: scanType,
+    "scan_this_cluster": scanThisCluster,
+    "scan_this_namespace": scanThisNamespace,
   };
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
     body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function stopCVEScan(params = {}) {
+  const { nodeId, nodeType } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_stop?scope_id=${nodeId}&node_type=${nodeType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function startSecretScan(params = {}) {
+  const { nodeId, nodeType } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/secret_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: getAuthHeader(),
@@ -1815,6 +1838,20 @@ export function scanRegistryImages(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function secretsScanRegistryImages(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/secret/scan_registry`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 
 export function saveRegistryCredentials(params = {}) {
   const url = `${backendElasticApiEndPoint()}/vulnerability/container_image_registry`;
@@ -1946,6 +1983,25 @@ export function reportGenerate(params = {}) {
       Authorization: getAuthHeader(),
     },
   }).then(errorHandler);
+}
+
+export function getSBOMByScanId(params = {}) {
+  const {scanId, action = 'get', dispatch} = params;
+  const url = `${backendElasticApiEndPoint()}/vulnerability/sbom`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify({
+      action,
+      filters: {
+        scan_id: scanId
+      }
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then((response) => errorHandler(response, dispatch, action === 'download'));
 }
 
 export function reportDownloadStatus(params = {}) {
@@ -2218,6 +2274,21 @@ export function addGlobalSettings(params = {}) {
   }).then(errorHandler);
 }
 
+
+export function getRuntimeBomData(params = {}) {
+  const { lucene_query: luceneQuery = [] } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  const url = `${backendElasticApiEndPoint()}/vulnerabilities/runtime_bom?lucene_query=${luceneQueryEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function getRegistryImagesTags(params = {}) {
   const url = `${backendElasticApiEndPoint()}/registry_images_tags`;
   return fetch(url, {
@@ -2230,3 +2301,197 @@ export function getRegistryImagesTags(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function getSecretScanData(params = {}) {
+  const {
+    dispatch,
+    filters,
+    start_index,
+    size,
+    lucene_query: luceneQuery = []
+  } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  let url = `${backendElasticApiEndPoint()}/secret/node_report?lucene_query=${luceneQueryEscaped}`;
+  const body = {
+    filters,
+    start_index,
+    size,
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
+export function getSecretScanResults(params = {}) {
+  const {
+    dispatch,
+    filters,
+    start_index,
+    size,
+    lucene_query: luceneQuery = [],
+  } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  let url = `${backendElasticApiEndPoint()}/secret/scan_results?lucene_query=${luceneQueryEscaped}`;
+  const body = {
+    filters,
+    start_index,
+    size,
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
+export function getTopSecretScanContainerAndHosts(params) {
+
+  const { luceneQuery = [] } = params;
+
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  const url = `${backendElasticApiEndPoint()}/secret/top_exposing_nodes?lucene_query=${luceneQueryEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getSecretScanReportChart(params) {
+  const { globalSearchQuery = [] } = params;
+
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(globalSearchQuery));
+
+  const url = `${backendElasticApiEndPoint()}/secret/report?lucene_query=${luceneQueryEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      // 'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getSecretScanChartData(params, dispatch) {
+  let url = `${backendElasticApiEndPoint()}/secret/secret_severity_chart?number=${params.number
+    }&time_unit=${params.time_unit}`;
+  if (params.lucene_query.length !== 0) {
+    const luceneQuery = getLuceneQuery(params.lucene_query);
+    url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
+  }
+  let body = {};
+  const { scan_id } = params;
+  body = {
+    filters: {
+      scan_id,
+    },
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
+export function secretScanMaskDocs(dispatch, params) {
+  let url = `${backendElasticApiEndPoint()}/secret/mask-doc`;
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(params),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};
+
+export function secretScanUnmaskDocs(dispatch, params) {
+  let url = `${backendElasticApiEndPoint()}/secret/unmask-doc`;
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(params),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};

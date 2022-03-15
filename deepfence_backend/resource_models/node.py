@@ -192,6 +192,61 @@ class Node(object):
             ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
         return True
 
+    def secret_start_scan(self):
+        if self.is_ui_vm or self.pseudo:
+            return {'secretScan': 'Secret scan cannot be started on management console'}
+        if self.type != constants.NODE_TYPE_HOST and self.type != constants.NODE_TYPE_CONTAINER and \
+                self.type != constants.NODE_TYPE_CONTAINER_IMAGE:
+            raise DFError('action not supported for this node type')
+        # Add 'QUEUED' doc
+        time_time = time.time()
+        scan_id = self.scope_id + "_" + datetime.now().strftime(
+                "%Y-%m-%dT%H:%M:%S") + ".000"
+        es_doc = {
+            "masked": "false",
+            "node_id": self.scope_id,
+            "node_type": self.type,
+            "node_name": self.host_name,
+            "host_name": self.host_name,
+            "scan_status": "QUEUED",
+            "scan_message": "",
+            "scan_id": scan_id,
+            "time_stamp": int(time_time * 1000.0),
+            "container_name": "" if self.type != constants.NODE_TYPE_CONTAINER else
+            self.host_name + "/" + self.container_name,
+            "kubernetes_cluster_name": self.kubernetes_cluster_name,
+            "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] + "Z"
+        }
+        ESConn.create_doc(constants.SECRET_SCAN_LOGS_INDEX, es_doc)
+        post_data = {"node_type": self.type, "scan_id": scan_id, "node_id": self.scope_id,
+                     "kubernetes_cluster_name": self.kubernetes_cluster_name, "container_name": ""}
+        if self.type == constants.NODE_TYPE_CONTAINER:
+            post_data["container_id"] = self.docker_container_id
+            post_data["container_name"] = self.host_name + "/" + self.container_name
+        elif self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+            post_data["image_id"] = self.image_id
+            post_data["image_name"] = self.image_name_tag
+        start_scan_api_url = constants.SCOPE_HOST_API_CONTROL_URL.format(
+            probe_id=self.probe_id, host_name=self.host_name, action=constants.NODE_ACTION_SECRET_SCAN_START)
+        return self.__secret_helper(start_scan_api_url, post_data)
+
+    def __secret_helper(self, url, payload):
+        try:
+            status, resp, status_code = call_scope_control_api(url, data=json.dumps(payload))
+        except Exception as e:
+            raise DFError("failed to connect to agent", error=e)
+        if status_code != 200:
+            if 400 <= status_code < 500:
+                raise DFError(resp.strip('"'))
+            else:
+                raise InternalError("non-200 response from {}; response code: {}; response: {}".format(
+                    url, status_code, resp))
+        try:
+            response = json.loads(resp)
+        except:
+            response = resp
+        return response
+
     def get_latest_cve_scan_doc(self):
         if self.is_ui_vm or self.pseudo:
             return {}

@@ -1,3 +1,11 @@
+FROM golang:1.17-bullseye AS build
+RUN apt-get update \
+    && apt-get install -y bash make git gcc \
+    && cd /go \
+    && git clone https://github.com/deepfence/syft \
+    && cd /go/syft \
+    && go build -v -o syftCli .
+
 FROM debian:bullseye-slim
 
 MAINTAINER Deepfence Inc
@@ -7,7 +15,8 @@ ENV CHECKPOINT_DISABLE=true \
     DOCKERVERSION=20.10.8 \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
-    DF_KUBERNETES_ON="N"
+    DF_KUBERNETES_ON="N" \
+    PACKAGE_SCAN_CONCURRENCY=1
 
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \
@@ -25,21 +34,21 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
         /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
     && mkdir /usr/local/discovery
-COPY fileUploader /usr/local/bin/fileUploader
 COPY misc/deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
 COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
 COPY start_serverless_services.sh /usr/local/bin/start_services
 COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-discovery
-COPY tools/apache/scope/docker/uploadFile.sh /home/deepfence/uploadFile.sh
 COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/docker_bin /home/deepfence/bin
 
-RUN chmod 700 /usr/local/bin/fileUploader /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
+COPY --from=build /go/syft/syftCli /usr/local/bin/syft
+
+RUN chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
     && chmod +x /home/deepfence/*.sh \
     && cd /tmp \

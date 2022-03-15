@@ -1,4 +1,5 @@
 from datetime import timedelta
+from celery.schedules import crontab
 
 imports = (
     'tasks.email_sender',
@@ -7,7 +8,7 @@ imports = (
     'tasks.task_scheduler',
     'tasks.registry_images',
     'tasks.running_notification',
-    'tasks.user_activity'
+    'tasks.user_activity',
 )
 
 beat_schedule = {
@@ -55,9 +56,8 @@ beat_schedule = {
     },
     'cve_db_update_notification': {
         'task': 'tasks.running_notification.cve_db_update_notification',
-        'schedule': timedelta(seconds=60),
+        'schedule': crontab(minute=0, hour='*/4'),
         'args': [],
-        'relative': True,
     },
     'deepfence_health_notification': {
         'task': 'tasks.running_notification.deepfence_health_notification',

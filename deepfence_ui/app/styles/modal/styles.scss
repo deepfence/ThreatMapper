@@ -102,21 +102,21 @@
           .container:hover input ~ .check {
             background-color: gray;
           }
-          
+
           input:checked ~ .check {
             border: 2px solid $color-primary;
           }
-          
+
           .check:after {
             content: "";
             position: absolute;
             display: none;
           }
-          
+
           input:checked ~ .check:after {
             display: block;
           }
-          
+
           .check:after {
             top: 3px;
             left: 3px;
@@ -189,13 +189,15 @@
     .compliance-check-view {
       background-color: transparent;
     }
+    input[type=checkbox] {
+      position: relative;
+    }
     input[type=checkbox]:before {
       content: "";
       display: block;
       position: absolute;
       width: 14px;
       height: 14px;
-      top: 2px;
       left: 0;
       background-color: #202020;
       border: 1px solid #B2B0B2;
@@ -210,6 +212,10 @@
       top: 0;
       left: 0;
       background-color: #1E80EF;
+    }
+    input[type=checkbox][disabled]:checked:before {
+      content: "";
+      background-color: #B2B0B2;
     }
     input[type=checkbox]:checked:after {
       content: "";
