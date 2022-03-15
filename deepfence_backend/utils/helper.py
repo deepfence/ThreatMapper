@@ -849,89 +849,91 @@ def get_all_secret_scanned_images(days) -> list:
     return set(image_names)
 
 
-def set_vulnerability_status_for_packages(open_files_list):
+def set_vulnerability_status_for_packages(open_files_list, number, time_unit, lucene_query_string):
     from utils.esconn import ESConn
-    file_severity_map = {}
-    package_queries = []
-    for node_info in open_files_list:
-        node_type = node_info["node_type"]
-        node_name = node_info["node_name"]
-        for package_info in node_info["packages"]:
-            package_key = "{}:{}:{}:{}".format(node_type, node_name, package_info["filepath"], package_info["package_name"])
-            package_subqueries = [
-                {
-                    "terms": {
-                        "cve_caused_by_package.keyword": [package_info["package_name"]]
-                    }
-                },
-                {
-                    "terms": {
-                        "cve_caused_by_package_path.keyword": [package_info["filepath"]]
-                    }
-                },
-                {
-                    "terms": {
-                        "cve_container_image.keyword": [node_name]
-                    }
-                },
-                {
-                    "terms": {
-                        "node_type.keyword": [node_type]
-                    }
-                }
-            ]
-            package_queries.append({
-                "bool": {
-                    "must": package_subqueries,
-                    "_name": package_key
-                }
-            })
-    query = {
-        "query": {
-            "bool": {
-                "should": package_queries
-            }
-        },
-        "sort": [
-            {
-                "cve_caused_by_package.keyword": "asc"
+    cve_aggs = {
+        "node_type": {
+            "terms": {
+                "field": "node_type.keyword",
+                "exclude": [""],
+                "size": ES_TERMS_AGGR_SIZE
             },
-            {
-                "_script": {
-                    "type": "number",
-                    "script": {
-                        "lang": "painless",
-                        "source": "params.sortOrder.indexOf(doc['cve_severity.keyword'].value)",
-                        "params": {"sortOrder": ["info", "low", "medium", "high", "critical"]}
+            "aggs": {
+                "node_name": {
+                    "terms": {
+                        "field": "cve_container_image.keyword",
+                        "exclude": [""],
+                        "size": ES_TERMS_AGGR_SIZE
                     },
-                    "order": "desc"
+                    "aggs": {
+                        "package_name": {
+                            "terms": {
+                                "field": "cve_caused_by_package.keyword",
+                                "size": ES_TERMS_AGGR_SIZE
+                            },
+                            "aggs": {
+                                "top_cves": {
+                                    "top_hits": {
+                                        "sort": [
+                                            {
+                                                "_script": {
+                                                    "type": "number",
+                                                    "script": {
+                                                        "lang": "painless",
+                                                        "source": "params.sortOrder.indexOf(doc['cve_severity.keyword'].value)",
+                                                        "params": {"sortOrder": ["info", "low", "medium", "high", "critical"]}
+                                                    },
+                                                    "order": "desc"
+                                                }
+                                            },
+                                            {
+                                                "cve_cvss_score": "desc"
+                                            },
+                                            {
+                                                "cve_overall_score": "desc"
+                                            }
+                                        ],
+                                        "_source": {
+                                            "includes": ["cve_severity", "cve_id"]
+                                        },
+                                        "size": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            },
-            {
-                "cve_overall_score": "desc"
             }
-        ]
+        }
     }
-    cve_es_list = ESConn.search(CVE_INDEX, query, 0, 49999)
-    cve_hits = []
-    if cve_es_list.get('hits', {}).get('total', {}).get('value', 0) != 0:
-        cve_hits = cve_es_list['hits']['hits']
+
+    node_types = {node_info["node_type"] for node_info in open_files_list}
+    node_names = {node_info["node_name"] for node_info in open_files_list}
+    cve_filters = { "node_type": list(node_types), "cve_container_image": list(node_names) }
+    cve_aggs_response = ESConn.aggregation_helper(CVE_INDEX, cve_filters, cve_aggs, number,
+                                                   TIME_UNIT_MAPPING.get(time_unit), lucene_query_string)
+
     top_cve = {}
-    for cve_hit in cve_hits:
-        source = cve_hit["_source"]
-        new_severity = source["cve_severity"]
-        for package_key in cve_hit["matched_queries"]:
-            if top_cve.get(package_key, None):
-                existing_severity = top_cve[package_key]["severity"]
-                if SEVERITY_RANK[existing_severity] > SEVERITY_RANK[new_severity]:
-                    top_cve[package_key] = { "severity": new_severity, "cve_id": source["cve_id"] }
-            else:
-                top_cve[package_key] = { "severity": new_severity, "cve_id": source["cve_id"] }
+    if "aggregations" in cve_aggs_response:
+        for node_type_aggr in cve_aggs_response["aggregations"]["node_type"]["buckets"]:
+            node_type = node_type_aggr["key"]
+            for node_name_aggr in node_type_aggr["node_name"]["buckets"]:
+                node_name = node_name_aggr["key"]
+                for package_name_aggr in node_name_aggr["package_name"]["buckets"]:
+                    package_name = package_name_aggr["key"]
+                    package_key = "{}:{}:{}".format(node_type, node_name, package_name)
+                    top_cve_list = package_name_aggr.get("top_cves", {}).get("hits", {}).get("hits", [])
+                    if top_cve_list:
+                        top_vuln = top_cve_list[0]
+                        cve_id = top_vuln["_source"]["cve_id"]
+                        cve_severity = top_vuln["_source"]["cve_severity"]
+                        top_cve[package_key] = {"severity": cve_severity, "cve_id": cve_id}
+
     for node_info in open_files_list:
         node_type = node_info["node_type"]
         node_name = node_info["node_name"]
         for package_info in node_info["packages"]:
-            package_key = "{}:{}:{}:{}".format(node_type, node_name, package_info["filepath"], package_info["package_name"])
+            package_key = "{}:{}:{}".format(node_type, node_name, package_info["package_name"])
             if top_cve.get(package_key, None):
                 package_info["vulnerability_status"] = top_cve[package_key]["severity"]
                 package_info["cve_id"] = top_cve[package_key]["cve_id"]
