@@ -121,13 +121,6 @@ On a Kubernetes platform, the sensors are installed using a Helm chart:
 ```shell script
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-# helm v2
-helm install deepfence/deepfence-agent \
-    --name=deepfence-agent \
-    --set managementConsoleUrl=---CONSOLE-IP--- \
-    --set deepfenceKey=---DEEPFENCE-API-KEY---
-
-# helm v3
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=---CONSOLE-IP--- \
     --set deepfenceKey=---DEEPFENCE-API-KEY---
@@ -137,16 +130,18 @@ helm install deepfence-agent deepfence/deepfence-agent \
 
 Once the sensor agents have been installed, you can begin to explore the topology of your infrastructure and applications.
 
-Subsequently, when the threat feeds have been acquired, you'll see a message on **Settings** -> **Diagnosis**. You can begin with your first [Production Vulnerability Scan](https://github.com/deepfence/ThreatMapper/wiki/Scanning-Production-Deployments).
+Subsequently, when the threat feeds have been acquired, you'll see a message on **Admin User: Settings** -> **Diagnosis**. You can begin with your first [Production Vulnerability Scan](https://github.com/deepfence/ThreatMapper/wiki/Scanning-Production-Deployments).
 
 Check out the [Deepfence ThreatMapper wiki](https://github.com/deepfence/ThreatMapper/wiki) for how to get started with using Deepfence ThreatMapper.
 
 
 # Get in touch
 
+Thank you for using ThreatMapper.  Please feel welcome to participate in the [ThreatMapper Community](COMMUNITY.md).
+
 * [<img src="https://img.shields.io/badge/slack-@deepfence-brightgreen.svg?logo=slack">](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) Got a question, need some help?  Find the Deepfence team on Slack
 * https://github.com/deepfence/ThreatMapper/issues: Got a feature request or found a bug?  Raise an issue
-* productsecurity at deepfence dot io: Found a security issue?  Share it in confidence
+* [productsecurity at deepfence dot io](SECURITY.md): Found a security issue?  Share it in confidence
 * Read the documentation in the [Deepfence ThreatMapper wiki](https://github.com/deepfence/ThreatMapper/wiki)
 * Find out more at [deepfence.io](https://deepfence.io/)
 
@@ -154,7 +149,7 @@ Check out the [Deepfence ThreatMapper wiki](https://github.com/deepfence/ThreatM
 
 # Security and Support
 
-For any security-related issues in the ThreatMapper project, contact **productsecurity *at* deepfence *dot* io**.
+For any security-related issues in the ThreatMapper project, contact [productsecurity *at* deepfence *dot* io](SECURITY.md).
 
 Please file GitHub issues as needed, and join the Deepfence Community [Slack channel](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ).
 
@@ -162,4 +157,4 @@ Please file GitHub issues as needed, and join the Deepfence Community [Slack cha
 
 The Deepfence ThreatMapper project (this repository) is offered under the [Apache2 license](https://www.apache.org/licenses/LICENSE-2.0).
 
-Contributions to Deepfence ThreatMapper project are similarly accepted under the Apache2 license, as per [GitHub's inbound=outbound policy](https://docs.github.com/en/github/site-policy/github-terms-of-service#6-contributions-under-repository-license).
+[Contributions](CONTRIBUTING.md) to Deepfence ThreatMapper project are similarly accepted under the Apache2 license, as per [GitHub's inbound=outbound policy](https://docs.github.com/en/github/site-policy/github-terms-of-service#6-contributions-under-repository-license).
