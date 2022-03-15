@@ -637,7 +637,7 @@ func ingestInBackground(docType string, body []byte) error {
 		bulkIndexReq.Index(docType).Doc(string(body))
 		bulkService.Add(bulkIndexReq)
 		res, _ := bulkService.Do(context.Background())
-		if res.Errors {
+		if res != nil && res.Errors {
 			for _, item := range res.Items {
 				resItem := item["index"]
 				if resItem != nil {

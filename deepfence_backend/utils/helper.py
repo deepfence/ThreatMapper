@@ -31,16 +31,6 @@ import time
 requests.packages.urllib3.disable_warnings()
 
 
-SEVERITY_RANK = {
-    "critical": 0,
-    "high": 1,
-    "medium": 2,
-    "low": 3,
-    "info": 4,
-    "not_vulnerable": 5
-}
-
-
 def get_postgres_uri():
     import os
     return 'postgresql://{}:{}@{}:{}/{}'.format(
