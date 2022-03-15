@@ -86,7 +86,7 @@ kill_agent() {
 }
 
 start_agent() {
-  docker run -dit --cpus=".2" --ulimit core=0 --name=deepfence-agent --restart on-failure --pid=host --net=host --uts=host --privileged=true -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw -v /:/fenced/mnt/host/:ro -e DF_ENABLE_PROCESS_REPORT="true" -e DF_ENABLE_CONNECTIONS_REPORT="true" -e INSTANCE_ID_SUFFIX="$INSTANCE_ID_SUFFIX" -e USER_DEFINED_TAGS="$USER_DEFINED_TAGS" -e MGMT_CONSOLE_URL="$MGMT_CONSOLE_URL" -e MGMT_CONSOLE_PORT="$MGMT_CONSOLE_PORT" -e SCOPE_HOSTNAME="$DF_HOSTNAME" -e DEEPFENCE_KEY="$DEEPFENCE_KEY" "$IMAGE_REPOSITORY"/deepfence_agent_ce:"${DF_IMG_TAG:-1.2.0}"
+  docker run -dit --cpus=".2" --ulimit core=0 --name=deepfence-agent --restart on-failure --pid=host --net=host --uts=host --privileged=true -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw -v /:/fenced/mnt/host/:ro -e DF_ENABLE_PROCESS_REPORT="true" -e DF_ENABLE_CONNECTIONS_REPORT="true" -e INSTANCE_ID_SUFFIX="$INSTANCE_ID_SUFFIX" -e USER_DEFINED_TAGS="$USER_DEFINED_TAGS" -e MGMT_CONSOLE_URL="$MGMT_CONSOLE_URL" -e MGMT_CONSOLE_PORT="$MGMT_CONSOLE_PORT" -e SCOPE_HOSTNAME="$DF_HOSTNAME" -e DEEPFENCE_KEY="$DEEPFENCE_KEY" "$IMAGE_REPOSITORY"/deepfence_agent_ce:"${DF_IMG_TAG:-1.3.0}"
 }
 
 main() {
