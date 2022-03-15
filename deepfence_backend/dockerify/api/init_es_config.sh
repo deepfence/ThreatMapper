@@ -194,6 +194,10 @@ add_index() {
       }
     }'
     echo ""
+    curl -X PUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/sbom-cve-scan/_settings" -H 'Content-Type: application/json' -d'
+      "index.mapping.total_fields.limit": 40000
+    }'
+    echo ""
 
   declare -a index_arr=("report")
   for index_name in "${index_arr[@]}"
