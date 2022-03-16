@@ -10,6 +10,7 @@ You are welcome to show your support for the project in several ways:
  * Share your experiences with the wider community by leaving a review on any of the following locations:
    * [Gartner Peer Insights](https://gtnr.io/b4L6DCx31)
    * [G2 Product Reviews](https://www.g2.com/products/threatmapper/reviews)
+   * [Stackshare](https://stackshare.io/deepfence-threatmapper)
 
 ## Contributing
 
