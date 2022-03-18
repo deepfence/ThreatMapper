@@ -167,7 +167,7 @@ add_index() {
             "type": "date"
           },
           "artifacts": {
-            "type": "nested"
+            "enabled": false
           },
           "scan_id": {
             "type": "text",
@@ -198,6 +198,97 @@ add_index() {
       "index.mapping.total_fields.limit": 40000
     }'
     echo ""
+
+  curl -X PUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/sbom-artifact" -H 'Content-Type: application/json' -d'
+  {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "name": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "version": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "language": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "licenses": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "locations" : {
+          "properties" : {
+            "path": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }
+          }
+        },
+        "scan_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "node_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "node_type": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "time_stamp": {
+          "type": "long"
+        }
+      }
+    }
+  }'
+  echo ""
 
   declare -a index_arr=("report")
   for index_name in "${index_arr[@]}"
