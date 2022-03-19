@@ -18,7 +18,8 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
     CVE_SCAN_LOGS_INDEX, SCOPE_TOPOLOGY_COUNT, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, NODE_TYPE_POD, ES_MAX_CLAUSE, \
     TOPOLOGY_ID_CONTAINER, TOPOLOGY_ID_CONTAINER_IMAGE, TOPOLOGY_ID_HOST, NODE_TYPE_CONTAINER_IMAGE, \
     TOPOLOGY_ID_KUBE_SERVICE, NODE_TYPE_KUBE_CLUSTER, ES_TERMS_AGGR_SIZE, \
-    REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX, SECRET_SCAN_INDEX, SBOM_INDEX
+    REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX, SECRET_SCAN_INDEX, SBOM_INDEX, \
+    SBOM_ARTIFACT_INDEX
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta
@@ -1003,15 +1004,21 @@ def delete_resources():
                         **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_HOST})
                     ESConn.bulk_delete(SBOM_INDEX, {
                         **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_HOST})
+                    ESConn.bulk_delete(SBOM_ARTIFACT_INDEX, {
+                        **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_HOST})
                 for delete_node_name_chunk in split_list_into_chunks(image_names_to_delete, ES_MAX_CLAUSE):
                     ESConn.bulk_delete(CVE_SCAN_LOGS_INDEX, {
                         **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_CONTAINER_IMAGE})
                     ESConn.bulk_delete(SBOM_INDEX, {
                         **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_CONTAINER_IMAGE})
+                    ESConn.bulk_delete(SBOM_ARTIFACT_INDEX, {
+                        **scan_log_filters, "node_id": delete_node_name_chunk, "node_type": NODE_TYPE_CONTAINER_IMAGE})
             else:
                 ESConn.bulk_delete(CVE_SCAN_LOGS_INDEX, scan_log_filters, number,
                                    TIME_UNIT_MAPPING[time_unit])
                 ESConn.bulk_delete(SBOM_INDEX, scan_log_filters, number,
+                                   TIME_UNIT_MAPPING[time_unit])
+                ESConn.bulk_delete(SBOM_ARTIFACT_INDEX, scan_log_filters, number,
                                    TIME_UNIT_MAPPING[time_unit])
         message = "Successfully scheduled deletion of selected vulnerabilities"
 

@@ -29,6 +29,7 @@ import (
 const (
 	cveIndexName              = "cve"
 	cveScanLogsIndexName      = "cve-scan"
+	sbomArtifactsIndexName    = "sbom-artifact"
 	redisVulnerabilityChannel = "vulnerability_task_queue"
 )
 
@@ -631,6 +632,32 @@ func ingestInBackground(docType string, body []byte) error {
 			}
 		}
 		bulkService.Do(context.Background())
+	} else if docType == sbomArtifactsIndexName {
+		bulkService := elastic.NewBulkService(esClient)
+		var artifacts []map[string]interface{}
+		err := json.Unmarshal(body, &artifacts)
+		if err != nil {
+			fmt.Println("Error reading artifacts: ", err.Error())
+		}
+		for _, artifact := range artifacts {
+			bulkIndexReq := elastic.NewBulkIndexRequest()
+			bulkIndexReq.Index(docType).Doc(artifact)
+			bulkService.Add(bulkIndexReq)
+		}
+		res, _ := bulkService.Do(context.Background())
+		if res != nil && res.Errors {
+			for _, item := range res.Items {
+				resItem := item["index"]
+				if resItem != nil {
+					fmt.Println(resItem.Index)
+					fmt.Println("status:" + strconv.Itoa(resItem.Status))
+					if resItem.Error != nil {
+						fmt.Println("Error Type:" + resItem.Error.Type)
+						fmt.Println("Error Reason: " + resItem.Error.Reason)
+					}
+				}
+			}
+		}
 	} else {
 		bulkService := elastic.NewBulkService(esClient)
 		bulkIndexReq := elastic.NewBulkIndexRequest()
@@ -643,8 +670,10 @@ func ingestInBackground(docType string, body []byte) error {
 				if resItem != nil {
 					fmt.Println(resItem.Index)
 					fmt.Println("status:" + strconv.Itoa(resItem.Status))
-					fmt.Println("Error Type:" + resItem.Error.Type)
-					fmt.Println("Error Reason: " + resItem.Error.Reason)
+					if resItem.Error != nil {
+						fmt.Println("Error Type:" + resItem.Error.Type)
+						fmt.Println("Error Reason: " + resItem.Error.Reason)
+					}
 				}
 			}
 		}
