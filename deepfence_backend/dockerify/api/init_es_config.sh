@@ -353,10 +353,16 @@ add_index() {
   done
 }
 
+
+reindex_sbom_artifacts_python_script () {
+    python /app/code/init_scripts/reindex_sbom_artifacts.py
+}
+
 add_template
 add_index
 add_cve_map_pipeline
 add_cve_scan_map_pipeline
 add_indexed_default_upsert_script
+reindex_sbom_artifacts_python_script
 echo ""
 echo "custom configuration added successfully"
