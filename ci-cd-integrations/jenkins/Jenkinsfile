@@ -1,10 +1,11 @@
 node {
     def app
     def full_image_name = 'deepfenceio/jenkins-example:latest'
-    def deepfence_mgmt_console_url = '127.0.0.1:443' // URL address of Deepfence management console
+    def deepfence_mgmt_console_url = '127.0.0.1' // URL address of Deepfence management console Note - Please do not mention port 
     def fail_cve_count = 100 // Fail jenkins build if number of vulnerabilities found is >= this number. Set -1 to pass regardless of vulnerabilities.
     def fail_cve_score = 8 // Fail jenkins build if cumulative CVE score is >= this value. Set -1 to pass regardless of cve score.
     def mask_cve_ids = "" // Comma separated. Example: "CVE-2019-9168,CVE-2019-9169"
+    def deepfence_key = "" // API key can be found on settings page of the deepfence 
 
     stage('Clone repository') {
         checkout scm
@@ -17,7 +18,7 @@ node {
     stage('Run Deepfence Vulnerability Mapper'){
         DeepfenceAgent = docker.image("deepfenceio/deepfence_vulnerability_mapper_ce:latest")
         try {
-            c = DeepfenceAgent.run("-it --net=host -v /var/run/docker.sock:/var/run/docker.sock", "-mgmt-console-url=${deepfence_mgmt_console_url} -image-name=${full_image_name} -fail-cve-count=${fail_cve_count} -fail-cve-score=${fail_cve_score} -mask-cve-ids='${mask_cve_ids}'")
+            c = DeepfenceAgent.run("-it --net=host -v /var/run/docker.sock:/var/run/docker.sock", "-deepfence-key=${deepfence_key} -vulnerability-scan=true -output=table -mode=local -mgmt-console-url=${deepfence_mgmt_console_url} -image-name=${full_image_name} -fail-cve-count=${fail_cve_count} -fail-cve-score=${fail_cve_score} -mask-cve-ids='${mask_cve_ids}'")
             sh "docker logs -f ${c.id}"
             def out = sh script: "docker inspect ${c.id} --format='{{.State.ExitCode}}'", returnStdout: true
             sh "exit ${out}"
