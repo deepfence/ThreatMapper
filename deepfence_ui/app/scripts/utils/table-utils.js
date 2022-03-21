@@ -45,3 +45,14 @@ export function getSummaryByType(type) {
   }
   return result;
 }
+
+const severities = [
+  'low',
+  'medium',
+  'high',
+  'critical',
+];
+// return 1 if rowA is greater than rowB
+export function severitySort(rowA, rowB, colId) {
+  return severities.indexOf(rowA.original[colId]) > severities.indexOf(rowB.original[colId]) ? 1 : -1;
+}
