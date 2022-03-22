@@ -22,7 +22,7 @@ class DonutDetailsModal extends React.Component {
     };
     this.onClickClose = this.onClickClose.bind(this);
     this.handlePageChange = this.handlePageChange.bind(this);
-    // this.resetTableUI = this.resetTableUI.bind(this);
+    this.resetTableUI = this.resetTableUI.bind(this);
     this.onSort = this.onSort.bind(this);
   }
 
@@ -59,7 +59,7 @@ class DonutDetailsModal extends React.Component {
       newProps.activeDonut !== this.props.activeDonut
     ) {
       // Resetting sorting UI
-      // this.resetTableUI();
+      this.resetTableUI();
     }
     if (this.props.days !== newProps.days) {
       this.updateTable(
@@ -75,9 +75,9 @@ class DonutDetailsModal extends React.Component {
     }
   }
 
-  // resetTableUI() {
-  //   this.setState({ sortOrder: 'asc' });
-  // }
+  resetTableUI() {
+    this.setState({ sortOrder: 'asc' });
+  }
 
   updateTable(number, time_unit) {
     const { fetchAlertsDetails } = this;
