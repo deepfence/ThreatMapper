@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 // React imports
 import React, { useCallback, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
@@ -17,10 +18,12 @@ class DonutDetailsModal extends React.Component {
       activeIndex: 0,
       recordsPerPage: 20,
       sortOrder: 'asc',
+      sortSeverity: 'desc'
     };
     this.onClickClose = this.onClickClose.bind(this);
     this.handlePageChange = this.handlePageChange.bind(this);
-    this.resetTableUI = this.resetTableUI.bind(this);
+    // this.resetTableUI = this.resetTableUI.bind(this);
+    this.onSort = this.onSort.bind(this);
   }
 
   componentDidMount() {
@@ -56,7 +59,7 @@ class DonutDetailsModal extends React.Component {
       newProps.activeDonut !== this.props.activeDonut
     ) {
       // Resetting sorting UI
-      this.resetTableUI();
+      // this.resetTableUI();
     }
     if (this.props.days !== newProps.days) {
       this.updateTable(
@@ -72,9 +75,9 @@ class DonutDetailsModal extends React.Component {
     }
   }
 
-  resetTableUI() {
-    this.setState({ sortOrder: 'asc' });
-  }
+  // resetTableUI() {
+  //   this.setState({ sortOrder: 'asc' });
+  // }
 
   updateTable(number, time_unit) {
     const { fetchAlertsDetails } = this;
@@ -147,6 +150,8 @@ class DonutDetailsModal extends React.Component {
         cve_container_image: imageName,
         scan_id: scanId,
       },
+      sort_by: 'cve_severity',
+      sort_order: this.state.sortSeverity
     };
     return dispatch(getVulnerabilitiesAction(params));
   }
@@ -158,6 +163,19 @@ class DonutDetailsModal extends React.Component {
       }));
     } else {
       this.setState({ activeIndex: data.selected });
+    }
+    setTimeout(() => {
+      this.fetchAlertsDetails();
+    }, 0);
+  }
+
+  onSort(data) {
+    if(data[0]?.desc === true) {
+      this.setState({ sortSeverity: 'desc'})
+    } else if (data[0]?.desc === false) {
+      this.setState({sortSeverity: 'asc'})
+    } else {
+      this.setState({ sortSeverity: 'desc'})
     }
     setTimeout(() => {
       this.fetchAlertsDetails();
@@ -215,6 +233,7 @@ class DonutDetailsModal extends React.Component {
             numPages={totalPages}
             pageSize={recordsPerPage}
             onPageChange={this.handlePageChange}
+            onSortChange={this.onSort}
           />
         </div>
       </div>
@@ -243,7 +262,7 @@ function mapStateToProps(state) {
 
 export default connect(mapStateToProps)(DonutDetailsModal);
 
-const Table = ({ data, numPages, pageSize, onPageChange }) => {
+const Table = ({ data, numPages, pageSize, onPageChange, onSortChange }) => {
 
   const rows = useMemo(() => data?.map(doc => doc._source), [data]);
 
@@ -281,6 +300,7 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
         data={rows}
         defaultPageSize={pageSize}
         totalRows={numPages * pageSize}
+        enableSorting
         columns={[
           {
             Header: 'CVE ID',
@@ -335,6 +355,7 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
         ]}
         showPagination
         onPageChange={onFetchData}
+        onSortChange={(sorted) => onSortChange(sorted)}
       />
       {
         modalState.isVulnerabilityModalOpen && modalState.cveData ? (
