@@ -90,9 +90,9 @@ const SecretScanImageReport = props => {
     };
   }, []);
 
-  const rowClickHandler = scanId => {
+  const rowClickHandler = (scanId, nodeName) => {
     setRedirect(true);
-    setLink(`/secret-scan/details/${encodeURIComponent(scanId)}`);
+    setLink(`/secret-scan/details/${encodeURIComponent(scanId)}?nodename=${encodeURIComponent(nodeName)}`);
   };
 
   const tableChangeHandler = (params = {}) => {
@@ -151,7 +151,7 @@ const SecretScanImageReport = props => {
   const renderSubComponent = ({ row }) => (
     <SecretScanImageReportDetails
       data={row.original.scans}
-      rowClickHandler={scanId => rowClickHandler(scanId)}
+      rowClickHandler={scanId => rowClickHandler(scanId, row.original.node_name)}
       isToasterVisible={props.isToasterVisible}
       onDelete={() => getSecretScanImageReport()}
     />

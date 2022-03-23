@@ -94,7 +94,8 @@ export const initialState = makeMap({
   topologyClickedNodeId: null,
   topologyFilters: makeList(),
   showTopologyPanel: false,
-  topologyPanelNavStack: []
+  topologyPanelNavStack: [],
+  secretScanNodeName: "test",
 });
 
 const combineState = (currentGlobalState, reducerName, reducerFunc, action) => {

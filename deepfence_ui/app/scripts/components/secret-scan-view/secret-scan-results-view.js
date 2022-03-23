@@ -50,16 +50,14 @@ const SecretScanResultsView = props => {
   };
 
   useEffect(() => {
-    const { match: { params: { scanId } = {} } = {} } = props;
-    const unEscapedScanId = decodeURIComponent(scanId);
-    const lastUnderscoreIndex = unEscapedScanId.lastIndexOf('_');
-    const unEscapedImageName = unEscapedScanId.substring(
-      0,
-      lastUnderscoreIndex
-    );
-    let changedImageName = unEscapedImageName;
-    if (unEscapedImageName.length > 20) {
-      changedImageName = `${unEscapedImageName.substring(0, 19)}...`;
+    const { location : {search} = {}} = props;
+
+    const nodeNameCheck = decodeURIComponent(search);
+    const nodeNameActual = nodeNameCheck.split('=')[1];
+
+    let changedImageName = nodeNameActual;
+    if (nodeNameActual.length > 20) {
+      changedImageName = `${nodeNameActual.substring(0, 19)}...`;
     }
     dispatch(
       breadcrumbChange([
@@ -103,6 +101,12 @@ const SecretScanResultsView = props => {
     return <Redirect to={link} />;
   }
   const { match: { params: { scanId } = {} } = {} } = props;
+
+  const { location : {search} = {}} = props;
+
+  const nodeNameCheck = decodeURIComponent(search);
+  const nodeNameActual = nodeNameCheck.split('=')[1];
+
   const unEscapedScanId = decodeURIComponent(scanId);
 
   const lastUnderscoreIndex = unEscapedScanId.lastIndexOf('_');
@@ -132,7 +136,7 @@ const SecretScanResultsView = props => {
             <div className="title vulnerability-scan-wrapper">
               Secret scan
               <div className="sub-title">
-                {unEscapedImageName} (scanned {timeOfScan.fromNow()})
+                {nodeNameActual} (scanned {timeOfScan.fromNow()})
               </div>
             </div>
           </div>
