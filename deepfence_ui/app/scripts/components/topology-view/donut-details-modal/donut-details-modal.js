@@ -170,16 +170,11 @@ class DonutDetailsModal extends React.Component {
   }
 
   onSort(data) {
-    if(data[0]?.desc === true) {
-      this.setState({ sortSeverity: 'desc'})
-    } else if (data[0]?.desc === false) {
-      this.setState({sortSeverity: 'asc'})
-    } else {
-      this.setState({ sortSeverity: 'desc'})
-    }
-    setTimeout(() => {
+    this.setState({
+      sortSeverity: data[0]?.desc ? 'asc' : 'desc' 
+    }, () => {
       this.fetchAlertsDetails();
-    }, 0);
+    });
   }
 
   onClickClose() {
@@ -305,6 +300,7 @@ const Table = ({ data, numPages, pageSize, onPageChange, onSortChange }) => {
           {
             Header: 'CVE ID',
             accessor: 'cve_id',
+            disableSortBy: true,
             maxWidth: 200,
             Cell: row => (
               <div className="truncate" title={row.value}>
@@ -323,6 +319,7 @@ const Table = ({ data, numPages, pageSize, onPageChange, onSortChange }) => {
           {
             Header: 'Package',
             accessor: 'cve_caused_by_package',
+            disableSortBy: true,
             maxWidth: 200,
             Cell: row => (
               <div className="truncate" title={row.value}>
@@ -333,6 +330,7 @@ const Table = ({ data, numPages, pageSize, onPageChange, onSortChange }) => {
           {
             Header: 'Description',
             accessor: 'cve_description',
+            disableSortBy: true,
             Cell: row => (
               <div className="truncate" title={row.value}>
                 {row.value}
@@ -343,6 +341,7 @@ const Table = ({ data, numPages, pageSize, onPageChange, onSortChange }) => {
           {
             Header: 'Link',
             accessor: 'cve_link',
+            disableSortBy: true,
             Cell: row => (
               <div className="truncate" title={row.value}>
                 <a href={row.value} target="_blank" rel="noreferrer">
