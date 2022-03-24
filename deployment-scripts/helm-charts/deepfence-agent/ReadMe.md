@@ -9,13 +9,6 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 ```
 
 ```bash
-# helm v2
-helm install deepfence/deepfence-agent \
-    --name=deepfence-agent \
-    --set managementConsoleUrl=40.40.40.40 \
-    --set deepfenceKey=""
-
-# helm v3
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=40.40.40.40 \
     --set deepfenceKey=""
@@ -75,10 +68,6 @@ clusterName: ""
 ```
 - Install deepfence-agent helm chart with values file
 ```bash
-# helm v2
-helm install -f deepfence_agent_values.yaml deepfence/deepfence-agent --name=deepfence-agent
-
-# helm v3
 helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent
 ```
 - Wait for pods to start up
@@ -90,9 +79,5 @@ kubectl get pods -n deepfence
 ### Delete
 
 ```bash
-# helm 2
-helm delete --purge deepfence-agent
-
-# helm 3
 helm delete deepfence-agent
 ```
