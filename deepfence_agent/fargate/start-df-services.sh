@@ -75,6 +75,11 @@ check_auth() {
   fi
 }
 
+launch_package_scanner() {
+  echo "Launching package-scanner grpc server"
+  bash -x -c "rm -rf /tmp/package-scanner.sock && /deepfence/bin/package-scanner -socket-path /tmp/package-scanner.sock -mode grpc-server" &
+}
+
 # Init hostname, environmental vars and paths
 setup_env_paths
 
@@ -95,6 +100,7 @@ chmod +x $DF_INSTALL_DIR/home/deepfence/*.sh
 
 echo "Start Deepfence services... Console is $MGMT_CONSOLE_URL"
 check_auth
+launch_package_scanner
 
 echo "Starting discovery logs..." >>$DF_INSTALL_DIR/var/log/fenced/discovery.logfile
 launch_discovery
