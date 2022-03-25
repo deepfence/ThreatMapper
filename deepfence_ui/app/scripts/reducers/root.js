@@ -1034,6 +1034,7 @@ export function rootReducer(state = initialState, action) {
         if (
           notification.source_application_id === 'cve_db_update_notification'
         ) {
+          notification.content = `Threat Intel feeds updated at ${moment(notification.updated_at).format('MMMM Do YYYY, h:mm:ss a')}`
           return {
             ...notification,
             classname: 'green-dot',

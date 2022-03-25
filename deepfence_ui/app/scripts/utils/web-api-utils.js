@@ -1210,7 +1210,7 @@ export function getCVEScanStatus(imageId) {
 }
 
 
-export function searchDocs(type, query = {}, filters, fields = [], node_filters = []) {
+export function searchDocs(type, query = {}, filters, fields = [], node_filters = [], sort_by, sort_order ) {
   const pQuery = {
     ...query,
     lucene_query: encodeURIComponent(getLuceneQuery(query.lucene_query || [])),
@@ -1222,7 +1222,7 @@ export function searchDocs(type, query = {}, filters, fields = [], node_filters 
     value: pQuery[key],
   })).reduce((acc, el) => (acc ? `${acc}&${el.key}=${el.value}`
     : `?${el.key}=${el.value}`), '');
-  const url = `${backendElasticApiEndPoint()}/search${queryStr}`;
+  const url = `${backendElasticApiEndPoint()}/search${queryStr}&sort_order=${sort_order}&sort_by=${sort_by}`;
 
   const body = {
     _type: type,
@@ -1259,8 +1259,10 @@ export function searchDocsWrapper({
   filters,
   fields = [],
   node_filters = [],
+  sort_by,
+  sort_order
 } = params) {
-  return searchDocs(type, query, filters, fields, node_filters);
+  return searchDocs(type, query, filters, fields, node_filters, sort_by, sort_order);
 }
 
 function getCVEReport(reportType, params = {}) {

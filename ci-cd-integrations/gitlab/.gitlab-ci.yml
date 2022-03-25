@@ -35,4 +35,4 @@ test-docker-build-and-cve:
   variables:
     IMAGE_NAME: go-server-test:latest
   script:
-    - docker run -it --rm --net=host -v /var/run/docker.sock:/var/run/docker.sock deepfenceio/deepfence_vulnerability_mapper_ce:latest -mgmt-console-ip=$DEEPFENCE_CONSOLE_IP -image-name="$IMAGE_NAME" -fail-cve-count=$FAIL_CVE_COUNT -fail-cve-score=$FAIL_CVE_SCORE
+    - docker run -i --rm --net=host -v /var/run/docker.sock:/var/run/docker.sock deepfenceio/deepfence_package_scanner_ce:1.3.0 -mgmt-console-url=$DEEPFENCE_CONSOLE_IP -deepfence-key="$DEEPFENCE_KEY" -vulnerability-scan=true -output=table -mode=local -source="$IMAGE_NAME" -fail-on-count=$FAIL_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE

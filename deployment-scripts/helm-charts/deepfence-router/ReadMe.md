@@ -7,10 +7,6 @@
 **Quick start**
 
 ```bash
-# helm v2
-helm install deepfence-router --name=deepfence-router
-
-# helm v3
 helm install deepfence-router deepfence-router
 ```
 
