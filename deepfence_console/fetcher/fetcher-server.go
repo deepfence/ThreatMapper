@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -18,6 +19,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -34,11 +36,167 @@ const (
 )
 
 var (
-	postgresDb *sql.DB
-	psqlInfo   string
-	redisPool  *redis.Pool
-	esClient   *elastic.Client
+	postgresDb             *sql.DB
+	psqlInfo               string
+	redisPool              *redis.Pool
+	esClient               *elastic.Client
+	vulnerabilityDbUpdater *VulnerabilityDbUpdater
 )
+
+type VulnerabilityDbDetail struct {
+	Built    time.Time `json:"built"`
+	Version  int       `json:"version"`
+	URL      string    `json:"url"`
+	Checksum string    `json:"checksum"`
+}
+
+type VulnerabilityDbListingV3 struct {
+	V3 []VulnerabilityDbDetail `json:"3"`
+}
+
+type VulnerabilityDbListing struct {
+	Available VulnerabilityDbListingV3 `json:"available"`
+}
+
+type VulnerabilityDbUpdater struct {
+	vulnerabilityDbListingJson VulnerabilityDbListing
+	vulnerabilityDbPath        string
+	grypeVulnerabilityDbPath   string
+	currentFileChecksum        string
+	currentFilePath            string
+	sync.RWMutex
+}
+
+func NewVulnerabilityDbUpdater() *VulnerabilityDbUpdater {
+	updater := &VulnerabilityDbUpdater{
+		vulnerabilityDbListingJson: VulnerabilityDbListing{},
+		vulnerabilityDbPath:        "/data/vulnerability-db/",
+		grypeVulnerabilityDbPath:   "/root/.cache/grype/db/3",
+	}
+	// Update once
+	updater.runGrypeUpdate()
+	if fileExists(updater.grypeVulnerabilityDbPath + "/metadata.json") {
+		updater.updateVulnerabilityDbListing()
+	}
+	return updater
+}
+
+func (v *VulnerabilityDbUpdater) runGrypeUpdate() error {
+	_, stdErr, exitCode := runCommand("grype", "db", "update")
+	if exitCode != 0 {
+		return errors.New(stdErr)
+	}
+	return nil
+}
+
+func (v *VulnerabilityDbUpdater) updateVulnerabilityDbListing() error {
+	v.RLock()
+	grypeVulnerabilityDbPath := v.grypeVulnerabilityDbPath
+	oldFileChecksum := v.currentFileChecksum
+	vulnerabilityDbPath := v.vulnerabilityDbPath
+	oldFilePath := v.currentFilePath
+	v.RUnlock()
+	content, err := ioutil.ReadFile(grypeVulnerabilityDbPath + "/metadata.json")
+	if err != nil {
+		return err
+	}
+	var vulnerabilityDbDetail VulnerabilityDbDetail
+	err = json.Unmarshal(content, &vulnerabilityDbDetail)
+	if err != nil {
+		return err
+	}
+	if vulnerabilityDbDetail.Checksum == oldFileChecksum {
+		return nil
+	}
+	currentFilePath := fmt.Sprintf("%s%d.tar.gz", vulnerabilityDbPath, vulnerabilityDbDetail.Built.Unix())
+	cmd := "cd " + grypeVulnerabilityDbPath + " && tar -czf " + currentFilePath + " metadata.json vulnerability.db"
+	_, stdErr, exitCode := runCommand("bash", "-c", cmd)
+	if exitCode != 0 {
+		return errors.New(stdErr)
+	}
+	currentFileChecksum, err := sha256sum(currentFilePath)
+	if err != nil {
+		return err
+	}
+	vulnerabilityDbDetail.Checksum = currentFileChecksum
+	vulnerabilityDbDetail.URL = "https://deepfence-fetcher:8005/df-api/download" + currentFilePath
+	v.Lock()
+	v.vulnerabilityDbListingJson = VulnerabilityDbListing{
+		Available: VulnerabilityDbListingV3{
+			V3: []VulnerabilityDbDetail{vulnerabilityDbDetail},
+		},
+	}
+	v.currentFilePath = currentFilePath
+	v.currentFileChecksum = currentFileChecksum
+	v.Unlock()
+	if oldFilePath != "" {
+		os.RemoveAll(oldFilePath)
+	}
+	return nil
+}
+
+func (v *VulnerabilityDbUpdater) updateVulnerabilityDb() {
+	ticker := time.NewTicker(4 * time.Hour)
+	var err error
+	for {
+		select {
+		case <-ticker.C:
+			err = v.runGrypeUpdate()
+			if err != nil {
+				fmt.Println(err)
+			}
+			err = v.updateVulnerabilityDbListing()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+}
+
+func vulnerabilityDbListing(respWrite http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
+	if req.Method != http.MethodGet {
+		http.Error(respWrite, "invalid request", http.StatusInternalServerError)
+		return
+	}
+	if vulnerabilityDbUpdater == nil {
+		http.Error(respWrite, "updater not initialized", http.StatusInternalServerError)
+		return
+	}
+	vulnerabilityDbUpdater.RLock()
+	vulnerabilityDbListingJson := vulnerabilityDbUpdater.vulnerabilityDbListingJson
+	vulnerabilityDbUpdater.RUnlock()
+	content, err := json.Marshal(vulnerabilityDbListingJson)
+	if err != nil {
+		http.Error(respWrite, "listing.json marshal error", http.StatusInternalServerError)
+		return
+	}
+	respWrite.WriteHeader(http.StatusOK)
+	respWrite.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(respWrite, string(content))
+}
+
+func sha256sum(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("sha256:%x", hash.Sum(nil)), nil
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	return false
+}
 
 func runCommand(name string, args ...string) (stdout string, stderr string, exitCode int) {
 	var defaultFailedCode = 1
@@ -337,18 +495,13 @@ func registryCredential(respWrite http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(respWrite, credentialsData)
 }
 
-func handleFileDownload(respWrite http.ResponseWriter, req *http.Request) {
-	if req.Method != "GET" {
-		http.Error(respWrite, "Invalid request", http.StatusInternalServerError)
-		return
-	}
-	fileName := req.Header.Get("DF_FILE_NAME")
+func fileDownloadHandler(fileName string, respWrite http.ResponseWriter, req *http.Request) {
 	if fileName == "" {
 		respWrite.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(respWrite, "Required information missing")
 		return
 	}
-	if fileName != filepath.Clean(fileName) || !strings.HasPrefix(fileName, "/data") {
+	if !strings.HasPrefix(fileName, "/data") || fileName != filepath.Clean(fileName) {
 		http.Error(respWrite, "Invalid request", http.StatusBadRequest)
 		return
 	}
@@ -373,6 +526,22 @@ func handleFileDownload(respWrite http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(respWrite, "Not found")
 		return
 	}
+}
+
+func handleDownload(respWrite http.ResponseWriter, req *http.Request) {
+	if req.Method != "GET" {
+		http.Error(respWrite, "Invalid request", http.StatusInternalServerError)
+		return
+	}
+	fileDownloadHandler(strings.TrimPrefix(req.URL.Path, "/df-api/download"), respWrite, req)
+}
+
+func handleFileDownload(respWrite http.ResponseWriter, req *http.Request) {
+	if req.Method != "GET" {
+		http.Error(respWrite, "Invalid request", http.StatusInternalServerError)
+		return
+	}
+	fileDownloadHandler(req.Header.Get("DF_FILE_NAME"), respWrite, req)
 }
 
 type userDefinedTags struct {
@@ -872,15 +1041,18 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error creating elasticsearch connection: %v", err)
 	}
+	vulnerabilityDbUpdater = NewVulnerabilityDbUpdater()
+	vulnerabilityDbUpdater.updateVulnerabilityDb()
+
 	httpMux := http.NewServeMux()
 	httpMux.HandleFunc("/df-api/uploadMultiPart", handleMultiPartPostMethod)
 	httpMux.HandleFunc("/df-api/deleteDumps", handleDeleteDumpsMethod)
 	httpMux.HandleFunc("/df-api/uploadExtractStatus", handleUploadExtractStatus)
 	httpMux.HandleFunc("/df-api/clear", handleClearMethod)
 	httpMux.HandleFunc("/df-api/downloadFile", handleFileDownload)
+	httpMux.HandleFunc("/df-api/download/", handleDownload)
 	httpMux.HandleFunc("/df-api/registry-credential", registryCredential)
 	httpMux.HandleFunc("/df-api/packet-capture-config", packetCaptureConfig)
-	httpMux.HandleFunc("/df-api/add-to-logstash", ingest) // depreciated
 	httpMux.HandleFunc("/df-api/ingest", ingest)
 	httpMux.HandleFunc("/df-api/masked-cve-id", maskedCveId)
 	// Get user defined tags for a host
@@ -888,7 +1060,10 @@ func main() {
 	// Get FIM config for this host from console
 	httpMux.HandleFunc("/df-api/fim_config", getFimConfig)
 
-	fmt.Println("vulnerability container is starting")
+	// Vulnerability database
+	httpMux.HandleFunc("/vulnerability-db/listing.json", vulnerabilityDbListing)
+
+	fmt.Println("fetcher server is starting")
 
 	logger := log.New(os.Stdout, "fetcher-server: ", log.LstdFlags)
 	logger.Println("Server is starting at 8006")

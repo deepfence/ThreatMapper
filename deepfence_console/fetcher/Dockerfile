@@ -28,10 +28,13 @@ COPY start_fetcher.sh /usr/bin/start_fetcher.sh
 RUN mkdir /etc/filebeat/
 COPY filebeat.crt /etc/filebeat/
 COPY filebeat.key /etc/filebeat/
+COPY grype.yaml /root/.grype.yaml
 
-RUN apk add --no-cache bash postgresql-client \
-    && rm -rf /var/cache/apk/* \
-    && chmod 755 /usr/local/bin/fetcher-server /usr/bin/start_fetcher.sh
+RUN apk add --no-cache bash curl postgresql-client \
+    && curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin \
+    && chmod 755 /usr/local/bin/fetcher-server /usr/bin/start_fetcher.sh \
+    && apk del curl \
+    && rm -rf /var/cache/apk/*
 
 ENTRYPOINT ["/usr/bin/start_fetcher.sh"]
 EXPOSE 8006
