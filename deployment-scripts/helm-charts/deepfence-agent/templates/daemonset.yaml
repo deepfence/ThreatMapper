@@ -42,14 +42,6 @@ spec:
           hostPath:
             path: /
             type: Directory
-        - name: host-tmp
-          hostPath:
-            path: /tmp
-            type: Directory
-        - name: host-containerd
-          hostPath:
-            path: /var/lib/containerd
-            type: Directory
         - name: fenced-path
           emptyDir: {}
 
@@ -117,10 +109,6 @@ spec:
             {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
             - mountPath: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
               name: containerd-sock
-            - mountPath: /tmp
-              name: host-tmp
-            - mountPath: /var/lib/containerd
-              name: host-containerd
             {{ end }}
             - mountPath: /sys/kernel/debug
               name: kernel-sys
