@@ -131,7 +131,7 @@ func (v *VulnerabilityDbUpdater) updateVulnerabilityDbListing() error {
 		return err
 	}
 	vulnerabilityDbDetail.Checksum = currentFileChecksum
-	vulnerabilityDbDetail.URL = "https://deepfence-fetcher:8005/df-api/download" + currentFilePath
+	vulnerabilityDbDetail.URL = "http://deepfence-fetcher:8006/df-api/download" + currentFilePath
 	v.Lock()
 	v.vulnerabilityDbListingJson = VulnerabilityDbListing{
 		Available: VulnerabilityDbListingV3{
