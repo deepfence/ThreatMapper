@@ -15,11 +15,13 @@ import ScheduledJobs from './scheduled-jobs/index';
 import UserAuditLogs from './user-audit-logs/index';
 
 import { removeUnderscore } from "../../utils/string-utils";
-import { getUserRole} from "../../helpers/auth-helper";
+import { getUserRole } from "../../helpers/auth-helper";
 import {
   ADMIN_SETTINGS_MENU_COLLECTION, ADMIN_SIDE_NAV_MENU_COLLECTION,
   USER_SIDE_NAV_MENU_COLLECTION, USER_SETTINGS_MUNU_COLLECTION
 } from "../../constants/menu-collection";
+import Tippy from '@tippyjs/react';
+import { logoutUser } from '../../actions/app-actions';
 
 class SettingsView extends React.Component {
   constructor() {
@@ -39,19 +41,23 @@ class SettingsView extends React.Component {
   }
 
 
-  componentWillUnmount(){
-    if(this.state.intervalObj){
+  componentWillUnmount() {
+    if (this.state.intervalObj) {
       clearInterval(this.state.intervalObj);
     }
   }
 
 
   handleOnClick(tab) {
-    this.setState({activeTab: tab});
+    this.setState({ activeTab: tab });
+  }
+
+  logout() {
+    this.props.dispatch(logoutUser());
   }
 
   renderTabsList() {
-    const {isLicenseActive} = this.props;
+    const { isLicenseActive } = this.props;
     const tabs = [];
     let tabList;
     if (getUserRole() == 'admin') {
@@ -64,16 +70,39 @@ class SettingsView extends React.Component {
       const activeClass = tabDetails.name === this.state.activeTab.name ? "active-tab" : "";
       tabs.push(
         <div className={"tab-container " + activeClass}
-             key={tab} onClick={()=> this.handleOnClick(tabDetails)}>
+          key={tab} onClick={() => this.handleOnClick(tabDetails)}>
           <div className="tab">{removeUnderscore(tabDetails.name)}</div>
         </div>
       );
     }
+    tabs.push(
+      <div className="user-menu" style={{
+        marginLeft: 'auto'
+      }}>
+        <Tippy content={
+          <div className="user-menu-dropdown-wrapper">
+            <div className="user-menu-dropdown-item" onClick={() => { this.logout() }}>
+              <div className="user-menu-item-icon">
+                <i className="fa fa-sign-out" aria-hidden="true" />
+              </div>
+              <div className="user-menu-item-text">
+                Sign out
+              </div>
+            </div>
+          </div>
+        } placement="bottom" trigger="click" interactive >
+          <div>
+            <i className="fa fa-user-circle-o user-icon" aria-hidden="true" />
+            <i className="fa fa-caret-down" aria-hidden="true" />
+          </div>
+        </Tippy>
+      </div>
+    )
     return tabs;
   }
 
   renderActiveTabContent() {
-    const activeTab  = this.state.activeTab;
+    const activeTab = this.state.activeTab;
     switch (activeTab.name) {
       case 'user_management': {
         return <UserProfileView />
@@ -83,18 +112,18 @@ class SettingsView extends React.Component {
       }
       case 'diagnosis': {
         return <DiagnosisView />
-      } 
+      }
       case 'scheduled_jobs': {
         return <ScheduledJobs />
       }
       case 'user_audit_logs': {
-        return  <UserAuditLogs />
+        return <UserAuditLogs />
       }
       case 'email_configuration': {
-        return  <EmailConfiguration />
+        return <EmailConfiguration />
       }
       case 'global_settings': {
-        return  <GlobalSettings />
+        return <GlobalSettings />
       }
       default: {
         null;
@@ -109,12 +138,12 @@ class SettingsView extends React.Component {
         <SideNavigation navMenuCollection={this.sideNavMenuCollection} activeMenu={this.state.activeMenu} />
         {/* // make genralised css */}
         <div className={`alerts-view-switcher-wrapper ${this.props.isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'}`}>
-            <div className="tabs-wrapper tabheading">
-              {this.renderTabsList()}
-            </div>
-            <div className="settings-wrapper">
-              {this.renderActiveTabContent()}
-            </div>
+          <div className="tabs-wrapper tabheading">
+            {this.renderTabsList()}
+          </div>
+          <div className="settings-wrapper">
+            {this.renderActiveTabContent()}
+          </div>
         </div>
 
       </div>
