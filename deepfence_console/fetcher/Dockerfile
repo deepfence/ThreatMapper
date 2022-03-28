@@ -32,6 +32,7 @@ COPY grype.yaml /root/.grype.yaml
 
 RUN apk add --no-cache bash curl postgresql-client \
     && curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin \
+    && /usr/local/bin/grype db update \
     && chmod 755 /usr/local/bin/fetcher-server /usr/bin/start_fetcher.sh \
     && apk del curl \
     && rm -rf /var/cache/apk/*
