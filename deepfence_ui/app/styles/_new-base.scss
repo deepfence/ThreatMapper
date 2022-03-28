@@ -4975,36 +4975,37 @@ input {
       float: right;
     }
   }
-  .user-menu {
-    min-width: 42px;
-    margin-left: 16px;
+}
+
+.user-menu {
+  min-width: 42px;
+  margin-left: 16px;
+  margin-right: 8px;
+  cursor: pointer;
+  .user-icon {
+    font-size: 24px;
     margin-right: 8px;
-    cursor: pointer;
-    .user-icon {
-      font-size: 24px;
+  }
+  .user-menu-dropdown-wrapper {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .tippy-content {
+    padding: 0;
+  }
+  .user-menu-dropdown-item {
+    color: $text-primary;
+    display: flex;
+    padding: 4px 8px;
+    .user-menu-item-icon {
       margin-right: 8px;
     }
-    .user-menu-dropdown-wrapper {
-      padding-top: 8px;
-      padding-bottom: 8px;
+    .user-menu-item-text {
+      font-weight: 600;
     }
-    .tippy-content {
-      padding: 0;
-    }
-    .user-menu-dropdown-item {
-      color: $text-primary;
-      display: flex;
-      padding: 4px 8px;
-      .user-menu-item-icon {
-        margin-right: 8px;
-      }
-      .user-menu-item-text {
-        font-weight: 600;
-      }
 
-      &:hover {
-        background-color: $color-secondary-shade;
-      }
+    &:hover {
+      background-color: $color-secondary-shade;
     }
   }
 }
