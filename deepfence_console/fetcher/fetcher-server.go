@@ -74,9 +74,21 @@ func NewVulnerabilityDbUpdater() *VulnerabilityDbUpdater {
 		grypeVulnerabilityDbPath:   "/root/.cache/grype/db/3",
 	}
 	// Update once
-	updater.runGrypeUpdate()
+	fmt.Println("Updating vulnerability database")
+	err := updater.runGrypeUpdate()
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("Updated vulnerability database")
+	}
 	if fileExists(updater.grypeVulnerabilityDbPath + "/metadata.json") {
-		updater.updateVulnerabilityDbListing()
+		fmt.Println("Updating vulnerability database listing.json")
+		err = updater.updateVulnerabilityDbListing()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("Updated vulnerability database listing.json")
+		}
 	}
 	return updater
 }
@@ -109,7 +121,7 @@ func (v *VulnerabilityDbUpdater) updateVulnerabilityDbListing() error {
 		return nil
 	}
 	currentFilePath := fmt.Sprintf("%s%d.tar.gz", vulnerabilityDbPath, vulnerabilityDbDetail.Built.Unix())
-	cmd := "cd " + grypeVulnerabilityDbPath + " && tar -czf " + currentFilePath + " metadata.json vulnerability.db"
+	cmd := "cd " + grypeVulnerabilityDbPath + " && mkdir -p " + vulnerabilityDbPath + " && tar -czf " + currentFilePath + " metadata.json vulnerability.db"
 	_, stdErr, exitCode := runCommand("bash", "-c", cmd)
 	if exitCode != 0 {
 		return errors.New(stdErr)
@@ -171,9 +183,8 @@ func vulnerabilityDbListing(respWrite http.ResponseWriter, req *http.Request) {
 		http.Error(respWrite, "listing.json marshal error", http.StatusInternalServerError)
 		return
 	}
-	respWrite.WriteHeader(http.StatusOK)
-	respWrite.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(respWrite, string(content))
+	respWrite.Header().Set("content-type", "application/json")
+	respWrite.Write(content)
 }
 
 func sha256sum(filePath string) (string, error) {
@@ -1042,7 +1053,7 @@ func main() {
 		fmt.Printf("Error creating elasticsearch connection: %v", err)
 	}
 	vulnerabilityDbUpdater = NewVulnerabilityDbUpdater()
-	vulnerabilityDbUpdater.updateVulnerabilityDb()
+	go vulnerabilityDbUpdater.updateVulnerabilityDb()
 
 	httpMux := http.NewServeMux()
 	httpMux.HandleFunc("/df-api/uploadMultiPart", handleMultiPartPostMethod)
@@ -1078,5 +1089,5 @@ func main() {
 		ErrorLog:          errorLogger,
 	}
 	defer server.Close()
-	log.Fatal(server.ListenAndServeTLS("/etc/filebeat/filebeat.crt", "/etc/filebeat/filebeat.key"))
+	log.Fatal(server.ListenAndServe())
 }

@@ -185,7 +185,7 @@ def pdf_report_fix(*args):
             headers = {'DF_FILE_NAME': ele['_source']['report_path']}
             try:
                 res = requests.request(
-                    "DEL", "https://deepfence-fetcher:8006/df-api/clear", headers=headers, verify=False)
+                    "DEL", "http://deepfence-fetcher:8006/df-api/clear", headers=headers)
             except:
                 pass
             ESConn.delete_docs([doc_id], REPORT_INDEX)

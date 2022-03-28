@@ -25,9 +25,6 @@ ENV DF_PROG_NAME="fetcher" \
 
 COPY --from=build /go/fetcher/fetcher-server /usr/local/bin/fetcher-server
 COPY start_fetcher.sh /usr/bin/start_fetcher.sh
-RUN mkdir /etc/filebeat/
-COPY filebeat.crt /etc/filebeat/
-COPY filebeat.key /etc/filebeat/
 COPY grype.yaml /root/.grype.yaml
 
 RUN apk add --no-cache bash curl postgresql-client \
