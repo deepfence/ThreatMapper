@@ -2278,9 +2278,9 @@ export function addGlobalSettings(params = {}) {
 
 
 export function getRuntimeBomData(params = {}) {
-  const { lucene_query: luceneQuery = [] } = params;
+  const { lucene_query: luceneQuery = [], start_index, size } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/vulnerabilities/runtime_bom?lucene_query=${luceneQueryEscaped}`;
+  const url = `${backendElasticApiEndPoint()}/vulnerabilities/runtime_bom?lucene_query=${luceneQueryEscaped}&start_index=${start_index}&size=${size}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
