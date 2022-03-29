@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine3.15 AS build
+FROM golang:1.18-alpine3.15 AS build
 RUN apk add --no-cache git
 ADD . /go/diagnosis/
 WORKDIR /go/diagnosis/
