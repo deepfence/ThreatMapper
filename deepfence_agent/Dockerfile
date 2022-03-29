@@ -1,4 +1,4 @@
-FROM golang:1.17-bullseye AS build
+FROM golang:1.18-bullseye AS build
 RUN apt-get update \
     && apt-get install -y bash make git gcc \
     && cd /go \

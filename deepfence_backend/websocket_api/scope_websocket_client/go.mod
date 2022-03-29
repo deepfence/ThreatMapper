@@ -1,12 +1,12 @@
 module github.com/deepfence/scope_websocket_client
 
-go 1.17
+go 1.18
 
 require (
-	github.com/gomodule/redigo v1.8.6
-	github.com/gorilla/websocket v1.4.2
+	github.com/gomodule/redigo v1.8.8
+	github.com/gorilla/websocket v1.5.0
 	github.com/lib/pq v1.10.4
-	github.com/olivere/elastic/v7 v7.0.29
+	github.com/olivere/elastic/v7 v7.0.32
 	github.com/satori/go.uuid v1.2.0
 )
 

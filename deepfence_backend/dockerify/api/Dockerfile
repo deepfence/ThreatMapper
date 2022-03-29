@@ -1,4 +1,4 @@
-FROM golang:1.17-bullseye AS build
+FROM golang:1.18-bullseye AS build
 
 WORKDIR /go/logstashPubSubReader
 ADD tasks/logstashPubSubReader /go/logstashPubSubReader/
