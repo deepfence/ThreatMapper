@@ -1,6 +1,6 @@
 module github.com/deepfence/logstashPubSubReader
 
-go 1.17
+go 1.18
 
 require (
 	github.com/gocelery/gocelery v0.0.0-20201111034804-825d89059344
