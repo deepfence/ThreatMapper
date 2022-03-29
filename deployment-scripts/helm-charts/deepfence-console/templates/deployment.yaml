@@ -407,7 +407,7 @@ spec:
 {{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
         - name: docker-sock
           hostPath:
-            path: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
+            path: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
             type: Socket
         - name: docker-certs
           hostPath:
