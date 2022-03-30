@@ -6,7 +6,7 @@ from utils.esconn import ESConn
 from utils.common import get_rounding_time_unit
 from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, NODE_TYPE_HOST, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, NODE_TYPE_POD, DEEPFENCE_SUPPORT_EMAIL, TIME_UNIT_MAPPING, \
-    ES_MAX_CLAUSE
+    ES_MAX_CLAUSE, SECRET_SCAN_INDEX
 
 from utils.resource import get_nodes_list, get_default_params
 
@@ -16,10 +16,13 @@ header_fields = {
     CVE_INDEX: ['@timestamp', 'cve_attack_vector', 'cve_caused_by_package', 'cve_container_image', 'scan_id',
                      'cve_container_image_id', 'cve_cvss_score', 'cve_description', 'cve_fixed_in', 'cve_id',
                      'cve_link', 'cve_severity', 'cve_overall_score', 'cve_type', 'host', 'host_name', 'masked'],
+    "secret-scan-source": [ 'Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part','Severity.level', 'host_name', 'container_name', 'kubernetes_cluster_name', 'node_type' ],
+    "secret-scan-header": [ 'Filename', 'Content', 'Name', 'Rule','Severity', 'Host Name', 'Container Name', 'Kubernetes Cluster Name', 'NodeType' ]
 }
 
 sheet_name = {
     CVE_INDEX: "Vulnerability",
+    SECRET_SCAN_INDEX: "Secrets"
 }
 
 
@@ -132,7 +135,9 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     number = duration.get('number')
     time_unit = duration.get('time_unit')
     no_node_filters_set = False
-
+    import sys
+    sys.stdout = open('/tmp/log.log', 'a+')
+    print("report generation has been started")
     if not filters:
         filters = {"type": node_type}
     elif not filters.get("type", None):
@@ -152,16 +157,24 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     scope_ids = []
     pod_names = []
 
+    
     buffer = io.BytesIO()
     wb = xlsxwriter.Workbook(buffer, {'in_memory': True, 'strings_to_urls': False, 'strings_to_formulas': False})
+    print("buffer has been made")
+    print("resources", resources)
     for resource in resources:
         resource_type = resource.get('type')
-        if resource_type not in [CVE_INDEX]:
+        print("resource type", resource_type)
+        if resource_type not in [CVE_INDEX, SECRET_SCAN_INDEX]:
             continue
-        headers = header_fields[resource_type]
+        if resource_type == SECRET_SCAN_INDEX:
+            headers = header_fields["secret-scan-header"]
+        else:
+            headers = header_fields[resource_type]
         ws = wb.add_worksheet(sheet_name[resource_type])
         row = 0
         col = 0
+        print("headers first one", headers )
         for header in headers:
             if header == 'cloud_metadata':
                 for sub_header in header_fields['ALERT_TYPE_META_SUB_FIELD']:
@@ -170,7 +183,12 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 continue
             ws.write(row, col, header)
             col += 1
+        # here changing the header to default format to align with the code
+        if resource_type == SECRET_SCAN_INDEX:
+            headers = header_fields["secret-scan-source"]
+
         if not filtered_node_list and no_node_filters_set is False:
+            print("it coming inside the older node list")
             # User is trying to filter and download report for old node, which does not exist now
             proceed = False
             if node_type == NODE_TYPE_HOST and filters.get("host_name"):
@@ -212,6 +230,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 aggs_response = ESConn.aggregation_helper(
                      CVE_INDEX, {"type": CVE_INDEX, }, aggs, number, time_unit, None
                 )
+                print("aggs_response", aggs_response)
                 if "aggregations" in aggs_response:
                     for image_aggr in aggs_response["aggregations"]["cve_container_image"]["buckets"]:
                         latest_scan_id = ""
@@ -221,8 +240,52 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                                 latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
                                 latest_scan_id = scan_id_aggr["key"]
                         cve_scan_id_list.append(latest_scan_id)
+            print("cve_scan_id_list", cve_scan_id_list)
+        elif resource_type == SECRET_SCAN_INDEX:
+            if "scan_id" not in resource_filter:
+                aggs = {
+                    "host_name": {
+                        "terms": {
+                            "field": "host_name.keyword",
+                            "size": ES_TERMS_AGGR_SIZE
+                        },
+                        "aggs": {
+                            "scan_id": {
+                                "terms": {
+                                    "field": "scan_id.keyword",
+                                    "size": ES_TERMS_AGGR_SIZE
+                                },
+                                "aggs": {
+                                    "scan_recent_timestamp": {
+                                        "max": {
+                                            "field": "@timestamp"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                aggs_response = ESConn.aggregation_helper(
+                     SECRET_SCAN_INDEX, {}, aggs, number, time_unit, None
+                )
+                print("aggs_response", aggs_response)
+                if "aggregations" in aggs_response:
+                    for image_aggr in aggs_response["aggregations"]["host_name"]["buckets"]:
+                        latest_scan_id = ""
+                        latest_scan_time = 0
+                        for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
+                            if scan_id_aggr["scan_recent_timestamp"]["value"] > latest_scan_time:
+                                latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
+                                latest_scan_id = scan_id_aggr["key"]
+                        cve_scan_id_list.append(latest_scan_id)
+            print("cve_scan_id_list", cve_scan_id_list)
+            print("it finally came to the condition")
+            
+        
 
         if number and time_unit and time_unit != 'all':
+            print("it came to time stuff")
             rounding_time_unit = get_rounding_time_unit(time_unit)
             and_terms.append({
                 "range": {
@@ -239,14 +302,17 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 and_terms.append({"terms": {"{}.keyword".format(filter_key): filter_value}})
             else:
                 and_terms.append({"term": {"{}.keyword".format(filter_key): filter_value}})
+            print("it came to resource_filter")
 
         if node_type == NODE_TYPE_HOST and not no_node_filters_set:
+            print("came to node_type host", filtered_node_list)
             host_names = []
             if not filtered_node_list:
                 host_names = filters["host_name"]
             for filtered_node in filtered_node_list:
                 if filtered_node.get("host_name"):
                     host_names.append(filtered_node["host_name"])
+            print("host_names", host_names)
             # if len(host_names) > 0:
             #     # and_terms.append({"terms": {"host_name.keyword": host_names}})
             #     pass
@@ -291,6 +357,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             return es_hits
 
         def get_all_docs(node_scope_ids_list, cve_scan_id_list, and_terms, keyword, global_hits, resource_type):
+            print("it is inside the get al doc stuff")
             if len(node_scope_ids_list) != 0 and len(cve_scan_id_list) != 0:
                 for index in range(0, len(node_scope_ids_list), ES_MAX_CLAUSE):
                     for scan_id_index in range(0, len(cve_scan_id_list), ES_MAX_CLAUSE):
@@ -314,6 +381,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             elif len(cve_scan_id_list) != 0:
                 for index in range(0, len(cve_scan_id_list), ES_MAX_CLAUSE):
                     and_terms_per_batch = copy.deepcopy(and_terms)
+                    print("and_terms_per_batch this is from get all docs", and_terms_per_batch)
                     list_per_batch = cve_scan_id_list[index:index + ES_MAX_CLAUSE]
 
                     if len(list_per_batch) > 0:
@@ -323,6 +391,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                         "query": {"bool": {"must": and_terms_per_batch}}, "sort": [{"@timestamp": {"order": "desc"}}],
                         "_source": headers
                     }
+                    print("this is the final query body for the results ", query_body)
                     hits = fetch_documents(resource_type, query_body)
                     global_hits.extend(hits)
             else:
@@ -341,32 +410,50 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
         elif node_type == NODE_TYPE_CONTAINER and resource_type == CVE_INDEX:
             get_all_docs(container_names, cve_scan_id_list, and_terms, "cve_container_name", global_hits, resource_type)
         elif node_type == NODE_TYPE_HOST:
+            print("and_terms", and_terms , "\n")
             get_all_docs(host_names, cve_scan_id_list, and_terms, "host_name", global_hits, resource_type)
         elif node_type == NODE_TYPE_POD and resource_type in [CVE_INDEX]:
             get_all_docs(pod_names, cve_scan_id_list, and_terms, "pod_name", global_hits, resource_type)
 
         global_hits = global_hits[:max_size]
+        print(global_hits[:10])
         row_count = 1
+
         for es_doc in global_hits:
             doc = es_doc.get('_source')
+            doc_index = es_doc.get('_index')
             col = 0
-            for header in headers:
-                value = doc.get(header)
-                if header == 'cloud_metadata':
-                    if value:
-                        for sub_header in header_fields['ALERT_TYPE_META_SUB_FIELD']:
-                            sub_value = value.get(sub_header, '')
-                            if type(sub_value) == dict or type(sub_value) == list:
-                                sub_value = json.dumps(sub_value)
-                            ws.write(row_count, col, sub_value)
-                            col += 1
+            if doc_index == SECRET_SCAN_INDEX:
+                for header in headers:
+                    header_split = header
+                    if "." in header:
+                        header_split = header.split('.')
+                        value = doc.get(header_split[0])
                     else:
-                        col += len(header_fields['ALERT_TYPE_META_SUB_FIELD'])
-                    continue
-                if type(value) == dict or type(value) == list:
-                    value = json.dumps(value)
-                ws.write(row_count, col, value)
-                col += 1
+                        value = doc.get(header)
+                    print(header,[] , value)
+                    if type(value) == dict or type(value) == list:
+                        value = value.get(header_split[1])
+                    ws.write(row_count, col, value)
+                    col += 1
+            else:
+                for header in headers:
+                    value = doc.get(header)
+                    if header == 'cloud_metadata':
+                        if value:
+                            for sub_header in header_fields['ALERT_TYPE_META_SUB_FIELD']:
+                                sub_value = value.get(sub_header, '')
+                                if type(sub_value) == dict or type(sub_value) == list:
+                                    sub_value = json.dumps(sub_value)
+                                ws.write(row_count, col, sub_value)
+                                col += 1
+                        else:
+                            col += len(header_fields['ALERT_TYPE_META_SUB_FIELD'])
+                        continue
+                    if type(value) == dict or type(value) == list:
+                        value = json.dumps(value)
+                    ws.write(row_count, col, value)
+                    col += 1
             row_count += 1
     wb.close()
     buffer.seek(0)
