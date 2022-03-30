@@ -39,7 +39,7 @@ distro:
 db:
   # check for database updates on execution
   # same as GRYPE_DB_AUTO_UPDATE env var
-  auto-update: true
+  auto-update: false
   
   # location to write the vulnerability database cache
   # same as GRYPE_DB_CACHE_DIR env var
