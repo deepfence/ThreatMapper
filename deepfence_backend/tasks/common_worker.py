@@ -588,16 +588,16 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                 arr_index += 1
 
         else:
-            df3 = df[df['node_type'] == node_type][["Severity.level", 'cve_container_image','count']]
-            pivot_table = pd.pivot_table(df3, index=["cve_container_image", "Severity.level"], aggfunc=[np.sum])
+            df3 = df[df['node_type'] == node_type][["Severity.level", 'node_name','count']]
+            pivot_table = pd.pivot_table(df3, index=["node_name", "Severity.level"], aggfunc=[np.sum])
 
             node_count_info = {}
-            temp_df = df[df['node_type'] == node_type][['cve_container_image', 'count']].groupby(
-                'cve_container_image').sum()
+            temp_df = df[df['node_type'] == node_type][['node_name', 'count']].groupby(
+                'node_name').sum()
             temp_df['score'] = temp_df['count'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
 
-            for host_name in temp_df.sort_values('score', ascending=False).index:
-                node_count_info[host_name] = {}
+            for node_name in temp_df.sort_values('score', ascending=False).index:
+                node_count_info[node_name] = {}
 
             for i, v in pivot_table.to_dict()[('sum', 'count')].items():
                 if i[0] not in node_count_info:
@@ -663,8 +663,8 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                         end_index += 1
                     arr_index += 1
         else:
-            for cve_container_image in df[df['node_type'] == node_type]['cve_container_image'].unique():
-                df2 = df[(df['host_name'] == host_name) & (df['node_type'] == node_type)][['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level','Severity.score']].sort_values('Severity.score', ascending=False)
+            for node_name in df[df['node_type'] == node_type]['node_name'].unique():
+                df2 = df[(df['node_name'] == node_name) & (df['node_type'] == node_type)][['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level','Severity.score']].sort_values('Severity.score', ascending=False)
                 df2.insert(0, 'ID', range(1, 1 + len(df2)))
                 secret_data = df2.to_dict('records')
                 start_index = 0
@@ -677,14 +677,14 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                         end_index = arr_index
                         node_wise_secret_html += template_env.get_template(
                             'detailed_report_nodewise_secret.html').render(
-                            host_image_name=cve_container_image, data=secret_data[start_index: end_index])
+                            host_image_name=node_name, data=secret_data[start_index: end_index])
                         start_index = arr_index
                         content_length = 0
                     elif content_length <= 1900 and arr_index == len(secret_data) - 1:
                         end_index = arr_index + 1
                         node_wise_secret_html += template_env.get_template(
                             'detailed_report_nodewise_secret.html').render(
-                            host_image_name=cve_container_image, data=secret_data[start_index: end_index])
+                            host_image_name=node_name, data=secret_data[start_index: end_index])
                     else:
                         end_index += 1
                     arr_index += 1
