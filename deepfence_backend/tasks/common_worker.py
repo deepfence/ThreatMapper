@@ -588,14 +588,13 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                 arr_index += 1
 
         else:
-            print("it should not come here")
-            df3 = df[df['node_type'] == node_type][['cve_severity', 'cve_container_image', 'count']]
-            pivot_table = pd.pivot_table(df3, index=["cve_container_image", "cve_severity"], aggfunc=[np.sum])
+            df3 = df[df['node_type'] == node_type][["Severity.level", 'cve_container_image','count']]
+            pivot_table = pd.pivot_table(df3, index=["cve_container_image", "Severity.level"], aggfunc=[np.sum])
 
             node_count_info = {}
-            temp_df = df[df['node_type'] == node_type][['cve_container_image', 'cve_overall_score']].groupby(
+            temp_df = df[df['node_type'] == node_type][['cve_container_image', 'count']].groupby(
                 'cve_container_image').sum()
-            temp_df['score'] = temp_df['cve_overall_score'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
+            temp_df['score'] = temp_df['count'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
 
             for host_name in temp_df.sort_values('score', ascending=False).index:
                 node_count_info[host_name] = {}
@@ -605,7 +604,7 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                     node_count_info[i[0]] = {i[1]: v}
                 else:
                     node_count_info[i[0]][i[1]] = v
-            summary_heading = "Image vulnerabilities"
+            summary_heading = "Image Secrets"
             start_index = 0
             arr_index = 0
             end_index = 0
@@ -665,29 +664,27 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                     arr_index += 1
         else:
             for cve_container_image in df[df['node_type'] == node_type]['cve_container_image'].unique():
-                df2 = df[(df['cve_container_image'] == cve_container_image) & (df['node_type'] == node_type)][
-                    ['cve_id', 'cve_severity', 'cve_caused_by_package', 'cve_link', 'cve_description',
-                     'cve_overall_score']].sort_values('cve_overall_score', ascending=False)
+                df2 = df[(df['host_name'] == host_name) & (df['node_type'] == node_type)][['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level','Severity.score']].sort_values('Severity.score', ascending=False)
                 df2.insert(0, 'ID', range(1, 1 + len(df2)))
-                vulnerability_data = df2.to_dict('records')
+                secret_data = df2.to_dict('records')
                 start_index = 0
                 arr_index = 0
                 content_length = 0
                 end_index = 0
-                while arr_index < len(vulnerability_data):
-                    content_length += len(vulnerability_data[arr_index]['cve_caused_by_package'])
+                while arr_index < len(secret_data):
+                    content_length += len(secret_data[arr_index]['Match.matched_content'])
                     if content_length > 1900 or end_index - start_index > 21:
                         end_index = arr_index
                         node_wise_secret_html += template_env.get_template(
-                            'detailed_report_nodewise_vulnerability.html').render(
-                            host_image_name=cve_container_image, data=vulnerability_data[start_index: end_index])
+                            'detailed_report_nodewise_secret.html').render(
+                            host_image_name=cve_container_image, data=secret_data[start_index: end_index])
                         start_index = arr_index
                         content_length = 0
-                    elif content_length <= 1900 and arr_index == len(vulnerability_data) - 1:
+                    elif content_length <= 1900 and arr_index == len(secret_data) - 1:
                         end_index = arr_index + 1
                         node_wise_secret_html += template_env.get_template(
-                            'detailed_report_nodewise_vulnerability.html').render(
-                            host_image_name=cve_container_image, data=vulnerability_data[start_index: end_index])
+                            'detailed_report_nodewise_secret.html').render(
+                            host_image_name=cve_container_image, data=secret_data[start_index: end_index])
                     else:
                         end_index += 1
                     arr_index += 1
