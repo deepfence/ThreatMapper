@@ -136,6 +136,8 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             }
         }
     }
+
+    print("filters_cve_scan", filters_cve_scan, "cve_scan_aggs", cve_scan_aggs)
     cve_scan_aggs_response = ESConn.aggregation_helper(
         CVE_SCAN_LOGS_INDEX, filters_cve_scan, cve_scan_aggs, number, time_unit,
         lucene_query_string, add_masked_filter=False)
@@ -449,8 +451,12 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
             }
         }
     }
+    filter_for_scan = {}
+    if len(filters.get("type", [])) != 0:
+        filter_for_scan = { "node_type" : filters.get("type") }
+    print("filter_for_scan", filter_for_scan)
     aggs_response = ESConn.aggregation_helper(
-            SECRET_SCAN_INDEX, {}, aggs, number, time_unit, None
+            SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
     )
     # print("aggs_response", aggs_response)
     if "aggregations" in aggs_response:
