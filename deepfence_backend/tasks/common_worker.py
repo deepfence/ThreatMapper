@@ -428,8 +428,8 @@ def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resou
     if report_email == "":
         report_file_name = "/data/xlsx-report/" + report_id + "/report.xlsx"
         headers = {"DF_FILE_NAME": report_file_name}
-        res = requests.post("https://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
-                            files={"DF_MULTIPART_BOUNDARY": xlsx_buffer}, verify=False)
+        res = requests.post("http://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
+                            files={"DF_MULTIPART_BOUNDARY": xlsx_buffer})
         if res.status_code == 200:
             add_report_status_in_es(
                 report_id=report_id, status="Completed",
@@ -478,8 +478,8 @@ def generate_pdf_report(report_id, filters, node_type,
     if report_email == "":
         headers = {"DF_FILE_NAME": report_file_name}
         with open(report_file_name, 'rb') as f:
-            res = requests.post("https://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
-                                files={"DF_MULTIPART_BOUNDARY": f}, verify=False)
+            res = requests.post("http://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
+                                files={"DF_MULTIPART_BOUNDARY": f})
             if res.status_code == 200:
                 add_report_status_in_es(
                     report_id=report_id, status="Completed",

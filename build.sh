@@ -101,7 +101,6 @@ fi
 bash ./clean_console_version.sh
 
 echo "Building fetcher"
-cp filebeat/filebeat.crt filebeat/filebeat.key $DEEPFENCE_FETCHER_DIR
 docker build -f $DEEPFENCE_FETCHER_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_FETCHER_DIR
 
 if [ ! $? -eq 0 ]; then
