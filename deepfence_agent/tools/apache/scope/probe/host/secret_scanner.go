@@ -145,8 +145,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		fmt.Println("Error from secretScan grpc server:" + err.Error())
 		for attemptNumber <= serverRestartAttempts {
 			fmt.Println("Attempting grpc server restart:" + strconv.Itoa(attemptNumber))
-			client = r.secretScanner.client
 			AttachSecretScanner(r)
+			client = r.secretScanner.client
 			res, err = client.FindSecretInfo(context.Background(), &req)
 			if err == nil {
 				fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
