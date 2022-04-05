@@ -58,6 +58,8 @@ spec:
                   key: postgresql-db-name
             - name: POSTGRES_USER_DB_SSLMODE
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
+            - name: ELASTICSEARCH_SCHEME
+              value: "{{ .Values.db.elasticsearch.scheme }}"
             - name: ELASTICSEARCH_HOST
               value: "{{ .Values.db.elasticsearch.host }}"
             - name: ELASTICSEARCH_PORT
@@ -327,6 +329,8 @@ spec:
                   key: postgresql-db-name
             - name: POSTGRES_USER_DB_SSLMODE
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
+            - name: ELASTICSEARCH_SCHEME
+              value: "{{ .Values.db.elasticsearch.scheme }}"
             - name: ELASTICSEARCH_HOST
               value: "{{ .Values.db.elasticsearch.host }}"
             - name: ELASTICSEARCH_PORT
@@ -453,6 +457,8 @@ spec:
                   key: postgresql-db-name
             - name: POSTGRES_USER_DB_SSLMODE
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
+            - name: ELASTICSEARCH_SCHEME
+              value: "{{ .Values.db.elasticsearch.scheme }}"
             - name: ELASTICSEARCH_HOST
               value: "{{ .Values.db.elasticsearch.host }}"
             - name: ELASTICSEARCH_PORT
@@ -590,6 +596,8 @@ spec:
                   key: postgresql-db-name
             - name: POSTGRES_USER_DB_SSLMODE
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
+            - name: ELASTICSEARCH_SCHEME
+              value: "{{ .Values.db.elasticsearch.scheme }}"
             - name: ELASTICSEARCH_HOST
               value: "{{ .Values.db.elasticsearch.host }}"
             - name: ELASTICSEARCH_PORT
