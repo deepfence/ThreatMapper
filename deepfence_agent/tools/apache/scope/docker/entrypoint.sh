@@ -44,11 +44,21 @@ if [[ "$MODE" == "discovery" ]]; then
   sysctl -w net.ipv4.tcp_max_syn_backlog=1024
   sysctl -w net.ipv4.ip_local_port_range="1024 65534"
   probe_log_level=${LOG_LEVEL:-info}
-  exec -a deepfence-discovery /home/deepfence/deepfence_exe --mode=probe --probe-only --weave=false --probe.no-controls=true --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.docker=true --probe.insecure=true --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "http://$TOPOLOGY_IP:8004"
+  /usr/local/bin/vessel 2> /dev/null
+  # Load .env
+  if [ -f .env ]
+  then
+    export $(cat .env | sed 's/#.*//g' | xargs)
+  fi
+  if [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+    exec -a deepfence-discovery /home/deepfence/deepfence_exe --mode=probe --probe-only --weave=false --probe.no-controls=true --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.docker=false --probe.cri=true --probe.cri.endpoint="$CRI_ENDPOINT" --probe.insecure=true --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "http://$TOPOLOGY_IP:8004"
+  else
+    exec -a deepfence-discovery /home/deepfence/deepfence_exe --mode=probe --probe-only --weave=false --probe.no-controls=true --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.docker=true --probe.cri=false --probe.insecure=true --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "http://$TOPOLOGY_IP:8004"
+  fi
 elif [[ "$MODE" == "topology" ]]; then
   app_log_level=${LOG_LEVEL:-info}
   export DF_PROG_NAME="topology"
-  exec -a deepfence-topology /home/deepfence/deepfence_exe --mode=app --weave=false --probe.docker=true --app.externalUI=true --app.log.level="$app_log_level"
+  exec -a deepfence-topology /home/deepfence/deepfence_exe --mode=app --weave=false --app.externalUI=true --app.log.level="$app_log_level"
 elif [[ "$MODE" == "cluster-agent" ]]; then
   probe_log_level=${LOG_LEVEL:-info}
   exec -a deepfence-cluster-agent /home/deepfence/deepfence_exe --mode=probe --probe-only --probe.kubernetes.role=cluster --probe.log.level="$probe_log_level" --weave=false --probe.docker=false --probe.spy.interval=5s --probe.publish.interval=10s --probe.insecure=true --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "https://$TOPOLOGY_IP:$TOPOLOGY_PORT"
