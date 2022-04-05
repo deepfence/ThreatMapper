@@ -3,9 +3,9 @@
 set -e
 
 set_es_user_creds() {
-    creds=""
-    if [ "$ELASTICSEARCH_USER" ] && [ "$ELASTICSEARCH_PASSWORD" ]; then
-        creds="-u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD"
+    local creds=""
+    if [ -n "$ELASTICSEARCH_USER" ] && [ -n "$ELASTICSEARCH_PASSWORD" ]; then
+        creds="-u$ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD"
     fi
     echo "$creds"
 }

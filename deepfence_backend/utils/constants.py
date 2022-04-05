@@ -1,4 +1,5 @@
 import datetime
+import os
 
 DEEPFENCE_SUPPORT_EMAIL = "support@deepfence.io"
 DEEPFENCE_COMMUNITY_EMAIL = "community@deepfence.io"
@@ -149,6 +150,7 @@ SCOPE_KUBE_CONTROLLER_API_CONTROL_URL = "http://deepfence-topology:8004/topology
 SECRET_SCAN_API_URL = "http://deepfence-secret-scanner:8011/secret-scan"
 PACKAGE_SCANNER_REGISTRY_API_URL = "http://deepfence-package-scanner:8005/registry"
 
+CUSTOMER_UNIQUE_ID = os.getenv('CUSTOMER_UNIQUE_ID', None)
 CVE_INDEX = "cve"
 CVE_SCAN_LOGS_INDEX = "cve-scan"
 SBOM_INDEX = "sbom-cve-scan"
@@ -158,6 +160,16 @@ SECRET_SCAN_INDEX = "secret-scan"
 SECRET_SCAN_LOGS_INDEX = "secret-scan-logs"
 REPORT_INDEX = "report"
 VULNERABILITY_LOG_PATH = "/var/log/vulnerability_scan_logs/"
+
+if CUSTOMER_UNIQUE_ID:
+    CVE_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+    CVE_SCAN_LOGS_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+    SBOM_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+    SBOM_ARTIFACT_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+    SECRET_SCAN_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+    SECRET_SCAN_LOGS_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+    REPORT_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+
 ALL_INDICES = [
     CVE_INDEX, CVE_SCAN_LOGS_INDEX
 ]

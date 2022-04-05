@@ -14,7 +14,7 @@ from utils.common import (
     calculate_interval_for_show_all_filter
 )
 
-EL_HOST = "http://%s:%s" % (os.environ['ELASTICSEARCH_HOST'], os.environ['ELASTICSEARCH_PORT'])
+EL_HOST = "%s://%s:%s" % (os.getenv('ELASTICSEARCH_SCHEME', 'http'), os.environ['ELASTICSEARCH_HOST'], os.environ['ELASTICSEARCH_PORT'])
 http_auth = None
 
 if 'ELASTICSEARCH_USER' in os.environ:

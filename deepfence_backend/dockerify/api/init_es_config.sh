@@ -5,23 +5,23 @@ set -e
 echo "Adding elasticsearch custom configuration"
 
 set_es_user_creds() {
-    creds=""
-    if [ "$ELASTICSEARCH_USER" ] && [ "$ELASTICSEARCH_PASSWORD" ]; then
-        creds="-u $ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD"
+    local creds=""
+    if [ -n "$ELASTICSEARCH_USER" ] && [ -n "$ELASTICSEARCH_PASSWORD" ]; then
+        creds="-u$ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD"
     fi
     echo "$creds"
 }
 
 create_index() {
-    index_str="$1"
-    if [ "$CUSTOMER_UNIQUE_ID" ]; then
+    local index_str="$1"
+    if [ -n "$CUSTOMER_UNIQUE_ID" ]; then
         index_str="$index_str-$CUSTOMER_UNIQUE_ID"
     fi
     echo "$index_str"
 }
 
 create_index_pattern() {
-    index_pattern_str=$"["
+    local index_pattern_str=$"["
     declare -a index_arr="$1"
 
     for index in "${!index_arr[@]}"; do
