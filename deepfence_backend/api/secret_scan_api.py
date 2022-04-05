@@ -571,7 +571,7 @@ def secret_exposing_nodes():
     aggs_responses = ESConn.msearch(search_queries).get("responses", [])
     response = {constants.NODE_TYPE_HOST: [], constants.NODE_TYPE_CONTAINER_IMAGE: []}
 
-    if "aggregations" in aggs_responses[0]:
+    if "aggregations" in aggs_responses[0] and active_hosts:
         for host_aggs in aggs_responses[0]["aggregations"]["node_id"]["buckets"]:
             for scan_id_bkt in host_aggs["scan_id"]["buckets"]:
                 for severity_bkt in scan_id_bkt["severity"]["buckets"]:
@@ -579,7 +579,7 @@ def secret_exposing_nodes():
                                  "value": severity_bkt["doc_count"]}
                     response[constants.NODE_TYPE_HOST].append(host_data)
 
-    if "aggregations" in aggs_responses[1]:
+    if "aggregations" in aggs_responses[1] and active_images:
         for image_aggs in aggs_responses[1]["aggregations"]["node_id"]["buckets"]:
             for scan_id_bkt in image_aggs["scan_id"]["buckets"]:
                 for severity_bkt in scan_id_bkt["severity"]["buckets"]:
