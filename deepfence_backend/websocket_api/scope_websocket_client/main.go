@@ -47,8 +47,8 @@ type TopologyStats struct {
 type NodeStatus struct {
 	VulnerabilityScanStatus     map[string]string
 	VulnerabilityScanStatusTime map[string]string
-	SecretScanStatus     map[string]string
-	SecretScanStatusTime map[string]string
+	SecretScanStatus            map[string]string
+	SecretScanStatusTime        map[string]string
 	sync.RWMutex
 }
 
@@ -394,6 +394,13 @@ func (wsCli *WebsocketClient) updateNodeCount() error {
 }
 
 func (wsCli *WebsocketClient) getEsData() error {
+	var esClient *elastic.Client
+	var err error
+
+	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
+	if esScheme == "" {
+		esScheme = "http"
+	}
 	esHost := os.Getenv("ELASTICSEARCH_HOST")
 	if esHost == "" {
 		esHost = "deepfence-es"
@@ -402,11 +409,23 @@ func (wsCli *WebsocketClient) getEsData() error {
 	if esPort == "" {
 		esPort = "9200"
 	}
-	esClient, err := elastic.NewClient(
-		elastic.SetHealthcheck(false),
-		elastic.SetSniff(false),
-		elastic.SetURL("http://"+esHost+":"+esPort),
-	)
+	esUsername := os.Getenv("ELASTICSEARCH_USER")
+	esPassword := os.Getenv("ELASTICSEARCH_PASSWORD")
+
+	if esUsername != "" && esPassword != "" {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+			elastic.SetBasicAuth(esUsername, esPassword),
+		)
+	} else {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+		)
+	}
 	if err != nil {
 		return err
 	}

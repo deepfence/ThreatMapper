@@ -3,8 +3,9 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 import math
 
-EL_HOST = "http://%s:%s" % (os.environ['ELASTICSEARCH_HOST'], os.environ['ELASTICSEARCH_PORT'])
+EL_HOST = "%s://%s:%s" % (os.getenv('ELASTICSEARCH_SCHEME', 'http'), os.environ['ELASTICSEARCH_HOST'], os.environ['ELASTICSEARCH_PORT'])
 http_auth = None
+CUSTOMER_UNIQUE_ID = os.getenv('CUSTOMER_UNIQUE_ID', None)
 
 if 'ELASTICSEARCH_USER' in os.environ:
     http_auth = (os.environ['ELASTICSEARCH_USER'],
@@ -17,6 +18,10 @@ else:
 
 SBOM_INDEX = "sbom-cve-scan"
 SBOM_ARTIFACT_INDEX = "sbom-artifact"
+if CUSTOMER_UNIQUE_ID:
+    SBOM_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+    SBOM_ARTIFACT_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
+
 ARRAY_SIZE = 5
 
 if EL_CLIENT.indices.exists(index=SBOM_INDEX) and EL_CLIENT.indices.exists(index=SBOM_ARTIFACT_INDEX):

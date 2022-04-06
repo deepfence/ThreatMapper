@@ -2,9 +2,17 @@
 
 set -e
 
+set_es_user_creds() {
+  basicAuth=""
+    if [ -n "$ELASTICSEARCH_USER" ] && [ -n "$ELASTICSEARCH_PASSWORD" ]; then
+      basicAuth="$ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD@"
+    fi
+}
+
 cd /app/code
 
-until curl "http://$ELASTICSEARCH_HOST:$ELASTICSEARCH_PORT"; do
+set_es_user_creds
+until curl "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"; do
   echo >&2 "Elastic search is unavailable - sleeping"
   sleep 5
 done

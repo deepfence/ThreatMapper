@@ -52,6 +52,7 @@ db:
     dbname: "users"
     sslmode: "disable"
   elasticsearch:
+    scheme: "http"
     host: deepfence-es
     port: "9200"
   redis:

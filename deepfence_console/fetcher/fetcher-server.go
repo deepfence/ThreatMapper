@@ -29,9 +29,6 @@ import (
 )
 
 const (
-	cveIndexName              = "cve"
-	cveScanLogsIndexName      = "cve-scan"
-	sbomArtifactsIndexName    = "sbom-artifact"
 	redisVulnerabilityChannel = "vulnerability_task_queue"
 )
 
@@ -41,6 +38,9 @@ var (
 	redisPool              *redis.Pool
 	esClient               *elastic.Client
 	vulnerabilityDbUpdater *VulnerabilityDbUpdater
+	cveIndexName           = "cve"
+	cveScanLogsIndexName   = "cve-scan"
+	sbomArtifactsIndexName = "sbom-artifact"
 )
 
 type VulnerabilityDbDetail struct {
@@ -1036,6 +1036,18 @@ func main() {
 		os.Getenv("POSTGRES_USER_DB_HOST"), postgresPort, os.Getenv("POSTGRES_USER_DB_USER"),
 		os.Getenv("POSTGRES_USER_DB_PASSWORD"), os.Getenv("POSTGRES_USER_DB_NAME"),
 		os.Getenv("POSTGRES_USER_DB_SSLMODE"))
+
+	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
+	if customerUniqueId != "" {
+		cveIndexName += fmt.Sprintf("-%s", customerUniqueId)
+		cveScanLogsIndexName += fmt.Sprintf("-%s", customerUniqueId)
+		sbomArtifactsIndexName += fmt.Sprintf("-%s", customerUniqueId)
+	}
+
+	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
+	if esScheme == "" {
+		esScheme = "http"
+	}
 	esHost := os.Getenv("ELASTICSEARCH_HOST")
 	if esHost == "" {
 		esHost = "deepfence-es"
@@ -1044,11 +1056,23 @@ func main() {
 	if esPort == "" {
 		esPort = "9200"
 	}
-	esClient, err = elastic.NewClient(
-		elastic.SetHealthcheck(false),
-		elastic.SetSniff(false),
-		elastic.SetURL("http://"+esHost+":"+esPort),
-	)
+	esUsername := os.Getenv("ELASTICSEARCH_USER")
+	esPassword := os.Getenv("ELASTICSEARCH_PASSWORD")
+
+	if esUsername != "" && esPassword != "" {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+			elastic.SetBasicAuth(esUsername, esPassword),
+		)
+	} else {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+		)
+	}
 	if err != nil {
 		fmt.Printf("Error creating elasticsearch connection: %v", err)
 	}

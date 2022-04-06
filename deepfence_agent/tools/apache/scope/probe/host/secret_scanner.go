@@ -27,24 +27,24 @@ import (
 )
 
 const (
-	ebpfSocketFormat        = "/tmp/%d.sock"
-	secretScanIndexName     = "secret-scan"
-	secretScanLogsIndexName = "secret-scan-logs"
-	ssEbpfExePath           = "/home/deepfence/bin/SecretScanner"
-	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
-	memLockSize             = "--memlock=8388608"
-	ebpfOptFormat           = "--socket-path=%s"
-	serverRestartAttempts   = 1
-	defaultScanConcurrency  = 5
+	ebpfSocketFormat       = "/tmp/%d.sock"
+	ssEbpfExePath          = "/home/deepfence/bin/SecretScanner"
+	ssEbpfLogPath          = "/var/log/fenced/secretScanner.log"
+	memLockSize            = "--memlock=8388608"
+	ebpfOptFormat          = "--socket-path=%s"
+	serverRestartAttempts  = 1
+	defaultScanConcurrency = 5
 )
 
 var certPath = "/etc/filebeat/filebeat.crt"
 
 var (
-	scanConcurrency    int
-	grpcScanWorkerPool *tunny.Pool
-	mgmtConsoleUrl     string
-	deepfenceKey       string
+	scanConcurrency         int
+	grpcScanWorkerPool      *tunny.Pool
+	mgmtConsoleUrl          string
+	deepfenceKey            string
+	secretScanIndexName     = "secret-scan"
+	secretScanLogsIndexName = "secret-scan-logs"
 )
 
 type secretScanParameters struct {
@@ -64,6 +64,12 @@ func init() {
 	grpcScanWorkerPool = tunny.NewFunc(scanConcurrency, getAndPublishSecretScanResultsWrapper)
 	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL") + ":" + os.Getenv("MGMT_CONSOLE_PORT")
 	deepfenceKey = os.Getenv("DEEPFENCE_KEY")
+
+	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
+	if customerUniqueId != "" {
+		secretScanIndexName += fmt.Sprintf("-%s", customerUniqueId)
+		secretScanLogsIndexName += fmt.Sprintf("-%s", customerUniqueId)
+	}
 }
 
 func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {

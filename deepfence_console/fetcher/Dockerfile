@@ -17,6 +17,7 @@ ENV DF_PROG_NAME="fetcher" \
     POSTGRES_USER_DB_PASSWORD=cve \
     POSTGRES_USER_DB_NAME=users \
     POSTGRES_USER_DB_SSLMODE=disable \
+    ELASTICSEARCH_SCHEME=http \
     ELASTICSEARCH_HOST=deepfence-es \
     ELASTICSEARCH_PORT=9200 \
     REDIS_HOST=deepfence-redis \
