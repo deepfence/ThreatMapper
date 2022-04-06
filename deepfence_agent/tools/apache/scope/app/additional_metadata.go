@@ -5,27 +5,28 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
-	"github.com/olivere/elastic/v7"
-	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
+	"github.com/olivere/elastic/v7"
+	"github.com/sirupsen/logrus"
 )
 
 const (
 	esAggsSize             = 100000
-	cveScanLogsEsIndex     = "cve-scan"
-	complianceLogsEsIndex  = "compliance-scan-logs"
-	secretScanLogsEsIndex  = "secret-scan-logs"
 	scanStatusNeverScanned = "never_scanned"
 	nodeSeverityRedisKey   = "NODE_SEVERITY"
 )
 
 var (
-	statusMap map[string]string
-	nStatus   *Status
+	cveScanLogsEsIndex    = "cve-scan"
+	complianceLogsEsIndex = "compliance-scan-logs"
+	secretScanLogsEsIndex = "secret-scan-logs"
+	statusMap             map[string]string
+	nStatus               *Status
 )
 
 type Status struct {
@@ -45,8 +46,8 @@ type NodeStatus struct {
 	VulnerabilityScanStatusTime map[string]string
 	ComplianceScanStatus        map[string]string
 	ComplianceScanStatusTime    map[string]string
-	SecretScanStatus     map[string]string
-	SecretScanStatusTime map[string]string
+	SecretScanStatus            map[string]string
+	SecretScanStatusTime        map[string]string
 	NodeSeverity                map[string]string
 	sync.RWMutex
 }
@@ -304,11 +305,18 @@ func formatComplianceStatus(count int, status string) string {
 }
 
 func NewStatus() (*Status, error) {
+	var esClient *elastic.Client
+	var err error
+
 	statusMap = map[string]string{
 		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
 		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
 		"GENERATED_SBOM": "in_progress", "IN_PROGRESS": "in_progress", "COMPLETE": "complete"}
 
+	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
+	if esScheme == "" {
+		esScheme = "http"
+	}
 	esHost := os.Getenv("ELASTICSEARCH_HOST")
 	if esHost == "" {
 		esHost = "deepfence-es"
@@ -317,16 +325,30 @@ func NewStatus() (*Status, error) {
 	if esPort == "" {
 		esPort = "9200"
 	}
+	esUsername := os.Getenv("ELASTICSEARCH_USER")
+	esPassword := os.Getenv("ELASTICSEARCH_PASSWORD")
+
 	var status Status
-	esClient, err := elastic.NewClient(
-		elastic.SetHealthcheck(false),
-		elastic.SetSniff(false),
-		elastic.SetURL("http://"+esHost+":"+esPort),
-	)
+
+	if esUsername != "" && esPassword != "" {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+			elastic.SetBasicAuth(esUsername, esPassword),
+		)
+	} else {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+		)
+	}
 	if err != nil {
 		return &status, err
 	}
 	status.esClient = esClient
+
 	status.redisPool, _ = newRedisPool()
 	if status.redisPool == nil {
 		return nil, errors.New("could not create redis pool connection")
@@ -359,6 +381,13 @@ func getScanStatus() error {
 }
 
 func init() {
+	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
+	if customerUniqueId != "" {
+		cveScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+		complianceLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+		secretScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+	}
+
 	if os.Getenv("DF_PROG_NAME") == "topology" {
 		go func() {
 			for {
