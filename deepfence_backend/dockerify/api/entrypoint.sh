@@ -3,16 +3,16 @@
 set -e
 
 set_es_user_creds() {
-    local creds=""
+  basicAuth=""
     if [ -n "$ELASTICSEARCH_USER" ] && [ -n "$ELASTICSEARCH_PASSWORD" ]; then
-        creds="-u$ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD"
+      basicAuth="$ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD@"
     fi
-    echo "$creds"
 }
 
 cd /app/code
 
-until curl "$(set_es_user_creds)" "$ELASTICSEARCH_SCHEME://$ELASTICSEARCH_HOST:$ELASTICSEARCH_PORT"; do
+set_es_user_creds
+until curl "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"; do
   echo >&2 "Elastic search is unavailable - sleeping"
   sleep 5
 done
