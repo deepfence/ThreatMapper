@@ -64,18 +64,18 @@ const (
 	filterTypeStr                    = "string"
 	filterTypeNumber                 = "number"
 	filterTypeBool                   = "bool"
-	cveScanLogsEsIndex               = "cve-scan"
-	secretScanLogsEsIndex			 = "secret-scan-logs"
 	scanStatusNeverScanned           = "never_scanned"
 	esAggsSize                       = 50000
 )
 
 var (
-	ScopeWebSocketUrl      map[string]url.URL
-	TopologyIdNodeTypeMap  map[string]string
-	RedisAddr              string
-	AllNodeTypes []string
-	statusMap    map[string]string
+	ScopeWebSocketUrl     map[string]url.URL
+	TopologyIdNodeTypeMap map[string]string
+	RedisAddr             string
+	AllNodeTypes          []string
+	statusMap             map[string]string
+	cveScanLogsEsIndex    = "cve-scan"
+	secretScanLogsEsIndex = "secret-scan-logs"
 )
 
 func init() {
@@ -109,6 +109,12 @@ func init() {
 		TopologyIdProcess:         NodeTypeProcess,
 		TopologyIdProcessByName:   NodeTypeProcessByName,
 		TopologyIdSwarmService:    NodeTypeSwarmService,
+	}
+
+	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
+	if customerUniqueId != "" {
+		cveScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+		secretScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
 	}
 }
 
