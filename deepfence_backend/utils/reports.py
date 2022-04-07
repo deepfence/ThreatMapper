@@ -16,8 +16,8 @@ header_fields = {
     CVE_INDEX: ['@timestamp', 'cve_attack_vector', 'cve_caused_by_package', 'cve_container_image', 'scan_id',
                      'cve_container_image_id', 'cve_cvss_score', 'cve_description', 'cve_fixed_in', 'cve_id',
                      'cve_link', 'cve_severity', 'cve_overall_score', 'cve_type', 'host', 'host_name', 'masked'],
-    "secret-scan-source": [ 'Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part','Severity.level', 'host_name', 'container_name', 'kubernetes_cluster_name', 'node_type' ],
-    "secret-scan-header": [ 'Filename', 'Content', 'Name', 'Rule','Severity', 'Host Name', 'Container Name', 'Kubernetes Cluster Name', 'NodeType' ]
+    "secret-scan-source": [ 'Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part','Severity.level', 'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type' ],
+    "secret-scan-header": [ 'Filename', 'Content', 'Name', 'Rule','Severity', 'Node Name', 'Container Name', 'Kubernetes Cluster Name', 'NodeType' ]
 }
 
 sheet_name = {
@@ -151,6 +151,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     else:
         filtered_node_list = get_nodes_list(get_default_params({"filters": filters, "size": 500000})).get("data", [])
 
+    print("filters", filters)
     host_names = []
     container_names = []
     image_name_with_tag_list = []
@@ -244,9 +245,9 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
         elif resource_type == SECRET_SCAN_INDEX:
             if "scan_id" not in resource_filter:
                 aggs = {
-                    "host_name": {
+                    "node_name": {
                         "terms": {
-                            "field": "host_name.keyword",
+                            "field": "node_name.keyword",
                             "size": ES_TERMS_AGGR_SIZE
                         },
                         "aggs": {
@@ -266,12 +267,15 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                         }
                     }
                 }
+                filter_for_scan = {}
+                if len(filters.get("type", [])) != 0:
+                    filter_for_scan = { "node_type" : filters.get("type") }
                 aggs_response = ESConn.aggregation_helper(
-                     SECRET_SCAN_INDEX, {}, aggs, number, time_unit, None
+                     SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
                 )
                 print("aggs_response", aggs_response)
                 if "aggregations" in aggs_response:
-                    for image_aggr in aggs_response["aggregations"]["host_name"]["buckets"]:
+                    for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
                         latest_scan_id = ""
                         latest_scan_time = 0
                         for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
