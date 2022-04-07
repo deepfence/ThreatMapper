@@ -67,8 +67,9 @@ func (t Target) String() string {
 
 // ResolverConfig is the config for a resolver.
 type ResolverConfig struct {
-	Targets []Target
-	Set     func(string, []url.URL)
+	Targets       []Target
+	Set           func(string, []url.URL)
+	ResolveDomain bool // Weather to resolve domain into ip address or not
 
 	// Optional
 	Lookup LookupIP
@@ -210,6 +211,9 @@ func (r staticResolver) resolveOne(t Target) []string {
 		addrs = []net.IP{addr}
 	} else {
 		var err error
+		if r.ResolveDomain == false {
+			return []string{t.hostname}
+		}
 		addrs, err = r.Lookup(t.hostname)
 		if err != nil {
 			if _, ok := r.failedResolutions[t.hostname]; !ok {
