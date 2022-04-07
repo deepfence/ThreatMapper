@@ -20,13 +20,18 @@ def update_all_registry_images():
 @celery_app.task(bind=True)
 def update_registry_images(self, registry_id):
     with app.app_context():
+        import sys
+        sys.stdout = open('/tmp/log.log', 'a+')
         try:
             registry_credential = RegistryCredential.query.get(registry_id)
+            print("registry_credential",registry_credential)
         except Exception as err:
             app.logger.error("Failed to get registry credential: error={}".format(err))
         try:
             client = registry_credential.client
+            print("got the client of the registry", client)
         except Exception as err:
+            print("came into exception")
             app.logger.error("Unable to initialize client: error={}".format(err))
             return
         image_list = []
@@ -35,7 +40,9 @@ def update_registry_images(self, registry_id):
         filters_image_tag = set()
         try:
             node_utils = NodeUtils()
+            print("node_utils", node_utils)
             tmp_image_list = client.get_images_list()
+            print("tmp_image_list",tmp_image_list)
             for image_detail in tmp_image_list:
                 image_detail["scope_id"] = image_detail["image_name_with_tag"] + ";<container_image>"
                 image_detail["id"] = node_utils.get_df_id_from_scope_id(
@@ -46,12 +53,16 @@ def update_registry_images(self, registry_id):
                 filters_image_name.add(image_detail["image_name"])
                 filters_image_tag.add(image_detail["image_tag"])
                 image_list.append(image_detail)
+            print("updated image list")
+            print("image_list", image_list)
         except Exception as err:
+            print("came into exception 2")
             app.logger.error("Failed to list images: error={}".format(err))
         image_list_details = {
             "image_list": image_list,
             "last_updated": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         }
+        print("will update stuff into the registr redis")
         from config.redisconfig import redis
         redis_cache_key = "{0}:{1}".format(REGISTRY_IMAGES_CACHE_KEY_PREFIX, registry_id)
         redis.setex(redis_cache_key, REGISTRY_IMAGES_CACHE_EXPIRY_TIME, json.dumps(image_list_details))

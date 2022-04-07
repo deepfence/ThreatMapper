@@ -700,55 +700,72 @@ class CveScanHarborRegistryImages(CveScanRegistryImages):
 
     def get_images_list(self, filter_image_name="", filter_image_tag="", filter_image_name_with_tag="",
                         filter_past_days=max_days):
+        print("it is coming to the get image lists harbor")
         images_list = []
         try:
             image_from_date = datetime.now() - timedelta(days=filter_past_days)
             image_from_date = image_from_date.replace(hour=0, minute=0, second=0, microsecond=0)
             session = requests.Session()
             session.auth = (self.harbor_registry_username, self.harbor_registry_password)
+            print(self.harbor_registry_url, self.harbor_registry_username, self.harbor_registry_password, urlparse(self.harbor_registry_url).netloc)
+            url_parse = urlparse(self.harbor_registry_url)
+            server_url = "{0}://{1}".format(url_parse.scheme, url_parse.netloc)
+            project_name = url_parse.path.lstrip('/')
             verify, cert = self.get_self_signed_certs()
-            harbor_repos = session.get("{0}/api/search?q=".format(self.harbor_registry_url), verify=verify,
-                                       cert=cert).json()
-            if not harbor_repos.get("repository", []):
+            print("{0}/api/v2.0/projects/{1}/repositories".format(server_url, project_name))
+            response = session.get("{0}/api/v2.0/projects/{1}/repositories".format(server_url, project_name), verify=verify, cert=cert)
+            if response.status_code == 200:
+                harbor_repos = response.json()
+            else:
                 return images_list
-            for repo in harbor_repos["repository"]:
-                repo_name = repo.get("repository_name", "")
+            print("harbor_repos", harbor_repos)
+            for repo in harbor_repos:
+                print("came to for loop for sure")
+                repo_name = repo.get("name", "")
+                repository_name = repo_name.split("/")[-1]
                 if not repo_name:
                     continue
-                repo_tags = session.get("{0}/api/repositories/{1}/tags?detail=true".format(
-                    self.harbor_registry_url, repo_name), verify=verify, cert=cert).json()
-                for repo_tag in repo_tags:
-                    tag = repo_tag.get("name", "")
-                    if not tag:
-                        continue
-                    image_name_with_tag = "{0}/{1}:{2}".format(self.docker_registry_name, repo_name, tag)
-                    if filter_image_name_with_tag:
-                        if filter_image_name_with_tag != image_name_with_tag:
+                repo_artifacts = session.get("{0}/api/v2.0/projects/{1}/repositories/{2}/artifacts".format(
+                    server_url, project_name, repository_name), verify=verify, cert=cert).json()
+                print("artifacts things is done now")
+                for artifact in repo_artifacts:
+                    print("artifact", artifact)
+                    for repo_tag in artifact['tags']:
+                        print("repo_tag", repo_tag)
+                        tag = repo_tag.get("name", "")
+                        if not tag:
                             continue
-                    if filter_image_name:
-                        if filter_image_name != repo_name:
-                            continue
-                    if filter_image_tag:
-                        if filter_image_tag != tag:
-                            continue
-                    pushed_at = repo_tag.get("push_time", "")
-                    image_os = repo_tag.get("os", "")
-                    if not pushed_at:
-                        pushed_at = repo_tag.get("created", "")
-                    if filter_past_days and filter_past_days != max_days and filter_past_days > 0 and pushed_at:
-                        push_time = datetime.strptime(pushed_at.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-                        if image_from_date > push_time:
-                            continue
-                    image_size = repo_tag.get("size", "")
-                    if image_size:
-                        image_size = bytes_to_str(image_size, "m")
-                    else:
-                        image_size = ""
-                    image_details = {
-                        "image_name": repo_name, "image_tag": tag, "image_name_with_tag": image_name_with_tag,
-                        "pushed_at": pushed_at, "docker_image_size": image_size, "image_os": image_os}
-                    images_list.append(image_details)
+                        image_name_with_tag = "{0}/{1}:{2}".format(self.docker_registry_name, repo_name, tag)
+                        if filter_image_name_with_tag:
+                            if filter_image_name_with_tag != image_name_with_tag:
+                                continue
+                        if filter_image_name:
+                            if filter_image_name != repo_name:
+                                continue
+                        if filter_image_tag:
+                            if filter_image_tag != tag:
+                                continue
+                        pushed_at = repo_tag.get("push_time", "")
+                        image_os = repo_tag.get("os", "")
+                        if not pushed_at:
+                            pushed_at = repo_tag.get("created", "")
+                        if filter_past_days and filter_past_days != max_days and filter_past_days > 0 and pushed_at:
+                            push_time = datetime.strptime(pushed_at.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+                            if image_from_date > push_time:
+                                continue
+                        image_size = repo_tag.get("size", "")
+                        if image_size:
+                            image_size = bytes_to_str(image_size, "m")
+                        else:
+                            image_size = ""
+                        image_details = {
+                            "image_name": repo_name, "image_tag": tag, "image_name_with_tag": image_name_with_tag,
+                            "pushed_at": pushed_at, "docker_image_size": image_size, "image_os": image_os}
+                        print("image_details", image_details)
+                        images_list.append(image_details)
+            print("just before exception")
         except Exception as e:
+            print("came into exception from get image list")
             raise DFError("Something went wrong", error=e)
         return images_list
 
