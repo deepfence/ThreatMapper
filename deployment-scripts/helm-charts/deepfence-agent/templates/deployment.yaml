@@ -28,6 +28,8 @@ spec:
             - "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
             - "{{ required "managementConsolePort is required" .Values.managementConsolePort }}"
           env:
+            - name: RESOLVE_DOMAIN
+              value: "{{ .Values.resolveDomain }}"
             - name: DEEPFENCE_KEY
               valueFrom:
                 secretKeyRef:

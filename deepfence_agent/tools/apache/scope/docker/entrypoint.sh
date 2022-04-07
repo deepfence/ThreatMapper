@@ -61,5 +61,5 @@ elif [[ "$MODE" == "topology" ]]; then
   exec -a deepfence-topology /home/deepfence/deepfence_exe --mode=app --weave=false --app.externalUI=true --app.log.level="$app_log_level"
 elif [[ "$MODE" == "cluster-agent" ]]; then
   probe_log_level=${LOG_LEVEL:-info}
-  exec -a deepfence-cluster-agent /home/deepfence/deepfence_exe --mode=probe --probe-only --probe.kubernetes.role=cluster --probe.log.level="$probe_log_level" --weave=false --probe.docker=false --probe.spy.interval=5s --probe.publish.interval=10s --probe.insecure=true --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "https://$TOPOLOGY_IP:$TOPOLOGY_PORT"
+  exec -a deepfence-cluster-agent /home/deepfence/deepfence_exe --mode=probe --probe-only --probe.kubernetes.role=cluster --probe.log.level="$probe_log_level" --weave=false --probe.docker=false --probe.spy.interval=5s --probe.publish.interval=10s --probe.insecure=true --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" --probe.resolve-domain="$RESOLVE_DOMAIN" "https://$TOPOLOGY_IP:$TOPOLOGY_PORT"
 fi
