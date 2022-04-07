@@ -429,9 +429,9 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     # filters["type"] = SECRET_SCAN_INDEX
     cve_scan_id_list = []
     aggs = {
-        "host_name": {
+        "node_name": {
             "terms": {
-                "field": "host_name.keyword",
+                "field": "node_name.keyword",
                 "size": ES_TERMS_AGGR_SIZE
             },
             "aggs": {
@@ -458,9 +458,9 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     aggs_response = ESConn.aggregation_helper(
             SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
     )
-    # print("aggs_response", aggs_response)
+    print("aggs_response", aggs_response)
     if "aggregations" in aggs_response:
-        for image_aggr in aggs_response["aggregations"]["host_name"]["buckets"]:
+        for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
             latest_scan_id = ""
             latest_scan_time = 0
             for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
