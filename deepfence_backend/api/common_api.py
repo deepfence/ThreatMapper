@@ -19,11 +19,11 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
     TOPOLOGY_ID_CONTAINER, TOPOLOGY_ID_CONTAINER_IMAGE, TOPOLOGY_ID_HOST, NODE_TYPE_CONTAINER_IMAGE, \
     TOPOLOGY_ID_KUBE_SERVICE, NODE_TYPE_KUBE_CLUSTER, ES_TERMS_AGGR_SIZE, \
     REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX, SECRET_SCAN_INDEX, SBOM_INDEX, \
-    SBOM_ARTIFACT_INDEX
+    SBOM_ARTIFACT_INDEX, CVE_ES_TYPE
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta
-from utils.helper import is_network_attack_vector, get_topology_network_graph
+from utils.helper import is_network_attack_vector, get_topology_network_graph, modify_es_index
 from utils.node_utils import NodeUtils
 from flask.views import MethodView
 from utils.custom_exception import InvalidUsage, InternalError, DFError, NotFound
@@ -140,7 +140,7 @@ def stats():
     if lucene_query_string:
         lucene_query_string = unquote(lucene_query_string)
 
-    if _type == CVE_INDEX:
+    if _type == CVE_ES_TYPE:
         severity_field = "cve_severity"
     else:
         raise InvalidUsage("Unsupported _type")
@@ -148,7 +148,7 @@ def stats():
     severities = ["critical", "medium", "high", "low", "info"]
     search_queries = []
     for severity in severities:
-        search_queries.append({"index": _type})
+        search_queries.append({"index": modify_es_index(_type)})
         filters = {"type": _type, "masked": "false", severity_field: severity}
         search_queries.append(
             ESConn.create_filtered_query(filters, number=number, time_unit=TIME_UNIT_MAPPING.get(time_unit),
@@ -331,7 +331,8 @@ def search():
     if not filters:
         raise InvalidUsage("filters key is required.")
 
-    index_name = request.json.get("_type")
+    _type = request.json.get("_type")
+    index_name = modify_es_index(_type)
     if not index_name:
         raise InvalidUsage("_type is required")
 
@@ -382,7 +383,7 @@ def search():
     values_for = request.json.get("values_for", [])
 
     filters.update({
-        "type": index_name,
+        "type": _type,
         "masked": "false"
     })
 
@@ -473,7 +474,8 @@ def search_corelation():
     if not filters:
         raise InvalidUsage("filters key is required.")
 
-    index_name = request.json.get("_type")
+    _type = request.json.get("_type")
+    index_name = modify_es_index(_type)
     if not index_name:
         raise InvalidUsage("_type is required")
 
@@ -505,7 +507,7 @@ def search_corelation():
     values_for = request.json.get("values_for", [])
 
     filters.update({
-        "type": index_name,
+        "type": _type,
         "masked": "false"
     })
 
@@ -890,7 +892,8 @@ def delete_resources():
     severity = request.json.get("severity")
     number = request.json.get("number")
     time_unit = request.json.get("time_unit")
-    index_name = request.json.get("doc_type")
+    _type = request.json.get("doc_type")
+    index_name = modify_es_index(_type)
     scan_id = request.json.get("scan_id")
     only_masked = bool(request.json.get("only_masked", False))
     only_dead_nodes = bool(request.json.get("only_dead_nodes", False))
@@ -909,7 +912,7 @@ def delete_resources():
 
     # cve
     if index_name == CVE_INDEX:
-        filters = {"type": CVE_INDEX}
+        filters = {"type": CVE_ES_TYPE}
         host_names_to_delete = []
         image_names_to_delete = []
         if only_masked:
@@ -1098,7 +1101,7 @@ def delete_docs_by_id():
         raise InvalidUsage("Missing json value")
     if type(request.json) != dict:
         raise InvalidUsage("Request data invalid")
-    index_name = request.json.get("index_name")
+    index_name = modify_es_index(request.json.get("index_name"))
     ids = request.json.get("ids")
     if not index_name:
         raise InvalidUsage("index_name is mandatory")
@@ -1134,7 +1137,8 @@ def groupby():
         raise InvalidUsage("Missing JSON in request")
     if type(request.json) != dict:
         raise InvalidUsage("Request data invalid")
-    index_name = request.json.get("doc_type")
+    _type = request.json.get("doc_type")
+    index_name = modify_es_index(_type)
     if not index_name:
         raise InvalidUsage("doc_type is required")
 
@@ -1184,7 +1188,7 @@ def groupby():
     # Hack alert on a generic API.
     # Assuming all CVE related grouping requires analysis
     # on only the latest scans, we apply the latest scan id filter
-    if index_name == 'cve':
+    if _type == CVE_ES_TYPE:
         latest_scan_ids = get_latest_cve_scan_id()
         # TODO: maxClause issue
         params.add_filter('terms', "scan_id.keyword", latest_scan_ids[:ES_MAX_CLAUSE])
@@ -1230,7 +1234,8 @@ def top_affected_node():
         raise InvalidUsage("Missing JSON in request")
     if type(request.json) != dict:
         raise InvalidUsage("Request data invalid")
-    index_name = request.json.get("doc_type")
+    _type = request.json.get("doc_type")
+    index_name = modify_es_index(_type)
     if not index_name:
         raise InvalidUsage("doc_type is required")
 
@@ -1277,7 +1282,7 @@ def top_affected_node():
     for key, value in filters.items():
         params.add_filter('term', "{0}.keyword".format(key), value)
 
-    if index_name == 'cve':
+    if _type == CVE_ES_TYPE:
         latest_scan_ids = get_latest_cve_scan_id()
         # TODO: maxClause issue
         params.add_filter('terms', "scan_id.keyword", latest_scan_ids[:ES_MAX_CLAUSE])
