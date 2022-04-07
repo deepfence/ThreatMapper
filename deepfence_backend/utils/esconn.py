@@ -817,7 +817,6 @@ class ESConn:
                 }
             }
         }
-        print("body for the count query ", body )
         res = EL_CLIENT.count(index=index_name, body=body)
         return res['count']
 
