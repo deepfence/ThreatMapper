@@ -130,6 +130,7 @@ def register():
     first_name = request.json.get('first_name', None)
     last_name = request.json.get('last_name', None)
     password = request.json.get('password', None)
+    temporary_password = request.json.get('temporary_password', False)
     confirm_password = request.json.get('confirm_password', None)
     company = request.json.get('company', None)
     phone_number = request.json.get('phone_number', None)
@@ -203,7 +204,8 @@ def register():
         phone_number=phone_number,
         role=admin_role,
         company=user_company,
-        api_key=api_key
+        api_key=api_key,
+        password_invalidated=temporary_password
     )
 
     user.set_password(password)

@@ -27,6 +27,8 @@ class User(db.Model):
 
     phone_number = db.Column(db.String(100), nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
+    password_invalidated = db.Column(db.Boolean, default=False,
+                                     server_default='f', nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
     isActive = db.Column(db.Boolean, default=True, server_default='t', nullable=False)
