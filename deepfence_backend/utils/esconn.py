@@ -1293,7 +1293,6 @@ class ESConn:
             "aggs": aggs,
             "size": 0
         }
-        print("query", aggs_query)
         if get_only_query:
             return aggs_query
         else:

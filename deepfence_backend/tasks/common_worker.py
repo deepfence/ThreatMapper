@@ -137,7 +137,6 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
         }
     }
 
-    print("filters_cve_scan", filters_cve_scan, "cve_scan_aggs", cve_scan_aggs)
     cve_scan_aggs_response = ESConn.aggregation_helper(
         CVE_SCAN_LOGS_INDEX, filters_cve_scan, cve_scan_aggs, number, time_unit,
         lucene_query_string, add_masked_filter=False)
@@ -421,9 +420,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     return final_html
 
 def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_unit, resource):
-    print(f"filters {filters}, lucene_query_string {lucene_query_string}, number {number}, time_unit {time_unit}, resource {resource}")
     node_filters = deepcopy(filters)
-    print("node filters", node_filters)
     filters_applied = deepcopy(node_filters)
     filters_cve_scan = {"action": "COMPLETED"}
     # filters["type"] = SECRET_SCAN_INDEX
@@ -454,11 +451,9 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     filter_for_scan = {}
     if len(filters.get("type", [])) != 0:
         filter_for_scan = { "node_type" : filters.get("type") }
-    print("filter_for_scan", filter_for_scan)
     aggs_response = ESConn.aggregation_helper(
             SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
     )
-    print("aggs_response", aggs_response)
     if "aggregations" in aggs_response:
         for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
             latest_scan_id = ""
@@ -468,7 +463,6 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                     latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
                     latest_scan_id = scan_id_aggr["key"]
             cve_scan_id_list.append(latest_scan_id)
-    print("cve_scan_id_list", cve_scan_id_list)
 
     and_terms = []
     for key, value in filters.items():
@@ -506,14 +500,12 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
         if doc_count > PDF_REPORT_MAX_DOCS:
             return "<div>Error while fetching vulnerabilities, please use filters to reduce the number of documents " \
                    "to download.</div> "
-    print(f"all document count is {doc_count}")
 
     secret_scan_data = []
     for scan_id_chunk in recent_scan_id_chunks:
         query = deepcopy(query_body)
         
         query["query"]["bool"]["must"].append({"terms": {"scan_id.keyword": scan_id_chunk}})
-        print("it is inside he for loop", query)
         for total_pages, page_count, page_items, page_data in ESConn.scroll(
                 SECRET_SCAN_INDEX, query, page_size=5000):
             docs = page_data.get('hits', {}).get('hits', [])
@@ -521,9 +513,7 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                 if doc.get("_source"):
                     secret_scan_data.append(doc["_source"])
     if not secret_scan_data:
-        print("it has come to the no sacan data")
         return "<div>No vulnerabilities found for the applied filter</div>"
-    # print("secret scan data", secret_scan_data)
     df = pd.json_normalize(secret_scan_data)
     df.insert(0, 'count', 1)
     secret_count = {}
@@ -538,7 +528,6 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     for severity_type in severity_types:
         secret_count[severity_type] = severity_wise_frequency.get(severity_type,0)
 
-    print("secret_count", secret_count)
 
     secret_table_html += template_env.get_template('detailed_secret_summary_table.html').render(
             secret_count=secret_count, summary_heading="total count severity wise",applied_severity=severity_types)
@@ -546,9 +535,7 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE] if i in df.node_type.unique()]
     table_index_length = 22
     for node_type in node_types:
-        print("it has gone into the node types loop")
         if node_type == 'host':
-            print("now in side the host if")
             df3 = df[df['node_type'] == node_type][["Severity.level", 'host_name','count']]
             pivot_table = pd.pivot_table(df3, index=["host_name", "Severity.level"], aggfunc=[np.sum])
 
@@ -570,7 +557,6 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
             arr_index = 0
             end_index = 0
             content_length = 0
-            print("pivot table passed and now going to while loop")
             while arr_index < len(node_count_info.keys()):
                 content_length += len(list(node_count_info.keys())[arr_index])
                 if content_length > 2950 or end_index - start_index > table_index_length:
@@ -640,7 +626,6 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     node_wise_secret_html = ''
     for node_type in node_types:
         if node_type == NODE_TYPE_HOST:
-            print("it is about to generate the report")
             for host_name in df[df['node_type'] == node_type]['host_name'].unique():
                 df2 = df[(df['host_name'] == host_name) & (df['node_type'] == node_type)][['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level','Severity.score']].sort_values('Severity.score', ascending=False)
                 df2.insert(0, 'ID', range(1, 1 + len(df2)))
@@ -649,7 +634,6 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                 arr_index = 0
                 content_length = 0
                 end_index = 0
-                print("it has come before while loop")
                 while arr_index < len(secret_data):
                     content_length += len(secret_data[arr_index]['Match.matched_content'])
                     if content_length > 1900 or end_index - start_index > 21:
@@ -660,7 +644,6 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                         start_index = arr_index
                         content_length = 0
                     elif content_length <= 1900 and arr_index == len(secret_data) - 1:
-                        print("it should come to the elif ")
                         end_index = arr_index + 1
                         node_wise_secret_html += template_env.get_template(
                             'detailed_report_nodewise_secret.html').render(
@@ -695,7 +678,6 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                         end_index += 1
                     arr_index += 1
 
-    print("It is coming after making that table")
     start_time_str, end_time_str = convert_time_unit_to_date(number, time_unit)
     header_html = template_env.get_template('detailed_report_summary_report_header.html').render(
         start_time_str=start_time_str, end_time_str=end_time_str, heading="Secret Scan Report")
@@ -752,8 +734,6 @@ def generate_pdf_report(report_id, filters, node_type,
     final_html = ""
     for resource in resources:
         resource_type = resource.get('type')
-        print("resource_type", resource_type)
-        print("it is going to main pdf report functions")
         if resource_type == CVE_INDEX:
             flask_app.logger.error("resources:{0}, resource:{1}, filters:{2}".format(str(resources), str(resource),
                                                                                      str(filters)))
