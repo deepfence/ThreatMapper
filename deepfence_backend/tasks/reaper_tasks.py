@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from utils.esconn import ESConn
 from utils.constants import CVE_SCAN_LOGS_INDEX, NODE_TYPE_HOST, \
     CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_QUEUED, CVE_SCAN_STATUS_ERROR, DEEPFENCE_KEY, REPORT_INDEX, \
-    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX
+    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX, CVE_SCAN_LOGS_ES_TYPE
 from utils.scope import fetch_topology_data
 import time
 from utils.helper import get_cve_scan_tmp_folder, rmdir_recursive, wait_for_postgres_table
@@ -45,7 +45,7 @@ def cve_fix_interrupted_at_start():
 
 def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_scan_message):
     body = {
-        "masked": "false", "type": "cve-scan", "scan_id": cve_status["scan_id"], "node_type": cve_status["node_type"],
+        "masked": "false", "type": CVE_SCAN_LOGS_ES_TYPE, "scan_id": cve_status["scan_id"], "node_type": cve_status["node_type"],
         "cve_scan_message": cve_scan_message, "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "time_stamp": int(time.time() * 1000.0), "host": host_name, "action": CVE_SCAN_STATUS_ERROR,
         "host_name": host_name, "node_id": cve_node_id,

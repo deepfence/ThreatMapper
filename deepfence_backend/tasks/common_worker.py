@@ -6,7 +6,7 @@ from config.app import celery_app, app as flask_app
 from tasks.task_scheduler import run_node_task
 from utils.constants import REPORT_INDEX, \
     NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, \
-    PDF_REPORT_MAX_DOCS
+    PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE
 import pandas as pd
 import requests
 from utils.constants import CVE_INDEX, MAX_TOTAL_SEVERITY_SCORE
@@ -38,7 +38,7 @@ def add_report_status_in_es(report_id, status, filters_applied_str, file_type, d
         elif "all" in duration:
             duration = "All Documents"
     body = {
-        "type": REPORT_INDEX,
+        "type": REPORT_ES_TYPE,
         "report_id": report_id,
         "status": status,
         "masked": 'false',
@@ -80,7 +80,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     filters_applied = deepcopy(node_filters)
     del node_filters["type"]
     filters_cve_scan = {"action": "COMPLETED"}
-    filters["type"] = CVE_INDEX
+    filters["type"] = CVE_ES_TYPE
     node_filters_for_cve_scan_index = {}
 
     if node_filters:
@@ -456,7 +456,7 @@ def generate_pdf_report(report_id, filters, node_type,
     final_html = ""
     for resource in resources:
         resource_type = resource.get('type')
-        if resource_type == CVE_INDEX:
+        if resource_type == CVE_ES_TYPE:
             flask_app.logger.error("resources:{0}, resource:{1}, filters:{2}".format(str(resources), str(resource),
                                                                                      str(filters)))
             final_html += vulnerability_pdf_report(filters=filters, lucene_query_string=lucene_query_string,

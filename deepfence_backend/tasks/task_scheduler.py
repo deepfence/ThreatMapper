@@ -158,7 +158,7 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                         datetime_now = datetime.now()
                         scan_id = image_name_with_tag + "_" + datetime_now.strftime("%Y-%m-%dT%H:%M:%S") + ".000"
                         body = {
-                            "masked": "false", "type": constants.CVE_SCAN_LOGS_INDEX, "scan_id": scan_id, "host": "",
+                            "masked": "false", "type": constants.CVE_SCAN_LOGS_ES_TYPE, "scan_id": scan_id, "host": "",
                             "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "cve_scan_message": "",
                             "action": constants.CVE_SCAN_STATUS_QUEUED, "host_name": "", "node_id": image_name_with_tag,
                             "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE
@@ -259,7 +259,7 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                             celery_task_id = "cve_scan:" + scan_id
                             celery_app.control.revoke(celery_task_id, terminate=False)
                             body = {
-                                "masked": "false", "type": constants.CVE_SCAN_LOGS_INDEX, "scan_id": scan_id,
+                                "masked": "false", "type": constants.CVE_SCAN_LOGS_ES_TYPE, "scan_id": scan_id,
                                 "cve_scan_message": "Scan stopped by user", "time_stamp": int(time.time() * 1000.0),
                                 "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "host": "",
                                 "action": constants.CVE_SCAN_STATUS_STOPPED, "host_name": "",
@@ -286,7 +286,7 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                 domain_name = console_url_setting.value.get("value")
             report_id = uuid.uuid4()
             body = {
-                "type": constants.REPORT_INDEX,
+                "type": constants.REPORT_ES_TYPE,
                 "report_id": report_id,
                 "status": "started",
                 "masked": "false",
@@ -316,7 +316,7 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                 domain_name = console_url_setting.value.get("value")
             report_id = uuid.uuid4()
             body = {
-                "type": constants.REPORT_INDEX,
+                "type": constants.REPORT_ES_TYPE,
                 "report_id": report_id,
                 "status": "started",
                 "masked": "false",

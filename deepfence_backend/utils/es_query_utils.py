@@ -1,4 +1,4 @@
-from utils.constants import CVE_INDEX, ES_TERMS_AGGR_SIZE, SECRET_SCAN_INDEX
+from utils.constants import CVE_INDEX, ES_TERMS_AGGR_SIZE, SECRET_SCAN_INDEX, CVE_ES_TYPE
 from utils.esconn import ESConn
 
 
@@ -29,7 +29,7 @@ def get_latest_cve_scan_id():
     }
     aggs_response = ESConn.aggregation_helper(
         CVE_INDEX,
-        {"type": CVE_INDEX},
+        {"type": CVE_ES_TYPE},
         aggs,
         add_masked_filter=False,
     )

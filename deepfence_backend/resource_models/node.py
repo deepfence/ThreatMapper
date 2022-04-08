@@ -134,7 +134,7 @@ class Node(object):
         scan_id = cve_node_id + "_" + datetime_now.strftime("%Y-%m-%dT%H:%M:%S") + ".000"
         body = {
             "masked": "false",
-            "type": constants.CVE_SCAN_LOGS_INDEX,
+            "type": constants.CVE_SCAN_LOGS_ES_TYPE,
             "scan_id": scan_id,
             "cve_scan_message": "",
             "time_stamp": int(time.time() * 1000.0),
@@ -178,7 +178,7 @@ class Node(object):
                 node_type = constants.NODE_TYPE_CONTAINER_IMAGE
             body = {
                 "masked": "false",
-                "type": constants.CVE_SCAN_LOGS_INDEX,
+                "type": constants.CVE_SCAN_LOGS_ES_TYPE,
                 "scan_id": scan_id,
                 "cve_scan_message": "Scan stopped by user",
                 "time_stamp": int(time.time() * 1000.0),

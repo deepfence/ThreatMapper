@@ -879,14 +879,14 @@ def enumerate_node_filters():
         resource_types = resource_types_str.split(",")
     resource_filters = []
     for resource_type in resource_types:
-        if resource_type not in [constants.CVE_INDEX, constants.SECRET_SCAN_INDEX]:
+        if resource_type not in [constants.CVE_ES_TYPE, constants.SECRET_SCAN_ES_TYPE]:
             print('Invalid resource_type {}. Skipping'.format(resource_type))
             continue
-        if resource_type == constants.CVE_INDEX:
+        if resource_type == constants.CVE_ES_TYPE:
             # Get `container` info from `cve` and `host` / `container_image` data from `cve-scan`
             cve_aggs = {"cve_container_name": {
                 "terms": {"field": "cve_container_name.keyword", "size": constants.ES_TERMS_AGGR_SIZE}}}
-            cve_filters = {"type": constants.CVE_INDEX}
+            cve_filters = {"type": constants.CVE_ES_TYPE}
             cve_aggs_query = ESConn.aggregation_helper(
                 constants.CVE_INDEX, cve_filters, cve_aggs, number,
                 constants.TIME_UNIT_MAPPING.get(time_unit), lucene_query_string, get_only_query=True)
@@ -953,7 +953,7 @@ def enumerate_node_filters():
                 resource_filters.append(details)
             node_types = [constants.NODE_TYPE_HOST]
             filters_needed = "kubernetes_cluster_name"
-        elif resource_type == constants.SECRET_SCAN_INDEX:
+        elif resource_type == constants.SECRET_SCAN_ES_TYPE:
             scan_aggs = {
                 "node_type": {
                     "terms": {"field": "node_type.keyword", "size": 10},
