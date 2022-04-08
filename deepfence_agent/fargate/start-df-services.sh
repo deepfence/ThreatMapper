@@ -51,6 +51,7 @@ setup_env_paths() {
 
   export MGMT_CONSOLE_PORT=443
   export DF_TLS_ON="1"
+  export SECRET_SCANNER_LD_LIBRARY_PATH=$DF_INSTALL_DIR/home/deepfence/lib:$LD_LIBRARY_PATH
 }
 
 deep_copy() {
@@ -77,9 +78,8 @@ check_auth() {
 
 launch_package_scanner() {
   echo "Launching package-scanner grpc server"
-  bash -x -c "rm -rf /tmp/package-scanner.sock && /deepfence/bin/package-scanner -socket-path /tmp/package-scanner.sock -mode grpc-server" &
+  bash -x -c "rm -rf /tmp/package-scanner.sock && $DF_INSTALL_DIR/home/deepfence/package-scanner -socket-path /tmp/package-scanner.sock -mode grpc-server" &
 }
-
 # Init hostname, environmental vars and paths
 setup_env_paths
 

@@ -31,7 +31,6 @@ const (
 	ssEbpfExePath           = "/home/deepfence/bin/SecretScanner"
 	ssEbpfExePathServerless = "/deepfence/bin/SecretScanner"
 	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
-	memLockSize             = "--memlock=8388608"
 	ebpfOptFormat           = "--socket-path=%s"
 	serverRestartAttempts   = 1
 	defaultScanConcurrency  = 5
@@ -46,6 +45,7 @@ var (
 	grpcScanWorkerPool *tunny.Pool
 	mgmtConsoleUrl     string
 	deepfenceKey       string
+	scanDir            string
 )
 
 type secretScanParameters struct {
@@ -69,6 +69,10 @@ func init() {
 		mgmtConsoleUrl += ":" + consolePort
 	}
 	deepfenceKey = os.Getenv("DEEPFENCE_KEY")
+	if os.Getenv("DF_SERVERLESS") == "true" {
+		certPath = "/deepfence/etc/filebeat/filebeat.crt"
+		scanDir = "/"
+	}
 }
 
 func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
@@ -92,7 +96,7 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 			Image: &pb.DockerImage{Id: imageId, Name: imageName},
 		}}
 	} else if nodeType == nodeTypeHost {
-		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: HostMountDir}}
+		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: scanDir}}
 	}
 	go grpcScanWorkerPool.Process(secretScanParameters{
 		client:      r.secretScanner.client,
@@ -139,8 +143,10 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	}
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	if req.GetPath() != "" && err == nil && res != nil {
-		for _, secret := range res.Secrets {
-			secret.GetMatch().FullFilename = strings.Replace(secret.GetMatch().GetFullFilename(), HostMountDir, "", 1)
+		if scanDir == HostMountDir {
+			for _, secret := range res.Secrets {
+				secret.GetMatch().FullFilename = strings.Replace(secret.GetMatch().GetFullFilename(), HostMountDir, "", 1)
+			}
 		}
 	}
 	timestamp := getTimestamp()
@@ -281,16 +287,21 @@ func NewSecretScanner() (*SecretScanner, error) {
 		scannerExePath = ssEbpfExePathServerless
 		scannerLogPath = getDfInstallDir() + ssEbpfLogPath
 	}
-	command := exec.Command("prlimit", memLockSize, scannerExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
+	command := exec.Command(scannerExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
 
-	cmdReader, err := command.StderrPipe()
+	command.Env = os.Environ()
+	command.Env = append(command.Env, fmt.Sprintf("LD_LIBRARY_PATH=%s", os.Getenv("SECRET_SCANNER_LD_LIBRARY_PATH")))
+	cmdReader, err := command.StdoutPipe()
 	if err != nil {
 		return nil, err
 	}
 
 	scanner := bufio.NewScanner(cmdReader)
 	go func() {
-		f, _ := os.Create(scannerLogPath)
+		f, e := os.Create(scannerLogPath)
+		if e != nil {
+			fmt.Println("Error logfile creation: ", e.Error())
+		}
 		defer f.Close()
 		for scanner.Scan() {
 			f.WriteString(scanner.Text() + "\n")
@@ -306,6 +317,7 @@ func NewSecretScanner() (*SecretScanner, error) {
 		command.Process.Kill()
 		return nil, err
 	}
+
 	client := pb.NewSecretScannerClient(conn)
 	return &SecretScanner{
 		conn:    conn,

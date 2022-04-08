@@ -1,4 +1,4 @@
-FROM golang:1.17-bullseye AS build
+FROM golang:1.18-bullseye AS build
 RUN apt-get update \
     && apt-get install -y bash make git gcc \
     && cd /go \
@@ -23,6 +23,8 @@ COPY run_discovery.sh /deepfence/home/deepfence/
 COPY fargate/run_discovery_loop.sh /deepfence/home/deepfence/
 
 COPY tools/apache/scope/docker/uploadFile.sh deepfence/home/deepfence/uploadFile.sh
+
+ADD fargate/misc/scanners-1.3.0.tar.gz /deepfence/home/deepfence/
 
 COPY misc/deepfence/df-utils/agent_auth/agentAuth /deepfence/usr/local/bin/agentAuth
 COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /deepfence/usr/local/bin/getCloudInstanceId
