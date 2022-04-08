@@ -62,7 +62,11 @@ func init() {
 		scanConcurrency = defaultScanConcurrency
 	}
 	grpcScanWorkerPool = tunny.NewFunc(scanConcurrency, getAndPublishSecretScanResultsWrapper)
-	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL") + ":" + os.Getenv("MGMT_CONSOLE_PORT")
+	mgmtConsoleUrl := os.Getenv("MGMT_CONSOLE_URL")
+	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
+	if consolePort != "" && consolePort != "443" {
+		mgmtConsoleUrl += ":" + consolePort
+	}
 	deepfenceKey = os.Getenv("DEEPFENCE_KEY")
 
 	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
