@@ -7,7 +7,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.client.indices import IndicesClient
 
 from utils.constants import CVE_SCAN_LOGS_INDEX, ES_TERMS_AGGR_SIZE, \
-    TIME_UNIT_MAPPING
+    TIME_UNIT_MAPPING, SECRET_SCAN_LOGS_INDEX
 from utils.common import (
     sort_expression,
     get_rounding_time_unit,
@@ -1063,7 +1063,7 @@ class ESConn:
             },
             "size": 0
         }
-        res = EL_CLIENT.search(index=CVE_SCAN_LOGS_INDEX, body=aggs_query)
+        res = EL_CLIENT.search(index=SECRET_SCAN_LOGS_INDEX, body=aggs_query)
         response = {}
         if "aggregations" not in res:
             return response
@@ -1076,17 +1076,17 @@ class ESConn:
                 if node_aggr["action"]["buckets"]:
                     recent_action = max(node_aggr["action"]["buckets"],
                                         key=lambda x: x["action_max_timestamp"]["value"])
-                    cve_scan_message = ""
-                    cve_scan_messages = recent_action["scan_message"]["buckets"]
-                    if cve_scan_messages:
-                        cve_scan_message = cve_scan_messages[-1]["key"]
+                    secret_scan_message = ""
+                    secret_scan_messages = recent_action["scan_message"]["buckets"]
+                    if secret_scan_messages:
+                        secret_scan_message = secret_scan_messages[-1]["key"]
                     scan_id = ""
                     scan_id_buckets = recent_action["scan_id"]["buckets"]
                     if scan_id_buckets:
                         scan_id = scan_id_buckets[-1]["key"]
                     response[host_aggr["key"]][node_aggr["key"]] = {
                         "action": recent_action["key"], "timestamp": recent_action["action_max_timestamp"]["value"],
-                        "scan_message": cve_scan_message, "scan_id": scan_id, "node_type": node_type}
+                        "scan_message": secret_scan_message, "scan_id": scan_id, "node_type": node_type}
         return response
 
     @staticmethod
