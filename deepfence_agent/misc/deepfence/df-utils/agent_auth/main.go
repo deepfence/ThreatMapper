@@ -49,7 +49,12 @@ func authenticateAgentWithConsole(httpClient *http.Client, scopeApiUrl, authKey 
 
 func main() {
 	authKey := os.Getenv("DEEPFENCE_KEY")
-	scopeApiUrl := fmt.Sprintf("https://%s:%s/topology-api", os.Getenv("MGMT_CONSOLE_URL"), os.Getenv("MGMT_CONSOLE_PORT"))
+	mgmtConsoleUrl := os.Getenv("MGMT_CONSOLE_URL")
+	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
+	if consolePort != "" && consolePort != "443" {
+		mgmtConsoleUrl += ":" + consolePort
+	}
+	scopeApiUrl := fmt.Sprintf("https://%s/topology-api", mgmtConsoleUrl)
 	var httpClient *http.Client
 	for {
 		if httpClient == nil {
