@@ -6,7 +6,7 @@ from utils.esconn import ESConn
 from utils.common import get_rounding_time_unit
 from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, NODE_TYPE_HOST, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, NODE_TYPE_POD, DEEPFENCE_SUPPORT_EMAIL, TIME_UNIT_MAPPING, \
-    ES_MAX_CLAUSE
+    ES_MAX_CLAUSE, SECRET_SCAN_INDEX
 
 from utils.resource import get_nodes_list, get_default_params
 
@@ -16,10 +16,13 @@ header_fields = {
     CVE_INDEX: ['@timestamp', 'cve_attack_vector', 'cve_caused_by_package', 'cve_container_image', 'scan_id',
                      'cve_container_image_id', 'cve_cvss_score', 'cve_description', 'cve_fixed_in', 'cve_id',
                      'cve_link', 'cve_severity', 'cve_overall_score', 'cve_type', 'host', 'host_name', 'masked'],
+    "secret-scan-source": [ 'Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part','Severity.level', 'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type' ],
+    "secret-scan-header": [ 'Filename', 'Content', 'Name', 'Rule','Severity', 'Node Name', 'Container Name', 'Kubernetes Cluster Name', 'NodeType' ]
 }
 
 sheet_name = {
     CVE_INDEX: "Vulnerability",
+    SECRET_SCAN_INDEX: "Secrets"
 }
 
 
@@ -132,7 +135,6 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     number = duration.get('number')
     time_unit = duration.get('time_unit')
     no_node_filters_set = False
-
     if not filters:
         filters = {"type": node_type}
     elif not filters.get("type", None):
@@ -152,13 +154,17 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     scope_ids = []
     pod_names = []
 
+    
     buffer = io.BytesIO()
     wb = xlsxwriter.Workbook(buffer, {'in_memory': True, 'strings_to_urls': False, 'strings_to_formulas': False})
     for resource in resources:
         resource_type = resource.get('type')
-        if resource_type not in [CVE_INDEX]:
+        if resource_type not in [CVE_INDEX, SECRET_SCAN_INDEX]:
             continue
-        headers = header_fields[resource_type]
+        if resource_type == SECRET_SCAN_INDEX:
+            headers = header_fields["secret-scan-header"]
+        else:
+            headers = header_fields[resource_type]
         ws = wb.add_worksheet(sheet_name[resource_type])
         row = 0
         col = 0
@@ -170,6 +176,10 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 continue
             ws.write(row, col, header)
             col += 1
+        # here changing the header to default format to align with the code
+        if resource_type == SECRET_SCAN_INDEX:
+            headers = header_fields["secret-scan-source"]
+
         if not filtered_node_list and no_node_filters_set is False:
             # User is trying to filter and download report for old node, which does not exist now
             proceed = False
@@ -221,6 +231,47 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                                 latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
                                 latest_scan_id = scan_id_aggr["key"]
                         cve_scan_id_list.append(latest_scan_id)
+        elif resource_type == SECRET_SCAN_INDEX:
+            if "scan_id" not in resource_filter:
+                aggs = {
+                    "node_name": {
+                        "terms": {
+                            "field": "node_name.keyword",
+                            "size": ES_TERMS_AGGR_SIZE
+                        },
+                        "aggs": {
+                            "scan_id": {
+                                "terms": {
+                                    "field": "scan_id.keyword",
+                                    "size": ES_TERMS_AGGR_SIZE
+                                },
+                                "aggs": {
+                                    "scan_recent_timestamp": {
+                                        "max": {
+                                            "field": "@timestamp"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                filter_for_scan = {}
+                if len(filters.get("type", [])) != 0:
+                    filter_for_scan = { "node_type" : filters.get("type") }
+                aggs_response = ESConn.aggregation_helper(
+                     SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
+                )
+                if "aggregations" in aggs_response:
+                    for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
+                        latest_scan_id = ""
+                        latest_scan_time = 0
+                        for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
+                            if scan_id_aggr["scan_recent_timestamp"]["value"] > latest_scan_time:
+                                latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
+                                latest_scan_id = scan_id_aggr["key"]
+                        cve_scan_id_list.append(latest_scan_id)
+        
 
         if number and time_unit and time_unit != 'all':
             rounding_time_unit = get_rounding_time_unit(time_unit)
@@ -347,26 +398,41 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
 
         global_hits = global_hits[:max_size]
         row_count = 1
+
         for es_doc in global_hits:
             doc = es_doc.get('_source')
+            doc_index = es_doc.get('_index')
             col = 0
-            for header in headers:
-                value = doc.get(header)
-                if header == 'cloud_metadata':
-                    if value:
-                        for sub_header in header_fields['ALERT_TYPE_META_SUB_FIELD']:
-                            sub_value = value.get(sub_header, '')
-                            if type(sub_value) == dict or type(sub_value) == list:
-                                sub_value = json.dumps(sub_value)
-                            ws.write(row_count, col, sub_value)
-                            col += 1
+            if doc_index == SECRET_SCAN_INDEX:
+                for header in headers:
+                    header_split = header
+                    if "." in header:
+                        header_split = header.split('.')
+                        value = doc.get(header_split[0])
                     else:
-                        col += len(header_fields['ALERT_TYPE_META_SUB_FIELD'])
-                    continue
-                if type(value) == dict or type(value) == list:
-                    value = json.dumps(value)
-                ws.write(row_count, col, value)
-                col += 1
+                        value = doc.get(header)
+                    if type(value) == dict or type(value) == list:
+                        value = value.get(header_split[1])
+                    ws.write(row_count, col, value)
+                    col += 1
+            else:
+                for header in headers:
+                    value = doc.get(header)
+                    if header == 'cloud_metadata':
+                        if value:
+                            for sub_header in header_fields['ALERT_TYPE_META_SUB_FIELD']:
+                                sub_value = value.get(sub_header, '')
+                                if type(sub_value) == dict or type(sub_value) == list:
+                                    sub_value = json.dumps(sub_value)
+                                ws.write(row_count, col, sub_value)
+                                col += 1
+                        else:
+                            col += len(header_fields['ALERT_TYPE_META_SUB_FIELD'])
+                        continue
+                    if type(value) == dict or type(value) == list:
+                        value = json.dumps(value)
+                    ws.write(row_count, col, value)
+                    col += 1
             row_count += 1
     wb.close()
     buffer.seek(0)
