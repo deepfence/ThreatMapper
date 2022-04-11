@@ -6,7 +6,7 @@ from config.app import celery_app, app as flask_app
 from tasks.task_scheduler import run_node_task
 from utils.constants import REPORT_INDEX, \
     NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, \
-    PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE, SECRET_SCAN_INDEX
+    PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE
 import pandas as pd
 import requests
 from utils.constants import CVE_INDEX, MAX_TOTAL_SEVERITY_SCORE
@@ -31,10 +31,10 @@ def common_worker(self, **kwargs):
             run_node_task(kwargs["action"], kwargs["node_action_details"])
 
 
-def add_report_status_in_es(report_id, status, filters_applied_str, file_type, duration="None",report_path=None):
+def add_report_status_in_es(report_id, status, filters_applied_str, file_type, duration="None", report_path=None):
     if duration:
         if "d" in duration:
-            duration = "Last "+duration.replace("d", " days")
+            duration = "Last " + duration.replace("d", " days")
         elif "all" in duration:
             duration = "All Documents"
     body = {
@@ -44,7 +44,7 @@ def add_report_status_in_es(report_id, status, filters_applied_str, file_type, d
         "masked": 'false',
         "filters": filters_applied_str,
         "file_type": file_type,
-        "duration" : duration,
+        "duration": duration,
         "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     }
     if report_path:
@@ -419,11 +419,12 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     final_html = template_env.get_template('detailed_report_summary_report.html').render(**report_dict)
     return final_html
 
+
 def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_unit, resource):
     node_filters = deepcopy(filters)
     filters_applied = deepcopy(node_filters)
     filters_cve_scan = {"action": "COMPLETED"}
-    # filters["type"] = SECRET_SCAN_INDEX
+    # filters["type"] = SECRET_SCAN_ES_TYPE
     cve_scan_id_list = []
     aggs = {
         "node_name": {
@@ -450,9 +451,9 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     }
     filter_for_scan = {}
     if len(filters.get("type", [])) != 0:
-        filter_for_scan = { "node_type" : filters.get("type") }
+        filter_for_scan = {"node_type": filters.get("type")}
     aggs_response = ESConn.aggregation_helper(
-            SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
+        SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
     )
     if "aggregations" in aggs_response:
         for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
@@ -496,7 +497,8 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     for scan_id_chunk in recent_scan_id_chunks:
         tmp_filters = deepcopy({})
         tmp_filters["scan_id"] = scan_id_chunk
-        doc_count += ESConn.count(SECRET_SCAN_INDEX, tmp_filters, number=number, time_unit=time_unit, lucene_query_string=lucene_query_string)
+        doc_count += ESConn.count(SECRET_SCAN_INDEX, tmp_filters, number=number, time_unit=time_unit,
+                                  lucene_query_string=lucene_query_string)
         if doc_count > PDF_REPORT_MAX_DOCS:
             return "<div>Error while fetching vulnerabilities, please use filters to reduce the number of documents " \
                    "to download.</div> "
@@ -526,21 +528,20 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
 
     severity_wise_frequency = df['Severity.level'].value_counts()
     for severity_type in severity_types:
-        secret_count[severity_type] = severity_wise_frequency.get(severity_type,0)
-
+        secret_count[severity_type] = severity_wise_frequency.get(severity_type, 0)
 
     secret_table_html += template_env.get_template('detailed_secret_summary_table.html').render(
-            secret_count=secret_count, summary_heading="total count severity wise",applied_severity=severity_types)
+        secret_count=secret_count, summary_heading="total count severity wise", applied_severity=severity_types)
 
     node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE] if i in df.node_type.unique()]
     table_index_length = 22
     for node_type in node_types:
         if node_type == 'host':
-            df3 = df[df['node_type'] == node_type][["Severity.level", 'host_name','count']]
+            df3 = df[df['node_type'] == node_type][["Severity.level", 'host_name', 'count']]
             pivot_table = pd.pivot_table(df3, index=["host_name", "Severity.level"], aggfunc=[np.sum])
 
             node_count_info = {}
-            temp_df = df[df['node_type'] == node_type][['host_name','count']].groupby('host_name').sum()
+            temp_df = df[df['node_type'] == node_type][['host_name', 'count']].groupby('host_name').sum()
             temp_df['score'] = temp_df['count'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
 
             for host_name in temp_df.sort_values('score', ascending=False).index:
@@ -580,7 +581,7 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                 arr_index += 1
 
         else:
-            df3 = df[df['node_type'] == node_type][["Severity.level", 'node_name','count']]
+            df3 = df[df['node_type'] == node_type][["Severity.level", 'node_name', 'count']]
             pivot_table = pd.pivot_table(df3, index=["node_name", "Severity.level"], aggfunc=[np.sum])
 
             node_count_info = {}
@@ -627,7 +628,9 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     for node_type in node_types:
         if node_type == NODE_TYPE_HOST:
             for host_name in df[df['node_type'] == node_type]['host_name'].unique():
-                df2 = df[(df['host_name'] == host_name) & (df['node_type'] == node_type)][['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level','Severity.score']].sort_values('Severity.score', ascending=False)
+                df2 = df[(df['host_name'] == host_name) & (df['node_type'] == node_type)][
+                    ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
+                     'Severity.score']].sort_values('Severity.score', ascending=False)
                 df2.insert(0, 'ID', range(1, 1 + len(df2)))
                 secret_data = df2.to_dict('records')
                 start_index = 0
@@ -653,7 +656,9 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                     arr_index += 1
         else:
             for node_name in df[df['node_type'] == node_type]['node_name'].unique():
-                df2 = df[(df['node_name'] == node_name) & (df['node_type'] == node_type)][['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level','Severity.score']].sort_values('Severity.score', ascending=False)
+                df2 = df[(df['node_name'] == node_name) & (df['node_type'] == node_type)][
+                    ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
+                     'Severity.score']].sort_values('Severity.score', ascending=False)
                 df2.insert(0, 'ID', range(1, 1 + len(df2)))
                 secret_data = df2.to_dict('records')
                 start_index = 0
@@ -688,7 +693,7 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
         "header_html": header_html,
         "applied_filters_html": applied_filters_html,
         "secret_table_html": secret_table_html,
-        "node_wise_secret_html" : node_wise_secret_html
+        "node_wise_secret_html": node_wise_secret_html
     }
 
     final_html = template_env.get_template('detailed_secret_report_summary.html').render(**report_dict)
@@ -697,7 +702,9 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
 
 def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resources,
                          include_dead_nodes, report_email):
-    add_report_status_in_es(report_id=report_id, status="In Progress",filters_applied_str=str({"filters": filters, "resources": resources}), file_type="xlsx",duration=f"{number}{time_unit}")
+    add_report_status_in_es(report_id=report_id, status="In Progress",
+                            filters_applied_str=str({"filters": filters, "resources": resources}), file_type="xlsx",
+                            duration=f"{number}{time_unit}")
     xlsx_buffer = prepare_report_download(
         node_type, filters, resources,
         {"duration": {"number": number, "time_unit": time_unit}}, include_dead_nodes)
@@ -714,7 +721,9 @@ def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resou
         else:
             add_report_status_in_es(
                 report_id=report_id, status="Error. Please try again later.",
-                filters_applied_str=str({"filters": {"filters": filters, "resources": resources}, "resources": resources}),file_type="xlsx",duration=f"{number}{time_unit}")
+                filters_applied_str=str(
+                    {"filters": {"filters": filters, "resources": resources}, "resources": resources}),
+                file_type="xlsx", duration=f"{number}{time_unit}")
     else:
         from tasks.email_sender import send_email_with_attachment
         email_html = prepare_report_email_body(
@@ -728,24 +737,20 @@ def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resou
 
 def generate_pdf_report(report_id, filters, node_type,
                         lucene_query_string, number, time_unit, resources, domain_name, report_email):
-    add_report_status_in_es(report_id=report_id, status="In Progress",filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf", duration=f"{number}{time_unit}")
-    import sys
-    sys.stdout = open('/tmp/pdf.log', 'a+')
+    add_report_status_in_es(report_id=report_id, status="In Progress",
+                            filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",
+                            duration=f"{number}{time_unit}")
     final_html = ""
     for resource in resources:
         resource_type = resource.get('type')
         if resource_type == CVE_ES_TYPE:
-            flask_app.logger.error("resources:{0}, resource:{1}, filters:{2}".format(str(resources), str(resource),
-                                                                                     str(filters)))
             final_html += vulnerability_pdf_report(filters=filters, lucene_query_string=lucene_query_string,
                                                    number=number, time_unit=time_unit,
                                                    resource=resource.get("filter", {}))
-        elif resource_type == SECRET_SCAN_INDEX:
-            flask_app.logger.error("resources:{0}, resource:{1}, filters:{2}".format(str(resources), str(resource),
-                                                                                     str(filters)))
+        elif resource_type == SECRET_SCAN_ES_TYPE:
             final_html += vulnerability_pdf_report_secret(filters=filters, lucene_query_string=lucene_query_string,
-                                                   number=number, time_unit=time_unit,
-                                                   resource=resource.get("filter", {}))
+                                                          number=number, time_unit=time_unit,
+                                                          resource=resource.get("filter", {}))
     options = {
         'page-size': 'Letter',
         'margin-top': '0.5in',
@@ -767,11 +772,13 @@ def generate_pdf_report(report_id, filters, node_type,
             if res.status_code == 200:
                 add_report_status_in_es(
                     report_id=report_id, status="Completed",
-                    filters_applied_str=str({"filters": filters, "resources": resources}),file_type="pdf", report_path=report_file_name,duration=f"{number}{time_unit}")
+                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",
+                    report_path=report_file_name, duration=f"{number}{time_unit}")
             else:
                 add_report_status_in_es(
                     report_id=report_id, status="Error. Please try again later.",
-                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",duration=f"{number}{time_unit}")
+                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",
+                    duration=f"{number}{time_unit}")
     else:
         from tasks.email_sender import send_email_with_attachment
         email_html = prepare_report_email_body(
@@ -812,4 +819,5 @@ def generate_report(self, **kwargs):
         flask_app.logger.error("Error creating report: {0} stackTrace: {1}".format(ex, traceback.format_exc()))
         add_report_status_in_es(
             report_id=report_id, status="Error. Please contact deepfence support",
-            filters_applied_str=str({"filters": filters, "resources": resources}), file_type=file_type,duration=f"{number}{time_unit}")
+            filters_applied_str=str({"filters": filters, "resources": resources}), file_type=file_type,
+            duration=f"{number}{time_unit}")

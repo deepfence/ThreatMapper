@@ -57,7 +57,6 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                     app.logger.error(ex)
 
         save_scheduled_task_status("In Progress")
-        print(action, node_action_details)
         node_type = node_action_details["node_type"]
         df_id_to_scope_id_map = {}
         topology_data_df_format = {}

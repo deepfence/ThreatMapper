@@ -6,23 +6,25 @@ from utils.esconn import ESConn
 from utils.common import get_rounding_time_unit
 from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, NODE_TYPE_HOST, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, NODE_TYPE_POD, DEEPFENCE_SUPPORT_EMAIL, TIME_UNIT_MAPPING, \
-    ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX
+    ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE
+from utils.esconn import ESConn
 from utils.helper import modify_es_index
 from utils.resource import get_nodes_list, get_default_params
-
 
 header_fields = {
     'ALERT_TYPE_META_SUB_FIELD': ['cloud_provider', 'name', 'private_ip', 'public_ip'],
     CVE_ES_TYPE: ['@timestamp', 'cve_attack_vector', 'cve_caused_by_package', 'cve_container_image', 'scan_id',
-                     'cve_container_image_id', 'cve_cvss_score', 'cve_description', 'cve_fixed_in', 'cve_id',
-                     'cve_link', 'cve_severity', 'cve_overall_score', 'cve_type', 'host', 'host_name', 'masked'],
-    "secret-scan-source": [ 'Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part','Severity.level', 'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type' ],
-    "secret-scan-header": [ 'Filename', 'Content', 'Name', 'Rule','Severity', 'Node Name', 'Container Name', 'Kubernetes Cluster Name', 'NodeType' ]
+                  'cve_container_image_id', 'cve_cvss_score', 'cve_description', 'cve_fixed_in', 'cve_id',
+                  'cve_link', 'cve_severity', 'cve_overall_score', 'cve_type', 'host', 'host_name', 'masked'],
+    "secret-scan-source": ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
+                           'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type'],
+    "secret-scan-header": ['Filename', 'Content', 'Name', 'Rule', 'Severity', 'Node Name', 'Container Name',
+                           'Kubernetes Cluster Name', 'NodeType']
 }
 
 sheet_name = {
     CVE_ES_TYPE: "Vulnerability",
-    SECRET_SCAN_INDEX: "Secrets"
+    SECRET_SCAN_ES_TYPE: "Secrets"
 }
 
 
@@ -154,14 +156,13 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     scope_ids = []
     pod_names = []
 
-
     buffer = io.BytesIO()
     wb = xlsxwriter.Workbook(buffer, {'in_memory': True, 'strings_to_urls': False, 'strings_to_formulas': False})
     for resource in resources:
         resource_type = resource.get('type')
-        if resource_type not in [CVE_ES_TYPE, SECRET_SCAN_INDEX]:
+        if resource_type not in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
             continue
-        if resource_type == SECRET_SCAN_INDEX:
+        if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-header"]
         else:
             headers = header_fields[resource_type]
@@ -177,7 +178,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             ws.write(row, col, header)
             col += 1
         # here changing the header to default format to align with the code
-        if resource_type == SECRET_SCAN_INDEX:
+        if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-source"]
 
         if not filtered_node_list and no_node_filters_set is False:
@@ -220,7 +221,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                     }
                 }
                 aggs_response = ESConn.aggregation_helper(
-                     CVE_INDEX, {"type": CVE_ES_TYPE, }, aggs, number, time_unit, None
+                    CVE_INDEX, {"type": CVE_ES_TYPE, }, aggs, number, time_unit, None
                 )
                 if "aggregations" in aggs_response:
                     for image_aggr in aggs_response["aggregations"]["cve_container_image"]["buckets"]:
@@ -231,7 +232,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                                 latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
                                 latest_scan_id = scan_id_aggr["key"]
                         cve_scan_id_list.append(latest_scan_id)
-        elif resource_type == SECRET_SCAN_INDEX:
+        elif resource_type == SECRET_SCAN_ES_TYPE:
             if "scan_id" not in resource_filter:
                 aggs = {
                     "node_name": {
@@ -258,9 +259,9 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 }
                 filter_for_scan = {}
                 if len(filters.get("type", [])) != 0:
-                    filter_for_scan = { "node_type" : filters.get("type") }
+                    filter_for_scan = {"node_type": filters.get("type")}
                 aggs_response = ESConn.aggregation_helper(
-                     SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
+                    SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
                 )
                 if "aggregations" in aggs_response:
                     for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
@@ -271,7 +272,6 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                                 latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
                                 latest_scan_id = scan_id_aggr["key"]
                         cve_scan_id_list.append(latest_scan_id)
-
 
         if number and time_unit and time_unit != 'all':
             rounding_time_unit = get_rounding_time_unit(time_unit)
