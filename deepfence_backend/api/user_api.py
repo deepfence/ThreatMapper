@@ -39,7 +39,7 @@ from utils.esconn import ESConn
 from utils.decorators import user_permission, non_read_only_user
 from flask_restful import Api
 from utils.helper import validateJiraCredentials, validate_url, \
-    validate_email, redact_sensitive_info, validate_domain, validate_ip
+    validate_email, redact_sensitive_info, validate_domain, validate_ip, modify_es_index
 from jira import JIRAError
 from pdpyras import APISession
 from models.setting import Setting
@@ -2144,7 +2144,7 @@ def notify_to_integrations():
 
     index_wise_content_list = defaultdict(list)
     for doc in docs:
-        index = doc['_index']
+        index = modify_es_index(doc['_index'])
         doc_id = doc['_id']
         try:
             if index not in allowed_indices:

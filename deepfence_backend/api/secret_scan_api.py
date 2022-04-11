@@ -417,7 +417,7 @@ def secret_scan_results():
         scan_id = image_name_with_tag + "_" + datetime_now.strftime("%Y-%m-%dT%H:%M:%S") + ".000"
         scan_id_list.append(scan_id)
         body = {
-            "masked": "false", "type": constants.SECRET_SCAN_LOGS_INDEX, "scan_id": scan_id, "host": "",
+            "masked": "false", "type": constants.SECRET_SCAN_LOGS_ES_TYPE, "scan_id": scan_id, "host": "",
             "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "scan_message": "",
             "scan_status": constants.CVE_SCAN_STATUS_QUEUED, "host_name": "", "node_id": image_name_with_tag,
             "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE,

@@ -5,7 +5,7 @@ from utils.constants import NODE_TYPE_CONTAINER, NODE_TYPE_PROCESS_BY_NAME, NODE
     DEEPFENCE_CONTAINER_STATE_URL, TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE, NODE_TYPE_SWARM_SERVICE, \
     DEEPFENCE_CONSOLE_CPU_MEMORY_STATE_URL, REDIS_KEY_PREFIX_CLUSTER_AGENT_PROBE_ID, EMPTY_POD_SCOPE_ID, \
     ES_TERMS_AGGR_SIZE, SENSITIVE_KEYS, REDACT_STRING, VULNERABILITY_LOG_PATH, TIME_UNIT_MAPPING, CVE_SCAN_LOGS_INDEX, \
-    CVE_INDEX, SECRET_SCAN_LOGS_INDEX
+    CVE_INDEX, SECRET_SCAN_LOGS_INDEX, CUSTOMER_UNIQUE_ID
 import hashlib
 import requests
 import string
@@ -29,6 +29,12 @@ import networkx as nx
 import time
 
 requests.packages.urllib3.disable_warnings()
+
+
+def modify_es_index(index: str) -> str:
+    if CUSTOMER_UNIQUE_ID:
+        return index+f"-{CUSTOMER_UNIQUE_ID}"
+    return index
 
 
 def get_postgres_uri():
