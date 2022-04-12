@@ -24,6 +24,10 @@ const config = [
     label: 'Vulnerabilities',
     value: 'cve',
   },
+  {
+    label: 'Secret scan',
+    value: 'secret-scan'
+  }
 ];
 
 const cveSeverityOptions = [
@@ -351,6 +355,12 @@ const Reports = props => {
       if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) {
         resourceData.push({
           type: 'cve',
+          filter: {},
+        });
+      }
+      if (resourceTypeText && resourceTypeText.includes('secret-scan')) {
+        resourceData.push({
+          type: 'secret-scan',
           filter: {},
         });
       }
