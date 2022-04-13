@@ -35,6 +35,10 @@ func getMemoryUsagePercent() (float64, error) {
 
 func getCpuMemoryStats(w http.ResponseWriter, r *http.Request) {
 	hostStats := HostStats{}
+	if nodeMetrics != "true" {
+		json.NewEncoder(w).Encode(&hostStats)
+		return
+	}
 	if orchestrator == kubernetesOrchestrator {
 		// check if metrics server is set up in the cluster
 		if kubeMetricsCli == nil {

@@ -10,7 +10,7 @@ import (
 
 func getPods(options metaV1.ListOptions) ([]coreV1.Pod, error) {
 	ctx := context.Background()
-	pods, err := kubeCli.CoreV1().Pods("").List(ctx, options)
+	pods, err := kubeCli.CoreV1().Pods(consoleNamespace).List(ctx, options)
 	if err != nil {
 		return nil, err
 	}

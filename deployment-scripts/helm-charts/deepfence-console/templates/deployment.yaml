@@ -715,6 +715,15 @@ spec:
       containers:
         - name: deepfence-diagnosis
           image: "{{ .Values.image.repository }}deepfence_diagnosis_ce:{{ .Values.image.tag }}"
+          env:
+            - name: NODE_METRICS
+              value: "{{ .Values.diagnosis.nodeMetrics }}"
+            - name: UI_SERVICE_NAME
+              value: "{{ .Values.router.uiServiceName }}"
+            - name: CONSOLE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - kubernetes
