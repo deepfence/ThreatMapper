@@ -932,6 +932,7 @@ def enumerate_node_filters():
                         resource_filters.append(details)
                 else:
                     resource_filters.append(details)
+            
             if filters_image_name:
                 details = {"label": "Image Name", "name": "image_name_with_tag", "options": filters_image_name,
                            "type": "string"}
@@ -958,7 +959,7 @@ def enumerate_node_filters():
                 "node_type": {
                     "terms": {"field": "node_type.keyword", "size": 10},
                     "aggs": {"node_id": {
-                        "terms": {"field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE},
+                        "terms": {"field": "node_name.keyword", "size": ES_TERMS_AGGR_SIZE},
                         "aggs": {
                             "container_name": {
                                 "terms": {
@@ -976,7 +977,6 @@ def enumerate_node_filters():
             containers = []
             images = []
             hosts = []
-            node_types = [constants.NODE_TYPE_HOST]
             filters_needed = "kubernetes_cluster_name"
             for bucket in buckets:
                 node_type = bucket.get("key", "")
@@ -990,15 +990,34 @@ def enumerate_node_filters():
                             containers.append(node_id_bucket.get("container_name", {}).get("buckets", [{}])[0].get("key", ""))
                         if node_type == constants.NODE_TYPE_HOST:
                             hosts.append(node_id)
-                if len(containers) > 0:
-                    resource_filters.append({"label": "Container Name", "name": "container_name", "options": containers,
-                           "type": "string"})
-                if len(images) > 0:
-                    resource_filters.append({"label": "Image Name", "name": "image_name_with_tag", "options": images,
-                           "type": "string"})
-                if len(hosts) > 0:
-                    resource_filters.append({"label": "Host Name", "name": "host_name", "options": hosts,
-                           "type": "string"})
+
+                if containers:
+                  details = {"label": "Container Name", "name": "container_name", "options": containers,
+                            "type": "string"}
+                  if node_types:
+                      if constants.NODE_TYPE_CONTAINER in node_types:
+                          resource_filters.append(details)
+                  else:
+                      resource_filters.append(details)
+
+                if images:
+                  details = {"label": "Image Name", "name": "image_name_with_tag", "options": images,
+                            "type": "string"}
+                  if node_types:
+                      if constants.NODE_TYPE_CONTAINER_IMAGE in node_types:
+                          resource_filters.append(details)
+                  else:
+                      resource_filters.append(details)
+
+                if hosts:
+                  details = {"label": "Hostname", "name": "host_name", "options": hosts, "type": "string"}
+                  if node_types:
+                      if constants.NODE_TYPE_HOST in node_types:
+                          resource_filters.append(details)
+                  else:
+                      resource_filters.append(details)
+
+            node_types = [constants.NODE_TYPE_HOST]
 
     if filters_needed:
         filters_needed = str(filters_needed).split(",")
