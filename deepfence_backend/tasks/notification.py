@@ -10,7 +10,7 @@ from models.notification import UserActivityNotification, VulnerabilityNotificat
 from models.user_activity_log import UserActivityLog
 from models.user import User
 from utils.common import get_epochtime
-from utils.constants import FILTER_TYPE_IMAGE_NAME_WITH_TAG, CVE_INDEX, USER_DEFINED_TAGS, \
+from utils.constants import FILTER_TYPE_IMAGE_NAME_WITH_TAG, CVE_ES_TYPE, USER_DEFINED_TAGS, \
     NODE_TYPE_POD, FILTER_TYPE_HOST_NAME, FILTER_TYPE_IMAGE_NAME, FILTER_TYPE_KUBE_CLUSTER_NAME, \
     FILTER_TYPE_KUBE_NAMESPACE, FILTER_TYPE_TAGS
 
@@ -154,7 +154,7 @@ def user_activity_digest(time, notification_id):
 
 def save_integrations_status(notification_id, resource_type, msg):
     notification_obj = None
-    if resource_type == CVE_INDEX:
+    if resource_type == CVE_ES_TYPE:
         notification_obj = VulnerabilityNotification
     else:
         return
