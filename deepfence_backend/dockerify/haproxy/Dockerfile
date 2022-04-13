@@ -17,7 +17,8 @@ ARG is_dev_build
 ENV ENABLE_AUTH=true \
     REDIS_HOST=deepfence-redis \
     REDIS_PORT=6379 \
-    IS_DEV_BUILD=$is_dev_build
+    IS_DEV_BUILD=$is_dev_build \
+    UI_SERVICE_NAME=deepfence-ui
 
 COPY --from=minica-builder /go/minica.pem /usr/local/etc/haproxy/deepfence.crt
 COPY --from=minica-builder /go/minica-key.pem /usr/local/etc/haproxy/deepfence.key
