@@ -186,12 +186,13 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             proceed = False
             if node_type == NODE_TYPE_HOST and filters.get("host_name"):
                 proceed = True
-            # if node_type == NODE_TYPE_CONTAINER and (filters.get("host_name") or filters.get("image_name_with_tag")):
-            #     proceed = True
+            if node_type == NODE_TYPE_CONTAINER and filters.get("container_name"):
+                proceed = True
             if node_type == NODE_TYPE_CONTAINER_IMAGE and filters.get("image_name_with_tag"):
                 proceed = True
             if not proceed:
                 continue
+
         resource_filter = resource.get("filter", {})
         and_terms = []
         cve_scan_id_list = []
@@ -259,7 +260,13 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 }
                 filter_for_scan = {}
                 if len(filters.get("type", [])) != 0:
-                    filter_for_scan = {"node_type": filters.get("type")}
+                    filter_for_scan["node_type"] = filters.get("type")
+                if len(filters.get("host_name", [])) != 0:
+                    filter_for_scan["node_name"] = filters.get("host_name")
+                if len(filters.get("image_name_with_tag", [])) != 0:
+                    filter_for_scan["node_name"] = filters.get("image_name_with_tag")
+                if len(filters.get("container_name", [])) != 0:
+                    filter_for_scan["container_name"] = filters.get("container_name")
                 aggs_response = ESConn.aggregation_helper(
                     SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
                 )
@@ -336,7 +343,6 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
 
         global_hits = []
         max_size = 49999  # Currently limiting to this, xlsx writer takes long time and times out
-
         def fetch_documents(res_type, query):
             es_hits = ESConn.get_data_from_scroll(res_type, query, page_size=10000, max_size=max_size)
             return es_hits
@@ -386,14 +392,23 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 hits = fetch_documents(modify_es_index(resource_type), query_body)
                 global_hits.extend(hits)
 
-        if node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type == CVE_ES_TYPE:
-            get_all_docs(image_name_with_tag_list, cve_scan_id_list, and_terms, "cve_container_image", global_hits,
+
+        if node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type in [CVE_ES_TYPE,SECRET_SCAN_ES_TYPE]:
+            if resource_type == SECRET_SCAN_ES_TYPE:
+                container_image = "node_name"
+            else:
+                container_image = "cve_container_image"
+            get_all_docs(image_name_with_tag_list, cve_scan_id_list, and_terms, container_image, global_hits,
                          resource_type)
-        elif node_type == NODE_TYPE_CONTAINER and resource_type == CVE_ES_TYPE:
-            get_all_docs(container_names, cve_scan_id_list, and_terms, "cve_container_name", global_hits, resource_type)
+        elif node_type == NODE_TYPE_CONTAINER and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
+            if resource_type == SECRET_SCAN_ES_TYPE:
+                container_name = "container_name"
+            else:
+                container_name = "cve_container_name"
+            get_all_docs(container_names, cve_scan_id_list, and_terms, container_name, global_hits, resource_type)
         elif node_type == NODE_TYPE_HOST:
             get_all_docs(host_names, cve_scan_id_list, and_terms, "host_name", global_hits, resource_type)
-        elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE]:
+        elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
             get_all_docs(pod_names, cve_scan_id_list, and_terms, "pod_name", global_hits, resource_type)
 
         global_hits = global_hits[:max_size]
