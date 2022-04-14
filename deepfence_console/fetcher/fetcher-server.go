@@ -38,9 +38,9 @@ var (
 	redisPool              *redis.Pool
 	esClient               *elastic.Client
 	vulnerabilityDbUpdater *VulnerabilityDbUpdater
-	cveIndexName           = "cve"
-	cveScanLogsIndexName   = "cve-scan"
-	sbomArtifactsIndexName = "sbom-artifact"
+	cveIndexName           = convertRootESIndexToCustomerSpecificESIndex("cve")
+	cveScanLogsIndexName   = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
+	sbomArtifactsIndexName = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
 )
 
 type VulnerabilityDbDetail struct {
@@ -874,6 +874,7 @@ func ingest(respWrite http.ResponseWriter, req *http.Request) {
 		return
 	}
 	docType := req.URL.Query().Get("doc_type")
+	docType = convertRootESIndexToCustomerSpecificESIndex(docType)
 	go ingestInBackground(docType, body)
 	respWrite.WriteHeader(http.StatusOK)
 	fmt.Fprintf(respWrite, "Ok")
@@ -1037,13 +1038,6 @@ func main() {
 		os.Getenv("POSTGRES_USER_DB_PASSWORD"), os.Getenv("POSTGRES_USER_DB_NAME"),
 		os.Getenv("POSTGRES_USER_DB_SSLMODE"))
 
-	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
-	if customerUniqueId != "" {
-		cveIndexName += fmt.Sprintf("-%s", customerUniqueId)
-		cveScanLogsIndexName += fmt.Sprintf("-%s", customerUniqueId)
-		sbomArtifactsIndexName += fmt.Sprintf("-%s", customerUniqueId)
-	}
-
 	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
 	if esScheme == "" {
 		esScheme = "http"
@@ -1114,4 +1108,13 @@ func main() {
 	}
 	defer server.Close()
 	log.Fatal(server.ListenAndServe())
+}
+
+//convertRootESIndexToCustomerSpecificESIndex : convert root ES index to customer specific ES index
+func convertRootESIndexToCustomerSpecificESIndex(rootIndex string) string {
+	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
+	if customerUniqueId != "" {
+		rootIndex += fmt.Sprintf("-%s", customerUniqueId)
+	}
+	return rootIndex
 }
