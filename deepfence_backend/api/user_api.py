@@ -743,7 +743,8 @@ def login():
     # Identity can be any data that is json serializable
     ret = {
         "access_token": access_token,
-        "refresh_token": refresh_token
+        "refresh_token": refresh_token,
+        "password_invalidated": user.password_invalidated
     }
     # instrument with user audit
     from tasks.user_activity import create_user_activity_login
@@ -1145,6 +1146,7 @@ def password_change():
     if user_email == DEEPFENCE_COMMUNITY_EMAIL:
         raise Forbidden("Change password not allowed for this user")
     user.set_password(password)
+    user.password_invalidated = False
     user.save()
 
     subject = PASSWORD_CHANGE_EMAIL_SUBJECT
@@ -1293,6 +1295,7 @@ class ResetPasswordVerify(MethodView):
         email = password_reset.email
         user = User.query.filter_by(email=email).one()
         user.set_password(password)
+        user.password_invalidated = False
         user.save()
 
         password_reset.delete()
