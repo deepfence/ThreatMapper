@@ -22,8 +22,10 @@ import RegisterView from './auth-module/register-view/register-view';
 import ForgotPasswordView from './auth-module/forgot-password-view/forgot-password-view';
 import ResetPasswordView from './auth-module/reset-password-view/reset-password-view';
 import RegisterViaInviteView from './auth-module/register-via-invite-view/register-via-invite-view';
-import { isUserSessionActive, isUserSessionActiveAsync } from '../helpers/auth-helper';
+import changePasswordView from './settings-view/user-profile-view/change-password-view';
+import { isPasswordInvalidated, isUserSessionActive, isUserSessionActiveAsync } from '../helpers/auth-helper';
 import Loader from './loader';
+
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -40,8 +42,14 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
   return <Route
     {...rest}
     render={props => {
+      const currentPath = props?.location?.pathname ?? '';
+
       if (isAuthLoading) {
         return <div style={{ marginTop: '400px' }}><Loader /></div>
+      }
+
+      if (isPasswordInvalidated() && currentPath !== '/change-password') {
+        return <Redirect to="/change-password" />
       }
 
       return isUserSessionActive ? (
@@ -138,6 +146,7 @@ class DeepFenceApp extends React.Component {
             />
             <PrivateRoute path="/notification" component={NotificationsView} />
             <PrivateRoute path="/settings" component={SettingsView} />
+            <PrivateRoute path="/change-password" component={changePasswordView} />
 
             <Route
               path="*"

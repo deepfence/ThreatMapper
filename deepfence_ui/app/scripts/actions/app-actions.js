@@ -511,6 +511,7 @@ export function receiveLoginResponse(response) {
   if (response.success) {
     localStorage.setItem('authToken', response.data.access_token);
     localStorage.setItem('refreshToken', response.data.refresh_token);
+    localStorage.setItem('passwordInvalidated', response.data?.password_invalidated);
     enableDashboardAccess();
     action = ActionTypes.LOGIN_SUCCESS;
   } else {

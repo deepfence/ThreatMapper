@@ -88,3 +88,7 @@ export function getUserRole() {
   }
   return null;
 }
+
+export function isPasswordInvalidated() {
+  return localStorage.getItem('passwordInvalidated') === 'true';
+}
