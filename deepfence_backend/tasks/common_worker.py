@@ -5,7 +5,7 @@ from config.app import celery_app, app as flask_app
 
 from tasks.task_scheduler import run_node_task
 from utils.constants import REPORT_INDEX, \
-    NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, \
+    NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
     PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE
 import pandas as pd
 import requests
@@ -451,7 +451,13 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     }
     filter_for_scan = {}
     if len(filters.get("type", [])) != 0:
-        filter_for_scan = {"node_type": filters.get("type")}
+        filter_for_scan["node_type"] = filters.get("type")
+    if len(filters.get("host_name", [])) != 0:
+        filter_for_scan["node_name"] = filters.get("host_name")
+    if len(filters.get("image_name_with_tag", [])) != 0:
+        filter_for_scan["node_name"] = filters.get("image_name_with_tag")
+    if len(filters.get("container_name", [])) != 0:
+        filter_for_scan["container_name"] = filters.get("container_name")
     aggs_response = ESConn.aggregation_helper(
         SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
     )
@@ -469,6 +475,8 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     for key, value in filters.items():
         if key == "type":
             continue
+        if key == "image_name_with_tag":
+            key = "node_name"
         if type(value) is not list:
             value = [value]
         if value:
@@ -533,7 +541,7 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     secret_table_html += template_env.get_template('detailed_secret_summary_table.html').render(
         secret_count=secret_count, summary_heading="total count severity wise", applied_severity=severity_types)
 
-    node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE] if i in df.node_type.unique()]
+    node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE,NODE_TYPE_CONTAINER] if i in df.node_type.unique()]
     table_index_length = 22
     for node_type in node_types:
         if node_type == 'host':
@@ -581,12 +589,17 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                 arr_index += 1
 
         else:
-            df3 = df[df['node_type'] == node_type][["Severity.level", 'node_name', 'count']]
-            pivot_table = pd.pivot_table(df3, index=["node_name", "Severity.level"], aggfunc=[np.sum])
+            if node_type == NODE_TYPE_CONTAINER:
+                pivot = "container_name"
+            else:
+                pivot = "node_name"
+
+            df3 = df[df['node_type'] == node_type][["Severity.level", pivot, 'count']]
+            pivot_table = pd.pivot_table(df3, index=[pivot, "Severity.level"], aggfunc=[np.sum])
 
             node_count_info = {}
-            temp_df = df[df['node_type'] == node_type][['node_name', 'count']].groupby(
-                'node_name').sum()
+            temp_df = df[df['node_type'] == node_type][[pivot, 'count']].groupby(
+                pivot).sum()
             temp_df['score'] = temp_df['count'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
 
             for node_name in temp_df.sort_values('score', ascending=False).index:
@@ -655,8 +668,12 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                         end_index += 1
                     arr_index += 1
         else:
-            for node_name in df[df['node_type'] == node_type]['node_name'].unique():
-                df2 = df[(df['node_name'] == node_name) & (df['node_type'] == node_type)][
+            if node_type == NODE_TYPE_CONTAINER:
+                name = "container_name"
+            else:
+                name = "node_name"
+            for node_name in df[df['node_type'] == node_type][name].unique():
+                df2 = df[(df[name] == node_name) & (df['node_type'] == node_type)][
                     ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
                      'Severity.score']].sort_values('Severity.score', ascending=False)
                 df2.insert(0, 'ID', range(1, 1 + len(df2)))
