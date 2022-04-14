@@ -56,6 +56,12 @@ const nodeTypeOption = [
   { label: 'pod', value: 'pod' },
 ];
 
+const nodeTypeOptionsSecret = [
+  { label: 'host', value: 'host' },
+  { label: 'container', value: 'container' },
+  { label: 'container image', value: 'container_image' },
+];
+
 const downloadOptions = [
   { label: 'XLSX', value: 'xlsx' },
   { label: 'PDF', value: 'pdf' },
@@ -181,7 +187,7 @@ const Reports = props => {
 // A function to initiate the report generation
   useEffect(() => {
     if (resource_type && node_type) {
-      const resourceTypeText = resource_type.map(el => el.value).join(',');
+      const resourceTypeText = resource_type.value;
       const nodeTypeText = node_type.value;
       props.enumerateFiltersAction({
         resource_type: resourceTypeText,
@@ -240,12 +246,9 @@ const Reports = props => {
 
   const checkIfResourceSelected = resourceValue => {
     let selected = false;
-    resource_type &&
-      resource_type.map(item => {
-        if (item.value === resourceValue) {
-          selected = true;
-        }
-      });
+    if ( resource_type && resource_type.value === resourceValue) {
+      selected = true;
+    }
     return selected;
   };
 
@@ -343,7 +346,7 @@ const Reports = props => {
         return;
       }
 
-      const resourceTypeText = resource_type.map(el => el.value).join(',');
+      const resourceTypeText = resource_type.value;
 
       const resourceData = [];
       if (resourceTypeText && resourceTypeText.includes('cve') && cve_severity) {
@@ -487,7 +490,6 @@ const Reports = props => {
                 buttonLabel="Resource type"
                 clearable={false}
                 placeholder="Select resource type"
-                isMulti
               />
               {errors && errors.resource_type && <div className="error-message-reports">{errors.resource_type}</div>}
             </div>
@@ -498,20 +500,40 @@ const Reports = props => {
             )}
           </div>
           <div className="resource-option-wrapper">
-            <div
-              className="nodes-filter-item"
-              style={{ marginLeft: '0px', width: '400px' }}
-            >
-              <Field
-                name="node_type"
-                rootClassName="form-field dir-column"
-                component={DFSearchableSelectField}
-                options={nodeTypeOption}
-                buttonLabel="Node type"
-                clearable={false}
-                placeholder="Select node type"
-              />
-            </div>
+            { checkIfResourceSelected('cve') && (
+              <div
+                className="nodes-filter-item"
+                style={{ marginLeft: '0px', width: '400px' }}
+              >
+                <Field
+                  name="node_type"
+                  rootClassName="form-field dir-column"
+                  component={DFSearchableSelectField}
+                  options={nodeTypeOption}
+                  buttonLabel="Node type"
+                  clearable={false}
+                  placeholder="Select node type"
+                />
+              </div>
+            )}
+
+            { checkIfResourceSelected('secret-scan') && (
+              <div
+                className="nodes-filter-item"
+                style={{ marginLeft: '0px', width: '400px' }}
+              >
+                <Field
+                  name="node_type"
+                  rootClassName="form-field dir-column"
+                  component={DFSearchableSelectField}
+                  options={nodeTypeOptionsSecret}
+                  buttonLabel="Node type"
+                  clearable={false}
+                  placeholder="Select node type"
+                />
+              </div>
+            )}
+
           </div>
           <div
             className="nodes-filter-item"
@@ -550,7 +572,7 @@ const Reports = props => {
             component={ToggleSwitchField}
             label="Include dead nodes"
           />
-          {props.resource_type && props.resource_type.length > 0 && (
+          {props.resource_type && (
             <span
               onClick={() => setShowModal(true)}
               className="link"
@@ -604,7 +626,7 @@ const Reports = props => {
                           node_type &&
                           topologyFilters
                             .get(
-                              resource_type.map(el => el.value).join(','),
+                              resource_type.value,
                               []
                             )
                             .map(filter => renderOne(filter))}
