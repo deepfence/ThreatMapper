@@ -94,7 +94,7 @@ func NewVulnerabilityDbUpdater() *VulnerabilityDbUpdater {
 }
 
 func (v *VulnerabilityDbUpdater) runGrypeUpdate() error {
-	_, stdErr, exitCode := runCommand("grype", "db", "update")
+	_, stdErr, exitCode := runCommand("/usr/local/bin/grype", "db", "update")
 	if exitCode != 0 {
 		return errors.New(stdErr)
 	}
@@ -141,8 +141,10 @@ func (v *VulnerabilityDbUpdater) updateVulnerabilityDbListing() error {
 	v.currentFilePath = currentFilePath
 	v.currentFileChecksum = currentFileChecksum
 	v.Unlock()
-	if oldFilePath != "" {
-		os.RemoveAll(oldFilePath)
+	if oldFilePath != currentFilePath {
+		if oldFilePath != "" {
+			os.RemoveAll(oldFilePath)
+		}
 	}
 	return nil
 }
@@ -155,11 +157,11 @@ func (v *VulnerabilityDbUpdater) updateVulnerabilityDb() {
 		case <-ticker.C:
 			err = v.runGrypeUpdate()
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("Error in runGrypeUpdate: ", err)
 			}
 			err = v.updateVulnerabilityDbListing()
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("Error in updateVulnerabilityDbListing: ", err)
 			}
 		}
 	}
@@ -829,9 +831,9 @@ func ingestInBackground(docType string, body []byte) error {
 			for _, item := range res.Items {
 				resItem := item["index"]
 				if resItem != nil {
-					fmt.Println(resItem.Index)
-					fmt.Println("status:" + strconv.Itoa(resItem.Status))
 					if resItem.Error != nil {
+						fmt.Println(resItem.Index)
+						fmt.Println("Status: " + strconv.Itoa(resItem.Status))
 						fmt.Println("Error Type:" + resItem.Error.Type)
 						fmt.Println("Error Reason: " + resItem.Error.Reason)
 					}
