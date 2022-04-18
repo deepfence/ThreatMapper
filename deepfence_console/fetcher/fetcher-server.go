@@ -822,6 +822,9 @@ func ingestInBackground(docType string, body []byte) error {
 			fmt.Println("Error reading artifacts: ", err.Error())
 		}
 		for _, artifact := range artifacts {
+			if len(artifact) == 0 {
+				continue
+			}
 			bulkIndexReq := elastic.NewBulkIndexRequest()
 			bulkIndexReq.Index(docType).Doc(artifact)
 			bulkService.Add(bulkIndexReq)
