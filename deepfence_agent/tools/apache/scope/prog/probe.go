@@ -220,9 +220,10 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			dnsLookupFn = appclient.LookupUsing(flags.resolver)
 		}
 		resolver, err := appclient.NewResolver(appclient.ResolverConfig{
-			Targets: targets,
-			Lookup:  dnsLookupFn,
-			Set:     multiClients.Set,
+			Targets:       targets,
+			ResolveDomain: flags.resolveDomain,
+			Lookup:        dnsLookupFn,
+			Set:           multiClients.Set,
 		})
 		if err != nil {
 			log.Fatalf("Failed to create resolver: %v", err)

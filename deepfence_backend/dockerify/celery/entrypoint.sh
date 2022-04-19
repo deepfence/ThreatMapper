@@ -15,15 +15,5 @@ touch /var/spool/cron/crontabs/root
 line="*/5 * * * * /usr/sbin/logrotate /app/code/logrotate.conf"
 (crontab -l; echo "$line" ) | crontab -
 service cron restart
-export VULNERABILITY_SCAN_CONCURRENCY=${VULNERABILITY_SCAN_CONCURRENCY:-10}
-if [ -f /app/code/supervisor_conf_celery/celery-vulnerability-scan-worker.conf ]; then
-    envsubst '${VULNERABILITY_SCAN_CONCURRENCY}' < /app/code/supervisor_conf_celery/celery-vulnerability-scan-worker.conf > /app/code/supervisor_conf_celery/celery-vulnerability-worker.conf
-    rm -f /app/code/supervisor_conf_celery/celery-vulnerability-scan-worker.conf
-fi
-
-if [ -f /app/code/supervisor_conf_celery/celery-vulnerability-scan-worker-priority.conf ]; then
-    envsubst '${VULNERABILITY_SCAN_CONCURRENCY}' < /app/code/supervisor_conf_celery/celery-vulnerability-scan-worker-priority.conf > /app/code/supervisor_conf_celery/celery-vulnerability-worker-priority.conf
-    rm -f /app/code/supervisor_conf_celery/celery-vulnerability-scan-worker-priority.conf
-fi
 # Start supervisor
 /usr/local/bin/supervisord -c /etc/supervisor/supervisord_celery.conf -n

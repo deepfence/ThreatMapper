@@ -26,6 +26,8 @@ type diagnosisT struct{}
 var (
 	supervisorContainers []string
 	supervisorLogsFolder = "/var/log/supervisor"
+	consoleNamespace     string
+	nodeMetrics          string
 )
 
 const (
@@ -34,7 +36,12 @@ const (
 )
 
 func init() {
-	supervisorContainers = []string{"deepfence-fetcher", "deepfence-analyzer-0", "deepfence-analyzer-1", "deepfence-analyzer-2", "deepfence-celery", "deepfence-backend", "deepfence-api"}
+	supervisorContainers = []string{"deepfence-analyzer-0", "deepfence-analyzer-1", "deepfence-analyzer-2", "deepfence-celery", "deepfence-backend", "deepfence-api"}
+	consoleNamespace = os.Getenv("CONSOLE_NAMESPACE")
+	if consoleNamespace == "" {
+		consoleNamespace = "default"
+	}
+	nodeMetrics = os.Getenv("NODE_METRICS")
 }
 
 func addSupervisorLogsKubernetes(pod v1.Pod, tarWriter *tar.Writer) error {

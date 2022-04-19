@@ -11,6 +11,8 @@ import EULAView from './common/eula-view/eula-view';
 import TopologyView from './topology-view/topology-view';
 import VulnerabilityView from './vulnerability-view/index';
 import CVEDetailsView from './vulnerability-view/vulnerability-view';
+import SecretScanHome from './secret-scan-view/index';
+import SecretScanResultsView from './secret-scan-view/secret-scan-results-view';
 import NotificationsView from './notification-view/notification-view';
 import SettingsView from './settings-view/settings-view';
 import RegistryVulnerabilityScan from './vulnerability-view/registry-scan/index';
@@ -20,8 +22,10 @@ import RegisterView from './auth-module/register-view/register-view';
 import ForgotPasswordView from './auth-module/forgot-password-view/forgot-password-view';
 import ResetPasswordView from './auth-module/reset-password-view/reset-password-view';
 import RegisterViaInviteView from './auth-module/register-via-invite-view/register-via-invite-view';
-import { isUserSessionActive, isUserSessionActiveAsync } from '../helpers/auth-helper';
+import changePasswordView from './settings-view/user-profile-view/change-password-view';
+import { isPasswordInvalidated, isUserSessionActive, isUserSessionActiveAsync } from '../helpers/auth-helper';
 import Loader from './loader';
+
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -38,8 +42,14 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
   return <Route
     {...rest}
     render={props => {
+      const currentPath = props?.location?.pathname ?? '';
+
       if (isAuthLoading) {
         return <div style={{ marginTop: '400px' }}><Loader /></div>
+      }
+
+      if (isPasswordInvalidated() && currentPath !== '/change-password') {
+        return <Redirect to="/change-password" />
       }
 
       return isUserSessionActive ? (
@@ -124,13 +134,19 @@ class DeepFenceApp extends React.Component {
               path="/vulnerability/details/:scanId"
               component={CVEDetailsView}
             />
+            <PrivateRoute
+              path="/secret-scan/details/:scanId"
+              component={SecretScanResultsView}
+            />
             <PrivateRoute path="/vulnerability" component={VulnerabilityView} />
+            <PrivateRoute path="/secret-scan" component={SecretScanHome} />
             <PrivateRoute
               path="/registry_vulnerability_scan"
               component={RegistryVulnerabilityScan}
             />
             <PrivateRoute path="/notification" component={NotificationsView} />
             <PrivateRoute path="/settings" component={SettingsView} />
+            <PrivateRoute path="/change-password" component={changePasswordView} />
 
             <Route
               path="*"

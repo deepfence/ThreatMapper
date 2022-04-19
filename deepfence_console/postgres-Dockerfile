@@ -3,13 +3,7 @@ FROM postgres:14.1-alpine3.15
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
-ENV POSTGRES_FETCHER_DB_HOST=deepfence-postgres \
-    POSTGRES_FETCHER_DB_PORT=5432 \
-    POSTGRES_FETCHER_DB_USER=cve \
-    POSTGRES_FETCHER_DB_PASSWORD=cve \
-    POSTGRES_FETCHER_DB_NAME=cve \
-    POSTGRES_FETCHER_DB_SSLMODE=disable \
-    POSTGRES_USER_DB_HOST=deepfence-postgres \
+ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     POSTGRES_USER_DB_PORT=5432 \
     POSTGRES_USER_DB_USER=cve \
     POSTGRES_USER_DB_PASSWORD=cve \

@@ -39,7 +39,7 @@ from utils.esconn import ESConn
 from utils.decorators import user_permission, non_read_only_user
 from flask_restful import Api
 from utils.helper import validateJiraCredentials, validate_url, \
-    validate_email, redact_sensitive_info, validate_domain, validate_ip
+    validate_email, redact_sensitive_info, validate_domain, validate_ip, modify_es_index
 from jira import JIRAError
 from pdpyras import APISession
 from models.setting import Setting
@@ -130,6 +130,7 @@ def register():
     first_name = request.json.get('first_name', None)
     last_name = request.json.get('last_name', None)
     password = request.json.get('password', None)
+    temporary_password = request.json.get('temporary_password', False)
     confirm_password = request.json.get('confirm_password', None)
     company = request.json.get('company', None)
     phone_number = request.json.get('phone_number', None)
@@ -203,7 +204,8 @@ def register():
         phone_number=phone_number,
         role=admin_role,
         company=user_company,
-        api_key=api_key
+        api_key=api_key,
+        password_invalidated=temporary_password
     )
 
     user.set_password(password)
@@ -741,7 +743,8 @@ def login():
     # Identity can be any data that is json serializable
     ret = {
         "access_token": access_token,
-        "refresh_token": refresh_token
+        "refresh_token": refresh_token,
+        "password_invalidated": user.password_invalidated
     }
     # instrument with user audit
     from tasks.user_activity import create_user_activity_login
@@ -1143,6 +1146,7 @@ def password_change():
     if user_email == DEEPFENCE_COMMUNITY_EMAIL:
         raise Forbidden("Change password not allowed for this user")
     user.set_password(password)
+    user.password_invalidated = False
     user.save()
 
     subject = PASSWORD_CHANGE_EMAIL_SUBJECT
@@ -1291,6 +1295,7 @@ class ResetPasswordVerify(MethodView):
         email = password_reset.email
         user = User.query.filter_by(email=email).one()
         user.set_password(password)
+        user.password_invalidated = False
         user.save()
 
         password_reset.delete()
@@ -2142,7 +2147,7 @@ def notify_to_integrations():
 
     index_wise_content_list = defaultdict(list)
     for doc in docs:
-        index = doc['_index']
+        index = modify_es_index(doc['_index'])
         doc_id = doc['_id']
         try:
             if index not in allowed_indices:

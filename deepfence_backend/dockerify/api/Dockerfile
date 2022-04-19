@@ -1,4 +1,4 @@
-FROM golang:1.17-bullseye AS build
+FROM golang:1.18-bullseye AS build
 
 WORKDIR /go/logstashPubSubReader
 ADD tasks/logstashPubSubReader /go/logstashPubSubReader/
@@ -17,12 +17,6 @@ LABEL deepfence.role=system
 ENV PYTHONUNBUFFERED=1 \
     FLASK_APP=config/app.py \
     MAX_RESULT_WINDOW=50000 \
-    POSTGRES_FETCHER_DB_HOST=deepfence-postgres \
-    POSTGRES_FETCHER_DB_PORT=5432 \
-    POSTGRES_FETCHER_DB_USER=cve \
-    POSTGRES_FETCHER_DB_PASSWORD=cve \
-    POSTGRES_FETCHER_DB_NAME=cve \
-    POSTGRES_FETCHER_DB_SSLMODE=disable \
     POSTGRES_USER_DB_HOST=deepfence-postgres \
     POSTGRES_USER_DB_PORT=5432 \
     POSTGRES_USER_DB_USER=cve \
@@ -30,6 +24,7 @@ ENV PYTHONUNBUFFERED=1 \
     POSTGRES_USER_DB_NAME=users \
     POSTGRES_USER_DB_SSLMODE=disable \
     JWT_ALGORITHM=RS256 \
+    ELASTICSEARCH_SCHEME=http \
     ELASTICSEARCH_HOST=deepfence-es \
     ELASTICSEARCH_PORT=9200 \
     ELASTICSEARCH_CVE_DOC_TYPE=cve \

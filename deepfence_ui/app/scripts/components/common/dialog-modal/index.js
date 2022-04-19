@@ -44,15 +44,15 @@ export const DialogModal = ({modalProps, showModal }) => {
       });
     }
     return modalProps.onConfirmButtonClick(values).then(() => {
+      setLoading(false);
       if (closeOnAction) {
         handleHideModal();
       }
-      setLoading(false);
     }, () => {
+      setLoading(false);
       if (closeOnAction) {
         handleHideModal();
       }
-      setLoading(false);
     });
   };
 

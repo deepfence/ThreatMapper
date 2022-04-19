@@ -13,10 +13,6 @@ When using cloud provided PersistentVolume or cloud managed databases, no need t
 
 #### OpenEBS Local PV provisioner
 ```bash
-# helm v2
-helm install --name openebs --namespace openebs --repo "https://openebs.github.io/charts" openebs --set analytics.enabled=false
-
-# helm v3
 kubectl create ns openebs
 helm install openebs --namespace openebs --repo "https://openebs.github.io/charts" openebs --set analytics.enabled=false
 ```
@@ -33,7 +29,7 @@ kubectl get deployment metrics-server -n kube-system
 ```
 - If not installed, run following command
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.0/components.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.1/components.yaml
 ```
 
 ### Install deepfence-console helm chart
@@ -45,13 +41,6 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 ```
 
 ```bash
-# helm v2
-helm install deepfence/deepfence-console \
-    --name=deepfence-console \
-    --set registry.username="<>" \
-    --set registry.password="<>"
-
-# helm v3
 helm install deepfence-console deepfence/deepfence-console \
     --set registry.username="<>" \
     --set registry.password="<>"
@@ -129,10 +118,6 @@ db:
 ```
 - Install deepfence-console helm chart with values file
 ```bash
-# helm v2
-helm install -f deepfence_console_values.yaml deepfence/deepfence-console --name=deepfence-console
-
-# helm v3
 helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console
 ```
 - Wait for pods to start up

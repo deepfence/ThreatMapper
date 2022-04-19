@@ -15,7 +15,7 @@ registry:
 
 image:
   repository: "deepfenceio/"
-  tag: 1.2.0
+  tag: 1.3.1
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
@@ -51,14 +51,8 @@ db:
     password: "KeTn4LA4SBN2"
     dbname: "users"
     sslmode: "disable"
-  postgresFetcherDb:
-    host: deepfence-postgres
-    port: "5432"
-    user: "deepfence"
-    password: "KeTn4LA4SBN2"
-    dbname: "cve"
-    sslmode: "disable"
   elasticsearch:
+    scheme: "http"
     host: deepfence-es
     port: "9200"
   redis:
@@ -83,6 +77,12 @@ runConsoleDiscovery: "true"
 vulnerabilityScanConcurrency: "15"
 
 dnsResolver: "kube-dns.kube-system.svc.cluster.local"
+
+diagnosis:
+  nodeMetrics: "true"
+
+router:
+  uiServiceName: "deepfence-ui"
 
 # Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
 mountContainerRuntimeSocket:

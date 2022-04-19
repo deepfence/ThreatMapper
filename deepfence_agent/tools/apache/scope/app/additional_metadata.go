@@ -17,15 +17,16 @@ import (
 
 const (
 	esAggsSize             = 100000
-	cveScanLogsEsIndex     = "cve-scan"
-	complianceLogsEsIndex  = "compliance-scan-logs"
 	scanStatusNeverScanned = "never_scanned"
 	nodeSeverityRedisKey   = "NODE_SEVERITY"
 )
 
 var (
-	vulnerabilityStatusMap map[string]string
-	nStatus                *Status
+	cveScanLogsEsIndex    = "cve-scan"
+	complianceLogsEsIndex = "compliance-scan-logs"
+	secretScanLogsEsIndex = "secret-scan-logs"
+	statusMap             map[string]string
+	nStatus               *Status
 )
 
 type Status struct {
@@ -45,19 +46,23 @@ type NodeStatus struct {
 	VulnerabilityScanStatusTime map[string]string
 	ComplianceScanStatus        map[string]string
 	ComplianceScanStatusTime    map[string]string
+	SecretScanStatus            map[string]string
+	SecretScanStatusTime        map[string]string
 	NodeSeverity                map[string]string
 	sync.RWMutex
 }
 
-func (st *Status) getNodeStatus() (map[string]string, map[string]string, map[string]string, map[string]string, map[string]string) {
+func (st *Status) getNodeStatus() (map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string) {
 	st.nodeStatus.RLock()
 	nodeIdVulnerabilityStatusMap := st.nodeStatus.VulnerabilityScanStatus
 	nodeIdVulnerabilityStatusTimeMap := st.nodeStatus.VulnerabilityScanStatusTime
 	nodeIdComplianceStatusMap := st.nodeStatus.ComplianceScanStatus
 	nodeIdComplianceStatusTimeMap := st.nodeStatus.ComplianceScanStatusTime
 	nodeSeverityMap := st.nodeStatus.NodeSeverity
+	nodeIdSecretStatusMap := st.nodeStatus.SecretScanStatus
+	nodeIdSecretStatusTimeMap := st.nodeStatus.SecretScanStatusTime
 	st.nodeStatus.RUnlock()
-	return nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdComplianceStatusMap, nodeIdComplianceStatusTimeMap, nodeSeverityMap
+	return nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdComplianceStatusMap, nodeIdComplianceStatusTimeMap, nodeSeverityMap, nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap
 }
 
 func (st *Status) getNodeSeverity() (map[string]string, error) {
@@ -118,6 +123,14 @@ func (st *Status) updateScanStatusData() error {
 	esQuery = elastic.NewSearchRequest().Index(complianceLogsEsIndex).Query(boolQuery).Size(0).Aggregation("node_id", nodeIdAggs)
 	mSearch.Add(esQuery)
 
+	nodeIdAggs = elastic.NewTermsAggregation().Field("node_id.keyword").Size(esAggsSize)
+	statusAggs = elastic.NewTermsAggregation().Field("scan_status.keyword").Size(50)
+	recentTimestampAggs = elastic.NewMaxAggregation().Field("@timestamp")
+	statusAggs.SubAggregation("secret_scan_timestamp", recentTimestampAggs)
+	nodeIdAggs.SubAggregation("secret_scan_status", statusAggs)
+	esQuery = elastic.NewSearchRequest().Index(secretScanLogsEsIndex).Query(elastic.NewMatchAllQuery()).Size(0).Aggregation("node_id", nodeIdAggs)
+	mSearch.Add(esQuery)
+
 	mSearchResult, err := mSearch.Do(context.Background())
 	if err != nil {
 		return err
@@ -153,7 +166,7 @@ func (st *Status) updateScanStatusData() error {
 				}
 			}
 		}
-		latestStatus, ok = vulnerabilityStatusMap[latestStatus]
+		latestStatus, ok = statusMap[latestStatus]
 		if !ok {
 			latestStatus = scanStatusNeverScanned
 		}
@@ -163,6 +176,49 @@ func (st *Status) updateScanStatusData() error {
 	st.nodeStatus.Lock()
 	st.nodeStatus.VulnerabilityScanStatus = nodeIdVulnerabilityStatusMap
 	st.nodeStatus.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap
+	st.nodeStatus.Unlock()
+
+	nodeIdSecretStatusMap := make(map[string]string)
+	nodeIdSecretStatusTimeMap := make(map[string]string)
+	secretResp := mSearchResult.Responses[2]
+	nodeIdAggsBkt, ok = secretResp.Aggregations.Terms("node_id")
+	if !ok {
+		return nil
+	}
+	for _, nodeIdAggs := range nodeIdAggsBkt.Buckets {
+		if nodeIdAggs.Key.(string) == "" {
+			continue
+		}
+		latestScanTime := 0.0
+		var latestStatus, latestScanTimeStr string
+		scanStatusBkt, ok := nodeIdAggs.Aggregations.Terms("secret_scan_status")
+		if !ok {
+			continue
+		}
+		for _, scanStatusAggs := range scanStatusBkt.Buckets {
+			recentTimestampBkt, ok := scanStatusAggs.Aggregations.Max("secret_scan_timestamp")
+			if !ok || recentTimestampBkt == nil || recentTimestampBkt.Value == nil {
+				continue
+			}
+			if *recentTimestampBkt.Value > latestScanTime {
+				latestScanTime = *recentTimestampBkt.Value
+				latestStatus = scanStatusAggs.Key.(string)
+				valueAsStr, ok := recentTimestampBkt.Aggregations["value_as_string"]
+				if ok {
+					latestScanTimeStr = strings.ReplaceAll(string(valueAsStr), "\"", "")
+				}
+			}
+		}
+		latestStatus, ok = statusMap[latestStatus]
+		if !ok {
+			latestStatus = scanStatusNeverScanned
+		}
+		nodeIdSecretStatusMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestStatus
+		nodeIdSecretStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
+	}
+	st.nodeStatus.Lock()
+	st.nodeStatus.SecretScanStatus = nodeIdSecretStatusMap
+	st.nodeStatus.SecretScanStatusTime = nodeIdSecretStatusTimeMap
 	st.nodeStatus.Unlock()
 
 	nodeIdComplianceStatusMap := make(map[string]string)
@@ -249,11 +305,18 @@ func formatComplianceStatus(count int, status string) string {
 }
 
 func NewStatus() (*Status, error) {
-	vulnerabilityStatusMap = map[string]string{
-		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
-		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "UPLOADING_IMAGE": "in_progress",
-		"UPLOAD_COMPLETE": "in_progress"}
+	var esClient *elastic.Client
+	var err error
 
+	statusMap = map[string]string{
+		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
+		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
+		"GENERATED_SBOM": "in_progress", "IN_PROGRESS": "in_progress", "COMPLETE": "complete"}
+
+	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
+	if esScheme == "" {
+		esScheme = "http"
+	}
 	esHost := os.Getenv("ELASTICSEARCH_HOST")
 	if esHost == "" {
 		esHost = "deepfence-es"
@@ -262,12 +325,25 @@ func NewStatus() (*Status, error) {
 	if esPort == "" {
 		esPort = "9200"
 	}
+	esUsername := os.Getenv("ELASTICSEARCH_USER")
+	esPassword := os.Getenv("ELASTICSEARCH_PASSWORD")
+
 	var status Status
-	esClient, err := elastic.NewClient(
-		elastic.SetHealthcheck(false),
-		elastic.SetSniff(false),
-		elastic.SetURL("http://"+esHost+":"+esPort),
-	)
+
+	if esUsername != "" && esPassword != "" {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+			elastic.SetBasicAuth(esUsername, esPassword),
+		)
+	} else {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+		)
+	}
 	if err != nil {
 		return &status, err
 	}
@@ -304,6 +380,13 @@ func getScanStatus() error {
 }
 
 func init() {
+	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
+	if customerUniqueId != "" {
+		cveScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+		complianceLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+		secretScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+	}
+
 	if os.Getenv("DF_PROG_NAME") == "topology" {
 		go func() {
 			for {

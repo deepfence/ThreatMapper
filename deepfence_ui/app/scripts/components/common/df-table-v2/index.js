@@ -197,6 +197,7 @@ function useColumnFilter({
 * @param {boolean} props.columnCustomizable - columns are customizable or not
 * @param {string} props.name - name of the table, used to save column customization preferences
 * @param {boolean} props.loading - show loader
+* @param {boolean} props.noMargin - no margin on left and right
 * @param {Object} props.multiSelectOptions - options for multi select, pass undefined if row selection is not needed
 * @param {Object[]} props.multiSelectOptions.actions - actions for multi select
 * @param {Object[]} props.multiSelectOptions.columnConfig - column config for multi select
@@ -219,6 +220,7 @@ const DfTableV2 = ({
   columnCustomizable,
   name,
   loading,
+  noMargin,
   multiSelectOptions,
   onRowClick,
   onCellClick,
@@ -336,7 +338,9 @@ const DfTableV2 = ({
 
   return (
     <div className={styles.tableContainer}>
-      <div className={styles.table} {...getTableProps()}>
+      <div className={classNames(styles.table, {
+        [styles.noMargin]: noMargin
+      })} {...getTableProps()}>
         {
           loading ? <AppLoader small className={styles.loader} /> : <>
             <div>

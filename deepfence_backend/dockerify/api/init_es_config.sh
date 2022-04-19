@@ -4,11 +4,40 @@ set -e
 
 echo "Adding elasticsearch custom configuration"
 
+set_es_user_creds() {
+  basicAuth=""
+    if [ -n "$ELASTICSEARCH_USER" ] && [ -n "$ELASTICSEARCH_PASSWORD" ]; then
+      basicAuth="$ELASTICSEARCH_USER:$ELASTICSEARCH_PASSWORD@"
+    fi
+}
+
+create_index() {
+    local index_str="$1"
+    if [ -n "$CUSTOMER_UNIQUE_ID" ]; then
+        index_str="$index_str-$CUSTOMER_UNIQUE_ID"
+    fi
+    echo "$index_str"
+}
+
+create_index_pattern() {
+    local index_pattern_str=$"["
+    declare -a index_arr="$1"
+
+    for index in "${!index_arr[@]}"; do
+        index_pattern_str+="\"$(create_index "${index_arr[$index]}")\""
+        if [ $((index + 1)) != "${#index_arr[@]}" ]; then
+            index_pattern_str+=", "
+        fi
+    done
+    index_pattern_str+="]"
+    echo "$index_pattern_str"
+}
+
 add_template () {
-    template_code=`curl -s -o /dev/null -w "%{http_code}" "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1?pretty"`
+    template_code=`curl -s -o /dev/null -w "%{http_code}" "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1?pretty"`
     if [ "$template_code" != "200" ]; then
-        curl -XPUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1" -H 'Content-Type: application/json' -d '{
-            "index_patterns": ["cve", "cve-scan"],
+        curl -XPUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1" -H 'Content-Type: application/json' -d '{
+            "index_patterns": '"$(create_index_pattern '("cve" "cve-scan")')"',
             "settings": {
                 "number_of_shards": 1,
                 "index": {
@@ -23,7 +52,7 @@ add_template () {
 add_cve_map_pipeline () {
     echo "Adding cve map pipeline"
 
-    cve_map_pipeline_code="$(curl -s -o /dev/null -w '%{http_code}' -XPUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/cve_map_pipeline?pretty" -H 'Content-Type: application/json' -d '
+    cve_map_pipeline_code="$(curl -s -o /dev/null -w '%{http_code}' -XPUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/cve_map_pipeline?pretty" -H 'Content-Type: application/json' -d '
     {
       "description" : "cve_map_pipeline",
       "processors" : [
@@ -47,7 +76,7 @@ add_cve_map_pipeline () {
 add_cve_scan_map_pipeline () {
     echo "Adding cve scan map pipeline"
 
-    cve_scan_map_pipeline_code="$(curl -s -o /dev/null -w '%{http_code}' -XPUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/cve_scan_map_pipeline?pretty" -H 'Content-Type: application/json' -d '
+    cve_scan_map_pipeline_code="$(curl -s -o /dev/null -w '%{http_code}' -XPUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/cve_scan_map_pipeline?pretty" -H 'Content-Type: application/json' -d '
     {
       "description" : "cve_scan_map_pipeline",
       "processors" : []
@@ -64,7 +93,7 @@ add_cve_scan_map_pipeline () {
 add_indexed_default_upsert_script() {
     echo "Adding default_upsert indexed script"
 
-    curl -X POST "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_scripts/default_upsert" -H 'Content-Type: application/json' -d'
+    curl -X POST "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_scripts/default_upsert" -H 'Content-Type: application/json' -d'
     {
       "script": {
         "lang": "painless",
@@ -76,7 +105,7 @@ add_indexed_default_upsert_script() {
 
 add_index() {
   echo "Adding deepfence indices"
-  curl -X PUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/cve" -H 'Content-Type: application/json' -d'
+  curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "cve")" -H 'Content-Type: application/json' -d'
   {
     "mappings": {
       "properties": {
@@ -123,7 +152,7 @@ add_index() {
     }
   }'
   echo ""
-  curl -X PUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/cve-scan" -H 'Content-Type: application/json' -d'
+  curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "cve-scan")" -H 'Content-Type: application/json' -d'
   {
     "mappings": {
       "properties": {
@@ -159,10 +188,141 @@ add_index() {
   }'
   echo ""
 
+   curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "sbom-cve-scan")" -H 'Content-Type: application/json' -d'
+    {
+      "mappings": {
+        "properties": {
+          "@timestamp": {
+            "type": "date"
+          },
+          "artifacts": {
+            "enabled": false
+          },
+          "scan_id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "node_id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "time_stamp": {
+            "type": "long"
+          }
+        }
+      }
+    }'
+    echo ""
+    curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "sbom-cve-scan")/_settings" -H 'Content-Type: application/json' -d'
+      "index.mapping.total_fields.limit": 40000
+    }'
+    echo ""
+
+  curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "sbom-artifact")" -H 'Content-Type: application/json' -d'
+  {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "name": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "version": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "language": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "licenses": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "locations" : {
+          "properties" : {
+            "path": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }
+          }
+        },
+        "scan_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "node_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "node_type": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "time_stamp": {
+          "type": "long"
+        }
+      }
+    }
+  }'
+  echo ""
+
   declare -a index_arr=("report")
   for index_name in "${index_arr[@]}"
   do
-      curl -X PUT "http://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/${index_name}" -H 'Content-Type: application/json' -d'
+      curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "${index_name}")" -H 'Content-Type: application/json' -d'
       {
         "mappings": {
           "properties": {
@@ -183,12 +343,56 @@ add_index() {
       }'
       echo ""
   done
+
+  declare -a index_arr=("secret-scan" "secret-scan-logs")
+  for index_name in "${index_arr[@]}"
+  do
+      curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "${index_name}")" -H 'Content-Type: application/json' -d'
+      {
+        "mappings": {
+          "properties": {
+            "@timestamp": {
+              "type": "date"
+            },
+            "scan_id": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "node_id": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "time_stamp": {
+              "type": "long"
+            }
+          }
+        }
+      }'
+      echo ""
+  done
 }
 
+
+reindex_sbom_artifacts_python_script () {
+    python /app/code/init_scripts/reindex_sbom_artifacts.py
+}
+
+set_es_user_creds
 add_template
 add_index
 add_cve_map_pipeline
 add_cve_scan_map_pipeline
 add_indexed_default_upsert_script
+reindex_sbom_artifacts_python_script
 echo ""
 echo "custom configuration added successfully"

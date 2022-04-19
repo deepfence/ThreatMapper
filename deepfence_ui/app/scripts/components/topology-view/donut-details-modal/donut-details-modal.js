@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 // React imports
 import React, { useCallback, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
@@ -17,10 +18,12 @@ class DonutDetailsModal extends React.Component {
       activeIndex: 0,
       recordsPerPage: 20,
       sortOrder: 'asc',
+      sortSeverity: 'desc'
     };
     this.onClickClose = this.onClickClose.bind(this);
     this.handlePageChange = this.handlePageChange.bind(this);
     this.resetTableUI = this.resetTableUI.bind(this);
+    this.onSort = this.onSort.bind(this);
   }
 
   componentDidMount() {
@@ -147,6 +150,8 @@ class DonutDetailsModal extends React.Component {
         cve_container_image: imageName,
         scan_id: scanId,
       },
+      sort_by: 'cve_severity',
+      sort_order: this.state.sortSeverity
     };
     return dispatch(getVulnerabilitiesAction(params));
   }
@@ -162,6 +167,14 @@ class DonutDetailsModal extends React.Component {
     setTimeout(() => {
       this.fetchAlertsDetails();
     }, 0);
+  }
+
+  onSort(data) {
+    this.setState({
+      sortSeverity: data[0]?.desc ? 'asc' : 'desc' 
+    }, () => {
+      this.fetchAlertsDetails();
+    });
   }
 
   onClickClose() {
@@ -215,6 +228,7 @@ class DonutDetailsModal extends React.Component {
             numPages={totalPages}
             pageSize={recordsPerPage}
             onPageChange={this.handlePageChange}
+            onSortChange={this.onSort}
           />
         </div>
       </div>
@@ -243,7 +257,7 @@ function mapStateToProps(state) {
 
 export default connect(mapStateToProps)(DonutDetailsModal);
 
-const Table = ({ data, numPages, pageSize, onPageChange }) => {
+const Table = ({ data, numPages, pageSize, onPageChange, onSortChange }) => {
 
   const rows = useMemo(() => data?.map(doc => doc._source), [data]);
 
@@ -281,10 +295,12 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
         data={rows}
         defaultPageSize={pageSize}
         totalRows={numPages * pageSize}
+        enableSorting
         columns={[
           {
             Header: 'CVE ID',
             accessor: 'cve_id',
+            disableSortBy: true,
             maxWidth: 200,
             Cell: row => (
               <div className="truncate" title={row.value}>
@@ -303,6 +319,7 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
           {
             Header: 'Package',
             accessor: 'cve_caused_by_package',
+            disableSortBy: true,
             maxWidth: 200,
             Cell: row => (
               <div className="truncate" title={row.value}>
@@ -313,6 +330,7 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
           {
             Header: 'Description',
             accessor: 'cve_description',
+            disableSortBy: true,
             Cell: row => (
               <div className="truncate" title={row.value}>
                 {row.value}
@@ -323,6 +341,7 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
           {
             Header: 'Link',
             accessor: 'cve_link',
+            disableSortBy: true,
             Cell: row => (
               <div className="truncate" title={row.value}>
                 <a href={row.value} target="_blank" rel="noreferrer">
@@ -335,6 +354,7 @@ const Table = ({ data, numPages, pageSize, onPageChange }) => {
         ]}
         showPagination
         onPageChange={onFetchData}
+        onSortChange={(sorted) => onSortChange(sorted)}
       />
       {
         modalState.isVulnerabilityModalOpen && modalState.cveData ? (

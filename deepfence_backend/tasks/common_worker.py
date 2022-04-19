@@ -5,8 +5,8 @@ from config.app import celery_app, app as flask_app
 
 from tasks.task_scheduler import run_node_task
 from utils.constants import REPORT_INDEX, \
-    NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, \
-    PDF_REPORT_MAX_DOCS
+    NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
+    PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE
 import pandas as pd
 import requests
 from utils.constants import CVE_INDEX, MAX_TOTAL_SEVERITY_SCORE
@@ -31,20 +31,20 @@ def common_worker(self, **kwargs):
             run_node_task(kwargs["action"], kwargs["node_action_details"])
 
 
-def add_report_status_in_es(report_id, status, filters_applied_str, file_type, duration="None",report_path=None):
+def add_report_status_in_es(report_id, status, filters_applied_str, file_type, duration="None", report_path=None):
     if duration:
         if "d" in duration:
-            duration = "Last "+duration.replace("d", " days")
+            duration = "Last " + duration.replace("d", " days")
         elif "all" in duration:
             duration = "All Documents"
     body = {
-        "type": REPORT_INDEX,
+        "type": REPORT_ES_TYPE,
         "report_id": report_id,
         "status": status,
         "masked": 'false',
         "filters": filters_applied_str,
         "file_type": file_type,
-        "duration" : duration,
+        "duration": duration,
         "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     }
     if report_path:
@@ -80,7 +80,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     filters_applied = deepcopy(node_filters)
     del node_filters["type"]
     filters_cve_scan = {"action": "COMPLETED"}
-    filters["type"] = CVE_INDEX
+    filters["type"] = CVE_ES_TYPE
     node_filters_for_cve_scan_index = {}
 
     if node_filters:
@@ -136,6 +136,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             }
         }
     }
+
     cve_scan_aggs_response = ESConn.aggregation_helper(
         CVE_SCAN_LOGS_INDEX, filters_cve_scan, cve_scan_aggs, number, time_unit,
         lucene_query_string, add_masked_filter=False)
@@ -419,17 +420,316 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     return final_html
 
 
+def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_unit, resource):
+    node_filters = deepcopy(filters)
+    filters_applied = deepcopy(node_filters)
+    filters_cve_scan = {"action": "COMPLETED"}
+    # filters["type"] = SECRET_SCAN_ES_TYPE
+    cve_scan_id_list = []
+    aggs = {
+        "node_name": {
+            "terms": {
+                "field": "node_name.keyword",
+                "size": ES_TERMS_AGGR_SIZE
+            },
+            "aggs": {
+                "scan_id": {
+                    "terms": {
+                        "field": "scan_id.keyword",
+                        "size": ES_TERMS_AGGR_SIZE
+                    },
+                    "aggs": {
+                        "scan_recent_timestamp": {
+                            "max": {
+                                "field": "@timestamp"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    filter_for_scan = {}
+    if len(filters.get("type", [])) != 0:
+        filter_for_scan["node_type"] = filters.get("type")
+    if len(filters.get("host_name", [])) != 0:
+        filter_for_scan["node_name"] = filters.get("host_name")
+    if len(filters.get("image_name_with_tag", [])) != 0:
+        filter_for_scan["node_name"] = filters.get("image_name_with_tag")
+    if len(filters.get("container_name", [])) != 0:
+        filter_for_scan["container_name"] = filters.get("container_name")
+    aggs_response = ESConn.aggregation_helper(
+        SECRET_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
+    )
+    if "aggregations" in aggs_response:
+        for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
+            latest_scan_id = ""
+            latest_scan_time = 0
+            for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
+                if scan_id_aggr["scan_recent_timestamp"]["value"] > latest_scan_time:
+                    latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
+                    latest_scan_id = scan_id_aggr["key"]
+            cve_scan_id_list.append(latest_scan_id)
+
+    and_terms = []
+    for key, value in filters.items():
+        if key == "type":
+            continue
+        if key == "image_name_with_tag":
+            key = "node_name"
+        if type(value) is not list:
+            value = [value]
+        if value:
+            and_terms.append({"terms": {key + ".keyword": value}})
+
+    # for key, value in resource.items():
+    #     if type(value) is not list:
+    #         value = [value]
+    #     if value and len(value) != 0:
+    #         if key == "cve_severity":
+    #             and_terms.append({"terms": {"cve_severity": value}})
+    #         else:
+    #             and_terms.append({"terms": {key: value}})
+
+    if number and time_unit and time_unit != 'all':
+        rounding_time_unit = get_rounding_time_unit(time_unit)
+        and_terms.append({"range": {"@timestamp": {"gt": "now-{0}{1}/{2}".format(
+            number, time_unit, rounding_time_unit)}}})
+
+    query_body = {"query": {"bool": {"must": and_terms}}, "sort": [{"@timestamp": {"order": "desc"}}]}
+
+    recent_scan_id_chunks = split_list_into_chunks(cve_scan_id_list, ES_MAX_CLAUSE)
+
+    # Count total data to fetch from es. If it's > 75000 docs, throw error
+    doc_count = 0
+    for scan_id_chunk in recent_scan_id_chunks:
+        tmp_filters = deepcopy({})
+        tmp_filters["scan_id"] = scan_id_chunk
+        doc_count += ESConn.count(SECRET_SCAN_INDEX, tmp_filters, number=number, time_unit=time_unit,
+                                  lucene_query_string=lucene_query_string)
+        if doc_count > PDF_REPORT_MAX_DOCS:
+            return "<div>Error while fetching vulnerabilities, please use filters to reduce the number of documents " \
+                   "to download.</div> "
+
+    secret_scan_data = []
+    for scan_id_chunk in recent_scan_id_chunks:
+        query = deepcopy(query_body)
+
+        query["query"]["bool"]["must"].append({"terms": {"scan_id.keyword": scan_id_chunk}})
+        for total_pages, page_count, page_items, page_data in ESConn.scroll(
+                SECRET_SCAN_INDEX, query, page_size=5000):
+            docs = page_data.get('hits', {}).get('hits', [])
+            for doc in docs:
+                if doc.get("_source"):
+                    secret_scan_data.append(doc["_source"])
+    if not secret_scan_data:
+        return "<div>No vulnerabilities found for the applied filter</div>"
+    df = pd.json_normalize(secret_scan_data)
+    df.insert(0, 'count', 1)
+    secret_count = {}
+    severity_types = ["critical", "high", "medium", "low"]
+
+    template_loader = jinja2.FileSystemLoader(searchpath="/app/code/config/templates/")
+    template_env = jinja2.Environment(loader=template_loader)
+
+    secret_table_html = ""
+
+    severity_wise_frequency = df['Severity.level'].value_counts()
+    for severity_type in severity_types:
+        secret_count[severity_type] = severity_wise_frequency.get(severity_type, 0)
+
+    secret_table_html += template_env.get_template('detailed_secret_summary_table.html').render(
+        secret_count=secret_count, summary_heading="total count severity wise", applied_severity=severity_types)
+
+    node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE,NODE_TYPE_CONTAINER] if i in df.node_type.unique()]
+    table_index_length = 22
+    for node_type in node_types:
+        if node_type == 'host':
+            df3 = df[df['node_type'] == node_type][["Severity.level", 'host_name', 'count']]
+            pivot_table = pd.pivot_table(df3, index=["host_name", "Severity.level"], aggfunc=[np.sum])
+
+            node_count_info = {}
+            temp_df = df[df['node_type'] == node_type][['host_name', 'count']].groupby('host_name').sum()
+            temp_df['score'] = temp_df['count'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
+
+            for host_name in temp_df.sort_values('score', ascending=False).index:
+                node_count_info[host_name] = {}
+
+            for i, v in pivot_table.to_dict()[('sum', 'count')].items():
+                if i[0] not in node_count_info:
+                    node_count_info[i[0]] = {i[1]: v}
+                else:
+                    node_count_info[i[0]][i[1]] = v
+            summary_heading = "Host & worker node secrets"
+            start_index = 0
+
+            arr_index = 0
+            end_index = 0
+            content_length = 0
+            while arr_index < len(node_count_info.keys()):
+                content_length += len(list(node_count_info.keys())[arr_index])
+                if content_length > 2950 or end_index - start_index > table_index_length:
+                    end_index = arr_index
+                    secret_table_html += template_env.get_template(
+                        'detailed_report_nodewise_vulnerability_count.html').render(
+                        summary_heading=summary_heading, data=dict(itertools.islice(
+                            node_count_info.items(), start_index, end_index)), applied_severity=severity_types)
+                    start_index = arr_index
+                    content_length = 0
+                    table_index_length = 30
+                elif content_length <= 2950 and arr_index == len(node_count_info.keys()) - 1:
+                    end_index = arr_index + 1
+                    secret_table_html += template_env.get_template(
+                        'detailed_report_nodewise_vulnerability_count.html').render(
+                        summary_heading=summary_heading, data=dict(itertools.islice(
+                            node_count_info.items(), start_index, end_index)), applied_severity=severity_types)
+                    table_index_length = 30
+                else:
+                    end_index += 1
+                arr_index += 1
+
+        else:
+            if node_type == NODE_TYPE_CONTAINER:
+                pivot = "container_name"
+            else:
+                pivot = "node_name"
+
+            df3 = df[df['node_type'] == node_type][["Severity.level", pivot, 'count']]
+            pivot_table = pd.pivot_table(df3, index=[pivot, "Severity.level"], aggfunc=[np.sum])
+
+            node_count_info = {}
+            temp_df = df[df['node_type'] == node_type][[pivot, 'count']].groupby(
+                pivot).sum()
+            temp_df['score'] = temp_df['count'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
+
+            for node_name in temp_df.sort_values('score', ascending=False).index:
+                node_count_info[node_name] = {}
+
+            for i, v in pivot_table.to_dict()[('sum', 'count')].items():
+                if i[0] not in node_count_info:
+                    node_count_info[i[0]] = {i[1]: v}
+                else:
+                    node_count_info[i[0]][i[1]] = v
+            summary_heading = "Image Secrets"
+            start_index = 0
+            arr_index = 0
+            end_index = 0
+            content_length = 0
+            while arr_index < len(node_count_info.keys()):
+                content_length += len(list(node_count_info.keys())[arr_index])
+                if content_length > 2950 or end_index - start_index > table_index_length:
+                    end_index = arr_index
+                    secret_table_html += template_env.get_template(
+                        'detailed_report_nodewise_vulnerability_count.html').render(
+                        summary_heading=summary_heading, data=dict(itertools.islice(
+                            node_count_info.items(), start_index, end_index)), applied_severity=severity_types)
+                    start_index = arr_index
+                    content_length = 0
+                    table_index_length = 30
+                elif content_length <= 2950 and arr_index == len(node_count_info.keys()) - 1:
+                    end_index = arr_index + 1
+                    secret_table_html += template_env.get_template(
+                        'detailed_report_nodewise_vulnerability_count.html').render(
+                        summary_heading=summary_heading, data=dict(itertools.islice(
+                            node_count_info.items(), start_index, end_index)), applied_severity=severity_types)
+                    table_index_length = 30
+                else:
+                    end_index += 1
+                arr_index += 1
+
+    node_wise_secret_html = ''
+    for node_type in node_types:
+        if node_type == NODE_TYPE_HOST:
+            for host_name in df[df['node_type'] == node_type]['host_name'].unique():
+                df2 = df[(df['host_name'] == host_name) & (df['node_type'] == node_type)][
+                    ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
+                     'Severity.score']].sort_values('Severity.score', ascending=False)
+                df2.insert(0, 'ID', range(1, 1 + len(df2)))
+                secret_data = df2.to_dict('records')
+                start_index = 0
+                arr_index = 0
+                content_length = 0
+                end_index = 0
+                while arr_index < len(secret_data):
+                    content_length += len(secret_data[arr_index]['Match.matched_content'])
+                    if content_length > 1900 or end_index - start_index > 21:
+                        end_index = arr_index
+                        node_wise_secret_html += template_env.get_template(
+                            'detailed_report_nodewise_secret.html').render(
+                            host_image_name=host_name, data=secret_data[start_index: end_index])
+                        start_index = arr_index
+                        content_length = 0
+                    elif content_length <= 1900 and arr_index == len(secret_data) - 1:
+                        end_index = arr_index + 1
+                        node_wise_secret_html += template_env.get_template(
+                            'detailed_report_nodewise_secret.html').render(
+                            host_image_name=host_name, data=secret_data[start_index: end_index])
+                    else:
+                        end_index += 1
+                    arr_index += 1
+        else:
+            if node_type == NODE_TYPE_CONTAINER:
+                name = "container_name"
+            else:
+                name = "node_name"
+            for node_name in df[df['node_type'] == node_type][name].unique():
+                df2 = df[(df[name] == node_name) & (df['node_type'] == node_type)][
+                    ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
+                     'Severity.score']].sort_values('Severity.score', ascending=False)
+                df2.insert(0, 'ID', range(1, 1 + len(df2)))
+                secret_data = df2.to_dict('records')
+                start_index = 0
+                arr_index = 0
+                content_length = 0
+                end_index = 0
+                while arr_index < len(secret_data):
+                    content_length += len(secret_data[arr_index]['Match.matched_content'])
+                    if content_length > 1900 or end_index - start_index > 21:
+                        end_index = arr_index
+                        node_wise_secret_html += template_env.get_template(
+                            'detailed_report_nodewise_secret.html').render(
+                            host_image_name=node_name, data=secret_data[start_index: end_index])
+                        start_index = arr_index
+                        content_length = 0
+                    elif content_length <= 1900 and arr_index == len(secret_data) - 1:
+                        end_index = arr_index + 1
+                        node_wise_secret_html += template_env.get_template(
+                            'detailed_report_nodewise_secret.html').render(
+                            host_image_name=node_name, data=secret_data[start_index: end_index])
+                    else:
+                        end_index += 1
+                    arr_index += 1
+
+    start_time_str, end_time_str = convert_time_unit_to_date(number, time_unit)
+    header_html = template_env.get_template('detailed_report_summary_report_header.html').render(
+        start_time_str=start_time_str, end_time_str=end_time_str, heading="Secret Scan Report")
+    applied_filters_html = template_env.get_template('detailed_report_applied_filter.html').render(
+        applied_filter="Applied Filters" if filters_applied else "Filters Not Applied", data=filters_applied)
+
+    report_dict = {
+        "header_html": header_html,
+        "applied_filters_html": applied_filters_html,
+        "secret_table_html": secret_table_html,
+        "node_wise_secret_html": node_wise_secret_html
+    }
+
+    final_html = template_env.get_template('detailed_secret_report_summary.html').render(**report_dict)
+    return final_html
+
+
 def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resources,
                          include_dead_nodes, report_email):
-    add_report_status_in_es(report_id=report_id, status="In Progress",filters_applied_str=str({"filters": filters, "resources": resources}), file_type="xlsx",duration=f"{number}{time_unit}")
+    add_report_status_in_es(report_id=report_id, status="In Progress",
+                            filters_applied_str=str({"filters": filters, "resources": resources}), file_type="xlsx",
+                            duration=f"{number}{time_unit}")
     xlsx_buffer = prepare_report_download(
         node_type, filters, resources,
         {"duration": {"number": number, "time_unit": time_unit}}, include_dead_nodes)
     if report_email == "":
         report_file_name = "/data/xlsx-report/" + report_id + "/report.xlsx"
         headers = {"DF_FILE_NAME": report_file_name}
-        res = requests.post("https://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
-                            files={"DF_MULTIPART_BOUNDARY": xlsx_buffer}, verify=False)
+        res = requests.post("http://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
+                            files={"DF_MULTIPART_BOUNDARY": xlsx_buffer})
         if res.status_code == 200:
             add_report_status_in_es(
                 report_id=report_id, status="Completed",
@@ -438,7 +738,9 @@ def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resou
         else:
             add_report_status_in_es(
                 report_id=report_id, status="Error. Please try again later.",
-                filters_applied_str=str({"filters": {"filters": filters, "resources": resources}, "resources": resources}),file_type="xlsx",duration=f"{number}{time_unit}")
+                filters_applied_str=str(
+                    {"filters": {"filters": filters, "resources": resources}, "resources": resources}),
+                file_type="xlsx", duration=f"{number}{time_unit}")
     else:
         from tasks.email_sender import send_email_with_attachment
         email_html = prepare_report_email_body(
@@ -452,16 +754,20 @@ def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resou
 
 def generate_pdf_report(report_id, filters, node_type,
                         lucene_query_string, number, time_unit, resources, domain_name, report_email):
-    add_report_status_in_es(report_id=report_id, status="In Progress",filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf", duration=f"{number}{time_unit}")
+    add_report_status_in_es(report_id=report_id, status="In Progress",
+                            filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",
+                            duration=f"{number}{time_unit}")
     final_html = ""
     for resource in resources:
         resource_type = resource.get('type')
-        if resource_type == CVE_INDEX:
-            flask_app.logger.error("resources:{0}, resource:{1}, filters:{2}".format(str(resources), str(resource),
-                                                                                     str(filters)))
+        if resource_type == CVE_ES_TYPE:
             final_html += vulnerability_pdf_report(filters=filters, lucene_query_string=lucene_query_string,
                                                    number=number, time_unit=time_unit,
                                                    resource=resource.get("filter", {}))
+        elif resource_type == SECRET_SCAN_ES_TYPE:
+            final_html += vulnerability_pdf_report_secret(filters=filters, lucene_query_string=lucene_query_string,
+                                                          number=number, time_unit=time_unit,
+                                                          resource=resource.get("filter", {}))
     options = {
         'page-size': 'Letter',
         'margin-top': '0.5in',
@@ -478,16 +784,18 @@ def generate_pdf_report(report_id, filters, node_type,
     if report_email == "":
         headers = {"DF_FILE_NAME": report_file_name}
         with open(report_file_name, 'rb') as f:
-            res = requests.post("https://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
-                                files={"DF_MULTIPART_BOUNDARY": f}, verify=False)
+            res = requests.post("http://deepfence-fetcher:8006/df-api/uploadMultiPart", headers=headers,
+                                files={"DF_MULTIPART_BOUNDARY": f})
             if res.status_code == 200:
                 add_report_status_in_es(
                     report_id=report_id, status="Completed",
-                    filters_applied_str=str({"filters": filters, "resources": resources}),file_type="pdf", report_path=report_file_name,duration=f"{number}{time_unit}")
+                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",
+                    report_path=report_file_name, duration=f"{number}{time_unit}")
             else:
                 add_report_status_in_es(
                     report_id=report_id, status="Error. Please try again later.",
-                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",duration=f"{number}{time_unit}")
+                    filters_applied_str=str({"filters": filters, "resources": resources}), file_type="pdf",
+                    duration=f"{number}{time_unit}")
     else:
         from tasks.email_sender import send_email_with_attachment
         email_html = prepare_report_email_body(
@@ -528,4 +836,5 @@ def generate_report(self, **kwargs):
         flask_app.logger.error("Error creating report: {0} stackTrace: {1}".format(ex, traceback.format_exc()))
         add_report_status_in_es(
             report_id=report_id, status="Error. Please contact deepfence support",
-            filters_applied_str=str({"filters": filters, "resources": resources}), file_type=file_type,duration=f"{number}{time_unit}")
+            filters_applied_str=str({"filters": filters, "resources": resources}), file_type=file_type,
+            duration=f"{number}{time_unit}")

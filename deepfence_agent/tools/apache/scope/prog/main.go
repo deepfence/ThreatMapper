@@ -107,6 +107,7 @@ type probeFlags struct {
 	logPrefix              string
 	logLevel               string
 	resolver               string
+	resolveDomain          bool
 	noApp                  bool
 	noControls             bool
 	noCommandLineArguments bool
@@ -307,6 +308,7 @@ func setupFlags(flags *flags) {
 
 	flag.BoolVar(&flags.probe.insecure, "probe.insecure", false, "(SSL) explicitly allow \"insecure\" SSL connections and transfers")
 	flag.StringVar(&flags.probe.resolver, "probe.resolver", "", "IP address & port of resolver to use.  Default is to use system resolver.")
+	flag.BoolVar(&flags.probe.resolveDomain, "probe.resolve-domain", false, "")
 	flag.StringVar(&flags.probe.logPrefix, "probe.log.prefix", "<probe>", "prefix for each log line")
 	flag.StringVar(&flags.probe.logLevel, "probe.log.level", "info", "logging threshold level: debug|info|warn|error|fatal|panic")
 
