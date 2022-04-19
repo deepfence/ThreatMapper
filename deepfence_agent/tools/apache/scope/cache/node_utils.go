@@ -140,11 +140,14 @@ func (r *RedisCache) formatTopologyHostData(nodeSummaries detailed.NodeSummaries
 		{Name: "is_ui_vm", Label: "Console VM", Type: filterTypeBool, Options: []string{}, NumberOptions: nil},
 		{Name: "pseudo", Label: "Pseudo", Type: filterTypeBool, Options: []string{}, NumberOptions: nil},
 		{Name: "vulnerability_scan_status", Label: "Vulnerability Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
+		{Name: "secret_scan_status", Label: "Secret Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
 	}
-	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap map[string]string
+	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap map[string]string
 	r.nodeStatus.RLock()
 	nodeIdVulnerabilityStatusMap = r.nodeStatus.VulnerabilityScanStatus
 	nodeIdVulnerabilityStatusTimeMap = r.nodeStatus.VulnerabilityScanStatusTime
+	nodeIdSecretStatusMap = r.nodeStatus.SecretScanStatus
+	nodeIdSecretStatusTimeMap = r.nodeStatus.SecretScanStatusTime
 	r.nodeStatus.RUnlock()
 	var filtersHostName, filtersKernelVersion, filtersOs, filtersCloudProvider, filtersInstanceType []string
 	var filtersAvailabilityZone, filtersDataCenter, filtersZone, filtersLocation, filtersSKU []string
@@ -158,6 +161,11 @@ func (r *RedisCache) formatTopologyHostData(nodeSummaries detailed.NodeSummaries
 			dfTopology.VulnerabilityScanStatus = scanStatusNeverScanned
 		}
 		dfTopology.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap[dfTopology.HostName]
+		dfTopology.SecretScanStatus = nodeIdSecretStatusMap[dfTopology.HostName]
+		if dfTopology.SecretScanStatus == "" {
+			dfTopology.SecretScanStatus = scanStatusNeverScanned
+		}
+		dfTopology.SecretScanStatusTime = nodeIdSecretStatusTimeMap[dfTopology.HostName]
 		if dfTopology.AgentRunning == "no" {
 			noOfUnprotectedHosts += 1
 		}
@@ -385,11 +393,14 @@ func (r *RedisCache) formatTopologyContainerData(nodeSummaries detailed.NodeSumm
 		{Name: "pseudo", Label: "Pseudo", Type: filterTypeBool, Options: []string{}, NumberOptions: nil},
 		{Name: "docker_container_state", Label: "Container State", Type: filterTypeStr, Options: []string{dockerStateStopped, dockerStatePaused, dockerStateRunning}, NumberOptions: nil},
 		{Name: "vulnerability_scan_status", Label: "Vulnerability Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
+		{Name: "secret_scan_status", Label: "Secret Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
 	}
-	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap map[string]string
+	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap map[string]string
 	r.nodeStatus.RLock()
 	nodeIdVulnerabilityStatusMap = r.nodeStatus.VulnerabilityScanStatus
 	nodeIdVulnerabilityStatusTimeMap = r.nodeStatus.VulnerabilityScanStatusTime
+	nodeIdSecretStatusMap = r.nodeStatus.SecretScanStatus
+	nodeIdSecretStatusTimeMap = r.nodeStatus.SecretScanStatusTime
 	r.nodeStatus.RUnlock()
 	var filtersHostName, filtersUserDefinedTags, filtersImageName, filtersImageTag, filtersImageNameWithTag, filtersContainerName, filtersKubernetesClusterId, filtersKubernetesClusterName []string
 	for _, scopeTopology := range nodeSummaries {
@@ -399,6 +410,11 @@ func (r *RedisCache) formatTopologyContainerData(nodeSummaries detailed.NodeSumm
 			dfTopology.VulnerabilityScanStatus = scanStatusNeverScanned
 		}
 		dfTopology.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap[dfTopology.ImageNameWithTag]
+		dfTopology.SecretScanStatus = nodeIdSecretStatusMap[dfTopology.ImageNameWithTag]
+		if dfTopology.SecretScanStatus == "" {
+			dfTopology.SecretScanStatus = scanStatusNeverScanned
+		}
+		dfTopology.SecretScanStatusTime = nodeIdSecretStatusTimeMap[dfTopology.ImageNameWithTag]
 		if dfTopology.Pseudo == false && dfTopology.IsUiVm == false {
 			cnameSplit := strings.Split(dfTopology.ContainerName, "/")
 			if len(cnameSplit) > 1 {
@@ -524,11 +540,14 @@ func (r *RedisCache) formatTopologyContainerImageData(nodeSummaries detailed.Nod
 	topologyFilters := []TopologyFilterOption{
 		{Name: "pseudo", Label: "Pseudo", Type: filterTypeBool, Options: []string{}, NumberOptions: nil},
 		{Name: "vulnerability_scan_status", Label: "Vulnerability Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
+		{Name: "secret_scan_status", Label: "Secret Scan Status", Type: filterTypeStr, Options: []string{"queued", "in_progress", "complete", "error", "never_scanned"}, NumberOptions: nil},
 	}
-	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap map[string]string
+	var nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap map[string]string
 	r.nodeStatus.RLock()
 	nodeIdVulnerabilityStatusMap = r.nodeStatus.VulnerabilityScanStatus
 	nodeIdVulnerabilityStatusTimeMap = r.nodeStatus.VulnerabilityScanStatusTime
+	nodeIdSecretStatusMap = r.nodeStatus.SecretScanStatus
+	nodeIdSecretStatusTimeMap = r.nodeStatus.SecretScanStatusTime
 	r.nodeStatus.RUnlock()
 	var filtersUserDefinedTags, filtersImageName, filtersImageTag, filtersImageNameWithTag []string
 	for _, scopeTopology := range nodeSummaries {
@@ -538,6 +557,11 @@ func (r *RedisCache) formatTopologyContainerImageData(nodeSummaries detailed.Nod
 			dfTopology.VulnerabilityScanStatus = scanStatusNeverScanned
 		}
 		dfTopology.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap[dfTopology.ImageNameWithTag]
+		dfTopology.SecretScanStatus = nodeIdSecretStatusMap[dfTopology.ImageNameWithTag]
+		if dfTopology.SecretScanStatus == "" {
+			dfTopology.SecretScanStatus = scanStatusNeverScanned
+		}
+		dfTopology.SecretScanStatusTime = nodeIdSecretStatusTimeMap[dfTopology.ImageNameWithTag]
 		if dfTopology.Pseudo == false {
 			noOfImages += 1
 			if dfTopology.ImageName != "" && !InArray(dfTopology.ImageName, filtersImageName) {

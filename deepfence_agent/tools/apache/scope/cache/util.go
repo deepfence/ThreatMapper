@@ -425,6 +425,8 @@ type DeepfenceTopology struct {
 	ScopeId                      string              `json:"scope_id,omitempty"`
 	VulnerabilityScanStatus      string              `json:"vulnerability_scan_status,omitempty"`
 	VulnerabilityScanStatusTime  string              `json:"vulnerability_scan_status_time,omitempty"`
+	SecretScanStatus             string              `json:"secret_scan_status,omitempty"`
+	SecretScanStatusTime         string              `json:"secret_scan_status_time,omitempty"`
 }
 
 type TopologyFilterNumberOption struct {
