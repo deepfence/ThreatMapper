@@ -31,6 +31,8 @@ building_image(){
         exit 1
     fi
 
+    wget -P fargate/misc https://deepfence-public.s3.amazonaws.com/ThreatMapper/fargate/scanners-1.3.0.tar.gz
+
     rm -rf fargate/bin
     wget https://deepfence-public.s3.amazonaws.com/ThreatMapper/fargate/fargate_bin.zip
     unzip fargate_bin.zip -d fargate
