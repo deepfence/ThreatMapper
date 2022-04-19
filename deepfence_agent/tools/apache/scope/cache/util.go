@@ -19,6 +19,8 @@ import (
 type NodeStatus struct {
 	VulnerabilityScanStatus     map[string]string
 	VulnerabilityScanStatusTime map[string]string
+	SecretScanStatus            map[string]string
+	SecretScanStatusTime        map[string]string
 	sync.RWMutex
 }
 
@@ -70,24 +72,25 @@ const (
 	filterTypeStr                    = "string"
 	filterTypeNumber                 = "number"
 	filterTypeBool                   = "bool"
-	cveScanLogsEsIndex               = "cve-scan"
 	scanStatusNeverScanned           = "never_scanned"
 	esAggsSize                       = 50000
 )
 
 var (
-	TopologyIdNodeTypeMap  map[string]string
-	AllNodeTypes           []string
-	vulnerabilityStatusMap map[string]string
+	TopologyIdNodeTypeMap map[string]string
+	AllNodeTypes          []string
+	statusMap             map[string]string
+	cveScanLogsEsIndex    = "cve-scan"
+	secretScanLogsEsIndex = "secret-scan-logs"
 )
 
 func init() {
 	AllNodeTypes = []string{NodeTypeHost, NodeTypeContainer, NodeTypeContainerByName, NodeTypeContainerImage, NodeTypeProcess,
 		NodeTypeProcessByName, NodeTypePod, NodeTypeKubeController, NodeTypeKubeService, NodeTypeSwarmService}
-	vulnerabilityStatusMap = map[string]string{
+	statusMap = map[string]string{
 		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
-		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "UPLOADING_IMAGE": "in_progress",
-		"UPLOAD_COMPLETE": "in_progress"}
+		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
+		"GENERATED_SBOM": "in_progress", "IN_PROGRESS": "in_progress", "COMPLETE": "complete"}
 	TopologyIdNodeTypeMap = map[string]string{
 		TopologyIdPod:             NodeTypePod,
 		TopologyIdContainer:       NodeTypeContainer,
@@ -99,6 +102,12 @@ func init() {
 		TopologyIdProcess:         NodeTypeProcess,
 		TopologyIdProcessByName:   NodeTypeProcessByName,
 		TopologyIdSwarmService:    NodeTypeSwarmService,
+	}
+
+	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
+	if customerUniqueId != "" {
+		cveScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+		secretScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
 	}
 }
 

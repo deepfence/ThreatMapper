@@ -4,11 +4,6 @@ WORKDIR /go/logstashPubSubReader
 ADD tasks/logstashPubSubReader /go/logstashPubSubReader/
 RUN go build -o logstashPubSubReader .
 
-ADD websocket_api/scope_websocket_client /go/scope_websocket_client
-WORKDIR /go/scope_websocket_client
-RUN go build -o websocket_client websocket_client.go helper.go main.go node_utils.go \
-    && go build -o websocket_server websocket_server.go helper.go main.go node_utils.go
-
 FROM steampipe_build:latest AS steampipe-build
 
 FROM python:3.9-slim-bullseye
@@ -75,14 +70,12 @@ ADD supervisord_celery.conf /etc/supervisor/supervisord_celery.conf
 ADD supervisord_api.conf /etc/supervisor/supervisord_api.conf
 
 COPY . /app/code
-COPY --from=build /go/scope_websocket_client/websocket_client /app/code/websocket_api/websocket_client
-COPY --from=build /go/scope_websocket_client/websocket_server /app/code/websocket_api/websocket_server
 COPY --from=build /go/logstashPubSubReader/logstashPubSubReader /app/code/tasks/logstashPubSubReader/logstashPubSubReader
 
 RUN chmod +x /app/code/dockerify/api/entrypoint.sh /app/code/dockerify/api/init_es_config.sh /app/code/dockerify/celery/entrypoint.sh /app/code/dockerify/backend/entrypoint.sh \
-    && rm -f /app/code/.gitignore /app/code/requirements.txt /app/code/websocket_api/*.go \
+    && rm -f /app/code/.gitignore /app/code/requirements.txt \
     /app/code/dockerify/api/Dockerfile \
-    && rm -rf /app/code/.git /app/code/unused /app/code/tests /app/code/scripts /app/code/websocket_api/scope_websocket_client \
+    && rm -rf /app/code/.git /app/code/unused /app/code/tests /app/code/scripts \
     /app/code/dockerify/haproxy /app/code/tasks/logstashPubSubReader/*.go \
     && openssl genrsa -out /app/code/rs256.pem 2048 \
     && openssl rsa -in /app/code/rs256.pem -pubout -outform PEM -out /app/code/rs256.pub

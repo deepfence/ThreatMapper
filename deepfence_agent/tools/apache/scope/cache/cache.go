@@ -183,6 +183,13 @@ func (r *RedisCache) scopeTopologyFixes(nodeSummaries *detailed.NodeSummaries) e
 }
 
 func (r *RedisCache) getEsData() error {
+	var esClient *elastic.Client
+	var err error
+
+	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
+	if esScheme == "" {
+		esScheme = "http"
+	}
 	esHost := os.Getenv("ELASTICSEARCH_HOST")
 	if esHost == "" {
 		esHost = "deepfence-es"
@@ -191,11 +198,23 @@ func (r *RedisCache) getEsData() error {
 	if esPort == "" {
 		esPort = "9200"
 	}
-	esClient, err := elastic.NewClient(
-		elastic.SetHealthcheck(false),
-		elastic.SetSniff(false),
-		elastic.SetURL("http://"+esHost+":"+esPort),
-	)
+	esUsername := os.Getenv("ELASTICSEARCH_USER")
+	esPassword := os.Getenv("ELASTICSEARCH_PASSWORD")
+
+	if esUsername != "" && esPassword != "" {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+			elastic.SetBasicAuth(esUsername, esPassword),
+		)
+	} else {
+		esClient, err = elastic.NewClient(
+			elastic.SetHealthcheck(false),
+			elastic.SetSniff(false),
+			elastic.SetURL(esScheme+"://"+esHost+":"+esPort),
+		)
+	}
 	if err != nil {
 		return err
 	}
@@ -228,6 +247,14 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 	statusAggs.SubAggregation("scan_recent_timestamp", recentTimestampAggs)
 	nodeIdAggs.SubAggregation("action", statusAggs)
 	esQuery := elastic.NewSearchRequest().Index(cveScanLogsEsIndex).Query(elastic.NewMatchAllQuery()).Size(0).Aggregation("node_id", nodeIdAggs)
+	mSearch.Add(esQuery)
+
+	nodeIdAggs = elastic.NewTermsAggregation().Field("node_id.keyword").Size(esAggsSize)
+	statusAggs = elastic.NewTermsAggregation().Field("scan_status.keyword").Size(50)
+	recentTimestampAggs = elastic.NewMaxAggregation().Field("@timestamp")
+	statusAggs.SubAggregation("secret_scan_timestamp", recentTimestampAggs)
+	nodeIdAggs.SubAggregation("secret_scan_status", statusAggs)
+	esQuery = elastic.NewSearchRequest().Index(secretScanLogsEsIndex).Query(elastic.NewMatchAllQuery()).Size(0).Aggregation("node_id", nodeIdAggs)
 	mSearch.Add(esQuery)
 
 	mSearchResult, err := mSearch.Do(context.Background())
@@ -265,7 +292,7 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 				}
 			}
 		}
-		latestStatus, ok = vulnerabilityStatusMap[latestStatus]
+		latestStatus, ok = statusMap[latestStatus]
 		if !ok {
 			latestStatus = scanStatusNeverScanned
 		}
@@ -275,6 +302,49 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 	r.nodeStatus.Lock()
 	r.nodeStatus.VulnerabilityScanStatus = nodeIdVulnerabilityStatusMap
 	r.nodeStatus.VulnerabilityScanStatusTime = nodeIdVulnerabilityStatusTimeMap
+	r.nodeStatus.Unlock()
+
+	nodeIdSecretStatusMap := make(map[string]string)
+	nodeIdSecretStatusTimeMap := make(map[string]string)
+	secretResp := mSearchResult.Responses[1]
+	nodeIdAggsBkt, ok = secretResp.Aggregations.Terms("node_id")
+	if !ok {
+		return nil
+	}
+	for _, nodeIdAggs := range nodeIdAggsBkt.Buckets {
+		if nodeIdAggs.Key.(string) == "" {
+			continue
+		}
+		latestScanTime := 0.0
+		var latestStatus, latestScanTimeStr string
+		scanStatusBkt, ok := nodeIdAggs.Aggregations.Terms("secret_scan_status")
+		if !ok {
+			continue
+		}
+		for _, scanStatusAggs := range scanStatusBkt.Buckets {
+			recentTimestampBkt, ok := scanStatusAggs.Aggregations.Max("secret_scan_timestamp")
+			if !ok || recentTimestampBkt == nil || recentTimestampBkt.Value == nil {
+				continue
+			}
+			if *recentTimestampBkt.Value > latestScanTime {
+				latestScanTime = *recentTimestampBkt.Value
+				latestStatus = scanStatusAggs.Key.(string)
+				valueAsStr, ok := recentTimestampBkt.Aggregations["value_as_string"]
+				if ok {
+					latestScanTimeStr = strings.ReplaceAll(string(valueAsStr), "\"", "")
+				}
+			}
+		}
+		latestStatus, ok = statusMap[latestStatus]
+		if !ok {
+			latestStatus = scanStatusNeverScanned
+		}
+		nodeIdSecretStatusMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestStatus
+		nodeIdSecretStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
+	}
+	r.nodeStatus.Lock()
+	r.nodeStatus.SecretScanStatus = nodeIdSecretStatusMap
+	r.nodeStatus.SecretScanStatusTime = nodeIdSecretStatusTimeMap
 	r.nodeStatus.Unlock()
 	return nil
 }
