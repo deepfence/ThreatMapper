@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gomodule/redigo/redis"
+	"github.com/olivere/elastic/v7"
+	"github.com/sirupsen/logrus"
+	redisCache "github.com/weaveworks/scope/cache"
 	"os"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/gomodule/redigo/redis"
-	"github.com/olivere/elastic/v7"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -348,8 +348,7 @@ func NewStatus() (*Status, error) {
 		return &status, err
 	}
 	status.esClient = esClient
-
-	status.redisPool, _ = newRedisPool()
+	status.redisPool, _ = redisCache.NewRedisPool()
 	if status.redisPool == nil {
 		return nil, errors.New("could not create redis pool connection")
 	}

@@ -1,22 +1,30 @@
-package main
+package cache
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/url"
+	"github.com/ugorji/go/codec"
+	"github.com/weaveworks/scope/report"
 	"os"
 	"os/exec"
 	"reflect"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
 )
 
+type NodeStatus struct {
+	VulnerabilityScanStatus     map[string]string
+	VulnerabilityScanStatusTime map[string]string
+	SecretScanStatus            map[string]string
+	SecretScanStatusTime        map[string]string
+	sync.RWMutex
+}
+
 const (
-	ScopeWsScheme                    = "ws"
-	ScopeBaseUrl                     = "deepfence-topology:8004"
 	NodeTypeHost                     = "host"
 	NodeTypeContainer                = "container"
 	NodeTypeProcess                  = "process"
@@ -69,9 +77,7 @@ const (
 )
 
 var (
-	ScopeWebSocketUrl     map[string]url.URL
 	TopologyIdNodeTypeMap map[string]string
-	RedisAddr             string
 	AllNodeTypes          []string
 	statusMap             map[string]string
 	cveScanLogsEsIndex    = "cve-scan"
@@ -85,19 +91,6 @@ func init() {
 		"QUEUED": "queued", "STARTED": "in_progress", "SCAN_IN_PROGRESS": "in_progress", "WARN": "in_progress",
 		"COMPLETED": "complete", "ERROR": "error", "STOPPED": "error", "GENERATING_SBOM": "in_progress",
 		"GENERATED_SBOM": "in_progress", "IN_PROGRESS": "in_progress", "COMPLETE": "complete"}
-	RedisAddr = fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
-	ScopeWebSocketUrl = map[string]url.URL{
-		NodeTypeHost:            {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/hosts/ws", RawQuery: "t=5s"},
-		NodeTypeContainer:       {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/containers/ws", RawQuery: "system=application&stopped=both&pseudo=show&t=5s"},
-		NodeTypeContainerByName: {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/containers-by-hostname/ws", RawQuery: "system=application&stopped=both&pseudo=show&t=5s"},
-		NodeTypeContainerImage:  {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/containers-by-image/ws", RawQuery: "system=application&stopped=both&pseudo=show&t=5s"},
-		NodeTypeProcess:         {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/processes/ws", RawQuery: "unconnected=show&t=5s"},
-		NodeTypeProcessByName:   {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/processes-by-name/ws", RawQuery: "unconnected=show&t=5s"},
-		NodeTypePod:             {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/pods/ws", RawQuery: "snapshot=hide&storage=hide&pseudo=show&namespace=&t=5s"},
-		NodeTypeKubeController:  {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/kube-controllers/ws", RawQuery: "pseudo=show&namespace=&t=5s"},
-		NodeTypeKubeService:     {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/services/ws", RawQuery: "pseudo=show&namespace=&t=5s"},
-		NodeTypeSwarmService:    {Scheme: ScopeWsScheme, Host: ScopeBaseUrl, Path: "/topology-api/topology/swarm-services/ws", RawQuery: "pseudo=show&namespace=&t=5s"},
-	}
 	TopologyIdNodeTypeMap = map[string]string{
 		TopologyIdPod:             NodeTypePod,
 		TopologyIdContainer:       NodeTypeContainer,
@@ -116,31 +109,6 @@ func init() {
 		cveScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
 		secretScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
 	}
-}
-
-func newRedisPool() (*redis.Pool, int) {
-	var dbNumInt int
-	var errVal error
-	dbNumStr := os.Getenv("REDIS_DB_NUMBER")
-	if dbNumStr == "" {
-		dbNumInt = 0
-	} else {
-		dbNumInt, errVal = strconv.Atoi(dbNumStr)
-		if errVal != nil {
-			dbNumInt = 0
-		}
-	}
-	return &redis.Pool{
-		MaxIdle:   10,
-		MaxActive: 30, // max number of connections
-		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", RedisAddr, redis.DialDatabase(dbNumInt))
-			if err != nil {
-				return nil, err
-			}
-			return c, err
-		},
-	}, dbNumInt
 }
 
 func uniqueSlice(strSlice []string) []string {
@@ -200,6 +168,15 @@ func JsonEncode(data interface{}) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func CodecEncode(data interface{}) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := codec.NewEncoder(buf, &codec.JsonHandle{}).Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
 func (topologyOptions *TopologyOptions) TopologyOptionsValidate() {
 	// container?format=deepfence&pseudo=show&stopped=both
 	topologyParams := topologyOptions.Params
@@ -221,17 +198,17 @@ func (topologyOptions *TopologyOptions) TopologyOptionsValidate() {
 	}
 
 	if topologyOptions.NodeType == NodeTypeHost {
-		topologyOptions.Channel = fmt.Sprintf("%s?format=%s", topologyOptions.NodeType, topologyParams.Format)
+		topologyOptions.Key = fmt.Sprintf("%s?format=%s", topologyOptions.NodeType, topologyParams.Format)
 	} else if topologyOptions.NodeType == NodeTypeContainer || topologyOptions.NodeType == NodeTypeContainerByName || topologyOptions.NodeType == NodeTypeContainerImage {
-		topologyOptions.Channel = fmt.Sprintf("%s?stopped=%s&pseudo=%s&format=%s", topologyOptions.NodeType, topologyParams.Stopped, topologyParams.Pseudo, topologyParams.Format)
+		topologyOptions.Key = fmt.Sprintf("%s?stopped=%s&pseudo=%s&format=%s", topologyOptions.NodeType, topologyParams.Stopped, topologyParams.Pseudo, topologyParams.Format)
 	} else if topologyOptions.NodeType == NodeTypeProcess || topologyOptions.NodeType == NodeTypeProcessByName {
-		topologyOptions.Channel = fmt.Sprintf("%s?unconnected=%s&format=%s", topologyOptions.NodeType, topologyParams.Unconnected, topologyParams.Format)
+		topologyOptions.Key = fmt.Sprintf("%s?unconnected=%s&format=%s", topologyOptions.NodeType, topologyParams.Unconnected, topologyParams.Format)
 	} else if topologyOptions.NodeType == NodeTypePod {
-		topologyOptions.Channel = fmt.Sprintf("%s?namespace=%s&pseudo=%s&format=%s", topologyOptions.NodeType, topologyParams.Namespace, topologyParams.Pseudo, topologyParams.Format)
+		topologyOptions.Key = fmt.Sprintf("%s?namespace=%s&pseudo=%s&format=%s", topologyOptions.NodeType, topologyParams.Namespace, topologyParams.Pseudo, topologyParams.Format)
 	} else if topologyOptions.NodeType == NodeTypeKubeController || topologyOptions.NodeType == NodeTypeKubeService || topologyOptions.NodeType == NodeTypeSwarmService {
-		topologyOptions.Channel = fmt.Sprintf("%s?namespace=%s&pseudo=%s&format=%s", topologyOptions.NodeType, topologyParams.Namespace, topologyParams.Pseudo, topologyParams.Format)
+		topologyOptions.Key = fmt.Sprintf("%s?namespace=%s&pseudo=%s&format=%s", topologyOptions.NodeType, topologyParams.Namespace, topologyParams.Pseudo, topologyParams.Format)
 	} else {
-		topologyOptions.Channel = ""
+		topologyOptions.Key = ""
 	}
 }
 
@@ -260,28 +237,12 @@ type TopologyParams struct {
 type TopologyOptions struct {
 	NodeType string         `json:"node_type"`
 	Params   TopologyParams `json:"params"`
-	Channel  string         `json:"channel"`
+	Key      string         `json:"channel"`
 }
 
 type MetricSample struct {
 	Timestamp time.Time `json:"date,omitempty"`
 	Value     float64   `json:"value,omitempty"`
-}
-
-type Metric struct {
-	ID         string         `json:"id,omitempty"`
-	Label      string         `json:"label,omitempty"`
-	Format     string         `json:"format,omitempty"`
-	Group      string         `json:"group,omitempty"`
-	Value      float64        `json:"value,omitempty"`
-	ValueEmpty bool           `json:"valueEmpty,omitempty"`
-	Priority   float64        `json:"priority,omitempty"`
-	Samples    []MetricSample `json:"samples"`
-	Min        float64        `json:"min,omitempty"`
-	Max        float64        `json:"max,omitempty"`
-	First      time.Time      `json:"first,omitempty"`
-	Last       time.Time      `json:"last,omitempty"`
-	URL        string         `json:"url,omitempty"`
 }
 
 type TableRow struct {
@@ -313,30 +274,10 @@ type ScopeMetadata struct {
 	Truncate int     `json:"truncate,omitempty"`
 }
 
-type Parent struct {
-	ID         string `json:"id,omitempty"`
-	Label      string `json:"label,omitempty"`
-	TopologyID string `json:"topologyId,omitempty"`
-}
-
 type ParentNode struct {
 	ID    string `json:"id,omitempty"`
 	Label string `json:"label,omitempty"`
 	Type  string `json:"type"`
-}
-
-type ScopeTopology struct {
-	ID         string          `json:"id,omitempty"`
-	Label      string          `json:"label,omitempty"`
-	LabelMinor string          `json:"labelMinor,omitempty"`
-	Rank       string          `json:"rank,omitempty"`
-	Shape      string          `json:"shape,omitempty"`
-	Metadata   []ScopeMetadata `json:"metadata,omitempty"`
-	Parents    []Parent        `json:"parents,omitempty"`
-	Metrics    []Metric        `json:"metrics,omitempty"`
-	Tables     []TopologyTable `json:"tables,omitempty"`
-	Adjacency  []string        `json:"adjacency,omitempty"`
-	Pseudo     bool            `json:"pseudo"`
 }
 
 type CloudMetadata struct {
@@ -439,7 +380,6 @@ type DeepfenceTopology struct {
 	PodName                      string              `json:"pod_name,omitempty"`
 	Pid                          int                 `json:"pid,omitempty"`
 	Cmdline                      string              `json:"cmdline,omitempty"`
-	OpenFiles                    string              `json:"OpenFiles,omitempty"`
 	Ppid                         int                 `json:"ppid,omitempty"`
 	Threads                      int                 `json:"threads,omitempty"`
 	Process                      string              `json:"process,omitempty"`
@@ -480,13 +420,11 @@ type DeepfenceTopology struct {
 	DockerImageVirtualSize       string              `json:"docker_image_virtual_size,omitempty"`
 	DockerImageID                string              `json:"docker_image_id,omitempty"`
 	IsUiVm                       bool                `json:"is_ui_vm,omitempty"`
-	Metrics                      []Metric            `json:"metrics,omitempty"`
+	Metrics                      []report.MetricRow  `json:"metrics,omitempty"`
 	SwarmStackNamespace          string              `json:"stack_namespace,omitempty"`
 	ScopeId                      string              `json:"scope_id,omitempty"`
 	VulnerabilityScanStatus      string              `json:"vulnerability_scan_status,omitempty"`
 	VulnerabilityScanStatusTime  string              `json:"vulnerability_scan_status_time,omitempty"`
-	SecretScanStatus             string              `json:"secret_scan_status,omitempty"`
-	SecretScanStatusTime         string              `json:"secret_scan_status_time,omitempty"`
 }
 
 type TopologyFilterNumberOption struct {
@@ -504,91 +442,36 @@ type TopologyFilterOption struct {
 
 type ConnectedProcesses interface{}
 
-func multiRemoveFromSlice(data *[]string, ids []string) {
-	m := make(map[string]bool, len(ids))
-	for _, id := range ids {
-		m[id] = true
-	}
-	s, x := *data, 0
-	for _, r := range s {
-		if !m[r] {
-			s[x] = r
-			x++
+func NewRedisPool() (*redis.Pool, int) {
+	var dbNumInt int
+	var errVal error
+	dbNumStr := os.Getenv("REDIS_DB_NUMBER")
+	if dbNumStr == "" {
+		dbNumInt = 0
+	} else {
+		dbNumInt, errVal = strconv.Atoi(dbNumStr)
+		if errVal != nil {
+			dbNumInt = 0
 		}
 	}
-	*data = s[0:x]
-}
-
-func multiRemoveFromScopeTopologySlice(data *[]ScopeTopology, ids []string) {
-	m := make(map[string]bool, len(ids))
-	for _, id := range ids {
-		m[id] = true
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		redisHost = "deepfence-redis"
 	}
-	s, x := *data, 0
-	for _, r := range s {
-		if !m[r.ID] {
-			s[x] = r
-			x++
-		}
+	redisPort := os.Getenv("REDIS_PORT")
+	if redisPort == "" {
+		redisPort = "6379"
 	}
-	*data = s[0:x]
-}
-
-func multiRemoveFromDfTopologySlice(data *[]DeepfenceTopology, ids []string) {
-	m := make(map[string]bool, len(ids))
-	for _, id := range ids {
-		m[id] = true
-	}
-	s, x := *data, 0
-	for _, r := range s {
-		if !m[r.ID] {
-			s[x] = r
-			x++
-		}
-	}
-	*data = s[0:x]
-}
-
-func DeepCopyDfTopology(originalMap map[string]DeepfenceTopology) map[string]DeepfenceTopology {
-	newMap := map[string]DeepfenceTopology{}
-	for k, v := range originalMap {
-		newMap[k] = v
-	}
-	return newMap
-}
-
-func DeepCopyScopeTopology(originalMap map[string]ScopeTopology) map[string]ScopeTopology {
-	newMap := map[string]ScopeTopology{}
-	for k, v := range originalMap {
-		newMap[k] = v
-	}
-	return newMap
-}
-
-func (scopeTopologyDiff *ScopeTopologyDiff) deleteIdsFromScopeTopologyDiff(deleteNodeIds []string) {
-	multiRemoveFromSlice(&scopeTopologyDiff.Remove, deleteNodeIds)
-	multiRemoveFromScopeTopologySlice(&scopeTopologyDiff.Add, deleteNodeIds)
-	multiRemoveFromScopeTopologySlice(&scopeTopologyDiff.Update, deleteNodeIds)
-}
-
-func (dfTopologyDiff *DeepfenceTopologyDiff) deleteIdsFromDfTopologyDiff(deleteNodeIds []string) {
-	multiRemoveFromSlice(&dfTopologyDiff.Remove, deleteNodeIds)
-	multiRemoveFromDfTopologySlice(&dfTopologyDiff.Add, deleteNodeIds)
-	multiRemoveFromDfTopologySlice(&dfTopologyDiff.Update, deleteNodeIds)
-}
-
-type ScopeTopologyDiff struct {
-	Add     []ScopeTopology `json:"add"`
-	Update  []ScopeTopology `json:"update"`
-	Remove  []string        `json:"remove"`
-	Reset   bool            `json:"reset"`
-	Options TopologyOptions `json:"options"`
-}
-
-type DeepfenceTopologyDiff struct {
-	Add     []DeepfenceTopology `json:"add"`
-	Update  []DeepfenceTopology `json:"update"`
-	Remove  []string            `json:"remove"`
-	Reset   bool                `json:"reset"`
-	Options TopologyOptions     `json:"options"`
+	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
+	return &redis.Pool{
+		MaxIdle:   5,
+		MaxActive: 10, // max number of connections
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", redisAddr, redis.DialDatabase(dbNumInt))
+			if err != nil {
+				return nil, err
+			}
+			return c, err
+		},
+	}, dbNumInt
 }
