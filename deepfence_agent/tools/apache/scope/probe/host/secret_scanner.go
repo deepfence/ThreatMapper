@@ -293,7 +293,7 @@ func NewSecretScanner() (*SecretScanner, error) {
 		command.Env = append(command.Env, fmt.Sprintf("LD_LIBRARY_PATH=%s", os.Getenv("SECRET_SCANNER_LD_LIBRARY_PATH")))
 	}
 
-	cmdReader, err := command.StdoutPipe()
+	cmdReader, err := command.StderrPipe()
 	if err != nil {
 		return nil, err
 	}
