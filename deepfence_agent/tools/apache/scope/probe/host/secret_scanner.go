@@ -31,6 +31,7 @@ const (
 	ssEbpfExePath           = "/home/deepfence/bin/SecretScanner"
 	ssEbpfExePathServerless = "/deepfence/bin/SecretScanner"
 	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
+	memLockSize             = "--memlock=8388608"
 	ebpfOptFormat           = "--socket-path=%s"
 	serverRestartAttempts   = 1
 	defaultScanConcurrency  = 5
@@ -283,14 +284,15 @@ func NewSecretScanner() (*SecretScanner, error) {
 	ebpfSocket := generateSocketString()
 	scannerExePath := ssEbpfExePath
 	scannerLogPath := ssEbpfLogPath
+	command := exec.Command("prlimit", memLockSize, scannerExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
 	if os.Getenv("DF_SERVERLESS") == "true" {
 		scannerExePath = ssEbpfExePathServerless
 		scannerLogPath = getDfInstallDir() + ssEbpfLogPath
+		command = exec.Command(scannerExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
+		command.Env = os.Environ()
+		command.Env = append(command.Env, fmt.Sprintf("LD_LIBRARY_PATH=%s", os.Getenv("SECRET_SCANNER_LD_LIBRARY_PATH")))
 	}
-	command := exec.Command(scannerExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
 
-	command.Env = os.Environ()
-	command.Env = append(command.Env, fmt.Sprintf("LD_LIBRARY_PATH=%s", os.Getenv("SECRET_SCANNER_LD_LIBRARY_PATH")))
 	cmdReader, err := command.StdoutPipe()
 	if err != nil {
 		return nil, err
