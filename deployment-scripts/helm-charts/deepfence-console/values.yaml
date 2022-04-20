@@ -55,6 +55,8 @@ db:
     scheme: "http"
     host: deepfence-es
     port: "9200"
+    user: ""
+    password: ""
   redis:
     host: deepfence-redis
     port: "6379"
@@ -73,6 +75,8 @@ agentServiceName: deepfence-router
 
 # Show console vm in management console UI
 runConsoleDiscovery: "true"
+# Run UI pod
+runUIPod: "true"
 
 vulnerabilityScanConcurrency: "15"
 

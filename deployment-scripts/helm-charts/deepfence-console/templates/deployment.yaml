@@ -60,6 +60,10 @@ spec:
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
             - name: ELASTICSEARCH_SCHEME
               value: "{{ .Values.db.elasticsearch.scheme }}"
+            - name: ELASTICSEARCH_USER
+              value: "{{ .Values.db.elasticsearch.user }}"
+            - name: ELASTICSEARCH_PASSWORD
+              value: "{{ .Values.db.elasticsearch.password }}"
             - name: ELASTICSEARCH_HOST
               value: "{{ .Values.db.elasticsearch.host }}"
             - name: ELASTICSEARCH_PORT
@@ -121,6 +125,21 @@ spec:
         - name: deepfence-topology
           image: "{{ .Values.image.repository }}deepfence_discovery_ce:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: ELASTICSEARCH_SCHEME
+            value: "{{ .Values.db.elasticsearch.scheme }}"
+          - name: ELASTICSEARCH_USER
+            value: "{{ .Values.db.elasticsearch.user }}"
+          - name: ELASTICSEARCH_PASSWORD
+            value: "{{ .Values.db.elasticsearch.password }}"
+          - name: ELASTICSEARCH_HOST
+            value: "{{ .Values.db.elasticsearch.host }}"
+          - name: ELASTICSEARCH_PORT
+            value: "{{ .Values.db.elasticsearch.port }}"
+          - name: REDIS_HOST
+            value: "{{ .Values.db.redis.host }}"
+          - name: REDIS_PORT
+            value: "{{ .Values.db.redis.port }}"
           args:
             - topology
           ports:
@@ -331,6 +350,10 @@ spec:
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
             - name: ELASTICSEARCH_SCHEME
               value: "{{ .Values.db.elasticsearch.scheme }}"
+            - name: ELASTICSEARCH_USER
+              value: "{{ .Values.db.elasticsearch.user }}"
+            - name: ELASTICSEARCH_PASSWORD
+              value: "{{ .Values.db.elasticsearch.password }}"
             - name: ELASTICSEARCH_HOST
               value: "{{ .Values.db.elasticsearch.host }}"
             - name: ELASTICSEARCH_PORT
@@ -459,6 +482,10 @@ spec:
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
             - name: ELASTICSEARCH_SCHEME
               value: "{{ .Values.db.elasticsearch.scheme }}"
+            - name: ELASTICSEARCH_USER
+              value: "{{ .Values.db.elasticsearch.user }}"
+            - name: ELASTICSEARCH_PASSWORD
+              value: "{{ .Values.db.elasticsearch.password }}"
             - name: ELASTICSEARCH_HOST
               value: "{{ .Values.db.elasticsearch.host }}"
             - name: ELASTICSEARCH_PORT
@@ -598,6 +625,10 @@ spec:
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
             - name: ELASTICSEARCH_SCHEME
               value: "{{ .Values.db.elasticsearch.scheme }}"
+            - name: ELASTICSEARCH_USER
+              value: "{{ .Values.db.elasticsearch.user }}"
+            - name: ELASTICSEARCH_PASSWORD
+              value: "{{ .Values.db.elasticsearch.password }}"
             - name: ELASTICSEARCH_HOST
               value: "{{ .Values.db.elasticsearch.host }}"
             - name: ELASTICSEARCH_PORT
@@ -627,6 +658,7 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
 ---
+{{- if eq "true" .Values.runUIPod }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -674,6 +706,7 @@ spec:
 {{- end }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
