@@ -10,6 +10,18 @@ const BACKEND_HOST = process.env.BACKEND_HOST || 'deepfence-topology';
 const BACKEND_PORT = process.env.BACKEND_PORT || '8004';
 
 /**
+ * inject runtime env variables.
+ * sensitive variables should not go here.
+ */
+ app.get('/env-config.js', (_, res) => {
+  res.send(`
+    window._env = {
+      env: ${process.env.NODE_ENV || `'development'`}
+    };
+  `);
+});
+
+/**
  *
  * Proxy requests to:
  *   - /api -> :4040/api
