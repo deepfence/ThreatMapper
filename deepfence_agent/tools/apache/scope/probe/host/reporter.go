@@ -24,7 +24,7 @@ import (
 
 // Agent version to dispay in metadata
 var (
-	agentVersionNo = "1.3.0"
+	agentVersionNo = "1.3.1"
 	agentCommitID  = "Unknown"
 	agentBuildTime = "0"
 	agentRunning   = "yes"

@@ -101,6 +101,7 @@ spec:
       protocol: TCP
       targetPort: 4041
 ---
+{{- if eq "true" .Values.runUIPod }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -118,6 +119,7 @@ spec:
       port: 4042
       protocol: TCP
       targetPort: 4042
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
