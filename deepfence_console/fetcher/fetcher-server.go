@@ -246,7 +246,7 @@ func runCommand(name string, args ...string) (stdout string, stderr string, exit
 }
 
 func extractTarFile(fileName string, extractFolder string) error {
-	_, stdErr, retVal := runCommand("tar", "-xf", fileName, "--warning=none", "-C"+extractFolder)
+	_, stdErr, retVal := runCommand("tar", "-xf", fileName, "-C"+extractFolder)
 	if retVal != 0 {
 		return errors.New(stdErr)
 	}
@@ -443,6 +443,82 @@ func checkOwaspDependencyDataDownloading() bool {
 		return false
 	}
 	return true
+}
+
+func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
+	if req.Method != "POST" {
+		http.Error(respWrite, "Invalid request", http.StatusInternalServerError)
+		return
+	}
+
+	// Maximum upload of 150 MB files
+	req.ParseMultipartForm(150 << 20)
+
+	inputFilePtr, handler, errVal := req.FormFile("file")
+	if handler == nil {
+		errMsg := "Error while getting data from client "
+		http.Error(respWrite, errMsg, http.StatusInternalServerError)
+		return
+	}
+
+	// Create file
+	dst, err := os.Create(handler.Filename)
+	if err != nil {
+		http.Error(respWrite, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	if errVal != nil {
+		errMsg := "Error while writing post data. " + errVal.Error()
+		http.Error(respWrite, errMsg, http.StatusInternalServerError)
+		return
+	}
+	defer inputFilePtr.Close()
+	_, copyErr := io.Copy(dst, inputFilePtr)
+	if copyErr != nil {
+		errMsg := "Error while writing post data. " + copyErr.Error()
+		http.Error(respWrite, errMsg, http.StatusInternalServerError)
+		return
+	}
+	// if toExtract == "true" {
+	extractFolder := "/root/.cache/grype/db/3"
+	// os.MkdirAll(extractFolder, 0755)
+	go func() {
+		dst.Sync()
+		err = extractTarFile(handler.Filename, extractFolder)
+		msg := "Complete"
+		if err != nil {
+			msg = "Error while extracting file: " + err.Error()
+		}
+		statusFile, statusFileErr := os.OpenFile(extractFolder+"/extract_status.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		if statusFileErr == nil {
+			_, _ = statusFile.WriteString(msg)
+			statusFile.Close()
+		}
+		vulnerabilityDbUpdater.updateVulnerabilityDbListing()
+	}()
+	// }
+	_, err = fmt.Fprintf(respWrite, "POST complete")
+	if err != nil {
+		fmt.Println(handler.Filename, err)
+	}
+
+	// call mapper api to update grype db
+	response, err := http.Post("http://deepfence-vulnerability-mapper:8001/vulnerability-mapper-api/db-update", "text/plain", nil)
+	if err != nil {
+		errMsg := "Error while calling vulnerability mapper api. " + err.Error()
+		fmt.Println(errMsg)
+		respWrite.WriteHeader(http.StatusInternalServerError)
+	}
+	if response.StatusCode != 200 {
+		errMsg := "Error while calling vulnerability mapper api. " + response.Status
+		fmt.Println(errMsg)
+		http.Error(respWrite, errMsg, http.StatusInternalServerError)
+	}
+	defer response.Body.Close()
+	respWrite.WriteHeader(http.StatusOK)
 }
 
 type registryCredentialRequest struct {
@@ -1096,6 +1172,7 @@ func main() {
 
 	// Vulnerability database
 	httpMux.HandleFunc("/vulnerability-db/listing.json", vulnerabilityDbListing)
+	httpMux.HandleFunc("/df-api/upload-vulnerability-db", handleVulnerabilityFeedTarUpload)
 
 	fmt.Println("fetcher server is starting")
 
