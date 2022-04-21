@@ -477,14 +477,16 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 	}
 	defer inputFilePtr.Close()
 	_, copyErr := io.Copy(dst, inputFilePtr)
+
+	// remove the tar.gz file after extraction
+	defer os.Remove(handler.Filename)
+
 	if copyErr != nil {
 		errMsg := "Error while writing post data. " + copyErr.Error()
 		http.Error(respWrite, errMsg, http.StatusInternalServerError)
 		return
 	}
-	// if toExtract == "true" {
 	extractFolder := "/root/.cache/grype/db/3"
-	// os.MkdirAll(extractFolder, 0755)
 	go func() {
 		dst.Sync()
 		err = extractTarFile(handler.Filename, extractFolder)
@@ -498,27 +500,33 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 			statusFile.Close()
 		}
 		vulnerabilityDbUpdater.updateVulnerabilityDbListing()
+
+		// call mapper api to update grype db
+		updateVulnerabilityMapperDB(respWrite)
 	}()
-	// }
-	_, err = fmt.Fprintf(respWrite, "POST complete")
+	_, err = fmt.Fprintf(respWrite, "vulnerability db updated")
 	if err != nil {
 		fmt.Println(handler.Filename, err)
 	}
 
-	// call mapper api to update grype db
+	respWrite.WriteHeader(http.StatusOK)
+}
+
+func updateVulnerabilityMapperDB(respWrite http.ResponseWriter) {
 	response, err := http.Post("http://deepfence-vulnerability-mapper:8001/vulnerability-mapper-api/db-update", "text/plain", nil)
 	if err != nil {
 		errMsg := "Error while calling vulnerability mapper api. " + err.Error()
 		fmt.Println(errMsg)
 		respWrite.WriteHeader(http.StatusInternalServerError)
 	}
+
+	defer response.Body.Close()
+
 	if response.StatusCode != 200 {
 		errMsg := "Error while calling vulnerability mapper api. " + response.Status
 		fmt.Println(errMsg)
 		http.Error(respWrite, errMsg, http.StatusInternalServerError)
 	}
-	defer response.Body.Close()
-	respWrite.WriteHeader(http.StatusOK)
 }
 
 type registryCredentialRequest struct {
