@@ -502,7 +502,7 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 		vulnerabilityDbUpdater.updateVulnerabilityDbListing()
 
 		// call mapper api to update grype db
-		updateVulnerabilityMapperDB(respWrite)
+		updateVulnerabilityMapperDB()
 	}()
 	_, err = fmt.Fprintf(respWrite, "vulnerability db updated")
 	if err != nil {
@@ -512,12 +512,12 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 	respWrite.WriteHeader(http.StatusOK)
 }
 
-func updateVulnerabilityMapperDB(respWrite http.ResponseWriter) {
+func updateVulnerabilityMapperDB() {
 	response, err := http.Post("http://deepfence-vulnerability-mapper:8001/vulnerability-mapper-api/db-update", "text/plain", nil)
 	if err != nil {
 		errMsg := "Error while calling vulnerability mapper api. " + err.Error()
 		fmt.Println(errMsg)
-		respWrite.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	defer response.Body.Close()
@@ -525,8 +525,9 @@ func updateVulnerabilityMapperDB(respWrite http.ResponseWriter) {
 	if response.StatusCode != 200 {
 		errMsg := "Error while calling vulnerability mapper api. " + response.Status
 		fmt.Println(errMsg)
-		http.Error(respWrite, errMsg, http.StatusInternalServerError)
+		return
 	}
+	return
 }
 
 type registryCredentialRequest struct {
