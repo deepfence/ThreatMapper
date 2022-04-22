@@ -462,8 +462,13 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 		return
 	}
 
+	if handler.Filename != filepath.Clean(handler.Filename) || !strings.HasPrefix(handler.Filename, "/data") {
+		http.Error(respWrite, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
 	// Create file
-	dst, err := os.Create(handler.Filename)
+	dst, err := os.Create("/tmp/" + handler.Filename)
 	if err != nil {
 		http.Error(respWrite, err.Error(), http.StatusInternalServerError)
 		return
@@ -479,7 +484,7 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 	_, copyErr := io.Copy(dst, inputFilePtr)
 
 	// remove the tar.gz file after extraction
-	defer os.Remove(handler.Filename)
+	defer os.Remove("/tmp/" + handler.Filename)
 
 	if copyErr != nil {
 		errMsg := "Error while writing post data. " + copyErr.Error()
@@ -489,7 +494,7 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 	extractFolder := "/root/.cache/grype/db/3"
 	go func() {
 		dst.Sync()
-		err = extractTarFile(handler.Filename, extractFolder)
+		err = extractTarFile("/tmp/"+handler.Filename, extractFolder)
 		msg := "Complete"
 		if err != nil {
 			msg = "Error while extracting file: " + err.Error()
