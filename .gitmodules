@@ -1,7 +1,3 @@
-[submodule "deepfence_agent/plugins/open-tracer"]
-	path = deepfence_agent/plugins/open-tracer
-	url = https://github.com/deepfence/open-tracer
-	branch = main
 [submodule "deepfence_agent/plugins/agent-plugins-grpc"]
 	path = deepfence_agent/plugins/agent-plugins-grpc
 	url = https://github.com/deepfence/agent-plugins-grpc
