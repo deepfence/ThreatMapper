@@ -1,7 +1,6 @@
 package host
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -10,11 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net"
 	"net/http"
 	"os"
-	"os/exec"
 	"reflect"
 	"strconv"
 	"strings"
@@ -152,30 +149,13 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	timestamp := getTimestamp()
 	currTime := getCurrentTime()
 	if err != nil {
-		var attemptNumber = 1
-		fmt.Println("Error from secretScan grpc server:" + err.Error())
-		for attemptNumber <= serverRestartAttempts {
-			fmt.Println("Attempting grpc server restart:" + strconv.Itoa(attemptNumber))
-			AttachSecretScanner(r)
-			// wait for process to start
-			time.Sleep(10 * time.Second)
-			client = r.secretScanner.client
-			res, err = client.FindSecretInfo(context.Background(), &req)
-			if err == nil {
-				fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
-				break
-			}
-			attemptNumber++
-		}
-		if err != nil {
-			secretScanLogDoc["scan_status"] = "ERROR"
-			secretScanLogDoc["scan_message"] = err.Error()
-			secretScanLogDoc["time_stamp"] = getTimestamp()
-			secretScanLogDoc["@timestamp"] = getCurrentTime()
-			byteJson, _ = json.Marshal(secretScanLogDoc)
-			ingestScanData(string(byteJson), secretScanLogsIndexName)
-			return
-		}
+		secretScanLogDoc["scan_status"] = "ERROR"
+		secretScanLogDoc["scan_message"] = err.Error()
+		secretScanLogDoc["time_stamp"] = getTimestamp()
+		secretScanLogDoc["@timestamp"] = getCurrentTime()
+		byteJson, _ = json.Marshal(secretScanLogDoc)
+		ingestScanData(string(byteJson), secretScanLogsIndexName)
+		return
 	} else {
 		fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
 	}
