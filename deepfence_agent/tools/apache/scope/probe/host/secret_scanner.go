@@ -27,13 +27,8 @@ import (
 )
 
 const (
-	ebpfSocketFormat        = "/tmp/%d.sock"
-	ssEbpfExePath           = "/home/deepfence/bin/SecretScanner"
-	ssEbpfExePathServerless = "/deepfence/bin/SecretScanner"
+	ebpfSocketPath          = "/tmp/secret-scanner.sock"
 	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
-	memLockSize             = "--memlock=8388608"
-	ebpfOptFormat           = "--socket-path=%s"
-	serverRestartAttempts   = 1
 	defaultScanConcurrency  = 5
 	secretScanIndexName     = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
@@ -99,8 +94,12 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 	} else if nodeType == nodeTypeHost {
 		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: scanDir}}
 	}
+	ssClient, err := newSecretScannerClient()
+	if err != nil {
+		return xfer.ResponseErrorf("error in getting ss client: %s", err.Error())
+	}
 	go grpcScanWorkerPool.Process(secretScanParameters{
-		client:      r.secretScanner.client,
+		client:      ssClient,
 		req:         greq,
 		controlArgs: req.ControlArgs,
 		hostName:    r.hostName,
@@ -274,58 +273,13 @@ func ingestScanData(secretScanMsg string, index string) error {
 	return nil
 }
 
-type SecretScanner struct {
-	conn    *grpc.ClientConn
-	client  pb.SecretScannerClient
-	command *exec.Cmd
-}
-
-func NewSecretScanner() (*SecretScanner, error) {
-	ebpfSocket := generateSocketString()
-	scannerExePath := ssEbpfExePath
-	scannerLogPath := ssEbpfLogPath
-	command := exec.Command("prlimit", memLockSize, scannerExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
-	if os.Getenv("DF_SERVERLESS") == "true" {
-		scannerExePath = ssEbpfExePathServerless
-		scannerLogPath = getDfInstallDir() + ssEbpfLogPath
-		command = exec.Command(scannerExePath, fmt.Sprintf(ebpfOptFormat, ebpfSocket))
-		command.Env = os.Environ()
-		command.Env = append(command.Env, fmt.Sprintf("LD_LIBRARY_PATH=%s", os.Getenv("SECRET_SCANNER_LD_LIBRARY_PATH")))
-	}
-
-	cmdReader, err := command.StderrPipe()
+func newSecretScannerClient() (pb.SecretScannerClient, error) {
+	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"), grpc.WithInsecure())
 	if err != nil {
+		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
 		return nil, err
 	}
-
-	scanner := bufio.NewScanner(cmdReader)
-	go func() {
-		f, e := os.Create(scannerLogPath)
-		if e != nil {
-			fmt.Println("Error logfile creation: ", e.Error())
-		}
-		defer f.Close()
-		for scanner.Scan() {
-			f.WriteString(scanner.Text() + "\n")
-		}
-	}()
-	err = command.Start()
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := grpc.Dial("unix://"+ebpfSocket, grpc.WithAuthority("dummy"), grpc.WithInsecure())
-	if err != nil {
-		command.Process.Kill()
-		return nil, err
-	}
-
-	client := pb.NewSecretScannerClient(conn)
-	return &SecretScanner{
-		conn:    conn,
-		client:  client,
-		command: command,
-	}, nil
+	return pb.NewSecretScannerClient(conn), nil
 }
 
 func buildClient() (*http.Client, error) {
@@ -357,16 +311,4 @@ func buildClient() (*http.Client, error) {
 	}
 
 	return client, nil
-}
-
-func generateSocketString() string {
-	rand.Seed(time.Now().UnixNano())
-	min := 1000
-	max := 9999
-	return fmt.Sprintf(ebpfSocketFormat, rand.Intn(max-min+1)+min)
-}
-
-func (it *SecretScanner) Stop() {
-	it.command.Process.Kill()
-	it.conn.Close()
 }

@@ -339,7 +339,6 @@ type Reporter struct {
 	AgentVersion       string
 	IsUiVm             string
 	userDefinedTags    UserDefinedTags
-	secretScanner      *SecretScanner
 }
 
 // NewReporter returns a Reporter which produces a report containing host
@@ -370,12 +369,10 @@ func NewReporter(hostID, hostName, probeID, version string, pipes controls.PipeC
 			tags: make([]string, 0),
 		},
 		hostDetailsMinute: HostDetailsEveryMinute{},
-		secretScanner:     nil,
 	}
 	if r.k8sClusterId != "" {
 		r.k8sClusterNodeId = report.MakeKubernetesClusterNodeID(r.k8sClusterId)
 	}
-	AttachSecretScanner(r)
 	r.registerControls()
 	go r.updateUserDefinedTags()
 	cloudProvider := cloud_metadata.DetectCloudServiceProvider()
@@ -385,16 +382,6 @@ func NewReporter(hostID, hostName, probeID, version string, pipes controls.PipeC
 	r.cloudMeta.mtx.RUnlock()
 	go r.updateHostDetails(cloudProvider)
 	return r, cloudProvider, cloudRegion
-}
-
-// AttachSecretScanner Setup & Start open files tracing
-func AttachSecretScanner(r *Reporter) {
-	sScanner, err := NewSecretScanner()
-	if err != nil {
-		logrus.Error("Failed to start secret scanner process")
-	}
-	logrus.Info("started secret scanner process")
-	r.secretScanner = sScanner
 }
 
 // Name of this reporter, for metrics gathering
