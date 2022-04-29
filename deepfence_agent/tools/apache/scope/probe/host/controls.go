@@ -85,6 +85,8 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 			"data": string(out),
 		}
 		fileInfo = append(fileInfo, data)
+	} else {
+		fmt.Printf("error in collecting supervisor logs: %s\n", out)
 	}
 	return xfer.Response{AgentLogs: fileInfo}
 }
