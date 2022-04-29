@@ -82,3 +82,27 @@ helm delete --purge deepfence-router
 # helm 3
 helm delete deepfence-router
 ```
+
+### Using Nginx Ingress Controller
+If using the Nginx Ingress Controller instead, the service type can be specified as `Ingress`.
+```yaml
+service:
+  name: deepfence-router
+  type: Ingress
+...
+```
+
+Additionally, the Nginx Ingress Controller needs to be installed as specified [here](https://kubernetes.github.io/ingress-nginx/deploy/) based on the cloud provider.
+
+For example, you can use either `helm` or `kubectl` commands for installing on AWS:
+Helm Command:
+```
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+```
+Kubectl Command:
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.0/deploy/static/provider/aws/deploy.yaml
+```
+
