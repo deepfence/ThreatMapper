@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -78,16 +79,20 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 			fileInfo = append(fileInfo, data)
 		}
 	}
-	out, err := exec.Command("find","/var/log/supervisor/","-type","f","-print","-exec","cat","{}","\\;").CombinedOutput()
-	if err == nil {
-		data := map[string]string{
-			"file_name": "supervisor.log",
-			"data": string(out),
+	filepath.Walk(getDfInstallDir() + "/var/log/supervisor/", func(path string, f os.FileInfo, err error) error {
+		if f.IsDir() {
+			return nil
 		}
-		fileInfo = append(fileInfo, data)
-	} else {
-		fmt.Printf("error in collecting supervisor logs: %s\n", out)
-	}
+		dat, err := readFile(path)
+		if err == nil {
+			data := map[string]string{
+				"file_name": f.Name(),
+				"data":      string(dat),
+			}
+			fileInfo = append(fileInfo, data)
+		}
+		return nil
+	})
 	return xfer.Response{AgentLogs: fileInfo}
 }
 
