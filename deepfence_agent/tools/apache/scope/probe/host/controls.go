@@ -6,7 +6,6 @@ import (
 	"github.com/weaveworks/scope/common/xfer"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
