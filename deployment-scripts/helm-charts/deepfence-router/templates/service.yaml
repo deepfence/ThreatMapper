@@ -54,7 +54,7 @@ spec:
     - name: https-port
       port: {{ required "managementConsolePort is required" .Values.managementConsolePort }}
       protocol: TCP
-      {{- if eq .Values.service.type "LoadBalancer" }}
+      {{- if or (eq .Values.service.type "LoadBalancer") (eq .Values.service.type "Ingress") }}
       targetPort: 443
       {{- end }}
       {{- if eq .Values.service.type "NodePort"}}
@@ -67,7 +67,7 @@ spec:
     - name: http-port
       port: 80
       protocol: TCP
-      {{- if eq .Values.service.type "LoadBalancer" }}
+      {{- if or (eq .Values.service.type "LoadBalancer") (eq .Values.service.type "Ingress") }}
       targetPort: 80
       {{- end }}
       {{- if eq .Values.service.type "NodePort" }}
@@ -77,6 +77,29 @@ spec:
       nodePort: 30008
       {{- end }}
       {{- end }}
+---
+{{- if eq .Values.service.type "Ingress" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: deepfence-router-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 200m
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.service.name }}
+                port:
+                  number: 443
+{{- end }}
 ---
 {{- if eq "true" .Values.createSeparateServiceForAgents }}
 apiVersion: v1

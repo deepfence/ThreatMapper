@@ -9,6 +9,8 @@ import {
 } from '../../../actions/app-actions';
 import DFSelect from '../../common/multi-select/app';
 
+import { DbFileUploader } from './db-file-uploader';
+
 const severityCollection = [
   { name: 'Critical', value: 'critical' },
   { name: 'High', value: 'high' },
@@ -201,6 +203,7 @@ const VulnerabilityManagementView = props => {
             <div className="auth-success-msg">{alertsDeleteResponse}</div>
           )}
         </div>
+        <DbFileUploader />
       </div>
     );
   };

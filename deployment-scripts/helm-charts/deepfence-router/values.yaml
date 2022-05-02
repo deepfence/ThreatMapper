@@ -13,7 +13,8 @@ service:
   name: deepfence-router
   # Select the type of service to be used. 
   # When exposing the service in an on premisses Kubernetes cluster, select NodePort as type
-  type: LoadBalancer # NodePort 
+  # Also, possible to use Ingress as type when ingress controller is installed
+  type: LoadBalancer # NodePort/Ingress
   # Nodeport configuration. Only used when selecting NodePort in the service type
   nodePortHttps: ""
   nodePortHttp: ""
