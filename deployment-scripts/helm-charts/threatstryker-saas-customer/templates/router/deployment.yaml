@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: router-{{ include "threatstryker-saas.fullname" . }}
+  name: router-{{ include "deepfence-console.fullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
     app: deepfence-console
     name: deepfence-router
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.router.autoscaling.enabled }}
   replicas: {{ .Values.router.replicaCount }}
@@ -14,13 +14,13 @@ spec:
   selector:
     matchLabels:
       name: deepfence-router
-      {{- include "threatstryker-saas.selectorLabels" . | nindent 6 }}
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: deepfence-console
         name: deepfence-router
-        {{- include "threatstryker-saas.selectorLabels" . | nindent 8 }}
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
@@ -33,32 +33,32 @@ spec:
             - name: POSTGRES_USER_DB_HOST
               valueFrom:
                 secretKeyRef:
-                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  name: pg-secret-{{ include "deepfence-console.fullname" . }}
                   key: pg_host
             - name: POSTGRES_USER_DB_PORT
               valueFrom:
                 secretKeyRef:
-                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  name: pg-secret-{{ include "deepfence-console.fullname" . }}
                   key: pg_port
             - name: POSTGRES_USER_DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  name: pg-secret-{{ include "deepfence-console.fullname" . }}
                   key: pg_user
             - name: POSTGRES_USER_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  name: pg-secret-{{ include "deepfence-console.fullname" . }}
                   key: pg_password
             - name: POSTGRES_USER_DB_NAME
               valueFrom:
                 secretKeyRef:
-                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  name: pg-secret-{{ include "deepfence-console.fullname" . }}
                   key: pg_users_db_name
             - name: POSTGRES_USER_DB_SSLMODE
               valueFrom:
                 secretKeyRef:
-                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  name: pg-secret-{{ include "deepfence-console.fullname" . }}
                   key: pg_ssl_mode
             - name: OPERATING_MODE
               value: "k8s"

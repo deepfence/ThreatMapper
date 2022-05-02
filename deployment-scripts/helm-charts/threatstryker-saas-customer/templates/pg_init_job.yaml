@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pginit-{{ include "threatstryker-saas.fullname" . }}
+  name: pginit-{{ include "deepfence-console.fullname" . }}
   namespace: common
   annotations:
     # This is what defines this resource as a hook. Without this line, the

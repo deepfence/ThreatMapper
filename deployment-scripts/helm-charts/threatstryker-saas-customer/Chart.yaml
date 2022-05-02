@@ -1,6 +1,6 @@
 apiVersion: v2
 appVersion: 1.16.0
-description: A Helm chart for ThreatStryker console components
-name: threatstryker-saas
+description: A Helm chart for ThreatMapper console components
+name: deepfence-console
 type: application
-version: 0.4.0
+version: 1.3.1

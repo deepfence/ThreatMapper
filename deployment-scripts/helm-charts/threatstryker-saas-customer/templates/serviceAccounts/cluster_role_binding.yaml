@@ -1,10 +1,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: deepfence-console-crb-{{ include "threatstryker-saas.fullname" . }}
+  name: deepfence-console-crb-{{ include "deepfence-console.fullname" . }}
   labels:
     app: deepfence-console
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}
 roleRef:
   kind: ClusterRole
   name: deepfence-console

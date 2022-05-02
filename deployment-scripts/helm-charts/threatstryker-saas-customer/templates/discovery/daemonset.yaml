@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: discovery-{{ include "threatstryker-saas.fullname" . }}
+  name: discovery-{{ include "deepfence-console.fullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}
     app: deepfence-console
     name: deepfence-discovery
 spec:
@@ -15,13 +15,13 @@ spec:
   selector:
     matchLabels:
       name: deepfence-discovery
-      {{- include "threatstryker-saas.selectorLabels" . | nindent 6 }}
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: deepfence-console
         name: deepfence-discovery
-        {{- include "threatstryker-saas.selectorLabels" . | nindent 8 }}
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}

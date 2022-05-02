@@ -3,14 +3,14 @@ kind: Service
 metadata:
   name: deepfence-package-scanner
   labels:
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}
     app: deepfence-console
     name: deepfence-package-scanner
   namespace: {{ .Values.namespace }}
 spec:
   type: ClusterIP
   selector:
-    {{- include "threatstryker-saas.selectorLabels" . | nindent 4 }}
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     name: deepfence-package-scanner
   ports:
   - name: deepfence-package-scanner-port

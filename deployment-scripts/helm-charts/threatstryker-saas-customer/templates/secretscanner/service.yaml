@@ -5,14 +5,14 @@ kind: Service
 metadata:
   name: deepfence-secret-scanner
   labels:
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}
     app: deepfence-console
     name: deepfence-secret-scanner
   namespace: {{ .Values.namespace }}
 spec:
   type: ClusterIP
   selector:
-    {{- include "threatstryker-saas.selectorLabels" . | nindent 4 }}
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     name: deepfence-secret-scanner
   ports:
     - name: deepfence-secret-scanner-port

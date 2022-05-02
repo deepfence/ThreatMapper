@@ -7,7 +7,7 @@ metadata:
   name: deepfence-es
   labels:
     app: deepfence-console
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}
     name: deepfence-es
   namespace: {{ .Values.namespace }}
 spec:
@@ -115,7 +115,7 @@ metadata:
   name: deepfence-es
   labels:
     app: deepfence-console
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   type: ClusterIP

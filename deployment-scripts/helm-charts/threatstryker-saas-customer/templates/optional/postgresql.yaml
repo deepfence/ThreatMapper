@@ -232,29 +232,29 @@ spec:
             - name: PGPOOL_SR_CHECK_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_password
             - name: PGPOOL_SR_CHECK_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_users_db_name
             - name: PGPOOL_ENABLE_LDAP
               value: "no"
             - name: PGPOOL_POSTGRES_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_user
             - name: PGPOOL_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_password
             - name: PGPOOL_POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_users_db_name
             - name: PGPOOL_ADMIN_USERNAME
               value: "admin"
@@ -392,22 +392,22 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_user
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_password
             - name: POSTGRES_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_root_password
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_users_db_name
             - name: POSTGRESQL_LOG_HOSTNAME
               value: "true"
@@ -461,7 +461,7 @@ spec:
             - name: REPMGR_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "pg-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
                   key: pg_password
             - name: REPMGR_DATABASE
               value: "repmgr"

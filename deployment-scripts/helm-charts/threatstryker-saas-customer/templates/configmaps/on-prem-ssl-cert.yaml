@@ -13,7 +13,7 @@ metadata:
   name: deepfence-ui-ssl-cert
   labels:
     app: deepfence-console
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}
   namespace: {{ .Values.namespace }}
 data:
   deepfence.crt: |-

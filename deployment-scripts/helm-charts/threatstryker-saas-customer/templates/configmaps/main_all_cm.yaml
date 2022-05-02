@@ -9,7 +9,7 @@ data:
   es_scheme: "{{ .Values.db.elasticsearch.scheme }}"
 kind: ConfigMap 
 metadata:
-  name: "main-cm-{{ include "threatstryker-saas.fullname" . }}"
+  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    {{- include "deepfence-console.labels" . | nindent 4 }}

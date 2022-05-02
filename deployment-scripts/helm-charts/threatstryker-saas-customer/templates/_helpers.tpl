@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "threatstryker-saas.name" -}}
+{{- define "deepfence-console.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "threatstryker-saas.fullname" -}}
+{{- define "deepfence-console.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "threatstryker-saas.chart" -}}
+{{- define "deepfence-console.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "threatstryker-saas.labels" -}}
-helm.sh/chart: {{ include "threatstryker-saas.chart" . }}
-{{ include "threatstryker-saas.selectorLabels" . }}
+{{- define "deepfence-console.labels" -}}
+helm.sh/chart: {{ include "deepfence-console.chart" . }}
+{{ include "deepfence-console.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "threatstryker-saas.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "threatstryker-saas.name" . }}
+{{- define "deepfence-console.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "deepfence-console.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "threatstryker-saas.serviceAccountName" -}}
+{{- define "deepfence-console.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "threatstryker-saas.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "deepfence-console.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
