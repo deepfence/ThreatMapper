@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secret-scaner-{{ include "threatstryker-saas.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-secret-scanner
+spec:
+  {{- if not .Values.sscanner.autoscaling.enabled }}
+  replicas: {{ .Values.sscanner.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      name: deepfence-secret-scanner
+      {{- include "threatstryker-saas.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: deepfence-console
+        name: deepfence-secret-scanner
+        {{- include "threatstryker-saas.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+      containers:
+        - name: deepfence-secret-scanner
+          image: "{{ .Values.sscanner.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.sscanner.image.pullPolicy }}
+          ports:
+            - containerPort: 8011
+          command: ["/home/deepfence/usr/SecretScanner"]
+          {{- if eq "true" .Values.saas_deployment }}
+          env:
+            - name: CUSTOMER_UNIQUE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: "es-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  key: es_customer_unique_id
+          {{- end }}
+          args: ["-config-path", "/home/deepfence/usr", "-http-port", "8011"]
+          resources:
+            {{- toYaml .Values.sscanner.resources | nindent 12 }}
+

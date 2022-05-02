@@ -1,0 +1,64 @@
+{{- if and (eq "deepfence-redis" .Values.db.redis.host) (eq "6379" .Values.db.redis.port) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-{{ include "threatstryker-saas.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: deepfence-redis
+      {{- include "threatstryker-saas.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: deepfence-console
+        name: deepfence-redis
+        {{- include "threatstryker-saas.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: init-sysctl
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        command:
+        - /bin/sh
+        - -c
+        - |
+          sysctl -w fs.file-max=1048576
+          sysctl -w net.core.somaxconn=512
+          sysctl vm.overcommit_memory=1
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      containers:
+        - name: deepfence-redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          env:
+            - name: INITIALIZE_REDIS
+              value: "Y"
+          ports:
+            - containerPort: 6379
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+      {{- with .Values.redis.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.redis.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.redis.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

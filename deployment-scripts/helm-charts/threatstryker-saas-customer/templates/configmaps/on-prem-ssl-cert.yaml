@@ -1,0 +1,23 @@
+{{- if and .Values.tls.certFile .Values.tls.keyFile }}
+{{- $certFile := .Files.Get .Values.tls.certFile }}
+{{- if not $certFile }}
+{{- fail "SSL certificate file not found. It should be there in the unpacked chart directory." }}
+{{- end }}
+{{- $keyFile := .Files.Get .Values.tls.keyFile }}
+{{- if not $keyFile }}
+{{- fail "SSL key file not found. It should be there in the unpacked chart directory." }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deepfence-ui-ssl-cert
+  labels:
+    app: deepfence-console
+    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+data:
+  deepfence.crt: |-
+{{ .Files.Get .Values.tls.certFile | indent 4}}
+  deepfence.key: |-
+{{ .Files.Get .Values.tls.keyFile | indent 4}}
+{{- end }}

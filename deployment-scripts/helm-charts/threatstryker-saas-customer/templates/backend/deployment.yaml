@@ -1,0 +1,159 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-{{ include "threatstryker-saas.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-backend
+spec:
+  {{- if not .Values.backend.autoscaling.enabled }}
+  replicas: {{ .Values.backend.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      name: deepfence-backend
+      {{- include "threatstryker-saas.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: deepfence-console
+        name: deepfence-backend
+        {{- include "threatstryker-saas.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      initContainers:
+      - name: init-sysctl
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        command:
+        - /bin/sh
+        - -c
+        - |
+          sysctl -w net.core.somaxconn=10240
+          sysctl -w net.ipv4.tcp_mem="1048576 1048576 6291456"
+          sysctl -w net.ipv4.tcp_max_syn_backlog=1024
+          sysctl -w net.ipv4.ip_local_port_range="1024 65534"
+          sysctl -w fs.nr_open=1048576
+          sysctl -w fs.file-max=1048576
+      containers:
+        - name: deepfence-backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.image.tag }}"
+          command: ["/app/code/dockerify/backend/entrypoint.sh"]
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          env:
+            - name: POSTGRES_USER_DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  key: pg_host
+            - name: POSTGRES_USER_DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  key: pg_port
+            - name: POSTGRES_USER_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  key: pg_user
+            - name: POSTGRES_USER_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  key: pg_password
+            - name: POSTGRES_USER_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  key: pg_users_db_name
+            - name: POSTGRES_USER_DB_SSLMODE
+              valueFrom:
+                secretKeyRef:
+                  name: pg-secret-{{ include "threatstryker-saas.fullname" . }}
+                  key: pg_ssl_mode
+            - name: ELASTICSEARCH_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: "main-cm-{{ include "threatstryker-saas.fullname" . }}"
+                  key: elasticsearch_host
+            - name: ELASTICSEARCH_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: "main-cm-{{ include "threatstryker-saas.fullname" . }}"
+                  key: elasticsearch_port
+            - name: ELASTICSEARCH_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: "main-cm-{{ include "threatstryker-saas.fullname" . }}"
+                  key: es_scheme
+            {{- if .Values.db.elasticsearch.user }}
+            - name: ELASTICSEARCH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "es-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  key: es_user
+            {{- end }}
+            {{- if .Values.db.elasticsearch.password }}
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "es-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  key: es_password
+            {{- end }}
+            {{- if eq "true" .Values.saas_deployment }}
+            - name: CUSTOMER_UNIQUE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: "es-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  key: es_customer_unique_id
+            {{- end }}
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: "main-cm-{{ include "threatstryker-saas.fullname" . }}"
+                  key: redis_host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: "main-cm-{{ include "threatstryker-saas.fullname" . }}"
+                  key: redis_port
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 4041
+              protocol: TCP
+          volumeMounts:
+{{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
+              name: docker-sock
+{{ end }}
+            - mountPath: /data
+              name: data
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+{{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+        - name: docker-sock
+          hostPath:
+            path: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
+            type: Socket
+{{ end }}
+        - name: data
+          emptyDir: {}

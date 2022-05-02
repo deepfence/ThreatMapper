@@ -1,0 +1,13 @@
+{{- if .Values.tls.pemfile }}
+---
+apiVersion: v1
+data:
+  deepfence.pem: |-
+{{ .Files.Get .Values.tls.pemfile | indent 4 }}
+kind: ConfigMap
+metadata:
+  name: deepfence-cert
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+{{- end }}

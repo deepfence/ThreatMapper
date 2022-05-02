@@ -1,0 +1,100 @@
+{{- if eq "true" .Values.runConsoleDiscovery }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: discovery-{{ include "threatstryker-saas.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-discovery
+spec:
+  {{- if not .Values.discovery.autoscaling.enabled }}
+  replicas: {{ .Values.discovery.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      name: deepfence-discovery
+      {{- include "threatstryker-saas.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: deepfence-console
+        name: deepfence-discovery
+        {{- include "threatstryker-saas.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+{{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+        - name: docker-sock
+          hostPath:
+            path: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
+            type: Socket
+{{ end }}
+{{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
+        - name: containerd-sock
+          hostPath:
+            path: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
+            type: Socket
+{{ end }}
+        - name: kernel-sys
+          hostPath:
+            path: /sys/kernel/debug
+            type: Directory
+      containers:
+        - name: deepfence-discovery
+          image: "{{ .Values.discovery.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.discovery.image.pullPolicy }}
+          args:
+            - discovery
+            - deepfence-topology.default.svc.cluster.local
+          env:
+            - name: DF_CLUSTER_NAME
+              value: "{{ .Values.clusterName }}"
+            - name: AGENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- if .Values.clusterName }}
+            - name: SCOPE_HOSTNAME
+              value: "{{ .Values.clusterName }}-$(AGENT_HOSTNAME)"
+            {{- else }}
+            - name: SCOPE_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8009
+              protocol: TCP
+          volumeMounts:
+{{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
+              name: docker-sock
+{{ end }}
+{{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
+              name: containerd-sock
+{{ end }}
+            - mountPath: /sys/kernel/debug
+              name: kernel-sys
+          securityContext:
+            privileged: true
+          resources:
+            {{- toYaml .Values.discovery.resources | nindent 12 }}
+      {{- with .Values.discovery.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.discovery.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.discovery.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

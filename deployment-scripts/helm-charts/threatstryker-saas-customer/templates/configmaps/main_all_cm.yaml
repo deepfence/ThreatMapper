@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  postgres_host: "{{ .Values.db.postgresUserDb.host }}"
+  postgres_port: "{{ .Values.db.postgresUserDb.port }}"
+  redis_host: "{{ .Values.db.redis.host }}"
+  redis_port: "{{ .Values.db.redis.port }}"
+  elasticsearch_host: "{{ .Values.db.elasticsearch.host }}"
+  elasticsearch_port: "{{ .Values.db.elasticsearch.port }}"
+  es_scheme: "{{ .Values.db.elasticsearch.scheme }}"
+kind: ConfigMap 
+metadata:
+  name: "main-cm-{{ include "threatstryker-saas.fullname" . }}"
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "threatstryker-saas.labels" . | nindent 4 }}

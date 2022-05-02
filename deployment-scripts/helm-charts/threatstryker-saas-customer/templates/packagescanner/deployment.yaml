@@ -1,0 +1,50 @@
+apiVersion:  apps/v1
+kind: Deployment
+metadata:
+  name: package-scanner-{{ include "threatstryker-saas.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "threatstryker-saas.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-package-scanner
+spec:
+  {{- if not .Values.pscaner.autoscaling.enabled }}
+  replicas: {{ .Values.pscaner.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      name: deepfence-package-scanner
+      {{- include "threatstryker-saas.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: deepfence-console
+        name: deepfence-package-scanner
+        {{- include "threatstryker-saas.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+      containers:
+        - name: deepfence-package-scanner
+          imagePullPolicy: {{ .Values.pscaner.image.pullPolicy }}
+          image: "{{ .Values.pscaner.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["/usr/local/bin/package-scanner"]
+          args: ["-mode", "http-server", "-port", "8005"]
+          env:
+            - name: MGMT_CONSOLE_URL
+              value: "deepfence-internal-router"
+            - name: MGMT_CONSOLE_PORT
+              value: "443"
+            - name: PACKAGE_SCAN_CONCURRENCY
+              value: "5"
+            {{- if eq "true" .Values.saas_deployment }}
+            - name: CUSTOMER_UNIQUE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: "es-secret-{{ include "threatstryker-saas.fullname" . }}"
+                  key: es_customer_unique_id
+            {{- end }}
+          ports:
+          - containerPort: 8005
+          resources:
+              {{- toYaml .Values.pscaner.resources | nindent 12 }}
