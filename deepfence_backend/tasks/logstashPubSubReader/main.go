@@ -5,18 +5,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gocelery/gocelery"
-	"github.com/gomodule/redigo/redis"
-	_ "github.com/lib/pq"
 	"log"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/gocelery/gocelery"
+	"github.com/gomodule/redigo/redis"
+	_ "github.com/lib/pq"
 )
 
 type NotificationSettings struct {
 	vulnerabilityNotificationsSet bool
+	secretsNotificationsSet       bool
 	sync.RWMutex
 }
 
@@ -69,8 +71,10 @@ func init() {
 		}
 	}
 	vulnerabilityTaskQueue = make(chan []byte, 10000)
+	secretTaskQueue = make(chan []byte, 10000)
 	resourcePubsubToChanMap = map[string]chan []byte{
 		vulnerabilityRedisPubsubName: vulnerabilityTaskQueue,
+		secretRedisPubsubName:        secretTaskQueue,
 	}
 	notificationSettings = NotificationSettings{
 		vulnerabilityNotificationsSet: false,
@@ -79,7 +83,7 @@ func init() {
 
 func initRedisPubsub() {
 	redisPubSub = &redis.PubSubConn{Conn: redisPool.Get()}
-	err := redisPubSub.Subscribe(vulnerabilityRedisPubsubName)
+	err := redisPubSub.Subscribe(vulnerabilityRedisPubsubName, secretRedisPubsubName)
 	if err != nil {
 		gracefulExit(err)
 	}
@@ -145,6 +149,13 @@ func batchMessages(resourceType string, resourceChan *chan []byte, batchSize int
 					if vulnerabilityNotificationsSet == true {
 						createNotificationCeleryTask(resourceType, messages)
 					}
+				} else if resourceType == resourceTypeSecret {
+					notificationSettings.RLock()
+					secretNotificationsSet := notificationSettings.vulnerabilityNotificationsSet
+					notificationSettings.RUnlock()
+					if vulnerabilityNotificationsSet == true {
+						createNotificationCeleryTask(resourceType, messages)
+					}
 				}
 			}()
 		}
@@ -161,5 +172,6 @@ func main() {
 	}
 	go syncPoliciesAndNotifications()
 	go batchMessages(resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
+	go batchMessages(resourceTypeSecret, &secretTaskQueue, 100)
 	receiveMessagesFromRedisPubsub()
 }

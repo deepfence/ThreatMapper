@@ -30,6 +30,7 @@ import (
 
 const (
 	redisVulnerabilityChannel = "vulnerability_task_queue"
+	redisSecretChannel        = "secret_task_queue"
 )
 
 var (
@@ -40,6 +41,7 @@ var (
 	vulnerabilityDbUpdater *VulnerabilityDbUpdater
 	cveIndexName           = convertRootESIndexToCustomerSpecificESIndex("cve")
 	cveScanLogsIndexName   = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
+	secretIndexName        = convertRootESIndexToCustomerSpecificESIndex("secret-scan")
 	sbomArtifactsIndexName = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
 )
 
@@ -932,6 +934,40 @@ func ingestInBackground(docType string, body []byte) error {
 					}
 				}
 			}
+		}
+	} else if docType == secretIndexName {
+		bulkService := elastic.NewBulkService(esClient)
+		bulkIndexReq := elastic.NewBulkIndexRequest()
+		bulkIndexReq.Index(docType).Doc(string(body))
+		bulkService.Add(bulkIndexReq)
+		res, _ := bulkService.Do(context.Background())
+		if res != nil && res.Errors {
+			for _, item := range res.Items {
+				resItem := item["index"]
+				if resItem != nil {
+					fmt.Println(resItem.Index)
+					fmt.Println("status:" + strconv.Itoa(resItem.Status))
+					if resItem.Error != nil {
+						fmt.Println("Error Type:" + resItem.Error.Type)
+						fmt.Println("Error Reason: " + resItem.Error.Reason)
+					}
+				}
+			}
+		}
+
+		retryCount := 0
+		for {
+			_, err := redisConn.Do("PUBLISH", redisSecretChannel, string(body))
+			if err == nil {
+				break
+			}
+			if retryCount > 1 {
+				fmt.Println(fmt.Sprintf("Error publishing cve document to %s - exiting", redisVulnerabilityChannel), err)
+				break
+			}
+			fmt.Println(fmt.Sprintf("Error publishing cve document to %s - trying again", redisVulnerabilityChannel), err)
+			retryCount += 1
+			time.Sleep(5 * time.Second)
 		}
 	} else {
 		bulkService := elastic.NewBulkService(esClient)

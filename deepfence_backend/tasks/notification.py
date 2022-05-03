@@ -6,13 +6,13 @@ import calendar
 import time
 from jira import JIRA, JIRAError
 from config.app import app, celery_app
-from models.notification import UserActivityNotification, VulnerabilityNotification
+from models.notification import UserActivityNotification, VulnerabilityNotification, SecretScanNotification
 from models.user_activity_log import UserActivityLog
 from models.user import User
 from utils.common import get_epochtime
 from utils.constants import FILTER_TYPE_IMAGE_NAME_WITH_TAG, CVE_ES_TYPE, USER_DEFINED_TAGS, \
     NODE_TYPE_POD, FILTER_TYPE_HOST_NAME, FILTER_TYPE_IMAGE_NAME, FILTER_TYPE_KUBE_CLUSTER_NAME, \
-    FILTER_TYPE_KUBE_NAMESPACE, FILTER_TYPE_TAGS
+    FILTER_TYPE_KUBE_NAMESPACE, FILTER_TYPE_TAGS, SECRET_SCAN_TYPE
 
 
 @celery_app.task
@@ -118,6 +118,9 @@ def filter_vulnerability_notification(filters, cve, topology_data):
     else:
         return True
 
+def filter_secret_scan_notification(filters, secret_scan_data, topology_data):
+    return True
+
 
 def user_activity_digest(time, notification_id):
     """
@@ -156,6 +159,8 @@ def save_integrations_status(notification_id, resource_type, msg):
     notification_obj = None
     if resource_type == CVE_ES_TYPE:
         notification_obj = VulnerabilityNotification
+    if resource_type == SECRET_SCAN_TYPE:
+        notification_obj = SecretScanNotification
     else:
         return
     event = notification_obj.query.filter_by(id=notification_id).one_or_none()

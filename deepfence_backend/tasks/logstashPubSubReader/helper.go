@@ -11,7 +11,9 @@ import (
 
 const (
 	resourceTypeVulnerability    = "vulnerability"
+	resourceTypeSecret           = "secret"
 	vulnerabilityRedisPubsubName = "vulnerability_task_queue"
+	secretRedisPubsubName        = "secret_task_queue"
 	celeryNotificationTask       = "tasks.notification_worker.notification_task"
 )
 
@@ -78,11 +80,22 @@ func syncPoliciesAndNotificationsSettings() {
 	if err != nil {
 		log.Println(err)
 	}
+	var secretNotificationCount int
+	row = postgresDb.QueryRow("SELECT COUNT(*) FROM secret_scan_notification where duration_in_mins=-1")
+	err = row.Scan(&secretNotificationCount)
+	if err != nil {
+		log.Println(err)
+	}
 	notificationSettings.Lock()
 	if vulnerabilityNotificationCount > 0 {
 		notificationSettings.vulnerabilityNotificationsSet = true
 	} else {
 		notificationSettings.vulnerabilityNotificationsSet = false
+	}
+	if secretNotificationCount > 0 {
+		notificationSettings.secretsNotificationsSet = true
+	} else {
+		notificationSettings.secretsNotificationsSet = false
 	}
 	notificationSettings.Unlock()
 }

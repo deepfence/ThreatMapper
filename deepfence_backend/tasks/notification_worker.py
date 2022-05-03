@@ -1,12 +1,12 @@
 import json
 from config.app import celery_app, app as flask_app
 from config.redisconfig import redis
-from models.notification import VulnerabilityNotification
+from models.notification import VulnerabilityNotification, SecretScanNotification
 from models.user import User
-from tasks.notification import filter_vulnerability_notification
+from tasks.notification import filter_vulnerability_notification, filter_secret_scan_notification
 from models.integration import Integration
 from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, \
-    NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_POD, CVE_ES_TYPE
+    NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_POD, CVE_ES_TYPE, NOTIFICATION_TYPE_SECRET_SCAN
 from utils.helper import websocketio_channel_name_format
 
 
@@ -46,6 +46,24 @@ def notification_task(self, **kwargs):
                         integration = integrations.get(notification.integration_id)
                         integration.send(notification.format_content(filtered_cve_list),
                                          summary="Deepfence - Vulnerabilities Subscription",
+                                         notification_id=notification.id, resource_type=CVE_ES_TYPE)
+                    except Exception as ex:
+                        flask_app.logger.error("Error sending notification: {0}".format(ex))
+            elif notification_type == NOTIFICATION_TYPE_SECRET_SCAN:
+                secret_scan_notifications = SecretScanNotification.query.filter(
+                    SecretScanNotification.user_id.in_(active_user_ids),
+                    SecretScanNotification.duration_in_mins == -1).all()
+                for notification in secret_scan_notifications:
+                    filtered_secret_scan_list = []
+                    for secret_result in data:
+                        if filter_secret_scan_notification(notification.filters, secret_result, topology_data):
+                            filtered_secret_scan_list.append(secret_result)
+                    if not filtered_cve_list:
+                        continue
+                    try:
+                        integration = integrations.get(notification.integration_id)
+                        integration.send(notification.format_content(filtered_cve_list),
+                                         summary="Deepfence - Secret Scan Subscription",
                                          notification_id=notification.id, resource_type=CVE_ES_TYPE)
                     except Exception as ex:
                         flask_app.logger.error("Error sending notification: {0}".format(ex))
