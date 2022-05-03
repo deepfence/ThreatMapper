@@ -6,6 +6,7 @@ import (
 	"github.com/weaveworks/scope/common/xfer"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -65,8 +66,6 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 	//logTypes := fmt.Sprintf("%s", req.ControlArgs["log_types"])
 	var logFileNameLocMap = map[string]string{
 		"discovery.logfile": getDfInstallDir() + "/var/log/fenced/discovery.logfile",
-		"secretScanner.log": getDfInstallDir() + "/var/log/fenced/secretScanner.log",
-		"cve_upload_file.logfile": getDfInstallDir() + "/var/log/fenced/cve_upload_file.logfile",
 	}
 	var fileInfo []map[string]string
 	for logFile, logLocation := range logFileNameLocMap {
@@ -79,6 +78,20 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 			fileInfo = append(fileInfo, data)
 		}
 	}
+	filepath.Walk(getDfInstallDir() + "/var/log/supervisor/", func(path string, f os.FileInfo, err error) error {
+		if f.IsDir() {
+			return nil
+		}
+		dat, err := readFile(path)
+		if err == nil {
+			data := map[string]string{
+				"file_name": f.Name(),
+				"data":      string(dat),
+			}
+			fileInfo = append(fileInfo, data)
+		}
+		return nil
+	})
 	return xfer.Response{AgentLogs: fileInfo}
 }
 
