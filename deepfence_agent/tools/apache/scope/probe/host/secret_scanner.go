@@ -65,6 +65,8 @@ func init() {
 	if os.Getenv("DF_SERVERLESS") == "true" {
 		certPath = "/deepfence/etc/filebeat/filebeat.crt"
 		scanDir = "/"
+	} else {
+		scanDir = HostMountDir
 	}
 }
 
