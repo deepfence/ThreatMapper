@@ -419,6 +419,8 @@ services:
       - ./kafka_update_run.sh:/tmp/kafka_update_run.sh
       - deepfence_data:/data:rw
     command: "bash -c 'if [ ! -f /tmp/kafka_update_run.sh ]; then echo \"ERROR: Did you forget the kafka_update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/kafka_update_run.sh && /etc/confluent/docker/run ; fi'"
+    networks:
+      - deepfence_net
     logging:
       driver: "json-file"
       options:
@@ -437,6 +439,8 @@ services:
       KAFKA_REST_BOOTSTRAP_SERVERS: ${KAFKA_BROKER:-deepfence-kafka-broker:29092}
       KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
       # KAFKA_REST_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+    networks:
+      - deepfence_net
     logging:
       driver: "json-file"
       options:
