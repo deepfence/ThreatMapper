@@ -113,7 +113,7 @@ func init() {
 		gracefulExit(err)
 	}
 
-	kafkaBrokers := os.Getenv("KAFKA_BROKERS")
+	kafkaBrokers = os.Getenv("KAFKA_BROKERS")
 	if kafkaBrokers == "" {
 		kafkaBrokers = "deepfence-kafka-broker:29092"
 	}

@@ -49,6 +49,7 @@ func newRedisPool() *redis.Pool {
 }
 
 func checkKafkaConn() error {
+	fmt.Println("check connection to kafka brokers: " + kafkaBrokers)
 	conn, err := kafka.Dial("tcp", strings.Split(kafkaBrokers, ",")[0])
 	if err != nil {
 		return err
