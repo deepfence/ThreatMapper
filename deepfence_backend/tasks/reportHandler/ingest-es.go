@@ -14,7 +14,6 @@ func afterBulkpush(executionId int64, requests []elastic.BulkableRequest, respon
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	if response.Errors {
 		for _, i := range response.Items {
 			fmt.Printf("error %+v", i)
@@ -50,7 +49,8 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 			var cveStruct dfCveStruct
 			err := json.Unmarshal(cve, &cveStruct)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("error reading cve: ", err.Error())
+				continue
 			}
 			cveStruct.Timestamp = getCurrentTime()
 			if cveStruct.Cve_severity != "critical" && cveStruct.Cve_severity != "high" && cveStruct.Cve_severity != "medium" {
@@ -74,7 +74,7 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 			var cveScanMap map[string]interface{}
 			err := json.Unmarshal(cveLog, &cveScanMap)
 			if err != nil {
-				continue
+				fmt.Println("error reading cve scan logs: ", err.Error())
 			}
 			cveScanMap["masked"] = "false"
 			cveScanMap["@timestamp"] = getCurrentTime()
@@ -83,10 +83,11 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 
 		case sbomArtifact := <-topicChannels[sbomArtifactsIndexName]:
 			fmt.Println("sbom: ", sbomArtifact)
-			var artifacts []map[string]interface{}
+			var artifacts map[string]interface{}
 			err := json.Unmarshal(sbomArtifact, &artifacts)
 			if err != nil {
-				fmt.Println("Error reading artifacts: ", err.Error())
+				fmt.Println("error reading sbom artifacts: ", err.Error())
+				continue
 			}
 			r := elastic.NewBulkIndexRequest().Index(sbomArtifactsIndexName).Doc(artifacts)
 			buklp.Add(r)
