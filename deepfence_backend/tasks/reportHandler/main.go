@@ -115,8 +115,13 @@ func init() {
 
 	kafkaBrokers := os.Getenv("KAFKA_BROKERS")
 	if kafkaBrokers == "" {
-		kafkaBrokers = "deepfence-kafka-broker:9092"
+		kafkaBrokers = "deepfence-kafka-broker:29092"
 	}
+	err = checkKafkaConn()
+	if err != nil {
+		gracefulExit(err)
+	}
+
 }
 
 // func initRedisPubsub() {

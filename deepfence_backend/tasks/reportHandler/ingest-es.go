@@ -15,10 +15,13 @@ func afterBulkpush(executionId int64, requests []elastic.BulkableRequest, respon
 		fmt.Println(err)
 	}
 	if response.Errors {
-		for _, i := range response.Items {
-			fmt.Printf("error %+v", i)
+		for _, i := range response.Failed() {
+			fmt.Printf("index: %s error reason: %s error: %+v",
+				i.Index, i.Error.Reason, i.Error)
 		}
 	}
+	fmt.Printf("number of docs sent to es successfully: %d failed: %d",
+		len(response.Succeeded()), len(response.Failed()))
 }
 
 func startBulkProcessor(
@@ -45,7 +48,7 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 	for {
 		select {
 		case cve := <-topicChannels[cveIndexName]:
-			fmt.Println("cve: ", cve)
+			// fmt.Println("cve: ", cve)
 			var cveStruct dfCveStruct
 			err := json.Unmarshal(cve, &cveStruct)
 			if err != nil {
@@ -70,7 +73,7 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 			}
 
 		case cveLog := <-topicChannels[cveScanLogsIndexName]:
-			fmt.Println("cve log: ", cveLog)
+			// fmt.Println("cve log: ", cveLog)
 			var cveScanMap map[string]interface{}
 			err := json.Unmarshal(cveLog, &cveScanMap)
 			if err != nil {
@@ -82,7 +85,7 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 			buklp.Add(r)
 
 		case sbomArtifact := <-topicChannels[sbomArtifactsIndexName]:
-			fmt.Println("sbom: ", sbomArtifact)
+			// fmt.Println("sbom: ", sbomArtifact)
 			var artifacts map[string]interface{}
 			err := json.Unmarshal(sbomArtifact, &artifacts)
 			if err != nil {

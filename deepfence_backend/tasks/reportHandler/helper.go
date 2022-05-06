@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
+	kafka "github.com/segmentio/kafka-go"
 )
 
 const (
@@ -43,6 +46,22 @@ func newRedisPool() *redis.Pool {
 			return c, err
 		},
 	}
+}
+
+func checkKafkaConn() error {
+	conn, err := kafka.Dial("tcp", strings.Split(kafkaBrokers, ",")[0])
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	brokers, err := conn.Brokers()
+	if err != nil {
+		return err
+	}
+	for _, b := range brokers {
+		fmt.Printf("broker found at %s", b.Host)
+	}
+	return nil
 }
 
 func gracefulExit(err error) {

@@ -309,6 +309,7 @@ services:
       - deepfence-init-container
       - deepfence-redis
       - deepfence-postgres
+      - deepfence-kafka-broker
     logging:
       driver: "json-file"
       options:
