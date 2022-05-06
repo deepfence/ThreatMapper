@@ -16,10 +16,11 @@ import (
 
 const (
 	awsMetadataBaseUrl         = "http://169.254.169.254/latest/meta-data"
+	awsInstanceIdentityUrl     = "http://169.254.169.254/latest/dynamic/instance-identity/document"
 	googleCloudMetadataBaseUrl = "http://metadata.google.internal/computeMetadata/v1"
 	azureMetadataBaseUrl       = "http://169.254.169.254/metadata"
 	softlayerMetadataBaseUrl   = "https://api.service.softlayer.com/rest/v3.1/SoftLayer_Resource_Metadata"
-	awsECSMetaDataURL          = "http://169.254.170.2/v2/metadata"
+	awsECSMetaDataURL          = "http://169.254.170.2/v4/metadata"
 	digitalOceanMetadaBaseUrl  = "http://169.254.169.254/metadata"
 )
 
@@ -59,22 +60,29 @@ func GetAWSFargateMetadata(onlyValidate bool) (CloudMetadata, error) {
 	if err != nil {
 		return awsFargateMetadata, err
 	}
-	var result map[string]interface{}
+	var result AWSFargateMetadata
 	err = json.Unmarshal([]byte(httpResp), &result)
 	if err != nil {
 		return awsFargateMetadata, err
 	}
-	awsFargateMetadata.TaskARN = result["TaskARN"].(string)
-	awsFargateMetadata.Family = result["Family"].(string)
-	awsFargateMetadata.Zone = result["AvailabilityZone"].(string)
+
+	cluster := strings.Split(strings.Split(result.Cluster, ":cluster/")[0], ":")
+	if len(cluster) > 0 {
+		awsFargateMetadata.ID = cluster[len(cluster)-1]
+	}
+	awsFargateMetadata.TaskARN = result.TaskARN
+	awsFargateMetadata.Family = result.Family
+	awsFargateMetadata.Zone = result.AvailabilityZone
 	awsFargateMetadata.Region = dfUtils.RemoveLastCharacter(awsFargateMetadata.Zone)
-	containers := result["Containers"].([]interface{})
+	containers := result.Containers
 	for _, value := range containers {
-		val := value.(map[string]interface{})
-		if val["Type"] == "NORMAL" && !strings.Contains(strings.ToLower(val["Name"].(string)), "agent") {
-			awsFargateMetadata.Hostname = val["Name"].(string)
-			awsFargateMetadata.NetworkMode = val["Networks"].([]interface{})[0].(map[string]interface{})["NetworkMode"].(string)
-			awsFargateMetadata.PrivateIP = []string{val["Networks"].([]interface{})[0].(map[string]interface{})["IPv4Addresses"].([]interface{})[0].(string)}
+		if value.Type == "NORMAL" && !strings.Contains(strings.ToLower(value.Name), "agent") {
+			awsFargateMetadata.Hostname = value.Name
+			for _, network := range value.Networks {
+				awsFargateMetadata.NetworkMode = network.NetworkMode
+				awsFargateMetadata.PrivateIP = network.IPv4Addresses
+				break
+			}
 		}
 	}
 	return awsFargateMetadata, nil
@@ -128,21 +136,47 @@ func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
 	if err != nil {
 		return awsMetadata, err
 	}
+	httpResp, err = GetHTTPResponse(client, "GET", awsInstanceIdentityUrl, nil, headers)
+	var privateIP string
+	if err == nil {
+		var instanceIdentity AWSInstanceIdentity
+		err = json.Unmarshal([]byte(httpResp), &instanceIdentity)
+		if err == nil {
+			fmt.Println(instanceIdentity)
+			awsMetadata.ID = instanceIdentity.InstanceID
+			awsMetadata.InstanceType = instanceIdentity.InstanceType
+			awsMetadata.Zone = instanceIdentity.AvailabilityZone
+			awsMetadata.Region = instanceIdentity.Region
+			if instanceIdentity.PrivateIP != "" {
+				privateIP = instanceIdentity.PrivateIP
+				awsMetadata.PrivateIP = []string{instanceIdentity.PrivateIP}
+			}
+			if instanceIdentity.KernelID != nil {
+				awsMetadata.KernelId = instanceIdentity.KernelID.(string)
+			}
+		}
+	}
 	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "hostname"), nil, headers)
 	if err == nil {
 		awsMetadata.Hostname = httpResp
 	}
-	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "instance-type"), nil, headers)
-	if err == nil {
-		awsMetadata.InstanceType = httpResp
+	if awsMetadata.InstanceType == "" {
+		httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "instance-type"), nil, headers)
+		if err == nil {
+			awsMetadata.InstanceType = httpResp
+		}
 	}
-	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "placement/availability-zone"), nil, headers)
-	if err == nil {
-		awsMetadata.Zone = httpResp
+	if awsMetadata.Zone == "" {
+		httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "placement/availability-zone"), nil, headers)
+		if err == nil {
+			awsMetadata.Zone = httpResp
+		}
 	}
-	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "placement/region"), nil, headers)
-	if err == nil {
-		awsMetadata.Region = httpResp
+	if awsMetadata.Region == "" {
+		httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "placement/region"), nil, headers)
+		if err == nil {
+			awsMetadata.Region = httpResp
+		}
 	}
 	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "public-ipv4"), nil, headers)
 	if err == nil {
@@ -151,14 +185,10 @@ func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
 		awsMetadata.PublicIP = ips
 	}
 	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "local-ipv4"), nil, headers)
-	if err == nil {
+	if err == nil && httpResp != privateIP {
 		var ips []string
 		ips = append(ips, httpResp)
 		awsMetadata.PrivateIP = ips
-	}
-	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", awsMetadataBaseUrl, "kernel-id"), nil, headers)
-	if err == nil {
-		awsMetadata.KernelId = httpResp
 	}
 	return awsMetadata, nil
 }
@@ -198,7 +228,14 @@ func GetGoogleCloudMetadata(onlyValidate bool) (CloudMetadata, error) {
 			region = zoneStr[:strings.LastIndex(zoneStr, "-")]
 		}
 	}
-	gcpMetadata = CloudMetadata{CloudProvider: "google_cloud", Label: "Google Cloud", InstanceID: strconv.FormatInt(gcMetadataAll.ID, 10), Hostname: gcMetadataAll.Hostname, Name: gcMetadataAll.Name, Zone: gcMetadataAll.Zone, Region: region, MachineType: gcMetadataAll.MachineType}
+	var accountID string
+	if strings.HasSuffix(gcMetadataAll.Hostname, ".internal") {
+		strSplit := strings.Split(gcMetadataAll.Hostname, ".")
+		if len(strSplit) > 1 {
+			accountID = strSplit[len(strSplit)-2]
+		}
+	}
+	gcpMetadata = CloudMetadata{CloudProvider: "google_cloud", ID: accountID, Label: "Google Cloud", InstanceID: strconv.FormatInt(gcMetadataAll.ID, 10), Hostname: gcMetadataAll.Hostname, Name: gcMetadataAll.Name, Zone: gcMetadataAll.Zone, Region: region, MachineType: gcMetadataAll.MachineType}
 	var privateIP []string
 	var publicIP []string
 	for _, nwInterface := range gcMetadataAll.NetworkInterfaces {
@@ -238,7 +275,7 @@ func GetAzureMetadata(onlyValidate bool) (CloudMetadata, error) {
 	if err != nil {
 		return azureMetadata, err
 	}
-	azureMetadata = CloudMetadata{CloudProvider: "azure", Label: "Azure", VmID: azureMetadataAll.Compute.VMID, Name: azureMetadataAll.Compute.Name, VMSize: azureMetadataAll.Compute.VMSize, Region: azureMetadataAll.Compute.Location, Zone: azureMetadataAll.Compute.Zone, OsType: azureMetadataAll.Compute.OsType, SKU: azureMetadataAll.Compute.Sku, ResourceGroupName: azureMetadataAll.Compute.ResourceGroupName}
+	azureMetadata = CloudMetadata{CloudProvider: "azure", ID: azureMetadataAll.Compute.SubscriptionID, Label: "Azure", VmID: azureMetadataAll.Compute.VMID, Name: azureMetadataAll.Compute.Name, VMSize: azureMetadataAll.Compute.VMSize, Region: azureMetadataAll.Compute.Location, Zone: azureMetadataAll.Compute.Zone, OsType: azureMetadataAll.Compute.OsType, SKU: azureMetadataAll.Compute.Sku, ResourceGroupName: azureMetadataAll.Compute.ResourceGroupName}
 	var privateIP []string
 	var publicIP []string
 	for _, iface := range azureMetadataAll.Network.Interface {
@@ -409,6 +446,86 @@ type CloudMetadata struct {
 	ResourceGroupName string   `json:"resource_group_name,omitempty"`
 }
 
+type AWSFargateMetadata struct {
+	Cluster       string `json:"Cluster"`
+	TaskARN       string `json:"TaskARN"`
+	Family        string `json:"Family"`
+	Revision      string `json:"Revision"`
+	DesiredStatus string `json:"DesiredStatus"`
+	KnownStatus   string `json:"KnownStatus"`
+	Limits        struct {
+		CPU    int `json:"CPU"`
+		Memory int `json:"Memory"`
+	} `json:"Limits"`
+	PullStartedAt    time.Time `json:"PullStartedAt"`
+	PullStoppedAt    time.Time `json:"PullStoppedAt"`
+	AvailabilityZone string    `json:"AvailabilityZone"`
+	Containers       []struct {
+		DockerID   string `json:"DockerId"`
+		Name       string `json:"Name"`
+		DockerName string `json:"DockerName"`
+		Image      string `json:"Image"`
+		ImageID    string `json:"ImageID"`
+		Labels     struct {
+			ComAmazonawsEcsCluster               string `json:"com.amazonaws.ecs.cluster"`
+			ComAmazonawsEcsContainerName         string `json:"com.amazonaws.ecs.container-name"`
+			ComAmazonawsEcsTaskArn               string `json:"com.amazonaws.ecs.task-arn"`
+			ComAmazonawsEcsTaskDefinitionFamily  string `json:"com.amazonaws.ecs.task-definition-family"`
+			ComAmazonawsEcsTaskDefinitionVersion string `json:"com.amazonaws.ecs.task-definition-version"`
+		} `json:"Labels"`
+		DesiredStatus string `json:"DesiredStatus"`
+		KnownStatus   string `json:"KnownStatus"`
+		Limits        struct {
+			CPU int `json:"CPU"`
+		} `json:"Limits"`
+		CreatedAt time.Time `json:"CreatedAt"`
+		StartedAt time.Time `json:"StartedAt"`
+		Type      string    `json:"Type"`
+		Networks  []struct {
+			NetworkMode              string   `json:"NetworkMode"`
+			IPv4Addresses            []string `json:"IPv4Addresses"`
+			AttachmentIndex          int      `json:"AttachmentIndex"`
+			MACAddress               string   `json:"MACAddress"`
+			IPv4SubnetCIDRBlock      string   `json:"IPv4SubnetCIDRBlock"`
+			DomainNameServers        []string `json:"DomainNameServers"`
+			DomainNameSearchList     []string `json:"DomainNameSearchList"`
+			PrivateDNSName           string   `json:"PrivateDNSName"`
+			SubnetGatewayIpv4Address string   `json:"SubnetGatewayIpv4Address"`
+		} `json:"Networks"`
+		ContainerARN string `json:"ContainerARN"`
+		LogOptions   struct {
+			AwslogsGroup  string `json:"awslogs-group"`
+			AwslogsRegion string `json:"awslogs-region"`
+			AwslogsStream string `json:"awslogs-stream"`
+		} `json:"LogOptions"`
+		LogDriver string `json:"LogDriver"`
+	} `json:"Containers"`
+	LaunchType string `json:"LaunchType"`
+	ClockDrift struct {
+		ClockErrorBound            float64   `json:"ClockErrorBound"`
+		ReferenceTimestamp         time.Time `json:"ReferenceTimestamp"`
+		ClockSynchronizationStatus string    `json:"ClockSynchronizationStatus"`
+	} `json:"ClockDrift"`
+}
+
+type AWSInstanceIdentity struct {
+	AccountID               string      `json:"accountId"`
+	Architecture            string      `json:"architecture"`
+	AvailabilityZone        string      `json:"availabilityZone"`
+	BillingProducts         interface{} `json:"billingProducts"`
+	DevpayProductCodes      interface{} `json:"devpayProductCodes"`
+	MarketplaceProductCodes interface{} `json:"marketplaceProductCodes"`
+	ImageID                 string      `json:"imageId"`
+	InstanceID              string      `json:"instanceId"`
+	InstanceType            string      `json:"instanceType"`
+	KernelID                interface{} `json:"kernelId"`
+	PendingTime             time.Time   `json:"pendingTime"`
+	PrivateIP               string      `json:"privateIp"`
+	RamdiskID               interface{} `json:"ramdiskId"`
+	Region                  string      `json:"region"`
+	Version                 string      `json:"version"`
+}
+
 type GoogleCloudMetadataAll struct {
 	Attributes struct {
 	} `json:"attributes"`
@@ -417,12 +534,19 @@ type GoogleCloudMetadataAll struct {
 	Disks       []struct {
 		DeviceName string `json:"deviceName"`
 		Index      int    `json:"index"`
+		Interface  string `json:"interface"`
 		Mode       string `json:"mode"`
 		Type       string `json:"type"`
 	} `json:"disks"`
-	Hostname string `json:"hostname"`
-	ID       int64  `json:"id"`
-	Image    string `json:"image"`
+	GuestAttributes struct {
+	} `json:"guestAttributes"`
+	Hostname             string `json:"hostname"`
+	ID                   int64  `json:"id"`
+	Image                string `json:"image"`
+	LegacyEndpointAccess struct {
+		Zero1   int `json:"0.1"`
+		V1Beta1 int `json:"v1beta1"`
+	} `json:"legacyEndpointAccess"`
 	Licenses []struct {
 		ID string `json:"id"`
 	} `json:"licenses"`
@@ -440,6 +564,7 @@ type GoogleCloudMetadataAll struct {
 		IP                string        `json:"ip"`
 		IPAliases         []interface{} `json:"ipAliases"`
 		Mac               string        `json:"mac"`
+		Mtu               int           `json:"mtu"`
 		Network           string        `json:"network"`
 		Subnetmask        string        `json:"subnetmask"`
 		TargetInstanceIps []interface{} `json:"targetInstanceIps"`
@@ -451,9 +576,15 @@ type GoogleCloudMetadataAll struct {
 		OnHostMaintenance string `json:"onHostMaintenance"`
 		Preemptible       string `json:"preemptible"`
 	} `json:"scheduling"`
-	ServiceAccounts interface{}   `json:"serviceAccounts"`
-	Tags            []interface{} `json:"tags"`
-	VirtualClock    struct {
+	ServiceAccounts struct {
+		Default struct {
+			Aliases []string `json:"aliases"`
+			Email   string   `json:"email"`
+			Scopes  []string `json:"scopes"`
+		} `json:"default"`
+	} `json:"serviceAccounts"`
+	Tags         []interface{} `json:"tags"`
+	VirtualClock struct {
 		DriftToken string `json:"driftToken"`
 	} `json:"virtualClock"`
 	Zone string `json:"zone"`
