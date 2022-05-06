@@ -12,12 +12,12 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/group.name: deepfence-1
     alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=3600
-  name: {{ .Values.namespace }}
+  name: {{ .Values.namespace }}-ingress
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: alb
   rules:
-  - host: {{ .Values.namespace }}.deepfence.com
+  - host: {{ .Values.namespace }}{{ .Values.saas_domain }}
     http:
       paths:
       - backend:

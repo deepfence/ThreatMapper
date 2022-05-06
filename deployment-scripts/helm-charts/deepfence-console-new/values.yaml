@@ -343,6 +343,7 @@ fetcher:
     type: ClusterIP
 
 router:
+  uiServiceName: "deepfence-ui"
   replicaCount: 1
   image:
     repository: deepfenceio/deepfence_router_ce

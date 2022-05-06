@@ -53,7 +53,7 @@ spec:
           command: ["sysctl", "-w", "vm.max_map_count=262144"]
       containers:
         - name: deepfence-es
-          image: "deepfenceio/deepfence_elastic:{{ .Values.image.tag }}"
+          image: "deepfenceio/deepfence_elastic_ce:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: DF_PROG_NAME

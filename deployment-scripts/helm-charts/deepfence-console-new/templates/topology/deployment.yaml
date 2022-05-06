@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: topology-{{ include "deepfence-console.fullname" . }}
+  name: deepfence-topology
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}

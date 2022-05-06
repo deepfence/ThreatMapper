@@ -1,7 +1,7 @@
 apiVersion:  apps/v1
 kind: Deployment
 metadata:
-  name: introuter-{{ include "deepfence-console.fullname" . }}
+  name: deepfence-introuter
   namespace: {{ .Values.namespace }}
   labels:
     app: deepfence-console

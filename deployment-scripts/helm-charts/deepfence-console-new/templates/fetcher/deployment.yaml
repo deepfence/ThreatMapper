@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fetcher-{{ include "deepfence-console.fullname" . }}
+  name: deepfence-fetcher
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     app: deepfence-console

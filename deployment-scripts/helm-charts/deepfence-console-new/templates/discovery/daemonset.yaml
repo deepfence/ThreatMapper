@@ -2,16 +2,13 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: discovery-{{ include "deepfence-console.fullname" . }}
+  name: deepfence-discovery
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     app: deepfence-console
     name: deepfence-discovery
 spec:
-  {{- if not .Values.discovery.autoscaling.enabled }}
-  replicas: {{ .Values.discovery.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       name: deepfence-discovery
