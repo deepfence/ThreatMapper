@@ -16,11 +16,11 @@ func afterBulkpush(executionId int64, requests []elastic.BulkableRequest, respon
 	}
 	if response.Errors {
 		for _, i := range response.Failed() {
-			fmt.Printf("index: %s error reason: %s error: %+v",
+			fmt.Printf("index: %s error reason: %s error: %+v\n",
 				i.Index, i.Error.Reason, i.Error)
 		}
 	}
-	fmt.Printf("number of docs sent to es successfully: %d failed: %d",
+	fmt.Printf("number of docs sent to es successfully: %d failed: %d\n",
 		len(response.Succeeded()), len(response.Failed()))
 }
 
