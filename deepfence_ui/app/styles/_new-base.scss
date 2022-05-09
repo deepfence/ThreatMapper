@@ -3482,27 +3482,6 @@ input[type='checkbox']:checked {
       }
     }
   }
-  .btn-wrapper {
-    margin-top: 80px;
-    .u-m-btn {
-      width: 160px;
-      border: 1px solid $critical-alert-color;
-      padding: 10px;
-      font-size: 14px;
-      // font-family: $open-sans;
-      color: white;
-      text-align: center;
-      margin-right: 10px;
-      border-radius: 4px;
-      width: 180px;
-      height: 40px;
-      cursor: pointer;
-      background-color: #db2547;
-    }
-    .u-m-btn:hover {
-      color: white;
-    }
-  }
 }
 /*END :: ALERTS MANAGEMENT*/
 
@@ -5455,6 +5434,28 @@ input {
     line-height: 50px;
     text-align: left;
   }
+}
+
+
+.btn-delete {
+  width: 160px;
+  border: 1px solid $critical-alert-color;
+  padding: 10px;
+  font-size: 14px;
+  color: white;
+  text-align: center;
+  margin-top: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+  background-color: #db2547;
+  border-radius: 4px;
+  width: 180px;
+  height: 40px;
+}
+.btn-delete:focus,
+.btn-delete:hover,
+.btn-delete:active {
+  border-color: white !important;
 }
 
 .btn-download {
