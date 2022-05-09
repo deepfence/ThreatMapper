@@ -100,7 +100,7 @@ func startConsumers(brokers string, topics []string, group string, topicChannels
 	}
 }
 
-func afterBulkpush(executionId int64, requests []elastic.BulkableRequest, response *elastic.BulkResponse, err error) {
+func afterBulkPush(executionId int64, requests []elastic.BulkableRequest, response *elastic.BulkResponse, err error) {
 	if err != nil {
 		log.Error(err)
 	}
@@ -109,7 +109,7 @@ func afterBulkpush(executionId int64, requests []elastic.BulkableRequest, respon
 			log.Errorf("index: %s error reason: %s error: %+v\n", i.Index, i.Error.Reason, i.Error)
 		}
 	}
-	log.Infof("number of docs sent to es successful: %d failed: %d", len(response.Succeeded()), len(response.Failed()))
+	log.Infof("number of docs sent to es -> successful: %d failed: %d", len(response.Succeeded()), len(response.Failed()))
 }
 
 func startBulkProcessor(
@@ -124,7 +124,7 @@ func startBulkProcessor(
 		FlushInterval(flushInterval).
 		Workers(numWorkers).
 		BulkActions(numDocs).
-		After(afterBulkpush).
+		After(afterBulkPush).
 		Stats(false).
 		Do(context.Background())
 	if err != nil {
