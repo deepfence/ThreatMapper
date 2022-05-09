@@ -410,7 +410,7 @@ redis:
   service:
     type: ClusterIP
 
-sscanner:
+secretScanner:
   replicaCount: 1
   image:
     repository: deepfenceio/deepfence_secret_scanner_ce
@@ -443,7 +443,7 @@ sscanner:
   service:
     type: ClusterIP
 
-vmapper:
+vulnerabilityMapper:
   replicaCount: 1
   image:
     repository: deepfenceio/deepfence_vulnerability_mapper_ce
@@ -476,7 +476,7 @@ vmapper:
   service:
     type: ClusterIP
 
-introuter:
+internalRouter:
   streamProcessorReplicationFactor: 1
   replicaCount: 1
   image:
@@ -510,7 +510,7 @@ introuter:
   service:
     type: ClusterIP
 
-pscaner:
+packageScanner:
   replicaCount: 1
   image:
     repository: deepfenceio/deepfence_package_scanner_ce

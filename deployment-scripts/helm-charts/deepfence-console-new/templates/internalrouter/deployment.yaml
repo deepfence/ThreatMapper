@@ -1,15 +1,15 @@
 apiVersion:  apps/v1
 kind: Deployment
 metadata:
-  name: deepfence-introuter
+  name: deepfence-internalRouter
   namespace: {{ .Values.namespace }}
   labels:
     app: deepfence-console
     name: deepfence-internal-router
     {{- include "deepfence-console.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.introuter.autoscaling.enabled }}
-  replicas: {{ .Values.introuter.replicaCount }}
+  {{- if not .Values.internalRouter.autoscaling.enabled }}
+  replicas: {{ .Values.internalRouter.replicaCount }}
   {{- end }}  
   selector:
     matchLabels:
@@ -25,7 +25,7 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
       containers:
-      - image: "{{ .Values.introuter.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+      - image: "{{ .Values.internalRouter.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.router.image.pullPolicy }}
         name: deepfence-internal-router
         env:
@@ -86,16 +86,16 @@ spec:
         ports:
         - containerPort: 443
         resources:
-        {{- toYaml .Values.introuter.resources | nindent 12 }}
-    {{- with .Values.introuter.nodeSelector }}
+        {{- toYaml .Values.internalRouter.resources | nindent 12 }}
+    {{- with .Values.internalRouter.nodeSelector }}
     nodeSelector:
     {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- with .Values.introuter.affinity }}
+    {{- with .Values.internalRouter.affinity }}
     affinity:
     {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- with .Values.introuter.tolerations }}
+    {{- with .Values.internalRouter.tolerations }}
     tolerations:
     {{- toYaml . | nindent 8 }}
     {{- end }}

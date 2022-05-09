@@ -8,8 +8,8 @@ metadata:
     app: deepfence-console
     name: deepfence-secret-scanner
 spec:
-  {{- if not .Values.sscanner.autoscaling.enabled }}
-  replicas: {{ .Values.sscanner.replicaCount }}
+  {{- if not .Values.secretScanner.autoscaling.enabled }}
+  replicas: {{ .Values.secretScanner.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
@@ -26,8 +26,8 @@ spec:
         - name: {{ .Values.image.pullSecretName }}
       containers:
         - name: deepfence-secret-scanner
-          image: "{{ .Values.sscanner.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.sscanner.image.pullPolicy }}
+          image: "{{ .Values.secretScanner.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.secretScanner.image.pullPolicy }}
           ports:
             - containerPort: 8011
           command: ["/home/deepfence/usr/SecretScanner"]
@@ -41,5 +41,5 @@ spec:
           {{- end }}
           args: ["-config-path", "/home/deepfence/usr", "-http-port", "8011"]
           resources:
-            {{- toYaml .Values.sscanner.resources | nindent 12 }}
+            {{- toYaml .Values.secretScanner.resources | nindent 12 }}
 
