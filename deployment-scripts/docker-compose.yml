@@ -431,8 +431,10 @@ services:
     image: confluentinc/cp-kafka-rest:7.1.1
     depends_on:
       - deepfence-kafka-broker
+    # ports:
+    #   - 8082:8082
     ports:
-      - 8082:8082
+      - "127.0.0.1:8082:8082"
     hostname: deepfence-rest-proxy
     container_name: deepfence-rest-proxy
     environment:

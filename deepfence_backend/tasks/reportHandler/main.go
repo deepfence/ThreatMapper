@@ -38,6 +38,14 @@ var (
 	log                    *logrus.Logger
 )
 
+// func funcName(fname string) string {
+// 	if strings.Contains(fname, ".") {
+// 		s := strings.Split(fname, ".")
+// 		return s[len(s)-1]
+// 	}
+// 	return fname
+// }
+
 func init() {
 
 	// setup logger
@@ -55,7 +63,8 @@ func init() {
 		FullTimestamp: true,
 		PadLevelText:  true,
 		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-			return f.Func.Name(), path.Base(f.File) + ":" + strconv.Itoa(f.Line)
+			// return funcName(f.Func.Name()) + "()", " " + path.Base(f.File) + ":" + strconv.Itoa(f.Line)
+			return "", " " + path.Base(f.File) + ":" + strconv.Itoa(f.Line)
 		},
 	})
 
@@ -206,7 +215,7 @@ func main() {
 
 	consumerGroupID := os.Getenv("CUSTOMER_UNIQUE_ID")
 	if consumerGroupID == "" {
-		log.Warn("no consumer id found setting consumer id to default")
+		log.Warn("empty CUSTOMER_UNIQUE_ID, setting kafka-consumer-group-id to 'default'")
 		consumerGroupID = "default"
 	}
 
