@@ -228,6 +228,7 @@ func ingestScanData(secretScanMsg string, index string) error {
 		}
 		httpReq.Close = true
 		httpReq.Header.Add("deepfence-key", deepfenceKey)
+		httpReq.Header.Add("Content-Type", "application/vnd.kafka.json.v2+json")
 		resp, err := httpClient.Do(httpReq)
 		if err != nil {
 			return err
@@ -289,19 +290,12 @@ func buildClient() (*http.Client, error) {
 	return client, nil
 }
 
-// data needs to be in this format
-// {"records":[{"value":<record1>},{"value":record2}]}
 func formatToKafka(data map[string]interface{}) []byte {
-	values := make([]string, len(data))
-	i := 0
-	for _, u := range data {
-		encoded, err := json.Marshal(&u)
-		if err != nil {
-			fmt.Println("Error in marshalling in progress secretScanLogDoc to json:" + err.Error())
-		}
-		values[i] = "{\"value\":" + string(encoded) + "}"
-		i++
+	encoded, err := json.Marshal(&data)
+	if err != nil {
+		fmt.Println("Error in marshalling in progress secretScan data to json:" + err.Error())
+		return nil
 	}
-	result := strings.Join(values, ",")
-	return []byte("{\"records\":[" + result + "]}")
+	value := "{\"value\":" + string(encoded) + "}"
+	return []byte("{\"records\":[" + value + "]}")
 }
