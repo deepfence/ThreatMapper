@@ -11,7 +11,6 @@ import (
 
 	"github.com/olivere/elastic/v7"
 	kafka "github.com/segmentio/kafka-go"
-	log "github.com/sirupsen/logrus"
 )
 
 var (

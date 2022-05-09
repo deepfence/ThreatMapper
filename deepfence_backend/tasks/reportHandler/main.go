@@ -17,7 +17,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	_ "github.com/lib/pq"
 	elastic "github.com/olivere/elastic/v7"
-	log "github.com/sirupsen/logrus"
+	logrus "github.com/sirupsen/logrus"
 )
 
 type NotificationSettings struct {
@@ -35,25 +35,27 @@ var (
 	notificationSettings   NotificationSettings
 	esClient               *elastic.Client
 	kafkaBrokers           string
+	log                    *logrus.Logger
 )
 
 func init() {
 
 	// setup logger
+	log = logrus.New()
 	debug := os.Getenv("DEBUG")
 	if strings.ToLower(debug) == "true" {
-		log.SetLevel(log.DebugLevel)
+		log.SetLevel(logrus.DebugLevel)
 	} else {
-		log.SetLevel(log.InfoLevel)
+		log.SetLevel(logrus.InfoLevel)
 	}
 	log.SetOutput(os.Stdout)
 	log.SetReportCaller(true)
-	log.SetFormatter(&log.TextFormatter{
-		DisableColors: true,
+	log.SetFormatter(&logrus.TextFormatter{
+		ForceColors:   true,
 		FullTimestamp: true,
 		PadLevelText:  true,
 		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-			return " ", path.Base(f.File) + strconv.Itoa(f.Line)
+			return f.Func.Name(), path.Base(f.File) + ":" + strconv.Itoa(f.Line)
 		},
 	})
 

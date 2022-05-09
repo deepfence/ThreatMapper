@@ -8,7 +8,6 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	kafka "github.com/segmentio/kafka-go"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
