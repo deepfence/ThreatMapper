@@ -11,6 +11,7 @@ import (
 
 	"github.com/olivere/elastic/v7"
 	kafka "github.com/segmentio/kafka-go"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -65,9 +66,9 @@ func getCurrentTime() string {
 
 func startConsumers(brokers string, topics []string, group string, topicChannels map[string](chan []byte)) {
 
-	fmt.Printf("brokers: %s\n", kafkaBrokers)
-	fmt.Printf("topics: %s\n", topics)
-	fmt.Printf("groupID: %s\n", group)
+	log.Info("brokers: ", brokers)
+	log.Info("topics: ", topics)
+	log.Info("group ID: ", group)
 
 	for _, t := range topics {
 		go func(topic string, out chan []byte) {
@@ -82,18 +83,19 @@ func startConsumers(brokers string, topics []string, group string, topicChannels
 					MaxWait:               5 * time.Second,
 					WatchPartitionChanges: true,
 					CommitInterval:        5 * time.Second,
+					Logger:                log.StandardLogger(),
 				},
 			)
 
 			defer reader.Close()
 
-			fmt.Println("start consuming from " + topic)
+			log.Infof("start consuming from topic %s", topic)
 			for {
 				m, err := reader.ReadMessage(context.Background())
 				if err != nil {
-					fmt.Println(err)
+					log.Error(err)
 				}
-				// fmt.Printf("topic:%v partition:%v offset:%v	message:%s\n", m.Topic, m.Partition, m.Offset, string(m.Value))
+				log.Debugf("received message from topic:%s partition:%d offset:%d message:%s", m.Topic, m.Partition, m.Offset, string(m.Value))
 				out <- m.Value
 			}
 		}(t, topicChannels[t])
@@ -102,16 +104,15 @@ func startConsumers(brokers string, topics []string, group string, topicChannels
 
 func afterBulkpush(executionId int64, requests []elastic.BulkableRequest, response *elastic.BulkResponse, err error) {
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 	}
 	if response.Errors {
-		for _, i := range response.Failed() {
-			fmt.Printf("index: %s error reason: %s error: %+v\n",
-				i.Index, i.Error.Reason, i.Error)
+		failed := response.Failed()
+		log.Infof("number of failed docs %d", len(failed))
+		for _, i := range failed {
+			log.Errorf("index: %s error reason: %s error: %+v\n", i.Index, i.Error.Reason, i.Error)
 		}
 	}
-	fmt.Printf("number of docs sent to es successfully: %d failed: %d\n",
-		len(response.Succeeded()), len(response.Failed()))
 }
 
 func startBulkProcessor(
@@ -127,6 +128,7 @@ func startBulkProcessor(
 		Workers(numWorkers).
 		BulkActions(numDocs).
 		After(afterBulkpush).
+		Stats(false).
 		Do(context.Background())
 	if err != nil {
 		gracefulExit(err)
@@ -142,8 +144,7 @@ func addToES(data []byte, index string, bulkp *elastic.BulkProcessor) error {
 	}
 	dataMap["masked"] = "false"
 	dataMap["@timestamp"] = getCurrentTime()
-	r := elastic.NewBulkIndexRequest().Index(index).Doc(dataMap)
-	bulkp.Add(r)
+	bulkp.Add(elastic.NewBulkIndexRequest().Index(index).Doc(dataMap))
 	return nil
 }
 
@@ -151,11 +152,10 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 	for {
 		select {
 		case cve := <-topicChannels[cveIndexName]:
-			// fmt.Println("cve: ", cve)
 			var cveStruct dfCveStruct
 			err := json.Unmarshal(cve, &cveStruct)
 			if err != nil {
-				fmt.Println("error reading cve: ", err.Error())
+				log.Errorf("error reading cve: %s", err.Error())
 				continue
 			}
 			cveStruct.Timestamp = getCurrentTime()
@@ -169,37 +169,32 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 
 			event, err := json.Marshal(cveStruct)
 			if err != nil {
-				fmt.Println("error marshal data: " + err.Error())
+				log.Errorf("error marshal updated cve data: %s", err.Error())
 				continue
 			} else {
-				r := elastic.NewBulkIndexRequest().Index(cveIndexName).Doc(cveStruct)
-				buklp.Add(r)
+				buklp.Add(elastic.NewBulkIndexRequest().Index(cveIndexName).Doc(cveStruct))
 				// publish after updating cve
 				vulnerabilityTaskQueue <- event
 			}
 
 		case cveLog := <-topicChannels[cveScanLogsIndexName]:
-			// fmt.Println("cve log: ", cveLog)
 			if err := addToES(cveLog, cveScanLogsIndexName, buklp); err != nil {
-				fmt.Println("failed to process cve scan log error: " + err.Error())
+				log.Errorf("failed to process cve scan log error: %s", err.Error())
 			}
 
 		case secret := <-topicChannels[secretScanIndexName]:
-			// fmt.Println("secret scann: ", secret)
 			if err := addToES(secret, secretScanIndexName, buklp); err != nil {
-				fmt.Println("failed to process secret scan error: " + err.Error())
+				log.Errorf("failed to process secret scan error: %s", err.Error())
 			}
 
 		case secretLog := <-topicChannels[secretScanLogsIndexName]:
-			// fmt.Println("secret log: ", secretLog)
 			if err := addToES(secretLog, secretScanLogsIndexName, buklp); err != nil {
-				fmt.Println("failed to process secret scan log error: " + err.Error())
+				log.Errorf("failed to process secret scan log error: %s", err.Error())
 			}
 
 		case sbomArtifact := <-topicChannels[sbomArtifactsIndexName]:
-			// fmt.Println("sbom: ", sbomArtifact)
 			if err := addToES(sbomArtifact, sbomArtifactsIndexName, buklp); err != nil {
-				fmt.Println("failed to process sbom artifacts error: " + err.Error())
+				log.Errorf("failed to process sbom artifacts error: %s", err.Error())
 			}
 
 		}

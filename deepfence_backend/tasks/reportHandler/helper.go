@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -10,6 +8,7 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	kafka "github.com/segmentio/kafka-go"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -48,7 +47,7 @@ func newRedisPool() *redis.Pool {
 }
 
 func checkKafkaConn() error {
-	fmt.Println("check connection to kafka brokers: " + kafkaBrokers)
+	log.Info("check connection to kafka brokers: " + kafkaBrokers)
 	conn, err := kafka.Dial("tcp", strings.Split(kafkaBrokers, ",")[0])
 	if err != nil {
 		return err
@@ -59,31 +58,31 @@ func checkKafkaConn() error {
 		return err
 	}
 	for _, b := range brokers {
-		fmt.Printf("broker found at %s", b.Host)
+		log.Infof("broker found at %s", b.Host)
 	}
 	return nil
 }
 
 func gracefulExit(err error) {
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
 	if postgresDb != nil {
 		postgresErr := postgresDb.Close()
 		if postgresErr != nil {
-			log.Println(postgresErr)
+			log.Error(postgresErr)
 		}
 	}
 	if redisPubSub != nil {
 		redisErr := redisPubSub.Close()
 		if redisErr != nil {
-			log.Println(redisErr)
+			log.Error(redisErr)
 		}
 	}
 	if redisPool != nil {
 		redisErr := redisPool.Close()
 		if redisErr != nil {
-			log.Println(redisErr)
+			log.Error(redisErr)
 		}
 	}
 	time.Sleep(time.Second * 5)
@@ -95,7 +94,7 @@ func syncPoliciesAndNotificationsSettings() {
 	row := postgresDb.QueryRow("SELECT COUNT(*) FROM vulnerability_notification where duration_in_mins=-1")
 	err := row.Scan(&vulnerabilityNotificationCount)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
 	notificationSettings.Lock()
 	if vulnerabilityNotificationCount > 0 {

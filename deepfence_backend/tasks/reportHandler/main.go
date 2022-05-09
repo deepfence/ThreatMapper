@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
+	"path"
+	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,6 +17,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	_ "github.com/lib/pq"
 	elastic "github.com/olivere/elastic/v7"
+	log "github.com/sirupsen/logrus"
 )
 
 type NotificationSettings struct {
@@ -35,6 +38,25 @@ var (
 )
 
 func init() {
+
+	// setup logger
+	debug := os.Getenv("DEBUG")
+	if strings.ToLower(debug) == "true" {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
+	log.SetOutput(os.Stdout)
+	log.SetReportCaller(true)
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+		FullTimestamp: true,
+		PadLevelText:  true,
+		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+			return " ", path.Base(f.File) + strconv.Itoa(f.Line)
+		},
+	})
+
 	redisAddr = fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT"))
 	redisPool = newRedisPool()
 	var err error
@@ -129,7 +151,7 @@ func createNotificationCeleryTask(resourceType string, messages []interface{}) {
 	kwargs["data"] = messages
 	_, err := celeryCli.DelayKwargs(celeryNotificationTask, kwargs)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
 }
 
@@ -144,7 +166,7 @@ func batchMessages(resourceType string, resourceChan *chan []byte, batchSize int
 				var msgJson interface{}
 				err := json.Unmarshal(msg, &msgJson)
 				if err != nil {
-					log.Println(err)
+					log.Error(err)
 					break
 				}
 				messages = append(messages, msgJson)
@@ -174,8 +196,6 @@ func batchMessages(resourceType string, resourceChan *chan []byte, batchSize int
 }
 
 func main() {
-	log.SetFlags(0)
-	// initRedisPubsub()
 	var err error
 	celeryCli, err = gocelery.NewCeleryClient(gocelery.NewRedisBroker(redisPool),
 		&gocelery.RedisCeleryBackend{Pool: redisPool}, 1)
@@ -185,7 +205,13 @@ func main() {
 	go syncPoliciesAndNotifications()
 	go batchMessages(resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
 
-	topicChannels := make(map[string](chan []byte))
+	consumerGroupID := os.Getenv("CUSTOMER_UNIQUE_ID")
+	if consumerGroupID == "" {
+		log.Warn("no consumer id found setting consumer id to default")
+		consumerGroupID = "default"
+	}
+
+	// list of kafka topics to fetch messages
 	topics := []string{
 		cveIndexName,
 		cveScanLogsIndexName,
@@ -193,17 +219,18 @@ func main() {
 		secretScanLogsIndexName,
 		sbomArtifactsIndexName,
 	}
+	log.Info("topics list: ", topics)
+
+	// channels to pass message between report processor and consumer
+	topicChannels := make(map[string](chan []byte))
 	for _, t := range topics {
 		topicChannels[t] = make(chan []byte, 100)
 	}
 
-	consumerGroupID := os.Getenv("CUSTOMER_UNIQUE_ID")
-	if consumerGroupID == "" {
-		consumerGroupID = "default"
-	}
-
 	startConsumers(kafkaBrokers, topics, consumerGroupID, topicChannels)
+
 	bulkp := startBulkProcessor(esClient, 5*time.Second, 2, 100)
 	defer bulkp.Close()
+
 	processReports(topicChannels, bulkp)
 }
