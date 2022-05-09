@@ -74,12 +74,14 @@ func startConsumers(brokers string, topics []string, group string, topicChannels
 			// https://pkg.go.dev/github.com/segmentio/kafka-go#ReaderConfig
 			reader := kafka.NewReader(
 				kafka.ReaderConfig{
-					Brokers:  strings.Split(kafkaBrokers, ","),
-					GroupID:  group,
-					Topic:    topic,
-					MinBytes: 10e3, // 10KB
-					MaxBytes: 10e6, // 10MB
-					MaxWait:  5 * time.Second,
+					Brokers:               strings.Split(kafkaBrokers, ","),
+					GroupID:               group,
+					Topic:                 topic,
+					MinBytes:              1e3, // 1KB
+					MaxBytes:              5e6, // 5MB
+					MaxWait:               5 * time.Second,
+					WatchPartitionChanges: true,
+					CommitInterval:        5 * time.Second,
 				},
 			)
 

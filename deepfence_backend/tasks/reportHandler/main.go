@@ -29,10 +29,9 @@ var (
 	redisAddr              string
 	vulnerabilityTaskQueue chan []byte
 	celeryCli              *gocelery.CeleryClient
-	// resourcePubsubToChanMap map[string]chan []byte
-	notificationSettings NotificationSettings
-	esClient             *elastic.Client
-	kafkaBrokers         string
+	notificationSettings   NotificationSettings
+	esClient               *elastic.Client
+	kafkaBrokers           string
 )
 
 func init() {
@@ -204,6 +203,6 @@ func main() {
 	}
 
 	startConsumers(kafkaBrokers, topics, consumerGroupID, topicChannels)
-	bulkp := startBulkProcessor(esClient, 10*time.Second, 2, 100)
+	bulkp := startBulkProcessor(esClient, 5*time.Second, 2, 100)
 	processReports(topicChannels, bulkp)
 }
