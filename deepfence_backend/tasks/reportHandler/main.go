@@ -204,5 +204,6 @@ func main() {
 
 	startConsumers(kafkaBrokers, topics, consumerGroupID, topicChannels)
 	bulkp := startBulkProcessor(esClient, 5*time.Second, 2, 100)
+	defer bulkp.Close()
 	processReports(topicChannels, bulkp)
 }
