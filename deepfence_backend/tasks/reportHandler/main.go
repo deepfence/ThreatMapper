@@ -94,9 +94,6 @@ func init() {
 		}
 	}
 	vulnerabilityTaskQueue = make(chan []byte, 10000)
-	// resourcePubsubToChanMap = map[string]chan []byte{
-	// 	vulnerabilityRedisPubsubName: vulnerabilityTaskQueue,
-	// }
 	notificationSettings = NotificationSettings{
 		vulnerabilityNotificationsSet: false,
 	}

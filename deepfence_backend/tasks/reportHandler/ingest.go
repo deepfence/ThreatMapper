@@ -83,7 +83,6 @@ func startConsumers(brokers string, topics []string, group string, topicChannels
 					MaxWait:               5 * time.Second,
 					WatchPartitionChanges: true,
 					CommitInterval:        5 * time.Second,
-					Logger:                log.StandardLogger(),
 				},
 			)
 
@@ -107,12 +106,11 @@ func afterBulkpush(executionId int64, requests []elastic.BulkableRequest, respon
 		log.Error(err)
 	}
 	if response.Errors {
-		failed := response.Failed()
-		log.Infof("number of failed docs %d", len(failed))
-		for _, i := range failed {
+		for _, i := range response.Failed() {
 			log.Errorf("index: %s error reason: %s error: %+v\n", i.Index, i.Error.Reason, i.Error)
 		}
 	}
+	log.Infof("number of docs sent to es successful: %d failed: %d", len(response.Succeeded()), len(response.Failed()))
 }
 
 func startBulkProcessor(
