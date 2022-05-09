@@ -131,12 +131,11 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	secretScanLogDoc["scan_status"] = "IN_PROGRESS"
 	secretScanLogDoc["time_stamp"] = getTimestamp()
 	secretScanLogDoc["@timestamp"] = getCurrentTime()
-	byteJson, err := json.Marshal(secretScanLogDoc)
-	if err != nil {
-		fmt.Println("Error in marshalling in progress secretScanLogDoc to json:" + err.Error())
-		return
-	}
-	err = ingestScanData(string(byteJson), secretScanLogsIndexName)
+
+	// byteJson, err := json.Marshal(secretScanLogDoc)
+	byteJson := formatToKafka(secretScanLogDoc)
+
+	err := ingestScanData(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
@@ -155,7 +154,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		secretScanLogDoc["scan_message"] = err.Error()
 		secretScanLogDoc["time_stamp"] = getTimestamp()
 		secretScanLogDoc["@timestamp"] = getCurrentTime()
-		byteJson, _ = json.Marshal(secretScanLogDoc)
+		// byteJson, _ = json.Marshal(secretScanLogDoc)
+		byteJson = formatToKafka(secretScanLogDoc)
 		ingestScanData(string(byteJson), secretScanLogsIndexName)
 		return
 	} else {
@@ -180,11 +180,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 				secretScanDoc[typeOfS.Field(index).Name] = values.Field(index).Interface()
 			}
 		}
-		byteJson, err := json.Marshal(secretScanDoc)
-		if err != nil {
-			fmt.Println("Error in marshalling secret result object to json:" + err.Error())
-			return
-		}
+		// byteJson, err := json.Marshal(secretScanDoc)
+		byteJson := formatToKafka(secretScanDoc)
 		err = ingestScanData(string(byteJson), secretScanIndexName)
 		if err != nil {
 			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
@@ -198,11 +195,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	}
 	secretScanLogDoc["time_stamp"] = timestamp
 	secretScanLogDoc["@timestamp"] = currTime
-	byteJson, err = json.Marshal(secretScanLogDoc)
-	if err != nil {
-		fmt.Println("Error in marshalling secretScanLogDoc to json:" + err.Error())
-		return
-	}
+	// byteJson, err = json.Marshal(secretScanLogDoc)
+	byteJson = formatToKafka(secretScanLogDoc)
 	err = ingestScanData(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex:" + err.Error())
@@ -228,7 +222,7 @@ func ingestScanData(secretScanMsg string, index string) error {
 		return err
 	}
 	for {
-		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/df-api/ingest?doc_type="+index, postReader)
+		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/ingest/topics/"+index, postReader)
 		if err != nil {
 			return err
 		}
@@ -293,4 +287,21 @@ func buildClient() (*http.Client, error) {
 	}
 
 	return client, nil
+}
+
+// data needs to be in this format
+// {"records":[{"value":<record1>},{"value":record2}]}
+func formatToKafka(data map[string]interface{}) []byte {
+	values := make([]string, len(data))
+	i := 0
+	for _, u := range data {
+		encoded, err := json.Marshal(&u)
+		if err != nil {
+			fmt.Println("Error in marshalling in progress secretScanLogDoc to json:" + err.Error())
+		}
+		values[i] = "{\"value\":" + string(encoded) + "}"
+		i++
+	}
+	result := strings.Join(values, ",")
+	return []byte("{\"records\":[" + result + "]}")
 }
