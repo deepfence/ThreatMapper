@@ -14,8 +14,7 @@ import (
 
 const (
 	resourceTypeVulnerability = "vulnerability"
-	// vulnerabilityRedisPubsubName = "vulnerability_task_queue"
-	celeryNotificationTask = "tasks.notification_worker.notification_task"
+	celeryNotificationTask    = "tasks.notification_worker.notification_task"
 )
 
 func getRedisDbNumber() int {

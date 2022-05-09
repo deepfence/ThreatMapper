@@ -124,30 +124,6 @@ func init() {
 
 }
 
-// func initRedisPubsub() {
-// 	redisPubSub = &redis.PubSubConn{Conn: redisPool.Get()}
-// 	err := redisPubSub.Subscribe(vulnerabilityRedisPubsubName)
-// 	if err != nil {
-// 		gracefulExit(err)
-// 	}
-// }
-
-// func receiveMessagesFromRedisPubsub() {
-// 	for {
-// 		switch v := redisPubSub.Receive().(type) {
-// 		case redis.Message:
-// 			resourcePubsubToChanMap[v.Channel] <- v.Data
-// 		case redis.Subscription:
-// 			//log.Printf("subscription message: %s: %s %d\n", v.Channel, v.Kind, v.Count)
-// 		case error:
-// 			log.Println("Error on redisPubSub.Receive(): ", v.Error())
-// 			time.Sleep(5 * time.Second)
-// 			// re initialize redis pubsub
-// 			initRedisPubsub()
-// 		}
-// 	}
-// }
-
 func createNotificationCeleryTask(resourceType string, messages []interface{}) {
 	kwargs := make(map[string]interface{})
 	kwargs["notification_type"] = resourceType
@@ -202,19 +178,24 @@ func main() {
 	log.SetFlags(0)
 	// initRedisPubsub()
 	var err error
-	celeryCli, err = gocelery.NewCeleryClient(
-		gocelery.NewRedisBroker(redisPool), &gocelery.RedisCeleryBackend{Pool: redisPool}, 1)
+	celeryCli, err = gocelery.NewCeleryClient(gocelery.NewRedisBroker(redisPool),
+		&gocelery.RedisCeleryBackend{Pool: redisPool}, 1)
 	if err != nil {
 		gracefulExit(err)
 	}
 	go syncPoliciesAndNotifications()
 	go batchMessages(resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
-	// receiveMessagesFromRedisPubsub()
 
 	topicChannels := make(map[string](chan []byte))
-	topics := []string{cveIndexName, cveScanLogsIndexName, sbomArtifactsIndexName}
+	topics := []string{
+		cveIndexName,
+		cveScanLogsIndexName,
+		secretScanIndexName,
+		secretScanLogsIndexName,
+		sbomArtifactsIndexName,
+	}
 	for _, t := range topics {
-		topicChannels[t] = make(chan []byte)
+		topicChannels[t] = make(chan []byte, 100)
 	}
 
 	consumerGroupID := os.Getenv("CUSTOMER_UNIQUE_ID")
@@ -223,6 +204,6 @@ func main() {
 	}
 
 	startConsumers(kafkaBrokers, topics, consumerGroupID, topicChannels)
-	bulkp := startBulkProcessor(esClient, 5*time.Second, 2, 100)
+	bulkp := startBulkProcessor(esClient, 10*time.Second, 2, 100)
 	processReports(topicChannels, bulkp)
 }
