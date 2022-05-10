@@ -91,11 +91,9 @@ services:
           cpus: ".2"
     restart: on-failure
     environment:
-    - MGMT_CONSOLE_URL=deepfence-internal-router
-    - MGMT_CONSOLE_PORT=443
-    - SCOPE_HOSTNAME=deepfence-management-console
-    networks:
-    - deepfence_net
+    - MGMT_CONSOLE_URL=127.0.0.1
+    - MGMT_CONSOLE_PORT=8443
+    network_mode: "host"
     volumes:
     - /sys/kernel/debug:/sys/kernel/debug:rw
     - /var/log/fenced
@@ -238,6 +236,8 @@ services:
       core: 0
     networks:
       - deepfence_net
+    ports:
+    - "127.0.0.1:8443:443"
     environment:
       ENABLE_AUTH: "false"
     restart: always
