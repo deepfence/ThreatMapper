@@ -82,6 +82,7 @@ func startConsumers(brokers string, topics []string, group string, topicChannels
 					MaxWait:               5 * time.Second,
 					WatchPartitionChanges: true,
 					CommitInterval:        5 * time.Second,
+					ErrorLogger:           kafka.LoggerFunc(log.Errorf),
 				},
 			)
 
