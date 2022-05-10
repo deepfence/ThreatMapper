@@ -92,6 +92,8 @@ def validate_domain(domain):
         domain = domain_split[0]
         if not validate_port(domain_split[1]):
             return False
+    if domain == "localhost":
+        return True
     if re.search(regex, domain):
         return True
     else:
