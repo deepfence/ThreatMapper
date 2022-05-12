@@ -226,6 +226,7 @@ func main() {
 		secretScanIndexName,
 		secretScanLogsIndexName,
 		sbomArtifactsIndexName,
+		sbomCveScanIndexName,
 	}
 	log.Info("topics list: ", topics)
 

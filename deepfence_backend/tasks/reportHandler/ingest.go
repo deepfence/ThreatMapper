@@ -19,6 +19,7 @@ var (
 	secretScanIndexName     = convertRootESIndexToCustomerSpecificESIndex("secret-scan")
 	secretScanLogsIndexName = convertRootESIndexToCustomerSpecificESIndex("secret-scan-logs")
 	sbomArtifactsIndexName  = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
+	sbomCveScanIndexName    = convertRootESIndexToCustomerSpecificESIndex("sbom-cve-scan")
 )
 
 type dfCveStruct struct {
@@ -192,6 +193,11 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 
 		case sbomArtifact := <-topicChannels[sbomArtifactsIndexName]:
 			if err := addToES(sbomArtifact, sbomArtifactsIndexName, buklp); err != nil {
+				log.Errorf("failed to process sbom artifacts error: %s", err.Error())
+			}
+
+		case sbomCve := <-topicChannels[sbomCveScanIndexName]:
+			if err := addToES(sbomCve, sbomCveScanIndexName, buklp); err != nil {
 				log.Errorf("failed to process sbom artifacts error: %s", err.Error())
 			}
 
