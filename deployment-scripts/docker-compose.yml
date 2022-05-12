@@ -397,8 +397,8 @@ services:
     hostname: deepfence-kafka-broker
     container_name: deepfence-kafka-broker
     ports:
-      - "9092:9092"
-      - "9101:9101"
+      - "127.0.0.1:9092:9092"
+      - "127.0.0.1:9101:9101"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
