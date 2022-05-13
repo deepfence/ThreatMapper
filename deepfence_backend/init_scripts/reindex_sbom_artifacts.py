@@ -32,7 +32,7 @@ if EL_CLIENT.indices.exists(index=SBOM_INDEX) and EL_CLIENT.indices.exists(index
     if sbom_count > 0:
         page = EL_CLIENT.search(
         index = 'sbom-cve-scan',
-        scroll = '10m',
+        scroll = '1m',
         size = ARRAY_SIZE,
         body={"query": {"match_all": {}}},
         sort="scan_id.keyword:desc",
@@ -89,7 +89,7 @@ if EL_CLIENT.indices.exists(index=SBOM_INDEX) and EL_CLIENT.indices.exists(index
                         print("Error while bulk processing artifacts for scan_id: ", source_doc["scan_id"])
                         print(errors[1])
 
-            page = EL_CLIENT.scroll(scroll_id=scroll_id, scroll='10m')
+            page = EL_CLIENT.scroll(scroll_id=scroll_id, scroll='1m')
             scroll_id = page['_scroll_id']
             sbom_docs = page['hits']['hits']
             print(scroll_id)
