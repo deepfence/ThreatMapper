@@ -43,6 +43,11 @@ from resource_models.node import Node
 common_api = Blueprint("common_api", __name__)
 
 
+@common_api.route('/ping', methods=["GET"])
+def ping():
+    return set_response({"message": "pong"})
+
+
 @common_api.route("/topology-metrics", methods=["GET"])
 @jwt_required()
 def topology_metrics():
