@@ -38,7 +38,7 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
 # Installing FluentBit
 RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
     && echo "deb https://packages.fluentbit.io/debian/buster buster main " >> /etc/apt/sources.list && apt-get update \
-    && apt-get install -y td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/ \
+    && apt-get install -y td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/
 
 COPY tools/apache/fluentbit/* /etc/td-agent-bit/
 
