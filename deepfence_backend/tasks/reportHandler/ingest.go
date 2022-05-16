@@ -171,7 +171,7 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 				log.Errorf("error marshal updated cve data: %s", err.Error())
 				continue
 			} else {
-				buklp.Add(elastic.NewBulkIndexRequest().Index(cveIndexName).Doc(cveStruct))
+				buklp.Add(elastic.NewBulkIndexRequest().Index(cveIndexName).Id(docId).Doc(cveStruct))
 				// publish after updating cve
 				vulnerabilityTaskQueue <- event
 			}
