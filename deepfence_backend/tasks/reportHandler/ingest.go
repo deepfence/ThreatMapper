@@ -165,6 +165,11 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 			cveStruct.CveTuple = fmt.Sprintf("%s|%s|%s", cveStruct.Cve_id, cveStruct.Cve_severity, cveStruct.Cve_container_image)
 			docId := fmt.Sprintf("%x", md5.Sum([]byte(cveStruct.Scan_id+cveStruct.Cve_caused_by_package+cveStruct.Cve_container_image+cveStruct.Cve_id)))
 			cveStruct.DocId = docId
+			if isMaskedCVE(cveStruct) {
+				cveStruct.Masked = "true"
+			} else {
+				cveStruct.Masked = "false"
+			}
 
 			event, err := json.Marshal(cveStruct)
 			if err != nil {
@@ -203,4 +208,13 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 
 		}
 	}
+}
+
+func isMaskedCVE(cve dfCveStruct) bool {
+	switch cve.Cve_id {
+	case "CVE-2022-27404", "CVE-2005-2541", "CVE-2019-1010022", "CVE-2022-1292", "CVE-2019-8457":
+		return true
+
+	}
+	return false
 }
