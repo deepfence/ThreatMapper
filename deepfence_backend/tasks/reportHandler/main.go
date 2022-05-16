@@ -230,15 +230,21 @@ func main() {
 	}
 	log.Info("topics list: ", topics)
 
+	//create if any topics is missing
+	err = createMissingTopics(topics)
+	if err != nil {
+		log.Error(err)
+	}
+
 	// channels to pass message between report processor and consumer
 	topicChannels := make(map[string](chan []byte))
 	for _, t := range topics {
 		topicChannels[t] = make(chan []byte, 100)
 	}
 
-	startConsumers(kafkaBrokers, topics, consumerGroupID, topicChannels)
+	startKafakConsumers(kafkaBrokers, topics, consumerGroupID, topicChannels)
 
-	bulkp := startBulkProcessor(esClient, 5*time.Second, 2, 100)
+	bulkp := startESBulkProcessor(esClient, 5*time.Second, 2, 100)
 	defer bulkp.Close()
 
 	processReports(topicChannels, bulkp)

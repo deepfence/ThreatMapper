@@ -64,7 +64,7 @@ func getCurrentTime() string {
 	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
 }
 
-func startConsumers(brokers string, topics []string, group string, topicChannels map[string](chan []byte)) {
+func startKafakConsumers(brokers string, topics []string, group string, topicChannels map[string](chan []byte)) {
 
 	log.Info("brokers: ", brokers)
 	log.Info("topics: ", topics)
@@ -114,7 +114,7 @@ func afterBulkPush(executionId int64, requests []elastic.BulkableRequest, respon
 	log.Infof("number of docs sent to es -> successful: %d failed: %d", len(response.Succeeded()), len(response.Failed()))
 }
 
-func startBulkProcessor(
+func startESBulkProcessor(
 	client *elastic.Client,
 	flushInterval time.Duration,
 	numWorkers int,

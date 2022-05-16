@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -59,6 +60,63 @@ func checkKafkaConn() error {
 	for _, b := range brokers {
 		log.Infof("broker found at %s", b.Host)
 	}
+	return nil
+}
+
+func createMissingTopics(topics []string) error {
+	conn, err := kafka.Dial("tcp", strings.Split(kafkaBrokers, ",")[0])
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	// list available topics
+	partitions, err := conn.ReadPartitions()
+	if err != nil {
+		return err
+	}
+	available := map[string]struct{}{}
+	for _, p := range partitions {
+		available[p.Topic] = struct{}{}
+	}
+
+	// get connection to current controller
+	controller, err := conn.Controller()
+	if err != nil {
+		return err
+	}
+
+	var ctrlConn *kafka.Conn
+	ctrlConn, err = kafka.Dial("tcp",
+		net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+	if err != nil {
+		return err
+	}
+	defer ctrlConn.Close()
+
+	topicConfigs := []kafka.TopicConfig{}
+	for _, t := range topics {
+		// check if topic exists
+		_, found := available[t]
+		if !found {
+			topicConfigs = append(topicConfigs,
+				kafka.TopicConfig{
+					Topic:             t,
+					NumPartitions:     1,
+					ReplicationFactor: 1,
+				},
+			)
+		}
+	}
+
+	// create missing topics
+	if len(topicConfigs) > 0 {
+		err = ctrlConn.CreateTopics(topicConfigs...)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
