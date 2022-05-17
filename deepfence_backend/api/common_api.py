@@ -641,7 +641,15 @@ def unmask_doc():
         raise InvalidUsage("Missing json value")
     if type(request.json) != dict:
         raise InvalidUsage("Request data invalid")
+    
     docs_to_be_unmasked = request.json.get("docs")
+    unmask_across_images = request.json.get("unmask_across_images", False)
+    extra = {"across_images":unmask_across_images, "operation": "unmask"}
+    if docs_to_be_unmasked:
+        for ds in docs_to_be_unmasked:
+            new_doc = ds.copy()
+            new_doc.update(extra)
+            redis.publish("mask-cve", json.dumps(new_doc))
 
     cve_id_list = request.json.get("cve_id_list")
     if cve_id_list:
@@ -767,7 +775,15 @@ def mask_doc():
         raise InvalidUsage("Missing json value")
     if type(request.json) != dict:
         raise InvalidUsage("Request data invalid")
+    
     docs_to_be_masked = request.json.get("docs")
+    mask_across_images = request.json.get("mask_across_images", False)
+    extra = {"across_images":mask_across_images, "operation": "mask"}
+    if docs_to_be_masked:
+        for ds in docs_to_be_masked:
+            new_doc = ds.copy()
+            new_doc.update(extra)
+            redis.publish("mask-cve", json.dumps(new_doc))
 
     cve_id_list = request.json.get("cve_id_list")
     if cve_id_list:

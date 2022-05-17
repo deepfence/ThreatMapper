@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -220,6 +221,7 @@ func writeScanDataToFile(secretScanMsg string, index string) error {
 	}
 
 	filename := files[index]
+	err := os.MkdirAll(filepath.Dir(filename), 0755)
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
