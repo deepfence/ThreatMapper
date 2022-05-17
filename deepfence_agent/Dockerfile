@@ -34,14 +34,6 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
         /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
     && mkdir /usr/local/discovery
-
-# Installing FluentBit
-RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
-    && echo "deb https://packages.fluentbit.io/debian/buster buster main " >> /etc/apt/sources.list && apt-get update \
-    && apt-get install -y td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/
-
-COPY tools/apache/fluentbit/* /etc/td-agent-bit/
-
 COPY misc/deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
 COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
@@ -59,7 +51,6 @@ COPY --from=build /go/syft/syftCli /usr/local/bin/syft
 RUN chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
     && chmod +x /home/deepfence/*.sh \
-    && chmod 600 /etc/td-agent-bit/* \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_services \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
