@@ -213,9 +213,11 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 }
 
 var (
-	maskedCVE     = map[string]map[string]string{}
+	maskedCVE     = map[string]Nodes{}
 	maskedCVELock = sync.RWMutex{}
 )
+
+type Nodes map[string]string
 
 func isMaskedCVE(cve dfCveStruct) bool {
 	maskedCVELock.RLock()
@@ -256,6 +258,14 @@ func addCVE(cve dfCveStruct, acrossImages bool) {
 		}
 	}
 	maskedCVE[cve.Cve_id] = nodes
+	n, err := getCVE(postgresDb, cve.Cve_id)
+	if err != nil {
+		if len(n) > 0 {
+			updateCVE(postgresDb, cve.Cve_id, nodes)
+		} else {
+			insertCVE(postgresDb, cve.Cve_id, nodes)
+		}
+	}
 }
 
 func removeCVE(cve dfCveStruct) {
@@ -265,6 +275,7 @@ func removeCVE(cve dfCveStruct) {
 	if found {
 		delete(maskedCVE, cve.Cve_id)
 	}
+	deleteCVE(postgresDb, cve.Cve_id)
 }
 
 func getMaskDocES(client *elastic.Client, mchan chan MaskDocID) {

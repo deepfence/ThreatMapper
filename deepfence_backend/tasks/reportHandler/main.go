@@ -213,6 +213,11 @@ func main() {
 	go syncPoliciesAndNotifications()
 	go batchMessages(resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
 
+	// load cve's from db
+	maskedCVELock.Lock()
+	maskedCVE = listAllCVE(postgresDb)
+	maskedCVELock.Unlock()
+
 	mchan := make(chan MaskDocID, 100)
 	go subscribeTOMaskedCVE(redisPool, mchan)
 	go getMaskDocES(esClient, mchan)
