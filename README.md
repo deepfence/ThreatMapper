@@ -88,8 +88,6 @@ More details are in the [ThreatMapper documentation](https://github.com/deepfenc
 
 Once the Management Console is up and running, you can [register an admin account and obtain an API key](https://github.com/deepfence/ThreatMapper/wiki/Console-Initial-Configuration).  
 
-When the console first starts up, it will begin to acquire the Threat Intel feed data; this usually takes a few minutes, but can take up to an hour.  You can install sensors and browse the topology of your applications, but you will not be able to perform vulnerability scans until the threat feeds have been fully acquired.
-
 ## Install the ThreatMapper Sensors
 
 Install the sensors on your production or development platforms. The sensors report to the Management Console; they tell it what services they discover, provide telemetry and generate manifests of software dependencies.
