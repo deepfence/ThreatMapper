@@ -21,7 +21,7 @@ ENV CHECKPOINT_DISABLE=true \
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \
     && echo "Installing some basic stuff" \
-    && apt-get update && apt-get install -y --no-install-recommends gettext ca-certificates supervisor logrotate util-linux dnsutils net-tools cgroup-tools libcgroup1 libcap2 libaudit1 conntrack runit auditd apparmor gzip lsof file curl wget zip at gnupg jq unzip procps cron sudo bzip2 libssl1.1 libevent-2.1-7 libevent-openssl-2.1-7 libevent-pthreads-2.1-7 libnet1 gnupg2 libfile-mimeinfo-perl \
+    && apt-get update && apt-get install -y --no-install-recommends gettext ca-certificates supervisor logrotate util-linux dnsutils net-tools cgroup-tools libcgroup1 libcap2 libaudit1 conntrack runit auditd apparmor gzip lsof file curl zip at gnupg jq unzip procps cron sudo bzip2 libssl1.1 libevent-2.1-7 libevent-openssl-2.1-7 libevent-pthreads-2.1-7 libnet1 gnupg2 libfile-mimeinfo-perl \
     && echo 'deb https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list \
     && curl -L https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key | sudo apt-key add - \
     && apt-get update \
@@ -34,14 +34,6 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
         /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
     && mkdir /usr/local/discovery
-
-# Installing FluentBit
-RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
-    && echo "deb https://packages.fluentbit.io/debian/buster buster main " >> /etc/apt/sources.list && apt-get update \
-    && apt-get install -y td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/
-
-COPY tools/apache/fluentbit/* /etc/td-agent-bit/
-
 COPY misc/deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
 COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
@@ -59,7 +51,6 @@ COPY --from=build /go/syft/syftCli /usr/local/bin/syft
 RUN chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
     && chmod +x /home/deepfence/*.sh \
-    && chmod 600 /etc/td-agent-bit/* \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_services \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
