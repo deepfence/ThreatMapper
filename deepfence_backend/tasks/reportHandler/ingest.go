@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/olivere/elastic/v7"
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -210,11 +212,106 @@ func processReports(topicChannels map[string](chan []byte), buklp *elastic.BulkP
 	}
 }
 
-func isMaskedCVE(cve dfCveStruct) bool {
-	switch cve.Cve_id {
-	case "CVE-2022-27404", "CVE-2005-2541", "CVE-2019-1010022", "CVE-2022-1292", "CVE-2019-8457":
-		return true
+var (
+	maskedCVE     = map[string]map[string]string{}
+	maskedCVELock = sync.RWMutex{}
+)
 
+func isMaskedCVE(cve dfCveStruct) bool {
+	maskedCVELock.RLock()
+	defer maskedCVELock.RUnlock()
+	nodes, ok := maskedCVE[cve.Cve_id]
+	if ok && len(nodes) > 0 {
+		nodeType, found := nodes[cve.Cve_container_image]
+		if found && nodeType == cve.NodeType {
+			return true
+		} else {
+			return false
+		}
 	}
-	return false
+	return ok
+}
+
+type MaskDocID struct {
+	ID           string `json:"_id"`
+	Index        string `json:"_index"`
+	Operation    string `json:"operation"`
+	AcrossImages bool   `json:"across_images"`
+}
+
+func addCVE(cve dfCveStruct, acrossImages bool) {
+	maskedCVELock.Lock()
+	defer maskedCVELock.Unlock()
+	nodes, found := maskedCVE[cve.Cve_id]
+	if !found {
+		nodes = make(map[string]string)
+		if !acrossImages {
+			nodes[cve.Cve_container_image] = cve.NodeType
+		}
+	} else {
+		if acrossImages {
+			nodes = make(map[string]string)
+		} else {
+			nodes[cve.Cve_container_image] = cve.NodeType
+		}
+	}
+	maskedCVE[cve.Cve_id] = nodes
+}
+
+func removeCVE(cve dfCveStruct) {
+	maskedCVELock.Lock()
+	defer maskedCVELock.Unlock()
+	_, found := maskedCVE[cve.Cve_id]
+	if found {
+		delete(maskedCVE, cve.Cve_id)
+	}
+}
+
+func getMaskDocES(client *elastic.Client, mchan chan MaskDocID) {
+	for m := range mchan {
+		doc, err := elastic.NewGetService(client).Index(m.Index).Id(m.ID).Do(context.Background())
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		var cveStruct dfCveStruct
+		err = json.Unmarshal(doc.Source, &cveStruct)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		switch m.Operation {
+		case "mask":
+			addCVE(cveStruct, m.AcrossImages)
+		case "unmask":
+			removeCVE(cveStruct)
+		}
+
+		maskedCVELock.RLock()
+		log.Infof("all masked cve: %s", maskedCVE)
+		maskedCVELock.RUnlock()
+	}
+}
+
+func subscribeTOMaskedCVE(rpool *redis.Pool, mchan chan MaskDocID) {
+	c := rpool.Get()
+	psc := redis.PubSubConn{Conn: c}
+	psc.Subscribe("mask-cve")
+
+	for {
+		switch v := psc.Receive().(type) {
+		case redis.Message:
+			log.Infof("redis channel:%s message:%s", v.Channel, v.Data)
+			var m MaskDocID
+			if err := json.Unmarshal(v.Data, &m); err != nil {
+				log.Error(err)
+			} else {
+				mchan <- m
+			}
+		case redis.Subscription:
+			log.Infof("channel:%s kind:%s #subscriptions:%d", v.Channel, v.Kind, v.Count)
+		case error:
+			log.Error(v)
+		}
+	}
 }

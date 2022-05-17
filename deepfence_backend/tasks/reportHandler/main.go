@@ -213,6 +213,10 @@ func main() {
 	go syncPoliciesAndNotifications()
 	go batchMessages(resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
 
+	mchan := make(chan MaskDocID, 100)
+	go subscribeTOMaskedCVE(redisPool, mchan)
+	go getMaskDocES(esClient, mchan)
+
 	consumerGroupID := os.Getenv("CUSTOMER_UNIQUE_ID")
 	if consumerGroupID == "" {
 		log.Warn("empty CUSTOMER_UNIQUE_ID, setting kafka-consumer-group-id to 'default'")
