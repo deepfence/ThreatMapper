@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"crypto/md5"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -224,6 +226,7 @@ func isMaskedCVE(cve dfCveStruct) bool {
 	defer maskedCVELock.RUnlock()
 	nodes, ok := maskedCVE[cve.Cve_id]
 	if ok && len(nodes) > 0 {
+		// check if only particular image is masked
 		nodeType, found := nodes[cve.Cve_container_image]
 		if found && nodeType == cve.NodeType {
 			return true
@@ -251,20 +254,19 @@ func addCVE(cve dfCveStruct, acrossImages bool) {
 			nodes[cve.Cve_container_image] = cve.NodeType
 		}
 	} else {
-		if acrossImages {
+		// check len(nodes) == 0 because this cve is already masked across images
+		if acrossImages || len(nodes) == 0 {
 			nodes = make(map[string]string)
 		} else {
 			nodes[cve.Cve_container_image] = cve.NodeType
 		}
 	}
 	maskedCVE[cve.Cve_id] = nodes
-	n, err := getCVE(postgresDb, cve.Cve_id)
-	if err != nil {
-		if len(n) > 0 {
-			updateCVE(postgresDb, cve.Cve_id, nodes)
-		} else {
-			insertCVE(postgresDb, cve.Cve_id, nodes)
-		}
+	_, err := getCVE(postgresDb, cve.Cve_id)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		insertCVE(postgresDb, cve.Cve_id, nodes)
+	} else {
+		updateCVE(postgresDb, cve.Cve_id, nodes)
 	}
 }
 
@@ -274,8 +276,8 @@ func removeCVE(cve dfCveStruct) {
 	_, found := maskedCVE[cve.Cve_id]
 	if found {
 		delete(maskedCVE, cve.Cve_id)
+		deleteCVE(postgresDb, cve.Cve_id)
 	}
-	deleteCVE(postgresDb, cve.Cve_id)
 }
 
 func getMaskDocES(client *elastic.Client, mchan chan MaskDocID) {

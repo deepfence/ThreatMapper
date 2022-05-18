@@ -12,9 +12,9 @@ import (
 const (
 	maskCveDbTable = "maskcve"
 	listAllQuery   = "SELECT cveid, nodes FROM maskcve;"
-	getQuery       = "SELECT cveid, nodes FROM maskcve WHERE cveid=$1;"
+	getQuery       = "SELECT nodes FROM maskcve WHERE cveid=$1;"
 	insertQuery    = "INSERT INTO maskcve (cveid, nodes) VALUES ($1, $2) RETURNING cveid, nodes;"
-	updateQuery    = "UPDATE maskcve SET nodes=$2 WHERE id=$1 RETURNING cveid, nodes;"
+	updateQuery    = "UPDATE maskcve SET nodes=$2 WHERE cveid=$1 RETURNING cveid, nodes;"
 	deleteQuery    = "DELETE FROM maskcve WHERE cveid = $1;"
 )
 
