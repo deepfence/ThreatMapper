@@ -133,9 +133,13 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	secretScanLogDoc["@timestamp"] = getCurrentTime()
 
 	byteJson, err := json.Marshal(secretScanLogDoc)
+	if err != nil {
+		fmt.Println("Error marshalling json: ", err)
+		return
+	}
 	// byteJson := formatToKafka(secretScanLogDoc)
 
-	err := writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
+	err = writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
@@ -154,7 +158,11 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		secretScanLogDoc["scan_message"] = err.Error()
 		secretScanLogDoc["time_stamp"] = getTimestamp()
 		secretScanLogDoc["@timestamp"] = getCurrentTime()
-		byteJson, _ = json.Marshal(secretScanLogDoc)
+		byteJson, err = json.Marshal(secretScanLogDoc)
+		if err != nil {
+			fmt.Println("Error marshalling json: ", err)
+			return
+		}
 		// byteJson = formatToKafka(secretScanLogDoc)
 		writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 		return
@@ -181,6 +189,10 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 			}
 		}
 		byteJson, err := json.Marshal(secretScanDoc)
+		if err != nil {
+			fmt.Println("Error marshalling json: ", err)
+			continue
+		}
 		// byteJson := formatToKafka(secretScanDoc)
 		err = writeScanDataToFile(string(byteJson), secretScanIndexName)
 		if err != nil {
@@ -196,6 +208,10 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	secretScanLogDoc["time_stamp"] = timestamp
 	secretScanLogDoc["@timestamp"] = currTime
 	byteJson, err = json.Marshal(secretScanLogDoc)
+	if err != nil {
+		fmt.Println("Error marshalling json: ", err)
+		return
+	}
 	// byteJson = formatToKafka(secretScanLogDoc)
 	err = writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
