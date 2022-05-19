@@ -56,9 +56,10 @@ func toMapStringInterface(i map[interface{}]interface{}) map[string]interface{} 
 func toKafkaRestFormat(data []map[string]interface{}) *bytes.Buffer {
 	values := make([]string, len(data))
 	for i, u := range data {
-		encoded, err := json.Marshal(&u)
+		encoded, err := json.Marshal(u)
 		if err != nil {
-			panic(err)
+			log.Printf("[deepfence] error marshal doc %s\ndoc:%s", err, u)
+			continue
 		}
 		values[i] = "{\"value\":" + string(encoded) + "}"
 	}
