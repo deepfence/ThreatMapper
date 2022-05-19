@@ -18,6 +18,7 @@ const getDockerInstructions = () => {
 
 const getK8sInstructions = () => {
   return `helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+  helm repo update
 
   helm install deepfence-agent deepfence/deepfence-agent \\
   --version ${process.env.__PRODUCTVERSION__} \\
@@ -59,6 +60,7 @@ export const AgentSetup = () => {
         }
         <i className={`fa fa-copy ${styles.copyButton}`} onClick={onDockerCopyClick} />
       </div>
+      <p>For more details reference our <a href="https://github.com/deepfence/ThreatMapper/wiki/Installing-Sensors-in-Docker" target="_blank" rel="noreferrer">agent installation documentation.</a></p>
       <div className={styles.setupHeader}>
         K8s:
       </div>
@@ -68,6 +70,7 @@ export const AgentSetup = () => {
         }
         <i className={`fa fa-copy ${styles.copyButton}`} onClick={onK8sCopyClick} />
       </div>
+      <p>For more details reference our <a href="https://github.com/deepfence/ThreatMapper/wiki/Installing-Sensors-in-Kubernetes" target="_blank" rel="noreferrer">agent installation documentation.</a></p>
     </div>
   )
 }
