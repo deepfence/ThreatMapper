@@ -132,8 +132,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	secretScanLogDoc["time_stamp"] = getTimestamp()
 	secretScanLogDoc["@timestamp"] = getCurrentTime()
 
-	// byteJson, err := json.Marshal(secretScanLogDoc)
-	byteJson := formatToKafka(secretScanLogDoc)
+	byteJson, err := json.Marshal(secretScanLogDoc)
+	// byteJson := formatToKafka(secretScanLogDoc)
 
 	err := writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
@@ -154,8 +154,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		secretScanLogDoc["scan_message"] = err.Error()
 		secretScanLogDoc["time_stamp"] = getTimestamp()
 		secretScanLogDoc["@timestamp"] = getCurrentTime()
-		// byteJson, _ = json.Marshal(secretScanLogDoc)
-		byteJson = formatToKafka(secretScanLogDoc)
+		byteJson, _ = json.Marshal(secretScanLogDoc)
+		// byteJson = formatToKafka(secretScanLogDoc)
 		writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 		return
 	} else {
@@ -180,8 +180,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 				secretScanDoc[typeOfS.Field(index).Name] = values.Field(index).Interface()
 			}
 		}
-		// byteJson, err := json.Marshal(secretScanDoc)
-		byteJson := formatToKafka(secretScanDoc)
+		byteJson, err := json.Marshal(secretScanDoc)
+		// byteJson := formatToKafka(secretScanDoc)
 		err = writeScanDataToFile(string(byteJson), secretScanIndexName)
 		if err != nil {
 			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
@@ -195,8 +195,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	}
 	secretScanLogDoc["time_stamp"] = timestamp
 	secretScanLogDoc["@timestamp"] = currTime
-	// byteJson, err = json.Marshal(secretScanLogDoc)
-	byteJson = formatToKafka(secretScanLogDoc)
+	byteJson, err = json.Marshal(secretScanLogDoc)
+	// byteJson = formatToKafka(secretScanLogDoc)
 	err = writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex:" + err.Error())
@@ -276,12 +276,12 @@ func buildClient() (*http.Client, error) {
 	return client, nil
 }
 
-func formatToKafka(data map[string]interface{}) []byte {
-	encoded, err := json.Marshal(&data)
-	if err != nil {
-		fmt.Println("Error in marshalling in progress secretScan data to json:" + err.Error())
-		return nil
-	}
-	value := "{\"value\":" + string(encoded) + "}"
-	return []byte("{\"records\":[" + value + "]}")
-}
+// func formatToKafka(data map[string]interface{}) []byte {
+// 	encoded, err := json.Marshal(&data)
+// 	if err != nil {
+// 		fmt.Println("Error in marshalling in progress secretScan data to json:" + err.Error())
+// 		return nil
+// 	}
+// 	value := "{\"value\":" + string(encoded) + "}"
+// 	return []byte("{\"records\":[" + value + "]}")
+// }
