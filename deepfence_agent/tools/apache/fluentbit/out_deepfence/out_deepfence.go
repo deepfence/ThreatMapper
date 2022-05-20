@@ -43,12 +43,29 @@ func getURL(schema, host, port, path, topic string) string {
 	return u.String()
 }
 
-func toMapStringInterface(i map[interface{}]interface{}) map[string]interface{} {
-	m := map[string]interface{}{}
-	for k, v := range i {
-		m[k.(string)] = v
+func toMapStringInterface(inputRecord map[interface{}]interface{}) map[string]interface{} {
+	return parseValue(inputRecord).(map[string]interface{})
+}
+
+func parseValue(value interface{}) interface{} {
+	switch value := value.(type) {
+	case []byte:
+		return string(value)
+	case map[interface{}]interface{}:
+		remapped := make(map[string]interface{})
+		for k, v := range value {
+			remapped[k.(string)] = parseValue(v)
+		}
+		return remapped
+	case []interface{}:
+		remapped := make([]interface{}, len(value))
+		for i, v := range value {
+			remapped[i] = parseValue(v)
+		}
+		return remapped
+	default:
+		return value
 	}
-	return m
 }
 
 // data needs to be in this format
