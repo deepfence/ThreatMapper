@@ -10,12 +10,12 @@ import (
 )
 
 const (
-	maskCveDbTable = "maskcve"
-	listAllQuery   = "SELECT cveid, nodes FROM maskcve;"
-	getQuery       = "SELECT nodes FROM maskcve WHERE cveid=$1;"
-	insertQuery    = "INSERT INTO maskcve (cveid, nodes) VALUES ($1, $2) RETURNING cveid, nodes;"
-	updateQuery    = "UPDATE maskcve SET nodes=$2 WHERE cveid=$1 RETURNING cveid, nodes;"
-	deleteQuery    = "DELETE FROM maskcve WHERE cveid = $1;"
+	maskCveDbTable = "masked_cve"
+	listAllQuery   = "SELECT cveid, nodes FROM masked_cve;"
+	getQuery       = "SELECT nodes FROM masked_cve WHERE cveid=$1;"
+	insertQuery    = "INSERT INTO masked_cve (cveid, nodes) VALUES ($1, $2) RETURNING cveid, nodes;"
+	updateQuery    = "UPDATE masked_cve SET nodes=$2 WHERE cveid=$1 RETURNING cveid, nodes;"
+	deleteQuery    = "DELETE FROM masked_cve WHERE cveid = $1;"
 )
 
 func (n Nodes) Value() (driver.Value, error) {
