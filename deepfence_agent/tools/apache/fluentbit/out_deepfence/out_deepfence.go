@@ -165,7 +165,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 		return output.FLB_ERROR
 	}
 	if idCfg.Key != "" {
-		req.Header.Add("deepfence_key", idCfg.Key)
+		req.Header.Add("deepfence-key", idCfg.Key)
 	}
 	req.Header.Add("Content-Type", "application/vnd.kafka.json.v2+json")
 
