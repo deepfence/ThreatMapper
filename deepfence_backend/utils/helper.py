@@ -847,7 +847,7 @@ def get_all_secret_scanned_images(days) -> list:
     return set(image_names)
 
 
-def set_vulnerability_status_for_packages(open_files_list, number, time_unit, lucene_query_string):
+def set_vulnerability_status_for_packages(open_files_list, number, time_unit, lucene_query_string,open_files_map,open_files_list_final):
     from utils.esconn import ESConn
     cve_aggs = {
         "node_type": {
@@ -927,12 +927,33 @@ def set_vulnerability_status_for_packages(open_files_list, number, time_unit, lu
                         cve_severity = top_vuln["_source"]["cve_severity"]
                         top_cve[package_key] = {"severity": cve_severity, "cve_id": cve_id}
 
-    for node_info in open_files_list:
-        node_type = node_info["node_type"]
+    
+    for node_key, node_packages in open_files_map.items():
+        node_type, node_id = node_key.split(":", 1)
+        node_info = {
+            "node_type": node_type,
+            "node_name": node_id,
+            **node_packages
+        }
         node_name = node_info["node_name"]
+        node_packages = []
         for package_info in node_info["packages"]:
             package_key = "{}:{}:{}".format(node_type, node_name, package_info["package_name"])
             if top_cve.get(package_key, None):
                 package_info["vulnerability_status"] = top_cve[package_key]["severity"]
                 package_info["cve_id"] = top_cve[package_key]["cve_id"]
+                node_packages.append(package_info)
+        node_info["packages"] = node_packages
+        open_files_list_final.append(node_info)
+
+    return open_files_list_final
+
+    # for node_info in open_files_list:
+    #     node_type = node_info["node_type"]
+    #     node_name = node_info["node_name"]
+    #     for package_info in node_info["packages"]:
+    #         package_key = "{}:{}:{}".format(node_type, node_name, package_info["package_name"])
+    #         if top_cve.get(package_key, None):
+    #             package_info["vulnerability_status"] = top_cve[package_key]["severity"]
+    #             package_info["cve_id"] = top_cve[package_key]["cve_id"]
 
