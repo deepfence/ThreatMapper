@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 class MaskCVE(db.Model):
     
-    __tablename__ = "maskcve"
+    __tablename__ = "masked_cve"
 
     cveid = db.Column(db.String(200), primary_key=True)
     nodes = db.Column(JSONB, nullable=False, server_default='{}', default='{}')
