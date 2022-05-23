@@ -2,6 +2,7 @@ package main
 
 import (
 	"C"
+	"crypto/x509"
 	"unsafe"
 
 	"github.com/fluent/fluent-bit-go/output"
@@ -101,19 +102,29 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	topic := output.FLBPluginConfigKey(plugin, "dftopic")
 	schema := output.FLBPluginConfigKey(plugin, "dfschema")
 	key := output.FLBPluginConfigKey(plugin, "dfkey")
-	log.Printf("[deepfence] schema=%s host=%s port=%s path=%s topic=%s",
-		schema, host, port, path, topic)
+	certPath := output.FLBPluginConfigKey(plugin, "dfcertpath")
+	certKey := output.FLBPluginConfigKey(plugin, "dfcertkey")
+	log.Printf("[deepfence] schema=%s host=%s port=%s path=%s topic=%s plugin=%s",
+		schema, host, port, path, topic, certPath)
 
 	// setup http client
+	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
 	client.RetryMax = 3
 	client.RetryWaitMin = 1 * time.Second
 	client.RetryWaitMax = 10 * time.Second
 	client.Logger = nil
 	if schema == "https" {
+		if len(certPath) > 0 && len(certKey) > 0 {
+			cer, err := tls.LoadX509KeyPair(certPath, certKey)
+			if err != nil {
+				log.Printf("[deepfence] error loading cert %s\n", err)
+				return output.FLB_ERROR
+			}
+			tlsConfig.Certificates = []tls.Certificate{cer}
+		}
 		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
+			TLSClientConfig:   tlsConfig,
+			DisableKeepAlives: false,
 		}
 		client.HTTPClient = &http.Client{Transport: tr}
 	}
@@ -123,7 +134,7 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 		URL: getURL(schema, host, port, path, topic),
 		Key: key,
 	}
-	log.Printf("[deepfence] deepfence key set %t for id %s", (key != ""), id)
+	log.Printf("[deepfence] deepfence key set %t for id %s", key != "", id)
 	log.Printf("[deepfence] push to url %s", cfg[id].URL)
 	output.FLBPluginSetContext(plugin, id)
 
