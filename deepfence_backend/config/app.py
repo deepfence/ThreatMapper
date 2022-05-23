@@ -77,7 +77,7 @@ def register_extensions(app):
     from models.scheduler import Scheduler
     from models.user_activity_log import UserActivityLog
     from models.email_configuration import EmailConfiguration
-    from models.mask_cve import MaskedCVE
+    from models.masked_cve import MaskedCVE
 
     cors.init_app(app, max_age=3600)
     jwt.init_app(app)
