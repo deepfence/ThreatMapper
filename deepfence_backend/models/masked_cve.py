@@ -3,7 +3,7 @@ from config.app import db
 from sqlalchemy.dialects.postgresql import JSONB
 
 
-class MaskCVE(db.Model):
+class MaskedCVE(db.Model):
     
     __tablename__ = "masked_cve"
 
