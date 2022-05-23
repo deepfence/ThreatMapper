@@ -86,15 +86,29 @@ spec:
         ports:
         - containerPort: 443
         resources:
-        {{- toYaml .Values.internalRouter.resources | nindent 12 }}
+          requests:
+            memory: 100Mi
+            cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+          limits:
+            cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+            memory: {{ .Values.defaultResourceLimits.limits.memory }}
+{{- end }}
     {{- with .Values.internalRouter.nodeSelector }}
     nodeSelector:
     {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- with .Values.internalRouter.affinity }}
-    affinity:
-    {{- toYaml . | nindent 8 }}
-    {{- end }}
+{{- if .Values.topologyNodeAffinityHostName }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
     {{- with .Values.internalRouter.tolerations }}
     tolerations:
     {{- toYaml . | nindent 8 }}

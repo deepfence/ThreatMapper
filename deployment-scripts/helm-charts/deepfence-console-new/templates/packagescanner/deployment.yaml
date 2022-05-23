@@ -22,6 +22,26 @@ spec:
         name: deepfence-package-scanner
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
     spec:
+{{- if .Values.topologyNodeAffinityHostName }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: name
+                operator: In
+                values:
+                - deepfence-package-scanner
+            topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
       containers:
@@ -47,4 +67,11 @@ spec:
           ports:
           - containerPort: 8005
           resources:
-              {{- toYaml .Values.packageScanner.resources | nindent 12 }}
+            requests:
+              memory: 1Gi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+            limits:
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+              memory: {{ .Values.defaultResourceLimits.limits.memory }}
+{{- end }}

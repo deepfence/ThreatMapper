@@ -41,5 +41,12 @@ spec:
           {{- end }}
           args: ["-config-path", "/home/deepfence/usr", "-http-port", "8011"]
           resources:
-            {{- toYaml .Values.secretScanner.resources | nindent 12 }}
+            requests:
+              memory: 100Mi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+            limits:
+              memory: 4Gi
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
 

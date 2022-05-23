@@ -20,6 +20,9 @@ spec:
         name: deepfence-discovery
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
     spec:
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
       serviceAccountName: {{ .Values.serviceAccountName }}
@@ -81,15 +84,29 @@ spec:
           securityContext:
             privileged: true
           resources:
-            {{- toYaml .Values.discovery.resources | nindent 12 }}
+            requests:
+              cpu: 150m
+              memory: {{ .Values.defaultResourceLimits.requests.memory }}
+            limits:
+              memory: 1Gi
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
       {{- with .Values.discovery.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.discovery.affinity }}
+{{- if .Values.topologyNodeAffinityHostName }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
       {{- with .Values.discovery.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

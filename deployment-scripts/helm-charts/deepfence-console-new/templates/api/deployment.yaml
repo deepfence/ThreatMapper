@@ -146,15 +146,39 @@ spec:
               containerPort: 9998
               protocol: TCP
           resources:
-            {{- toYaml .Values.api.resources | nindent 12 }}
+            requests:
+              memory: 150Mi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+            limits:
+              memory: 4Gi
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
       {{- with .Values.api.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.api.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: name
+                    operator: In
+                    values:
+                      - deepfence-backend
+                      - deepfence-celery
+              topologyKey: kubernetes.io/hostname
+        {{- if .Values.topologyNodeAffinityHostName }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+        {{- end }}
       {{- with .Values.api.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

@@ -48,15 +48,29 @@ spec:
           ports:
             - containerPort: 6379
           resources:
-            {{- toYaml .Values.redis.resources | nindent 12 }}
+            requests:
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+              memory: {{ .Values.defaultResourceLimits.requests.memory }}
+            limits:
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
+              memory: 10Gi
       {{- with .Values.redis.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.redis.affinity }}
+{{- if .Values.topologyNodeAffinityHostName }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
       {{- with .Values.redis.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

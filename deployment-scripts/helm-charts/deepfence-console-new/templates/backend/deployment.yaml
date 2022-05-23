@@ -124,7 +124,14 @@ spec:
                   name: "main-cm-{{ include "deepfence-console.fullname" . }}"
                   key: redis_port
           resources:
-            {{- toYaml .Values.backend.resources | nindent 12 }}
+            requests:
+              memory: 512Mi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+            limits:
+              memory: 4Gi
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
           ports:
             - name: http
               containerPort: 4041
@@ -140,10 +147,36 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.backend.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: name
+                    operator: In
+                    values:
+                      - deepfence-api
+                      - deepfence-celery
+              topologyKey: kubernetes.io/hostname
+{{- if .Values.backendNodeAffinityHostName }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - "{{ .Values.backendNodeAffinityHostName }}"
+{{- else if .Values.topologyNodeAffinityHostName }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
       {{- with .Values.backend.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

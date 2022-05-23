@@ -117,11 +117,25 @@ spec:
               name: data
 
           resources:
-            {{- toYaml .Values.fetcher.resources | nindent 12 }}
-      {{- with .Values.fetcher.affinity }}
+            requests:
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+              memory: {{ .Values.defaultResourceLimits.requests.memory }}
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+            limits:
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+              memory: {{ .Values.defaultResourceLimits.limits.memory }}
+{{- end }}
+{{- if .Values.topologyNodeAffinityHostName }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
       {{- with .Values.fetcher.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

@@ -116,14 +116,6 @@ api:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 150Mi
-      cpu: 50m
-    limits:
-      memory: 4Gi
-      cpu: 16000m
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -134,8 +126,6 @@ api:
   nodeSelector: {}
 
   tolerations: []
-
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -149,14 +139,6 @@ backend:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 512Mi
-      cpu: 50m
-    limits:
-      memory: 4Gi
-      cpu: 16000m
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -168,7 +150,6 @@ backend:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -183,14 +164,6 @@ celery:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 1Gi
-      cpu: 50m
-    limits:
-      memory: 8Gi
-      cpu: 16000m
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -202,7 +175,6 @@ celery:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -217,14 +189,6 @@ diagnosis:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 40Mi
-      cpu: 50m
-    limits:
-      memory: 200Mi
-      cpu: 16000m
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -236,7 +200,6 @@ diagnosis:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -253,14 +216,6 @@ discovery:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 40Mi
-      cpu: 150m
-    limits:
-      memory: 1Gi
-      cpu: 16000m
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -272,7 +227,6 @@ discovery:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -305,7 +259,6 @@ topology:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -319,14 +272,6 @@ fetcher:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      cpu: 50m
-      memory: 40Mi
-    limits:
-      cpu: 16000m
-      memory: 32Gi
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -338,7 +283,6 @@ fetcher:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -353,14 +297,6 @@ router:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 100Mi
-      cpu: 50m
-    limits:
-      cpu: 16000m
-      memory: 32Gi
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -372,7 +308,6 @@ router:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -420,14 +355,6 @@ secretScanner:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 100Mi
-      cpu: 50m
-    limits:
-      memory: 4Gi
-      cpu: 16000m
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -439,7 +366,6 @@ secretScanner:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -487,14 +413,6 @@ internalRouter:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 100Mi
-      cpu: 50m
-    limits:
-      cpu: 16000m
-      memory: 32Gi
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -506,7 +424,6 @@ internalRouter:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 
@@ -553,14 +470,6 @@ ui:
   nameOverride: ""
   fullnameOverride: ""
 
-  resources:
-    requests:
-      memory: 1Gi
-      cpu: 50m
-    limits:
-      cpu: 16000m
-      memory: 32Gi
-
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -572,7 +481,6 @@ ui:
 
   tolerations: []
 
-  affinity: {}
   service:
     type: ClusterIP
 

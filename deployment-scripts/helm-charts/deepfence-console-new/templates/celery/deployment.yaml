@@ -147,15 +147,39 @@ spec:
               name: data
 
           resources:
-            {{- toYaml .Values.celery.resources | nindent 12 }}
+            requests:
+              memory: 1Gi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+            limits:
+              memory: 8Gi
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
       {{- with .Values.celery.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.celery.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: name
+                    operator: In
+                    values:
+                      - deepfence-backend
+                      - deepfence-api
+              topologyKey: kubernetes.io/hostname
+{{- if .Values.topologyNodeAffinityHostName }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
       {{- with .Values.celery.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

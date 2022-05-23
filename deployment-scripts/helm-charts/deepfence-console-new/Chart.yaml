@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: 1.16.0
-description: A Helm chart for ThreatMapper console components
+appVersion: 1.3.1
+description: Deepfence Console - Helm chart for Kubernetes
 name: deepfence-console
 type: application
 version: 1.3.1

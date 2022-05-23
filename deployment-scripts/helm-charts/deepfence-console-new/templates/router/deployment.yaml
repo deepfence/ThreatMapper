@@ -91,15 +91,38 @@ spec:
               readOnly: true
           {{- end }}
           resources:
-            {{- toYaml .Values.router.resources | nindent 12 }}
+            requests:
+              memory: 100Mi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+            limits:
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+              memory: {{ .Values.defaultResourceLimits.limits.memory }}
+{{- end }}
       {{- with .Values.router.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.router.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: name
+                    operator: In
+                    values:
+                      - deepfence-router
+              topologyKey: kubernetes.io/hostname
+{{- if .Values.topologyNodeAffinityHostName }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
       {{- with .Values.router.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
