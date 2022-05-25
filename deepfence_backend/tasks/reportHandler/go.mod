@@ -1,4 +1,4 @@
-module github.com/deepfence/reportHandler
+module github.com/deepfence/ThreatMapper/deepfence_backend/tasks/reportHandler
 
 go 1.18
 
