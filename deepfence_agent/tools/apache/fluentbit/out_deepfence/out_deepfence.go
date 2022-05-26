@@ -11,12 +11,12 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -109,6 +109,7 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 
 	// setup http client
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
+	client.HTTPClient.Timeout = 10 * time.Second
 	client.RetryMax = 3
 	client.RetryWaitMin = 1 * time.Second
 	client.RetryWaitMax = 10 * time.Second
@@ -117,7 +118,7 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 		if len(certPath) > 0 && len(certKey) > 0 {
 			cer, err := tls.LoadX509KeyPair(certPath, certKey)
 			if err != nil {
-				log.Printf("[deepfence] error loading cert %s\n", err)
+				log.Printf("[deepfence] error loading certs %s", err)
 				return output.FLB_ERROR
 			}
 			tlsConfig.Certificates = []tls.Certificate{cer}
@@ -182,15 +183,24 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 
 	resp, err := client.Do(req)
 	if err != nil {
+		if os.IsTimeout(err) {
+			// timeout error
+			log.Printf("[deepfence] retry request timeout error: %s", err)
+			return output.FLB_RETRY
+		}
 		log.Printf("[deepfence] error making request %s", err)
 		return output.FLB_ERROR
 	}
 
 	defer resp.Body.Close()
 
-	if errors.Is(err, http.ErrHandlerTimeout) {
-		log.Printf("[deepfence] error timeout sending data %s", err)
+	if resp.StatusCode == http.StatusBadGateway || resp.StatusCode == http.StatusServiceUnavailable ||
+		resp.StatusCode == http.StatusGatewayTimeout || resp.StatusCode == http.StatusTooManyRequests {
+		log.Printf("[deepfence] retry response code %s", resp.Status)
 		return output.FLB_RETRY
+	} else if resp.StatusCode != http.StatusOK {
+		log.Printf("[deepfence] error response code %s", resp.Status)
+		return output.FLB_ERROR
 	}
 
 	_, err = ioutil.ReadAll(resp.Body)
@@ -199,11 +209,6 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 		return output.FLB_ERROR
 	}
 
-	// check response code
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("[deepfence] error response code %s", resp.Status)
-		return output.FLB_ERROR
-	}
 	return output.FLB_OK
 }
 
