@@ -8,7 +8,7 @@ test-go-app-build:
 
   variables:
     # Please edit to your GitLab project
-    REPO_NAME: gitlab.com/deepfence-gitlab/simple_go_server
+    REPO_NAME: gitlab.com/deepfence-io/simple_go_server
 
     # The problem is that to be able to use go get, one needs to put
     # the repository in the $GOPATH. So for example if your gitlab domain
