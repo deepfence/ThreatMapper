@@ -257,6 +257,7 @@ func addCVE(cve dfCveStruct, acrossImages bool) {
 		// check len(nodes) == 0 because this cve is already masked across images
 		if acrossImages || len(nodes) == 0 {
 			nodes = make(map[string]string)
+			log.Debugf("cve id %s is masked across all images", cve.Cve_id)
 		} else {
 			nodes[cve.Cve_container_image] = cve.NodeType
 		}
@@ -284,19 +285,21 @@ func getMaskDocES(client *elastic.Client, mchan chan MaskDocID) {
 	for m := range mchan {
 		doc, err := elastic.NewGetService(client).Index(m.Index).Id(m.ID).Do(context.Background())
 		if err != nil {
-			log.Error(err)
+			log.Errorf("failed to load document id %s from index %s", m.ID, m.Index, err)
 			continue
 		}
 		var cveStruct dfCveStruct
 		err = json.Unmarshal(doc.Source, &cveStruct)
 		if err != nil {
-			log.Error(err)
+			log.Errorf("failed to unmarshal masked cve data from ES: %s", err)
 			continue
 		}
 		switch m.Operation {
 		case "mask":
+			log.Debugf("mask cve id %s across images %t", m.ID, m.AcrossImages)
 			addCVE(cveStruct, m.AcrossImages)
 		case "unmask":
+			log.Debugf("unmask cve id %s across images %t", m.ID, m.AcrossImages)
 			removeCVE(cveStruct)
 		}
 
@@ -317,7 +320,7 @@ func subscribeTOMaskedCVE(rpool *redis.Pool, mchan chan MaskDocID) {
 			log.Infof("redis channel:%s message:%s", v.Channel, v.Data)
 			var m MaskDocID
 			if err := json.Unmarshal(v.Data, &m); err != nil {
-				log.Error(err)
+				log.Errorf("failed to unmarshal data from mask-cve subscription: %s", err)
 			} else {
 				mchan <- m
 			}

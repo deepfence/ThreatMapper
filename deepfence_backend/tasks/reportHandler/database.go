@@ -48,7 +48,7 @@ func listAllCVE(db *sql.DB) map[string]Nodes {
 			log.Errorf("scan error: %s", err)
 		}
 		all[cveid] = nodes
-		log.Infof("present in db cveid:%s nodes: %s", cveid, nodes)
+		log.Infof("maked cve in db cveid:%s nodes: %s", cveid, nodes)
 	}
 	err = rows.Err()
 	if err != nil {
