@@ -7,6 +7,11 @@ POD_NUMBER=${POD_NAME##*-}
 if [ ! -z "$POD_NUMBER" ]
 then
     echo "were are inside kuberntes, update kafka config vars"
+    if [ -z "$STORAGE_UUID"]
+    then
+        echo "storage uuid not set run kafka-storage random-uuid and set STORAGE_UUID var"
+        exit 1
+    fi
     KAFKA_NODE_ID=$((POD_NUMBER+1))
     KAFKA_BROKER_ID=$((POD_NUMBER+1))
     KAFKA_LISTENERS="PLAINTEXT://:9092,CONTROLLER://:9093"
@@ -22,7 +27,13 @@ then
     done
 else
     echo "looks like we are not inside kubernetes use default kafka vars"
+    if [ -z "$STORAGE_UUID"]
+    then
+        echo "storage uuid not set generate new"
+        STORAGE_UUID=$(kafka-storage random-uuid)
+    fi
 fi
+
 
 
 # Docker workaround: Remove check for KAFKA_ZOOKEEPER_CONNECT parameter

@@ -144,7 +144,7 @@ func init() {
 
 	kafkaBrokers = os.Getenv("KAFKA_BROKERS")
 	if kafkaBrokers == "" {
-		kafkaBrokers = "deepfence-kafka-broker:29092"
+		kafkaBrokers = "deepfence-kafka-broker:9092"
 	}
 	err = checkKafkaConn()
 	if err != nil {
