@@ -13,6 +13,13 @@ IMAGE_REPOSITORY?=deepfenceio
 DF_IMG_TAG?=latest
 
 .PHONY: deepfence_backend
-
 deepfence_backend:
 	docker build -f $(DEEPFENCE_BACKEND_DIR)/dockerify/api/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_api_ce:$(DF_IMG_TAG) $(DEEPFENCE_BACKEND_DIR)
+
+.PHONY: deepfence_backend
+kafka-broker:
+	docker build -t $(IMAGE_REPOSITORY)/deepfence_kafka_broker_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/kafka-broker-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
+
+.PHONY: deepfence_backend
+kafka-rest-proxy:
+	docker build -t $(IMAGE_REPOSITORY)/deepfence_kafka_rest_proxy_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/kafka-rest-proxy-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
