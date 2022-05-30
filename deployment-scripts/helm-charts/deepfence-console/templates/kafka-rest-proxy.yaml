@@ -58,7 +58,11 @@ spec:
             - name: KAFKA_REST_LISTENERS
               value: "http://0.0.0.0:8082"
             - name: KAFKA_REST_BOOTSTRAP_SERVERS
+              {{- if (eq "deepfence-kafka-broker:9092" .Values.db.kafka.broker) }}
               value: "deepfence-kafka-broker.{{ .Values.namespace }}.svc:9092"
+              {{ else }}
+              value: "{{ .Values.db.kafka.broker }}"
+              {{- end }}
           livenessProbe:
             httpGet:
               port: 8082

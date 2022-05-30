@@ -637,6 +637,12 @@ spec:
               value: "{{ .Values.db.redis.host }}"
             - name: REDIS_PORT
               value: "{{ .Values.db.redis.port }}"
+            - name: KAFKA_BROKERS
+              {{- if (eq "deepfence-kafka-broker:9092" .Values.db.kafka.broker) }}
+              value: "deepfence-kafka-broker.{{ .Values.namespace }}.svc:9092"
+              {{ else }}
+              value: "{{ .Values.db.kafka.broker }}"
+              {{- end }}
           ports:
             - containerPort: 4041
           volumeMounts:
