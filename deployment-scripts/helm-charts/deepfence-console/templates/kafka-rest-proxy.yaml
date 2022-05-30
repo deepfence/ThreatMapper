@@ -1,0 +1,94 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: deepfence-rest-proxy
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    name: deepfence-rest-proxy
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: deepfence-rest-proxy
+  replicas: {{ .Values.kafkaRestProxyReplicas }}
+  selector:
+    matchLabels:
+      name: deepfence-rest-proxy
+  template:
+    metadata:
+      labels:
+        name: deepfence-rest-proxy
+        app: deepfence-console
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - deepfence-rest-proxy
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+{{- if .Values.topologyNodeAffinityHostName }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - "{{ .Values.topologyNodeAffinityHostName }}"
+{{- end }}
+      containers:
+        - name: rest-proxy
+          image: "{{ .Values.image.repository }}deepfence_kafka_rest_proxy_ce:{{ .Values.image.tag }}"
+          # imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8082
+          env:
+            - name: KAFKA_REST_HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KAFKA_REST_LISTENERS
+              value: "http://0.0.0.0:8082"
+            - name: KAFKA_REST_BOOTSTRAP_SERVERS
+              value: "deepfence-kafka-broker.{{ .Values.namespace }}.svc:9092"
+          livenessProbe:
+            httpGet:
+              port: 8082
+              path: /brokers
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: {{ .Values.kafkaRestProxyResources.requests.cpu }}
+              memory: {{ .Values.kafkaRestProxyResources.requests.memory }}
+            limits:
+              cpu: {{ .Values.kafkaRestProxyResources.limits.cpu }}
+              memory: {{ .Values.kafkaRestProxyResources.limits.memory }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-rest-proxy
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-rest-proxy
+  ports:
+    - name: http
+      port: 8082
+      protocol: TCP
+      targetPort: 8082

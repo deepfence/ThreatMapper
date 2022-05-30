@@ -39,6 +39,7 @@ volume:
   # or it will be 'default' when using cloud managed Persistent Volumes.
   esStorage: 30Gi
   postgresStorage: 30Gi
+  kafkaStorage: 30Gi
 
 db:
   # If kubernetes secret is already defined externally, change following value to false
@@ -60,6 +61,15 @@ db:
   redis:
     host: deepfence-redis
     port: "6379"
+  kafka:
+    broker: deepfence-kafka-broker:9092
+    # set this to new value when kafka resplicas is >1 
+    # to generate download kafka and run "kafka-storage random-uuid"
+    # storageUUID: ""
+    storageUUID: hNQ55qppT5GGybF52ZGlOQ
+
+kafkaBrokerReplicas: 3
+kafkaRestProxyReplicas: 1
 
 # Replication factor for elasticsearch
 # Recommended: 3+ for production, 1 for dev setup, minikube
@@ -116,6 +126,22 @@ elasticsearchResources:
     cpu: 8000m
     memory: 8Gi
 elasticsearchHeapSize: "2g"
+
+kafkaBrokerResources:
+  requests:
+    cpu: 200m
+    memory: 1Gi
+  limits:
+    cpu: 2
+    memory: 4Gi
+
+kafkaRestProxyResources:
+  requests:
+    cpu: 200m
+    memory: 1Gi
+  limits:
+    cpu: 2
+    memory: 2Gi
 
 defaultResourceLimits:
   requests:
