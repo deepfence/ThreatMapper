@@ -7,7 +7,7 @@ POD_NUMBER=${POD_NAME##*-}
 if [ ! -z "$POD_NUMBER" ]
 then
     echo "were are inside kuberntes, update kafka config vars"
-    if [ -z "$STORAGE_UUID"]
+    if [ -z "$STORAGE_UUID" ]
     then
         echo "storage uuid not set run kafka-storage random-uuid and set STORAGE_UUID var"
         exit 1
@@ -27,7 +27,7 @@ then
     done
 else
     echo "looks like we are not inside kubernetes use default kafka vars"
-    if [ -z "$STORAGE_UUID"]
+    if [ -z "$STORAGE_UUID" ]
     then
         echo "storage uuid not set generate new"
         STORAGE_UUID=$(kafka-storage random-uuid)
