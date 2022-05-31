@@ -103,7 +103,7 @@ func createMissingTopics(topics []string) error {
 				kafka.TopicConfig{
 					Topic:             t,
 					NumPartitions:     1,
-					ReplicationFactor: 1,
+					ReplicationFactor: 3,
 				},
 			)
 		}
