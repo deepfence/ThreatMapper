@@ -45,8 +45,7 @@ spec:
       containers:
         - name: rest-proxy
           image: "{{ .Values.image.repository }}deepfence_kafka_rest_proxy_ce:{{ .Values.image.tag }}"
-          # imagePullPolicy: {{ .Values.image.pullPolicy }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 8082

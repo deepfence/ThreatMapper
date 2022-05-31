@@ -56,8 +56,7 @@ spec:
       containers:
         - name: kafka
           image: "{{ .Values.image.repository }}deepfence_kafka_broker_ce:{{ .Values.image.tag }}"
-          # imagePullPolicy: {{ .Values.image.pullPolicy }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 9092
             - containerPort: 9093
