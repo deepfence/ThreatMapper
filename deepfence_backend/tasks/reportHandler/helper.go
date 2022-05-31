@@ -46,6 +46,8 @@ func newRedisPool() *redis.Pool {
 	}
 }
 
+var numBrokers = 0
+
 func checkKafkaConn() error {
 	log.Info("check connection to kafka brokers: " + kafkaBrokers)
 	conn, err := kafka.Dial("tcp", strings.Split(kafkaBrokers, ",")[0])
@@ -59,6 +61,7 @@ func checkKafkaConn() error {
 	}
 	for _, b := range brokers {
 		log.Infof("broker found at %s", b.Host)
+		numBrokers = numBrokers + 1
 	}
 	return nil
 }
@@ -94,6 +97,13 @@ func createMissingTopics(topics []string) error {
 	}
 	defer ctrlConn.Close()
 
+	replication := func() int {
+		if numBrokers >= 3 {
+			return 3
+		}
+		return 1
+	}()
+
 	topicConfigs := []kafka.TopicConfig{}
 	for _, t := range topics {
 		// check if topic exists
@@ -103,7 +113,7 @@ func createMissingTopics(topics []string) error {
 				kafka.TopicConfig{
 					Topic:             t,
 					NumPartitions:     1,
-					ReplicationFactor: 3,
+					ReplicationFactor: replication,
 				},
 			)
 		}
