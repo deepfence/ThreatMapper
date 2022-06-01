@@ -2,7 +2,7 @@ FROM golang:1.18-bullseye AS build
 RUN apt-get update \
     && apt-get install -y bash make git gcc \
     && cd /go \
-    && git clone https://github.com/deepfence/syft \
+    && git clone --depth 1 -b v0.44.1 https://github.com/deepfence/syft \
     && cd /go/syft \
     && go build -v -o syftCli .
 
