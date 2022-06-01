@@ -22,6 +22,7 @@ import {
 } from "../../constants/menu-collection";
 import Tippy from '@tippyjs/react';
 import { logoutUser } from '../../actions/app-actions';
+import { AgentSetup } from '../common/agent-setup';
 
 class SettingsView extends React.Component {
   constructor() {
@@ -76,7 +77,7 @@ class SettingsView extends React.Component {
       );
     }
     tabs.push(
-      <div className="user-menu" style={{
+      <div className="user-menu" key="user-menu" style={{
         marginLeft: 'auto'
       }}>
         <Tippy content={
@@ -104,6 +105,9 @@ class SettingsView extends React.Component {
   renderActiveTabContent() {
     const activeTab = this.state.activeTab;
     switch (activeTab.name) {
+      case 'agent_setup': {
+        return <AgentSetup />
+      }
       case 'user_management': {
         return <UserProfileView />
       }
