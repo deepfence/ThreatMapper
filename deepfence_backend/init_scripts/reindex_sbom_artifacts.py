@@ -3,7 +3,8 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 import math
 
-EL_HOST = "%s://%s:%s" % (os.getenv('ELASTICSEARCH_SCHEME', 'http'), os.environ['ELASTICSEARCH_HOST'], os.environ['ELASTICSEARCH_PORT'])
+EL_HOST = "%s://%s:%s" % (
+os.getenv('ELASTICSEARCH_SCHEME', 'http'), os.environ['ELASTICSEARCH_HOST'], os.environ['ELASTICSEARCH_PORT'])
 http_auth = None
 CUSTOMER_UNIQUE_ID = os.getenv('CUSTOMER_UNIQUE_ID', None)
 
@@ -31,12 +32,12 @@ if EL_CLIENT.indices.exists(index=SBOM_INDEX) and EL_CLIENT.indices.exists(index
         sbom_count = int(sbom_count_array[0]["count"])
     if sbom_count > 0:
         page = EL_CLIENT.search(
-        index = 'sbom-cve-scan',
-        scroll = '1m',
-        size = ARRAY_SIZE,
-        body={"query": {"match_all": {}}},
-        sort="scan_id.keyword:desc",
-        _source=["scan_id", "node_id", "node_type", "@timestamp", "time_stamp", "artifacts"]
+            index='sbom-cve-scan',
+            scroll='1m',
+            size=ARRAY_SIZE,
+            body={"query": {"match_all": {}}},
+            sort="scan_id.keyword:desc",
+            _source=["scan_id", "node_id", "node_type", "@timestamp", "time_stamp", "artifacts"]
         )
         scroll_id = page['_scroll_id']
         sbom_docs = page['hits']['hits']
@@ -92,6 +93,3 @@ if EL_CLIENT.indices.exists(index=SBOM_INDEX) and EL_CLIENT.indices.exists(index
             page = EL_CLIENT.scroll(scroll_id=scroll_id, scroll='1m')
             scroll_id = page['_scroll_id']
             sbom_docs = page['hits']['hits']
-            print(scroll_id)
-
-
