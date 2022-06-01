@@ -91,14 +91,15 @@ if [ ! $? -eq 0 ]; then
 fi
 
 echo "Building UI image"
-bash ./write_console_version.sh
+git log --format="%h" -n 1 > $DEEPFENCE_UI_DIR/console_version.txt
+echo "1.3.1" > $DEEPFENCE_UI_DIR/product_version.txt
 docker build -f $DEEPFENCE_UI_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_ui_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_UI_DIR
 
 if [ ! $? -eq 0 ]; then
     echo "Building UI image failed. Exiting"
     exit 1
 fi
-bash ./clean_console_version.sh
+rm -rf $DEEPFENCE_UI_DIR/console_version.txt $DEEPFENCE_UI_DIR/product_version.txt
 
 echo "Building fetcher"
 docker build -f $DEEPFENCE_FETCHER_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_FETCHER_DIR
