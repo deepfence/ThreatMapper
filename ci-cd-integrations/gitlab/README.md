@@ -12,6 +12,10 @@ via the project settings (i.e `Project > Settings > CI/CD > Variables`) page, be
 | ------------------------------ | --------------------------------------------------------- |
 | `DEEPFENCE_CONSOLE_IP`         | Deepfence management console ip address                   |
 | `FAIL_CVE_COUNT`               | Fail the build if number of vulnerabilities found >= this value. Set -1 to pass regardless of vulnerabilities.  |
+| `FAIL_CRITICAL_CVE_COUNT`      | Fail the build if number of critical vulnerabilities found >= this value. Set -1 to pass regardless of critical vulnerabilities.  |
+| `FAIL_HIGH_CVE_COUNT`          | Fail the build if number of high vulnerabilities found >= this value. Set -1 to pass regardless of high vulnerabilities.  |
+| `FAIL_MEDIUM_CVE_COUNT`        | Fail the build if number of medium vulnerabilities found >= this value. Set -1 to pass regardless of medium vulnerabilities.  |
+| `FAIL_LOW_CVE_COUNT`           | Fail the build if number of low vulnerabilities found >= this value. Set -1 to pass regardless of low vulnerabilities.  |
 | `FAIL_CVE_SCORE`               | Fail the build if cumulative CVE score is >= this value. Set -1 to pass regardless of cve score.  |
 
 ## References
