@@ -145,45 +145,45 @@ class RegistryCredential(db.Model):
         if not registry_type:
             raise DFError("Invalid registry")
         if registry_type == REGISTRY_TYPE_DOCKER_PVT:
-            self._client = CveScanDockerPrivateRegistryImages(credentials.get('docker_registry_url'),
-                                                              credentials.get('docker_username'),
-                                                              credentials.get('docker_password'))
+            self._client = CveScanDockerPrivateRegistryImages(credentials.get('docker_registry_url').strip(),
+                                                              credentials.get('docker_username').strip(),
+                                                              credentials.get('docker_password').strip())
         elif registry_type == REGISTRY_TYPE_DOCKER_HUB:
-            self._client = CveScanDockerHubImages(credentials.get('docker_hub_namespace'),
-                                                  credentials.get('docker_hub_username'),
-                                                  credentials.get('docker_hub_password'))
+            self._client = CveScanDockerHubImages(credentials.get('docker_hub_namespace').strip(),
+                                                  credentials.get('docker_hub_username').strip(),
+                                                  credentials.get('docker_hub_password').strip())
         elif registry_type == REGISTRY_TYPE_QUAY:
-            self._client = CveScanQuayRegistryImages(credentials.get('quay_registry_url'),
-                                                     credentials.get('quay_namespace'),
-                                                     credentials.get('quay_access_token', ""))
+            self._client = CveScanQuayRegistryImages(credentials.get('quay_registry_url').strip(),
+                                                     credentials.get('quay_namespace').strip(),
+                                                     credentials.get('quay_access_token', "").strip())
         elif registry_type == REGISTRY_TYPE_ECR:
-            self._client = CveScanECRImages(credentials.get('aws_access_key_id'),
-                                            credentials.get('aws_secret_access_key'),
-                                            credentials.get('aws_region_name'),
-                                            credentials.get('registry_id'),
-                                            credentials.get('target_account_role_arn'),
-                                            str(credentials.get('use_iam_role')).lower())
+            self._client = CveScanECRImages(credentials.get('aws_access_key_id').strip(),
+                                            credentials.get('aws_secret_access_key').strip(),
+                                            credentials.get('aws_region_name').strip(),
+                                            credentials.get('registry_id').strip(),
+                                            credentials.get('target_account_role_arn').strip(),
+                                            str(credentials.get('use_iam_role')).lower().strip())
         elif registry_type == REGISTRY_TYPE_HARBOR:
-            self._client = CveScanHarborRegistryImages(credentials.get('harbor_registry_url'),
-                                                       credentials.get('harbor_username'),
-                                                       credentials.get('harbor_password'))
+            self._client = CveScanHarborRegistryImages(credentials.get('harbor_registry_url').strip(),
+                                                       credentials.get('harbor_username').strip(),
+                                                       credentials.get('harbor_password').strip())
         elif registry_type == REGISTRY_TYPE_AZURE:
-            self._client = CveScanAzureRegistryImages(credentials.get('azure_registry_url'),
-                                                      credentials.get('azure_registry_username'),
-                                                      credentials.get('azure_registry_password'))
+            self._client = CveScanAzureRegistryImages(credentials.get('azure_registry_url').strip(),
+                                                      credentials.get('azure_registry_username').strip(),
+                                                      credentials.get('azure_registry_password').strip())
         elif registry_type == REGISTRY_TYPE_GITLAB:
-            self._client = CveScanGitlabRegistryImages(credentials.get('gitlab_server_url'),
-                                                       credentials.get('gitlab_registry_url'),
-                                                       credentials.get('gitlab_access_token'))
+            self._client = CveScanGitlabRegistryImages(credentials.get('gitlab_server_url').strip(),
+                                                       credentials.get('gitlab_registry_url').strip(),
+                                                       credentials.get('gitlab_access_token').strip())
         elif registry_type == REGISTRY_TYPE_GCLOUD:
-            self._client = CveScanGoogleRegistryImages(credentials.get('registry_hostname'),
-                                                       credentials.get('service_account_json'),
-                                                       credentials.get('project_id'))
+            self._client = CveScanGoogleRegistryImages(credentials.get('registry_hostname').strip(),
+                                                       credentials.get('service_account_json').strip(),
+                                                       credentials.get('project_id').strip())
         elif registry_type == REGISTRY_TYPE_JFROG:
-            self._client = CveScanJfrogRegistryImages(credentials.get('jfrog_registry_url'),
-                                                      credentials.get('jfrog_repository'),
-                                                      credentials.get('jfrog_username'),
-                                                      credentials.get('jfrog_password'))
+            self._client = CveScanJfrogRegistryImages(credentials.get('jfrog_registry_url').strip(),
+                                                      credentials.get('jfrog_repository').strip(),
+                                                      credentials.get('jfrog_username').strip(),
+                                                      credentials.get('jfrog_password').strip())
         else:
             raise DFError("Registry {} not supported".format(registry_type))
 
