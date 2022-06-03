@@ -10,7 +10,7 @@ const getDockerInstructions = () => {
   return `docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=host --net=host \\
   --privileged=true -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced \\
   -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \\
-  -e USER_DEFINED_TAGS="" -e MGMT_CONSOLE_URL="${window.location.origin ?? '---CONSOLE-IP---'}" -e MGMT_CONSOLE_PORT="443" \\
+  -e USER_DEFINED_TAGS="" -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" -e MGMT_CONSOLE_PORT="443" \\
   -e DEEPFENCE_KEY="${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'}" \\
   deepfenceio/deepfence_agent_ce:${process.env.__PRODUCTVERSION__}
 `;
@@ -18,11 +18,11 @@ const getDockerInstructions = () => {
 
 const getK8sInstructions = () => {
   return `helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
-  helm repo update
+helm repo update
 
-  helm install deepfence-agent deepfence/deepfence-agent \\
+helm install deepfence-agent deepfence/deepfence-agent \\
   --version ${process.env.__PRODUCTVERSION__} \\
-  --set managementConsoleUrl=${window.location.origin ?? '---CONSOLE-IP---'} \\
+  --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
   --set deepfenceKey=${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'}`;
 };
 
