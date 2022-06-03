@@ -180,10 +180,10 @@ class RegistryCredential(db.Model):
                                                        credentials.get('service_account_json', "").strip(),
                                                        credentials.get('project_id', "").strip())
         elif registry_type == REGISTRY_TYPE_JFROG:
-            self._client = CveScanJfrogRegistryImages(credentials.get('jfrog_registry_url').strip(),
-                                                      credentials.get('jfrog_repository').strip(),
-                                                      credentials.get('jfrog_username').strip(),
-                                                      credentials.get('jfrog_password').strip())
+            self._client = CveScanJfrogRegistryImages(credentials.get('jfrog_registry_url',"").strip(),
+                                                      credentials.get('jfrog_repository',"").strip(),
+                                                      credentials.get('jfrog_username',"").strip(),
+                                                      credentials.get('jfrog_password',"").strip())
         else:
             raise DFError("Registry {} not supported".format(registry_type))
 
