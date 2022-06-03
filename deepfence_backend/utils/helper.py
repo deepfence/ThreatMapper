@@ -928,6 +928,18 @@ def set_vulnerability_status_for_packages(open_files_list, number, time_unit, lu
                         top_cve[package_key] = {"severity": cve_severity, "cve_id": cve_id}
 
     
+    pattern = '^\((.*?):(.*?)\)$'
+    
+
+    omitted_list = ['cve_severity']
+    seeverity_presence = False
+
+    if lucene_query_string:
+        result = re.match(pattern, lucene_query_string)
+        if result:
+            if result.group(1) in omitted_list:
+                seeverity_presence = True
+
     for node_key, node_packages in open_files_map.items():
         node_type, node_id = node_key.split(":", 1)
         node_info = {
@@ -936,15 +948,23 @@ def set_vulnerability_status_for_packages(open_files_list, number, time_unit, lu
             **node_packages
         }
         node_name = node_info["node_name"]
-        node_packages = []
-        for package_info in node_info["packages"]:
-            package_key = "{}:{}:{}".format(node_type, node_name, package_info["package_name"])
-            if top_cve.get(package_key, None):
-                package_info["vulnerability_status"] = top_cve[package_key]["severity"]
-                package_info["cve_id"] = top_cve[package_key]["cve_id"]
-                node_packages.append(package_info)
-        node_info["packages"] = node_packages
-        open_files_list_final.append(node_info)
+        if seeverity_presence:
+            node_packages_ = []
+            for package_info in node_info["packages"]:
+                package_key = "{}:{}:{}".format(node_type, node_name, package_info["package_name"])
+                if top_cve.get(package_key, None):
+                    package_info["vulnerability_status"] = top_cve[package_key]["severity"]
+                    package_info["cve_id"] = top_cve[package_key]["cve_id"]
+                    node_packages_.append(package_info)
+            node_info["packages"] = node_packages_
+            open_files_list_final.append(node_info)
+        else:
+            for package_info in node_info["packages"]:
+                package_key = "{}:{}:{}".format(node_type, node_name, package_info["package_name"])
+                if top_cve.get(package_key, None):
+                    package_info["vulnerability_status"] = top_cve[package_key]["severity"]
+                    package_info["cve_id"] = top_cve[package_key]["cve_id"]
+            open_files_list_final.append(node_info)
 
     return open_files_list_final
 
