@@ -1,10 +1,6 @@
-FROM golang:1.18-bullseye AS build
-RUN apt-get update \
-    && apt-get install -y bash make git gcc \
-    && cd /go \
-    && git clone --depth 1 -b v0.44.1 https://github.com/deepfence/syft \
-    && cd /go/syft \
-    && go build -v -o syftCli .
+ARG DF_IMG_TAG=latest
+ARG IMAGE_REPOSITORY=deepfenceio
+FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS build
 
 FROM debian:bullseye-slim
 
@@ -46,7 +42,7 @@ COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/docker_bin /home/deepfence/bin
 
-COPY --from=build /go/syft/syftCli /usr/local/bin/syft
+COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
 
 RUN chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
