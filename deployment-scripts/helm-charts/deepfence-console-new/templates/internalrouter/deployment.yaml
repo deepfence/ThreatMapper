@@ -63,8 +63,6 @@ spec:
                   key: pg_ssl_mode
           - name: OPERATING_MODE
             value: "k8s"
-          - name: DNS_RESOLVER
-            value: "{{ .Values.dnsResolver }}"
           - name: SERVICE_NAME_SUFFIX
             value: ".{{ .Values.namespace }}.svc.cluster.local"
         volumeMounts:

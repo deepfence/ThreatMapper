@@ -86,8 +86,6 @@ enableGraphReport: "true"
 
 vulnerabilityScanConcurrency: "15"
 
-dnsResolver: "kube-dns.kube-system.svc.cluster.local"
-
 mountContainerRuntimeSocket:
   dockerSock: "true"
   dockerSockPath: "/var/run/docker.sock"

@@ -80,8 +80,6 @@ runUIPod: "true"
 
 vulnerabilityScanConcurrency: "15"
 
-dnsResolver: "kube-dns.kube-system.svc.cluster.local"
-
 diagnosis:
   nodeMetrics: "true"
 
