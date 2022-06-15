@@ -11,6 +11,9 @@ VULNERABILITY_MAPPER_DIR=$(pwd)/vulnerability_mapper
 SECRET_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/SecretScanner/
 PACKAGE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/package-scanner/
 
+cd $DEEPFENCE_AGENT_DIR/plugins
+bash bootstrap.sh
+
 cd $DEEPFENCE_CONSOLE_DIR
 
 if [ ! -f certs/ssl/filebeat.crt ]; then
@@ -116,9 +119,6 @@ if [ ! $? -eq 0 ]; then
     echo "Building diagnosis image failed. Exiting"
     exit 1
 fi
-
-cd $DEEPFENCE_AGENT_DIR/plugins
-bash bootstrap.sh
 
 echo "Building Secret Scanner Image"
 cd $SECRET_SCANNER_DIR
