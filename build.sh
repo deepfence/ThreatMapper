@@ -117,18 +117,10 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-echo "Building agent"
-cd $DEEPFENCE_AGENT_DIR
-env IMAGE_REPOSITORY="${IMAGE_REPOSITORY:-deepfenceio}" DF_IMG_TAG="${DF_IMG_TAG:-latest}" bash build.sh
-
-if [ ! $? -eq 0 ]; then
-    echo "Building agent image failed. Exiting"
-    exit 1
-fi
-
-echo "Building Secret Scanner Image"
 cd $DEEPFENCE_AGENT_DIR/plugins
 bash bootstrap.sh
+
+echo "Building Secret Scanner Image"
 cd $SECRET_SCANNER_DIR
 bash bootstrap.sh
 docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_secret_scanner_ce:${DF_IMG_TAG:-latest} -f $SECRET_SCANNER_DIR/Dockerfile $SECRET_SCANNER_DIR
@@ -142,6 +134,15 @@ cd $PACKAGE_SCANNER_DIR
 docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-latest} -f $PACKAGE_SCANNER_DIR/Dockerfile $PACKAGE_SCANNER_DIR
 if [ ! $? -eq 0 ]; then
     echo "Building secret scanner image failed. Exiting"
+    exit 1
+fi
+
+echo "Building agent"
+cd $DEEPFENCE_AGENT_DIR
+env IMAGE_REPOSITORY="${IMAGE_REPOSITORY:-deepfenceio}" DF_IMG_TAG="${DF_IMG_TAG:-latest}" bash build.sh
+
+if [ ! $? -eq 0 ]; then
+    echo "Building agent image failed. Exiting"
     exit 1
 fi
 
