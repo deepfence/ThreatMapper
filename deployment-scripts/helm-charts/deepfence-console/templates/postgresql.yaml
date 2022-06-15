@@ -241,7 +241,7 @@ spec:
             runAsUser: 1001
           env:
             - name: BITNAMI_DEBUG
-              value: "false"
+              value: "true"
             - name: PGPOOL_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -404,7 +404,7 @@ spec:
           # Auxiliary vars to populate environment variables
           env:
             - name: BITNAMI_DEBUG
-              value: "false"
+              value: "true"
             # PostgreSQL configuration
             - name: POSTGRESQL_VOLUME_DIR
               value: "/bitnami/postgresql"
