@@ -76,7 +76,7 @@ const DiagnosisView = props => {
     filter = filter.filter(el => el.host_name !== 'The Internet');
     return (
       <div className="nodes-filter-item" key="host_name">
-        <div className="df-select-field">
+        <div className="df-select-field" style={{width: 'auto'}}>
           {props.nodesIndex && (
             <DFSelect
               name={fieldName}
@@ -91,6 +91,17 @@ const DiagnosisView = props => {
               placeholder="search"
               isMulti={isMulti}
               isSearchable
+              styles={{
+                input: base => {
+                  return {
+                    ...base,
+                    color: '#ffffff',
+                    '& input': {
+                      height: 'auto',
+                    }
+                  };
+                },
+              }}
             />
           )}
         </div>
