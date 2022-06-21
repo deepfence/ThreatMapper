@@ -71,7 +71,7 @@ clusterAgentResources:
     cpu: 1500m
     memory: 1536Mi
 
-nodeSelector: {}
+nodeSelector: {"kubernetes.io/os": "linux"}
 
 tolerations:
   - operator: "Exists"
