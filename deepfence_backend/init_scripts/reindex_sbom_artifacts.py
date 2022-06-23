@@ -32,7 +32,7 @@ if EL_CLIENT.indices.exists(index=SBOM_INDEX) and EL_CLIENT.indices.exists(index
         sbom_count = int(sbom_count_array[0]["count"])
     if sbom_count > 0:
         page = EL_CLIENT.search(
-            index='sbom-cve-scan',
+            index=SBOM_INDEX,
             scroll='1m',
             size=ARRAY_SIZE,
             body={"query": {"match_all": {}}},
