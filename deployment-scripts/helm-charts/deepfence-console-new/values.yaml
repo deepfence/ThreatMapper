@@ -41,6 +41,13 @@ volume:
   esStorage: 30Gi
   postgresStorage: 30Gi
 
+# If config update needed for postgres instance
+# postgresql:
+#   extendedConf: |-
+#     huge_pages = off
+
+clusterDomain: "cluster.local"
+
 db:
   # If kubernetes secret is already defined externally, change following value to false
   createDbSecret: "true"

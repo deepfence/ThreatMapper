@@ -257,7 +257,6 @@ spec:
           imagePullPolicy: "IfNotPresent"
           securityContext:
             runAsUser: 1001
-          {{- $clusterDomain:= .Values.clusterDomain }}
           env:
             - name: BITNAMI_DEBUG
               value: "true"
@@ -266,7 +265,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: PGPOOL_BACKEND_NODES
-              value: "0:deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ $clusterDomain }}:5432,1:deepfence-postgres-postgresql-1.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ $clusterDomain }}:5432"
+              value: "0:deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}:5432,1:deepfence-postgres-postgresql-1.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}:5432"
             - name: PGPOOL_SR_CHECK_USER
               value: "repmgr"
             - name: PGPOOL_SR_CHECK_PASSWORD
@@ -441,7 +440,6 @@ spec:
           securityContext:
             runAsUser: 1001
           # Auxiliary vars to populate environment variables
-          {{- $clusterDomain:= .Values.clusterDomain }}
           env:
             - name: BITNAMI_DEBUG
               value: "true"
@@ -502,13 +500,13 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: REPMGR_PARTNER_NODES
-              value: "deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ $clusterDomain }},deepfence-postgres-postgresql-1.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ $clusterDomain }}"
+              value: "deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }},deepfence-postgres-postgresql-1.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}"
             - name: REPMGR_PRIMARY_HOST
-              value: "deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ $clusterDomain }}"
+              value: "deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}"
             - name: REPMGR_NODE_NAME
               value: "$(MY_POD_NAME)"
             - name: REPMGR_NODE_NETWORK_NAME
-              value: "$(MY_POD_NAME).deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ $clusterDomain }}"
+              value: "$(MY_POD_NAME).deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}"
             - name: REPMGR_LOG_LEVEL
               value: "NOTICE"
             - name: REPMGR_CONNECT_TIMEOUT
