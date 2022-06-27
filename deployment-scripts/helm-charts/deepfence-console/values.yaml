@@ -41,6 +41,13 @@ volume:
   postgresStorage: 30Gi
   kafkaStorage: 30Gi
 
+# If config update needed for postgres instance
+# postgresql:
+#   extendedConf: |-
+#     huge_pages = off
+
+clusterDomain: "cluster.local"
+
 db:
   # If kubernetes secret is already defined externally, change following value to false
   createDbSecret: "true"
@@ -89,8 +96,6 @@ runConsoleDiscovery: "true"
 runUIPod: "true"
 
 vulnerabilityScanConcurrency: "15"
-
-dnsResolver: "kube-dns.kube-system.svc.cluster.local"
 
 diagnosis:
   nodeMetrics: "true"

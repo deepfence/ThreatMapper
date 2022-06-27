@@ -43,6 +43,11 @@ from resource_models.node import Node
 common_api = Blueprint("common_api", __name__)
 
 
+@common_api.route('/ping', methods=["GET"])
+def ping():
+    return set_response({"message": "pong"})
+
+
 @common_api.route("/topology-metrics", methods=["GET"])
 @jwt_required()
 def topology_metrics():
@@ -1475,6 +1480,7 @@ def user_activity_log():
         print(ex)
         raise InvalidUsage()
 
+
 @common_api.route("/registry_images_tags", methods=["POST"])
 @jwt_required()
 def registry_images_tags():
@@ -1491,6 +1497,7 @@ def registry_images_tags():
     for image in image_dict['image_list']:
         images_set.add(image["image_tag"])
     return set_response(list(images_set))
+
 
 @common_api.route("/attack-path", methods=["GET"])
 @jwt_required()
@@ -1615,7 +1622,8 @@ def attack_path():
                 for i in shortest_path:
                     labelled_element = ""
                     if i not in [incoming_internet_container_id, outgoing_internet_container_id]:
-                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if
+                                                 x["topologyId"] == "containers-by-image"), "")
                     if not labelled_element:
                         labelled_element = topology_containers[i]["label"]
                     labelled_path.append(labelled_element)
@@ -1635,7 +1643,8 @@ def attack_path():
                 for i in shortest_path:
                     labelled_element = ""
                     if i not in [incoming_internet_container_id, outgoing_internet_container_id]:
-                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if
+                                                 x["topologyId"] == "containers-by-image"), "")
                     if not labelled_element:
                         labelled_element = topology_containers[i]["label"]
                     labelled_path.append(labelled_element)
@@ -1651,7 +1660,8 @@ def attack_path():
             node_scope_id = ""
             if not scope_id.endswith(NODE_TYPE_HOST, 0, -1):
                 node_type = NODE_TYPE_CONTAINER
-                node_scope_id = next((x["id"] for x in topology_containers[scope_id]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                node_scope_id = next((x["id"] for x in topology_containers[scope_id]["parents"] if
+                                      x["topologyId"] == "containers-by-image"), "")
             node_id = node_utils.get_df_id_from_scope_id(scope_id, node_type)
             node = Node(node_id)
             if not node:
@@ -1718,7 +1728,8 @@ def attack_path():
                 for i in shortest_path:
                     labelled_element = ""
                     if i not in [incoming_internet_container_id, outgoing_internet_container_id]:
-                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if
+                                                 x["topologyId"] == "containers-by-image"), "")
                     if not labelled_element:
                         labelled_element = topology_containers[i]["label"]
                     labelled_path.append(labelled_element)
@@ -1738,7 +1749,8 @@ def attack_path():
                 for i in shortest_path:
                     labelled_element = ""
                     if i not in [incoming_internet_container_id, outgoing_internet_container_id]:
-                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                        labelled_element = next((x["label"] for x in topology_containers[i]["parents"] if
+                                                 x["topologyId"] == "containers-by-image"), "")
                     if not labelled_element:
                         labelled_element = topology_containers[i]["label"]
                     labelled_path.append(labelled_element)
@@ -1754,7 +1766,8 @@ def attack_path():
             node_scope_id = ""
             if not scope_id.endswith(NODE_TYPE_HOST, 0, -1):
                 node_type = NODE_TYPE_CONTAINER
-                node_scope_id = next((x["id"] for x in topology_containers[scope_id]["parents"] if x["topologyId"] == "containers-by-image"), "")
+                node_scope_id = next((x["id"] for x in topology_containers[scope_id]["parents"] if
+                                      x["topologyId"] == "containers-by-image"), "")
             node_id = node_utils.get_df_id_from_scope_id(scope_id, node_type)
             node = Node(node_id)
             if not node:
@@ -1771,6 +1784,7 @@ def attack_path():
             )
             count += 1
         return set_response(data=response)
+
 
 class EmailConfigurationView(MethodView):
     @jwt_required()

@@ -3,7 +3,8 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 import math
 
-EL_HOST = "%s://%s:%s" % (os.getenv('ELASTICSEARCH_SCHEME', 'http'), os.environ['ELASTICSEARCH_HOST'], os.environ['ELASTICSEARCH_PORT'])
+EL_HOST = "%s://%s:%s" % (
+os.getenv('ELASTICSEARCH_SCHEME', 'http'), os.environ['ELASTICSEARCH_HOST'], os.environ['ELASTICSEARCH_PORT'])
 http_auth = None
 CUSTOMER_UNIQUE_ID = os.getenv('CUSTOMER_UNIQUE_ID', None)
 
@@ -30,57 +31,65 @@ if EL_CLIENT.indices.exists(index=SBOM_INDEX) and EL_CLIENT.indices.exists(index
     if sbom_count_array:
         sbom_count = int(sbom_count_array[0]["count"])
     if sbom_count > 0:
-        for i in range(0, math.ceil(sbom_count/ARRAY_SIZE)):
-            sbom_docs = EL_CLIENT.search(index=SBOM_INDEX, body={"query": {"match_all": {}}}, from_=i*ARRAY_SIZE, size=ARRAY_SIZE,
-                                         sort="scan_id.keyword:desc", _source=["scan_id", "node_id", "node_type",
-                                                                               "@timestamp", "time_stamp", "artifacts"])
-            if sbom_docs["hits"]["total"]["value"] > 0:
-                for sbom_doc in sbom_docs["hits"]["hits"]:
-                    body = {
-                        "query": {
-                            "constant_score": {
-                                "filter": {
-                                    "bool": {
-                                        "must": {
-                                            "terms": {
-                                                "scan_id.keyword": [sbom_doc["_source"]["scan_id"]]
-                                            }
+        page = EL_CLIENT.search(
+            index=SBOM_INDEX,
+            scroll='1m',
+            size=ARRAY_SIZE,
+            body={"query": {"match_all": {}}},
+            sort="scan_id.keyword:desc",
+            _source=["scan_id", "node_id", "node_type", "@timestamp", "time_stamp", "artifacts"]
+        )
+        scroll_id = page['_scroll_id']
+        sbom_docs = page['hits']['hits']
+        while len(sbom_docs):
+            for sbom_doc in sbom_docs:
+                body = {
+                    "query": {
+                        "constant_score": {
+                            "filter": {
+                                "bool": {
+                                    "must": {
+                                        "terms": {
+                                            "scan_id.keyword": [sbom_doc["_source"]["scan_id"]]
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    sbom_artifact_res = EL_CLIENT.search(index=SBOM_ARTIFACT_INDEX, body=body, size=1)
-                    if sbom_artifact_res.get("hits", {}).get("total", {}).get("value", -1) == 0:
-                        source_doc = sbom_doc["_source"]
-                        defaults = {
-                            "scan_id": source_doc["scan_id"],
-                            "node_id": source_doc["node_id"],
-                            "node_type": source_doc["node_type"],
-                            "masked": "false",
-                            "@timestamp": source_doc["@timestamp"],
-                            "time_stamp": source_doc["time_stamp"],
+                }
+                sbom_artifact_res = EL_CLIENT.search(index=SBOM_ARTIFACT_INDEX, body=body, size=1)
+                if sbom_artifact_res.get("hits", {}).get("total", {}).get("value", -1) == 0:
+                    source_doc = sbom_doc["_source"]
+                    defaults = {
+                        "scan_id": source_doc["scan_id"],
+                        "node_id": source_doc["node_id"],
+                        "node_type": source_doc["node_type"],
+                        "masked": "false",
+                        "@timestamp": source_doc["@timestamp"],
+                        "time_stamp": source_doc["time_stamp"],
+                    }
+                    bulk_index_actions = []
+                    for artifact in sbom_doc["_source"]["artifacts"]:
+                        # print("Going through artifact: ", artifact["name"])
+                        doc = {
+                            **defaults,
+                            "name": artifact["name"],
+                            "version": artifact["version"],
+                            "locations": artifact["locations"],
+                            "licenses": artifact["licenses"],
+                            "language": artifact["language"]
                         }
-                        bulk_index_actions = []
-                        for artifact in sbom_doc["_source"]["artifacts"]:
-                            # print("Going through artifact: ", artifact["name"])
-                            doc = {
-                                **defaults,
-                                "name": artifact["name"],
-                                "version": artifact["version"],
-                                "locations": artifact["locations"],
-                                "licenses": artifact["licenses"],
-                                "language": artifact["language"]
-                            }
-                            bulk_index_actions.append({
-                                "_op_type": "index",
-                                "_index": SBOM_ARTIFACT_INDEX,
-                                "_source": doc
-                            })
-                        errors = bulk(EL_CLIENT, bulk_index_actions)
-                        if errors:
-                            print("Error while bulk processing artifacts for scan_id: ", source_doc["scan_id"])
-                            print(errors)
+                        bulk_index_actions.append({
+                            "_op_type": "index",
+                            "_index": SBOM_ARTIFACT_INDEX,
+                            "_source": doc
+                        })
+                    errors = bulk(EL_CLIENT, bulk_index_actions)
+                    if len(errors[1]) != 0:
+                        print("Error while bulk processing artifacts for scan_id: ", source_doc["scan_id"])
+                        print(errors[1])
 
-
+            page = EL_CLIENT.scroll(scroll_id=scroll_id, scroll='1m')
+            scroll_id = page['_scroll_id']
+            sbom_docs = page['hits']['hits']

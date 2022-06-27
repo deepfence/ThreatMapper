@@ -40,6 +40,24 @@ data:
   admin-password: "ZnJjc1BzVjlGUw=="
 {{- end }}
 ---
+{{- if ((.Values.postgresql).extendedConf) }}
+# Source: postgresql-ha/templates/postgresql/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/name: postgresql-ha
+    helm.sh/chart: postgresql-ha-7.12.0
+    app.kubernetes.io/instance: deepfence-postgres
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: postgresql
+  namespace: {{ .Values.namespace }}
+  name: "deepfence-postgres-postgresql-extended-configuration"
+data:
+  override.conf: |-
+    {{- tpl .Values.postgresql.extendedConf . | nindent 4 }}
+{{- end }}
+---
 # Source: postgresql-ha/templates/postgresql/hooks-scripts-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -241,13 +259,13 @@ spec:
             runAsUser: 1001
           env:
             - name: BITNAMI_DEBUG
-              value: "false"
+              value: "true"
             - name: PGPOOL_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: PGPOOL_BACKEND_NODES
-              value: "0:deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.cluster.local:5432,1:deepfence-postgres-postgresql-1.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.cluster.local:5432"
+              value: "0:deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}:5432,1:deepfence-postgres-postgresql-1.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}:5432"
             - name: PGPOOL_SR_CHECK_USER
               value: "repmgr"
             - name: PGPOOL_SR_CHECK_PASSWORD
@@ -390,6 +408,26 @@ spec:
 {{- end }}
       securityContext:
         fsGroup: 1001
+      {{- if ((.Values.postgresql).extendedConf) }}
+      initContainers:
+        - name: init-chmod-data
+          image: docker.io/bitnami/bitnami-shell:10-debian-10-r444
+          imagePullPolicy: "IfNotPresent"
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /bitnami/postgresql/conf /bitnami/postgresql/data /bitnami/postgresql/lock
+              chmod 700 /bitnami/postgresql/conf /bitnami/postgresql/data /bitnami/postgresql/lock
+              chown 1001:1001 /bitnami/postgresql
+              find /bitnami/postgresql -mindepth 1 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | \
+                xargs -r chown -R 1001:1001
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/postgresql
+      {{- end }}
       containers:
         - name: postgresql
           lifecycle:
@@ -404,7 +442,7 @@ spec:
           # Auxiliary vars to populate environment variables
           env:
             - name: BITNAMI_DEBUG
-              value: "false"
+              value: "true"
             # PostgreSQL configuration
             - name: POSTGRESQL_VOLUME_DIR
               value: "/bitnami/postgresql"
@@ -462,13 +500,13 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: REPMGR_PARTNER_NODES
-              value: "deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.cluster.local,deepfence-postgres-postgresql-1.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.cluster.local"
+              value: "deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }},deepfence-postgres-postgresql-1.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}"
             - name: REPMGR_PRIMARY_HOST
-              value: "deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.cluster.local"
+              value: "deepfence-postgres-postgresql-0.deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}"
             - name: REPMGR_NODE_NAME
               value: "$(MY_POD_NAME)"
             - name: REPMGR_NODE_NETWORK_NAME
-              value: "$(MY_POD_NAME).deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.cluster.local"
+              value: "$(MY_POD_NAME).deepfence-postgres-postgresql-headless.{{ .Values.namespace }}.svc.{{ .Values.clusterDomain }}"
             - name: REPMGR_LOG_LEVEL
               value: "NOTICE"
             - name: REPMGR_CONNECT_TIMEOUT
@@ -522,12 +560,21 @@ spec:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
           volumeMounts:
+            {{- if ((.Values.postgresql).extendedConf) }}
+            - name: postgresql-extended-config
+              mountPath: /bitnami/postgresql/conf/conf.d/
+            {{- end }}
             - name: data
               mountPath: /bitnami/postgresql
             - name: hooks-scripts
               mountPath: /pre-stop.sh
               subPath: pre-stop.sh
       volumes:
+        {{- if ((.Values.postgresql).extendedConf) }}
+        - name: postgresql-extended-config
+          configMap:
+            name: "deepfence-postgres-postgresql-extended-configuration"
+        {{- end }}
         - name: hooks-scripts
           configMap:
             name: deepfence-postgres-postgresql-hooks-scripts

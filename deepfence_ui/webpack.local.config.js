@@ -15,6 +15,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
  */
 
 let commitHash;
+const productVersion = 'latest';
 try {
   commitHash = require('child_process')
     .execSync('git rev-parse --short HEAD')
@@ -48,6 +49,7 @@ module.exports = {
         API_BASE_URL: JSON.stringify(process.env.API_BASE_URL),
         WS_BASE_URL: JSON.stringify(process.env.WS_BASE_URL),
         __BUILDVERSION__: JSON.stringify(commitHash),
+        __PRODUCTVERSION__: JSON.stringify(productVersion),
       },
     }),
     new CopyWebpackPlugin({

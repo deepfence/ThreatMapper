@@ -437,15 +437,15 @@ class CveScanDockerHubImages(CveScanRegistryImages):
         try:
             resp = requests.post(self.docker_hub_url + "/users/login/",
                                  json={"username": self.docker_hub_username, "password": self.docker_hub_password})
+            cookies = resp.cookies
             auth_token = resp.json().get("token", "")
             if not auth_token:
                 return images_list
             image_from_date = datetime.now() - timedelta(days=filter_past_days)
             image_from_date = image_from_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            req_header = {"Authorization": "JWT " + auth_token}
             resp = requests.get(
                 self.docker_hub_url + "/repositories/" + self.docker_hub_namespace + "/?page_size=100",
-                headers=req_header)
+                cookies=cookies)
             if resp.status_code != 200:
                 return images_list
             resp = resp.json()
@@ -455,7 +455,7 @@ class CveScanDockerHubImages(CveScanRegistryImages):
             while next_url:
                 resp = requests.get(
                     self.docker_hub_url + "/repositories/" + self.docker_hub_namespace +
-                    "/?page_size=100&page={0}".format(page_no), headers=req_header)
+                    "/?page_size=100&page={0}".format(page_no), cookies=cookies)
                 if resp.status_code != 200:
                     break
                 resp = resp.json()
@@ -478,7 +478,7 @@ class CveScanDockerHubImages(CveScanRegistryImages):
                 try:
                     resp = requests.get(
                         self.docker_hub_url + "/repositories/{0}/{1}/tags?page_size=100".format(
-                            result["namespace"], result["name"]), headers=req_header)
+                            result["namespace"], result["name"]), cookies=cookies)
                 except:
                     continue
                 if resp.status_code != 200:
@@ -710,7 +710,8 @@ class CveScanHarborRegistryImages(CveScanRegistryImages):
             server_url = "{0}://{1}".format(url_parse.scheme, url_parse.netloc)
             project_name = url_parse.path.lstrip('/')
             verify, cert = self.get_self_signed_certs()
-            response = session.get("{0}/api/v2.0/projects/{1}/repositories".format(server_url, project_name), verify=verify, cert=cert)
+            response = session.get("{0}/api/v2.0/projects/{1}/repositories".format(server_url, project_name),
+                                   verify=verify, cert=cert)
             if response.status_code == 200:
                 harbor_repos = response.json()
             else:

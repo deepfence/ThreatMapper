@@ -11,8 +11,9 @@ localinit:
 
 bin/SecretScanner: ./SecretScanner/**/*.go
 	(cd SecretScanner && make)
-	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin
-	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin
+	mkdir $(PWD)/bin/secret-scanner/
+	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin/secret-scanner/
+	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin/secret-scanner/
 
 bin/package-scanner:
 	(cd package-scanner && make)
@@ -24,7 +25,7 @@ proto: ./agent-plugins-grpc/proto/*.proto
 
 clean:
 	-#rm $(PWD)/bin/open-tracer
-	-rm $(PWD)/bin/SecretScanner
+	-rm -rf $(PWD)/bin/secret-scanner/
 	-rm $(PWD)/bin/package-scanner
 	#cargo clean --manifest-path=./open-tracer/Cargo.toml
 	(cd agent-plugins-grpc && make clean)

@@ -8,7 +8,7 @@ export const DbFileUploader = () => {
   const [isFilePicked, setIsFilePicked] = useState(false);
 
   const changeHandler = event => {
-    
+
     setSelectedFile(event.target.files[0]);
     setIsFilePicked(true);
   };
@@ -35,7 +35,7 @@ export const DbFileUploader = () => {
 
   return (
     <div>
-       <h4> Upload Vulnerabilty Database</h4> 
+       <h4> Upload Vulnerabilty Database</h4>
        <div style={{marginTop: '30px'}}>
        <input type="file" name="file" onChange={changeHandler} />
       {isFilePicked ? (
@@ -49,7 +49,7 @@ export const DbFileUploader = () => {
           </p>
         </div>
       ) : (
-        <p>Select a file to show details</p>
+        <p style={{paddingTop: "10px"}}>Select a file to show details</p>
       )}{' '}
        </div>
       <div >

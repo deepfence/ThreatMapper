@@ -64,7 +64,7 @@ building_image(){
 
 
     echo "Building Agent"
-    docker build --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_agent_ce:${DF_IMG_TAG:-latest} -f Dockerfile .
+    docker build --network host --rm=true --build-arg DF_IMG_TAG="${DF_IMG_TAG:-latest}" --build-arg IMAGE_REPOSITORY="${IMAGE_REPOSITORY}" --tag=$IMAGE_REPOSITORY/deepfence_agent_ce:"${DF_IMG_TAG:-latest}" -f Dockerfile .
 }
 
 

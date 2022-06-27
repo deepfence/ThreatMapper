@@ -900,8 +900,6 @@ spec:
               value: "{{ .Values.db.postgresUserDb.sslmode }}"
             - name: OPERATING_MODE
               value: "k8s"
-            - name: DNS_RESOLVER
-              value: "{{ .Values.dnsResolver }}"
             - name: SERVICE_NAME_SUFFIX
               value: ".{{ .Values.namespace }}.svc.cluster.local"
           ports:
@@ -999,8 +997,6 @@ spec:
           value: "{{ .Values.db.postgresUserDb.sslmode }}"
         - name: OPERATING_MODE
           value: "k8s"
-        - name: DNS_RESOLVER
-          value: "{{ .Values.dnsResolver }}"
         - name: SERVICE_NAME_SUFFIX
           value: ".{{ .Values.namespace }}.svc.cluster.local"
         ports:

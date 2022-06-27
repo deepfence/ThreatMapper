@@ -66,3 +66,12 @@ spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
