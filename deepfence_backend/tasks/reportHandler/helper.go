@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net"
 	"os"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gomodule/redigo/redis"
+	"github.com/olivere/elastic/v7"
 	kafka "github.com/segmentio/kafka-go"
 )
 
@@ -134,8 +136,8 @@ func gracefulExit(err error) {
 	if err != nil {
 		log.Error(err)
 	}
-	if postgresDb != nil {
-		postgresErr := postgresDb.Close()
+	if pgDB != nil {
+		postgresErr := pgDB.Close()
 		if postgresErr != nil {
 			log.Error(postgresErr)
 		}
@@ -158,7 +160,7 @@ func gracefulExit(err error) {
 
 func syncPoliciesAndNotificationsSettings() {
 	var vulnerabilityNotificationCount int
-	row := postgresDb.QueryRow("SELECT COUNT(*) FROM vulnerability_notification where duration_in_mins=-1")
+	row := pgDB.QueryRow("SELECT COUNT(*) FROM vulnerability_notification where duration_in_mins=-1")
 	err := row.Scan(&vulnerabilityNotificationCount)
 	if err != nil {
 		log.Error(err)
@@ -178,4 +180,18 @@ func syncPoliciesAndNotifications() {
 	for range ticker.C {
 		syncPoliciesAndNotificationsSettings()
 	}
+}
+
+func printJSON(d interface{}) string {
+	// s, _ := json.MarshalIndent(d, "", "  ")
+	s, _ := json.Marshal(d)
+	return string(s)
+}
+
+func checkElasticError(err error) {
+	e, ok := err.(*elastic.Error)
+	if !ok {
+		log.Error(err)
+	}
+	log.Error(printJSON(e.Details))
 }

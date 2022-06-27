@@ -1,20 +1,23 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/gocelery/gocelery"
 	"github.com/gomodule/redigo/redis"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	elastic "github.com/olivere/elastic/v7"
 	logrus "github.com/sirupsen/logrus"
@@ -28,7 +31,7 @@ type NotificationSettings struct {
 var (
 	redisPubSub            *redis.PubSubConn
 	redisPool              *redis.Pool
-	postgresDb             *sql.DB
+	pgDB                   *sqlx.DB
 	redisAddr              string
 	vulnerabilityTaskQueue chan []byte
 	celeryCli              *gocelery.CeleryClient
@@ -83,11 +86,11 @@ func init() {
 		os.Getenv("POSTGRES_USER_DB_HOST"), postgresPort, os.Getenv("POSTGRES_USER_DB_USER"),
 		os.Getenv("POSTGRES_USER_DB_PASSWORD"), os.Getenv("POSTGRES_USER_DB_NAME"),
 		os.Getenv("POSTGRES_USER_DB_SSLMODE"))
-	postgresDb, err = sql.Open("postgres", psqlInfo)
+	pgDB, err = sqlx.Open("postgres", psqlInfo)
 	if err != nil {
 		gracefulExit(err)
 	}
-	err = postgresDb.Ping()
+	err = pgDB.Ping()
 	if err != nil {
 		gracefulExit(err)
 	}
@@ -95,7 +98,7 @@ func init() {
 	tablesToCheck := []string{"vulnerability_notification", "masked_cve"}
 	for _, tableName := range tablesToCheck {
 		var tableExists bool
-		row := postgresDb.QueryRow("SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1)", tableName)
+		row := pgDB.QueryRow("SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1)", tableName)
 		err := row.Scan(&tableExists)
 		if err != nil {
 			gracefulExit(err)
@@ -163,10 +166,12 @@ func createNotificationCeleryTask(resourceType string, messages []interface{}) {
 	}
 }
 
-func batchMessages(resourceType string, resourceChan *chan []byte, batchSize int) {
+func batchMessages(ctx context.Context, resourceType string,
+	resourceChan *chan []byte, batchSize int) {
 	for {
 		var messages []interface{}
 		ticker := time.NewTicker(15 * time.Second)
+		exit := false
 		for {
 			breakFor := false
 			select {
@@ -183,6 +188,10 @@ func batchMessages(resourceType string, resourceChan *chan []byte, batchSize int
 				}
 			case <-ticker.C:
 				breakFor = true
+			case <-ctx.Done():
+				log.Infof("stop batchMessages for %s", resourceType)
+				breakFor = true
+				exit = true
 			}
 			if breakFor {
 				break
@@ -200,10 +209,18 @@ func batchMessages(resourceType string, resourceChan *chan []byte, batchSize int
 				}
 			}()
 		}
+		if exit {
+			return
+		}
 	}
 }
 
 func main() {
+
+	ctx, cancel := signal.NotifyContext(context.Background(),
+		os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
 	var err error
 	celeryCli, err = gocelery.NewCeleryClient(gocelery.NewRedisBroker(redisPool),
 		&gocelery.RedisCeleryBackend{Pool: redisPool}, 1)
@@ -211,16 +228,16 @@ func main() {
 		gracefulExit(err)
 	}
 	go syncPoliciesAndNotifications()
-	go batchMessages(resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
+	go batchMessages(ctx, resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
 
 	// load cve's from db
 	maskedCVELock.Lock()
-	maskedCVE = listAllCVE(postgresDb)
+	maskedCVE = listAllCVE(pgDB)
 	maskedCVELock.Unlock()
 
 	mchan := make(chan MaskDocID, 100)
-	go subscribeTOMaskedCVE(redisPool, mchan)
-	go getMaskDocES(esClient, mchan)
+	go subscribeTOMaskedCVE(ctx, redisPool, mchan)
+	go startMaskCVE(ctx, esClient, mchan)
 
 	consumerGroupID := os.Getenv("CUSTOMER_UNIQUE_ID")
 	if consumerGroupID == "" {
@@ -251,10 +268,23 @@ func main() {
 		topicChannels[t] = make(chan []byte, 100)
 	}
 
-	startKafakConsumers(kafkaBrokers, topics, consumerGroupID, topicChannels)
+	startKafkaConsumers(ctx, kafkaBrokers, topics, consumerGroupID, topicChannels)
 
 	bulkp := startESBulkProcessor(esClient, 5*time.Second, 2, 100)
 	defer bulkp.Close()
 
-	processReports(topicChannels, bulkp)
+	go processReports(ctx, topicChannels, bulkp)
+	go processReports(ctx, topicChannels, bulkp)
+
+	// wait for exit
+	// flush all data from bulk processor
+	<-ctx.Done()
+	if err := bulkp.Flush(); err != nil {
+		log.Error(err)
+	}
+	if err := bulkp.Stop(); err != nil {
+		log.Error(err)
+	}
+	log.Info("ctx cancelled exit")
+	gracefulExit(nil)
 }
