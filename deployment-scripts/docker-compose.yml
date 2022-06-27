@@ -303,6 +303,8 @@ services:
       core: 0
     entrypoint: /app/code/dockerify/backend/entrypoint.sh
     restart: on-failure
+    environment:
+      - DEBUG=false
     networks:
       - deepfence_net
     depends_on:

@@ -113,19 +113,20 @@ func init() {
 	}
 
 	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
+	esHost := os.Getenv("ELASTICSEARCH_HOST")
+	esUsername := os.Getenv("ELASTICSEARCH_USER")
+	esPassword := os.Getenv("ELASTICSEARCH_PASSWORD")
+	esPort := os.Getenv("ELASTICSEARCH_PORT")
+
 	if esScheme == "" {
 		esScheme = "http"
 	}
-	esHost := os.Getenv("ELASTICSEARCH_HOST")
 	if esHost == "" {
 		esHost = "deepfence-es"
 	}
-	esPort := os.Getenv("ELASTICSEARCH_PORT")
 	if esPort == "" {
 		esPort = "9200"
 	}
-	esUsername := os.Getenv("ELASTICSEARCH_USER")
-	esPassword := os.Getenv("ELASTICSEARCH_PASSWORD")
 
 	if esUsername != "" && esPassword != "" {
 		esClient, err = elastic.NewClient(

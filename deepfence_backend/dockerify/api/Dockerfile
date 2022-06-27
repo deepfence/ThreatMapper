@@ -32,7 +32,9 @@ ENV PYTHONUNBUFFERED=1 \
     REDIS_DB_NUMBER=0 \
     PYTHONPATH=/app/code \
     DOCKERVERSION=20.10.8 \
-    AUTHLIB_INSECURE_TRANSPORT=true
+    AUTHLIB_INSECURE_TRANSPORT=true \
+    DEBUG=false \
+    KAFKA_BROKERS=deepfence-kafka-broker:9092
 
 COPY ./requirements.txt /tmp/requirements.txt
 
