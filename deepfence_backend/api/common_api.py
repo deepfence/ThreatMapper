@@ -647,9 +647,10 @@ def unmask_doc():
     extra = {"across_images":unmask_across_images, "operation": "unmask"}
     if docs_to_be_unmasked:
         for ds in docs_to_be_unmasked:
-            new_doc = ds.copy()
-            new_doc.update(extra)
-            redis.publish("mask-cve", json.dumps(new_doc))
+            if "cve" in ds.get("_index"):
+                new_doc = ds.copy()
+                new_doc.update(extra)
+                redis.publish("mask-cve", json.dumps(new_doc))
 
     cve_id_list = request.json.get("cve_id_list")
     if cve_id_list:
