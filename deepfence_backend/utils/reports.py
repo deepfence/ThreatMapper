@@ -293,6 +293,8 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
         for filter_key, filter_value in resource_filter.items():
             if not filter_value:
                 continue
+            if filter_key == "cve_severity":
+                filter_value = filter_value.split(",")
             if type(filter_value) == list:
                 and_terms.append({"terms": {"{}.keyword".format(filter_key): filter_value}})
             else:

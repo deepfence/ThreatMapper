@@ -185,14 +185,12 @@ const VulnerabilityManagementView = props => {
                 simpleValue
               />
             </div>
-            <div className="btn-wrapper">
               <div
-                className="u-m-btn"
+                className="btn-delete"
                 onClick={() => handleSeverityDeletionSubmit()}
               >
                 Delete
               </div>
-            </div>
           </div>
         </div>
         <div className="error-msg-container" style={errorMsgContainer}>

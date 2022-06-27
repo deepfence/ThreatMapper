@@ -1,0 +1,43 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+
+.wrapper {
+  padding: 16px;
+  padding-top: 64px;
+  font-size: 1.125rem;
+  height: 100%;
+  overflow-y: auto;
+
+  .setupHeader {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 16px;
+  }
+
+  .codeBlock {
+    margin-top: 8px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    background-color: black;
+    border-radius: 8px;
+    padding: 8px;
+    position: relative;
+    font-size: 1rem;
+    line-height: 24px;
+
+
+    .copyButton {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 8px;
+      border-radius: 2px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: $background-darker-color;
+      }
+    }
+  }
+}

@@ -193,7 +193,7 @@ const Reports = props => {
         resource_type: resourceTypeText,
         node_type: nodeTypeText,
         filters:
-          'host_name,container_name,image_name_with_tag,os,kubernetes_cluster_name,kubernetes_namespace',
+          'host_name,container_name,image_name_with_tag,os,kubernetes_cluster_name,kubernetes_namespace,masked',
       });
     }
   }, [resource_type, node_type]);
@@ -338,6 +338,7 @@ const Reports = props => {
         cve_severity,
         download_type,
         valid,
+        masked,
         reportGenerateAction: actionDownload,
         reportScheduleEmailAction: actionEmail,
       } = props;
@@ -347,18 +348,19 @@ const Reports = props => {
       }
 
       const resourceTypeText = resource_type.value;
+      const maskedFilter = masked && masked.map(v => v.value );
 
       const resourceData = [];
       if (resourceTypeText && resourceTypeText.includes('cve') && cve_severity) {
         resourceData.push({
           type: 'cve',
-          filter: { cve_severity: cve_severity.map(el => el.value).join(',') },
+          filter: { cve_severity: cve_severity.map(el => el.value).join(','), masked: maskedFilter },
         });
       }
       if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) {
         resourceData.push({
           type: 'cve',
-          filter: {},
+          filter: {masked: maskedFilter},
         });
       }
       if (resourceTypeText && resourceTypeText.includes('secret-scan')) {
@@ -739,6 +741,7 @@ const mapStateToProps = state => ({
   operating_system: selector(state, 'os'),
   kubernetes_cluster_name: selector(state, 'kubernetes_cluster_name'),
   kubernetes_namespace: selector(state, 'kubernetes_namespace'),
+  masked: selector(state, 'masked'),
 
   loading: state.getIn(['reportForm', 'form', 'loading']),
   info: state.getIn(['reportForm', 'form', 'error', 'message']),

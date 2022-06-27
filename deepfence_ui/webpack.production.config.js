@@ -8,6 +8,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 let commitHash;
+let productVersion;
 
 try {
   commitHash = fs.readFileSync('console_version.txt').toString().trim();
@@ -16,11 +17,19 @@ try {
   console.error('error reading console_version.txt');
 }
 
+try {
+  productVersion = fs.readFileSync('product_version.txt').toString().trim();
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.error('error reading product_version.txt');
+}
+
 const GLOBALS = {
   'process.env': {
     NODE_ENV: '"production"',
     __BUILDVERSION__: JSON.stringify(commitHash),
     __BUILDTIME__: new Date().getTime(),
+    __PRODUCTVERSION__: JSON.stringify(productVersion),
   },
 };
 
