@@ -7,20 +7,6 @@ packer {
   }
 }
 
-# DEEPFENCE_DOCKER_USERNAME variable can be overidden in variables.pkrvars.hcl
-variable "DEEPFENCE_DOCKER_USERNAME" {
-  type      = string
-  default   = "username"
-  sensitive = true
-}
-
-# DEEPFENCE_DOCKER_PASSWORD variable can be overidden in variables.pkrvars.hcl
-variable "DEEPFENCE_DOCKER_PASSWORD" {
-  type      = string
-  default   = "password"
-  sensitive = true
-}
-
 # DEEPFENCE_CONSOLE_URL variable can be overidden in variables.pkrvars.hcl
 variable "DEEPFENCE_CONSOLE_URL" {
   type      = string
@@ -118,12 +104,7 @@ build {
 
   post-processor "shell-local" {
     inline = [
-      "rm -rf deepfence_docker && mkdir deepfence_docker",
-      "docker_config_path=\"$(pwd)/deepfence_docker\"",
-      "docker_creds=$(echo -n \"${var.DEEPFENCE_DOCKER_USERNAME}:${var.DEEPFENCE_DOCKER_PASSWORD}\" | base64)",
-      "echo \"{\\\"auths\\\":{\\\"https://index.docker.io/v1/\\\":{\\\"auth\\\":\\\"$docker_creds\\\"}}}\" > \"$docker_config_path/config.json\"",
-      "docker --config \"$docker_config_path\" pull deepfenceio/deepfence_package_scanner_ce:1.3.1",
-      "rm -rf deepfence_docker",
+      "docker pull deepfenceio/deepfence_package_scanner_ce:1.3.1",
       "docker run -i --rm --net=host --privileged=true --cpus=\"0.3\" -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:1.3.1 -mgmt-console-url=${var.DEEPFENCE_CONSOLE_URL} -deepfence-key=\"${var.DEEPFENCE_KEY}\" -vulnerability-scan=\"true\" -output=\"table\" -mode=\"local\" -source=\"${var.image_name}:${var.image_tag}\" -fail-on-count=${var.FAIL_CVE_COUNT} -fail-on-critical-count=${var.FAIL_CRITICAL_CVE_COUNT} -fail-on-high-count=${var.FAIL_HIGH_CVE_COUNT} -fail-on-medium-count=${var.FAIL_MEDIUM_CVE_COUNT} -fail-on-low-count=${var.FAIL_LOW_CVE_COUNT} -fail-on-score=${var.FAIL_CVE_SCORE} -scan-type=\"base,java,python,ruby,php,nodejs,js,dotnet\""
     ]
   }
