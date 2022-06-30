@@ -19,7 +19,7 @@ func (f *fixedConnIter) Next() *Connection {
 
 // SetFixtures is used in test scenarios to have known output.
 func SetFixtures(c []Connection) {
-	cbConnections = func(bool) (ConnIter, error) {
+	cbConnections = func(bool, []uint, []string) (ConnIter, error) {
 		f := fixedConnIter(c)
 		return &f, nil
 	}
