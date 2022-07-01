@@ -10,7 +10,7 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/olivere/elastic/v7"
-	kafka "github.com/segmentio/kafka-go"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 var (
@@ -35,49 +35,57 @@ func getCurrentTime() string {
 	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
 }
 
-func startKafkaConsumers(ctx context.Context, brokers string,
-	topics []string, group string, topicChannels map[string](chan []byte)) {
+func startKafkaConsumers(
+	ctx context.Context,
+	brokers string,
+	topics []string,
+	group string,
+	topicChannels map[string](chan []byte),
+) {
 
 	log.Info("brokers: ", brokers)
 	log.Info("topics: ", topics)
 	log.Info("group ID: ", group)
 
-	for _, topic := range topics {
-		go func(ctx context.Context, topic string, out chan []byte) {
-			// https://pkg.go.dev/github.com/segmentio/kafka-go#ReaderConfig
-			reader := kafka.NewReader(
-				kafka.ReaderConfig{
-					Brokers:               strings.Split(kafkaBrokers, ","),
-					GroupID:               group,
-					Topic:                 topic,
-					MinBytes:              1e3, // 1KB
-					MaxBytes:              5e6, // 5MB
-					MaxWait:               5 * time.Second,
-					WatchPartitionChanges: true,
-					CommitInterval:        5 * time.Second,
-					ErrorLogger:           kafka.LoggerFunc(log.Errorf),
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(strings.Split(brokers, ",")...),
+		kgo.ConsumerGroup(group),
+		kgo.ConsumeTopics(topics...),
+		kgo.ClientID(group),
+		kgo.FetchMinBytes(1e3),
+		kgo.WithLogger(kgoLogger),
+	}
+
+	kClient, err := kgo.NewClient(opts...)
+	if err != nil {
+		log.Error(err)
+	}
+	defer kClient.Close()
+
+	if err := kClient.Ping(ctx); err != nil {
+		log.Error(err)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info("stop consuming from kafka")
+			return
+		default:
+			records := kClient.PollRecords(ctx, 1000)
+			records.EachRecord(
+				func(r *kgo.Record) {
+					topicChannels[r.Topic] <- r.Value
 				},
 			)
-
-			defer reader.Close()
-
-			log.Infof("start consuming from topic %s", topic)
-			for {
-				select {
-				case <-ctx.Done():
-					log.Infof("stop consuming from topic %s", topic)
-					return
-				default:
-					m, err := reader.ReadMessage(ctx)
-					if err != nil {
-						log.Error(err)
-						break
-					}
-					out <- m.Value
-				}
-			}
-		}(ctx, topic, topicChannels[topic])
+			records.EachError(
+				func(s string, i int32, err error) {
+					log.Errorf("topic=%s partition=%d error: %s", s, i, err)
+				},
+			)
+		}
 	}
+
 }
 
 func afterBulkPush(executionId int64, requests []elastic.BulkableRequest, response *elastic.BulkResponse, err error) {
@@ -171,7 +179,10 @@ func processReports(
 func subscribeTOMaskedCVE(ctx context.Context, rpool *redis.Pool, mchan chan MaskDocID) {
 	c := rpool.Get()
 	psc := redis.PubSubConn{Conn: c}
-	psc.Subscribe("mask-cve")
+	err := psc.Subscribe("mask-cve")
+	if err != nil {
+		log.Error(err)
+	}
 
 	for {
 		select {

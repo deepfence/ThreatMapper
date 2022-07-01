@@ -95,7 +95,7 @@ func init() {
 		gracefulExit(err)
 	}
 	time.Sleep(10 * time.Second)
-	tablesToCheck := []string{"vulnerability_notification", "masked_cve"}
+	tablesToCheck := []string{"vulnerability_notification", maskedCVEDBTable}
 	for _, tableName := range tablesToCheck {
 		var tableExists bool
 		row := pgDB.QueryRow("SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1)", tableName)
@@ -167,6 +167,17 @@ func createNotificationCeleryTask(resourceType string, messages []interface{}) {
 	}
 }
 
+func createCeleryTasks(resourceType string, messages []interface{}) {
+	if resourceType == resourceTypeVulnerability {
+		notificationSettings.RLock()
+		vulnerabilityNotificationsSet := notificationSettings.vulnerabilityNotificationsSet
+		notificationSettings.RUnlock()
+		if vulnerabilityNotificationsSet {
+			createNotificationCeleryTask(resourceType, messages)
+		}
+	}
+}
+
 func batchMessages(ctx context.Context, resourceType string,
 	resourceChan *chan []byte, batchSize int) {
 	for {
@@ -200,14 +211,7 @@ func batchMessages(ctx context.Context, resourceType string,
 		}
 		if len(messages) > 0 {
 			go func() {
-				if resourceType == resourceTypeVulnerability {
-					notificationSettings.RLock()
-					vulnerabilityNotificationsSet := notificationSettings.vulnerabilityNotificationsSet
-					notificationSettings.RUnlock()
-					if vulnerabilityNotificationsSet {
-						createNotificationCeleryTask(resourceType, messages)
-					}
-				}
+				createCeleryTasks(resourceType, messages)
 			}()
 		}
 		if exit {
@@ -269,7 +273,7 @@ func main() {
 		topicChannels[t] = make(chan []byte, 100)
 	}
 
-	startKafkaConsumers(ctx, kafkaBrokers, topics, consumerGroupID, topicChannels)
+	go startKafkaConsumers(ctx, kafkaBrokers, topics, consumerGroupID, topicChannels)
 
 	bulkp := startESBulkProcessor(esClient, 5*time.Second, 2, 100)
 	defer bulkp.Close()

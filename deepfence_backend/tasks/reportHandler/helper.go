@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
-	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -10,7 +10,8 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/olivere/elastic/v7"
-	kafka "github.com/segmentio/kafka-go"
+	"github.com/twmb/franz-go/pkg/kadm"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 const (
@@ -48,87 +49,70 @@ func newRedisPool() *redis.Pool {
 	}
 }
 
-var numBrokers = 0
+var kgoLogger kgo.Logger = kgo.BasicLogger(
+	os.Stdout,
+	kgo.LogLevelInfo,
+	func() string { return "[" + getCurrentTime() + "]" + " " },
+)
 
 func checkKafkaConn() error {
-	log.Info("check connection to kafka brokers: " + kafkaBrokers)
-	conn, err := kafka.Dial("tcp", strings.Split(kafkaBrokers, ",")[0])
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
+		kgo.WithLogger(kgoLogger),
+	}
+	kClient, err := kgo.NewClient(opts...)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
-	brokers, err := conn.Brokers()
-	if err != nil {
+	defer kClient.Close()
+	if err := kClient.Ping(context.Background()); err != nil {
 		return err
 	}
-	for _, b := range brokers {
-		log.Infof("broker found at %s", b.Host)
-		numBrokers = numBrokers + 1
-	}
+	log.Info("connection successful to kafka brokers " + kafkaBrokers)
 	return nil
 }
 
 func createMissingTopics(topics []string) error {
-	conn, err := kafka.Dial("tcp", strings.Split(kafkaBrokers, ",")[0])
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
+		kgo.WithLogger(kgoLogger),
+	}
+	kClient, err := kgo.NewClient(opts...)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
-
-	// list available topics
-	partitions, err := conn.ReadPartitions()
-	if err != nil {
-		return err
-	}
-	available := map[string]struct{}{}
-	for _, p := range partitions {
-		available[p.Topic] = struct{}{}
-	}
-
-	// get connection to current controller
-	controller, err := conn.Controller()
-	if err != nil {
+	defer kClient.Close()
+	if err := kClient.Ping(context.Background()); err != nil {
 		return err
 	}
 
-	var ctrlConn *kafka.Conn
-	ctrlConn, err = kafka.Dial("tcp",
-		net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
-	if err != nil {
-		return err
-	}
-	defer ctrlConn.Close()
+	adminClient := kadm.NewClient(kClient)
+	defer adminClient.Close()
 
-	replication := func() int {
-		if numBrokers >= 3 {
+	bm, err := adminClient.BrokerMetadata(context.Background())
+	if err != nil {
+		log.Error(err)
+	}
+
+	partitions := int32(1)
+	replication := func() int16 {
+		if len(bm.Brokers.NodeIDs()) >= 3 {
 			return 3
 		}
 		return 1
 	}()
 
-	topicConfigs := []kafka.TopicConfig{}
-	for _, t := range topics {
-		// check if topic exists
-		_, found := available[t]
-		if !found {
-			topicConfigs = append(topicConfigs,
-				kafka.TopicConfig{
-					Topic:             t,
-					NumPartitions:     1,
-					ReplicationFactor: replication,
-				},
-			)
+	resp, err := adminClient.CreateTopics(context.Background(),
+		partitions, replication, nil, topics...)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	for _, r := range resp.Sorted() {
+		if r.Err != nil {
+			log.Errorf("topic: %s error: %s", r.Topic, r.Err)
 		}
 	}
-
-	// create missing topics
-	if len(topicConfigs) > 0 {
-		err = ctrlConn.CreateTopics(topicConfigs...)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -160,7 +144,8 @@ func gracefulExit(err error) {
 
 func syncPoliciesAndNotificationsSettings() {
 	var vulnerabilityNotificationCount int
-	row := pgDB.QueryRow("SELECT COUNT(*) FROM vulnerability_notification where duration_in_mins=-1")
+	row := pgDB.QueryRow(
+		"SELECT COUNT(*) FROM vulnerability_notification where duration_in_mins=-1")
 	err := row.Scan(&vulnerabilityNotificationCount)
 	if err != nil {
 		log.Error(err)
