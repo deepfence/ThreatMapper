@@ -219,6 +219,8 @@ services:
     networks:
       - deepfence_net
     restart: always
+    environment:
+      KAFKA_REST_PROXY: "deepfence-rest-proxy:8082"
     ports:
       - "80:80"
       - "${MGMT_CONSOLE_PORT:-443}:443"
@@ -240,6 +242,7 @@ services:
     - "127.0.0.1:8443:443"
     environment:
       ENABLE_AUTH: "false"
+      KAFKA_REST_PROXY: "deepfence-rest-proxy:8082"
     restart: always
     volumes:
     - /etc/deepfence/certs:/etc/deepfence/certs/:ro
@@ -305,6 +308,7 @@ services:
     restart: on-failure
     environment:
       - DEBUG=false
+      - KAFKA_BROKERS=deepfence-kafka-broker:9092
     networks:
       - deepfence_net
     depends_on:
@@ -418,6 +422,8 @@ services:
       - "127.0.0.1:8082:8082"
     hostname: deepfence-rest-proxy
     container_name: deepfence-rest-proxy
+    environment:
+      - KAFKA_REST_BOOTSTRAP_SERVERS=deepfence-kafka-broker:9092
     networks:
       - deepfence_net
     logging:

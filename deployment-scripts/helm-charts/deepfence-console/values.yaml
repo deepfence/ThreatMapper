@@ -74,6 +74,7 @@ db:
     # to generate download kafka and run "kafka-storage random-uuid"
     # storageUUID: ""
     storageUUID: hNQ55qppT5GGybF52ZGlOQ
+  kafka_rest: deepfence-rest-proxy:8082
 
 kafkaBrokerReplicas: 3
 kafkaRestProxyReplicas: 1

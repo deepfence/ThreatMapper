@@ -362,6 +362,12 @@ spec:
               value: "{{ .Values.db.redis.host }}"
             - name: REDIS_PORT
               value: "{{ .Values.db.redis.port }}"
+            - name: KAFKA_BROKERS
+              {{- if (eq "deepfence-kafka-broker:9092" .Values.db.kafka.broker) }}
+              value: "deepfence-kafka-broker.{{ .Values.namespace }}.svc:9092"
+              {{ else }}
+              value: "{{ .Values.db.kafka.broker }}"
+              {{- end }}
           ports:
             - containerPort: 9998
           volumeMounts:
@@ -902,6 +908,12 @@ spec:
               value: "k8s"
             - name: SERVICE_NAME_SUFFIX
               value: ".{{ .Values.namespace }}.svc.cluster.local"
+            - name: KAFKA_REST_PROXY
+              {{- if (eq "deepfence-rest-proxy:8082" .Values.db.kafka_rest) }}
+              value: "deepfence-rest-proxy.{{ .Values.namespace }}.svc:8082"
+              {{ else }}
+              value: "{{ .Values.db.kafka_rest }}"
+              {{- end }}
           ports:
             - containerPort: 443
             - containerPort: 80
@@ -999,6 +1011,12 @@ spec:
           value: "k8s"
         - name: SERVICE_NAME_SUFFIX
           value: ".{{ .Values.namespace }}.svc.cluster.local"
+        - name: KAFKA_REST_PROXY
+          {{- if (eq "deepfence-rest-proxy:8082" .Values.db.kafka_rest) }}
+          value: "deepfence-rest-proxy.{{ .Values.namespace }}.svc:8082"
+          {{ else }}
+          value: "{{ .Values.db.kafka_rest }}"
+          {{- end }}
         ports:
         - containerPort: 443
           {{- if and .Values.tls.certFile .Values.tls.keyFile }}

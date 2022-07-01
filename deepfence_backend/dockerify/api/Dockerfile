@@ -6,7 +6,7 @@ FROM golang:1.18-bullseye AS build
 
 WORKDIR /go/reportHandler
 ADD tasks/reportHandler /go/reportHandler/
-RUN go build -o reportHandler .
+RUN CGO_ENABLED=0 go build -o reportHandler .
 
 FROM steampipe_build:latest AS steampipe-build
 
@@ -34,7 +34,8 @@ ENV PYTHONUNBUFFERED=1 \
     DOCKERVERSION=20.10.8 \
     AUTHLIB_INSECURE_TRANSPORT=true \
     DEBUG=false \
-    KAFKA_BROKERS=deepfence-kafka-broker:9092
+    KAFKA_BROKERS=deepfence-kafka-broker:9092 \
+    CUSTOMER_UNIQUE_ID=""
 
 COPY ./requirements.txt /tmp/requirements.txt
 
