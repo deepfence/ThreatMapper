@@ -30,8 +30,24 @@ func (c *pnConnIter) Next() *Connection {
 	return n
 }
 
+/*
+tcpStates
+---------------------
+TCPF_ESTABLISHED = 1,
+TCPF_SYN_SENT	 = 2,
+TCPF_SYN_RECV	 = 3,
+TCPF_FIN_WAIT1	 = 4,
+TCPF_FIN_WAIT2	 = 5,
+TCPF_TIME_WAIT	 = 6,
+TCPF_CLOSE	     = 7,
+TCPF_CLOSE_WAIT	 = 8,
+TCPF_LAST_ACK	 = 9,
+TCPF_LISTEN	     = 10,
+TCPF_CLOSING	 = 11,
+TCPF_NEW_SYN_RECV = 12,
+*/
 // cbConnections sets Connections()
-var cbConnections = func(processes bool) (ConnIter, error) {
+var cbConnections = func(processes bool, tcpStates []uint, localIpList []string) (ConnIter, error) {
 	// buffer for contents of /proc/<pid>/net/tcp
 	buf := bufPool.Get().(*bytes.Buffer)
 	buf.Reset()
