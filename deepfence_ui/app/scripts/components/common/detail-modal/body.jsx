@@ -186,7 +186,7 @@ export const KeyValueContent = ({ data, topRightVisualization }) => {
         topRightVisualization ? (
           <div className={styles.topRightVisualizationWrapper}>
             <div className={styles.kvPairTitle}>{topRightVisualization.title}</div>
-            <div>{topRightVisualization.visualization}</div>
+            <div className={styles.graphWrapper}>{topRightVisualization.visualization}</div>
           </div>
         ) : null
       }

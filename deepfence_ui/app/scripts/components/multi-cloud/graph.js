@@ -85,10 +85,10 @@ export const useGraph = (el, data) => {
       },
 
       defaultEdge: {
+        size: 3,
         style: {
           stroke: COLORS.EDGE,
-          lineWidth: 1,
-          opacity: 0.5,
+          opacity: 0.4,
           endArrow: {
             path: G6.Arrow.triangle(6, 9, 0),
             fill: "#13F4EF",
