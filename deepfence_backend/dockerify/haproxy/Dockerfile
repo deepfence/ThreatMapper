@@ -28,7 +28,8 @@ RUN apk update --no-cache \
     && chmod +x /usr/local/bin/docker-entrypoint.sh \
     && apk add --no-cache bash lua5.3 lua5.3-socket curl rsyslog logrotate \
     && rm -rf /var/cache/apk/* \
-    && touch /var/log/haproxy.log
+    && mkdir -p /var/log/haproxy \
+    && touch /var/log/haproxy/haproxy.log
 
 COPY ./dockerify/haproxy/rsyslog.conf /etc/rsyslog.conf
 COPY ./dockerify/haproxy/logrotate.conf /etc/logrotate.d/haproxy
