@@ -275,7 +275,7 @@ func main() {
 
 	go startKafkaConsumers(ctx, kafkaBrokers, topics, consumerGroupID, topicChannels)
 
-	bulkp := startESBulkProcessor(esClient, 5*time.Second, 2, 100)
+	bulkp := startESBulkProcessor(esClient, 5*time.Second, 2, 1000)
 	defer bulkp.Close()
 
 	go processReports(ctx, topicChannels, bulkp)
