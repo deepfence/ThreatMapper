@@ -83,11 +83,6 @@ USER root
 RUN mkdir /data \
     && chmod 755 /usr/bin/startEs.sh \
     && chown -R elasticsearch:elasticsearch /data
-#    && apk add --no-cache zip \
-#    && apk del --purge zip \
-#    && chmod 755 /usr/local/bin/check-postgres \   
-#    && ls org/apache/logging/log4j/core/lookup/JndiLookup.class \
-#    && zip -q -d /usr/share/elasticsearch/lib/log4j-core-2.11.1.jar org/apache/logging/log4j/core/lookup/JndiLookup.class
 
 EXPOSE 9200 9300
 ENTRYPOINT ["/usr/bin/startEs.sh"]
