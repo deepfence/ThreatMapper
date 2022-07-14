@@ -13,13 +13,13 @@ You should first [build the management console](Building-Console-and-Sensors-fro
 
 1. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/master/deployment-scripts/docker-compose.yml) to the system that will host the Console
 
-    ```shell script
+    ```bash
     wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/docker-compose.yml
     ```
 
 2. Execute the following command to install and start the Console.  Note the override to specify your repository `myorg`, rather than the `deepfenceio` default:
 
-    ```shell script
+    ```bash
     ACC=myorg             # the name of the dockerhub account 
     docker login -u $ACC  # log in to the account
     IMAGE_REPOSITORY=$ACC docker-compose -f docker-compose.yml up --detach
@@ -36,7 +36,7 @@ You should first [build the management console](Building-Console-and-Sensors-fro
 
     We will install the Management Console using the helm chart, but overriding the repository source for the images:
 
-    ```shell script
+    ```bash
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
     # Create the values file
@@ -47,7 +47,7 @@ You should first [build the management console](Building-Console-and-Sensors-fro
 
     Install the management console:
 
-    ```shell script
+    ```bash
     # helm v2
     helm install -f deepfence_console_values.yaml deepfence/deepfence-console --name=deepfence-console
 
@@ -61,14 +61,14 @@ You should first [build the management console](Building-Console-and-Sensors-fro
 
     Refer to the the instructions to install the [Router](../tree/master/deployment-scripts/helm-charts/deepfence-router), typically as follows:
    
-    ```shell script
+    ```bash
     # Create the values file
     helm show values deepfence/deepfence-router > deepfence_router_values.yaml
     ```
 
     Edit the `deepfence_router_values.yaml` file, replacing the `image: repository:` value to point to your repository, and making any other changes as needed.
 
-    ```
+    ```bash
     # helm v2
     helm install -f deepfence_router_values.yaml deepfence/deepfence-router --name=deepfence-router
     
