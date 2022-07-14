@@ -1,13 +1,13 @@
 ---
-title: ThreatMapper Demo
+title: Quickstart Demo
 ---
 
-## ThreatMapper Demo
+# Quickstart with the Demo Sandbox
 
-Demo of ThreatMapper is hosted here
+A demo of ThreatMapper is hosted here
 
-https://threatmapper.deepfence.show/
+ * URL: https://threatmapper.deepfence.show/
 
-Username: `community@deepfence.io`
+ * Username: `community@deepfence.io`
 
-Password: `mzHAmWa!89zRD$KMIZ@ot4SiO`
+ * Password: `mzHAmWa!89zRD$KMIZ@ot4SiO`

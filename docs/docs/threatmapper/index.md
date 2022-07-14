@@ -4,7 +4,7 @@ title: Introduction to ThreatMapper
 
 # ThreatMapper
 
-## What does Deepfence ThreatMapper do?
+## Introducing Deepfence ThreatMapper
 
 Deepfence ThreatMapper hunts for vulnerabilities in your production platforms, and ranks these vulnerabilities based on their risk-of-exploit. You can then prioritize the issues that present the greatest risk to the security of your applications.
 
