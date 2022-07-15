@@ -10,7 +10,7 @@ On Amazon Fargate, the ThreatMapper sensor agents are deployed as a sidecar cont
 
 These instructions are draft, untested, and need technical review.
 
-See also the [Deepfence ThreatStryker](/threatstryker/sensors/aws-fargate) instructions.
+See also the Deepfence ThreatStryker instructions.
 
 :::
 

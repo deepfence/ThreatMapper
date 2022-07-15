@@ -36,7 +36,7 @@ Refer to the [Kubernetes Installation Instructions](/threatmapper/console/kubern
 
 1. Prepare the cluster, installing the storage driver and metrics service
 
-    Follow the instructions to install the OpenEBS storage and metrics server: [Installation Instructions](Installing-the-Management-Console)
+    Follow the instructions to install the OpenEBS storage and metrics server: [Installation Instructions](/threatmapper/console/kubernetes)
 
 
 2. Install your Management Console
@@ -58,11 +58,11 @@ Refer to the [Kubernetes Installation Instructions](/threatmapper/console/kubern
     helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console
     ```
 
-    Full instructions can be found in the [Console helm chart documentation](../tree/master/deployment-scripts/helm-charts/deepfence-console).
+    Full instructions can be found in the [Console helm chart documentation](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console).
 
 4. Optional: enable external access with the `deepfence-router` package:
 
-    Refer to the the instructions to install the [Router](../tree/master/deployment-scripts/helm-charts/deepfence-router), typically as follows:
+    Refer to the the instructions to install the [Router](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-router), typically as follows:
    
     ```bash
     # Create the values file

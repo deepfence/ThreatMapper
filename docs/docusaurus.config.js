@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Deepfence ThreatMapper',
   tagline: 'Open source cloud native security observability platform. Linux, K8s, AWS Fargate and more',
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'http://threatmapper.oweng.io',
   baseUrl: '/',
 
   onBrokenLinks: 'throw',

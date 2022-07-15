@@ -4,7 +4,7 @@ title: Notifications
 
 # Notifications
 
-You can integrate ThreatMapper with a variety of notification services.  Any time a new vulnerability is detected (for example, during [CI](Scanning-CI) or an [automated scan](Automating-Production-Scans), ThreatMapper will submit the details to the configured notification services.
+You can integrate ThreatMapper with a variety of notification services.  Any time a new vulnerability is detected (for example, during [CI](/threatmapper/operations/scanning-ci) or an [automated scan](/threatmapper/operations/scanning), ThreatMapper will submit the details to the configured notification services.
 
 ![Diagnosis](../img/notifications-1.jpg)
 
