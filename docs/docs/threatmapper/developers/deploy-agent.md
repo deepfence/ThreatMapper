@@ -1,15 +1,17 @@
 ---
-title: Deploy ThreatMapper Sensors
+title: Deploy Sensors
 ---
 
 # Deploy custom ThreatMapper Sensor Agents
 
-You should first [build the management console](Building-Console-and-Sensors-from-Source) and push the images to a suitable repository.  You can then adapt the [standard installation instructions](Installing-the-Sensor-Agents) to refer to your custom sensor images rather than the Deepfence-provided ones.
-
-**Important:** Review the [standard installation instructions](Installing-the-Sensor-Agents) for your selected platform first!
+You should first [build the management console an dagents](build) and push the images to a suitable repository.  You can then adapt the standard installation instructions ([Docker](/threatmapper/sensors/docker), [Kubernetes](/threatmapper/sensors/kubernetes)) to refer to your custom images rather than the Deepfence-provided ones.
 
 
 ## Installing and Running the Sensor Agents on a Docker Host
+
+:::tip
+Refer to the [Docker Installation Instructions](/threatmapper/sensors/docker) along with the modifications below.
+:::
 
 Execute the following command to install and start the sensors:
 
@@ -26,6 +28,10 @@ docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=ho
 ```
 
 ## Installing and Running the Sensor Agents in a Kubernetes Cluster
+
+:::tip
+Refer to the [Kubernetes Installation Instructions](/threatmapper/sensors/kubernetes) along with the modifications below.
+:::
 
 You can use these instructions for helm-based installs in standalone and hosted Kubernetes clusters
 
@@ -44,4 +50,4 @@ helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-
 
 Allow a few seconds for the containers to pull and deploy in your Kubernetes environment.
 
-Full instructions can be found in the [Agent helm chart documentation](../tree/master/deployment-scripts/helm-charts/deepfence-agent).
+Full instructions can be found in the [Agent helm chart documentation](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-agent).

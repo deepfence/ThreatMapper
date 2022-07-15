@@ -6,15 +6,11 @@ title: Kubernetes
 
 In Kubernetes, the ThreatMapper sensors are deployed as a daemonset in the Kubernetes cluster, using a helm chart.
 
-## ThreatMapper Console
+## Quick Install of ThreatMapper Sensors
 
-The ThreatMapper management console is installed separately, outside of the Kubernetes cluster, following the [installation instructions](Installing-the-Management-Console).
+Install and start the latest release of the deepfence sensor.  Replace `x.x.x.x` with the IP address of the Management Console and `C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0` with the API key.
 
-## ThreatMapper Sensors
-
-Install and start the deepfence sensor.  Replace `x.x.x.x` with the IP address of the Management Console and `C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0` with the API key.
-
-```shell script
+```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm show readme deepfence/deepfence-agent
 helm show values deepfence/deepfence-agent
@@ -26,7 +22,9 @@ helm install deepfence-agent deepfence/deepfence-agent \
 
 ## Install a named version of the ThreatMapper Sensor
 
-```shell script
+You should seek to ensure that the version number of the sensors matches the version of your Management Console as closely as possible, for best compatibility.
+
+```bash
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0
@@ -35,9 +33,9 @@ helm install deepfence-agent deepfence/deepfence-agent \
 
 ## Perform a rolling upgrade of the ThreatMapper Sensors
 
-When you upgrade the Management Console, you should also upgrade the ThreatMapper sensors to the same version, as compatibility is not guaranteed:
+When you upgrade the Management Console, you should also upgrade the ThreatMapper sensors to the same version:
 
-```shell script
+```bash
 helm repo update deepfence
 helm upgrade deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
@@ -45,15 +43,15 @@ helm upgrade deepfence-agent deepfence/deepfence-agent \
     --set image.tag=1.3.1 --set image.clusterAgentImageTag=1.3.1
 ```
 
-## Delete the ThreatMapper Agent
+## Delete the ThreatMapper Sensor
 
-```shell script
+```bash
 helm delete deepfence-agent
 ```
 
 ## Fine-tune the Helm deployment
 
-```shell script
+```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
 helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml

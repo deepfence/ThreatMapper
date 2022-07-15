@@ -14,6 +14,6 @@ If a build is not blocked, ThreatMapper silently allows it to proceed.
 
 For configuration details, refer to the appropriate [CI/CD Integrations](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations), including:
 
- * [CircleCI](../tree/master/ci-cd-integrations/circleci)
- * [GitLab](../tree/master/ci-cd-integrations/gitlab)
- * [Jenkins](../tree/master/ci-cd-integrations/jenkins)
+ * [CircleCI](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations/circleci)
+ * [GitLab](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations/gitlab)
+ * [Jenkins](https://github.com/deepfence/ThreatMapper/tree/master/ci-cd-integrations/jenkins)

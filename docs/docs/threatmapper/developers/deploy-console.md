@@ -1,15 +1,18 @@
 ---
-title: Deploy ThreatMapper Console
+title: Deploy Console
 ---
 
 # Deploy a custom ThreatMapper Console
 
-You should first [build the management console](Building-Console-and-Sensors-from-Source) and push the images to a suitable repository.  You can then adapt the [standard installation instructions](Installing-the-Management-Console) to refer to your custom images rather than the Deepfence-provided ones.
+You should first [build the management console](build) and push the images to a suitable repository.  You can then adapt the standard installation instructions ([Docker](/threatmapper/console/docker), [Kubernetes](/threatmapper/console/kubernetes)) to refer to your custom images rather than the Deepfence-provided ones.
 
-**Important:** Review the [standard installation instructions](Installing-the-Management-Console) for your selected platform first!
 
 
 ## Installing and Running the Management Console on a Docker Host
+
+:::tip
+Refer to the [Docker Installation Instructions](/threatmapper/console/docker) along with the modifications below.
+:::
 
 1. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/master/deployment-scripts/docker-compose.yml) to the system that will host the Console
 
@@ -26,6 +29,10 @@ You should first [build the management console](Building-Console-and-Sensors-fro
     ```
 
 ## Installing and Running the Management Console in a Kubernetes Cluster
+
+:::tip
+Refer to the [Kubernetes Installation Instructions](/threatmapper/console/kubernetes) along with the modifications below.
+:::
 
 1. Prepare the cluster, installing the storage driver and metrics service
 
@@ -48,10 +55,6 @@ You should first [build the management console](Building-Console-and-Sensors-fro
     Install the management console:
 
     ```bash
-    # helm v2
-    helm install -f deepfence_console_values.yaml deepfence/deepfence-console --name=deepfence-console
-
-    # helm v3
     helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console
     ```
 
@@ -69,9 +72,5 @@ You should first [build the management console](Building-Console-and-Sensors-fro
     Edit the `deepfence_router_values.yaml` file, replacing the `image: repository:` value to point to your repository, and making any other changes as needed.
 
     ```bash
-    # helm v2
-    helm install -f deepfence_router_values.yaml deepfence/deepfence-router --name=deepfence-router
-    
-    # helm v3
     helm install -f deepfence_router_values.yaml deepfence-router deepfence/deepfence-router
     ```

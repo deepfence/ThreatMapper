@@ -23,7 +23,7 @@ Running `kubectl describe pod -n deepfence deepfence-agent-8lxng` reveals:
 
 **Solution:** edit `deepfence_agent_values.yaml` and set `containerdSock` to be `"false"`.  Redeploy the agent using:
 
-```shell script
+```bash
 helm delete deepfence-agent
 
 helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml

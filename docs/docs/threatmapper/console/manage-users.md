@@ -4,7 +4,7 @@ title: Managing Users
 
 # Managing Users
 
-The first Management Console user is created through the [Initial Registration](Console-Initial-Configuration) process.  This is a one-time process; further users must be invited to the Console by an existing Admin user.
+The first Management Console user is created through the [Initial Registration](initial-configuration) process.  This is a one-time process; further users must be invited to the Console by an existing Admin user.
 
 An admin user can invite users by two methods:
 
@@ -22,17 +22,17 @@ An admin user can invite users by two methods:
 
 ## Invite via Email
 
-### Configure Email Relay
-
 You should configure an Email relay first, so that invitation emails can be sent.
 
 1. Go to **Settings** > **Email Configuration**
 
 2. Select the mailer type
 
-#### Configuring Google SMTP
+### Configuring Google SMTP
 
+:::info
 For more information, see [Set up a device or app to send email through Google Workspace](https://support.google.com/a/answer/176600?hl=en#zippy=%2Cuse-the-gmail-smtp-server).
+:::
 
 First, provide:
 
@@ -49,9 +49,11 @@ If the 'App Password' facility is not available, please refer to your Google Wor
 
 Copy the password that has been generated, and enter it into **App Password** field.  Save settings.
 
-#### Configuring Amazon SES
+### Configuring Amazon SES
 
+:::info
 For more information, see [Using Amazon Simple Email Service](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email.html).
+:::
 
  * Provide an email address to identify the email sender
  * Specify an [Amazon SES Region](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html)

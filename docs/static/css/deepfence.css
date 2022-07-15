@@ -48,9 +48,22 @@ pre code {
   background-color: var(--ifm-code-background) !important;
 }
 
+/* Navbar dropdown - for titles */
+
+.nav-dropdown-title {
+  font-size: 0.9rem !important;
+  border-bottom: 1px solid var(--ifm-color-button);
+  padding-top: 8px;
+  padding-left: 8px;
+}
+
+
 
 /* hide the toc */
 .theme-doc-toc-desktop {
+  display: none;
+}
+.table-of-contents {
   display: none;
 }
 
@@ -66,11 +79,14 @@ pre code {
   border-bottom: 1px solid var(--ifm-color-primary-darkest);
 }
 
+
+
 .deepfence-button {
   background-color: var(--ifm-color-button); 
   border: 1px solid var(--ifm-color-button); 
   color: var(--ifm-color-button-text);
   padding: 7px 16px;
+  margin: 4px 16px;
   text-align: center;
   display: inline-block;
   font-size: 16px;
@@ -82,6 +98,41 @@ pre code {
 .deepfence-button:hover {
   background-color: var(--ifm-color-button-hover); 
   color: var(--ifm-color-button-text-hover);
+}
+
+
+/* Pagination Links at footer of page */
+
+.pagination-nav__link {
+  background-color: var(--ifm-color-button); 
+  border: 1px solid var(--ifm-color-button); 
+  color: var(--ifm-color-button-text);
+  padding: 7px 16px;
+  margin: 4px 16px;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 6px;
+  transition-duration: 0.4s;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px
+}
+.pagination-nav__sublabel {
+  display: none;
+}
+.pagination-nav__label {
+  padding-top: 7px;
+}
+.pagination-nav__link:hover {
+  background-color: var(--ifm-color-button-hover); 
+  color: var(--ifm-color-button-text-hover);
+}
+
+/* Informational cards */
+
+.card {
+  background-color: rgba(127,127,127,0.1);
+  border-radius: 6px;
+  transition-duration: 0.4s;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px !important;
 }
 
 
