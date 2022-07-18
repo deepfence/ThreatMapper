@@ -2,12 +2,12 @@ FROM alpine:3.13.6
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
-ENV VERSION=7.10.2 \
+ENV VERSION=7.17.5 \
     DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch"
-ENV ES_TARBAL="${DOWNLOAD_URL}/elasticsearch-oss-${VERSION}-no-jdk-linux-x86_64.tar.gz" \
-    ES_TARBALL_ASC="${DOWNLOAD_URL}/elasticsearch-oss-${VERSION}-no-jdk-linux-x86_64.tar.gz.asc" \
-    EXPECTED_SHA_URL="${DOWNLOAD_URL}/elasticsearch-oss-${VERSION}-no-jdk-linux-x86_64.tar.gz.sha512" \
-    ES_TARBALL_SHA="7b63237996569ccdc7c9d9e7cc097fcb23865396eddac30e5f02543484220d2fc70a7285b430877e5e76a5d8716d9682de9fc40d5e57a08f331e82011fc59756" \
+ENV ES_TARBAL="${DOWNLOAD_URL}/elasticsearch-${VERSION}-linux-x86_64.tar.gz" \
+    ES_TARBALL_ASC="${DOWNLOAD_URL}/elasticsearch-${VERSION}-linux-x86_64.tar.gz.asc" \
+    EXPECTED_SHA_URL="${DOWNLOAD_URL}/elasticsearch-${VERSION}-linux-x86_64.tar.gz.sha512" \
+    ES_TARBALL_SHA="98791c40f7ce1ba2a463fddb0986bb6ab9f94ab6479d79f96cd9b772e5208a04c7552c56e9fea484248d2ff1dd46fa25ed7066a41160fb22eb1b8dc837448ccf" \
     GPG_KEY="46095ACC8548582C1A2699A9D27D666CD88E42B4" \
     PATH=/usr/share/elasticsearch/bin:$PATH \
     ES_TMPDIR=/usr/share/elasticsearch/tmp \
@@ -18,7 +18,6 @@ ENV bootstrap.memory_lock true
 ENV cluster.name=df-es-cluster
 ENV path.data=/usr/share/elasticsearch/data
 ENV path.logs=/usr/share/elasticsearch/logs
-
 
 RUN apk update --no-cache && apk upgrade --no-cache \
     && apk add --no-cache openjdk11-jre-headless su-exec bash \
@@ -83,11 +82,8 @@ USER root
 #COPY --from=build /go/check-postgres /usr/local/bin/check-postgres
 RUN mkdir /data \
     && chmod 755 /usr/bin/startEs.sh \
-    && chown -R elasticsearch:elasticsearch /data \
-    && apk add --no-cache zip \
-    && zip -q -d /usr/share/elasticsearch/lib/log4j-core-2.11.1.jar org/apache/logging/log4j/core/lookup/JndiLookup.class \
-    && apk del --purge zip
-#&& chmod 755 /usr/local/bin/check-postgres
+    && chown -R elasticsearch:elasticsearch /data
+
 EXPOSE 9200 9300
 ENTRYPOINT ["/usr/bin/startEs.sh"]
 CMD ["elasticsearch"]
