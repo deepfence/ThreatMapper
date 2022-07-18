@@ -72,7 +72,9 @@ func checkKafkaConn() error {
 	return nil
 }
 
-func createMissingTopics(topics []string) error {
+func createMissingTopics(topics []string, partitions int32, replicas int16) error {
+	log.Infof("create topics with partitions=%d and replicas=%d", partitions, replicas)
+
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
 		kgo.WithLogger(kgoLogger),
@@ -89,21 +91,21 @@ func createMissingTopics(topics []string) error {
 	adminClient := kadm.NewClient(kClient)
 	defer adminClient.Close()
 
-	bm, err := adminClient.BrokerMetadata(context.Background())
-	if err != nil {
-		log.Error(err)
-	}
+	// bm, err := adminClient.BrokerMetadata(context.Background())
+	// if err != nil {
+	// 	log.Error(err)
+	// }
 
-	partitions := int32(1)
-	replication := func() int16 {
-		if len(bm.Brokers.NodeIDs()) >= 3 {
-			return 3
-		}
-		return 1
-	}()
+	// partitions = int32(1)
+	// replication = func() int16 {
+	// 	if len(bm.Brokers.NodeIDs()) >= 3 {
+	// 		return 3
+	// 	}
+	// 	return 1
+	// }()
 
 	resp, err := adminClient.CreateTopics(context.Background(),
-		partitions, replication, nil, topics...)
+		partitions, replicas, nil, topics...)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -179,4 +181,22 @@ func checkElasticError(err error) {
 		log.Error(err)
 	}
 	log.Error(printJSON(e.Details))
+}
+
+func GetEnvStringWithDefault(key, fallback string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return fallback
+}
+
+func GetEnvIntWithDefault(key string, fallback int) int {
+	if value, exists := os.LookupEnv(key); exists {
+		if v, err := strconv.Atoi(value); err != nil {
+			return fallback
+		} else {
+			return v
+		}
+	}
+	return fallback
 }

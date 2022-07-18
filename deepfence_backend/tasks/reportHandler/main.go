@@ -262,7 +262,9 @@ func main() {
 	log.Info("topics list: ", topics)
 
 	//create if any topics is missing
-	err = createMissingTopics(topics)
+	partitions := GetEnvIntWithDefault("KAFKA_TOPIC_PARTITIONS", 1)
+	replicas := GetEnvIntWithDefault("KAFKA_TOPIC_REPLICAS", 1)
+	err = createMissingTopics(topics, int32(partitions), int16(replicas))
 	if err != nil {
 		log.Error(err)
 	}
@@ -270,16 +272,23 @@ func main() {
 	// channels to pass message between report processor and consumer
 	topicChannels := make(map[string](chan []byte))
 	for _, t := range topics {
-		topicChannels[t] = make(chan []byte, 100)
+		topicChannels[t] = make(chan []byte, 1000)
 	}
 
 	go startKafkaConsumers(ctx, kafkaBrokers, topics, consumerGroupID, topicChannels)
 
-	bulkp := startESBulkProcessor(esClient, 5*time.Second, 2, 1000)
+	esDocSize := GetEnvIntWithDefault("ES_BULK_DOC_SIZE", 1000)
+	esBulkWorkers := GetEnvIntWithDefault("ES_BULK_NUM_WORKERS", 4)
+	log.Infof("set es bulk workers=%d and bulk docs size=%d", esBulkWorkers, esDocSize)
+	bulkp := startESBulkProcessor(esClient, 5*time.Second, esBulkWorkers, esDocSize)
 	defer bulkp.Close()
 
-	go processReports(ctx, topicChannels, bulkp)
-	go processReports(ctx, topicChannels, bulkp)
+	numProcessReport := GetEnvIntWithDefault("PROCESS_REPORT_PARALLEL", 10)
+	log.Infof("num of parallel processReports %d", numProcessReport)
+	// start multiple processReports goroutines if required
+	for i := numProcessReport; i > 0; i-- {
+		go processReports(ctx, topicChannels, bulkp)
+	}
 
 	// wait for exit
 	// flush all data from bulk processor

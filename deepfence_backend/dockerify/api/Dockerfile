@@ -35,7 +35,12 @@ ENV PYTHONUNBUFFERED=1 \
     AUTHLIB_INSECURE_TRANSPORT=true \
     DEBUG=false \
     KAFKA_BROKERS=deepfence-kafka-broker:9092 \
-    CUSTOMER_UNIQUE_ID=""
+    CUSTOMER_UNIQUE_ID="" \
+    KAFKA_TOPIC_PARTITIONS=1 \
+    KAFKA_TOPIC_REPLICAS=1 \
+    ES_BULK_DOC_SIZE=1000 \
+    ES_BULK_NUM_WORKERS=4 \
+    PROCESS_REPORT_PARALLEL=10
 
 COPY ./requirements.txt /tmp/requirements.txt
 
