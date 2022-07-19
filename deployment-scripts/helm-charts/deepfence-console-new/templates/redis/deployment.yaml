@@ -55,7 +55,7 @@ spec:
 {{- if eq "true" .Values.setDefaultResourceLimits }}
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
-              memory: 10Gi
+              memory: 16Gi
       {{- with .Values.redis.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
