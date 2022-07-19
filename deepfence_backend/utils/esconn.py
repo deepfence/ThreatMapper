@@ -920,7 +920,7 @@ class ESConn:
         }
         """
         aggs_query = {
-            "query": {"bool": {"must": [{"range": {"@timestamp": {"gte": "now-7d"}}}]}},
+            "query": {"bool": {"must": [{"range": {"@timestamp": {"gte": "now-10m"}}}]}},
             "aggs": {
                 "host_name": {
                     "terms": {

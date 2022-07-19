@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from utils.esconn import ESConn
 from utils.constants import CVE_SCAN_LOGS_INDEX, NODE_TYPE_HOST, \
     CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_QUEUED, CVE_SCAN_STATUS_ERROR, DEEPFENCE_KEY, REPORT_INDEX, \
-    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX, CVE_SCAN_LOGS_ES_TYPE
+    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX, CVE_SCAN_LOGS_ES_TYPE, SECRET_SCAN_LOGS_ES_TYPE
 from utils.scope import fetch_topology_data
 import time
 from utils.helper import get_cve_scan_tmp_folder, rmdir_recursive, wait_for_postgres_table
@@ -50,7 +50,7 @@ def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_s
         "time_stamp": int(time.time() * 1000.0), "host": host_name, "action": CVE_SCAN_STATUS_ERROR,
         "host_name": host_name, "node_id": cve_node_id,
     }
-    ESConn.create_doc(CVE_SCAN_LOGS_INDEX, body)
+    ESConn.create_doc(CVE_SCAN_LOGS_INDEX, body, refresh="wait_for")
     image_file_folder = get_cve_scan_tmp_folder(
         host_name, cve_status["scan_id"])
     rmdir_recursive(image_file_folder)
@@ -58,12 +58,13 @@ def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_s
 
 def insert_secret_error_doc(status, datetime_now, host_name, node_id, scan_message):
     body = {
-        "masked": "false", "scan_id": status["scan_id"], "node_type": status["node_type"],
+        "masked": "false","type": SECRET_SCAN_LOGS_ES_TYPE , "scan_id": status["scan_id"], "node_type": status["node_type"],
         "scan_message": scan_message, "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "time_stamp": int(time.time() * 1000.0), "host": host_name, "action": CVE_SCAN_STATUS_ERROR,
+        "time_stamp": int(time.time() * 1000.0), "host": host_name, "scan_status": CVE_SCAN_STATUS_ERROR,
         "host_name": host_name, "node_id": node_id, "node_name": host_name
     }
-    ESConn.create_doc(SECRET_SCAN_LOGS_INDEX, body)
+    ESConn.create_doc(SECRET_SCAN_LOGS_INDEX, body, refresh="wait_for")
+
 
 
 @celery_app.task(bind=True, default_retry_delay=60)

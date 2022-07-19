@@ -163,7 +163,7 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                             "action": constants.CVE_SCAN_STATUS_QUEUED, "host_name": "", "node_id": image_name_with_tag,
                             "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE
                         }
-                        ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
+                        ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body, refresh="wait_for")
                         scan_details = {
                             "cve_node_id": image_name_with_tag, "scan_types": node_action_details["scan_type"],
                             "registry_type": registry_credential.registry_type, "scan_id": scan_id,
@@ -266,7 +266,7 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                                 "node_id": latest_cve_scan_doc.get("node_id", ""),
                                 "node_type": constants.NODE_TYPE_CONTAINER_IMAGE
                             }
-                            ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
+                            ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body, refresh="wait_for")
                     except Exception as ex:
                         save_scheduled_task_status("Error: " + str(ex))
                         app.logger.error(ex)

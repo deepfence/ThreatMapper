@@ -423,7 +423,7 @@ def secret_scan_results():
             "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE,
             "node_name": image_name_with_tag
         }
-        ESConn.create_doc(constants.SECRET_SCAN_LOGS_INDEX, body)
+        ESConn.create_doc(constants.SECRET_SCAN_LOGS_INDEX, body, refresh="wait_for")
 
     scan_details = {
         "registry_type": registry_credential.registry_type, "scan_id_list": scan_id_list,

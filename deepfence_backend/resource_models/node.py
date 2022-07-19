@@ -217,7 +217,7 @@ class Node(object):
             "kubernetes_cluster_name": self.kubernetes_cluster_name,
             "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] + "Z"
         }
-        ESConn.create_doc(constants.SECRET_SCAN_LOGS_INDEX, es_doc)
+        ESConn.create_doc(constants.SECRET_SCAN_LOGS_INDEX, es_doc, refresh="wait_for")
         post_data = {"node_type": self.type, "scan_id": scan_id, "node_id": self.scope_id,
                      "kubernetes_cluster_name": self.kubernetes_cluster_name, "container_name": ""}
         if self.type == constants.NODE_TYPE_CONTAINER:
