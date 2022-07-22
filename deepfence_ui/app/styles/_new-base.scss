@@ -4991,10 +4991,9 @@ input {
 
 
 .row-action-menu {
-  min-width: 42px;
-  margin-left: 16px;
-  margin-right: 8px;
   cursor: pointer;
+  margin-left: -8px;
+  margin-right: -8px;
   .user-icon {
     font-size: 24px;
     margin-right: 8px;
