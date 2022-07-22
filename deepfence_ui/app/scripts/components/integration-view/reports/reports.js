@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form/immutable';
@@ -423,9 +422,10 @@ const Reports = props => {
       let deadNodes;
       if (node_type.value === 'host' || node_type.value === 'container') {
         let lenHostName = 0;
+        // eslint-disable-next-line no-unused-expressions
         globalFilter.host_name &&
-          globalFilter.host_name.map(x => (lenHostName = lenHostName + 1));
-        deadNodes = dead_nodes_toggle ? true : false;
+          globalFilter.host_name.forEach(x => {lenHostName += 1});
+        deadNodes = !!dead_nodes_toggle;
         if (lenHostName !== 0) {
           deadNodes = false;
         }
@@ -701,7 +701,7 @@ const Reports = props => {
           <tbody>
             {tableItems &&
               tableItems.map(key => (
-                <tr>
+                <tr key={key['@timestamp']}>
                   <td>
                     {moment(key['@timestamp']).format(
                       'MMMM Do YYYY, h:mm:ss a'
