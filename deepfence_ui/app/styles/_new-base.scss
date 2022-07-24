@@ -5669,7 +5669,7 @@ input {
   transition: opacity 250ms ease-in;
 }
 
-// remove input arrows from chrome, safari, edge
+// remove arrows of phone input number type appear in chrome, safari, edge
 input[name='phoneNumber']::-webkit-outer-spin-button,
 input[name='phoneNumber']::-webkit-inner-spin-button {
   -webkit-appearance: none;
