@@ -5668,3 +5668,10 @@ input {
   opacity: 1;
   transition: opacity 250ms ease-in;
 }
+
+// remove input arrows from chrome, safari, edge
+input[name='phoneNumber']::-webkit-outer-spin-button,
+input[name='phoneNumber']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
