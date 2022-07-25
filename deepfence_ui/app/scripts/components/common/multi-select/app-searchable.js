@@ -1,16 +1,17 @@
-/* eslint-disable react/button-has-type */
 /* eslint-disable prefer-destructuring */
 /* eslint-disable react/destructuring-assignment */
-import React from 'react';
+import React, { useRef } from 'react';
 import Select from 'react-select';
 import { List } from 'react-virtualized';
+import useClickAway from 'react-use/lib/useClickAway';
 
-const Menu = (props) => {
+const Menu = props => {
+  const ref = useRef(null);
+  useClickAway(ref, () => {
+    props?.onClose?.();
+  });
   const shadow = 'hsla(218, 50%, 10%, 0.1)';
-  const {
-    maxOptionCharLength,
-    dropdownExpandDirection = 'right',
-  } = props;
+  const { maxOptionCharLength, dropdownExpandDirection = 'right' } = props;
 
   let expansionDirection = 'left';
   if (dropdownExpandDirection === 'right') {
@@ -33,27 +34,8 @@ const Menu = (props) => {
     width: `${Math.max(100, maxSupportedCharLength * 4)}%`,
     [`${expansionDirection}`]: 0,
   };
-  return (
-    <div
-      className="df-select"
-      style={MenuStyle}
-      {...props}
-    />
-  );
+  return <div ref={ref} className="df-select" style={MenuStyle} {...props} />;
 };
-const Blanket = props => (
-  <div
-    style={{
-      bottom: 0,
-      left: 0,
-      top: 0,
-      right: 0,
-      position: 'fixed',
-      zIndex: 1,
-    }}
-    {...props}
-  />
-);
 const Dropdown = ({
   children,
   isOpen,
@@ -62,20 +44,17 @@ const Dropdown = ({
   maxOptionCharLength,
   dropdownExpandDirection,
 }) => (
-  // const charList = chars.split(' ');
   <div style={{ position: 'relative' }}>
     {target}
-    { isOpen ? (
+    {isOpen ? (
       <Menu
         maxOptionCharLength={maxOptionCharLength}
         dropdownExpandDirection={dropdownExpandDirection}
+        onClose={onClose}
       >
         {children}
       </Menu>
-    )
-      : null
-      }
-    {isOpen ? <Blanket onClick={onClose} /> : null}
+    ) : null}
   </div>
 );
 const Svg = p => (
@@ -101,14 +80,16 @@ const DropdownIndicator = () => (
 );
 
 const selectStyles = {
-  control: provided => ({ ...provided, margin: 8}),
-  menu: () => ({ boxShadow: 'inset 0 1px 0 rgba(0, 0, 0, 0.1)'}),
+  control: provided => ({ ...provided, margin: 8 }),
+  menu: () => ({ boxShadow: 'inset 0 1px 0 rgba(0, 0, 0, 0.1)' }),
 };
 
-const VirtualizedList = (props) => {
+const VirtualizedList = props => {
   const rows = props.children;
   const rowRenderer = ({ key, index, style }) => (
-    <div key={key} style={style}>{rows[index]}</div>
+    <div key={key} style={style}>
+      {rows[index]}
+    </div>
   );
 
   return (
@@ -123,27 +104,11 @@ const VirtualizedList = (props) => {
   );
 };
 
-// const Option = props => (
-//   <div>
-//     <components.Option {...props}>
-//       <input
-//         type="checkbox"
-//         checked={props.isSelected}
-//         onChange={() => null}
-//         name={`options-${props.value}`}
-//       />
-//       <label htmlFor={`options-${props.value}`}>{props.label}</label>
-//     </components.Option>
-//   </div>
-// );
-//
 const filterOption = (candidate, input = '') => {
   if (input.length === 0) {
     return true;
   }
-  const {
-    label = '',
-  } = candidate;
+  const { label = '' } = candidate;
   return label.toLowerCase().includes(input.toLowerCase());
 };
 
@@ -161,14 +126,11 @@ class DFSearchableSelect extends React.Component {
     if (e) {
       e.preventDefault();
     }
-    this.setState(state => ({isOpen: !state.isOpen}));
+    this.setState(state => ({ isOpen: !state.isOpen }));
   }
 
   handleClearAll() {
-    const {
-      onChange = () => {},
-      isMulti,
-    } = this.props;
+    const { onChange = () => {}, isMulti } = this.props;
 
     if (isMulti) {
       onChange([]);
@@ -178,19 +140,13 @@ class DFSearchableSelect extends React.Component {
   }
 
   handleSelectAll() {
-    const {
-      onChange = () => {},
-      options,
-    } = this.props;
+    const { onChange = () => {}, options } = this.props;
 
     onChange(options);
   }
 
   onSelectChange(controlValue) {
-    const {
-      isMulti,
-      onChange = () => {},
-    } = this.props;
+    const { isMulti, onChange = () => {} } = this.props;
     if (!isMulti) {
       this.toggleOpen();
     }
@@ -209,24 +165,29 @@ class DFSearchableSelect extends React.Component {
       dropdownExpandDirection = 'right',
       ...rest
     } = this.props;
-    const {
-      isOpen,
-    } = this.state;
+    const { isOpen } = this.state;
     let passedValue = value;
     if (!isMulti && Array.isArray(value) && value.length > 0) {
       passedValue = value[0];
     }
     const userValue = passedValue;
-    let buttonValue = (userValue && userValue.value !== undefined) ? userValue.label : buttonLabel;
+    let buttonValue =
+      userValue && userValue.value !== undefined
+        ? userValue.label
+        : buttonLabel;
     if (isMulti) {
-      buttonValue = (userValue && userValue.length)
-        ? `${buttonLabel} (${userValue.length})`
-        : `${buttonLabel}`;
+      buttonValue =
+        userValue && userValue.length
+          ? `${buttonLabel} (${userValue.length})`
+          : `${buttonLabel}`;
     }
 
-    const maxOptionCharLength = options.map(el => el.label).reduce((acc, label) => (
-      acc.length > label.length ? acc : label
-    ), '').length;
+    const maxOptionCharLength = options
+      .map(el => el.label)
+      .reduce(
+        (acc, label) => (acc.length > label.length ? acc : label),
+        ''
+      ).length;
 
     return (
       <Dropdown
@@ -234,27 +195,31 @@ class DFSearchableSelect extends React.Component {
         maxOptionCharLength={maxOptionCharLength}
         dropdownExpandDirection={dropdownExpandDirection}
         onClose={this.toggleOpen}
-        target={(
+        target={
           <button
             className="primary-btn non-focus select-button-wrapper"
             onClick={this.toggleOpen}
             aria-hidden="true"
+            type='button'
           >
-            <div style={{display: 'flex', justifyContent: 'space-between'}}>
-              <div>
-                {buttonValue}
-              </div>
-              <div style={{lineHeight: 'unset'}} className="fa fa-chevron-down" />
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div>{buttonValue}</div>
+              <div
+                style={{ lineHeight: 'unset' }}
+                className="fa fa-chevron-down"
+              />
             </div>
           </button>
-        )}
+        }
       >
         <Select
           components={{
             DropdownIndicator,
             IndicatorSeparator: null,
             // if there are more than 50 opitons, switch to Virtualized list
-            ...((options && options.length > 50) ? {MenuList: VirtualizedList} : {}),
+            ...(options && options.length > 50
+              ? { MenuList: VirtualizedList }
+              : {}),
           }}
           backspaceRemovesValue={false}
           controlShouldRenderValue={false}
@@ -271,7 +236,7 @@ class DFSearchableSelect extends React.Component {
           styles={selectStyles}
           isMulti={isMulti}
           filterOption={filterOption}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.keyCode === 13) {
               // prevent default on enter key press
               e.preventDefault();
@@ -281,24 +246,22 @@ class DFSearchableSelect extends React.Component {
           {...rest}
         />
         {isMulti && (
-        <div
-          className="Select__options-menu"
-        >
-          <div
-            onClick={this.handleSelectAll}
-            className="Select__options-menu-item"
-            aria-hidden="true"
-          >
-            Select All
+          <div className="Select__options-menu">
+            <div
+              onClick={this.handleSelectAll}
+              className="Select__options-menu-item"
+              aria-hidden="true"
+            >
+              Select All
+            </div>
+            <div
+              onClick={this.handleClearAll}
+              className="Select__options-menu-item"
+              aria-hidden="true"
+            >
+              Clear All
+            </div>
           </div>
-          <div
-            onClick={this.handleClearAll}
-            className="Select__options-menu-item"
-            aria-hidden="true"
-          >
-            Clear All
-          </div>
-        </div>
         )}
       </Dropdown>
     );
