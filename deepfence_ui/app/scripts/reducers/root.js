@@ -12,6 +12,7 @@ import { reducer as formReducer } from 'redux-form/immutable';
 import ActionTypes from '../constants/action-types';
 
 import { GRAPH_VIEW_MODE } from '../constants/naming';
+import ComplianceReducer from './compliance-reducer';
 import CVEReducer from './cve-reducer';
 import DFTableMultiSelectColumnReducer from './df-table-multi-select-column-reducer';
 import ReportDownloadReducer from './report-download-reducer';
@@ -1646,12 +1647,262 @@ export function rootReducer(state = initialState, action) {
         'No data available');
     }
 
+    case ActionTypes.START_SCAN_COMPLIANCE_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_start_scan', data.message);
+      return state;
+    }
+
+    case ActionTypes.START_SCAN_COMPLIANCE_FAILURE: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_start_scan_error', data.error);
+      return state;
+    }
+
+    case ActionTypes.COMPLIANCE_SCAN_SCHEDULE_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_schedule_scan', data.message);
+      return state;
+    }
+
+    case ActionTypes.COMPLIANCE_SCAN_SCHEDULE_FAILURE: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_schedule_scan_error', data.error);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_RULES_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_rules', data);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_CRED_REQUEST: {
+      const {
+        initiatedByPollable
+      } = action.input || {};
+      if (initiatedByPollable && initiatedByPollable === true){
+        state = state.set('cloud_credentials_loader', false);
+      }
+      else{
+        state = state.set('cloud_credentials_loader', true);
+      }
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_CRED_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('cloud_credentials', data);
+      state = state.set('cloud_credentials_loader', false);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_CRED_FAILURE: {
+      state = state.set('cloud_credentials_loader', false);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_SCAN_LIST_REQUEST: {
+      const {
+        initiatedByPollable
+      } = action.input || {};
+      if (initiatedByPollable && initiatedByPollable === true){
+        state = state.set('compliance_scan_list_loader', false);
+      }
+      else{
+        state = state.set('compliance_scan_list_loader', true);
+      }
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_SCAN_LIST_SUCCESS: {
+      const { payload: { data: { hits = [], total = 0, node_type } = {} } = {} } = action;
+
+      /* eslint-disable no-underscore-dangle */
+      const scans = hits.map(hit => ({
+        ...hit._source,
+        doc_index: hit._index,
+      }));
+      state = state.set('compliance_scan_list_loader', false);
+      state = state.set('compliance_scan_list', scans)
+      state = state.set('compliance_node_type', node_type)
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_SCAN_LIST_FAILURE: {
+      state = state.set('compliance_scan_list_loader', false);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_CHART_REQUEST: {
+      state = state.set('compliance_chart_data_loader', true);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_CHART_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_chart_data', data);
+      state = state.set('compliance_chart_data_loader', false);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_CHART_FAILURE: {
+      state = state.set('compliance_chart_data_loader', false);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_BAR_CHART_REQUEST: {
+      const {
+        initiatedByPollable
+      } = action.input || {};
+      if (initiatedByPollable && initiatedByPollable === true){
+        state = state.set('compliance_barchart_data_loader', false);
+      }
+      else{
+        state = state.set('compliance_barchart_data_loader', true);
+      }
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_BAR_CHART_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_barchart_data_loader', false);
+      state = state.set('compliance_barchart_data', data);
+      return state;
+    }
+
+    case ActionTypes.GET_COMPLIANCE_BAR_CHART_FAILURE: {
+      state = state.set('compliance_barchart_data_loader', false);
+      return state;
+    }
+
+    case ActionTypes.GET_RESULT_DONUT_REQUEST: {
+      const {
+        initiatedByPollable
+      } = action.input || {};
+      if (initiatedByPollable && initiatedByPollable === true){
+        state = state.set('compliance_result_donut_loader', false);
+      }
+      else{
+        state = state.set('compliance_result_donut_loader', true);
+      }
+      return state;
+    }
+
+    case ActionTypes.GET_RESULT_DONUT_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_result_donut_loader', false);
+      state = state.set('compliance_result_donut', data);
+      return state;
+    }
+
+    case ActionTypes.GET_RESULT_DONUT_FAILURE: {
+      state = state.set('compliance_result_donut_loader', false);
+      return state;
+    }
+
+    case ActionTypes.GET_SCAN_RESULT_REQUEST: {
+      const {
+        initiatedByPollable
+      } = action.input || {};
+      if (initiatedByPollable && initiatedByPollable === true){
+        state = state.set('compliance_result_scans_loader', false);
+      }
+      else{
+        state = state.set('compliance_result_scans_loader', true);
+      }
+      return state;
+    }
+
+    case ActionTypes.GET_SCAN_RESULT_SUCCESS: {
+      const {
+        payload: { data },
+      } = action;
+      state = state.set('compliance_result_scans_loader', false);
+      state = state.set('compliance_result_scans', data);
+      return state;
+    }
+
+    case ActionTypes.GET_SCAN_RESULT_FAILURE: {
+      state = state.set('compliance_result_scans_loader', false);
+      return state;
+    }
+
+    case ActionTypes.RESOURCES_FOR_CLOUD_SERVICE_REQUEST: {
+      const {
+        input: { nodeid, serviceid },
+      } = action;
+      return state.setIn(['resourcesForCloudService', nodeid, serviceid, 'status', 'loading'], true);
+    }
+
+    case ActionTypes.RESOURCES_FOR_CLOUD_SERVICE_SUCCESS: {
+      const {
+        payload: { data },
+        input: { nodeid, serviceid },
+      } = action;
+      state = state.setIn(['resourcesForCloudService', nodeid, serviceid, 'status', 'loading'], false);
+      return state.setIn(['resourcesForCloudService', nodeid, serviceid, 'data'], data);
+    }
+
+    case ActionTypes.RESOURCES_FOR_CLOUD_SERVICE_FAILURE: {
+      const { input: { nodeid, serviceid }} = action;
+      state = state.setIn(['resourcesForCloudService', nodeid, serviceid, 'status', 'loading'], false);
+      state = state.setIn(['resourcesForCloudService', nodeid, serviceid, 'data'], null);
+      return state.setIn(['resourcesForCloudService', nodeid, serviceid, 'status', 'error'],
+        'No data available');
+    }
+
+    case ActionTypes.SERVICES_FOR_CLOUD_ACCOUNT_REQUEST: {
+      const {
+        input: { nodeid },
+      } = action;
+      return state.setIn(['servicesForCloudAccount', nodeid, 'status', 'loading'], true);
+    }
+
+    case ActionTypes.SERVICES_FOR_CLOUD_ACCOUNT_SUCCESS: {
+      const {
+        payload: { data },
+        input: { nodeid },
+      } = action;
+      state = state.setIn(['servicesForCloudAccount', nodeid, 'status', 'loading'], false);
+      return state.setIn(['servicesForCloudAccount', nodeid, 'data'], data);
+    }
+
+    case ActionTypes.SERVICES_FOR_CLOUD_ACCOUNT_FAILURE: {
+      const { input: { nodeid }} = action;
+      state = state.setIn(['servicesForCloudAccount', nodeid, 'status', 'loading'], false);
+      state = state.setIn(['servicesForCloudAccount', nodeid, 'data'], null);
+      return state.setIn(['servicesForCloudAccount', nodeid, 'status', 'error'],
+        'No data available');
+    }
+
     default: {
       // forwarding unknown action types to redux-form reducer.
       state = state.set('form', formReducer(state.get('form'), action));
       state = state.set('cve', CVEReducer(state.get('cve'), action));
       state = state.set('secretScanner', SecretScannerReducer(state.get('secretScanner'), action));
-
+      state = state.set(
+        'compliance',
+        ComplianceReducer(state.get('compliance'), action)
+      );
       const dfTableMultiSelectColumnCurrentState = state.get(
         'df_table_multi_select_column'
       );

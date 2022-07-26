@@ -5020,6 +5020,22 @@ input {
       background-color: $color-secondary-shade;
     }
   }
+  .row-action-dropdown-item-disabled {
+    color: $text-primary;
+    display: flex;
+    padding: 4px 12px;
+    .row-action-item-icon {
+      margin-right: 8px;
+    }
+    .row-action-item-text {
+      font-weight: 600;
+    }
+    &:hover {
+      background-color: $color-secondary-shade;
+    }
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
 }
 
 

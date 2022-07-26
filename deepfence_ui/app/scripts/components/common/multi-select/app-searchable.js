@@ -11,7 +11,7 @@ const Menu = props => {
     props?.onClose?.();
   });
   const shadow = 'hsla(218, 50%, 10%, 0.1)';
-  const { maxOptionCharLength, dropdownExpandDirection = 'right' } = props;
+  const { maxOptionCharLength, dropdownExpandDirection = 'right', ...rest } = props;
 
   let expansionDirection = 'left';
   if (dropdownExpandDirection === 'right') {
@@ -34,7 +34,7 @@ const Menu = props => {
     width: `${Math.max(100, maxSupportedCharLength * 4)}%`,
     [`${expansionDirection}`]: 0,
   };
-  return <div ref={ref} className="df-select" style={MenuStyle} {...props} />;
+  return <div ref={ref} className="df-select" style={MenuStyle} {...rest} />;
 };
 const Dropdown = ({
   children,

@@ -98,6 +98,21 @@ import {
   stopCVEScan,
   getSBOMByScanId,
   getRuntimeBomData,
+  startComplianceScan,
+  complianceScheduleScan,
+  getComplianceTests,
+  updateComplianceTests,
+  getComplianceRules,
+  getComplianceCloudCredentials,
+  getComplianceScanList,
+  getComplianceChartData,
+  getComplianceBarChart,
+  getResultDonutData,
+  complianceMaskDocs,
+  complianceUnmaskDocs,
+  getScanResults,
+  getResourcesForCloudService,
+  getServicesForCloudAccount
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1912,4 +1927,140 @@ export function getAttackPathsAction(params) {
     ActionTypes.GET_ATTACK_PATHS_FAILURE,
   ];
   return genericThunkAction(actionTypes, getAttackPaths, params);
+}
+
+export function startComplianceScanAction(params) {
+  const actionTypes = [
+    ActionTypes.START_SCAN_COMPLIANCE_REQUEST,
+    ActionTypes.START_SCAN_COMPLIANCE_SUCCESS,
+    ActionTypes.START_SCAN_COMPLIANCE_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, startComplianceScan, params);
+}
+
+export function complianceScheduleScanAction(params) {
+  const actionTypes = [
+    ActionTypes.COMPLIANCE_SCAN_SCHEDULE_REQUEST,
+    ActionTypes.COMPLIANCE_SCAN_SCHEDULE_SUCCESS,
+    ActionTypes.COMPLIANCE_SCAN_SCHEDULE_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, complianceScheduleScan, params);
+}
+
+export function getComplianceTestsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_COMPLIANCE_TESTS_REQUEST,
+    ActionTypes.GET_COMPLIANCE_TESTS_SUCCESS,
+    ActionTypes.GET_COMPLIANCE_TESTS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getComplianceTests, params);
+}
+
+export function updateComplianceTestsAction(params) {
+  const actionTypes = [
+    ActionTypes.UPDATE_COMPLIANCE_TESTS_REQUEST,
+    ActionTypes.UPDATE_COMPLIANCE_TESTS_SUCCESS,
+    ActionTypes.UPDATE_COMPLIANCE_TESTS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, updateComplianceTests, params);
+}
+
+export function getComplianceRulesAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_COMPLIANCE_RULES_REQUEST,
+    ActionTypes.GET_COMPLIANCE_RULES_SUCCESS,
+    ActionTypes.GET_COMPLIANCE_RULES_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getComplianceRules, params);
+}
+
+export function getComplianceCloudCredentialsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_COMPLIANCE_CRED_REQUEST,
+    ActionTypes.GET_COMPLIANCE_CRED_SUCCESS,
+    ActionTypes.GET_COMPLIANCE_CRED_FAILURE,
+  ];
+  return genericThunkAction(actionTypes,  getComplianceCloudCredentials, params);
+}
+
+export function getComplianceScanListAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_COMPLIANCE_SCAN_LIST_REQUEST,
+    ActionTypes.GET_COMPLIANCE_SCAN_LIST_SUCCESS,
+    ActionTypes.GET_COMPLIANCE_SCAN_LIST_FAILURE,
+  ];
+  return genericThunkAction(actionTypes,  getComplianceScanList, params);
+}
+
+export function getComplianceChartDataAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_COMPLIANCE_CHART_REQUEST,
+    ActionTypes.GET_COMPLIANCE_CHART_SUCCESS,
+    ActionTypes.GET_COMPLIANCE_CHART_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getComplianceChartData, params);
+}
+
+export function getComplianceBarChartAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_COMPLIANCE_BAR_CHART_REQUEST,
+    ActionTypes.GET_COMPLIANCE_BAR_CHART_SUCCESS,
+    ActionTypes.GET_COMPLIANCE_BAR_CHART_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getComplianceBarChart, params);
+}
+
+export function getResultDonutDataAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_RESULT_DONUT_REQUEST,
+    ActionTypes.GET_RESULT_DONUT_SUCCESS,
+    ActionTypes.GET_RESULT_DONUT_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getResultDonutData, params);
+}
+
+export function complianceMaskDocsAction(params) {
+  return (dispatch) => complianceMaskDocs(dispatch, params);
+}
+
+export function complianceUnmaskDocsAction(params) {
+  return (dispatch) => complianceUnmaskDocs(dispatch, params);
+}
+
+export function complianceTestRemoveAction(nodeId, checkType, idList) {
+  return {
+    type: ActionTypes.COMPLIANCE_TEST_REMOVE,
+    input: {
+      nodeId,
+      checkType,
+    },
+    payload: idList,
+  };
+}
+
+export function getScanResultsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_SCAN_RESULT_REQUEST,
+    ActionTypes.GET_SCAN_RESULT_SUCCESS,
+    ActionTypes.GET_SCAN_RESULT_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getScanResults, params);
+}
+
+export function getResourcesForCloudServiceAction(params) {
+  const actionTypes = [
+    ActionTypes.RESOURCES_FOR_CLOUD_SERVICE_REQUEST,
+    ActionTypes.RESOURCES_FOR_CLOUD_SERVICE_SUCCESS,
+    ActionTypes.RESOURCES_FOR_CLOUD_SERVICE_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getResourcesForCloudService, params);
+}
+
+export function getServicesForCloudAccountAction(params) {
+  const actionTypes = [
+    ActionTypes.SERVICES_FOR_CLOUD_ACCOUNT_REQUEST,
+    ActionTypes.SERVICES_FOR_CLOUD_ACCOUNT_SUCCESS,
+    ActionTypes.SERVICES_FOR_CLOUD_ACCOUNT_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getServicesForCloudAccount, params);
 }

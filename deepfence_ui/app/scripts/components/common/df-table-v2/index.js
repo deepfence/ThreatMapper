@@ -43,6 +43,7 @@ const columnIdExtractor = column => column.id || column.accessor;
 function useColumnFilter({
   columnCustomizable,
   renderRowSubComponent,
+  hideExpander,
   columns,
   name,
   multiSelectOptions
@@ -147,7 +148,7 @@ function useColumnFilter({
       });
     }
 
-    if (renderRowSubComponent) {
+    if (renderRowSubComponent && !hideExpander) {
       visibleColumns.unshift({
         Header: ({ getToggleAllRowsExpandedProps, isAllRowsExpanded }) => (
           <span className={styles.expanderCell} {...getToggleAllRowsExpandedProps()}>
@@ -180,6 +181,7 @@ function useColumnFilter({
 * @param {boolean} props.columns[].show - set false if don't want to show the column by default
 * @param {Object[]} props.data - data is an array of row data objects
 * @param {function} props.renderRowSubComponent - a function that returns an react node used as sub component for a row
+* @param {boolean} props.hideExpander - hides expander row
 * @param {boolean} props.showPagination - specifies pagination is shown or not
 * @param {boolean} props.manual - whether the pagination, sorting etc are controlled via parent
 * @param {number} props.totalRows - total number of rows in table, required when manual is true
@@ -207,6 +209,7 @@ const DfTableV2 = ({
   columns,
   data,
   renderRowSubComponent,
+  hideExpander,
   showPagination,
   manual,
   totalRows,
@@ -237,6 +240,7 @@ const DfTableV2 = ({
     columns,
     columnCustomizable,
     renderRowSubComponent,
+    hideExpander,
     name,
     multiSelectOptions,
   });
