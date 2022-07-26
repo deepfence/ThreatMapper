@@ -112,7 +112,8 @@ import {
   complianceUnmaskDocs,
   getScanResults,
   getResourcesForCloudService,
-  getServicesForCloudAccount
+  getServicesForCloudAccount,
+  getAttackGraphData,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -2063,4 +2064,13 @@ export function getServicesForCloudAccountAction(params) {
     ActionTypes.SERVICES_FOR_CLOUD_ACCOUNT_FAILURE,
   ];
   return genericThunkAction(actionTypes, getServicesForCloudAccount, params);
+}
+
+export function getAttackGraphDataAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_ATTACK_GRAPH_DATA_REQUEST,
+    ActionTypes.GET_ATTACK_GRAPH_DATA_SUCCESS,
+    ActionTypes.GET_ATTACK_GRAPH_DATA_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getAttackGraphData, params);
 }

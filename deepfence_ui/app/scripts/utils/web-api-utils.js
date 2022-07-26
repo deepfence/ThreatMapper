@@ -2814,3 +2814,15 @@ export function getServicesForCloudAccount(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function getAttackGraphData(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/attack-graph/graph`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}

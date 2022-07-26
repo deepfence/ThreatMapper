@@ -1,6 +1,7 @@
 /* eslint-disable */
 import G6 from "@antv/g6";
 import { useCallback, useEffect, useRef } from "react";
+import { onNodeMouseEnter, onNodeMouseLeave } from "./event-handlers";
 import { COLORS, PALETTE } from "./theme";
 
 export const useGraph = (el, data) => {
@@ -85,14 +86,17 @@ export const useGraph = (el, data) => {
       },
 
       defaultEdge: {
+        type: 'quadratic',
+        size: 3,
+        color: COLORS.EDGE,
         style: {
-          stroke: COLORS.EDGE,
-          lineWidth: 1,
-          opacity: 0.5,
+          opacity: 0.4,
           endArrow: {
-            path: G6.Arrow.triangle(6, 9, 0),
-            fill: "#13F4EF",
-            stroke: "#13F4EF",
+            path: G6.Arrow.triangle(4, 6, 12),
+            opacity: 0.4,
+            strokeOpacity: 0.4,
+            fillOpacity: 0.4,
+            d: 16
           },
         },
       },
@@ -123,22 +127,9 @@ export const useGraph = (el, data) => {
 
       edgeStateStyles: {
         active: {
-          stroke: "#fefefe",
-          endArrow: {
-            path: G6.Arrow.triangle(7, 10, 15),
-            fill: "#E6E6FA",
-            stroke: "#E6E6FA",
-            d: -20,
-          },
-        },
-        inactive: {
-          endArrow: {
-            path: G6.Arrow.triangle(7, 10, 15),
-            fill: "red",
-            opacity: 0,
-            stroke: "#E6E6FA",
-            d: -20,
-          },
+          lineWidth: 3,
+          stroke: COLORS.ACTIVE_EDGE,
+          opacity: 0.6,
         },
       },
 
@@ -162,6 +153,9 @@ export const useGraph = (el, data) => {
 
     graph.data(data);
     graph.render();
+
+    graph.on('node:mouseenter', onNodeMouseEnter(graph));
+    graph.on('node:mouseleave', onNodeMouseLeave(graph));
 
     graphRef.current = graph;
   }, [el]);

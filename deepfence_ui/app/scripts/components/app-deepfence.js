@@ -21,6 +21,7 @@ import ComplianceDetailsView from './compliance-view/details';
 import ComplianceSummary from './compliance-view/compliance-summary';
 import { InventoryServiceResourceView } from './inventory/service-resources';
 import { InventoryServicesView } from './inventory/services';
+import { AttackGraph } from './attack-garph';
 
 import LoginView from './auth-module/login-view/login-view';
 import RegisterView from './auth-module/register-view/register-view';
@@ -167,6 +168,7 @@ class DeepFenceApp extends React.Component {
             />
             <PrivateRoute path="/compliance/:cloudtype/:nodeid/:checkType" component={ComplianceSummary} />
             <PrivateRoute path="/compliance" component={ComplianceViewHome} />
+            <PrivateRoute path="/attack-graph" component={AttackGraph} />
 
             <Route
               path="*"
