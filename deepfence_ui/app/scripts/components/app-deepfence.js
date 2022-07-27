@@ -16,6 +16,11 @@ import SecretScanResultsView from './secret-scan-view/secret-scan-results-view';
 import NotificationsView from './notification-view/notification-view';
 import SettingsView from './settings-view/settings-view';
 import RegistryVulnerabilityScan from './vulnerability-view/registry-scan/index';
+import { ComplianceViewHome } from './compliance-view';
+import ComplianceDetailsView from './compliance-view/details';
+import ComplianceSummary from './compliance-view/compliance-summary';
+import { InventoryServiceResourceView } from './inventory/service-resources';
+import { InventoryServicesView } from './inventory/services';
 
 import LoginView from './auth-module/login-view/login-view';
 import RegisterView from './auth-module/register-view/register-view';
@@ -147,6 +152,21 @@ class DeepFenceApp extends React.Component {
             <PrivateRoute path="/notification" component={NotificationsView} />
             <PrivateRoute path="/settings" component={SettingsView} />
             <PrivateRoute path="/change-password" component={changePasswordView} />
+
+            <PrivateRoute
+              path="/compliance/summary/:nodeId/:checkType/:scanId/:scanType"
+              component={ComplianceDetailsView}
+            />
+            <PrivateRoute
+              path="/compliance/cloud-inventory/:cloudtype/:nodeid/:serviceid"
+              component={InventoryServiceResourceView}
+            />
+            <PrivateRoute
+              path="/compliance/cloud-inventory/:cloudtype/:nodeid"
+              component={InventoryServicesView}
+            />
+            <PrivateRoute path="/compliance/:cloudtype/:nodeid/:checkType" component={ComplianceSummary} />
+            <PrivateRoute path="/compliance" component={ComplianceViewHome} />
 
             <Route
               path="*"

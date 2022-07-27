@@ -79,6 +79,9 @@
   &:global(.modal-critical) {
     color: $critical-main;
   }
+  &:global(.modal-pass) {
+    color: $color-success;
+  }
 }
 
 .topRightVisualizationWrapper {

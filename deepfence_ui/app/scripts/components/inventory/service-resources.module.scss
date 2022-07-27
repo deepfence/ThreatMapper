@@ -1,0 +1,30 @@
+.container {
+  padding: 0px 12px;
+}
+
+.filtersContainer {
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 400px;
+  margin-right: 10px;
+}
+
+.scansTableContainer {
+  padding: 16px;
+
+  .scansTableTitle {
+    font-weight: 600;
+    padding: 8px 0px;
+    font-size: 14px;
+  }
+}
+
+.notScannedMessage {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
