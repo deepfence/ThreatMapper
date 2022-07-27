@@ -40,6 +40,9 @@ COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
 COPY start_serverless_services.sh /usr/local/bin/start_services
 COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-discovery
+COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
+COPY plugins/compliance/config.json /usr/local/bin/compliance_check/config.json
+COPY plugins/docker_bin/compliance /usr/local/bin/compliance_check/compliance
 COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/

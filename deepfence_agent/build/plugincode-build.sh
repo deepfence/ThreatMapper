@@ -21,6 +21,12 @@ if [ $build_result -ne 0 ]
 then
     exit 1
 fi
+make bin/compliance
+build_result=$?
+if [ $build_result -ne 0 ]
+then
+    exit 1
+fi
 cd /go/src/github.com/deepfence/deepfence_agent
 rm -rf ./plugins/docker_bin
 mkdir ./plugins/docker_bin 2>/dev/null

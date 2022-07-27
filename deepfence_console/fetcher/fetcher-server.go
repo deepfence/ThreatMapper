@@ -33,14 +33,16 @@ const (
 )
 
 var (
-	postgresDb             *sql.DB
-	psqlInfo               string
-	redisPool              *redis.Pool
-	esClient               *elastic.Client
-	vulnerabilityDbUpdater *VulnerabilityDbUpdater
-	cveIndexName           = convertRootESIndexToCustomerSpecificESIndex("cve")
-	cveScanLogsIndexName   = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
-	sbomArtifactsIndexName = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
+	postgresDb               *sql.DB
+    psqlInfo                 string
+    redisPool                *redis.Pool
+    esClient                 *elastic.Client
+    vulnerabilityDbUpdater   *VulnerabilityDbUpdater
+    cveIndexName             = convertRootESIndexToCustomerSpecificESIndex("cve")
+    cveScanLogsIndexName     = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
+    sbomArtifactsIndexName   = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
+    cloudComplianceIndexName = convertRootESIndexToCustomerSpecificESIndex("cloud-compliance-scan")
+    resourceToNodeTypeMap = map[string]string{"CloudWatch": "aws_cloudwatch_log_group", "VPC": "aws_vpc", "CloudTrail": "aws_cloudtrail_trail", "Config": "aws_config_rule", "KMS": "aws_kms_key", "S3": "aws_s3_bucket", "IAM": "aws_iam_user", "EBS": "aws_ebs_volume", "RDS": "aws_rds_db_cluster"}
 )
 
 type VulnerabilityDbDetail struct {
@@ -91,6 +93,30 @@ func NewVulnerabilityDbUpdater() *VulnerabilityDbUpdater {
 		}
 	}
 	return updater
+}
+
+type CloudComplianceDoc struct {
+	DocId               string `json:"doc_id"`
+	Timestamp           string `json:"@timestamp"`
+	Count               int    `json:"count"`
+	Reason              string `json:"reason"`
+	Resource            string `json:"resource"`
+	Status              string `json:"status"`
+	Region              string `json:"region"`
+	AccountID           string `json:"account_id"`
+	Group               string `json:"group"`
+	Service             string `json:"service"`
+	Title               string `json:"title"`
+	ComplianceCheckType string `json:"compliance_check_type"`
+	CloudProvider       string `json:"cloud_provider"`
+	NodeName            string `json:"node_name"`
+	NodeID              string `json:"node_id"`
+	ScanID              string `json:"scan_id"`
+	Masked              string `json:"masked"`
+	Type                string `json:"type"`
+	ControlID           string `json:"control_id"`
+	Description         string `json:"description"`
+	Severity            string `json:"severity"`
 }
 
 func (v *VulnerabilityDbUpdater) runGrypeUpdate() error {
@@ -935,6 +961,25 @@ func ingestInBackground(docType string, body []byte) error {
 				}
 			}
 		}
+	} else if docType == cloudComplianceIndexName {
+		var complianceDocs []CloudComplianceDoc
+		err := json.Unmarshal(body, &complianceDocs)
+		if err != nil {
+			return err
+		}
+		bulkService := elastic.NewBulkService(esClient)
+		for _, complianceDoc := range complianceDocs {
+			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanID+complianceDoc.ControlID+complianceDoc.Resource)))
+			complianceDoc.DocId = docId
+			event, err := json.Marshal(complianceDoc)
+			if err == nil {
+				bulkIndexReq := elastic.NewBulkIndexRequest()
+				bulkIndexReq.Index(cloudComplianceIndexName).Id(docId).Doc(string(event))
+				bulkService.Add(bulkIndexReq)
+			}
+		}
+		bulkService.Do(context.Background())
+		processResourceNode(complianceDocs)
 	} else {
 		bulkService := elastic.NewBulkService(esClient)
 		bulkIndexReq := elastic.NewBulkIndexRequest()
@@ -956,6 +1001,48 @@ func ingestInBackground(docType string, body []byte) error {
 		}
 	}
 	return nil
+}
+
+func processResourceNode(docs []CloudComplianceDoc) {
+	if len(docs) == 0 {
+		return
+	}
+	accountId := docs[0].AccountID
+	postgresDb, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		fmt.Println("Error in processing Resource Nodes: " + err.Error())
+		return
+	}
+	defer postgresDb.Close()
+	rows, err := postgresDb.Query("SELECT node_id,node_type from cloud_resource_node WHERE account_id=$1;", accountId)
+	if err != nil {
+		fmt.Println("Error in processing Resource Nodes retrieval: " + err.Error())
+		return
+	}
+	defer rows.Close()
+	nodeIdMap := make(map[string]string)
+	for rows.Next() {
+		var nodeId, nodeType string
+		err = rows.Scan(&nodeId, &nodeType)
+		if err == nil {
+			nodeIdMap[nodeId] = nodeType
+		} else {
+			fmt.Println("Error in processing Resource Nodes: row read" + err.Error())
+		}
+	}
+	for _, doc := range docs {
+		nodeType, found := nodeIdMap[doc.NodeID]
+		if found && nodeType == resourceToNodeTypeMap[doc.Resource] {
+			continue
+		} else {
+			sqlStatement := `INSERT INTO cloud_resource_node(node_id, node_type, node_name, cloud_provider, account_id, region, is_active)
+							 VALUES($1, $2, $3, $4, $5, $6, $7)`
+			_, err = postgresDb.Exec(sqlStatement, doc.NodeID, resourceToNodeTypeMap[doc.Resource], resourceToNodeTypeMap[doc.Resource], doc.CloudProvider, doc.AccountID, doc.Region, true)
+			if err != nil {
+				fmt.Println("Error in processing Resource Nodes: row insert" + err.Error())
+			}
+		}
+	}
 }
 
 func ingest(respWrite http.ResponseWriter, req *http.Request) {

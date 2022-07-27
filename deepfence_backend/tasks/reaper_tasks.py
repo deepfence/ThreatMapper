@@ -4,11 +4,13 @@ from models.user import User
 from models.integration import Integration
 from models.user_activity_log import UserActivityLog
 from models.notification import RunningNotification, VulnerabilityNotification
+from models.cloud_resource_node import CloudResourceNode
 from datetime import datetime, timedelta
 from utils.esconn import ESConn
 from utils.constants import CVE_SCAN_LOGS_INDEX, NODE_TYPE_HOST, \
     CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_QUEUED, CVE_SCAN_STATUS_ERROR, DEEPFENCE_KEY, REPORT_INDEX, \
-    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX, CVE_SCAN_LOGS_ES_TYPE
+    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX, CVE_SCAN_LOGS_ES_TYPE, \
+    COMPLIANCE_INDEX, COMPLIANCE_LOGS_ES_TYPE, CLOUD_COMPLIANCE_SCAN, CSPM_RESOURCES_INVERTED
 from utils.scope import fetch_topology_data
 import time
 from utils.helper import get_cve_scan_tmp_folder, rmdir_recursive, wait_for_postgres_table
@@ -268,3 +270,46 @@ def tag_k8s_cluster_name_in_docs(*args):
             continue
         break
     return
+
+
+@celery_app.task(bind=True, default_retry_delay=60)
+def map_cloud_account_arn_to_table(*args):
+    """
+    Keep cpu_anomaly_top and memory_anomaly_top docs only for 30 minutes
+    """
+    with app.app_context():
+        query_body = {
+            "query" : {
+                "range": {
+                    "@timestamp": {
+                        "gte" : "now-5m/m",
+                        "lte" : "now/m"
+                    }
+                }
+            }
+        }
+        scans_in_last_5_mins = ESConn.search(CLOUD_COMPLIANCE_SCAN, query_body, 0, 10000).get('hits', {}).get("hits", [])
+
+        for scan_doc in scans_in_last_5_mins:
+            resource = scan_doc.get("_source").get("resource")
+            region = scan_doc.get("_source").get("region","")
+            if not region:
+                region = "global"
+            service_name = scan_doc.get("_source").get("service")
+            cloud_resource_nodes_count = CloudResourceNode.query.filter_by(node_id=resource, service_name=service_name).count()
+            if cloud_resource_nodes_count == 0:
+                node_type = "aws"
+                for service, table_names in CSPM_RESOURCES_INVERTED.items():
+                    if service_name == service.split("_")[-1]:
+                        node_type = table_names[0]
+                cloud_resource_node_data = CloudResourceNode(
+                    node_id = scan_doc.get("_source").get("resource"),
+                    node_type = node_type,
+                    node_name = service_name,
+                    cloud_provider = scan_doc.get("_source").get("cloud_provider"),
+                    account_id = scan_doc.get("_source").get("node_id"),
+                    region = region,
+                    service_name = service_name,
+                    is_active = True
+                )
+                cloud_resource_node_data.save()

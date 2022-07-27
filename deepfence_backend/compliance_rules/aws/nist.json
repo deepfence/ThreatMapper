@@ -1,0 +1,284 @@
+[
+  {
+    "test_category": "IAM",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_2",
+    "test_desc": "Application Partitioning (SC-2)",
+    "test_rationale": "The information system separates user functionality (including user interface services) from information system management functionality."
+  },
+  {
+    "test_category": "EBS",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_4",
+    "test_desc": "Information In Shared Resources (SC-4)",
+    "test_rationale": "The information system prevents unauthorized and unintended information transfer via shared system resources."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_5",
+    "test_desc": "Denial Of Service Protection (SC-5)",
+    "test_rationale": "The information system protects against or limits the effects of the following types of denial of service attacks: [Assignment: organization-defined types of denial of service attacks or references to sources for such information] by employing [Assignment: organization-defined security safeguards]."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_7",
+    "test_desc": "Boundary Protection (SC-7)",
+    "test_rationale": "The information system: a. Monitors and controls communications at the external boundary of the system and at key internal boundaries within the system; b. Implements subnetworks for publicly accessible system components that are [Selection: physically; logically] separated from internal organizational networks; and c. Connects to external networks or information systems only through managed interfaces consisting of boundary protection devices arranged in accordance with an organizational security architecture."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_8",
+    "test_desc": "Transmission Confidentiality And Integrity (SC-8)",
+    "test_rationale": "The information system protects the [Selection (one or more): confidentiality; integrity] of transmitted information."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_12",
+    "test_desc": "Cryptographic Key Establishment And Management (SC-12)",
+    "test_rationale": "The organization establishes and manages cryptographic keys for required cryptography employed within the information system in accordance with [Assignment: organization-defined requirements for key generation, distribution, storage, access, and destruction]."
+  },
+  {
+    "test_category": "DynamoDB",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_13",
+    "test_desc": "Cryptographic Protection (SC-13)",
+    "test_rationale": "The information system implements [Assignment: organization-defined cryptographic uses and type of cryptography required for each use] in accordance with applicable federal laws, Executive Orders, directives, policies, regulations, and standards."
+  },
+  {
+    "test_category": "ELB",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_23",
+    "test_desc": "Session Authenticity (SC-23)",
+    "test_rationale": "TThe information system protects the authenticity of communications sessions."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_sc_28",
+    "test_desc": "Protection Of Information At Rest (SC-28)",
+    "test_rationale": "The information system protects the [Selection (one or more): confidentiality; integrity] of [Assignment: organization-defined information at rest]."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_cp_9",
+    "test_desc": "Information System Backup (CP-9)",
+    "test_rationale": "The organization conducts backups of user-level information, system-level information  and information system documentation including security-related documentation contained in the information system and protects the confidentiality, integrity, and availability of backup information at storage locations."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_cp_10",
+    "test_desc": "Information System Recovery And Reconstitution (CP-10)",
+    "test_rationale": "The organization provides for the recovery and reconstitution of the information system to a known state after a disruption, compromise, or failure."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ca_7",
+    "test_desc": "Continuous Monitoring (CA-7)",
+    "test_rationale": "Continuously monitor configuration management processes. Determine security impact, environment and operational risks."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_sa_3",
+    "test_desc": "System Development Life Cycle (SA-3)",
+    "test_rationale": "The organization manages the information system using organization-defined system development life cycle, defines and documents information security roles and responsibilities throughout the system development life cycle, identifies individuals having information security roles and responsibilities and integrates the organizational information security risk management process into system development life cycle activities."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_sa_10",
+    "test_desc": "Developer Configuration Management (SA-10)",
+    "test_rationale": "The organization requires the developer of the information system, system component, or information system service to: a. Perform configuration management during system, component, or service [Selection (one or more): design; development; implementation; operation]; b. Document, manage, and control the integrity of changes to [Assignment: organization-defined configuration items under configuration management]; c. Implement only organization-approved changes to the system, component, or service; d. Document approved changes to the system, component, or service and the potential security impacts of such changes; and e. Track security flaws and flaw resolution within the system, component, or service and report findings to [Assignment: organization-defined personnel]."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_si_2_2",
+    "test_desc": "SI-2(2) Automates Flaw Remediation Status",
+    "test_rationale": "The organization employs automated mechanisms to determine the state of information system components with regard to flaw remediation."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_si_4",
+    "test_desc": "Information System Monitoring (SI-4)",
+    "test_rationale": "The organization: a.Monitors the information system to detect: 1. Attacks and indicators of potential attacks in accordance with [Assignment: organization-defined monitoring objectives]; and 2.Unauthorized local, network, and remote connections; b. Identifies unauthorized use of the information system through [Assignment: organization-defined techniques and methods]; c. Deploys monitoring devices: 1. Strategically within the information system to collect organization-determined essential information; and 2. At ad hoc locations within the system to track specific types of transactions of interest to the organization; d. Protects information obtained from intrusion-monitoring tools from unauthorized access, modification, and deletion; e. Heightens the level of information system monitoring activity whenever there is an indication of increased risk to organizational operations and assets, individuals, other organizations, or the Nation based on law enforcement information, intelligence information, or other credible sources of information; f. Obtains legal opinion with regard to information system monitoring activities in accordance with applicable federal laws, Executive Orders, directives, policies, or regulations; and g. Provides [Assignment: organization-defined information system monitoring information] to [Assignment: organization-defined personnel or roles] [Selection (one or more): as needed; [Assignment: organization-defined frequency]]."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_si_7",
+    "test_desc": "Software, Firmware, and Information Integrity (SI-7)",
+    "test_rationale": "The organization employs integrity verification tools to detect unauthorized changes to [Assignment: organization-defined software, firmware, and information]."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_si_12",
+    "test_desc": "Information Handling and Retention (SI-12)",
+    "test_rationale": "The organization handles and retains information within the information system and information output from the system in accordance with applicable federal laws, Executive Orders, directives, policies, regulations, standards, and operational requirements."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_2",
+    "test_desc": "Account Management (AC-2)",
+    "test_rationale": "Manage system accounts, group memberships, privileges, workflow, notifications, deactivations, and authorizations."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_3",
+    "test_desc": "Access Enforcement (AC-3)",
+    "test_rationale": "The information system enforces approved authorizations for logical access to information and system resources in accordance with applicable access control policies."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_4",
+    "test_desc": "Information Flow Enforcement (AC-4)",
+    "test_rationale": "The information system enforces approved authorizations for controlling the flow of information within the system and between interconnected systems based on organization-defined information flow control policies."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_5",
+    "test_desc": "Separation Of Duties (AC-5)",
+    "test_rationale": "Separate duties of individuals to prevent malevolent activity. automate separation of duties and access authorizations."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_6",
+    "test_desc": "Least Privilege (AC-6)",
+    "test_rationale": "The organization employs the principle of least privilege, allowing only authorized accesses for users (or processes acting on behalf of users) which are necessary to accomplish assigned tasks in accordance with organizational missions and business functions."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_17_1",
+    "test_desc": "AC-17(1) Automated Monitoring/Control",
+    "test_rationale": "The information system monitors and controls remote access methods."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_17_2",
+    "test_desc": "AC-17(2) Protection Of Confidentiality/Integrity Using Encryption",
+    "test_rationale": "The information system implements cryptographic mechanisms to protect the confidentiality and integrity of remote access sessions."
+  },
+  {
+    "test_category": "VPC",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_17_3",
+    "test_desc": "AC-17(3) Managed Access Control Points",
+    "test_rationale": "The information system routes all remote accesses through organization-defined managed network access control points."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ac_21",
+    "test_desc": "Information Sharing (AC-21)",
+    "test_rationale": "Facilitate information sharing. Enable authorized users to grant access to partners."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ir_4_1",
+    "test_desc": "IR-4(1) Automated Incident Handling Processes",
+    "test_rationale": "The organization employs automated mechanisms to support the incident handling process."
+  },
+  {
+    "test_category": "GuardDuty",
+    "test_number": "benchmark.nist_800_53_rev_4_ir_6_1",
+    "test_desc": "IR-6(1) Automated Reporting",
+    "test_rationale": "The organization employs automated mechanisms to assist in the reporting of security incidents."
+  },
+  {
+    "test_category": "GuardDuty",
+    "test_number": "benchmark.nist_800_53_rev_4_ir_7_1",
+    "test_desc": "IR-7(1) Automation Support For Availability Of Information / Support",
+    "test_rationale": "The organization employs automated mechanisms to increase the availability of incident response-related information and support."
+  },
+  {
+    "test_category": "GuardDuty",
+    "test_number": "benchmark.nist_800_53_rev_4_ra_5",
+    "test_desc": "Vulnerability Scanning (RA-5)",
+    "test_rationale": "Scan for system vulnerabilities. Share vulnerability information and security controls that eliminate vulnerabilities."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_cm_2",
+    "test_desc": "Baseline Configuration (CM-2)",
+    "test_rationale": "The organization develops, documents, and maintains under configuration control, a current baseline configuration of the information system."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_cm_7",
+    "test_desc": "Least Functionality (CM-7)",
+    "test_rationale": "The organization configures the information system to provide only essential capabilities and prohibits or restricts the use of the functions, ports, protocols, and/or services."
+  },
+  {
+    "test_category": "EC2",
+    "test_number": "benchmark.nist_800_53_rev_4_cm_8_1",
+    "test_desc": "CM-8(1) Updates During Installation / Removals",
+    "test_rationale": "The organization updates the inventory of information system components as an integral part of component installations, removals, and information system updates."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_cm_8_3",
+    "test_desc": "CM-8(3) Automated Unauthorized Component Detection",
+    "test_rationale": "The organization employs automated mechanisms to detect the presence of unauthorized hardware, software, and firmware components within the information system and takes actions (disables network access by such components, isolates the components etc) when unauthorized components are detected."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_au_2",
+    "test_desc": "Event Logging (AU-2)",
+    "test_rationale": "Automate security audit function with other organizational entities. Enable mutual support of audit of auditable events."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_au_3",
+    "test_desc": "Content of Audit Records (AU-3)",
+    "test_rationale": "The information system generates audit records containing information that establishes what type of event occurred, when the event occurred, where the event occurred, the source of the event, the outcome of the event, and the identity of any individuals or subjects associated with the event."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_au_6_1",
+    "test_desc": "AU-6(1) Process Integration",
+    "test_rationale": "The organization employs automated mechanisms to integrate audit review, analysis,and reporting processes to support organizational processes for investigation and response to suspicious activities."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_au_6_3",
+    "test_desc": "AU-6(3) Correlate Audit Repositories",
+    "test_rationale": "The organization analyzes and correlates audit records across different repositories to gain organization-wide situational awareness."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_au_7_1",
+    "test_desc": "AU-7(1) Automatic Processing",
+    "test_rationale": "The information system provides the capability to process audit records for events of interest based on [Assignment: organization-defined audit fields within audit records]."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_au_9",
+    "test_desc": "Protection of Audit Information (AU-9)",
+    "test_rationale": "The information system protects audit information and audit tools from unauthorized access, modification, and deletion."
+  },
+  {
+    "test_category": "CloudWatch",
+    "test_number": "benchmark.nist_800_53_rev_4_au_11",
+    "test_desc": "Audit Record Retention (AU-11)",
+    "test_rationale": "The organization retains audit records for [Assignment: organization-defined time period consistent with records retention policy] to provide support for after-the-fact investigations of security incidents and to meet regulatory and organizational information retention requirements."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_au_12",
+    "test_desc": "Audit Generation (AU-12)",
+    "test_rationale": "Audit events defined in AU-2. Allow trusted personnel to select which events to audit. Generate audit records for events."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.nist_800_53_rev_4_ia_2",
+    "test_desc": "Identification and Authentication (Organizational users) (IA-2)",
+    "test_rationale": "The information system uniquely identifies and authenticates organizational users (or processes acting on behalf of organizational users)."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "benchmark.nist_800_53_rev_4_ia_5_1",
+    "test_desc": "IA-5(1) Password-Based Authentication",
+    "test_rationale": "The information system, for password-based authentication that enforces  minimum password complexity, stores and transmits only cryptographically-protected passwords, enforces password minimum and maximum lifetime restrictions, prohibits password reuse, allows the use of a temporary password for system logons with an immediate change to a permanent password etc."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "benchmark.nist_800_53_rev_4_ia_5_4",
+    "test_desc": "IA-5(4) Automated Support For Password Strength Determination",
+    "test_rationale": "The organization employs automated tools to determine if password authenticators are sufficiently strong to satisfy [Assignment: organization-defined requirements]."
+  },
+  {
+    "test_category": "CodeBuild",
+    "test_number": "benchmark.nist_800_53_rev_4_ia_5_7",
+    "test_desc": "IA-5(7) No Embedded Unencrypted Static Authenticators",
+    "test_rationale": "The organization ensures that unencrypted static authenticators are not embedded in applications or access scripts or stored on function keys."
+  }
+]

@@ -10,7 +10,7 @@ from utils.scope import fetch_topology_data
 import urllib
 from config.config import celery_app
 from config.redisconfig import redis
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import networkx as nx
 import urllib.parse
@@ -191,6 +191,91 @@ class Node(object):
             }
             ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
         return True
+
+    def __compliance_helper(self, url, payload):
+        try:
+            status, resp, status_code = call_scope_control_api(url, data=json.dumps(payload))
+        except Exception as e:
+            raise DFError("failed to connect to agent", error=e)
+        if status_code != 200:
+            if 400 <= status_code < 500:
+                raise DFError(resp.strip('"'))
+            else:
+                raise InternalError("non-200 response from {}; response code: {}; response: {}".format(
+                    url, status_code, resp))
+        try:
+            response = json.loads(resp)
+        except:
+            response = resp
+        return response
+
+    def compliance_applicable_scans(self):
+        if self.is_ui_vm or self.pseudo:
+            return {"complianceScanLists": []}
+        if self.type == constants.NODE_TYPE_HOST:
+            redis_key = "{0}:{1}:{2}".format(constants.REDIS_COMPLIANCE_APPLICABLE_SCANS_PREFIX, self.type,
+                                             self.host_name)
+        elif self.type == constants.NODE_TYPE_CONTAINER or self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+            redis_key = "{0}:{1}:{2}".format(constants.REDIS_COMPLIANCE_APPLICABLE_SCANS_PREFIX,
+                                             constants.NODE_TYPE_CONTAINER_IMAGE, self.image_name_tag)
+        else:
+            raise DFError('action not supported for this node type')
+        applicable_scans = redis.get(redis_key)
+        if applicable_scans:
+            return json.loads(applicable_scans)
+        else:
+            post_data = {"node_type": self.type}
+            if self.type == constants.NODE_TYPE_CONTAINER:
+                post_data["container_id"] = self.docker_container_id
+            elif self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+                post_data["image_id"] = self.image_id
+            applicable_scans_api_url = constants.SCOPE_HOST_API_CONTROL_URL.format(
+                probe_id=self.probe_id, host_name=self.host_name,
+                action=constants.NODE_ACTION_COMPLIANCE_APPLICABLE_SCANS)
+            applicable_scans = self.__compliance_helper(applicable_scans_api_url, post_data)
+            redis.setex(redis_key, timedelta(days=14), json.dumps(applicable_scans))
+            return applicable_scans
+
+    def compliance_start_scan(self, compliance_check_type, ignore_test_numbers, scan_id=None):
+        if self.is_ui_vm or self.pseudo:
+            return {'complianceCheck': 'Compliance check cannot be started on management console'}
+        if self.type != constants.NODE_TYPE_HOST and self.type != constants.NODE_TYPE_CONTAINER and self.type != constants.NODE_TYPE_CONTAINER_IMAGE:
+            raise DFError('action not supported for this node type')
+        # Add 'QUEUED' doc
+        time_time = time.time()
+        if scan_id is None:
+            scan_id = self.scope_id + "_" + compliance_check_type + "_" + datetime.now().strftime(
+                "%Y-%m-%dT%H:%M:%S") + ".000"
+        es_doc = {
+            "total_checks": 0,
+            "result": {},
+            "node_id": self.scope_id,
+            "node_type": self.type,
+            "compliance_check_type": compliance_check_type,
+            "masked": "false",
+            "node_name": "",
+            "host_name": self.host_name,
+            "scan_status": "QUEUED",
+            "scan_message": "",
+            "scan_id": scan_id,
+            "time_stamp": int(time_time * 1000.0),
+            "kubernetes_cluster_id": self.kubernetes_cluster_id,
+            "kubernetes_cluster_name": self.kubernetes_cluster_name,
+            "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] + "Z"
+        }
+        post_data = {"check_type": compliance_check_type, "node_type": self.type}
+        if self.type == constants.NODE_TYPE_CONTAINER:
+            post_data["container_id"] = self.docker_container_id
+        elif self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+            post_data["image_id"] = self.image_id
+            post_data["image_name"] = self.image_name_tag
+        post_data["ignore_test_number_list"] = json.dumps(ignore_test_numbers)
+        post_data["kubernetes_cluster_name"] = self.kubernetes_cluster_name
+        post_data["kubernetes_cluster_id"] = self.kubernetes_cluster_id
+        post_data["scan_id"] = scan_id
+        start_scan_api_url = constants.SCOPE_HOST_API_CONTROL_URL.format(
+            probe_id=self.probe_id, host_name=self.host_name, action=constants.NODE_ACTION_COMPLIANCE_START_SCAN)
+        return self.__compliance_helper(start_scan_api_url, post_data)
 
     def secret_start_scan(self):
         if self.is_ui_vm or self.pseudo:

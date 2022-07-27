@@ -9,6 +9,7 @@ imports = (
     'tasks.registry_images',
     'tasks.running_notification',
     'tasks.user_activity',
+    'tasks.attack_graph',
 )
 
 beat_schedule = {
@@ -48,9 +49,27 @@ beat_schedule = {
         'args': [],
         'relative': False,
     },
+    'compute_attack_graph': {
+        'task': 'tasks.attack_graph.compute_attack_graph',
+        'schedule': timedelta(minutes=5),
+        'args': [],
+        'relative': False,
+    },
     'cve_fix_interrupted': {
         'task': 'tasks.reaper_tasks.cve_fix_interrupted',
         'schedule': timedelta(minutes=2),
+        'args': [],
+        'relative': True,
+    },
+    'compliance_fix_interrupted': {
+        'task': 'tasks.reaper_tasks.compliance_fix_interrupted',
+        'schedule': timedelta(minutes=2),
+        'args': [],
+        'relative': True,
+    },
+    'map_cloud_account_arn_to_table': {
+        'task': 'tasks.reaper_tasks.map_cloud_account_arn_to_table',
+        'schedule': timedelta(minutes=4),
         'args': [],
         'relative': True,
     },

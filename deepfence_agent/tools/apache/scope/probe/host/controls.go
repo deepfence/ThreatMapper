@@ -22,7 +22,13 @@ const (
 	tcpProtocol  		  = "tcp"
 )
 
+func init() {
+	complianceCheckTypes = []string{"hipaa", "gdpr", "nist", "pci"}
+}
+
 func (r *Reporter) registerControls() {
+	r.handlerRegistry.Register(StartComplianceScan, r.startComplianceScan)
+	r.handlerRegistry.Register(ApplicableComplianceScans, r.applicableComplianceScans)
 	r.handlerRegistry.Register(GetLogsFromAgent, r.getLogsFromAgent)
 	r.handlerRegistry.Register(GenerateSBOM, r.handleGenerateSBOM)
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
@@ -62,6 +68,36 @@ func (r *Reporter) deleteUserDefinedTags(req xfer.Request) xfer.Response {
 	return xfer.Response{TagsInfo: "Tags deleted"}
 }
 
+func (r *Reporter) applicableComplianceScans(req xfer.Request) xfer.Response {
+	// Get list of available compliance scans
+	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
+	//TODO clean here
+	complianceScansList := make([]dfUtils.ComplianceScan, 0)
+	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: dfUtils.CheckTypeHIPAA, Label: dfUtils.CheckNameHIPAA})
+	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "gdpr", Label: "GDPR"})
+	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "nist", Label: "NIST"})
+	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "pci", Label: "PCI"})
+	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: dfUtils.CheckTypeCIS, Label: dfUtils.CheckNameCIS})
+	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "hipaakube", Label: "Hipaakube"})
+	if nodeType == nodeTypeContainer {
+		containerID := fmt.Sprintf("%s", req.ControlArgs["container_id"])
+		if containerID == "" {
+			return xfer.ResponseErrorf("container_id is required")
+		}
+		return xfer.Response{ComplianceScanListsInfo: dfUtils.GetContainerApplicableComplianceScans(containerID)}
+	} else if nodeType == nodeTypeImage {
+		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
+		if imageId == "" {
+			return xfer.ResponseErrorf("image_id is required")
+		}
+		return xfer.Response{ComplianceScanListsInfo: dfUtils.GetImageApplicableComplianceScans(imageId)}
+	} else if nodeType == nodeTypeHost {
+		return xfer.Response{ComplianceScanListsInfo: complianceScansList}
+	} else {
+		return xfer.ResponseErrorf("invalid node_type")
+	}
+}
+
 func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 	//logTypes := fmt.Sprintf("%s", req.ControlArgs["log_types"])
 	var logFileNameLocMap = map[string]string{
@@ -93,6 +129,95 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 		return nil
 	})
 	return xfer.Response{AgentLogs: fileInfo}
+}
+
+func (r *Reporter) startComplianceScan(req xfer.Request) xfer.Response {
+	// Run compliance scan
+	var ignoreList, ignoreFileName, ignoreParam string
+	var ignoreErr bool
+	complianceCheckType := fmt.Sprintf("%s", req.ControlArgs["check_type"])
+	if complianceCheckType == "" {
+		return xfer.ResponseErrorf("check_type is required")
+	}
+	exists, _ := dfUtils.InArray(complianceCheckType, complianceCheckTypes)
+	if !exists {
+		return xfer.ResponseErrorf("check_type should be one of %v", complianceCheckTypes)
+	}
+	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
+	kubernetesClusterName := fmt.Sprintf("%s", req.ControlArgs["kubernetes_cluster_name"])
+	kubernetesClusterId := fmt.Sprintf("%s", req.ControlArgs["kubernetes_cluster_id"])
+	scanId := fmt.Sprintf("%s", req.ControlArgs["scan_id"])
+	// prepend cgexec only if deepfence created groups are present
+	cgexecPrefix := ""
+	if _, statErr := os.Stat("/sys/fs/cgroup/cpu/medium_2"); statErr == nil {
+		cgexecPrefix = "cgexec -g cpu:medium_2 "
+	}
+	ignoreList, ignoreErr = req.ControlArgs["ignore_test_number_list"]
+	if ignoreErr == false {
+		ignoreList = ""
+		ignoreParam = ""
+	}
+	var command string
+	if nodeType == nodeTypeContainer {
+		containerID := fmt.Sprintf("%s", req.ControlArgs["container_id"])
+		if containerID == "" {
+			return xfer.ResponseErrorf("container_id is required")
+		}
+		if ignoreList != "" {
+			ignoreFileName = fmt.Sprintf("%s/tmp/%s_%s.txt", getDfInstallDir(), complianceCheckType, containerID)
+			ignoreErr := writeIgnoreFile(ignoreFileName, ignoreList)
+			if ignoreErr != nil {
+				log.Errorf("Unable to write to ignore file %s %v", ignoreFileName, ignoreErr)
+				ignoreParam = ""
+			} else {
+				ignoreParam = fmt.Sprintf("-ignore-file-name %s", ignoreFileName)
+			}
+		}
+		command = fmt.Sprintf("%s%s/usr/local/bin/compliance_check/deepfence_compliance_check -compliance-check-type '%s' -container-id '%s' -node-type '%s' -k8-name '%s' %s", cgexecPrefix, getDfInstallDir(), complianceCheckType, containerID, nodeType, kubernetesClusterName, ignoreParam)
+	} else if nodeType == nodeTypeImage {
+		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
+		if imageId == "" {
+			return xfer.ResponseErrorf("image_id is required")
+		}
+		imageNameWithTag := fmt.Sprintf("%s", req.ControlArgs["image_name"])
+		if imageNameWithTag == "" {
+			return xfer.ResponseErrorf("image_name is required")
+		}
+		if ignoreList != "" {
+			ignoreFileName = fmt.Sprintf("%s/tmp/%s_%s.txt", getDfInstallDir(), complianceCheckType, imageId)
+			ignoreErr := writeIgnoreFile(ignoreFileName, ignoreList)
+			if ignoreErr != nil {
+				log.Errorf("Unable to write to ignore file %s %v", ignoreFileName, ignoreErr)
+				ignoreParam = ""
+			} else {
+				ignoreParam = fmt.Sprintf("-ignore-file-name %s", ignoreFileName)
+			}
+		}
+		command = fmt.Sprintf("%s%s/usr/local/bin/compliance_check/deepfence_compliance_check -compliance-check-type '%s' -image-name '%s' -image-id '%s' -node-type '%s' -k8-name '%s' %s", cgexecPrefix, getDfInstallDir(), complianceCheckType, imageNameWithTag, imageId, nodeType, kubernetesClusterName, ignoreParam)
+	} else if nodeType == nodeTypeHost {
+		if ignoreList != "" {
+			ignoreFileName = fmt.Sprintf("%s/tmp/%s.txt", getDfInstallDir(), complianceCheckType)
+			ignoreErr := writeIgnoreFile(ignoreFileName, ignoreList)
+			if ignoreErr != nil {
+				log.Errorf("Unable to write to ignore file %s %v", ignoreFileName, ignoreErr)
+				ignoreParam = ""
+			} else {
+				ignoreParam = fmt.Sprintf("-ignore-file-name %s", ignoreFileName)
+			}
+		}
+		_, _, _, kubeNodeRole, _ := dfUtils.GetKubernetesDetails()
+		if kubeNodeRole != "master" {
+			kubeNodeRole = "worker"
+		}
+		command = fmt.Sprintf("%s%s/usr/local/bin/compliance_check/deepfence_compliance_check -compliance-check-type '%s' -node-type '%s' -k8-name '%s' %s -k8-id '%s' -scan-id '%s' -k8-node-role '%s'", cgexecPrefix, getDfInstallDir(), complianceCheckType, nodeType, kubernetesClusterName, ignoreParam, kubernetesClusterId, scanId, kubeNodeRole)
+	} else {
+		return xfer.ResponseErrorf("invalid node_type")
+	}
+	err := dfUtils.ExecuteCommandInBackground(command)
+	if err != nil {
+		return xfer.ResponseErrorf(fmt.Sprintf("%s", err))
+	}
+	return xfer.Response{ComplianceCheckInfo: "Compliance check started"}
 }
 
 func readFile(filepath string) ([]byte, error) {

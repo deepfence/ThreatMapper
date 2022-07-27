@@ -37,7 +37,7 @@ add_template () {
     template_code=`curl -s -o /dev/null -w "%{http_code}" "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1?pretty"`
     if [ "$template_code" != "200" ]; then
         curl -XPUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1" -H 'Content-Type: application/json' -d '{
-            "index_patterns": '"$(create_index_pattern '("cve" "cve-scan")')"',
+            "index_patterns": '"$(create_index_pattern '("cve" "cve-scan" "cloud-compliance-scan-logs" "cloud-compliance-scan")')"',
             "settings": {
                 "number_of_shards": 1,
                 "index": {
@@ -380,6 +380,170 @@ add_index() {
       }'
       echo ""
   done
+  curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "compliance")" -H 'Content-Type: application/json' -d'
+  {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "test_rationale": {
+          "type": "text"
+        },
+        "test_desc": {
+          "type": "text"
+        },
+        "scan_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "node_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "test_number": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 512
+            }
+          }
+        },
+        "time_stamp": {
+          "type": "long"
+        }
+      }
+    }
+  }'
+  echo ""
+  curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "cloud-compliance-scan")" -H 'Content-Type: application/json' -d'
+  {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "test_rationale": {
+          "type": "text"
+        },
+        "test_desc": {
+          "type": "text"
+        },
+        "scan_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "node_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "test_number": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 512
+            }
+          }
+        },
+        "time_stamp": {
+          "type": "long"
+        }
+      }
+    }
+  }'
+  echo ""
+  curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "compliance-scan-logs")" -H 'Content-Type: application/json' -d'
+  {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "scan_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "node_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "time_stamp": {
+          "type": "long"
+        },
+        "scan_message": {
+          "type": "text"
+        }
+      }
+    }
+  }'
+  echo ""
+  curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "cloud-compliance-scan-logs")" -H 'Content-Type: application/json' -d'
+  {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "scan_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "node_id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "time_stamp": {
+          "type": "long"
+        },
+        "scan_message": {
+          "type": "text"
+        }
+      }
+    }
+  }'
+  echo ""
 }
 
 

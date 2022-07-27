@@ -23,6 +23,9 @@ type PolicyAction string
 
 const (
 	maxIdleConnsPerHost = 1024
+    CheckTypePCI                       = "pci"
+    CheckTypeNIST                      = "nist"
+    CheckTypeGDPR                      = "gdpr"
 )
 
 func RemoveLastCharacter(s string) string {
@@ -275,12 +278,16 @@ func InArray(val interface{}, array interface{}) (exists bool, index int) {
 	return
 }
 
-func ExecuteCommand(commandStr string) (string, error) {
+func ExecuteCommand(commandStr string, envVars map[string]string) (string, error) {
 	cmd := exec.Command("/bin/sh", "-c", commandStr)
 	var commandOut bytes.Buffer
 	var commandErr bytes.Buffer
 	cmd.Stdout = &commandOut
 	cmd.Stderr = &commandErr
+	cmd.Env = os.Environ()
+	for key, value := range envVars {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	}
 	err := cmd.Run()
 	if err != nil {
 		return strings.TrimSpace(commandErr.String()), err

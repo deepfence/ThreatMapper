@@ -18,6 +18,10 @@ bin/package-scanner:
 	(cd package-scanner && make)
 	cp $(PWD)/package-scanner/package-scanner $(PWD)/bin
 
+bin/compliance:
+	(cd compliance && make)
+	cp $(PWD)/compliance/compliance $(PWD)/bin
+
 proto: ./agent-plugins-grpc/proto/*.proto
 	(cd agent-plugins-grpc && make go)
 	cp agent-plugins-grpc/proto/*.go $(PWD)/proto
