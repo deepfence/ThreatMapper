@@ -1,6 +1,8 @@
 package host
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
 	dfUtils "github.com/deepfence/df-utils"
 	"github.com/weaveworks/scope/common/xfer"
@@ -12,14 +14,20 @@ import (
 
 // Control IDs used by the host integration.
 const (
-	GetLogsFromAgent      = "get_logs_from_agent"
-	GenerateSBOM          = "generate_sbom"
-	AddUserDefinedTags    = "host_add_user_defined_tags"
-	DeleteUserDefinedTags = "host_delete_user_defined_tags"
-	StartSecretsScan      = "secret_scan_start"
-	secretScanSocket	  = "/tmp/secretScanner.sock"
-	unixProtocol 		  = "unix"
-	tcpProtocol  		  = "tcp"
+	StartComplianceScan       = "start_compliance_scan"
+	ApplicableComplianceScans = "applicable_compliance_scans"
+	GetLogsFromAgent          = "get_logs_from_agent"
+	GenerateSBOM              = "generate_sbom"
+	AddUserDefinedTags        = "host_add_user_defined_tags"
+	DeleteUserDefinedTags     = "host_delete_user_defined_tags"
+	StartSecretsScan          = "secret_scan_start"
+	secretScanSocket          = "/tmp/secretScanner.sock"
+	unixProtocol              = "unix"
+	tcpProtocol               = "tcp"
+)
+
+var (
+	complianceCheckTypes []string
 )
 
 func init() {
@@ -79,19 +87,7 @@ func (r *Reporter) applicableComplianceScans(req xfer.Request) xfer.Response {
 	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "pci", Label: "PCI"})
 	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: dfUtils.CheckTypeCIS, Label: dfUtils.CheckNameCIS})
 	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "hipaakube", Label: "Hipaakube"})
-	if nodeType == nodeTypeContainer {
-		containerID := fmt.Sprintf("%s", req.ControlArgs["container_id"])
-		if containerID == "" {
-			return xfer.ResponseErrorf("container_id is required")
-		}
-		return xfer.Response{ComplianceScanListsInfo: dfUtils.GetContainerApplicableComplianceScans(containerID)}
-	} else if nodeType == nodeTypeImage {
-		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
-		if imageId == "" {
-			return xfer.ResponseErrorf("image_id is required")
-		}
-		return xfer.Response{ComplianceScanListsInfo: dfUtils.GetImageApplicableComplianceScans(imageId)}
-	} else if nodeType == nodeTypeHost {
+	if nodeType == nodeTypeHost {
 		return xfer.Response{ComplianceScanListsInfo: complianceScansList}
 	} else {
 		return xfer.ResponseErrorf("invalid node_type")
@@ -114,7 +110,7 @@ func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {
 			fileInfo = append(fileInfo, data)
 		}
 	}
-	filepath.Walk(getDfInstallDir() + "/var/log/supervisor/", func(path string, f os.FileInfo, err error) error {
+	filepath.Walk(getDfInstallDir()+"/var/log/supervisor/", func(path string, f os.FileInfo, err error) error {
 		if f.IsDir() {
 			return nil
 		}
@@ -222,6 +218,25 @@ func (r *Reporter) startComplianceScan(req xfer.Request) xfer.Response {
 
 func readFile(filepath string) ([]byte, error) {
 	return ioutil.ReadFile(filepath)
+}
+
+func writeIgnoreFile(fileName string, dataBuff string) error {
+	var ignoreIds []string
+	err := json.Unmarshal([]byte(dataBuff), &ignoreIds)
+	if err != nil {
+		return err
+	}
+	filePtr, fileErr := os.Create(fileName)
+	if fileErr != nil {
+		return fileErr
+	}
+	defer filePtr.Close()
+	fileWriter := bufio.NewWriter(filePtr)
+	for _, line := range ignoreIds {
+		fmt.Fprintln(filePtr, line)
+	}
+	fileWriter.Flush()
+	return nil
 }
 
 func getDfInstallDir() string {

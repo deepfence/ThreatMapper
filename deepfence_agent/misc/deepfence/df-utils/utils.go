@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/hostname"
 	"io/ioutil"
 	"net"
@@ -23,10 +24,20 @@ type PolicyAction string
 
 const (
 	maxIdleConnsPerHost = 1024
-    CheckTypePCI                       = "pci"
-    CheckTypeNIST                      = "nist"
-    CheckTypeGDPR                      = "gdpr"
+	HostMountDir        = "/fenced/mnt/host/"
+	CheckTypeHIPAA      = "hipaa"
+	CheckNameHIPAA      = "HIPAA"
+	CheckTypeCIS        = "cis"
+	CheckNameCIS        = "CIS"
+	CheckTypePCI        = "pci"
+	CheckTypeNIST       = "nist"
+	CheckTypeGDPR       = "gdpr"
 )
+
+type ComplianceScan struct {
+	Code  string `json:"code"`
+	Label string `json:"label"`
+}
 
 func RemoveLastCharacter(s string) string {
 	r := []rune(s)
@@ -302,6 +313,14 @@ func ExecuteCommandInBackground(commandStr string) error {
 	return err
 }
 
+func GetContainerNameFromID(containerID string) (string, error) {
+	cName, err := ExecuteCommand(fmt.Sprintf("docker inspect --format=\"{{.Name}}\" %s", containerID), nil)
+	if err != nil {
+		return "", err
+	}
+	return cName, nil
+}
+
 func IsThisHostUIMachine() bool {
 	value := os.Getenv("DF_PROG_NAME")
 	if len(value) == 0 || value != "discovery" {
@@ -341,6 +360,16 @@ func GetRealHostName() string {
 		}
 	}
 	return hostName
+}
+
+func GetTimestamp() int64 {
+	return time.Now().UTC().UnixNano() / 1000000
+}
+
+func AppendTextToFile(fileObj *os.File, text string) {
+	if _, err := fileObj.WriteString(text); err != nil {
+		logrus.Error(err.Error())
+	}
 }
 
 func RoutedInterface(network string, flags net.Flags) *net.Interface {
