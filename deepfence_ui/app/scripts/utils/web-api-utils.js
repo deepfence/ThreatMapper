@@ -2826,3 +2826,17 @@ export function getAttackGraphData(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function getAttackGraphNodeInfo(params = {}) {
+  const { nodeId } = params;
+  const url = new URL(`${backendElasticApiEndPoint()}/attack-graph/node`);
+  url.searchParams.append('graph_node_id', nodeId);
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}

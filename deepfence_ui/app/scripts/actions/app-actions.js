@@ -114,6 +114,7 @@ import {
   getResourcesForCloudService,
   getServicesForCloudAccount,
   getAttackGraphData,
+  getAttackGraphNodeInfo
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -2073,4 +2074,13 @@ export function getAttackGraphDataAction(params) {
     ActionTypes.GET_ATTACK_GRAPH_DATA_FAILURE,
   ];
   return genericThunkAction(actionTypes, getAttackGraphData, params);
+}
+
+export function getAttackGraphNodeInfoAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_ATTACK_GRAPH_NODE_INFO_REQUEST,
+    ActionTypes.GET_ATTACK_GRAPH_NODE_INFO_SUCCESS,
+    ActionTypes.GET_ATTACK_GRAPH_NODE_INFO_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getAttackGraphNodeInfo, params);
 }

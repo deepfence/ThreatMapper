@@ -16,9 +16,10 @@ registerNode('attack-path-node', {
     const keyShape = group?.addShape('circle', {
       attrs: {
         r: size / 2,
-        fill: 'transparent',
+        fill: '#fff',
         stroke: '#fff',
-        strokeOpacity: '0.6',
+        strokeOpacity: '0.4',
+        opacity: 0.2,
         cursor: 'pointer'
       },
       draggable: true,
@@ -27,10 +28,10 @@ registerNode('attack-path-node', {
     if (cfg?.img) {
       group?.addShape('image', {
         attrs: {
-          x: (- size / 2) - 2,
-          y: (- size/ 2) - 2,
-          width: size + 4,
-          height: size + 4,
+          x: (- size / 2) + 4,
+          y: (- size/ 2) + 4,
+          width: size - 8,
+          height: size - 8,
           img: cfg.img,
           opacity: mainOpacity,
           cursor: 'pointer'
@@ -38,6 +39,11 @@ registerNode('attack-path-node', {
         // must be assigned in G6 3.3 and later versions. it can be any value you want
         name: 'image-shape',
         draggable: true,
+      }).setClip({
+        attrs: {
+          r: (size) / 2
+        },
+        type: 'circle',
       });
     }
 
@@ -202,7 +208,7 @@ registerNode('attack-path-node', {
           textAlign: 'center',
           textBaseline: 'middle',
           cursor: 'pointer',
-          text: cfg.label,
+          text: `${cfg.label} ${cfg?.count > 0 ? `(${cfg?.count})` : ''}`,
           ...(cfg.labelCfg?.style ?? {})
         },
         // must be assigned in G6 3.3 and later versions. it can be any value you want
