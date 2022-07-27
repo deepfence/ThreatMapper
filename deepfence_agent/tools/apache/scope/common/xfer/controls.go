@@ -2,6 +2,7 @@ package xfer
 
 import (
 	"fmt"
+	dfUtils "github.com/deepfence/df-utils"
 	"net/rpc"
 	"strconv"
 	"sync"
@@ -29,16 +30,17 @@ type Response struct {
 	ResizeTTYControl string `json:"resize_tty_control,omitempty"`
 
 	// Remove specific fields
-	RemovedNode         string              `json:"removedNode,omitempty"` // Set if node was removed
-	CVEInfo             string              `json:"cve,omitempty"`
-	AgentLogs           []map[string]string `json:"agent_logs,omitempty"`
-	KubeClusterNodes    []string            `json:"kube_cluster_nodes,omitempty"`
-	ComplianceCheckInfo string              `json:"complianceCheck,omitempty"`
-	PodsList            map[string]string   `json:"pods_list,omitempty"`
-	CNIPlugin           string              `json:"cni_plugin,omitempty"`
-	NodesList           []string            `json:"nodes_list,omitempty"`
-	LoadBalancerIp      string              `json:"load_balancer_ip,omitempty"`
-	TagsInfo            string              `json:"tags,omitempty"`
+	RemovedNode             string                   `json:"removedNode,omitempty"` // Set if node was removed
+	CVEInfo                 string                   `json:"cve,omitempty"`
+	AgentLogs               []map[string]string      `json:"agent_logs,omitempty"`
+	KubeClusterNodes        []string                 `json:"kube_cluster_nodes,omitempty"`
+	ComplianceCheckInfo     string                   `json:"complianceCheck,omitempty"`
+	ComplianceScanListsInfo []dfUtils.ComplianceScan `json:"complianceScanLists,omitempty"`
+	PodsList                map[string]string         `json:"pods_list,omitempty"`
+	CNIPlugin               string                   `json:"cni_plugin,omitempty"`
+	NodesList               []string                 `json:"nodes_list,omitempty"`
+	LoadBalancerIp          string                   `json:"load_balancer_ip,omitempty"`
+	TagsInfo                string                   `json:"tags,omitempty"`
 	ImagesList          []string            `json:"images_list,omitempty"`
 	SecretsScanInfo     string              `json:"secrets_scan,omitempty"`
 }

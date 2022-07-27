@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	dfUtils "github.com/deepfence/df-utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
 	"io/ioutil"
 	"os"
