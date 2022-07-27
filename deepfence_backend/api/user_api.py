@@ -150,6 +150,14 @@ def register():
         raise InvalidUsage("Company is required.")
     elif not console_url:
         raise InvalidUsage("Deepfence Console URL is required.")
+    else:
+        email = email.strip()
+        first_name = first_name.strip()
+        last_name = last_name.strip()
+        password = password.strip()
+        confirm_password = confirm_password.strip()
+        company = company.strip()
+        console_url = console_url.strip()
 
     if not _is_email_valid():
         raise InvalidUsage("Email {} already exists".format(email))
@@ -309,8 +317,11 @@ def api_auth():
     if type(request.json) != dict:
         raise InvalidUsage("Request data invalid")
     api_key = request.json.get('api_key', None)
+
     if not api_key:
         raise InvalidUsage("api_key is required")
+    else:
+        api_key = api_key.strip()
 
     from config.app import db
 
@@ -706,9 +717,14 @@ def login():
     email = request.json.get('email', None)
     if not email:
         raise InvalidUsage("Email is required")
+    else:
+        email = email.strip()
     password = request.json.get('password', None)
+    
     if not password:
         raise InvalidUsage("Password is required")
+    else:
+        password = password.strip()
 
     from config.app import db
 
@@ -1188,9 +1204,11 @@ class ResetPasswordEmail(MethodView):
           404:
             description: User not found.
         """
-        email = request.args.get("email")
+        email = request.args.get("email","")
         if not email:
             raise InvalidUsage("Email is required.")
+        else:
+            email = email.strip()
 
         user = User.query.filter_by(email=email).one_or_none()
         if not user:

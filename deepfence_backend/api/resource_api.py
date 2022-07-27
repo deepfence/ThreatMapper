@@ -886,6 +886,9 @@ def enumerate_node_filters():
             continue
         if resource_type == constants.CVE_ES_TYPE:
             # Get `container` info from `cve` and `host` / `container_image` data from `cve-scan`
+            resource_filters.append(
+                {"label": "Masked", "name": "masked", "options": ["false", "true"], "type": "string",
+                 "resource": "cve"})
             cve_aggs = {"cve_container_name": {
                 "terms": {"field": "cve_container_name.keyword", "size": constants.ES_TERMS_AGGR_SIZE}}}
             cve_filters = {"type": constants.CVE_ES_TYPE}

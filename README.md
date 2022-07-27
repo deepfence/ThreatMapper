@@ -38,7 +38,7 @@ Deepfence ThreatMapper hunts for vulnerabilities in your production platforms, a
 
 # Getting Started with ThreatMapper
 
-https://user-images.githubusercontent.com/1436408/144302426-733a062c-5f56-4404-9c37-547452a6b75b.mp4
+https://user-images.githubusercontent.com/3711627/171056631-fd2d310b-b40a-4dde-9f00-5ab4e29b8935.mp4
 
 ## Planning your Deployment
 
@@ -87,8 +87,6 @@ More details are in the [ThreatMapper documentation](https://github.com/deepfenc
 ### Initial Configuration
 
 Once the Management Console is up and running, you can [register an admin account and obtain an API key](https://github.com/deepfence/ThreatMapper/wiki/Console-Initial-Configuration).  
-
-When the console first starts up, it will begin to acquire the Threat Intel feed data; this usually takes a few minutes, but can take up to an hour.  You can install sensors and browse the topology of your applications, but you will not be able to perform vulnerability scans until the threat feeds have been fully acquired.
 
 ## Install the ThreatMapper Sensors
 

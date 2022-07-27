@@ -87,6 +87,7 @@ export const USER_SIDE_NAV_MENU_COLLECTION = [
 ];
 
 export const ADMIN_SETTINGS_MENU_COLLECTION = [
+  {name: 'agent_setup', isActive: false},
   {name: 'scheduled_jobs', isActive: false},
   {name: 'user_management', isActive: false},
   {name: 'alerts_&_logs_management', isActive: false},
@@ -97,6 +98,7 @@ export const ADMIN_SETTINGS_MENU_COLLECTION = [
 ];
 
 export const USER_SETTINGS_MUNU_COLLECTION = [
+  {name: 'agent_setup', isActive: false},
   {name: 'scheduled_jobs', isActive: false},
   {name: 'user_management', isActive: false}
 ];

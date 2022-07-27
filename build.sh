@@ -11,6 +11,9 @@ VULNERABILITY_MAPPER_DIR=$(pwd)/vulnerability_mapper
 SECRET_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/SecretScanner/
 PACKAGE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/package-scanner/
 
+cd $DEEPFENCE_AGENT_DIR/plugins
+bash bootstrap.sh
+
 cd $DEEPFENCE_CONSOLE_DIR
 
 if [ ! -f certs/ssl/filebeat.crt ]; then
@@ -91,14 +94,15 @@ if [ ! $? -eq 0 ]; then
 fi
 
 echo "Building UI image"
-bash ./write_console_version.sh
+git log --format="%h" -n 1 > $DEEPFENCE_UI_DIR/console_version.txt
+echo "1.3.1" > $DEEPFENCE_UI_DIR/product_version.txt
 docker build -f $DEEPFENCE_UI_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_ui_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_UI_DIR
 
 if [ ! $? -eq 0 ]; then
     echo "Building UI image failed. Exiting"
     exit 1
 fi
-bash ./clean_console_version.sh
+rm -rf $DEEPFENCE_UI_DIR/console_version.txt $DEEPFENCE_UI_DIR/product_version.txt
 
 echo "Building fetcher"
 docker build -f $DEEPFENCE_FETCHER_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_FETCHER_DIR
@@ -116,18 +120,7 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-echo "Building agent"
-cd $DEEPFENCE_AGENT_DIR
-env IMAGE_REPOSITORY="${IMAGE_REPOSITORY:-deepfenceio}" DF_IMG_TAG="${DF_IMG_TAG:-latest}" bash build.sh
-
-if [ ! $? -eq 0 ]; then
-    echo "Building agent image failed. Exiting"
-    exit 1
-fi
-
 echo "Building Secret Scanner Image"
-cd $DEEPFENCE_AGENT_DIR/plugins
-bash bootstrap.sh
 cd $SECRET_SCANNER_DIR
 bash bootstrap.sh
 docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_secret_scanner_ce:${DF_IMG_TAG:-latest} -f $SECRET_SCANNER_DIR/Dockerfile $SECRET_SCANNER_DIR
@@ -141,6 +134,15 @@ cd $PACKAGE_SCANNER_DIR
 docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-latest} -f $PACKAGE_SCANNER_DIR/Dockerfile $PACKAGE_SCANNER_DIR
 if [ ! $? -eq 0 ]; then
     echo "Building secret scanner image failed. Exiting"
+    exit 1
+fi
+
+echo "Building agent"
+cd $DEEPFENCE_AGENT_DIR
+env IMAGE_REPOSITORY="${IMAGE_REPOSITORY:-deepfenceio}" DF_IMG_TAG="${DF_IMG_TAG:-latest}" bash build.sh
+
+if [ ! $? -eq 0 ]; then
+    echo "Building agent image failed. Exiting"
     exit 1
 fi
 

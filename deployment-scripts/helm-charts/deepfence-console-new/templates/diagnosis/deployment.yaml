@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-diagnosis
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-diagnosis
+spec:
+  {{- if not .Values.diagnosis.autoscaling.enabled }}
+  replicas: {{ .Values.diagnosis.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      name: deepfence-diagnosis
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: deepfence-console
+        name: deepfence-diagnosis
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      volumes:
+{{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+        - name: docker-sock
+          hostPath:
+            path: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
+            type: Socket
+{{ end }}
+      containers:
+        - name: deepfence-diagnosis
+          image: "{{ .Values.diagnosis.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.diagnosis.image.pullPolicy }}
+          args:
+            - kubernetes
+          env:
+            - name: NODE_METRICS
+              value: "{{ .Values.diagnosis.nodeMetrics }}"
+            - name: UI_SERVICE_NAME
+              value: "{{ .Values.router.uiServiceName }}"
+            - name: CONSOLE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: http
+              containerPort: 8009
+              protocol: TCP
+          volumeMounts:
+{{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
+              name: docker-sock
+{{ end }}
+          resources:
+            requests:
+              memory: {{ .Values.defaultResourceLimits.requests.memory }}
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+            limits:
+              memory: 200Mi
+{{- if eq "true" .Values.setDefaultResourceLimits }}
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+{{- end }}
+      {{- with .Values.diagnosis.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: name
+                    operator: In
+                    values:
+                      - deepfence-celery
+              topologyKey: kubernetes.io/hostname
+      {{- with .Values.diagnosis.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

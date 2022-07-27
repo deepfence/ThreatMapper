@@ -36,7 +36,7 @@ const (
 )
 
 func init() {
-	supervisorContainers = []string{"deepfence-analyzer-0", "deepfence-analyzer-1", "deepfence-analyzer-2", "deepfence-celery", "deepfence-backend", "deepfence-api"}
+	supervisorContainers = []string{"deepfence-celery", "deepfence-backend", "deepfence-api"}
 	consoleNamespace = os.Getenv("CONSOLE_NAMESPACE")
 	if consoleNamespace == "" {
 		consoleNamespace = "default"

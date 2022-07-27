@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"io"
+	"math"
 	"net"
 	"net/http"
 	"os"
@@ -43,6 +45,11 @@ func authenticateAgentWithConsole(httpClient *http.Client, scopeApiUrl, authKey 
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
 		return true, nil
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err == nil {
+		fmt.Printf("agent authentication: got status code %d with message %s\n", resp.StatusCode,
+			string(body)[:int(math.Min(160.0, float64(len(body))))])
 	}
 	return false, nil
 }

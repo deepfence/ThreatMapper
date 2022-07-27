@@ -10,6 +10,7 @@ import { TopologyGraph } from "./TopologyGraph";
 import { getNodeIcon } from "./node-icons";
 import { TopologyClient, TopologyNodeType } from "./topology-client-2";
 import { useSocketDisconnectHandler } from './hooks';
+import { AgentSetup } from "../common/agent-setup";
 
 export const LiveTopologyGraph = forwardRef(
   (
@@ -173,9 +174,7 @@ export const LiveTopologyGraph = forwardRef(
       hoverNode(item, hover);
     }, []);
     return (
-      count === 0 ? <div className="absolute-center" style={{fontSize: '35px'}}>
-      No Nodes Available
-    </div> : <TopologyGraph
+      count === 0 ? <AgentSetup /> : <TopologyGraph
         ref={graph}
         onNodeExpanded={onNodeExpanded}
         onNodeCollapsed={onNodeCollapsed}
