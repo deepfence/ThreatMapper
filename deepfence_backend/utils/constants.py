@@ -178,7 +178,7 @@ if CUSTOMER_UNIQUE_ID:
     REPORT_INDEX += f"-{CUSTOMER_UNIQUE_ID}"
 
 ALL_INDICES = [
-    CVE_INDEX, CVE_SCAN_LOGS_INDEX
+    CVE_INDEX, CVE_SCAN_LOGS_INDEX, SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, SBOM_INDEX, SBOM_ARTIFACT_INDEX
 ]
 CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "javascript", "rust", "golang", "dotnet"]
 AES_SETTING_KEY = "aes_secret"
