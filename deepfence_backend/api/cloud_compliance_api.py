@@ -579,7 +579,7 @@ def cloud_compliance_scan_nodes():
         org_compliance_percentage = 0.0
         if org_total and (org_total['ok'] + org_total['info'] + org_total['alarm'] + org_total['skip']) != 0:
             org_compliance_percentage = (org_total['ok'] + org_total['info']) * 100 / (org_total['ok'] +
-                                                                                       org_total['info'] + org_total['alarm'] + org_total['skip'])
+                org_total['info'] + org_total['alarm'] + org_total['skip'])
         org_list.append({
             "node_id": org_id,
             "node_name": org_node_name if org_node_name != "" else org_id.replace("aws-", "").split(";")[0],
@@ -1101,7 +1101,7 @@ def register_cloud_account():
             raise InvalidUsage("Org account id is needed for multi account setup")
         for monitored_account_id, monitored_node_id in monitored_account_ids.items():
             node = None
-            compliance_scan_node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_account_id)
+            compliance_scan_node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_node_id)
             if compliance_scan_node_details_str:
                 node = json.loads(compliance_scan_node_details_str)
 
@@ -1114,11 +1114,11 @@ def register_cloud_account():
                     "account_id": monitored_account_id,
                     "updated_at": updated_at_timestamp
                 }
-            redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_account_id, json.dumps(node))
+            redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_node_id, json.dumps(node))
             cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=monitored_node_id).first()
             if not cloud_compliance_node:
                 cloud_compliance_node = CloudComplianceNode(
-                    node_id=monitored_account_id,
+                    node_id=monitored_node_id,
                     node_name=monitored_account_id,
                     cloud_provider=post_data["cloud_provider"],
                     org_account_id="aws-{};<cloud_org>".format(org_account_id),

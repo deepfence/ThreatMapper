@@ -122,35 +122,45 @@ def get_recent_scan_ids(index_name, number, time_unit, lucene_query_string, filt
             filters = {"action": "COMPLETED"}
         elif index_name in [COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX]:
             filters = {"scan_status": "COMPLETED"}
-        elif index_name in SECRET_SCAN_LOGS_INDEX:
+        elif index_name == SECRET_SCAN_LOGS_INDEX:
             filters = {"scan_status": "COMPLETE"}
         else:
             filters = {}
-    aggs = {
-        "node_id": {
-            "terms": {
-                "field": "node_id.keyword",
-                "size": ES_TERMS_AGGR_SIZE
-            },
-            "aggs": {
-                "docs": {
-                    "top_hits": {
-                        "size": 1,
-                        "sort": [{"@timestamp": {"order": "desc"}}, {"scan_id.keyword": {"order": "desc"}}],
-                        "_source": {"includes": ["scan_id"]}
-                    }
-                }
+    if index_name in [COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX]:
+        aggs = {
+            "node_id": {
+                "terms": {"field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE},
+                "aggs": {
+                    "compliance_check_type": {
+                        "terms": {"field": "compliance_check_type.keyword", "size": 15},
+                        "aggs": {
+                            "docs": {
+                                "top_hits": {
+                                    "size": 1, "_source": {"includes": ["scan_id"]},
+                                    "sort": [{"@timestamp": {"order": "desc"}}, {"scan_id.keyword": {"order": "desc"}}]
+                                }}}}}}
+        }
+    else:
+        aggs = {
+            "node_id": {
+                "terms": {"field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE},
+                "aggs": {"docs": {"top_hits": {"size": 1, "sort": [
+                    {"@timestamp": {"order": "desc"}}, {"scan_id.keyword": {"order": "desc"}}]}}}
             }
         }
-    }
     from utils.esconn import ESConn
     aggs_response = ESConn.aggregation_helper(
         index_name, filters, aggs, number, TIME_UNIT_MAPPING.get(time_unit),
         lucene_query_string, add_masked_filter=False)
     recent_scan_ids = []
     for node_id_bkt in aggs_response.get("aggregations", {}).get("node_id", {}).get("buckets", []):
-        if node_id_bkt.get("docs", {}).get("hits", {}).get("hits", []):
-            recent_scan_ids.append(node_id_bkt["docs"]["hits"]["hits"][0]["_source"]["scan_id"])
+        if node_id_bkt.get("compliance_check_type"):
+            for check_type_bkt in node_id_bkt.get("compliance_check_type").get("buckets", []):
+                if check_type_bkt.get("docs", {}).get("hits", {}).get("hits", []):
+                    recent_scan_ids.append(check_type_bkt["docs"]["hits"]["hits"][0]["_source"]["scan_id"])
+        else:
+            if node_id_bkt.get("docs", {}).get("hits", {}).get("hits", []):
+                recent_scan_ids.append(node_id_bkt["docs"]["hits"]["hits"][0]["_source"]["scan_id"])
     return recent_scan_ids
 
 
@@ -374,14 +384,16 @@ def get_topology_network_graph(topology_nodes, graph=None, node_type=None, inclu
                 continue
         node_name = node_details.get("name", node_details.get("label"))
         if node_details.get("pseudo", False):
-            if node_name != "The Internet":
-                continue
+            if node_name == "The Internet":
+                needed_nodes[node_id] = node_name
+            continue
+        image_name = node_details.get("image_name_with_tag", node_details.get("image"))
+        if image_name and image_name != ":":
+            image_names[node_id] = image_name
         if include_nodes:
             if node_name in include_nodes:
                 needed_nodes[node_id] = node_name
                 continue
-            image_name = node_details.get("image_name_with_tag", node_details.get("image"))
-            image_names[node_id] = image_name
             if image_name and image_name != ":":
                 if image_name in include_nodes:
                     needed_nodes[node_id] = node_name
@@ -401,7 +413,7 @@ def get_topology_network_graph(topology_nodes, graph=None, node_type=None, inclu
                 continue
             if not graph.has_node(adj_node_id):
                 graph.add_node(adj_node_id, name=needed_nodes[adj_node_id], node_type=node_type,
-                               image_name=image_names.get(node_id, ""))
+                               image_name=image_names.get(adj_node_id, ""))
             if not graph.has_edge(node_id, adj_node_id):
                 graph.add_edge(node_id, adj_node_id)
     return graph
