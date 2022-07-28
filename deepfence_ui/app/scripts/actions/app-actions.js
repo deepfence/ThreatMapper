@@ -2084,3 +2084,12 @@ export function getAttackGraphNodeInfoAction(params) {
   ];
   return genericThunkAction(actionTypes, getAttackGraphNodeInfo, params);
 }
+
+export function getAttackGraphNodeIssuesAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_REQUEST,
+    ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_SUCCESS,
+    ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, searchDocsWrapper, params);
+}

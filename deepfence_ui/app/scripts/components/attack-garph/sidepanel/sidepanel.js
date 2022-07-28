@@ -6,13 +6,14 @@ import { ShimmerLoaderRow } from '../../shimmer-loader/shimmer-row';
 import styles from './sidepanel.module.scss';
 import S3Icon from '../../../../images/cloud-icons/aws/Res_Amazon-Simple-Storage-Service_Bucket_48_Dark.svg';
 import BugIcon from '../../../../images/attack-graph-icons/attack_graph_bug.svg';
-import ChecklistIcon from "../../../../images/attack-graph-icons/attack_graph_checklist.svg";
-import PasswordIcon from "../../../../images/attack-graph-icons/attack_graph_password.svg";
+import ChecklistIcon from '../../../../images/attack-graph-icons/attack_graph_checklist.svg';
+import PasswordIcon from '../../../../images/attack-graph-icons/attack_graph_password.svg';
 
 export const Sidepanel = props => {
   const {
     model: { id },
     onDismiss,
+    onStatClick,
   } = props;
   const dispatch = useDispatch();
 
@@ -25,7 +26,6 @@ export const Sidepanel = props => {
       ),
     };
   });
-
 
   useEffect(() => {
     if (id) {
@@ -48,12 +48,22 @@ export const Sidepanel = props => {
     >
       <DialogContent className={styles.reachContent} aria-label="test">
         <DialogHeader
-          title={nodeData?.label ? `${nodeData?.label} (${Object.keys(nodeData?.nodes ?? {})?.length})` : 'Loading...'}
+          title={
+            nodeData?.label
+              ? `${nodeData?.label} (${
+                  Object.keys(nodeData?.nodes ?? {})?.length
+                })`
+              : 'Loading...'
+          }
           onCloseClick={() => {
             onDismiss();
           }}
         />
-        <DialogData nodeData={nodeData} nodeDataLoading={nodeDataLoading} />
+        <DialogData
+          nodeData={nodeData}
+          nodeDataLoading={nodeDataLoading}
+          onStatClick={onStatClick}
+        />
       </DialogContent>
     </DialogOverlay>
   );
@@ -73,7 +83,7 @@ function DialogHeader({ title, onCloseClick }) {
   );
 }
 
-const DialogData = ({ nodeData, nodeDataLoading }) => {
+const DialogData = ({ nodeData, nodeDataLoading, onStatClick }) => {
   if (nodeDataLoading) {
     return (
       <div className={styles.contentWrapper}>
@@ -112,27 +122,63 @@ const DialogData = ({ nodeData, nodeDataLoading }) => {
             ) : null}
             <div className={styles.statsWrapper}>
               {node?.vulnerability_count ? (
-                <div className={styles.stat}>
+                <div
+                  className={styles.stat}
+                  onClick={() => {
+                    onStatClick({
+                      nodeData: node,
+                      type: 'vulnerabilities',
+                    });
+                  }}
+                >
                   <div className={styles.count}>
-                    <img src={BugIcon} className={styles.countIcon} alt="vulnerability icon" />
+                    <img
+                      src={BugIcon}
+                      className={styles.countIcon}
+                      alt="vulnerability icon"
+                    />
                     {node.vulnerability_count}
                   </div>
                   <div className={styles.label}>Vunlerabilities</div>
                 </div>
               ) : null}
               {node?.compliance_count ? (
-                <div className={styles.stat}>
+                <div
+                  className={styles.stat}
+                  onClick={() => {
+                    onStatClick({
+                      nodeData: node,
+                      type: 'compliance',
+                    });
+                  }}
+                >
                   <div className={styles.count}>
-                    <img src={ChecklistIcon} className={styles.countIcon} alt="compliance icon" />
+                    <img
+                      src={ChecklistIcon}
+                      className={styles.countIcon}
+                      alt="compliance icon"
+                    />
                     {node.compliance_count}
                   </div>
                   <div className={styles.label}>Compliance Issues</div>
                 </div>
               ) : null}
               {node?.secrets_count ? (
-                <div className={styles.stat}>
+                <div
+                  className={styles.stat}
+                  onClick={() => {
+                    onStatClick({
+                      nodeData: node,
+                      type: 'secrets',
+                    });
+                  }}
+                >
                   <div className={styles.count}>
-                    <img src={PasswordIcon} className={styles.countIcon} alt="secrets icon" />
+                    <img
+                      src={PasswordIcon}
+                      className={styles.countIcon}
+                      alt="secrets icon"
+                    />
                     {node.secrets_count}
                   </div>
                   <div className={styles.label}>Secrets</div>
