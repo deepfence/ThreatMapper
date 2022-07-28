@@ -37,7 +37,7 @@ add_template () {
     template_code=`curl -s -o /dev/null -w "%{http_code}" "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1?pretty"`
     if [ "$template_code" != "200" ]; then
         curl -XPUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1" -H 'Content-Type: application/json' -d '{
-            "index_patterns": '"$(create_index_pattern '("cve" "cve-scan" "cloud-compliance-scan-logs" "cloud-compliance-scan")')"',
+            "index_patterns": '"$(create_index_pattern '("alert" "cve" "cve-scan" "compliance" "compliance-scan-logs" "cloud-compliance-scan-logs" "cloud-compliance-scan")')"',
             "settings": {
                 "number_of_shards": 1,
                 "index": {
@@ -86,6 +86,40 @@ add_cve_scan_map_pipeline () {
     echo $cve_scan_map_pipeline_code
     if [ "$cve_scan_map_pipeline_code" != "200" ]; then
         add_cve_scan_map_pipeline
+    fi
+    echo ""
+}
+
+add_compliance_pipeline () {
+    echo "Adding compliance_pipeline"
+
+    compliance_pipeline="$(curl -s -o /dev/null -w '%{http_code}' -XPUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/compliance_pipeline?pretty" -H 'Content-Type: application/json' -d '
+    {
+      "description" : "compliance_pipeline",
+      "processors" : []
+    }
+    ')"
+
+    echo "$compliance_pipeline"
+    if [ "$compliance_pipeline" != "200" ]; then
+        add_compliance_pipeline
+    fi
+    echo ""
+}
+
+add_compliance_scan_logs_pipeline () {
+    echo "Adding compliance_scan_logs_pipeline"
+
+    compliance_scan_logs_pipeline="$(curl -s -o /dev/null -w '%{http_code}' -XPUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_ingest/pipeline/compliance_scan_logs_pipeline?pretty" -H 'Content-Type: application/json' -d '
+    {
+      "description" : "compliance_scan_logs_pipeline",
+      "processors" : []
+    }
+    ')"
+
+    echo "$compliance_scan_logs_pipeline"
+    if [ "$compliance_scan_logs_pipeline" != "200" ]; then
+        add_compliance_scan_logs_pipeline
     fi
     echo ""
 }
@@ -556,6 +590,8 @@ add_template
 add_index
 add_cve_map_pipeline
 add_cve_scan_map_pipeline
+add_compliance_pipeline
+add_compliance_scan_logs_pipeline
 add_indexed_default_upsert_script
 reindex_sbom_artifacts_python_script
 echo ""
