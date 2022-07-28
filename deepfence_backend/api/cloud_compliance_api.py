@@ -580,13 +580,19 @@ def cloud_compliance_scan_nodes():
         if org_total and (org_total['ok'] + org_total['info'] + org_total['alarm'] + org_total['skip']) != 0:
             org_compliance_percentage = (org_total['ok'] + org_total['info']) * 100 / (org_total['ok'] +
                 org_total['info'] + org_total['alarm'] + org_total['skip'])
+        org_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, org_id)
+        enabled = False
+        if org_details_str:
+            org_details = json.loads(org_details_str)
+            enabled = (current_timestamp - org_details["updated_at"] < 250.0)
         org_list.append({
             "node_id": org_id,
             "node_name": org_node_name if org_node_name != "" else org_id.replace("aws-", "").split(";")[0],
             "cloud_provider": cloud_provider,
             "compliance_percentage": org_compliance_percentage,
             "account_id": org_id.replace("aws-", "").split(";")[0],
-            "nodes": org_nodes
+            "nodes": org_nodes,
+            "enabled": enabled,
         })
 
     resource_count = CloudResourceNode.query.filter_by(cloud_provider=cloud_provider).count()
@@ -1099,6 +1105,13 @@ def register_cloud_account():
     if monitored_account_ids:
         if not org_account_id:
             raise InvalidUsage("Org account id is needed for multi account setup")
+        node = {
+            "node_id": "{}-{};<cloud_org>".format(post_data["cloud_provider"], org_account_id),
+            "cloud_provider": post_data["cloud_provider"],
+            "account_id": org_account_id,
+            "updated_at": updated_at_timestamp
+        }
+        redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, node["node_id"], json.dumps(node))
         for monitored_account_id, monitored_node_id in monitored_account_ids.items():
             node = None
             compliance_scan_node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_node_id)
