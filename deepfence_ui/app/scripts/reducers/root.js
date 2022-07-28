@@ -1894,6 +1894,56 @@ export function rootReducer(state = initialState, action) {
         'No data available');
     }
 
+
+    case ActionTypes.GET_ATTACK_GRAPH_DATA_REQUEST: {
+      state = state.setIn(['attackGraph', 'graphData', 'loading'], true);
+      return state;
+    }
+
+    case ActionTypes.GET_ATTACK_GRAPH_DATA_SUCCESS: {
+      const {
+        payload: {
+          data
+        }
+      } = action;
+      state = state.setIn(['attackGraph', 'graphData', 'loading'], false);
+      state = state.setIn(['attackGraph', 'graphData', 'data'], data);
+      state = state.setIn(['attackGraph', 'graphData', 'error'], null);
+      return state;
+    }
+
+    case ActionTypes.GET_ATTACK_GRAPH_DATA_FAILURE: {
+      state = state.setIn(['attackGraph', 'graphData', 'loading'], false);
+      state = state.setIn(['attackGraph', 'graphData', 'error'], 'An error occured loading attack graph.');
+      return state;
+    }
+
+    case ActionTypes.GET_ATTACK_GRAPH_NODE_INFO_REQUEST: {
+      const { input: { nodeId }} = action;
+      state = state.setIn(['attackGraph', 'nodeInfo', nodeId, 'loading'], true);
+      return state;
+    }
+
+    case ActionTypes.GET_ATTACK_GRAPH_NODE_INFO_SUCCESS: {
+      const {
+        payload: {
+          data
+        },
+        input: { nodeId }
+      } = action;
+      state = state.setIn(['attackGraph', 'nodeInfo', nodeId, 'loading'], false);
+      state = state.setIn(['attackGraph', 'nodeInfo', nodeId, 'data'], data);
+      state = state.setIn(['attackGraph', 'nodeInfo', nodeId, 'error'], null);
+      return state;
+    }
+
+    case ActionTypes.GET_ATTACK_GRAPH_NODE_INFO_FAILURE: {
+      const { input: { nodeId }} = action;
+      state = state.setIn(['attackGraph', 'nodeInfo', nodeId, 'loading'], false);
+      state = state.setIn(['attackGraph', 'nodeInfo', nodeId, 'error'], 'An error occured loading data.');
+      return state;
+    }
+
     default: {
       // forwarding unknown action types to redux-form reducer.
       state = state.set('form', formReducer(state.get('form'), action));
