@@ -13,4 +13,4 @@
 [submodule "deepfence_agent/plugins/compliance"]
 	path = deepfence_agent/plugins/compliance
 	url = https://github.com/deepfence/compliance
-	branch = saurabh-dev
+	branch = main
