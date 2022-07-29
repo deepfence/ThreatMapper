@@ -77,14 +77,6 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-echo "Building steampipe image"
-docker build -f $DEEPFENCE_BACKEND_DIR/dockerify/api/Dockerfile.steampipe -t steampipe_build:latest $DEEPFENCE_BACKEND_DIR
-
-if [ ! $? -eq 0 ]; then
-    echo "Building steampipe failed. Exiting"
-    exit 1
-fi
-
 echo "Building API image"
 docker build -f $DEEPFENCE_BACKEND_DIR/dockerify/api/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_BACKEND_DIR
 
