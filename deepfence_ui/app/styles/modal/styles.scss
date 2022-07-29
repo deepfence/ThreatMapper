@@ -156,7 +156,6 @@
 }
 
 .df-generic-modal {
-  // height: 100%;
   background-color: #222222;
 
   .modal-header {
@@ -178,6 +177,9 @@
 
   .modal-body {
     padding: 0 40px 32px 40px;
+    overflow-y: auto;
+    max-height: 70vh;
+    height: 100%;
 
     .node-details-table-node-link {
       color: rgba(255, 255, 255, 0.72);

@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import Select from 'react-select';
 import { List } from 'react-virtualized';
 import useClickAway from 'react-use/lib/useClickAway';
+import Portal from "@reach/portal";
 
 const Menu = props => {
   const ref = useRef(null);
@@ -11,8 +12,13 @@ const Menu = props => {
     props?.onClose?.();
   });
   const shadow = 'hsla(218, 50%, 10%, 0.1)';
-  const { maxOptionCharLength, dropdownExpandDirection = 'right' } = props;
-
+  const {
+    maxOptionCharLength,
+    dropdownExpandDirection = 'right',
+    targetRef,
+    ...rest
+  } = props;
+  const targetClientRect = targetRef?.current?.getBoundingClientRect?.();
   let expansionDirection = 'left';
   if (dropdownExpandDirection === 'right') {
     expansionDirection = 'left';
@@ -31,10 +37,20 @@ const Menu = props => {
     // where all characters are 'm' in small case. (character 'm'
     // takes the most pixel width in the current font family @ 14px size)
     // Make sure the width doesn't fall below 100%
-    width: `${Math.max(100, maxSupportedCharLength * 4)}%`,
-    [`${expansionDirection}`]: 0,
+    width: `${Math.max(targetClientRect?.width ?? 0, maxSupportedCharLength * 10)}px`,
+    maxWidth: '400px',
+    top: 8 + (targetClientRect?.y ?? 0) + (window.scrollY ?? 0) + (targetClientRect?.height ?? 0),
+    [`${expansionDirection}`]: expansionDirection === 'left' ? (targetClientRect?.x ?? 0) : `calc(100vw - ${(targetClientRect?.right ?? 0)}px)`,
   };
-  return <div ref={ref} className="df-select" style={MenuStyle} {...props} />;
+
+  return (
+    <div
+      ref={ref}
+      className="df-select"
+      style={MenuStyle}
+      {...rest}
+    />
+  );
 };
 const Dropdown = ({
   children,
@@ -43,20 +59,29 @@ const Dropdown = ({
   onClose,
   maxOptionCharLength,
   dropdownExpandDirection,
-}) => (
-  <div style={{ position: 'relative' }}>
-    {target}
-    {isOpen ? (
-      <Menu
-        maxOptionCharLength={maxOptionCharLength}
-        dropdownExpandDirection={dropdownExpandDirection}
-        onClose={onClose}
-      >
-        {children}
-      </Menu>
-    ) : null}
-  </div>
-);
+}) => {
+  const targetRef = useRef(null);
+  return (
+    <div style={{ position: 'relative' }}>
+      <span ref={targetRef}>
+        {target}
+      </span>
+      {isOpen ? (
+        <Portal>
+          <Menu
+            maxOptionCharLength={maxOptionCharLength}
+            dropdownExpandDirection={dropdownExpandDirection}
+            onClose={onClose}
+            targetRef={targetRef}
+          >
+            {children}
+          </Menu>
+        </Portal>
+      ) : null}
+    </div>
+  );
+};
+
 const Svg = p => (
   <svg
     width="24"
