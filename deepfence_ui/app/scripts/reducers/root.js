@@ -1944,6 +1944,32 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
+    case ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_REQUEST: {
+      const { input: { type }} = action;
+      state = state.setIn(['attackGraph', 'nodeIssues', type, 'loading'], true);
+      return state;
+    }
+
+    case ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_SUCCESS: {
+      const {
+        payload: {
+          data
+        },
+        input: { type }
+      } = action;
+      state = state.setIn(['attackGraph', 'nodeIssues', type, 'loading'], false);
+      state = state.setIn(['attackGraph', 'nodeIssues', type, 'data'], data);
+      state = state.setIn(['attackGraph', 'nodeIssues', type, 'error'], null);
+      return state;
+    }
+
+    case ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_FAILURE: {
+      const { input: { type }} = action;
+      state = state.setIn(['attackGraph', 'nodeIssues', type, 'loading'], false);
+      state = state.setIn(['attackGraph', 'nodeIssues', type, 'error'], 'An error occured loading data.');
+      return state;
+    }
+
     default: {
       // forwarding unknown action types to redux-form reducer.
       state = state.set('form', formReducer(state.get('form'), action));

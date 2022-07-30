@@ -15,6 +15,7 @@ import './register-custom-node';
 import { getAttackGraphDataAction } from '../../actions/app-actions';
 import { getNodeIcon } from '../multi-cloud/node-icons';
 import { Sidepanel } from './sidepanel/sidepanel';
+import { DetailsTable } from './sidepanel/details-table';
 
 const toolbar = new G6.ToolBar({
   className: 'g6-df-toolbar g6-attack-path-toolbar',
@@ -67,6 +68,7 @@ export const AttackGraph = () => {
   const ref = useRef(null);
   const graphRef = useRef(null);
   const [dialogModel, setDialogModel] = useState(null);
+  const [detailsTableNode, setDetailsTableNode] = useState(null);
   const dispatch = useDispatch();
 
   const [graphData, setGraphData] = useState();
@@ -176,7 +178,7 @@ export const AttackGraph = () => {
             height: 'calc(100vh - 72px)',
             width: '100%',
             overflow: 'hidden',
-            userSelect: 'none'
+            userSelect: 'none',
           }}
         />
       </div>
@@ -185,13 +187,25 @@ export const AttackGraph = () => {
           model={dialogModel}
           onDismiss={() => {
             setDialogModel(null);
+            setDetailsTableNode(null);
+          }}
+          onStatClick={info => {
+            setDetailsTableNode(info);
+          }}
+        />
+      ) : null}
+      {detailsTableNode ? (
+        <DetailsTable
+          tableType={detailsTableNode.type}
+          nodeData={detailsTableNode.nodeData}
+          onDismiss={() => {
+            setDetailsTableNode(null);
           }}
         />
       ) : null}
     </AuthenticatedLayout>
   );
 };
-
 
 function createLegend() {
   return new G6.Legend({
@@ -255,7 +269,7 @@ function processData(attackGraphData) {
     nodes: [],
     edges: [],
   };
-  if (!attackGraphData) {
+  if (!attackGraphData || !attackGraphData.length) {
     return res;
   }
   const nodesMap = new Map();
