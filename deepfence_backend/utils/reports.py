@@ -7,7 +7,7 @@ from utils.common import get_rounding_time_unit
 from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, COMPLIANCE_INDEX, NODE_TYPE_HOST, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, NODE_TYPE_POD, DEEPFENCE_SUPPORT_EMAIL, TIME_UNIT_MAPPING, \
     ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE, COMPLIANCE_ES_TYPE, \
-    NODE_TYPE_LINUX, CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE
+    NODE_TYPE_LINUX,CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE,CLOUD_COMPLIANCE_ES_TYPE
 from utils.esconn import ESConn
 from utils.helper import modify_es_index
 from utils.resource import get_nodes_list, get_default_params
@@ -427,9 +427,13 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
         elif node_type == NODE_TYPE_CONTAINER and resource_type == COMPLIANCE_ES_TYPE:
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
-        elif node_type in [NODE_TYPE_LINUX, CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE] and resource_type == COMPLIANCE_ES_TYPE:
+        elif node_type == NODE_TYPE_LINUX and resource_type == COMPLIANCE_ES_TYPE:
             and_terms.append({"term": {"compliance_node_type.keyword": node_type}})
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
+        elif node_type in [CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE] and resource_type == COMPLIANCE_ES_TYPE:
+            and_terms.append({"term": {"cloud_provider.keyword": node_type}})
+            # here resource_type has to be CLOUD_COMPLIANCE_ES_TYPE for cloud
+            get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, CLOUD_COMPLIANCE_ES_TYPE)
         elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
             get_all_docs(pod_names, cve_scan_id_list, and_terms, "pod_name", global_hits, resource_type)
 
