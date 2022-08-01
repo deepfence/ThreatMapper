@@ -28,10 +28,10 @@ registerNode('attack-path-node', {
     if (cfg?.img) {
       group?.addShape('image', {
         attrs: {
-          x: (- size / 2) + 4,
-          y: (- size/ 2) + 4,
-          width: size - 8,
-          height: size - 8,
+          x: (- size / 2) + 6,
+          y: (- size/ 2) + 6,
+          width: size - 12,
+          height: size - 12,
           img: cfg.img,
           opacity: mainOpacity,
           cursor: 'pointer'

@@ -16,6 +16,7 @@ import { getAttackGraphDataAction } from '../../actions/app-actions';
 import { getNodeIcon } from '../multi-cloud/node-icons';
 import { Sidepanel } from './sidepanel/sidepanel';
 import { DetailsTable } from './sidepanel/details-table';
+import { getAssetIcon } from './icons';
 
 const toolbar = new G6.ToolBar({
   className: 'g6-df-toolbar g6-attack-path-toolbar',
@@ -105,10 +106,6 @@ export const AttackGraph = () => {
 
     const graph = new G6.Graph({
       fitView: true,
-      // animate: true,
-      // animateCfg: {
-      //   duration: 10000,
-      // },
       container: ref.current,
       height: w,
       width: h,
@@ -124,20 +121,8 @@ export const AttackGraph = () => {
         ranksep: 60,
         preventOverlap: true,
       },
-      // defaultCombo: {
-      // color: '#a5a5a5',
-      // anchorPoints: [[0.5, -0.13]],
-      // // offset: [100, 100],
-      // style: {
-      // radius: 10,
-      // fillOpacity: 0,
-      // lineWidth: 1,
-      // opacity: 0.5,
-      // },
-      // },
       defaultNode: {
         type: 'attack-path-node',
-        // size: [40],
         labelCfg: {
           offset: 5,
           style: {
@@ -314,7 +299,7 @@ function processData(attackGraphData) {
           nodeType: singleGraph.node_type,
           secretsCount: singleGraph.secrets_count,
           vulnerabilityCount: singleGraph.vulnerability_count,
-          img: getNodeIcon('s3'),
+          img: getAssetIcon(singleGraph?.node_type),
         });
       }
     }
