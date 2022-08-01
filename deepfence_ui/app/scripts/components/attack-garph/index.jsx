@@ -172,7 +172,6 @@ export const AttackGraph = () => {
           model={dialogModel}
           onDismiss={() => {
             setDialogModel(null);
-            setDetailsTableNode(null);
           }}
           onStatClick={info => {
             setDetailsTableNode(info);
@@ -183,6 +182,7 @@ export const AttackGraph = () => {
         <DetailsTable
           tableType={detailsTableNode.type}
           nodeData={detailsTableNode.nodeData}
+          isSidepanelOpen={!!dialogModel}
           onDismiss={() => {
             setDetailsTableNode(null);
           }}

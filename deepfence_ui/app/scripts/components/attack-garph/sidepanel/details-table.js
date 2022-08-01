@@ -16,10 +16,13 @@ const TABLE_TITLES = {
   compliance: 'Compliance Issues',
 };
 
-export const DetailsTable = ({ onDismiss, tableType, nodeData }) => {
+export const DetailsTable = ({ onDismiss, tableType, nodeData, isSidepanelOpen }) => {
   return (
     <DialogOverlay
       className={styles.reachOverlay}
+      style={{
+        right: isSidepanelOpen ? undefined : 0
+      }}
       isOpen
       onDismiss={() => {
         onDismiss();
