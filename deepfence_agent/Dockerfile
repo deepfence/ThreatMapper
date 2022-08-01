@@ -48,8 +48,7 @@ COPY plugins/docker_bin /home/deepfence/bin
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
 
-RUN chmod +x /usr/local/bin/compliance_check/*.sh \
-    && rm /usr/local/bin/compliance_check/*.go \
+RUN rm -rf /usr/local/bin/compliance_check/*.go \
     && chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
     && chmod +x /home/deepfence/*.sh \
