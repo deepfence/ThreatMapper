@@ -172,6 +172,12 @@ const LABEL_CFG = {
     fill: COLORS.LABEL,
     fontFamily: "Source Sans Pro",
     fontSize: 20,
+    background: {
+      fill: '#ffffff',
+      fillOpacity: 0.1,
+      padding: [2, 4, 2, 4],
+      radius: 2,
+    }
   },
 };
 

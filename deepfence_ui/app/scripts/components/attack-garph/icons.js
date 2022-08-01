@@ -1,5 +1,6 @@
 
 import HostIcon from '../../../images/attack-graph-icons/graph-node-icons/server.svg';
+import ContainerIcon from '../../../images/attack-graph-icons/graph-node-icons/container.svg';
 import AWSS3BucketIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Amazon-Simple-Storage-Service_Bucket_48_Dark.svg';
 import AWSEKSCloudIcon from '../../../images/attack-graph-icons/graph-node-icons/Arch_Amazon-EKS-Cloud_48.svg';
 import AWSOpenSearchServiceIcon from '../../../images/attack-graph-icons/graph-node-icons/Arch_Amazon-OpenSearch-Service_48.svg';
@@ -10,6 +11,7 @@ import AWSLambdaFunctionIcon from '../../../images/attack-graph-icons/graph-node
 
 const mapping = {
   host: HostIcon,
+  container: ContainerIcon,
   aws_s3_bucket: AWSS3BucketIcon,
   aws_eks_cluster: AWSEKSCloudIcon,
   aws_opensearch_domain: AWSOpenSearchServiceIcon,

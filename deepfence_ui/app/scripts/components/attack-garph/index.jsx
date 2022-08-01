@@ -129,6 +129,12 @@ export const AttackGraph = () => {
             fill: 'rgb(192, 192, 192)',
             fontFamily: 'Source Sans Pro',
             fontSize: 14,
+            background: {
+              fill: '#ffffff',
+              fillOpacity: 0.1,
+              padding: [2, 4, 2, 4],
+              radius: 2,
+            },
           },
         },
       },
