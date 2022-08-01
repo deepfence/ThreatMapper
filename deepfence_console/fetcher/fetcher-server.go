@@ -34,15 +34,15 @@ const (
 
 var (
 	postgresDb               *sql.DB
-    psqlInfo                 string
-    redisPool                *redis.Pool
-    esClient                 *elastic.Client
-    vulnerabilityDbUpdater   *VulnerabilityDbUpdater
-    cveIndexName             = convertRootESIndexToCustomerSpecificESIndex("cve")
-    cveScanLogsIndexName     = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
-    sbomArtifactsIndexName   = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
-    cloudComplianceIndexName = convertRootESIndexToCustomerSpecificESIndex("cloud-compliance-scan")
-    resourceToNodeTypeMap = map[string]string{"CloudWatch": "aws_cloudwatch_log_group", "VPC": "aws_vpc", "CloudTrail": "aws_cloudtrail_trail", "Config": "aws_config_rule", "KMS": "aws_kms_key", "S3": "aws_s3_bucket", "IAM": "aws_iam_user", "EBS": "aws_ebs_volume", "RDS": "aws_rds_db_cluster"}
+	psqlInfo                 string
+	redisPool                *redis.Pool
+	esClient                 *elastic.Client
+	vulnerabilityDbUpdater   *VulnerabilityDbUpdater
+	cveIndexName             = convertRootESIndexToCustomerSpecificESIndex("cve")
+	cveScanLogsIndexName     = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
+	sbomArtifactsIndexName   = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
+	cloudComplianceIndexName = convertRootESIndexToCustomerSpecificESIndex("cloud-compliance-scan")
+	resourceToNodeTypeMap    = map[string]string{"CloudWatch": "aws_cloudwatch_log_group", "VPC": "aws_vpc", "CloudTrail": "aws_cloudtrail_trail", "Config": "aws_config_rule", "KMS": "aws_kms_key", "S3": "aws_s3_bucket", "IAM": "aws_iam_user", "EBS": "aws_ebs_volume", "RDS": "aws_rds_db_cluster"}
 )
 
 type VulnerabilityDbDetail struct {
@@ -98,7 +98,7 @@ func NewVulnerabilityDbUpdater() *VulnerabilityDbUpdater {
 type CloudComplianceDoc struct {
 	DocId               string `json:"doc_id"`
 	Timestamp           string `json:"@timestamp"`
-	Count               int    `json:"count"`
+	Count               int    `json:"count,omitempty"`
 	Reason              string `json:"reason"`
 	Resource            string `json:"resource"`
 	Status              string `json:"status"`
@@ -969,17 +969,25 @@ func ingestInBackground(docType string, body []byte) error {
 		}
 		bulkService := elastic.NewBulkService(esClient)
 		for _, complianceDoc := range complianceDocs {
-			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanID+complianceDoc.ControlID+complianceDoc.Resource)))
+			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanID+complianceDoc.ControlID+complianceDoc.Resource+complianceDoc.Group)))
 			complianceDoc.DocId = docId
-			event, err := json.Marshal(complianceDoc)
-			if err == nil {
-				bulkIndexReq := elastic.NewBulkIndexRequest()
-				bulkIndexReq.Index(cloudComplianceIndexName).Id(docId).Doc(string(event))
-				bulkService.Add(bulkIndexReq)
-			}
+			bulkIndexReq := elastic.NewBulkUpdateRequest()
+			bulkIndexReq.Index(cloudComplianceIndexName).Id(docId).
+				Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
+				Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
+			bulkService.Add(bulkIndexReq)
 		}
-		bulkService.Do(context.Background())
-		processResourceNode(complianceDocs)
+		bulkResp, err := bulkService.Do(context.Background())
+		if err != nil {
+			log.Println("err cloud compliance " + err.Error())
+		}
+		failed := bulkResp.Failed()
+		log.Printf("cloud compliance bulk response Succeeded=%d Failed=%d\n",
+			len(bulkResp.Succeeded()), len(failed))
+		for _, r := range failed {
+			log.Printf("error cloud compliance doc %s %s", r.Error.Type, r.Error.Reason)
+		}
+		// processResourceNode(complianceDocs)
 	} else {
 		bulkService := elastic.NewBulkService(esClient)
 		bulkIndexReq := elastic.NewBulkIndexRequest()
