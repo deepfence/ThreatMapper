@@ -1,4 +1,5 @@
 import os
+from sqlite3 import IntegrityError
 from config.app import celery_app, app
 from models.user import User
 from models.integration import Integration
@@ -47,7 +48,8 @@ def cve_fix_interrupted_at_start():
 
 def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_scan_message):
     body = {
-        "masked": "false", "type": CVE_SCAN_LOGS_ES_TYPE, "scan_id": cve_status["scan_id"], "node_type": cve_status["node_type"],
+        "masked": "false", "type": CVE_SCAN_LOGS_ES_TYPE, "scan_id": cve_status["scan_id"],
+        "node_type": cve_status["node_type"],
         "cve_scan_message": cve_scan_message, "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "time_stamp": int(time.time() * 1000.0), "host": host_name, "action": CVE_SCAN_STATUS_ERROR,
         "host_name": host_name, "node_id": cve_node_id,
@@ -279,37 +281,67 @@ def map_cloud_account_arn_to_table(*args):
     """
     with app.app_context():
         query_body = {
-            "query" : {
+            "query": {
                 "range": {
                     "@timestamp": {
-                        "gte" : "now-5m/m",
-                        "lte" : "now/m"
+                        "gte": "now-5m/m",
+                        "lte": "now/m"
                     }
                 }
             }
         }
-        scans_in_last_5_mins = ESConn.search(CLOUD_COMPLIANCE_SCAN, query_body, 0, 10000).get('hits', {}).get("hits", [])
+        scans_in_last_5_mins = ESConn.search(CLOUD_COMPLIANCE_SCAN, query_body, 0, 10000).get('hits', {}).get("hits",
+                                                                                                              [])
 
         for scan_doc in scans_in_last_5_mins:
             resource = scan_doc.get("_source").get("resource")
-            region = scan_doc.get("_source").get("region","")
+            region = scan_doc.get("_source").get("region", "")
             if not region:
                 region = "global"
             service_name = scan_doc.get("_source").get("service")
-            cloud_resource_nodes_count = CloudResourceNode.query.filter_by(node_id=resource, service_name=service_name).count()
-            if cloud_resource_nodes_count == 0:
-                node_type = "aws"
-                for service, table_names in CSPM_RESOURCES_INVERTED.items():
-                    if service_name == service.split("_")[-1]:
-                        node_type = table_names[0]
-                cloud_resource_node_data = CloudResourceNode(
-                    node_id = scan_doc.get("_source").get("resource"),
-                    node_type = node_type,
-                    node_name = service_name,
-                    cloud_provider = scan_doc.get("_source").get("cloud_provider"),
-                    account_id = scan_doc.get("_source").get("node_id"),
-                    region = region,
-                    service_name = service_name,
-                    is_active = True
-                )
-                cloud_resource_node_data.save()
+            cloud_resource_nodes_count = CloudResourceNode.query.filter_by(node_id=resource).all()
+            # print("resource={} region={} service_name={} cloud_resource_nodes_count={}".format(resource,region,service_name,len(cloud_resource_nodes_count)))
+            # already exists
+            if len(cloud_resource_nodes_count) == 1:
+                if service_name == cloud_resource_nodes_count[0].service_name:
+                    # print("1 already exists same service_name: {} cloud_resource_nodes_count: {}".format(service_name,cloud_resource_nodes_count[0].service_name))
+                    continue
+                elif not cloud_resource_nodes_count[0].service_name:
+                    # print("2 already exists same service_name: {} cloud_resource_nodes_count: {}".format(service_name,cloud_resource_nodes_count[0].service_name))
+                    cloud_resource_nodes_count[0].service_name = service_name
+                    cloud_resource_nodes_count[0].save()
+            # multiple resources with different service names
+            elif len(cloud_resource_nodes_count) > 1:
+                next_resource = next(
+                    (x.service_name for x in cloud_resource_nodes_count if x.service_name == service_name), "")
+                if next_resource:
+                    # print("1 multiple resources service_name exists: {}".format(next_resource))
+                    continue
+                else:
+                    # print("2 multiple resources update service_name: {}".format(scan_doc))
+                    create_resource_node_aws(scan_doc, service_name, region)
+            # resource doesn't exists
+            else:
+                create_resource_node_aws(scan_doc, service_name, region)
+
+
+def create_resource_node_aws(doc, service_name, region):
+    # print("create_resource_node_aws: {}".format(doc))
+    node_type = "aws"
+    for service, table_names in CSPM_RESOURCES_INVERTED.items():
+        if service_name.lower() == service.split("_")[-1]:
+            node_type = table_names[0]
+    cloud_resource_node_data = CloudResourceNode(
+        node_id=doc.get("_source").get("resource"),
+        node_type=node_type,
+        node_name=service_name,
+        cloud_provider=doc.get("_source").get("cloud_provider"),
+        account_id=doc.get("_source").get("node_id"),
+        region=region,
+        service_name=service_name,
+        is_active=True
+    )
+    try:
+        cloud_resource_node_data.save()
+    except IntegrityError:
+        pass

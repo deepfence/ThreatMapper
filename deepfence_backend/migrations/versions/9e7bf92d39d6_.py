@@ -43,6 +43,8 @@ def upgrade():
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_unique_constraint('node_id_constraint', 'cloud_resource_node',
+                                ['node_id', 'node_type', 'region', 'service_name', 'account_id'])
     op.create_table('compliance_rules',
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
@@ -74,5 +76,6 @@ def downgrade():
     op.drop_table('compliance_rules_disabled')
     op.drop_table('compliance_rules')
     op.drop_table('cloud_resource_node')
+    op.drop_constraint('node_id_constraint', 'cloud_resource_node', type_='unique')
     op.drop_table('cloud_compliance_node')
     # ### end Alembic commands ###

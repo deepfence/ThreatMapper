@@ -1,4 +1,5 @@
 from sqlalchemy.sql import func
+from sqlalchemy.schema import UniqueConstraint
 from config.app import db
 
 
@@ -15,6 +16,8 @@ class CloudResourceNode(db.Model):
     region = db.Column(db.String(200), nullable=True)
     service_name = db.Column(db.String(200), nullable=True)
     is_active = db.Column(db.Boolean, nullable=True)
+
+    __table_args__ = (UniqueConstraint('node_id', 'node_type', 'region','service_name','account_id', name='node_id_constraint'),)
 
     def save(self, commit=True):
         db.session.add(self)
@@ -46,7 +49,7 @@ class CloudResourceNode(db.Model):
             "created_at": str(self.created_at),
             "updated_at": str(self.updated_at),
             "node_id": self.node_id,
-            "node_type": self.node_id,
+            "node_type": self.node_type,
             "node_name": self.node_name,
             "cloud_provider": self.cloud_provider,
             "region": self.region,
