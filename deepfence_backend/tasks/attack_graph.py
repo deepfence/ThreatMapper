@@ -57,18 +57,17 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                     graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
             if cloud_resource["event_notification_configuration"] is not None:
                 if cloud_resource["event_notification_configuration"]["LambdaFunctionConfigurations"] is not None:
-                    if cloud_resource["event_notification_configuration"]["LambdaFunctionConfigurations"][
-                            "LambdaFunctionArn"] is not None:
-                        lambda_function = \
-                            cloud_resource["event_notification_configuration"]["LambdaFunctionConfigurations"][
-                                "LambdaFunctionArn"]
-                        if lambda_function not in lamda_function_map:
-                            lamda_function_map[lambda_function] = cloud_resource["arn"]
-                        elif isinstance(lambda_function, list):
-                            lamda_function_map[lambda_function].append(cloud_resource["arn"])
-                        else:
-                            lamda_function_map[lambda_function] = [lamda_function_map[lambda_function],
-                                                                   cloud_resource["arn"]]
+                    for configuration in cloud_resource["event_notification_configuration"][
+                        "LambdaFunctionConfigurations"]:
+                        if configuration["LambdaFunctionArn"] is not None:
+                            lambda_function = configuration["LambdaFunctionArn"]
+                            if lambda_function not in lamda_function_map:
+                                lamda_function_map[lambda_function] = cloud_resource["arn"]
+                            elif isinstance(lambda_function, list):
+                                lamda_function_map[lambda_function].append(cloud_resource["arn"])
+                            else:
+                                lamda_function_map[lambda_function] = [lamda_function_map[lambda_function],
+                                                                       cloud_resource["arn"]]
         elif cloud_resource["id"] in ["aws_ec2_classic_load_balancer", "aws_ec2_application_load_balancer",
                                       "aws_ec2_network_load_balancer"]:
             if cloud_resource["scheme"] == "internet-facing":
@@ -212,15 +211,14 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
             lambda_fun = cloud_resource["arn"]
             if not cloud_resource.get("policy_std"):
                 continue
-            if cloud_resource["policy_std"]["Statement"]["Effect"] == "Allow" and (
-                    cloud_resource["policy_std"]["Statement"]["Prinicipal"] == "*" or
-                    str(cloud_resource["policy_std"]["Prinicipal"]["AWS"]) == "*"):
-                if not graph.has_node(lambda_fun):
-                    graph.add_node(lambda_fun, name=cloud_resource["name"], node_type=cloud_resource["id"])
-                if not graph.has_edge(incoming_internet_host_id, lambda_fun):
-                    graph.add_edge(incoming_internet_host_id, lambda_fun)
-                if not graph.has_edge(lambda_fun, outgoing_internet_host_id):
-                    graph.add_edge(lambda_fun, outgoing_internet_host_id)
+            for stmt in cloud_resource.get("policy_std", {}).get("Statement", []):
+                if stmt["Effect"] == "Allow" and "*" in stmt["Principal"].get("AWS", []):
+                    if not graph.has_node(lambda_fun):
+                        graph.add_node(lambda_fun, name=cloud_resource["name"], node_type=cloud_resource["id"])
+                    if not graph.has_edge(incoming_internet_host_id, lambda_fun):
+                        graph.add_edge(incoming_internet_host_id, lambda_fun)
+                    if not graph.has_edge(lambda_fun, outgoing_internet_host_id):
+                        graph.add_edge(lambda_fun, outgoing_internet_host_id)
             if lambda_fun in lamda_function_map:
                 if isinstance(lamda_function_map[lambda_fun], str):
                     if not graph.has_edge(lambda_fun, lamda_function_map[lambda_fun]):
@@ -292,12 +290,18 @@ def get_mis_config_count(index_name, logs_index_name, aggs_field):
     recent_scan_id_chunks = split_list_into_chunks(recent_scan_ids, ES_MAX_CLAUSE)
     for scan_id_chunk in recent_scan_id_chunks:
         filters = {"masked": False, "scan_id": scan_id_chunk}
+        if index_name == CLOUD_COMPLIANCE_INDEX:
+            filters["status"] = "alarm"
+        elif index_name == COMPLIANCE_INDEX:
+            filters["status"] = "warn"
         aggs = {
             aggs_field: {
                 "terms": {"field": aggs_field + ".keyword", "size": ES_TERMS_AGGR_SIZE},
                 "aggs": {"scan_id": {"terms": {"field": "scan_id.keyword", "size": ES_TERMS_AGGR_SIZE}}}
             }
         }
+        print(ESConn.aggregation_helper(
+            index_name, filters, aggs, number, TIME_UNIT_MAPPING.get(time_unit), None, get_only_query=True))
         aggs_response = ESConn.aggregation_helper(
             index_name, filters, aggs, number, TIME_UNIT_MAPPING.get(time_unit), None)
         for bkt in aggs_response.get("aggregations", {}).get(aggs_field, {}).get("buckets", []):
