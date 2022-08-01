@@ -15,42 +15,42 @@ import arrow
 
 
 def add_compliance_rules(compliance_check_type, cloud_provider, rules_json_file_name):
-    wait_for_postgres_table("compliance_rules")
-    with flask_app.app_context():
-        with open(rules_json_file_name, 'r', encoding="utf-8") as rules_file:
-            rules = json.load(rules_file)
-            for rule_json in rules:
-                if not rule_json or not rule_json.get("test_number"):
+    with open(rules_json_file_name, 'r', encoding="utf-8") as rules_file:
+        rules = json.load(rules_file)
+        for rule_json in rules:
+            if not rule_json or not rule_json.get("test_number"):
+                continue
+            try:
+                rule = ComplianceRules.query.filter_by(compliance_check_type=compliance_check_type,
+                                                       cloud_provider=cloud_provider,
+                                                       test_number=rule_json["test_number"]).one_or_none()
+                if rule:
                     continue
-                try:
-                    rule = ComplianceRules.query.filter_by(compliance_check_type=compliance_check_type,
-                                                           cloud_provider=cloud_provider,
-                                                           test_number=rule_json["test_number"]).one_or_none()
-                    if rule:
-                        continue
-                    rule = ComplianceRules(
-                        compliance_check_type=compliance_check_type,
-                        test_category=rule_json["test_category"],
-                        test_number=rule_json["test_number"],
-                        test_desc=rule_json["test_desc"],
-                        test_rationale=rule_json["test_rationale"],
-                        cloud_provider=cloud_provider,
-                        is_enabled=True,
-                    )
-                    rule.save()
-                except Exception as ex:
-                    print(ex)
+                rule = ComplianceRules(
+                    compliance_check_type=compliance_check_type,
+                    test_category=rule_json["test_category"],
+                    test_number=rule_json["test_number"],
+                    test_desc=rule_json["test_desc"],
+                    test_rationale=rule_json["test_rationale"],
+                    cloud_provider=cloud_provider,
+                    is_enabled=True,
+                )
+                rule.save()
+            except Exception as ex:
+                print(ex)
 
 
 def insert_compliance_rules():
+    wait_for_postgres_table("compliance_rules")
     file_path = "/app/code/compliance_rules/{0}/{1}.json"
-    for cloud_provider, compliance_check_types in COMPLIANCE_CHECK_TYPES.items():
-        for compliance_check_type in compliance_check_types:
-            try:
-                add_compliance_rules(compliance_check_type, cloud_provider, file_path.format(cloud_provider,
-                                                                                             compliance_check_type))
-            except Exception as ex:
-                print(ex)
+    with flask_app.app_context():
+        for cloud_provider, compliance_check_types in COMPLIANCE_CHECK_TYPES.items():
+            for compliance_check_type in compliance_check_types:
+                try:
+                    add_compliance_rules(compliance_check_type, cloud_provider, file_path.format(cloud_provider,
+                                                                                                 compliance_check_type))
+                except Exception as ex:
+                    print(ex)
 
 
 def mask_not_applicable_compliance_scans():

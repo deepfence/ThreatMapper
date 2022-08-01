@@ -203,7 +203,7 @@ COMPLIANCE_LINUX_HOST = "linux"
 COMPLIANCE_KUBERNETES_HOST = "kubernetes"
 COMPLIANCE_CHECK_TYPES = {
     COMPLIANCE_PROVIDER_AWS: ["cis", "aws-foundational-security", "nist", "pci", "hipaa", "soc2", "gdpr"],
-    COMPLIANCE_PROVIDER_GCP: ["cis", "cft-scorecardd"],
+    COMPLIANCE_PROVIDER_GCP: ["cis", "cft-scorecard"],
     COMPLIANCE_PROVIDER_AZURE: ["cis", "nist", "hipaa"],
     COMPLIANCE_LINUX_HOST: ["hipaa", "gdpr", "pci", "nist"],
     COMPLIANCE_KUBERNETES_HOST: ["hipaa", "gdpr", "pci", "nist"]
