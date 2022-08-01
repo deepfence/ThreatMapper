@@ -988,10 +988,6 @@ def start_cloud_compliance_scan(node_id):
     if not request.is_json:
         raise InvalidUsage("Missing JSON post data in request")
     post_data = request.json
-    scan_list = []
-    current_pending_scans = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id)
-    if current_pending_scans:
-        scan_list.extend(json.loads(current_pending_scans))
     if not post_data.get("compliance_check_type", []):
         raise InvalidUsage("Compliance check type cannot be empty")
     if post_data.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
@@ -1009,6 +1005,10 @@ def start_cloud_compliance_scan(node_id):
                 node.compliance_start_scan(compliance_check_type, None)
         return set_response(data={"message": "Scans queued successfully"}, status=200)
     cloud_provider = post_data.get("node_type", "")
+    scan_list = []
+    current_pending_scans = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id)
+    if current_pending_scans:
+        scan_list.extend(json.loads(current_pending_scans))
     for compliance_check_type in post_data.get("compliance_check_type", []):
         enabled_rules = ComplianceRules.get_rules_with_status(compliance_check_type=compliance_check_type,
                                                               cloud_provider=cloud_provider)

@@ -15,16 +15,15 @@ import (
 
 // Control IDs used by the host integration.
 const (
-	StartComplianceScan       = "start_compliance_scan"
-	ApplicableComplianceScans = "applicable_compliance_scans"
-	GetLogsFromAgent          = "get_logs_from_agent"
-	GenerateSBOM              = "generate_sbom"
-	AddUserDefinedTags        = "host_add_user_defined_tags"
-	DeleteUserDefinedTags     = "host_delete_user_defined_tags"
-	StartSecretsScan          = "secret_scan_start"
-	secretScanSocket          = "/tmp/secretScanner.sock"
-	unixProtocol              = "unix"
-	tcpProtocol               = "tcp"
+	StartComplianceScan   = "start_compliance_scan"
+	GetLogsFromAgent      = "get_logs_from_agent"
+	GenerateSBOM          = "generate_sbom"
+	AddUserDefinedTags    = "host_add_user_defined_tags"
+	DeleteUserDefinedTags = "host_delete_user_defined_tags"
+	StartSecretsScan      = "secret_scan_start"
+	secretScanSocket      = "/tmp/secretScanner.sock"
+	unixProtocol          = "unix"
+	tcpProtocol           = "tcp"
 )
 
 var (
@@ -37,7 +36,6 @@ func init() {
 
 func (r *Reporter) registerControls() {
 	r.handlerRegistry.Register(StartComplianceScan, r.startComplianceScan)
-	r.handlerRegistry.Register(ApplicableComplianceScans, r.applicableComplianceScans)
 	r.handlerRegistry.Register(GetLogsFromAgent, r.getLogsFromAgent)
 	r.handlerRegistry.Register(GenerateSBOM, r.handleGenerateSBOM)
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
@@ -75,24 +73,6 @@ func (r *Reporter) deleteUserDefinedTags(req xfer.Request) xfer.Response {
 		r.userDefinedTags.tags = dfUtils.RemoveFromArray(r.userDefinedTags.tags, tag)
 	}
 	return xfer.Response{TagsInfo: "Tags deleted"}
-}
-
-func (r *Reporter) applicableComplianceScans(req xfer.Request) xfer.Response {
-	// Get list of available compliance scans
-	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
-	//TODO clean here
-	complianceScansList := make([]dfUtils.ComplianceScan, 0)
-	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: dfUtils.CheckTypeHIPAA, Label: dfUtils.CheckNameHIPAA})
-	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "gdpr", Label: "GDPR"})
-	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "nist", Label: "NIST"})
-	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "pci", Label: "PCI"})
-	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: dfUtils.CheckTypeCIS, Label: dfUtils.CheckNameCIS})
-	complianceScansList = append(complianceScansList, dfUtils.ComplianceScan{Code: "hipaakube", Label: "Hipaakube"})
-	if nodeType == nodeTypeHost {
-		return xfer.Response{ComplianceScanListsInfo: complianceScansList}
-	} else {
-		return xfer.ResponseErrorf("invalid node_type")
-	}
 }
 
 func (r *Reporter) getLogsFromAgent(req xfer.Request) xfer.Response {

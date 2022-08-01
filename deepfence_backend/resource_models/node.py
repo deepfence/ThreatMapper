@@ -209,33 +209,6 @@ class Node(object):
             response = resp
         return response
 
-    def compliance_applicable_scans(self):
-        if self.is_ui_vm or self.pseudo:
-            return {"complianceScanLists": []}
-        if self.type == constants.NODE_TYPE_HOST:
-            redis_key = "{0}:{1}:{2}".format(constants.REDIS_COMPLIANCE_APPLICABLE_SCANS_PREFIX, self.type,
-                                             self.host_name)
-        elif self.type == constants.NODE_TYPE_CONTAINER or self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
-            redis_key = "{0}:{1}:{2}".format(constants.REDIS_COMPLIANCE_APPLICABLE_SCANS_PREFIX,
-                                             constants.NODE_TYPE_CONTAINER_IMAGE, self.image_name_tag)
-        else:
-            raise DFError('action not supported for this node type')
-        applicable_scans = redis.get(redis_key)
-        if applicable_scans:
-            return json.loads(applicable_scans)
-        else:
-            post_data = {"node_type": self.type}
-            if self.type == constants.NODE_TYPE_CONTAINER:
-                post_data["container_id"] = self.docker_container_id
-            elif self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
-                post_data["image_id"] = self.image_id
-            applicable_scans_api_url = constants.SCOPE_HOST_API_CONTROL_URL.format(
-                probe_id=self.probe_id, host_name=self.host_name,
-                action=constants.NODE_ACTION_COMPLIANCE_APPLICABLE_SCANS)
-            applicable_scans = self.__compliance_helper(applicable_scans_api_url, post_data)
-            redis.setex(redis_key, timedelta(days=14), json.dumps(applicable_scans))
-            return applicable_scans
-
     def compliance_start_scan(self, compliance_check_type, ignore_test_numbers, scan_id=None):
         if self.is_ui_vm or self.pseudo:
             return {'complianceCheck': 'Compliance check cannot be started on management console'}
@@ -269,6 +242,8 @@ class Node(object):
         elif self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
             post_data["image_id"] = self.image_id
             post_data["image_name"] = self.image_name_tag
+        if not ignore_test_numbers:
+            ignore_test_numbers = []
         post_data["ignore_test_number_list"] = json.dumps(ignore_test_numbers)
         post_data["kubernetes_cluster_name"] = self.kubernetes_cluster_name
         post_data["kubernetes_cluster_id"] = self.kubernetes_cluster_id
