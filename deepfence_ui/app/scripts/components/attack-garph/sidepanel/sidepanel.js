@@ -1,20 +1,31 @@
 import { DialogContent, DialogOverlay } from '@reach/dialog';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { animated, useTransition } from '@react-spring/web';
 import { getAttackGraphNodeInfoAction } from '../../../actions/app-actions';
 import { ShimmerLoaderRow } from '../../shimmer-loader/shimmer-row';
 import styles from './sidepanel.module.scss';
-import S3Icon from '../../../../images/cloud-icons/aws/Res_Amazon-Simple-Storage-Service_Bucket_48_Dark.svg';
 import BugIcon from '../../../../images/attack-graph-icons/attack_graph_bug.svg';
 import ChecklistIcon from '../../../../images/attack-graph-icons/attack_graph_checklist.svg';
 import PasswordIcon from '../../../../images/attack-graph-icons/attack_graph_password.svg';
+import { getAssetIcon } from '../icons';
 
 export const Sidepanel = props => {
   const {
-    model: { id },
+    model: { id, nodeType },
     onDismiss,
     onStatClick,
   } = props;
+
+  const [showDialog, setShowDialog] = useState(true);
+
+  const dismissDialog = () => {
+    setShowDialog(false);
+  };
+
+  const AnimatedDialogOverlay = animated(DialogOverlay);
+  const AnimatedDialogContent = animated(DialogContent);
+
   const dispatch = useDispatch();
 
   const { nodeData, nodeDataLoading } = useSelector(state => {
@@ -37,43 +48,62 @@ export const Sidepanel = props => {
     }
   }, [id]);
 
-  return (
-    <DialogOverlay
-      className={styles.reachOverlay}
-      isOpen
-      onDismiss={() => {
-        onDismiss();
-      }}
-      dangerouslyBypassScrollLock
-    >
-      <DialogContent className={styles.reachContent} aria-label="test">
-        <DialogHeader
-          title={
-            nodeData?.label
-              ? `${nodeData?.label} (${
-                  Object.keys(nodeData?.nodes ?? {})?.length
-                })`
-              : 'Loading...'
-          }
-          onCloseClick={() => {
-            onDismiss();
+  const transitions = useTransition(showDialog, {
+    from: { left: 0 },
+    enter: { left: 500 },
+    leave: { left: 0 },
+    onDestroyed: () => {
+      onDismiss();
+    },
+  });
+
+  return transitions((transitionStyles, item) => {
+    return (
+      item && (
+        <AnimatedDialogOverlay
+          className={styles.reachOverlay}
+          style={{
+            left: transitionStyles.left.to(value => `calc(100vw - ${value}px)`),
           }}
-        />
-        <DialogData
-          nodeData={nodeData}
-          nodeDataLoading={nodeDataLoading}
-          onStatClick={onStatClick}
-        />
-      </DialogContent>
-    </DialogOverlay>
-  );
+          onDismiss={() => {
+            dismissDialog();
+          }}
+          dangerouslyBypassScrollLock
+        >
+          <AnimatedDialogContent
+            aria-label="details"
+            className={styles.reachContent}
+          >
+            <DialogHeader
+              title={
+                nodeData?.label
+                  ? `${nodeData?.label} (${
+                      Object.keys(nodeData?.nodes ?? {})?.length
+                    })`
+                  : 'Loading...'
+              }
+              nodeType={nodeType}
+              onCloseClick={() => {
+                dismissDialog();
+              }}
+            />
+            <DialogData
+              nodeData={nodeData}
+              nodeDataLoading={nodeDataLoading}
+              onStatClick={onStatClick}
+            />
+          </AnimatedDialogContent>
+        </AnimatedDialogOverlay>
+      )
+    );
+  });
 };
 
-function DialogHeader({ title, onCloseClick }) {
+function DialogHeader({ title, onCloseClick, nodeType }) {
   return (
     <div className={styles.headerWrapper}>
       <span className={styles.titleWrapper}>
-        <Icon resourceId="TODO" size="28px" />
+        <Icon nodeType={nodeType} size="28px" />
         {title}
       </span>
       <span className={styles.dismissBtn} onClick={onCloseClick}>
@@ -192,7 +222,7 @@ const DialogData = ({ nodeData, nodeDataLoading, onStatClick }) => {
   );
 };
 
-const Icon = ({ resourceId, size }) => {
+const Icon = ({ nodeType, size }) => {
   return (
     <div
       style={{
@@ -201,7 +231,7 @@ const Icon = ({ resourceId, size }) => {
       }}
       className={styles.iconWrapper}
     >
-      <img src={S3Icon} className={styles.iconImage} alt="service icon" />
+      <img src={getAssetIcon(nodeType)} className={styles.iconImage} alt="service icon" />
     </div>
   );
 };
