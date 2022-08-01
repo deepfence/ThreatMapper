@@ -1,0 +1,830 @@
+[
+  {
+    "test_category": "AWS/Config", 
+    "test_rationale": "This control checks whether AWS Config is enabled in the account for the local Region and is recording all resources. The AWS Config service performs configuration management of supported AWS resources in your account and delivers log files to you. The recorded information includes the configuration item (AWS resource), relationships between configuration items, and any configuration changes between resources.", 
+    "test_desc": "1 AWS Config should be enabled", 
+    "test_number": "foundational_security_config_1"
+  }, 
+  {
+    "test_category": "AWS/ECR", 
+    "test_rationale": "This control checks whether an Amazon ECR repository has at least one lifecycle policy configured. This control fails if an ECR repository does not have any lifecycle policies configured.", 
+    "test_desc": "3 ECR repositories should have at least one lifecycle policy configured", 
+    "test_number": "foundational_security_ecr_3"
+  }, 
+  {
+    "test_category": "AWS/DMS", 
+    "test_rationale": "This control checks whether AWS DMS replication instances are public. To do this, it examines the value of the PubliclyAccessible field. A private replication instance has a private IP address that you cannot access outside of the replication network. A replication instance should have a private IP address when the source and target databases are in the same network. The network must also be connected to the replication instance's VPC using a VPN, AWS Direct Connect, or VPC peering. To learn more about public and private replication instances, see Public and private replication instances in the AWS Database Migration Service User Guide.", 
+    "test_desc": "1 AWS Database Migration Service replication instances should not be public", 
+    "test_number": "foundational_security_dms_1"
+  }, 
+  {
+    "test_category": "AWS/SageMaker", 
+    "test_rationale": "This control checks whether direct internet access is disabled for an SageMaker notebook instance. To do this, it checks whether the DirectInternetAccess field is disabled for the notebook instance. If you configure your SageMaker instance without a VPC, then by default direct internet access is enabled on your instance. You should configure your instance with a VPC and change the default setting to Disable \u2014 Access the internet through a VPC.", 
+    "test_desc": "1 SageMaker notebook instances should not have direct internet access", 
+    "test_number": "foundational_security_sagemaker_1"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether Amazon RDS snapshots are public. This control is intended for RDS instances. It can also return findings for snapshots of Aurora DB instances, Neptune DB instances, and Amazon DocumentDB clusters, even though they are not evaluated for public accessibility. If these findings are not useful, you can suppress them.", 
+    "test_desc": "1 RDS snapshots should be private", 
+    "test_number": "foundational_security_rds_1"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether Amazon RDS instances are publicly accessible by evaluating the PubliclyAccessible field in the instance configuration item. Neptune DB instances and Amazon DocumentDB clusters do not have the PubliclyAccessible flag and cannot be evaluated. However, this control can still generate findings for these resources. You can suppress these findings.", 
+    "test_desc": "2 RDS DB instances should prohibit public access, determined by the PubliclyAccessible configuration", 
+    "test_number": "foundational_security_rds_2"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether storage encryption is enabled for your Amazon RDS DB instances. This control is intended for RDS DB instances. However, it can also generate findings for Aurora DB instances, Neptune DB instances, and Amazon DocumentDB clusters. If these findings are not useful, then you can suppress them.", 
+    "test_desc": "3 RDS DB instances should have encryption at rest enabled", 
+    "test_number": "foundational_security_rds_3"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether RDS DB snapshots are encrypted. This control is intended for RDS DB instances. However, it can also generate findings for snapshots of Aurora DB instances, Neptune DB instances, and Amazon DocumentDB clusters. If these findings are not useful, then you can suppress them.", 
+    "test_desc": "4 RDS cluster snapshots and database snapshots should be encrypted at rest", 
+    "test_number": "foundational_security_rds_4"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether high availability is enabled for your RDS DB instances. RDS DB instances should be configured for multiple Availability Zones (AZs). This ensures the availability of the data stored. Multi-AZ deployments allow for automated failover if there is an issue with Availability Zone availability and during regular RDS maintenance.", 
+    "test_desc": "5 RDS DB instances should be configured with multiple Availability Zones", 
+    "test_number": "foundational_security_rds_5"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether enhanced monitoring is enabled for your RDS DB instances. In Amazon RDS, Enhanced Monitoring enables a more rapid response to performance changes in underlying infrastructure. These performance changes could result in a lack of availability of the data. Enhanced Monitoring provides real-time metrics of the operating system that your RDS DB instance runs on. An agent is installed on the instance. The agent can obtain metrics more accurately than is possible from the hypervisor layer.", 
+    "test_desc": "6 Enhanced monitoring should be configured for RDS DB instances and clusters", 
+    "test_number": "foundational_security_rds_6"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether RDS clusters have deletion protection enabled. This control is intended for RDS DB instances. However, it can also generate findings for Aurora DB instances, Neptune DB instances, and Amazon DocumentDB clusters. If these findings are not useful,then you can suppress them.", 
+    "test_desc": "7 RDS clusters should have deletion protection enabled", 
+    "test_number": "foundational_security_rds_7"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether your RDS DB instances that use one of the listed database engines have deletion protection enabled. DatabaseEngines: mariadb,mysql,oracle-ee,oracle-se2,oracle-se1,oracle-se,postgres,sqlserver-ee,sqlserver-se,sqlserver-ex,sqlserver-web.", 
+    "test_desc": "8 RDS DB instances should have deletion protection enabled", 
+    "test_number": "foundational_security_rds_8"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether the logs of Amazon RDS are enabled and sent to CloudWatch Logs. RDS databases should have relevant logs enabled. Database logging provides detailed records of requests made to RDS. Database logs can assist with security and access audits and can help to diagnose availability issues.", 
+    "test_desc": "9 Database logging should be enabled", 
+    "test_number": "foundational_security_rds_9"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether an RDS DB instance has IAM database authentication enabled IAM database authentication allows authentication to database instances with an authentication token instead of a password. Network traffic to and from the database is encrypted using SSL.", 
+    "test_desc": "10 IAM authentication should be configured for RDS instances", 
+    "test_number": "foundational_security_rds_10"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether an RDS DB cluster has IAM database authentication enabled. IAM database authentication allows for password-free authentication to database instances. The authentication uses an authentication token. Network traffic to and from the database is encrypted using SSL.", 
+    "test_desc": "12 IAM authentication should be configured for RDS clusters", 
+    "test_number": "foundational_security_rds_12"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether automatic minor version upgrades are enabled for the RDS database instance. Enabling automatic minor version upgrades ensures that the latest minor version updates to the relational database management system (RDBMS) are installed. These upgrades might include security patches and bug fixes. Keeping up to date with patch installation is an important step in securing systems.", 
+    "test_desc": "13 RDS automatic minor version upgrades should be enabled", 
+    "test_number": "foundational_security_rds_13"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether Amazon Aurora clusters have backtracking enabled. Backups help you to recover more quickly from a security incident. They also strengthens the resilience of your systems. Aurora backtracking reduces the time to recover a database to a point in time. It does not require a database restore to so.", 
+    "test_desc": "14 Amazon Aurora clusters should have backtracking enabled", 
+    "test_number": "foundational_security_rds_14"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether high availability is enabled for your RDS DB clusters. RDS DB clusters should be configured for multiple Availability Zones to ensure availability of the data that is stored.", 
+    "test_desc": "15 RDS DB clusters should be configured for multiple Availability Zones", 
+    "test_number": "foundational_security_rds_15"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether RDS DB clusters are configured to copy all tags to snapshots when the snapshots are created.", 
+    "test_desc": "16 RDS DB clusters should be configured to copy tags to snapshots", 
+    "test_number": "foundational_security_rds_16"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether RDS DB instances are configured to copy all tags to snapshots when the snapshots are created.", 
+    "test_desc": "17 RDS DB instances should be configured to copy tags to snapshots", 
+    "test_number": "foundational_security_rds_17"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether an RDS instance is deployed in a VPC (EC2-VPC).", 
+    "test_desc": "18 RDS instances should be deployed in a VPC", 
+    "test_number": "foundational_security_rds_18"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether an Amazon RDS event subscription exists that has notifications enabled for the following source type, event category key-value pairs.", 
+    "test_desc": "19 An RDS event notifications subscription should be configured for critical cluster events", 
+    "test_number": "foundational_security_rds_19"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether an Amazon RDS event subscription exists with notifications enabled for the following source type, event category key-value pairs.", 
+    "test_desc": "20 An RDS event notifications subscription should be configured for critical database instance events", 
+    "test_number": "foundational_security_rds_20"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether an Amazon RDS event subscription exists with notifications enabled for the following source type, event category key-value pairs.", 
+    "test_desc": "21 An RDS event notifications subscription should be configured for critical database parameter group events", 
+    "test_number": "foundational_security_rds_21"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether an Amazon RDS event subscription exists with notifications enabled for the following source type, event category key-value pairs.", 
+    "test_desc": "22 An RDS event notifications subscription should be configured for critical database security group events", 
+    "test_number": "foundational_security_rds_22"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether the RDS cluster or instance uses a port other than the default port of the database engine.", 
+    "test_desc": "23 RDS databases and clusters should not use a database engine default port", 
+    "test_number": "foundational_security_rds_23"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether an Amazon RDS database cluster has changed the admin username from its default value. This rule will fail if the admin username is set to the default value.", 
+    "test_desc": "24 RDS database clusters should use a custom administrator username", 
+    "test_number": "foundational_security_rds_24"
+  }, 
+  {
+    "test_category": "AWS/RDS", 
+    "test_rationale": "This control checks whether you've changed the administrative username for Amazon Relational Database Service (Amazon RDS) database instances from the default value. The control fails if the administrative username is set to the default value.", 
+    "test_desc": "25 RDS database instances should use a custom administrator username", 
+    "test_number": "foundational_security_rds_25"
+  }, 
+  {
+    "test_category": "AWS/EMR", 
+    "test_rationale": "This control checks whether master nodes on Amazon EMR clusters have public IP addresses. The control fails if the master node has public IP addresses that are associated with any of its instances. Public IP addresses are designated in the PublicIp field of the NetworkInterfaces configuration for the instance. This control only checks Amazon EMR clusters that are in a RUNNING or WAITING state.", 
+    "test_desc": "1 Amazon EMR cluster master nodes should not have public IP addresses", 
+    "test_number": "foundational_security_emr_1"
+  }, 
+  {
+    "test_category": "AWS/Lambda", 
+    "test_rationale": "This control checks whether the Lambda function resource-based policy prohibits public access outside of your account. The Lambda function should not be publicly accessible, as this may allow unintended access to your code stored in the function.", 
+    "test_desc": "1 Lambda function policies should prohibit public access", 
+    "test_number": "foundational_security_lambda_1"
+  }, 
+  {
+    "test_category": "AWS/Lambda", 
+    "test_rationale": "This control checks that the Lambda function settings for runtimes match the expected values set for the latest runtimes for each supported language. This control checks for the following runtimes: nodejs14.x, nodejs12.x, nodejs10.x, python3.8, python3.7, python3.6, ruby2.7, ruby2.5,java11, java8, go1.x, dotnetcore3.1, dotnetcore2.1.", 
+    "test_desc": "2 Lambda functions should use latest runtimes", 
+    "test_number": "foundational_security_lambda_2"
+  }, 
+  {
+    "test_category": "AWS/Lambda", 
+    "test_rationale": "This control checks whether a Lambda function is configured with a dead-letter queue. The control fails if the Lambda function is not configured with a dead-letter queue.", 
+    "test_desc": "4 Lambda functions should have a dead-letter queue configured", 
+    "test_number": "foundational_security_lambda_4"
+  }, 
+  {
+    "test_category": "AWS/Lambda", 
+    "test_rationale": "This control checks if Lambda has more than one availability zone associated. The rule fails if only one availability zone is associated with Lambda.", 
+    "test_desc": "5 VPC Lambda functions should operate in more than one Availability Zone", 
+    "test_number": "foundational_security_lambda_5"
+  }, 
+  {
+    "test_category": "AWS/ES", 
+    "test_rationale": "This control checks whether Amazon Elasticsearch Service (Amazon ES) domains have encryption at rest configuration enabled. The check fails if encryption at rest is not enabled.", 
+    "test_desc": "1 Elasticsearch domains should have encryption at-rest enabled", 
+    "test_number": "foundational_security_es_1"
+  }, 
+  {
+    "test_category": "AWS/ES", 
+    "test_rationale": "This control checks whether Amazon Elasticsearch Service domains are in a VPC. It does not evaluate the VPC subnet routing configuration to determine public access. You should ensure that Amazon ES domains are not attached to public subnets.", 
+    "test_desc": "2 Amazon Elasticsearch Service domains should be in a VPC", 
+    "test_number": "foundational_security_es_2"
+  }, 
+  {
+    "test_category": "AWS/ES", 
+    "test_rationale": "This control checks whether Amazon ES domains have node-to-node encryption enabled.", 
+    "test_desc": "3 Amazon Elasticsearch Service domains should encrypt data sent between nodes", 
+    "test_number": "foundational_security_es_3"
+  }, 
+  {
+    "test_category": "AWS/ES", 
+    "test_rationale": "This control checks whether Elasticsearch domains are configured to send error logs to CloudWatch Logs.", 
+    "test_desc": "4 Elasticsearch domain error logging to CloudWatch Logs should be enabled", 
+    "test_number": "foundational_security_es_4"
+  }, 
+  {
+    "test_category": "AWS/ES", 
+    "test_rationale": "This control checks whether Elasticsearch domains have audit logging enabled. This control fails if an Elasticsearch domain does not have audit logging enabled.", 
+    "test_desc": "5 Elasticsearch domains should have audit logging enabled", 
+    "test_number": "foundational_security_es_5"
+  }, 
+  {
+    "test_category": "AWS/ES", 
+    "test_rationale": "This control checks whether Elasticsearch domains are configured with at least three data nodes and zoneAwarenessEnabled is true.", 
+    "test_desc": "6 Elasticsearch domains should have at least three data nodes", 
+    "test_number": "foundational_security_es_6"
+  }, 
+  {
+    "test_category": "AWS/ES", 
+    "test_rationale": "This control checks whether Elasticsearch domains are configured with at least three dedicated master nodes. This control fails if the domain does not use dedicated master nodes. This control passes if Elasticsearch domains have five dedicated master nodes. However, using more than three master nodes might be unnecessary to mitigate the availability risk, and will result in additional cost.", 
+    "test_desc": "7 Elasticsearch domains should be configured with at least three dedicated master nodes", 
+    "test_number": "foundational_security_es_7"
+  }, 
+  {
+    "test_category": "AWS/ES", 
+    "test_rationale": "This control checks whether connections to Elasticsearch domains are required to use TLS 1.2. The check fails if the Elasticsearch domain TLSSecurityPolicy is not Policy-Min-TLS-1-2-2019-07.", 
+    "test_desc": "8 Connections to Elasticsearch domains should be encrypted using TLS 1.2", 
+    "test_number": "foundational_security_es_8"
+  }, 
+  {
+    "test_category": "AWS/ACM", 
+    "test_rationale": "This control checks whether ACM certificates in your account are marked for expiration within 30 days. It checks both imported certificates and certificates provided by AWS Certificate Manager.", 
+    "test_desc": "1 Imported ACM certificates should be renewed after a specified time period", 
+    "test_number": "foundational_security_acm_1"
+  }, 
+  {
+    "test_category": "AWS/Redshift", 
+    "test_rationale": "This control checks whether Amazon Redshift clusters are publicly accessible. It evaluates the PubliclyAccessible field in the cluster configuration item. The PubliclyAccessible attribute of the Amazon Redshift cluster configuration indicates whether the cluster is publicly accessible. When the cluster is configured with PubliclyAccessible set to true, it is an Internet-facing instance that has a publicly resolvable DNS name, which resolves to a public IP address. When the cluster is not publicly accessible, it is an internal instance with a DNS name that resolves to a private IP address. Unless you intend for your cluster to be publicly accessible, the cluster should not be configured with PubliclyAccessible set to true.", 
+    "test_desc": "1 Amazon Redshift clusters should prohibit public access", 
+    "test_number": "foundational_security_redshift_1"
+  }, 
+  {
+    "test_category": "AWS/Redshift", 
+    "test_rationale": "This control checks whether connections to Amazon Redshift clusters are required to use encryption in transit. The check fails if the Amazon Redshift cluster parameter require_SSL is not set to 1. TLS can be used to help prevent potential attackers from using person-in-the-middle or similar attacks to eavesdrop on or manipulate network traffic. Only encrypted connections over TLS should be allowed. Encrypting data in transit can affect performance. You should test your application with this feature to understand the performance profile and the impact of TLS.", 
+    "test_desc": "2 Connections to Amazon Redshift clusters should be encrypted in transit", 
+    "test_number": "foundational_security_redshift_2"
+  }, 
+  {
+    "test_category": "AWS/Redshift", 
+    "test_rationale": "This control checks whether Amazon Redshift clusters have automated snapshots enabled. It also checks whether the snapshot retention period is greater than or equal to seven.", 
+    "test_desc": "3 Amazon Redshift clusters should have automatic snapshots enabled", 
+    "test_number": "foundational_security_redshift_3"
+  }, 
+  {
+    "test_category": "AWS/Redshift", 
+    "test_rationale": "This control checks whether an Amazon Redshift cluster has audit logging enabled.", 
+    "test_desc": "4 Amazon Redshift clusters should have audit logging enabled", 
+    "test_number": "foundational_security_redshift_4"
+  }, 
+  {
+    "test_category": "AWS/Redshift", 
+    "test_rationale": "This control checks whether automatic major version upgrades are enabled for the Amazon Redshift cluster.", 
+    "test_desc": "6 Amazon Redshift should have automatic upgrades to major versions enabled", 
+    "test_number": "foundational_security_redshift_6"
+  }, 
+  {
+    "test_category": "AWS/Redshift", 
+    "test_rationale": "This control checks whether an Amazon Redshift cluster has EnhancedVpcRouting enabled.", 
+    "test_desc": "7 Amazon Redshift clusters should use enhanced VPC routing", 
+    "test_number": "foundational_security_redshift_7"
+  }, 
+  {
+    "test_category": "AWS/Redshift", 
+    "test_rationale": "This control checks whether a Amazon Redshift cluster has changed the admin username from its default value. This control will fail if the admin username for a Redshift cluster is set to awsuser.", 
+    "test_desc": "8 Amazon Redshift clusters should not use the default Admin username", 
+    "test_number": "foundational_security_redshift_8"
+  }, 
+  {
+    "test_category": "AWS/SQS", 
+    "test_rationale": "This control checks whether Amazon SQS queues are encrypted at rest.", 
+    "test_desc": "1 Amazon SQS queues should be encrypted at rest", 
+    "test_number": "foundational_security_sqs_1"
+  }, 
+  {
+    "test_category": "AWS/ELBv2", 
+    "test_rationale": "This control checks whether HTTP to HTTPS redirection is configured on all HTTP listeners of Application Load Balancers. The check fails if one or more HTTP listeners of Application Load Balancers do not have HTTP to HTTPS redirection configured.", 
+    "test_desc": "1 Application Load Balancer should be configured to redirect all HTTP requests to HTTPS", 
+    "test_number": "foundational_security_elbv2_1"
+  }, 
+  {
+    "test_category": "AWS/KMS", 
+    "test_rationale": "Checks whether the default version of IAM customer managed policies allow principals to use the AWS KMS decryption actions on all resources. This control uses Zelkova, an automated reasoning engine, to validate and warn you about policies that may grant broad access to your secrets across AWS accounts. This control fails if the kms:Decrypt or kms:ReEncryptFrom actions are allowed on all KMS keys. The control evaluates both attached and unattached customer managed policies. It does not check inline policies or AWS managed policies.", 
+    "test_desc": "1 IAM customer managed policies should not allow decryption actions on all KMS keys", 
+    "test_number": "foundational_security_kms_1"
+  }, 
+  {
+    "test_category": "AWS/KMS", 
+    "test_rationale": "Checks whether the inline policies that are embedded in your IAM identities (role, user, or group) allow the AWS KMS decryption actions on all KMS keys. This control uses Zelkova, an automated reasoning engine, to validate and warn you about policies that may grant broad access to your secrets across AWS accounts. This control fails if kms:Decrypt or kms:ReEncryptFrom actions are allowed on all KMS keys in an inline policy.", 
+    "test_desc": "2 IAM principals should not have IAM inline policies that allow decryption actions on all KMS keys", 
+    "test_number": "foundational_security_kms_2"
+  }, 
+  {
+    "test_category": "AWS/KMS", 
+    "test_rationale": "This control checks whether AWS KMS customer managed keys (CMK) are scheduled for deletion. The control fails if a CMK is scheduled for deletion. CMKs cannot be recovered once deleted. Data encrypted under a KMS CMK is also permanently unrecoverable if the CMK is deleted. If meaningful data has been encrypted under a CMK scheduled for deletion,consider decrypting the data or re-encrypting the data under a new CMK unless you are intentionally performing a cryptographic erasure.", 
+    "test_desc": "3 AWS KMS keys should not be unintentionally deleted", 
+    "test_number": "foundational_security_kms_3"
+  }, 
+  {
+    "test_category": "AWS/ElasticBeanstalk", 
+    "test_rationale": "This control checks whether enhanced health reporting is enabled for your AWS Elastic Beanstalk environments.Elastic Beanstalk enhanced health reporting enables a more rapid response to changes in the health of the underlying infrastructure. These changes could result in a lack of availability of the application.", 
+    "test_desc": "1 Elastic Beanstalk environments should have enhanced health reporting enabled", 
+    "test_number": "foundational_security_elasticbeanstalk_1"
+  }, 
+  {
+    "test_category": "AWS/SSM", 
+    "test_rationale": "This control checks whether the EC2 instances in your account are managed by AWS Systems Manager. Systems Manager is an AWS service that you can use to view and control your AWS infrastructure. To help you to maintain security and compliance, Systems Manager scans your managed instances. A managed instance is a machine that is configured for use with Systems Manager. Systems Manager then reports or takes corrective action on any policy violations that it detects. Systems Manager also helps you to configure and maintain your managed instances.", 
+    "test_desc": "1 EC2 instances should be managed by AWS Systems Manager", 
+    "test_number": "foundational_security_ssm_1"
+  }, 
+  {
+    "test_category": "AWS/SSM", 
+    "test_rationale": "This control checks whether the compliance status of the Amazon EC2 Systems Manager patch compliance is COMPLIANT or NON_COMPLIANT after the patch installation on the instance. It only checks instances that are managed by Systems Manager Patch Manager.", 
+    "test_desc": "2 All EC2 instances managed by Systems Manager should be compliant with patching requirements", 
+    "test_number": "foundational_security_ssm_2"
+  }, 
+  {
+    "test_category": "AWS/SSM", 
+    "test_rationale": "This control checks whether the status of the AWS Systems Manager association compliance is COMPLIANT or NON_COMPLIANT after the association is run on an instance. The control passes if the association compliance status is COMPLIANT.", 
+    "test_desc": "3 Instances managed by Systems Manager should have an association compliance status of COMPLIANT", 
+    "test_number": "foundational_security_ssm_3"
+  }, 
+  {
+    "test_category": "AWS/ECS", 
+    "test_rationale": "root or is empty.", 
+    "test_desc": "1 Amazon ECS task definitions should have secure networking modes and user definitions", 
+    "test_number": "foundational_security_ecs_1"
+  }, 
+  {
+    "test_category": "AWS/ECS", 
+    "test_rationale": "This control checks whether Amazon ECS services are configured to automatically assign public IP addresses. This control fails if AssignPublicIP is ENABLED. This control passes if AssignPublicIP is DISABLED.", 
+    "test_desc": "2 Amazon ECS services should not have public IP addresses assigned to them automatically", 
+    "test_number": "foundational_security_ecs_2"
+  }, 
+  {
+    "test_category": "AWS/DynamoDB", 
+    "test_rationale": "This control checks whether an Amazon DynamoDB table can scale its read and write capacity as needed. This control passes if the table uses either on-demand capacity mode or provisioned mode with auto scaling configured. Scaling capacity with demand avoids throttling exceptions, which helps to maintain availability of your applications.", 
+    "test_desc": "1 DynamoDB tables should automatically scale capacity with demand", 
+    "test_number": "foundational_security_dynamodb_1"
+  }, 
+  {
+    "test_category": "AWS/DynamoDB", 
+    "test_rationale": "This control checks whether point-in-time recovery (PITR) is enabled for an Amazon DynamoDB table. Backups help you to recover more quickly from a security incident. They also strengthen the resilience of your systems. DynamoDB point-in-time recovery automates backups for DynamoDB tables. It reduces the time to recover from accidental delete or write operations. DynamoDB tables that have PITR enabled can be restored to any point in time in the last 35 days.", 
+    "test_desc": "2 DynamoDB tables should have point-in-time recovery enabled", 
+    "test_number": "foundational_security_dynamodb_2"
+  }, 
+  {
+    "test_category": "AWS/DynamoDB", 
+    "test_rationale": "This control checks whether a DAX cluster is encrypted at rest. Encrypting data at rest reduces the risk of data stored on disk being accessed by a user not authenticated to AWS. The encryption adds another set of access controls to limit the ability of unauthorized users to access to the data. For example, API permissions are required to decrypt the data before it can be read.", 
+    "test_desc": "3 DynamoDB Accelerator (DAX) clusters should be encrypted at rest", 
+    "test_number": "foundational_security_dynamodb_3"
+  }, 
+  {
+    "test_category": "AWS/NetworkFirewall", 
+    "test_rationale": "A rule group contains rules that define how your firewall processes traffic in your VPC. An empty stateless rule group when present in a firewall policy might give the impression that the rule group will process traffic. However, when the stateless rule group is empty, it does not process traffic.", 
+    "test_desc": "6 Stateless network firewall rule group should not be empty", 
+    "test_number": "foundational_security_networkfirewall_6"
+  }, 
+  {
+    "test_category": "AWS/EFS", 
+    "test_rationale": "This control checks whether Amazon Elastic File System is configured to encrypt the file data using AWS KMS.", 
+    "test_desc": "1 Amazon EFS should be configured to encrypt file data at rest using AWS KMS", 
+    "test_number": "foundational_security_efs_1"
+  }, 
+  {
+    "test_category": "AWS/EFS", 
+    "test_rationale": "This control checks whether Amazon Elastic File System (Amazon EFS) file systems are added to the backup plans in AWS Backup. The control fails if Amazon EFS file systems are not included in the backup plans.", 
+    "test_desc": "2 Amazon EFS volumes should be in backup plans", 
+    "test_number": "foundational_security_efs_2"
+  }, 
+  {
+    "test_category": "AWS/CodeBuild", 
+    "test_rationale": "Authentication credentials should never be stored or transmitted in clear text or appear in the repository URL. Instead of personal access tokens or user name and password, you should use OAuth to grant authorization for accessing GitHub or Bitbucket repositories. Using personal access tokens or a user name and password could expose your credentials to unintended data exposure and unauthorized access.", 
+    "test_desc": "1 CodeBuild GitHub or Bitbucket source repository URLs should use OAuth", 
+    "test_number": "foundational_security_codebuild_1"
+  }, 
+  {
+    "test_category": "AWS/CodeBuild", 
+    "test_rationale": "This control checks whether the project contains the environment variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY. Authentication credentials AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY should never be stored in clear text, as this could lead to unintended data exposure and unauthorized access.", 
+    "test_desc": "2 CodeBuild project environment variables should not contain clear text credentials", 
+    "test_number": "foundational_security_codebuild_2"
+  }, 
+  {
+    "test_category": "AWS/CodeBuild", 
+    "test_rationale": "This control checks whether a CodeBuild project environment has at least one log option, either to S3 or CloudWatch logs enabled. This control fails if a CodeBuild project environment does not have at least one log option enabled.", 
+    "test_desc": "4 CodeBuild project environments should have a logging configuration", 
+    "test_number": "foundational_security_codebuild_4"
+  }, 
+  {
+    "test_category": "AWS/CodeBuild", 
+    "test_rationale": "This control checks if an AWS CodeBuild project environment has privileged mode enabled. This control fails when an AWS CodeBuild project environment has privileged mode enabled.", 
+    "test_desc": "5 CodeBuild project environments should not have privileged mode enabled", 
+    "test_number": "foundational_security_codebuild_5"
+  }, 
+  {
+    "test_category": "AWS/SNS", 
+    "test_rationale": "This control checks whether an SNS topic is encrypted at rest using AWS KMS.", 
+    "test_desc": "1 SNS topics should be encrypted at rest using AWS KMS", 
+    "test_number": "foundational_security_sns_1"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks whether the following Amazon S3 public access block settings are configured at the account level", 
+    "test_desc": "1 S3 Block Public Access setting should be enabled", 
+    "test_number": "foundational_security_s3_1"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks whether your S3 buckets allow public read access. It evaluates the Block Public Access settings, the bucket policy, and the bucket access control list (ACL).", 
+    "test_desc": "2 S3 buckets should prohibit public read access", 
+    "test_number": "foundational_security_s3_2"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks whether your S3 buckets allow public write access. It evaluates the block public access settings, the bucket policy, and the bucket access control list (ACL).", 
+    "test_desc": "3 S3 buckets should prohibit public write access", 
+    "test_number": "foundational_security_s3_3"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks that your S3 bucket either has Amazon S3 default encryption enabled or that the S3 bucket policy explicitly denies put-object requests without server-side encryption.", 
+    "test_desc": "4 S3 buckets should have server-side encryption enabled", 
+    "test_number": "foundational_security_s3_4"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks whether S3 buckets have policies that require requests to use Secure Socket Layer (SSL). S3 buckets should have policies that require all requests (Action: S3:*)to only accept transmission of data over HTTPS in the S3 resource policy, indicated by the condition key aws:SecureTransport.", 
+    "test_desc": "5 S3 buckets should require requests to use Secure Socket Layer", 
+    "test_number": "foundational_security_s3_5"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks whether the S3 bucket policy prevents principals from other AWS accounts from performing denied actions on resources in the S3 bucket.", 
+    "test_desc": "6 Amazon S3 permissions granted to other AWS accounts in bucket policies should be restricted", 
+    "test_number": "foundational_security_s3_6"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks whether S3 buckets have bucket-level public access blocks applied.", 
+    "test_desc": "8 S3 Block Public Access setting should be enabled at the bucket level", 
+    "test_number": "foundational_security_s3_8"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "When logging is enabled, Amazon S3 delivers access logs for a source bucket to a chosen target bucket. The target bucket must be in the same AWS Region as the source bucket and must not have a default retention period configuration.", 
+    "test_desc": "9 S3 bucket server access logging should be enabled", 
+    "test_number": "foundational_security_s3_9"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks if Amazon Simple Storage Service (Amazon S3) version enabled buckets have lifecycle policy configured. This rule fails if Amazon S3 lifecycle policy is not enabled.", 
+    "test_desc": "10 S3 buckets with versioning enabled should have lifecycle policies configured", 
+    "test_number": "foundational_security_s3_10"
+  }, 
+  {
+    "test_category": "AWS/S3", 
+    "test_rationale": "This control checks whether S3 Event Notifications are enabled on an Amazon S3 bucket. This control fails if S3 Event Notifications are not enabled on a bucket.", 
+    "test_desc": "11 S3 buckets should have event notifications enabled", 
+    "test_number": "foundational_security_s3_11"
+  }, 
+  {
+    "test_category": "AWS/AutoScaling", 
+    "test_rationale": "This control checks whether your Auto Scaling groups that are associated with a load balancer are using Elastic Load Balancing health checks. This ensures that the group can determine an instance's health based on additional tests provided by the load balancer. Using Elastic Load Balancing health checks can help support the availability of applications that use EC2 Auto Scaling groups.", 
+    "test_desc": "1 Auto Scaling groups associated with a load balancer should use load balancer health checks", 
+    "test_number": "foundational_security_autoscaling_1"
+  }, 
+  {
+    "test_category": "AWS/AutoScaling", 
+    "test_rationale": "This control checks whether an Auto Scaling group spans multiple Availability Zones. The control fails if an Auto Scaling group does not span multiple availability zones.", 
+    "test_desc": "2 Amazon EC2 Auto Scaling group should cover multiple Availability Zones", 
+    "test_number": "foundational_security_autoscaling_2"
+  }, 
+  {
+    "test_category": "AWS/AutoScaling", 
+    "test_rationale": "This control checks whether an Auto Scaling groups associated launch configuration assigns a public IP address to the group\u2019s instances.", 
+    "test_desc": "5 Amazon EC2 instances launched using Auto Scaling group launch configurations should not have Public IP addresses", 
+    "test_number": "foundational_security_autoscaling_5"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks whether an Amazon CloudFront distribution is configured to return a specific object that is the default root object. The control fails if the CloudFront distribution does not have a default root object configured.", 
+    "test_desc": "1 CloudFront distributions should have a default root object configured", 
+    "test_number": "foundational_security_cloudfront_1"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks whether an Amazon CloudFront distribution with Amazon S3 Origin type has Origin Access Identity (OAI) configured. The control fails if OAI is not configured.", 
+    "test_desc": "2 CloudFront distributions should have origin access identity enabled", 
+    "test_number": "foundational_security_cloudfront_2"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks whether an Amazon CloudFront distribution requires viewers to use HTTPS directly or whether it uses redirection. The control fails if ViewerProtocolPolicy is set to allow-all for defaultCacheBehavior or for cacheBehaviors.", 
+    "test_desc": "3 CloudFront distributions should require encryption in transit", 
+    "test_number": "foundational_security_cloudfront_3"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks whether an Amazon CloudFront distribution is configured with an origin group that has two or more origins. CloudFront origin failover can increase availability. Origin failover automatically redirects traffic to a secondary origin if the primary origin is unavailable or if it returns specific HTTP response status codes.", 
+    "test_desc": "4 CloudFront distributions should have origin failover configured", 
+    "test_number": "foundational_security_cloudfront_4"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks whether server access logging is enabled on CloudFront distributions. The control fails if access logging is not enabled for a distribution.", 
+    "test_desc": "5 CloudFront distributions should have logging enabled", 
+    "test_number": "foundational_security_cloudfront_5"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks whether CloudFront distributions are associated with either AWS WAF or AWS WAFv2 web ACLs. The control fails if the distribution is not associated with a web ACL.", 
+    "test_desc": "6 CloudFront distributions should have AWS WAF enabled", 
+    "test_number": "foundational_security_cloudfront_6"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks whether CloudFront distributions are using the default SSL/TLS certificate CloudFront provides. This control passes if the CloudFront distribution uses a custom SSL/TLS certificate. This control fails if the CloudFront distribution uses the default SSL/TLS certificate.", 
+    "test_desc": "7 CloudFront distributions should use custom SSL/TLS certificates", 
+    "test_number": "foundational_security_cloudfront_7"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks if Amazon CloudFront distributions are using a custom SSL/TLS certificate and are configured to use SNI to serve HTTPS requests. This control fails if a custom SSL/TLS certificate is associated but the SSL/TLS support method is a dedicated IP address.", 
+    "test_desc": "8 CloudFront distributions should use SNI to serve HTTPS requests", 
+    "test_number": "foundational_security_cloudfront_8"
+  }, 
+  {
+    "test_category": "AWS/CloudFront", 
+    "test_rationale": "This control checks if Amazon CloudFront distributions are encrypting traffic to custom origins. This control fails for a CloudFront distribution whose origin protocol policy allows 'http-only'. This control also fails if the distribution's origin protocol policy is 'match-viewer' while the viewer protocol policy is 'allow-all'.", 
+    "test_desc": "9 CloudFront distributions should encrypt traffic to custom origins", 
+    "test_number": "foundational_security_cloudfront_9"
+  }, 
+  {
+    "test_category": "AWS/SecretsManager", 
+    "test_rationale": "This control checks whether a secret stored in AWS Secrets Manager is configured with automatic rotation. Secrets Manager helps you improve the security posture of your organization. Secrets include database credentials, passwords, and third-party API keys. You can use Secrets Manager to store secrets centrally, encrypt secrets automatically, control access to secrets, and rotate secrets safely and automatically.", 
+    "test_desc": "1 Secrets Manager secrets should have automatic rotation enabled", 
+    "test_number": "foundational_security_secretsmanager_1"
+  }, 
+  {
+    "test_category": "AWS/SecretsManager", 
+    "test_rationale": "This control checks whether an AWS Secrets Manager secret rotated successfully based on the rotation schedule. The control fails if RotationOccurringAsScheduled is false. The control does not evaluate secrets that do not have rotation configured.", 
+    "test_desc": "2 Secrets Manager secrets configured with automatic rotation should rotate successfully", 
+    "test_number": "foundational_security_secretsmanager_2"
+  }, 
+  {
+    "test_category": "AWS/SecretsManager", 
+    "test_rationale": "This control checks whether your secrets have been accessed within a specified number of days. The default value is 90 days. If a secret was accessed even once within the defined number of days, this control fails.", 
+    "test_desc": "3 Remove unused Secrets Manager secrets", 
+    "test_number": "foundational_security_secretsmanager_3"
+  }, 
+  {
+    "test_category": "AWS/SecretsManager", 
+    "test_rationale": "This control checks whether your secrets have been rotated at least once within 90 days. Rotating secrets can help you to reduce the risk of an unauthorized use of your secrets in your AWS account. Examples include database credentials, passwords, third-party API keys, and even arbitrary text. If you do not change your secrets for a long period of time, the secrets are more likely to be compromised.", 
+    "test_desc": "4 Secrets Manager secrets should be rotated within a specified number of days", 
+    "test_number": "foundational_security_secretsmanager_4"
+  }, 
+  {
+    "test_category": "AWS/APIGateway", 
+    "test_rationale": "This control checks whether all stages of an Amazon API Gateway REST or WebSocket API have logging enabled. The control fails if logging is not enabled for all methods of a stage or if loggingLevel is neither ERROR nor INFO.", 
+    "test_desc": "1 API Gateway REST and WebSocket API logging should be enabled", 
+    "test_number": "foundational_security_apigateway_1"
+  }, 
+  {
+    "test_category": "AWS/APIGateway", 
+    "test_rationale": "This control checks whether Amazon API Gateway REST API stages have SSL certificates configured. Backend systems use these certificates to authenticate that incoming requests are from API Gateway.", 
+    "test_desc": "2 API Gateway REST API stages should be configured to use SSL certificates for backend authentication", 
+    "test_number": "foundational_security_apigateway_2"
+  }, 
+  {
+    "test_category": "AWS/APIGateway", 
+    "test_rationale": "This control checks whether AWS X-Ray active tracing is enabled for your Amazon API Gateway REST API stages.", 
+    "test_desc": "3 API Gateway REST API stages should have AWS X-Ray tracing enabled", 
+    "test_number": "foundational_security_apigateway_3"
+  }, 
+  {
+    "test_category": "AWS/APIGateway", 
+    "test_rationale": "This control checks whether an API Gateway stage uses an AWS WAF web access control list (ACL). This control fails if an AWS WAF web ACL is not attached to a REST API Gateway stage.", 
+    "test_desc": "4 API Gateway should be associated with an AWS WAF web ACL", 
+    "test_number": "foundational_security_apigateway_4"
+  }, 
+  {
+    "test_category": "AWS/APIGateway", 
+    "test_rationale": "This control checks whether all methods in API Gateway REST API stages that have cache enabled are encrypted. The control fails if any method in an API Gateway REST API stage is configured to cache and the cache is not encrypted.", 
+    "test_desc": "5 API Gateway REST API cache data should be encrypted at rest", 
+    "test_number": "foundational_security_apigateway_5"
+  }, 
+  {
+    "test_category": "AWS/CloudTrail", 
+    "test_rationale": "This control checks that there is at least one multi-Region CloudTrail trail.", 
+    "test_desc": "1 CloudTrail should be enabled and configured with at least one multi-Region trail", 
+    "test_number": "foundational_security_cloudtrail_1"
+  }, 
+  {
+    "test_category": "AWS/CloudTrail", 
+    "test_rationale": "This control checks whether CloudTrail is configured to use the server-side encryption (SSE) AWS Key Management Service customer master key (CMK) encryption. The check passes if the KmsKeyId is defined.", 
+    "test_desc": "2 CloudTrail should have encryption at rest enabled", 
+    "test_number": "foundational_security_cloudtrail_2"
+  }, 
+  {
+    "test_category": "AWS/CloudTrail", 
+    "test_rationale": "This control checks whether log file integrity validation is enabled on a CloudTrail trail. CloudTrail log file validation creates a digitally signed digest file that contains a hash of each log that CloudTrail writes to Amazon S3. You can use these digest files to determine whether a log file was changed, deleted, or unchanged after CloudTrail delivered the log.", 
+    "test_desc": "4 Ensure CloudTrail log file validation is enabled", 
+    "test_number": "foundational_security_cloudtrail_4"
+  }, 
+  {
+    "test_category": "AWS/CloudTrail", 
+    "test_rationale": "This control checks whether CloudTrail trails are configured to send logs to CloudWatch Logs. The control fails if the CloudWatchLogsLogGroupArn property of the trail is empty.", 
+    "test_desc": "5 Ensure CloudTrail trails are integrated with Amazon CloudWatch Logs", 
+    "test_number": "foundational_security_cloudtrail_5"
+  }, 
+  {
+    "test_category": "AWS/GuardDuty", 
+    "test_rationale": "This control checks whether Amazon GuardDuty is enabled in your GuardDuty account and Region. It is highly recommended that you enable GuardDuty in all supported AWS Regions. Doing so allows GuardDuty to generate findings about unauthorized or unusual activity, even in Regions that you do not actively use. This also allows GuardDuty to monitor CloudTrail events for global AWS services such as IAM.", 
+    "test_desc": "1 GuardDuty should be enabled", 
+    "test_number": "foundational_security_guardduty_1"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks whether the default version of IAM policies (also known as customer managed policies) has administrator access that includes a statement with 'Effect': 'Allow' with 'Action': '*' over 'Resource': '*'. The control only checks the customer managed policies that you create. It does not check inline and AWS managed policies.", 
+    "test_desc": "1 IAM policies should not allow full '*' administrative privileges", 
+    "test_number": "foundational_security_iam_1"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks that none of your IAM users have policies attached. Instead, IAM users must inherit permissions from IAM groups or roles.", 
+    "test_desc": "2 IAM users should not have IAM policies attached", 
+    "test_number": "foundational_security_iam_2"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks whether the active access keys are rotated within 90 days.", 
+    "test_desc": "3 IAM users' access keys should be rotated every 90 days or less", 
+    "test_number": "foundational_security_iam_3"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks whether the root user access key is present. The root account is the most privileged user in an AWS account. AWS access keys provide programmatic access to a given account.", 
+    "test_desc": "4 IAM root user access key should not exist", 
+    "test_number": "foundational_security_iam_4"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks whether AWS multi-factor authentication (MFA) is enabled for all IAM users that use a console password.", 
+    "test_desc": "5 MFA should be enabled for all IAM users that have a console password", 
+    "test_number": "foundational_security_iam_5"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks whether your AWS account is enabled to use a hardware multi-factor authentication (MFA) device to sign in with root user credentials.", 
+    "test_desc": "6 Hardware MFA should be enabled for the root user", 
+    "test_number": "foundational_security_iam_6"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks whether the account password policy for IAM users uses the recommended configurations.", 
+    "test_desc": "7 Password policies for IAM users should have strong configurations", 
+    "test_number": "foundational_security_iam_7"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks whether your IAM users have passwords or active access keys that have not been used for 90 days.", 
+    "test_desc": "8 Unused IAM user credentials should be removed", 
+    "test_number": "foundational_security_iam_8"
+  }, 
+  {
+    "test_category": "AWS/IAM", 
+    "test_rationale": "This control checks whether the IAM identity-based policies that you create have Allow statements that use the * wildcard to grant permissions for all actions on any service. The control fails if any policy statement includes 'Effect': 'Allow' with 'Action': 'Service:*'.", 
+    "test_desc": "21 IAM customer managed policies that you create should not allow wildcard actions for services", 
+    "test_number": "foundational_security_iam_21"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "Amazon EBS snapshots should not be public, determined by the ability to be restorable by anyone. EBS snapshots are used to back up the data on your EBS volumes to Amazon S3 at a specific point in time. You can use the snapshots to restore previous states of EBS volumes. It is rarely acceptable to share a snapshot with the public. Typically the decision to share a snapshot publicly was made in error or without a complete understanding of the implications. This check helps ensure that all such sharing was fully planned and intentional.", 
+    "test_desc": "1 Amazon EBS snapshots should not be public, determined by the ability to be restorable by anyone", 
+    "test_number": "foundational_security_ec2_1"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks that the default security group of a VPC does not allow inbound or outbound traffic. The rules for the default security group allow all outbound and inbound traffic from network interfaces (and their associated instances) that are assigned to the same security group.", 
+    "test_desc": "2 The VPC default security group should not allow inbound and outbound traffic", 
+    "test_number": "foundational_security_ec2_2"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether the EBS volumes that are in an attached state are encrypted. To pass this check, EBS volumes must be in use and encrypted. If the EBS volume is not attached, then it is not subject to this check.", 
+    "test_desc": "3 Attached EBS volumes should be encrypted at rest", 
+    "test_number": "foundational_security_ec2_3"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether any EC2 instances have been stopped for more than the allowed number of days. An EC2 instance fails this check if it is stopped for longer than the maximum allowed time period, which by default is 30 days.", 
+    "test_desc": "4 Stopped EC2 instances should be removed after a specified time period", 
+    "test_number": "foundational_security_ec2_4"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether Amazon VPC Flow Logs are found and enabled for VPCs. The traffic type is set to Reject. With the VPC Flow Logs feature, you can capture information about the IP address traffic going to and from network interfaces in your VPC. After you create a flow log, you can view and retrieve its data in CloudWatch Logs. To reduce cost, you can also send your flow logs to Amazon S3.", 
+    "test_desc": "6 VPC flow logging should be enabled in all VPCs", 
+    "test_number": "foundational_security_ec2_6"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether account-level encryption is enabled by default for Amazon Elastic Block Store(Amazon EBS). The control fails if the account level encryption is not enabled.", 
+    "test_desc": "7 EBS default encryption should be enabled", 
+    "test_number": "foundational_security_ec2_7"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether your EC2 instance metadata version is configured with Instance Metadata Service Version 2 (IMDSv2). The control passes if HttpTokens is set to required for IMDSv2. The control fails if HttpTokens is set to optional.", 
+    "test_desc": "8 EC2 instances should use IMDSv2", 
+    "test_number": "foundational_security_ec2_8"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether EC2 instances have a public IP address. The control fails if the publicIp field is present in the EC2 instance configuration item. This control applies to IPv4 addresses only.", 
+    "test_desc": "9 EC2 instances should not have a public IP address", 
+    "test_number": "foundational_security_ec2_9"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether a service endpoint for Amazon EC2 is created for each VPC. The control fails if a VPC does not have a VPC endpoint created for the Amazon EC2 service.", 
+    "test_desc": "10 Amazon EC2 should be configured to use VPC endpoints", 
+    "test_number": "foundational_security_ec2_10"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether the assignment of public IPs in Amazon Virtual Private Cloud (Amazon VPC) subnets have MapPublicIpOnLaunch set to FALSE. The control passes if the flag is set to FALSE.", 
+    "test_desc": "15 EC2 subnets should not automatically assign public IP addresses", 
+    "test_number": "foundational_security_ec2_15"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether there are any unused network access control lists (ACLs). The control checks the item configuration of the resource AWS::EC2::NetworkAcl and determines the relationships of the network ACL.", 
+    "test_desc": "16 Unused network access control lists should be removed", 
+    "test_number": "foundational_security_ec2_16"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether an EC2 instance uses multiple Elastic Network Interfaces (ENIs) or Elastic Fabric Adapters (EFAs). This control passes if a single network adapter is used. The control includes an optional parameter list to identify the allowed ENIs.", 
+    "test_desc": "17 EC2 instances should not use multiple ENIs", 
+    "test_number": "foundational_security_ec2_17"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether the security groups that are in use allow unrestricted incoming traffic. Optionally the rule checks whether the port numbers are listed in the authorizedTcpPorts parameter. The default values for authorizedTcpPorts are 80 and 443.", 
+    "test_desc": "18 Security groups should only allow unrestricted incoming traffic for authorized ports", 
+    "test_number": "foundational_security_ec2_18"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks whether unrestricted incoming traffic for the security groups is accessible to the specified ports that have the highest risk. This control passes when none of the rules in a security group allow ingress traffic from 0.0.0.0/0 for those ports.", 
+    "test_desc": "19 Security groups should not allow unrestricted access to ports with high risk", 
+    "test_number": "foundational_security_ec2_19"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This control checks if default ports for SSH/RDP ingress traffic for network access control lists (NACLs) is unrestricted. The rule fails if a NACL inbound entry allows a source CIDR block of '0.0.0.0/0' or '::/0' for ports 22 or 3389.", 
+    "test_desc": "21 Network ACLs should not allow ingress from 0.0.0.0/0 to port 22 or port 3389", 
+    "test_number": "foundational_security_ec2_21"
+  }, 
+  {
+    "test_category": "AWS/EC2", 
+    "test_rationale": "This AWS control checks that security groups are attached to Amazon Elastic Compute Cloud (Amazon EC2) instances or to an elastic network interface. The control will fail if the security group is not associated with an Amazon EC2 instance or an elastic network interface.", 
+    "test_desc": "22 Unused EC2 security groups should be removed", 
+    "test_number": "foundational_security_ec2_22"
+  }, 
+  {
+    "test_category": "AWS/ELB", 
+    "test_rationale": "This control checks whether your Classic Load Balancer listeners are configured with HTTPS or TLS protocol for front-end (client to load balancer) connections. The control is applicable if a Classic Load Balancer has listeners. If your Classic Load Balancer does not have a listener configured, then the control does not report any findings. The control passes if the Classic Load Balancer listeners are configured with TLS or HTTPS for front-end connections. The control fails if the listener is not configured with TLS or HTTPS for front-end connections.", 
+    "test_desc": "3 Classic Load Balancer listeners should be configured with HTTPS or TLS termination", 
+    "test_number": "foundational_security_elb_3"
+  }, 
+  {
+    "test_category": "AWS/ELB", 
+    "test_rationale": "This control evaluates AWS Application Load Balancers (ALB) to ensure they are configured to drop invalid HTTP headers. The control fails if the value of routing.http.drop_invalid_header_fields.enabled is set to false. By default, ALBs are not configured to drop invalid HTTP header values. Removing these header values prevents HTTP desync attacks.", 
+    "test_desc": "4 Application load balancers should be configured to drop HTTP headers", 
+    "test_number": "foundational_security_elb_4"
+  }, 
+  {
+    "test_category": "AWS/ELB", 
+    "test_rationale": "This control checks whether the Application Load Balancer and the Classic Load Balancer have logging enabled. The control fails if access_logs.s3.enabled is false.", 
+    "test_desc": "5 Application and Classic Load Balancers logging should be enabled", 
+    "test_number": "foundational_security_elb_5"
+  }, 
+  {
+    "test_category": "AWS/ELB", 
+    "test_rationale": "This control checks whether an Application Load Balancer has deletion protection enabled. The control fails if deletion protection is not configured. Enable deletion protection to protect your Application Load Balancer from deletion.", 
+    "test_desc": "6 Application Load Balancer deletion protection should be enabled", 
+    "test_number": "foundational_security_elb_6"
+  }, 
+  {
+    "test_category": "AWS/ELB", 
+    "test_rationale": "This control checks whether Classic Load Balancers have connection draining enabled.", 
+    "test_desc": "7 Classic Load Balancers should have connection draining enabled", 
+    "test_number": "foundational_security_elb_7"
+  }, 
+  {
+    "test_category": "AWS/ELB", 
+    "test_rationale": "This control checks whether a Classic Load Balancer has been configured to span multiple Availability Zones. The control fails if the Classic Load Balancer does not span multiple Availability Zones.", 
+    "test_desc": "10 Classic Load Balancers should span multiple Availability Zones", 
+    "test_number": "foundational_security_elb_10"
+  }
+]

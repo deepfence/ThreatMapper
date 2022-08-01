@@ -76,6 +76,7 @@ def register_extensions(app):
     from models.notification import VulnerabilityNotification, UserActivityNotification
     from models.system_events import SystemEvents
     from models.node_tags import NodeTags
+    from models.compliance_rules import ComplianceRules
     from models.compliance_rules_disabled import ComplianceRulesDisabled
     from models.scheduler import Scheduler
     from models.user_activity_log import UserActivityLog

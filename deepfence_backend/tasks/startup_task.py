@@ -133,12 +133,15 @@ def main():
     process1 = Thread(target=cve_fix_interrupted_at_start)
     process2 = Thread(target=update_all_registry_images_in_redis)
     process3 = Thread(target=generate_aes_settings)
+    process4 = Thread(target=insert_compliance_rules)
     process1.start()
     process2.start()
     process3.start()
+    process4.start()
     process1.join()
     process2.join()
     process3.join()
+    process4.join()
 
 
 if __name__ == '__main__':

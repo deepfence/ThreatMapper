@@ -300,8 +300,6 @@ def get_mis_config_count(index_name, logs_index_name, aggs_field):
                 "aggs": {"scan_id": {"terms": {"field": "scan_id.keyword", "size": ES_TERMS_AGGR_SIZE}}}
             }
         }
-        print(ESConn.aggregation_helper(
-            index_name, filters, aggs, number, TIME_UNIT_MAPPING.get(time_unit), None, get_only_query=True))
         aggs_response = ESConn.aggregation_helper(
             index_name, filters, aggs, number, TIME_UNIT_MAPPING.get(time_unit), None)
         for bkt in aggs_response.get("aggregations", {}).get(aggs_field, {}).get("buckets", []):
