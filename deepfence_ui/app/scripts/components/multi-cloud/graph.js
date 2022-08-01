@@ -86,7 +86,7 @@ export const useGraph = (el, data) => {
       },
 
       defaultEdge: {
-        type: 'quadratic',
+        type: 'cubic',
         size: 3,
         color: COLORS.EDGE,
         style: {
