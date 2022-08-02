@@ -160,7 +160,7 @@ export const InventoryServiceResourceView = props => {
                   cloudtype={cloudtype}
                   nodeid={nodeid}
                   resource={row.original.arn}
-                  location = {location}
+                  serviceid={serviceid}
                 />
               );
             }}
@@ -191,10 +191,12 @@ const Filters = ({ filters, onFiltersChange, allResources }) => {
   }, [allResources, setUniqueRegions]);
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'row'
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+      }}
+    >
       <SearchInput
         className={styles.searchInput}
         placeholder="Search"
@@ -207,7 +209,7 @@ const Filters = ({ filters, onFiltersChange, allResources }) => {
       />
       <SingleSelectDropdown
         placeholder="Region"
-        onChange={(e) => {
+        onChange={e => {
           onFiltersChange({
             region: e?.value ?? null,
           });
@@ -215,32 +217,35 @@ const Filters = ({ filters, onFiltersChange, allResources }) => {
         isClearable
         options={uniqueRegions.map(region => ({
           label: region,
-          value: region
+          value: region,
         }))}
         width={200}
       />
       <SingleSelectDropdown
         placeholder="Scan status"
-        onChange={(e) => {
+        onChange={e => {
           onFiltersChange({
             isScanned: e?.value ?? null,
           });
         }}
         isClearable
-        options={[{
-          label: 'Scanned',
-          value: 'yes',
-        }, {
-          label: 'Not scanned',
-          value: 'no'
-        }]}
+        options={[
+          {
+            label: 'Scanned',
+            value: 'yes',
+          },
+          {
+            label: 'Not scanned',
+            value: 'no',
+          },
+        ]}
         width={200}
       />
     </div>
   );
 };
 
-const ScanResults = ({ scanData, nodeid, cloudtype, resource, location }) => {
+const ScanResults = ({ scanData, nodeid, cloudtype, resource, serviceid }) => {
   const keys = Object.keys(scanData);
   if (!keys.length) {
     return <NotScannedMessage />;
@@ -320,9 +325,13 @@ const ScanResults = ({ scanData, nodeid, cloudtype, resource, location }) => {
       Cell: ({ row }) => (
         <div>
           <Link
-            to={{pathname: `/compliance/summary/${nodeid}/${row.original?.scanType}/${
-              row.original?.scanId
-            }/${cloudtype}${resource ? `?resource=${resource}` : ''}`, state: {prevpath : location}}}
+            to={{
+              pathname: `/compliance/summary/${nodeid}/${row.original?.scanType}/${row.original?.scanId}/${cloudtype}`,
+              search: new URLSearchParams({
+                resource,
+                serviceId: serviceid,
+              }).toString(),
+            }}
           >
             Full details &gt;
           </Link>

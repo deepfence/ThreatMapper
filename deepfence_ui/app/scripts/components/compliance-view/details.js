@@ -86,11 +86,6 @@ class ComplianceDetailsView extends React.PureComponent {
 
     const {location} = this.props;
 
-    let serviceId;
-    if(location.search !== undefined && location.state !== undefined) {
-      serviceId = this.props.history.location.state.prevpath;
-    }
-
     return (
       <div className="compliance-details">
         <SideNavigation
@@ -155,7 +150,7 @@ class ComplianceDetailsView extends React.PureComponent {
               </span>
             </div>
           ) : null}
-          {location.state && location.state.prevpath !== undefined && (
+          {urlSearchParams.get('resource')?.length && urlSearchParams.get('serviceId')?.length && (
             <div
               className="go-back-btn"
               style={{
@@ -165,7 +160,7 @@ class ComplianceDetailsView extends React.PureComponent {
               }}
               onClick={() =>
                 this.props.history.push(
-                  `/compliance/cloud-inventory/${cloudType}/${nodeId}/${serviceId}`
+                  `/compliance/cloud-inventory/${cloudType}/${nodeId}/${urlSearchParams.get('serviceId')}`
                 )
               }
             >
