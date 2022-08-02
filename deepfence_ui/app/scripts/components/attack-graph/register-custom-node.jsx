@@ -4,6 +4,14 @@ import BugIcon from '../../../images/attack-graph-icons/attack_graph_bug.svg';
 import ChecklistIcon from '../../../images/attack-graph-icons/attack_graph_checklist.svg';
 import PasswordIcon from '../../../images/attack-graph-icons/attack_graph_password.svg';
 
+
+function ellipseText(text, maxLength=20) {
+  if (text.length >= maxLength) {
+    return `${text.substring(0, maxLength - 3)}...`
+  }
+  return text;
+}
+
 registerNode(
   'attack-path-node',
   {
@@ -223,7 +231,7 @@ registerNode(
             textBaseline: 'middle',
             cursor: 'pointer',
             fontFamily: 'Source Sans Pro',
-            text: `${cfg.label} ${cfg?.count > 0 ? `(${cfg?.count})` : ''}`,
+            text: `${ellipseText(cfg.label)} ${cfg?.count > 0 ? `(${cfg?.count})` : ''}`,
             ...(cfg.labelCfg?.style ?? {}),
           },
           // must be assigned in G6 3.3 and later versions. it can be any value you want
