@@ -222,8 +222,11 @@ CSPM_RESOURCES = {
     "aws_elastic_beanstalk_environment": "aws_elastic_beanstalk",
     "aws_lambda_function": "aws_lambda",
     "aws_elasticsearch_domain": "aws_elasticsearch",
+    "aws_ec2_classic_load_balancer": "aws_elb",
     "aws_ec2_application_load_balancer": "aws_elb",
+    "aws_ec2_network_load_balancer": "aws_elb",
     "aws_ec2_load_balancer_listener": "aws_elbv2",
+    "aws_eks_cluster": "aws_eks",
     "aws_ssm_parameter": "aws_ssm",
     "aws_sagemaker_endpoint_configuration": "aws_sagemaker",
     "aws_cloudfront_distribution": "aws_cloudfront",
@@ -240,8 +243,13 @@ CSPM_RESOURCES = {
     "aws_codebuild_project": "aws_codebuild",
     "aws_dynamodb_table": "aws_dynamodb",
     "aws_ecs_cluster": "aws_ecs",
+    "aws_ecs_service": "aws_ecs_service",
+    "aws_ecs_task": "aws_ecs_task",
+    "aws_ecs_task_definiton": "aws_ecs_task_definiton",
     "aws_sns_topic": "aws_sns",
-    "aws_ec2_autoscaling_group": "aws_autoscaling"
+    "aws_ec2_autoscaling_group": "aws_autoscaling",
+    "aws_rds_db_instance": "aws_rds",
+    "aws_rds_db_cluster": "aws_rds",
 }
 CSPM_RESOURCES_INVERTED = defaultdict(list)
 for key, value in CSPM_RESOURCES.items():
@@ -258,6 +266,7 @@ CSPM_RESOURCE_LABELS = {
     "aws_dms": "AWS Database Migration Service (DMS)",
     "aws_acm": "AWS ACM",
     "aws_elastic_beanstalk": "AWS Elastic Beanstalk",
+    "aws_eks": "AWS EKS",
     "aws_lambda": "AWS Lambda",
     "aws_elasticsearch": "AWS ElasticSearch",
     "aws_elb": "AWS ELB",
@@ -278,8 +287,12 @@ CSPM_RESOURCE_LABELS = {
     "aws_codebuild": "AWS CodeBuild",
     "aws_dynamodb": "Amazon DynamoDB",
     "aws_ecs": "Amazon ECS",
+    "aws_ecs_task": "AWS ECS Task",
+    "aws_ecs_service": "AWS ECS Service",
+    "aws_ecs_task_definiton": "AWS ECS Task Definition",
     "aws_sns": "AWS SNS",
-    "aws_autoscaling": "AWS Autoscaling"
+    "aws_autoscaling": "AWS Autoscaling",
+    "aws_rds": "AWS RDS",
 }
 CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "javascript", "rust", "golang", "dotnet"]
 AES_SETTING_KEY = "aes_secret"
@@ -332,6 +345,7 @@ NODE_TYPE_LINUX = 'linux'
 USER_DEFINED_TAGS = "user_defined_tags"
 CLOUD_AWS = "aws"
 CLOUD_GCP = "google_cloud"
+CLOUD_GCP2 = "gcp"
 CLOUD_AZURE = "azure"
 NODE_TYPE_LABEL = {
     NODE_TYPE_HOST: "Compute Instance",
