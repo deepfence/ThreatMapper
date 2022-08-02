@@ -8,6 +8,8 @@ import AWSRDSAuroraInstanceIcon from '../../../images/attack-graph-icons/graph-n
 import AWSRDSMultiAZDbClusterIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Amazon-RDS_Multi-AZ-DB-Cluster_48_Dark.svg';
 import AWSECSTaskIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Amazon-Elastic-Container-Service_Task_48_Dark.svg';
 import AWSLambdaFunctionIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_AWS-Lambda_Lambda-Function_48_Dark.svg';
+import AWSEC2NLBIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Elastic-Load-Balancing_Network-Load-Balancer_48_Dark.svg';
+import AWSEC2CLBIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Elastic-Load-Balancing_Classic-Load-Balancer_48_Dark.svg';
 
 const mapping = {
   host: HostIcon,
@@ -19,6 +21,8 @@ const mapping = {
   aws_rds_db_cluster: AWSRDSMultiAZDbClusterIcon,
   aws_ecs_task: AWSECSTaskIcon,
   aws_lambda_function: AWSLambdaFunctionIcon,
+  aws_ec2_network_load_balancer: AWSEC2NLBIcon,
+  aws_ec2_classic_load_balancer: AWSEC2CLBIcon
 };
 
 export function getAssetIcon(id) {

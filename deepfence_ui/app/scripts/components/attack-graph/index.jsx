@@ -147,7 +147,7 @@ export const AttackGraph = () => {
     graph.on('node:click', evt => {
       const { item } = evt;
       const model = item.getModel();
-      setDialogModel(model);
+      if (!model?.nonInteractive) setDialogModel(model);
     });
     graph.render();
     graphRef.current = graph;
@@ -272,6 +272,7 @@ function processData(attackGraphData) {
     img: getNodeIcon('cloud'),
     type: 'image',
     size: 30,
+    nonInteractive: true,
   });
 
   attackGraphData.forEach(singleGraph => {
