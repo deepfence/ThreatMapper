@@ -1,8 +1,8 @@
 /* eslint-disable no-nested-ternary */
 import { registerNode } from '@antv/g6';
-import BugIcon from '../../../images/attack-graph-icons/attack_graph_bug.svg';
-import ChecklistIcon from '../../../images/attack-graph-icons/attack_graph_checklist.svg';
-import PasswordIcon from '../../../images/attack-graph-icons/attack_graph_password.svg';
+import VulnerabilityIcon from '../../../images/attack-graph-icons/attack_graph_vulnerability.svg';
+import PostureIcon from '../../../images/attack-graph-icons/attack_graph_posture.svg';
+import SecretIcon from '../../../images/attack-graph-icons/attack_graph_secret.svg';
 
 
 function ellipseText(text, maxLength=20) {
@@ -90,7 +90,7 @@ registerNode(
             y: -20,
             width: 8,
             height: 8,
-            img: BugIcon,
+            img: VulnerabilityIcon,
             cursor: 'pointer',
           },
           // must be assigned in G6 3.3 and later versions. it can be any value you want
@@ -143,7 +143,7 @@ registerNode(
             y: -3,
             width: 6,
             height: 6,
-            img: ChecklistIcon,
+            img: PostureIcon,
             cursor: 'pointer',
           },
           // must be assigned in G6 3.3 and later versions. it can be any value you want
@@ -196,7 +196,7 @@ registerNode(
             y: 12,
             width: 8,
             height: 8,
-            img: PasswordIcon,
+            img: SecretIcon,
             cursor: 'pointer',
           },
           // must be assigned in G6 3.3 and later versions. it can be any value you want
