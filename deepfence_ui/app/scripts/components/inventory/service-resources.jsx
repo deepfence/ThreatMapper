@@ -22,6 +22,8 @@ export const InventoryServiceResourceView = props => {
     isScanned: null,
   });
 
+  const location = props.location.pathname;
+
   const { resources, loading } = useSelector(state => {
     return {
       resources: state.getIn(
@@ -158,6 +160,7 @@ export const InventoryServiceResourceView = props => {
                   cloudtype={cloudtype}
                   nodeid={nodeid}
                   resource={row.original.arn}
+                  location = {location}
                 />
               );
             }}
@@ -237,7 +240,7 @@ const Filters = ({ filters, onFiltersChange, allResources }) => {
   );
 };
 
-const ScanResults = ({ scanData, nodeid, cloudtype, resource }) => {
+const ScanResults = ({ scanData, nodeid, cloudtype, resource, location }) => {
   const keys = Object.keys(scanData);
   if (!keys.length) {
     return <NotScannedMessage />;
@@ -317,9 +320,9 @@ const ScanResults = ({ scanData, nodeid, cloudtype, resource }) => {
       Cell: ({ row }) => (
         <div>
           <Link
-            to={`/compliance/summary/${nodeid}/${row.original?.scanType}/${
+            to={{pathname: `/compliance/summary/${nodeid}/${row.original?.scanType}/${
               row.original?.scanId
-            }/${cloudtype}${resource ? `?resource=${resource}` : ''}`}
+            }/${cloudtype}${resource ? `?resource=${resource}` : ''}`, state: {prevpath : location}}}
           >
             Full details &gt;
           </Link>

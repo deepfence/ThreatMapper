@@ -84,6 +84,13 @@ class ComplianceDetailsView extends React.PureComponent {
       this.props.location?.search ?? ''
     );
 
+    const {location} = this.props;
+
+    let serviceId;
+    if(location.search !== undefined && location.state !== undefined) {
+      serviceId = this.props.history.location.state.prevpath;
+    }
+
     return (
       <div className="compliance-details">
         <SideNavigation
@@ -121,7 +128,7 @@ class ComplianceDetailsView extends React.PureComponent {
               </span>
             </div>
           )}
-          {cloudType !== 'kubernetes' && !urlSearchParams.get('resource') ? (
+          {cloudType !== 'kubernetes' && !urlSearchParams.get('resource') && location.state === undefined ? (
             <div
               className="go-back-btn"
               style={{
@@ -148,6 +155,33 @@ class ComplianceDetailsView extends React.PureComponent {
               </span>
             </div>
           ) : null}
+          {location.state && location.state.prevpath !== undefined && (
+            <div
+              className="go-back-btn"
+              style={{
+                marginBottom: '8px',
+                width: 'fit-content',
+                cursor: 'pointer',
+              }}
+              onClick={() =>
+                this.props.history.push(
+                  `/compliance/cloud-inventory/${cloudType}/${nodeId}/${serviceId}`
+                )
+              }
+            >
+              <i className="fa fa-arrow-left" aria-hidden="true" />{' '}
+              <span
+                style={{
+                  paddingLeft: '5px',
+                  color: '#0276C9',
+                  fontSize: '15px',
+                }}
+              >
+                {' '}
+                Go Back
+              </span>
+            </div>
+          )}
           <div
             className={`report ${
               this.props.isFiltersViewVisible
