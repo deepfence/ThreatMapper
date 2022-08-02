@@ -338,13 +338,6 @@ def get_secrets_count():
     return get_mis_config_count(SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, "node_id")
 
 
-def compute_attack_graph_for_cloud(cloud_resources, include_nodes):
-    graph = nx.DiGraph()
-    graph.add_node(incoming_internet_host_id, name="The Internet", node_type="")
-    graph.add_node(outgoing_internet_host_id, name="The Internet", node_type="")
-    return compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes)
-
-
 def _compute_attack_graph():
     # Get count of vulnerability, compliance, secrets
     vulnerability_count_map = get_vulnerability_count()
@@ -355,16 +348,21 @@ def _compute_attack_graph():
                      **cloud_compliance_count_map, **secrets_count_map}
 
     graph = {CLOUD_AWS: nx.DiGraph(), CLOUD_GCP2: nx.DiGraph(), CLOUD_AZURE: nx.DiGraph(), pvt_cloud: nx.DiGraph()}
+    for cloud_provider, _ in graph.items():
+        graph[cloud_provider].add_node(incoming_internet_host_id, name="The Internet", node_type="")
+        graph[cloud_provider].add_node(outgoing_internet_host_id, name="The Internet", node_type="")
     # Get cloud resources
     cloud_resources = redis.hgetall(CLOUD_RESOURCES_CACHE_KEY)
     for k, v in cloud_resources.items():
         try:
             if k.startswith(CLOUD_AWS):
-                graph[CLOUD_AWS] = compute_attack_graph_for_cloud(json.loads(v), include_nodes)
+                graph[CLOUD_AWS] = compute_aws_cloud_network_graph(json.loads(v), graph[CLOUD_AWS], include_nodes)
             elif k.startswith(CLOUD_GCP2):
-                graph[CLOUD_GCP2] = compute_attack_graph_for_cloud(json.loads(v), include_nodes)
+                graph[CLOUD_GCP2] = compute_gcp_cloud_network_graph(json.loads(v), graph[CLOUD_GCP2], include_nodes)
             elif k.startswith(CLOUD_AZURE):
-                graph[CLOUD_AZURE] = compute_attack_graph_for_cloud(json.loads(v), include_nodes)
+                graph[CLOUD_AZURE] = compute_azure_cloud_network_graph(json.loads(v), graph[CLOUD_AZURE], include_nodes)
+        except nx.NetworkXNoPath:
+            pass
         except Exception as ex:
             flask_app.logger.error("Error in attack graph: {0}".format(ex))
 
