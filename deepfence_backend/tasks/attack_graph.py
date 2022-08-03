@@ -7,13 +7,16 @@ from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE
     CLOUD_AZURE, ATTACK_GRAPH_CACHE_KEY, ATTACK_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
     CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_INDEX, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, SECRET_SCAN_LOGS_INDEX, \
     TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
-    SECRET_SCAN_INDEX
+    SECRET_SCAN_INDEX, CLOUD_GCP2
 import networkx as nx
 from collections import defaultdict
 import json
 
 incoming_internet_host_id = "in-theinternet"
 outgoing_internet_host_id = "out-theinternet"
+pvt_cloud = "others"  # other cloud, non cloud
+CLOUD_PROVIDERS = [CLOUD_AWS, CLOUD_GCP2, CLOUD_AZURE]
+ALL_CLOUD_PROVIDERS = [CLOUD_AWS, CLOUD_GCP2, CLOUD_AZURE, pvt_cloud]
 # Get vulnerabilities, compliance mis-config in the past 90 days
 number = 90
 time_unit = "d"
@@ -121,8 +124,7 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                 if not graph.has_edge(cloud_resource["domain_id"], outgoing_internet_host_id):
                     graph.add_edge(cloud_resource["domain_id"], outgoing_internet_host_id)
         if cloud_resource["id"] == "aws_rds_db_instance":
-            host_name = cloud_resource["name"]
-            db_instance = cloud_resource["db_instance_identifier"] + ";<db>"
+            db_instance = cloud_resource["arn"]
             if cloud_resource["publicly_accessible"] is True:
                 if not graph.has_node(db_instance):
                     graph.add_node(db_instance, name=cloud_resource["name"], node_type=cloud_resource["id"])
@@ -153,28 +155,28 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                             graph.add_edge(incoming_internet_host_id, db_instance)
     for cloud_resource in cloud_resources:
         if cloud_resource["id"] == "aws_rds_db_cluster":
-            db_cluster = cloud_resource["db_cluster_identifier"] + ";<db>"
-            for sec_group in cloud_resource["vpc_security_groups"]:
-                if security_groups[sec_group["VpcSecurityGroupId"]]["is_egress"]:
-                    if security_groups[sec_group["VpcSecurityGroupId"]]["cidr_ipv4"] == '0.0.0.0/0':
-                        if not graph.has_node(db_cluster):
-                            graph.add_node(db_cluster, name=cloud_resource["name"], node_type=cloud_resource["id"])
-                        if not graph.has_edge(db_cluster, outgoing_internet_host_id):
-                            graph.add_edge(db_cluster, outgoing_internet_host_id)
-                        for instance in cloud_resource["members"]:
-                            instance_id = instance["DBInstanceIdentifier"] + ";<db>"
-                            if not graph.has_edge(db_cluster, instance_id):
-                                graph.add_edge(db_cluster, outgoing_internet_host_id)
-                else:
-                    if security_groups[sec_group["VpcSecurityGroupId"]]["cidr_ipv4"] == '0.0.0.0/0':
-                        if not graph.has_node(db_cluster):
-                            graph.add_node(db_cluster, name=cloud_resource["name"], node_type=cloud_resource["id"])
-                        if not graph.has_edge(incoming_internet_host_id, db_cluster):
-                            graph.add_edge(incoming_internet_host_id, db_cluster)
-                        for instance in cloud_resource["members"]:
-                            db_instance_id = instance["DBInstanceIdentifier"] + ";<db>"
-                            if not graph.has_edge(db_cluster, db_instance_id):
-                                graph.add_edge(db_cluster, outgoing_internet_host_id)
+            db_cluster = cloud_resource["arn"]
+            # for sec_group in cloud_resource["vpc_security_groups"]:
+            #     if security_groups[sec_group["VpcSecurityGroupId"]]["is_egress"]:
+            #         if security_groups[sec_group["VpcSecurityGroupId"]]["cidr_ipv4"] == '0.0.0.0/0':
+            #             if not graph.has_node(db_cluster):
+            #                 graph.add_node(db_cluster, name=cloud_resource["name"], node_type=cloud_resource["id"])
+            #             if not graph.has_edge(db_cluster, outgoing_internet_host_id):
+            #                 graph.add_edge(db_cluster, outgoing_internet_host_id)
+            #             for instance in cloud_resource["members"]:
+            #                 instance_id = instance["DBInstanceIdentifier"] + ";<db>"
+            #                 if not graph.has_edge(db_cluster, instance_id):
+            #                     graph.add_edge(db_cluster, outgoing_internet_host_id)
+            #     else:
+            #         if security_groups[sec_group["VpcSecurityGroupId"]]["cidr_ipv4"] == '0.0.0.0/0':
+            #             if not graph.has_node(db_cluster):
+            #                 graph.add_node(db_cluster, name=cloud_resource["name"], node_type=cloud_resource["id"])
+            #             if not graph.has_edge(incoming_internet_host_id, db_cluster):
+            #                 graph.add_edge(incoming_internet_host_id, db_cluster)
+            #             for instance in cloud_resource["members"]:
+            #                 db_instance_id = instance["DBInstanceIdentifier"] + ";<db>"
+            #                 if not graph.has_edge(db_cluster, db_instance_id):
+            #                     graph.add_edge(db_cluster, outgoing_internet_host_id)
         # check compute to compute mapping
         if cloud_resource["id"] == "aws_ec2_instance":
             host_name = cloud_resource["name"] + ";<host>"
@@ -221,10 +223,15 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                         graph.add_edge(lambda_fun, outgoing_internet_host_id)
             if lambda_fun in lamda_function_map:
                 if isinstance(lamda_function_map[lambda_fun], str):
+                    if not graph.has_node(lamda_function_map[lambda_fun]):
+                        graph.add_node(lamda_function_map[lambda_fun], name=lamda_function_map[lambda_fun],
+                                       node_type="aws_s3_bucket")
                     if not graph.has_edge(lambda_fun, lamda_function_map[lambda_fun]):
                         graph.add_edge(lambda_fun, lamda_function_map[lambda_fun])
                 if isinstance(lamda_function_map[lambda_fun], list):
                     for bucket in lamda_function_map[lambda_fun]:
+                        if not graph.has_node(bucket):
+                            graph.add_node(bucket, name=bucket, node_type="aws_s3_bucket")
                         if not graph.has_edge(lambda_fun, bucket):
                             graph.add_edge(lambda_fun, bucket)
     return graph
@@ -340,126 +347,174 @@ def _compute_attack_graph():
     include_nodes = {**vulnerability_count_map, **compliance_count_map,
                      **cloud_compliance_count_map, **secrets_count_map}
 
+    graph = {CLOUD_AWS: nx.DiGraph(), CLOUD_GCP2: nx.DiGraph(), CLOUD_AZURE: nx.DiGraph(), pvt_cloud: nx.DiGraph()}
+    for cloud_provider, _ in graph.items():
+        graph[cloud_provider].add_node(incoming_internet_host_id, name="The Internet", node_type="")
+        graph[cloud_provider].add_node(outgoing_internet_host_id, name="The Internet", node_type="")
     # Get cloud resources
     cloud_resources = redis.hgetall(CLOUD_RESOURCES_CACHE_KEY)
-    aws_cloud_resources = []
-    gcp_cloud_resources = []
-    azure_cloud_resources = []
     for k, v in cloud_resources.items():
         try:
             if k.startswith(CLOUD_AWS):
-                aws_cloud_resources.extend(json.loads(v))
-            elif k.startswith(CLOUD_GCP):
-                gcp_cloud_resources.extend(json.loads(v))
+                graph[CLOUD_AWS] = compute_aws_cloud_network_graph(json.loads(v), graph[CLOUD_AWS], include_nodes)
+            elif k.startswith(CLOUD_GCP2):
+                graph[CLOUD_GCP2] = compute_gcp_cloud_network_graph(json.loads(v), graph[CLOUD_GCP2], include_nodes)
             elif k.startswith(CLOUD_AZURE):
-                azure_cloud_resources.extend(json.loads(v))
-        except Exception as ex:
-            flask_app.logger.error("Error in attack graph: {0}".format(ex))
-    graph = nx.DiGraph()
-    graph.add_node(incoming_internet_host_id, name="The Internet", node_type="")
-    graph.add_node(outgoing_internet_host_id, name="The Internet", node_type="")
-    if aws_cloud_resources:
-        graph = compute_aws_cloud_network_graph(aws_cloud_resources, graph, include_nodes)
-    if gcp_cloud_resources:
-        graph = compute_gcp_cloud_network_graph(gcp_cloud_resources, graph, include_nodes)
-    if azure_cloud_resources:
-        graph = compute_azure_cloud_network_graph(azure_cloud_resources, graph, include_nodes)
-
-    # Get topology data
-    topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
-    graph = get_topology_network_graph(topology_hosts, graph, node_type=NODE_TYPE_HOST, include_nodes=include_nodes)
-    topology_containers = fetch_topology_data(NODE_TYPE_CONTAINER, format="scope")
-    graph = get_topology_network_graph(
-        topology_containers, graph, node_type=NODE_TYPE_CONTAINER, include_nodes=include_nodes)
-
-    attack_graph = {}
-    attack_graph_paths = defaultdict(dict)
-    attack_graph_node = {}
-    node_data = dict(graph.nodes.data())
-
-    for node_id, meta in node_data.items():
-        if incoming_internet_host_id == node_id or outgoing_internet_host_id == node_id:
-            continue
-        try:
-            shortest_paths_generator_in = nx.shortest_simple_paths(graph, incoming_internet_host_id, node_id)
-            for _, path in enumerate(shortest_paths_generator_in):
-                p = []
-                p_str = ""
-                counter = 0
-                for i in path:
-                    if i == incoming_internet_host_id:
-                        p.append("The Internet")
-                        p_str += "The Internet"
-                    else:
-                        n = node_data[i]["node_type"] + "-" + str(counter)
-                        p.append(n)
-                        p_str += "," + n
-                    counter += 1
-                node_type = meta["node_type"]
-                key = node_type + "-" + str(len(path) - 1)
-                label = node_type
-                if node_type in NODE_TYPE_LABEL:
-                    label = NODE_TYPE_LABEL[node_type]
-                elif node_type in CSPM_RESOURCES:
-                    if CSPM_RESOURCES[node_type] in CSPM_RESOURCE_LABELS:
-                        label = CSPM_RESOURCE_LABELS[CSPM_RESOURCES[node_type]]
-                vulnerability_count = 0
-                vulnerability_scan_id = []
-                compliance_scan_id = []
-                secrets_count = 0
-                secrets_scan_id = []
-                if node_type == NODE_TYPE_HOST:
-                    vulnerability_count = vulnerability_count_map.get(meta["name"], {}).get("count", 0)
-                    if vulnerability_count > 0:
-                        vulnerability_scan_id = vulnerability_count_map[meta["name"]]["scan_id"]
-                    compliance_count = compliance_count_map.get(node_id, {}).get("count", 0)
-                    if compliance_count > 0:
-                        compliance_scan_id = compliance_count_map[node_id]["scan_id"]
-                    if meta.get("cloud_id"):
-                        compliance_count += cloud_compliance_count_map.get(meta["cloud_id"], {}).get("count", 0)
-                        compliance_scan_id += cloud_compliance_count_map.get(meta["cloud_id"], {}).get("scan_id", [])
-                    secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
-                    if secrets_count > 0:
-                        secrets_scan_id = secrets_count_map[node_id]["scan_id"]
-                elif node_type == NODE_TYPE_CONTAINER:
-                    vulnerability_count = vulnerability_count_map.get(meta["image_name"], {}).get("count", 0)
-                    if vulnerability_count > 0:
-                        vulnerability_scan_id = vulnerability_count_map[meta["image_name"]]["scan_id"]
-                    compliance_count = compliance_count_map.get(node_id, {}).get("count", 0)
-                    if compliance_count > 0:
-                        compliance_scan_id = compliance_count_map[node_id]["scan_id"]
-                    secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
-                    if secrets_count > 0:
-                        secrets_scan_id = secrets_count_map[node_id]["scan_id"]
-                else:
-                    compliance_count = cloud_compliance_count_map.get(node_id, {}).get("count", 0)
-                    compliance_scan_id = cloud_compliance_count_map.get(node_id, {}).get("scan_id", [])
-                if key not in attack_graph_node:
-                    attack_graph_node[key] = {
-                        "label": label, "id": key, "nodes": {}, "node_type": node_type}
-                attack_graph_node[key]["nodes"][node_id] = {
-                    "node_id": node_id, "name": meta["name"], "image_name": meta.get("image_name", ""),
-                    "vulnerability_count": vulnerability_count, "vulnerability_scan_id": vulnerability_scan_id,
-                    "compliance_count": compliance_count, "compliance_scan_id": compliance_scan_id,
-                    "secrets_count": secrets_count, "secrets_scan_id": secrets_scan_id,
-                }
-                if key in attack_graph:
-                    if not attack_graph_paths[key][p_str]:
-                        attack_graph[key]["attack_path"].append(p)
-                    attack_graph[key]["count"] += 1
-                else:
-                    attack_graph_paths[key][p_str] = True
-                    attack_graph[key] = {
-                        "attack_path": [p], "count": 1, "vulnerability_count": vulnerability_count,
-                        "compliance_count": compliance_count, "secrets_count": secrets_count,
-                        "label": label, "id": key, "node_type": node_type,
-                    }
+                graph[CLOUD_AZURE] = compute_azure_cloud_network_graph(json.loads(v), graph[CLOUD_AZURE], include_nodes)
         except nx.NetworkXNoPath:
             pass
         except Exception as ex:
             flask_app.logger.error("Error in attack graph: {0}".format(ex))
 
-    redis.set(ATTACK_GRAPH_CACHE_KEY, json.dumps(list(attack_graph.values())))
+    # Get topology data
+    topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
+    topology_containers = fetch_topology_data(NODE_TYPE_CONTAINER, format="scope")
+    host_cloud = {}
+    cloud_vms = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP2: {}, pvt_cloud: {}}
+    cloud_containers = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP2: {}, pvt_cloud: {}}
+    for node_id, node_details in topology_hosts.items():
+        node_name = node_details.get("name", node_details.get("label"))
+        if node_details.get("pseudo", False):
+            if node_name == "The Internet":
+                for cp, nodes in cloud_vms.items():
+                    cloud_vms[cp][node_id] = node_details
+            continue
+        cp = ""
+        for metadata in node_details.get("metadata", []):
+            if metadata["id"] == "cloud_provider":
+                cp = metadata["value"]
+                break
+        if cp not in CLOUD_PROVIDERS:
+            cp = pvt_cloud
+        if cp == CLOUD_GCP:
+            cp = CLOUD_GCP2
+        host_cloud[node_details.get("label", "")] = cp
+        cloud_vms[cp][node_id] = node_details
+    for node_id, node_details in topology_containers.items():
+        node_name = node_details.get("name", node_details.get("label"))
+        if node_details.get("pseudo", False):
+            if node_name == "The Internet":
+                for cp, nodes in cloud_containers.items():
+                    cloud_containers[cp][node_id] = node_details
+            continue
+        host_name = node_details.get("labelMinor")
+        if not host_name:
+            continue
+        cp = host_cloud.get(host_name, pvt_cloud)
+        cloud_containers[cp][node_id] = node_details
+    for cloud_provider in ALL_CLOUD_PROVIDERS:
+        graph[cloud_provider] = get_topology_network_graph(cloud_vms[cloud_provider], graph[cloud_provider],
+                                                           node_type=NODE_TYPE_HOST, include_nodes=include_nodes)
+        graph[cloud_provider] = get_topology_network_graph(cloud_containers[cloud_provider], graph[cloud_provider],
+                                                           node_type=NODE_TYPE_CONTAINER, include_nodes=include_nodes)
+
+    attack_graph = {
+        CLOUD_AWS: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
+        CLOUD_AZURE: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
+        CLOUD_GCP2: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
+        pvt_cloud: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}}
+    }
+    attack_graph_paths = defaultdict(dict)
+    attack_graph_node = {}
+
+    for cloud_provider in ALL_CLOUD_PROVIDERS:
+        node_data = dict(graph[cloud_provider].nodes.data())
+        for node_id, meta in node_data.items():
+            if incoming_internet_host_id == node_id or outgoing_internet_host_id == node_id:
+                continue
+            if not meta:
+                continue
+            try:
+                shortest_paths_generator_in = nx.shortest_simple_paths(
+                    graph[cloud_provider], incoming_internet_host_id, node_id)
+                for _, path in enumerate(shortest_paths_generator_in):
+                    p = []
+                    p_str = ""
+                    counter = 0
+                    for i in path:
+                        if i == incoming_internet_host_id:
+                            p.append("The Internet")
+                            p_str += "The Internet"
+                        else:
+                            n = node_data[i]["node_type"] + "-" + str(counter)
+                            p.append(n)
+                            p_str += "," + n
+                        counter += 1
+                    node_type = meta["node_type"]
+                    key = node_type + "-" + str(len(path) - 1)
+                    label = node_type
+                    if node_type in NODE_TYPE_LABEL:
+                        label = NODE_TYPE_LABEL[node_type]
+                    elif node_type in CSPM_RESOURCES:
+                        if CSPM_RESOURCES[node_type] in CSPM_RESOURCE_LABELS:
+                            label = CSPM_RESOURCE_LABELS[CSPM_RESOURCES[node_type]]
+                    vulnerability_count = 0
+                    vulnerability_scan_id = []
+                    compliance_scan_id = []
+                    secrets_count = 0
+                    secrets_scan_id = []
+                    if node_type == NODE_TYPE_HOST:
+                        vulnerability_count = vulnerability_count_map.get(meta["name"], {}).get("count", 0)
+                        if vulnerability_count > 0:
+                            vulnerability_scan_id = vulnerability_count_map[meta["name"]]["scan_id"]
+                        compliance_count = compliance_count_map.get(node_id, {}).get("count", 0)
+                        if compliance_count > 0:
+                            compliance_scan_id = compliance_count_map[node_id]["scan_id"]
+                        if meta.get("cloud_id"):
+                            compliance_count += cloud_compliance_count_map.get(meta["cloud_id"], {}).get("count", 0)
+                            compliance_scan_id += cloud_compliance_count_map.get(meta["cloud_id"], {}).get("scan_id",
+                                                                                                           [])
+                        secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
+                        if secrets_count > 0:
+                            secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                    elif node_type == NODE_TYPE_CONTAINER:
+                        vulnerability_count = vulnerability_count_map.get(meta["image_name"], {}).get("count", 0)
+                        if vulnerability_count > 0:
+                            vulnerability_scan_id = vulnerability_count_map[meta["image_name"]]["scan_id"]
+                        compliance_count = compliance_count_map.get(node_id, {}).get("count", 0)
+                        if compliance_count > 0:
+                            compliance_scan_id = compliance_count_map[node_id]["scan_id"]
+                        secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
+                        if secrets_count > 0:
+                            secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                    else:
+                        compliance_count = cloud_compliance_count_map.get(node_id, {}).get("count", 0)
+                        compliance_scan_id = cloud_compliance_count_map.get(node_id, {}).get("scan_id", [])
+                    if key not in attack_graph_node:
+                        attack_graph_node[key] = {
+                            "label": label, "id": key, "nodes": {}, "node_type": node_type}
+                    attack_graph_node[key]["nodes"][node_id] = {
+                        "node_id": node_id, "name": meta["name"], "image_name": meta.get("image_name", ""),
+                        "vulnerability_count": vulnerability_count, "vulnerability_scan_id": vulnerability_scan_id,
+                        "compliance_count": compliance_count, "compliance_scan_id": compliance_scan_id,
+                        "secrets_count": secrets_count, "secrets_scan_id": secrets_scan_id,
+                    }
+                    if key in attack_graph[cloud_provider]["resources"]:
+                        if not attack_graph_paths[key][p_str]:
+                            attack_graph[cloud_provider]["resources"][key]["attack_path"].append(p)
+                        attack_graph[cloud_provider]["resources"][key]["count"] += 1
+                        attack_graph[cloud_provider]["resources"][key]["vulnerability_count"] += vulnerability_count
+                        attack_graph[cloud_provider]["resources"][key]["secrets_count"] += secrets_count
+                        attack_graph[cloud_provider]["resources"][key]["compliance_count"] += compliance_count
+                    else:
+                        attack_graph_paths[key][p_str] = True
+                        attack_graph[cloud_provider]["resources"][key] = {
+                            "attack_path": [p], "count": 1, "vulnerability_count": vulnerability_count,
+                            "compliance_count": compliance_count, "secrets_count": secrets_count,
+                            "label": label, "id": key, "node_type": node_type,
+                        }
+                    attack_graph[cloud_provider]["count"] += 1
+                    attack_graph[cloud_provider]["vulnerability_count"] += vulnerability_count
+                    attack_graph[cloud_provider]["secrets_count"] += secrets_count
+                    attack_graph[cloud_provider]["compliance_count"] += compliance_count
+            except nx.NetworkXNoPath:
+                pass
+            except Exception as ex:
+                flask_app.logger.error("Error in attack graph: {0}".format(ex))
+
+    for cloud_provider, _ in attack_graph.items():
+        attack_graph[cloud_provider]["resources"] = list(attack_graph[cloud_provider]["resources"].values())
+    redis.set(ATTACK_GRAPH_CACHE_KEY, json.dumps(attack_graph))
     attack_graph_node_detail = {k: json.dumps(v) for k, v in attack_graph_node.items()}
     if attack_graph_node_detail:
         redis.hset(ATTACK_GRAPH_NODE_DETAIL_KEY, mapping=attack_graph_node_detail)

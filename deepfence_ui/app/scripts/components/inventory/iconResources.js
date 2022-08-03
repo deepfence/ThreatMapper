@@ -1,643 +1,150 @@
 import AWSGeneric from '../../../images/aws.png';
 import GCPGeneric from '../../../images/gcp.png';
 import AzureGeneric from '../../../images/azure.png';
+
 import AWSS3Bucket from '../../../images/cloud-icons/aws/Res_Amazon-Simple-Storage-Service_Bucket_48_Dark.svg';
-import AWSAccessAnalyzer from '../../../images/cloud-icons/aws/Res_AWS-Identity-Access-Management_AWS-IAM-Access-Analyzer_48_Dark.svg';
-import AWSACMCertificate from '../../../images/cloud-icons/aws/Res_AWS-IoT_Certificate_48_Dark.svg';
-
-
-import AWSApiGatewayV2Api from '../../../images/cloud-icons/aws/Res_Amazon-API-Gateway_Endpoint_48_Dark.svg';
-import AWSBackupVault from '../../../images/cloud-icons/aws/Res_AWS-Backup_Backup-Vault_48_Dark.svg';
-import AWSBackupPlan from '../../../images/cloud-icons/aws/Res_AWS-Backup_Backup-Plan_48_Dark.svg';
-import AWSBackupRecoveryPoint from '../../../images/cloud-icons/aws/Res_AWS-Backup_Recovery-Point-Objective_48_Dark.svg';
-import AWSBackupSelection from '../../../images/cloud-icons/aws/Res_AWS-Backup_Backup-Restore_48_Dark.svg';
-import AWSBackupProtectedResource from '../../../images/cloud-icons/aws/Res_AWS-Backup_Database_48_Dark.svg';
-import AWSCloudFrontCachePolicy from '../../../images/cloud-icons/aws/Res_Amazon-CloudFront_Edge-Location_48_Dark.svg';
-import AWSCloudFrontDistribution from '../../../images/cloud-icons/aws/Res_Amazon-CloudFront_Functions_48_Dark.svg';
-import AWSCloudWatchMetric from '../../../images/cloud-icons/aws/Res_Amazon-CloudWatch_Metrics-Insights_48_Dark.svg';
-import AWSCloudWatchAlarm from '../../../images/cloud-icons/aws/Res_Amazon-CloudWatch_Alarm_48_Dark.svg';
-import AWSCloudWatchLogEvent from '../../../images/cloud-icons/aws/Res_Amazon-CloudWatch_Event-Event-Based_48_Dark.svg';
-import AWSCloudWatchLogGroup from '../../../images/cloud-icons/aws/Res_Amazon-CloudWatch_Evidently_48_Dark.svg';
-import AWSCloudWatchLogResourcePolicy from '../../../images/cloud-icons/aws/Res_Amazon-CloudWatch_Logs_48_Dark.svg';
-import AWSDynamoDBGlobalTable from '../../../images/cloud-icons/aws/Res_Amazon-DynamoDB_Table_48_Dark.svg';
-import AWSDynamoDBTable from '../../../images/cloud-icons/aws/Res_Amazon-DynamoDB_Items_48_Dark.svg';
-import AWSEBSSnapshot from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Block-Store_Snapshot_48_Dark.svg';
-import AWSEBSVolume from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Block-Store_Volume_48_Dark.svg';
-import AWSEBSVolumeReadOps from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Block-Store_Multiple-Volumes_48_Dark.svg';
-import AWSEBSVolumeWriteOps from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Block-Store_Amazon-Data-Lifecycle-Manager_48_Dark.svg';
-import AWSEc2AutoscalingGroup from '../../../images/cloud-icons/aws/Res_Amazon-EC2_Auto-Scaling_48_Dark.svg';
-import AWSEc2Instance from '../../../images/cloud-icons/aws/Res_Amazon-EC2_A1-Instance_48_Dark.svg';
-import AWSEc2KeyPair from '../../../images/cloud-icons/aws/Res_AWS-Identity-Access-Management_Long-Term-Security-Credential_48_Dark.svg';
-import AWSEc2AMI from '../../../images/cloud-icons/aws/Res_Amazon-EC2_AMI_48_Dark.svg';
-import AWSEc2InstanceAvailability from '../../../images/cloud-icons/aws/Res_Amazon-EC2_Instance_48_Dark.svg';
-import AWSEc2InstanceType from '../../../images/cloud-icons/aws/Res_Amazon-EC2_Instances_48_Dark.svg';
-import AWSECRRepository from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Registry_Image_48_Dark.svg';
-import AWSECRPublicRepository from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Registry_Registry_48_Dark.svg';
-import AWSECSService from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Service_48_Dark.svg';
-import AWSECSTask from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Task_48_Dark.svg';
-import AWSECSCluster from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Container-1_48_Dark.svg';
-import AWSECSContainerInstance from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Container-2_48_Dark.svg';
-import AWSECSClusterMetricCPU from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Container-3_48_Dark.svg';
-import AWSECSClusterMetricCPUDaily from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Copilot-CLI_48_Dark.svg';
-import AWSECSClusterMetricCPUHourly from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_ECS-Anywhere_48_Dark.svg';
-import AWSElasticBeanstalkApplication from '../../../images/cloud-icons/aws/Res_AWS-Elastic-Beanstalk_Application_48_Dark.svg';
-import AWSElasticBeanstalkEnvironment from '../../../images/cloud-icons/aws/Res_AWS-Elastic-Beanstalk_Deployment_48_Dark.svg';
-import AWSElasticacheCluster from '../../../images/cloud-icons/aws/Res_Amazon-ElastiCache_Cache-Node_48_Dark.svg';
-import AWSEMRCluster from '../../../images/cloud-icons/aws/Res_Amazon-EMR_Cluster_48_Dark.svg';
-import AWSEMRInstanceGroup from '../../../images/cloud-icons/aws/Res_Amazon-EMR_HDFS-Cluster_48_Dark.svg';
-import AWSEMRClusterMetric from '../../../images/cloud-icons/aws/Res_Amazon-EMR_EMR-Engine_48_Dark.svg';
-import AWSEventBridgeBus from '../../../images/cloud-icons/aws/Res_Amazon-EventBridge_Default-Event-Bus_48_Dark.svg';
-import AWSEventBridgeRule from '../../../images/cloud-icons/aws/Res_Amazon-EventBridge_Rule_48_Dark.svg';
-import AWSFsxFileSystem from '../../../images/cloud-icons/aws/Res_AWS-Storage-Gateway_Amazon-FSx-File-Gateway_48_Dark.svg';
-import AWSGlacierVault from '../../../images/cloud-icons/aws/Res_Amazon-Simple-Storage-Service-Glacier_Vault_48_Dark.svg';
-import AWSGlueCrawler from '../../../images/cloud-icons/aws/Res_AWS-Glue_Crawler_48_Dark.svg';
-import AWSGlueCatalogDatabase from '../../../images/cloud-icons/aws/Res_AWS-Glue_Data-Catalog_48_Dark.svg';
-import AWSIAMAccessKey from '../../../images/cloud-icons/aws/Res_AWS-Identity-Access-Management_Add-on_48_Dark.svg';
-import AWSIAMCredentialReport from '../../../images/cloud-icons/aws/Res_AWS-Identity-Access-Management_Permissions_48_Dark.svg';
 import AWSIAMRole from '../../../images/cloud-icons/aws/Res_AWS-Identity-Access-Management_Role_48_Dark.svg';
-import AWSIAMAccountPasswordPolicy from '../../../images/cloud-icons/aws/Res_AWS-Identity-Access-Management_Data-Encryption-Key_48_Dark.svg';
-import AWSInspectorFinding from '../../../images/cloud-icons/aws/Res_Amazon-Inspector_Agent_48_Dark.svg';
-import AWSLambdaFunction from '../../../images/cloud-icons/aws/Res_AWS-Lambda_Lambda-Function_48_Dark.svg';
-import AWSNetworkFirewall from '../../../images/cloud-icons/aws/Res_AWS-Network-Firewall_Endpoints_48_Dark.svg';
-import AWSOrganizationsAccount from '../../../images/cloud-icons/aws/Res_AWS-Organizations_Account_48_Dark.svg';
-import AWSPinpointApp from '../../../images/cloud-icons/aws/Res_Amazon-Pinpoint_Journey_48_Dark.svg';
-import AWSRdsDBInstance from '../../../images/cloud-icons/aws/Res_Amazon-Aurora_Amazon-RDS-Instance_48_Dark.svg';
-import AWSRdsDBCluster from '../../../images/cloud-icons/aws/Res_Amazon-Aurora_Amazon-RDS-Instance-Aternate_48_Dark.svg';
-import AWSRdsSnapshot from '../../../images/cloud-icons/aws/Res_Amazon-RDS_Multi-AZ_48_Dark.svg';
-import AWSRdsClusterSnapshot from '../../../images/cloud-icons/aws/Res_Amazon-RDS_Multi-AZ-DB-Cluster_48_Dark.svg';
-import AWSRedshiftSubnetGroup from '../../../images/cloud-icons/aws/Res_Amazon-Redshift_Dense-Compute-Node_48_Dark.svg';
-import AWSRedshiftSnapshot from '../../../images/cloud-icons/aws/Res_Amazon-Redshift_ML_48_Dark.svg';
-import AWSRedshiftCluster from '../../../images/cloud-icons/aws/Res_Amazon-Redshift_RA3_48_Dark.svg';
-import AWSRegion from '../../../images/cloud-icons/aws/Res_Amazon-Location-Service_Map_48_Dark.svg';
-import AWSRoute53HealthCheck from '../../../images/cloud-icons/aws/Res_Amazon-Route-53_Readiness-Checks_48_Dark.svg';
-import AWSRoute53ResolverRule from '../../../images/cloud-icons/aws/Res_Amazon-Route-53_Resolver_48_Dark.svg';
-import AWSRoute53TrafficPolicyInstance from '../../../images/cloud-icons/aws/Res_Amazon-Route-53_Resolver-Query-Logging_48_Dark.svg';
-import AWSRoute53TrafficPolicy from '../../../images/cloud-icons/aws/Res_Amazon-Route-53_Resolver-DNS-Firewall_48_Dark.svg';
-import AWSRoute53Zone from '../../../images/cloud-icons/aws/Res_Amazon-Route-53-Hosted-Zone_48_Dark.svg';
-import AWSRoute53AccountSettings from '../../../images/cloud-icons/aws/Res_Amazon-Route-53_Routing-Controls_48_Dark.svg';
-import AWSRoute53Domain from '../../../images/cloud-icons/aws/Res_Amazon-Route-53_Application-Recovery-Controller_48_Dark.svg';
-import AWSSagemakerNotebook from '../../../images/cloud-icons/aws/Res_Amazon-SageMaker_Notebook_48_Dark.svg';
-import AWSSagemakerTrainingJob from '../../../images/cloud-icons/aws/Res_Amazon-SageMaker_Train_48_Dark.svg';
-import AWSSagemakerModel from '../../../images/cloud-icons/aws/Res_Amazon-SageMaker_Model_48_Dark.svg';
-import AWSSagemakerApp from '../../../images/cloud-icons/aws/Res_Amazon-SageMaker_Canvas_48_Dark.svg';
-import AWSSecurityHubFinding from '../../../images/cloud-icons/aws/Res_AWS-Security-Hub_Finding_48_Dark.svg';
-import AWSVPCCustomerGateway from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Customer-Gateway_48_Dark.svg';
-import AWSVPCEndpoints from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Endpoints_48_Dark.svg';
-import AWSVPCFlowLog from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Flow-Logs_48_Dark.svg';
-import AWSVPCInternetGateway from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Internet-Gateway_48_Dark.svg';
-import AWSVPCNATGateway from '../../../images/cloud-icons/aws/Res_Amazon-VPC_NAT-Gateway_48_Dark.svg';
-import AWSVPCFlowLogEvent from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Network-Access-Analyzer_48_Dark.svg';
-import AWSVPCNetworkAcl from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Network-Access-Control-List_48_Dark.svg';
-import AWSVPCPeeringConnection from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Peering-Connection_48_Dark.svg';
-import AWSVPCRoute from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Router_48_Dark.svg';
-import AWSVPCVPNConnection from '../../../images/cloud-icons/aws/Res_Amazon-VPC_VPN-Connection_48_Dark.svg';
-import AWSVPCVPNGateway from '../../../images/cloud-icons/aws/Res_Amazon-VPC_VPN-Gateway_48_Dark.svg';
-import AWSVPCEgressGateway from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Elastic-Network-Adapter_48_Dark.svg';
-import AWSVPCEip from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Elastic-Network-Interface_48_Dark.svg';
-import AWSVPCSecurityGroup from '../../../images/cloud-icons/aws/Res_Amazon-VPC_Traffic-Mirroring_48_Dark.svg';
-import AWSWAFRule from '../../../images/cloud-icons/aws/Res_AWS-WAF_Rule_48_Dark.svg';
-import AWSWAFRateBasedRule from '../../../images/cloud-icons/aws/Res_AWS-WAF_Managed-Rule_48_Dark.svg';
-import AWSWAFV2RegexPatternSet from '../../../images/cloud-icons/aws/Res_AWS-WAF_Labels_48_Dark.svg';
-import AWSWAFV2RuleGroup from '../../../images/cloud-icons/aws/Res_AWS-WAF_Filtering-Rule_48_Dark.svg';
-import AWSWAFV2WebACL from '../../../images/cloud-icons/aws/Res_AWS-WAF_Bot-Control_48_Dark.svg';
-import AWSWorkspaces from '../../../images/cloud-icons/aws/Res_Amazon-WorkSpaces_WorkSpaces-Web_48_Dark.svg';
-import AWSKmsKey from '../../../images/cloud-icons/aws/Res_AWS-Identity-Access-Management_AWS-STS_48_Dark.svg';
 import AWSVPC from '../../../images/cloud-icons/aws/Arch_Amazon-Virtual-Private-Cloud_48.svg';
+import AWSConfig from '../../../images/cloud-icons/aws/Res_Amazon-Braket_Chip_48_Dark.svg';
+import AWSCloudWatchMetric from '../../../images/cloud-icons/aws/Res_Amazon-CloudWatch_Metrics-Insights_48_Dark.svg';
+import AWSEBSSnapshot from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Block-Store_Snapshot_48_Dark.svg';
 import AWSCloudTrail from '../../../images/cloud-icons/aws/Arch_AWS-CloudTrail_48.png';
+import AWSKmsKey from '../../../images/cloud-icons/aws/Res_AWS-Identity-Access-Management_AWS-STS_48_Dark.svg';
+import AWSDMS from '../../../images/cloud-icons/aws/Res_AWS-Backup_Database_48_Dark.svg';
+import AWSACMCertificate from '../../../images/cloud-icons/aws/Res_AWS-IoT_Certificate_48_Dark.svg';
+import AWSElasticBeanstalk from '../../../images/cloud-icons/aws/Res_AWS-Elastic-Beanstalk_Application_48_Dark.svg';
+import AWSLambda from '../../../images/cloud-icons/aws/Res_AWS-Lambda_Lambda-Function_48_Dark.svg';
+import AWSElasticSearch from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_ECS-Anywhere_48_Dark.svg';
+import AWSElasticLoadBalancer from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Block-Store_Amazon-Data-Lifecycle-Manager_48_Dark.svg';
+import AWSElasticLoadBalancerV2 from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Copilot-CLI_48_Dark.svg';
+import AWSSystemsManager from '../../../images/cloud-icons/aws/Res_Amazon-CloudFront_Edge-Location_48_Dark.svg';
+import AWSSagemaker from '../../../images/cloud-icons/aws/Res_Amazon-SageMaker_Model_48_Dark.svg';
+import AWSCloudFront from '../../../images/cloud-icons/aws/Res_Amazon-CloudFront_Functions_48_Dark.svg';
+import AWSSecretsManager from '../../../images/cloud-icons/aws/Res_AWS-Security-Hub_Finding_48_Dark.svg';
+import AWSECR from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Registry_Image_48_Dark.svg';
+import AWSECRV2 from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Registry_Registry_48_Dark.svg';
+import AWSSQS from '../../../images/cloud-icons/aws/Res_Amazon-Simple-Storage-Service-Glacier_Vault_48_Dark.svg';
+import AWSRedshift from '../../../images/cloud-icons/aws/Res_Amazon-Redshift_RA3_48_Dark.svg';
+import AWSEFS from '../../../images/cloud-icons/aws/Res_AWS-Storage-Gateway_Amazon-FSx-File-Gateway_48_Dark.svg';
+import AWSEMR from '../../../images/cloud-icons/aws/Res_Amazon-EMR_Cluster_48_Dark.svg';
+import AWSApiGateway from '../../../images/cloud-icons/aws/Res_Amazon-API-Gateway_Endpoint_48_Dark.svg';
+import AWSOpenSearch from '../../../images/cloud-icons/aws/Res_Amazon-CloudWatch_Logs_48_Dark.svg';
+import AWSGuardDuty from '../../../images/cloud-icons/aws/Res_Amazon-Route-53_Resolver_48_Dark.svg';
+import AWSCodeBuild from '../../../images/cloud-icons/aws/Res_Amazon-Simple-Storage-Service_S3-Object-Lambda-Access-Points_48_Dark.svg';
+import AWSDynamoDB from '../../../images/cloud-icons/aws/Res_Amazon-DynamoDB_Items_48_Dark.svg';
+import AWSECS from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Container-1_48_Dark.svg';
+import AWSSNS from '../../../images/cloud-icons/aws/Res_Amazon-SageMaker_Notebook_48_Dark.svg';
+import AWSAutoscaling from '../../../images/cloud-icons/aws/Res_Amazon-EC2_Auto-Scaling_48_Dark.svg';
+
+import GCPAppEngine from '../../../images/cloud-icons/gcp/app_engine.svg';
+import GCPBigQuery from '../../../images/cloud-icons/gcp/bigquery.svg';
+import GCPCompute from '../../../images/cloud-icons/gcp/compute_engine.svg';
+import GCPDNS from '../../../images/cloud-icons/gcp/cloud_dns.svg';
+import GCPIAM from '../../../images/cloud-icons/gcp/identity_and_access_management.svg';
+import GCPKMS from '../../../images/cloud-icons/gcp/key_management_service.svg';
+import GCPLogging from '../../../images/cloud-icons/gcp/cloud_logging.svg';
+import GCPSQL from '../../../images/cloud-icons/gcp/cloud_sql.svg';
+import GCPStorage from '../../../images/cloud-icons/gcp/cloud_storage.svg';
+
+import AzureRedis from '../../../images/cloud-icons/azure/10137-icon-service-Cache-Redis.svg';
+import AzureLogic from '../../../images/cloud-icons/azure/10201-icon-service-Logic-Apps.svg';
+import AzureStorage from '../../../images/cloud-icons/azure/10086-icon-service-Storage-Accounts.svg';
+import AzureNetwork from '../../../images/cloud-icons/azure/02794-icon-service-Private-Mobile-Network.svg';
+import AzureAppService from '../../../images/cloud-icons/azure/10035-icon-service-App-Services.svg';
+import AzureStoragem from '../../../images/cloud-icons/azure/10091-icon-service-Storage-Explorer.svg';
+import AzureSQL from '../../../images/cloud-icons/azure/02390-icon-service-Azure-SQL.svg';
+import AzureActiveDirectorym from '../../../images/cloud-icons/azure/10221-icon-service-Azure-Active-Directory.svg';
+import AzureIOTHub from '../../../images/cloud-icons/azure/10182-icon-service-IoT-Hub.svg';
+import AzureMySQL from '../../../images/cloud-icons/azure/10122-icon-service-Azure-Database-MySQL-Server.svg';
+import AzureMariaDB from '../../../images/cloud-icons/azure/10123-icon-service-Azure-Database-MariaDB-Server.svg';
+import AzureBatch from '../../../images/cloud-icons/azure/00028-icon-service-Batch-AI.svg';
+import AzureCompute from '../../../images/cloud-icons/azure/02864-icon-service-Azure-Compute-Galleries.svg';
+import AzureResourceManager from '../../../images/cloud-icons/azure/02145-icon-service-Resource-Management-Private-Link.svg';
+import AzurePostgreSQL from '../../../images/cloud-icons/azure/10131-icon-service-Azure-Database-PostgreSQL-Server.svg';
+import AzureDataLakeStorage from '../../../images/cloud-icons/azure/10090-icon-service-Data-Lake-Storage-Gen1.svg';
+import AzureContainerRegistry from '../../../images/cloud-icons/azure/10105-icon-service-Container-Registries.svg';
+import AzureMonitor from '../../../images/cloud-icons/azure/00001-icon-service-Monitor.svg';
+import AzureKubernetesService from '../../../images/cloud-icons/azure/10023-icon-service-Kubernetes-Services.svg';
+import AzureSecurityCenter from '../../../images/cloud-icons/azure/10241-icon-service-Security-Center.svg';
+import AzureEventHub from '../../../images/cloud-icons/azure/00039-icon-service-Event-Hubs.svg';
+import AzureKeyVault from '../../../images/cloud-icons/azure/10245-icon-service-Key-Vaults.svg';
+import AzureActiveDirectory from '../../../images/cloud-icons/azure/10224-icon-service-Active-Directory-Connect-Health.svg';
+import AzureCosmosDB from '../../../images/cloud-icons/azure/10121-icon-service-Azure-Cosmos-DB.svg';
 
 export const CloudIconsMapping = {
   aws: {
     generic: AWSGeneric,
-    aws_accessanalyzer_analyzer: AWSAccessAnalyzer,
-    aws_account: null,
-    aws_acm_certificate: AWSACMCertificate,
-    aws_api_gateway_api_key: null,
-    aws_api_gateway_authorizer: null,
-    aws_api_gateway_rest_api: null,
-    aws_api_gateway_stage: null,
-    aws_api_gateway_usage_plan: null,
-    aws_api_gatewayv2_api: AWSApiGatewayV2Api,
-    aws_api_gatewayv2_domain_name: null,
-    aws_api_gatewayv2_integration: null,
-    aws_api_gatewayv2_stage: null,
-    aws_appautoscaling_target: null,
-    aws_auditmanager_assessment: null,
-    aws_auditmanager_control: null,
-    aws_auditmanager_evidence: null,
-    aws_auditmanager_evidence_folder: null,
-    aws_auditmanager_framework: null,
-    aws_availability_zone: null,
-    aws_backup_plan: AWSBackupPlan,
-    aws_backup_protected_resource: AWSBackupProtectedResource,
-    aws_backup_recovery_point: AWSBackupRecoveryPoint,
-    aws_backup_selection: AWSBackupSelection,
-    aws_backup_vault: AWSBackupVault,
-    aws_cloudcontrol_resource: null,
-    aws_cloudformation_stack: null,
-    aws_cloudfront_cache_policy: AWSCloudFrontCachePolicy,
-    aws_cloudfront_distribution: AWSCloudFrontDistribution,
-    aws_cloudfront_origin_access_identity: null,
-    aws_cloudfront_origin_request_policy: null,
-    aws_cloudtrail_trail: AWSCloudTrail,
-    aws_cloudtrail_trail_event: null,
-    aws_cloudwatch_alarm: AWSCloudWatchAlarm,
-    aws_cloudwatch_log_event: AWSCloudWatchLogEvent,
-    aws_cloudwatch_log_group: AWSCloudWatchLogGroup,
-    aws_cloudwatch_log_metric_filter: null,
-    aws_cloudwatch_log_resource_policy: AWSCloudWatchLogResourcePolicy,
-    aws_cloudwatch_log_stream: null,
-    aws_cloudwatch_metric: AWSCloudWatchMetric,
-    aws_codebuild_project: null,
-    aws_codebuild_source_credential: null,
-    aws_codecommit_repository: null,
-    aws_codepipeline_pipeline: null,
-    aws_config_aggregate_authorization: null,
-    aws_config_configuration_recorder: null,
-    aws_config_conformance_pack: null,
-    aws_config_rule: null,
-    aws_cost_by_account_daily: null,
-    aws_cost_by_account_monthly: null,
-    aws_cost_by_record_type_daily: null,
-    aws_cost_by_record_type_monthly: null,
-    aws_cost_by_service_daily: null,
-    aws_cost_by_service_monthly: null,
-    aws_cost_by_service_usage_type_daily: null,
-    aws_cost_by_service_usage_type_monthly: null,
-    aws_cost_forecast_daily: null,
-    aws_cost_forecast_monthly: null,
-    aws_cost_usage: null,
-    aws_dax_cluster: null,
-    aws_directory_service_directory: null,
-    aws_dlm_lifecycle_policy: null,
-    aws_dms_replication_instance: null,
-    aws_dynamodb_backup: null,
-    aws_dynamodb_global_table: AWSDynamoDBGlobalTable,
-    aws_dynamodb_metric_account_provisioned_read_capacity_util: null,
-    aws_dynamodb_metric_account_provisioned_write_capacity_util: null,
-    aws_dynamodb_table: AWSDynamoDBTable,
-    aws_ebs_snapshot: AWSEBSSnapshot,
-    aws_ebs_volume: AWSEBSVolume,
-    aws_ebs_volume_metric_read_ops: AWSEBSVolumeReadOps,
-    aws_ebs_volume_metric_read_ops_daily: null,
-    aws_ebs_volume_metric_read_ops_hourly: null,
-    aws_ebs_volume_metric_write_ops: AWSEBSVolumeWriteOps,
-    aws_ebs_volume_metric_write_ops_daily: null,
-    aws_ebs_volume_metric_write_ops_hourly: null,
-    aws_ec2_ami: AWSEc2AMI,
-    aws_ec2_ami_shared: null,
-    aws_ec2_application_load_balancer: null,
-    aws_ec2_application_load_balancer_metric_request_count: null,
-    aws_ec2_application_load_balancer_metric_request_count_daily: null,
-    aws_ec2_autoscaling_group: AWSEc2AutoscalingGroup,
-    aws_ec2_capacity_reservation: null,
-    aws_ec2_classic_load_balancer: null,
-    aws_ec2_gateway_load_balancer: null,
-    aws_ec2_instance: AWSEc2Instance,
-    aws_ec2_instance_availability: AWSEc2InstanceAvailability,
-    aws_ec2_instance_metric_cpu_utilization: null,
-    aws_ec2_instance_metric_cpu_utilization_daily: null,
-    aws_ec2_instance_metric_cpu_utilization_hourly: null,
-    aws_ec2_instance_type: AWSEc2InstanceType,
-    aws_ec2_key_pair: AWSEc2KeyPair,
-    aws_ec2_launch_configuration: null,
-    aws_ec2_load_balancer_listener: null,
-    aws_ec2_managed_prefix_list: null,
-    aws_ec2_network_interface: null,
-    aws_ec2_network_load_balancer: null,
-    aws_ec2_network_load_balancer_metric_net_flow_count: null,
-    aws_ec2_network_load_balancer_metric_net_flow_count_daily: null,
-    aws_ec2_regional_settings: null,
-    aws_ec2_reserved_instance: null,
-    aws_ec2_ssl_policy: null,
-    aws_ec2_target_group: null,
-    aws_ec2_transit_gateway: null,
-    aws_ec2_transit_gateway_route: null,
-    aws_ec2_transit_gateway_route_table: null,
-    aws_ec2_transit_gateway_vpc_attachment: null,
-    aws_ecr_repository: AWSECRRepository,
-    aws_ecrpublic_repository: AWSECRPublicRepository,
-    aws_ecs_cluster: AWSECSCluster,
-    aws_ecs_cluster_metric_cpu_utilization: AWSECSClusterMetricCPU,
-    aws_ecs_cluster_metric_cpu_utilization_daily: AWSECSClusterMetricCPUDaily,
-    aws_ecs_cluster_metric_cpu_utilization_hourly: AWSECSClusterMetricCPUHourly,
-    aws_ecs_container_instance: AWSECSContainerInstance,
-    aws_ecs_service: AWSECSService,
-    aws_ecs_task: AWSECSTask,
-    aws_ecs_task_definition: null,
-    aws_efs_access_point: null,
-    aws_efs_file_system: null,
-    aws_efs_mount_target: null,
-    aws_eks_addon: null,
-    aws_eks_addon_version: null,
-    aws_eks_cluster: null,
-    aws_eks_identity_provider_config: null,
-    aws_elastic_beanstalk_application: AWSElasticBeanstalkApplication,
-    aws_elastic_beanstalk_environment: AWSElasticBeanstalkEnvironment,
-    aws_elasticache_cluster: AWSElasticacheCluster,
-    aws_elasticache_parameter_group: null,
-    aws_elasticache_redis_metric_cache_hits_hourly: null,
-    aws_elasticache_redis_metric_curr_connections_hourly: null,
-    aws_elasticache_redis_metric_engine_cpu_utilization_daily: null,
-    aws_elasticache_redis_metric_engine_cpu_utilization_hourly: null,
-    aws_elasticache_redis_metric_get_type_cmds_hourly: null,
-    aws_elasticache_redis_metric_list_based_cmds_hourly: null,
-    aws_elasticache_redis_metric_new_connections_hourly: null,
-    aws_elasticache_replication_group: null,
-    aws_elasticache_subnet_group: null,
-    aws_elasticsearch_domain: null,
-    aws_emr_cluster: AWSEMRCluster,
-    aws_emr_cluster_metric_is_idle: AWSEMRClusterMetric,
-    aws_emr_instance_group: AWSEMRInstanceGroup,
-    aws_eventbridge_bus: AWSEventBridgeBus,
-    aws_eventbridge_rule: AWSEventBridgeRule,
-    aws_fsx_file_system: AWSFsxFileSystem,
-    aws_glacier_vault: AWSGlacierVault,
-    aws_glue_catalog_database: AWSGlueCatalogDatabase,
-    aws_glue_catalog_table: null,
-    aws_glue_crawler: AWSGlueCrawler,
-    aws_glue_dev_endpoint: null,
-    aws_guardduty_detector: null,
-    aws_guardduty_filter: null,
-    aws_guardduty_finding: null,
-    aws_guardduty_ipset: null,
-    aws_guardduty_member: null,
-    aws_guardduty_publishing_destination: null,
-    aws_guardduty_threat_intel_set: null,
-    aws_iam_access_advisor: null,
-    aws_iam_access_key: AWSIAMAccessKey,
-    aws_iam_account_password_policy: AWSIAMAccountPasswordPolicy,
-    aws_iam_account_summary: null,
-    aws_iam_action: null,
-    aws_iam_credential_report: AWSIAMCredentialReport,
-    aws_iam_group: null,
-    aws_iam_policy: null,
-    aws_iam_policy_attachment: null,
-    aws_iam_policy_simulator: null,
-    aws_iam_role: AWSIAMRole,
-    aws_iam_server_certificate: null,
-    aws_iam_user: null,
-    aws_iam_virtual_mfa_device: null,
-    aws_identitystore_group: null,
-    aws_identitystore_user: null,
-    aws_inspector_assessment_run: null,
-    aws_inspector_assessment_target: null,
-    aws_inspector_assessment_template: null,
-    aws_inspector_exclusion: null,
-    aws_inspector_finding: AWSInspectorFinding,
-    aws_kinesis_consumer: null,
-    aws_kinesis_firehose_delivery_stream: null,
-    aws_kinesis_stream: null,
-    aws_kinesis_video_stream: null,
-    aws_kinesisanalyticsv2_application: null,
-    aws_kms_key: AWSKmsKey,
-    aws_lambda_alias: null,
-    aws_lambda_function: AWSLambdaFunction,
-    aws_lambda_function_metric_duration_daily: null,
-    aws_lambda_function_metric_errors_daily: null,
-    aws_lambda_function_metric_invocations_daily: null,
-    aws_lambda_layer: null,
-    aws_lambda_layer_version: null,
-    aws_lambda_version: null,
-    aws_macie2_classification_job: null,
-    aws_media_store_container: null,
-    aws_neptune_db_cluster: null,
-    aws_networkfirewall_rule_group: AWSNetworkFirewall,
-    aws_opensearch_domain: null,
-    aws_organizations_account: AWSOrganizationsAccount,
-    aws_pinpoint_app: AWSPinpointApp,
-    aws_ram_principal_association: null,
-    aws_ram_resource_association: null,
-    aws_rds_db_cluster: AWSRdsDBCluster,
-    aws_rds_db_cluster_parameter_group: null,
-    aws_rds_db_cluster_snapshot: AWSRdsClusterSnapshot,
-    aws_rds_db_event_subscription: null,
-    aws_rds_db_instance: AWSRdsDBInstance,
-    aws_rds_db_instance_metric_connections: null,
-    aws_rds_db_instance_metric_connections_daily: null,
-    aws_rds_db_instance_metric_connections_hourly: null,
-    aws_rds_db_instance_metric_cpu_utilization: null,
-    aws_rds_db_instance_metric_cpu_utilization_daily: null,
-    aws_rds_db_instance_metric_cpu_utilization_hourly: null,
-    aws_rds_db_instance_metric_read_iops: null,
-    aws_rds_db_instance_metric_read_iops_daily: null,
-    aws_rds_db_instance_metric_read_iops_hourly: null,
-    aws_rds_db_instance_metric_write_iops: null,
-    aws_rds_db_instance_metric_write_iops_daily: null,
-    aws_rds_db_instance_metric_write_iops_hourly: null,
-    aws_rds_db_option_group: null,
-    aws_rds_db_parameter_group: null,
-    aws_rds_db_snapshot: AWSRdsSnapshot,
-    aws_rds_db_subnet_group: null,
-    aws_rds_reserved_db_instance: null,
-    aws_redshift_cluster: AWSRedshiftCluster,
-    aws_redshift_cluster_metric_cpu_utilization_daily: null,
-    aws_redshift_event_subscription: null,
-    aws_redshift_parameter_group: null,
-    aws_redshift_snapshot: AWSRedshiftSnapshot,
-    aws_redshift_subnet_group: AWSRedshiftSubnetGroup,
-    aws_region: AWSRegion,
-    aws_route53_domain: AWSRoute53Domain,
-    aws_route53_health_check: AWSRoute53HealthCheck,
-    aws_route53_record: null,
-    aws_route53_resolver_endpoint: null,
-    aws_route53_resolver_rule: AWSRoute53ResolverRule,
-    aws_route53_traffic_policy: AWSRoute53TrafficPolicy,
-    aws_route53_traffic_policy_instance: AWSRoute53TrafficPolicyInstance,
-    aws_route53_zone: AWSRoute53Zone,
-    aws_s3_access_point: null,
-    aws_s3_account_settings: AWSRoute53AccountSettings,
-    aws_s3_bucket: AWSS3Bucket,
-    aws_sagemaker_app: AWSSagemakerApp,
-    aws_sagemaker_domain: null,
-    aws_sagemaker_endpoint_configuration: null,
-    aws_sagemaker_model: AWSSagemakerModel,
-    aws_sagemaker_notebook_instance: AWSSagemakerNotebook,
-    aws_sagemaker_training_job: AWSSagemakerTrainingJob,
-    aws_secretsmanager_secret: null,
-    aws_securityhub_action_target: null,
-    aws_securityhub_finding: AWSSecurityHubFinding,
-    aws_securityhub_finding_aggregator: null,
-    aws_securityhub_hub: null,
-    aws_securityhub_insight: null,
-    aws_securityhub_member: null,
-    aws_securityhub_product: null,
-    aws_securityhub_standards_control: null,
-    aws_securityhub_standards_subscription: null,
-    aws_serverlessapplicationrepository_application: null,
-    aws_servicequotas_default_service_quota: null,
-    aws_servicequotas_service_quota: null,
-    aws_servicequotas_service_quota_change_request: null,
-    aws_ses_email_identity: null,
-    aws_sfn_state_machine: null,
-    aws_sfn_state_machine_execution: null,
-    aws_sfn_state_machine_execution_history: null,
-    aws_sns_topic: null,
-    aws_sns_topic_subscription: null,
-    aws_sqs_queue: null,
-    aws_ssm_association: null,
-    aws_ssm_document: null,
-    aws_ssm_inventory: null,
-    aws_ssm_maintenance_window: null,
-    aws_ssm_managed_instance: null,
-    aws_ssm_managed_instance_compliance: null,
-    aws_ssm_parameter: null,
-    aws_ssm_patch_baseline: null,
-    aws_ssoadmin_instance: null,
-    aws_ssoadmin_managed_policy_attachment: null,
-    aws_ssoadmin_permission_set: null,
-    aws_tagging_resource: null,
+    aws_s3: AWSS3Bucket,
+    aws_iam: AWSIAMRole,
     aws_vpc: AWSVPC,
-    aws_vpc_customer_gateway: AWSVPCCustomerGateway,
-    aws_vpc_dhcp_options: null,
-    aws_vpc_egress_only_internet_gateway: AWSVPCEgressGateway,
-    aws_vpc_eip: AWSVPCEip,
-    aws_vpc_endpoint: AWSVPCEndpoints,
-    aws_vpc_endpoint_service: null,
-    aws_vpc_flow_log: AWSVPCFlowLog,
-    aws_vpc_flow_log_event: AWSVPCFlowLogEvent,
-    aws_vpc_internet_gateway: AWSVPCInternetGateway,
-    aws_vpc_nat_gateway: AWSVPCNATGateway,
-    aws_vpc_network_acl: AWSVPCNetworkAcl,
-    aws_vpc_peering_connection: AWSVPCPeeringConnection,
-    aws_vpc_route: AWSVPCRoute,
-    aws_vpc_route_table: null,
-    aws_vpc_security_group: AWSVPCSecurityGroup,
-    aws_vpc_security_group_rule: null,
-    aws_vpc_subnet: null,
-    aws_vpc_vpn_connection: AWSVPCVPNConnection,
-    aws_vpc_vpn_gateway: AWSVPCVPNGateway,
-    aws_waf_rate_based_rule: AWSWAFRateBasedRule,
-    aws_waf_rule: AWSWAFRule,
-    aws_wafregional_rule: null,
-    aws_wafv2_ip_set: null,
-    aws_wafv2_regex_pattern_set: AWSWAFV2RegexPatternSet,
-    aws_wafv2_rule_group: AWSWAFV2RuleGroup,
-    aws_wafv2_web_acl: AWSWAFV2WebACL,
-    aws_wellarchitected_workload: null,
-    aws_workspaces_workspace: AWSWorkspaces,
+    aws_config: AWSConfig,
+    aws_cloudwatch: AWSCloudWatchMetric,
+    aws_ebs: AWSEBSSnapshot,
+    aws_cloudtrail: AWSCloudTrail,
+    aws_kms: AWSKmsKey,
+    aws_dms: AWSDMS,
+    aws_acm: AWSACMCertificate,
+    aws_elasticbeanstalk: AWSElasticBeanstalk,
+    aws_lambda: AWSLambda,
+    aws_es: AWSElasticSearch,
+    aws_elb: AWSElasticLoadBalancer,
+    aws_elbv2: AWSElasticLoadBalancerV2,
+    aws_ssm: AWSSystemsManager,
+    aws_sagemaker: AWSSagemaker,
+    aws_cloudfront: AWSCloudFront,
+    aws_secretsmanager: AWSSecretsManager,
+    aws_ecr: AWSECR,
+    aws_ecr2: AWSECRV2,
+    aws_sqs: AWSSQS,
+    aws_redshift: AWSRedshift,
+    aws_efs: AWSEFS,
+    aws_emr: AWSEMR,
+    aws_apigateway: AWSApiGateway,
+    aws_opensearch: AWSOpenSearch,
+    aws_guardduty: AWSGuardDuty,
+    aws_codebuild: AWSCodeBuild,
+    aws_dynamodb: AWSDynamoDB,
+    aws_ecs: AWSECS,
+    aws_sns: AWSSNS,
+    aws_autoscaling: AWSAutoscaling,
   },
   google_cloud: {
     generic: GCPGeneric,
-    gcp_audit_policy: null,
-    gcp_bigquery_dataset: null,
-    gcp_bigquery_job: null,
-    gcp_bigquery_table: null,
-    gcp_bigtable_instance: null,
-    gcp_cloudfunctions_function: null,
-    gcp_compute_address: null,
-    gcp_compute_backend_bucket: null,
-    gcp_compute_backend_service: null,
-    gcp_compute_disk: null,
-    gcp_compute_disk_metric_read_ops: null,
-    gcp_compute_disk_metric_read_ops_daily: null,
-    gcp_compute_disk_metric_read_ops_hourly: null,
-    gcp_compute_disk_metric_write_ops: null,
-    gcp_compute_disk_metric_write_ops_daily: null,
-    gcp_compute_disk_metric_write_ops_hourly: null,
-    gcp_compute_firewall: null,
-    gcp_compute_forwarding_rule: null,
-    gcp_compute_global_address: null,
-    gcp_compute_global_forwarding_rule: null,
-    gcp_compute_image: null,
-    gcp_compute_instance: null,
-    gcp_compute_instance_metric_cpu_utilization: null,
-    gcp_compute_instance_metric_cpu_utilization_daily: null,
-    gcp_compute_instance_metric_cpu_utilization_hourly: null,
-    gcp_compute_instance_template: null,
-    gcp_compute_machine_type: null,
-    gcp_compute_network: null,
-    gcp_compute_node_group: null,
-    gcp_compute_node_template: null,
-    gcp_compute_project_metadata: null,
-    gcp_compute_region: null,
-    gcp_compute_resource_policy: null,
-    gcp_compute_router: null,
-    gcp_compute_snapshot: null,
-    gcp_compute_ssl_policy: null,
-    gcp_compute_subnetwork: null,
-    gcp_compute_target_https_proxy: null,
-    gcp_compute_target_pool: null,
-    gcp_compute_target_ssl_proxy: null,
-    gcp_compute_target_vpn_gateway: null,
-    gcp_compute_url_map: null,
-    gcp_compute_vpn_tunnel: null,
-    gcp_compute_zone: null,
-    gcp_dns_managed_zone: null,
-    gcp_dns_policy: null,
-    gcp_dns_record_set: null,
-    gcp_iam_policy: null,
-    gcp_iam_role: null,
-    gcp_kms_key: null,
-    gcp_kms_key_ring: null,
-    gcp_kms_key_version: null,
-    gcp_kubernetes_cluster: null,
-    gcp_kubernetes_node_pool: null,
-    gcp_logging_bucket: null,
-    gcp_logging_exclusion: null,
-    gcp_logging_metric: null,
-    gcp_logging_sink: null,
-    gcp_monitoring_alert_policy: null,
-    gcp_monitoring_group: null,
-    gcp_monitoring_notification_channel: null,
-    gcp_organization: null,
-    gcp_project: null,
-    gcp_project_organization_policy: null,
-    gcp_project_service: null,
-    gcp_pubsub_snapshot: null,
-    gcp_pubsub_subscription: null,
-    gcp_pubsub_topic: null,
-    gcp_service_account: null,
-    gcp_service_account_key: null,
-    gcp_sql_backup: null,
-    gcp_sql_database: null,
-    gcp_sql_database_instance: null,
-    gcp_sql_database_instance_metric_connections: null,
-    gcp_sql_database_instance_metric_connections_daily: null,
-    gcp_sql_database_instance_metric_connections_hourly: null,
-    gcp_sql_database_instance_metric_cpu_utilization: null,
-    gcp_sql_database_instance_metric_cpu_utilization_daily: null,
-    gcp_sql_database_instance_metric_cpu_utilization_hourly: null,
-    gcp_storage_bucket: null,
+    gcp_appengine: GCPAppEngine,
+    gcp_bigquery: GCPBigQuery,
+    gcp_compute: GCPCompute,
+    gcp_dns: GCPDNS,
+    gcp_iam: GCPIAM,
+    gcp_kms: GCPKMS,
+    gcp_logging: GCPLogging,
+    gcp_sql: GCPSQL,
+    gcp_storage: GCPStorage,
   },
   azure: {
     generic: AzureGeneric,
-    azure_ad_group: null,
-    azure_ad_service_principal: null,
-    azure_ad_user: null,
-    azure_api_management: null,
-    azure_app_configuration: null,
-    azure_app_service_environment: null,
-    azure_app_service_function_app: null,
-    azure_app_service_plan: null,
-    azure_app_service_web_app: null,
-    azure_application_gateway: null,
-    azure_application_security_group: null,
-    azure_batch_account: null,
-    azure_cognitive_account: null,
-    azure_compute_availability_set: null,
-    azure_compute_disk: null,
-    azure_compute_disk_access: null,
-    azure_compute_disk_encryption_set: null,
-    azure_compute_disk_metric_read_ops: null,
-    azure_compute_disk_metric_read_ops_daily: null,
-    azure_compute_disk_metric_read_ops_hourly: null,
-    azure_compute_disk_metric_write_ops: null,
-    azure_compute_disk_metric_write_ops_daily: null,
-    azure_compute_disk_metric_write_ops_hourly: null,
-    azure_compute_image: null,
-    azure_compute_resource_sku: null,
-    azure_compute_snapshot: null,
-    azure_compute_virtual_machine: null,
-    azure_compute_virtual_machine_metric_cpu_utilization: null,
-    azure_compute_virtual_machine_metric_cpu_utilization_daily: null,
-    azure_compute_virtual_machine_metric_cpu_utilization_hourly: null,
-    azure_compute_virtual_machine_scale_set: null,
-    azure_compute_virtual_machine_scale_set_vm: null,
-    azure_container_registry: null,
-    azure_cosmosdb_account: null,
-    azure_cosmosdb_mongo_database: null,
-    azure_cosmosdb_sql_database: null,
-    azure_data_factory: null,
-    azure_data_factory_dataset: null,
-    azure_data_factory_pipeline: null,
-    azure_data_lake_analytics_account: null,
-    azure_data_lake_store: null,
-    azure_databox_edge_device: null,
-    azure_diagnostic_setting: null,
-    azure_eventgrid_domain: null,
-    azure_eventgrid_topic: null,
-    azure_eventhub_namespace: null,
-    azure_express_route_circuit: null,
-    azure_firewall: null,
-    azure_frontdoor: null,
-    azure_hdinsight_cluster: null,
-    azure_healthcare_service: null,
-    azure_hpc_cache: null,
-    azure_hybrid_compute_machine: null,
-    azure_hybrid_kubernetes_connected_cluster: null,
-    azure_iothub: null,
-    azure_iothub_dps: null,
-    azure_key_vault: null,
-    azure_key_vault_deleted_vault: null,
-    azure_key_vault_key: null,
-    azure_key_vault_managed_hardware_security_module: null,
-    azure_key_vault_secret: null,
-    azure_kubernetes_cluster: null,
-    azure_kusto_cluster: null,
-    azure_lb: null,
-    azure_lb_backend_address_pool: null,
-    azure_lb_nat_rule: null,
-    azure_lb_outbound_rule: null,
-    azure_lb_probe: null,
-    azure_lb_rule: null,
-    azure_location: null,
-    azure_log_alert: null,
-    azure_log_profile: null,
-    azure_logic_app_workflow: null,
-    azure_machine_learning_workspace: null,
-    azure_management_group: null,
-    azure_management_lock: null,
-    azure_mariadb_server: null,
-    azure_mssql_elasticpool: null,
-    azure_mssql_managed_instance: null,
-    azure_mssql_virtual_machine: null,
-    azure_mysql_flexible_server: null,
-    azure_mysql_server: null,
-    azure_network_interface: null,
-    azure_network_security_group: null,
-    azure_network_watcher: null,
-    azure_network_watcher_flow_log: null,
-    azure_policy_assignment: null,
-    azure_policy_definition: null,
-    azure_postgresql_server: null,
-    azure_provider: null,
-    azure_public_ip: null,
-    azure_recovery_services_vault: null,
-    azure_redis_cache: null,
-    azure_resource_group: null,
-    azure_resource_link: null,
-    azure_role_assignment: null,
-    azure_role_definition: null,
-    azure_route_table: null,
-    azure_search_service: null,
-    azure_security_center_auto_provisioning: null,
-    azure_security_center_automation: null,
-    azure_security_center_contact: null,
-    azure_security_center_jit_network_access_policy: null,
-    azure_security_center_setting: null,
-    azure_security_center_sub_assessment: null,
-    azure_security_center_subscription_pricing: null,
-    azure_service_fabric_cluster: null,
-    azure_servicebus_namespace: null,
-    azure_signalr_service: null,
-    azure_spring_cloud_service: null,
-    azure_sql_database: null,
-    azure_sql_server: null,
-    azure_storage_account: null,
-    azure_storage_blob: null,
-    azure_storage_blob_service: null,
-    azure_storage_container: null,
-    azure_storage_queue: null,
-    azure_storage_share_file: null,
-    azure_storage_sync: null,
-    azure_storage_table: null,
-    azure_storage_table_service: null,
-    azure_stream_analytics_job: null,
-    azure_subnet: null,
-    azure_subscription: null,
-    azure_synapse_workspace: null,
-    azure_tenant: null,
-    azure_virtual_network: null,
-    azure_virtual_network_gateway: null,
-
-    azuread_application: null,
-    azuread_conditional_access_policy: null,
-    azuread_directory_role: null,
-    azuread_domain: null,
-    azuread_group: null,
-    azuread_identity_provider: null,
-    azuread_service_principal: null,
-    azuread_sign_in_report: null,
-    azuread_user: null,
+    azure_redis: AzureRedis,
+    azure_logic: AzureLogic,
+    azure_storage: AzureStorage,
+    azure_network: AzureNetwork,
+    azure_appservice: AzureAppService,
+    azure_storagem: AzureStoragem,
+    azure_sql: AzureSQL,
+    azure_activedirectorym: AzureActiveDirectorym,
+    azure_iothub: AzureIOTHub,
+    azure_mysql: AzureMySQL,
+    azure_mariadb: AzureMariaDB,
+    azure_batch: AzureBatch,
+    azure_compute: AzureCompute,
+    azure_resourcemanager: AzureResourceManager,
+    azure_postgresql: AzurePostgreSQL,
+    azure_datalakestorage: AzureDataLakeStorage,
+    azure_containerregistry: AzureContainerRegistry,
+    azure_monitor: AzureMonitor,
+    azure_kubernetesservice: AzureKubernetesService,
+    azure_securitycenter: AzureSecurityCenter,
+    azure_eventhub: AzureEventHub,
+    azure_keyvault: AzureKeyVault,
+    azure_activedirectory: AzureActiveDirectory,
+    azure_cosmosdb: AzureCosmosDB,
   },
 };
