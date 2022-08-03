@@ -5,9 +5,9 @@ import { animated, useTransition } from '@react-spring/web';
 import { getAttackGraphNodeInfoAction } from '../../../actions/app-actions';
 import { ShimmerLoaderRow } from '../../shimmer-loader/shimmer-row';
 import styles from './sidepanel.module.scss';
-import BugIcon from '../../../../images/attack-graph-icons/attack_graph_bug.svg';
-import ChecklistIcon from '../../../../images/attack-graph-icons/attack_graph_checklist.svg';
-import PasswordIcon from '../../../../images/attack-graph-icons/attack_graph_password.svg';
+import VulnerabilityIcon from '../../../../images/attack-graph-icons/attack_graph_vulnerability.svg';
+import PostureIcon from '../../../../images/attack-graph-icons/attack_graph_posture.svg';
+import SecretIcon from '../../../../images/attack-graph-icons/attack_graph_secret.svg';
 import { getAssetIcon } from '../icons';
 
 export const Sidepanel = props => {
@@ -163,7 +163,7 @@ const DialogData = ({ nodeData, nodeDataLoading, onStatClick }) => {
                 >
                   <div className={styles.count}>
                     <img
-                      src={BugIcon}
+                      src={VulnerabilityIcon}
                       className={styles.countIcon}
                       alt="vulnerability icon"
                     />
@@ -184,7 +184,7 @@ const DialogData = ({ nodeData, nodeDataLoading, onStatClick }) => {
                 >
                   <div className={styles.count}>
                     <img
-                      src={ChecklistIcon}
+                      src={PostureIcon}
                       className={styles.countIcon}
                       alt="compliance icon"
                     />
@@ -205,7 +205,7 @@ const DialogData = ({ nodeData, nodeDataLoading, onStatClick }) => {
                 >
                   <div className={styles.count}>
                     <img
-                      src={PasswordIcon}
+                      src={SecretIcon}
                       className={styles.countIcon}
                       alt="secrets icon"
                     />

@@ -273,6 +273,7 @@ function ComplianceTable({ nodeData }) {
       },
       filters: {
         masked: ['false'],
+        status: isCloud ? 'alarm' : 'warn',
         scan_id: Object.keys(nodeData.compliance_scan_id ?? {}),
         ...(isCloud
           ? {
@@ -284,7 +285,7 @@ function ComplianceTable({ nodeData }) {
       sort_order: sortOrder,
     };
     dispatch(getAttackGraphNodeIssuesAction(params));
-  }, [nodeData, page, sortBy, sortOrder]);
+  }, [nodeData, page, sortBy, sortOrder, isCloud]);
 
   const onRowClick = useCallback(doc => {
     setModalState({
