@@ -241,11 +241,43 @@ CSPM_RESOURCES = {
     "aws_dynamodb_table": "aws_dynamodb",
     "aws_ecs_cluster": "aws_ecs",
     "aws_sns_topic": "aws_sns",
-    "aws_ec2_autoscaling_group": "aws_autoscaling"
+    "aws_ec2_autoscaling_group": "aws_autoscaling",
+    # azure 
+    "azure_compute_virtual_machine": "azure_compute_vm",
+    "azure_resource_group": "azure_resource_group",
+    "azure_storage_account": "azure_storage_account",
+    "azure_storage_blob": "azure_storage_blob",
+    "azure_virtual_network": "azure_virtual_network",
+    "azure_ad_user": "azure_ad_user",
+    "azure_sql_database": "azure_sql",
+    "azure_mssql_managed_instance": "azure_mssql_managed",
+    "azure_mssql_virtual_machine": "azure_mssql_vm",
+    "azure_cosmosdb_sql_database": "azure_cosmosdb_sql",
+    "azure_mysql_server": "azure_mysql_server",
+    "azure_storage_table": "azure_storage_table",
+    "azure_log_profile": "azure_log",
+    "azure_policy_definition": "azure_policy",
+    "azure_policy_assignment": "azure_policy_assignment",
+    "azure_app_service_environment": "azure_app_service",
+    "azure_app_service_function_app": "azure_app_service_function",
+    "azure_network_interface": "azure_network_interface",
+    "azure_container_registry": "azure_container_registry" ,
+    "azure_key_vault_secret": "azure_key_vault",
+    "azure_app_service_plan": "azure_app_service_plan",
+    "azure_app_service_web_app": "azure_app_service_web_app",
+    "azure_application_security_group": "azure_application_security_group",
+    "azure_synapse_workspace": "azure_synapse",
+    "azure_hdinsight_cluster": "azure_hdinsight_cluster",
+    "azure_kubernetes_cluster": "azure_kubernetes_cluster",
+    "azure_storage_queue": "azure_storage_queue",
+    "azure_servicebus_namespace": "azure_servicebus",
+    "azure_network_security_group": "azure_network_security_group"
 }
+
 CSPM_RESOURCES_INVERTED = defaultdict(list)
 for key, value in CSPM_RESOURCES.items():
     CSPM_RESOURCES_INVERTED[value].append(key)
+
 CSPM_RESOURCE_LABELS = {
     "aws_s3": "AWS S3 Bucket",
     "aws_iam": "AWS Identity and Access Management (IAM)",
@@ -279,8 +311,39 @@ CSPM_RESOURCE_LABELS = {
     "aws_dynamodb": "Amazon DynamoDB",
     "aws_ecs": "Amazon ECS",
     "aws_sns": "AWS SNS",
-    "aws_autoscaling": "AWS Autoscaling"
+    "aws_autoscaling": "AWS Autoscaling",
+    # azure
+    "azure_ad_user": "Azure AD User",
+    "azure_app_service": "Azure App Service Environment",
+    "azure_app_service_function": "Azure App Service Function",
+    "azure_app_service_plan": "Azure App Service Plan",
+    "azure_app_service_web_app": "Azure App Service Web Application",
+    "azure_application_security_group": "Azure Application Security Groups",
+    "azure_compute_vm": "Azure Virtual Machines",
+    "azure_container_registry": "Azure Container Registry",
+    "azure_cosmosdb_sql": "Azure Cosmos DB",
+    "azure_hdinsight_cluster": "Azure HDInsight",
+    "azure_key_vault": "Azure Key Vault",
+    "azure_kubernetes_cluster": "Azure Kubernetes Cluster",
+    "azure_log": "Azure Log Profiles",
+    "azure_mssql_managed": "Azure SQL Managed Instance",
+    "azure_mssql_vm": "Azure SQL Virtual Machines ",
+    "azure_mysql_server": "Azure Database for MySQL Server",
+    "azure_network_interface": "Azure Network Interface",
+    "azure_network_security_group": "Azure Network Security Group",
+    "azure_policy": "Azure Policy",
+    "azure_policy_assignment": "Azure Policy Assignment",
+    "azure_resource_group": "Azure Resource Group",
+    "azure_servicebus": "Azure Servicebus Namespace",
+    "azure_sql": "Azure SQL Database",
+    "azure_storage_account": "Azure Storage Account",
+    "azure_storage_blob": "Azure Blob Storage",
+    "azure_storage_queue": "Azure Queue Storage",
+    "azure_storage_table": "Azure Table storage",
+    "azure_synapse": "Azure Synapse",
+    "azure_virtual_network": "Azure Virtual Network"
 }
+
 CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "javascript", "rust", "golang", "dotnet"]
 AES_SETTING_KEY = "aes_secret"
 CLOUD_CREDENTIAL_AES_SETTING_KEY = "cloud_credential_secret"

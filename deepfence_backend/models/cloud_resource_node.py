@@ -8,7 +8,7 @@ class CloudResourceNode(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True), default=db.func.now(), onupdate=func.now())
 
     id = db.Column(db.Integer, primary_key=True)
-    node_id = db.Column(db.String(200), nullable=False)
+    node_id = db.Column(db.String(4096), nullable=False)
     node_type = db.Column(db.String(200), nullable=False)
     node_name = db.Column(db.String(200), nullable=False)
     cloud_provider = db.Column(db.String(200), nullable=False)
