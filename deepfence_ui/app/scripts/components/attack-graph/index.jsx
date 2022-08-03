@@ -12,7 +12,7 @@ import {
   serviceEdgeColor,
 } from './graph-components';
 import './register-custom-node';
-import { getAttackGraphDataAction } from '../../actions/app-actions';
+import { breadcrumbChange, getAttackGraphDataAction } from '../../actions/app-actions';
 import { getNodeIcon } from '../multi-cloud/node-icons';
 import { Sidepanel } from './sidepanel/sidepanel';
 import { DetailsTable } from './sidepanel/details-table';
@@ -94,6 +94,11 @@ export const AttackGraph = () => {
   }, [graphData]);
 
   useEffect(() => {
+    dispatch(
+      breadcrumbChange([
+        { name: 'Threat Graph' },
+      ])
+    );
     dispatch(getAttackGraphDataAction());
   }, []);
 
@@ -105,11 +110,11 @@ export const AttackGraph = () => {
     const h = height ?? 1000;
 
     const graph = new G6.Graph({
-      fitCenter: true,
+      fitView: true,
       container: ref.current,
+      maxZoom: 4,
       height: w,
       width: h,
-      // groupByTypes: false,
       modes: {
         default: ['drag-canvas', 'zoom-canvas'],
       },
