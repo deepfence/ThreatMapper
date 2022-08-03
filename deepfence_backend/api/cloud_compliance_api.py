@@ -26,7 +26,7 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
     CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, CLOUD_COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
     PENDING_CLOUD_COMPLIANCE_SCANS_KEY, CLOUD_COMPLIANCE_LOGS_ES_TYPE, NODE_TYPE_HOST, COMPLIANCE_LINUX_HOST, \
     COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, COMPLIANCE_KUBERNETES_HOST, CSPM_RESOURCES, CSPM_RESOURCE_LABELS, \
-    CSPM_RESOURCES_INVERTED, CLOUD_RESOURCES_CACHE_KEY
+    CSPM_RESOURCES_INVERTED, CLOUD_RESOURCES_CACHE_KEY, CLOUD_COMPLIANCE_REFRESH_INVENTORY
 from utils.custom_exception import InvalidUsage
 import json
 from utils.resource import get_nodes_list, get_default_params
@@ -1043,6 +1043,14 @@ def start_cloud_compliance_scan(node_id):
     return set_response(data={"message": "Scans queued successfully"}, status=200)
 
 
+@cloud_compliance_api.route("/cloud-compliance/<path:node_id>/refresh", methods=["POST"],
+                            endpoint="api_v1_5_refresh_inventory")
+@jwt_required()
+def refresh_cloud_compliance_inventory(node_id):
+    # set CLOUD_COMPLIANCE_REFRESH_INVENTORY
+    redis.hset(CLOUD_COMPLIANCE_REFRESH_INVENTORY, node_id, "true")
+    return set_response(data={"message": "Refreshing inventory"}, status=200)
+
 @cloud_compliance_api.route("/compliance/update_controls", methods=["POST"])
 @jwt_required()
 def compliance_rules_update():
@@ -1102,6 +1110,13 @@ def register_cloud_account():
     org_account_id = post_data.get("org_acc_id", None)
     updated_at_timestamp = datetime.now().timestamp()
     scan_list = {}
+
+    # get refresh status and set false
+    do_refresh = redis.hget(CLOUD_COMPLIANCE_REFRESH_INVENTORY, post_data["node_id"])
+    if not do_refresh:
+        do_refresh = "false"
+    if do_refresh == "true":
+        redis.hset(CLOUD_COMPLIANCE_REFRESH_INVENTORY, post_data["node_id"], "false")
     if monitored_account_ids:
         if not org_account_id:
             raise InvalidUsage("Org account id is needed for multi account setup")
@@ -1193,7 +1208,7 @@ def register_cloud_account():
 
         current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, post_data["node_id"])
         if not current_pending_scans_str:
-            return set_response(data={"scans": {}}, status=200)
+            return set_response(data={"scans": {}, "refresh": do_refresh}, status=200)
         current_pending_scans = json.loads(current_pending_scans_str)
         for scan in current_pending_scans:
             filters = {
@@ -1206,7 +1221,8 @@ def register_cloud_account():
                 scan_list[scan["scan_id"]] = scan
         if not scan_list:
             redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, post_data["node_id"], "")
-    return set_response(data={"scans": scan_list}, status=200)
+
+    return set_response(data={"scans": scan_list, "refresh": do_refresh}, status=200)
 
 
 @cloud_compliance_api.route("/cloud_compliance/cloud_resource/<path:cloud_provider>", methods=["POST"],
