@@ -252,9 +252,9 @@ def compute_azure_cloud_network_graph(cloud_resources, graph, include_nodes):
         return graph
     if not graph.has_node(incoming_internet_host_id):
         graph.add_node(incoming_internet_host_id)
-    # outbound_network_security_group = []
-    # inbound_network_security_group = []
     for cloud_resource in cloud_resources:
+        if "resource_id" not in cloud_resource:
+            continue
         if cloud_resource["resource_id"] == "azure_storage_account":
             if cloud_resource["allow_blob_public_access"]:
                 if not graph.has_node(cloud_resource["id"]):
@@ -262,9 +262,7 @@ def compute_azure_cloud_network_graph(cloud_resources, graph, include_nodes):
                                    node_type="azure_storage_account")
                 if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
                     graph.add_edge(incoming_internet_host_id, cloud_resource["name"])
-
-    for cloud_resource in cloud_resources:
-        if cloud_resource["resource_id"] == "azure_storage_blob":
+        elif cloud_resource["resource_id"] == "azure_storage_blob":
             if graph.has_edge(incoming_internet_host_id, cloud_resource["storage_account_name"]):
                 if not graph.has_node(cloud_resource["name"]):
                     graph.add_node(cloud_resource["name"], name="Azure Storage Blob", node_type="azure_storage_blob")
@@ -276,12 +274,6 @@ def compute_azure_cloud_network_graph(cloud_resources, graph, include_nodes):
                     graph.add_node(cloud_resource["name"], name="Azure Storage Table", node_type="azure_storage_table")
                 if not graph.has_edge(cloud_resource["storage_account_name"], cloud_resource["name"]):
                     graph.add_edge(cloud_resource["storage_account_name"], cloud_resource["name"])
-        elif cloud_resource["resource_id"] == "azure_log_profile":
-            if graph.has_edge(incoming_internet_host_id, cloud_resource["storage_account_name"]):
-                if not graph.has_node(cloud_resource["name"]):
-                    graph.add_node(cloud_resource["name"], name="Azure Log Profile", node_type="azure_log_profile")
-                if not graph.has_edge(cloud_resource["azure_log_profile"], cloud_resource["name"]):
-                    graph.add_edge(cloud_resource["azure_log_profile"], cloud_resource["name"])
         elif cloud_resource["resource_id"] == "azure_compute_virtual_machine":
             for network_interface in cloud_resource["network_interfaces"]:
                 if network_interface[id]:
@@ -449,10 +441,10 @@ def _compute_attack_graph():
                         if CSPM_RESOURCES[node_type] in CSPM_RESOURCE_LABELS:
                             label = CSPM_RESOURCE_LABELS[CSPM_RESOURCES[node_type]]
                     vulnerability_count = 0
-                    vulnerability_scan_id = []
-                    compliance_scan_id = []
+                    vulnerability_scan_id = {}
+                    compliance_scan_id = {}
                     secrets_count = 0
-                    secrets_scan_id = []
+                    secrets_scan_id = {}
                     if node_type == NODE_TYPE_HOST:
                         vulnerability_count = vulnerability_count_map.get(meta["name"], {}).get("count", 0)
                         if vulnerability_count > 0:
@@ -462,8 +454,10 @@ def _compute_attack_graph():
                             compliance_scan_id = compliance_count_map[node_id]["scan_id"]
                         if meta.get("cloud_id"):
                             compliance_count += cloud_compliance_count_map.get(meta["cloud_id"], {}).get("count", 0)
-                            compliance_scan_id += cloud_compliance_count_map.get(meta["cloud_id"], {}).get("scan_id",
-                                                                                                           [])
+                            compliance_scan_id = {
+                                **cloud_compliance_count_map.get(meta["cloud_id"], {}).get("scan_id", {}),
+                                **compliance_scan_id,
+                            }
                         secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
                         if secrets_count > 0:
                             secrets_scan_id = secrets_count_map[node_id]["scan_id"]
@@ -479,7 +473,7 @@ def _compute_attack_graph():
                             secrets_scan_id = secrets_count_map[node_id]["scan_id"]
                     else:
                         compliance_count = cloud_compliance_count_map.get(node_id, {}).get("count", 0)
-                        compliance_scan_id = cloud_compliance_count_map.get(node_id, {}).get("scan_id", [])
+                        compliance_scan_id = cloud_compliance_count_map.get(node_id, {}).get("scan_id", {})
                     if key not in attack_graph_node:
                         attack_graph_node[key] = {
                             "label": label, "id": key, "nodes": {}, "node_type": node_type}
