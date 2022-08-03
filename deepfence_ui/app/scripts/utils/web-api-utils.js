@@ -2592,6 +2592,20 @@ export function getComplianceCloudCredentials(params = {}) {
   }).then(errorHandler);
 }
 
+// refreshes the cloud resources
+export function refreshCloudComplianceResources(params = {}) {
+  const { nodeId } = params;
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance/${nodeId}/refresh`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 // scan list for speific node and check type.
 export function getComplianceScanList(params = {}) {
   const { lucene_query: luceneQuery = [], nodeId, checkType, cloudType } = params;
