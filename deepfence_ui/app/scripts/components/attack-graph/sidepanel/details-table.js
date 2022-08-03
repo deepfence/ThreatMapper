@@ -27,6 +27,7 @@ export const DetailsTable = ({ onDismiss, tableType, nodeData, isSidepanelOpen }
       onDismiss={() => {
         onDismiss();
       }}
+      dangerouslyBypassFocusLock
       dangerouslyBypassScrollLock
     >
       <DialogContent className={styles.reachContent} aria-label="test">

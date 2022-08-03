@@ -108,10 +108,11 @@ export const InventoryServicesView = props => {
           )}
         </div>
         <div className={styles.servicesContainer}>
-          {filteredServices.map(service => {
+          {filteredServices.map((service, index) => {
             return (
               <ServiceCard
-                key={service.id}
+                // eslint-disable-next-line react/no-array-index-key
+                key={`${index}-${service.id}`}
                 service={service}
                 cloudtype={cloudtype}
                 nodeid={nodeid}

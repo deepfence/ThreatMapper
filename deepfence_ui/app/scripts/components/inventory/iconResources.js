@@ -35,6 +35,11 @@ import AWSDynamoDB from '../../../images/cloud-icons/aws/Res_Amazon-DynamoDB_Ite
 import AWSECS from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Container-1_48_Dark.svg';
 import AWSSNS from '../../../images/cloud-icons/aws/Res_Amazon-SageMaker_Notebook_48_Dark.svg';
 import AWSAutoscaling from '../../../images/cloud-icons/aws/Res_Amazon-EC2_Auto-Scaling_48_Dark.svg';
+import AWSEKSCloud from '../../../images/cloud-icons/aws/Arch_Amazon-EKS-Cloud_48.svg';
+import AWSEC2 from '../../../images/cloud-icons/aws/Arch_Amazon-EC2_48.png';
+import AWSECSTask from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Task_48_Dark.svg';
+import AWSECSService from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Service_48_Dark.svg';
+import AWSRDS from '../../../images/cloud-icons/aws/Arch_Amazon-RDS_48.svg';
 
 import GCPAppEngine from '../../../images/cloud-icons/gcp/app_engine.svg';
 import GCPBigQuery from '../../../images/cloud-icons/gcp/bigquery.svg';
@@ -46,30 +51,29 @@ import GCPLogging from '../../../images/cloud-icons/gcp/cloud_logging.svg';
 import GCPSQL from '../../../images/cloud-icons/gcp/cloud_sql.svg';
 import GCPStorage from '../../../images/cloud-icons/gcp/cloud_storage.svg';
 
-import AzureRedis from '../../../images/cloud-icons/azure/10137-icon-service-Cache-Redis.svg';
-import AzureLogic from '../../../images/cloud-icons/azure/10201-icon-service-Logic-Apps.svg';
-import AzureStorage from '../../../images/cloud-icons/azure/10086-icon-service-Storage-Accounts.svg';
-import AzureNetwork from '../../../images/cloud-icons/azure/02794-icon-service-Private-Mobile-Network.svg';
-import AzureAppService from '../../../images/cloud-icons/azure/10035-icon-service-App-Services.svg';
-import AzureStoragem from '../../../images/cloud-icons/azure/10091-icon-service-Storage-Explorer.svg';
 import AzureSQL from '../../../images/cloud-icons/azure/02390-icon-service-Azure-SQL.svg';
-import AzureActiveDirectorym from '../../../images/cloud-icons/azure/10221-icon-service-Azure-Active-Directory.svg';
-import AzureIOTHub from '../../../images/cloud-icons/azure/10182-icon-service-IoT-Hub.svg';
-import AzureMySQL from '../../../images/cloud-icons/azure/10122-icon-service-Azure-Database-MySQL-Server.svg';
-import AzureMariaDB from '../../../images/cloud-icons/azure/10123-icon-service-Azure-Database-MariaDB-Server.svg';
-import AzureBatch from '../../../images/cloud-icons/azure/00028-icon-service-Batch-AI.svg';
-import AzureCompute from '../../../images/cloud-icons/azure/02864-icon-service-Azure-Compute-Galleries.svg';
-import AzureResourceManager from '../../../images/cloud-icons/azure/02145-icon-service-Resource-Management-Private-Link.svg';
-import AzurePostgreSQL from '../../../images/cloud-icons/azure/10131-icon-service-Azure-Database-PostgreSQL-Server.svg';
-import AzureDataLakeStorage from '../../../images/cloud-icons/azure/10090-icon-service-Data-Lake-Storage-Gen1.svg';
-import AzureContainerRegistry from '../../../images/cloud-icons/azure/10105-icon-service-Container-Registries.svg';
-import AzureMonitor from '../../../images/cloud-icons/azure/00001-icon-service-Monitor.svg';
-import AzureKubernetesService from '../../../images/cloud-icons/azure/10023-icon-service-Kubernetes-Services.svg';
-import AzureSecurityCenter from '../../../images/cloud-icons/azure/10241-icon-service-Security-Center.svg';
-import AzureEventHub from '../../../images/cloud-icons/azure/00039-icon-service-Event-Hubs.svg';
-import AzureKeyVault from '../../../images/cloud-icons/azure/10245-icon-service-Key-Vaults.svg';
-import AzureActiveDirectory from '../../../images/cloud-icons/azure/10224-icon-service-Active-Directory-Connect-Health.svg';
+import AzureUsers from '../../../images/cloud-icons/azure/10230-icon-service-Users.svg';
+import AzureAppServices from '../../../images/cloud-icons/azure/10035-icon-service-App-Services.svg';
+import AzureAppServicePlans from '../../../images/cloud-icons/azure/00046-icon-service-App-Service-Plans.svg';
+import AzureApplicationSecurityGroups from '../../../images/cloud-icons/azure/10244-icon-service-Application-Security-Groups.svg';
+import AzureHosts from '../../../images/cloud-icons/azure/10347-icon-service-Hosts.svg';
+import AzureContainerRegistries from '../../../images/cloud-icons/azure/10105-icon-service-Container-Registries.svg';
 import AzureCosmosDB from '../../../images/cloud-icons/azure/10121-icon-service-Azure-Cosmos-DB.svg';
+import AzureHDInsightsClusters from '../../../images/cloud-icons/azure/10142-icon-service-HD-Insight-Clusters.svg';
+import AzureKeyVaults from '../../../images/cloud-icons/azure/10245-icon-service-Key-Vaults.svg';
+import AzureK8sServices from '../../../images/cloud-icons/azure/10023-icon-service-Kubernetes-Services.svg';
+import AzureActivityLog from '../../../images/cloud-icons/azure/00007-icon-service-Activity-Log.svg';
+import AzureSQLServer from '../../../images/cloud-icons/azure/10132-icon-service-SQL-Server.svg';
+import AzureMysqlServer from '../../../images/cloud-icons/azure/10122-icon-service-Azure-Database-MySQL-Server.svg';
+import AzureNetworkInterfaces from '../../../images/cloud-icons/azure/10080-icon-service-Network-Interfaces.svg';
+import AzureNetworkSG from '../../../images/cloud-icons/azure/10067-icon-service-Network-Security-Groups.svg';
+import AzurePolicy from '../../../images/cloud-icons/azure/10316-icon-service-Policy.svg';
+import AzureResourceGroups from '../../../images/cloud-icons/azure/10007-icon-service-Resource-Groups.svg';
+import AzureServiceBus from '../../../images/cloud-icons/azure/10836-icon-service-Service-Bus.svg';
+import AzureStorageAccounts from '../../../images/cloud-icons/azure/10086-icon-service-Storage-Accounts.svg';
+import AzureStorageQueue from '../../../images/cloud-icons/azure/10840-icon-service-Storage-Queue.svg';
+import AzureNetworkSynapseAnalytics from '../../../images/cloud-icons/azure/00606-icon-service-Azure-Synapse-Analytics.svg';
+import AzureNetworkVirtualNetworks from '../../../images/cloud-icons/azure/10061-icon-service-Virtual-Networks.svg';
 
 export const CloudIconsMapping = {
   aws: {
@@ -107,6 +111,15 @@ export const CloudIconsMapping = {
     aws_ecs: AWSECS,
     aws_sns: AWSSNS,
     aws_autoscaling: AWSAutoscaling,
+    aws_elastic_beanstalk: AWSElasticBeanstalk,
+    aws_eks: AWSEKSCloud,
+    aws_elasticsearch: AWSOpenSearch,
+    aws_ec2: AWSEC2,
+    aws_api_gateway: AWSApiGateway,
+    aws_ecs_task: AWSECSTask,
+    aws_ecs_service: AWSECSService,
+    aws_ecs_task_definiton: AWSECSTask,
+    aws_rds: AWSRDS,
   },
   google_cloud: {
     generic: GCPGeneric,
@@ -122,29 +135,34 @@ export const CloudIconsMapping = {
   },
   azure: {
     generic: AzureGeneric,
-    azure_redis: AzureRedis,
-    azure_logic: AzureLogic,
-    azure_storage: AzureStorage,
-    azure_network: AzureNetwork,
-    azure_appservice: AzureAppService,
-    azure_storagem: AzureStoragem,
+    azure_ad_user: AzureUsers,
+    azure_app_service: AzureAppServices,
+    azure_app_service_function: AzureAppServices,
+    azure_app_service_plan: AzureAppServicePlans,
+    azure_app_service_web_app: AzureAppServices,
+    azure_application_security_group: AzureApplicationSecurityGroups,
+    azure_compute_vm: AzureHosts,
+    azure_container_registry: AzureContainerRegistries,
+    azure_cosmosdb_sql: AzureCosmosDB,
+    azure_hdinsight_cluster: AzureHDInsightsClusters,
+    azure_key_vault: AzureKeyVaults,
+    azure_kubernetes_cluster: AzureK8sServices,
+    azure_log: AzureActivityLog,
+    azure_mssql_managed: AzureSQLServer,
+    azure_mssql_vm: AzureSQLServer,
+    azure_mysql_server: AzureMysqlServer,
+    azure_network_interface: AzureNetworkInterfaces,
+    azure_network_security_group: AzureNetworkSG,
+    azure_policy: AzurePolicy,
+    azure_policy_assignment: AzurePolicy,
+    azure_resource_group: AzureResourceGroups,
+    azure_servicebus: AzureServiceBus,
     azure_sql: AzureSQL,
-    azure_activedirectorym: AzureActiveDirectorym,
-    azure_iothub: AzureIOTHub,
-    azure_mysql: AzureMySQL,
-    azure_mariadb: AzureMariaDB,
-    azure_batch: AzureBatch,
-    azure_compute: AzureCompute,
-    azure_resourcemanager: AzureResourceManager,
-    azure_postgresql: AzurePostgreSQL,
-    azure_datalakestorage: AzureDataLakeStorage,
-    azure_containerregistry: AzureContainerRegistry,
-    azure_monitor: AzureMonitor,
-    azure_kubernetesservice: AzureKubernetesService,
-    azure_securitycenter: AzureSecurityCenter,
-    azure_eventhub: AzureEventHub,
-    azure_keyvault: AzureKeyVault,
-    azure_activedirectory: AzureActiveDirectory,
-    azure_cosmosdb: AzureCosmosDB,
+    azure_storage_account: AzureStorageAccounts,
+    azure_storage_blob: AzureStorageAccounts,
+    azure_storage_queue: AzureStorageQueue,
+    azure_storage_table: AzureStorageAccounts,
+    azure_synapse: AzureNetworkSynapseAnalytics,
+    azure_virtual_network: AzureNetworkVirtualNetworks,
   },
 };
