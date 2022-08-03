@@ -373,7 +373,11 @@ def _compute_attack_graph():
     cloud_vms = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP2: {}, pvt_cloud: {}}
     cloud_containers = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP2: {}, pvt_cloud: {}}
     for node_id, node_details in topology_hosts.items():
+        node_name = node_details.get("name", node_details.get("label"))
         if node_details.get("pseudo", False):
+            if node_name == "The Internet":
+                for cp, nodes in cloud_vms.items():
+                    cloud_vms[cp][node_id] = node_details
             continue
         cp = ""
         for metadata in node_details.get("metadata", []):
@@ -387,10 +391,14 @@ def _compute_attack_graph():
         host_cloud[node_details.get("label", "")] = cp
         cloud_vms[cp][node_id] = node_details
     for node_id, node_details in topology_containers.items():
+        node_name = node_details.get("name", node_details.get("label"))
+        if node_details.get("pseudo", False):
+            if node_name == "The Internet":
+                for cp, nodes in cloud_containers.items():
+                    cloud_containers[cp][node_id] = node_details
+            continue
         host_name = node_details.get("labelMinor")
         if not host_name:
-            continue
-        if node_details.get("pseudo", False):
             continue
         cp = host_cloud.get(host_name, pvt_cloud)
         cloud_containers[cp][node_id] = node_details
