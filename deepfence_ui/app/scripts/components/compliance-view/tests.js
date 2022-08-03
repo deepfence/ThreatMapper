@@ -248,129 +248,128 @@ class ComplianceTests extends React.PureComponent {
       tests.push(t);
     });
 
-    const isCloud = !isLoading && tests.length && tests[0]?._source?.type === 'cloud-compliance-scan'
+    const isCloud =
+      !isLoading &&
+      tests.length &&
+      tests[0]?._source?.type === 'cloud-compliance-scan';
 
     return (
       <>
-        {isLoading === true ? (
-          <AppLoader />
-        ) : (
-          <div className="compliance-check-view">
-            <DfTableV2
-              noDataText="compliance-check-view"
-              showPagination
-              defaultPageSize={20}
-              manual
-              totalRows={test.total}
-              data={tests}
-              columnCustomizable
-              multiSelectOptions={{
-                actions: this.multiSelectOptions,
-                columnConfig: {
-                  accessor: '_id',
+        <div className="compliance-check-view">
+          <DfTableV2
+            noDataText="No rows found"
+            showPagination
+            defaultPageSize={20}
+            manual
+            totalRows={test.total}
+            data={tests}
+            columnCustomizable
+            multiSelectOptions={{
+              actions: this.multiSelectOptions,
+              columnConfig: {
+                accessor: '_id',
+              },
+            }}
+            name="compliance tests"
+            getRowStyle={rowInfo => {
+              return {
+                opacity:
+                  rowInfo && rowInfo.original._source.masked === 'true'
+                    ? 0.5
+                    : 1,
+                cursor: 'pointer',
+              };
+            }}
+            onRowClick={rowInfo => {
+              this.handleDescClick(rowInfo.original._source.doc_id);
+            }}
+            onPageChange={this.handlePageChange}
+            columns={[
+              {
+                Header: 'Timestamp',
+                accessor: row => {
+                  return dateTimeFormat(row._source['@timestamp']);
                 },
+                id: '_source.timestamp',
+                width: 100,
+                minWidth: 50,
+                Cell: ({ value }) => {
+                  return (
+                    <div className="truncate" title={value}>
+                      {value}
+                    </div>
+                  );
+                },
+              },
+              {
+                Header: 'Status',
+                id: '_source.status',
+                width: 70,
+                minWidth: 60,
+                Cell: ({ row }) => {
+                  return (
+                    <div
+                      className={`compliance-${row.original._source.compliance_check_type}-${row.original._source.status} label box`}
+                    >
+                      {row.original._source.status}
+                    </div>
+                  );
+                },
+              },
+              {
+                Header: 'Service',
+                accessor: '_source.service',
+                id: 'service',
+                width: 80,
+                minWidth: 80,
+                Cell: ({ value }) => {
+                  return (
+                    <div className="truncate" title={value}>
+                      {value || '-'}
+                    </div>
+                  );
+                },
+              },
+              {
+                Header: isCloud ? 'Resource' : 'Node name',
+                id: '_source.Resource',
+                minWidth: 150,
+                Cell: ({ row }) => {
+                  return (
+                    <div className="truncate">
+                      {row.original._source.resource ||
+                        row.original._source.node_name}
+                    </div>
+                  );
+                },
+              },
+              {
+                Header: isCloud ? 'Reason' : 'Description',
+                id: '_source.Reason',
+                minWidth: 400,
+                Cell: ({ row }) => {
+                  return (
+                    <div className="truncate">
+                      {row.original._source.reason ||
+                        row.original._source.description}
+                    </div>
+                  );
+                },
+              },
+            ]}
+          />
+          {this.state.isTestModalOpen && this.state.testData ? (
+            <ComplianceTestModal
+              data={this.state.testData}
+              onRequestClose={() => {
+                this.setState({
+                  isTestModalOpen: false,
+                  testData: null,
+                });
               }}
-              name="compliance tests"
-              getRowStyle={rowInfo => {
-                return {
-                  opacity:
-                    rowInfo && rowInfo.original._source.masked === 'true' ? 0.5 : 1,
-                  cursor: 'pointer',
-                };
-              }}
-              onRowClick={rowInfo => {
-                this.handleDescClick(rowInfo.original._source.doc_id);
-              }}
-              onPageChange={this.handlePageChange}
-              columns={[
-                {
-                  Header: 'Timestamp',
-                  accessor: row => {
-                    return dateTimeFormat(row._source['@timestamp']);
-                  },
-                  id: '_source.timestamp',
-                  width: 100,
-                  minWidth: 50,
-                  Cell: ({ value }) => {
-                    return (
-                      <div className="truncate" title={value}>
-                        {value}
-                      </div>
-                    );
-                  },
-                },
-                {
-                  Header: 'Status',
-                  id: '_source.status',
-                  width: 70,
-                  minWidth: 60,
-                  Cell: ({ row }) => {
-                    return (
-                      <div
-                        className={`compliance-${row.original._source.compliance_check_type}-${row.original._source.status} label box`}
-                      >
-                        {row.original._source.status}
-                      </div>
-                    );
-                  },
-                },
-                {
-                  Header: 'Service',
-                  accessor: '_source.service',
-                  id: 'service',
-                  width: 80,
-                  minWidth: 80,
-                  Cell: ({ value }) => {
-                    return (
-                      <div className="truncate" title={value}>
-                        {value || '-'}
-                      </div>
-                    );
-                  },
-                },
-                {
-                  Header: isCloud ? 'Resource' : 'Node name',
-                  id: '_source.Resource',
-                  minWidth: 150,
-                  Cell: ({ row }) => {
-                    return (
-                      <div
-                        className="truncate"
-                      >
-                      {row.original._source.resource || row.original._source.node_name}
-                      </div>
-                    );
-                  },
-                },
-                {
-                  Header: isCloud ? 'Reason' : 'Description',
-                  id: '_source.Reason',
-                  minWidth: 400,
-                  Cell: ({ row }) => {
-                    return (
-                      <div
-                        className="truncate"
-                      >
-                      {row.original._source.reason || row.original._source.description}
-                      </div>
-                    );
-                  },
-                },
-              ]}
             />
-            {this.state.isTestModalOpen && this.state.testData ? (
-              <ComplianceTestModal
-                data={this.state.testData}
-                onRequestClose={() => {
-                  this.setState({
-                    isTestModalOpen: false,
-                    testData: null,
-                  });
-                }}
-              />
-            ) : null}
-          </div>
-        )}
+          ) : null}
+        </div>
       </>
     );
   }
