@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ugorji/go/codec"
 	"github.com/weaveworks/scope/report"
+	"io"
 	"os"
 	"os/exec"
 	"reflect"
@@ -175,6 +176,14 @@ func CodecEncode(data interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+func CodecDecode(reader io.Reader, data interface{}) error {
+	err := codec.NewDecoder(reader, &codec.JsonHandle{}).Decode(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (topologyOptions *TopologyOptions) TopologyOptionsValidate() {

@@ -1,8 +1,8 @@
 package cache
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"github.com/olivere/elastic/v7"
@@ -145,7 +145,7 @@ func (r *RedisCache) scopeTopologyFixes(nodeSummaries *detailed.NodeSummaries) e
 			return err
 		}
 		var topologyPods detailed.NodeSummaries
-		err = json.Unmarshal(topologyPodsJson, &topologyPods)
+		err = CodecDecode(bytes.NewReader(topologyPodsJson), &topologyPods)
 		if err != nil {
 			return err
 		}
