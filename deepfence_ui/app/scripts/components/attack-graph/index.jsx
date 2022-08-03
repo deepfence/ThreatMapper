@@ -105,7 +105,7 @@ export const AttackGraph = () => {
     const h = height ?? 1000;
 
     const graph = new G6.Graph({
-      fitView: true,
+      fitCenter: true,
       container: ref.current,
       height: w,
       width: h,
@@ -260,7 +260,13 @@ function processData(attackGraphData) {
     nodes: [],
     edges: [],
   };
-  if (!attackGraphData || !attackGraphData.length) {
+  if (
+    !attackGraphData ||
+    (!attackGraphData?.aws?.resources?.length &&
+      !attackGraphData?.azure?.resources?.length &&
+      !attackGraphData?.gcp?.resources?.length &&
+      !attackGraphData?.others?.resources?.length)
+  ) {
     return res;
   }
   const nodesMap = new Map();
@@ -275,41 +281,64 @@ function processData(attackGraphData) {
     nonInteractive: true,
   });
 
-  attackGraphData.forEach(singleGraph => {
-    if (singleGraph?.attack_path?.length) {
-      const paths = singleGraph.attack_path;
-      paths.forEach(path => {
-        path.forEach((node, index) => {
-          if (!nodesMap.has(node)) {
-            nodesMap.set(node, {
-              id: node,
-              label: node,
-            });
-          }
-          if (index) {
-            const prev = path[index - 1];
-            if (!edgesMap.has(`${prev}<->${node}`)) {
-              edgesMap.set(`${prev}<->${node}`, {
-                source: prev,
-                target: node,
+  Object.keys(attackGraphData).forEach(cloudKey => {
+    const cloudObj = attackGraphData[cloudKey];
+    if (!cloudObj?.resources?.length) {
+      return;
+    }
+    const cloudRootId = `cloud_root_${cloudKey}`;
+    nodesMap.set(cloudRootId, {
+      id: cloudRootId,
+      label: cloudKey,
+      complianceCount: cloudObj.compliance_count,
+      count: cloudObj.count,
+      nodeType: cloudRootId,
+      secretsCount: cloudObj.secrets_count,
+      vulnerabilityCount: cloudObj.vulnerability_count,
+      img: getAssetIcon(cloudRootId),
+      nonInteractive: true,
+    });
+    edgesMap.set(`The Internet<->${cloudRootId}`, {
+      source: 'The Internet',
+      target: cloudRootId,
+    });
+    cloudObj?.resources?.forEach(singleGraph => {
+      if (singleGraph?.attack_path?.length) {
+        const paths = singleGraph.attack_path;
+        paths.forEach(path => {
+          path.forEach((node, index) => {
+            if (!nodesMap.has(node)) {
+              nodesMap.set(node, {
+                id: node,
+                label: node,
               });
             }
-          }
+            if (index) {
+              let prev = path[index - 1];
+              if (prev === 'The Internet') prev = cloudRootId;
+              if (!edgesMap.has(`${prev}<->${node}`)) {
+                edgesMap.set(`${prev}<->${node}`, {
+                  source: prev,
+                  target: node,
+                });
+              }
+            }
+          });
         });
-      });
-      if (nodesMap.has(singleGraph.id)) {
-        nodesMap.set(singleGraph.id, {
-          id: singleGraph.id,
-          label: singleGraph.label,
-          complianceCount: singleGraph.compliance_count,
-          count: singleGraph.count,
-          nodeType: singleGraph.node_type,
-          secretsCount: singleGraph.secrets_count,
-          vulnerabilityCount: singleGraph.vulnerability_count,
-          img: getAssetIcon(singleGraph?.node_type),
-        });
+        if (nodesMap.has(singleGraph.id)) {
+          nodesMap.set(singleGraph.id, {
+            id: singleGraph.id,
+            label: singleGraph.label,
+            complianceCount: singleGraph.compliance_count,
+            count: singleGraph.count,
+            nodeType: singleGraph.node_type,
+            secretsCount: singleGraph.secrets_count,
+            vulnerabilityCount: singleGraph.vulnerability_count,
+            img: getAssetIcon(singleGraph?.node_type),
+          });
+        }
       }
-    }
+    });
   });
 
   res.nodes = Array.from(nodesMap.values());

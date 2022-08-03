@@ -4,7 +4,7 @@ export const computeEdgeColor = '#007fff';
 export const serviceEdgeColor = '#12c4c1';
 export const computeEdgeConfig = {
   type: 'cubic-vertical',
-  size: 3,
+  size: 2,
   color: computeEdgeColor,
   style: {
     endArrow: {

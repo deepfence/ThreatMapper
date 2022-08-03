@@ -30,9 +30,9 @@ registerNode(
           r: size / 2,
           fill: '#fff',
           stroke: '#fff',
-          strokeOpacity: '0.4',
+          strokeOpacity: '0.6',
           opacity: 0.2,
-          cursor: 'pointer',
+          cursor: cfg?.nonInteractive ? 'default' : 'pointer',
         },
         draggable: true,
       });
@@ -47,7 +47,7 @@ registerNode(
               height: size - 12,
               img: cfg.img,
               opacity: mainOpacity,
-              cursor: 'pointer',
+              cursor: cfg?.nonInteractive ? 'default' : 'pointer',
             },
             // must be assigned in G6 3.3 and later versions. it can be any value you want
             name: 'image-shape',
@@ -100,10 +100,9 @@ registerNode(
         group?.addShape('text', {
           attrs: {
             x: 19,
-            y: -16,
+            y: -15.5,
             fontSize: 8,
             lineHeight: 10,
-            fontWeight: 600,
             fill: '#000',
             opacity: mainOpacity,
             textBaseline: 'middle',
@@ -153,11 +152,10 @@ registerNode(
         group?.addShape('text', {
           attrs: {
             x: 23,
-            y: 0,
+            y: 0.5,
             fontSize: 8,
             opacity: mainOpacity,
             lineHeight: 10,
-            fontWeight: 600,
             fill: '#000',
             textBaseline: 'middle',
             text,
@@ -206,7 +204,7 @@ registerNode(
         group?.addShape('text', {
           attrs: {
             x: 17,
-            y: 16,
+            y: 16.5,
             fontSize: 8,
             lineHeight: 10,
             fontWeight: 600,
