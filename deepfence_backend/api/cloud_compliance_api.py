@@ -1237,6 +1237,7 @@ def register_cloud_resource(cloud_provider):
                     cloud_provider=cloud_provider,
                     account_id=resource.get("account_id"),
                     region=resource.get("region"),
+                    service_name=CSPM_RESOURCES.get(resource.get("id", ""), None),
                     is_active=True
                 )
                 cloud_resource_node.save()
