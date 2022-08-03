@@ -294,9 +294,9 @@ function processData(attackGraphData) {
     const cloudRootId = `cloud_root_${cloudKey}`;
     nodesMap.set(cloudRootId, {
       id: cloudRootId,
-      label: cloudKey,
+      label: cloudKey === 'others' ? 'private cloud' : cloudKey,
       complianceCount: cloudObj.compliance_count,
-      count: cloudObj.count,
+      count: 0,
       nodeType: cloudRootId,
       secretsCount: cloudObj.secrets_count,
       vulnerabilityCount: cloudObj.vulnerability_count,
