@@ -26,7 +26,7 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     PASSWORD_CHANGE_EMAIL_SUBJECT, PASSWORD_CHANGE_EMAIL_HTML, PASSWORD_RESET_EMAIL_HTML, PASSWORD_RESET_EMAIL_SUBJECT, \
     PASSWORD_RESET_CODE_EXPIRY, PASSWORD_RESET_SUCCESS_EMAIL_SUBJECT, PASSWORD_RESET_SUCCESS_EMAIL_HTML, \
     INTEGRATION_TYPES, DURATION_IN_MINS, \
-    CVE_INDEX, INTEGRATION_TYPE_EMAIL, INTEGRATION_TYPE_ES, INTEGRATION_TYPE_SUMO_LOGIC, \
+    CVE_INDEX, CVE_ES_TYPE, INTEGRATION_TYPE_EMAIL, INTEGRATION_TYPE_ES, INTEGRATION_TYPE_SUMO_LOGIC, \
     INTEGRATION_TYPE_HTTP, INTEGRATION_TYPE_JIRA, INTEGRATION_TYPE_PAGERDUTY, INTEGRATION_TYPE_S3, \
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
@@ -2187,7 +2187,7 @@ def notify_to_integrations():
                                   user_notifications}.values()
             for notification in user_notifications:
                 try:
-                    notification.send(docs_list)
+                    notification.send(docs_list, notification_id=notification.id, resource_type=CVE_ES_TYPE)
                 except Exception as ex:
                     app.logger.error("Error sending notification: {0}".format(ex))
 

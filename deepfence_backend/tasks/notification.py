@@ -144,7 +144,7 @@ def user_activity_digest(time, notification_id):
             new_cursor_id = content.id
         # Send batches of size 50
         try:
-            notification.send(response, notification_id=notification.id)
+            notification.send(response, notification_id=notification.id, resource_type=CVE_ES_TYPE)
             if new_cursor_id:
                 notification.cursor_id = new_cursor_id
                 notification.save()

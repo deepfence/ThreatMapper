@@ -114,7 +114,7 @@ class VulnerabilityNotification(Notification):
                     "doc_fields_map": cls.vulnerability_doc_fields_map}
 
     def send(self, contents, **kwargs):
-        self.integration.send(self.format_content(contents), summary="Deepfence - Vulnerabilities Subscription")
+        self.integration.send(self.format_content(contents), summary="Deepfence - Vulnerabilities Subscription", **kwargs)
 
     def __repr__(self):
         return "<VulnerabilityNotification {}>".format(self.id)
