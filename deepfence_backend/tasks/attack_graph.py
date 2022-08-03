@@ -445,6 +445,7 @@ def _compute_attack_graph():
                     compliance_scan_id = {}
                     secrets_count = 0
                     secrets_scan_id = {}
+                    cloud_id = ""
                     if node_type == NODE_TYPE_HOST:
                         vulnerability_count = vulnerability_count_map.get(meta["name"], {}).get("count", 0)
                         if vulnerability_count > 0:
@@ -453,9 +454,10 @@ def _compute_attack_graph():
                         if compliance_count > 0:
                             compliance_scan_id = compliance_count_map[node_id]["scan_id"]
                         if meta.get("cloud_id"):
-                            compliance_count += cloud_compliance_count_map.get(meta["cloud_id"], {}).get("count", 0)
+                            cloud_id = meta["cloud_id"]
+                            compliance_count += cloud_compliance_count_map.get(cloud_id, {}).get("count", 0)
                             compliance_scan_id = {
-                                **cloud_compliance_count_map.get(meta["cloud_id"], {}).get("scan_id", {}),
+                                **cloud_compliance_count_map.get(cloud_id, {}).get("scan_id", {}),
                                 **compliance_scan_id,
                             }
                         secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
@@ -472,6 +474,7 @@ def _compute_attack_graph():
                         if secrets_count > 0:
                             secrets_scan_id = secrets_count_map[node_id]["scan_id"]
                     else:
+                        cloud_id = node_id
                         compliance_count = cloud_compliance_count_map.get(node_id, {}).get("count", 0)
                         compliance_scan_id = cloud_compliance_count_map.get(node_id, {}).get("scan_id", {})
                     if key not in attack_graph_node:
@@ -481,7 +484,7 @@ def _compute_attack_graph():
                         "node_id": node_id, "name": meta["name"], "image_name": meta.get("image_name", ""),
                         "vulnerability_count": vulnerability_count, "vulnerability_scan_id": vulnerability_scan_id,
                         "compliance_count": compliance_count, "compliance_scan_id": compliance_scan_id,
-                        "secrets_count": secrets_count, "secrets_scan_id": secrets_scan_id,
+                        "secrets_count": secrets_count, "secrets_scan_id": secrets_scan_id, "cloud_id": cloud_id
                     }
                     if key in attack_graph[cloud_provider]["resources"]:
                         if not attack_graph_paths[key][p_str]:
