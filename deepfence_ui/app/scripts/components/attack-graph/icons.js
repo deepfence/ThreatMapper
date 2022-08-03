@@ -10,10 +10,16 @@ import AWSECSTaskIcon from '../../../images/attack-graph-icons/graph-node-icons/
 import AWSLambdaFunctionIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_AWS-Lambda_Lambda-Function_48_Dark.svg';
 import AWSEC2NLBIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Elastic-Load-Balancing_Network-Load-Balancer_48_Dark.svg';
 import AWSEC2CLBIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Elastic-Load-Balancing_Classic-Load-Balancer_48_Dark.svg';
+import GCPRootIcon from '../../../images/attack-graph-icons/graph-node-icons/gcp.png';
+import AWSRootIcon from '../../../images/attack-graph-icons/graph-node-icons/aws.png';
+import OthersRootIcon from '../../../images/attack-graph-icons/graph-node-icons/others.svg';
 
 const mapping = {
   host: HostIcon,
   container: ContainerIcon,
+  cloud_root_aws: AWSRootIcon,
+  cloud_root_gcp: GCPRootIcon,
+  cloud_root_others: OthersRootIcon,
   aws_s3_bucket: AWSS3BucketIcon,
   aws_eks_cluster: AWSEKSCloudIcon,
   aws_opensearch_domain: AWSOpenSearchServiceIcon,
