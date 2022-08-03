@@ -296,7 +296,7 @@ function processData(attackGraphData) {
       id: cloudRootId,
       label: cloudKey,
       complianceCount: cloudObj.compliance_count,
-      count: cloudObj.count,
+      count: 0,
       nodeType: cloudRootId,
       secretsCount: cloudObj.secrets_count,
       vulnerabilityCount: cloudObj.vulnerability_count,

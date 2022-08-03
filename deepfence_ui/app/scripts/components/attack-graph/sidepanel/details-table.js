@@ -60,7 +60,7 @@ function DialogHeader({ title, onCloseClick }) {
   );
 }
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 20;
 
 function VulnerabilityTable({ nodeData }) {
   const dispatch = useDispatch();
@@ -278,7 +278,7 @@ function ComplianceTable({ nodeData }) {
         scan_id: Object.keys(nodeData.compliance_scan_id ?? {}),
         ...(isCloud
           ? {
-              resource: [nodeData.node_id],
+              resource: [nodeData.cloud_id ?? nodeData.node_id],
             }
           : {}),
       },
