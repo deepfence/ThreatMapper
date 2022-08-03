@@ -21,7 +21,7 @@ from utils.response import set_response
 from utils.esconn import ESConn, GroupByParams
 from utils.scope import fetch_topology_data
 from collections import defaultdict
-from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICES, CLOUD_COMPLIANCE_SCAN, \
+from utils.constants import CLOUD_AWS, CLOUD_AZURE, USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICES, CLOUD_COMPLIANCE_SCAN, \
     NODE_TYPE_CONTAINER, NODE_TYPE_CONTAINER_IMAGE, ES_TERMS_AGGR_SIZE, COMPLIANCE_CHECK_TYPES, \
     CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, CLOUD_COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
     PENDING_CLOUD_COMPLIANCE_SCANS_KEY, CLOUD_COMPLIANCE_LOGS_ES_TYPE, NODE_TYPE_HOST, COMPLIANCE_LINUX_HOST, \
@@ -1227,7 +1227,7 @@ def register_cloud_resource(cloud_provider):
                 cloud_resource_node = CloudResourceNode(
                     node_id=resource.get("arn", ""),
                     node_name=resource.get("name", ""),
-                    node_type=resource.get("id", ""),
+                    node_type=resource.get("resource_id", resource.get("id", "")),
                     cloud_provider=cloud_provider,
                     account_id=resource.get("account_id"),
                     region=resource.get("region"),
@@ -1249,10 +1249,14 @@ def cloud_resources(account_id):
     :return:
     """
 
-    cloud_resource_nodes_ = db.session.query(CloudResourceNode.node_type,
-                                             func.count(CloudResourceNode.node_type).label('count')).filter_by(
-        account_id=account_id). \
-        group_by(CloudResourceNode.node_type).all()
+    account = CloudComplianceNode.query.filter_by(node_id=account_id).first()
+    if not account:
+        return set_response([])
+
+    cloud_resource_nodes_ = db.session.query(CloudResourceNode.node_type, 
+                                            func.count(CloudResourceNode.node_type).label('count')). \
+                                            filter_by(account_id=account_id). \
+                                            group_by(CloudResourceNode.node_type).all()
     node_type_data_with_count = []  #
     cloud_resource_nodes_map = defaultdict(int)
 
@@ -1264,6 +1268,8 @@ def cloud_resources(account_id):
     # print("cloud_resource_nodes_map", cloud_resource_nodes_map)
     # node_type here is service name aws_s3
     for node_type in CSPM_RESOURCE_LABELS:
+        if not node_type.startswith(account.cloud_provider):
+            continue
         if not node_type:
             raise InvalidUsage("Missing node_type")
         for table_name in CSPM_RESOURCES_INVERTED.get(node_type, node_type):
@@ -1271,8 +1277,7 @@ def cloud_resources(account_id):
             if not cloud_resource_nodes:
                 # print("continue", node_type)
                 node_type_data_with_count.append({"id": node_type, "count": cloud_resource_nodes_map.get(node_type, 0),
-                                                  "label": CSPM_RESOURCE_LABELS.get(node_type,
-                                                                                    node_type.replace("_", " ")),
+                                                  "label": CSPM_RESOURCE_LABELS.get(node_type, node_type.replace("_", " ")),
                                                   "total_scan_count": {'alarm': 0, "ok": 0, "info": 0, "skip": 0}})
                 continue
             number = request.args.get("number")
@@ -1339,12 +1344,9 @@ def cloud_resources(account_id):
                 scan_id_buckets = bucket.get("scan_id", {}).get("buckets", [])
                 if len(scan_id_buckets) > 0:
                     type_scan_id_map[bucket["key"]] = scan_id_buckets[0]["key"]
-                    if scan_id_buckets[0].get("recent_scan_aggr", {}).get("value",
-                                                                          most_recent_scan_time) > most_recent_scan_time:
-                        most_recent_scan_time = scan_id_buckets[0].get("recent_scan_aggr", {}).get("value",
-                                                                                                   most_recent_scan_time)
-                        most_recent_scan_ts = scan_id_buckets[0].get("recent_scan_aggr", {}).get("value_as_string",
-                                                                                                 most_recent_scan_ts)
+                    if scan_id_buckets[0].get("recent_scan_aggr", {}).get("value", most_recent_scan_time) > most_recent_scan_time:
+                        most_recent_scan_time = scan_id_buckets[0].get("recent_scan_aggr", {}).get("value", most_recent_scan_time)
+                        most_recent_scan_ts = scan_id_buckets[0].get("recent_scan_aggr", {}).get("value_as_string", most_recent_scan_ts)
             for check_type in type_scan_id_map:
                 es_filter = {"scan_id": type_scan_id_map[check_type]}
                 aggs_cc_scan = {
@@ -1390,7 +1392,7 @@ def cloud_resources(account_id):
                                                                        scan_counts[scan_type]
 
             node_type_data_with_count.append({"id": node_type, "count": cloud_resource_nodes_map.get(node_type, 0),
-                                              "label": CSPM_RESOURCES.get(node_type, node_type),
+                                              "label": CSPM_RESOURCE_LABELS.get(node_type, node_type.replace("_", " ")),
                                               "total_scan_count": total_count_dict_node_id_wise})
 
             # print(total_count_dict_node_id_wise)

@@ -327,7 +327,8 @@ def map_cloud_account_arn_to_table(*args):
 
 def create_resource_node_aws(doc, service_name, region):
     # print("create_resource_node_aws: {}".format(doc))
-    node_type = "aws"
+    cloud_provider = doc.get("_source").get("cloud_provider")
+    node_type = cloud_provider
     for service, table_names in CSPM_RESOURCES_INVERTED.items():
         if service_name.lower() == service.split("_")[-1]:
             node_type = table_names[0]
@@ -335,7 +336,7 @@ def create_resource_node_aws(doc, service_name, region):
         node_id=doc.get("_source").get("resource"),
         node_type=node_type,
         node_name=service_name,
-        cloud_provider=doc.get("_source").get("cloud_provider"),
+        cloud_provider=cloud_provider,
         account_id=doc.get("_source").get("node_id"),
         region=region,
         service_name=service_name,
