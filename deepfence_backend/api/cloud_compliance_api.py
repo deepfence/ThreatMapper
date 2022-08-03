@@ -990,6 +990,11 @@ def start_cloud_compliance_scan(node_id):
     post_data = request.json
     if not post_data.get("compliance_check_type", []):
         raise InvalidUsage("Compliance check type cannot be empty")
+
+    account = CloudComplianceNode.query.filter_by(node_id=node_id).first()
+    if not account:
+        set_response(data={"message": "node_id not found"}, status=404)
+
     if post_data.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
         for compliance_check_type in post_data.get("compliance_check_type", []):
             if post_data.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
@@ -1037,7 +1042,8 @@ def start_cloud_compliance_scan(node_id):
             scan_list.append({
                 "scan_id": scan_id,
                 "scan_type": compliance_check_type,
-                "controls": controls
+                "controls": controls,
+                "account_id": account.node_name
             })
     redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id, json.dumps(scan_list))
     return set_response(data={"message": "Scans queued successfully"}, status=200)
