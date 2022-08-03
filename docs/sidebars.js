@@ -37,6 +37,21 @@ const sidebars = {
 
     {
       type: 'category',
+      label: 'Compliance Posture',
+      link: {
+        type: 'doc',
+        id: 'threatmapper/compliance/index'
+      },
+      items: [
+        'threatmapper/compliance/amazon',
+        'threatmapper/compliance/azure',
+        'threatmapper/compliance/google',
+        'threatmapper/compliance/other',
+       ],
+    },
+
+    {
+      type: 'category',
       label: 'Sensor Agents',
       link: {
         type: 'doc',
@@ -63,6 +78,8 @@ const sidebars = {
       items: [
         'threatmapper/operations/scanning',
         'threatmapper/operations/sboms',
+        'threatmapper/operations/compliance',
+        'threatmapper/operations/threatgraph',
         'threatmapper/operations/scanning-registries',
         'threatmapper/operations/scanning-ci',
         'threatmapper/operations/support',

@@ -2,9 +2,9 @@
 title: Installing ThreatMapper Sensors
 ---
 
-# Installing ThreatMapper Sensors
+# The Role of ThreatMapper Sensors
 
-Your production workloads are managed using ThreatMapper Sensors.  The ThreatMapper Sensors are implemented as lightweight containers which monitor activity, discover workloads and retrieve manifests.  They communicate with the ThreatMapper Management Console over TLS, using the URL and API key.
+Your production workloads are managed using ThreatMapper Sensors.  The ThreatMapper Sensors are implemented as lightweight, privileged containers which monitor activity, discover workloads and retrieve manifests.  They communicate with the ThreatMapper Management Console over TLS, using the URL and API key.
 
 A single ThreatMapper Console can manage multiple workload types, and on-premise and cloud deployments simultaneously.
 

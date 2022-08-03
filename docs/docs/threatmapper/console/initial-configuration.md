@@ -15,9 +15,11 @@ You will need the IP address for the management console:
 
 ## Initial Configuration
 
-1. Open the Console in a browser (https://A.B.C.D/):
+1. Open the Console in a browser (https://your-ip-address/):
     
     ![Initial Login](../img/threatmapper-reg-1.png)
+
+   You will likely encounter a warning about an invalid SSL/TLS certificate, because the console is using an internally-generated self-signed cert. You can bypass that warning. See below for how to provide your own TLS certificate.
 
 2. Create a new account. Once one user has been registered, additional users are added by invitation from an admin user:
 
@@ -27,14 +29,14 @@ You will need the IP address for the management console:
 
 3. Obtain the Deepfence API key from the console. Go to `Settings` -> `User Management` and make note of the API key; you will need it when deploying the Deepfence sensors. 
 
-   Once the Console has started, it will begin update its Threat Intel feed data; this can take up to an hour, and is repeated daily.  You can check the status on the Console, at `Settings` -> `Diagnosis`; look for the **System Status** report.
+   Console installations are preconfigured with threat intel data. Once the Console has started, it will update its Threat Intel feed data; this can take seveal minutes, and is repeated daily.  You can check the status on the Console, at `Settings` -> `Diagnosis`; look for the **System Status** report.
 
    ![Diagnosis](../img/diagnosis-status.jpg)
 
 
 ## Configuring Access to the Management Console (optional)
 
-By default, the Management Console is accessed by IP address (https://A.B.C.D/) and uses a self-signed certificate.
+By default, the Management Console is accessed by IP address (https://your-ip-address/) and uses a self-signed certificate.
 
 You can configure the URL used to access the Management Console, and you can provide your own TLS certificate:
 

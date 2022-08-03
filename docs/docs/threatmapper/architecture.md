@@ -32,8 +32,27 @@ The Management Console may be installed on a single Docker host or in a dedicate
 
 Larger deployments, managing 250 or more production nodes, will require additional CPU and RAM resources.  For enterprise-scale deployments, managing 1000+ production nodes, the ThreatMapper Console should be deployed on a Kubernetes cluster of 3 or more nodes.
 
+### ThreatMapper Compliance Posture Scanning
 
-## ThreatMapper Sensor Containers
+ThreatMapper performs compliance posture scanning for cloud platforms by querying the infrastructure APIs for these platforms.
+
+This is achieved using a relay 'cloud scanner' task that is deployed within each cloud instance using a terraform module.  This 'cloud scanner' is granted appropriate access to the local APIs, and operates under instruction from the remote ThreatMapper console.
+
+### ThreatMapper Registry Scanning
+
+The ThreatMapper console can scan container images at rest in a wide range of supported registries.
+
+This is achieved by providing appropriate credentials to the ThreatMapper console so that it can discover and download assets directly from these registries.
+
+### ThreatMapper Vulnerability, Secret and Local Compliance Scanning
+
+ThreatMapper performs vulnerability and secret scanning directly on production and non-production hosts using a sensor agent container.
+
+The sensor agent is also used for local compliance scanning (Kubernetes and Linux posture) where it has access to configuration and assets that are not exposed through an API.
+
+## ThreatMapper Sensor Agent Containers
+
+ThreatMapper performs detailed scanning of  resources using sensor agent containers that are deployed with the target infrastructure.
 
 Sensor containers can be deployed directly to Kubernetes or Fargate, or can be deployed on a Docker environment.  If you wish to monitor a Linux-based virtual machine or bare-metal production server, you should install a docker runtime within the host Linux operating system:
 
