@@ -1279,13 +1279,11 @@ def cloud_resources(account_id):
             continue
         if not node_type:
             raise InvalidUsage("Missing node_type")
+        service_resource_nodes_count = 0
+        total_count_dict_node_id_wise = {"alarm": 0, "ok": 0, "info": 0, "skip": 0}
         for table_name in CSPM_RESOURCES_INVERTED.get(node_type, node_type):
             cloud_resource_nodes = CloudResourceNode.query.filter_by(node_type=table_name, account_id=account_id).all()
             if not cloud_resource_nodes:
-                # print("continue", node_type)
-                node_type_data_with_count.append({"id": node_type, "count": cloud_resource_nodes_map.get(node_type, 0),
-                                                  "label": CSPM_RESOURCE_LABELS.get(node_type, node_type.replace("_", " ")),
-                                                  "total_scan_count": {'alarm': 0, "ok": 0, "info": 0, "skip": 0}})
                 continue
             number = request.args.get("number")
             time_unit = request.args.get("time_unit")
@@ -1390,19 +1388,24 @@ def cloud_resources(account_id):
                             status_data[status_bucket.get("key", "")] = status_bucket.get("doc_count", "")
 
             # print("node_type_data_map", node_type_data_map)
-            total_count_dict_node_id_wise = {'alarm': 0, "ok": 0, "info": 0, "skip": 0}
             for arn, scan_data in node_type_data_map.items():
                 for available_scan_type, scan_counts in scan_data.items():
                     for scan_type in scan_counts.keys():
                         if total_count_dict_node_id_wise.get(scan_type, None) is not None:
-                            total_count_dict_node_id_wise[scan_type] = total_count_dict_node_id_wise[scan_type] + \
-                                                                       scan_counts[scan_type]
+                            total_count_dict_node_id_wise[scan_type] += scan_counts[scan_type]
 
+            service_resource_nodes_count += cloud_resource_nodes_map.get(node_type, 0)
+
+            # print(total_count_dict_node_id_wise)
+        if service_resource_nodes_count > 0:
             node_type_data_with_count.append({"id": node_type, "count": cloud_resource_nodes_map.get(node_type, 0),
                                               "label": CSPM_RESOURCE_LABELS.get(node_type, node_type.replace("_", " ")),
                                               "total_scan_count": total_count_dict_node_id_wise})
+        else:
+            node_type_data_with_count.append({"id": node_type, "count": cloud_resource_nodes_map.get(node_type, 0),
+                                              "label": CSPM_RESOURCE_LABELS.get(node_type, node_type.replace("_", " ")),
+                                              "total_scan_count": {"alarm": 0, "ok": 0, "info": 0, "skip": 0}})
 
-            # print(total_count_dict_node_id_wise)
     return set_response(node_type_data_with_count)
     # TODO: Resolve node type data merge
     #    return set_response(node_type_data)
