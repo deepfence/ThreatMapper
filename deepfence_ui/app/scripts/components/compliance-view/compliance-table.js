@@ -167,13 +167,6 @@ const AccountListTable = ({ nodes = [], cloudType, handleViewRules }) => {
           accessor: 'id',
           disableSortBy: true,
           Cell: cell => {
-            let enableShowPrevScanButton = true;
-            if (
-              cell.row.original.cloud_provider?.length &&
-              !cell.row.original.last_scanned_ts?.length
-            ) {
-              enableShowPrevScanButton = false;
-            }
             return (
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
@@ -207,7 +200,6 @@ const AccountListTable = ({ nodes = [], cloudType, handleViewRules }) => {
                     tabIndex={-1}
                     className="primary-btn"
                     onClick={e => e.stopPropagation()}
-                    disabled={!enableShowPrevScanButton}
                     title={
                       !cell.row.original.last_scanned_ts
                         ? 'Account has never been scanned'
