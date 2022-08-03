@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/internal/deepfence"
+	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/util"
+	dfUtils "github.com/deepfence/df-utils"
 	"os"
 	"os/exec"
 	"sort"
 	"strings"
 	"time"
-
-	dfUtils "github.com/deepfence/df-utils"
 )
 
 var (
@@ -30,57 +31,7 @@ const (
 	nodeTypeHost      = "host"
 	nodeTypeContainer = "container"
 	nodeTypeImage     = "container_image"
-	esScanDocType     = "compliance"
-	esScanLogsDocType = "compliance-scan-logs"
 )
-
-type ComplianceScan struct {
-	Type                  string `json:"type"`
-	TimeStamp             int64  `json:"time_stamp"`
-	NodeId                string `json:"node_id"`
-	NodeType              string `json:"node_type"`
-	KubernetesClusterName string `json:"kubernetes_cluster_name"`
-	NodeName              string `json:"node_name"`
-	TestCategory          string `json:"test_category"`
-	TestNumber            string `json:"test_number"`
-	TestInfo              string `json:"description"`
-	Masked                string `json:"masked,omitempty"`
-	RemediationScript     string `json:"remediation_script,omitempty"`
-	RemediationAnsible    string `json:"remediation_ansible,omitempty"`
-	RemediationPuppet     string `json:"remediation_puppet,omitempty"`
-	TestRationale         string `json:"test_rationale"`
-	TestSeverity          string `json:"test_severity"`
-	TestDesc              string `json:"test_desc"`
-	Status                string `json:"status"`
-	ComplianceCheckType   string `json:"compliance_check_type"`
-	ScanId                string `json:"scan_id"`
-	ComplianceNodeType    string `json:"compliance_node_type"`
-}
-type ComplianceScanLog struct {
-	Type                  string         `json:"type"`
-	TimeStamp             int64          `json:"time_stamp"`
-	NodeId                string         `json:"node_id"`
-	NodeType              string         `json:"node_type"`
-	KubernetesClusterName string         `json:"kubernetes_cluster_name"`
-	KubernetesClusterId   string         `json:"kubernetes_cluster_id"`
-	NodeName              string         `json:"node_name"`
-	ScanStatus            string         `json:"scan_status"`
-	ScanMessage           string         `json:"scan_message"`
-	ComplianceCheckType   string         `json:"compliance_check_type"`
-	TotalChecks           int            `json:"total_checks"`
-	Result                map[string]int `json:"result"`
-	ScanId                string         `json:"scan_id"`
-}
-
-func addComplianceScanLog(openscapLogsFile *os.File, nodeID string, kubernetesClusterName string, nodeType string, nodeName string, scanMessage string, scanStatus string, complianceCheckType string, totalChecks int, resultMap map[string]int) {
-	openscapScanLog := ComplianceScanLog{ScanId: scanId, Type: esScanLogsDocType, TimeStamp: dfUtils.GetTimestamp(), NodeId: nodeID, NodeType: nodeType, KubernetesClusterName: kubernetesClusterName, KubernetesClusterId: kubernetesClusterId, NodeName: nodeName, ScanMessage: scanMessage, ScanStatus: scanStatus, ComplianceCheckType: complianceCheckType, TotalChecks: totalChecks, Result: resultMap}
-	openscapScanLogStr, err := json.Marshal(openscapScanLog)
-	if err != nil {
-		return
-	}
-	dfUtils.AppendTextToFile(openscapLogsFile, string(openscapScanLogStr)+"\n")
-	openscapLogsFile.Sync()
-}
 
 func main() {
 	var complianceCheckType string
@@ -103,14 +54,6 @@ func main() {
 	dfComplianceDir = dfInstallDir + "/usr/local/bin/compliance_check"
 	fmt.Println("DF log directory: ", dfLogDir)
 	fmt.Println("DF Compliance directory: ", dfComplianceDir)
-
-	openscapLogsFileName := dfLogDir + "/compliance-scan-logs/debug.log"
-	openscapLogsFile, err := os.OpenFile(openscapLogsFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-	if err != nil {
-		fmt.Println("Unable to create file for logging to es")
-		os.Exit(1)
-	}
-	defer openscapLogsFile.Close()
 
 	flag.StringVar(&complianceCheckType, "compliance-check-type", "", "\t Choose from gdpr, hipaa, pci, nist")
 	flag.StringVar(&nodeType, "node-type", "", "\t Choose from host, container, container_image")
@@ -146,12 +89,35 @@ func main() {
 	hostName := dfUtils.GetHostName()
 	nodeName := hostName
 	resultMap := map[string]int{}
-	addComplianceScanLog(openscapLogsFile, nodeID, kubernetesClusterName, nodeType, nodeName, "", nodeName+hostName, complianceCheckType, 0, resultMap)
+	var kubeSuffix string
+	var complianceNodeType string
+	if kubernetesClusterId != "" {
+		kubeSuffix = "kube"
+		complianceNodeType = "kubernetes"
+	} else {
+		complianceNodeType = "linux"
+	}
+	config := util.Config{
+		ManagementConsolePort: os.Getenv("MGMT_CONSOLE_PORT"),
+		ManagementConsoleUrl:  os.Getenv("MGMT_CONSOLE_URL"),
+		DeepfenceKey:          os.Getenv("DEEPFENCE_KEY"),
+		KubernetesClusterName: kubernetesClusterName,
+		KubernetesClusterId:   kubernetesClusterId,
+		NodeType:              nodeType,
+		NodeName:              nodeName,
+		ComplianceCheckType:   complianceCheckType,
+		HostName:              hostName,
+		ContainerID:           containerID,
+		ComplianceNodeType:    complianceNodeType,
+	}
+	dfClient, _ := deepfence.NewClient(config)
+	dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
 	if nodeType == nodeTypeContainer {
 		containerName, err := dfUtils.GetContainerNameFromID(containerID)
 		if err == nil {
 			nodeName = hostName + containerName
 		}
+		config.ContainerName = containerName
 		nodeID = containerID + ";<container>"
 	} else if nodeType == nodeTypeImage {
 		nodeID = imageName + ";<container_image>"
@@ -159,25 +125,27 @@ func main() {
 	} else {
 		nodeID = nodeName + ";<" + nodeType + ">"
 	}
+	config.NodeId = nodeID
+	dfClient.UpdateConfig(config)
+
 	if complianceCheckType == "" || nodeType == "" {
 		flag.Usage()
-		addComplianceScanLog(openscapLogsFile, nodeID, kubernetesClusterName, nodeType, nodeName, "Incorrect usage", "ERROR", complianceCheckType, 0, resultMap)
+		dfClient.SendScanStatustoConsole("Incorrect usage", "ERROR", 0, resultMap)
 		os.Exit(1)
 	}
 	if nodeType == nodeTypeContainer && containerID == "" {
 		errMsg := fmt.Sprintf("container-id is required for container scan")
 		fmt.Println(errMsg)
-		addComplianceScanLog(openscapLogsFile, nodeID, kubernetesClusterName, nodeType, nodeName, errMsg, "ERROR", complianceCheckType, 0, resultMap)
+		dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		os.Exit(1)
 	}
 	if nodeType == nodeTypeImage && (imageName == "" || imageId == "") {
 		errMsg := fmt.Sprintf("image-name and image-id are required for image scan")
 		fmt.Println(errMsg)
-		addComplianceScanLog(openscapLogsFile, nodeID, kubernetesClusterName, nodeType, nodeName, errMsg, "ERROR", complianceCheckType, 0, resultMap)
+		dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		os.Exit(1)
 	}
 	command := ""
-	tmpDir := ""
 	openscapResultsFile := ""
 	//var linuxDistribution string
 	if scanId == "" {
@@ -186,12 +154,12 @@ func main() {
 
 	stopLoggingInProgress := make(chan bool)
 	go func() {
-		addComplianceScanLog(openscapLogsFile, nodeID, kubernetesClusterName, nodeType, nodeName, "", "INPROGRESS", complianceCheckType, 0, resultMap)
+		dfClient.SendScanStatustoConsole("", "INPROGRESS", 0, resultMap)
 		ticker := time.NewTicker(2 * time.Minute)
 		for {
 			select {
 			case <-ticker.C:
-				addComplianceScanLog(openscapLogsFile, nodeID, kubernetesClusterName, nodeType, nodeName, "", "SCAN_IN_PROGRESS", complianceCheckType, 0, resultMap)
+				dfClient.SendScanStatustoConsole("", "SCAN_IN_PROGRESS", 0, resultMap)
 			case <-stopLoggingInProgress:
 				return
 			}
@@ -202,18 +170,10 @@ func main() {
 		stopLoggingInProgress <- true
 		time.Sleep(2 * time.Second)
 		fmt.Println(errMsg)
-		addComplianceScanLog(openscapLogsFile, nodeID, kubernetesClusterName, nodeType, nodeName, errMsg, "ERROR", complianceCheckType, 0, resultMap)
+		dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		os.Exit(1)
 	}
 
-	var kubeSuffix string
-	var complianceNodeType string
-	if kubernetesClusterId != "" {
-		kubeSuffix = "kube"
-		complianceNodeType = "kubernetes"
-	} else {
-		complianceNodeType = "linux"
-	}
 	if complianceCheckType == dfUtils.CheckTypeHIPAA {
 		command = fmt.Sprintf(dfComplianceDir + "/compliance --bench-id hipaa" + kubeSuffix)
 	} else if complianceCheckType == dfUtils.CheckTypeNIST {
@@ -230,38 +190,27 @@ func main() {
 		logErrorAndExit(fmt.Sprintf("Compliance scan of type '%s' already running on this node. Please wait for it to finish and then scan again.", complianceCheckType))
 	}
 
-	// If rpm based oscap scan, then "docker run" else run "./command.sh"
-	//if linuxDistribution == debianBasedDistro || complianceCheckType == dfUtils.CheckTypeCIS || complianceCheckType == dfUtils.CheckTypeNISTMaster || complianceCheckType == dfUtils.CheckTypeNISTSlave || (complianceCheckType == dfUtils.CheckTypePCIDSS && (osVersion == "ubuntu1804" || osVersion == "ubuntu1604" || osVersion == "ubuntu1404" || osVersion == "debian8" || osVersion == "debian9" || osVersion == "debian10")) {
-	// CIS | NIST | Oscap (debian based) | DebianPCIDSS
 	var envVars = make(map[string]string)
 	envVars["NODE_TYPE"] = kubeNodeRole
 	envVars["pathPrefix"] = dfUtils.HostMountDir
 	res, err := dfUtils.ExecuteCommand(command, envVars)
-	file, _ := os.OpenFile(dfLogDir+"/compliance-scan-logs/"+"allLog.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	file, _ := os.OpenFile(dfLogDir+"/compliance-scan-logs/allLog.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	defer file.Close()
-	if err != nil {
-		dfUtils.AppendTextToFile(file, err.Error()+"\n")
-	}
-	dfUtils.AppendTextToFile(file, "res from ec:"+res+"\n")
 	stopLoggingInProgress <- true
 	time.Sleep(2 * time.Second)
-	if tmpDir != "" {
-		os.RemoveAll(tmpDir)
-	}
 	dfUtils.AppendTextToFile(file, command+"\n")
 	if err != nil {
 		os.Remove(openscapResultsFile)
 		errMsg := fmt.Sprintf(err.Error())
 		dfUtils.AppendTextToFile(file, err.Error()+"\n")
 		fmt.Println(errMsg)
-		addComplianceScanLog(openscapLogsFile, nodeID, kubernetesClusterName, nodeType, nodeName, errMsg, "ERROR", complianceCheckType, 0, resultMap)
+		dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		// TODO Remove below execute
 		file.Close()
 		os.Exit(1)
 	}
 	list := make([]benchItem, 0)
 	scanner := bufio.NewScanner(strings.NewReader(res))
-	dfUtils.AppendTextToFile(file, strings.TrimSpace(res)+"\n")
 	for scanner.Scan() {
 		// Read output line-by-line. Every check forms a item,
 		// the first line is the header and the rest form the message
@@ -277,25 +226,27 @@ func main() {
 	timestamp := dfUtils.GetTimestamp()
 	cisScanResult := map[string]int{"pass": 0, "info": 0, "warn": 0, "note": 0}
 	for _, item := range list {
-		compScan := ComplianceScan{
-			Type: esScanDocType, TimeStamp: timestamp, NodeId: nodeID, KubernetesClusterName: kubernetesClusterName, NodeType: nodeType, NodeName: nodeName,
-			TestCategory: item.TestCategory, TestNumber: item.TestNum, TestInfo: item.Header, TestRationale: "", TestSeverity: "",
-			TestDesc: item.TestNum + " - " + item.Level, Status: strings.ToLower(item.Level), ComplianceCheckType: complianceCheckType, ScanId: scanId,
-			RemediationScript: item.Remediation, RemediationPuppet: item.RemediationImpact,ComplianceNodeType: complianceNodeType,
+		compScan := util.ComplianceScan{
+			TimeStamp:         timestamp,
+			TestCategory:      item.TestCategory,
+			TestNumber:        item.TestNum,
+			TestInfo:          item.Header,
+			TestRationale:     "",
+			TestSeverity:      "",
+			TestDesc:          item.TestNum + " - " + item.Level,
+			Status:            strings.ToLower(item.Level),
+			RemediationScript: item.Remediation,
+			RemediationPuppet: item.RemediationImpact,
 		}
-		resultStr, err := json.Marshal(compScan)
+		err := dfClient.SendComplianceResultToConsole(compScan)
 		if err != nil {
 			continue
 		}
 		if _, ok := cisScanResult[compScan.Status]; ok {
 			cisScanResult[compScan.Status] += 1
 		}
-		logFile, _ := os.OpenFile(dfLogDir+"/compliance/"+complianceCheckType+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-		dfUtils.AppendTextToFile(logFile, string(resultStr)+"\n")
 	}
-	logFile, _ := os.OpenFile(dfLogDir+"/compliance-scan-logs/"+complianceCheckType+".log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-	addComplianceScanLog(logFile, nodeID, kubernetesClusterName, nodeType, nodeName, "", "COMPLETED", complianceCheckType, cisScanResult["pass"]+cisScanResult["info"]+cisScanResult["warn"]+cisScanResult["note"], cisScanResult)
-
+	dfClient.SendScanStatustoConsole("", "COMPLETED", cisScanResult["pass"]+cisScanResult["info"]+cisScanResult["warn"]+cisScanResult["note"], cisScanResult)
 }
 
 type benchItem struct {
