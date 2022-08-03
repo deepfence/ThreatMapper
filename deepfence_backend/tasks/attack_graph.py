@@ -436,12 +436,12 @@ def _compute_attack_graph():
                             p.append("The Internet")
                             p_str += "The Internet"
                         else:
-                            n = node_data[i]["node_type"] + "-" + str(counter)
+                            n = cloud_provider + "-" + node_data[i]["node_type"] + "-" + str(counter)
                             p.append(n)
                             p_str += "," + n
                         counter += 1
                     node_type = meta["node_type"]
-                    key = node_type + "-" + str(len(path) - 1)
+                    key = cloud_provider + "-" + node_type + "-" + str(len(path) - 1)
                     label = node_type
                     if node_type in NODE_TYPE_LABEL:
                         label = NODE_TYPE_LABEL[node_type]
