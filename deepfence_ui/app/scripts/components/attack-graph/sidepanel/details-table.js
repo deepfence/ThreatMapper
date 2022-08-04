@@ -335,7 +335,7 @@ function ComplianceTable({ nodeData }) {
             accessor: row => {
               return dateTimeFormat(row._source['@timestamp']);
             },
-            id: '_source.timestamp',
+            id: '@timestamp',
             width: 100,
             minWidth: 50,
             Cell: ({ value }) => {
@@ -348,7 +348,7 @@ function ComplianceTable({ nodeData }) {
           },
           {
             Header: 'Status',
-            id: '_source.status',
+            id: 'status',
             width: 70,
             minWidth: 60,
             Cell: ({ row }) => {
@@ -377,7 +377,7 @@ function ComplianceTable({ nodeData }) {
           },
           {
             Header: isCloud ? 'Resource' : 'Node name',
-            id: '_source.Resource',
+            id: 'resource',
             minWidth: 150,
             Cell: ({ row }) => {
               return (
@@ -390,7 +390,7 @@ function ComplianceTable({ nodeData }) {
           },
           {
             Header: isCloud ? 'Reason' : 'Description',
-            id: '_source.Reason',
+            id: 'reason',
             minWidth: 400,
             Cell: ({ row }) => {
               return (
@@ -512,10 +512,12 @@ function SecretsTable({ nodeData }) {
               </div>
             ),
             width: 100,
+            disableSortBy: true,
           },
           {
             Header: 'Filename',
             accessor: '_source.Match.full_filename',
+            id: 'Match.full_filename',
             Cell: row => (
               <div className="truncate" title={row.value}>
                 {row.value}
@@ -532,10 +534,12 @@ function SecretsTable({ nodeData }) {
               </div>
             ),
             width: 100,
+            disableSortBy: true,
           },
           {
             Header: 'Severity',
             accessor: '_source.Severity.level',
+            id: 'Severity.level',
             Cell: cell => (
               <div className={`${cell.value}-severity`}>{cell.value}</div>
             ),
@@ -544,6 +548,7 @@ function SecretsTable({ nodeData }) {
           {
             Header: 'Rule name',
             accessor: '_source.Rule.name',
+            id: 'Rule.name',
             Cell: row => (
               <div className="truncate" title={row.value}>
                 {row.value}
@@ -562,6 +567,7 @@ function SecretsTable({ nodeData }) {
             ),
             minWidth: 100,
             width: 300,
+            disableSortBy: true,
           },
         ]}
       />
