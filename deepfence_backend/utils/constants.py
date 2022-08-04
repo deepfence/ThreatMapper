@@ -319,6 +319,7 @@ CSPM_RESOURCES = {
     "azure_storage_queue": "azure_storage_queue",
     "azure_servicebus_namespace": "azure_servicebus",
     "azure_network_security_group": "azure_network_security_group",
+    "azure_storage_container": "azure_storage_container",
     # gcp 
     "gcp_compute_instance": "gcp_compute",
     "gcp_cloudfunctions_function": "gcp_cloud_function",
@@ -413,6 +414,7 @@ CSPM_RESOURCE_LABELS = {
     "azure_storage_table": "Azure Table storage",
     "azure_synapse": "Azure Synapse",
     "azure_virtual_network": "Azure Virtual Network",
+    "azure_storage_container": "Azure Storage Container",
     # gcp
     'gcp_cloud_function': 'GCP Cloud Functions',
     'gcp_compute': 'GCP VM Instance',
