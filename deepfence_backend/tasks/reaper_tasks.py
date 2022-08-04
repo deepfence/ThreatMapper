@@ -307,9 +307,17 @@ def map_cloud_account_arn_to_table(*args):
                     # print("1 already exists same service_name: {} cloud_resource_nodes_count: {}".format(service_name,cloud_resource_nodes_count[0].service_name))
                     continue
                 elif not cloud_resource_nodes_count[0].service_name:
+                    valid_service_name = False
+                    for service, table_names in CSPM_RESOURCES_INVERTED.items():
+                        if service_name.lower() == service.split("_")[-1] and cloud_resource_nodes_count[0].node_type in CSPM_RESOURCES_INVERTED.get(service):
+                            valid_service_name = True
+                    if not valid_service_name:
+                        continue
                     # print("2 already exists same service_name: {} cloud_resource_nodes_count: {}".format(service_name,cloud_resource_nodes_count[0].service_name))
                     cloud_resource_nodes_count[0].service_name = service_name
                     cloud_resource_nodes_count[0].save()
+                else:
+                    create_resource_node_aws(scan_doc, service_name, region)
             # multiple resources with different service names
             elif len(cloud_resource_nodes_count) > 1:
                 next_resource = next(
