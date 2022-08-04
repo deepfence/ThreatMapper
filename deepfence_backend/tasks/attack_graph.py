@@ -38,32 +38,34 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
     vpc_definitions = []
     taskdefarns = {}
     for cloud_resource in cloud_resources:
+        if cloud_resource["arn"] not in include_nodes:
+            continue
         if cloud_resource["id"] == "aws_ecr_repository":
-            print(cloud_resource)
-            if cloud_resource["policy"] is not None:
-                if cloud_resource["policy"]["Statement"] is not None:
-                    for statement in cloud_resource["policy"]["Statement"]:
-                        if 'Principal' in statement:
-                            if 'AWS' in statement['Principal']:
-                                if statement['Effect'] == "Allow" and (
-                                        "*" in statement['Principal']['AWS'] ):
-                                    if not graph.has_node(cloud_resource['repository_uri']):
-                                        graph.add_node(cloud_resource['repository_uri'], name=cloud_resource["repository_name"], node_type=cloud_resource["id"])
-                                    if not graph.has_edge(incoming_internet_host_id, cloud_resource['repository_uri']):
-                                        graph.add_edge(incoming_internet_host_id, cloud_resource['repository_uri'])
-                                    if not graph.has_edge(cloud_resource['repository_uri'], outgoing_internet_host_id):
-                                        graph.add_edge(cloud_resource['repository_uri'], outgoing_internet_host_id)
+            if not cloud_resource["policy"]:
+                continue
+            if not cloud_resource["policy"]["Statement"]:
+                continue
+            for statement in cloud_resource["policy"]["Statement"]:
+                if 'Principal' in statement:
+                    if 'AWS' in statement['Principal']:
+                        if statement['Effect'] == "Allow" and ("*" in statement['Principal']['AWS']):
+                            if not graph.has_node(cloud_resource['arn']):
+                                graph.add_node(cloud_resource['arn'], name=cloud_resource["repository_uri"],
+                                               node_type=cloud_resource["id"])
+                            if not graph.has_edge(incoming_internet_host_id, cloud_resource['arn']):
+                                graph.add_edge(incoming_internet_host_id, cloud_resource['arn'])
         if cloud_resource["id"] == "aws_ecrpublic_repository":
-            if not graph.has_node(cloud_resource['repository_uri']):
-                graph.add_node(cloud_resource['repository_uri'], name=cloud_resource["repository_name"], node_type=cloud_resource["id"])
-            if not graph.has_edge(incoming_internet_host_id, cloud_resource['repository_uri']):
-                graph.add_edge(incoming_internet_host_id, cloud_resource['repository_uri'])
-            if not graph.has_edge(cloud_resource['repository_uri'], outgoing_internet_host_id):
-                graph.add_edge(cloud_resource['repository_uri'], outgoing_internet_host_id)
+            if not graph.has_node(cloud_resource["arn"]):
+                graph.add_node(cloud_resource["arn"], name=cloud_resource["repository_uri"],
+                               node_type=cloud_resource["id"])
+            if not graph.has_edge(incoming_internet_host_id, cloud_resource["arn"]):
+                graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
     for cloud_resource in cloud_resources:
         if cloud_resource["id"] == "aws_vpc_security_group_rule":
             security_groups[cloud_resource.get("group_id")] = cloud_resource
         if cloud_resource["id"] == "aws_eks_cluster":
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             if cloud_resource["resources_vpc_config"] is not None:
                 if cloud_resource["resources_vpc_config"]["EndpointPublicAccess"] == "true":
                     if not graph.has_node(cloud_resource["arn"]):
@@ -83,9 +85,10 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                             taskdefarns[cloud_resource["arn"]].append(container_def["Image"])
                         else:
                             taskdefarns[cloud_resource["arn"]] = [taskdefarns[cloud_resource["arn"]],
-                                                                    container_def["Image"]]
-                        
+                                                                  container_def["Image"]]
         if cloud_resource["id"] == "aws_s3_bucket":
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             if cloud_resource["bucket_policy_is_public"] is True:
                 if not graph.has_node(cloud_resource["arn"]):
                     graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["id"])
@@ -93,7 +96,8 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                     graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
             if cloud_resource["event_notification_configuration"] is not None:
                 if cloud_resource["event_notification_configuration"]["LambdaFunctionConfigurations"] is not None:
-                    for configuration in cloud_resource["event_notification_configuration"]["LambdaFunctionConfigurations"]:
+                    for configuration in cloud_resource["event_notification_configuration"][
+                        "LambdaFunctionConfigurations"]:
                         if configuration["LambdaFunctionArn"] is not None:
                             lambda_function = configuration["LambdaFunctionArn"]
                             if lambda_function not in lamda_function_map:
@@ -102,9 +106,11 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                                 lamda_function_map[lambda_function].append(cloud_resource["arn"])
                             else:
                                 lamda_function_map[lambda_function] = [lamda_function_map[lambda_function],
-                                                                    cloud_resource["arn"]]
+                                                                       cloud_resource["arn"]]
         elif cloud_resource["id"] in ["aws_ec2_classic_load_balancer", "aws_ec2_application_load_balancer",
                                       "aws_ec2_network_load_balancer"]:
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             if cloud_resource["scheme"] == "internet-facing":
                 if not graph.has_node(cloud_resource["arn"]):
                     graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["id"])
@@ -140,23 +146,27 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                         if not graph.has_edge(incoming_internet_host_id, host_name):
                             graph.add_edge(incoming_internet_host_id, host_name)
         if cloud_resource["id"] == "aws_ecs_service":
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             if cloud_resource["task_definition"] in vpc_definitions:
-                if 'network_configuration'  in cloud_resource:
+                if 'network_configuration' in cloud_resource:
                     if cloud_resource["network_configuration"] is not None:
                         if cloud_resource["network_configuration"]["AwsvpcConfiguration"] is not None:
                             if cloud_resource["network_configuration"]["AwsvpcConfiguration"]["AssignPublicIp"] \
                                     == 'ENABLED':
                                 publicly_accessible_services.append(cloud_resource["service_name"])
         if cloud_resource["id"] == "aws_opensearch_domain":
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             if cloud_resource["vpc_options"] is None:
-                if not graph.has_node(cloud_resource["domain_id"]):
-                    graph.add_node(cloud_resource["domain_id"], name=cloud_resource["domain_name"],
+                if not graph.has_node(cloud_resource["arn"]):
+                    graph.add_node(cloud_resource["arn"], name=cloud_resource["domain_name"],
                                    node_type=cloud_resource["id"])
-                if not graph.has_edge(incoming_internet_host_id, cloud_resource["domain_id"]):
-                    graph.add_edge(incoming_internet_host_id, cloud_resource["domain_id"])
-                if not graph.has_edge(cloud_resource["domain_id"], outgoing_internet_host_id):
-                    graph.add_edge(cloud_resource["domain_id"], outgoing_internet_host_id)
+                if not graph.has_edge(incoming_internet_host_id, cloud_resource["arn"]):
+                    graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
         if cloud_resource["id"] == "aws_rds_db_instance":
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             host_name = cloud_resource["name"]
             db_instance = cloud_resource["db_instance_identifier"] + ";<db>"
             if cloud_resource["publicly_accessible"] is True:
@@ -164,8 +174,6 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                     graph.add_node(db_instance, name=cloud_resource["name"], node_type=cloud_resource["id"])
                 if not graph.has_edge(incoming_internet_host_id, db_instance):
                     graph.add_edge(incoming_internet_host_id, db_instance)
-                if not graph.has_edge(db_instance, outgoing_internet_host_id):
-                    graph.add_edge(db_instance, outgoing_internet_host_id)
             for sec_group in cloud_resource["vpc_security_groups"]:
                 sg_id = sec_group["VpcSecurityGroupId"]
                 if sg_id not in security_group_rds_map:
@@ -179,8 +187,6 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                     if security_groups[sec_group["VpcSecurityGroupId"]]["cidr_ipv4"] == '0.0.0.0/0':
                         if not graph.has_node(db_instance):
                             graph.add_node(db_instance, name=cloud_resource["name"], node_type=cloud_resource["id"])
-                        if not graph.has_edge(db_instance, outgoing_internet_host_id):
-                            graph.add_edge(db_instance, outgoing_internet_host_id)
                 else:
                     if security_groups[sec_group["VpcSecurityGroupId"]]["cidr_ipv4"] == '0.0.0.0/0':
                         if not graph.has_node(db_instance):
@@ -189,6 +195,8 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                             graph.add_edge(incoming_internet_host_id, db_instance)
     for cloud_resource in cloud_resources:
         if cloud_resource["id"] == "aws_rds_db_cluster":
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             db_cluster = cloud_resource["db_cluster_identifier"] + ";<db>"
             for sec_group in cloud_resource["vpc_security_groups"]:
                 if security_groups[sec_group["VpcSecurityGroupId"]]["is_egress"]:
@@ -236,23 +244,26 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                                 if not graph.has_edge(db, host_name):
                                     graph.add_edge(db, host_name)
         if cloud_resource["id"] == "aws_ecs_task":
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             if cloud_resource["service_name"] in publicly_accessible_services or \
-            any(ser in cloud_resource['group'] for ser in publicly_accessible_services):
+                    any(ser in cloud_resource['group'] for ser in publicly_accessible_services):
                 if not graph.has_node(cloud_resource["arn"]):
                     graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["id"])
                 if not graph.has_edge(incoming_internet_host_id, cloud_resource["arn"]):
                     graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
-                if not graph.has_edge(cloud_resource["arn"], outgoing_internet_host_id):
-                    graph.add_edge(cloud_resource["arn"], outgoing_internet_host_id)
                 if cloud_resource["task_definition_arn"] in list(taskdefarns.keys()):
                     if isinstance(taskdefarns[cloud_resource["task_definition_arn"]], str):
-                        if not graph.has_edge(taskdefarns[cloud_resource["task_definition_arn"]], cloud_resource["arn"]):
+                        if not graph.has_edge(taskdefarns[cloud_resource["task_definition_arn"]],
+                                              cloud_resource["arn"]):
                             graph.add_edge(taskdefarns[cloud_resource["task_definition_arn"]], cloud_resource["arn"])
                         if isinstance(taskdefarns[cloud_resource["task_definition_arn"]], list):
                             for ecr in taskdefarns[cloud_resource["task_definition_arn"]]:
                                 if not graph.has_edge(ecr, cloud_resource["arn"]):
-                                    graph.add_edge(ecr, cloud_resource["arn"])        
+                                    graph.add_edge(ecr, cloud_resource["arn"])
         if cloud_resource["id"] == "aws_lambda_function":
+            if cloud_resource["arn"] not in include_nodes:
+                continue
             lambda_fun = cloud_resource["arn"]
             if not cloud_resource.get("policy_std"):
                 continue
@@ -260,22 +271,21 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                 if 'Principal' in statement:
                     if 'AWS' in statement['Principal']:
                         if statement['Effect'] == "Allow" and (
-                                "*" in statement['Principal']['AWS'] ):
+                                "*" in statement['Principal']['AWS']):
                             if not graph.has_node(lambda_fun):
                                 graph.add_node(lambda_fun, name=cloud_resource["name"], node_type=cloud_resource["id"])
                             if not graph.has_edge(incoming_internet_host_id, lambda_fun):
                                 graph.add_edge(incoming_internet_host_id, lambda_fun)
-                            if not graph.has_edge(lambda_fun, outgoing_internet_host_id):
-                                graph.add_edge(lambda_fun, outgoing_internet_host_id)
                     if lambda_fun in lamda_function_map:
                         if isinstance(lamda_function_map[lambda_fun], str):
-                            if(not graph.has_node(lamda_function_map[lambda_fun])):
-                                graph.add_node(lamda_function_map[lambda_fun], name=lamda_function_map[lambda_fun], node_type="aws_s3_bucket")
+                            if not graph.has_node(lamda_function_map[lambda_fun]):
+                                graph.add_node(lamda_function_map[lambda_fun], name=lamda_function_map[lambda_fun],
+                                               node_type="aws_s3_bucket")
                             if not graph.has_edge(lambda_fun, lamda_function_map[lambda_fun]):
                                 graph.add_edge(lambda_fun, lamda_function_map[lambda_fun])
                         if isinstance(lamda_function_map[lambda_fun], list):
                             for bucket in lamda_function_map[lambda_fun]:
-                                if(not graph.has_node(bucket)):
+                                if (not graph.has_node(bucket)):
                                     graph.add_node(bucket, name=bucket, node_type="aws_s3_bucket")
                                 if not graph.has_edge(lambda_fun, bucket):
                                     graph.add_edge(lambda_fun, bucket)
@@ -295,47 +305,44 @@ def compute_gcp_cloud_network_graph(cloud_resources, graph, include_nodes):
 def compute_azure_cloud_network_graph(cloud_resources, graph, include_nodes):
     if not cloud_resources:
         return graph
-    if not graph.has_node(incoming_internet_host_id):
-        graph.add_node(incoming_internet_host_id)
-    # outbound_network_security_group = []
-    # inbound_network_security_group = []
     for cloud_resource in cloud_resources:
+        if cloud_resource["arn"] not in include_nodes:
+            continue
         if cloud_resource["id"] == "azure_storage_account":
             if cloud_resource["allow_blob_public_access"]:
                 if not graph.has_node(cloud_resource["id"]):
-                    graph.add_node(cloud_resource["name"],cloud_resource["name"],
+                    graph.add_node(cloud_resource["arn"], cloud_resource["name"],
                                    node_type=cloud_resource["id"])
                 if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
-                    graph.add_edge(incoming_internet_host_id, cloud_resource["name"])
-    for cloud_resource in cloud_resources:
-        if cloud_resource["id"] == "azure_storage_blob" \
-        or cloud_resource["id"] == "azure_storage_table" \
-        or cloud_resource["id"] == "azure_log_profile" :
-            if graph.has_node(cloud_resource["storage_account_name"]) :
+                    graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
+        elif cloud_resource["id"] == "azure_storage_blob" \
+                or cloud_resource["id"] == "azure_storage_table" \
+                or cloud_resource["id"] == "azure_log_profile":
+            if graph.has_node(cloud_resource["storage_account_name"]):
                 if not graph.has_node(cloud_resource["name"]):
-                    graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["id"])
+                    graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["id"])
                 if not graph.has_edge(cloud_resource["storage_account_name"], cloud_resource["name"]):
-                    graph.add_edge(cloud_resource["storage_account_name"], cloud_resource["name"])
+                    graph.add_edge(cloud_resource["storage_account_name"], cloud_resource["arn"])
         elif cloud_resource["id"] == "azure_compute_virtual_machine":
             if cloud_resource["public_ips"] is not None:
                 if not graph.has_node(cloud_resource["name"]):
-                    graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["id"])
+                    graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["id"])
                 if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
-                    graph.add_edge(incoming_internet_host_id, cloud_resource["name"])
+                    graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
         elif cloud_resource["id"] == "azure_mysql_server":
             if cloud_resource["public_network_access"] is not None:
                 if cloud_resource["public_network_access"] == "Enabled":
                     if not graph.has_node(cloud_resource["name"]):
-                        graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["id"])
+                        graph.add_node(cloud_resource["arn"], name=cloud_resource["name"],
+                                       node_type=cloud_resource["id"])
                     if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
-                        graph.add_edge(incoming_internet_host_id, cloud_resource["name"]) 
+                        graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
         elif cloud_resource["id"] == "azure_storage_container":
             if cloud_resource["public_access"] is not None:
                 if not graph.has_node(cloud_resource["name"]):
-                    graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["id"])
+                    graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["id"])
                 if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
-                    graph.add_edge(incoming_internet_host_id, cloud_resource["name"]) 
-           
+                    graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
     return graph
 
 
