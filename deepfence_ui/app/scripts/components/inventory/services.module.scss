@@ -30,11 +30,11 @@
       left: 16px;
       width: 64px;
       height: 64px;
-      border-radius: 100vh;
+      border-radius: 4px;
+      border: 2px solid #555555;
       overflow: hidden;
-      background-color: black;
+      background-color: #101010;
       box-shadow: 0 8px 12px 0 rgba(0, 0, 0, 0.16);
-      border: 2px solid $color-secondary-shade;
       padding: 32px;
       display: flex;
       align-items: center;

@@ -40,6 +40,12 @@ import AWSEC2 from '../../../images/cloud-icons/aws/Arch_Amazon-EC2_48.png';
 import AWSECSTask from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Task_48_Dark.svg';
 import AWSECSService from '../../../images/cloud-icons/aws/Res_Amazon-Elastic-Container-Service_Service_48_Dark.svg';
 import AWSRDS from '../../../images/cloud-icons/aws/Arch_Amazon-RDS_48.svg';
+import AWSElastiCache from '../../../images/cloud-icons/aws/Arch_Amazon-ElastiCache_48.svg';
+import AWSSecurityHub from '../../../images/cloud-icons/aws/Arch_AWS-Security-Hub_48.svg';
+import AWSBackup from '../../../images/cloud-icons/aws/Arch_AWS-Backup_48.svg';
+import AWSWAF from '../../../images/cloud-icons/aws/Arch_AWS-WAF_48.svg';
+import AWSFSX from '../../../images/cloud-icons/aws/Arch_Amazon-FSx_48.svg';
+import AWSDAX from '../../../images/cloud-icons/aws/Res_Amazon-DynamoDB_Amazon-DynamoDB-Accelerator_48_Dark.svg';
 
 import GCPAppEngine from '../../../images/cloud-icons/gcp/app_engine.svg';
 import GCPBigQuery from '../../../images/cloud-icons/gcp/bigquery.svg';
@@ -120,6 +126,12 @@ export const CloudIconsMapping = {
     aws_ecs_service: AWSECSService,
     aws_ecs_task_definiton: AWSECSTask,
     aws_rds: AWSRDS,
+    aws_elasticache: AWSElastiCache,
+    aws_securityhub: AWSSecurityHub,
+    aws_backup: AWSBackup,
+    aws_wafv2: AWSWAF,
+    aws_fsx: AWSFSX,
+    aws_dax: AWSDAX,
   },
   google_cloud: {
     generic: GCPGeneric,
