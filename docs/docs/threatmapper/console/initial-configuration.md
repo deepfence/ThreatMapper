@@ -17,19 +17,38 @@ You will need the IP address for the management console:
 
 1. Open the Console in a browser (https://your-ip-address/):
     
-    ![Initial Login](../img/threatmapper-reg-1.png)
+   |![Initial Login](../img/threatmapper-reg-1.png)|
+   | :--: |
+   | Initial Login |
 
    You will likely encounter a warning about an invalid SSL/TLS certificate, because the console is using an internally-generated self-signed cert. You can bypass that warning. See below for how to provide your own TLS certificate.
 
 2. Create a new account. Once one user has been registered, additional users are added by invitation from an admin user:
 
-    ![Account Registration](../img/threatmapper-reg-2.png)
+    |![Account Registration](../img/threatmapper-reg-2.png)|
+    | :--: |
+    | Account Registration |
     
     Account Registration details are private to your Management Console, and are not shared with Deepfence or other third parties.
 
-3. Obtain the Deepfence API key from the console. Go to `Settings` -> `User Management` and make note of the API key; you will need it when deploying the Deepfence sensors. 
+## Obtain the API Key
 
-   Console installations are preconfigured with threat intel data. Once the Console has started, it will update its Threat Intel feed data; this can take seveal minutes, and is repeated daily.  You can check the status on the Console, at `Settings` -> `Diagnosis`; look for the **System Status** report.
+The API key is used to authenticate remote sensor agents and cloud scanner tasks. Go to `Settings` -> `User Management` and make note of the API key; you will need it when deploying the Deepfence sensors.
+
+|![API Key](../img/api-key.jpg)|
+| :--: |
+| View the API key |
+
+For your convenience, the console also displays the specific commands to perform a default installation of the Deepfence Sensor Agents on Docker and Kubernetes hosts, pre-filled with the API key and management console URL data:
+
+|![API Key](../img/agent-setup.jpg)|
+| :--: |
+| Default Agent Setup (URL and Key masked) |
+
+
+## Updating Threat Intel Data
+
+Console installations are preconfigured with threat intel data. Once the Console has started, it will update its Threat Intel feed data; this can take several minutes, and is repeated daily.  You can check the status on the Console, at `Settings` -> `Diagnosis`; look for the **System Status** report.
 
    ![Diagnosis](../img/diagnosis-status.jpg)
 

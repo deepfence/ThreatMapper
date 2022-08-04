@@ -6,6 +6,10 @@ title: Amazon ECS
 
 Cloud Scanner is deployed as a task within your AWS ECS infrastructure. The ThreatMapper console provides a simple terraform script to perform the deployment.
 
+| ![Compliance Install - Amazon ECS](../img/compliance-install-aws.jpg) |
+| :--: |
+| Compliance Install - Amazon ECS |
+
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
 For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-aws-cloud-scanner

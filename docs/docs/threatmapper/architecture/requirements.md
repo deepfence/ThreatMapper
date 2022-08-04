@@ -1,16 +1,8 @@
 ---
-title: ThreatMapper Components
+title: System Requirements
 ---
 
-# ThreatMapper Components
-
-The ThreatMapper product consists of a Management Console, and multiple Sensor containers that are deployed within your production platform(s).
-
-![ThreatMapper Components](img/threatmapper-components.jpg)
-
-You should install the Management Console first. The Management console generates an API key and a URL which you will need when you install the Sensor containers.
-
-The Management Console is managed over TLS (port 443), used for administrative traffic and for sensor traffic.  You should firewall or secure access to this port so that only authorised admin users and remote production platforms are able to connect.
+# System Requirements
 
 
 ## ThreatMapper Management Console
@@ -32,23 +24,7 @@ The Management Console may be installed on a single Docker host or in a dedicate
 
 Larger deployments, managing 250 or more production nodes, will require additional CPU and RAM resources.  For enterprise-scale deployments, managing 1000+ production nodes, the ThreatMapper Console should be deployed on a Kubernetes cluster of 3 or more nodes.
 
-### ThreatMapper Compliance Posture Scanning
 
-ThreatMapper performs compliance posture scanning for cloud platforms by querying the infrastructure APIs for these platforms.
-
-This is achieved using a relay 'cloud scanner' task that is deployed within each cloud instance using a terraform module.  This 'cloud scanner' is granted appropriate access to the local APIs, and operates under instruction from the remote ThreatMapper console.
-
-### ThreatMapper Registry Scanning
-
-The ThreatMapper console can scan container images at rest in a wide range of supported registries.
-
-This is achieved by providing appropriate credentials to the ThreatMapper console so that it can discover and download assets directly from these registries.
-
-### ThreatMapper Vulnerability, Secret and Local Compliance Scanning
-
-ThreatMapper performs vulnerability and secret scanning directly on production and non-production hosts using a sensor agent container.
-
-The sensor agent is also used for local compliance scanning (Kubernetes and Linux posture) where it has access to configuration and assets that are not exposed through an API.
 
 ## ThreatMapper Sensor Agent Containers
 

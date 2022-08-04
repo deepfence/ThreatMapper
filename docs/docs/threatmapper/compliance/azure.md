@@ -6,6 +6,10 @@ title: Microsoft Azure
 
 Cloud Scanner is deployed as a task within your Azure infrastructure. The ThreatMapper console provides a simple terraform script to perform the deployment.
 
+| ![Compliance Install - Microsoft Azure](../img/compliance-install-azure.jpg) |
+| :--: |
+| Compliance Install - Microsoft Azure |
+
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
 For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-azure-cloud-scanner

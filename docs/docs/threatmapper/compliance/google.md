@@ -6,6 +6,10 @@ title: Google GCP
 
 Cloud Scanner is deployed as a task within your Google Cloud Platform instance. The ThreatMapper console provides a simple terraform script to perform the deployment.
 
+| ![Compliance Install - Google Compute Platform](../img/compliance-install-gcp.jpg) |
+| :--: |
+| Compliance Install - Google Compute Platform |
+
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
 For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-gcp-cloud-scanner

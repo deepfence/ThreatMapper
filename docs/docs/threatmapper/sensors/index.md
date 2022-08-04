@@ -16,6 +16,14 @@ You should take care to install the sensor version that matches your Management 
 
 ## Installing the ThreatMapper Sensors
 
+For your convenience, the ThreatMapper management console provides the default installation commands to install the agent on a docker host or a in a kubernetes cluster:
+
+|![Agent Setup](../img/agent-setup.jpg)|
+| :--: |
+| Default Agent Setup (URL and Key masked) |
+
+More detailed instuctions are as follows:
+
 ```mdx-code-block
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';

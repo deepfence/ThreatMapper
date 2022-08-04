@@ -21,7 +21,22 @@ const sidebars = {
     },
 
     'threatmapper/index',
-    'threatmapper/architecture',
+    'threatmapper/threatgraph',
+
+    {
+      type: 'category',
+      label: 'Architecture',
+      link: {
+        type: 'doc',
+        id: 'threatmapper/architecture/index'
+      },
+      items: [
+        'threatmapper/architecture/console',
+        'threatmapper/architecture/services',
+        'threatmapper/architecture/requirements',
+
+      ],
+    },
     'threatmapper/demo',
 
     {
@@ -79,7 +94,6 @@ const sidebars = {
         'threatmapper/operations/scanning',
         'threatmapper/operations/sboms',
         'threatmapper/operations/compliance',
-        'threatmapper/operations/threatgraph',
         'threatmapper/operations/scanning-registries',
         'threatmapper/operations/scanning-ci',
         'threatmapper/operations/support',
