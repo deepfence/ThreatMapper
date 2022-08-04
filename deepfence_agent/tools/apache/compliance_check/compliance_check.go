@@ -111,7 +111,10 @@ func main() {
 		ComplianceNodeType:    complianceNodeType,
 	}
 	dfClient, _ := deepfence.NewClient(config)
-	dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
+	err := dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
+	if err != nil {
+		addToAllLog("Error in sending Queued status to console" + err.Error())
+	}
 	if nodeType == nodeTypeContainer {
 		containerName, err := dfUtils.GetContainerNameFromID(containerID)
 		if err == nil {
@@ -130,19 +133,28 @@ func main() {
 
 	if complianceCheckType == "" || nodeType == "" {
 		flag.Usage()
-		dfClient.SendScanStatustoConsole("Incorrect usage", "ERROR", 0, resultMap)
+		err := dfClient.SendScanStatustoConsole("Incorrect usage", "ERROR", 0, resultMap)
+		if err != nil {
+			addToAllLog("Error in sending Error status to console" + err.Error())
+		}
 		os.Exit(1)
 	}
 	if nodeType == nodeTypeContainer && containerID == "" {
 		errMsg := fmt.Sprintf("container-id is required for container scan")
 		fmt.Println(errMsg)
-		dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		if err != nil {
+			addToAllLog("Error in sending Error status to console" + err.Error())
+		}
 		os.Exit(1)
 	}
 	if nodeType == nodeTypeImage && (imageName == "" || imageId == "") {
 		errMsg := fmt.Sprintf("image-name and image-id are required for image scan")
 		fmt.Println(errMsg)
-		dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		if err != nil {
+			addToAllLog("Error in sending Error status to console" + err.Error())
+		}
 		os.Exit(1)
 	}
 	command := ""
@@ -154,12 +166,18 @@ func main() {
 
 	stopLoggingInProgress := make(chan bool)
 	go func() {
-		dfClient.SendScanStatustoConsole("", "INPROGRESS", 0, resultMap)
+		err := dfClient.SendScanStatustoConsole("", "INPROGRESS", 0, resultMap)
+		if err != nil {
+			addToAllLog("Error in sending in progress status to console" + err.Error())
+		}
 		ticker := time.NewTicker(2 * time.Minute)
 		for {
 			select {
 			case <-ticker.C:
-				dfClient.SendScanStatustoConsole("", "SCAN_IN_PROGRESS", 0, resultMap)
+				err := dfClient.SendScanStatustoConsole("", "SCAN_IN_PROGRESS", 0, resultMap)
+				if err != nil {
+					addToAllLog("Error in sending inProgress status to console" + err.Error())
+				}
 			case <-stopLoggingInProgress:
 				return
 			}
@@ -170,7 +188,10 @@ func main() {
 		stopLoggingInProgress <- true
 		time.Sleep(2 * time.Second)
 		fmt.Println(errMsg)
-		dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		if err != nil {
+			addToAllLog("Error in sending Error status to console" + err.Error())
+		}
 		os.Exit(1)
 	}
 
@@ -204,7 +225,10 @@ func main() {
 		errMsg := fmt.Sprintf(err.Error())
 		dfUtils.AppendTextToFile(file, err.Error()+"\n")
 		fmt.Println(errMsg)
-		dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		if err != nil {
+			dfUtils.AppendTextToFile(file, "Error in sending Error status to console"+err.Error())
+		}
 		// TODO Remove below execute
 		file.Close()
 		os.Exit(1)
@@ -240,13 +264,17 @@ func main() {
 		}
 		err := dfClient.SendComplianceResultToConsole(compScan)
 		if err != nil {
+			addToAllLog("Error in sending Compliance Result to console" + err.Error())
 			continue
 		}
 		if _, ok := cisScanResult[compScan.Status]; ok {
 			cisScanResult[compScan.Status] += 1
 		}
 	}
-	dfClient.SendScanStatustoConsole("", "COMPLETED", cisScanResult["pass"]+cisScanResult["info"]+cisScanResult["warn"]+cisScanResult["note"], cisScanResult)
+	err = dfClient.SendScanStatustoConsole("", "COMPLETED", cisScanResult["pass"]+cisScanResult["info"]+cisScanResult["warn"]+cisScanResult["note"], cisScanResult)
+	if err != nil {
+		addToAllLog("Error in send completed scan status to console:" + err.Error())
+	}
 }
 
 type benchItem struct {
@@ -301,4 +329,10 @@ func checkScanAlreadyRunning(command string) bool {
 	} else {
 		return true
 	}
+}
+
+func addToAllLog(message string) {
+	file, _ := os.OpenFile(dfLogDir+"/compliance-scan-logs/allLog.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	defer file.Close()
+	dfUtils.AppendTextToFile(file, message+"\n")
 }
