@@ -318,7 +318,20 @@ CSPM_RESOURCES = {
     "azure_kubernetes_cluster": "azure_kubernetes_cluster",
     "azure_storage_queue": "azure_storage_queue",
     "azure_servicebus_namespace": "azure_servicebus",
-    "azure_network_security_group": "azure_network_security_group"
+    "azure_network_security_group": "azure_network_security_group",
+    # gcp 
+    "gcp_compute_instance": "gcp_compute",
+    "gcp_cloudfunctions_function": "gcp_cloud_function",
+    "gcp_compute_network": "gcp_compute_network",
+    "gcp_compute_resource_policy": "gcp_compute_resource_policy",
+    "gcp_iam_policy": "gcp_iam_policy",
+    "gcp_iam_role": "gcp_iam",
+    "gcp_logging_bucket": "gcp_logging",
+    "gcp_project": "gcp_project",
+    "gcp_pubsub_topic": "gcp_pubsub_topic",
+    "gcp_service_account": "gcp_sa",
+    "gcp_sql_database_instance": "gcp_sql",
+    "gcp_storage_bucket": "gcp_storage"
 }
 
 CSPM_RESOURCES_INVERTED = defaultdict(list)
@@ -399,7 +412,20 @@ CSPM_RESOURCE_LABELS = {
     "azure_storage_queue": "Azure Queue Storage",
     "azure_storage_table": "Azure Table storage",
     "azure_synapse": "Azure Synapse",
-    "azure_virtual_network": "Azure Virtual Network"
+    "azure_virtual_network": "Azure Virtual Network",
+    # gcp
+    'gcp_cloud_function': 'GCP Cloud Functions',
+    'gcp_compute': 'GCP VM Instance',
+    'gcp_compute_network': 'GCP VPC Network',
+    'gcp_compute_resource_policy': 'GCP Compute Resource Policy',
+    'gcp_iam': 'GCP IAM Role',
+    'gcp_iam_policy': 'GCP IAM Policy',
+    'gcp_logging': 'GCP Log Buckets',
+    'gcp_project': 'GCP Project',
+    'gcp_pubsub_topic': 'GCP Cloud Pub/Sub',
+    'gcp_sa': 'GCP Service Account',
+    'gcp_sql': 'GCP Cloud SQL Instance',
+    'gcp_storage': 'GCP Cloud Storage Buckets'
 }
 
 CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "javascript", "rust", "golang", "dotnet"]

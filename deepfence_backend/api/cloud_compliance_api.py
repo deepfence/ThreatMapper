@@ -1238,6 +1238,9 @@ def register_cloud_resource(cloud_provider):
     if not request.is_json:
         raise InvalidUsage("Missing JSON post data in request")
 
+    if cloud_provider == "gcp":
+        cloud_provider == "google_cloud"
+
     post_data = request.json
     if not cloud_provider:
         raise InvalidUsage("cloud_provider is required for cloud resource registration")
@@ -1252,7 +1255,7 @@ def register_cloud_resource(cloud_provider):
                     node_type=resource.get("resource_id", resource.get("id", "")),
                     cloud_provider=cloud_provider,
                     account_id=resource.get("account_id"),
-                    region=resource.get("region"),
+                    region=resource.get("region","global"),
                     service_name=CSPM_RESOURCES.get(resource.get("id", ""), None),
                     is_active=True
                 )
@@ -1291,7 +1294,10 @@ def cloud_resources(account_id):
     # print("cloud_resource_nodes_map", cloud_resource_nodes_map)
     # node_type here is service name aws_s3
     for node_type in CSPM_RESOURCE_LABELS:
-        if not node_type.startswith(account.cloud_provider):
+        cp = account.cloud_provider
+        if cp == "google_cloud":
+            cp = "gcp"
+        if not node_type.startswith(cp):
             continue
         if not node_type:
             raise InvalidUsage("Missing node_type")
