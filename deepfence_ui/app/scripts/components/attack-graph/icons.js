@@ -10,9 +10,12 @@ import AWSECSTaskIcon from '../../../images/attack-graph-icons/graph-node-icons/
 import AWSLambdaFunctionIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_AWS-Lambda_Lambda-Function_48_Dark.svg';
 import AWSEC2NLBIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Elastic-Load-Balancing_Network-Load-Balancer_48_Dark.svg';
 import AWSEC2CLBIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Elastic-Load-Balancing_Classic-Load-Balancer_48_Dark.svg';
+import AWSECRRegistry from '../../../images/attack-graph-icons/graph-node-icons/Res_Amazon-Elastic-Container-Registry_Registry_48_Dark.svg';
 import GCPRootIcon from '../../../images/attack-graph-icons/graph-node-icons/gcp.png';
 import AWSRootIcon from '../../../images/attack-graph-icons/graph-node-icons/aws.png';
 import AzureRootIcon from '../../../images/attack-graph-icons/graph-node-icons/azure.png';
+import AzureVirtualMachine from '../../../images/attack-graph-icons/graph-node-icons/10021-icon-service-Virtual-Machine.svg';
+import AzureStorageContainer from '../../../images/attack-graph-icons/graph-node-icons/10839-icon-service-Storage-Container.svg';
 import OthersRootIcon from '../../../images/attack-graph-icons/graph-node-icons/others.svg';
 
 const mapping = {
@@ -22,6 +25,7 @@ const mapping = {
   cloud_root_gcp: GCPRootIcon,
   cloud_root_azure: AzureRootIcon,
   cloud_root_others: OthersRootIcon,
+  // aws
   aws_s3_bucket: AWSS3BucketIcon,
   aws_eks_cluster: AWSEKSCloudIcon,
   aws_opensearch_domain: AWSOpenSearchServiceIcon,
@@ -30,7 +34,11 @@ const mapping = {
   aws_ecs_task: AWSECSTaskIcon,
   aws_lambda_function: AWSLambdaFunctionIcon,
   aws_ec2_network_load_balancer: AWSEC2NLBIcon,
-  aws_ec2_classic_load_balancer: AWSEC2CLBIcon
+  aws_ec2_classic_load_balancer: AWSEC2CLBIcon,
+  aws_ecrpublic_repository: AWSECRRegistry,
+  // azure
+  azure_compute_virtual_machine: AzureVirtualMachine,
+  azure_storage_container: AzureStorageContainer
 };
 
 export function getAssetIcon(id) {

@@ -12,14 +12,19 @@ import {
   serviceEdgeColor,
 } from './graph-components';
 import './register-custom-node';
-import { breadcrumbChange, getAttackGraphDataAction } from '../../actions/app-actions';
+import {
+  breadcrumbChange,
+  getAttackGraphDataAction,
+} from '../../actions/app-actions';
 import { getNodeIcon } from '../multi-cloud/node-icons';
 import { Sidepanel } from './sidepanel/sidepanel';
 import { DetailsTable } from './sidepanel/details-table';
 import { getAssetIcon } from './icons';
+import AppLoader from '../common/app-loader/app-loader';
+import styles from './index.module.scss';
 
 const toolbar = new G6.ToolBar({
-  className: 'g6-df-toolbar g6-attack-path-toolbar',
+  className: 'g6-df-toolbar',
   getContent: () => {
     const outDiv = document.createElement('div');
     outDiv.innerHTML = `<ul>
@@ -74,9 +79,13 @@ export const AttackGraph = () => {
 
   const [graphData, setGraphData] = useState();
 
-  const { attackGraphData } = useSelector(state => {
+  const { attackGraphData, attackGraphDataLoading } = useSelector(state => {
     return {
       attackGraphData: state.getIn(['attackGraph', 'graphData', 'data'], null),
+      attackGraphDataLoading: state.getIn(
+        ['attackGraph', 'graphData', 'loading'],
+        null
+      ),
     };
   });
 
@@ -94,11 +103,7 @@ export const AttackGraph = () => {
   }, [graphData]);
 
   useEffect(() => {
-    dispatch(
-      breadcrumbChange([
-        { name: 'Threat Graph' },
-      ])
-    );
+    dispatch(breadcrumbChange([{ name: 'Threat Graph' }]));
     dispatch(getAttackGraphDataAction());
   }, []);
 
@@ -167,38 +172,41 @@ export const AttackGraph = () => {
 
   return (
     <AuthenticatedLayout>
-      <div ref={containerRef}>
-        <div
-          ref={ref}
-          style={{
-            height: 'calc(100vh - 72px)',
-            width: '100%',
-            overflow: 'hidden',
-            userSelect: 'none',
-          }}
-        />
+      <div className={styles.attackGraphWrapper}>
+        <div ref={containerRef}>
+          <div ref={ref} className={styles.canvasWrapper} />
+        </div>
+        {!graphData?.edges?.length && !graphData?.nodes?.length ? (
+          <div className={styles.placeholder}>
+            {attackGraphDataLoading ? (
+              <AppLoader />
+            ) : (
+              'No Threat Paths discovered.'
+            )}
+          </div>
+        ) : null}
+        {dialogModel ? (
+          <Sidepanel
+            model={dialogModel}
+            onDismiss={() => {
+              setDialogModel(null);
+            }}
+            onStatClick={info => {
+              setDetailsTableNode(info);
+            }}
+          />
+        ) : null}
+        {detailsTableNode ? (
+          <DetailsTable
+            tableType={detailsTableNode.type}
+            nodeData={detailsTableNode.nodeData}
+            isSidepanelOpen={!!dialogModel}
+            onDismiss={() => {
+              setDetailsTableNode(null);
+            }}
+          />
+        ) : null}
       </div>
-      {dialogModel ? (
-        <Sidepanel
-          model={dialogModel}
-          onDismiss={() => {
-            setDialogModel(null);
-          }}
-          onStatClick={info => {
-            setDetailsTableNode(info);
-          }}
-        />
-      ) : null}
-      {detailsTableNode ? (
-        <DetailsTable
-          tableType={detailsTableNode.type}
-          nodeData={detailsTableNode.nodeData}
-          isSidepanelOpen={!!dialogModel}
-          onDismiss={() => {
-            setDetailsTableNode(null);
-          }}
-        />
-      ) : null}
     </AuthenticatedLayout>
   );
 };
