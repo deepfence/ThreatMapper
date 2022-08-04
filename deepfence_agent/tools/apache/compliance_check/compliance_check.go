@@ -84,6 +84,7 @@ func main() {
 		HostName:              hostName,
 		ContainerID:           containerID,
 		ComplianceNodeType:    complianceNodeType,
+		ScanId:                scanId,
 	}
 	dfClient, _ := deepfence.NewClient(config)
 	err := dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
@@ -189,7 +190,7 @@ func main() {
 	dfUtils.AppendTextToFile(file, command+"\n")
 	if err != nil {
 		errMsg := fmt.Sprintf(err.Error())
-		dfUtils.AppendTextToFile(file, "ExecuteCommand: "+err.Error()+"\n")
+		dfUtils.AppendTextToFile(file, "Error from executing command: "+command+", error:"+errMsg+"\n")
 		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			dfUtils.AppendTextToFile(file, "Error in sending Error status to console"+err.Error())
@@ -262,6 +263,6 @@ func getDatetimeNow() string {
 
 func addToAllLog(message string) {
 	file, _ := os.OpenFile(dfLogDir+"/compliance-scan-logs/allLog.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-	defer file.Close()
 	dfUtils.AppendTextToFile(file, message+"\n")
+	file.Close()
 }
