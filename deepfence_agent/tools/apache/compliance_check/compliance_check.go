@@ -182,7 +182,7 @@ func main() {
 	addToAllLog(command)
 	if err != nil {
 		errMsg := fmt.Sprintf(err.Error())
-		addToAllLog("ExecuteCommand: " + err.Error())
+		addToAllLog("Error from executing command: "+command+", error:"+errMsg)
 		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			addToAllLog("Error in sending Error status to console" + err.Error())
@@ -262,6 +262,6 @@ type benchItem struct {
 
 func addToAllLog(message string) {
 	file, _ := os.OpenFile(dfLogDir+"/compliance-scan-logs/allLog.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-	defer file.Close()
 	dfUtils.AppendTextToFile(file, message+"\n")
+	file.Close()
 }
