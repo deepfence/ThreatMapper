@@ -1,8 +1,8 @@
 ---
-title: Configuring Compliance Posture Scanning
+title: Cloud Scanner task
 ---
 
-# Configuring Compliance Posture Scanning
+# Cloud Scanner Overview
 
 ThreatMapper performs Compliance Posture Scanning to:
 
@@ -13,8 +13,8 @@ ThreatMapper then summarises the results in a 'Threat Graph' visualization, to h
 
 ## Implementation
 
- * Compliance Posture Scanning for **Clouds** requires access (typically read-only) to the cloud platform APIs.
- * Compliance Posture Scanning for **Hosts** requires the ThreatMapper Sensor Agent to be available on that host.
+ * Compliance Posture Scanning for **Clouds** requires access (typically read-only) to the cloud platform APIs, and uses the Cloud Scanner task
+ * Compliance Posture Scanning for **Hosts** requires direct access to the host, and uses the Sensor Agent container.
 
 ### Compliance Posture Scanning for Clouds
 
@@ -24,18 +24,17 @@ Each Cloud Scanner task runs in your cloud environment, gathering inventory and 
 
 Cloud Scanner tasks are deployed using the appropriate Terraform module for each cloud, and are configured with the address and API key of your management console.  They 'phone home' to your management console and take instructions on demand; they do not listen for remote connections or control.
 
+:::info
+Refer to the Installation Documentation to [Learn how to install Cloud Scanner tasks](../compliance)
+:::
+
+
 ### Compliance Posture Scanning for Hosts
 
 ThreatMapper can perform compliance posture scanning on linux hosts and Kubernetes master and worker nodes.
 
-Scanning is done directly, using a local [Sensor Agent](../sensors) rather than by using the Cloud Scanner task employed by the cloud platform integrations.
+Scanning is done directly, using a local [Sensor Agent](sensors) rather than by using the Cloud Scanner task employed by the cloud platform integrations.
 
 
-## Configuring Cloud Posture Management
 
-```mdx-code-block
-import DocCardList from '@theme/DocCardList';
-import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
 
-<DocCardList items={useCurrentSidebarCategory().items}/>
-```

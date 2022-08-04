@@ -8,15 +8,19 @@ Your production workloads are managed using ThreatMapper Sensors.  The ThreatMap
 
 A single ThreatMapper Console can manage multiple workload types, and on-premise and cloud deployments simultaneously.
 
-## Before you Begin
+## Before You Begin
 
 Before you install the Sensors, obtain the Management Console URL and API key as described in the [Initial Configuration](../console/initial-configuration).
 
 You should take care to install the sensor version that matches your Management Console version, as compatibility across versions is not guaranteed.
 
+Review the architecture for the Sensor Agent, as described in [Architecture: Sensor Agent container](../architecture/sensors).
+
+Review the requirements for the Sensor Agent container, as described in [System Requirements](../architecture/requirements).
+
 ## Installing the ThreatMapper Sensors
 
-For your convenience, the ThreatMapper management console provides the default installation commands to install the agent on a docker host or a in a kubernetes cluster:
+For your convenience, the ThreatMapper management console provides the default installation commands to install the agent on a docker host or in a kubernetes cluster:
 
 |![Agent Setup](../img/agent-setup.jpg)|
 | :--: |

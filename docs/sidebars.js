@@ -32,7 +32,8 @@ const sidebars = {
       },
       items: [
         'threatmapper/architecture/console',
-        'threatmapper/architecture/services',
+        'threatmapper/architecture/cloudscanner',
+        'threatmapper/architecture/sensors',
         'threatmapper/architecture/requirements',
 
       ],
@@ -41,45 +42,59 @@ const sidebars = {
 
     {
       type: 'category',
-      label: 'Management Console',
-      items: [
-        'threatmapper/console/docker',
-        'threatmapper/console/kubernetes',
-        'threatmapper/console/initial-configuration',
-        'threatmapper/console/manage-users',
-      ],
-    },
-
-    {
-      type: 'category',
-      label: 'Compliance Posture',
+      label: 'Installation',
       link: {
         type: 'doc',
-        id: 'threatmapper/compliance/index'
+        id: 'threatmapper/installation'
       },
       items: [
-        'threatmapper/compliance/amazon',
-        'threatmapper/compliance/azure',
-        'threatmapper/compliance/google',
-        'threatmapper/compliance/other',
-       ],
-    },
+        {
+          type: 'category',
+          label: 'Management Console',
+          link: {
+            type: 'doc',
+            id: 'threatmapper/console/index'
+          },
+          items: [
+            'threatmapper/console/docker',
+            'threatmapper/console/kubernetes',
+            'threatmapper/console/initial-configuration',
+            'threatmapper/console/manage-users',
+          ],
+        },
 
-    {
-      type: 'category',
-      label: 'Sensor Agents',
-      link: {
-        type: 'doc',
-        id: 'threatmapper/sensors/index'
-      },
-      items: [
-        'threatmapper/sensors/kubernetes',
-        'threatmapper/sensors/docker',
-        'threatmapper/sensors/amazon-ecs',
-        'threatmapper/sensors/amazon-fargate',
-        'threatmapper/sensors/azure-aks',
-        'threatmapper/sensors/google-gke',
-        'threatmapper/sensors/linux-host',
+        {
+          type: 'category',
+          label: 'Cloud Scanner task',
+          link: {
+            type: 'doc',
+            id: 'threatmapper/cloudscanner/index'
+          },
+          items: [
+            'threatmapper/cloudscanner/amazon',
+            'threatmapper/cloudscanner/azure',
+            'threatmapper/cloudscanner/google',
+            'threatmapper/cloudscanner/other',
+           ],
+        },
+
+        {
+          type: 'category',
+          label: 'Sensor Agent container',
+          link: {
+            type: 'doc',
+            id: 'threatmapper/sensors/index'
+          },
+          items: [
+            'threatmapper/sensors/kubernetes',
+            'threatmapper/sensors/docker',
+            'threatmapper/sensors/amazon-ecs',
+            'threatmapper/sensors/amazon-fargate',
+            'threatmapper/sensors/azure-aks',
+            'threatmapper/sensors/google-gke',
+            'threatmapper/sensors/linux-host',
+          ],
+        },
       ],
     },
 
