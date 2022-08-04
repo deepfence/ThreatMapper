@@ -38,7 +38,7 @@ The benchmarks available vary by cloud provider:
 
 Begin on the **Posture** page in the ThreatMapper console.
 
-Select a cloud instance that you have [configured previously](../compliance/).  You may have several instances of a given cloud type:
+Select a cloud instance that you have [configured previously](../cloudscanner/).  You may have several instances of a given cloud type:
 
 | ![Cloud Compliance Scan - Select](../img/compliance-scan-1.jpg) |
 | :--: |
