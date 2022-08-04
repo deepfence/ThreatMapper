@@ -9,16 +9,12 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/util"
 	dfUtils "github.com/deepfence/df-utils"
 	"os"
-	"os/exec"
-	"sort"
 	"strings"
 	"time"
 )
 
 var (
 	scanId                string
-	ignoreValues          []string
-	ignoreValuesLen       = 0
 	kubernetesClusterName string
 	kubernetesClusterId   string
 	dfInstallDir          = ""
@@ -39,21 +35,12 @@ func main() {
 	var containerID string
 	var imageName string
 	var imageId string
-	var ignoreFileName string
-	f, _ := os.Create("/tmp/cdebug.log")
-	defer f.Close()
-
-	_, _ = f.WriteString("it is working all good\n")
-	f.Sync()
-
 	installDir, exists := os.LookupEnv("DF_INSTALL_DIR")
 	if exists {
 		dfInstallDir = installDir
 	}
 	dfLogDir = dfInstallDir + "/var/log/fenced"
 	dfComplianceDir = dfInstallDir + "/usr/local/bin/compliance_check"
-	fmt.Println("DF log directory: ", dfLogDir)
-	fmt.Println("DF Compliance directory: ", dfComplianceDir)
 
 	flag.StringVar(&complianceCheckType, "compliance-check-type", "", "\t Choose from gdpr, hipaa, pci, nist")
 	flag.StringVar(&nodeType, "node-type", "", "\t Choose from host, container, container_image")
@@ -64,7 +51,6 @@ func main() {
 	flag.StringVar(&containerID, "container-id", "", "\t Container ID (Only when node-type is container)")
 	flag.StringVar(&imageName, "image-name", "", "\t Image name (Only when node-type is container_image)")
 	flag.StringVar(&imageId, "image-id", "", "\t Image ID (Only when node-type is container_image)")
-	flag.StringVar(&ignoreFileName, "ignore-file-name", "", "\t Filename that contains entries to be ignored while sending out results ")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n\n", os.Args[0])
 		flag.PrintDefaults()
@@ -73,17 +59,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "E.g. ./deepfence_compliance_check -compliance-check-type \"pcidss\" -node-type \"container_image\" -image-name \"1234\" -image-id \"1234\" \n")
 	}
 	flag.Parse()
-
-	_, _ = f.WriteString("parsing done completely\n")
-
-	if ignoreFileName != "" {
-		ignoreValues = readIgnoreFile(ignoreFileName)
-		ignoreValuesLen = len(ignoreValues)
-		if ignoreValuesLen > 0 {
-			sort.Strings(ignoreValues)
-		}
-		os.Remove(ignoreFileName)
-	}
 
 	nodeID := ""
 	hostName := dfUtils.GetHostName()
@@ -141,7 +116,6 @@ func main() {
 	}
 	if nodeType == nodeTypeContainer && containerID == "" {
 		errMsg := fmt.Sprintf("container-id is required for container scan")
-		fmt.Println(errMsg)
 		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			addToAllLog("Error in sending Error status to console" + err.Error())
@@ -150,7 +124,6 @@ func main() {
 	}
 	if nodeType == nodeTypeImage && (imageName == "" || imageId == "") {
 		errMsg := fmt.Sprintf("image-name and image-id are required for image scan")
-		fmt.Println(errMsg)
 		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			addToAllLog("Error in sending Error status to console" + err.Error())
@@ -158,7 +131,6 @@ func main() {
 		os.Exit(1)
 	}
 	command := ""
-	openscapResultsFile := ""
 	//var linuxDistribution string
 	if scanId == "" {
 		scanId = fmt.Sprintf("%s_%s_%s", complianceCheckType, nodeID, getDatetimeNow())
@@ -187,7 +159,6 @@ func main() {
 	logErrorAndExit := func(errMsg string) {
 		stopLoggingInProgress <- true
 		time.Sleep(2 * time.Second)
-		fmt.Println(errMsg)
 		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			addToAllLog("Error in sending Error status to console" + err.Error())
@@ -206,10 +177,6 @@ func main() {
 	} else {
 		logErrorAndExit(fmt.Sprintf("Unknown complianceCheckType: " + complianceCheckType + ". complianceCheckType should be hipaa, pci, gdpr, nist"))
 	}
-	alreadyRunning := checkScanAlreadyRunning(command)
-	if alreadyRunning {
-		logErrorAndExit(fmt.Sprintf("Compliance scan of type '%s' already running on this node. Please wait for it to finish and then scan again.", complianceCheckType))
-	}
 
 	var envVars = make(map[string]string)
 	envVars["NODE_TYPE"] = kubeNodeRole
@@ -221,10 +188,8 @@ func main() {
 	time.Sleep(2 * time.Second)
 	dfUtils.AppendTextToFile(file, command+"\n")
 	if err != nil {
-		os.Remove(openscapResultsFile)
 		errMsg := fmt.Sprintf(err.Error())
-		dfUtils.AppendTextToFile(file, err.Error()+"\n")
-		fmt.Println(errMsg)
+		dfUtils.AppendTextToFile(file, "ExecuteCommand: "+err.Error()+"\n")
 		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			dfUtils.AppendTextToFile(file, "Error in sending Error status to console"+err.Error())
@@ -244,7 +209,7 @@ func main() {
 		if err == nil {
 			list = append(list, item)
 		} else {
-			dfUtils.AppendTextToFile(file, err.Error()+"\n")
+			dfUtils.AppendTextToFile(file, "json.Unmarshal: "+err.Error()+"\n")
 		}
 	}
 	timestamp := dfUtils.GetTimestamp()
@@ -293,42 +258,6 @@ type benchItem struct {
 
 func getDatetimeNow() string {
 	return time.Now().UTC().Format("2006-01-02T15:04:05.000")
-}
-
-func readIgnoreFile(fileName string) []string {
-	var retVal []string
-	filePtr, fileErr := os.Open(fileName)
-	if fileErr != nil {
-		fmt.Printf("Error while opening file %s Reason %s\n",
-			fileName, fileErr.Error())
-		return []string{}
-	}
-	defer filePtr.Close()
-	fileScanner := bufio.NewScanner(filePtr)
-	for fileScanner.Scan() {
-		retVal = append(retVal, fileScanner.Text())
-	}
-	return retVal
-}
-
-func checkScanAlreadyRunning(command string) bool {
-	//	check if scan is already running
-	firstChar := command[0:1]
-	command = strings.Replace(command, firstChar, "["+firstChar+"]", 1)
-	psOut, err := dfUtils.ExecuteCommand(fmt.Sprintf("ps aux | grep \"%s\"", command), nil)
-	if err != nil {
-		switch err.(type) {
-		case *exec.ExitError:
-			return false
-		default:
-			return true
-		}
-	}
-	if psOut == "" {
-		return false
-	} else {
-		return true
-	}
 }
 
 func addToAllLog(message string) {
