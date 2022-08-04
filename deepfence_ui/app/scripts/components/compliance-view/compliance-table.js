@@ -5,7 +5,7 @@ import isNil from 'lodash/isNil';
 import { DfTableV2 } from '../common/df-table-v2';
 import pollable from '../common/header-view/pollable';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
-import { getComplianceCloudCredentialsAction } from '../../actions/app-actions';
+import { getComplianceCloudCredentialsAction, refreshCloudComplianceResourcesAction } from '../../actions/app-actions';
 import AppLoader from '../common/app-loader/app-loader';
 
 import { StartScanModalContent } from './start-scan-modal';
@@ -49,6 +49,10 @@ const ComplianceTable = withRouter(props => {
     });
   };
 
+  const doRefresh = nodeId => {
+    dispatch(refreshCloudComplianceResourcesAction({nodeId}))
+  }
+
   return (
     <div style={{ marginBottom: '75px', marginTop: '8px' }}>
       <div style={{ color: 'white' }} className="name heading">
@@ -61,6 +65,7 @@ const ComplianceTable = withRouter(props => {
           <AccountListTable
             cloudType={props.cloudType}
             handleViewRules={handleViewRules}
+            doRefresh={doRefresh}
             nodes={accountList?.nodes}
           />
         </div>
@@ -69,7 +74,7 @@ const ComplianceTable = withRouter(props => {
   );
 });
 
-const AccountListTable = ({ nodes = [], cloudType, handleViewRules }) => {
+const AccountListTable = ({ nodes = [], cloudType, handleViewRules, doRefresh }) => {
   return (
     <DfTableV2
       noMargin
@@ -90,6 +95,7 @@ const AccountListTable = ({ nodes = [], cloudType, handleViewRules }) => {
               nodes={original.nodes}
               cloudType={cloudType}
               handleViewRules={handleViewRules}
+              doRefresh={doRefresh}
             />
           </div>
         );
@@ -239,6 +245,29 @@ const AccountListTable = ({ nodes = [], cloudType, handleViewRules }) => {
                     </button>
                   </Link>
                 ) : null}
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (cell.row.original.enabled === true) {
+                      doRefresh(cell.row.original.node_id)
+                    }
+                  }}
+                  disabled={!cell.row.original.enabled}
+                  title={
+                    cell.row.original.enabled === false
+                      ? 'Account is inactive'
+                      : ''
+                  }
+                >
+                  <i
+                    className="fa fa-refresh"
+                    aria-hidden="true"
+                    style={{ paddingRight: '4px' }}
+                  />
+                  Refresh
+                </button>
               </div>
             );
           },
