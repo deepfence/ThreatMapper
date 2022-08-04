@@ -54,9 +54,9 @@ func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n\n", os.Args[0])
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\nE.g. ./deepfence_compliance_check -compliance-check-type \"cis\" -node-type \"host\" \n")
-		fmt.Fprintf(os.Stderr, "E.g. ./deepfence_compliance_check -compliance-check-type \"pcidss\" -node-type \"container\" -container-id \"1234\" \n")
-		fmt.Fprintf(os.Stderr, "E.g. ./deepfence_compliance_check -compliance-check-type \"pcidss\" -node-type \"container_image\" -image-name \"1234\" -image-id \"1234\" \n")
+		fmt.Fprintf(os.Stderr, "\nE.g. ./deepfence_compliance_check -compliance-check-type \"hipaa\" -node-type \"host\" \n")
+		fmt.Fprintf(os.Stderr, "E.g. ./deepfence_compliance_check -compliance-check-type \"pci\" -node-type \"container\" -container-id \"1234\" \n")
+		fmt.Fprintf(os.Stderr, "E.g. ./deepfence_compliance_check -compliance-check-type \"gdpr\" -node-type \"container_image\" -image-name \"1234\" -image-id \"1234\" \n")
 	}
 	flag.Parse()
 
@@ -72,6 +72,38 @@ func main() {
 	} else {
 		complianceNodeType = "linux"
 	}
+
+	if complianceCheckType == "" || nodeType == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
+	if nodeType == nodeTypeContainer && containerID == "" {
+		fmt.Println("container-id is required for container scan")
+		os.Exit(1)
+	}
+	if nodeType == nodeTypeImage && (imageName == "" || imageId == "") {
+		fmt.Println("image-name and image-id are required for image scan")
+		os.Exit(1)
+	}
+
+	var containerName string
+	var err error
+	if nodeType == nodeTypeContainer {
+		containerName, err = dfUtils.GetContainerNameFromID(containerID)
+		if err == nil {
+			nodeName = hostName + containerName
+		}
+		nodeID = containerID + ";<container>"
+	} else if nodeType == nodeTypeImage {
+		nodeID = imageName + ";<container_image>"
+		nodeName = imageName
+	} else {
+		nodeID = nodeName + ";<" + nodeType + ">"
+	}
+	if scanId == "" {
+		scanId = fmt.Sprintf("%s_%s_%s", complianceCheckType, nodeID, dfUtils.GetDatetimeNow())
+	}
+
 	config := util.Config{
 		ManagementConsolePort: os.Getenv("MGMT_CONSOLE_PORT"),
 		ManagementConsoleUrl:  os.Getenv("MGMT_CONSOLE_URL"),
@@ -84,58 +116,21 @@ func main() {
 		HostName:              hostName,
 		ContainerID:           containerID,
 		ComplianceNodeType:    complianceNodeType,
+		ScanId:                scanId,
+		ContainerName:         containerName,
+		NodeId:                nodeID,
 	}
-	dfClient, _ := deepfence.NewClient(config)
-	err := dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
+	dfClient, err := deepfence.NewClient(config)
+	if err != nil {
+		addToAllLog("Error initializing df client " + err.Error())
+		os.Exit(1)
+	}
+	err = dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
 	if err != nil {
 		addToAllLog("Error in sending Queued status to console" + err.Error())
 	}
-	if nodeType == nodeTypeContainer {
-		containerName, err := dfUtils.GetContainerNameFromID(containerID)
-		if err == nil {
-			nodeName = hostName + containerName
-		}
-		config.ContainerName = containerName
-		nodeID = containerID + ";<container>"
-	} else if nodeType == nodeTypeImage {
-		nodeID = imageName + ";<container_image>"
-		nodeName = imageName
-	} else {
-		nodeID = nodeName + ";<" + nodeType + ">"
-	}
-	config.NodeId = nodeID
-	dfClient.UpdateConfig(config)
 
-	if complianceCheckType == "" || nodeType == "" {
-		flag.Usage()
-		err := dfClient.SendScanStatustoConsole("Incorrect usage", "ERROR", 0, resultMap)
-		if err != nil {
-			addToAllLog("Error in sending Error status to console" + err.Error())
-		}
-		os.Exit(1)
-	}
-	if nodeType == nodeTypeContainer && containerID == "" {
-		errMsg := fmt.Sprintf("container-id is required for container scan")
-		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
-		if err != nil {
-			addToAllLog("Error in sending Error status to console" + err.Error())
-		}
-		os.Exit(1)
-	}
-	if nodeType == nodeTypeImage && (imageName == "" || imageId == "") {
-		errMsg := fmt.Sprintf("image-name and image-id are required for image scan")
-		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
-		if err != nil {
-			addToAllLog("Error in sending Error status to console" + err.Error())
-		}
-		os.Exit(1)
-	}
 	command := ""
-	//var linuxDistribution string
-	if scanId == "" {
-		scanId = fmt.Sprintf("%s_%s_%s", complianceCheckType, nodeID, getDatetimeNow())
-	}
-
 	stopLoggingInProgress := make(chan bool)
 	go func() {
 		err := dfClient.SendScanStatustoConsole("", "INPROGRESS", 0, resultMap)
@@ -182,20 +177,16 @@ func main() {
 	envVars["NODE_TYPE"] = kubeNodeRole
 	envVars["pathPrefix"] = dfUtils.HostMountDir
 	res, err := dfUtils.ExecuteCommand(command, envVars)
-	file, _ := os.OpenFile(dfLogDir+"/compliance-scan-logs/allLog.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
-	defer file.Close()
 	stopLoggingInProgress <- true
 	time.Sleep(2 * time.Second)
-	dfUtils.AppendTextToFile(file, command+"\n")
+	addToAllLog(command)
 	if err != nil {
 		errMsg := fmt.Sprintf(err.Error())
-		dfUtils.AppendTextToFile(file, "ExecuteCommand: "+err.Error()+"\n")
+		addToAllLog("ExecuteCommand: " + err.Error())
 		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		if err != nil {
-			dfUtils.AppendTextToFile(file, "Error in sending Error status to console"+err.Error())
+			addToAllLog("Error in sending Error status to console" + err.Error())
 		}
-		// TODO Remove below execute
-		file.Close()
 		os.Exit(1)
 	}
 	list := make([]benchItem, 0)
@@ -209,34 +200,47 @@ func main() {
 		if err == nil {
 			list = append(list, item)
 		} else {
-			dfUtils.AppendTextToFile(file, "json.Unmarshal: "+err.Error()+"\n")
+			addToAllLog("json.Unmarshal: " + err.Error())
 		}
 	}
 	timestamp := dfUtils.GetTimestamp()
-	cisScanResult := map[string]int{"pass": 0, "info": 0, "warn": 0, "note": 0}
+	timestampStr := dfUtils.GetDatetimeNow()
+	scanResult := map[string]int{"pass": 0, "info": 0, "warn": 0, "note": 0}
+	var complianceScanResults []util.ComplianceScan
 	for _, item := range list {
 		compScan := util.ComplianceScan{
-			TimeStamp:         timestamp,
-			TestCategory:      item.TestCategory,
-			TestNumber:        item.TestNum,
-			TestInfo:          item.Header,
-			TestRationale:     "",
-			TestSeverity:      "",
-			TestDesc:          item.TestNum + " - " + item.Level,
-			Status:            strings.ToLower(item.Level),
-			RemediationScript: item.Remediation,
-			RemediationPuppet: item.RemediationImpact,
+			Type:                  util.ComplianceScanIndexName,
+			TimeStamp:             timestamp,
+			Timestamp:             timestampStr,
+			Masked:                "false",
+			TestCategory:          item.TestCategory,
+			TestNumber:            item.TestNum,
+			TestInfo:              item.Header,
+			TestRationale:         "",
+			TestSeverity:          "",
+			TestDesc:              item.TestNum + " - " + item.Level,
+			Status:                strings.ToLower(item.Level),
+			RemediationScript:     item.Remediation,
+			RemediationPuppet:     item.RemediationImpact,
+			NodeId:                config.NodeId,
+			KubernetesClusterName: config.KubernetesClusterName,
+			KubernetesClusterId:   config.KubernetesClusterId,
+			NodeType:              config.NodeType,
+			NodeName:              config.NodeName,
+			ComplianceCheckType:   config.ComplianceCheckType,
+			ScanId:                config.ScanId,
+			ComplianceNodeType:    config.ComplianceNodeType,
 		}
-		err := dfClient.SendComplianceResultToConsole(compScan)
-		if err != nil {
-			addToAllLog("Error in sending Compliance Result to console" + err.Error())
-			continue
-		}
-		if _, ok := cisScanResult[compScan.Status]; ok {
-			cisScanResult[compScan.Status] += 1
+		complianceScanResults = append(complianceScanResults, compScan)
+		if _, ok := scanResult[compScan.Status]; ok {
+			scanResult[compScan.Status] += 1
 		}
 	}
-	err = dfClient.SendScanStatustoConsole("", "COMPLETED", cisScanResult["pass"]+cisScanResult["info"]+cisScanResult["warn"]+cisScanResult["note"], cisScanResult)
+	err = dfClient.SendComplianceResultToConsole(complianceScanResults)
+	if err != nil {
+		addToAllLog("Error in sending Compliance Result to console" + err.Error())
+	}
+	err = dfClient.SendScanStatustoConsole("", "COMPLETED", scanResult["pass"]+scanResult["info"]+scanResult["warn"]+scanResult["note"], scanResult)
 	if err != nil {
 		addToAllLog("Error in send completed scan status to console:" + err.Error())
 	}
@@ -254,10 +258,6 @@ type benchItem struct {
 	Remediation       string
 	RemediationImpact string
 	TestCategory      string
-}
-
-func getDatetimeNow() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05.000")
 }
 
 func addToAllLog(message string) {

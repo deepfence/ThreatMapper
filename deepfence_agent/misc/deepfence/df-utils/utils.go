@@ -26,9 +26,6 @@ const (
 	maxIdleConnsPerHost = 1024
 	HostMountDir        = "/fenced/mnt/host/"
 	CheckTypeHIPAA      = "hipaa"
-	CheckNameHIPAA      = "HIPAA"
-	CheckTypeCIS        = "cis"
-	CheckNameCIS        = "CIS"
 	CheckTypePCI        = "pci"
 	CheckTypeNIST       = "nist"
 	CheckTypeGDPR       = "gdpr"
@@ -364,6 +361,10 @@ func GetRealHostName() string {
 
 func GetTimestamp() int64 {
 	return time.Now().UTC().UnixNano() / 1000000
+}
+
+func GetDatetimeNow() string {
+	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
 }
 
 func AppendTextToFile(fileObj *os.File, text string) {

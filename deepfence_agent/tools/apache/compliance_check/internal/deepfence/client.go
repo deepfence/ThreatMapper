@@ -15,10 +15,8 @@ import (
 )
 
 const (
-	MethodGet                   = "GET"
-	MethodPost                  = "POST"
-	complianceScanLogsIndexName = "compliance-scan-logs"
-	complianceScanIndexName     = "compliance"
+	MethodGet  = "GET"
+	MethodPost = "POST"
 )
 
 type Client struct {
@@ -44,19 +42,31 @@ func NewClient(config util.Config) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) UpdateConfig(config util.Config) {
-	c.config = config
-}
-
 func (c *Client) SendScanStatustoConsole(scanMsg string, status string, totalChecks int, resultMap map[string]int) error {
 	scanMsg = strings.Replace(scanMsg, "\n", " ", -1)
-	scanLog := util.ComplianceScanLog{ScanId: c.config.ScanId, Type: complianceScanLogsIndexName, TimeStamp: dfUtils.GetTimestamp(), NodeId: c.config.NodeId, NodeType: c.config.NodeType, KubernetesClusterName: c.config.KubernetesClusterName, KubernetesClusterId: c.config.KubernetesClusterId, NodeName: c.config.NodeName, ScanMessage: scanMsg, ScanStatus: status, ComplianceCheckType: c.config.ComplianceCheckType, TotalChecks: totalChecks, Result: resultMap}
+	scanLog := util.ComplianceScanLog{
+		ScanId:                c.config.ScanId,
+		Type:                  util.ComplianceScanLogsIndexName,
+		TimeStamp:             dfUtils.GetTimestamp(),
+		Timestamp:             dfUtils.GetDatetimeNow(),
+		Masked:                "false",
+		NodeId:                c.config.NodeId,
+		NodeType:              c.config.NodeType,
+		KubernetesClusterName: c.config.KubernetesClusterName,
+		KubernetesClusterId:   c.config.KubernetesClusterId,
+		NodeName:              c.config.NodeName,
+		ScanMessage:           scanMsg,
+		ScanStatus:            status,
+		ComplianceCheckType:   c.config.ComplianceCheckType,
+		TotalChecks:           totalChecks,
+		Result:                resultMap,
+	}
 	complianceScanLog, err := json.Marshal(scanLog)
 	if err != nil {
 		return err
 	}
 	postReader := bytes.NewReader(complianceScanLog)
-	ingestScanStatusAPI := fmt.Sprintf("https://" + c.mgmtConsoleUrl + "/df-api/ingest?doc_type=" + complianceScanLogsIndexName)
+	ingestScanStatusAPI := fmt.Sprintf("https://" + c.mgmtConsoleUrl + "/df-api/ingest?doc_type=" + util.ComplianceScanLogsIndexName)
 	_, err = c.HttpRequest(MethodPost, ingestScanStatusAPI, postReader, nil)
 	return err
 }
@@ -92,24 +102,13 @@ func (c *Client) GetApiAccessToken() (string, error) {
 	return dfApiAuthResponse.Data.AccessToken, nil
 }
 
-func (c *Client) SendComplianceResultToConsole(complianceScan util.ComplianceScan) error {
-	//NodeId: nodeID, KubernetesClusterName: kubernetesClusterName, NodeType: nodeType, NodeName: nodeName,
-	complianceScan.Type = complianceScanIndexName
-	complianceScan.NodeId = c.config.NodeId
-	complianceScan.KubernetesClusterName = c.config.KubernetesClusterName
-	complianceScan.KubernetesClusterId = c.config.KubernetesClusterId
-	complianceScan.NodeType = c.config.NodeType
-	complianceScan.NodeName = c.config.NodeName
-	complianceScan.ComplianceCheckType = c.config.ComplianceCheckType
-	complianceScan.ScanId = c.config.ScanId
-	complianceScan.ComplianceNodeType = c.config.ComplianceNodeType
-
+func (c *Client) SendComplianceResultToConsole(complianceScan []util.ComplianceScan) error {
 	docBytes, err := json.Marshal(complianceScan)
 	if err != nil {
 		return err
 	}
 	postReader := bytes.NewReader(docBytes)
-	ingestScanStatusAPI := fmt.Sprintf("https://" + c.mgmtConsoleUrl + "/df-api/ingest?doc_type=" + complianceScanIndexName)
+	ingestScanStatusAPI := fmt.Sprintf("https://" + c.mgmtConsoleUrl + "/df-api/ingest?doc_type=" + util.ComplianceScanIndexName)
 	_, err = c.HttpRequest("POST", ingestScanStatusAPI, postReader, nil)
 	if err != nil {
 		return err

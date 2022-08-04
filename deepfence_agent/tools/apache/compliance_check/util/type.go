@@ -1,5 +1,10 @@
 package util
 
+const (
+	ComplianceScanLogsIndexName = "compliance-scan-logs"
+	ComplianceScanIndexName     = "compliance"
+)
+
 type Config struct {
 	ManagementConsoleUrl  string `json:"management_console_url,omitempty"`
 	ManagementConsolePort string `json:"management_console_port,omitempty"`
@@ -22,6 +27,8 @@ type Config struct {
 type ComplianceScan struct {
 	Type                  string `json:"type"`
 	TimeStamp             int64  `json:"time_stamp"`
+	Timestamp             string `json:"@timestamp"`
+	Masked                string `json:"masked"`
 	NodeId                string `json:"node_id"`
 	NodeType              string `json:"node_type"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name"`
@@ -30,7 +37,6 @@ type ComplianceScan struct {
 	TestCategory          string `json:"test_category"`
 	TestNumber            string `json:"test_number"`
 	TestInfo              string `json:"description"`
-	Masked                string `json:"masked,omitempty"`
 	RemediationScript     string `json:"remediation_script,omitempty"`
 	RemediationAnsible    string `json:"remediation_ansible,omitempty"`
 	RemediationPuppet     string `json:"remediation_puppet,omitempty"`
@@ -46,6 +52,8 @@ type ComplianceScan struct {
 type ComplianceScanLog struct {
 	Type                  string         `json:"type"`
 	TimeStamp             int64          `json:"time_stamp"`
+	Timestamp             string         `json:"@timestamp"`
+	Masked                string         `json:"masked"`
 	NodeId                string         `json:"node_id"`
 	NodeType              string         `json:"node_type"`
 	KubernetesClusterName string         `json:"kubernetes_cluster_name"`
