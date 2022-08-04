@@ -6,14 +6,13 @@ import time
 from sqlalchemy import func, exc
 from urllib.parse import unquote
 from config.app import db
-
+from utils.decorators import non_read_only_user
 from models.cloud_resource_node import CloudResourceNode
 from models.compliance_rules_disabled import ComplianceRulesDisabled
 from flask import Blueprint, request, make_response
 from flask import current_app as app
 from flask_jwt_extended import jwt_required
 from resource_models.node import Node
-import networkx as nx
 
 from models.cloud_compliance_node import CloudComplianceNode
 from models.compliance_rules import ComplianceRules
@@ -983,17 +982,13 @@ def compliance_rules(compliance_check_type):
 @cloud_compliance_api.route("/cloud-compliance-scan/<path:node_id>/start", methods=["POST"],
                             endpoint="api_v1_5_start_cloud_compliance_scan")
 @jwt_required()
-# @non_read_only_user
+@non_read_only_user
 def start_cloud_compliance_scan(node_id):
     if not request.is_json:
         raise InvalidUsage("Missing JSON post data in request")
     post_data = request.json
     if not post_data.get("compliance_check_type", []):
         raise InvalidUsage("Compliance check type cannot be empty")
-
-    account = CloudComplianceNode.query.filter_by(node_id=node_id).first()
-    if not account:
-        set_response(data={"message": "node_id not found"}, status=404)
 
     if post_data.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
         for compliance_check_type in post_data.get("compliance_check_type", []):
@@ -1009,6 +1004,10 @@ def start_cloud_compliance_scan(node_id):
                 node = Node.get_node(0, node_id, "host")
                 node.compliance_start_scan(compliance_check_type, None)
         return set_response(data={"message": "Scans queued successfully"}, status=200)
+
+    account = CloudComplianceNode.query.filter_by(node_id=node_id).first()
+    if not account:
+        set_response(data={"message": "node_id not found"}, status=404)
     cloud_provider = post_data.get("node_type", "")
     scan_list = []
     current_pending_scans = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id)
@@ -1052,13 +1051,16 @@ def start_cloud_compliance_scan(node_id):
 @cloud_compliance_api.route("/cloud-compliance/<path:node_id>/refresh", methods=["POST"],
                             endpoint="api_v1_5_refresh_inventory")
 @jwt_required()
+@non_read_only_user
 def refresh_cloud_compliance_inventory(node_id):
     # set CLOUD_COMPLIANCE_REFRESH_INVENTORY
     redis.hset(CLOUD_COMPLIANCE_REFRESH_INVENTORY, node_id, "true")
     return set_response(data={"message": "Refreshing inventory"}, status=200)
 
+
 @cloud_compliance_api.route("/compliance/update_controls", methods=["POST"])
 @jwt_required()
+@non_read_only_user
 def compliance_rules_update():
     """
     Compliance API - Enable / Disable Controls
@@ -1104,6 +1106,7 @@ def compliance_rules_update():
 @cloud_compliance_api.route("/cloud_compliance/cloud_account", methods=["POST"],
                             endpoint="api_v1_5_register_cloud_account_cloud_compliance_scan")
 @jwt_required()
+@non_read_only_user
 def register_cloud_account():
     if not request.is_json:
         raise InvalidUsage("Missing JSON post data in request")
@@ -1234,6 +1237,7 @@ def register_cloud_account():
 @cloud_compliance_api.route("/cloud_compliance/cloud_resource/<path:cloud_provider>", methods=["POST"],
                             endpoint="api_v1_5_register_cloud_resource")
 @jwt_required()
+@non_read_only_user
 def register_cloud_resource(cloud_provider):
     if not request.is_json:
         raise InvalidUsage("Missing JSON post data in request")
@@ -1567,6 +1571,7 @@ def cloud_resources_type(account_id):
 
 @cloud_compliance_api.route("compliance/mask_doc", methods=["POST"], endpoint="api_v1_5_mask_compliance_doc")
 @jwt_required()
+@non_read_only_user
 def mask_doc():
     if not request.is_json:
         raise InvalidUsage("Missing JSON post data in request")
@@ -1587,6 +1592,7 @@ def mask_doc():
 
 @cloud_compliance_api.route("compliance/unmask_doc", methods=["POST"], endpoint="api_v1_5_unmask_compliance_doc")
 @jwt_required()
+@non_read_only_user
 def mask_doc():
     if not request.is_json:
         raise InvalidUsage("Missing JSON post data in request")

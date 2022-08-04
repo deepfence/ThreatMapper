@@ -9,12 +9,14 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/util"
 	dfUtils "github.com/deepfence/df-utils"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
 
 var (
 	scanId                string
+	ignoreValues          []string
 	kubernetesClusterName string
 	kubernetesClusterId   string
 	dfInstallDir          = ""
@@ -35,6 +37,7 @@ func main() {
 	var containerID string
 	var imageName string
 	var imageId string
+	var ignoreFileName string
 	installDir, exists := os.LookupEnv("DF_INSTALL_DIR")
 	if exists {
 		dfInstallDir = installDir
@@ -51,6 +54,7 @@ func main() {
 	flag.StringVar(&containerID, "container-id", "", "\t Container ID (Only when node-type is container)")
 	flag.StringVar(&imageName, "image-name", "", "\t Image name (Only when node-type is container_image)")
 	flag.StringVar(&imageId, "image-id", "", "\t Image ID (Only when node-type is container_image)")
+	flag.StringVar(&ignoreFileName, "ignore-file-name", "", "\t Filename that contains entries to be ignored while sending out results ")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n\n", os.Args[0])
 		flag.PrintDefaults()
@@ -59,6 +63,14 @@ func main() {
 		fmt.Fprintf(os.Stderr, "E.g. ./deepfence_compliance_check -compliance-check-type \"gdpr\" -node-type \"container_image\" -image-name \"1234\" -image-id \"1234\" \n")
 	}
 	flag.Parse()
+
+	if ignoreFileName != "" {
+		ignoreValues = readIgnoreFile(ignoreFileName)
+		if len(ignoreValues) > 0 {
+			sort.Strings(ignoreValues)
+		}
+		os.Remove(ignoreFileName)
+	}
 
 	nodeID := ""
 	hostName := dfUtils.GetHostName()
@@ -182,7 +194,7 @@ func main() {
 	addToAllLog(command)
 	if err != nil {
 		errMsg := fmt.Sprintf(err.Error())
-		addToAllLog("Error from executing command: "+command+", error:"+errMsg)
+		addToAllLog("Error from executing command: " + command + ", error:" + errMsg)
 		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			addToAllLog("Error in sending Error status to console" + err.Error())
@@ -258,6 +270,22 @@ type benchItem struct {
 	Remediation       string
 	RemediationImpact string
 	TestCategory      string
+}
+
+func readIgnoreFile(fileName string) []string {
+	var retVal []string
+	filePtr, fileErr := os.Open(fileName)
+	if fileErr != nil {
+		fmt.Printf("Error while opening file %s Reason %s\n",
+			fileName, fileErr.Error())
+		return []string{}
+	}
+	defer filePtr.Close()
+	fileScanner := bufio.NewScanner(filePtr)
+	for fileScanner.Scan() {
+		retVal = append(retVal, fileScanner.Text())
+	}
+	return retVal
 }
 
 func addToAllLog(message string) {
