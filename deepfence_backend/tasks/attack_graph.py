@@ -236,7 +236,7 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                                 if not graph.has_edge(db, host_name):
                                     graph.add_edge(db, host_name)
         if cloud_resource["id"] == "aws_ecs_task":
-            if cloud_resource["service_name"] in publicly_accessible_services | \
+            if cloud_resource["service_name"] in publicly_accessible_services or \
             any(ser in cloud_resource['group'] for ser in publicly_accessible_services):
                 if not graph.has_node(cloud_resource["arn"]):
                     graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["id"])
@@ -300,35 +300,42 @@ def compute_azure_cloud_network_graph(cloud_resources, graph, include_nodes):
     # outbound_network_security_group = []
     # inbound_network_security_group = []
     for cloud_resource in cloud_resources:
-        if cloud_resource["resource_id"] == "azure_storage_account":
+        if cloud_resource["id"] == "azure_storage_account":
             if cloud_resource["allow_blob_public_access"]:
                 if not graph.has_node(cloud_resource["id"]):
                     graph.add_node(cloud_resource["name"],cloud_resource["name"],
-                                   node_type=cloud_resource["resource_id"])
+                                   node_type=cloud_resource["id"])
                 if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
                     graph.add_edge(incoming_internet_host_id, cloud_resource["name"])
     for cloud_resource in cloud_resources:
-        if cloud_resource["resource_id"] == "azure_storage_blob" \
-        | cloud_resource["resource_id"] == "azure_storage_table" \
-        | cloud_resource["resource_id"] == "azure_log_profile" :
+        if cloud_resource["id"] == "azure_storage_blob" \
+        or cloud_resource["id"] == "azure_storage_table" \
+        or cloud_resource["id"] == "azure_log_profile" :
             if graph.has_node(cloud_resource["storage_account_name"]) :
                 if not graph.has_node(cloud_resource["name"]):
-                    graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["resource_id"])
+                    graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["id"])
                 if not graph.has_edge(cloud_resource["storage_account_name"], cloud_resource["name"]):
                     graph.add_edge(cloud_resource["storage_account_name"], cloud_resource["name"])
-        elif cloud_resource["resource_id"] == "azure_compute_virtual_machine":
+        elif cloud_resource["id"] == "azure_compute_virtual_machine":
             if cloud_resource["public_ips"] is not None:
                 if not graph.has_node(cloud_resource["name"]):
-                    graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["resource_id"])
+                    graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["id"])
                 if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
                     graph.add_edge(incoming_internet_host_id, cloud_resource["name"])
-        elif cloud_resource["resource_id"] == "azure_mysql_server":
+        elif cloud_resource["id"] == "azure_mysql_server":
             if cloud_resource["public_network_access"] is not None:
                 if cloud_resource["public_network_access"] == "Enabled":
                     if not graph.has_node(cloud_resource["name"]):
-                        graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["resource_id"])
+                        graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["id"])
                     if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
-                        graph.add_edge(incoming_internet_host_id, cloud_resource["name"])            
+                        graph.add_edge(incoming_internet_host_id, cloud_resource["name"]) 
+        elif cloud_resource["id"] == "azure_storage_container":
+            if cloud_resource["public_access"] is not None:
+                if not graph.has_node(cloud_resource["name"]):
+                    graph.add_node(cloud_resource["name"], name=cloud_resource["name"], node_type=cloud_resource["id"])
+                if not graph.has_edge(incoming_internet_host_id, cloud_resource["name"]):
+                    graph.add_edge(incoming_internet_host_id, cloud_resource["name"]) 
+           
     return graph
 
 
