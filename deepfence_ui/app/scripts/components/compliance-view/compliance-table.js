@@ -5,7 +5,10 @@ import isNil from 'lodash/isNil';
 import { DfTableV2 } from '../common/df-table-v2';
 import pollable from '../common/header-view/pollable';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
-import { getComplianceCloudCredentialsAction, refreshCloudComplianceResourcesAction } from '../../actions/app-actions';
+import {
+  getComplianceCloudCredentialsAction,
+  refreshCloudComplianceResourcesAction,
+} from '../../actions/app-actions';
 import AppLoader from '../common/app-loader/app-loader';
 
 import { StartScanModalContent } from './start-scan-modal';
@@ -50,8 +53,8 @@ const ComplianceTable = withRouter(props => {
   };
 
   const doRefresh = nodeId => {
-    dispatch(refreshCloudComplianceResourcesAction({nodeId}))
-  }
+    dispatch(refreshCloudComplianceResourcesAction({ nodeId }));
+  };
 
   return (
     <div style={{ marginBottom: '75px', marginTop: '8px' }}>
@@ -74,7 +77,12 @@ const ComplianceTable = withRouter(props => {
   );
 });
 
-const AccountListTable = ({ nodes = [], cloudType, handleViewRules, doRefresh }) => {
+const AccountListTable = ({
+  nodes = [],
+  cloudType,
+  handleViewRules,
+  doRefresh,
+}) => {
   return (
     <DfTableV2
       noMargin
@@ -221,14 +229,39 @@ const AccountListTable = ({ nodes = [], cloudType, handleViewRules, doRefresh })
                   </button>
                 </Link>
                 {cell.row.original.cloud_provider?.length ? (
-                  <Link
-                    to={`/compliance/cloud-inventory/${cloudType}/${cell.row.original.node_id}`}
-                  >
+                  <>
+                    <Link
+                      to={`/compliance/cloud-inventory/${cloudType}/${cell.row.original.node_id}`}
+                    >
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        className="primary-btn"
+                        onClick={e => e.stopPropagation()}
+                        disabled={!cell.row.original.enabled}
+                        title={
+                          cell.row.original.enabled === false
+                            ? 'Account is inactive'
+                            : ''
+                        }
+                      >
+                        <i
+                          className="fa fa-list-ol"
+                          aria-hidden="true"
+                          style={{ paddingRight: '4px' }}
+                        />
+                        View inventory
+                      </button>
+                    </Link>
                     <button
                       type="button"
-                      tabIndex={-1}
                       className="primary-btn"
-                      onClick={e => e.stopPropagation()}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (cell.row.original.enabled === true) {
+                          doRefresh(cell.row.original.node_id);
+                        }
+                      }}
                       disabled={!cell.row.original.enabled}
                       title={
                         cell.row.original.enabled === false
@@ -237,37 +270,14 @@ const AccountListTable = ({ nodes = [], cloudType, handleViewRules, doRefresh })
                       }
                     >
                       <i
-                        className="fa fa-list-ol"
+                        className="fa fa-refresh"
                         aria-hidden="true"
                         style={{ paddingRight: '4px' }}
                       />
-                      View inventory
+                      Refresh
                     </button>
-                  </Link>
+                  </>
                 ) : null}
-                <button
-                  type="button"
-                  className="primary-btn"
-                  onClick={e => {
-                    e.stopPropagation();
-                    if (cell.row.original.enabled === true) {
-                      doRefresh(cell.row.original.node_id)
-                    }
-                  }}
-                  disabled={!cell.row.original.enabled}
-                  title={
-                    cell.row.original.enabled === false
-                      ? 'Account is inactive'
-                      : ''
-                  }
-                >
-                  <i
-                    className="fa fa-refresh"
-                    aria-hidden="true"
-                    style={{ paddingRight: '4px' }}
-                  />
-                  Refresh
-                </button>
               </div>
             );
           },
