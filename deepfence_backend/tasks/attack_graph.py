@@ -353,7 +353,7 @@ def compute_azure_cloud_network_graph(cloud_resources, graph, include_nodes):
                         graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["resource_id"])
                     if not graph.has_edge(incoming_internet_host_id, cloud_resource["arn"]):
                         graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
-        elif cloud_resource["id"] == "azure_compute_virtual_machine":
+        if "vm_id" in cloud_resource:
             if cloud_resource["public_ips"] is not None:
                 if not graph.has_node(cloud_resource["arn"]):
                     graph.add_node(cloud_resource["arn"], name=cloud_resource["name"], node_type=cloud_resource["id"])
