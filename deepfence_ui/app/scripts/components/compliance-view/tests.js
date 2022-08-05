@@ -322,15 +322,15 @@ class ComplianceTests extends React.PureComponent {
                 },
               },
               {
-                Header: 'Service',
+                Header: isCloud ? 'Service' : '',
                 accessor: '_source.service',
                 id: 'service',
-                width: 80,
+                width: isCloud ? 80 : 10,
                 minWidth: 80,
                 Cell: ({ value }) => {
                   return (
                     <div className="truncate" title={value}>
-                      {value || '-'}
+                      {value || ''}
                     </div>
                   );
                 },
