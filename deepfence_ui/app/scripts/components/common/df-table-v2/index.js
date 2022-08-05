@@ -77,18 +77,21 @@ function useColumnFilter({
       visibleColumns.push({
         Header: () => 'Action',
         id: 'df-multi-select-column',
-        Cell: ({ row }) => (
-          <div
-            className="center-text"
-            onClick={ev => ev.stopPropagation()}
-            aria-hidden="true"
-          >
-            <input
-              type="checkbox"
-              {...row.getToggleRowSelectedProps()}
-            />
-          </div>
-        ),
+        Cell: ({ row }) => {
+          const { indeterminate: _, ...toggleRowSelectedProps } = row.getToggleRowSelectedProps();
+          return (
+            <div
+              className="center-text"
+              onClick={ev => ev.stopPropagation()}
+              aria-hidden="true"
+            >
+              <input
+                type="checkbox"
+                {...toggleRowSelectedProps}
+              />
+            </div>
+          );
+        },
         disableCustomization: true,
         width: 100,
         disableResizing: true,
