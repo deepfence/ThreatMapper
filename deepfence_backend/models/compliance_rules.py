@@ -4,6 +4,7 @@ from sqlalchemy.schema import UniqueConstraint
 from models.compliance_rules_disabled import ComplianceRulesDisabled
 from utils.custom_exception import DFError
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import or_, and_
 
 
 class ComplianceRules(db.Model):
@@ -58,12 +59,14 @@ class ComplianceRules(db.Model):
             raise DFError("Sorry, Something went wrong", error=err)
 
     @staticmethod
-    def get_rules_with_status(compliance_check_type, cloud_provider):
+    def get_rules_with_status(compliance_check_type, cloud_provider, node_id):
         rules = db.session.query(ComplianceRules, ComplianceRulesDisabled).filter_by(
             compliance_check_type=compliance_check_type, cloud_provider=cloud_provider).order_by(
-            ComplianceRules.created_at.asc()).join(ComplianceRulesDisabled,
+            ComplianceRules.created_at.asc()).join(ComplianceRulesDisabled, and_(
                                                    ComplianceRulesDisabled.disabled_rule_id == ComplianceRules.id,
-                                                   isouter=True).all()
+                                                   or_(ComplianceRulesDisabled.node_id == None,
+                                                       ComplianceRulesDisabled.node_id == node_id)
+                                                   ), isouter=True).all()
         rule_objects = []
         if rules:
             for rule in rules:

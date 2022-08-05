@@ -959,9 +959,13 @@ def compliance_rules(compliance_check_type):
         raise InvalidUsage("Invalid cloud provider {0}".format(cloud_provider))
     if not compliance_check_type or compliance_check_type not in COMPLIANCE_CHECK_TYPES.get(cloud_provider, []):
         raise InvalidUsage("Invalid compliance check type {0}".format(compliance_check_type))
+    node_id = request.args.get("node_id", None)
+    if not node_id:
+        raise InvalidUsage("Node id is required {0}".format(node_id))
 
     rules = ComplianceRules.get_rules_with_status(compliance_check_type=compliance_check_type,
-                                                  cloud_provider=cloud_provider)
+                                                  cloud_provider=cloud_provider,
+                                                  node_id=node_id)
 
     if not rules:
         rules = []
@@ -1005,46 +1009,57 @@ def start_cloud_compliance_scan(node_id):
                 node.compliance_start_scan(compliance_check_type, None)
         return set_response(data={"message": "Scans queued successfully"}, status=200)
 
-    account = CloudComplianceNode.query.filter_by(node_id=node_id).first()
-    if not account:
-        set_response(data={"message": "node_id not found"}, status=404)
+    if node_id.endswith(";<cloud_org>"):
+        accounts = CloudComplianceNode.query.filter_by(org_account_id=node_id).all()
+    else:
+        accounts = [CloudComplianceNode.query.filter_by(node_id=node_id).first()]
+
+    if not accounts:
+        return set_response(data={"message": "node_id not found"}, status=404)
+
     cloud_provider = post_data.get("node_type", "")
-    scan_list = []
-    current_pending_scans = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id)
-    if current_pending_scans:
-        scan_list.extend(json.loads(current_pending_scans))
-    for compliance_check_type in post_data.get("compliance_check_type", []):
-        enabled_rules = ComplianceRules.get_rules_with_status(compliance_check_type=compliance_check_type,
-                                                              cloud_provider=cloud_provider)
-        controls = [compliance_rule.test_number for compliance_rule in
-                    list(filter(lambda x: x.is_enabled, enabled_rules))]
-        if controls:
-            time_time = time.time()
-            scan_id = node_id + "_" + compliance_check_type + "_" + datetime.now().strftime(
-                "%Y-%m-%dT%H:%M:%S") + ".000"
-            es_doc = {
-                "total_checks": 0,
-                "result": {},
-                "node_id": node_id,
-                "compliance_check_type": compliance_check_type,
-                "masked": "false",
-                "node_name": "",
-                "type": CLOUD_COMPLIANCE_LOGS_ES_TYPE,
-                "scan_status": "QUEUED",
-                "scan_message": "",
-                "scan_id": scan_id,
-                "time_stamp": int(time_time * 1000.0),
-                "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] +
-                              "Z"
-            }
-            ESConn.create_doc(CLOUD_COMPLIANCE_LOGS_INDEX, es_doc)
-            scan_list.append({
-                "scan_id": scan_id,
-                "scan_type": compliance_check_type,
-                "controls": controls,
-                "account_id": account.node_name
-            })
-    redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id, json.dumps(scan_list))
+
+    for account in accounts:
+        scan_list = []
+        current_pending_scans = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, account.node_id)
+
+        if current_pending_scans:
+            scan_list.extend(json.loads(current_pending_scans))
+
+        for compliance_check_type in post_data.get("compliance_check_type", []):
+            enabled_rules = ComplianceRules.get_rules_with_status(compliance_check_type=compliance_check_type,
+                                                                  cloud_provider=cloud_provider,
+                                                                  node_id=account.node_id)
+            controls = [compliance_rule.test_number for compliance_rule in
+                        list(filter(lambda x: x.is_enabled, enabled_rules))]
+            if controls:
+                time_time = time.time()
+                scan_id = account.node_id + "_" + compliance_check_type + "_" + datetime.now().strftime(
+                    "%Y-%m-%dT%H:%M:%S") + ".000"
+                es_doc = {
+                    "total_checks": 0,
+                    "result": {},
+                    "node_id": account.node_id,
+                    "compliance_check_type": compliance_check_type,
+                    "masked": "false",
+                    "node_name": "",
+                    "type": CLOUD_COMPLIANCE_LOGS_ES_TYPE,
+                    "scan_status": "QUEUED",
+                    "scan_message": "",
+                    "scan_id": scan_id,
+                    "time_stamp": int(time_time * 1000.0),
+                    "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] +
+                                  "Z"
+                }
+                ESConn.create_doc(CLOUD_COMPLIANCE_LOGS_INDEX, es_doc)
+                scan_list.append({
+                    "scan_id": scan_id,
+                    "scan_type": compliance_check_type,
+                    "controls": controls,
+                    "account_id": account.node_name
+                })
+        redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, account.node_id, json.dumps(scan_list))
+
     return set_response(data={"message": "Scans queued successfully"}, status=200)
 
 
@@ -1129,6 +1144,7 @@ def register_cloud_account():
     if monitored_account_ids:
         if not org_account_id:
             raise InvalidUsage("Org account id is needed for multi account setup")
+        monitored_account_ids[post_data["cloud_account"]] = post_data["node_id"]
         node = {
             "node_id": "{}-{};<cloud_org>".format(post_data["cloud_provider"], org_account_id),
             "cloud_provider": post_data["cloud_provider"],
@@ -1276,14 +1292,24 @@ def cloud_resources(account_id):
     :return:
     """
 
-    account = CloudComplianceNode.query.filter_by(node_id=account_id).first()
-    if not account:
+    if account_id.endswith(";<cloud_org>"):
+        accounts = CloudComplianceNode.query.filter_by(org_account_id=account_id).all()
+    else:
+        accounts = [CloudComplianceNode.query.filter_by(node_id=account_id).first()]
+
+    if not accounts:
         return set_response([])
 
-    cloud_resource_nodes_ = db.session.query(CloudResourceNode.node_type, 
-                                            func.count(CloudResourceNode.node_type).label('count')). \
-                                            filter_by(account_id=account_id). \
-                                            group_by(CloudResourceNode.node_type).all()
+    if account_id.endswith(";<cloud_org>"):
+        cloud_resource_nodes_ = db.session.query(CloudResourceNode.node_type,
+                                                 func.count(CloudResourceNode.node_type).label('count')). \
+                                                 filter(CloudResourceNode.account_id.in_(map(lambda x: x.node_id, accounts))). \
+                                                 group_by(CloudResourceNode.node_type).all()
+    else:
+        cloud_resource_nodes_ = db.session.query(CloudResourceNode.node_type,
+                                                 func.count(CloudResourceNode.node_type).label('count')). \
+                                                 filter_by(account_id=account_id). \
+                                                 group_by(CloudResourceNode.node_type).all()
     node_type_data_with_count = []  #
     cloud_resource_nodes_map = defaultdict(int)
 
@@ -1295,7 +1321,7 @@ def cloud_resources(account_id):
     # print("cloud_resource_nodes_map", cloud_resource_nodes_map)
     # node_type here is service name aws_s3
     for node_type in CSPM_RESOURCE_LABELS:
-        cp = account.cloud_provider
+        cp = accounts[0].cloud_provider
         if not node_type.startswith(cp):
             continue
         if not node_type:
@@ -1303,7 +1329,12 @@ def cloud_resources(account_id):
         service_resource_nodes_count = 0
         total_count_dict_node_id_wise = {"alarm": 0, "ok": 0, "info": 0, "skip": 0}
         for table_name in CSPM_RESOURCES_INVERTED.get(node_type, node_type):
-            cloud_resource_nodes = CloudResourceNode.query.filter_by(node_type=table_name, account_id=account_id).all()
+            if account_id.endswith(";<cloud_org>"):
+                cloud_resource_nodes = CloudResourceNode.query.filter_by(node_type=table_name). \
+                                           filter(CloudResourceNode.account_id.in_(map(lambda x: x.node_id, accounts))).all()
+            else:
+                cloud_resource_nodes = CloudResourceNode.query.filter_by(node_type=table_name,
+                                                                         account_id=account_id).all()
             if not cloud_resource_nodes:
                 continue
             number = request.args.get("number")
@@ -1354,7 +1385,7 @@ def cloud_resources(account_id):
                     }
                 }
             }
-            es_filter = {"scan_status": "COMPLETED", "node_id": account_id}
+            es_filter = {"scan_status": "COMPLETED", "node_id": list(map(lambda x: x.node_id, accounts))}
             aggs_response = ESConn.aggregation_helper(
                 CLOUD_COMPLIANCE_LOGS_INDEX,
                 es_filter,
@@ -1439,13 +1470,22 @@ def cloud_resources_type(account_id):
     Get list of resource available for cloud account id and resource_type
     :return:
     """
+
+    if account_id.endswith(";<cloud_org>"):
+        accounts = CloudComplianceNode.query.filter_by(org_account_id=account_id).all()
+    else:
+        accounts = [CloudComplianceNode.query.filter_by(node_id=account_id).first()]
+
+    if not accounts:
+        return set_response([])
+
     node_type = request.args.get("node_type")
     if not node_type:
         raise InvalidUsage("Missing node_type")
 
     cloud_resource_nodes = CloudResourceNode.query.filter(
-        CloudResourceNode.node_type.in_(CSPM_RESOURCES_INVERTED.get(node_type, node_type))).filter_by(
-        account_id=account_id).all()
+        CloudResourceNode.node_type.in_(CSPM_RESOURCES_INVERTED.get(node_type, node_type))).filter(
+        CloudResourceNode.account_id.in_(map(lambda x: x.node_id, accounts))).all()
     if not cloud_resource_nodes:
         return set_response([])
     number = request.args.get("number")
@@ -1501,7 +1541,7 @@ def cloud_resources_type(account_id):
             }
         }
     }
-    es_filter = {"scan_status": "COMPLETED", "node_id": account_id}
+    es_filter = {"scan_status": "COMPLETED", "node_id": list(map(lambda x: x.node_id, accounts))}
     aggs_response = ESConn.aggregation_helper(
         CLOUD_COMPLIANCE_LOGS_INDEX,
         es_filter,
