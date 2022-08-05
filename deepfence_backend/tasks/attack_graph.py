@@ -296,6 +296,8 @@ def compute_gcp_cloud_network_graph(cloud_resources, graph, include_nodes):
     if not cloud_resources:
         return graph
     for cloud_resource in cloud_resources:
+        if cloud_resource["arn"] not in include_nodes:
+            continue
         if cloud_resource["resource_id"] == "gcp_compute_instance":
             if "network_interfaces" in cloud_resource:
                 for network_interface in cloud_resources["network_interfaces"]:
