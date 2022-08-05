@@ -83,6 +83,7 @@ import AzureStorageAccounts from '../../../images/cloud-icons/azure/10086-icon-s
 import AzureStorageQueue from '../../../images/cloud-icons/azure/10840-icon-service-Storage-Queue.svg';
 import AzureNetworkSynapseAnalytics from '../../../images/cloud-icons/azure/00606-icon-service-Azure-Synapse-Analytics.svg';
 import AzureNetworkVirtualNetworks from '../../../images/cloud-icons/azure/10061-icon-service-Virtual-Networks.svg';
+import AzureStorageContainer from '../../../images/cloud-icons/azure/10839-icon-service-Storage-Container.svg';
 
 export const CloudIconsMapping = {
   aws: {
@@ -135,6 +136,7 @@ export const CloudIconsMapping = {
     aws_wafv2: AWSWAF,
     aws_fsx: AWSFSX,
     aws_dax: AWSDAX,
+    aws_ecr_public: AWSECR,
   },
   gcp: {
     generic: GCPGeneric,
@@ -186,5 +188,6 @@ export const CloudIconsMapping = {
     azure_storage_table: AzureStorageAccounts,
     azure_synapse: AzureNetworkSynapseAnalytics,
     azure_virtual_network: AzureNetworkVirtualNetworks,
+    azure_storage_container: AzureStorageContainer,
   },
 };
