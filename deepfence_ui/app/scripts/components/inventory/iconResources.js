@@ -56,6 +56,9 @@ import GCPKMS from '../../../images/cloud-icons/gcp/key_management_service.svg';
 import GCPLogging from '../../../images/cloud-icons/gcp/cloud_logging.svg';
 import GCPSQL from '../../../images/cloud-icons/gcp/cloud_sql.svg';
 import GCPStorage from '../../../images/cloud-icons/gcp/cloud_storage.svg';
+import GCPCloudFunctions from '../../../images/cloud-icons/gcp/cloud_functions.svg';
+import GCPCloudNetwork from '../../../images/cloud-icons/gcp/cloud_network.svg';
+import GCPProject from '../../../images/cloud-icons/gcp/project.svg';
 
 import AzureSQL from '../../../images/cloud-icons/azure/02390-icon-service-Azure-SQL.svg';
 import AzureUsers from '../../../images/cloud-icons/azure/10230-icon-service-Users.svg';
@@ -144,6 +147,13 @@ export const CloudIconsMapping = {
     gcp_logging: GCPLogging,
     gcp_sql: GCPSQL,
     gcp_storage: GCPStorage,
+    gcp_cloud_function: GCPCloudFunctions,
+    gcp_compute_network: GCPCloudNetwork,
+    gcp_compute_resource_policy: GCPGeneric,
+    gcp_iam_policy: GCPGeneric,
+    gcp_project: GCPProject,
+    gcp_pubsub_topic: GCPGeneric,
+    gcp_sa: GCPGeneric,
   },
   azure: {
     generic: AzureGeneric,
