@@ -1,4 +1,8 @@
 
+import GCPRootIcon from '../../../images/attack-graph-icons/graph-node-icons/gcp.png';
+import AWSRootIcon from '../../../images/attack-graph-icons/graph-node-icons/aws.png';
+import AzureRootIcon from '../../../images/attack-graph-icons/graph-node-icons/azure.png';
+import OthersRootIcon from '../../../images/attack-graph-icons/graph-node-icons/others.svg';
 import HostIcon from '../../../images/attack-graph-icons/graph-node-icons/server.svg';
 import ContainerIcon from '../../../images/attack-graph-icons/graph-node-icons/container.svg';
 import AWSS3BucketIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Amazon-Simple-Storage-Service_Bucket_48_Dark.svg';
@@ -11,12 +15,16 @@ import AWSLambdaFunctionIcon from '../../../images/attack-graph-icons/graph-node
 import AWSEC2NLBIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Elastic-Load-Balancing_Network-Load-Balancer_48_Dark.svg';
 import AWSEC2CLBIcon from '../../../images/attack-graph-icons/graph-node-icons/Res_Elastic-Load-Balancing_Classic-Load-Balancer_48_Dark.svg';
 import AWSECRRegistry from '../../../images/attack-graph-icons/graph-node-icons/Res_Amazon-Elastic-Container-Registry_Registry_48_Dark.svg';
-import GCPRootIcon from '../../../images/attack-graph-icons/graph-node-icons/gcp.png';
-import AWSRootIcon from '../../../images/attack-graph-icons/graph-node-icons/aws.png';
-import AzureRootIcon from '../../../images/attack-graph-icons/graph-node-icons/azure.png';
+import AWSIAMRole from '../../../images/attack-graph-icons/graph-node-icons/Res_AWS-Identity-Access-Management_Role_48_Dark.svg';
+import AWSEC2Instance from '../../../images/attack-graph-icons/graph-node-icons/Res_Amazon-EC2_Instance_48_Dark.svg';
+import AWSECSService from '../../../images/attack-graph-icons/graph-node-icons/Res_Amazon-Elastic-Container-Service_Service_48_Dark.svg';
 import AzureVirtualMachine from '../../../images/attack-graph-icons/graph-node-icons/10021-icon-service-Virtual-Machine.svg';
 import AzureStorageContainer from '../../../images/attack-graph-icons/graph-node-icons/10839-icon-service-Storage-Container.svg';
-import OthersRootIcon from '../../../images/attack-graph-icons/graph-node-icons/others.svg';
+import AzureStorageAccounts from '../../../images/attack-graph-icons/graph-node-icons/10086-icon-service-Storage-Accounts.svg';
+import AzureMysqlServer from '../../../images/attack-graph-icons/graph-node-icons/10122-icon-service-Azure-Database-MySQL-Server.svg';
+import GCPComputEngine from '../../../images/attack-graph-icons/graph-node-icons/gcp_compute_engine.svg';
+import GCPCloudStorage from '../../../images/attack-graph-icons/graph-node-icons/gcp_cloud_storage.svg';
+
 
 const mapping = {
   host: HostIcon,
@@ -36,9 +44,24 @@ const mapping = {
   aws_ec2_network_load_balancer: AWSEC2NLBIcon,
   aws_ec2_classic_load_balancer: AWSEC2CLBIcon,
   aws_ecrpublic_repository: AWSECRRegistry,
+  aws_ecr_repository: AWSECRRegistry,
+  aws_vpc_security_group_rule: AWSIAMRole,
+  aws_ecs_task_definition: AWSECSTaskIcon,
+  aws_ec2_instance: AWSEC2Instance,
+  aws_ecs_service: AWSECSService,
+
   // azure
   azure_compute_virtual_machine: AzureVirtualMachine,
-  azure_storage_container: AzureStorageContainer
+  azure_storage_container: AzureStorageContainer,
+  azure_storage_account: AzureStorageAccounts,
+  azure_storage_blob: AzureRootIcon,
+  azure_storage_table: AzureRootIcon,
+  azure_log_profile: AzureRootIcon,
+  azure_mysql_server: AzureMysqlServer,
+
+  // gcp
+  gcp_compute_instance: GCPComputEngine,
+  gcp_storage_bucket: GCPCloudStorage
 };
 
 export function getAssetIcon(id) {

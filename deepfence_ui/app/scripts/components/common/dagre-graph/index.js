@@ -209,6 +209,12 @@ const labelCfg = {
     fill: 'rgb(192, 192, 192)',
     fontFamily: "Source Sans Pro",
     fontSize: 6,
+    background: {
+      fill: '#ffffff',
+      fillOpacity: 0.1,
+      padding: [1, 1, 1, 1],
+      radius: 1,
+    },
   },
 };
 
