@@ -14,7 +14,6 @@ import { dateTimeFormat } from '../../utils/time-utils';
 import pollable from '../common/header-view/pollable';
 import { ComplianceTestModal } from './test-modal';
 import { DfTableV2 } from '../common/df-table-v2';
-import AppLoader from '../common/app-loader/app-loader';
 
 class ComplianceTests extends React.PureComponent {
   constructor(props) {
@@ -31,6 +30,7 @@ class ComplianceTests extends React.PureComponent {
     this.state = {
       testData: null,
       isTestModalOpen: false,
+      page: 0,
     };
     this.multiSelectOptions = [
       {
@@ -196,6 +196,9 @@ class ComplianceTests extends React.PureComponent {
     this.tableChangeHandler({
       page: pageNumber,
     });
+    this.setState({
+      page: pageNumber
+    });
   }
 
   getComplianceTest(params = {}) {
@@ -243,6 +246,7 @@ class ComplianceTests extends React.PureComponent {
 
   render() {
     const { test = [], isLoading } = this.props;
+    const { page } = this.state;
     const tests = [];
     test.hits?.forEach(t => {
       tests.push(t);
@@ -263,6 +267,7 @@ class ComplianceTests extends React.PureComponent {
             manual
             totalRows={test.total}
             data={tests}
+            page={page}
             columnCustomizable
             multiSelectOptions={{
               actions: this.multiSelectOptions,
