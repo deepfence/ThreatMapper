@@ -377,7 +377,7 @@ def map_cloud_account_arn_to_table(*args):
             region = scan_doc.get("_source").get("region", "")
             if not region:
                 region = "global"
-            service_name = scan_doc.get("_source").get("service")
+            service_name =scan_doc.get("_source").get("cloud_provider")+"_"+scan_doc.get("_source").get("service").lower()
             cloud_resource_nodes_count = CloudResourceNode.query.filter_by(node_id=resource).all()
             # print("resource={} region={} service_name={} cloud_resource_nodes_count={}".format(resource,region,service_name,len(cloud_resource_nodes_count)))
             # already exists
@@ -388,15 +388,15 @@ def map_cloud_account_arn_to_table(*args):
                 elif not cloud_resource_nodes_count[0].service_name:
                     valid_service_name = False
                     for service, table_names in CSPM_RESOURCES_INVERTED.items():
-                        if service_name.lower() == service.split("_")[-1] and cloud_resource_nodes_count[0].node_type in CSPM_RESOURCES_INVERTED.get(service):
+                        if service_name.lower() == service and cloud_resource_nodes_count[0].node_type in CSPM_RESOURCES_INVERTED.get(service):
                             valid_service_name = True
                     if not valid_service_name:
                         continue
                     # print("2 already exists same service_name: {} cloud_resource_nodes_count: {}".format(service_name,cloud_resource_nodes_count[0].service_name))
                     cloud_resource_nodes_count[0].service_name = service_name
                     cloud_resource_nodes_count[0].save()
-                else:
-                    create_resource_node_aws(scan_doc, service_name, region)
+                # else:
+                #     create_resource_node_aws(scan_doc, service_name, region)
             # multiple resources with different service names
             elif len(cloud_resource_nodes_count) > 1:
                 next_resource = next(
@@ -417,7 +417,7 @@ def create_resource_node_aws(doc, service_name, region):
     cloud_provider = doc.get("_source").get("cloud_provider")
     node_type = cloud_provider
     for service, table_names in CSPM_RESOURCES_INVERTED.items():
-        if service_name.lower() == service.split("_")[-1]:
+        if service_name.lower() == service:
             node_type = table_names[0]
     cloud_resource_node_data = CloudResourceNode(
         node_id=doc.get("_source").get("resource"),

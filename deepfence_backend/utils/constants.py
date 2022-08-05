@@ -333,7 +333,10 @@ CSPM_RESOURCES = {
     "gcp_pubsub_topic": "gcp_pubsub_topic",
     "gcp_service_account": "gcp_sa",
     "gcp_sql_database_instance": "gcp_sql",
-    "gcp_storage_bucket": "gcp_storage"
+    "gcp_storage_bucket": "gcp_storage",
+    "gcp_compute_disk": "gcp_compute_disk",
+    "gcp_compute_firewall": "gcp_compute_firewall",
+    "gcp_compute_subnetwork": "gcp_compute_subnetwork"
 }
 
 CSPM_RESOURCES_INVERTED = defaultdict(list)
@@ -418,18 +421,21 @@ CSPM_RESOURCE_LABELS = {
     "azure_virtual_network": "Azure Virtual Network",
     "azure_storage_container": "Azure Storage Container",
     # gcp
-    'gcp_cloud_function': 'GCP Cloud Functions',
-    'gcp_compute': 'GCP VM Instance',
-    'gcp_compute_network': 'GCP VPC Network',
-    'gcp_compute_resource_policy': 'GCP Compute Resource Policy',
-    'gcp_iam': 'GCP IAM Role',
-    'gcp_iam_policy': 'GCP IAM Policy',
-    'gcp_logging': 'GCP Log Buckets',
-    'gcp_project': 'GCP Project',
-    'gcp_pubsub_topic': 'GCP Cloud Pub/Sub',
-    'gcp_sa': 'GCP Service Account',
-    'gcp_sql': 'GCP Cloud SQL Instance',
-    'gcp_storage': 'GCP Cloud Storage Buckets'
+    "gcp_cloud_function": "GCP Cloud Functions",
+    "gcp_compute": "GCP VM Instance",
+    "gcp_compute_network": "GCP VPC Network",
+    "gcp_compute_resource_policy": "GCP Compute Resource Policy",
+    "gcp_iam": "GCP IAM Role",
+    "gcp_iam_policy": "GCP IAM Policy",
+    "gcp_logging": "GCP Log Buckets",
+    "gcp_project": "GCP Project",
+    "gcp_pubsub_topic": "GCP Cloud Pub/Sub",
+    "gcp_sa": "GCP Service Account",
+    "gcp_sql": "GCP Cloud SQL Instance",
+    "gcp_storage": "GCP Cloud Storage Buckets",
+    "gcp_compute_disk": "GCP Compute Disk",
+    "gcp_compute_firewall" : "GCP Compute Firewall",
+    "gcp_compute_subnetwork": "GCP Compute SubNet"
 }
 
 CVE_SCAN_TYPES = ["base", "java", "python", "ruby", "php", "javascript", "rust", "golang", "dotnet"]
