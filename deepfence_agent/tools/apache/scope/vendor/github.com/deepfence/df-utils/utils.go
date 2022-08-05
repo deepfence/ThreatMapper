@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/hostname"
 	"io/ioutil"
 	"net"
@@ -23,7 +24,17 @@ type PolicyAction string
 
 const (
 	maxIdleConnsPerHost = 1024
+	HostMountDir        = "/fenced/mnt/host/"
+	CheckTypeHIPAA      = "hipaa"
+	CheckTypePCI        = "pci"
+	CheckTypeNIST       = "nist"
+	CheckTypeGDPR       = "gdpr"
 )
+
+type ComplianceScan struct {
+	Code  string `json:"code"`
+	Label string `json:"label"`
+}
 
 func RemoveLastCharacter(s string) string {
 	r := []rune(s)
@@ -275,12 +286,16 @@ func InArray(val interface{}, array interface{}) (exists bool, index int) {
 	return
 }
 
-func ExecuteCommand(commandStr string) (string, error) {
+func ExecuteCommand(commandStr string, envVars map[string]string) (string, error) {
 	cmd := exec.Command("/bin/sh", "-c", commandStr)
 	var commandOut bytes.Buffer
 	var commandErr bytes.Buffer
 	cmd.Stdout = &commandOut
 	cmd.Stderr = &commandErr
+	cmd.Env = os.Environ()
+	for key, value := range envVars {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	}
 	err := cmd.Run()
 	if err != nil {
 		return strings.TrimSpace(commandErr.String()), err
@@ -293,6 +308,14 @@ func ExecuteCommandInBackground(commandStr string) error {
 	err := cmd.Start()
 	go WaitFunction(cmd)
 	return err
+}
+
+func GetContainerNameFromID(containerID string) (string, error) {
+	cName, err := ExecuteCommand(fmt.Sprintf("docker inspect --format=\"{{.Name}}\" %s", containerID), nil)
+	if err != nil {
+		return "", err
+	}
+	return cName, nil
 }
 
 func IsThisHostUIMachine() bool {
@@ -334,6 +357,20 @@ func GetRealHostName() string {
 		}
 	}
 	return hostName
+}
+
+func GetTimestamp() int64 {
+	return time.Now().UTC().UnixNano() / 1000000
+}
+
+func GetDatetimeNow() string {
+	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
+}
+
+func AppendTextToFile(fileObj *os.File, text string) {
+	if _, err := fileObj.WriteString(text); err != nil {
+		logrus.Error(err.Error())
+	}
 }
 
 func RoutedInterface(network string, flags net.Flags) *net.Interface {
