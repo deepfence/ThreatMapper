@@ -258,7 +258,7 @@ CSPM_RESOURCES = {
     "aws_ec2_instance": "aws_ec2",
     "aws_ec2_regional_settings": "aws_ec2",
     "aws_ecr_repository": "aws_ecr",
-    "aws_ecr_publicrepository": "aws_ecr_public",
+    "aws_ecrpublic_repository": "aws_ecr_public",
     "aws_sqs_queue": "aws_sqs",
     "aws_redshift_cluster": "aws_redshift",
     "aws_redshift_parameter_group": "aws_redshift",
