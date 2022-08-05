@@ -60,7 +60,7 @@ const complianceProviders = [
   },
   {
     label: 'Google Cloud',
-    value: 'google_cloud',
+    value: 'gcp',
   },
   {
     label: 'Azure',
@@ -386,7 +386,7 @@ const Reports = props => {
       checkTypesDropdownList = azureCheckType;
     } else if (provider.value === 'linux') {
       checkTypesDropdownList = linuxCheckType;
-    } else if (provider.value === 'google_cloud') {
+    } else if (provider.value === 'gcp') {
       checkTypesDropdownList = gcpCheckType;
     }
     // } else if (provider.value === 'k8s') {

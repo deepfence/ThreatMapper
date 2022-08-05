@@ -105,7 +105,7 @@ module "cloud-compliance_example_single-project" {
       ) : null}
       <ComplianceStats />
 
-      <ComplianceTable cloudType="google_cloud" />
+      <ComplianceTable cloudType="gcp" />
     </div>
   );
 });

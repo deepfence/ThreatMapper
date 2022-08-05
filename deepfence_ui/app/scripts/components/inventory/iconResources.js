@@ -133,7 +133,7 @@ export const CloudIconsMapping = {
     aws_fsx: AWSFSX,
     aws_dax: AWSDAX,
   },
-  google_cloud: {
+  gcp: {
     generic: GCPGeneric,
     gcp_appengine: GCPAppEngine,
     gcp_bigquery: GCPBigQuery,
