@@ -71,8 +71,8 @@ class ComplianceDetailsView extends React.PureComponent {
       cloudType = 'aws';
     } else if (scanId.includes('azure')) {
       cloudType = 'azure';
-    } else if (scanId.includes('google_cloud')) {
-      cloudType = 'google_cloud';
+    } else if (scanId.includes('gcp')) {
+      cloudType = 'gcp';
     } else if (scanType === 'linux') {
       cloudType = 'linux';
     } else if (scanType === 'kubernetes') {

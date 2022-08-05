@@ -306,7 +306,7 @@ const checkTypes = {
       displayName: 'NIST',
     },
   ],
-  google_cloud: [
+  gcp: [
     {
       id: 'cis',
       displayName: 'CIS',

@@ -153,7 +153,7 @@ const allIcons = {
   dropbox,
   gcloud,
   digital_ocean: digitalocean,
-  google_cloud: gcloud,
+  gcp: gcloud,
   digitalocean,
   github,
   gitlab,

@@ -22,7 +22,7 @@ class ComplianceRulesTable extends React.Component {
 
     if (props.cloudType === 'aws') {
       activeTab = 'cis';
-    } else if (props.cloudType === 'google_cloud') {
+    } else if (props.cloudType === 'gcp') {
       activeTab = 'cis';
     } else if (props.cloudType === 'azure') {
       activeTab = 'cis';
@@ -257,7 +257,7 @@ class ComplianceRulesTable extends React.Component {
 
     if (cloudType === 'aws') {
       tabCategoryList = awsCheckTypes;
-    } else if (cloudType === 'google_cloud') {
+    } else if (cloudType === 'gcp') {
       tabCategoryList = gcpCheckTypes;
     } else if (cloudType === 'azure') {
       tabCategoryList = azureCheckType;

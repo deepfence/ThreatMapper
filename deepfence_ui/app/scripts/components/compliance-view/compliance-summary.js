@@ -97,7 +97,7 @@ class ComplianceSummary extends React.PureComponent {
                   ))}
                 </ul>
               )}
-              {match.params.cloudtype === 'google_cloud' && (
+              {match.params.cloudtype === 'gcp' && (
                 <ul>
                   {GCPComplianceViewMenu.map(complianceView => (
                     <Route
@@ -187,7 +187,7 @@ class ComplianceSummary extends React.PureComponent {
                   render={props => <complianceView.component {...props} />}
                 />
               ))}
-            {match.params.cloudtype === 'google_cloud' &&
+            {match.params.cloudtype === 'gcp' &&
               GCPComplianceViewMenu.map(complianceView => (
                 <Route
                   key={complianceView.id}
@@ -234,7 +234,7 @@ class ComplianceSummary extends React.PureComponent {
                 )}
               />
             )}
-            {match.params.cloudtype === 'google_cloud' && (
+            {match.params.cloudtype === 'gcp' && (
               <Route
                 exact
                 path={match.path}

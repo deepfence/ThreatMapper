@@ -58,7 +58,7 @@ class PCISummary extends React.PureComponent {
     } = this.props;
     const cloudType = window.location.hash.split('/').reverse()[3];
     let scanType = '';
-    if(cloudType === 'aws' || cloudType === 'azure' || cloudType === 'google_cloud') {
+    if(cloudType === 'aws' || cloudType === 'azure' || cloudType === 'gcp') {
       scanType = 'cloud'
     }
     else if(cloudType === 'kubernetes' || cloudType === 'linux') {
@@ -73,7 +73,7 @@ class PCISummary extends React.PureComponent {
             <h4>Compliance tests</h4>
             <h5>Overview of the overall compliance</h5>
           </div>
-          {scanTimeStamp !== undefined && 
+          {scanTimeStamp !== undefined &&
             <div style={{display: 'flex', flexDirection: 'row-reverse', paddingTop: '23px'}}>Last scanned on {dateTimeFormat(scanTimeStamp)}</div>
           }
           <div className="report">

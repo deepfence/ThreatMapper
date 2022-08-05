@@ -24,7 +24,7 @@ const menu = [
     component: AwsTerraFormScript,
   },
   {
-    id: 'google_cloud',
+    id: 'gcp',
     displayName: 'Google Cloud',
     image: GCP_LOGO,
     component: GcpTerraFormScript,

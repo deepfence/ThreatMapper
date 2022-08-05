@@ -7,7 +7,7 @@ from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE
     CLOUD_AZURE, ATTACK_GRAPH_CACHE_KEY, ATTACK_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
     CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_INDEX, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, SECRET_SCAN_LOGS_INDEX, \
     TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
-    SECRET_SCAN_INDEX, CLOUD_GCP2
+    SECRET_SCAN_INDEX
 import networkx as nx
 from collections import defaultdict
 import json
@@ -15,8 +15,8 @@ import json
 incoming_internet_host_id = "in-theinternet"
 outgoing_internet_host_id = "out-theinternet"
 pvt_cloud = "others"  # other cloud, non cloud
-CLOUD_PROVIDERS = [CLOUD_AWS, CLOUD_GCP2, CLOUD_AZURE]
-ALL_CLOUD_PROVIDERS = [CLOUD_AWS, CLOUD_GCP2, CLOUD_AZURE, pvt_cloud]
+CLOUD_PROVIDERS = [CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE]
+ALL_CLOUD_PROVIDERS = [CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE, pvt_cloud]
 # Get vulnerabilities, compliance mis-config in the past 90 days
 number = 90
 time_unit = "d"
@@ -418,7 +418,7 @@ def _compute_attack_graph():
     include_nodes = {**vulnerability_count_map, **compliance_count_map,
                      **cloud_compliance_count_map, **secrets_count_map}
 
-    graph = {CLOUD_AWS: nx.DiGraph(), CLOUD_GCP2: nx.DiGraph(), CLOUD_AZURE: nx.DiGraph(), pvt_cloud: nx.DiGraph()}
+    graph = {CLOUD_AWS: nx.DiGraph(), CLOUD_GCP: nx.DiGraph(), CLOUD_AZURE: nx.DiGraph(), pvt_cloud: nx.DiGraph()}
     for cloud_provider, _ in graph.items():
         graph[cloud_provider].add_node(incoming_internet_host_id, name="The Internet", node_type="")
         graph[cloud_provider].add_node(outgoing_internet_host_id, name="The Internet", node_type="")
@@ -428,8 +428,8 @@ def _compute_attack_graph():
         try:
             if k.startswith(CLOUD_AWS):
                 graph[CLOUD_AWS] = compute_aws_cloud_network_graph(json.loads(v), graph[CLOUD_AWS], include_nodes)
-            elif k.startswith(CLOUD_GCP2):
-                graph[CLOUD_GCP2] = compute_gcp_cloud_network_graph(json.loads(v), graph[CLOUD_GCP2], include_nodes)
+            elif k.startswith(CLOUD_GCP):
+                graph[CLOUD_GCP] = compute_gcp_cloud_network_graph(json.loads(v), graph[CLOUD_GCP], include_nodes)
             elif k.startswith(CLOUD_AZURE):
                 graph[CLOUD_AZURE] = compute_azure_cloud_network_graph(json.loads(v), graph[CLOUD_AZURE], include_nodes)
         except nx.NetworkXNoPath:
@@ -441,8 +441,8 @@ def _compute_attack_graph():
     topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
     topology_containers = fetch_topology_data(NODE_TYPE_CONTAINER, format="scope")
     host_cloud = {}
-    cloud_vms = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP2: {}, pvt_cloud: {}}
-    cloud_containers = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP2: {}, pvt_cloud: {}}
+    cloud_vms = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP: {}, pvt_cloud: {}}
+    cloud_containers = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP: {}, pvt_cloud: {}}
     for node_id, node_details in topology_hosts.items():
         node_name = node_details.get("name", node_details.get("label"))
         if node_details.get("pseudo", False):
@@ -458,7 +458,7 @@ def _compute_attack_graph():
         if cp not in CLOUD_PROVIDERS:
             cp = pvt_cloud
         if cp == CLOUD_GCP:
-            cp = CLOUD_GCP2
+            cp = CLOUD_GCP
         host_cloud[node_details.get("label", "")] = cp
         cloud_vms[cp][node_id] = node_details
     for node_id, node_details in topology_containers.items():
@@ -482,7 +482,7 @@ def _compute_attack_graph():
     attack_graph = {
         CLOUD_AWS: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
         CLOUD_AZURE: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
-        CLOUD_GCP2: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
+        CLOUD_GCP: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
         pvt_cloud: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}}
     }
     attack_graph_paths = defaultdict(dict)

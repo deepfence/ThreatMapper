@@ -22,7 +22,7 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
     {{- else if eq "azure" .Values.cloudProvider }}
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    {{- else if eq "google_cloud" .Values.cloudProvider }}
+    {{- else if eq "gcp" .Values.cloudProvider }}
     networking.gke.io/load-balancer-type: "Internal"
     cloud.google.com/load-balancer-type: "Internal"
     {{- else if eq "ibm_cloud" .Values.cloudProvider }}
@@ -125,7 +125,7 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
     {{- else if eq "azure" .Values.cloudProvider }}
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    {{- else if eq "google_cloud" .Values.cloudProvider }}
+    {{- else if eq "gcp" .Values.cloudProvider }}
     networking.gke.io/load-balancer-type: "Internal"
     cloud.google.com/load-balancer-type: "Internal"
     {{- else if eq "ibm_cloud" .Values.cloudProvider }}
