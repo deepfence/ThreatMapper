@@ -2566,8 +2566,8 @@ export function updateComplianceTests(params = {}) {
 }
 
 export function getComplianceRules(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, cloudType} = params;
-  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/controls?cloud_provider=${cloudType}`;
+  const { lucene_query: luceneQuery = [], checkType, cloudType, nodeId} = params;
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/controls?cloud_provider=${cloudType}&node_id=${nodeId}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',

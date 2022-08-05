@@ -44,11 +44,12 @@ class RulesTable extends React.Component {
   }
 
   componentDidMount() {
-    const { cloudType, checkType } = this.props;
+    const { cloudType, checkType, nodeId } = this.props;
     this.props.dispatch(
       getComplianceRulesAction({
         cloudType,
         checkType,
+        nodeId,
       })
     );
     const { registerActions } = this.props;
@@ -84,12 +85,13 @@ class RulesTable extends React.Component {
   }
 
   UNSAFE_componentWillReceiveProps(newProps) {
-    const { info: newInfo, error: newError, cloudType, checkType } = newProps;
+    const { info: newInfo, error: newError, cloudType, checkType, nodeId } = newProps;
     if (this.props.checkType !== newProps.checkType) {
       this.props.dispatch(
         getComplianceRulesAction({
           cloudType,
           checkType,
+          nodeId
         })
       );
     }
@@ -135,7 +137,7 @@ class RulesTable extends React.Component {
       checkType,
     } = this.props;
     return updateAction(params).then(
-      this.props.dispatch(getComplianceRulesAction({ cloudType, checkType }))
+      this.props.dispatch(getComplianceRulesAction({ cloudType, checkType, nodeId }))
     );
   }
 
