@@ -73,11 +73,11 @@ provider "google-beta" {
    region  = "<REGION_ID>; ex. asia-east1"
 }
 
-module "cloud-compliance_example_single-project" {
-  source              = "deepfence/cloud-compliance/gcp//examples/single-project"
+module "cloud-scanner_example_single-project" {
+  source              = "deepfence/cloud-scanner/gcp//examples/single-project"
   version             = "0.1.0"
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port   = "<Console port> eg. 443"
+  mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 }
 `}</pre>

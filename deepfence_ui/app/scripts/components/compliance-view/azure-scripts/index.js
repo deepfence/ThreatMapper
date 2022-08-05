@@ -66,11 +66,12 @@ export const AzureTerraFormScript = withRouter(props => {
   features {}
   subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
 }
-module "cloud-compliance_example_single-subscription" {
-  source              = "deepfence/cloud-compliance/azure//examples/single-subscription"
+
+module "cloud-scanner_example_single-subscription" {
+  source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
   version             = "0.1.0"
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port   = "<Console port> eg. 443"
+  mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 }
 `}</pre>
