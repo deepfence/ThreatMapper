@@ -167,8 +167,7 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
         if cloud_resource["id"] == "aws_rds_db_instance":
             if cloud_resource["arn"] not in include_nodes:
                 continue
-            host_name = cloud_resource["name"]
-            db_instance = cloud_resource["db_instance_identifier"] + ";<db>"
+            db_instance = cloud_resource["arn"]
             if cloud_resource["publicly_accessible"] is True:
                 if not graph.has_node(db_instance):
                     graph.add_node(db_instance, name=cloud_resource["name"], node_type=cloud_resource["id"])
@@ -303,7 +302,7 @@ def compute_gcp_cloud_network_graph(cloud_resources, graph, include_nodes):
                 for network_interface in cloud_resource["network_interfaces"]:
                     if "accessConfigs" in network_interface:
                         for config in network_interface["accessConfigs"]:
-                            if config.get("natIp"):
+                            if config.get("natIP"):
                                 if not graph.has_node(cloud_resource["arn"]):
                                     graph.add_node(cloud_resource["arn"], name=cloud_resource["name"],
                                                    node_type=cloud_resource["resource_id"])
