@@ -831,13 +831,21 @@ def cloud_compliance_node_scans():
         es_index, filters, start_index, sort_order, number=number,
         time_unit=TIME_UNIT_MAPPING.get(time_unit), size=page_size, lucene_query_string=lucene_query_string)
     if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
-        for scan in es_resp.get("hits", []):
+        added_scan_id = {}
+        hits = es_resp.get("hits", [])
+        es_resp["hits"] = []
+        for scan in hits:
             source = scan.get("_source", {})
+            if added_scan_id.get(source.get("scan_id", ""), False):
+                continue
+            else:
+                added_scan_id[source.get("scan_id", "")] =  True
             result = source.get("result", {})
             total = result.get("pass", 0) + result.get("warn", 0) + result.get("note", 1)
             checks_passed = result.get("pass", 0)
             total = 1 if total == 0 else total
             source["result"]["compliance_percentage"] = (checks_passed * 100) / total
+            es_resp.get("hits").append(scan)
     es_resp["node_type"] = request.args.get("node_type", "")
     return set_response(data=es_resp)
 
