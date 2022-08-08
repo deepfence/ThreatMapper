@@ -132,7 +132,6 @@ function VulnerabilityTable({ nodeData }) {
         data={nodeIssues?.hits ?? []}
         totalRows={nodeIssues?.total ?? 0}
         defaultPageSize={PAGE_SIZE}
-        page={page}
         onPageChange={page => {
           setPage(page);
         }}
@@ -315,7 +314,6 @@ function ComplianceTable({ nodeData }) {
         data={nodeIssues?.hits ?? []}
         totalRows={nodeIssues?.total ?? 0}
         defaultPageSize={PAGE_SIZE}
-        page={page}
         onPageChange={page => {
           setPage(page);
         }}
@@ -488,7 +486,6 @@ function SecretsTable({ nodeData }) {
         data={nodeIssues?.hits ?? []}
         totalRows={nodeIssues?.total ?? 0}
         defaultPageSize={PAGE_SIZE}
-        page={page}
         onPageChange={page => {
           setPage(page);
         }}
