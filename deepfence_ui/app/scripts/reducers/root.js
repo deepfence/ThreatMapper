@@ -1649,33 +1649,48 @@ export function rootReducer(state = initialState, action) {
 
     case ActionTypes.START_SCAN_COMPLIANCE_SUCCESS: {
       const {
-        payload: { data },
+        payload: { data, error },
       } = action;
-      state = state.set('compliance_start_scan', data.message);
+      if (error) {
+        state = state.set('compliance_start_scan', null);
+        state = state.set('compliance_start_scan_error', error?.message ?? error);
+      } else {
+        state = state.set('compliance_start_scan', data?.message ?? 'Compliance scan started.');
+        state = state.set('compliance_start_scan_error', null);
+      }
       return state;
     }
 
     case ActionTypes.START_SCAN_COMPLIANCE_FAILURE: {
-      const {
-        payload: { data },
-      } = action;
-      state = state.set('compliance_start_scan_error', data.error);
+      state = state.set('compliance_start_scan_error', 'An error occured starting the scan. Please check the logs for detailed error.');
       return state;
     }
 
     case ActionTypes.COMPLIANCE_SCAN_SCHEDULE_SUCCESS: {
       const {
-        payload: { data },
+        payload: { data, error },
       } = action;
-      state = state.set('compliance_schedule_scan', data.message);
+      if (error) {
+        state = state.set('compliance_schedule_scan', null);
+        state = state.set('compliance_schedule_scan_error', error?.message ?? error);
+      } else {
+        state = state.set('compliance_schedule_scan', data?.message ?? 'Compliance scan started.');
+        state = state.set('compliance_schedule_scan_error', null);
+      }
       return state;
     }
 
     case ActionTypes.COMPLIANCE_SCAN_SCHEDULE_FAILURE: {
-      const {
-        payload: { data },
-      } = action;
-      state = state.set('compliance_schedule_scan_error', data.error);
+      state = state.set('compliance_schedule_scan_error', 'An error occured starting the scan. Please check the logs for detailed error.');
+      return state;
+    }
+
+    case ActionTypes.CLEAR_START_COMPLIANCE_SCAN_ERROR: {
+      state = state.set('compliance_schedule_scan_error', null);
+      state = state.set('compliance_start_scan_error', null);
+      state = state.set('compliance_schedule_scan', null);
+      state = state.set('compliance_start_scan', null);
+      debugger;
       return state;
     }
 

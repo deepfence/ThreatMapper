@@ -2,6 +2,16 @@
 @import './../../../../styles/variables';
 
 .modalContentWrapper {
+  .errorMessage {
+    width: 100%;
+    color: $color-error;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid $color-error;
+    padding: 4px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
   .tabFormWrapper {
     display: flex;
     gap: 8px;

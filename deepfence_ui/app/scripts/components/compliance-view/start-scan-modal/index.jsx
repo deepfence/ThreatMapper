@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Tippy from '@tippyjs/react';
 import { useDispatch, useSelector } from 'react-redux';
 import RulesTable from './rules-table';
@@ -9,6 +9,7 @@ import {
   startComplianceScanAction,
   toaster,
   complianceScheduleScanAction,
+  clearStartComplianceScanErrrorAction,
 } from '../../../actions/app-actions';
 
 export const StartScanModalContent = props => {
@@ -18,12 +19,30 @@ export const StartScanModalContent = props => {
   const [intervalValue, setIntervalValue] = useState('');
   const dispatch = useDispatch();
 
-  const { scanMessage, scheduleScanMessage } = useSelector(state => {
+  const { scanMessage, scheduleScanMessage, scanErrorMessage, ScheduledScanErrorMessage } = useSelector(state => {
     return {
       scanMessage: state.get('compliance_start_scan'),
-      scheduleScanMessage: state.get('compliance_schedule_scan_error'),
+      scheduleScanMessage: state.get('compliance_schedule_scan'),
+      scanErrorMessage: state.get('compliance_start_scan_error'),
+      ScheduledScanErrorMessage: state.get('compliance_schedule_scan_error'),
     };
   });
+
+  useEffect(() => {
+    if (scanMessage) {
+      dispatch(toaster(scanMessage));
+      dispatch(hideModal());
+      dispatch(clearStartComplianceScanErrrorAction());
+    }
+  }, [scanMessage]);
+
+  useEffect(() => {
+    if (scheduleScanMessage) {
+      dispatch(toaster(scheduleScanMessage));
+      dispatch(hideModal());
+      dispatch(clearStartComplianceScanErrrorAction());
+    }
+  }, [scheduleScanMessage]);
 
   const startScan = () => {
     if (selectedCheckTypeIds.length) {
@@ -34,8 +53,6 @@ export const StartScanModalContent = props => {
           checkTypes: selectedCheckTypeIds,
         })
       );
-      dispatch(hideModal());
-      dispatch(toaster(scanMessage));
     }
   };
 
@@ -49,13 +66,18 @@ export const StartScanModalContent = props => {
           scheduleScanIntervel: intervalValue,
         })
       );
-      dispatch(hideModal());
-      dispatch(toaster(scheduleScanMessage));
     }
   };
 
   return (
     <div className={styles.modalContentWrapper}>
+      {
+        scanErrorMessage || ScheduledScanErrorMessage ? (
+          <div className={styles.errorMessage}>
+            {scanErrorMessage || ScheduledScanErrorMessage}
+          </div>
+        ) : null
+      }
       <div className={styles.tabFormWrapper}>
         <ComplianceTypeTabs
           cloudType={cloudType}

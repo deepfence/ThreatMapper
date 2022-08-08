@@ -6,6 +6,7 @@ import { DfTableV2 } from '../common/df-table-v2';
 import pollable from '../common/header-view/pollable';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
 import {
+  clearStartComplianceScanErrrorAction,
   getComplianceCloudCredentialsAction,
   refreshCloudComplianceResourcesAction,
 } from '../../actions/app-actions';
@@ -45,6 +46,9 @@ const ComplianceTable = withRouter(props => {
       title: `Start Compliance Scan`,
       modalContent: () =>
         renderModalContent(cloudType, cell.row.original.node_id),
+      onHide: () => {
+        dispatch(clearStartComplianceScanErrrorAction());
+      },
       contentStyles: {
         width: '80%',
         height: '80%',

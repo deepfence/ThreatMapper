@@ -1941,6 +1941,12 @@ export function startComplianceScanAction(params) {
   return genericThunkAction(actionTypes, startComplianceScan, params);
 }
 
+export function clearStartComplianceScanErrrorAction() {
+  return {
+    type: ActionTypes.CLEAR_START_COMPLIANCE_SCAN_ERROR,
+  };
+}
+
 export function refreshCloudComplianceResourcesAction(params) {
   const actionTypes = [
     ActionTypes.REFRESH_CLOUD_COMPLIANCE_RESOURCES_REQUEST,
