@@ -12,6 +12,7 @@
     "@antv/g2plot": "^2.4.20",
     "@antv/g6": "^4.6.15",
     "@babel/helper-module-imports": "^7.0.0",
+    "@reach/portal": "^0.17.0",
     "@reach/dialog": "^0.17.0",
     "@react-spring/web": "^9.5.2",
     "@tippyjs/react": "^4.2.6",
