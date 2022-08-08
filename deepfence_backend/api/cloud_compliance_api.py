@@ -26,7 +26,7 @@ from utils.constants import CLOUD_AWS, CLOUD_AZURE, USER_ROLES, TIME_UNIT_MAPPIN
     PENDING_CLOUD_COMPLIANCE_SCANS_KEY, CLOUD_COMPLIANCE_LOGS_ES_TYPE, NODE_TYPE_HOST, COMPLIANCE_LINUX_HOST, \
     COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, COMPLIANCE_KUBERNETES_HOST, CSPM_RESOURCES, CSPM_RESOURCE_LABELS, \
     CSPM_RESOURCES_INVERTED, CLOUD_RESOURCES_CACHE_KEY, CLOUD_COMPLIANCE_REFRESH_INVENTORY
-from utils.custom_exception import InvalidUsage
+from utils.custom_exception import InvalidUsage, DFError
 import json
 from utils.resource import get_nodes_list, get_default_params
 import urllib.parse
@@ -1011,7 +1011,10 @@ def start_cloud_compliance_scan(node_id):
                 for host_id, host in hosts.items():
                     if host.get("kubernetes_cluster_id", None) == node_id:
                         node = Node.get_node(0, host.get("scope_id", ""), "host")
-                        node.compliance_start_scan(compliance_check_type, None, scan_id)
+                        try:
+                            node.compliance_start_scan(compliance_check_type, None, scan_id)
+                        except DFError as e:
+                            return set_response(error=e.message, status=400)
             else:
                 node = Node.get_node(0, node_id, "host")
                 node.compliance_start_scan(compliance_check_type, None)

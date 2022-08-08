@@ -28,6 +28,7 @@ const (
 
 var (
 	complianceCheckTypes []string
+	kubeVersionCisMap    = map[string]string{"1.16": "1.6.0", "1.17": "1.6.0", "1.18": "1.6.0", "1.19": "1.6.1"}
 )
 
 func init() {
@@ -135,43 +136,7 @@ func (r *Reporter) startComplianceScan(req xfer.Request) xfer.Response {
 		ignoreParam = ""
 	}
 	var command string
-	if nodeType == nodeTypeContainer {
-		containerID := fmt.Sprintf("%s", req.ControlArgs["container_id"])
-		if containerID == "" {
-			return xfer.ResponseErrorf("container_id is required")
-		}
-		if ignoreList != "" {
-			ignoreFileName = fmt.Sprintf("%s/tmp/%s_%s.txt", getDfInstallDir(), complianceCheckType, containerID)
-			ignoreErr := writeIgnoreFile(ignoreFileName, ignoreList)
-			if ignoreErr != nil {
-				log.Errorf("Unable to write to ignore file %s %v", ignoreFileName, ignoreErr)
-				ignoreParam = ""
-			} else {
-				ignoreParam = fmt.Sprintf("-ignore-file-name %s", ignoreFileName)
-			}
-		}
-		command = fmt.Sprintf("%s%s/usr/local/bin/compliance_check/deepfence_compliance_check -compliance-check-type '%s' -container-id '%s' -node-type '%s' -k8-name '%s' %s", cgexecPrefix, getDfInstallDir(), complianceCheckType, containerID, nodeType, kubernetesClusterName, ignoreParam)
-	} else if nodeType == nodeTypeImage {
-		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
-		if imageId == "" {
-			return xfer.ResponseErrorf("image_id is required")
-		}
-		imageNameWithTag := fmt.Sprintf("%s", req.ControlArgs["image_name"])
-		if imageNameWithTag == "" {
-			return xfer.ResponseErrorf("image_name is required")
-		}
-		if ignoreList != "" {
-			ignoreFileName = fmt.Sprintf("%s/tmp/%s_%s.txt", getDfInstallDir(), complianceCheckType, imageId)
-			ignoreErr := writeIgnoreFile(ignoreFileName, ignoreList)
-			if ignoreErr != nil {
-				log.Errorf("Unable to write to ignore file %s %v", ignoreFileName, ignoreErr)
-				ignoreParam = ""
-			} else {
-				ignoreParam = fmt.Sprintf("-ignore-file-name %s", ignoreFileName)
-			}
-		}
-		command = fmt.Sprintf("%s%s/usr/local/bin/compliance_check/deepfence_compliance_check -compliance-check-type '%s' -image-name '%s' -image-id '%s' -node-type '%s' -k8-name '%s' %s", cgexecPrefix, getDfInstallDir(), complianceCheckType, imageNameWithTag, imageId, nodeType, kubernetesClusterName, ignoreParam)
-	} else if nodeType == nodeTypeHost {
+	if nodeType == nodeTypeHost {
 		if ignoreList != "" {
 			ignoreFileName = fmt.Sprintf("%s/tmp/%s.txt", getDfInstallDir(), complianceCheckType)
 			ignoreErr := writeIgnoreFile(ignoreFileName, ignoreList)
@@ -182,11 +147,23 @@ func (r *Reporter) startComplianceScan(req xfer.Request) xfer.Response {
 				ignoreParam = fmt.Sprintf("-ignore-file-name %s", ignoreFileName)
 			}
 		}
-		_, _, _, kubeNodeRole, _ := dfUtils.GetKubernetesDetails()
+		_, _, kubeVersion, kubeNodeRole, _ := dfUtils.GetKubernetesDetails()
+		var cisVersion = ""
+		var supportedVersions = ""
+		for kubeV, cisV := range kubeVersionCisMap {
+			if strings.Contains(kubeVersion, kubeV) {
+				cisVersion = cisV
+				break
+			}
+			supportedVersions += kubeV + ", "
+		}
+		if cisVersion == "" {
+			return xfer.ResponseErrorf("Unsupported kube Version, Supported Versions: " + fmt.Sprintf(supportedVersions))
+		}
 		if kubeNodeRole != "master" {
 			kubeNodeRole = "worker"
 		}
-		command = fmt.Sprintf("%s%s/usr/local/bin/compliance_check/deepfence_compliance_check -compliance-check-type '%s' -node-type '%s' -k8-name '%s' %s -k8-id '%s' -scan-id '%s' -k8-node-role '%s'", cgexecPrefix, getDfInstallDir(), complianceCheckType, nodeType, kubernetesClusterName, ignoreParam, kubernetesClusterId, scanId, kubeNodeRole)
+		command = fmt.Sprintf("%s%s/usr/local/bin/compliance_check/deepfence_compliance_check -compliance-check-type '%s' -node-type '%s' -k8-name '%s' %s -k8-id '%s' -scan-id '%s' -k8-node-role '%s' -cis-version '%s'", cgexecPrefix, getDfInstallDir(), complianceCheckType, nodeType, kubernetesClusterName, ignoreParam, kubernetesClusterId, scanId, kubeNodeRole, cisVersion)
 	} else {
 		return xfer.ResponseErrorf("invalid node_type")
 	}

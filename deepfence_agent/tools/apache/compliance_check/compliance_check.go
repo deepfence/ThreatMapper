@@ -38,6 +38,7 @@ func main() {
 	var imageName string
 	var imageId string
 	var ignoreFileName string
+	var cisVersion string
 	installDir, exists := os.LookupEnv("DF_INSTALL_DIR")
 	if exists {
 		dfInstallDir = installDir
@@ -55,6 +56,7 @@ func main() {
 	flag.StringVar(&imageName, "image-name", "", "\t Image name (Only when node-type is container_image)")
 	flag.StringVar(&imageId, "image-id", "", "\t Image ID (Only when node-type is container_image)")
 	flag.StringVar(&ignoreFileName, "ignore-file-name", "", "\t Filename that contains entries to be ignored while sending out results ")
+	flag.StringVar(&cisVersion, "cis-version", "1.6.0", "\t CIS Version of kubernetes benchmark")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n\n", os.Args[0])
 		flag.PrintDefaults()
@@ -188,6 +190,7 @@ func main() {
 	var envVars = make(map[string]string)
 	envVars["NODE_TYPE"] = kubeNodeRole
 	envVars["pathPrefix"] = dfUtils.HostMountDir
+	envVars["CIS_VERSION"] = cisVersion
 	res, err := dfUtils.ExecuteCommand(command, envVars)
 	stopLoggingInProgress <- true
 	time.Sleep(2 * time.Second)
