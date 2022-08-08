@@ -100,7 +100,6 @@ class ComplianceDetailsView extends React.PureComponent {
               className="go-back-btn"
               style={{
                 marginBottom: '8px',
-                marginLeft: '100px',
                 width: 'fit-content',
                 cursor: 'pointer',
               }}
