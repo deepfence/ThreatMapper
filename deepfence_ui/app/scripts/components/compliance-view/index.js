@@ -1,6 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
 import { Route, Link, withRouter, Redirect } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 import AWS_LOGO from '../../../images/AWS_logo_dark.png';
 import AZURE_LOGO from '../../../images/azure.png';
@@ -15,6 +16,7 @@ import { LinuxTerraFormScript } from './linux-scripts';
 import { K8sTerraFormScript } from './k8s-scripts';
 
 import { AuthenticatedLayout } from '../layouts/AuthenticatedLayout';
+import NotificationToaster from '../common/notification-toaster/notification-toaster';
 
 const menu = [
   {
@@ -50,6 +52,13 @@ const menu = [
 ];
 
 export const ComplianceViewHome = withRouter(match => {
+
+  const { isToasterVisible } = useSelector((state) => {
+    return {
+      isToasterVisible: state.get('isToasterVisible'),
+    };
+  })
+
   return (
     <AuthenticatedLayout>
       <div
@@ -98,6 +107,7 @@ export const ComplianceViewHome = withRouter(match => {
           path={match.match.path}
           render={() => <Redirect to={`${match.match.url}/${menu[0].id}`} />}
         />
+        {isToasterVisible && <NotificationToaster />}
       </div>
     </AuthenticatedLayout>
   );

@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import HostReportContainer from './host-report-container';
 import ComplianceTotalTestReportContainer from './total-test-report-container';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
-import ComplianceRulesTable from './compliance-rules-table';
 import { dateTimeFormat } from '../../utils/time-utils';
 
 const testValueConfigCloud = [
@@ -44,30 +43,8 @@ const testValueConfigHosts = [
   },
 ];
 
-const renderModalContent = complianceChecktype => (
-  <ComplianceRulesTable
-    complianceChecktype={complianceChecktype}
-  />
-);
 
 class NISTSummary extends React.PureComponent {
-  handleViewRules({
-    checkType,
-    label,
-  }) {
-    const {
-      triggerModal,
-    } = this.props;
-
-    triggerModal('GENERIC_MODAL', {
-      title: `Compliance Controls (${label})`,
-      modalContent: () => renderModalContent(checkType),
-      contentStyles: {
-        width: '90%',
-        height: '600px',
-      },
-    });
-  }
 
   render() {
     const {

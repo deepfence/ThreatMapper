@@ -1690,7 +1690,6 @@ export function rootReducer(state = initialState, action) {
       state = state.set('compliance_start_scan_error', null);
       state = state.set('compliance_schedule_scan', null);
       state = state.set('compliance_start_scan', null);
-      debugger;
       return state;
     }
 

@@ -8,7 +8,6 @@ import {
 } from '../../../actions/app-actions';
 import DFTable from '../../common/df-table/index';
 import withMultiSelectColumn from '../../common/df-table/with-multi-select-column';
-import NotificationToaster from '../../common/notification-toaster/notification-toaster';
 
 class RulesTable extends React.Component {
   constructor(props) {
@@ -145,7 +144,6 @@ class RulesTable extends React.Component {
     const {
       complianceRules = [],
       multiSelectColumn,
-      isToasterVisible,
       checkType
     } = this.props;
     const { filteredData, searchInput } = this.state;
@@ -218,7 +216,6 @@ class RulesTable extends React.Component {
             multiSelectColumn,
           ]}
         />
-        {isToasterVisible && <NotificationToaster />}
       </>
     );
   }
@@ -242,7 +239,6 @@ const mapStateToProps = (state, { complianceChecktype }) => ({
     'info',
     complianceChecktype,
   ]),
-  isToasterVisible: state.get('isToasterVisible'),
 });
 
 export default connect(mapStateToProps, {
