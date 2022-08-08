@@ -408,6 +408,12 @@ add_index() {
             },
             "time_stamp": {
               "type": "long"
+            },
+            "Severity" : {
+              "type" : "nested"
+            }
+            "Severity.score" : {
+              "type" : "float"
             }
           }
         }
