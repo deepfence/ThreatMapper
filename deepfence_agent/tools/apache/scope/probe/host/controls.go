@@ -149,19 +149,22 @@ func (r *Reporter) startComplianceScan(req xfer.Request) xfer.Response {
 		}
 		_, _, kubeVersion, kubeNodeRole, _ := dfUtils.GetKubernetesDetails()
 		var cisVersion = ""
-		var supportedVersions = ""
-		for kubeV, cisV := range kubeVersionCisMap {
-			if strings.Contains(kubeVersion, kubeV) {
-				cisVersion = cisV
-				break
+		if kubeVersion != "" {
+			// kubernetes
+			var supportedVersions = ""
+			for kubeV, cisV := range kubeVersionCisMap {
+				if strings.Contains(kubeVersion, kubeV) {
+					cisVersion = cisV
+					break
+				}
+				supportedVersions += kubeV + ", "
 			}
-			supportedVersions += kubeV + ", "
-		}
-		if cisVersion == "" {
-			return xfer.ResponseErrorf("Unsupported kube Version, Supported Versions: " + fmt.Sprintf(supportedVersions))
-		}
-		if kubeNodeRole != "master" {
-			kubeNodeRole = "worker"
+			if cisVersion == "" {
+				return xfer.ResponseErrorf("Unsupported kubernetes version. Supported Versions: " + fmt.Sprintf(supportedVersions))
+			}
+			if kubeNodeRole != "master" {
+				kubeNodeRole = "worker"
+			}
 		}
 		command = fmt.Sprintf("%s%s/usr/local/bin/compliance_check/deepfence_compliance_check -compliance-check-type '%s' -node-type '%s' -k8-name '%s' %s -k8-id '%s' -scan-id '%s' -k8-node-role '%s' -cis-version '%s'", cgexecPrefix, getDfInstallDir(), complianceCheckType, nodeType, kubernetesClusterName, ignoreParam, kubernetesClusterId, scanId, kubeNodeRole, cisVersion)
 	} else {
