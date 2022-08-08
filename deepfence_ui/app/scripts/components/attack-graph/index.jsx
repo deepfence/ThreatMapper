@@ -181,7 +181,7 @@ export const AttackGraph = () => {
             {attackGraphDataLoading ? (
               <AppLoader />
             ) : (
-              'No Threat Paths discovered.'
+              'No attack paths discovered. Please run Vulnerability/Secret/Compliance scans to discover new attack paths.'
             )}
           </div>
         ) : null}
