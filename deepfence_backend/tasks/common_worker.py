@@ -1134,6 +1134,15 @@ def generate_pdf_report(report_id, filters, node_type,
             final_html += vulnerability_pdf_report(filters=filters, lucene_query_string=lucene_query_string,
                                                    number=number, time_unit=time_unit,
                                                    resource=resource.get("filter", {}))
+        elif resource_type == COMPLIANCE_ES_TYPE:
+            if node_type == "aws":
+                final_html += compliance_pdf_report_cloud(filters=filters,
+                                                          lucene_query_string=lucene_query_string,
+                                                          number=number, time_unit=time_unit, domain_name=domain_name, resource=resource.get("filter", {}), node_type=node_type)
+            else:
+                final_html += compliance_pdf_report(filters=filters,
+                                                    lucene_query_string=lucene_query_string,
+                                                    number=number, time_unit=time_unit, domain_name=domain_name, resource=resource.get("filter", {}))
         elif resource_type == SECRET_SCAN_ES_TYPE:
             final_html += vulnerability_pdf_report_secret(filters=filters, lucene_query_string=lucene_query_string,
                                                           number=number, time_unit=time_unit,
