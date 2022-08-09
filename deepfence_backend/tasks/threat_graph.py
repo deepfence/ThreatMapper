@@ -4,7 +4,7 @@ from utils.scope import fetch_topology_data
 from utils.esconn import ESConn
 from utils.helper import get_topology_network_graph, get_recent_scan_ids, split_list_into_chunks
 from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, CLOUD_AWS, CLOUD_GCP, \
-    CLOUD_AZURE, ATTACK_GRAPH_CACHE_KEY, ATTACK_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
+    CLOUD_AZURE, THREAT_GRAPH_CACHE_KEY, THREAT_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
     CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_INDEX, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, SECRET_SCAN_LOGS_INDEX, \
     TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
     SECRET_SCAN_INDEX
@@ -23,9 +23,9 @@ time_unit = "d"
 
 
 @celery_app.task
-def compute_attack_graph():
+def compute_threat_graph():
     with flask_app.app_context():
-        _compute_attack_graph()
+        _compute_threat_graph()
 
 
 def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
@@ -448,7 +448,7 @@ def get_secrets_count():
     return get_mis_config_count(SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, "node_id")
 
 
-def _compute_attack_graph():
+def _compute_threat_graph():
     # Get count of vulnerability, compliance, secrets
     vulnerability_count_map = get_vulnerability_count()
     compliance_count_map = get_compliance_count()
@@ -474,7 +474,7 @@ def _compute_attack_graph():
         except nx.NetworkXNoPath:
             pass
         except Exception as ex:
-            flask_app.logger.error("Error in attack graph: {0}".format(ex))
+            flask_app.logger.error("Error in threat graph: {0}".format(ex))
 
     # Get topology data
     topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
@@ -518,14 +518,14 @@ def _compute_attack_graph():
         graph[cloud_provider] = get_topology_network_graph(cloud_containers[cloud_provider], graph[cloud_provider],
                                                            node_type=NODE_TYPE_CONTAINER, include_nodes=include_nodes)
 
-    attack_graph = {
+    threat_graph = {
         CLOUD_AWS: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
         CLOUD_AZURE: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
         CLOUD_GCP: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
         pvt_cloud: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}}
     }
-    attack_graph_paths = defaultdict(dict)
-    attack_graph_node = {}
+    threat_graph_paths = defaultdict(dict)
+    threat_graph_node = {}
 
     for cloud_provider in ALL_CLOUD_PROVIDERS:
         node_data = dict(graph[cloud_provider].nodes.data())
@@ -595,41 +595,41 @@ def _compute_attack_graph():
                         cloud_id = node_id
                         compliance_count = cloud_compliance_count_map.get(node_id, {}).get("count", 0)
                         compliance_scan_id = cloud_compliance_count_map.get(node_id, {}).get("scan_id", {})
-                    if key not in attack_graph_node:
-                        attack_graph_node[key] = {
+                    if key not in threat_graph_node:
+                        threat_graph_node[key] = {
                             "label": label, "id": key, "nodes": {}, "node_type": node_type}
-                    attack_graph_node[key]["nodes"][node_id] = {
+                    threat_graph_node[key]["nodes"][node_id] = {
                         "node_id": node_id, "name": meta["name"], "image_name": meta.get("image_name", ""),
                         "vulnerability_count": vulnerability_count, "vulnerability_scan_id": vulnerability_scan_id,
                         "compliance_count": compliance_count, "compliance_scan_id": compliance_scan_id,
                         "secrets_count": secrets_count, "secrets_scan_id": secrets_scan_id, "cloud_id": cloud_id
                     }
-                    if key in attack_graph[cloud_provider]["resources"]:
-                        if not attack_graph_paths[key][p_str]:
-                            attack_graph[cloud_provider]["resources"][key]["attack_path"].append(p)
-                        attack_graph[cloud_provider]["resources"][key]["count"] += 1
-                        attack_graph[cloud_provider]["resources"][key]["vulnerability_count"] += vulnerability_count
-                        attack_graph[cloud_provider]["resources"][key]["secrets_count"] += secrets_count
-                        attack_graph[cloud_provider]["resources"][key]["compliance_count"] += compliance_count
+                    if key in threat_graph[cloud_provider]["resources"]:
+                        if not threat_graph_paths[key][p_str]:
+                            threat_graph[cloud_provider]["resources"][key]["attack_path"].append(p)
+                        threat_graph[cloud_provider]["resources"][key]["count"] += 1
+                        threat_graph[cloud_provider]["resources"][key]["vulnerability_count"] += vulnerability_count
+                        threat_graph[cloud_provider]["resources"][key]["secrets_count"] += secrets_count
+                        threat_graph[cloud_provider]["resources"][key]["compliance_count"] += compliance_count
                     else:
-                        attack_graph_paths[key][p_str] = True
-                        attack_graph[cloud_provider]["resources"][key] = {
+                        threat_graph_paths[key][p_str] = True
+                        threat_graph[cloud_provider]["resources"][key] = {
                             "attack_path": [p], "count": 1, "vulnerability_count": vulnerability_count,
                             "compliance_count": compliance_count, "secrets_count": secrets_count,
                             "label": label, "id": key, "node_type": node_type,
                         }
-                    attack_graph[cloud_provider]["count"] += 1
-                    attack_graph[cloud_provider]["vulnerability_count"] += vulnerability_count
-                    attack_graph[cloud_provider]["secrets_count"] += secrets_count
-                    attack_graph[cloud_provider]["compliance_count"] += compliance_count
+                    threat_graph[cloud_provider]["count"] += 1
+                    threat_graph[cloud_provider]["vulnerability_count"] += vulnerability_count
+                    threat_graph[cloud_provider]["secrets_count"] += secrets_count
+                    threat_graph[cloud_provider]["compliance_count"] += compliance_count
             except nx.NetworkXNoPath:
                 pass
             except Exception as ex:
-                flask_app.logger.error("Error in attack graph: {0}".format(ex))
+                flask_app.logger.error("Error in threat graph: {0}".format(ex))
 
-    for cloud_provider, _ in attack_graph.items():
-        attack_graph[cloud_provider]["resources"] = list(attack_graph[cloud_provider]["resources"].values())
-    redis.set(ATTACK_GRAPH_CACHE_KEY, json.dumps(attack_graph))
-    attack_graph_node_detail = {k: json.dumps(v) for k, v in attack_graph_node.items()}
-    if attack_graph_node_detail:
-        redis.hset(ATTACK_GRAPH_NODE_DETAIL_KEY, mapping=attack_graph_node_detail)
+    for cloud_provider, _ in threat_graph.items():
+        threat_graph[cloud_provider]["resources"] = list(threat_graph[cloud_provider]["resources"].values())
+    redis.set(THREAT_GRAPH_CACHE_KEY, json.dumps(threat_graph))
+    threat_graph_node_detail = {k: json.dumps(v) for k, v in threat_graph_node.items()}
+    if threat_graph_node_detail:
+        redis.hset(THREAT_GRAPH_NODE_DETAIL_KEY, mapping=threat_graph_node_detail)

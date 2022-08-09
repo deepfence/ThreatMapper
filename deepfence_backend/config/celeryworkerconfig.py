@@ -10,7 +10,7 @@ imports = (
     'tasks.registry_images',
     'tasks.running_notification',
     'tasks.user_activity',
-    'tasks.attack_graph',
+    'tasks.threat_graph',
 )
 
 task_create_missing_queues = True

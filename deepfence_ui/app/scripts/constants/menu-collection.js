@@ -55,7 +55,7 @@ export const ADMIN_SIDE_NAV_MENU_COLLECTION = [
     name: 'Topology', menuIcon: 'icon-Topology', isActive: true, link: '/topology'
   },
   {
-    name: 'Threat Graph', menuIcon: 'nav-icon-attack-graph', isActive: true, link: '/attack-graph'
+    name: 'Threat Graph', menuIcon: 'nav-icon-attack-graph', isActive: true, link: '/threat-graph'
   },
   {
     name: 'Vulnerabilities', menuIcon: 'icon-biohazard', isActive: false, link: '/vulnerability'
@@ -79,7 +79,7 @@ export const USER_SIDE_NAV_MENU_COLLECTION = [
     name: 'Topology', menuIcon: 'icon-Topology', isActive: true, link: '/topology'
   },
   {
-    name: 'Threat Graph', menuIcon: 'nav-icon-attack-graph', isActive: true, link: '/attack-graph'
+    name: 'Threat Graph', menuIcon: 'nav-icon-attack-graph', isActive: true, link: '/threat-graph'
   },
   {
     name: 'Vulnerabilities', menuIcon: 'icon-biohazard', isActive: false, link: '/vulnerability'

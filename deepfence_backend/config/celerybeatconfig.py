@@ -9,7 +9,7 @@ imports = (
     'tasks.registry_images',
     'tasks.running_notification',
     'tasks.user_activity',
-    'tasks.attack_graph',
+    'tasks.threat_graph',
 )
 
 beat_schedule = {
@@ -49,8 +49,8 @@ beat_schedule = {
         'args': [],
         'relative': False,
     },
-    'compute_attack_graph': {
-        'task': 'tasks.attack_graph.compute_attack_graph',
+    'compute_threat_graph': {
+        'task': 'tasks.threat_graph.compute_threat_graph',
         'schedule': timedelta(minutes=5),
         'args': [],
         'relative': False,

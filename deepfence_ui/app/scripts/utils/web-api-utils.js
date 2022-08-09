@@ -2830,7 +2830,7 @@ export function getServicesForCloudAccount(params = {}) {
 }
 
 export function getAttackGraphData(params = {}) {
-  const url = `${backendElasticApiEndPoint()}/attack-graph/graph`;
+  const url = `${backendElasticApiEndPoint()}/threat-graph/graph`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
@@ -2843,7 +2843,7 @@ export function getAttackGraphData(params = {}) {
 
 export function getAttackGraphNodeInfo(params = {}) {
   const { nodeId } = params;
-  const url = new URL(`${backendElasticApiEndPoint()}/attack-graph/node`);
+  const url = new URL(`${backendElasticApiEndPoint()}/threat-graph/node`);
   url.searchParams.append('graph_node_id', nodeId);
   return fetch(url, {
     credentials: 'same-origin',

@@ -168,7 +168,7 @@ class DeepFenceApp extends React.Component {
             />
             <PrivateRoute path="/compliance/:cloudtype/:nodeid/:checkType" component={ComplianceSummary} />
             <PrivateRoute path="/compliance" component={ComplianceViewHome} />
-            <PrivateRoute path="/attack-graph" component={AttackGraph} />
+            <PrivateRoute path="/threat-graph" component={AttackGraph} />
 
             <Route
               path="*"
