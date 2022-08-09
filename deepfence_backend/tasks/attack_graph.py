@@ -312,8 +312,7 @@ def compute_gcp_cloud_network_graph(cloud_resources, graph, include_nodes):
                             if config.get("natIP"):
                                 if not graph.has_node(host_name):
                                     graph.add_node(host_name, name=cloud_resource["name"],
-                                                   cloud_id=cloud_resource["arn"],
-                                                   node_type=cloud_resource["resource_id"])
+                                                   cloud_id=cloud_resource["arn"], node_type=NODE_TYPE_HOST)
                                 if not graph.has_edge(incoming_internet_host_id, host_name):
                                     graph.add_edge(incoming_internet_host_id, host_name)
         if cloud_resource["resource_id"] == "gcp_storage_bucket":
@@ -394,7 +393,7 @@ def compute_azure_cloud_network_graph(cloud_resources, graph, include_nodes):
             if cloud_resource["public_ips"]:
                 if not graph.has_node(host_name):
                     graph.add_node(host_name, name=cloud_resource["name"], cloud_id=cloud_resource["arn"],
-                                   node_type=cloud_resource["resource_id"])
+                                   node_type=NODE_TYPE_HOST)
                 if not graph.has_edge(incoming_internet_host_id, host_name):
                     graph.add_edge(incoming_internet_host_id, host_name)
     return graph
