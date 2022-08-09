@@ -322,15 +322,13 @@ def compute_gcp_cloud_network_graph(cloud_resources, graph, include_nodes):
         if cloud_resource["resource_id"] == "gcp_sql_database_instance":
             if "ip_configuration" in cloud_resource:
                 if "authorizedNetworks" in cloud_resource["ip_configuration"]:
-                    if "ipv4Enabled" in cloud_resource["ip_configuration"]:
-                        if cloud_resource["ip_configuration"]["ipv4Enabled"]:
-                            for network in cloud_resource["ip_configuration"]["authorizedNetworks"]:
-                                if network["value"] == '0.0.0.0/0':
-                                    if not graph.has_node(cloud_resource["arn"]):
-                                        graph.add_node(cloud_resource["arn"], name=cloud_resource["name"],
-                                                   node_type=cloud_resource["resource_id"])
-                                    if not graph.has_edge(incoming_internet_host_id, cloud_resource["arn"]):
-                                        graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
+                        for network in cloud_resource["ip_configuration"]["authorizedNetworks"]:
+                            if network["value"] == '0.0.0.0/0':
+                                if not graph.has_node(cloud_resource["arn"]):
+                                    graph.add_node(cloud_resource["arn"], name=cloud_resource["name"],
+                                                    node_type=cloud_resource["resource_id"])
+                                if not graph.has_edge(incoming_internet_host_id, cloud_resource["arn"]):
+                                    graph.add_edge(incoming_internet_host_id, cloud_resource["arn"])
         if cloud_resource["resource_id"] == "gcp_cloudfunctions_function":
             if "ingress_settings" in cloud_resource:
                 if cloud_resource["ingress_settings"] == "ALLOW_ALL":
