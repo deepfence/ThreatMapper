@@ -2,7 +2,7 @@
 title: Installing ThreatMapper
 ---
 
-# Installating ThreatMapper
+# Installing ThreatMapper
 
 The ThreatMapper product consists of a Management Console, and multiple Sensor Agent containers and Cloud Scanner tasks that are deployed within your production platform(s).
 
