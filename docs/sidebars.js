@@ -28,7 +28,7 @@ const sidebars = {
       label: 'Architecture',
       link: {
         type: 'doc',
-        id: 'threatmapper/architecture/index'
+        id: 'threatmapper/architecture'
       },
       items: [
         'threatmapper/architecture/console',
