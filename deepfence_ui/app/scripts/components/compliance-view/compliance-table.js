@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 import isNil from 'lodash/isNil';
@@ -9,6 +9,7 @@ import {
   clearStartComplianceScanErrrorAction,
   getComplianceCloudCredentialsAction,
   refreshCloudComplianceResourcesAction,
+  toaster,
 } from '../../actions/app-actions';
 import AppLoader from '../common/app-loader/app-loader';
 
@@ -16,6 +17,36 @@ import { StartScanModalContent } from './start-scan-modal';
 
 const ComplianceTable = withRouter(props => {
   const dispatch = useDispatch();
+  const [refreshDisabledIdx, setRefreshDisabledIdx] = useState({});
+  const refreshDisabledIds = Object.keys(refreshDisabledIdx);
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setRefreshDisabledIdx(prev => {
+        const newIdx = {};
+        for (const nodeId of Object.keys(prev)) {
+          if (new Date().getTime() - prev[nodeId] < 10000) {
+            newIdx[nodeId] = prev[nodeId];
+          }
+        }
+        return newIdx;
+      });
+    }, 2000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  function disableRefreshFor(nodeId) {
+    setRefreshDisabledIdx(prev => {
+      if (!prev[nodeId]) {
+        return {
+          ...prev,
+          [nodeId]: new Date().getTime(),
+        };
+      }
+      return prev;
+    });
+  }
 
   const renderModalContent = (cloudType, nodeId) => (
     <StartScanModalContent cloudType={cloudType} nodeId={nodeId} />
@@ -57,7 +88,11 @@ const ComplianceTable = withRouter(props => {
   };
 
   const doRefresh = nodeId => {
+    disableRefreshFor(nodeId);
     dispatch(refreshCloudComplianceResourcesAction({ nodeId }));
+    dispatch(
+      toaster('Refreshing cloud inventory. This can take up to a minute...')
+    );
   };
 
   return (
@@ -73,7 +108,11 @@ const ComplianceTable = withRouter(props => {
             cloudType={props.cloudType}
             handleViewRules={handleViewRules}
             doRefresh={doRefresh}
-            nodes={accountList?.nodes}
+            nodes={withRefreshDisabledFlag(
+              accountList?.nodes,
+              refreshDisabledIds
+            )}
+            refreshDisabledIds={refreshDisabledIds}
           />
         </div>
       )}
@@ -81,11 +120,24 @@ const ComplianceTable = withRouter(props => {
   );
 });
 
+function withRefreshDisabledFlag(nodes = [], refreshDisabledIds = []) {
+  return nodes.map(node => {
+    if (refreshDisabledIds.includes(node?.node_id)) {
+      return {
+        ...node,
+        refreshDisabled: true,
+      };
+    }
+    return node;
+  });
+}
+
 const AccountListTable = ({
   nodes = [],
   cloudType,
   handleViewRules,
   doRefresh,
+  refreshDisabledIds = [],
 }) => {
   return (
     <DfTableV2
@@ -104,7 +156,10 @@ const AccountListTable = ({
             }}
           >
             <AccountListTable
-              nodes={original.nodes}
+              nodes={withRefreshDisabledFlag(
+                original.nodes,
+                refreshDisabledIds
+              )}
               cloudType={cloudType}
               handleViewRules={handleViewRules}
               doRefresh={doRefresh}
@@ -266,7 +321,10 @@ const AccountListTable = ({
                           doRefresh(cell.row.original.node_id);
                         }
                       }}
-                      disabled={!cell.row.original.enabled}
+                      disabled={
+                        !cell.row.original.enabled ||
+                        cell.row.original.refreshDisabled
+                      }
                       title={
                         cell.row.original.enabled === false
                           ? 'Account is inactive'
