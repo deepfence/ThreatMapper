@@ -7,7 +7,6 @@
 [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://docs.deepfence.io/threatmapper/demo)
 [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
-[![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 [![Twitter](https://img.shields.io/twitter/follow/deepfence?style=social&logo=twitter)](https://twitter.com/intent/follow?screen_name=deepfence)
 
 ## :tada: Announcing ThreatMapper 1.4.0
@@ -22,15 +21,15 @@ With ThreatMapper's **ThreatGraph** visualization, you can then identify the iss
 
 <table width="100%">
   <tr>
-  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-topology-full.jpg"><img src="images/readme/threatmapper-topology-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="images/readme/threatmapper-topology-full.jpg"><img src="images/readme/threatmapper-topology-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Learn the Topology
   </td>
-  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-vulnerabilities-full.jpg"><img src="images/readme/threatmapper-vulnerabilities-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="images/readme/threatmapper-vulnerabilities-full.jpg"><img src="images/readme/threatmapper-vulnerabilities-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Identify Threats
   </td>
-  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-exploits-full.jpg"><img src="images/readme/threatmapper-exploits-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="images/readme/threatmapper-threatgraph-full.jpg"><img src="images/readme/threatmapper-threatgraph-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Explore the ThreatGraph
   </td>
