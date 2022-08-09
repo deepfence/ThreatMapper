@@ -7,7 +7,7 @@
 [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://docs.deepfence.io/threatmapper/demo)
 [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
-[![Twitter](https://img.shields.io/twitter/follow/deepfence?style=social&logo=twitter)](https://twitter.com/intent/follow?screen_name=deepfence)
+[![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
 ## :tada: Announcing ThreatMapper 1.4.0
 
@@ -49,7 +49,9 @@ Use ThreatMapper to provide security observability for your production workloads
 
 # Getting Started with ThreatMapper
 
-https://user-images.githubusercontent.com/3711627/171056631-fd2d310b-b40a-4dde-9f00-5ab4e29b8935.mp4
+
+
+https://user-images.githubusercontent.com/3711627/183735806-7afc0dd3-a3ee-4486-a241-06541025a3d4.mp4
 
 
 ## Planning your Deployment
