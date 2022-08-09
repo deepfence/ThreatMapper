@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 import isNil from 'lodash/isNil';
@@ -52,21 +52,21 @@ const ComplianceTable = withRouter(props => {
     <StartScanModalContent cloudType={cloudType} nodeId={nodeId} />
   );
 
-  useEffect(() => {
-    const { registerPolling, startPolling } = props;
+  const { registerPolling, startPolling } = props;
 
-    registerPolling(initialData);
-    return startPolling();
+  useEffect(() => {
+    registerPolling(fetchData);
+    startPolling();
   }, []);
 
-  const initialData = pollParams => {
+  const fetchData = useCallback(pollParams => {
     const { initiatedByPollable } = pollParams;
     const params = {
       initiatedByPollable,
       cloud_provider: props.cloudType,
     };
-    dispatch(getComplianceCloudCredentialsAction(params));
-  };
+    return dispatch(getComplianceCloudCredentialsAction(params));
+  }, []);
 
   const isLoading = useSelector(state => state.get('cloud_credentials_loader'));
   const accountList = useSelector(state => state.get('cloud_credentials'));
