@@ -21,15 +21,15 @@ With ThreatMapper's **ThreatGraph** visualization, you can then identify the iss
 
 <table width="100%">
   <tr>
-  <td align="center" valign="top" width="33%"><a href="images/readme/threatmapper-topology-full.jpg"><img src="images/readme/threatmapper-topology-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-topology-full.jpg"><img src="images/readme/threatmapper-topology-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Learn the Topology
   </td>
-  <td align="center" valign="top" width="33%"><a href="images/readme/threatmapper-vulnerabilities-full.jpg"><img src="images/readme/threatmapper-vulnerabilities-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-vulnerabilities-full.jpg"><img src="images/readme/threatmapper-vulnerabilities-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Identify Threats
   </td>
-  <td align="center" valign="top" width="33%"><a href="images/readme/threatmapper-threatgraph-full.jpg"><img src="images/readme/threatmapper-threatgraph-thumb.jpg" border=0 align="center"/></a>
+  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-threatgraph-full.jpg"><img src="images/readme/threatmapper-threatgraph-thumb.jpg" border=0 align="center"/></a>
     <br/><br/>
     Explore the ThreatGraph
   </td>
