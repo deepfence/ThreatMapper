@@ -263,6 +263,7 @@ const Reports = props => {
     download_type,
     errors,
     valid,
+    change
   } = props;
   const showEmailField = schedule_interval;
   const downloadButtonLabel = schedule_interval
@@ -304,6 +305,12 @@ const Reports = props => {
       });
     }
   }, [resource_type, node_type, compliance_provider]);
+
+  useEffect(() => {
+    if (compliance_provider) {
+      change('compliance_checktype', []);
+    }
+  }, [compliance_provider]);
 
 
 // Function used to display the NodeType dropdown
@@ -569,8 +576,10 @@ const Reports = props => {
       const downloadTypeOption = download_type && download_type.value;
       if (resource_type.value === 'compliance' && node_type.value === 'host') {
         const accountId = account_id && account_id.map(v => v.value);
+        const hostName = host_name && host_name.map(v => v.value);
         globalFilter = {
           type: [compliance_provider.value],
+          host_name: hostName,
           account_id: accountId,
         };
       } else if (node_type.value === 'host') {
