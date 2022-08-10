@@ -1,554 +1,62 @@
 [
   {
-    "test_category": "API Server",
-    "test_number": "1.1.1",
-    "test_desc": "Ensure that the --anonymous-auth argument is set to false (Not Scored)",
+    "test_category": "File Permission",
+    "test_number": "df_k8_4_1_1",
+    "test_desc": "Ensure that the kubelet service file permissions are set to 644 or more restrictive",
     "test_rationale": ""
   },
   {
-    "test_category": "API Server",
-    "test_number": "1.1.2",
-    "test_desc": "Ensure that the --basic-auth-file argument is not set (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.3",
-    "test_desc": "Ensure that the --insecure-allow-any-token argument is not set (Not Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.4",
-    "test_desc": "Ensure that the --kubelet-https argument is set to true (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.5",
-    "test_desc": "Ensure that the --insecure-bind-address argument is not set (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.6",
-    "test_desc": "Ensure that the --insecure-port argument is set to 0 (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.7",
-    "test_desc": "Ensure that the --secure-port argument is not set to 0 (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.8",
-    "test_desc": "Ensure that the --profiling argument is set to false (Scored)",
+    "test_category": "File Permission",
+    "test_number": "df_k8_4_1_2",
+    "test_desc": "Ensure that the kubelet service file ownership is set to root:root",
     "test_rationale": ""
   },
   {
-    "test_category": "API Server",
-    "test_number": "1.1.9",
-    "test_desc": "Ensure that the --repair-malformed-updates argument is set to false (Scored)",
+    "test_category": "File Permission",
+    "test_number": "df_k8_4_1_3",
+    "test_desc": "Ensure that the proxy kubeconfig file permissions are set to 644 or more restrictive",
+    "test_rationale": "."
+  },
+  {
+    "test_category": "File Ownership",
+    "test_number": "df_k8_4_1_4",
+    "test_desc": "Ensure that the proxy kubeconfig file ownership is set to root:root",
     "test_rationale": ""
   },
   {
-    "test_category": "API Server",
-    "test_number": "1.1.10",
-    "test_desc": "Ensure that the admission control plugin AlwaysAdmit is not set (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.11",
-    "test_desc": "Ensure that the admission control plugin AlwaysPullImages is set (Scored)",
+    "test_category": "File Permission",
+    "test_number": "df_k8_4_1_5",
+    "test_desc": "Ensure that the kubelet.conf file permissions are set to 644 or more restrictive",
     "test_rationale": ""
   },
   {
-    "test_category": "API Server",
-    "test_number": "1.1.12",
-    "test_desc": "[DEPRECATED] Ensure that the admission control plugin DenyEscalatingExec is set (Not Scored)",
+    "test_category": "File Ownership",
+    "test_number": "df_k8_4_1_6",
+    "test_desc": "Ensure that the kubelet.conf file ownership is set to root:root",
     "test_rationale": ""
   },
   {
-    "test_category": "API Server",
-    "test_number": "1.1.13",
-    "test_desc": "Ensure that the admission control plugin SecurityContextDeny is set (Not Scored)",
+    "test_category": "File Permission",
+    "test_number": "df_k8_4_1_7",
+    "test_desc": "Ensure that the certificate authorities file permissions are set to 644 or more restrictive",
     "test_rationale": ""
   },
   {
-    "test_category": "API Server",
-    "test_number": "1.1.14",
-    "test_desc": "Ensure that the admission control plugin NamespaceLifecycle is set (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.15",
-    "test_desc": "Ensure that the --audit-log-path argument is set as appropriate (Scored)",
+    "test_category": "File Ownership",
+    "test_number": "df_k8_4_1_8",
+    "test_desc": "Ensure that the client certificate authorities file ownership is set to root:root",
     "test_rationale": ""
   },
   {
-    "test_category": "API Server",
-    "test_number": "1.1.16",
-    "test_desc": "Ensure that the --audit-log-maxage argument is set to 30 or as appropriate (Scored)",
+    "test_category": "File Permission",
+    "test_number": "df_k8_4_1_9",
+    "test_desc": "Ensure that the kubelet configuration file has permissions set to 644 or more restrictive",
     "test_rationale": ""
   },
   {
-    "test_category": "API Server",
-    "test_number": "1.1.17",
-    "test_desc": "Ensure that the --audit-log-maxbackup argument is set to 10 or as appropriate (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.18",
-    "test_desc": "Ensure that the --audit-log-maxsize argument is set to 100 or as appropriate (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.19",
-    "test_desc": "Ensure that the --authorization-mode argument is not set to AlwaysAllow (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.20",
-    "test_desc": "Ensure that the --token-auth-file parameter is not set (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.21",
-    "test_desc": "Ensure that the --kubelet-certificate-authority argument is set as appropriate (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.22",
-    "test_desc": "Ensure that the --kubelet-client-certificate and --kubelet-client-key arguments are set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.23",
-    "test_desc": "Ensure that the --service-account-lookup argument is set to true (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.24",
-    "test_desc": "Ensure that the admission control plugin PodSecurityPolicy is set (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.25",
-    "test_desc": "Ensure that the --service-account-key-file argument is set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.26",
-    "test_desc": "Ensure that the --etcd-certfile and --etcd-keyfile arguments are set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.27",
-    "test_desc": "Ensure that the admission control plugin ServiceAccount is set(Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.28",
-    "test_desc": "Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.29",
-    "test_desc": "Ensure that the --client-ca-file argument is set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.30",
-    "test_desc": "Ensure that the --etcd-cafile argument is set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.31",
-    "test_desc": "Ensure that the API Server only makes use of Strong Cryptographic Ciphers (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.32",
-    "test_desc": "Ensure that the --authorization-mode argument is set to Node (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.33",
-    "test_desc": "Ensure that the admission control plugin NodeRestriction is set (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.34",
-    "test_desc": "Ensure that the --encryption-provider-config argument is set as appropriate (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.35",
-    "test_desc": "Ensure that the encryption provider is set to aescbc (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.36",
-    "test_desc": "Ensure that the admission control plugin EventRateLimit is set (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.37a",
-    "test_desc": "Ensure that the AdvancedAuditing argument is not set to false (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.37b",
-    "test_desc": "Ensure that the AdvancedAuditing argument is not set to false (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.38",
-    "test_desc": "Ensure that the --request-timeout argument is set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "API Server",
-    "test_number": "1.1.39",
-    "test_desc": "Ensure that the --authorization-mode argument includes RBAC (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\n"
-  },
-  {
-    "test_category": "Scheduler",
-    "test_number": "1.2.1",
-    "test_desc": "Ensure that the --profiling argument is set to false (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Scheduler",
-    "test_number": "1.2.2",
-    "test_desc": "Ensure that the --address argument is set to 127.0.0.1 (Scored)",
-    "test_rationale": "root     19951 19918  0 Aug08 ?        00:42:51 kube-scheduler --address=127.0.0.1 --kubeconfig=/etc/kubernetes/scheduler.conf --leader-elect=true\n"
-  },
-  {
-    "test_category": "Controller Manager",
-    "test_number": "1.3.1",
-    "test_desc": "Ensure that the --terminated-pod-gc-threshold argument is set as appropriate (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Controller Manager",
-    "test_number": "1.3.2",
-    "test_desc": "Ensure that the --profiling argument is set to false (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Controller Manager",
-    "test_number": "1.3.3",
-    "test_desc": "Ensure that the --use-service-account-credentials argument is set to true (Scored)",
-    "test_rationale": "root     20018 19972  3 Aug08 ?        02:29:12 kube-controller-manager --address=127.0.0.1 --allocate-node-cidrs=true --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf --client-ca-file=/etc/kubernetes/pki/ca.crt --cluster-cidr=192.168.0.0/16 --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt --cluster-signing-key-file=/etc/kubernetes/pki/ca.key --controllers=*,bootstrapsigner,tokencleaner --kubeconfig=/etc/kubernetes/controller-manager.conf --leader-elect=true --node-cidr-mask-size=24 --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --root-ca-file=/etc/kubernetes/pki/ca.crt --service-account-private-key-file=/etc/kubernetes/pki/sa.key --use-service-account-credentials=true\n"
-  },
-  {
-    "test_category": "Controller Manager",
-    "test_number": "1.3.4",
-    "test_desc": "Ensure that the --service-account-private-key-file argument is set as appropriate (Scored)",
-    "test_rationale": "root     20018 19972  3 Aug08 ?        02:29:12 kube-controller-manager --address=127.0.0.1 --allocate-node-cidrs=true --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf --client-ca-file=/etc/kubernetes/pki/ca.crt --cluster-cidr=192.168.0.0/16 --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt --cluster-signing-key-file=/etc/kubernetes/pki/ca.key --controllers=*,bootstrapsigner,tokencleaner --kubeconfig=/etc/kubernetes/controller-manager.conf --leader-elect=true --node-cidr-mask-size=24 --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --root-ca-file=/etc/kubernetes/pki/ca.crt --service-account-private-key-file=/etc/kubernetes/pki/sa.key --use-service-account-credentials=true\n"
-  },
-  {
-    "test_category": "Controller Manager",
-    "test_number": "1.3.5",
-    "test_desc": "Ensure that the --root-ca-file argument is set as appropriate (Scored)",
-    "test_rationale": "root     20018 19972  3 Aug08 ?        02:29:12 kube-controller-manager --address=127.0.0.1 --allocate-node-cidrs=true --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf --client-ca-file=/etc/kubernetes/pki/ca.crt --cluster-cidr=192.168.0.0/16 --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt --cluster-signing-key-file=/etc/kubernetes/pki/ca.key --controllers=*,bootstrapsigner,tokencleaner --kubeconfig=/etc/kubernetes/controller-manager.conf --leader-elect=true --node-cidr-mask-size=24 --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --root-ca-file=/etc/kubernetes/pki/ca.crt --service-account-private-key-file=/etc/kubernetes/pki/sa.key --use-service-account-credentials=true\n"
-  },
-  {
-    "test_category": "Controller Manager",
-    "test_number": "1.3.6",
-    "test_desc": "Ensure that the RotateKubeletServerCertificate argument is set to true (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Controller Manager",
-    "test_number": "1.3.7",
-    "test_desc": "Ensure that the --address argument is set to 127.0.0.1 (Scored)",
-    "test_rationale": "root     20018 19972  3 Aug08 ?        02:29:12 kube-controller-manager --address=127.0.0.1 --allocate-node-cidrs=true --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf --client-ca-file=/etc/kubernetes/pki/ca.crt --cluster-cidr=192.168.0.0/16 --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt --cluster-signing-key-file=/etc/kubernetes/pki/ca.key --controllers=*,bootstrapsigner,tokencleaner --kubeconfig=/etc/kubernetes/controller-manager.conf --leader-elect=true --node-cidr-mask-size=24 --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --root-ca-file=/etc/kubernetes/pki/ca.crt --service-account-private-key-file=/etc/kubernetes/pki/sa.key --use-service-account-credentials=true\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.1",
-    "test_desc": "Ensure that the API server pod specification file permissions are set to 644 or more restrictive (Scored)",
-    "test_rationale": "permissions=600\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.2",
-    "test_desc": "Ensure that the API server pod specification file ownership is set to root:root (Scored)",
-    "test_rationale": "root:root\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.3",
-    "test_desc": "Ensure that the controller manager pod specification file permissions are set to 644 or more restrictive (Scored)",
-    "test_rationale": "permissions=600\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.4",
-    "test_desc": "Ensure that the controller manager pod specification file ownership is set to root:root (Scored)",
-    "test_rationale": "root:root\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.5",
-    "test_desc": "Ensure that the scheduler pod specification file permissions are set to 644 or more restrictive (Scored)",
-    "test_rationale": "permissions=600\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.6",
-    "test_desc": "Ensure that the scheduler pod specification file ownership is set to root:root (Scored)",
-    "test_rationale": "root:root\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.7",
-    "test_desc": "Ensure that the etcd pod specification file permissions are set to 644 or more restrictive (Scored)",
-    "test_rationale": "permissions=600\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.8",
-    "test_desc": "Ensure that the etcd pod specification file ownership is set to root:root (Scored)",
-    "test_rationale": "root:root\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.9",
-    "test_desc": "Ensure that the Container Network Interface file permissions are set to 644 or more restrictive (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.10",
-    "test_desc": "Ensure that the Container Network Interface file ownership is set to root:root (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.11",
-    "test_desc": "Ensure that the etcd data directory permissions are set to 700 or more restrictive (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.12",
-    "test_desc": "Ensure that the etcd data directory ownership is set to etcd:etcd (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.13",
-    "test_desc": "Ensure that the admin.conf file permissions are set to 644 or more restrictive (Scored)",
-    "test_rationale": "permissions=600\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.14",
-    "test_desc": "Ensure that the admin.conf file ownership is set to root:root (Scored)",
-    "test_rationale": "root:root\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.15",
-    "test_desc": "Ensure that the scheduler.conf file permissions are set to 644 or more restrictive (Scored)",
-    "test_rationale": "permissions=600\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.16",
-    "test_desc": "Ensure that the scheduler.conf file ownership is set to root:root (Scored)",
-    "test_rationale": "root:root\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.17",
-    "test_desc": "Ensure that the controller-manager.conf file permissions are set to 644 or more restrictive (Scored)",
-    "test_rationale": "permissions=600\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.18",
-    "test_desc": "Ensure that the controller-manager.conf file ownership is set to root:root (Scored)",
-    "test_rationale": "root:root\n"
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.19",
-    "test_desc": "Ensure that the Kubernetes PKI directory and file ownership is set to root:root (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.20",
-    "test_desc": "Ensure that the Kubernetes PKI certificate file permissions are set to 644 or more restrictive (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "Configuration Files",
-    "test_number": "1.4.21",
-    "test_desc": "Ensure that the Kubernetes PKI key file permissions are set to 600 or more restrictive (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "etcd",
-    "test_number": "1.5.1",
-    "test_desc": "Ensure that the --cert-file and --key-file arguments are set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:39 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\nroot      8665  8631  1 Jan28 ?        3-05:02:04 etcd --advertise-client-urls=https://10.0.0.89:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --initial-advertise-peer-urls=https://10.0.0.89:2380 --initial-cluster=kubernetes-master=https://10.0.0.89:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://10.0.0.89:2379 --listen-peer-urls=https://10.0.0.89:2380 --name=kubernetes-master --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt\n"
-  },
-  {
-    "test_category": "etcd",
-    "test_number": "1.5.2",
-    "test_desc": "Ensure that the --client-cert-auth argument is set to true (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:40 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\nroot      8665  8631  1 Jan28 ?        3-05:02:04 etcd --advertise-client-urls=https://10.0.0.89:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --initial-advertise-peer-urls=https://10.0.0.89:2380 --initial-cluster=kubernetes-master=https://10.0.0.89:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://10.0.0.89:2379 --listen-peer-urls=https://10.0.0.89:2380 --name=kubernetes-master --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt\n"
-  },
-  {
-    "test_category": "etcd",
-    "test_number": "1.5.3",
-    "test_desc": "Ensure that the --auto-tls argument is not set to true (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:40 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\nroot      8665  8631  1 Jan28 ?        3-05:02:04 etcd --advertise-client-urls=https://10.0.0.89:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --initial-advertise-peer-urls=https://10.0.0.89:2380 --initial-cluster=kubernetes-master=https://10.0.0.89:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://10.0.0.89:2379 --listen-peer-urls=https://10.0.0.89:2380 --name=kubernetes-master --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt\n"
-  },
-  {
-    "test_category": "etcd",
-    "test_number": "1.5.4",
-    "test_desc": "Ensure that the --peer-cert-file and --peer-key-file arguments are set as appropriate (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:40 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\nroot      8665  8631  1 Jan28 ?        3-05:02:04 etcd --advertise-client-urls=https://10.0.0.89:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --initial-advertise-peer-urls=https://10.0.0.89:2380 --initial-cluster=kubernetes-master=https://10.0.0.89:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://10.0.0.89:2379 --listen-peer-urls=https://10.0.0.89:2380 --name=kubernetes-master --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt\n"
-  },
-  {
-    "test_category": "etcd",
-    "test_number": "1.5.5",
-    "test_desc": "Ensure that the --peer-client-cert-auth argument is set to true (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:40 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\nroot      8665  8631  1 Jan28 ?        3-05:02:04 etcd --advertise-client-urls=https://10.0.0.89:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --initial-advertise-peer-urls=https://10.0.0.89:2380 --initial-cluster=kubernetes-master=https://10.0.0.89:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://10.0.0.89:2379 --listen-peer-urls=https://10.0.0.89:2380 --name=kubernetes-master --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt\n"
-  },
-  {
-    "test_category": "etcd",
-    "test_number": "1.5.6",
-    "test_desc": "Ensure that the --peer-auto-tls argument is not set to true (Scored)",
-    "test_rationale": "root      8583  8565  3 Jan28 ?        6-17:15:40 kube-apiserver --authorization-mode=Node,RBAC --advertise-address=10.0.0.89 --allow-privileged=true --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key\nroot      8665  8631  1 Jan28 ?        3-05:02:04 etcd --advertise-client-urls=https://10.0.0.89:2379 --cert-file=/etc/kubernetes/pki/etcd/server.crt --client-cert-auth=true --data-dir=/var/lib/etcd --initial-advertise-peer-urls=https://10.0.0.89:2380 --initial-cluster=kubernetes-master=https://10.0.0.89:2380 --key-file=/etc/kubernetes/pki/etcd/server.key --listen-client-urls=https://127.0.0.1:2379,https://10.0.0.89:2379 --listen-peer-urls=https://10.0.0.89:2380 --name=kubernetes-master --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt --peer-client-cert-auth=true --peer-key-file=/etc/kubernetes/pki/etcd/peer.key --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt --snapshot-count=10000 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt\n"
-  },
-  {
-    "test_category": "etcd",
-    "test_number": "1.5.7",
-    "test_desc": "Ensure that a unique Certificate Authority is used for etcd (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "General Security Primitives",
-    "test_number": "1.6.1",
-    "test_desc": "Ensure that the cluster-admin role is only used where required (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "General Security Primitives",
-    "test_number": "1.6.2",
-    "test_desc": "Create administrative boundaries between resources using namespaces (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "General Security Primitives",
-    "test_number": "1.6.3",
-    "test_desc": "Create network segmentation using Network Policies (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "General Security Primitives",
-    "test_number": "1.6.4",
-    "test_desc": "Ensure that the seccomp profile is set to docker/default in your pod definitions (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "General Security Primitives",
-    "test_number": "1.6.5",
-    "test_desc": "Apply Security Context to Your Pods and Containers (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "General Security Primitives",
-    "test_number": "1.6.6",
-    "test_desc": "Configure Image Provenance using ImagePolicyWebhook admission controller (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "General Security Primitives",
-    "test_number": "1.6.7",
-    "test_desc": "Configure Network policies as appropriate (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "General Security Primitives",
-    "test_number": "1.6.8",
-    "test_desc": "Place compensating controls in the form of PSP and RBAC for privileged containers usage (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "PodSecurityPolicies",
-    "test_number": "1.7.1",
-    "test_desc": "Do not admit privileged containers (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "PodSecurityPolicies",
-    "test_number": "1.7.2",
-    "test_desc": "Do not admit containers wishing to share the host process ID namespace (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "PodSecurityPolicies",
-    "test_number": "1.7.3",
-    "test_desc": "Do not admit containers wishing to share the host IPC namespace (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "PodSecurityPolicies",
-    "test_number": "1.7.4",
-    "test_desc": "Do not admit containers wishing to share the host network namespace (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "PodSecurityPolicies",
-    "test_number": "1.7.5",
-    "test_desc": " Do not admit containers with allowPrivilegeEscalation (Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "PodSecurityPolicies",
-    "test_number": "1.7.6",
-    "test_desc": "Do not admit root containers (Not Scored)",
-    "test_rationale": ""
-  },
-  {
-    "test_category": "PodSecurityPolicies",
-    "test_number": "1.7.7",
-    "test_desc": "Do not admit containers with dangerous capabilities (Not Scored)",
+    "test_category": "File Ownership",
+    "test_number": "df_k8_4_1_10",
+    "test_desc": "Ensure that the kubelet configuration file ownership is set to root:root",
     "test_rationale": ""
   }
 ]
