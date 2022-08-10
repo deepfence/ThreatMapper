@@ -421,7 +421,7 @@ add_index() {
                   }
                 },
                 "score": {
-                  "type": "long"
+                  "type": "float"
                 }
               }
             }
