@@ -24,6 +24,8 @@ import AzureStorageAccounts from '../../../images/attack-graph-icons/graph-node-
 import AzureMysqlServer from '../../../images/attack-graph-icons/graph-node-icons/10122-icon-service-Azure-Database-MySQL-Server.svg';
 import GCPComputEngine from '../../../images/attack-graph-icons/graph-node-icons/gcp_compute_engine.svg';
 import GCPCloudStorage from '../../../images/attack-graph-icons/graph-node-icons/gcp_cloud_storage.svg';
+import GCPCloudSQL from '../../../images/attack-graph-icons/graph-node-icons/gcp_cloud_sql.svg';
+import GCPCloudFunctions from '../../../images/attack-graph-icons/graph-node-icons/gcp_cloud_functions.svg';
 
 
 const mapping = {
@@ -61,7 +63,9 @@ const mapping = {
 
   // gcp
   gcp_compute_instance: GCPComputEngine,
-  gcp_storage_bucket: GCPCloudStorage
+  gcp_storage_bucket: GCPCloudStorage,
+  gcp_sql_database_instance: GCPCloudSQL,
+  gcp_cloudfunctions_function: GCPCloudFunctions
 };
 
 export function getAssetIcon(id) {
