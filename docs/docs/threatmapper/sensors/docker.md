@@ -30,13 +30,13 @@ You should seek to ensure that the version number of the sensors matches the ver
 To start a named [tagged release](https://github.com/deepfence/ThreatMapper/releases) of the ThreatMapper sensor, tag the container appropriately:
 
 ```bash
-# Install tagged release 1.3.1
+# Install tagged release 1.4.0
 docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=host --net=host \
   --privileged=true -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced \
   -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
   -e USER_DEFINED_TAGS="" -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" \
   -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-  deepfenceio/deepfence_agent_ce:1.3.1
+  deepfenceio/deepfence_agent_ce:1.4.0
 ```
 
 :::tip
