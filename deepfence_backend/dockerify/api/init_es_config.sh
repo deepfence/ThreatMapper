@@ -409,11 +409,21 @@ add_index() {
             "time_stamp": {
               "type": "long"
             },
-            "Severity" : {
-              "type" : "nested"
-            },
-            "Severity.score" : {
-              "type" : "float"
+            "Severity": {
+              "properties": {
+                "level": {
+                  "type": "text",
+                  "fields": {
+                    "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                    }
+                  }
+                },
+                "score": {
+                  "type": "long"
+                }
+              }
             }
           }
         }

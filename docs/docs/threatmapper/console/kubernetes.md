@@ -28,7 +28,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     If the metrics server is not already installed (```kubectl get deployment metrics-server -n kube-system```), install as follows:
 
     ```bash
-    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.1/components.yaml
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
     ```
 
 3. **Install the ThreatMapper Console**
