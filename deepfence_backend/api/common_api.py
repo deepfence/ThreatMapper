@@ -19,7 +19,8 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
     TOPOLOGY_ID_CONTAINER, TOPOLOGY_ID_CONTAINER_IMAGE, TOPOLOGY_ID_HOST, NODE_TYPE_CONTAINER_IMAGE, \
     TOPOLOGY_ID_KUBE_SERVICE, NODE_TYPE_KUBE_CLUSTER, ES_TERMS_AGGR_SIZE, \
     REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX, SECRET_SCAN_INDEX, SBOM_INDEX, \
-    SBOM_ARTIFACT_INDEX, CVE_ES_TYPE
+    SBOM_ARTIFACT_INDEX, CVE_ES_TYPE, CLOUD_COMPLIANCE_LOGS_ES_TYPE, CLOUD_COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_INDEX, \
+    CLOUD_COMPLIANCE_LOGS_INDEX, COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, COMPLIANCE_ES_TYPE, COMPLIANCE_LOGS_ES_TYPE
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta
@@ -1042,6 +1043,78 @@ def delete_resources():
                 filters["Severity.level"] = severity
             ESConn.bulk_delete(SECRET_SCAN_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
             ESConn.bulk_delete(SECRET_SCAN_LOGS_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
+    # compliance
+    elif index_name == COMPLIANCE_INDEX:
+        filters = {"type": COMPLIANCE_ES_TYPE}
+        scan_log_filters = {"type": COMPLIANCE_LOGS_ES_TYPE}
+        node_names_to_delete = []
+        cloud_compliance_filters = {"type": CLOUD_COMPLIANCE_ES_TYPE}
+        cloud_compliance_log_filters = {"type": CLOUD_COMPLIANCE_LOGS_ES_TYPE}
+        if scan_id:
+            filters["scan_id"] = scan_id
+            scan_log_filters["scan_id"] = scan_id
+            cloud_compliance_filters["scan_id"] = scan_id
+            cloud_compliance_log_filters["scan_id"] = scan_id
+        if only_masked:
+            filters["masked"] = "true"
+            cloud_compliance_filters["masked"] = "true"
+        if only_dead_nodes:
+            exclude_nodes = fetch_topology_data(NODE_TYPE_HOST, format="deepfence")
+            if not exclude_nodes:
+                raise InvalidUsage("found no dead nodes, please try later")
+            exclude_node_names = [i["scope_id"] for _, i in exclude_nodes.items() if
+                                  i.get("scope_id") and not i.get("pseudo")]
+            exclude_nodes = fetch_topology_data(NODE_TYPE_CONTAINER, format="deepfence")
+            for _, i in exclude_nodes.items():
+                if i.get("scope_id") and not i.get("pseudo"):
+                    exclude_node_names.append(i["scope_id"])
+            exclude_nodes = fetch_topology_data(NODE_TYPE_CONTAINER_IMAGE, format="deepfence")
+            for _, i in exclude_nodes.items():
+                if i.get("scope_id") and not i.get("pseudo"):
+                    exclude_node_names.append(i["scope_id"])
+            aggs = {
+                "node_id": {
+                    "terms": {
+                        "field": "node_id.keyword",
+                        "size": 200000
+                    },
+                    "aggs": {
+                        "docs": {
+                            "top_hits": {
+                                "size": 1,
+                                "sort": [{"@timestamp": {"order": "desc"}}],
+                                "_source": {"includes": ["@timestamp"]}
+                            }
+                        }
+                    }
+                }
+            }
+            aggs_response = ESConn.aggregation_helper(COMPLIANCE_INDEX, {}, aggs)
+            for image_aggr in aggs_response["aggregations"]["node_id"]["buckets"]:
+                if image_aggr["key"] in exclude_node_names:
+                    continue
+                if dead_nodes_since_days > 0:
+                    recent_alert_dt = datetime.strptime(image_aggr["docs"]["hits"]["hits"][0]["_source"]["@timestamp"],
+                                                        "%Y-%m-%dT%H:%M:%S.%fZ")
+                    if recent_alert_dt <= dead_nodes_since_dt:
+                        node_names_to_delete.append(image_aggr["key"])
+                else:
+                    node_names_to_delete.append(image_aggr["key"])
+            for delete_node_name_chunk in split_list_into_chunks(node_names_to_delete, ES_MAX_CLAUSE):
+                ESConn.bulk_delete(COMPLIANCE_INDEX, {**filters, "node_id": delete_node_name_chunk})
+                ESConn.bulk_delete(COMPLIANCE_LOGS_INDEX,
+                                   {**scan_log_filters, "node_id": delete_node_name_chunk})
+        else:
+            ESConn.bulk_delete(COMPLIANCE_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
+            ESConn.bulk_delete(CLOUD_COMPLIANCE_INDEX, cloud_compliance_filters, number, TIME_UNIT_MAPPING[time_unit])
+
+            if not only_masked:
+                ESConn.bulk_delete(COMPLIANCE_LOGS_INDEX, scan_log_filters, number,
+                                   TIME_UNIT_MAPPING[time_unit])
+                ESConn.bulk_delete(CLOUD_COMPLIANCE_LOGS_INDEX, cloud_compliance_log_filters, number,
+                                   TIME_UNIT_MAPPING[time_unit])
+        message = "Successfully scheduled deletion of selected compliance scan reports"
+
     else:
         raise InvalidUsage("doc_type is invalid")
 

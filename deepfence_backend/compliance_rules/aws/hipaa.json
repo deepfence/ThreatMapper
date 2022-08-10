@@ -1,0 +1,194 @@
+[
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_8",
+    "test_desc": "164.308(a)(8) Evaluation",
+    "test_rationale": "Perform a periodic technical and nontechnical evaluation, based initially upon the standards implemented under this rule and subsequently, in response to environmental or operational changes affecting the security of electronic protected health information, that establishes the extent to which an entity's security policies and procedures meet the requirements of this subpart."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "benchmark.hipaa_164_308_a_4_ii_b",
+    "test_desc": "164.308(a)(4)(ii)(B) Access authorization",
+    "test_rationale": "Implement policies and procedures for granting access to electronic protected health information, As one illustrative example, through access to a workstation, transaction, program, process, or other mechanism."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_4_ii_c",
+    "test_desc": "164.308(a)(4)(ii)(C) Access establishment and modification",
+    "test_rationale": "Implement policies and procedures that, based upon the covered entity's or the business associate's access authorization policies, establish, document, review, and modify a user's right of access to a workstation, transaction, program, or process."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_1_ii_a",
+    "test_desc": "164.308(a)(1)(ii)(A) Risk analysis",
+    "test_rationale": "Conduct an accurate and thorough assessment of the potential risks and vulnerabilities to the confidentiality, integrity, and availability of electronic protected health information held by the covered entity or business associate."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_7_i",
+    "test_desc": "164.308(a)(7)(i) Contingency plan",
+    "test_rationale": "Establish (and implement as needed) policies and procedures for responding to an emergency or other occurrence (for example, fire, vandalism, system failure, and natural disaster) that damages systems that contain electronic protected health information."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_1_ii_b",
+    "test_desc": "164.308(a)(1)(ii)(B) Risk Management",
+    "test_rationale": "Implement security measures sufficient to reduce risks and vulnerabilities to a reasonable and appropriate level to comply with 164.306(a): Ensure the confidentiality, integrity, and availability of all electronic protected health information the covered entity or business associate creates, receives, maintains, or transmits."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_7_ii_b",
+    "test_desc": "164.308(a)(7)(ii)(B) Disaster recovery plan",
+    "test_rationale": "Establish (and implement as needed) procedures to restore any loss of data."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_5_ii_b",
+    "test_desc": "164.308(a)(5)(ii)(B) Protection from malicious software",
+    "test_rationale": "Procedures for guarding against, detecting, and reporting malicious software."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "benchmark.hipaa_164_308_a_3_ii_b",
+    "test_desc": "164.308(a)(3)(ii)(B) Workforce clearance procedure",
+    "test_rationale": "Implement procedures to determine that the access of a workforce member to electronic protected health information is appropriate."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_6_ii",
+    "test_desc": "164.308(a)(6)(ii) Response and reporting",
+    "test_rationale": "Identify and respond to suspected or known security incidents; mitigate, to the extent practicable, harmful effects of security incidents that are known to the covered entity or business associate; and document security incidents and their outcomes."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_7_ii_c",
+    "test_desc": "164.308(a)(7)(ii)(C) Emergency mode operation plan",
+    "test_rationale": "Establish (and implement as needed) procedures to enable continuation of critical business processes for protection of the security of electronic protected health information while operating in emergency mode."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "benchmark.hipaa_164_308_a_3_ii_c",
+    "test_desc": "164.308(a)(3)(ii)(C) Termination procedures",
+    "test_rationale": "Implement procedures for terminating access to electronic protected health information when the employment of, or other arrangement with, a workforce member ends or as required by determinations made as specified in paragraph (a)(3)(ii)(b)."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "benchmark.hipaa_164_308_a_4_i",
+    "test_desc": "164.308(a)(4)(i) Information access management",
+    "test_rationale": "Implement policies and procedures for authorizing access to electronic protected health information that are consistent with the applicable requirements of subpart E of this part."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "benchmark.hipaa_164_308_a_5_ii_d",
+    "test_desc": "164.308(a)(5)(ii)(D) Password management",
+    "test_rationale": "Procedures for creating, changing, and safeguarding passwords."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_5_ii_c",
+    "test_desc": "164.308(a)(5)(ii)(C) Log-in monitoring",
+    "test_rationale": "Procedures for monitoring log-in attempts and reporting discrepancies."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_4_ii_a",
+    "test_desc": "164.308(a)(4)(ii)(A) Isolating health care clearinghouse functions",
+    "test_rationale": "If a health care clearinghouse is part of a larger organization, the clearinghouse must implement policies and procedures that protect the electronic protected health information of the clearinghouse from unauthorized access by the larger organization."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_1_ii_d",
+    "test_desc": "164.308(a)(1)(ii)(D) Information system activity review",
+    "test_rationale": "Implement procedures to regularly review records of information system activity, such as audit logs, access reports, and security incident tracking reports."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_3_ii_a",
+    "test_desc": "164.308(a)(3)(ii)(A) Authorization and/or supervision",
+    "test_rationale": "Implement procedures for the authorization and/or supervision of workforce members who work with electronic protected health information or in locations where it might be accessed."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_3_i",
+    "test_desc": "164.308(a)(3)(i) Workforce security",
+    "test_rationale": "Implement policies and procedures to ensure that all members of its workforce have appropriate access to electronic protected health information, as provided under paragraph (a)(4) of this section, and to prevent those workforce members who do not have access under paragraph (a)(4) of this section from obtaining access to electronic protected health information."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_6_i",
+    "test_desc": "164.308(a)(6)(i) Security incident procedures",
+    "test_rationale": "Implement policies and procedures to address security incidents."
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.hipaa_164_308_a_7_ii_a",
+    "test_desc": "164.308(a)(7)(ii)(A) Data backup plan",
+    "test_rationale": "Establish and implement procedures to create and maintain retrievable exact copies of electronic protected health information."
+  },
+  {
+    "test_category": "IAM", 
+    "test_rationale": "Implement procedures to verify that a person or entity seeking access to electronic protected health information is the one claimed.", 
+    "test_desc": "164.312(d) Person or entity authentication", 
+    "test_number": "benchmark.hipaa_164_312_d"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Establish (and implement as needed) procedures for obtaining necessary electronic protected health information during an emergency.", 
+    "test_desc": "164.312(a)(2)(ii) Emergency access procedure", 
+    "test_number": "benchmark.hipaa_164_312_a_2_ii"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Implement security measures to ensure that electronically transmitted electronic protected health information is not improperly modified without detection until disposed of.", 
+    "test_desc": "164.312(e)(2)(i) Integrity controls", 
+    "test_number": "benchmark.hipaa_164_312_e_2_i"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Implement technical security measures to guard against unauthorized access to electronic protected health information that is being transmitted over an electronic communications network.", 
+    "test_desc": "164.312(e)(1) Transmission security", 
+    "test_number": "benchmark.hipaa_164_312_e_1"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Implement policies and procedures to protect electronic protected health information from improper alteration or destruction.", 
+    "test_desc": "164.312(c)(1) Integrity", 
+    "test_number": "benchmark.hipaa_164_312_c_1"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Implement technical policies and procedures for electronic information systems that maintain electronic protected health information to allow access only to those persons or software programs that have been granted access rights as specified in 164.308(a)(4).", 
+    "test_desc": "164.312(a)(1) Access control", 
+    "test_number": "benchmark.hipaa_164_312_a_1"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Assign a unique name and/or number for identifying and tracking user identity.", 
+    "test_desc": "164.312(a)(2)(i) Unique user identification", 
+    "test_number": "benchmark.hipaa_164_312_a_2_i"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Implement a mechanism to encrypt and decrypt electronic protected health information.", 
+    "test_desc": "164.312(a)(2)(iv) Encryption and decryption", 
+    "test_number": "benchmark.hipaa_164_312_a_2_iv"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Implement hardware, software, and/or procedural mechanisms that record and examine activity in information systems that contain or use electronic protected health information.", 
+    "test_desc": "164.312(b) Audit controls", 
+    "test_number": "benchmark.hipaa_164_312_b"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Implement electronic mechanisms to corroborate that electronic protected health information has not been altered or destroyed in an unauthorized manner.", 
+    "test_desc": "164.312(c)(2) Mechanism to authenticate electronic protected health information", 
+    "test_number": "benchmark.hipaa_164_312_c_2"
+  }, 
+  {
+    "test_category": "AWS", 
+    "test_rationale": "Implement a mechanism to encrypt electronic protected health information whenever deemed appropriate.", 
+    "test_desc": "164.312(e)(2)(ii) Encryption", 
+    "test_number": "benchmark.hipaa_164_312_e_2_ii"
+  }
+]

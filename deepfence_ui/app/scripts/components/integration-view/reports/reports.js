@@ -26,7 +26,11 @@ const config = [
   {
     label: 'Secret scan',
     value: 'secret-scan'
-  }
+  },
+  {
+    label: 'Compliance',
+    value: 'compliance',
+  },
 ];
 
 const cveSeverityOptions = [
@@ -45,6 +49,93 @@ const cveSeverityOptions = [
   {
     label: 'Low',
     value: 'low',
+  },
+];
+
+
+const complianceProviders = [
+  {
+    label: 'AWS',
+    value: 'aws',
+  },
+  {
+    label: 'Google Cloud',
+    value: 'gcp',
+  },
+  {
+    label: 'Azure',
+    value: 'azure',
+  },
+  {
+    label: 'Linux',
+    value: 'linux',
+  },
+];
+const awsCheckTypes = [
+  {
+    value: 'cis',
+    label: 'CIS',
+  },
+  {
+    value: 'gdpr',
+    label: 'GDPR',
+  },
+  {
+    value: 'hipaa',
+    label: 'HIPAA',
+  },
+  {
+    value: 'pci',
+    label: 'PCI',
+  },
+  {
+    value: 'soc2',
+    label: 'SOC2',
+  },
+  {
+    value: 'nist',
+    label: 'NIST',
+  },
+];
+
+const azureCheckType = [
+  {
+    value: 'cis',
+    label: 'CIS',
+  },
+  {
+    value: 'hipaa',
+    label: 'HIPAA',
+  },
+  {
+    value: 'nist',
+    label: 'NIST',
+  },
+];
+
+const linuxCheckType = [
+  {
+    value: 'hipaa',
+    label: 'HIPAA',
+  },
+  {
+    value: 'gdpr',
+    label: 'GDPR',
+  },
+  {
+    value: 'pci',
+    label: 'PCI',
+  },
+  {
+    value: 'nist',
+    label: 'NIST',
+  },
+];
+
+const gcpCheckType = [
+  {
+    value: 'cis',
+    label: 'CIS',
   },
 ];
 
@@ -127,6 +218,12 @@ const validate = (values) => {
       errors.email_address = 'Enter email address to send scheduled reports';
     }
   }
+  if (
+    values.get('resource_type')?.value === 'compliance' &&
+    !values.get('compliance_provider')
+  ) {
+    errors.compliance_provider = 'Please select a cloud provider';
+  }
   return errors;
 };
 
@@ -156,6 +253,7 @@ const Reports = props => {
     topologyFilters,
     duration,
     schedule_interval,
+    compliance_provider,
     pristine,
     submitting,
     loading,
@@ -185,7 +283,17 @@ const Reports = props => {
 
 // A function to initiate the report generation
   useEffect(() => {
-    if (resource_type && node_type) {
+    if (resource_type?.value === 'compliance') {
+      if (!compliance_provider) return;
+      // debugger;
+      const resourceTypeText = resource_type.value;
+      props.enumerateFiltersAction({
+        resource_type: resourceTypeText,
+        node_type: compliance_provider.value,
+        filters:
+          'host_name,container_name,image_name_with_tag,os,kubernetes_cluster_name,kubernetes_namespace,masked',
+      });
+    } else if (resource_type && node_type) {
       const resourceTypeText = resource_type.value;
       const nodeTypeText = node_type.value;
       props.enumerateFiltersAction({
@@ -195,7 +303,7 @@ const Reports = props => {
           'host_name,container_name,image_name_with_tag,os,kubernetes_cluster_name,kubernetes_namespace,masked',
       });
     }
-  }, [resource_type, node_type]);
+  }, [resource_type, node_type, compliance_provider]);
 
 
 // Function used to display the NodeType dropdown
@@ -204,6 +312,7 @@ const Reports = props => {
       <div
         className="nodes-filter-item"
         style={{ marginLeft: '0px', width: '400px' }}
+        key={filter.name}
       >
         <Field
           key={filter.name}
@@ -237,6 +346,65 @@ const Reports = props => {
           buttonLabel="CVE Severity"
           clearable={false}
           placeholder="Select cve severity"
+          isMulti
+        />
+      </div>
+    );
+  };
+
+  const renderComplianceSeverityDropdown = errors => {
+    return (
+      <div
+        className="nodes-filter-item"
+        style={{ marginLeft: '0px', width: '400px' }}
+      >
+        <Field
+          name="compliance_provider"
+          rootClassName="form-field dir-column"
+          component={DFSearchableSelectField}
+          options={complianceProviders}
+          buttonLabel="Provider"
+          clearable={false}
+          placeholder="Select provider"
+        />
+        {errors && errors.compliance_provider && (
+          <div className="error-message-reports">
+            {errors.compliance_provider}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderCheckTypeDropdown = () => {
+    const { compliance_provider: provider } = props;
+    let checkTypesDropdownList = '';
+
+    if (provider.value === 'aws') {
+      checkTypesDropdownList = awsCheckTypes;
+    } else if (provider.value === 'azure') {
+      checkTypesDropdownList = azureCheckType;
+    } else if (provider.value === 'linux') {
+      checkTypesDropdownList = linuxCheckType;
+    } else if (provider.value === 'gcp') {
+      checkTypesDropdownList = gcpCheckType;
+    }
+    // } else if (provider.value === 'k8s') {
+    //   checkTypesDropdownList = ''
+    // }
+    return (
+      <div
+        className="nodes-filter-item"
+        style={{ marginLeft: '0px', width: '400px' }}
+      >
+        <Field
+          name="compliance_checktype"
+          rootClassName="form-field dir-column"
+          component={DFSearchableSelectField}
+          options={checkTypesDropdownList}
+          buttonLabel="Checktype"
+          clearable={false}
+          placeholder="Select checktype"
           isMulti
         />
       </div>
@@ -340,6 +508,9 @@ const Reports = props => {
         masked,
         reportGenerateAction: actionDownload,
         reportScheduleEmailAction: actionEmail,
+        account_id,
+        compliance_provider,
+        compliance_checktype,
       } = props;
 
       if (!valid) {
@@ -368,10 +539,41 @@ const Reports = props => {
           filter: {},
         });
       }
+      if (
+        resourceTypeText &&
+        resourceTypeText.includes('compliance') &&
+        compliance_checktype
+      ) {
+        resourceData.push({
+          type: 'compliance',
+          filter: {
+            compliance_check_type: compliance_checktype.map(el => el.value),
+            masked: maskedFilter,
+          },
+        });
+      }
+      if (
+        resourceTypeText &&
+        resourceTypeText.includes('compliance') &&
+        !compliance_checktype
+      ) {
+        resourceData.push({
+          type: 'compliance',
+          filter: {
+            masked: maskedFilter,
+          },
+        });
+      }
       let globalFilter;
       const durationValues = duration && duration.value;
       const downloadTypeOption = download_type && download_type.value;
-      if (node_type.value === 'host') {
+      if (resource_type.value === 'compliance' && node_type.value === 'host') {
+        const accountId = account_id && account_id.map(v => v.value);
+        globalFilter = {
+          type: [compliance_provider.value],
+          account_id: accountId,
+        };
+      } else if (node_type.value === 'host') {
         const hostName = host_name && host_name.map(v => v.value);
         const os = operating_system && operating_system.map(v => v.value);
         const k8sClusterName =
@@ -449,11 +651,18 @@ const Reports = props => {
         };
         return actionEmail(params);
       }
+      // node_type value different for resource type compliance
+      let NodeType = '';
+      if (resource_type.value === 'compliance') {
+        NodeType = compliance_provider.value;
+      } else {
+        NodeType = node_type.value;
+      }
       // API params for report generation
       params = {
         action: 'download_report',
         file_type: downloadTypeOption,
-        node_type: node_type.value,
+        node_type: NodeType,
         add_hist: true,
         include_dead_nodes: deadNodes,
         action_args: {
@@ -499,6 +708,16 @@ const Reports = props => {
           <div>
             {checkIfResourceSelected('cve') && (
               <div>{renderCVESeverityDropdown()}</div>
+            )}
+          </div>
+          <div>
+            {checkIfResourceSelected('compliance') && (
+              <>
+                <div>{renderComplianceSeverityDropdown(errors)}</div>
+                <div>
+                  {props.compliance_provider && renderCheckTypeDropdown()}
+                </div>
+              </>
             )}
           </div>
           <div className="resource-option-wrapper">
@@ -574,7 +793,10 @@ const Reports = props => {
             component={ToggleSwitchField}
             label="Include dead nodes"
           />
-          {props.resource_type && (
+          {(props.resource_type?.value === 'compliance' &&
+            compliance_provider) ||
+          (props.resource_type &&
+            props.resource_type?.value !== 'compliance') ? (
             <span
               onClick={() => setShowModal(true)}
               className="link"
@@ -583,7 +805,7 @@ const Reports = props => {
             >
               Advanced
             </span>
-          )}
+          ) : null}
           {showModal && (
             <div className="ReactModalPortal">
               <div
@@ -691,12 +913,14 @@ const Reports = props => {
       <div className="email-integration-collection-wrapper">
         <table className="table table-bordered table-striped">
           <thead>
-            <th> Timestamp </th>
-            <th> Report Type </th>
-            <th> Filters Used </th>
-            <th> Duration </th>
-            <th> Status </th>
-            <th> Download </th>
+            <tr>
+              <th> Timestamp </th>
+              <th> Report Type </th>
+              <th> Filters Used </th>
+              <th> Duration </th>
+              <th> Status </th>
+              <th> Download </th>
+            </tr>
           </thead>
           <tbody>
             {tableItems &&
@@ -728,6 +952,9 @@ const mapStateToProps = state => ({
   resource_type: selector(state, 'resource_type'),
   node_type: selector(state, 'node_type'),
   cve_severity: selector(state, 'cve_severity'),
+  compliance_provider: selector(state, 'compliance_provider'),
+  compliance_checktype: selector(state, 'compliance_checktype'),
+  account_id: selector(state, 'account_id'),
   duration: selector(state, 'duration'),
   schedule_interval: selector(state, 'schedule_interval'),
   email_address: selector(state, 'email_address'),
@@ -759,6 +986,12 @@ initialValues = initialValues.set('node_type', {
   label: 'Node Type',
   value: 'host',
 });
+initialValues = initialValues.set('masked', [
+  {
+    label: 'false',
+    value: 'false',
+  },
+]);
 initialValues = initialValues.set('toggle', true);
 
 export default connect(mapStateToProps, {

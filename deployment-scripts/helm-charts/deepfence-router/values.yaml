@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Cloud Provider: aws, azure, google_cloud, ibm_cloud, open_stack
+# Cloud Provider: aws, azure, gcp, ibm_cloud, open_stack
 # cloudProvider is required to set appropriate LoadBalancer annotations
 cloudProvider: ""
 

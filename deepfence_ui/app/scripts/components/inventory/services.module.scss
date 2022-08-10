@@ -1,0 +1,76 @@
+@import './../../../styles/deepfence';
+
+.container {
+  padding: 0px 12px;
+}
+
+.servicesContainer {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.serviceCard {
+  text-decoration: none;
+  color: $text-primary;
+  width: 260px;
+
+  .cardInner {
+    box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.2);
+    background-color: $background-secondary;
+    margin-top: 60px;
+    border-radius: 6px;
+    position: relative;
+    padding: 16px;
+    padding-top: 40px;
+
+    .serviceImageWrapper {
+      position: absolute;
+      top: -34px;
+      left: 16px;
+      width: 64px;
+      height: 64px;
+      border-radius: 4px;
+      border: 2px solid #555555;
+      overflow: hidden;
+      background-color: #101010;
+      box-shadow: 0 8px 12px 0 rgba(0, 0, 0, 0.16);
+      padding: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .serviceLabel {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+
+    .countsContainer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+}
+
+.filtersContainer {
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.searchInput {
+  width: 400px;
+}
+
+.noData {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+}

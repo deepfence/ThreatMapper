@@ -1,0 +1,93 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.modalContentWrapper {
+  .errorMessage {
+    width: 100%;
+    color: $color-error;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid $color-error;
+    padding: 4px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .tabFormWrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .scanButtonsWrapper {
+      margin-left: auto;
+      margin-right: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tabsWrapper {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+      height: 48px;
+
+      .tabWrapper {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        gap: 8px;
+        align-items: center;
+        background-color: $color-secondary;
+        cursor: pointer;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        font-weight: 600;
+
+        .removeTabButton {
+          padding-inline: 6px;
+          border-radius: 3px;
+          &:hover {
+            background-color: $grey-background;
+          }
+        }
+
+        &.active {
+          border-bottom: 5px solid $color-primary;
+        }
+      }
+      .addTabButtonWrapper {
+        .scanTypeSelectWrapper {
+          margin-inline: -8px;
+          .scanTypeSelectItem {
+            padding: 8px 16px;
+            font-size: 1rem;
+
+            &:hover {
+              background-color: $grey-background;
+              cursor: pointer;
+            }
+          }
+        }
+        .addTabButton {
+          height: 100%;
+          padding-inline: 12px;
+          border-radius: 4px;
+          &:hover {
+            background-color: $grey-background;
+          }
+        }
+      }
+    }
+  }
+}
+
+.unstyledButton {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+}

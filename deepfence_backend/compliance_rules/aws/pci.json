@@ -1,0 +1,278 @@
+[
+  {
+    "test_category": "Config",
+    "test_number": "control.pci_v321_config_1",
+    "test_desc": "1 AWS Config should be enabled",
+    "test_rationale": "This control checks whether AWS Config is enabled in the account for the local Region and is recording all resources. It does not check for change detection for all critical system files and content files, as AWS Config supports only a subset of resource types. The AWS Config service performs configuration management of supported AWS resources in your account and delivers log files to you. The recorded information includes the configuration item (AWS resource), relationships between configuration items, and any configuration changes between resources."
+  },
+  {
+    "test_category": "DMS",
+    "test_number": "control.pci_v321_dms_1",
+    "test_desc": "1 AWS Database Migration Service replication instances should not be public",
+    "test_rationale": "This control checks whether AWS DMS replication instances are public. To do this, it examines the value of the PubliclyAccessible field. A private replication instance has a private IP address that you cannot access outside of the replication network. A replication instance should have a private IP address when the source and target databases are in the same network, and the network is connected to the replication instance's VPC using a VPN, AWS Direct Connect, or VPC peering."
+  },
+  {
+    "test_category": "SageMaker",
+    "test_number": "control.pci_v321_sagemaker_1",
+    "test_desc": "1 Amazon SageMaker notebook instances should not have direct internet access",
+    "test_rationale": "This control checks whether direct internet access is disabled for an SageMaker notebook instance. To do this, it checks whether the DirectInternetAccess field is disabled for the notebook instance."
+  },
+  {
+    "test_category": "RDS",
+    "test_number": "control.pci_v321_rds_1",
+    "test_desc": "1 RDS snapshots should prohibit public access",
+    "test_rationale": "This control checks whether Amazon RDS DB snapshots prohibit access by other accounts. You should also ensure that access to the snapshot and permission to change Amazon RDS configuration is restricted to authorized principals only."
+  },
+  {
+    "test_category": "RDS",
+    "test_number": "control.pci_v321_rds_2",
+    "test_desc": "2 RDS DB Instances should prohibit public access",
+    "test_rationale": "This control checks whether RDS instances are publicly accessible by evaluating the publiclyAccessible field in the instance configuration item. The value of publiclyAccessible indicates whether the DB instance is publicly accessible. When the DB instance is publicly accessible,it is an Internet-facing instance with a publicly resolvable DNS name, which resolves to a public IP address. When the DB instance isn't publicly accessible, it is an internal instance with a DNS name that resolves to a private IP address."
+  },
+  {
+    "test_category": "Lambda",
+    "test_number": "control.pci_v321_lambda_1",
+    "test_desc": "1 Lambda functions should prohibit public access",
+    "test_rationale": "This control checks whether the Lambda function resource-based policy prohibits public access. It does not check for access to the Lambda function by internal principals, such as IAM roles. You should ensure that access to the Lambda function is restricted to authorized principals only by using least privilege Lambda resource-based policies."
+  },
+  {
+    "test_category": "Lambda",
+    "test_number": "control.pci_v321_lambda_2",
+    "test_desc": "2 Lambda functions should be in a VPC",
+    "test_rationale": "This control checks whether a Lambda function is in a VPC. It does not evaluate the VPC subnet routing configuration to determine public reachability."
+  },
+  {
+    "test_category": "ES",
+    "test_number": "control.pci_v321_es_1",
+    "test_desc": "1 Amazon Elasticsearch Service domains should be in a VPC",
+    "test_rationale": "This control checks whether Amazon Elasticsearch Service domains are in a VPC. It does not evaluate the VPC subnet routing configuration to determine public reachability."
+  },
+  {
+    "test_category": "ES",
+    "test_number": "control.pci_v321_es_2",
+    "test_desc": "2 Amazon Elasticsearch Service domains should have encryption at rest enabled",
+    "test_rationale": "This control checks whether Amazon ES domains have encryption at rest configuration enabled."
+  },
+  {
+    "test_category": "Redshift",
+    "test_number": "control.pci_v321_redshift_1",
+    "test_desc": "1 Amazon Redshift clusters should prohibit public access",
+    "test_rationale": "This control checks whether Amazon Redshift clusters are publicly accessible by evaluating the publiclyAccessible field in the cluster configuration item."
+  },
+  {
+    "test_category": "CloudWatch",
+    "test_number": "control.pci_v321_cw_1",
+    "test_desc": "1 A log metric filter and alarm should exist for usage of the 'root' user",
+    "test_rationale": "AwsServiceEvent }."
+  },
+  {
+    "test_category": "ELBv2",
+    "test_number": "control.pci_v321_elbv2_1",
+    "test_desc": "1 Application Load Balancer should be configured to redirect all HTTP requests to HTTPS",
+    "test_rationale": "This control checks whether HTTP to HTTPS redirection is configured on all HTTP listeners of Application Load Balancers. The control fails if any of the HTTP listeners of Application Load Balancers do not have HTTP to HTTPS redirection configured."
+  },
+  {
+    "test_category": "KMS",
+    "test_number": "control.pci_v321_kms_1",
+    "test_desc": "1 Customer master key (CMK) rotation should be enabled",
+    "test_rationale": "This control checks that key rotation is enabled for each customer master key (CMK). It does not check CMKs that have imported key material. You should ensure keys that have imported material and those that are not stored in AWS KMS are rotated. AWS managed customer master keys are rotated once every 3 years."
+  },
+  {
+    "test_category": "SSM",
+    "test_number": "control.pci_v321_ssm_1",
+    "test_desc": "1 Amazon EC2 instances managed by Systems Manager should have a patch compliance status of COMPLIANT after a patch installation",
+    "test_rationale": "This control checks whether the compliance status of the Amazon EC2 Systems Manager patch compliance is COMPLIANT or NON_COMPLIANT after the patch installation on the instance."
+  },
+  {
+    "test_category": "SSM",
+    "test_number": "control.pci_v321_ssm_2",
+    "test_desc": "2 Instances managed by Systems Manager should have an association compliance status of COMPLIANT",
+    "test_rationale": "This control checks whether the status of the AWS Systems Manager association compliance is COMPLIANT or NON_COMPLIANT after the association is run on an instance. The control passes if the association compliance status is COMPLIANT."
+  },
+  {
+    "test_category": "SSM",
+    "test_number": "control.pci_v321_ssm_3",
+    "test_desc": "3 EC2 instances should be managed by AWS Systems Manager",
+    "test_rationale": "This control checks whether the EC2 instances in your account are managed by Systems Manager."
+  },
+  {
+    "test_category": "CodeBuild",
+    "test_number": "control.pci_v321_codebuild_1",
+    "test_desc": "1 CodeBuild GitHub or Bitbucket source repository URLs should use OAuth",
+    "test_rationale": "This control checks whether the GitHub or Bitbucket source repository URL contains either personal access tokens or a user name and password."
+  },
+  {
+    "test_category": "CodeBuild",
+    "test_number": "control.pci_v321_codebuild_2",
+    "test_desc": "2 CodeBuild project environment variables should not contain clear text credentials",
+    "test_rationale": "This control checks whether the project contains environment variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
+  },
+  {
+    "test_category": "OpenSearch",
+    "test_number": "control.pci_v321_opensearch_1",
+    "test_desc": "1 Amazon OpenSearch domains should be in a VPC",
+    "test_rationale": "This control checks whether Amazon OpenSearch domains are in a VPC. It does not evaluate the VPC subnet routing configuration to determine public access."
+  },
+  {
+    "test_category": "OpenSearch",
+    "test_number": "control.pci_v321_opensearch_2",
+    "test_desc": "2 OpenSearch domains should have encryption at rest enabled",
+    "test_rationale": "This control checks whether Amazon OpenSearch domains have encryption-at-rest configuration enabled. The check fails if encryption at rest is not enabled."
+  },
+  {
+    "test_category": "S3",
+    "test_number": "control.pci_v321_s3_1",
+    "test_desc": "1 S3 buckets should prohibit public write access",
+    "test_rationale": "This control checks whether your S3 buckets allow public write access by evaluating the Block Public Access settings, the bucket policy, and the bucket access control list (ACL). It does not check for write access to the bucket by internal principals, such as IAM roles. You should ensure that access to the bucket is restricted to authorized principals only."
+  },
+  {
+    "test_category": "S3",
+    "test_number": "control.pci_v321_s3_2",
+    "test_desc": "2 S3 buckets should prohibit public read access",
+    "test_rationale": "This control checks whether your S3 buckets allow public read access by evaluating the Block Public Access settings, the bucket policy, and the bucket access control list (ACL). Unless you explicitly require everyone on the internet to be able to write to your S3 bucket, you should ensure that your S3 bucket is not publicly writable. It does not check for read access to the bucket by internal principals, such as IAM roles. You should ensure that access to the bucket is restricted to authorized principals only."
+  },
+  {
+    "test_category": "S3",
+    "test_number": "control.pci_v321_s3_3",
+    "test_desc": "3 S3 buckets should have cross-region replication enabled",
+    "test_rationale": "This control checks whether S3 buckets have cross-region replication enabled. PCI DSS does not require data replication or highly available configurations. However, this check aligns with AWS best practices for this control."
+  },
+  {
+    "test_category": "S3",
+    "test_number": "control.pci_v321_s3_4",
+    "test_desc": "4 S3 buckets should have server-side encryption enabled",
+    "test_rationale": "This control checks that your Amazon S3 bucket either has Amazon S3 default encryption enabled or that the S3 bucket policy explicitly denies put-object requests without server-side encryption. When you set default encryption on a bucket, all new objects stored in the bucket are encrypted when they are stored, including clear text PAN data. Server-side encryption for all of the objects stored in a bucket can also be enforced using a bucket policy."
+  },
+  {
+    "test_category": "S3",
+    "test_number": "control.pci_v321_s3_5",
+    "test_desc": "5 S3 buckets should require requests to use Secure Socket Layer",
+    "test_rationale": "This control checks whether Amazon S3 buckets have policies that require requests to use Secure Socket Layer (SSL). S3 buckets should have policies that require all requests (Action: S3:*)to only accept transmission of data over HTTPS in the S3 resource policy, indicated by the condition key aws:SecureTransport."
+  },
+  {
+    "test_category": "S3",
+    "test_number": "control.pci_v321_s3_6",
+    "test_desc": "6 S3 Block Public Access setting should be enabled",
+    "test_rationale": "This control checks whether the following public access block settings are configured at the account level. The control passes if all of the public access block settings are set to true. The control fails if any of the settings are set to false, or if any of the settings are not configured. When the settings do not have a value, the AWS Config rule cannot complete its evaluation."
+  },
+  {
+    "test_category": "AutoScaling",
+    "test_number": "control.pci_v321_autoscaling_1",
+    "test_desc": "1 Auto Scaling groups associated with a load balancer should use health checks",
+    "test_rationale": "This control checks whether your Auto Scaling groups that are associated with a load balancer are using Elastic Load Balancing health checks. PCI DSS does not require load balancing or highly available configurations. However, this check aligns with AWS best practices."
+  },
+  {
+    "test_category": "CloudTrail",
+    "test_number": "control.pci_v321_cloudtrail_1",
+    "test_desc": "1 CloudTrail logs should be encrypted at rest using AWS KMS CMKs",
+    "test_rationale": "This control checks whether AWS CloudTrail is configured to use the server-side encryption (SSE) AWS KMS customer master key (CMK) encryption. If you are only using the default encryption option, you can choose to disable this check."
+  },
+  {
+    "test_category": "CloudTrail",
+    "test_number": "control.pci_v321_cloudtrail_2",
+    "test_desc": "2 CloudTrail should be enabled",
+    "test_rationale": "This control checks whether CloudTrail is enabled in your AWS account. However, some AWS services do not enable logging of all APIs and events. You should implement any additional audit trails other than CloudTrail and review the documentation for each service."
+  },
+  {
+    "test_category": "CloudTrail",
+    "test_number": "control.pci_v321_cloudtrail_3",
+    "test_desc": "3 CloudTrail log file validation should be enabled",
+    "test_rationale": "This control checks whether CloudTrail log file validation is enabled."
+  },
+  {
+    "test_category": "CloudTrail",
+    "test_number": "control.pci_v321_cloudtrail_4",
+    "test_desc": "4 CloudTrail trails should be integrated with CloudWatch Logs",
+    "test_rationale": "This control checks whether CloudTrail trails are configured to send logs to CloudWatch Logs."
+  },
+  {
+    "test_category": "GuardDuty",
+    "test_number": "control.pci_v321_guardduty_1",
+    "test_desc": "1 GuardDuty should be enabled",
+    "test_rationale": "This control checks whether Amazon GuardDuty is enabled in your AWS account and Region."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.pci_v321_iam_1",
+    "test_desc": "1 IAM root user access key should not exist",
+    "test_rationale": "This control checks whether user access keys exist for the root user."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.pci_v321_iam_2",
+    "test_desc": "2 IAM users should not have IAM policies attached",
+    "test_rationale": "This control checks that none of your IAM users have policies attached. IAM users must inherit permissions from IAM groups or roles. It does not check whether least privileged policies are applied to IAM roles and groups."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.pci_v321_iam_3",
+    "test_desc": "3 IAM policies should not allow full '*' administrative privileges",
+    "test_rationale": "This control checks whether the default version of AWS Identity and Access Management policies (also known as customer managed policies) do not have administrator access with a statement that has 'Effect': 'Allow' with 'Action': '*' over 'Resource': '*'."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.pci_v321_iam_4",
+    "test_desc": "4 Hardware MFA should be enabled for the root user",
+    "test_rationale": "This control checks whether your AWS account is enabled to use multi-factor authentication (MFA) hardware device to sign in with root user credentials. It does not check whether you are using virtual MFA."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.pci_v321_iam_5",
+    "test_desc": "5 Virtual MFA should be enabled for the root user",
+    "test_rationale": "This control checks whether users of your AWS account require a multi-factor authentication (MFA) device to sign in with root user credentials. It does not check whether you are using hardware MFA."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.pci_v321_iam_6",
+    "test_desc": "6 MFA should be enabled for all IAM users",
+    "test_rationale": "This control checks whether the IAM users have multi-factor authentication (MFA) enabled."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.pci_v321_iam_7",
+    "test_desc": "7 IAM user credentials should be disabled if not used within a predefined number of days",
+    "test_rationale": "This control checks whether your IAM users have passwords or active access keys that have not been used within a specified number of days. The default is 90 days."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.pci_v321_iam_8",
+    "test_desc": "8 Password policies for IAM users should have strong configurations",
+    "test_rationale": "This control checks whether the account password policy for IAM users uses the following minimum PCI DSS configurations."
+  },
+  {
+    "test_category": "EC2",
+    "test_number": "control.pci_v321_ec2_1",
+    "test_desc": "1 Amazon EBS snapshots should not be publicly restorable",
+    "test_rationale": "This control checks whether Amazon Elastic Block Store snapshots are not publicly restorable by everyone, which makes them public. Amazon EBS snapshots should not be publicly restorable by everyone unless you explicitly allow it, to avoid accidental exposure of your company\u2019s sensitive data."
+  },
+  {
+    "test_category": "EC2",
+    "test_number": "control.pci_v321_ec2_2",
+    "test_desc": "2 VPC default security group should prohibit inbound and outbound traffic",
+    "test_rationale": "This control checks that the default security group of a VPC does not allow inbound or outbound traffic. It does not check for access restrictions for other security groups that are not default, and other VPC configurations."
+  },
+  {
+    "test_category": "EC2",
+    "test_number": "control.pci_v321_ec2_3",
+    "test_desc": "3 Unused EC2 security groups should be removed",
+    "test_rationale": "This control helps you maintain an accurate asset inventory of needed security groups in your cardholder data environment (CDE). It does so by checking that security groups are attached to Amazon EC2 instances or to an ENI. A failed finding indicates you may have unused Amazon EC2 security groups."
+  },
+  {
+    "test_category": "EC2",
+    "test_number": "control.pci_v321_ec2_4",
+    "test_desc": "4 Unused EC2 EIPs should be removed",
+    "test_rationale": "This control checks whether Elastic IP addresses that are allocated to a VPC are attached to Amazon EC2 instances or in-use elastic network interfaces (ENIs). A failed finding indicates you may have unused Amazon EC2 EIPs. This will help you maintain an accurate asset inventory of EIPs in your cardholder data environment (CDE)."
+  },
+  {
+    "test_category": "EC2",
+    "test_number": "control.pci_v321_ec2_5",
+    "test_desc": "5 Security groups should not allow ingress from 0.0.0.0/0 to port 22",
+    "test_rationale": "This control checks whether security groups in use disallow unrestricted incoming SSH traffic. It does not evaluate outbound traffic. Note that security groups are stateful. If you send a request from your instance, the response traffic for that request is allowed to flow in regardless of inbound security group rules. Responses to allowed inbound traffic are allowed to flow out regardless of outbound rules."
+  },
+  {
+    "test_category": "EC2",
+    "test_number": "control.pci_v321_ec2_6",
+    "test_desc": "6 VPC flow logging should be enabled in all VPCs",
+    "test_rationale": "This control checks whether VPC flow logs are found and enabled for VPCs. The traffic type is set to REJECT. With VPC Flow Logs, you can capture information about the IP address traffic to and from network interfaces in your VPC. After you create a flow log, you can use CloudWatch Logs to view and retrieve the log data. Security Hub recommends that you enable flow logging for packet rejects for VPCs. Flow logs provide visibility into network traffic that traverses the VPC. They can detect anomalous traffic and provide insight into security workflows. By default, the record includes values for the different components of the IP address flow, including the source, destination, and protocol."
+  }
+]

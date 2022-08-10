@@ -17,7 +17,7 @@ registry:
 # e.g by changing api.image.repository, api.image.tag, etc.
 image:
   repository: deepfenceio
-  tag: 1.3.1
+  tag: 1.4.0
   name: "" # Expected to be overridden by the per-component specific maps.
   fullname: # can be used instead of repository, tag, & name
   pullPolicy: Always

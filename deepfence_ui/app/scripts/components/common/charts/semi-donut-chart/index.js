@@ -3,110 +3,138 @@ import React from 'react';
 import { Pie } from '@ant-design/charts';
 import dfStyles from '@deepfence-theme';
 import {
-  complianceColors,
+
+  complianceDonutColors,
   getComplianceColorActive,
 } from '../../../../constants/colors';
 
 const chartColors = ({ label }) => {
   if (label === 'critical') {
-    return complianceColors.critical;
+    return complianceDonutColors.critical;
   }
   if (label === 'high') {
-    return complianceColors.high;
+    return complianceDonutColors.high;
   }
   if (label === 'medium') {
-    return complianceColors.medium;
+    return complianceDonutColors.medium;
   }
   if (label === 'low') {
-    return complianceColors.low;
+    return complianceDonutColors.low;
   }
   if (label === 'total') {
-    return complianceColors.total;
+    return complianceDonutColors.total;
   }
   if (label === 'scanned') {
-    return complianceColors.scanned;
+    return complianceDonutColors.scanned;
   }
   if (label === 'fail') {
-    return complianceColors.fail;
+    return complianceDonutColors.fail;
   }
-  if (label === 'pass') {
-    return complianceColors.pass;
+  if (label === 'ok') {
+    return complianceDonutColors.pass;
   }
   if (label === 'info') {
-    return complianceColors.info;
+    return complianceDonutColors.info;
   }
   if (label === 'note') {
-    return complianceColors.note;
+    return complianceDonutColors.note;
+  }
+  if (label === 'alarm') {
+    return complianceDonutColors.warn;
+  }
+  if (label === 'skip') {
+    return complianceDonutColors.medium;
+  }
+  if (label === 'pass') {
+    return complianceDonutColors.pass;
   }
   if (label === 'warn') {
-    return complianceColors.warn;
+    return complianceDonutColors.critical;
   }
 };
 
 const chartPieStyle = el => {
   if (el.label === 'critical') {
     return {
-      stroke: complianceColors.critical,
+      stroke: complianceDonutColors.critical,
       opacity: 0.8,
     };
   }
   if (el.label === 'high') {
     return {
-      stroke: complianceColors.high,
+      stroke: complianceDonutColors.high,
       opacity: 0.8,
     };
   }
   if (el.label === 'medium') {
     return {
-      stroke: complianceColors.medium,
+      stroke: complianceDonutColors.medium,
       opacity: 0.8,
     };
   }
   if (el.label === 'low') {
     return {
-      stroke: complianceColors.low,
+      stroke: complianceDonutColors.low,
       opacity: 0.8,
     };
   }
   if (el.label === 'scanned') {
     return {
-      stroke: complianceColors.scanned,
+      stroke: complianceDonutColors.scanned,
       opacity: 0.8,
     };
   }
   if (el.label === 'total') {
     return {
-      stroke: complianceColors.total,
+      stroke: complianceDonutColors.total,
       opacity: 0.8,
     };
   }
   if (el.label === 'fail') {
     return {
-      stroke: complianceColors.fail,
+      stroke: complianceDonutColors.fail,
       opacity: 0.8,
     };
   }
-  if (el.label === 'pass') {
+  if (el.label === 'ok') {
     return {
-      stroke: complianceColors.pass,
+      stroke: complianceDonutColors.pass,
       opacity: 0.8,
     };
   }
   if (el.label === 'info') {
     return {
-      stroke: complianceColors.info,
+      stroke: complianceDonutColors.info,
       opacity: 0.8,
     };
   }
   if (el.label === 'note') {
     return {
-      stroke: complianceColors.note,
+      stroke: complianceDonutColors.note,
+      opacity: 0.8,
+    };
+  }
+  if (el.label === 'alarm') {
+    return {
+      stroke: complianceDonutColors.warn,
+      opacity: 0.8,
+    };
+  }
+  if (el.label === 'skip') {
+    return {
+      stroke: complianceDonutColors.medium,
+      opacity: 0.8,
+    };
+  }
+  if (el.label === 'pass') {
+    return {
+      stroke: complianceDonutColors.pass,
       opacity: 0.8,
     };
   }
   if (el.label === 'warn') {
     return {
-      stroke: complianceColors.warn,
+      stroke: complianceDonutColors.critical,
       opacity: 0.8,
     };
   }

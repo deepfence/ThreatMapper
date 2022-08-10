@@ -1,0 +1,21 @@
+@import './../../../styles/deepfence';
+@import './../../../styles/variables';
+
+
+.container {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+
+  .statsBox {
+    flex: 1;
+    background-color: $background-primary;
+
+    .statsBoxBody {
+      padding: 24px;
+      font-size: 4rem;
+      text-align: center;
+    }
+  }
+}
