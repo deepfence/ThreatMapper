@@ -31,22 +31,21 @@ spec:
                       - "{{ .Values.topologyNodeAffinityHostName }}"
 {{- end }}
       initContainers:
-      - name: init-sysctl
-        image: busybox:latest
-        imagePullPolicy: IfNotPresent
-        securityContext:
-          privileged: true
-        command:
-        - /bin/sh
-        - -c
-        - |
-          sysctl -w fs.file-max=1048576
-          sysctl -w net.core.somaxconn=512
-          sysctl vm.overcommit_memory=1
+        - name: init-sysctl
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          command:
+            - /bin/sh
+            - -c
+            - |
+              sysctl -w fs.file-max=1048576
+              sysctl -w net.core.somaxconn=512
+              sysctl vm.overcommit_memory=1
       containers:
         - name: deepfence-redis
-          image: "{{ .Values.image.repository }}deepfence_redis_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.redis.image) | indent 10 }}
           env:
             - name: INITIALIZE_REDIS
               value: "Y"
@@ -62,7 +61,7 @@ spec:
 {{- end }}
               memory: 16Gi
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.redis.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion: v1
 kind: Service

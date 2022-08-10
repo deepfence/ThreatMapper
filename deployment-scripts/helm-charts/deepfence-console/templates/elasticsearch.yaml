@@ -52,8 +52,7 @@ spec:
           command: ["sysctl", "-w", "vm.max_map_count=262144"]
       containers:
         - name: deepfence-es
-          image: "{{ .Values.image.repository }}deepfence_elastic_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.elasticsearch.image) | indent 10 }}
           env:
             - name: DF_PROG_NAME
               valueFrom:
@@ -96,7 +95,7 @@ spec:
                 - IPC_LOCK
                 - SYS_RESOURCE
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.elasticsearch.image.pullSecretName | default .Values.image.pullSecretName }}
   volumeClaimTemplates:
     - metadata:
         name: deepfence-data

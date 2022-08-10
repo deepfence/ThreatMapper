@@ -13,11 +13,210 @@ registry:
   # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   createRegistrySecret: "true"
 
+# Docker image settings. Can be overridden by the per-component specific maps,
+# e.g by changing api.image.repository, api.image.tag, etc.
 image:
-  repository: "deepfenceio/"
+  repository: deepfenceio
   tag: 1.3.1
+  name: "" # Expected to be overridden by the per-component specific maps.
+  fullname: # can be used instead of repository, tag, & name
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
+
+fetcher:
+  # Override image settings just for the fetcher pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_fetcher_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+topology:
+  # Override image settings just for the topology pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_discovery_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+discovery:
+  # Override image settings just for the discovery pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_discovery_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+api:
+  # Override image settings just for the API pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_api_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+celery:
+  # Override image settings just for the celery API pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_api_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+backend:
+  # Override image settings just for the backend API pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_api_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+ui:
+  # Override image settings just for the web UI pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_ui_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+diagnosis:
+  nodeMetrics: "true"
+
+  # Override image settings just for the diagnosis pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_diagnosis_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+secretScanner:
+  # Override image settings just for the secret-scanner pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_secret_scanner_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+router:
+  uiServiceName: "deepfence-ui"
+
+  # Override image settings just for the router pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_router_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+internalRouter:
+  # Override image settings just for the internal router pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_router_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+vulnerabilityMapper:
+  # Override image settings just for the vulnerability mapper pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_vulnerability_mapper_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+packageScanner:
+  # Override image settings just for the package scanner pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_package_scanner_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+elasticsearch:
+  # Override image settings just for the Elasticsearch pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_elastic_ce
+    fullname:
+    pullPolicy:
+    pullSecretName:
+
+redis:
+  # Override image settings just for the Redis pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag:
+    name: deepfence_redis_ce
+    fullname:
+    pullPolicy: IfNotPresent
+    pullSecretName:
+
+postgresql:
+  # If config update needed for postgres instance
+  #extendedConf: |-
+  #  huge_pages = off
+  
+  # Override image settings just for the PostgreSQL pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag: 12.8.0-debian-10-r71
+    name: postgresql-repmgr
+    fullname:
+    pullPolicy: IfNotPresent
+    pullSecretName:
+
+postgresqlPgpool:
+  # Override image settings just for the PostgreSQL PG-pool pods.
+  # All values here default to the root image.* fields.
+  image:
+    repository:
+    tag: 4.2.5-debian-10-r37
+    name: pgpool
+    fullname:
+    pullPolicy: IfNotPresent
+    pullSecretName:
 
 # Use custom ssl certificate for Deepfence UI
 # Copy *.key and *.crt file to current directory (same directory as values.yaml file)
@@ -39,11 +238,6 @@ volume:
   # or it will be 'default' when using cloud managed Persistent Volumes.
   esStorage: 30Gi
   postgresStorage: 30Gi
-
-# If config update needed for postgres instance
-# postgresql:
-#   extendedConf: |-
-#     huge_pages = off
 
 clusterDomain: "cluster.local"
 
@@ -86,12 +280,6 @@ runConsoleDiscovery: "true"
 runUIPod: "true"
 
 vulnerabilityScanConcurrency: "15"
-
-diagnosis:
-  nodeMetrics: "true"
-
-router:
-  uiServiceName: "deepfence-ui"
 
 # Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
 mountContainerRuntimeSocket:

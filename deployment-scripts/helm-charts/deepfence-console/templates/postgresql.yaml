@@ -253,8 +253,7 @@ spec:
       # Auxiliary vars to populate environment variables
       containers:
         - name: pgpool
-          image: docker.io/deepfenceio/pgpool:4.2.5-debian-10-r37
-          imagePullPolicy: "IfNotPresent"
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.postgresqlPgpool.image) | indent 10 }}
           securityContext:
             runAsUser: 1001
           env:
@@ -348,6 +347,8 @@ spec:
             limits:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
               memory: {{ .Values.defaultResourceLimits.limits.memory }}
+      imagePullSecrets:
+        - name: {{ .Values.postgresqlPgpool.image.pullSecretName | default .Values.image.pullSecretName }}
 {{- end }}
 ---
 # Source: postgresql-ha/templates/postgresql/statefulset.yaml
@@ -435,8 +436,7 @@ spec:
               exec:
                 command:
                   - /pre-stop.sh
-          image: docker.io/deepfenceio/postgresql-repmgr:12.8.0-debian-10-r71
-          imagePullPolicy: "IfNotPresent"
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.postgresql.image) | indent 10 }}
           securityContext:
             runAsUser: 1001
           # Auxiliary vars to populate environment variables
@@ -579,6 +579,8 @@ spec:
           configMap:
             name: deepfence-postgres-postgresql-hooks-scripts
             defaultMode: 0755
+      imagePullSecrets:
+        - name: {{ .Values.postgresql.image.pullSecretName | default .Values.image.pullSecretName }}
   volumeClaimTemplates:
     - metadata:
         name: data

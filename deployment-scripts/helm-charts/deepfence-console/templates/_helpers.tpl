@@ -68,3 +68,17 @@ Create secret to access docker registry
 {{- define "imagePullSecret" }}
 {{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.registry.name (printf "%s:%s" .Values.registry.username .Values.registry.password | b64enc) | b64enc }}
 {{- end }}
+
+{{/*
+Combine image config map fields into a Docker image name.
+*/}}
+{{- define "deepfence-console.imageAndPullPolicy" }}
+{{- if .fullname }}
+image: {{ .fullname | quote }}
+{{- else }}
+image: {{ printf "%v/%v:%v" (.repository | default "docker.io" | trimSuffix "/") .name .tag | quote }}
+{{- end }}
+{{- if .pullPolicy }}
+imagePullPolicy: {{ .pullPolicy | quote }}
+{{- end }}
+{{- end }}

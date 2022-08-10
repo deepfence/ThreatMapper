@@ -34,8 +34,7 @@ spec:
           emptyDir: {}
       containers:
         - name: deepfence-fetcher
-          image: "{{ .Values.image.repository }}deepfence_fetcher_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.fetcher.image) | indent 10 }}
           env:
             - name: POSTGRES_USER_DB_HOST
               value: "{{ .Values.db.postgresUserDb.host }}"
@@ -89,7 +88,7 @@ spec:
               memory: {{ .Values.defaultResourceLimits.limits.memory }}
 {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.fetcher.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -123,8 +122,7 @@ spec:
 {{- end }}
       containers:
         - name: deepfence-topology
-          image: "{{ .Values.image.repository }}deepfence_discovery_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.topology.image) | indent 10 }}
           env:
           - name: ELASTICSEARCH_SCHEME
             value: "{{ .Values.db.elasticsearch.scheme }}"
@@ -152,7 +150,7 @@ spec:
               cpu: {{ .Values.topologyResources.limits.cpu }}
               memory: {{ .Values.topologyResources.limits.memory }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.topology.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 {{- if eq "true" .Values.runConsoleDiscovery }}
 apiVersion: apps/v1
@@ -212,8 +210,7 @@ spec:
             type: Directory
       containers:
         - name: deepfence-discovery
-          image: "{{ .Values.image.repository }}deepfence_discovery_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.discovery.image) | indent 10 }}
           args:
             - discovery
             - deepfence-topology.default.svc.cluster.local
@@ -256,7 +253,7 @@ spec:
                   fieldPath: spec.nodeName
             {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.discovery.image.pullSecretName | default .Values.image.pullSecretName }}
 {{- end }}
 ---
 apiVersion: apps/v1
@@ -323,8 +320,7 @@ spec:
 {{ end }}
       containers:
         - name: deepfence-api
-          image: "{{ .Values.image.repository }}deepfence_api_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.api.image) | indent 10 }}
           command: ["/app/code/dockerify/api/entrypoint.sh"]
           env:
             - name: POSTGRES_USER_DB_HOST
@@ -387,7 +383,7 @@ spec:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.api.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -455,8 +451,7 @@ spec:
           emptyDir: {}
       containers:
         - name: deepfence-celery
-          image: "{{ .Values.image.repository }}deepfence_api_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.celery.image) | indent 10 }}
           command: ["/app/code/dockerify/celery/entrypoint.sh"]
           env:
             - name: POSTGRES_USER_DB_HOST
@@ -519,7 +514,7 @@ spec:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.celery.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -598,8 +593,7 @@ spec:
           sysctl -w fs.file-max=1048576
       containers:
         - name: deepfence-backend
-          image: "{{ .Values.image.repository }}deepfence_api_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.backend.image) | indent 10 }}
           command: ["/app/code/dockerify/backend/entrypoint.sh"]
           env:
             - name: POSTGRES_USER_DB_HOST
@@ -656,7 +650,7 @@ spec:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.backend.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 {{- if eq "true" .Values.runUIPod }}
 apiVersion: apps/v1
@@ -691,8 +685,7 @@ spec:
 {{- end }}
       containers:
         - name: deepfence-ui
-          image: "{{ .Values.image.repository }}deepfence_ui_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.ui.image) | indent 10 }}
           ports:
             - containerPort: 4042
           resources:
@@ -705,7 +698,7 @@ spec:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.ui.image.pullSecretName | default .Values.image.pullSecretName }}
 {{- end }}
 ---
 apiVersion: apps/v1
@@ -747,7 +740,7 @@ spec:
 {{ end }}
       containers:
         - name: deepfence-diagnosis
-          image: "{{ .Values.image.repository }}deepfence_diagnosis_ce:{{ .Values.image.tag }}"
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.diagnosis.image) | indent 10 }}
           env:
             - name: NODE_METRICS
               value: "{{ .Values.diagnosis.nodeMetrics }}"
@@ -757,7 +750,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - kubernetes
           ports:
@@ -777,7 +769,7 @@ spec:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.diagnosis.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -800,8 +792,7 @@ spec:
     spec:
       containers:
         - name: deepfence-secret-scanner
-          image: "{{ .Values.image.repository }}deepfence_secret_scanner_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.secretScanner.image) | indent 10 }}
           ports:
             - containerPort: 8011
           command: ["/home/deepfence/usr/SecretScanner"]
@@ -816,7 +807,7 @@ spec:
               cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
 {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.secretScanner.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion:  apps/v1
 kind: Deployment
@@ -867,9 +858,8 @@ spec:
             name: deepfence-ui-ssl-cert
       {{- end }}
       containers:
-        - image: "{{ .Values.image.repository }}deepfence_router_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          name: deepfence-router
+        - name: deepfence-router
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.router.image) | indent 10 }}
           env:
             - name: POSTGRES_USER_DB_HOST
               value: "{{ .Values.db.postgresUserDb.host }}"
@@ -920,7 +910,7 @@ spec:
               memory: {{ .Values.defaultResourceLimits.limits.memory }}
 {{- end }}
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.router.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion:  apps/v1
 kind: Deployment
@@ -962,61 +952,60 @@ spec:
           name: deepfence-ui-ssl-cert
       {{- end }}
       containers:
-      - image: "{{ .Values.image.repository }}deepfence_router_ce:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: deepfence-internal-router
-        env:
-        - name: ENABLE_AUTH
-          value: "false"
-        - name: POSTGRES_USER_DB_HOST
-          value: "{{ .Values.db.postgresUserDb.host }}"
-        - name: POSTGRES_USER_DB_PORT
-          value: "{{ .Values.db.postgresUserDb.port }}"
-        - name: POSTGRES_USER_DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: deepfence-postgres-postgresql
-              key: postgresql-username
-        - name: POSTGRES_USER_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: deepfence-postgres-postgresql
-              key: postgresql-password
-        - name: POSTGRES_USER_DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: deepfence-postgres-postgresql
-              key: postgresql-db-name
-        - name: POSTGRES_USER_DB_SSLMODE
-          value: "{{ .Values.db.postgresUserDb.sslmode }}"
-        - name: OPERATING_MODE
-          value: "k8s"
-        - name: SERVICE_NAME_SUFFIX
-          value: ".{{ .Values.namespace }}.svc.cluster.local"
-        ports:
-        - containerPort: 443
+        - name: deepfence-internal-router
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.internalRouter.image) | indent 10 }}
+          env:
+            - name: ENABLE_AUTH
+              value: "false"
+            - name: POSTGRES_USER_DB_HOST
+              value: "{{ .Values.db.postgresUserDb.host }}"
+            - name: POSTGRES_USER_DB_PORT
+              value: "{{ .Values.db.postgresUserDb.port }}"
+            - name: POSTGRES_USER_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: deepfence-postgres-postgresql
+                  key: postgresql-username
+            - name: POSTGRES_USER_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: deepfence-postgres-postgresql
+                  key: postgresql-password
+            - name: POSTGRES_USER_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: deepfence-postgres-postgresql
+                  key: postgresql-db-name
+            - name: POSTGRES_USER_DB_SSLMODE
+              value: "{{ .Values.db.postgresUserDb.sslmode }}"
+            - name: OPERATING_MODE
+              value: "k8s"
+            - name: SERVICE_NAME_SUFFIX
+              value: ".{{ .Values.namespace }}.svc.cluster.local"
+          ports:
+            - containerPort: 443
           {{- if and .Values.tls.certFile .Values.tls.keyFile }}
-        volumeMounts:
-        - name: deepfence-ui-ssl-cert-file
-          mountPath: /etc/deepfence/certs/deepfence.crt
-          subPath: deepfence.crt
-          readOnly: true
-        - name: deepfence-ui-ssl-key-file
-          mountPath: /etc/deepfence/certs/deepfence.key
-          subPath: deepfence.key
-          readOnly: true
+          volumeMounts:
+            - name: deepfence-ui-ssl-cert-file
+              mountPath: /etc/deepfence/certs/deepfence.crt
+              subPath: deepfence.crt
+              readOnly: true
+            - name: deepfence-ui-ssl-key-file
+              mountPath: /etc/deepfence/certs/deepfence.key
+              subPath: deepfence.key
+              readOnly: true
           {{- end }}
-        resources:
-          requests:
-            memory: 100Mi
-            cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
 {{- if eq "true" .Values.setDefaultResourceLimits }}
-          limits:
-            cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-            memory: {{ .Values.defaultResourceLimits.limits.memory }}
+            limits:
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+              memory: {{ .Values.defaultResourceLimits.limits.memory }}
 {{- end }}
       imagePullSecrets:
-      - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.internalRouter.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion:  apps/v1
 kind: Deployment
@@ -1049,22 +1038,21 @@ spec:
                 - "{{ .Values.topologyNodeAffinityHostName }}"
 {{- end }}
       containers:
-      - image: "{{ .Values.image.repository }}deepfence_vulnerability_mapper_ce:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: deepfence-vulnerability-mapper
-        ports:
-        - containerPort: 8001
-        resources:
-          requests:
-            memory: 100Mi
-            cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+        - name: deepfence-vulnerability-mapper
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.vulnerabilityMapper.image) | indent 10 }}
+          ports:
+            - containerPort: 8001
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
 {{- if eq "true" .Values.setDefaultResourceLimits }}
-          limits:
-            cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-            memory: {{ .Values.defaultResourceLimits.limits.memory }}
+            limits:
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+              memory: {{ .Values.defaultResourceLimits.limits.memory }}
 {{- end }}
       imagePullSecrets:
-      - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.vulnerabilityMapper.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
 apiVersion:  apps/v1
 kind: Deployment
@@ -1106,29 +1094,28 @@ spec:
                 - "{{ .Values.topologyNodeAffinityHostName }}"
 {{- end }}
       containers:
-      - image: "{{ .Values.image.repository }}deepfence_package_scanner_ce:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: deepfence-package-scanner
-        command: ["/usr/local/bin/package-scanner"]
-        args: ["-mode", "http-server", "-port", "8005"]
-        env:
-        - name: MGMT_CONSOLE_URL
-          value: "deepfence-internal-router"
-        - name: MGMT_CONSOLE_PORT
-          value: "443"
-        - name: PACKAGE_SCAN_CONCURRENCY
-          value: "5"
-        ports:
-        - containerPort: 8005
-        resources:
-          requests:
-            memory: 1Gi
-            cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
+        - name: deepfence-package-scanner
+          {{- include "deepfence-console.imageAndPullPolicy" (deepCopy .Values.image | merge .Values.packageScanner.image) | indent 10 }}
+          command: ["/usr/local/bin/package-scanner"]
+          args: ["-mode", "http-server", "-port", "8005"]
+          env:
+            - name: MGMT_CONSOLE_URL
+              value: "deepfence-internal-router"
+            - name: MGMT_CONSOLE_PORT
+              value: "443"
+            - name: PACKAGE_SCAN_CONCURRENCY
+              value: "5"
+          ports:
+            - containerPort: 8005
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
 {{- if eq "true" .Values.setDefaultResourceLimits }}
-          limits:
-            cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-            memory: {{ .Values.defaultResourceLimits.limits.memory }}
+            limits:
+              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
+              memory: {{ .Values.defaultResourceLimits.limits.memory }}
 {{- end }}
       imagePullSecrets:
-      - name: {{ .Values.image.pullSecretName }}
+        - name: {{ .Values.packageScanner.image.pullSecretName | default .Values.image.pullSecretName }}
 ---
