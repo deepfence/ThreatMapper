@@ -307,7 +307,7 @@ const Reports = props => {
   }, [resource_type, node_type, compliance_provider]);
 
   useEffect(() => {
-    if (complianceProviders) {
+    if (compliance_provider) {
       change('compliance_checktype', []);
     }
   }, [compliance_provider]);
