@@ -45,6 +45,20 @@ topology:
     pullPolicy:
     pullSecretName:
 
+# Optionally set node affinity for topology pod
+topologyNodeAffinityHostName: ""
+
+topologyResources:
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+  limits:
+    cpu: 16000m
+    memory: 32Gi
+
+# Show console vm in management console UI
+runConsoleDiscovery: "true"
+
 discovery:
   # Override image settings just for the discovery pods.
   # All values here default to the root image.* fields.
@@ -88,6 +102,12 @@ backend:
     fullname:
     pullPolicy:
     pullSecretName:
+
+# Optionally set node affinity for backend pod
+backendNodeAffinityHostName: ""
+
+# Run UI pod
+runUIPod: "true"
 
 ui:
   # Override image settings just for the web UI pods.
@@ -181,6 +201,20 @@ elasticsearch:
     pullPolicy:
     pullSecretName:
 
+# Replication factor for elasticsearch
+# Recommended: 3+ for production, 1 for dev setup, minikube
+elasticsearchReplicationFactor: 3
+
+elasticsearchResources:
+  requests:
+    cpu: 200m
+    memory: 2Gi
+  limits:
+    cpu: 8000m
+    memory: 8Gi
+
+elasticsearchHeapSize: "2g"
+
 redis:
   # Override image settings just for the Redis pods.
   # All values here default to the root image.* fields.
@@ -262,10 +296,6 @@ db:
     host: deepfence-redis
     port: "6379"
 
-# Replication factor for elasticsearch
-# Recommended: 3+ for production, 1 for dev setup, minikube
-elasticsearchReplicationFactor: 3
-
 # (Optional) Set custom name for the cluster and hostname prefix for console vm's to easily identify in Deepfence UI.
 # Example: df-console or deepfence-console
 # It will be suffixed with hostname - df-console-aks-agentpool-123456-vmss000001
@@ -273,11 +303,6 @@ clusterName: "df-console"
 
 # Service name for access from agents and vulnerability mapper
 agentServiceName: deepfence-router
-
-# Show console vm in management console UI
-runConsoleDiscovery: "true"
-# Run UI pod
-runUIPod: "true"
 
 vulnerabilityScanConcurrency: "15"
 
@@ -288,28 +313,6 @@ mountContainerRuntimeSocket:
   containerdSock: "true"
   containerdSockPath: "/run/containerd/containerd.sock"
 
-# Optionally set node affinity for topology pod
-topologyNodeAffinityHostName: ""
-# Optionally set node affinity for backend pod
-backendNodeAffinityHostName: ""
-
-topologyResources:
-  requests:
-    cpu: 1000m
-    memory: 2Gi
-  limits:
-    cpu: 16000m
-    memory: 32Gi
-
-elasticsearchResources:
-  requests:
-    cpu: 200m
-    memory: 2Gi
-  limits:
-    cpu: 8000m
-    memory: 8Gi
-elasticsearchHeapSize: "2g"
-
 defaultResourceLimits:
   requests:
     cpu: 50m
@@ -317,6 +320,7 @@ defaultResourceLimits:
   limits:
     cpu: 16000m
     memory: 32Gi
+
 setDefaultResourceLimits: "false"
 
 enablePacketCaptureService: "true"
