@@ -1135,7 +1135,7 @@ def generate_pdf_report(report_id, filters, node_type,
                                                    number=number, time_unit=time_unit,
                                                    resource=resource.get("filter", {}))
         elif resource_type == COMPLIANCE_ES_TYPE:
-            if node_type == "aws":
+            if node_type == "aws" or node_type == "gcp" or node_type == "azure":
                 final_html += compliance_pdf_report_cloud(filters=filters,
                                                           lucene_query_string=lucene_query_string,
                                                           number=number, time_unit=time_unit, domain_name=domain_name, resource=resource.get("filter", {}), node_type=node_type)
