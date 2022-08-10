@@ -411,7 +411,7 @@ add_index() {
             },
             "Severity" : {
               "type" : "nested"
-            }
+            },
             "Severity.score" : {
               "type" : "float"
             }
