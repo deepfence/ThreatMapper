@@ -4,9 +4,10 @@ import io
 import copy
 from utils.esconn import ESConn
 from utils.common import get_rounding_time_unit
-from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, NODE_TYPE_HOST, \
+from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, COMPLIANCE_INDEX, NODE_TYPE_HOST, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, NODE_TYPE_POD, DEEPFENCE_SUPPORT_EMAIL, TIME_UNIT_MAPPING, \
-    ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE
+    ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE, COMPLIANCE_ES_TYPE, \
+    NODE_TYPE_LINUX,CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE,CLOUD_COMPLIANCE_ES_TYPE
 from utils.esconn import ESConn
 from utils.helper import modify_es_index
 from utils.resource import get_nodes_list, get_default_params
@@ -16,6 +17,9 @@ header_fields = {
     CVE_ES_TYPE: ['@timestamp', 'cve_attack_vector', 'cve_caused_by_package', 'cve_container_image', 'scan_id',
                   'cve_container_image_id', 'cve_cvss_score', 'cve_description', 'cve_fixed_in', 'cve_id',
                   'cve_link', 'cve_severity', 'cve_overall_score', 'cve_type', 'host', 'host_name', 'masked'],
+    COMPLIANCE_ES_TYPE: ['@timestamp', 'compliance_check_type', 'count', 'doc_id', 'host', 'host_name', 'masked',
+                         'node_id', 'node_name', 'node_type', 'scan_id', 'status', 'test_category', 'test_desc',
+                         'test_info', 'test_number'],
     "secret-scan-source": ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
                            'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type'],
     "secret-scan-header": ['Filename', 'Content', 'Name', 'Rule', 'Severity', 'Node Name', 'Container Name',
@@ -24,6 +28,7 @@ header_fields = {
 
 sheet_name = {
     CVE_ES_TYPE: "Vulnerability",
+    COMPLIANCE_ES_TYPE: "Compliance",
     SECRET_SCAN_ES_TYPE: "Secrets"
 }
 
@@ -160,7 +165,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     wb = xlsxwriter.Workbook(buffer, {'in_memory': True, 'strings_to_urls': False, 'strings_to_formulas': False})
     for resource in resources:
         resource_type = resource.get('type')
-        if resource_type not in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
+        if resource_type not in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
             continue
         if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-header"]
@@ -322,6 +327,10 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             #     if container_names:
             #         # and_terms.append({"terms": {"cve_container_name.keyword": container_names}})
             #         pass
+            # elif resource_type == COMPLIANCE_DOC_TYPE:
+            #     if scope_ids:
+            #         # and_terms.append({"terms": {"node_id.keyword": scope_ids}})
+            #         pass
         if node_type == NODE_TYPE_CONTAINER_IMAGE and not no_node_filters_set:
             image_name_with_tag_list = []
             scope_ids = []
@@ -333,9 +342,13 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                     image_name_with_tag_list.append(filtered_node["image_name_with_tag"])
                 if filtered_node.get("scope_id"):
                     scope_ids.append(filtered_node["scope_id"])
-            # if resource_type == CVE_INDEX:
+            # if resource_type == CVE_TYPE_FIELD:
             #     if image_name_with_tag_list:
             #         # and_terms.append({"terms": {"cve_container_image.keyword": image_name_with_tag_list}})
+            #         pass
+            # elif resource_type == COMPLIANCE_DOC_TYPE:
+            #     if scope_ids:
+            #         # and_terms.append({"terms": {"node_id.keyword": scope_ids}})
             #         pass
         if node_type == NODE_TYPE_POD and not no_node_filters_set:
             pod_names = []
@@ -345,6 +358,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
 
         global_hits = []
         max_size = 49999  # Currently limiting to this, xlsx writer takes long time and times out
+
         def fetch_documents(res_type, query):
             es_hits = ESConn.get_data_from_scroll(res_type, query, page_size=10000, max_size=max_size)
             return es_hits
@@ -394,8 +408,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 hits = fetch_documents(modify_es_index(resource_type), query_body)
                 global_hits.extend(hits)
 
-
-        if node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type in [CVE_ES_TYPE,SECRET_SCAN_ES_TYPE]:
+        if node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
             if resource_type == SECRET_SCAN_ES_TYPE:
                 container_image = "node_name"
             else:
@@ -410,7 +423,18 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             get_all_docs(container_names, cve_scan_id_list, and_terms, container_name, global_hits, resource_type)
         elif node_type == NODE_TYPE_HOST:
             get_all_docs(host_names, cve_scan_id_list, and_terms, "host_name", global_hits, resource_type)
-        elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
+        elif node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type == COMPLIANCE_ES_TYPE:
+            get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
+        elif node_type == NODE_TYPE_CONTAINER and resource_type == COMPLIANCE_ES_TYPE:
+            get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
+        elif node_type == NODE_TYPE_LINUX and resource_type == COMPLIANCE_ES_TYPE:
+            and_terms.append({"term": {"compliance_node_type.keyword": node_type}})
+            get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
+        elif node_type in [CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE] and resource_type == COMPLIANCE_ES_TYPE:
+            and_terms.append({"term": {"cloud_provider.keyword": node_type}})
+            # here resource_type has to be CLOUD_COMPLIANCE_ES_TYPE for cloud
+            get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, CLOUD_COMPLIANCE_ES_TYPE)
+        elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
             get_all_docs(pod_names, cve_scan_id_list, and_terms, "pod_name", global_hits, resource_type)
 
         global_hits = global_hits[:max_size]

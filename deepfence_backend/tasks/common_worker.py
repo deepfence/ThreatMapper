@@ -6,7 +6,8 @@ from config.app import celery_app, app as flask_app
 from tasks.task_scheduler import run_node_task
 from utils.constants import REPORT_INDEX, \
     NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
-    PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE
+    PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE, COMPLIANCE_INDEX, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE, \
+    COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_SCAN
 import pandas as pd
 import requests
 from utils.constants import CVE_INDEX, MAX_TOTAL_SEVERITY_SCORE
@@ -18,7 +19,7 @@ from datetime import datetime, date
 from utils.esconn import ESConn
 from utils.helper import mkdir_recursive, split_list_into_chunks, rmdir_recursive
 from utils.reports import prepare_report_download, prepare_report_email_body
-from utils.resource import filter_node_for_vulnerabilities, get_active_node_images_count
+from utils.resource import filter_node_for_vulnerabilities, get_active_node_images_count, filter_node_for_compliance
 from utils.common import get_rounding_time_unit
 from copy import deepcopy
 from dateutil.relativedelta import relativedelta
@@ -69,6 +70,375 @@ def convert_time_unit_to_date(number, time_unit):
         start_time_str = 'All Data'
         end_time_str = 'All Data'
     return start_time_str, end_time_str
+
+
+def compliance_pdf_report_cloud(filters, lucene_query_string, number, time_unit, domain_name, resource, node_type):
+    if len(resource.get("compliance_check_type", "")) > 0:
+        resource["compliance_check_type"] = resource.get("compliance_check_type", [])
+    else:
+        resource["compliance_check_type"] = []
+    node_filters = deepcopy(filters)
+    filters_applied = deepcopy(node_filters)
+
+    from_arg = 0
+    size_arg = 10000
+    sort_order = "desc"
+    sort_by = "@timestamp"
+    _source = []
+    filters_applied = {k: v for k, v in filters_applied.items() if v}
+    filters_applied_str = json.dumps(filters_applied) if filters_applied else "None"
+
+    filters['cloud_provider'] = filters['type']
+    filters['compliance_check_type'] = resource["compliance_check_type"]
+    del filters["type"]
+
+    # if node_filters:
+    #     tmp_filters = filter_node_for_compliance(node_filters)
+    #     if tmp_filters:
+    #         filters = {**filters, **tmp_filters}
+
+
+    # # Count total data to fetch from es. If it's > 75000 docs, throw error
+    doc_count = ESConn.count(CLOUD_COMPLIANCE_SCAN, filters, number=number, time_unit=time_unit,
+                             lucene_query_string=lucene_query_string)
+    if doc_count > PDF_REPORT_MAX_DOCS:
+        return "<div>Error while fetching compliance data, please use filters to reduce the number of documents " \
+                   "to download.</div> "
+
+    search_response = ESConn.search_by_and_clause(
+        CLOUD_COMPLIANCE_SCAN,
+        filters,
+        from_arg,
+        sort_order,
+        number,
+        time_unit,
+        lucene_query_string,
+        size_arg,
+        _source,
+        sort_by=sort_by
+    )
+    filters.update({
+        "type": CLOUD_COMPLIANCE_SCAN,
+        "masked": "false"
+    })
+    if len(search_response['hits']) == 0:
+        return "<div>No compliance reports found for the applied filters</div>"
+
+    try:
+        df = pd.json_normalize(search_response['hits'])
+    except Exception as ex:
+        return "<div>No compliance reports found for the applied filters, Try with different filters</div>"
+
+    def datetime_format(string):
+        date_time = datetime.strptime(string, '%Y-%m-%dT%H:%M:%S.%f')
+        return "{date} {time}".format(date=date_time.strftime("%d %b, %Y"), time=date_time.strftime("%H:%M:%S"))
+
+    df['_source.@timestamp'] = df['_source.@timestamp'].apply(datetime_format)
+    df['_source.status'] = df['_source.status'].apply(lambda x: x.lower())
+    c_df = df[['_source.node_name','_source.account_id', '_source.control_id', '_source.compliance_check_type','_source.title',
+               '_source.description', '_source.doc_id', '_source.status', '_source.@timestamp', '_source.cloud_provider']]
+
+    template_loader = jinja2.FileSystemLoader(searchpath="/app/code/config/templates/")
+    template_env = jinja2.Environment(loader=template_loader)
+
+    compliance_check_type = c_df['_source.compliance_check_type'].unique()
+    compliance_nodewise_count_report_html = ''
+    all_hosts = c_df['_source.node_name'].unique()
+    cloud_providers = c_df['_source.cloud_provider'].unique()
+    account_ids = c_df['_source.account_id'].unique()
+    all_status = ['alarm', 'ok', 'skip', 'info']
+    page_index = 30
+
+
+    for cloud_provider in cloud_providers:
+        for account_id in account_ids:
+            compliance_count_data_list = []
+            temp_html = ''
+            for check in compliance_check_type:
+                compliance_count_data = {}
+                compliance_count_data["compliance_check"] = check
+                for status in all_status:
+                    compliance_count_data[status] = len(c_df[(c_df['_source.account_id'] == account_id) & (
+                            c_df['_source.status'] == status) & (c_df['_source.compliance_check_type'] == check) & (
+                                                                    c_df['_source.cloud_provider'] == cloud_provider)])
+                summ = 0
+                for key, val in compliance_count_data.items():
+                    if type(val) != str:
+                        summ += val
+                if summ > 0:
+                    compliance_count_data_list.append(compliance_count_data)
+            start_index = 0
+            arr_index = 0
+            end_index = 0
+            content_length = 0
+            while arr_index < len(compliance_count_data_list):
+                content_length += len(compliance_count_data_list[arr_index]['compliance_check'])
+                if page_index != 0:
+                    page_break = ''
+                else:
+                    page_break = 'yes'
+                if content_length > 1200 or end_index - start_index > 30 or page_index == 0:
+                    end_index = arr_index
+                    temp_html += template_env.get_template('detailed_report_nodewise_cloud_compliance_count.html').render(
+                        data=compliance_count_data_list[start_index:end_index], summary_heading="Compliance Summary",
+                        account_id=account_id, page_break=page_break, node_type=cloud_provider)
+                    start_index = arr_index
+                    content_length = 0
+                    if page_index == 0:
+                        page_index = 30
+                elif arr_index == len(compliance_count_data_list) - 1 or page_index == 0:
+                    end_index = arr_index + 1
+                    temp_html += template_env.get_template('detailed_report_nodewise_cloud_compliance_count.html').render(
+                        data=compliance_count_data_list[start_index:end_index], summary_heading="Compliance Summary",
+                        account_id=account_id, page_break=page_break, node_type=cloud_provider)
+                    if page_index == 0:
+                        page_index = 26
+                    else:
+                        page_index -= 5
+                else:
+                    end_index += 1
+                page_index -= 1
+                arr_index += 1
+            compliance_nodewise_count_report_html += temp_html
+    compliance_nodewise_count_report_html += '<div class="page-break"></div>'
+
+
+    compliance_nodewise_summary_report_html = ''
+
+    for host in all_hosts:
+        for check in compliance_check_type:
+            conditioned_data = c_df[
+                (c_df['_source.node_name'] == host) & (c_df['_source.compliance_check_type'] == check)]
+            conditioned_data.insert(0, 'ID', range(1, 1 + len(conditioned_data)))
+            conditioned_data_dict = conditioned_data.to_dict('records')
+
+            if check in ['nist_master', 'nist_slave']:
+                test_number = "yes"
+            else:
+                test_number = ""
+            start_index = 0
+            arr_index = 0
+            end_index = 0
+            content_length = 0
+            while arr_index < len(conditioned_data_dict):
+                content_length += len(conditioned_data_dict[arr_index]['_source.title'])
+                if content_length > 580 or end_index - start_index > 23:
+                    end_index = arr_index
+                    compliance_nodewise_summary_report_html += template_env.get_template(
+                        'detailed_report_nodewise_cloud_compliance.html').render(
+                        data=conditioned_data_dict[start_index:end_index], host_name=host, compliance_type=check,
+                        domain_name=domain_name, test_number=test_number,
+                        time=conditioned_data_dict[0]['_source.@timestamp'])
+                    start_index = arr_index
+                    content_length = 0
+                elif arr_index == len(conditioned_data_dict) - 1:
+                    end_index = arr_index + 1
+                    compliance_nodewise_summary_report_html += template_env.get_template(
+                        'detailed_report_nodewise_cloud_compliance.html').render(
+                        data=conditioned_data_dict[start_index:end_index], host_name=host, compliance_type=check,
+                        domain_name=domain_name, test_number=test_number,
+                        time=conditioned_data_dict[0]['_source.@timestamp'])
+                else:
+                    end_index += 1
+                arr_index += 1
+
+    start_time_str, end_time_str = convert_time_unit_to_date(number, time_unit)
+    header_html = template_env.get_template('detailed_report_summary_report_header.html').render(
+        start_time_str=start_time_str, end_time_str=end_time_str, heading="Compliance Summary")
+
+    applied_filters_html = template_env.get_template('detailed_report_applied_filter.html').render(
+        applied_filter="Applied Filters" if filters_applied else "Filters Not Applied", data=filters_applied)
+
+    report_dict = {
+        "compliance_nodewise_count_report_html": compliance_nodewise_count_report_html,
+        "compliance_nodewise_summary_report_html": compliance_nodewise_summary_report_html.rstrip(
+            '<div class="page-break"></div>'),
+        "header_html": header_html,
+        "applied_filters_html": applied_filters_html
+    }
+    final_html = template_env.get_template('detailed_report_summary_report.html').render(**report_dict)
+
+    return final_html
+
+
+def compliance_pdf_report(filters, lucene_query_string, number, time_unit, domain_name, resource):
+    if len(resource.get("compliance_check_type", "")) > 0:
+        resource["compliance_check_type"] = resource.get("compliance_check_type", "")
+    else:
+        resource["compliance_check_type"] = []
+
+    filters['compliance_node_type'] = filters['type']
+    filters['compliance_check_type'] = resource["compliance_check_type"]
+
+    node_filters = deepcopy(filters)
+    filters_applied = deepcopy(node_filters)
+
+    del node_filters["type"]
+
+    from_arg = 0
+    size_arg = 10000
+    sort_order = "desc"
+    sort_by = "@timestamp"
+    _source = []
+    filters_applied = {k: v for k, v in filters_applied.items() if v}
+    filters_applied_str = json.dumps(filters_applied) if filters_applied else "None"
+    if node_filters:
+        tmp_filters = filter_node_for_compliance(node_filters)
+        if tmp_filters:
+            filters = {**filters, **tmp_filters}
+
+    del filters["type"]
+
+    # Count total data to fetch from es. If it's > 75000 docs, throw error
+    doc_count = ESConn.count(COMPLIANCE_INDEX, filters, number=number, time_unit=time_unit,
+                             lucene_query_string=lucene_query_string)
+    if doc_count > PDF_REPORT_MAX_DOCS:
+        return "<div>Error while fetching compliance data, please use filters to reduce the number of documents " \
+                   "to download.</div> "
+
+    search_response = ESConn.search_by_and_clause(
+        COMPLIANCE_INDEX,
+        filters,
+        from_arg,
+        sort_order,
+        number,
+        time_unit,
+        lucene_query_string,
+        size_arg,
+        _source,
+        sort_by=sort_by
+    )
+    filters.update({
+        "type": COMPLIANCE_ES_TYPE,
+        "masked": "false"
+    })
+    if len(search_response['hits']) == 0:
+        return "<div>No compliance reports found for the applied filters</div>"
+    try:
+        df = pd.json_normalize(search_response['hits'])
+    except Exception as ex:
+        return "<div>No compliance reports found for the applied filters, Try with different filters</div>"
+    def datetime_format(string):
+        date_time = datetime.strptime(string, '%Y-%m-%dT%H:%M:%S.%fZ')
+        return "{date} {time}".format(date=date_time.strftime("%d %b, %Y"), time=date_time.strftime("%H:%M:%S"))
+    df['_source.@timestamp'] = df['_source.@timestamp'].apply(datetime_format)
+    df['_source.status'] = df['_source.status'].apply(lambda x: x.lower())
+    c_df = df[['_source.node_name', '_source.test_category', '_source.compliance_check_type', '_source.test_number',
+               '_source.description', '_source.doc_id', '_source.status', '_source.@timestamp', '_source.node_type']]
+
+    template_loader = jinja2.FileSystemLoader(searchpath="/app/code/config/templates/")
+    template_env = jinja2.Environment(loader=template_loader)
+    compliance_check_type = c_df['_source.compliance_check_type'].unique()
+    compliance_nodewise_count_report_html = ''
+    all_hosts = c_df['_source.node_name'].unique()
+    node_types = c_df['_source.node_type'].unique()
+    all_status = ['pass', 'note', 'warn', 'info', 'fail']
+    page_index = 30
+    for node in node_types:
+        for check in compliance_check_type:
+            compliance_count_data_list = []
+            temp_html = ''
+            for host in all_hosts:
+                compliance_count_data = {}
+                compliance_count_data["host_name"] = host
+                for status in all_status:
+                    compliance_count_data[status] = len(c_df[(c_df['_source.node_name'] == host) & (
+                            c_df['_source.status'] == status) & (c_df['_source.compliance_check_type'] == check) & (
+                                                                     c_df['_source.node_type'] == node)])
+                summ = 0
+                for key, val in compliance_count_data.items():
+                    if type(val) != str:
+                        summ += val
+                if summ > 0:
+                    compliance_count_data_list.append(compliance_count_data)
+            start_index = 0
+            arr_index = 0
+            end_index = 0
+            content_length = 0
+            while arr_index < len(compliance_count_data_list):
+                content_length += len(compliance_count_data_list[arr_index]['host_name'])
+                if page_index != 0:
+                    page_break = ''
+                else:
+                    page_break = 'yes'
+                if content_length > 1200 or end_index - start_index > 30 or page_index == 0:
+                    end_index = arr_index
+                    temp_html += template_env.get_template('detailed_report_nodewise_compliance_count.html').render(
+                        data=compliance_count_data_list[start_index:end_index], summary_heading="Compliance Summary",
+                        check=check, page_break=page_break, node_type=node)
+                    start_index = arr_index
+                    content_length = 0
+                    if page_index == 0:
+                        page_index = 30
+                elif arr_index == len(compliance_count_data_list) - 1 or page_index == 0:
+                    end_index = arr_index + 1
+                    temp_html += template_env.get_template('detailed_report_nodewise_compliance_count.html').render(
+                        data=compliance_count_data_list[start_index:end_index], summary_heading="Compliance Summary",
+                        check=check, page_break=page_break, node_type=node)
+                    if page_index == 0:
+                        page_index = 26
+                    else:
+                        page_index -= 5
+                else:
+                    end_index += 1
+                page_index -= 1
+                arr_index += 1
+            compliance_nodewise_count_report_html += temp_html
+    compliance_nodewise_count_report_html += '<div class="page-break"></div>'
+
+
+    compliance_nodewise_summary_report_html = ''
+
+    for host in all_hosts:
+        for check in compliance_check_type:
+            conditioned_data = c_df[
+                (c_df['_source.node_name'] == host) & (c_df['_source.compliance_check_type'] == check)]
+            conditioned_data.insert(0, 'ID', range(1, 1 + len(conditioned_data)))
+            conditioned_data_dict = conditioned_data.to_dict('records')
+            if check in ['nist_master', 'nist_slave']:
+                test_number = "yes"
+            else:
+                test_number = ""
+            start_index = 0
+            arr_index = 0
+            end_index = 0
+            content_length = 0
+            while arr_index < len(conditioned_data_dict):
+                content_length += len(conditioned_data_dict[arr_index]['_source.test_category'])
+                if content_length > 580 or end_index - start_index > 23:
+                    end_index = arr_index
+                    compliance_nodewise_summary_report_html += template_env.get_template(
+                        'detailed_report_nodewise_compliance.html').render(
+                        data=conditioned_data_dict[start_index:end_index], host_name=host, compliance_type=check,
+                        domain_name=domain_name, test_number=test_number,
+                        time=conditioned_data_dict[0]['_source.@timestamp'])
+                    start_index = arr_index
+                    content_length = 0
+                elif arr_index == len(conditioned_data_dict) - 1:
+                    end_index = arr_index + 1
+                    compliance_nodewise_summary_report_html += template_env.get_template(
+                        'detailed_report_nodewise_compliance.html').render(
+                        data=conditioned_data_dict[start_index:end_index], host_name=host, compliance_type=check,
+                        domain_name=domain_name, test_number=test_number,
+                        time=conditioned_data_dict[0]['_source.@timestamp'])
+                else:
+                    end_index += 1
+                arr_index += 1
+    start_time_str, end_time_str = convert_time_unit_to_date(number, time_unit)
+    header_html = template_env.get_template('detailed_report_summary_report_header.html').render(
+        start_time_str=start_time_str, end_time_str=end_time_str, heading="Compliance Summary")
+    applied_filters_html = template_env.get_template('detailed_report_applied_filter.html').render(
+        applied_filter="Applied Filters" if filters_applied else "Filters Not Applied", data=filters_applied)
+    report_dict = {
+        "compliance_nodewise_count_report_html": compliance_nodewise_count_report_html,
+        "compliance_nodewise_summary_report_html": compliance_nodewise_summary_report_html.rstrip(
+            '<div class="page-break"></div>'),
+        "header_html": header_html,
+        "applied_filters_html": applied_filters_html
+    }
+    final_html = template_env.get_template('detailed_report_summary_report.html').render(**report_dict)
+
+    return final_html
 
 
 def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, resource):
@@ -764,6 +1134,15 @@ def generate_pdf_report(report_id, filters, node_type,
             final_html += vulnerability_pdf_report(filters=filters, lucene_query_string=lucene_query_string,
                                                    number=number, time_unit=time_unit,
                                                    resource=resource.get("filter", {}))
+        elif resource_type == COMPLIANCE_ES_TYPE:
+            if node_type == "aws" or node_type == "gcp" or node_type == "azure":
+                final_html += compliance_pdf_report_cloud(filters=filters,
+                                                          lucene_query_string=lucene_query_string,
+                                                          number=number, time_unit=time_unit, domain_name=domain_name, resource=resource.get("filter", {}), node_type=node_type)
+            else:
+                final_html += compliance_pdf_report(filters=filters,
+                                                    lucene_query_string=lucene_query_string,
+                                                    number=number, time_unit=time_unit, domain_name=domain_name, resource=resource.get("filter", {}))
         elif resource_type == SECRET_SCAN_ES_TYPE:
             final_html += vulnerability_pdf_report_secret(filters=filters, lucene_query_string=lucene_query_string,
                                                           number=number, time_unit=time_unit,

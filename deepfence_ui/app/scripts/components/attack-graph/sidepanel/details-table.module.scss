@@ -1,0 +1,50 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.reachOverlay {
+  right: 502px;
+  left: 96px;
+  bottom: auto;
+  height: auto;
+  background: transparent;
+  top: 60px;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+.reachContent {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overflow-y: auto;
+  background: black;
+}
+
+
+.headerWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 46px;
+  background-color: $theme-color;
+  padding-left: 16px;
+  color: #ffffff;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  .dismissBtn {
+    height: 100%;
+    padding-right: 24px;
+    padding-left: 16px;
+    cursor: pointer;
+  }
+
+  .titleWrapper {
+    display: flex;
+    align-items: center;
+  }
+}

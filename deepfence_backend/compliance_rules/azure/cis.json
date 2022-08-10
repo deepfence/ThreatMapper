@@ -1,0 +1,668 @@
+[
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v130_7_1",
+    "test_desc": "7.1 Ensure Virtual Machines are utilizing Managed Disks",
+    "test_rationale": "Migrate BLOB based VHD's to Managed Disks on Virtual Machines to exploit the default features of this configuration."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v130_7_2",
+    "test_desc": "7.2 Ensure that 'OS and Data' disks are encrypted with CMK",
+    "test_rationale": "Ensure that OS disks (boot volumes) and data disks (non-boot volumes) are encrypted with CMK."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v130_7_3",
+    "test_desc": "7.3 Ensure that 'Unattached disks' are encrypted with CMK",
+    "test_rationale": "Ensure that unattached disks in a subscription are encrypted with a Customer Managed Key (CMK)."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v130_7_4",
+    "test_desc": "7.4 Ensure that only approved extensions are installed",
+    "test_rationale": "Only install organization-approved extensions on VMs."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v130_7_5",
+    "test_desc": "7.5 Ensure that the latest OS Patches for all Virtual Machines are applied",
+    "test_rationale": "Ensure that the latest OS patches for all virtual machines are applied."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v130_7_6",
+    "test_desc": "7.6 Ensure that the endpoint protection for all Virtual Machines is installed",
+    "test_rationale": "Install endpoint protection for all virtual machines."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v130_7_7",
+    "test_desc": "7.7 Ensure that VHD's are encrypted",
+    "test_rationale": "VHD (Virtual Hard Disks) are stored in BLOB storage and are the old style disks that were attached to Virtual Machines, and the BLOB VHD was then leased to the VM. By Default storage accounts are not encrypted, and Azure Defender(Security Centre) would then recommend that the OS disks should be encrypted. Storage accounts can be encrypted as a whole using PMK or CMK and this should be turned on for storage accounts containing VHD's."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_1_1",
+    "test_desc": "4.1.1 Ensure that 'Auditing' is set to 'On'",
+    "test_rationale": "Enable auditing on SQL Servers."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_1_2",
+    "test_desc": "4.1.2 Ensure that 'Data encryption' is set to 'On' on a SQL Database",
+    "test_rationale": "Enable auditing on SQL Servers."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_1_3",
+    "test_desc": "4.1.3 Ensure that 'Auditing' Retention is 'greater than 90 days'",
+    "test_rationale": "SQL Server Audit Retention should be configured to be greater than 90 days."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_2_1",
+    "test_desc": "4.2.1 Ensure that Advanced Threat Protection (ATP) on a SQL server is set to 'Enabled'",
+    "test_rationale": "Enable \\\"Azure Defender for SQL\\\" on critical SQL Servers."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_2_2",
+    "test_desc": "4.2.2 Ensure that Vulnerability Assessment (VA) is enabled on a SQL server by setting a Storage Account",
+    "test_rationale": "Enable Vulnerability Assessment (VA) service scans for critical SQL servers and corresponding SQL databases."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_2_3",
+    "test_desc": "4.2.3 Ensure that VA setting Periodic Recurring Scans is enabled on a SQL server",
+    "test_rationale": "Enable Vulnerability Assessment (VA) Periodic recurring scans for critical SQL servers and corresponding SQL databases."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_2_4",
+    "test_desc": "4.2.4 Ensure that VA setting Send scan reports to is configured for a SQL server",
+    "test_rationale": "Configure 'Send scan reports to' with email ids of concerned data owners/stakeholders for a critical SQL servers."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_2_5",
+    "test_desc": "4.2.5 Ensure that VA setting 'Also send email notifications to admins and subscription owners' is set for a SQL server",
+    "test_rationale": "Enable Vulnerability Assessment (VA) setting 'Also send email notifications to admins and subscription owners'."
+  },
+  {
+    "test_category": "PostgreSQL",
+    "test_number": "control.cis_v130_4_3_1",
+    "test_desc": "4.3.1 Ensure 'Enforce SSL connection' is set to 'ENABLED' for PostgreSQL Database Server",
+    "test_rationale": "Enable SSL connection on PostgreSQL Servers."
+  },
+  {
+    "test_category": "MySQL",
+    "test_number": "control.cis_v130_4_3_2",
+    "test_desc": "4.3.2 Ensure 'Enforce SSL connection' is set to 'ENABLED' for MySQL Database Server",
+    "test_rationale": "Enable SSL connection on MYSQL Servers."
+  },
+  {
+    "test_category": "PostgreSQL",
+    "test_number": "control.cis_v130_4_3_3",
+    "test_desc": "4.3.3 Ensure server parameter 'log_checkpoints' is set to 'ON' for PostgreSQL Database Server",
+    "test_rationale": "Enable log_checkpoints on PostgreSQL Servers."
+  },
+  {
+    "test_category": "PostgreSQL",
+    "test_number": "control.cis_v130_4_3_4",
+    "test_desc": "4.3.4 Ensure server parameter 'log_connections' is set to 'ON' for PostgreSQL Database Server",
+    "test_rationale": "Enable log_connections on PostgreSQL Servers."
+  },
+  {
+    "test_category": "PostgreSQL",
+    "test_number": "control.cis_v130_4_3_5",
+    "test_desc": "4.3.5 Ensure server parameter 'log_disconnections' is set to 'ON' for PostgreSQL Database Server",
+    "test_rationale": "Enable log_disconnections on PostgreSQL Servers."
+  },
+  {
+    "test_category": "PostgreSQL",
+    "test_number": "control.cis_v130_4_3_6",
+    "test_desc": "4.3.6 Ensure server parameter 'connection_throttling' is set to 'ON' for PostgreSQL Database Server",
+    "test_rationale": "Enable connection_throttling on PostgreSQL Servers."
+  },
+  {
+    "test_category": "PostgreSQL",
+    "test_number": "control.cis_v130_4_3_7",
+    "test_desc": "4.3.7 Ensure server parameter 'log_retention_days' is greater than 3 days for PostgreSQL Database Server",
+    "test_rationale": "Enable log_retention_days on PostgreSQL Servers."
+  },
+  {
+    "test_category": "PostgreSQL",
+    "test_number": "control.cis_v130_4_3_8",
+    "test_desc": "4.3.8 Ensure 'Allow access to Azure services' for PostgreSQL Database Server is disabled",
+    "test_rationale": "Disable access from Azure services to PostgreSQL Database Server."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_4",
+    "test_desc": "4.4 Ensure that Azure Active Directory Admin is configured",
+    "test_rationale": "Use Azure Active Directory Authentication for authentication with SQL Database."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v130_4_5",
+    "test_desc": "4.5 Ensure SQL server's TDE protector is encrypted with Customer-managed key",
+    "test_rationale": "Based on business needs or criticality of data/databases hosted a SQL server, it is recommended that the TDE protector is encrypted by a key that is managed by the data owner (Customer-managed key)"
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_1_1",
+    "test_desc": "5.1.1 Ensure that a 'Diagnostics Setting' exists",
+    "test_rationale": "Enable Diagnostic settings for exporting activity logs. Diagnostic setting are available for each individual resources within a subscription. Settings should be configured for all appropriate resources for your environment."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_1_2",
+    "test_desc": "5.1.2 Ensure Diagnostic Setting captures appropriate categories",
+    "test_rationale": "Enable Diagnostic settings for exporting activity logs. Diagnostic setting are available for each individual resources within a subscription. Settings should be configured for all appropriate resources for your environment."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_1_3",
+    "test_desc": "5.1.3 Ensure the storage container storing the activity logs is not publicly accessible",
+    "test_rationale": "The storage account container containing the activity log export should not be publicly accessible."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_1_4",
+    "test_desc": "5.1.4 Ensure the storage account containing the container with activity logs is encrypted with BYOK (Use Your Own Key)",
+    "test_rationale": "The storage account with the activity log export container is configured to use BYOK (Use Your Own Key)."
+  },
+  {
+    "test_category": "KeyVault",
+    "test_number": "control.cis_v130_5_1_5",
+    "test_desc": "5.1.5 Ensure that logging for Azure KeyVault is 'Enabled'",
+    "test_rationale": "Enable AuditEvent logging for key vault instances to ensure interactions with key vaults are logged and available."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_1",
+    "test_desc": "5.2.1 Ensure that Activity Log Alert exists for Create Policy Assignment",
+    "test_rationale": "Create an activity log alert for the Create Policy Assignment event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_2",
+    "test_desc": "5.2.2 Ensure that Activity Log Alert exists for Delete Policy Assignment",
+    "test_rationale": "Create an activity log alert for the Delete Policy Assignment event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_3",
+    "test_desc": "5.2.3 Ensure that Activity Log Alert exists for Create or Update Network Security Group",
+    "test_rationale": "Create an Activity Log Alert for the \\\"Create\\\" or \\\"Update Network Security Group\\\" event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_4",
+    "test_desc": "5.2.4 Ensure that Activity Log Alert exists for Delete Network Security Group",
+    "test_rationale": "Create an activity log alert for the Delete Network Security Group event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_5",
+    "test_desc": "5.2.5 Ensure that Activity Log Alert exists for Create or Update Network Security Group Rule",
+    "test_rationale": "Create an activity log alert for the Create or Update Network Security Group Rule event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_6",
+    "test_desc": "5.2.6 Ensure that Activity Log Alert exists for Create or Update Network Security Group Rule",
+    "test_rationale": "Create an activity log alert for the Create or Update Network Security Group Rule event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_7",
+    "test_desc": "5.2.7 Ensure that Activity Log Alert exists for Create or Update Security Solution",
+    "test_rationale": "Create an activity log alert for the Create or Update Security Solution event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_8",
+    "test_desc": "5.2.8 Ensure that Activity Log Alert exists for Delete Security Solution",
+    "test_rationale": "Create an activity log alert for the Delete Security Solution event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_2_9",
+    "test_desc": "5.2.9 Ensure that Activity Log Alert exists for Create or Update or Delete SQL Server Firewall Rule",
+    "test_rationale": "Create an activity log alert for the Create or Update or Delete SQL Server Firewall Rule event."
+  },
+  {
+    "test_category": "Monitor",
+    "test_number": "control.cis_v130_5_3",
+    "test_desc": "5.3 Ensure that Diagnostic Logs are enabled for all services which support it",
+    "test_rationale": "Diagnostic Logs capture activity to the data access plane while the Activity log is a subscription-level log for the control plane. Resource-level diagnostic logs provide insight into operations that were performed within that resource itself. It is crucial that logging systems are correctly configured to log all relevant activities and retain those logs for a sufficient length of time."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_1",
+    "test_desc": "9.1 Ensure App Service Authentication is set on Azure App Service",
+    "test_rationale": "Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_2",
+    "test_desc": "9.2 Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service",
+    "test_rationale": "Azure Web Apps allows sites to run under both HTTP and HTTPS by default. Web apps can be accessed by anyone using non-secure HTTP links by default. Non-secure HTTP requests can be restricted and all HTTP requests redirected to the secure HTTPS port. It is recommended to enforce HTTPS-only traffic."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_3",
+    "test_desc": "9.3 Ensure web app is using the latest version of TLS encryption",
+    "test_rationale": "The TLS(Transport Layer Security) protocol secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS. App service allows TLS 1.2 by default, which is the recommended TLS level by industry standards, such as PCI DSS."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_4",
+    "test_desc": "9.4 Ensure the web app has 'Client Certificates (Incoming client certificates)' set to 'On'",
+    "test_rationale": "Client certificates allow for the app to request a certificate for incoming requests. Only clients that have a valid certificate will be able to reach the app."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_5",
+    "test_desc": "9.5 Ensure that Register with Azure Active Directory is enabled on App Service",
+    "test_rationale": "Managed service identity in App Service makes the app more secure by eliminating secrets from the app, such as credentials in the connection strings. When registering with Azure Active Directory in the app service, the app will connect to other Azure services securely without the need of username and passwords."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_6",
+    "test_desc": "9.6 Ensure that 'PHP version' is the latest, if used to run the web app",
+    "test_rationale": "Periodically newer versions are released for PHP software either due to security flaws or to include additional functionality. Using the latest PHP version for web apps is recommended in order to take advantage of security fixes, if any, and/or additional functionalities of the newer version."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_7",
+    "test_desc": "9.7 Ensure that 'Python version' is the latest, if used to run the web app",
+    "test_rationale": "Periodically, newer versions are released for Python software either due to security flaws or to include additional functionality. Using the latest Python version for web apps is recommended in order to take advantage of security fixes, if any, and/or additional functionalities of the newer version."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_8",
+    "test_desc": "9.8 Ensure that 'Java version' is the latest, if used to run the web app",
+    "test_rationale": "Periodically, newer versions are released for Java software either due to security flaws or to include additional functionality. Using the latest Java version for web apps is recommended in order to take advantage of security fixes, if any, and/or new functionalities of the newer version."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_9",
+    "test_desc": "9.9 Ensure that 'HTTP Version' is the latest, if used to run the web app",
+    "test_rationale": "Periodically, newer versions are released for HTTP either due to security flaws or to include additional functionality. Using the latest HTTP version for web apps to take advantage of security fixes, if any, and/or new functionalities of the newer version."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_10",
+    "test_desc": "9.10 Ensure FTP deployments are disabled",
+    "test_rationale": "By default, Azure Functions, Web and API Services can be deployed over FTP. If FTP is required for an essential deployment workflow, FTPS should be required for FTP login for all App Service Apps and Functions."
+  },
+  {
+    "test_category": "AppService",
+    "test_number": "control.cis_v130_9_11",
+    "test_desc": "9.11 Ensure Azure Keyvaults are used to store secrets",
+    "test_rationale": "Encryption keys, Certificate thumbprints and Managed Identity Credentials can be coded into the APP service, this renders them visible as part of the configuration, to maintain security of these keys it is better to store in an Azure Keyvault and reference them from the Keyvault."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_1",
+    "test_desc": "3.1 Ensure that 'Secure transfer required' is set to 'Enabled'",
+    "test_rationale": "Enable data encryption in transit."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_2",
+    "test_desc": "3.2 Ensure that storage account access keys are periodically regenerated",
+    "test_rationale": "Regenerate storage account access keys periodically."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_3",
+    "test_desc": "3.3 Ensure Storage logging is enabled for Queue service for read, write, and delete requests",
+    "test_rationale": "The Storage Queue service stores messages that may be read by any client who has access to the storage account. A queue can contain an unlimited number of messages, each of which can be up to 64KB in size using version 2011-08-18 or newer. Storage Logging happens server-side and allows details for both successful and failed requests to be recorded in the storage account. These logs allow users to see the details of read, write, and delete operations against the queues. Storage Logging log entries contain the following information about individual requests: Timing information such as start time, end-to-end latency, and server latency, authentication details , concurrency information and the sizes of the request and response messages."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_4",
+    "test_desc": "3.4 Ensure that shared access signature tokens expire within an hour",
+    "test_rationale": "A shared access signature (SAS) is a URI that grants restricted access rights to Azure Storage resources. A shared access signature can be provided to clients who should not be trusted with the storage account key but for whom it may be necessary to delegate access to certain storage account resources. Providing a shared access signature URI to these clients allows them access to a resource for a specified period of time. This time should be set as low as possible and preferably no longer than an hour."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_5",
+    "test_desc": "3.5 Ensure that 'Public access level' is set to Private for blob containers",
+    "test_rationale": "Disable anonymous access to blob containers and disallow blob public access on storage account."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_6",
+    "test_desc": "3.6 Ensure default network access rule for Storage Accounts is set to deny",
+    "test_rationale": "Restricting default network access helps to provide a new layer of security, since storage accounts accept connections from clients on any network. To limit access to selected networks, the default action must be changed."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_7",
+    "test_desc": "3.7 Ensure 'Trusted Microsoft Services' is enabled for Storage Account access",
+    "test_rationale": "Some Microsoft services that interact with storage accounts operate from networks that can't be granted access through network rules. To help this type of service work as intended, allow the set of trusted Microsoft services to bypass the network rules. These services will then use strong authentication to access the storage account. If the Allow trusted Microsoft services exception is enabled, the following services: Azure Backup, Azure Site Recovery, Azure DevTest Labs, Azure Event Grid, Azure Event Hubs, Azure Networking, Azure Monitor and Azure SQL Data Warehouse (when registered in the subscription), are granted access to the storage account."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_8",
+    "test_desc": "3.8 Ensure soft delete is enabled for Azure Storage",
+    "test_rationale": "The Azure Storage blobs contain data like ePHI, Financial, secret or personal. Erroneously modified or deleted accidentally by an application or other storage account user cause data loss or data unavailability. It is recommended the Azure Storage be made recoverable by enabling soft delete configuration. This is to save and recover data when blobs or blob snapshots are deleted."
+  },
+  {
+    "test_category": "StorageM",
+    "test_number": "control.cis_v130_3_9",
+    "test_desc": "3.9 Ensure storage for critical data are encrypted with Customer Managed Key",
+    "test_rationale": "Enable sensitive data encryption at rest using Customer Managed Keys rather than Microsoft Managed keys"
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_10",
+    "test_desc": "3.10 Ensure Storage logging is enabled for Blob service for read, write, and delete requests",
+    "test_rationale": "The Storage Blob service provides scalable, cost-efficient objective storage in the cloud. Storage Logging happens server-side and allows details for both successful and failed requests to be recorded in the storage account. These logs allow users to see the details of read, write, and delete operations against the blobs. Storage Logging log entries contain the following information about individual requests: Timing information such as start time, end-to-end latency, and server latency, authentication details , concurrency information and the sizes of the request and response messages."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v130_3_11",
+    "test_desc": "3.11 Ensure Storage logging is enabled for Table service for read, write, and delete requests",
+    "test_rationale": "The Storage Table storage is a service that stores structure NoSQL data in the cloud, providing a key/attribute store with a schema less design. Storage Logging happens server- side and allows details for both successful and failed requests to be recorded in the storage account. These logs allow users to see the details of read, write, and delete operations against the tables. Storage Logging log entries contain the following information about individual requests: Timing information such as start time, end-to-end latency, and server latency, authentication details , concurrency information and the sizes of the request and response messages."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_1",
+    "test_desc": "1.1 Ensure that multi-factor authentication is enabled for all privileged users",
+    "test_rationale": "Enable multi-factor authentication for all user credentials who have write access to Azure resources. These include roles like 'Service Co-Administrators',  'Subscription Owners', 'Contributors'."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_2",
+    "test_desc": "1.2 Ensure that multi-factor authentication is enabled for all non- privileged users",
+    "test_rationale": "Enable multi-factor authentication for all non-privileged users."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_3",
+    "test_desc": "1.3 Ensure guest users are reviewed on a monthly basis",
+    "test_rationale": "Guest users allow you to share your company's applications and services with users from any other organization, while maintaining control over your own corporate data. Guest users should be review on a monthly basis to ensure that inactive and unneeded accounts are removed."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_4",
+    "test_desc": "1.4 Ensure that 'Allow users to remember multi-factor authentication on devices they trust' is 'Disabled'",
+    "test_rationale": "Do not allow users to remember multi-factor authentication on devices."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_5",
+    "test_desc": "1.5 Ensure that 'Number of methods required to reset' is set to '2'",
+    "test_rationale": "Ensure that two alternate forms of identification are provided before allowing a password reset."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_6",
+    "test_desc": "1.6 Ensure that 'Number of days before users are asked to re-confirm their authentication information' is not set to \\\"0\\",
+    "test_rationale": "Ensure that the number of days before users are asked to re-confirm their authentication information is not set to 0."
+  },
+  {
+    "test_category": "ActiveDirectoryM",
+    "test_number": "control.cis_v130_1_7",
+    "test_desc": "1.7 Ensure that 'Notify users on password resets?' is set to 'Yes'",
+    "test_rationale": "Ensure that users are notified on their primary and secondary emails on password resets."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_8",
+    "test_desc": "1.8 Ensure that 'Notify all admins when other admins reset their password?' is set to 'Yes'",
+    "test_rationale": "Ensure that all administrators are notified if any other administrator resets their password."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_9",
+    "test_desc": "1.9 Ensure that 'Users can consent to apps accessing company data on their behalf' is set to 'No'",
+    "test_rationale": "Require administrators to provide consent for the apps before use."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_10",
+    "test_desc": "1.10 Ensure that 'Users can add gallery apps to their Access Panel' is set to 'No'",
+    "test_rationale": "Require administrators to provide consent for the apps before use."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_11",
+    "test_desc": "1.11 Ensure that 'Users can register applications' is set to 'No'",
+    "test_rationale": "Require administrators to register third-party applications."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_12",
+    "test_desc": "1.12 Ensure that 'Guest user permissions are limited' is set to 'Yes'",
+    "test_rationale": "Limit guest user permissions."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_13",
+    "test_desc": "1.13 Ensure that 'Members can invite' is set to 'No'",
+    "test_rationale": "Restrict invitations to administrators only."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_14",
+    "test_desc": "1.14 Ensure that 'Guests can invite' is set to 'No'",
+    "test_rationale": "Restrict guest being able to invite other guests to collaborate with your organization."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_15",
+    "test_desc": "1.15 Ensure that 'Restrict access to Azure AD administration portal' is set to 'Yes'",
+    "test_rationale": "Restrict access to the Azure AD administration portal to administrators only."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_16",
+    "test_desc": "1.16 Ensure that 'Restrict user ability to access groups features in the Access Pane' is set to 'No'",
+    "test_rationale": "Restrict group creation to administrators only."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_17",
+    "test_desc": "1.17 Ensure that 'Users can create security groups in Azure Portals' is set to 'No'",
+    "test_rationale": "Restrict security group creation to administrators only."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_18",
+    "test_desc": "1.18 Ensure that 'Owners can manage group membership requests in the Access Panel' is set to 'No'",
+    "test_rationale": "Restrict security group management to administrators only."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_19",
+    "test_desc": "1.19 Ensure that 'Users can create Microsoft 365 groups in Azure Portals' is set to 'No'",
+    "test_rationale": "Restrict Microsoft 365 group creation to administrators only."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_20",
+    "test_desc": "1.20 Ensure that 'Require Multi-Factor Auth to join devices' is set to 'Yes'",
+    "test_rationale": "Joining devices to the active directory should require Multi-factor authentication."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_21",
+    "test_desc": "1.21 Ensure that no custom subscription owner roles are created",
+    "test_rationale": "Subscription ownership should not include permission to create custom owner roles. The principle of least privilege should be followed and only necessary privileges should be assigned instead of allowing full administrative access."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_22",
+    "test_desc": "1.22 Ensure Security Defaults is enabled on Azure Active Directory",
+    "test_rationale": "Security defaults in Azure Active Directory (Azure AD) make it easier to be secure and help protect your organization. Security defaults contain preconfigured security settings for common attacks."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "control.cis_v130_1_23",
+    "test_desc": "1.23 Ensure Custom Role is assigned for Administering Resource Locks",
+    "test_rationale": "Resource locking is a powerful protection mechanism that can prevent inadvertent modification/deletion of resources within Azure subscriptions/Resource Groups and is a recommended NIST configuration."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_1",
+    "test_desc": "2.1 Ensure that Azure Defender is set to On for Servers",
+    "test_rationale": "Turning on Azure Defender enables threat detection for Server, providing threat intelligence, anomaly detection, and behavior analytics in the Azure Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_2",
+    "test_desc": "2.2 Ensure that Azure Defender is set to On for App Service",
+    "test_rationale": "Turning on Azure Defender enables threat detection for App Service, providing threat intelligence, anomaly detection, and behavior analytics in the Azure Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_3",
+    "test_desc": "2.3 Ensure that Azure Defender is set to On for Azure SQL database servers",
+    "test_rationale": "Turning on Azure Defender enables threat detection for Azure SQL database servers, providing threat intelligence, anomaly detection, and behavior analytics in the Azure Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_4",
+    "test_desc": "2.4 Ensure that Azure Defender is set to On for SQL servers on machines",
+    "test_rationale": "Turning on Azure Defender enables threat detection for SQL servers on machines, providing threat intelligence, anomaly detection, and behavior analytics in the Azure Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_5",
+    "test_desc": "2.5 Ensure that Azure Defender is set to On for Storage",
+    "test_rationale": "Turning on Azure Defender enables threat detection for Storage, providing threat intelligence, anomaly detection, and behavior analytics in the Azure Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_6",
+    "test_desc": "2.6 Ensure that Azure Defender is set to On for Kubernetes",
+    "test_rationale": "Turning on Azure Defender enables threat detection for Kubernetes, providing threat intelligence, anomaly detection, and behavior analytics in the Azure Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_7",
+    "test_desc": "2.7 Ensure that Azure Defender is set to On for Container Registries",
+    "test_rationale": "Turning on Azure Defender enables threat detection for Container Registries, providing threat intelligence, anomaly detection, and behavior analytics in the Azure Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_8",
+    "test_desc": "2.8 Ensure that Azure Defender is set to On for Key Vault",
+    "test_rationale": "Turning on Azure Defender enables threat detection for Key Vault, providing threat intelligence, anomaly detection, and behavior analytics in the Azure Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_9",
+    "test_desc": "2.9 Ensure that Windows Defender ATP (WDATP) integration with Security Center is selected",
+    "test_rationale": "This setting enables Windows Defender ATP (WDATP) integration with Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_10",
+    "test_desc": "2.10 Ensure that Microsoft Cloud App Security (MCAS) integration with Security Center is selected",
+    "test_rationale": "This setting enables Microsoft Cloud App Security (MCAS) integration with Security Center."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_11",
+    "test_desc": "2.11 Ensure that 'Automatic provisioning of monitoring agent' is set to 'On'",
+    "test_rationale": "Enable automatic provisioning of the monitoring agent to collect security data."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_12",
+    "test_desc": "2.12 Ensure any of the ASC Default policy setting is not set to \\\"Disabled\\",
+    "test_rationale": "None of the settings offered by ASC Default policy should be set to effect \\\"Disabled\\\"."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_13",
+    "test_desc": "2.13 Ensure 'Additional email addresses' is configured with a security contact email",
+    "test_rationale": "Security Center emails the subscription owners whenever a high-severity alert is triggered for their subscription. You should provide a security contact email address as an additional email address."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_14",
+    "test_desc": "2.14 Ensure that 'Notify about alerts with the following severity' is set to 'High'",
+    "test_rationale": "Enables emailing security alerts to the subscription owner or other designated security contact."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "control.cis_v130_2_15",
+    "test_desc": "2.15 Ensure that 'All users with the following roles' is set to 'Owner'",
+    "test_rationale": "Enable security alert emails to subscription owners."
+  },
+  {
+    "test_category": "Network",
+    "test_number": "control.cis_v130_6_1",
+    "test_desc": "6.1 Ensure that RDP access is restricted from the internet",
+    "test_rationale": "Disable RDP access on network security groups from the Internet."
+  },
+  {
+    "test_category": "Network",
+    "test_number": "control.cis_v130_6_2",
+    "test_desc": "6.2 Ensure that SSH access is restricted from the internet",
+    "test_rationale": "Disable SSH access on network security groups from the Internet."
+  },
+  {
+    "test_category": "Network",
+    "test_number": "control.cis_v130_6_3",
+    "test_desc": "6.3 Ensure no SQL Databases allow ingress 0.0.0.0/0 (ANY IP)",
+    "test_rationale": "Ensure that no SQL Databases allow ingress from 0.0.0.0/0 (ANY IP)."
+  },
+  {
+    "test_category": "Network",
+    "test_number": "control.cis_v130_6_4",
+    "test_desc": "6.4 Ensure that Network Security Group Flow Log retention period is 'greater than 90 days'",
+    "test_rationale": "Network Security Group Flow Logs should be enabled and the retention period is set to greater than or equal to 90 days."
+  },
+  {
+    "test_category": "Network",
+    "test_number": "control.cis_v130_6_5",
+    "test_desc": "6.5 Ensure that Network Watcher is 'Enabled'",
+    "test_rationale": "Enable Network Watcher for Azure subscriptions."
+  },
+  {
+    "test_category": "Network",
+    "test_number": "control.cis_v130_6_6",
+    "test_desc": "6.6 Ensure that UDP Services are restricted from the Internet",
+    "test_rationale": "Disable Internet exposed UDP ports on network security groups."
+  },
+  {
+    "test_category": "KeyVault",
+    "test_number": "control.cis_v130_8_1",
+    "test_desc": "8.1 Ensure that the expiration date is set on all keys",
+    "test_rationale": "Ensure that all keys in Azure Key Vault have an expiration time set."
+  },
+  {
+    "test_category": "KeyVault",
+    "test_number": "control.cis_v130_8_2",
+    "test_desc": "8.2 Ensure that the expiration date is set on all Secrets",
+    "test_rationale": "Ensure that all Secrets in the Azure Key Vault have an expiration time set."
+  },
+  {
+    "test_category": "ResourceManager",
+    "test_number": "control.cis_v130_8_3",
+    "test_desc": "8.3 Ensure that Resource Locks are set for mission critical Azure resources",
+    "test_rationale": "Resource Manager Locks provide a way for administrators to lock down Azure resources to prevent deletion of, or modifications to, a resource. These locks sit outside of the Role Based Access Controls (RBAC) hierarchy and, when applied, will place restrictions on the resource for all users. These locks are very useful when there is an important resource in a subscription that users should not be able to delete or change. Locks can help prevent accidental and malicious changes or deletion."
+  },
+  {
+    "test_category": "KeyVault",
+    "test_number": "control.cis_v130_8_4",
+    "test_desc": "8.4 Ensure the key vault is recoverable",
+    "test_rationale": "The key vault contains object keys, secrets and certificates. Accidental unavailability of a key vault can cause immediate data loss or loss of security functions (authentication, validation, verification, non-repudiation, etc.) supported by the key vault objects. It is recommended the key vault be made recoverable by enabling the \\\"Do Not Purge\\\" and \\\"Soft Delete\\\" functions."
+  },
+  {
+    "test_category": "KeyVault",
+    "test_number": "control.cis_v130_8_5",
+    "test_desc": "8.5 Enable role-based access control (RBAC) within Azure Kubernetes Services",
+    "test_rationale": "Ensure that RBAC is enabled on all Azure Kubernetes Services Instances."
+  }
+]

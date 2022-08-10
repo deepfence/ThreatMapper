@@ -1,0 +1,20 @@
+[
+  {
+    "test_category": "AWS/ACM",
+    "test_number": "foundational_security_acm_1",
+    "test_desc": "1 Imported ACM certificates should be renewed after a specified time period",
+    "test_rationale": "This control checks whether ACM certificates in your account are marked for expiration within 30 days. It checks both imported certificates and certificates provided by AWS Certificate Manager."
+  },
+  {
+    "test_category": "AWS/APIGateway",
+    "test_number": "foundational_security_apigateway_1",
+    "test_desc": "1 API Gateway REST and WebSocket API logging should be enabled",
+    "test_rationale": "This control checks whether all stages of an Amazon API Gateway REST or WebSocket API have logging enabled. The control fails if logging is not enabled for all methods of a stage or if loggingLevel is neither ERROR nor INFO."
+  },
+  {
+    "test_category": "AWS/APIGateway",
+    "test_number": "foundational_security_apigateway_2",
+    "test_desc": "2 API Gateway REST API stages should be configured to use SSL certificates for backend authentication",
+    "test_rationale": "This control checks whether Amazon API Gateway REST API stages have SSL certificates configured. Backend systems use these certificates to authenticate that incoming requests are from API Gateway."
+  }
+]

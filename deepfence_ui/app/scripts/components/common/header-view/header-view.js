@@ -136,21 +136,27 @@ class HeaderView extends React.Component {
       <div className={`header-view ${this.props.isSideNavCollapsed ? 'collapse-fixed-panel' : 'expand-fixed-panel'}`}>
         <div className="infra-summary">
           {this.renderIntegration()}
-          <SearchBox onRef={ref => { (this.child = ref) }} />
-          <SingleSelectDropdown
-            prefixText="from "
-            onChange={this.setHistoryBound}
-            options={TIME_BOUNDARY_OPTIONS}
-            defaultValue={this.props.historyBound}
-            width={150}
-          />
-          <SingleSelectDropdown
-            prefixText="refresh "
-            onChange={this.setRefreshInterval}
-            options={REFRESH_INTERVALS_OPTIONS}
-            defaultValue={this.props.refreshInterval}
-            width={150}
-          />
+          {
+            this.props.hideLuceneQuery ? null : (
+              <>
+                <SearchBox onRef={ref => { (this.child = ref) }} />
+                <SingleSelectDropdown
+                  prefixText="from "
+                  onChange={this.setHistoryBound}
+                  options={TIME_BOUNDARY_OPTIONS}
+                  defaultValue={this.props.historyBound}
+                  width={150}
+                />
+                <SingleSelectDropdown
+                  prefixText="refresh "
+                  onChange={this.setRefreshInterval}
+                  options={REFRESH_INTERVALS_OPTIONS}
+                  defaultValue={this.props.refreshInterval}
+                  width={150}
+                />
+              </>
+            )
+          }
           <InfraStats />
           <div className="user-menu">
             <Tippy content={

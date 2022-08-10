@@ -1,0 +1,10 @@
+@import './../../../../styles/deepfence';
+@import './../../../../styles/variables';
+
+.modalBodyColumnsWrapper {
+  display: flex;
+}
+
+.modalBodyColumn {
+  flex: 10;
+}

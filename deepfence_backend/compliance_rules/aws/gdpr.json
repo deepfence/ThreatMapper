@@ -1,0 +1,20 @@
+[
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.article_30",
+    "test_desc": "Article 30 Records of processing activities",
+    "test_rationale": "Article 30 Records of processing activities"
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.article_32",
+    "test_desc": "Article 32 Security of processing",
+    "test_rationale": "Article 32 Security of processing"
+  },
+  {
+    "test_category": "AWS",
+    "test_number": "benchmark.article_25",
+    "test_desc": "Article 25 Data protection by design and by default",
+    "test_rationale": "Article 25 Data protection by design and by default"
+  }
+]

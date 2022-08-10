@@ -1,0 +1,28 @@
+<h3>{{summary_heading}} ({{ account_id }})</h3>
+<h3>Cloud Provider - {{node_type}}</h3>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-all;">
+        <tr>
+            <th style="background: white;   color: black; width: 400px;">Name</th>
+            <th style="background: #0B3E58; color: #ffffff;">Alarm</th>
+            <th style="background: #580B1D; color: #ffffff;">Ok</th>
+            <th style="background: #393E41; color: #ffffff;">Skip</th>
+            <th style="background: #58481C; color: #ffffff;">Info</th>
+            <th>Total</th>
+        </tr>
+        {% for datum in data %}
+        <tr>
+            <td style="width: 400px;"><a style="text-decoration : none;" href="#{{node_type}}/{{account_id}}/{{datum['compliance_check']}}">{{datum['compliance_check']}}</a></td>
+            <td>{{ datum.get('alarm', 0) }}</td>
+            <td>{{ datum.get('ok', 0) }}</td>
+            <td>{{ datum.get('skip', 0) }}</td>
+            <td>{{ datum.get('info', 0) }}</td>
+            <td>{{ datum.get('alarm', 0) + datum.get('ok', 0) + datum.get('skip', 0) + datum.get('info', 0)  }}</td>
+            
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% if page_break %}
+    <div class="page-break"></div>
+{% endif %}

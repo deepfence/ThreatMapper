@@ -5020,6 +5020,22 @@ input {
       background-color: $color-secondary-shade;
     }
   }
+  .row-action-dropdown-item-disabled {
+    color: $text-primary;
+    display: flex;
+    padding: 4px 12px;
+    .row-action-item-icon {
+      margin-right: 8px;
+    }
+    .row-action-item-text {
+      font-weight: 600;
+    }
+    &:hover {
+      background-color: $color-secondary-shade;
+    }
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
 }
 
 
@@ -5262,9 +5278,16 @@ input {
   height: 64px;
   position: absolute;
   top: -30px;
-  padding: 10px;
   border-radius: 50%;
   background-color: white;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    padding:8px;
+  }
 }
 .logo-box.gitlab {
   width: 64px;
@@ -5294,15 +5317,20 @@ input {
   background-color: white;
 }
 .logo-box img {
-  border-radius: 50%;
+  width: 100%;
+  height: 100%;
 }
 .logo-box.azure {
   width: 64px;
   height: 64px;
   position: absolute;
   top: -30px;
-  padding: 10px;
+  background-color: #2166da;
   border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .logo-box.gcr {
   width: 64px;

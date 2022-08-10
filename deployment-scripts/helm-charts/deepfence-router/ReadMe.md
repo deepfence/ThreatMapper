@@ -18,7 +18,7 @@ helm show values deepfence-router > deepfence_router_values.yaml
 ```
 - Set cloud provider
 ```yaml
-# Cloud Provider: aws, azure, google_cloud, ibm_cloud, open_stack
+# Cloud Provider: aws, azure, gcp, ibm_cloud, open_stack
 # cloudProvider is required to set appropriate LoadBalancer annotations
 cloudProvider: "aws"
 ```

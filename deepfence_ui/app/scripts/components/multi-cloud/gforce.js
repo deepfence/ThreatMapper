@@ -31,7 +31,7 @@ export const gForceLayout = (graph) => {
 export const linkDistance = (edge) => {
   if (edge.combo_pseudo_inner) {
     // setting this to non-zero creates a "hole" inside combos
-    return 0;
+    return -1;
   }
 
   if (edge.combo_pseudo_center) {
