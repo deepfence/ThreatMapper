@@ -36,6 +36,9 @@ gocode:
 	echo "Building go binary for cloud metadata instance id..."
 	$(CD) misc/deepfence/df-utils/get_cloud_instance_id && env CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .
 
+	echo "Building compliance checker"
+	$(CD) tools/apache/compliance_check/ && go build -o deepfence_compliance_check $(GOFLAGS) *.go
+
 install:
 
 clean:

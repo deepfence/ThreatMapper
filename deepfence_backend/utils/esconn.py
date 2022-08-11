@@ -7,7 +7,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.client.indices import IndicesClient
 
 from utils.constants import CVE_SCAN_LOGS_INDEX, ES_TERMS_AGGR_SIZE, \
-    TIME_UNIT_MAPPING, SECRET_SCAN_LOGS_INDEX
+    TIME_UNIT_MAPPING, SECRET_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX
 from utils.common import (
     sort_expression,
     get_rounding_time_unit,
@@ -894,6 +894,122 @@ class ESConn:
         # refresh index, so that the changes are reflected in search.
         # Note: This action has an impact on the performance.
         EL_CLIENT.indices.refresh(index=list(indices))
+
+    @staticmethod
+    def get_node_wise_compliance_status():
+        """
+        Returns:
+        {
+          "ramanan-dev-2;<host>": {
+            "cis": {
+              "scan_status": "ERROR",
+              "timestamp": "2018-06-18T07:04:33.678Z",
+              "node_name": "ramanan-dev-2",
+              "host_name": "ramanan-dev-2",
+              "node_type": "host"
+            },
+            "nist_master": {
+              "scan_status": "COMPLETED",
+              "timestamp": "2018-06-18T06:45:17.478Z",
+              "node_name": "ramanan-dev-2",
+              "host_name": "ramanan-dev-2",
+              "node_type": "host"
+            },
+            "nist_slave": {
+              "scan_status": "COMPLETED",
+              "timestamp": "2018-06-18T06:45:17.478Z",
+              "node_name": "ramanan-dev-2",
+              "host_name": "ramanan-dev-2",
+              "node_type": "host"
+            },
+            "pcidss": {
+              "scan_status": "STARTED",
+              "timestamp": "2018-06-18T06:50:14.869Z",
+              "node_name": "ramanan-dev-2",
+              "host_name": "ramanan-dev-2",
+              "node_type": "host"
+            }
+          }
+        }
+        """
+        aggs_query = {
+            "query": {"bool": {"must": [{"range": {"@timestamp": {"gte": "now-7d"}}}]}},
+            "aggs": {
+                "node_id": {
+                    "terms": {
+                        "field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE
+                    },
+                    "aggs": {
+                        "compliance_check_type": {
+                            "terms": {
+                                "field": "compliance_check_type.keyword", "size": 30
+                            },
+                            "aggs": {
+                                "scan_status": {
+                                    "terms": {
+                                        "field": "scan_status.keyword", "size": 30
+                                    },
+                                    "aggs": {
+                                        "scan_max_timestamp": {
+                                            "max": {
+                                                "field": "@timestamp"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "node_name": {
+                            "terms": {
+                                "field": "node_name.keyword", "size": 10
+                            }
+                        },
+                        "host_name": {
+                            "terms": {
+                                "field": "host_name.keyword", "size": 10
+                            }
+                        },
+                        "node_type": {
+                            "terms": {
+                                "field": "node_type.keyword", "size": 10
+                            }
+                        }
+                    }
+                }
+            },
+            "size": 0
+        }
+        res = EL_CLIENT.search(index=COMPLIANCE_LOGS_INDEX, body=aggs_query)
+        response = {}
+        if "aggregations" not in res:
+            return response
+        for host_aggr in res["aggregations"]["node_id"]["buckets"]:
+            response[host_aggr["key"]] = {}
+            node_name = ""
+            host_name = ""
+            node_type = ""
+            for node_name_aggr in host_aggr["node_name"]["buckets"]:
+                if node_name_aggr["key"]:
+                    node_name = node_name_aggr["key"]
+                    break
+            for host_name_aggr in host_aggr["host_name"]["buckets"]:
+                if host_name_aggr["key"]:
+                    host_name = host_name_aggr["key"]
+                    break
+            for node_type_aggr in host_aggr["node_type"]["buckets"]:
+                if node_type_aggr["key"]:
+                    node_type = node_type_aggr["key"]
+                    break
+            for check_type_aggr in host_aggr["compliance_check_type"]["buckets"]:
+                if check_type_aggr["scan_status"]["buckets"]:
+                    recent_scan = max(check_type_aggr["scan_status"]["buckets"],
+                                      key=lambda x: x["scan_max_timestamp"]["value"])
+                    response[host_aggr["key"]][check_type_aggr["key"]] = {
+                        "scan_status": recent_scan["key"],
+                        "timestamp": recent_scan["scan_max_timestamp"]["value_as_string"],
+                        "node_name": node_name, "host_name": host_name, "node_type": node_type
+                    }
+        return response
 
     @staticmethod
     def get_node_wise_cve_status():

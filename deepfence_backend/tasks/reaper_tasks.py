@@ -1,16 +1,22 @@
+import logging
 import os
+from sqlite3 import IntegrityError
 from config.app import celery_app, app
 from models.user import User
 from models.integration import Integration
 from models.user_activity_log import UserActivityLog
 from models.notification import RunningNotification, VulnerabilityNotification
+from models.cloud_resource_node import CloudResourceNode
 from datetime import datetime, timedelta
 from utils.esconn import ESConn
 from utils.constants import CVE_SCAN_LOGS_INDEX, NODE_TYPE_HOST, \
     CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_QUEUED, CVE_SCAN_STATUS_ERROR, DEEPFENCE_KEY, REPORT_INDEX, \
-    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX, CVE_SCAN_LOGS_ES_TYPE
+    CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX, CVE_SCAN_LOGS_ES_TYPE, \
+    COMPLIANCE_INDEX, COMPLIANCE_LOGS_ES_TYPE, CLOUD_COMPLIANCE_SCAN, CSPM_RESOURCES_INVERTED, COMPLIANCE_LOGS_INDEX, \
+    NODE_TYPE_CONTAINER
 from utils.scope import fetch_topology_data
 import time
+import hashlib
 from utils.helper import get_cve_scan_tmp_folder, rmdir_recursive, wait_for_postgres_table
 import requests
 
@@ -45,7 +51,8 @@ def cve_fix_interrupted_at_start():
 
 def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_scan_message):
     body = {
-        "masked": "false", "type": CVE_SCAN_LOGS_ES_TYPE, "scan_id": cve_status["scan_id"], "node_type": cve_status["node_type"],
+        "masked": "false", "type": CVE_SCAN_LOGS_ES_TYPE, "scan_id": cve_status["scan_id"],
+        "node_type": cve_status["node_type"],
         "cve_scan_message": cve_scan_message, "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         "time_stamp": int(time.time() * 1000.0), "host": host_name, "action": CVE_SCAN_STATUS_ERROR,
         "host_name": host_name, "node_id": cve_node_id,
@@ -147,6 +154,82 @@ def secret_fix_interrupted(*args):
                 if total_diff_minutes >= 10:
                     insert_secret_error_doc(status, datetime_now, host, node_id,
                                             "Scan was interrupted. Please restart.")
+
+
+def insert_compliance_error_doc(node_id, scan_data, check_type):
+    time_time = time.time()
+    es_doc = {
+        "node_id": node_id,
+        "node_type": scan_data["node_type"],
+        "compliance_check_type": check_type,
+        "total_checks": 0,
+        "masked": "false",
+        "host_name": scan_data["host_name"],
+        "node_name": scan_data["node_name"],
+        "type": COMPLIANCE_LOGS_ES_TYPE,
+        "result": {},
+        "scan_status": "ERROR",
+        "scan_message": "Compliance scan was interrupted. Please start again.",
+        "time_stamp": int(time_time * 1000.0),
+        "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") +
+                      repr(time_time).split('.')[1][:3] + "Z"
+    }
+    es_doc["doc_id"] = hashlib.md5(
+        (es_doc["node_id"] + es_doc["node_type"] + es_doc["compliance_check_type"] + es_doc[
+            "scan_status"] + str(
+            es_doc["time_stamp"])).encode("utf-8")).hexdigest()
+    ESConn.overwrite_doc_having_id(COMPLIANCE_LOGS_INDEX, es_doc, es_doc["doc_id"])
+    logging.info(
+        "Compliance scan was interrupted on host {0}, node_id {1}, check_type {2}. Fixed in es - {3}.".format(
+            scan_data["host_name"], node_id, check_type, es_doc["doc_id"]))
+
+
+@celery_app.task(bind=True, default_retry_delay=60)
+def compliance_fix_interrupted(*args):
+    """
+    Fix interrupted compliance scans
+    """
+    hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
+    windows_hosts = []
+    windows_containers = []
+    all_host_names = []
+    for node_id, node in hosts.items():
+        all_host_names.append(node.get("host_name", ""))
+        if node.get("os", "") == "windows":
+            windows_hosts.append(node.get("host_name", "") + ";<host>")
+    if windows_hosts:
+        containers = fetch_topology_data(
+            node_type=NODE_TYPE_CONTAINER, format="deepfence")
+        for node_id, node in containers.items():
+            if node.get("host_name", "") + ";<host>" in windows_hosts:
+                windows_containers.append(
+                    node.get("docker_container_id", "") + ";<container>")
+    compliance_scans = ESConn.get_node_wise_compliance_status()
+    for node_id, check_types in compliance_scans.items():
+        for check_type, scan_data in check_types.items():
+            if scan_data["host_name"] and scan_data["host_name"] not in all_host_names:
+                # In case the agent itself is not connected, don't act now, wait till agent reconnects
+                continue
+            if scan_data["node_type"] == "host":
+                if node_id in windows_hosts:
+                    continue
+            elif scan_data["node_type"] == "container":
+                if node_id in windows_containers:
+                    continue
+            timestamp = datetime.strptime(
+                scan_data["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+            time_now = datetime.now()
+            total_minutes = int(
+                round((time_now - timestamp).total_seconds() / 60))
+            if scan_data["scan_status"] == "QUEUED":
+                # If scan was queued 5 minutes ago, still not in progress, then it has failed
+                if total_minutes >= 5:
+                    insert_compliance_error_doc(node_id, scan_data, check_type)
+            elif scan_data["scan_status"] in ["INPROGRESS", "SCAN_IN_PROGRESS"]:
+                # If scan was started 5 minutes ago, still no updated status found, then it has failed
+                # We send updates every 2 minutes
+                if total_minutes >= 5:
+                    insert_compliance_error_doc(node_id, scan_data, check_type)
 
 
 @celery_app.task(bind=True, default_retry_delay=60)
@@ -268,3 +351,85 @@ def tag_k8s_cluster_name_in_docs(*args):
             continue
         break
     return
+
+
+@celery_app.task(bind=True, default_retry_delay=60)
+def map_cloud_account_arn_to_table(*args):
+    """
+    Keep cpu_anomaly_top and memory_anomaly_top docs only for 30 minutes
+    """
+    with app.app_context():
+        query_body = {
+            "query": {
+                "range": {
+                    "@timestamp": {
+                        "gte": "now-5m/m",
+                        "lte": "now/m"
+                    }
+                }
+            }
+        }
+        scans_in_last_5_mins = ESConn.search(CLOUD_COMPLIANCE_SCAN, query_body, 0, 10000).get('hits', {}).get("hits",
+                                                                                                              [])
+
+        for scan_doc in scans_in_last_5_mins:
+            resource = scan_doc.get("_source").get("resource")
+            region = scan_doc.get("_source").get("region", "")
+            if not region:
+                region = "global"
+            service_name =scan_doc.get("_source").get("cloud_provider")+"_"+scan_doc.get("_source").get("service").lower()
+            cloud_resource_nodes_count = CloudResourceNode.query.filter_by(node_id=resource).all()
+            # print("resource={} region={} service_name={} cloud_resource_nodes_count={}".format(resource,region,service_name,len(cloud_resource_nodes_count)))
+            # already exists
+            if len(cloud_resource_nodes_count) == 1:
+                if service_name == cloud_resource_nodes_count[0].service_name:
+                    # print("1 already exists same service_name: {} cloud_resource_nodes_count: {}".format(service_name,cloud_resource_nodes_count[0].service_name))
+                    continue
+                elif not cloud_resource_nodes_count[0].service_name:
+                    valid_service_name = False
+                    for service, table_names in CSPM_RESOURCES_INVERTED.items():
+                        if service_name.lower() == service and cloud_resource_nodes_count[0].node_type in CSPM_RESOURCES_INVERTED.get(service):
+                            valid_service_name = True
+                    if not valid_service_name:
+                        continue
+                    # print("2 already exists same service_name: {} cloud_resource_nodes_count: {}".format(service_name,cloud_resource_nodes_count[0].service_name))
+                    cloud_resource_nodes_count[0].service_name = service_name
+                    cloud_resource_nodes_count[0].save()
+                # else:
+                #     create_resource_node_aws(scan_doc, service_name, region)
+            # multiple resources with different service names
+            elif len(cloud_resource_nodes_count) > 1:
+                next_resource = next(
+                    (x.service_name for x in cloud_resource_nodes_count if x.service_name == service_name), "")
+                if next_resource:
+                    # print("1 multiple resources service_name exists: {}".format(next_resource))
+                    continue
+                else:
+                    # print("2 multiple resources update service_name: {}".format(scan_doc))
+                    create_resource_node_aws(scan_doc, service_name, region)
+            # resource doesn't exists
+            else:
+                create_resource_node_aws(scan_doc, service_name, region)
+
+
+def create_resource_node_aws(doc, service_name, region):
+    # print("create_resource_node_aws: {}".format(doc))
+    cloud_provider = doc.get("_source").get("cloud_provider")
+    node_type = cloud_provider
+    for service, table_names in CSPM_RESOURCES_INVERTED.items():
+        if service_name.lower() == service:
+            node_type = table_names[0]
+    cloud_resource_node_data = CloudResourceNode(
+        node_id=doc.get("_source").get("resource"),
+        node_type=node_type,
+        node_name=service_name,
+        cloud_provider=cloud_provider,
+        account_id=doc.get("_source").get("node_id"),
+        region=region,
+        service_name=service_name,
+        is_active=True
+    )
+    try:
+        cloud_resource_node_data.save()
+    except IntegrityError:
+        pass

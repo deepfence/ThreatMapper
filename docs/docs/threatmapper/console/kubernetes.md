@@ -28,7 +28,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     If the metrics server is not already installed (```kubectl get deployment metrics-server -n kube-system```), install as follows:
 
     ```bash
-    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.1/components.yaml
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
     ```
 
 3. **Install the ThreatMapper Console**
@@ -50,7 +50,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases) (recommended), specify the release tag as follows:
 
     ```bash
-    helm install deepfence-console deepfence/deepfence-console --set image.tag=1.3.1
+    helm install deepfence-console deepfence/deepfence-console --set image.tag=1.4.0
     ```
     :::
 
@@ -65,7 +65,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     ```bash
     helm install deepfence-router deepfence/deepfence-router
     # Optionally, use a tagged release:
-    # helm install deepfence-router deepfence/deepfence-router --set image.tag=1.3.1
+    # helm install deepfence-router deepfence/deepfence-router --set image.tag=1.4.0
     ```
 
     ... and wait for the cloud platform to deploy an external load-balancer:
@@ -86,8 +86,8 @@ You can perform a rolling upgrade of the Management Console to a new, tagged rel
 
    ```bash
    helm repo update deepfence
-   helm upgrade deepfence-console deepfence/deepfence-console --set image.tag=1.3.1
-   helm upgrade deepfence-router deepfence/deepfence-router --set image.tag=1.3.1
+   helm upgrade deepfence-console deepfence/deepfence-console --set image.tag=1.4.0
+   helm upgrade deepfence-router deepfence/deepfence-router --set image.tag=1.4.0
    ```
 
 ### Remove the ThreatMapper Management Console

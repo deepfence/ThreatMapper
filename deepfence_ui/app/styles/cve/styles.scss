@@ -171,9 +171,14 @@
           .dagre-chart-container {
             width: 100%;
             max-width: 600px;
+            min-width: 200px;
             margin: 0 auto;
+            padding-bottom: 24px;
             margin-left: 50px;
             min-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
           }
         }
 

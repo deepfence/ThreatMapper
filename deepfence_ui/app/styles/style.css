@@ -44,6 +44,16 @@
   font-weight: normal;
   font-size: 28px;
 }
+.nav-icon-attack-graph {
+  height: 32px;
+}
+.nav-icon-attack-graph:before {
+  content: "\f140";
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 28px;
+}
 .icon-webhook:before {
   content: "\e909";
 }

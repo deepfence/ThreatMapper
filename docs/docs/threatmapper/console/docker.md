@@ -34,8 +34,8 @@ The following instructions explain how to get started with a docker-based instal
     Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases), specify the release tag as follows:
 
     ```bash
-    wget https://github.com/deepfence/ThreatMapper/raw/release-1.3/deployment-scripts/docker-compose.yml
-    env DF_IMG_TAG=1.3.1 docker-compose -f docker-compose.yml up -d
+    wget https://github.com/deepfence/ThreatMapper/raw/release-1.4/deployment-scripts/docker-compose.yml
+    env DF_IMG_TAG=1.4.0 docker-compose -f docker-compose.yml up -d
     ```
     :::
 
@@ -50,8 +50,8 @@ docker-compose -f docker-compose.yml down
 
 # refresh the docker-compose file
 rm docker-compose.yml
-wget https://github.com/deepfence/ThreatMapper/raw/release-1.3/deployment-scripts/docker-compose.yml
-env DF_IMG_TAG=1.3.1 docker-compose -f docker-compose.yml up -d
+wget https://github.com/deepfence/ThreatMapper/raw/release-1.4/deployment-scripts/docker-compose.yml
+env DF_IMG_TAG=1.4.0 docker-compose -f docker-compose.yml up -d
 ```
 
 ### Remove the ThreatMapper Management Console
@@ -62,5 +62,10 @@ Remove the ThreatMapper Management Console as follows:
 docker-compose -f docker-compose.yml down
 ```
 
-You can then prune the images and volumes if they are no longer required.
+You can then prune the images and volumes if they are no longer required:
+
+```bash
+docker image prune
+docker volume prune
+```
 

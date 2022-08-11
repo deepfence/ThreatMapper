@@ -1,0 +1,74 @@
+[
+  {
+    "test_category": "User Settings",
+    "test_number": "1.1.2",
+    "test_desc": "Ensure only trusted users are allowed to control Docker daemon",
+    "test_rationale": "You should remove any untrusted users from the docker group using command sudo gpasswd -d <your-user> docker or add trusted users to the docker group using command sudo usermod -aG docker <your-user>. You should not create a mapping of sensitive directories from the host to container volumes."
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.18",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /usr/bin/runc (Automated)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.5",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /var/lib/docker (Automated)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.6",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /etc/docker (Automated)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.7",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - docker.service (Automated)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.9",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - docker.socket (Automated)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.10",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /etc/default/docker (Automated)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.13",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /etc/sysconfig/docker (Automated)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.14",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd (Automated)",
+    "test_rationale": "package provides several obsolete and insecure\nnetwork services. Removing it decreases the risk of those services' accidental (or intentional)\nactivation."
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "2.5",
+    "test_desc": "Ensure insecure registries are not used (Scored)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "2.7",
+    "test_desc": "Ensure TLS authentication for Docker daemon is configured (Scored)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "2.14",
+    "test_desc": "Ensure containers are restricted from acquiring new privileges (Scored)",
+    "test_rationale": ""
+  }
+]

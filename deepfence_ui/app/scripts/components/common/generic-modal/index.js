@@ -4,11 +4,12 @@ import { hideModal} from '../../../actions/app-actions';
 
 const modalStyles = {
   content: {
-    backgroundColor: 'rgba(16, 16, 16)',
+    backgroundColor: '#222222',
     margin: 'auto',
     padding: '0px',
     border: '1px solid #252525',
     overflow: 'initial',
+    overflowY: 'auto',
     top: '50%',
     left: '50%',
     bottom: 'auto',

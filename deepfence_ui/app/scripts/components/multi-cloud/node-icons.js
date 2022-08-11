@@ -136,6 +136,8 @@ import verizon from '../../../images/topology-icons/grayscale/verizon Dark.svg';
 import digitalocean from '../../../images/topology-icons/grayscale/digital-ocean-dark.svg';
 import container from '../../../images/topology-icons/grayscale/container-dark.svg';
 import kubernetes from '../../../images/topology-icons/grayscale/k8s-dark.svg';
+import azure from '../../../images/topology-icons/grayscale/Microsoft_Azure.svg';
+
 
 const allIcons = {
   acm: waf,
@@ -144,6 +146,7 @@ const allIcons = {
   alexa,
   amazoncloudfront,
   aws,
+  azure,
   circle,
   cloud,
   clouddirectory,
@@ -153,7 +156,7 @@ const allIcons = {
   dropbox,
   gcloud,
   digital_ocean: digitalocean,
-  google_cloud: gcloud,
+  gcp: gcloud,
   digitalocean,
   github,
   gitlab,

@@ -105,7 +105,7 @@
   justify-content: center;
 }
 
-.compliance-cis-info, .compliance-standard-informational, .compliance-pcidss-informational, .compliance-hipaa-informational, .compliance-mission_critical_classified-informational {
+.compliance-cis-info, .compliance-hipaa-info, .compliance-gdpr-info, .compliance-soc2-info, .compliance-pci-info, .compliance-nist-info {
   color: $low-alert-color;
   background-color: transparent;
 
@@ -127,7 +127,7 @@
   }
 }
 
-.compliance-cis-pass, .compliance-nist-PASS, .compliance-standard-pass, .compliance-pcidss-pass, .compliance-hipaa-pass , .compliance-mission_critical_classified-pass {
+.compliance-cis-ok, .compliance-cis-pass, .compliance-gdpr-pass, .compliance-pci-pass, .compliance-nist-pass,  .compliance-gdpr-ok, .compliance-pci-ok, .compliance-nist-ok, .compliance-hipaa-pass, .compliance-soc2-ok, .compliance-hipaa-ok {
   color: $color-success;
   background-color: transparent;
 
@@ -149,7 +149,7 @@
   }
 }
 
-.compliance-cis-warn, .compliance-nist-FAIL, .compliance-standard-fail, .compliance-pcidss-fail, .compliance-hipaa-fail, .compliance-mission_critical_classified-fail {
+.compliance-cis-warn, .compliance-cis-note, .compliance-hipaa-warn, .compliance-gdpr-warn, .compliance-pci-warn, .compliance-nist-warn, .compliance-cis-alarm, .compliance-hipaa-alarm, .compliance-gdpr-alarm, .compliance-pci-alarm, .compliance-nist-alarm, .compliance-soc2-alarm {
   color: $critical-alert-color;
   background-color: transparent;
 
@@ -193,7 +193,7 @@
   }
 }
 
-.compliance-cis-note, .compliance-nist-WARN, .compliance-standard-error, .compliance-pcidss-error, .compliance-hipaa-error, .compliance-mission_critical_classified-error {
+.compliance-hipaa-note, .compliance-gdpr-note, .compliance-pci-note, .compliance-nist-note, .compliance-cis-skip,.compliance-gdpr-skip, .compliance-hipaa-skip, .compliance-pci-skip, .compliance-soc2-skip, .compliance-nist-skip {
   color: $medium-alert-color;
   background-color: transparent;
 

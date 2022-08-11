@@ -55,10 +55,16 @@ export const ADMIN_SIDE_NAV_MENU_COLLECTION = [
     name: 'Topology', menuIcon: 'icon-Topology', isActive: true, link: '/topology'
   },
   {
+    name: 'Threat Graph', menuIcon: 'nav-icon-attack-graph', isActive: true, link: '/threat-graph'
+  },
+  {
     name: 'Vulnerabilities', menuIcon: 'icon-biohazard', isActive: false, link: '/vulnerability'
   },
   {
     name: 'Secrets', menuIcon: "nav-icon-secret", isActive: false, link: '/secret-scan'
+  },
+  {
+    name: 'Posture', menuIcon: 'icon-compliance', isActive: false, link: '/compliance'
   },
   {
     name: 'Registries', menuIcon: 'icon-containers', isActive: false, link: '/registry_vulnerability_scan'
@@ -73,10 +79,16 @@ export const USER_SIDE_NAV_MENU_COLLECTION = [
     name: 'Topology', menuIcon: 'icon-Topology', isActive: true, link: '/topology'
   },
   {
+    name: 'Threat Graph', menuIcon: 'nav-icon-attack-graph', isActive: true, link: '/threat-graph'
+  },
+  {
     name: 'Vulnerabilities', menuIcon: 'icon-biohazard', isActive: false, link: '/vulnerability'
   },
   {
     name: 'Secrets', menuIcon: "nav-icon-secret", isActive: false, link: '/secret-scan'
+  },
+  {
+    name: 'Posture', menuIcon: 'icon-compliance', isActive: false, link: '/compliance'
   },
   {
     name: 'Registries', menuIcon: 'icon-containers', isActive: false, link: '/registry_vulnerability_scan'

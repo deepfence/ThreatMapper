@@ -2184,7 +2184,6 @@ export function userUpdate(params = {}) {
 }
 
 export function deleteScans(params = {}) {
-  const { id: userId } = params;
   const url = `${backendElasticApiEndPoint()}/docs/delete`;
   return fetch(url, {
     credentials: 'same-origin',
@@ -2497,3 +2496,361 @@ export function secretScanUnmaskDocs(dispatch, params) {
     },
   });
 };
+
+
+export function startComplianceScan(params ={}) {
+  const { nodeId, checkTypes, cloudType} = params;
+  const requestBody = {
+    node_type: cloudType,
+    compliance_check_type: checkTypes,
+  };
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/${nodeId}/start`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(requestBody),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function complianceScheduleScan(params = {}) {
+  const { nodeId, checkTypes, cloudType, scheduleScanIntervel} = params;
+  const requestBody = {
+    action: 'schedule_compliance_scan',
+    node_type: cloudType,
+    action_args: {
+      cron: `0 0 */${scheduleScanIntervel} * *`,
+      compliance_check_type: checkTypes,
+      node_id: nodeId
+    },
+  };
+
+  const url = `${backendElasticApiEndPoint()}/node_action`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(requestBody),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getComplianceTests({ checkType }) {
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/controls`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function updateComplianceTests(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/compliance/update_controls`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getComplianceRules(params = {}) {
+  const { lucene_query: luceneQuery = [], checkType, cloudType, nodeId} = params;
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/controls?cloud_provider=${cloudType}&node_id=${nodeId}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+// individual cloud creds
+export function getComplianceCloudCredentials(params = {}) {
+  const { cloud_provider } = params;
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/nodes?cloud_provider=${cloud_provider}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+// refreshes the cloud resources
+export function refreshCloudComplianceResources(params = {}) {
+  const { nodeId } = params;
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance/${nodeId}/refresh`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+// scan list for speific node and check type.
+export function getComplianceScanList(params = {}) {
+  const { lucene_query: luceneQuery = [], nodeId, checkType, cloudType } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/scans?number=30&size=100&time_unit=day&lucene_query=${luceneQueryEscaped}&node_id=${nodeId}&compliance_check_type=${checkType}&node_type=${cloudType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+// centre chart data scan results.
+export function getComplianceChartData(params = {}) {
+  const { lucene_query: luceneQuery = [], checkType, nodeId, scanId, cloudType} = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/summary?number=30&time_unit=day&lucene_query=${luceneQueryEscaped}&node_id=${nodeId}&compliance_check_type=${checkType}&node_type=${cloudType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getComplianceBarChart(params = {}) {
+  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType} = params;
+  const requestBody = {
+    scan_id: scanId,
+  };
+  if (resource) {
+    requestBody.filters = { resource };
+  }
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_category_report?&lucene_query=${luceneQueryEscaped}&number=30&time_unit=day&node_type=${cloudType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(requestBody),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+
+// Donut chart Scan Results
+export function getResultDonutData(params = {}) {
+  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType} = params;
+  const filters = {};
+  if (resource) {
+    filters.resource = resource;
+  }
+  const requestBody = {
+    scan_id: scanId,
+    filters
+  };
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_status_report?&lucene_query=${luceneQueryEscaped}&number=30&time_unit=day&node_type=${cloudType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(requestBody),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function complianceMaskDocs(dispatch, params) {
+  const url = `${backendElasticApiEndPoint()}/compliance/mask_doc`;
+  const { cloudType, selectedDocIndexValues } = params;
+  let nodeType = '';
+  if (cloudType === 'linux' || cloudType === 'k8s') {
+    nodeType = 'linux';
+  }
+  else nodeType = ''
+  const requestBody = {
+    docs: selectedDocIndexValues,
+    node_type: nodeType,
+  };
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(requestBody),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+}
+
+
+export function complianceUnmaskDocs(dispatch, params) {
+  const url = `${backendElasticApiEndPoint()}/compliance/unmask_doc`;
+  const { cloudType, selectedDocIndexValues } = params;
+  let nodeType = '';
+  if (cloudType === 'linux' || cloudType === 'k8s') {
+    nodeType = 'linux';
+  }
+  else nodeType = ''
+  const requestBody = {
+    docs: selectedDocIndexValues,
+    node_type: nodeType,
+  };
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(requestBody),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};
+
+
+// Scan results
+export function getScanResults(params = {}) {
+  const {
+    lucene_query: luceneQuery = [],
+    nodeId,
+    resource,
+    checkType,
+    scanId,
+    pageSize,
+    page,
+    cloudType,
+    hideMasked,
+  } = params;
+  const from = page ? page * pageSize : page;
+  let filters = {};
+  if (hideMasked === true) {
+    filters = {
+      masked: false,
+      node_id: nodeId,
+      scan_id: scanId,
+      compliance_check_type: checkType,
+    };
+  } else {
+    filters = {
+      node_id: nodeId,
+      scan_id: scanId,
+      compliance_check_type: checkType,
+    };
+  }
+  if (resource) {
+    filters.resource = resource;
+  }
+  const requestBody = {
+    _type: 'cloud-compliance-scan',
+    filters,
+  };
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  const url = `${backendElasticApiEndPoint()}/compliance/search?from=${from}&size=20&lucene_query=${luceneQueryEscaped}&number=30&time_unit=day&hideMasked=${hideMasked}&node_type=${cloudType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(requestBody),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getResourcesForCloudService(params = {}) {
+  const { nodeid, serviceid } = params;
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance/cloud_resource/${nodeid}?node_type=${encodeURIComponent(serviceid)}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getServicesForCloudAccount(params = {}) {
+  const { nodeid } = params;
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance/cloud_resources/${nodeid}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getAttackGraphData(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/threat-graph/graph`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getAttackGraphNodeInfo(params = {}) {
+  const { nodeId } = params;
+  const url = new URL(`${backendElasticApiEndPoint()}/threat-graph/node`);
+  url.searchParams.append('graph_node_id', nodeId);
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}

@@ -24,7 +24,7 @@ import (
 
 // Agent version to dispay in metadata
 var (
-	agentVersionNo = "1.3.1"
+	agentVersionNo = "1.4.0"
 	agentCommitID  = "Unknown"
 	agentBuildTime = "0"
 	agentRunning   = "yes"
@@ -121,7 +121,7 @@ func getCloudMetadata(cloudProvider string) (string, string, string, string) {
 	var cloudMetadata cloud_metadata.CloudMetadata
 	if cloudProvider == "aws" {
 		cloudMetadata, _ = cloud_metadata.GetAWSMetadata(false)
-	} else if cloudProvider == "google_cloud" {
+	} else if cloudProvider == "gcp" {
 		cloudMetadata, _ = cloud_metadata.GetGoogleCloudMetadata(false)
 	} else if cloudProvider == "azure" {
 		cloudMetadata, _ = cloud_metadata.GetAzureMetadata(false)

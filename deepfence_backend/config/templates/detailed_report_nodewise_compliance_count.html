@@ -1,0 +1,30 @@
+<h3>{{summary_heading}} ({{ check }})</h3>
+<h3>Node Type - {{node_type}}</h3>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-all;">
+        <tr>
+            <th style="background: white;   color: black; width: 400px;">Name</th>
+            <th style="background: #0B3E58; color: #ffffff;">Pass</th>
+            <th style="background: #580B1D; color: #ffffff;">Fail</th>
+            <th style="background: #393E41; color: #ffffff;">Info</th>
+            <th style="background: #58481C; color: #ffffff;">Warn</th>
+            <th style="background: #58350B; color: #ffffff;">Note</th>
+            <th>Total</th>
+        </tr>
+        {% for datum in data %}
+        <tr>
+            <td style="width: 400px;"><a style="text-decoration : none;" href="#{{datum['host_name']}}">{{datum['host_name']}}</a></td>
+            <td>{{ datum.get('pass', 0) }}</td>
+            <td>{{ datum.get('fail', 0) }}</td>
+            <td>{{ datum.get('info', 0) }}</td>
+            <td>{{ datum.get('warn', 0) }}</td>
+            <td>{{ datum.get('note', 0) }}</td>
+            <td>{{ datum.get('pass', 0) + datum.get('fail', 0) + datum.get('info', 0) + datum.get('warn', 0) + datum.get('note', 0) }}</td>
+            
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% if page_break %}
+    <div class="page-break"></div>
+{% endif %}

@@ -6,6 +6,7 @@ import G6 from "@antv/g6";
 import { AutoSizer } from 'react-virtualized';
 import { isNil } from 'lodash';
 import styles from './index.module.scss';
+import { getNodeIcon } from '../../multi-cloud/node-icons';
 
 G6.registerEdge(
   'circles-running',
@@ -21,7 +22,7 @@ G6.registerEdge(
             x: 0,
             y: 0,
             r: 0.6,
-            opacity: 1,
+            opacity: 0.8,
             fill: '#db2547',
           },
           name: 'circle-shape',
@@ -37,7 +38,7 @@ G6.registerEdge(
             return {
               x: tmpPoint.x,
               y: tmpPoint.y,
-              fillOpacity: 1
+              fillOpacity: 0.8
             };
           },
           {
@@ -53,7 +54,7 @@ G6.registerEdge(
       }
     },
   },
-  'spline',
+  'cubic-vertical',
 );
 
 
@@ -121,9 +122,12 @@ export const formatApiDataForDagreGraph = (apiResponse, highlightTarget) => {
           edgesProps.type = 'circles-running';
           edgesProps.style = {
             stroke: '#db2547',
-            opacity: 0.6,
+            opacity: 0.5,
             shadowColor: 'white',
             endArrow: {
+              fillOpacity: 0.5,
+              strokeOpacity: 0.5,
+              opacity: 0.5,
               fill: "#db2547",
               stroke: "#db2547",
             },
@@ -145,6 +149,16 @@ export const formatApiDataForDagreGraph = (apiResponse, highlightTarget) => {
       });
     });
   });
+
+  if (nodesMap.has('The Internet')) {
+    nodesMap.set('The Internet', {
+      ...nodesMap.get('The Internet'),
+      img: getNodeIcon('cloud'),
+      type: 'image',
+      size: 10,
+    })
+  }
+
   return {
     nodes: [...nodesMap.values()],
     edges: [...edgesMap.values()]
@@ -194,7 +208,13 @@ const labelCfg = {
     lineWidth: 0,
     fill: 'rgb(192, 192, 192)',
     fontFamily: "Source Sans Pro",
-    fontSize: 8,
+    fontSize: 6,
+    background: {
+      fill: '#ffffff',
+      fillOpacity: 0.1,
+      padding: [1, 1, 1, 1],
+      radius: 1,
+    },
   },
 };
 
@@ -226,9 +246,9 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
         fitView: true,
         layout: {
           type: 'dagre',
-          rankdir: 'LR',
+          rankdir: 'TB',
           nodesepFunc: () => 0,
-          ranksepFunc: () => 0,
+          ranksep: 15,
           controlPoints: true,
         },
         modes: {
@@ -236,18 +256,20 @@ export const DagreGraph = ({ data, height, width, style, className }) => {
         },
         plugins: [tooltip],
         defaultNode: {
+          anchorPoints: [[0.5,0], [0.5, 1]],
           type: 'circle',
-          size: 15,
+          size: 10,
           style: {
             opacity: 0.8,
+            fillOpacity: 0.8,
             stroke: 'rgb(192, 192, 192)',
             fill: '#0079f2',
-            lineWidth: 0.7,
+            lineWidth: 0.5,
           },
           labelCfg,
         },
         defaultEdge: {
-          type: 'spline',
+          type: 'cubic-vertical',
           style: {
             stroke: '#55c1e9',
             lineWidth: 1.2,

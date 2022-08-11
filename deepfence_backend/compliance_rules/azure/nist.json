@@ -1,0 +1,206 @@
+[
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ia_2",
+    "test_desc": "Identification and Authentication (organizational Users) (IA-2)",
+    "test_rationale": "Identify and authenticate organization users and processes."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ia_4",
+    "test_desc": "Identifier Management (IA-4)",
+    "test_rationale": "Manage information system identifiers for users and devices. Automate authorizing and disabling users to prevent misuse."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ia_5",
+    "test_desc": "Authenticator Management (IA-5)",
+    "test_rationale": "Authenticate users and devices. Automate administrative control. Enforce restrictions. Protect against unauthorized use."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_au_6",
+    "test_desc": "Audit Record Review, Analysis, and Reporting (AU-6)",
+    "test_rationale": "Integrate audit review, analysis, and reporting with processes for investigation and response to suspicious activities."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_au_11",
+    "test_desc": "Audit Record Retention (AU-11)",
+    "test_rationale": "Retain audit records for security investigations. Meet regulatory and organizational data retention requirements."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_au_12",
+    "test_desc": "Audit Record Generation (AU-12)",
+    "test_rationale": "Audit events defined in AU-2. Allow trusted personnel to select which events to audit. Generate audit records for events."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ir_4",
+    "test_desc": "Incident Handling (IR-4)",
+    "test_rationale": "The organization implements an incident handling capability for security incidents that includes preparation, detection and analysis, containment, eradication, and recovery; coordinates incident handling activities with contingency planning activities; and incorporates lessons learned from ongoing incident handling activities into incident response procedures, training, and testing/exercises, and implements the resulting changes accordingly."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ir_5",
+    "test_desc": "Incident Monitoring (IR-5)",
+    "test_rationale": "The organization tracks and documents information system security incidents."
+  },
+  {
+    "test_category": "SecurityCenter",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ir_6_2",
+    "test_desc": "Vulnerabilities Related to Incidents IR-6(2)",
+    "test_rationale": "The organization reports information system vulnerabilities associated with reported security incidents to organization-defined personnel or roles."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_sc_3",
+    "test_desc": "Security Function Isolation (SC-3)",
+    "test_rationale": "The information system isolates security functions from nonsecurity functions."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_sc_5",
+    "test_desc": "Denial-of-service Protection (SC-5)",
+    "test_rationale": "The information system protects against or limits the effects of the organization-defined types of denial of service attacks or reference to a source for such information by employing organization-defined security safeguards."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_sc_7",
+    "test_desc": "Boundary Protection (SC-7)",
+    "test_rationale": "The information system monitors and controls communications at the external boundary of the system and at key internal boundaries within the system; implements subnetworks for publicly accessible system components that are physically or logically separated from internal organizational networks; and connects to external networks or information systems only through managed interfaces consisting of boundary protection devices arranged in accordance with an organizational security architecture."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_sc_8",
+    "test_desc": "Transmission Confidentiality and Integrity (SC-8)",
+    "test_rationale": "The information system protects the confidentiality and integrity of transmitted information."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_sc_12",
+    "test_desc": "Cryptographic Key Establishment and Management (SC-12)",
+    "test_rationale": "The organization establishes and manages cryptographic keys for required cryptography employed within the information system in accordance with organization-defined requirements for key generation, distribution, storage, access, and destruction."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_sc_28",
+    "test_desc": "Protection of Information at Rest (SC-28)",
+    "test_rationale": "The information system protects the confidentiality and integrity of organization-defined information at rest."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_cm_6",
+    "test_desc": "Configuration Settings (CM-6)",
+    "test_rationale": "The organization establishes and documents configuration settings for information technology products employed within the information system using organization-defined security configuration checklists that reflect the most restrictive mode consistent with operational requirements; implements the configuration settings; identifies, documents, and approves any deviations from established configuration settings for organization-defined information system components based on organization-defined operational requirements; and monitors and controls changes to the configuration settings in accordance with organizational policies and procedures."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_cm_7",
+    "test_desc": "Least Functionality (CM-7)",
+    "test_rationale": "The organization configures the information system to provide only essential capabilities and prohibits or restricts the use of organization-defined prohibited or restricted functions, ports, protocols, and/or services."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_cm_10",
+    "test_desc": "Software Usage Restrictions (CM-10)",
+    "test_rationale": "The organization uses software and associated documentation in accordance with contract agreements and copyright laws, tracks the use of software and associated documentation protected by quantity licenses to control copying and distribution, and controls and documents the use of peer-to-peer file-sharing technology to ensure that this capability is not used for the unauthorized distribution, display, performance, or reproduction of copyrighted work."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_cm_11",
+    "test_desc": "User-installed Software (CM-11)",
+    "test_rationale": "The organization establishes organization-defined policies governing the installation of software by users, enforces software installation policies through organization-defined methods, and monitors policy compliance at organization-defined frequency."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ra_5",
+    "test_desc": "Vulnerability Monitoring and Scanning (RA-5)",
+    "test_rationale": "Scan for system vulnerabilities. Share vulnerability information and security controls that eliminate vulnerabilities."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_si_2",
+    "test_desc": "Flaw Remediation (SI-2)",
+    "test_rationale": "The organization identifies, reports, and corrects information system flaws, tests software and firmware updates related to flaw remediation for effectiveness and potential side effects before installation, installs security-relevant software and firmware updates within the organization-defined time period of the release of the updates, and incorporates flaw remediation into the organizational configuration management process."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_si_3",
+    "test_desc": "Malicious Code Protection (SI-3)",
+    "test_rationale": "The organization employs malicious code protection mechanisms at information system entry and exit points to detect and eradicate malicious code; updates malicious code protection mechanisms whenever new releases are available in accordance with organizational configuration management policy and procedures; addresses the receipt of false positives during malicious code detection and eradication and the resulting potential impact on the availability of the information system; and configures malicious code protection mechanisms to perform periodic scans of the information system and real-time scans of files from external sources at an endpoint, network entry/exit points as the files are downloaded, opened, or executed in accordance with organizational security policy, and block and quarantine malicious code, send alert to the administrator and take organization-defined action in response to malicious code detection."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_si_4",
+    "test_desc": "System Monitoring (SI-4)",
+    "test_rationale": "The organization monitors the information system to detect attacks and indicators of potential attacks in accordance with organization-defined monitoring objectives and unauthorized local, network, and remote connections; identifies unauthorized use of the information system through organization-defined techniques and methods; deploys monitoring devices strategically within the information system to collect organization-determined essential information and at ad hoc locations within the system to track specific types of transactions of interest to the organization; protects information obtained from intrusion-monitoring tools from unauthorized access, modification, and deletion; heightens the level of information system monitoring activity whenever there is an indication of increased risk to organizational operations and assets, individuals, other organizations, or the Nation based on law enforcement information, intelligence information, or other credible sources of information; obtains legal opinion with regard to information system monitoring activities in accordance with applicable federal laws, Executive Orders, directives, policies, or regulations; and provides organization-defined system monitoring information to organization-defined personnel or roles as needed."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_si_16",
+    "test_desc": "Memory Protection (SI-16)",
+    "test_rationale": "The information system implements organization-defined security safeguards to protect its memory from unauthorized code execution."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_cp_6",
+    "test_desc": "Alternate Storage Site (CP-6)",
+    "test_rationale": "The organization establishes an alternate storage site including necessary agreements to permit the storage and retrieval of information system backup information and ensures that the alternate storage site provides information security safeguards equivalent to that of the primary site."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_cp_7",
+    "test_desc": "Alternate Processing Site (CP-7)",
+    "test_rationale": "The organization establishes an alternate processing site including necessary agreements to permit the transfer and resumption of organization-defined information system operations for essential missions/business functions within an organization-defined time period consistent with recovery time and recovery point objectives when the primary processing capabilities are unavailable, ensures that equipment and supplies required to transfer and resume operations are available at the alternate processing site or contracts are in place to support delivery to the site within the organization-defined time period for transfer/resumption and ensure that the alternate processing site provides information security safeguards equivalent to that of the primary site."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_cp_9",
+    "test_desc": "System Backup (CP-9)",
+    "test_rationale": "The organization conducts backups of information system documentation including security-related documentation, user-level and system-level information contained in the information system with recovery time and recovery point objectives, and protects the confidentiality, integrity, and availability of backup information at storage locations."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ac_2",
+    "test_desc": "Account Management (AC-2)",
+    "test_rationale": "Manage system accounts, group memberships, privileges, workflow, notifications, deactivations, and authorizations."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ac_3",
+    "test_desc": "Access Enforcement (AC-3)",
+    "test_rationale": "Enforce approved authorizations for access to systems in accordance with policy."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ac_4",
+    "test_desc": "Information Flow Enforcement (AC-4)",
+    "test_rationale": "Enforce approved authorizations. Control information workflow between interconnected systems."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ac_5",
+    "test_desc": "Separation of Duties (AC-5)",
+    "test_rationale": "Separate duties of individuals to prevent malevolent activity. automate separation of duties and access authorizations."
+  },
+  {
+    "test_category": "ActiveDirectory",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ac_6",
+    "test_desc": "Least Privilege (AC-6)",
+    "test_rationale": "Automate least privilege. Allow only authorized accesses for users and processes which are necessary."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ac_16",
+    "test_desc": "Security and Privacy Attributes (AC-16)",
+    "test_rationale": "Support and maintains the binding of security attributes to information in storage, in process, and in transition."
+  },
+  {
+    "test_category": "Azure",
+    "test_number": "benchmark.nist_sp_800_53_rev_5_ac_17",
+    "test_desc": "Remote Access (AC-17)",
+    "test_rationale": "Authorize remote access systems prior to connection. Enforce remote connection requirements to information systems."
+  }
+]

@@ -155,7 +155,7 @@ class RegistryCredential(db.Model):
         elif registry_type == REGISTRY_TYPE_QUAY:
             self._client = CveScanQuayRegistryImages(credentials.get('quay_registry_url', "").strip(),
                                                      credentials.get('quay_namespace', "").strip(),
-                                                     credentials.get('quay_access_token', "", "").strip())
+                                                     credentials.get('quay_access_token', "").strip())
         elif registry_type == REGISTRY_TYPE_ECR:
             self._client = CveScanECRImages(credentials.get('aws_access_key_id', "").strip(),
                                             credentials.get('aws_secret_access_key', "").strip(),
