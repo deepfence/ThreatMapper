@@ -12,7 +12,7 @@ from utils.esconn import ESConn
 from utils.constants import CVE_SCAN_LOGS_INDEX, NODE_TYPE_HOST, \
     CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_QUEUED, CVE_SCAN_STATUS_ERROR, DEEPFENCE_KEY, REPORT_INDEX, \
     CVE_INDEX, SECRET_SCAN_STATUS_IN_PROGRESS, SECRET_SCAN_LOGS_INDEX, CVE_SCAN_LOGS_ES_TYPE, \
-    COMPLIANCE_INDEX, COMPLIANCE_LOGS_ES_TYPE, CLOUD_COMPLIANCE_SCAN, CSPM_RESOURCES_INVERTED, COMPLIANCE_LOGS_INDEX, \
+    COMPLIANCE_LOGS_ES_TYPE, CLOUD_COMPLIANCE_INDEX, CSPM_RESOURCES_INVERTED, COMPLIANCE_LOGS_INDEX, \
     NODE_TYPE_CONTAINER
 from utils.scope import fetch_topology_data
 import time
@@ -369,15 +369,15 @@ def map_cloud_account_arn_to_table(*args):
                 }
             }
         }
-        scans_in_last_5_mins = ESConn.search(CLOUD_COMPLIANCE_SCAN, query_body, 0, 10000).get('hits', {}).get("hits",
-                                                                                                              [])
-
+        scans_in_last_5_mins = ESConn.search(CLOUD_COMPLIANCE_INDEX, query_body, 0, 10000).get('hits', {}).get("hits",
+                                                                                                               [])
         for scan_doc in scans_in_last_5_mins:
             resource = scan_doc.get("_source").get("resource")
             region = scan_doc.get("_source").get("region", "")
             if not region:
                 region = "global"
-            service_name =scan_doc.get("_source").get("cloud_provider")+"_"+scan_doc.get("_source").get("service").lower()
+            service_name = scan_doc.get("_source").get("cloud_provider") + "_" + scan_doc.get("_source").get(
+                "service").lower()
             cloud_resource_nodes_count = CloudResourceNode.query.filter_by(node_id=resource).all()
             # print("resource={} region={} service_name={} cloud_resource_nodes_count={}".format(resource,region,service_name,len(cloud_resource_nodes_count)))
             # already exists
@@ -388,7 +388,8 @@ def map_cloud_account_arn_to_table(*args):
                 elif not cloud_resource_nodes_count[0].service_name:
                     valid_service_name = False
                     for service, table_names in CSPM_RESOURCES_INVERTED.items():
-                        if service_name.lower() == service and cloud_resource_nodes_count[0].node_type in CSPM_RESOURCES_INVERTED.get(service):
+                        if service_name.lower() == service and \
+                                cloud_resource_nodes_count[0].node_type in CSPM_RESOURCES_INVERTED.get(service):
                             valid_service_name = True
                     if not valid_service_name:
                         continue

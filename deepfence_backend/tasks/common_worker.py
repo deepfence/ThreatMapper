@@ -7,7 +7,7 @@ from tasks.task_scheduler import run_node_task
 from utils.constants import REPORT_INDEX, \
     NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
     PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE, COMPLIANCE_INDEX, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE, \
-    COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_SCAN
+    COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_INDEX, CLOUD_COMPLIANCE_ES_TYPE
 import pandas as pd
 import requests
 from utils.constants import CVE_INDEX, MAX_TOTAL_SEVERITY_SCORE
@@ -99,14 +99,14 @@ def compliance_pdf_report_cloud(filters, lucene_query_string, number, time_unit,
 
 
     # # Count total data to fetch from es. If it's > 75000 docs, throw error
-    doc_count = ESConn.count(CLOUD_COMPLIANCE_SCAN, filters, number=number, time_unit=time_unit,
+    doc_count = ESConn.count(CLOUD_COMPLIANCE_INDEX, filters, number=number, time_unit=time_unit,
                              lucene_query_string=lucene_query_string)
     if doc_count > PDF_REPORT_MAX_DOCS:
         return "<div>Error while fetching compliance data, please use filters to reduce the number of documents " \
                    "to download.</div> "
 
     search_response = ESConn.search_by_and_clause(
-        CLOUD_COMPLIANCE_SCAN,
+        CLOUD_COMPLIANCE_INDEX,
         filters,
         from_arg,
         sort_order,
@@ -118,7 +118,7 @@ def compliance_pdf_report_cloud(filters, lucene_query_string, number, time_unit,
         sort_by=sort_by
     )
     filters.update({
-        "type": CLOUD_COMPLIANCE_SCAN,
+        "type": CLOUD_COMPLIANCE_ES_TYPE,
         "masked": "false"
     })
     if len(search_response['hits']) == 0:
