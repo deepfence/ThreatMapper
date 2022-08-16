@@ -52,10 +52,6 @@ kafka-rest-proxy:
 router:
 	docker build -f $(DEEPFENCE_BACKEND_DIR)/dockerify/haproxy/Dockerfile --build-arg is_dev_build=$(IS_DEV_BUILD) -t $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG) $(DEEPFENCE_BACKEND_DIR)
 
-.PHONY: steampipe
-steampipe:
-	docker build -f $(DEEPFENCE_BACKEND_DIR)/dockerify/api/Dockerfile.steampipe -t steampipe_build:latest $(DEEPFENCE_BACKEND_DIR)
-
 .PHONY: api
 api: certs
 	docker build -f $(DEEPFENCE_BACKEND_DIR)/dockerify/api/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_api_ce:$(DF_IMG_TAG) $(DEEPFENCE_BACKEND_DIR)

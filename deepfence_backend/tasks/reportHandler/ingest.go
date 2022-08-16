@@ -14,12 +14,14 @@ import (
 )
 
 var (
-	cveIndexName            = convertRootESIndexToCustomerSpecificESIndex("cve")
-	cveScanLogsIndexName    = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
-	secretScanIndexName     = convertRootESIndexToCustomerSpecificESIndex("secret-scan")
-	secretScanLogsIndexName = convertRootESIndexToCustomerSpecificESIndex("secret-scan-logs")
-	sbomArtifactsIndexName  = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
-	sbomCveScanIndexName    = convertRootESIndexToCustomerSpecificESIndex("sbom-cve-scan")
+	cveIndexName                     = convertRootESIndexToCustomerSpecificESIndex("cve")
+	cveScanLogsIndexName             = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
+	secretScanIndexName              = convertRootESIndexToCustomerSpecificESIndex("secret-scan")
+	secretScanLogsIndexName          = convertRootESIndexToCustomerSpecificESIndex("secret-scan-logs")
+	sbomArtifactsIndexName           = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
+	sbomCveScanIndexName             = convertRootESIndexToCustomerSpecificESIndex("sbom-cve-scan")
+	cloudComplianceScanIndexName     = convertRootESIndexToCustomerSpecificESIndex("cloud-compliance-scan")
+	cloudComplianceScanLogsIndexName = convertRootESIndexToCustomerSpecificESIndex("cloud-compliance-scan-logs")
 )
 
 //convertRootESIndexToCustomerSpecificESIndex : convert root ES index to customer specific ES index
@@ -172,6 +174,13 @@ func processReports(
 				log.Errorf("failed to process sbom artifacts error: %s", err.Error())
 			}
 
+		case cloudCompliance := <-topicChannels[cloudComplianceScanIndexName]:
+			processCloudCompliance(cloudCompliance, bulkp)
+
+		case cloudComplianceLog := <-topicChannels[cloudComplianceScanLogsIndexName]:
+			if err := addToES(cloudComplianceLog, cloudComplianceScanLogsIndexName, bulkp); err != nil {
+				log.Errorf("failed to process cloud compliance logs error: %s", err.Error())
+			}
 		}
 	}
 }

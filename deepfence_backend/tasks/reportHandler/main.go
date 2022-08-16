@@ -258,6 +258,8 @@ func main() {
 		secretScanLogsIndexName,
 		sbomArtifactsIndexName,
 		sbomCveScanIndexName,
+		cloudComplianceScanIndexName,
+		cloudComplianceScanLogsIndexName,
 	}
 	log.Info("topics list: ", topics)
 
