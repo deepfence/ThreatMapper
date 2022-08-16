@@ -14,6 +14,8 @@ def determine_node_status(node_type, status_type, taglist_filter=None):
         taglist_filter = []
     if status_type == 'cve':
         return get_topology_cve_status(node_type, taglist_filter)
+    elif status_type == 'compliance':
+        return get_node_compliance_status(node_type, taglist_filter)
     else:
         raise InvalidUsage('Invalid status_type')
 

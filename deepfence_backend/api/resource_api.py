@@ -1350,7 +1350,7 @@ def node_action():
     if not action_args:
         action_args = {}
     node_action_details["priority"] = action_args.get("priority", False)
-    accepted_action_args = ["cron", "description", "scan_type", "filters", "resources", "compliance_check_type"
+    accepted_action_args = ["cron", "description", "scan_type", "filters", "resources", "compliance_check_type",
                             "report_email", "durationValues", "registry_credentials", "delete_resources", "node_id"]
     action_args = {k: v for k, v in action_args.items() if k in accepted_action_args}
     filters = action_args.get("filters", {})

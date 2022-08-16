@@ -20,7 +20,7 @@ from utils.response import set_response
 from utils.esconn import ESConn, GroupByParams
 from utils.scope import fetch_topology_data
 from collections import defaultdict
-from utils.constants import CLOUD_AWS, CLOUD_AZURE, USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICES, CLOUD_COMPLIANCE_SCAN, \
+from utils.constants import TIME_UNIT_MAPPING, ALL_INDICES, \
     NODE_TYPE_CONTAINER, NODE_TYPE_CONTAINER_IMAGE, ES_TERMS_AGGR_SIZE, COMPLIANCE_CHECK_TYPES, \
     CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, CLOUD_COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
     PENDING_CLOUD_COMPLIANCE_SCANS_KEY, CLOUD_COMPLIANCE_LOGS_ES_TYPE, NODE_TYPE_HOST, COMPLIANCE_LINUX_HOST, \
@@ -109,7 +109,7 @@ def search():
 
     node_filters = request.json.get("node_filters", {})
     if node_filters:
-        if index_name == CLOUD_COMPLIANCE_SCAN:
+        if index_name == CLOUD_COMPLIANCE_INDEX:
             tmp_filters = filter_node_for_compliance(node_filters)
             if tmp_filters:
                 filters = {**filters, **tmp_filters}
@@ -225,7 +225,7 @@ def compliance_test_status_report(compliance_check_type):
             }
         }
     }
-    es_index = CLOUD_COMPLIANCE_SCAN
+    es_index = CLOUD_COMPLIANCE_INDEX
     if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
         es_index = COMPLIANCE_INDEX
     aggs_response = ESConn.aggregation_helper(
@@ -319,7 +319,7 @@ def compliance_test_category_report(compliance_check_type):
             }
         }
     }
-    es_index = CLOUD_COMPLIANCE_SCAN
+    es_index = CLOUD_COMPLIANCE_INDEX
     if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
         es_index = COMPLIANCE_INDEX
     aggs_response = ESConn.aggregation_helper(
