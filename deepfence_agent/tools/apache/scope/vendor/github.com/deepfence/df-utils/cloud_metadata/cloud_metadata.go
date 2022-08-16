@@ -195,7 +195,7 @@ func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
 
 func GetGoogleCloudMetadata(onlyValidate bool) (CloudMetadata, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
-	gcpMetadata := CloudMetadata{CloudProvider: "google_cloud"}
+	gcpMetadata := CloudMetadata{CloudProvider: "gcp"}
 	resp, err := GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", googleCloudMetadataBaseUrl, "instance/?recursive=true&timeout_sec=1"), nil, map[string]string{"Metadata-Flavor": "Google"})
 	if err != nil {
 		return gcpMetadata, err
@@ -235,7 +235,7 @@ func GetGoogleCloudMetadata(onlyValidate bool) (CloudMetadata, error) {
 			accountID = strSplit[len(strSplit)-2]
 		}
 	}
-	gcpMetadata = CloudMetadata{CloudProvider: "google_cloud", ID: accountID, Label: "Google Cloud", InstanceID: strconv.FormatInt(gcMetadataAll.ID, 10), Hostname: gcMetadataAll.Hostname, Name: gcMetadataAll.Name, Zone: gcMetadataAll.Zone, Region: region, MachineType: gcMetadataAll.MachineType}
+	gcpMetadata = CloudMetadata{CloudProvider: "gcp", ID: accountID, Label: "Google Cloud", InstanceID: strconv.FormatInt(gcMetadataAll.ID, 10), Hostname: gcMetadataAll.Hostname, Name: gcMetadataAll.Name, Zone: gcMetadataAll.Zone, Region: region, MachineType: gcMetadataAll.MachineType}
 	var privateIP []string
 	var publicIP []string
 	for _, nwInterface := range gcMetadataAll.NetworkInterfaces {
@@ -395,7 +395,7 @@ func DetectCloudServiceProvider() string {
 	// Check if Google Cloud
 	_, err = GetGoogleCloudMetadata(true)
 	if err == nil {
-		return "google_cloud"
+		return "gcp"
 	}
 	// Check if Azure
 	_, err = GetAzureMetadata(true)

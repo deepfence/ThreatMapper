@@ -1,7 +1,6 @@
 .idea/*
 *.pyc
 *.swp
-cloud_detect/steampipe-plugins/
 .DS_Store
 .vscode
 

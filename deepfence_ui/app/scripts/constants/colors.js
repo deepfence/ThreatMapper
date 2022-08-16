@@ -33,6 +33,25 @@ export const complianceColors = {
   high: dfStyle.severityColorHigh,
   medium: dfStyle.severityColorMedium,
   low: dfStyle.severityColorLow,
+  alarm: dfStyle.severityColorCritical,
+  fail: dfStyle.severityColorCritical,
+  note: dfStyle.severityColorMedium,
+  error: dfStyle.severityColorMedium,
+  info: dfStyle.severityColorLow,
+  informational: dfStyle.severityColorLow,
+  total: dfStyle.severityColorLow,
+  scanned: dfStyle.severityColorHigh,
+  ok: dfStyle.passColor,
+  skip: dfStyle.severityColorMedium,
+  pass: dfStyle.passColor,
+  warn: dfStyle.severityColorCritical,
+};
+
+export const complianceDonutColors = {
+  critical: dfStyle.severityColorCritical,
+  high: dfStyle.severityColorHigh,
+  medium: dfStyle.severityColorMedium,
+  low: dfStyle.severityColorLow,
   warn: dfStyle.severityColorCritical,
   fail: dfStyle.severityColorCritical,
   note: dfStyle.severityColorMedium,
@@ -49,7 +68,7 @@ export const complianceColorsShade = {
   high: dfStyle.severityColorHighShade,
   medium: dfStyle.severityColorMediumShade,
   low: dfStyle.severityColorLowShade,
-  warn: dfStyle.severityColorCriticalShade,
+  alarm: dfStyle.severityColorCriticalShade,
   fail: dfStyle.severityColorCriticalShade,
   note: dfStyle.severityColorMediumShade,
   error: dfStyle.severityColorMediumShade,
@@ -57,7 +76,10 @@ export const complianceColorsShade = {
   informational: dfStyle.severityColorLowShade,
   total: dfStyle.severityColorLowShade,
   scanned: dfStyle.severityColorHighShade,
-  pass: dfStyle.passColorShade,
+  ok: dfStyle.passColorShade,
+  skip: dfStyle.severityColorMedium,
+  pass: dfStyle.passColor,
+  warn: dfStyle.severityColorCritical,
 };
 
 export const severityColorsSunBurst = ({ path }) => {

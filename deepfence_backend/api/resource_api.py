@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from models.cloud_compliance_node import CloudComplianceNode
 from models.node_tags import NodeTags
 from models.scheduler import Scheduler
 from models.container_image_registry import RegistryCredential
@@ -15,7 +16,8 @@ from resource_models.node import Node
 from utils import constants
 from croniter import croniter
 from utils.esconn import ESConn
-from utils.constants import ES_TERMS_AGGR_SIZE
+from utils.constants import ES_TERMS_AGGR_SIZE, COMPLIANCE_KUBERNETES_HOST, NODE_TYPE_HOST, CLOUD_AWS, CLOUD_GCP, \
+    CLOUD_AZURE
 import urllib.parse
 import requests
 from config.redisconfig import redis
@@ -879,7 +881,7 @@ def enumerate_node_filters():
         resource_types = resource_types_str.split(",")
     resource_filters = []
     for resource_type in resource_types:
-        if resource_type not in [constants.CVE_ES_TYPE, constants.SECRET_SCAN_ES_TYPE]:
+        if resource_type not in [constants.CVE_ES_TYPE, constants.SECRET_SCAN_ES_TYPE, constants.COMPLIANCE_ES_TYPE]:
             print('Invalid resource_type {}. Skipping'.format(resource_type))
             continue
         if resource_type == constants.CVE_ES_TYPE:
@@ -1021,6 +1023,78 @@ def enumerate_node_filters():
                       resource_filters.append(details)
 
             node_types = [constants.NODE_TYPE_HOST]
+        elif resource_type == constants.COMPLIANCE_ES_TYPE:
+            resource_filters.append(
+                {"label": "Masked", "name": "masked", "options": ["false", "true"], "type": "string",
+                 "resource": "compliance"})
+            aggs = {
+                "node_type": {"terms": {"field": "node_type.keyword", "size": constants.ES_TERMS_AGGR_SIZE},
+                              "aggs": {"node_name": {"terms": {"field": "node_name.keyword",
+                                                               "size": constants.ES_TERMS_AGGR_SIZE}}}}}
+            compliance_check_type = request.args.get("compliance_check_type")
+            if compliance_check_type and compliance_check_type not in constants.COMPLIANCE_CHECK_TYPES:
+                raise InvalidUsage("compliance_check_type '{0}' is invalid".format(compliance_check_type))
+            aggs_filter = {"type": constants.COMPLIANCE_ES_TYPE}
+            if compliance_check_type:
+                aggs_filter["compliance_check_type"] = compliance_check_type
+            aggs_response = ESConn.aggregation_helper(
+                constants.COMPLIANCE_INDEX,
+                aggs_filter, aggs, number,
+                constants.TIME_UNIT_MAPPING.get(time_unit), lucene_query_string
+            )
+            filters_host_name = []
+            filters_container_name = []
+            filters_image_name = []
+            for node_type_bkt in aggs_response.get("aggregations", {}).get("node_type", {}).get("buckets", []):
+                if node_type_bkt["key"] == constants.NODE_TYPE_HOST:
+                    for host_bkt in node_type_bkt.get("node_name", {}).get("buckets", []):
+                        if host_bkt["key"] and host_bkt["key"] not in filters_host_name:
+                            filters_host_name.append(host_bkt["key"])
+                elif node_type_bkt["key"] == constants.NODE_TYPE_CONTAINER:
+                    for container_bkt in node_type_bkt.get("node_name", {}).get("buckets", []):
+                        if container_bkt["key"] and container_bkt["key"] not in filters_container_name:
+                            filters_container_name.append(container_bkt["key"])
+                elif node_type_bkt["key"] == constants.NODE_TYPE_CONTAINER_IMAGE:
+                    for image_bkt in node_type_bkt.get("node_name", {}).get("buckets", []):
+                        if image_bkt["key"] and image_bkt["key"] not in filters_image_name:
+                            filters_image_name.append(image_bkt["key"])
+            if filters_host_name:
+                details = {"label": "Hostname", "name": "host_name", "options": filters_host_name, "type": "string"}
+                if node_types:
+                    if constants.NODE_TYPE_HOST in node_types or constants.COMPLIANCE_LINUX_HOST in node_types:
+                        resource_filters.append(details)
+                else:
+                    resource_filters.append(details)
+            if filters_image_name:
+                details = {"label": "Image Name", "name": "image_name_with_tag", "options": filters_image_name,
+                           "type": "string"}
+                if node_types:
+                    if constants.NODE_TYPE_CONTAINER_IMAGE in node_types:
+                        resource_filters.append(details)
+                else:
+                    resource_filters.append(details)
+            if filters_container_name:
+                details = {"label": "Container Name", "name": "container_name", "options": filters_container_name,
+                           "type": "string"}
+                if node_types:
+                    if constants.NODE_TYPE_CONTAINER in node_types:
+                        resource_filters.append(details)
+                else:
+                    resource_filters.append(details)
+            if CLOUD_AWS in node_types or CLOUD_AZURE in node_types or CLOUD_GCP in node_types:
+                for node_type in node_types:
+                    if node_type in [CLOUD_AWS, CLOUD_AZURE, CLOUD_GCP]:
+                        cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=node_type,
+                                                                             org_account_id=None).all()
+                        node_ids = []
+                        for node in cloud_compliance_nodes:
+                            node_ids.append(node.node_id)
+                        resource_filters.append({"label": "Account Id", "name": "account_id", "options": node_ids,
+                           "type": "string"})
+        # get kubernetes_cluster_name from host topology
+        if len(node_types) == 0:
+            node_types = [constants.NODE_TYPE_HOST]
+            filters_needed = "kubernetes_cluster_name"
 
     if filters_needed:
         filters_needed = str(filters_needed).split(",")
@@ -1276,8 +1350,8 @@ def node_action():
     if not action_args:
         action_args = {}
     node_action_details["priority"] = action_args.get("priority", False)
-    accepted_action_args = ["cron", "description", "scan_type", "filters", "resources",
-                            "report_email", "durationValues", "registry_credentials", "delete_resources"]
+    accepted_action_args = ["cron", "description", "scan_type", "filters", "resources", "compliance_check_type",
+                            "report_email", "durationValues", "registry_credentials", "delete_resources", "node_id"]
     action_args = {k: v for k, v in action_args.items() if k in accepted_action_args}
     filters = action_args.get("filters", {})
     if type(filters) != dict:
@@ -1330,6 +1404,9 @@ def node_action():
         except:
             raise InternalError("Failed to get registry credential {}".format(registry_images["registry_id"]))
         node_action_details["registry_images"] = registry_images
+    elif node_type in [constants.COMPLIANCE_PROVIDER_AWS, constants.COMPLIANCE_PROVIDER_AZURE,
+                       constants.COMPLIANCE_PROVIDER_GCP]:
+        pass
     else:
         if not filters and not node_ids:
             raise InvalidUsage("node_id_list is required for node_type {0}".format(node_type))
@@ -1363,6 +1440,23 @@ def node_action():
         if node_type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
                              constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_REGISTRY_IMAGE]:
             raise InvalidUsage("action {0} not applicable for node_type {1}".format(action, node_type))
+    elif action in [constants.NODE_ACTION_COMPLIANCE_START_SCAN,
+                    constants.NODE_ACTION_SCHEDULE_COMPLIANCE_SCAN]:
+        if not node_type or node_type not in constants.COMPLIANCE_CHECK_TYPES.keys():
+            raise InvalidUsage("node_type should be one of {}".format(constants.COMPLIANCE_CHECK_TYPES.keys()))
+        compliance_check_types = action_args.get("compliance_check_type", None)
+        if not compliance_check_types or type(compliance_check_types) != list:
+            raise InvalidUsage("compliance_check_type should be list")
+        node_id = action_args.get("node_id", None)
+        if not node_id:
+            raise InvalidUsage("node_id is required")
+        invalid_check_types = set(compliance_check_types) - set(constants.COMPLIANCE_CHECK_TYPES[node_type])
+        if invalid_check_types:
+            raise InvalidUsage(
+                "compliance_check_type has invalid values: {0}".format(", ".join(invalid_check_types)))
+        node_action_details["compliance_check_type"] = compliance_check_types
+        node_action_details["node_id"] = node_id
+        node_action_details["node_type"] = node_type
     elif action in [constants.NODE_ACTION_DOWNLOAD_REPORT, constants.NODE_ACTION_SCHEDULE_SEND_REPORT]:
         if not filters:
             raise InvalidUsage("filters is required for this action")
@@ -1397,6 +1491,9 @@ def node_action():
             kwargs={"action": action, "node_action_details": node_action_details, "task_type": "node_task"})
     elif action in [constants.NODE_ACTION_DOWNLOAD_REPORT]:
         from tasks.task_scheduler import run_node_task
+        # translates to kubernetes hosts, added for UI requests consistency
+        if node_type == COMPLIANCE_KUBERNETES_HOST:
+            node_action_details["node_type"] = NODE_TYPE_HOST
         return run_node_task(action, node_action_details)
     elif action in [constants.NODE_ACTION_SCHEDULE_CVE_SCAN, constants.NODE_ACTION_SCHEDULE_SEND_REPORT]:
         if not action_args.get("cron"):
@@ -1408,6 +1505,13 @@ def node_action():
             node_names = ", ".join(registry_images["image_name_with_tag_list"][:3])
             if len(registry_images["image_name_with_tag_list"]) > 3:
                 node_names += " and more"
+        elif action == constants.NODE_ACTION_SCHEDULE_COMPLIANCE_SCAN:
+            node_names = ""
+            try:
+                node = CloudComplianceNode.query.filter_by(node_id=node_id)
+                node_names = node.node_name
+            except:
+                pass
         else:
             tmp_node_names = []
             for node_id in node_ids[:3]:
@@ -1417,11 +1521,8 @@ def node_action():
                     tmp_node_names.append(node.name)
                 except:
                     pass
-            node_names = ", ".join(tmp_node_names)
-            if len(node_ids) > 3:
-                node_names += " and more"
         try:
-            check_existing = Scheduler.query.filter_by(action=action, nodes=node_action_details).all()
+            check_existing = Scheduler.query.filter_by(action=action, nodes=node_action_details).first()
             if check_existing:
                 raise InvalidUsage("A similar schedule already exists")
             scheduled_action = Scheduler(

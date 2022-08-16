@@ -14,7 +14,7 @@ const BACKEND_PORT = process.env.BACKEND_PORT || '8004';
  * sensitive variables should not go here.
  */
  app.get('/env-config.js', (_, res) => {
-  res.send(`
+  res.set("content-type", "application/javascript").send(`
     window._env = {
       env: ${process.env.NODE_ENV ? `'${process.env.NODE_ENV}'` : `'development'`},
     };

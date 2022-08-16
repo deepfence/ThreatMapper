@@ -1,6 +1,7 @@
 /* eslint-disable */
 import G6 from "@antv/g6";
 import { useCallback, useEffect, useRef } from "react";
+import { onNodeMouseEnter, onNodeMouseLeave } from "./event-handlers";
 import { COLORS, PALETTE } from "./theme";
 
 export const useGraph = (el, data) => {
@@ -85,14 +86,17 @@ export const useGraph = (el, data) => {
       },
 
       defaultEdge: {
+        type: 'cubic',
+        size: 2,
+        color: COLORS.EDGE,
         style: {
-          stroke: COLORS.EDGE,
-          lineWidth: 1,
-          opacity: 0.5,
+          opacity: 0.6,
           endArrow: {
-            path: G6.Arrow.triangle(6, 9, 0),
-            fill: "#13F4EF",
-            stroke: "#13F4EF",
+            path: G6.Arrow.triangle(4, 6, 12),
+            opacity: 0.6,
+            strokeOpacity: 0.6,
+            fillOpacity: 0.6,
+            d: 16
           },
         },
       },
@@ -123,22 +127,9 @@ export const useGraph = (el, data) => {
 
       edgeStateStyles: {
         active: {
-          stroke: "#fefefe",
-          endArrow: {
-            path: G6.Arrow.triangle(7, 10, 15),
-            fill: "#E6E6FA",
-            stroke: "#E6E6FA",
-            d: -20,
-          },
-        },
-        inactive: {
-          endArrow: {
-            path: G6.Arrow.triangle(7, 10, 15),
-            fill: "red",
-            opacity: 0,
-            stroke: "#E6E6FA",
-            d: -20,
-          },
+          lineWidth: 3,
+          stroke: COLORS.ACTIVE_EDGE,
+          opacity: 0.6,
         },
       },
 
@@ -163,6 +154,9 @@ export const useGraph = (el, data) => {
     graph.data(data);
     graph.render();
 
+    graph.on('node:mouseenter', onNodeMouseEnter(graph));
+    graph.on('node:mouseleave', onNodeMouseLeave(graph));
+
     graphRef.current = graph;
   }, [el]);
 
@@ -178,6 +172,12 @@ const LABEL_CFG = {
     fill: COLORS.LABEL,
     fontFamily: "Source Sans Pro",
     fontSize: 20,
+    background: {
+      fill: '#ffffff',
+      fillOpacity: 0.1,
+      padding: [2, 4, 2, 4],
+      radius: 2,
+    }
   },
 };
 

@@ -5,7 +5,8 @@ from utils.constants import NODE_TYPE_CONTAINER, NODE_TYPE_PROCESS_BY_NAME, NODE
     DEEPFENCE_CONTAINER_STATE_URL, TOPOLOGY_ID_NODE_TYPE_MAP_REVERSE, NODE_TYPE_SWARM_SERVICE, \
     DEEPFENCE_CONSOLE_CPU_MEMORY_STATE_URL, REDIS_KEY_PREFIX_CLUSTER_AGENT_PROBE_ID, EMPTY_POD_SCOPE_ID, \
     ES_TERMS_AGGR_SIZE, SENSITIVE_KEYS, REDACT_STRING, VULNERABILITY_LOG_PATH, TIME_UNIT_MAPPING, CVE_SCAN_LOGS_INDEX, \
-    CVE_INDEX, SECRET_SCAN_LOGS_INDEX, CUSTOMER_UNIQUE_ID
+    CVE_INDEX, SECRET_SCAN_LOGS_INDEX, CUSTOMER_UNIQUE_ID, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, \
+    COMPLIANCE_LOGS_INDEX
 import hashlib
 import requests
 import string
@@ -115,35 +116,51 @@ def validate_ip(ip_address):
         return False
 
 
-def get_recent_scan_ids(number, time_unit, lucene_query_string, filters_cve_scan=None):
-    if not filters_cve_scan:
-        filters_cve_scan = {"action": "COMPLETED"}
-    cve_scan_aggs = {
-        "node_id": {
-            "terms": {
-                "field": "node_id.keyword",
-                "size": ES_TERMS_AGGR_SIZE
-            },
-            "aggs": {
-                "docs": {
-                    "top_hits": {
-                        "size": 1,
-                        "sort": [{"@timestamp": {"order": "desc"}}, {"scan_id.keyword": {"order": "desc"}}],
-                        "_source": {"includes": ["scan_id"]}
-                    }
-                }
+def get_recent_scan_ids(index_name, number, time_unit, lucene_query_string, filters=None):
+    if not filters:
+        if index_name == CVE_SCAN_LOGS_INDEX:
+            filters = {"action": "COMPLETED"}
+        elif index_name in [COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX]:
+            filters = {"scan_status": "COMPLETED"}
+        elif index_name == SECRET_SCAN_LOGS_INDEX:
+            filters = {"scan_status": "COMPLETE"}
+        else:
+            filters = {}
+    if index_name in [COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX]:
+        aggs = {
+            "node_id": {
+                "terms": {"field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE},
+                "aggs": {
+                    "compliance_check_type": {
+                        "terms": {"field": "compliance_check_type.keyword", "size": 15},
+                        "aggs": {
+                            "docs": {
+                                "top_hits": {
+                                    "size": 1, "_source": {"includes": ["scan_id"]},
+                                    "sort": [{"@timestamp": {"order": "desc"}}, {"scan_id.keyword": {"order": "desc"}}]
+                                }}}}}}
+        }
+    else:
+        aggs = {
+            "node_id": {
+                "terms": {"field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE},
+                "aggs": {"docs": {"top_hits": {"size": 1, "sort": [
+                    {"@timestamp": {"order": "desc"}}, {"scan_id.keyword": {"order": "desc"}}]}}}
             }
         }
-    }
-
     from utils.esconn import ESConn
-    cve_scan_aggs_response = ESConn.aggregation_helper(
-        CVE_SCAN_LOGS_INDEX, filters_cve_scan, cve_scan_aggs, number, TIME_UNIT_MAPPING.get(time_unit),
+    aggs_response = ESConn.aggregation_helper(
+        index_name, filters, aggs, number, TIME_UNIT_MAPPING.get(time_unit),
         lucene_query_string, add_masked_filter=False)
     recent_scan_ids = []
-    for node_id_bkt in cve_scan_aggs_response.get("aggregations", {}).get("node_id", {}).get("buckets", []):
-        if node_id_bkt.get("docs", {}).get("hits", {}).get("hits", []):
-            recent_scan_ids.append(node_id_bkt["docs"]["hits"]["hits"][0]["_source"]["scan_id"])
+    for node_id_bkt in aggs_response.get("aggregations", {}).get("node_id", {}).get("buckets", []):
+        if node_id_bkt.get("compliance_check_type"):
+            for check_type_bkt in node_id_bkt.get("compliance_check_type").get("buckets", []):
+                if check_type_bkt.get("docs", {}).get("hits", {}).get("hits", []):
+                    recent_scan_ids.append(check_type_bkt["docs"]["hits"]["hits"][0]["_source"]["scan_id"])
+        else:
+            if node_id_bkt.get("docs", {}).get("hits", {}).get("hits", []):
+                recent_scan_ids.append(node_id_bkt["docs"]["hits"]["hits"][0]["_source"]["scan_id"])
     return recent_scan_ids
 
 
@@ -343,11 +360,15 @@ def is_network_attack_vector(attack_vector):
     return False
 
 
-def get_topology_network_graph(topology_nodes):
-    graph = nx.DiGraph()
+def get_topology_network_graph(topology_nodes, graph=None, node_type=None, include_nodes=None):
+    if not include_nodes:
+        include_nodes = {}
+    if graph is None:
+        graph = nx.DiGraph()
     if not topology_nodes:
         return graph
     needed_nodes = {}
+    image_names = {}
     for node_id, node_details in topology_nodes.items():
         if "is_ui_vm" in node_details:
             if node_details.get("is_ui_vm") is True:
@@ -363,21 +384,38 @@ def get_topology_network_graph(topology_nodes):
                 continue
         node_name = node_details.get("name", node_details.get("label"))
         if node_details.get("pseudo", False):
-            if node_name != "The Internet":
+            if node_name == "The Internet":
+                needed_nodes[node_id] = node_name
+            continue
+        image_name = node_details.get("image_name_with_tag", node_details.get("image"))
+        if image_name and image_name != ":":
+            image_names[node_id] = image_name
+        if include_nodes:
+            if node_name in include_nodes:
+                needed_nodes[node_id] = node_name
                 continue
-        needed_nodes[node_id] = node_name
+            if image_name and image_name != ":":
+                if image_name in include_nodes:
+                    needed_nodes[node_id] = node_name
+                    continue
+        else:
+            needed_nodes[node_id] = node_name
     for node_id, node_details in topology_nodes.items():
         if node_id not in needed_nodes:
             continue
-        graph.add_node(node_id)
+        if not graph.has_node(node_id):
+            graph.add_node(node_id, name=needed_nodes[node_id], node_type=node_type,
+                           image_name=image_names.get(node_id, ""))
         for adj_node_id in node_details.get("adjacency", []):
             if adj_node_id == node_id:
                 continue
             if adj_node_id not in needed_nodes:
                 continue
             if not graph.has_node(adj_node_id):
-                graph.add_node(adj_node_id)
-            graph.add_edge(node_id, adj_node_id)
+                graph.add_node(adj_node_id, name=needed_nodes[adj_node_id], node_type=node_type,
+                               image_name=image_names.get(adj_node_id, ""))
+            if not graph.has_edge(node_id, adj_node_id):
+                graph.add_edge(node_id, adj_node_id)
     return graph
 
 

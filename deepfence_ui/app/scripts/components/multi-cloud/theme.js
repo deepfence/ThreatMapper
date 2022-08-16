@@ -20,7 +20,7 @@ export const PALETTE = {
 
   AWS_YELLOW: "#FF9900",
   GOOGLE_BLUE: "#4285F4",
-  EDGE_BLUE: '#13F4EF'
+  EDGE_BLUE: '#007fff'
 };
 
 export const COLORS = {
@@ -33,6 +33,7 @@ export const COLORS = {
   LABEL: "white",
 
   EDGE: PALETTE.EDGE_BLUE,
+  ACTIVE_EDGE: PALETTE.AWS_YELLOW,
 
   CLOUD_PROVIDER: PALETTE.DEEP_GREY,
   REGION: PALETTE.DARK_GREY,

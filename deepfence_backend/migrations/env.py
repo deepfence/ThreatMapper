@@ -42,6 +42,8 @@ def run_migrations_offline():
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(url=url)
+    # compare type checks if column type is changed and generate db migration
+    # context.configure(url=url,compare_type=True)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -70,11 +72,15 @@ def run_migrations_online():
                                 poolclass=pool.NullPool)
 
     connection = engine.connect()
+    # context.configure(connection=connection,
+    #                   target_metadata=target_metadata,
+    #                   process_revision_directives=process_revision_directives,
+    #                   **current_app.extensions['migrate'].configure_args,
+    #                   compare_type=True)
     context.configure(connection=connection,
                       target_metadata=target_metadata,
                       process_revision_directives=process_revision_directives,
                       **current_app.extensions['migrate'].configure_args)
-
     try:
         with context.begin_transaction():
             context.run_migrations()

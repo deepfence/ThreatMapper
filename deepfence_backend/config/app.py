@@ -10,8 +10,8 @@ from utils.custom_exception import CustomException
 from config.error_handlers import handle_invalid_usage
 from config.extensions import cors, jwt, db, migrate
 from utils.constants import API_URL_PREFIX
-from api import user_api, common_api, vulnerability_api, resource_api, reports_api, \
-    setting_api, internal_api, secret_scan_api, license_api
+from api import user_api, threat_graph, common_api, vulnerability_api, resource_api, reports_api, \
+    cloud_compliance_api, setting_api, internal_api, secret_scan_api, license_api
 
 
 def create_app(config_object):
@@ -55,6 +55,8 @@ def create_app(config_object):
 def register_blueprints(app):
     app.register_blueprint(user_api.user_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(common_api.common_api, url_prefix=API_URL_PREFIX)
+    app.register_blueprint(threat_graph.threat_graph_api, url_prefix=API_URL_PREFIX)
+    app.register_blueprint(cloud_compliance_api.cloud_compliance_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(vulnerability_api.vulnerability_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(resource_api.resource_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(reports_api.reports_api, url_prefix=API_URL_PREFIX)
@@ -74,10 +76,14 @@ def register_extensions(app):
     from models.notification import VulnerabilityNotification, UserActivityNotification
     from models.system_events import SystemEvents
     from models.node_tags import NodeTags
+    from models.compliance_rules import ComplianceRules
+    from models.compliance_rules_disabled import ComplianceRulesDisabled
     from models.scheduler import Scheduler
     from models.user_activity_log import UserActivityLog
     from models.email_configuration import EmailConfiguration
     from models.masked_cve import MaskedCVE
+    from models.cloud_compliance_node import CloudComplianceNode
+    from models.cloud_resource_node import CloudResourceNode
 
     cors.init_app(app, max_age=3600)
     jwt.init_app(app)

@@ -1,0 +1,500 @@
+[
+  {
+    "test_category": "BigQuery",
+    "test_number": "control.cis_v120_7_1",
+    "test_desc": "7.1 Ensure that BigQuery datasets are not anonymously or publicly accessible",
+    "test_rationale": "It is recommended that the IAM policy on BigQuery datasets does not allow anonymous and/or public access."
+  },
+  {
+    "test_category": "BigQuery",
+    "test_number": "control.cis_v120_7_2",
+    "test_desc": "7.2 Ensure that all BigQuery Tables are encrypted with Customer-managed encryption key (CMEK)",
+    "test_rationale": "BigQuery by default encrypts the data as rest by employing Envelope Encryption using Google managed cryptographic keys. The data is encrypted using the data encryption keys and data encryption keys themselves are further encrypted using key encryption keys. This is seamless and do not require any additional input from the user. However, if you want to have greater control, Customer-managed encryption keys (CMEK) can be used as encryption key management solution for BigQuery Data Sets. If CMEK is used, the CMEK is used to encrypt the data encryption keys instead of using google-managed encryption keys."
+  },
+  {
+    "test_category": "BigQuery",
+    "test_number": "control.cis_v120_7_3",
+    "test_desc": "7.3 Ensure that a Default Customer-managed encryption key (CMEK) is specified for all BigQuery Data Sets",
+    "test_rationale": "BigQuery by default encrypts the data as rest by employing Envelope Encryption using Google managed cryptographic keys. The data is encrypted using the data encryption keys and data encryption keys themselves are further encrypted using key encryption keys. This is seamless and do not require any additional input from the user. However, if you want to have greater control, Customer-managed encryption keys (CMEK) can be used as encryption key management solution for BigQuery Data Sets."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_1",
+    "test_desc": "4.1 Ensure that instances are not configured to use the default service account",
+    "test_rationale": "It is recommended to configure your instance to not use the default Compute Engine service account because it has the Editor role on the project."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_2",
+    "test_desc": "4.2 Ensure that instances are not configured to use the default service account with full access to all Cloud APIs",
+    "test_rationale": "To support principle of least privileges and prevent potential privilege escalation it is recommended that instances are not assigned to default service account Compute Engine default service account with Scope Allow full access to all Cloud APIs."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_3",
+    "test_desc": "4.3 Ensure 'Block Project-wide SSH keys' is enabled for VM instances",
+    "test_rationale": "It is recommended to use Instance specific SSH key(s) instead of using common/shared project-wide SSH key(s) to access Instances."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_4",
+    "test_desc": "4.4 Ensure oslogin is enabled for a Project",
+    "test_rationale": "Enabling OS login binds SSH certificates to IAM users and facilitates effective SSH certificate management."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_5",
+    "test_desc": "4.5 Ensure 'Enable connecting to serial ports' is not enabled for VM Instance",
+    "test_rationale": "Interacting with a serial port is often referred to as the serial console, which is similar to using a terminal window, in that input and output is entirely in text mode and there is no graphical interface or mouse support."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_6",
+    "test_desc": "4.6 Ensure that IP forwarding is not enabled on Instances",
+    "test_rationale": "Compute Engine instance cannot forward a packet unless the source IP address of the packet matches the IP address of the instance. Similarly, GCP won't deliver a packet whose destination IP address is different than the IP address of the instance receiving the packet. However, both capabilities are required if you want to use instances to help route packets."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_7",
+    "test_desc": "4.7 Ensure VM disks for critical VMs are encrypted with Customer-Supplied Encryption Keys (CSEK)",
+    "test_rationale": "Customer-Supplied Encryption Keys (CSEK) are a feature in Google Cloud Storage and Google Compute Engine. If you supply your own encryption keys, Google uses your key to protect the Google-generated keys used to encrypt and decrypt your data. By default, Google Compute Engine encrypts all data at rest. Compute Engine handles and manages this encryption for you without any additional actions on your part. However, if you wanted to control and manage this encryption yourself, you can provide your own encryption keys."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_8",
+    "test_desc": "4.8 Ensure Compute instances are launched with Shielded VM enabled",
+    "test_rationale": "To defend against against advanced threats and ensure that the boot loader and firmware on your VMs are signed and untampered, it is recommended that Compute instances are launched with Shielded VM enabled."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_9",
+    "test_desc": "4.9 Ensure that Compute instances do not have public IP addresses",
+    "test_rationale": "Compute instances should not be configured to have external IP addresses."
+  },
+  {
+    "test_category": "AppEngine",
+    "test_number": "control.cis_v120_4_10",
+    "test_desc": "4.10 Ensure that App Engine applications enforce HTTPS connections",
+    "test_rationale": "In order to maintain the highest level of security all connections to an application should be secure by default."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_4_11",
+    "test_desc": "4.11 Ensure that Compute instances have Confidential Computing enabled",
+    "test_rationale": "Google Cloud encrypts data at-rest and in-transit, but customer data must be decrypted for processing. Confidential Computing is a breakthrough technology which encrypts data in-use\u2014while it is being processed. Confidential Computing environments keep data encrypted in memory and elsewhere outside the central processing unit (CPU)."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v120_5_1",
+    "test_desc": "5.1 Ensure that Cloud Storage bucket is not anonymously or publicly accessible",
+    "test_rationale": "It is recommended that IAM policy on Cloud Storage bucket does not allows anonymous or public access."
+  },
+  {
+    "test_category": "Storage",
+    "test_number": "control.cis_v120_5_2",
+    "test_desc": "5.2 Ensure that Cloud Storage buckets have uniform bucket-level access enabled",
+    "test_rationale": "It is recommended that uniform bucket-level access is enabled on Cloud Storage buckets."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_3_1",
+    "test_desc": "3.1 Ensure that the default network does not exist in a project",
+    "test_rationale": "To prevent use of default network, a project should not have a default network."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_3_2",
+    "test_desc": "3.2 Ensure legacy networks do not exist for a project",
+    "test_rationale": "In order to prevent use of legacy networks, a project should not have a legacy network configured."
+  },
+  {
+    "test_category": "DNS",
+    "test_number": "control.cis_v120_3_3",
+    "test_desc": "3.3 Ensure that DNSSEC is enabled for Cloud DNS",
+    "test_rationale": "Cloud Domain Name System (DNS) is a fast, reliable and cost-effective domain name system that powers millions of domains on the internet. Domain Name System Security Extensions (DNSSEC) in Cloud DNS enables domain owners to take easy steps to protect their domains against DNS hijacking and man-in-the-middle and other attacks."
+  },
+  {
+    "test_category": "DNS",
+    "test_number": "control.cis_v120_3_4",
+    "test_desc": "3.4 Ensure that RSASHA1 is not used for the key-signing key in Cloud DNS DNSSEC",
+    "test_rationale": "DNSSEC algorithm numbers in this registry may be used in CERT RRs. Zone signing (DNSSEC) and transaction security mechanisms (SIG(0) and TSIG) make use of particular subsets of these algorithms. The algorithm used for key signing should be a recommended one and it should be strong."
+  },
+  {
+    "test_category": "DNS",
+    "test_number": "control.cis_v120_3_5",
+    "test_desc": "3.5 Ensure that RSASHA1 is not used for the zone-signing key in Cloud DNS DNSSEC",
+    "test_rationale": "DNSSEC algorithm numbers in this registry may be used in CERT RRs. Zone signing (DNSSEC) and transaction security mechanisms (SIG(0) and TSIG) make use of particular subsets of these algorithms. The algorithm used for key signing should be a recommended one and it should be strong."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_3_6",
+    "test_desc": "3.6 Ensure that SSH access is restricted from the internet",
+    "test_rationale": "GCP Firewall Rules are specific to a VPC Network. Each rule either allows or denies traffic when its conditions are met. Its conditions allow the user to specify the type of traffic, such as ports and protocols, and the source or destination of the traffic, including IP addresses, subnets, and instances."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_3_7",
+    "test_desc": "3.7 Ensure that RDP access is restricted from the Internet",
+    "test_rationale": "GCP Firewall Rules are specific to a VPC Network. Each rule either allows or denies traffic when its conditions are met. Its conditions allow users to specify the type of traffic, such as ports and protocols, and the source or destination of the traffic, including IP addresses, subnets, and instances."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_3_8",
+    "test_desc": "3.8 Ensure that VPC Flow Logs is enabled for every subnet in a VPC Network",
+    "test_rationale": "Flow Logs is a feature that enables users to capture information about the IP traffic going to and from network interfaces in the organization's VPC Subnets. Once a flow log is created, the user can view and retrieve its data in Stackdriver Logging. It is recommended that Flow Logs be enabled for every business-critical VPC subnet."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_3_9",
+    "test_desc": "3.9 Ensure no HTTPS or SSL proxy load balancers permit SSL policies with weak cipher suites",
+    "test_rationale": "Secure Sockets Layer (SSL) policies determine what port Transport Layer Security (TLS) features clients are permitted to use when connecting to load balancers."
+  },
+  {
+    "test_category": "Compute",
+    "test_number": "control.cis_v120_3_10",
+    "test_desc": "3.10 Ensure Firewall Rules for instances behind Identity Aware Proxy (IAP) only allow the traffic from Google Cloud Loadbalancer (GCLB) Health Check and Proxy Addresses",
+    "test_rationale": "Access to VMs should be restricted by firewall rules that allow only IAP traffic by ensuring only connections proxied by the IAP are allowed. To ensure that load balancing works correctly health checks should also be allowed."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_1",
+    "test_desc": "1.1 Ensure that corporate login credentials are used",
+    "test_rationale": "Use corporate login credentials instead of personal accounts, such as Gmail accounts."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_2",
+    "test_desc": "1.2 Ensure that multi-factor authentication is enabled for all non-service accounts",
+    "test_rationale": "Setup multi-factor authentication for Google Cloud Platform accounts."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_3",
+    "test_desc": "1.3 Ensure that Security Key Enforcement is enabled for all admin accounts",
+    "test_rationale": "Setup Security Key Enforcement for Google Cloud Platform admin accounts."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_4",
+    "test_desc": "1.4 Ensure that there are only GCP-managed service account keys for each service account",
+    "test_rationale": "User managed service accounts should not have user-managed keys."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_5",
+    "test_desc": "1.5 Ensure that Service Account has no Admin privileges",
+    "test_rationale": "A service account is a special Google account that belongs to an application or a VM, instead of to an individual end-user. The application uses the service account to call the service's Google API so that users aren't directly involved. It's recommended not to use admin access for ServiceAccount."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_6",
+    "test_desc": "1.6 Ensure that IAM users are not assigned the Service Account User or Service Account Token Creator roles at project level",
+    "test_rationale": "It is recommended to assign the Service Account User (iam.serviceAccountUser) and Service Account Token Creator (iam.serviceAccountTokenCreator) roles to a user for a specific service account rather than assigning the role to a user at project level."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_7",
+    "test_desc": "1.7 Ensure user-managed/external keys for service accounts are rotated every 90 days or less",
+    "test_rationale": "Service Account keys consist of a key ID (Private_key_Id) and Private key, which are used to sign programmatic requests users make to Google cloud services accessible to that particular service account. It is recommended that all Service Account keys are regularly rotated."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_8",
+    "test_desc": "1.8 Ensure that Separation of duties is enforced while assigning service account related roles to users",
+    "test_rationale": "It is recommended that the principle of 'Separation of Duties' is enforced while assigning service-account related roles to users."
+  },
+  {
+    "test_category": "KMS",
+    "test_number": "control.cis_v120_1_9",
+    "test_desc": "1.9 Ensure that Cloud KMS cryptokeys are not anonymously or publicly accessible",
+    "test_rationale": "It is recommended that the IAM policy on Cloud KMS cryptokeys should restrict anonymous and/or public access."
+  },
+  {
+    "test_category": "KMS",
+    "test_number": "control.cis_v120_1_10",
+    "test_desc": "1.10 Ensure KMS encryption keys are rotated within a period of 90 days",
+    "test_rationale": "Google Cloud Key Management Service stores cryptographic keys in a hierarchical structure designed for useful and elegant access control management. The format for the rotation schedule depends on the client library that is used. For the gcloud command-line tool, the next rotation time must be in ISO or RFC3339 format, and the rotation period must be in the form INTEGER[UNIT], where units can be one of seconds (s), minutes (m), hours (h) or days (d)."
+  },
+  {
+    "test_category": "KMS",
+    "test_number": "control.cis_v120_1_11",
+    "test_desc": "1.11 Ensure that Separation of duties is enforced while assigning KMS related roles to users",
+    "test_rationale": "It is recommended that the principle of 'Separation of Duties' is enforced while assigning KMS related roles to users."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_12",
+    "test_desc": "1.12 Ensure API keys are not created for a project",
+    "test_rationale": "Keys are insecure because they can be viewed publicly, such as from within a browser, or they can be accessed on a device where the key resides. It is recommended to use standard authentication flow instead."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_13",
+    "test_desc": "1.13 Ensure API keys are restricted to use by only specified Hosts and Apps",
+    "test_rationale": "Unrestricted keys are insecure because they can be viewed publicly, such as from within a browser, or they can be accessed on a device where the key resides. It is recommended to restrict API key usage to trusted hosts, HTTP referrers and apps."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_14",
+    "test_desc": "1.14 Ensure API keys are restricted to only APIs that application needs access",
+    "test_rationale": "API keys are insecure because they can be viewed publicly, such as from within a browser, or they can be accessed on a device where the key resides. It is recommended to restrict API keys to use (call) only APIs required by an application."
+  },
+  {
+    "test_category": "IAM",
+    "test_number": "control.cis_v120_1_15",
+    "test_desc": "1.15 Ensure API keys are rotated every 90 days",
+    "test_rationale": "It is recommended to rotate API keys every 90 days."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_1",
+    "test_desc": "2.1 Ensure that Cloud Audit Logging is configured properly across all services and all users from a project",
+    "test_rationale": "It is recommended that Cloud Audit Logging is configured to track all admin activities and read, write access to user data."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_2",
+    "test_desc": "2.2 Ensure that sinks are configured for all log entries",
+    "test_rationale": "It is recommended to create a sink that will export copies of all the log entries. This can help aggregate logs from multiple projects and export them to a Security Information and Event Management (SIEM)."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_3",
+    "test_desc": "2.3 Ensure that retention policies on log buckets are configured using Bucket Lock",
+    "test_rationale": "Enabling retention policies on log buckets will protect logs stored in cloud storage buckets from being overwritten or accidentally deleted. It is recommended to set up retention policies and configure Bucket Lock on all storage buckets that are used as log sinks."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_4",
+    "test_desc": "2.4 Ensure log metric filter and alerts exist for project ownership assignments/changes",
+    "test_rationale": "In order to prevent unnecessary project ownership assignments to users/service-accounts and further misuses of projects and resources, all roles/Owner assignments should be monitored. Members (users/Service-Accounts) with a role assignment to primitive role roles/Owner are project owners."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_5",
+    "test_desc": "2.5 Ensure that the log metric filter and alerts exist for Audit Configuration changes",
+    "test_rationale": "Cloud audit logging records information includes the identity of the API caller, the time of the API call, the source IP address of the API caller, the request parameters, and the response elements returned by GCP services. Cloud audit logging provides a history of GCP API calls for an account, including API calls made via the console, SDKs, command-line tools, and other GCP services."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_6",
+    "test_desc": "2.6 Ensure that the log metric filter and alerts exist for Custom Role changes",
+    "test_rationale": "It is recommended that a metric filter and alarm be established for changes to Identity and Access Management (IAM) role creation, deletion and updating activities."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_7",
+    "test_desc": "2.7 Ensure that the log metric filter and alerts exist for VPC Network Firewall rule changes",
+    "test_rationale": "It is recommended that a metric filter and alarm be established for Virtual Private Cloud (VPC) Network Firewall rule changes."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_8",
+    "test_desc": "2.8 Ensure that the log metric filter and alerts exist for VPC network route changes",
+    "test_rationale": "It is recommended that a metric filter and alarm be established for Virtual Private Cloud (VPC) network route changes."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_9",
+    "test_desc": "2.9 Ensure that the log metric filter and alerts exist for VPC network changes",
+    "test_rationale": "It is recommended that a metric filter and alarm be established for Virtual Private Cloud (VPC) network changes."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_10",
+    "test_desc": "2.10 Ensure that the log metric filter and alerts exist for Cloud Storage IAM permission changes",
+    "test_rationale": "It is recommended that a metric filter and alarm be established for Cloud Storage Bucket IAM changes."
+  },
+  {
+    "test_category": "Logging",
+    "test_number": "control.cis_v120_2_11",
+    "test_desc": "2.11 Ensure that the log metric filter and alerts exist for SQL instance configuration changes",
+    "test_rationale": "It is recommended that a metric filter and alarm be established for SQL instance configuration changes."
+  },
+  {
+    "test_category": "DNS",
+    "test_number": "control.cis_v120_2_12",
+    "test_desc": "2.12 Ensure that Cloud DNS logging is enabled for all VPC networks",
+    "test_rationale": "Cloud DNS logging records the queries from the name servers within your VPC to Stackdriver. Logged queries can come from Compute Engine VMs, GKE containers, or other GCP resources provisioned within the VPC."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_1_1",
+    "test_desc": "6.1.1 Ensure that a MySQL database instance does not allow anyone to connect with administrative privileges",
+    "test_rationale": "It is recommended to set a password for the administrative user (root by default) to prevent unauthorized access to the SQL database instances. This recommendation is applicable only for MySQL Instances. PostgreSQL does not offer any setting for No Password from the cloud console."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_1_2",
+    "test_desc": "6.1.2 Ensure 'skip_show_database' database flag for Cloud SQL Mysql instance is set to 'on'",
+    "test_rationale": "It is recommended to set skip_show_database database flag for Cloud SQL Mysql instance to on."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_1_3",
+    "test_desc": "6.1.3 Ensure that the 'local_infile' database flag for a Cloud SQL Mysql instance is set to 'off'",
+    "test_rationale": "It is recommended to set the local_infile database flag for a Cloud SQL MySQL instance to off."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_1",
+    "test_desc": "6.2.1 Ensure that the 'log_checkpoints' database flag for Cloud SQL PostgreSQL instance is set to 'on'",
+    "test_rationale": "Ensure that the log_checkpoints database flag for the Cloud SQL PostgreSQL instance is set to on."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_2",
+    "test_desc": "6.2.2 Ensure 'log_error_verbosity' database flag for Cloud SQL PostgreSQL instance is set to 'DEFAULT' or stricter",
+    "test_rationale": "The log_error_verbosity flag controls the verbosity/details of messages logged. Valid values are: 'TERSE', 'DEFAULT', and 'VERBOSE'."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_3",
+    "test_desc": "6.2.3 Ensure that the 'log_connections' database flag for Cloud SQL PostgreSQL instance is set to 'on'",
+    "test_rationale": "Enabling the log_connections setting causes each attempted connection to the server to be logged, along with successful completion of client authentication. This parameter cannot be changed after the session starts."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_4",
+    "test_desc": "6.2.4 Ensure that the 'log_disconnections' database flag for Cloud SQL PostgreSQL instance is set to 'on'",
+    "test_rationale": "Enabling the log_disconnections setting logs the end of each session, including the session duration."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_5",
+    "test_desc": "6.2.5 Ensure 'log_duration' database flag for Cloud SQL PostgreSQL instance is set to 'on'",
+    "test_rationale": "Enabling the log_duration setting causes the duration of each completed statement to be logged. This does not logs the text of the query and thus behaves different from the log_min_duration_statement flag. This parameter cannot be changed after session start."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_6",
+    "test_desc": "6.2.6 Ensure that the 'log_lock_waits' database flag for Cloud SQL PostgreSQL instance is set to 'on'",
+    "test_rationale": "Enabling the log_lock_waits flag for a PostgreSQL instance creates a log for any session waits that take longer than the alloted deadlock_timeout time to acquire a lock."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_7",
+    "test_desc": "6.2.7 Ensure 'log_statement' database flag for Cloud SQL PostgreSQL instance is set appropriately",
+    "test_rationale": "The value of log_statement flag determined the SQL statements that are logged. Valid values are: 'none', 'ddl', 'mod', and 'all'."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_8",
+    "test_desc": "6.2.8 Ensure 'log_hostname' database flag for Cloud SQL PostgreSQL instance is set appropriately",
+    "test_rationale": "PostgreSQL logs only the IP address of the connecting hosts. The log_hostname flag controls the logging of hostnames in addition to the IP addresses logged. The performance hit is dependent on the configuration of the environment and the host name resolution setup. This parameter can only be set in the postgresql.conf file or on the server command line."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_9",
+    "test_desc": "6.2.9 Ensure 'log_parser_stats' database flag for Cloud SQL PostgreSQL instance is set to 'off'",
+    "test_rationale": "The PostgreSQL planner/optimizer is responsible to parse and verify the syntax of each query received by the server. If the syntax is correct a parse tree is built up else an error is generated. The log_parser_stats flag controls the inclusion of parser performance statistics in the PostgreSQL logs for each query."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_10",
+    "test_desc": "6.2.10 Ensure 'log_planner_stats' database flag for Cloud SQL PostgreSQL instance is set to 'off'",
+    "test_rationale": "The same SQL query can be executed in multiple ways and still produce different results. The PostgreSQL planner/optimizer is responsible to create an optimal execution plan for each query. The log_planner_stats flag controls the inclusion of PostgreSQL planner performance statistics in the PostgreSQL logs for each query."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_11",
+    "test_desc": "6.2.11 Ensure 'log_executor_stats' database flag for Cloud SQL PostgreSQL instance is set to 'off'",
+    "test_rationale": "The PostgreSQL executor is responsible to execute the plan handed over by the PostgreSQL planner. The executor processes the plan recursively to extract the required set of rows. The log_executor_stats flag controls the inclusion of PostgreSQL executor performance statistics in the PostgreSQL logs for each query."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_12",
+    "test_desc": "6.2.12 Ensure 'log_statement_stats' database flag for Cloud SQL PostgreSQL instance is set to 'off'",
+    "test_rationale": "The log_statement_stats flag controls the inclusion of end to end performance statistics of a SQL query in the PostgreSQL logs for each query. This cannot be enabled with other module statistics (log_parser_stats, log_planner_stats, log_executor_stats)."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_13",
+    "test_desc": "6.2.13 Ensure that the 'log_min_messages' database flag for Cloud SQL PostgreSQL instance is set appropriately",
+    "test_rationale": "The log_min_messages flag defines the minimum message severity level that is considered as an error statement. Messages for error statements are logged with the SQL statement. Valid values include DEBUG5, DEBUG4, DEBUG3, DEBUG2, DEBUG1, INFO, NOTICE, WARNING, ERROR, LOG, FATAL, and PANIC. Each severity level includes the subsequent levels mentioned above."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_14",
+    "test_desc": "6.2.14 Ensure 'log_min_error_statement' database flag for Cloud SQL PostgreSQL instance is set to 'Error' or stricter",
+    "test_rationale": "The log_min_error_statement flag defines the minimum message severity level that are considered as an error statement. Messages for error statements are logged with the SQL statement. Valid values include DEBUG5, DEBUG4, DEBUG3, DEBUG2, DEBUG1, INFO, NOTICE, WARNING, ERROR, LOG, FATAL, and PANIC. Each severity level includes the subsequent levels mentioned above. Ensure a value of ERROR or stricter is set."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_15",
+    "test_desc": "6.2.15 Ensure that the 'log_temp_files' database flag for Cloud SQL PostgreSQL instance is set to '0'",
+    "test_rationale": "PostgreSQL can create a temporary file for actions such as sorting, hashing and temporary query results when these operations exceed work_mem. The log_temp_files flag controls logging names and the file size when it is deleted. Configuring log_temp_files to 0 causes all temporary file information to be logged, while positive values log only files whose size is greater than or equal to the specified number of kilobytes. A value of -1 disables temporary file information logging."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_2_16",
+    "test_desc": "6.2.16 Ensure that the 'log_min_duration_statement' database flag for Cloud SQL PostgreSQL instance is set to '-1' (disabled)",
+    "test_rationale": "The log_min_duration_statement flag defines the minimum amount of execution time of a statement in milliseconds where the total duration of the statement is logged. Ensure that log_min_duration_statement is disabled, i.e., a value of -1 is set."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_3_1",
+    "test_desc": "6.3.1 Ensure 'external scripts enabled' database flag for Cloud SQL SQL Server instance is set to 'off'",
+    "test_rationale": "It is recommended to set external scripts enabled database flag for Cloud SQL SQL Server instance to off."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_3_2",
+    "test_desc": "6.3.2 Ensure that the 'cross db ownership chaining' database flag for Cloud SQL SQL Server instance is set to 'off'",
+    "test_rationale": "It is recommended to set cross db ownership chaining database flag for Cloud SQL SQL Server instance to off."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_3_3",
+    "test_desc": "6.3.3 Ensure 'user connections' database flag for Cloud SQL SQL Server instance is set as appropriate",
+    "test_rationale": "It is recommended to set user connections database flag for Cloud SQL SQL Server instance according organization-defined value."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_3_4",
+    "test_desc": "6.3.4 Ensure 'user options' database flag for Cloud SQL SQL Server instance is not configured",
+    "test_rationale": "It is recommended that, user options database flag for Cloud SQL SQL Server instance should not be configured."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_3_5",
+    "test_desc": "6.3.5 Ensure 'remote access' database flag for Cloud SQL SQL Server instance is set to 'off'",
+    "test_rationale": "It is recommended to set remote access database flag for Cloud SQL SQL Server instance to off."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_3_6",
+    "test_desc": "6.3.6 Ensure '3625 (trace flag)' database flag for Cloud SQL SQL Server instance is set to 'off'",
+    "test_rationale": "It is recommended to set 3625 (trace flag) database flag for Cloud SQL SQL Server instance to off."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_3_7",
+    "test_desc": "6.3.7 Ensure that the 'contained database authentication' database flag for Cloud SQL on the SQL Server instance is set to 'off'",
+    "test_rationale": "It is recommended to set contained database authentication database flag for Cloud SQL on the SQL Server instance is set to off."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_4",
+    "test_desc": "6.4 Ensure that the Cloud SQL database instance requires all incoming connections to use SSL",
+    "test_rationale": "It is recommended to enforce all incoming connections to SQL database instance to use SSL."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_5",
+    "test_desc": "6.5 Ensure that Cloud SQL database instances are not open to the world",
+    "test_rationale": "Database Server should accept connections only from trusted Network(s)/IP(s) and restrict access from the world."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_6",
+    "test_desc": "6.6 Ensure that Cloud SQL database instances do not have public IPs",
+    "test_rationale": "It is recommended to configure Second Generation Sql instance to use private IPs instead of public IPs."
+  },
+  {
+    "test_category": "SQL",
+    "test_number": "control.cis_v120_6_7",
+    "test_desc": "6.7 Ensure that Cloud SQL database instances are configured with automated backups",
+    "test_rationale": "It is recommended to have all SQL database instances set to enable automated backups."
+  }
+]

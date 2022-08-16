@@ -1,0 +1,62 @@
+[
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.3",
+    "test_desc": "Ensure auditing is configured for the Docker daemon (Automated)",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.4",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /run/containerd",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.5",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /var/lib/docker",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.6",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /etc/docker",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.7",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - docker.service",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.8",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - containerd.sock",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.9",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - docker.socket",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.10",
+    "test_desc": "Ensure auditing is configured for Docker files and directories - /etc/default/docker",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.11",
+    "test_desc": "Ensure auditing is configured for Dockerfiles and directories - /etc/docker/daemon.json",
+    "test_rationale": ""
+  },
+  {
+    "test_category": "Docker Host",
+    "test_number": "1.1.12",
+    "test_desc": "Ensure auditing is configured for Dockerfiles and directories - /etc/containerd/config.toml",
+    "test_rationale": ""
+  }
+]

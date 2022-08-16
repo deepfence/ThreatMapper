@@ -8,8 +8,6 @@ WORKDIR /go/reportHandler
 ADD tasks/reportHandler /go/reportHandler/
 RUN CGO_ENABLED=0 go build -o reportHandler .
 
-FROM steampipe_build:latest AS steampipe-build
-
 FROM python:3.9-slim-bullseye
 LABEL deepfence.role=system
 
@@ -65,7 +63,6 @@ RUN mkdir -p /usr/share/man/man1 \
     && pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt \
-    && /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)" \
     && apt-get remove -y git gcc make g++ linux-libc-dev && apt-get clean && apt-get autoclean && apt-get autoremove -y \
     && rm -rf /usr/lib/python*/ensurepip /usr/local/lib/python*/ensurepip
 
@@ -92,26 +89,6 @@ RUN chmod +x /app/code/dockerify/api/entrypoint.sh /app/code/dockerify/api/init_
     /app/code/dockerify/haproxy /app/code/tasks/logstashPubSubReader/*.go \
     && openssl genrsa -out /app/code/rs256.pem 2048 \
     && openssl rsa -in /app/code/rs256.pem -pubout -outform PEM -out /app/code/rs256.pub
-
-RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1001 -p "$(openssl passwd -1 ubuntu)" ubuntu
-
-USER ubuntu
-
-WORKDIR /home/ubuntu
-RUN mkdir -p /home/ubuntu/.steampipe/plugins/hub.steampipe.io/plugins/turbot/aws@latest \
-    && mkdir -p /home/ubuntu/.steampipe/plugins/hub.steampipe.io/plugins/turbot/gcp@latest \
-    && mkdir -p /home/ubuntu/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azure@latest \
-    && mkdir -p /home/ubuntu/.steampipe/config \
-    && steampipe plugin install steampipe
-
-COPY --chown=ubuntu:root --from=steampipe-build /go/steampipe-plugin-aws/steampipe-plugin-aws.plugin /home/ubuntu/.steampipe/plugins/hub.steampipe.io/plugins/turbot/aws@latest/steampipe-plugin-aws.plugin
-COPY --chown=ubuntu:root --from=steampipe-build /go/steampipe-plugin-gcp/steampipe-plugin-gcp.plugin /home/ubuntu/.steampipe/plugins/hub.steampipe.io/plugins/turbot/gcp@latest/steampipe-plugin-gcp.plugin
-COPY --chown=ubuntu:root --from=steampipe-build /go/steampipe-plugin-azure/steampipe-plugin-azure.plugin /home/ubuntu/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azure@latest/steampipe-plugin-azure.plugin
-COPY --chown=ubuntu:root --from=steampipe-build /go/steampipe-plugin-aws/config/aws.spc /home/ubuntu/.steampipe/config/aws.spc
-COPY --chown=ubuntu:root --from=steampipe-build /go/steampipe-plugin-gcp/config/gcp.spc /home/ubuntu/.steampipe/config/gcp.spc
-COPY --chown=ubuntu:root --from=steampipe-build /go/steampipe-plugin-azure/config/azure.spc /home/ubuntu/.steampipe/config/azure.spc
-
-USER root
 
 RUN apt-get clean && apt-get autoclean && apt-get autoremove -y && rm -rf /tmp/*
 
