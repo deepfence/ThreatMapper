@@ -14,18 +14,20 @@ import (
 )
 
 var (
-	cveIndexName                     = convertRootESIndexToCustomerSpecificESIndex("cve")
-	cveScanLogsIndexName             = convertRootESIndexToCustomerSpecificESIndex("cve-scan")
-	secretScanIndexName              = convertRootESIndexToCustomerSpecificESIndex("secret-scan")
-	secretScanLogsIndexName          = convertRootESIndexToCustomerSpecificESIndex("secret-scan-logs")
-	sbomArtifactsIndexName           = convertRootESIndexToCustomerSpecificESIndex("sbom-artifact")
-	sbomCveScanIndexName             = convertRootESIndexToCustomerSpecificESIndex("sbom-cve-scan")
-	cloudComplianceScanIndexName     = convertRootESIndexToCustomerSpecificESIndex("cloud-compliance-scan")
-	cloudComplianceScanLogsIndexName = convertRootESIndexToCustomerSpecificESIndex("cloud-compliance-scan-logs")
+	cveIndexName                     = ToCustomerSpecificESIndex("cve")
+	cveScanLogsIndexName             = ToCustomerSpecificESIndex("cve-scan")
+	secretScanIndexName              = ToCustomerSpecificESIndex("secret-scan")
+	secretScanLogsIndexName          = ToCustomerSpecificESIndex("secret-scan-logs")
+	sbomArtifactsIndexName           = ToCustomerSpecificESIndex("sbom-artifact")
+	sbomCveScanIndexName             = ToCustomerSpecificESIndex("sbom-cve-scan")
+	cloudComplianceScanIndexName     = ToCustomerSpecificESIndex("cloud-compliance-scan")
+	cloudComplianceScanLogsIndexName = ToCustomerSpecificESIndex("cloud-compliance-scan-logs")
+	complianceScanIndexName          = ToCustomerSpecificESIndex("compliance")
+	complianceScanLogsIndexName      = ToCustomerSpecificESIndex("compliance-scan-logs")
 )
 
-//convertRootESIndexToCustomerSpecificESIndex : convert root ES index to customer specific ES index
-func convertRootESIndexToCustomerSpecificESIndex(rootIndex string) string {
+//ToCustomerSpecificESIndex : convert root ES index to customer specific ES index
+func ToCustomerSpecificESIndex(rootIndex string) string {
 	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
 	if customerUniqueId != "" {
 		rootIndex += fmt.Sprintf("-%s", customerUniqueId)
@@ -180,6 +182,14 @@ func processReports(
 		case cloudComplianceLog := <-topicChannels[cloudComplianceScanLogsIndexName]:
 			if err := addToES(cloudComplianceLog, cloudComplianceScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process cloud compliance logs error: %s", err.Error())
+			}
+
+		case compliance := <-topicChannels[complianceScanIndexName]:
+			processCompliance(compliance, bulkp)
+
+		case complianceLog := <-topicChannels[complianceScanLogsIndexName]:
+			if err := addToES(complianceLog, complianceScanLogsIndexName, bulkp); err != nil {
+				log.Errorf("failed to process compliance logs error: %s", err.Error())
 			}
 		}
 	}

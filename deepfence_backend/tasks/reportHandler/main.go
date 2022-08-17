@@ -260,6 +260,8 @@ func main() {
 		sbomCveScanIndexName,
 		cloudComplianceScanIndexName,
 		cloudComplianceScanLogsIndexName,
+		complianceScanIndexName,
+		complianceScanLogsIndexName,
 	}
 	log.Info("topics list: ", topics)
 
