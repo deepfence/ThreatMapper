@@ -307,6 +307,8 @@ func main() {
 		go processReports(ctx, topicChannels, bulkp)
 	}
 
+	// collect consumer lag for metrics
+	go getLagByTopic(ctx, kafkaBrokers, consumerGroupID)
 	// wait for exit
 	// flush all data from bulk processor
 	<-ctx.Done()
