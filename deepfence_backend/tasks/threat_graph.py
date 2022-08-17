@@ -7,10 +7,12 @@ from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE
     CLOUD_AZURE, THREAT_GRAPH_CACHE_KEY, THREAT_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
     CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_INDEX, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, SECRET_SCAN_LOGS_INDEX, \
     TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
-    SECRET_SCAN_INDEX
+    SECRET_SCAN_INDEX, CLOUD_TOPOLOGY_COUNT
 import networkx as nx
 from collections import defaultdict
 import json
+import requests
+import arrow
 
 incoming_internet_host_id = "in-theinternet"
 outgoing_internet_host_id = "out-theinternet"
@@ -633,3 +635,66 @@ def _compute_threat_graph():
     threat_graph_node_detail = {k: json.dumps(v) for k, v in threat_graph_node.items()}
     if threat_graph_node_detail:
         redis.hset(THREAT_GRAPH_NODE_DETAIL_KEY, mapping=threat_graph_node_detail)
+
+
+@celery_app.task
+def topology_cloud_report():
+    with flask_app.app_context():
+        _topology_cloud_report()
+
+
+def _topology_cloud_report():
+    cloud_report = {
+        "CloudProvider": {
+            "shape": "circle", "label": "host", "label_plural": "hosts", "nodes": {}, "controls": {},
+            "metadata_templates": {
+                "name": {"id": "name", "label": "Name", "priority": 1.0, "from": "latest"},
+                "label": {"id": "label", "label": "Label", "priority": 2.0, "from": "latest"},
+            },
+            "metric_templates": {}
+        }
+    }
+    cloud_resources = redis.hgetall(CLOUD_RESOURCES_CACHE_KEY)
+    # We will let agent's report metadata take precedence
+    time_now = arrow.utcnow()
+    old_timestamp = time_now.shift(seconds=-30).strftime("%Y-%m-%dT%H:%M:%S.%f00Z")
+    hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
+    topology_cloud_providers = []
+    for node_id, node_details in hosts.items():
+        if node_details.get("cloud_provider"):
+            if node_details["cloud_provider"] not in topology_cloud_providers:
+                topology_cloud_providers.append(node_details["cloud_provider"])
+    topology_count = {"cloud_provider": 0}
+    for k, v in cloud_resources.items():
+        cloud_provider = ""
+        label = ""
+        try:
+            if k.startswith(CLOUD_AWS):
+                cloud_provider = CLOUD_AWS
+                label = "AWS"
+            elif k.startswith(CLOUD_GCP):
+                cloud_provider = CLOUD_GCP
+                label = "Google Cloud"
+            elif k.startswith(CLOUD_AZURE):
+                cloud_provider = CLOUD_AZURE
+                label = "Azure"
+            else:
+                continue
+        except Exception as ex:
+            flask_app.logger.error("Error in topology_cloud_report: {0}".format(ex))
+            continue
+        scope_id = cloud_provider + ";<cloud_provider>"
+        report = {
+            "id": scope_id, "topology": "cloud_provider", "counters": None,
+            "sets": {}, "latestControls": {},
+            "latest": {
+                "name": {"timestamp": old_timestamp, "value": cloud_provider},
+                "label": {"timestamp": old_timestamp, "value": label},
+            }
+        }
+        cloud_report["CloudProvider"]["nodes"][scope_id] = report
+        if topology_count["cloud_provider"] not in topology_cloud_providers:
+            topology_count["cloud_provider"] += 1
+    # requests.post("http://deepfence-topology:8004/topology-api/report", json=cloud_report,
+    #               headers={"Content-type": "application/json"})
+    redis.hset(CLOUD_TOPOLOGY_COUNT, mapping=topology_count)
