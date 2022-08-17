@@ -60,7 +60,7 @@ export const AgentSetup = () => {
         }
         <i className={`fa fa-copy ${styles.copyButton}`} onClick={onDockerCopyClick} />
       </div>
-      <p>For more details reference our <a href="https://github.com/deepfence/ThreatMapper/wiki/Installing-Sensors-in-Docker" target="_blank" rel="noreferrer">agent installation documentation.</a></p>
+      <p>For more details reference our <a href="https://community.deepfence.io/docs/threatmapper/sensors/docker" target="_blank" rel="noreferrer">agent installation documentation.</a></p>
       <div className={styles.setupHeader}>
         K8s:
       </div>
@@ -70,7 +70,7 @@ export const AgentSetup = () => {
         }
         <i className={`fa fa-copy ${styles.copyButton}`} onClick={onK8sCopyClick} />
       </div>
-      <p>For more details reference our <a href="https://github.com/deepfence/ThreatMapper/wiki/Installing-Sensors-in-Kubernetes" target="_blank" rel="noreferrer">agent installation documentation.</a></p>
+      <p>For more details reference our <a href="https://community.deepfence.io/docs/threatmapper/sensors/kubernetes" target="_blank" rel="noreferrer">agent installation documentation.</a></p>
     </div>
   )
 }
