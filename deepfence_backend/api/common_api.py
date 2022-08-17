@@ -13,14 +13,15 @@ from utils.response import set_response
 from utils.helper import split_list_into_chunks, get_deepfence_logs, get_process_ids_for_pod, md5_hash
 from utils.esconn import ESConn, GroupByParams
 from utils.decorators import user_permission, non_read_only_user, admin_user_only
-from collections import defaultdict
+from collections import defaultdict, Counter
 from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICES, \
     CVE_SCAN_LOGS_INDEX, SCOPE_TOPOLOGY_COUNT, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, NODE_TYPE_POD, ES_MAX_CLAUSE, \
     TOPOLOGY_ID_CONTAINER, TOPOLOGY_ID_CONTAINER_IMAGE, TOPOLOGY_ID_HOST, NODE_TYPE_CONTAINER_IMAGE, \
     TOPOLOGY_ID_KUBE_SERVICE, NODE_TYPE_KUBE_CLUSTER, ES_TERMS_AGGR_SIZE, \
     REGISTRY_IMAGES_CACHE_KEY_PREFIX, NODE_TYPE_KUBE_NAMESPACE, SECRET_SCAN_LOGS_INDEX, SECRET_SCAN_INDEX, SBOM_INDEX, \
     SBOM_ARTIFACT_INDEX, CVE_ES_TYPE, CLOUD_COMPLIANCE_LOGS_ES_TYPE, CLOUD_COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_INDEX, \
-    CLOUD_COMPLIANCE_LOGS_INDEX, COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, COMPLIANCE_ES_TYPE, COMPLIANCE_LOGS_ES_TYPE
+    CLOUD_COMPLIANCE_LOGS_INDEX, COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, COMPLIANCE_ES_TYPE, COMPLIANCE_LOGS_ES_TYPE, \
+    CLOUD_TOPOLOGY_COUNT
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta
@@ -53,23 +54,25 @@ def ping():
 @jwt_required()
 def topology_metrics():
     count = redis.hgetall(SCOPE_TOPOLOGY_COUNT)
-    if not count:
-        count = {}
+    count = {k: int(v) for k, v in count.items()}
+    cloud_count = redis.hgetall(CLOUD_TOPOLOGY_COUNT)
+    cloud_count = {k: int(v) for k, v in cloud_count.items()}
+    count = dict(Counter(count) + Counter(cloud_count))
     total_hosts = int(count.get(NODE_TYPE_HOST, 0))
     unprotected_hosts = int(count.get(NODE_TYPE_HOST + "_unprotected", 0))
     response = {
         "coverage": {
-            "discovered": str(total_hosts),
-            "protected": str(total_hosts - unprotected_hosts),
+            "discovered": total_hosts,
+            "protected": min(total_hosts - unprotected_hosts, 0),
         },
         "cloud": {
             k.replace("_", " ").title(): v for k, v in count.items()
             if k not in ["host_unprotected", NODE_TYPE_KUBE_CLUSTER, NODE_TYPE_POD, NODE_TYPE_KUBE_NAMESPACE]
         },
         "kubernetes": {
-            "kubernetes_cluster": count.get(NODE_TYPE_KUBE_CLUSTER, "0"),
-            "kubernetes_namespace": count.get(NODE_TYPE_KUBE_NAMESPACE, "0"),
-            NODE_TYPE_POD: count.get(NODE_TYPE_POD, "0"),
+            "kubernetes_cluster": count.get(NODE_TYPE_KUBE_CLUSTER, 0),
+            "kubernetes_namespace": count.get(NODE_TYPE_KUBE_NAMESPACE, 0),
+            NODE_TYPE_POD: count.get(NODE_TYPE_POD, 0),
         },
     }
     return set_response(data=response)
