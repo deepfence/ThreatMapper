@@ -118,7 +118,7 @@ func getLagByTopic(ctx context.Context, kafkaBrokers string, groupID string) {
 			}
 			lagByTopic := kadm.CalculateGroupLag(described[groupID], fetched, endOffsets).TotalByTopic()
 			for k, v := range lagByTopic {
-				log.Infof("consumer group lag topic=%s lag=%d", k, v.Lag)
+				log.Debugf("consumer group lag topic=%s lag=%d", k, v.Lag)
 				topicLag.WithLabelValues(k).Set(float64(v.Lag))
 			}
 		}

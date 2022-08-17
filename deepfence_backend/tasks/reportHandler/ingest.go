@@ -102,7 +102,8 @@ func afterBulkPush(executionId int64, requests []elastic.BulkableRequest, respon
 			log.Errorf("index: %s error reason: %s error: %+v\n", i.Index, i.Error.Reason, i.Error)
 		}
 	}
-	log.Infof("number of docs sent to es -> successful: %d failed: %d", len(response.Succeeded()), len(response.Failed()))
+	log.Debugf("number of docs sent to es -> successful: %d failed: %d",
+		len(response.Succeeded()), len(response.Failed()))
 	pubElasticSearchSuccess.Add(float64(len(response.Succeeded())))
 }
 
