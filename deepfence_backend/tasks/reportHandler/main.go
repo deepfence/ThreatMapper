@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"path"
@@ -20,6 +21,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	elastic "github.com/olivere/elastic/v7"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	logrus "github.com/sirupsen/logrus"
 )
 
@@ -226,6 +228,17 @@ func main() {
 		os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
+	// for prometheus metrics
+	mux := http.NewServeMux()
+	srv := &http.Server{Addr: ":8181", Handler: mux}
+	mux.Handle("/metrics", promhttp.Handler())
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Errorf("Server listen failed: %s", err)
+		}
+	}()
+	log.Info("Server Started for metrics")
+
 	var err error
 	celeryCli, err = gocelery.NewCeleryClient(gocelery.NewRedisBroker(redisPool),
 		&gocelery.RedisCeleryBackend{Pool: redisPool}, 1)
@@ -297,12 +310,16 @@ func main() {
 	// wait for exit
 	// flush all data from bulk processor
 	<-ctx.Done()
+	log.Info("ctx cancelled exit")
 	if err := bulkp.Flush(); err != nil {
 		log.Error(err)
 	}
 	if err := bulkp.Stop(); err != nil {
 		log.Error(err)
 	}
-	log.Info("ctx cancelled exit")
+	// stop server
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Errorf("Server Shutdown Failed: %s", err)
+	}
 	gracefulExit(nil)
 }

@@ -98,10 +98,12 @@ func afterBulkPush(executionId int64, requests []elastic.BulkableRequest, respon
 	}
 	if response.Errors {
 		for _, i := range response.Failed() {
+			pubElasticSearchFailed.Inc()
 			log.Errorf("index: %s error reason: %s error: %+v\n", i.Index, i.Error.Reason, i.Error)
 		}
 	}
 	log.Infof("number of docs sent to es -> successful: %d failed: %d", len(response.Succeeded()), len(response.Failed()))
+	pubElasticSearchSuccess.Add(float64(len(response.Succeeded())))
 }
 
 func startESBulkProcessor(
@@ -149,45 +151,55 @@ func processReports(
 			return
 
 		case cve := <-topicChannels[cveIndexName]:
+			cveProcessed.Inc()
 			processCVE(cve, bulkp)
 
 		case cveLog := <-topicChannels[cveScanLogsIndexName]:
+			cveLogsProcessed.Inc()
 			if err := addToES(cveLog, cveScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process cve scan log error: %s", err.Error())
 			}
 
 		case secret := <-topicChannels[secretScanIndexName]:
+			secretProcessed.Inc()
 			if err := addToES(secret, secretScanIndexName, bulkp); err != nil {
 				log.Errorf("failed to process secret scan error: %s", err.Error())
 			}
 
 		case secretLog := <-topicChannels[secretScanLogsIndexName]:
+			secretLogsProcessed.Inc()
 			if err := addToES(secretLog, secretScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process secret scan log error: %s", err.Error())
 			}
 
 		case sbomArtifact := <-topicChannels[sbomArtifactsIndexName]:
+			sbomArtifactsProcessed.Inc()
 			if err := addToES(sbomArtifact, sbomArtifactsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process sbom artifacts error: %s", err.Error())
 			}
 
 		case sbomCve := <-topicChannels[sbomCveScanIndexName]:
+			sbomCveProcessed.Inc()
 			if err := addToES(sbomCve, sbomCveScanIndexName, bulkp); err != nil {
 				log.Errorf("failed to process sbom artifacts error: %s", err.Error())
 			}
 
 		case cloudCompliance := <-topicChannels[cloudComplianceScanIndexName]:
+			cloudComplianceProcessed.Inc()
 			processCloudCompliance(cloudCompliance, bulkp)
 
 		case cloudComplianceLog := <-topicChannels[cloudComplianceScanLogsIndexName]:
+			cloudComplianceLogsProcessed.Inc()
 			if err := addToES(cloudComplianceLog, cloudComplianceScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process cloud compliance logs error: %s", err.Error())
 			}
 
 		case compliance := <-topicChannels[complianceScanIndexName]:
+			complianceProcessed.Inc()
 			processCompliance(compliance, bulkp)
 
 		case complianceLog := <-topicChannels[complianceScanLogsIndexName]:
+			complianceLogsProcessed.Inc()
 			if err := addToES(complianceLog, complianceScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process compliance logs error: %s", err.Error())
 			}

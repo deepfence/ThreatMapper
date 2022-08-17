@@ -165,6 +165,7 @@ func processCVE(cve []byte, bulkp *elastic.BulkProcessor) {
 
 	// check if cve masked
 	if isMaskedCVE(cveStruct) {
+		cveMasked.Inc()
 		cveStruct.Masked = "true"
 	} else {
 		cveStruct.Masked = "false"
