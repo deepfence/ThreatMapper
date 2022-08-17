@@ -62,17 +62,17 @@ def topology_metrics():
     unprotected_hosts = int(count.get(NODE_TYPE_HOST + "_unprotected", 0))
     response = {
         "coverage": {
-            "discovered": total_hosts,
-            "protected": min(total_hosts - unprotected_hosts, 0),
+            "discovered": str(total_hosts),
+            "protected": str(min(total_hosts - unprotected_hosts, 0)),
         },
         "cloud": {
-            k.replace("_", " ").title(): v for k, v in count.items()
+            k.replace("_", " ").title(): str(v) for k, v in count.items()
             if k not in ["host_unprotected", NODE_TYPE_KUBE_CLUSTER, NODE_TYPE_POD, NODE_TYPE_KUBE_NAMESPACE]
         },
         "kubernetes": {
-            "kubernetes_cluster": count.get(NODE_TYPE_KUBE_CLUSTER, 0),
-            "kubernetes_namespace": count.get(NODE_TYPE_KUBE_NAMESPACE, 0),
-            NODE_TYPE_POD: count.get(NODE_TYPE_POD, 0),
+            "kubernetes_cluster": str(count.get(NODE_TYPE_KUBE_CLUSTER, 0)),
+            "kubernetes_namespace": str(count.get(NODE_TYPE_KUBE_NAMESPACE, 0)),
+            NODE_TYPE_POD: str(count.get(NODE_TYPE_POD, 0)),
         },
     }
     return set_response(data=response)

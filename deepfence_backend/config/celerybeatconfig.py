@@ -55,6 +55,12 @@ beat_schedule = {
         'args': [],
         'relative': False,
     },
+    'topology_cloud_report': {
+        'task': 'tasks.threat_graph.topology_cloud_report',
+        'schedule': timedelta(minutes=5),
+        'args': [],
+        'relative': False,
+    },
     'cve_fix_interrupted': {
         'task': 'tasks.reaper_tasks.cve_fix_interrupted',
         'schedule': timedelta(minutes=2),

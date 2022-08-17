@@ -664,7 +664,7 @@ def _topology_cloud_report():
         if node_details.get("cloud_provider"):
             if node_details["cloud_provider"] not in topology_cloud_providers:
                 topology_cloud_providers.append(node_details["cloud_provider"])
-    topology_count = {"host_unprotected": 0, "cloud_provider": 0}
+    topology_count = {"cloud_provider": 0}
     for k, v in cloud_resources.items():
         cloud_provider = ""
         label = ""
