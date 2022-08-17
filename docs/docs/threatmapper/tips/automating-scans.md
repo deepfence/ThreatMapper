@@ -19,7 +19,7 @@ The results of automated scans are added to the **Vulnerability Scans** report, 
 
 ThreatMapper presents a series of APIs that you can use to enumerate nodes and run scans:
 
-* [https://docs.deepfence.io/api.html#](https://docs.deepfence.io/api.html#)
+* [https://deepfence.github.io/deepfence_runtime_api/](https://deepfence.github.io/deepfence_runtime_api/)
 
 
 ### Scanning Workloads before Deployment

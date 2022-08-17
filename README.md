@@ -3,8 +3,8 @@
 [![GitHub license](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
-[![Documentation](https://img.shields.io/badge/documentation-read-green)](https://docs.deepfence.io/threatmapper)
-[![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://docs.deepfence.io/threatmapper/demo)
+[![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/docs/threatmapper)
+[![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/docs/threatmapper/demo)
 [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
@@ -36,9 +36,9 @@ With ThreatMapper's **ThreatGraph** visualization, you can then identify the iss
   </tr>
 </table>
 
- * [Learn more about ThreatMapper](https://docs.deepfence.io/threatmapper) in the product documentation.
+ * [Learn more about ThreatMapper](https://community.deepfence.io/docs/threatmapper/) in the product documentation.
 
- * [See ThreatMapper running](https://docs.deepfence.io/threatmapper/demo) in the live demo sandbox.
+ * [See ThreatMapper running](https://community.deepfence.io/docs/threatmapper/demo) in the live demo sandbox.
 
 ## When to use ThreatMapper
 
@@ -73,27 +73,27 @@ wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/doc
 docker-compose -f docker-compose.yml up --detach
 ```
 
-Once the Management Console is up and running, you can [register an admin account and obtain an API key](https://docs.deepfence.io/threatmapper/console/initial-configuration).  
+Once the Management Console is up and running, you can [register an admin account and obtain an API key](https://community.deepfence.io/docs/threatmapper/console/initial-configuration).  
 
 ### Cloud Scanner tasks
 
-ThreatMapper [Cloud Scanner tasks](https://docs.deepfence.io/threatmapper/cloudscanner/) are responsible for querying the cloud provider APIs to gather configuration and identify deviations from compliance benchmarks. 
+ThreatMapper [Cloud Scanner tasks](https://community.deepfence.io/docs/threatmapper/cloudscanner/) are responsible for querying the cloud provider APIs to gather configuration and identify deviations from compliance benchmarks. 
 
 The task is deployed using a Terraform module. The ThreatMapper Management Console will present a basic configuration that may be deployed with Terraform, or you can refer to the expert configurations to fine-tune the deployment ([AWS](https://github.com/deepfence/terraform-aws-cloud-scanner), [Azure](https://github.com/deepfence/terraform-azure-cloud-scanner), [GCP](https://github.com/deepfence/terraform-gcp-cloud-scanner).
 
 ### Sensor Agents
 
-Install the [sensor agents](https://docs.deepfence.io/threatmapper/sensors/) on your production or development platforms. The sensors report to the Management Console; they tell it what services they discover, provide telemetry and generate manifests of software dependencies.
+Install the [sensor agents](https://community.deepfence.io/docs/threatmapper/sensors/) on your production or development platforms. The sensors report to the Management Console; they tell it what services they discover, provide telemetry and generate manifests of software dependencies.
 
 The following production platforms are supported by ThreatMapper sensor agents:
 
- * [Kubernetes](https://docs.deepfence.io/threatmapper/sensors/kubernetes): ThreatMapper sensors are deployed as a daemonset in the Kubernetes cluster, using a helm chart.
- * [Docker](https://docs.deepfence.io/threatmapper/sensors/docker): ThreatMapper sensors are deployed as a lightweight container.
- * [Amazon ECS](https://cdocsommunity.deepfence.io/threatmapper/sensors/amazon-ecs): ThreatMapper sensors are deployed as a daemon service using a task definition.
- * [AWS Fargate](https://docs.deepfence.io/docthreatmapper/sensors/amazon-fargate): ThreatMapper sensors are deployed as a sidecar container, using a task definition.
- * [Google Kubernetes Engine](https://docs.deepfence.io/threatmapper/sensors/google-gke): ThreatMapper sensors are deployed as a daemonset in the GKE cluster.
- * [Azure Kubernetes Service](https://docs.deepfence.io/threatmapper/sensors/azure-aks): ThreatMapper sensors are deployed as a daemonset in the AKS cluster.
- * [Bare-Metal or Virtual Machines](https://docs.deepfence.io/threatmapper/sensors/linux-host): ThreatMapper sensors are deployed within a lightweight Docker runtime.
+ * [Kubernetes](https://community.deepfence.io/docs/threatmapper/sensors/kubernetes/): ThreatMapper sensors are deployed as a daemonset in the Kubernetes cluster, using a helm chart.
+ * [Docker](https://community.deepfence.io/docs/threatmapper/sensors/docker/): ThreatMapper sensors are deployed as a lightweight container.
+ * [Amazon ECS](https://community.deepfence.io/docs/threatmapper/sensors/amazon-ecs): ThreatMapper sensors are deployed as a daemon service using a task definition.
+ * [AWS Fargate](https://community.deepfence.io/docs/threatmapper/sensors/amazon-fargate): ThreatMapper sensors are deployed as a sidecar container, using a task definition.
+ * [Google Kubernetes Engine](https://community.deepfence.io/docs/threatmapper/sensors/google-gke/): ThreatMapper sensors are deployed as a daemonset in the GKE cluster.
+ * [Azure Kubernetes Service](https://community.deepfence.io/docs/threatmapper/sensors/azure-aks/): ThreatMapper sensors are deployed as a daemonset in the AKS cluster.
+ * [Bare-Metal or Virtual Machines](https://community.deepfence.io/docs/threatmapper/sensors/linux-host/): ThreatMapper sensors are deployed within a lightweight Docker runtime.
 
 For example, run the following command to start the ThreatMapper sensor on a Docker host:
 
@@ -116,7 +116,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
 
 ### Next Steps
 
-Visit the [Deepfence ThreatMapper Documentation](https://docs.deepfence.io/threatmapper), to learn how to get started and how to use ThreatMapper.
+Visit the [Deepfence ThreatMapper Documentation](https://community.deepfence.io/docs/threatmapper/), to learn how to get started and how to use ThreatMapper.
 
 
 # Get in touch
@@ -126,7 +126,7 @@ Thank you for using ThreatMapper.  Please feel welcome to participate in the [Th
 * [Deepfence Community Website](https://community.deepfence.io) 
 * [<img src="https://img.shields.io/badge/slack-@deepfence-brightgreen.svg?logo=slack">](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) Got a question, need some help?  Find the Deepfence team on Slack
 * [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) Got a feature request or found a bug?  Raise an issue
-* [![Documentation](https://img.shields.io/badge/documentation-read-green)](https://docs.deepfence.io/threatmapper) Read the documentation in the [Deepfence ThreatMapper Documentation](https://docs.deepfence.io/threatmapper)
+* [![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/docs/threatmapper/) Read the documentation in the [Deepfence ThreatMapper Documentation](https://community.deepfence.io/docs/threatmapper/)
 * [productsecurity at deepfence dot io](SECURITY.md): Found a security issue?  Share it in confidence
 * Find out more at [deepfence.io](https://deepfence.io/)
 
