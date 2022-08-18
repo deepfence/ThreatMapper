@@ -579,8 +579,8 @@ const Reports = props => {
         const hostName = host_name && host_name.map(v => v.value);
         globalFilter = {
           type: [compliance_provider.value],
-          host_name: hostName,
-          account_id: accountId,
+          node_name: hostName,
+          node_id: accountId,
         };
       } else if (node_type.value === 'host') {
         const hostName = host_name && host_name.map(v => v.value);
