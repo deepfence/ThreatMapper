@@ -12,61 +12,56 @@ import (
 )
 
 var (
-	pubElasticSearchSuccess = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "publish_es_success",
+	publishElasticSearch = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "publish_es_total",
 		Help: "Total number of records sent successfully to elasticsearch",
-	})
-	pubElasticSearchFailed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "publish_es_failed",
-		Help: "Total number of records failed to be sent to elasticsearch",
-	})
+	}, []string{"status"})
 	topicLag = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "consumer_group_lag",
 		Help: "Consumer group lag per topic",
-	},
-		[]string{"topic"})
+	}, []string{"topic"})
 	cveMasked = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cve_masked",
+		Name: "cve_masked_total",
 		Help: "Total number of cve records masked",
 	})
 	cveProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cve_scan",
+		Name: "cve_scan_total",
 		Help: "Total number of cve records processed",
 	})
 	cveLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cve_scan_logs",
+		Name: "cve_scan_logs_total",
 		Help: "Total number of cve log records processed",
 	})
 	secretProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "secret_scan",
+		Name: "secret_scan_total",
 		Help: "Total number of secret scan records processed",
 	})
 	secretLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "secret_scan_logs",
+		Name: "secret_scan_logs_total",
 		Help: "Total number of secret scan log records processed",
 	})
 	sbomArtifactsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sbom_artifacts",
+		Name: "sbom_artifacts_total",
 		Help: "Total number of sbom artifacts processed",
 	})
 	sbomCveProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sbom_cve",
+		Name: "sbom_cve_total",
 		Help: "Total number of sbom cve records processed",
 	})
 	cloudComplianceProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cloud_compliance_scan",
+		Name: "cloud_compliance_scan_total",
 		Help: "Total number of cloud compliance scan records processed",
 	})
 	cloudComplianceLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "cloud_compliance_scan_logs",
+		Name: "cloud_compliance_scan_logs_total",
 		Help: "Total number of cloud compliance scan log records processed",
 	})
 	complianceProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "compliance_scan",
+		Name: "compliance_scan_total",
 		Help: "Total number of compliance scan records processed",
 	})
 	complianceLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "compliance_scan_logs",
+		Name: "compliance_scan_logs_total",
 		Help: "Total number of compliance scan log records processed",
 	})
 )
