@@ -230,7 +230,7 @@ func main() {
 
 	// for prometheus metrics
 	mux := http.NewServeMux()
-	srv := &http.Server{Addr: ":8181", Handler: mux}
+	srv := &http.Server{Addr: "0.0.0.0:8181", Handler: mux}
 	mux.Handle("/metrics", promhttp.Handler())
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

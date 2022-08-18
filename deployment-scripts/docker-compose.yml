@@ -310,7 +310,7 @@ services:
       - DEBUG=false
       - KAFKA_BROKERS=deepfence-kafka-broker:9092
     ports:
-      - "127.0.0.1:8181:8181"
+      - "8181:8181"
     networks:
       - deepfence_net
     depends_on:
