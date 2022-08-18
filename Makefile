@@ -14,7 +14,7 @@ DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="3.6.0"
 
-default: certs init-container vulnerability-mapper elasticsearch redis postgres kafka-broker kafka-rest-proxy router steampipe api ui fetcher diagnosis agent secretscanner packagescanner
+default: certs init-container vulnerability-mapper elasticsearch redis postgres kafka-broker kafka-rest-proxy router api ui fetcher diagnosis agent secretscanner packagescanner
 
 .PHONY: certs
 certs:
