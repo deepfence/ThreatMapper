@@ -161,6 +161,22 @@ export const renderCorrelatedAlertLink = minimalAlert => {
   return null;
 };
 
+export const renderCveLink = cveLink => {
+  const docId = cveLink;
+  // check id docId present to make it into a link
+  // else return the object as it is
+  if (docId) {
+    return (
+      <div key={docId}>
+        <a href={`${docId}`} target="_blank" rel="noreferrer">
+          {docId}
+        </a>
+      </div>
+    );
+  }
+  return null;
+};
+
 export const renderAlertLink = link => (
   <a href={`${link}`} className="link" target="_blank" rel="noreferrer" >
     {link}
@@ -176,6 +192,7 @@ export const KeyValueContent = ({ data, topRightVisualization }) => {
         data && data.length ? (
           data.map((kvPair) => {
             if (kvPair.key === 'correlated_alerts') return <LinksKVPair k={kvPair.key} value={kvPair.value?.length ? kvPair.value.map((minimalAlert) => renderCorrelatedAlertLink(minimalAlert)) : '-'} key={kvPair.key} />;
+            if (kvPair.key === 'cve_link') return <LinksKVPair k={kvPair.key} value={kvPair.value?.length ? renderCveLink(kvPair.value) : '-'} key={kvPair.key} />;
             if (kvPair.key === 'ip_reputation') return <LinksKVPair k={kvPair.key} value={kvPair.value ? renderAlertLink(kvPair.value) : '-'} key={kvPair.key} />;
             // eslint-disable-next-line react/jsx-no-duplicate-props
             return <KVPair k={kvPair.key} value={kvPair.value} key={kvPair.key} />
