@@ -43,6 +43,7 @@ type Response struct {
 	TagsInfo                string                   `json:"tags,omitempty"`
 	ImagesList          []string            `json:"images_list,omitempty"`
 	SecretsScanInfo     string              `json:"secrets_scan,omitempty"`
+	MalwareScanInfo     string              `json:"malware_scan,omitempty"`
 }
 
 // Message is the unions of Request, Response and arbitrary Value.

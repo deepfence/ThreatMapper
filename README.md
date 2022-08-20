@@ -15,7 +15,7 @@
 
 # ThreatMapper - Runtime Threat Management and Attack Path Enumeration for Cloud Native
 
-Deepfence ThreatMapper hunts for threats in your production platforms, and ranks these threats based on their risk-of-exploit. It uncovers vulnerable software components, exposed secrets and deviations from good security practice. ThreatMapper uses a combination of agent-based inspection and agent-less monitoring to provide the widest possible coverage to detect threats.
+Deepfence ThreatMapper hunts for threats in your production platforms, and ranks these threats based on their risk-of-exploit. It uncovers vulnerable software components, exposed secrets, malwares and deviations from good security practice. ThreatMapper uses a combination of agent-based inspection and agent-less monitoring to provide the widest possible coverage to detect threats.
 
 With ThreatMapper's **ThreatGraph** visualization, you can then identify the issues that present the greatest risk to the security of your applications, and prioritize these for planned protection or remediation.
 

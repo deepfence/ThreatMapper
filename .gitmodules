@@ -6,6 +6,10 @@
 	path = deepfence_agent/plugins/package-scanner
 	url = https://github.com/deepfence/package-scanner
 	branch = main
+[submodule "deepfence_agent/plugins/malware-scanner"]
+	path = deepfence_agent/plugins/malware-scanner
+	url = https://github.com/deepfence/YaraHunter
+	branch = main
 [submodule "deepfence_agent/plugins/SecretScanner"]
 	path = deepfence_agent/plugins/SecretScanner
 	url = https://github.com/deepfence/SecretScanner

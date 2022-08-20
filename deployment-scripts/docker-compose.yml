@@ -371,6 +371,21 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
+  
+  deepfence-malware-scanner:
+    container_name: deepfence-malware-scanner
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-1.4.0}
+    ulimits:
+      core: 0
+    restart: always
+    networks:
+      - deepfence_net
+    entrypoint: /home/deepfence/usr/MalwareScanner
+    command: ["-config-path","/home/deepfence/usr", "-http-port", "8011"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
         
   deepfence-package-scanner:
     container_name: deepfence-package-scanner

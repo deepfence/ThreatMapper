@@ -1,4 +1,4 @@
-all: localinit proto bin/SecretScanner bin/package-scanner
+all: localinit proto bin/SecretScanner bin/package-scanner bin/MalwareScanner
 # bin/open-tracer
 
 localinit:
@@ -15,6 +15,12 @@ bin/SecretScanner: ./SecretScanner/**/*.go
 	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin/secret-scanner/
 	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin/secret-scanner/
 
+bin/MalwareScanner: ./MalwareScanner/**/*.go
+	(cd MalwareScanner && make)
+	mkdir $(PWD)/bin/malware-scanner/
+	cp $(PWD)/MalwareScanner/MalwareScanner $(PWD)/bin/malware-scanner/
+	cp $(PWD)/MalwareScanner/config.yaml $(PWD)/bin/malware-scanner/
+
 bin/package-scanner:
 	(cd package-scanner && make)
 	cp $(PWD)/package-scanner/package-scanner $(PWD)/bin
@@ -30,6 +36,7 @@ proto: ./agent-plugins-grpc/proto/*.proto
 clean:
 	-#rm $(PWD)/bin/open-tracer
 	-rm -rf $(PWD)/bin/secret-scanner/
+	-rm -rf $(PWD)/bin/malware-scanner/
 	-rm $(PWD)/bin/package-scanner
 	#cargo clean --manifest-path=./open-tracer/Cargo.toml
 	(cd agent-plugins-grpc && make clean)
