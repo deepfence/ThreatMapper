@@ -1,4 +1,4 @@
-FROM confluentinc/cp-kafka:7.1.1
+FROM confluentinc/cp-kafka:7.2.1
 
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
@@ -20,7 +20,9 @@ ENV KAFKA_BROKER_ID=1 \
     KAFKA_PROCESS_ROLES='broker,controller' \
     KAFKA_INTER_BROKER_LISTENER_NAME='PLAINTEXT' \
     KAFKA_CONTROLLER_LISTENER_NAMES='CONTROLLER' \
-    KAFKA_LOG_DIRS='/data/kafka'
+    KAFKA_LOG_DIRS='/data/kafka' \
+    KAFKA_LOG_RETENTION_MS=86400000 \
+    KAFKA_LOG_RETENTION_BYTES=-1
 
 COPY kafka_update_run.sh /home/appuser/kafka_update_run.sh
 CMD ["bash","-c", "/home/appuser/kafka_update_run.sh" ]
