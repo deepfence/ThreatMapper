@@ -447,7 +447,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     else:
         resource["cve_severity"] = []
     
-    filters["node_type"] = filters["type"]
+    filters["node_type"] = filters.get("type",[] )
     node_filters = deepcopy(filters)
     filters_applied = deepcopy(node_filters)
     del node_filters["type"]
