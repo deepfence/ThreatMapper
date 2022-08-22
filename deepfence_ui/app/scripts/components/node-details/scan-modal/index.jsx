@@ -4,11 +4,13 @@ import { getCVEScanStatusAction, getSecretScanStatusAction } from '../../../acti
 import pollable from '../../common/header-view/pollable';
 import { Devider } from './common';
 import { SecretScan } from './secret-scan';
+import { MalwareScan } from './malware-scan';
 import { VulnerabilityScan } from './vulnerability-scan';
 
 const scans = [
   VulnerabilityScan,
-  SecretScan
+  SecretScan,
+  MalwareScan
 ]
 
 // All the polling logic should be in this component

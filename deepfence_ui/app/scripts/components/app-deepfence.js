@@ -22,6 +22,8 @@ import ComplianceSummary from './compliance-view/compliance-summary';
 import { InventoryServiceResourceView } from './inventory/service-resources';
 import { InventoryServicesView } from './inventory/services';
 import { AttackGraph } from './attack-graph';
+import MalwareScanHome from './malware-scan-view/index';
+import MalwareScanResultsView from './malware-scan-view/malware-scan-results-view';
 
 import LoginView from './auth-module/login-view/login-view';
 import RegisterView from './auth-module/register-view/register-view';
@@ -169,7 +171,11 @@ class DeepFenceApp extends React.Component {
             <PrivateRoute path="/compliance/:cloudtype/:nodeid/:checkType" component={ComplianceSummary} />
             <PrivateRoute path="/compliance" component={ComplianceViewHome} />
             <PrivateRoute path="/threat-graph" component={AttackGraph} />
-
+            <PrivateRoute path="/malware-scan" component={MalwareScanHome} />
+            <PrivateRoute
+              path="/malware-scan/details/:scanId"
+              component={MalwareScanResultsView}
+            />
             <Route
               path="*"
               render={() =>
