@@ -281,7 +281,8 @@ func main() {
 	//create if any topics is missing
 	partitions := GetEnvIntWithDefault("KAFKA_TOPIC_PARTITIONS", 1)
 	replicas := GetEnvIntWithDefault("KAFKA_TOPIC_REPLICAS", 1)
-	err = createMissingTopics(topics, int32(partitions), int16(replicas))
+	retention_ms := GetEnvStringWithDefault("KAFKA_TOPIC_RETENTION_MS", "86400000")
+	err = createMissingTopics(topics, int32(partitions), int16(replicas), retention_ms)
 	if err != nil {
 		log.Error(err)
 	}

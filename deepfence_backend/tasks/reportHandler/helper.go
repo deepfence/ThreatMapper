@@ -72,7 +72,7 @@ func checkKafkaConn() error {
 	return nil
 }
 
-func createMissingTopics(topics []string, partitions int32, replicas int16) error {
+func createMissingTopics(topics []string, partitions int32, replicas int16, retention_ms string) error {
 	log.Infof("create topics with partitions=%d and replicas=%d", partitions, replicas)
 
 	opts := []kgo.Opt{
@@ -104,8 +104,12 @@ func createMissingTopics(topics []string, partitions int32, replicas int16) erro
 	// 	return 1
 	// }()
 
+	topicConfig := map[string]*string{
+		"retention.ms": kadm.StringPtr(retention_ms),
+	}
+
 	resp, err := adminClient.CreateTopics(context.Background(),
-		partitions, replicas, nil, topics...)
+		partitions, replicas, topicConfig, topics...)
 	if err != nil {
 		log.Error(err)
 		return err
