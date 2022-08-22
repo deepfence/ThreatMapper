@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: deepfence-cluster-agent
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
   {{- include "deepfence-cluster-agent.labels" . | nindent 4 }}
 spec:

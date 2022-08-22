@@ -11,7 +11,9 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 ```bash
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=40.40.40.40 \
-    --set deepfenceKey=""
+    --set deepfenceKey="" \
+    --namespace deepfence \
+    --create-namespace
 ```
 
 **Detailed setup**
@@ -68,7 +70,9 @@ clusterName: ""
 ```
 - Install deepfence-agent helm chart with values file
 ```bash
-helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent
+helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
+    --namespace deepfence \
+    --create-namespace
 ```
 - Wait for pods to start up
 ```bash

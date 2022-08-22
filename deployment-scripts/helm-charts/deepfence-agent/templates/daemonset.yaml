@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: deepfence-agent
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "deepfence-agent.labels" . | nindent 4 }}
 spec:
@@ -22,13 +22,13 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
 
       volumes:
-        {{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+        {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
         - name: docker-sock
           hostPath:
             path: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
             type: Socket
         {{- end }}
-        {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
+        {{- if .Values.mountContainerRuntimeSocket.containerdSock }}
         - name: containerd-sock
           hostPath:
             path: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
@@ -43,6 +43,10 @@ spec:
             path: /
             type: Directory
         - name: fenced-path
+          emptyDir: {}
+        - name: fenced-path-compliance
+          emptyDir: {}
+        - name: fenced-path-compliance-scan-logs
           emptyDir: {}
 
       containers:
@@ -102,11 +106,11 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           volumeMounts:
-            {{- if eq .Values.mountContainerRuntimeSocket.dockerSock "true" }}
+            {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
             - mountPath: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
               name: docker-sock
             {{ end }}
-            {{- if eq .Values.mountContainerRuntimeSocket.containerdSock "true" }}
+            {{- if .Values.mountContainerRuntimeSocket.containerdSock }}
             - mountPath: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
               name: containerd-sock
             {{ end }}
@@ -117,6 +121,10 @@ spec:
               readOnly: true
             - mountPath: /var/log/fenced
               name: fenced-path
+            - mountPath: /var/log/fenced/compliance
+              name: fenced-path-compliance
+            - mountPath: /var/log/fenced/compliance-scan-logs
+              name: fenced-path-compliance-scan-logs
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
 

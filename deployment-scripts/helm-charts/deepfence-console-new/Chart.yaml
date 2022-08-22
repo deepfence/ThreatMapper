@@ -1,6 +1,0 @@
-apiVersion: v2
-appVersion: 1.4.0
-description: Deepfence Console - Helm chart for Kubernetes
-name: deepfence-console
-type: application
-version: 1.4.0

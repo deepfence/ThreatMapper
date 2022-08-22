@@ -34,22 +34,23 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 
 ### Install deepfence-console helm chart
 
+Docker hub credentials will be shared in email
+
 **Quick start**
 
 ```bash
-helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/enterprise
 ```
 
 ```bash
 helm install deepfence-console deepfence/deepfence-console \
-    --set registry.username="<>" \
-    --set registry.password="<>"
+    --namespace default
 ```
 
 **Detailed setup**
 
 ```bash
-helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/enterprise
 ```
 
 - Create values file
@@ -102,13 +103,6 @@ db:
     password: "cve"
     dbname: "users"
     sslmode: "disable"
-  postgresFetcherDb:
-    host: deepfence-postgres
-    port: "5432"
-    user: "cve"
-    password: "cve"
-    dbname: "cve"
-    sslmode: "disable"
   elasticsearch:
     host: deepfence-es
     port: "9200"
@@ -118,7 +112,7 @@ db:
 ```
 - Install deepfence-console helm chart with values file
 ```bash
-helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console
+helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console --namespace default
 ```
 - Wait for pods to start up
 ```bash
