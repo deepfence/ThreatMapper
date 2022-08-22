@@ -1495,7 +1495,7 @@ def node_action():
         if node_type == COMPLIANCE_KUBERNETES_HOST:
             node_action_details["node_type"] = NODE_TYPE_HOST
         return run_node_task(action, node_action_details)
-    elif action in [constants.NODE_ACTION_SCHEDULE_CVE_SCAN, constants.NODE_ACTION_SCHEDULE_SEND_REPORT]:
+    elif action in [constants.NODE_ACTION_SCHEDULE_CVE_SCAN, constants.NODE_ACTION_SCHEDULE_SEND_REPORT, constants.NODE_ACTION_SCHEDULE_COMPLIANCE_SCAN]:
         if not action_args.get("cron"):
             raise InvalidUsage("cron is required in action_args key")
         if not croniter.is_valid(action_args["cron"]):
