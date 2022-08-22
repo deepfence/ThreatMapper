@@ -92,19 +92,28 @@ func startKafkaConsumers(
 
 }
 
-func afterBulkPush(executionId int64, requests []elastic.BulkableRequest, response *elastic.BulkResponse, err error) {
+func afterBulkPush(
+	executionId int64,
+	requests []elastic.BulkableRequest,
+	response *elastic.BulkResponse,
+	err error,
+) {
 	if err != nil {
 		log.Error(err)
 	}
 	if response.Errors {
 		for _, i := range response.Failed() {
 			publishElasticSearch.WithLabelValues("failed").Inc()
-			log.Errorf("index: %s error reason: %s error: %+v\n", i.Index, i.Error.Reason, i.Error)
+			log.Errorf("index: %s error reason: %s error: %+v\n",
+				i.Index, i.Error.Reason, i.Error)
 		}
 	}
 	log.Debugf("number of docs sent to es -> successful: %d failed: %d",
 		len(response.Succeeded()), len(response.Failed()))
 	publishElasticSearch.WithLabelValues("success").Add(float64(len(response.Succeeded())))
+	for _, i := range response.Succeeded() {
+		publishElasticSearch.WithLabelValues(i.Result).Inc()
+	}
 }
 
 func startESBulkProcessor(
