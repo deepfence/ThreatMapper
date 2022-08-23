@@ -65,6 +65,11 @@ spec:
             value: "false"
           - name: OPERATING_MODE
             value: "k8s"
+          - name: KAFKA_REST_PROXY
+            valueFrom:
+              configMapKeyRef:
+                name: "main-cm-{{ include "deepfence-console.fullname" . }}"
+                key: kafka_rest_proxy
         volumeMounts:
         {{- if .Values.tls.pemfile }}
           - name: deepfence-cert-volume

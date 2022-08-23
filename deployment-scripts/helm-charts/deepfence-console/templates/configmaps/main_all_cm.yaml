@@ -7,6 +7,16 @@ data:
   elasticsearch_host: "{{ .Values.db.elasticsearch.host }}"
   elasticsearch_port: "{{ .Values.db.elasticsearch.port }}"
   es_scheme: "{{ .Values.db.elasticsearch.scheme }}"
+  {{- if (eq "deepfence-kafka-broker:9092" .Values.db.kafka.broker) }}
+  kafka_brokers: "deepfence-kafka-broker.{{ .Release.namespace }}.svc:9092"
+  {{ else }}
+  kafka_brokers: "{{ .Values.db.kafka.broker }}"
+  {{- end }}
+  {{- if (eq "deepfence-rest-proxy:8082" .Values.db.kafka_rest) }}
+  kafka_rest_proxy: "deepfence-rest-proxy.{{ .Release.namespace }}.svc:8082"
+  {{ else }}
+  kafka_rest_proxy: "{{ .Values.db.kafka_rest }}"
+  {{- end }}
 kind: ConfigMap 
 metadata:
   name: "main-cm-{{ include "deepfence-console.fullname" . }}"

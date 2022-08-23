@@ -78,9 +78,6 @@ db:
     storageUUID: hNQ55qppT5GGybF52ZGlOQ
   kafka_rest: deepfence-rest-proxy:8082
 
-kafkaBrokerReplicas: 3
-kafkaRestProxyReplicas: 1
-
 # (Optional) Set custom name for the cluster and hostname prefix for console vm's to easily identify in Deepfence UI.
 # Example: df-console or deepfence-console
 # It will be suffixed with hostname - df-console-aks-agentpool-123456-vmss000001
@@ -540,23 +537,64 @@ postgresql:
   service:
     type: ClusterIP
 
+kafkaBroker:
+  # Replication factor for kafka-broker
+  # Recommended: 3+ for production, 1 for dev setup, minikube
+  replicaCount: 3
+  image:
+    repository: deepfenceio/deepfence_kafka_broker_ce
+    pullPolicy: Always
+  imagePullSecrets:
+  - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
 
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
 
-kafkaBrokerResources:
-  requests:
-    cpu: 200m
-    memory: 1Gi
-  limits:
-    cpu: 2
-    memory: 4Gi
+  autoscaling:
+    enabled: false
+  
+  nodeSelector: {}
+  
+  tolerations: []
+  
+  service:
+    type: ClusterIP
 
-kafkaRestProxyResources:
-  requests:
-    cpu: 200m
-    memory: 1Gi
-  limits:
-    cpu: 2
-    memory: 2Gi
+kafkaRestProxy:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_kafka_rest_proxy_ce
+    pullPolicy: Always
+  imagePullSecrets:
+  - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  autoscaling:
+    enabled: false
+  
+  nodeSelector: {}
+  
+  tolerations: []
+  
+  service:
+    type: ClusterIP
+
 
 defaultResourceLimits:
   requests:

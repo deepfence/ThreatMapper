@@ -1,3 +1,4 @@
+{{- if not .Values.saas_deployment }}
 {{- if (eq "deepfence-kafka-broker:9092" .Values.db.kafka.broker) }}
 ---
 apiVersion: apps/v1
@@ -8,10 +9,10 @@ metadata:
     app: deepfence-console
     {{- include "deepfence-console.labels" . | nindent 4 }}
     name: deepfence-kafka-broker
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.namespace }}
 spec:
   serviceName: deepfence-kafka-broker
-  replicas: {{ .Values.kafkaBrokerReplicas }}
+  replicas: {{ .Values.kafkaBroker.replicaCount }}
   selector:
     matchLabels:
       name: deepfence-kafka-broker
@@ -24,7 +25,8 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
+            - weight: 1
+              podAffinityTerm:
                 labelSelector:
                   matchExpressions:
                     - key: name
@@ -32,17 +34,6 @@ spec:
                       values:
                         - deepfence-kafka-broker
                 topologyKey: kubernetes.io/hostname
-              weight: 1
-{{- if .Values.topologyNodeAffinityHostName }}
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: NotIn
-                    values:
-                      - "{{ .Values.topologyNodeAffinityHostName }}"
-{{- end }}
       initContainers:
         - name: init
           image: busybox
@@ -55,8 +46,8 @@ spec:
               mountPath: /data
       containers:
         - name: kafka
-          image: "{{ .Values.image.repository }}deepfence_kafka_broker_ce:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.registry.imagePrefix }}{{ .Values.kafkaBroker.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.kafkaBroker.image.pullPolicy }}
           ports:
             - containerPort: 9092
             - containerPort: 9093
@@ -70,7 +61,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: REPLICAS
-              value: "{{ .Values.kafkaBrokerReplicas }}"
+              value: "{{ .Values.kafkaBroker.replicaCount }}"
             - name: SERVICE
               value: deepfence-kafka-broker
             - name: KAFKA_LOG_DIRS
@@ -89,11 +80,11 @@ spec:
           #   periodSeconds: 30
           resources:
             requests:
-              cpu: {{ .Values.kafkaBrokerResources.requests.cpu }}
-              memory: {{ .Values.kafkaBrokerResources.requests.memory }}
+              cpu: {{ .Values.kafkaBroker.resources.requests.cpu }}
+              memory: {{ .Values.kafkaBroker.resources.requests.memory }}
             limits:
-              cpu: {{ .Values.kafkaBrokerResources.limits.cpu }}
-              memory: {{ .Values.kafkaBrokerResources.limits.memory }}
+              cpu: {{ .Values.kafkaBroker.resources.limits.cpu }}
+              memory: {{ .Values.kafkaBroker.resources.limits.memory }}
           volumeMounts:
             - name: deepfence-kafka-data
               mountPath: /data
@@ -117,7 +108,7 @@ metadata:
   labels:
     app: deepfence-console
     {{- include "deepfence-console.labels" . | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.namespace }}
 spec:
   type: ClusterIP
   clusterIP: None
@@ -133,4 +124,5 @@ spec:
       protocol: TCP
       targetPort: 9093
 ---
+{{- end }}
 {{- end }}
