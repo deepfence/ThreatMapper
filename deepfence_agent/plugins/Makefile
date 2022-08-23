@@ -1,4 +1,4 @@
-all: localinit proto bin/SecretScanner bin/package-scanner bin/MalwareScanner
+all: localinit proto bin/SecretScanner bin/package-scanner bin/malware-scanner
 # bin/open-tracer
 
 localinit:
@@ -15,11 +15,11 @@ bin/SecretScanner: ./SecretScanner/**/*.go
 	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin/secret-scanner/
 	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin/secret-scanner/
 
-bin/MalwareScanner: ./MalwareScanner/**/*.go
-	(cd MalwareScanner && make)
+bin/malware-scanner: ./malware-scanner/**/*.go
+	(cd malware-scanner && make)
 	mkdir $(PWD)/bin/malware-scanner/
-	cp $(PWD)/MalwareScanner/MalwareScanner $(PWD)/bin/malware-scanner/
-	cp $(PWD)/MalwareScanner/config.yaml $(PWD)/bin/malware-scanner/
+	cp $(PWD)/malware-scanner/malware-scanner $(PWD)/bin/malware-scanner/
+	cp $(PWD)/malware-scanner/config.yaml $(PWD)/bin/malware-scanner/
 
 bin/package-scanner:
 	(cd package-scanner && make)

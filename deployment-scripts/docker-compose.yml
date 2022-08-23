@@ -380,7 +380,7 @@ services:
     restart: always
     networks:
       - deepfence_net
-    entrypoint: /home/deepfence/usr/MalwareScanner
+    entrypoint: /home/deepfence/usr/malware-scanner
     command: ["-config-path","/home/deepfence/usr", "-http-port", "8011"]
     logging:
       driver: "json-file"

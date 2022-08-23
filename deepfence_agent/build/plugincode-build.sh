@@ -21,7 +21,7 @@ if [ $build_result -ne 0 ]
 then
     exit 1
 fi
-make bin/MalwareScanner
+make bin/malware-scanner
 build_result=$?
 if [ $build_result -ne 0 ]
 then
