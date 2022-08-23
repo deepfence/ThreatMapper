@@ -7,11 +7,11 @@ metadata:
     alb.ingress.kubernetes.io/backend-protocol: HTTPS
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
     alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.cert_arn }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.awsALB.certArn }}
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/group.name: deepfence-1
+    alb.ingress.kubernetes.io/group.name: {{ .Values.awsALB.groupName }}
     alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=3600
-    alb.ingress.kubernetes.io/wafv2-acl-arn: {{ .Values.waf_annotation }}
+    alb.ingress.kubernetes.io/wafv2-acl-arn: {{ .Values.awsALB.wafAnnotation }}
     external-dns.alpha.kubernetes.io/ttl: "60"
   name: {{ .Release.Namespace }}-ingress
   namespace: {{ .Release.Namespace }}

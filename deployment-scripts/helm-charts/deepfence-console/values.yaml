@@ -81,8 +81,12 @@ clusterName: "df-console"
 # SaaS specific values
 saas_deployment: false
 saas_domain: ""
-cert_arn: ""
-waf_annotation: ""
+
+awsALB:
+  wafAnnotation: ""
+  certArn: ""
+  groupName: "deepfence-1"
+
 saas_env:
   name: ""
   clusterName: ""
