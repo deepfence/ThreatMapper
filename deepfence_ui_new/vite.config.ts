@@ -13,7 +13,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'], // to do prior task before all of your tests run
     coverage: {
-      reporter: ['text', 'html'],
+      reporter: ['text', 'json', 'html'],
     },
   },
 });

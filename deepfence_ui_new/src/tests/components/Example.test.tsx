@@ -6,17 +6,29 @@ import { renderWithClient } from '../utils';
 import { Example } from './Example';
 
 describe('example component', () => {
-  it('successful fetch query', async () => {
+  it('display a loader', async () => {
     server.use(
       rest.get('*', (req, res, ctx) => {
         return res(ctx.status(200));
       }),
     );
 
+    const { getByText } = renderWithClient(<Example />);
+    expect(getByText(/Loading.../i)).toBeDefined();
+  });
+  it('get query data', async () => {
+    server.use(
+      rest.get('*', (req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            name: 'query',
+          }),
+        );
+      }),
+    );
+
     const { findByText } = renderWithClient(<Example />);
-
-    const element = await findByText(/query/i);
-
-    expect(element).toBeDefined();
+    expect(await findByText(/query/i)).toBeDefined();
   });
 });
