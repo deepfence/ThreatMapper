@@ -1,5 +1,15 @@
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+import { Example } from './tests/components/Example';
+
+const queryClient = new QueryClient();
+
 function App() {
-  return <div className="w-full text-blue-600">Welcome to deepfence!</div>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Example />
+    </QueryClientProvider>
+  );
 }
 
 export default App;

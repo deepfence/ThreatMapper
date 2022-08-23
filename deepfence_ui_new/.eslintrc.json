@@ -38,6 +38,7 @@
     "react/prop-types": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    "simple-import-sort/exports": "error",
+    "react/display-name": "off"
   }
 }
