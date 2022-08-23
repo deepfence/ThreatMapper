@@ -17,6 +17,8 @@ data:
   {{ else }}
   kafka_rest_proxy: "{{ .Values.db.kafka_rest }}"
   {{- end }}
+  kafka_topic_replicas: "{{ .Values.db.kafka.kafka_topic_replicas }}"
+  kafka_topic_retention_ms: "{{ .Values.db.kafka.kafka_topic_retention_ms}}"
 kind: ConfigMap 
 metadata:
   name: "main-cm-{{ include "deepfence-console.fullname" . }}"

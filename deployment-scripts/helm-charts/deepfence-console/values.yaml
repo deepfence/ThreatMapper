@@ -72,6 +72,8 @@ db:
     port: "6379"
   kafka:
     broker: deepfence-kafka-broker:9092
+    kafka_topic_replicas: 3
+    kafka_topic_retention_ms: "86400000"
     # set this to new value when kafka resplicas is >1 
     # to generate download kafka and run "kafka-storage random-uuid"
     # storageUUID: ""
