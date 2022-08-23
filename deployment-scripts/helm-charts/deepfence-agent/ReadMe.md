@@ -83,5 +83,5 @@ kubectl get pods -n deepfence
 ### Delete
 
 ```bash
-helm delete deepfence-agent
+helm delete deepfence-agent -n deepfence
 ```

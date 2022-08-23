@@ -58,14 +58,12 @@ The following instructions explain how to install the ThreatMapper console on a 
     For advanced installation, you can edit the helm chart values as described in the [Helm Chart - detailed setup](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console#install-deepfence-console-helm-chart).
     :::
 
-4. **Enable external access** with the ```deepfence-router``` package (optional step):
+4. **Enable external access** with the ```deepfence-router``` helm chart:
 
     Deploy deepfence-router:
 
     ```bash
     helm install deepfence-router deepfence/deepfence-router
-    # Optionally, use a tagged release:
-    # helm install deepfence-router deepfence/deepfence-router --set image.tag=1.4.0
     ```
 
     ... and wait for the cloud platform to deploy an external load-balancer:

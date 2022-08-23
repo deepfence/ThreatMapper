@@ -24,5 +24,7 @@ helm show values deepfence/deepfence-agent
 
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
-    --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0
+    --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0 \
+    --namespace deepfence \
+    --create-namespace
 ```

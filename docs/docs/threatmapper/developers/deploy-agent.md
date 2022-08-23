@@ -24,7 +24,7 @@ docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=ho
   -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
   -e USER_DEFINED_TAGS="" -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" \
   -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-  $ACC/deepfence_agent_ce:latest
+  $ACC/deepfence_agent_ce:1.4.0
 ```
 
 ## Installing and Running the Sensor Agents in a Kubernetes Cluster
@@ -45,7 +45,9 @@ helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml
 #   managementConsoleUrl and deepfenceKey - specify your IP and API key value
 vim deepfence_agent_values.yaml
 
-helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent
+helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
+    --namespace deepfence \
+    --create-namespace
 ```
 
 Allow a few seconds for the containers to pull and deploy in your Kubernetes environment.

@@ -1,0 +1,6 @@
+Verify Deepfence Management Console pods are running
+---------------------------------
+kubectl get pods -o wide -n default -l "app=deepfence-console"
+kubectl get deployments -o wide -n default -l "app=deepfence-console"
+kubectl get statefulsets -o wide -n default -l "app=deepfence-console"
+kubectl get services -o wide -n default -l "app=deepfence-console"

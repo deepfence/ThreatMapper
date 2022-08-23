@@ -39,7 +39,7 @@ Docker hub credentials will be shared in email
 **Quick start**
 
 ```bash
-helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/enterprise
+helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 ```
 
 ```bash
@@ -50,7 +50,7 @@ helm install deepfence-console deepfence/deepfence-console \
 **Detailed setup**
 
 ```bash
-helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/enterprise
+helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 ```
 
 - Create values file

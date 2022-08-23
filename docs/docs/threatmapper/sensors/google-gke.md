@@ -36,7 +36,9 @@ helm show values deepfence/deepfence-agent
 
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
-    --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0
+    --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0 \
+    --namespace deepfence \
+    --create-namespace
 ```
 
 :::tip
@@ -47,7 +49,9 @@ Optionally specify a named [tagged release](https://github.com/deepfence/ThreatM
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0
-    --set image.tag=1.4.0 --set image.clusterAgentImageTag=1.4.0
+    --set image.tag=1.4.0 --set image.clusterAgentImageTag=1.4.0 \
+    --namespace deepfence \
+    --create-namespace
 ```
 :::
 

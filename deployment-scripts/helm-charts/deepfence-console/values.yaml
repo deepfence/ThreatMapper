@@ -2,11 +2,9 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Set docker hub username and password provided by Deepfence
 registry:
   name: "https://index.docker.io/v1/"
   imagePrefix: ""
-  # Set docker hub username and password provided by Deepfence
   # This will create a secret called "deepfence-docker-secret"
   username: ""
   password: ""
@@ -481,7 +479,7 @@ elasticsearch:
   # Recommended: 3+ for production, 1 for dev setup, minikube
   replicaCount: 3
   image:
-    repository: deepfenceio/deepfence_elastic
+    repository: deepfenceio/deepfence_elastic_ce
     pullPolicy: Always
   imagePullSecrets:
   - name: docker-deepfence-secret
