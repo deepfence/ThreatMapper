@@ -21,7 +21,7 @@ if [ $build_result -ne 0 ]
 then
     exit 1
 fi
-make bin/malware-scanner
+make bin/YaraHunter
 build_result=$?
 if [ $build_result -ne 0 ]
 then

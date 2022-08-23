@@ -1,4 +1,4 @@
-all: localinit proto bin/SecretScanner bin/package-scanner bin/malware-scanner
+all: localinit proto bin/SecretScanner bin/package-scanner bin/YaraHunter
 # bin/open-tracer
 
 localinit:
@@ -15,11 +15,11 @@ bin/SecretScanner: ./SecretScanner/**/*.go
 	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin/secret-scanner/
 	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin/secret-scanner/
 
-bin/malware-scanner: ./malware-scanner/**/*.go
-	(cd malware-scanner && make)
-	mkdir $(PWD)/bin/malware-scanner/
-	cp $(PWD)/malware-scanner/malware-scanner $(PWD)/bin/malware-scanner/
-	cp $(PWD)/malware-scanner/config.yaml $(PWD)/bin/malware-scanner/
+bin/YaraHunter: ./YaraHunter/**/*.go
+	(cd YaraHunter && make)
+	mkdir $(PWD)/bin/yara-hunter/
+	cp $(PWD)/YaraHunter/YaraHunter $(PWD)/bin/yara-hunter/
+	cp $(PWD)/YaraHunter/config.yaml $(PWD)/bin/yara-hunter/
 
 bin/package-scanner:
 	(cd package-scanner && make)
@@ -36,7 +36,7 @@ proto: ./agent-plugins-grpc/proto/*.proto
 clean:
 	-#rm $(PWD)/bin/open-tracer
 	-rm -rf $(PWD)/bin/secret-scanner/
-	-rm -rf $(PWD)/bin/malware-scanner/
+	-rm -rf $(PWD)/bin/YaraHunter/
 	-rm $(PWD)/bin/package-scanner
 	#cargo clean --manifest-path=./open-tracer/Cargo.toml
 	(cd agent-plugins-grpc && make clean)
