@@ -1098,6 +1098,8 @@ def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resou
     add_report_status_in_es(report_id=report_id, status="In Progress",
                             filters_applied_str=str({"filters": filters, "resources": resources}), file_type="xlsx",
                             duration=f"{number}{time_unit}")
+    import sys
+    sys.stdout = open('/tmp/log.log', 'a+')
     xlsx_buffer = prepare_report_download(
         node_type, filters, resources,
         {"duration": {"number": number, "time_unit": time_unit}}, include_dead_nodes)
