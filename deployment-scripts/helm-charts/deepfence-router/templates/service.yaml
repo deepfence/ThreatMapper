@@ -101,7 +101,7 @@ spec:
                   number: 443
 {{- end }}
 ---
-{{- if eq "true" .Values.createSeparateServiceForAgents }}
+{{- if .Values.createSeparateServiceForAgents }}
 apiVersion: v1
 kind: Service
 metadata:

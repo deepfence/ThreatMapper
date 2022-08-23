@@ -1,0 +1,39 @@
+{{- if .Values.saas_deployment }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "saas-pginit-{{ randAlphaNum 5 | lower }}"
+  namespace: common
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec: 
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+      containers:
+      - name: pginit
+        image: deepfenceio/deepfence_saas_postgres_init:latest
+        command: ["/bin/bash"]
+        args: ["/opt/init.sh", "create"]
+        env:
+         - name: DB_HOST
+           value: {{ .Values.db.postgresUserDb.host }}
+         - name: DB_USER
+           value: {{ .Values.db.postgresUserDb.user }}
+         - name: DB_PASSWORD
+           value: {{ .Values.db.postgresUserDb.password }}
+         - name: USERS_DB_NAME
+           value: {{ .Values.db.postgresUserDb.dbname }}
+         - name: CUSTOMER_DB_USER
+           value: {{ .Values.db.postgresUserDb.customer_user_name }}
+         - name: CUSTOMER_DB_PASS
+           value: {{ .Values.db.postgresUserDb.customer_user_password }}
+
+  backoffLimit: 4
+{{- end }}

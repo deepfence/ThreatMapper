@@ -86,7 +86,7 @@ func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
 		if imageId == "" {
 			return xfer.ResponseErrorf("image_id is required")
 		}
-		imageName := fmt.Sprintf("%s", req.ControlArgs["image_id"])
+		imageName := fmt.Sprintf("%s", req.ControlArgs["image_name"])
 		greq = pb.FindRequest{Input: &pb.FindRequest_Image{
 			Image: &pb.DockerImage{Id: imageId, Name: imageName},
 		}}

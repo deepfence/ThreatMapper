@@ -1,0 +1,23 @@
+{{- if not .Values.saas_deployment }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-ui
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-ui
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.ui.service.type }}
+  selector:
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
+    name: deepfence-ui
+
+  ports:
+    - name: deepfence-ui-port
+      port: 4042
+      protocol: TCP
+      targetPort: 4042
+{{- end }}

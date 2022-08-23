@@ -1,0 +1,20 @@
+{{- if .Values.saas_deployment }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-router
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-router
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: deepfence-router-port
+    port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    name: deepfence-router
+  type:  {{ .Values.router.service.type }}
+{{- end }}
