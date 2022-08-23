@@ -15,7 +15,8 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "playwright": "npx playwright test"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.18.10",
+    "@playwright/test": "^1.25.0",
     "@storybook/addon-actions": "^6.5.10",
     "@storybook/addon-essentials": "^6.5.10",
     "@storybook/addon-interactions": "^6.5.10",

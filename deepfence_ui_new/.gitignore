@@ -23,3 +23,6 @@ dist-ssr
 
 storybook-static
 coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
