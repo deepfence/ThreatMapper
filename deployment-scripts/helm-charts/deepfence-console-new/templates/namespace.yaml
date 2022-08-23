@@ -1,8 +1,0 @@
-{{- if ne "default" .Values.namespace }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    {{- include "deepfence-console.labels" . | nindent 4 }}
-  name: {{ .Values.namespace }}
-{{- end }}

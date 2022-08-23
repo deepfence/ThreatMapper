@@ -1,0 +1,13 @@
+{{- if .Values.tls.pemfile }}
+---
+apiVersion: v1
+data:
+  deepfence.pem: |-
+{{ .Files.Get .Values.tls.pemfile | indent 4 }}
+kind: ConfigMap
+metadata:
+  name: deepfence-cert
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+{{- end }}

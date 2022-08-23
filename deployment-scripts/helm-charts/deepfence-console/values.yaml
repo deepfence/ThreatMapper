@@ -2,22 +2,19 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Set docker hub username and password provided by Deepfence
 registry:
   name: "https://index.docker.io/v1/"
-  # Set docker hub username and password provided by Deepfence
+  imagePrefix: ""
   # This will create a secret called "deepfence-docker-secret"
   username: ""
   password: ""
   # If kubernetes secret is already defined externally, change following value to false
   # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  createRegistrySecret: "true"
+  createRegistrySecret: true
 
 image:
-  repository: "deepfenceio/"
   tag: 1.4.0
-  pullPolicy: Always
-  pullSecretName: deepfence-docker-secret
+  pullSecretName: docker-deepfence-secret
 
 # Use custom ssl certificate for Deepfence UI
 # Copy *.key and *.crt file to current directory (same directory as values.yaml file)
@@ -28,6 +25,8 @@ image:
 tls:
   certFile: ""
   keyFile: ""
+# for SaaS deployments
+  pemfile: ""
 
 # Configure port for browser / agents
 managementConsolePort: "443"
@@ -49,15 +48,18 @@ clusterDomain: "cluster.local"
 
 db:
   # If kubernetes secret is already defined externally, change following value to false
-  createDbSecret: "true"
+  createDbSecret: true
   #  Change following values accordingly if using externally managed database
   postgresUserDb:
     host: deepfence-postgres
     port: "5432"
-    user: "deepfence"
-    password: "KeTn4LA4SBN2"
+    user: "cve"
+    password: "cve"
     dbname: "users"
     sslmode: "disable"
+    # Following values are only for SaaS deployments
+    customer_user_name: ""
+    customer_user_password: ""
   elasticsearch:
     scheme: "http"
     host: deepfence-es
@@ -68,74 +70,473 @@ db:
     host: deepfence-redis
     port: "6379"
 
-# Replication factor for elasticsearch
-# Recommended: 3+ for production, 1 for dev setup, minikube
-elasticsearchReplicationFactor: 3
-
 # (Optional) Set custom name for the cluster and hostname prefix for console vm's to easily identify in Deepfence UI.
 # Example: df-console or deepfence-console
 # It will be suffixed with hostname - df-console-aks-agentpool-123456-vmss000001
 clusterName: "df-console"
 
-# Service name for access from agents and vulnerability mapper
-agentServiceName: deepfence-router
+# SaaS specific values
+saas_deployment: false
+saas_domain: ""
 
-# Show console vm in management console UI
-runConsoleDiscovery: "true"
-# Run UI pod
-runUIPod: "true"
+awsALB:
+  wafAnnotation: ""
+  certArn: ""
+  groupName: "deepfence-1"
 
-vulnerabilityScanConcurrency: "15"
+saas_env:
+  name: ""
+  clusterName: ""
+  lokiUrl: ""
 
-diagnosis:
-  nodeMetrics: "true"
-
-router:
-  uiServiceName: "deepfence-ui"
-
-# Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
 mountContainerRuntimeSocket:
-  dockerSock: "false"
+  dockerSock: false
   dockerSockPath: "/var/run/docker.sock"
-  containerdSock: "true"
+  containerdSock: true
   containerdSockPath: "/run/containerd/containerd.sock"
 
-# Optionally set node affinity for topology pod
-topologyNodeAffinityHostName: ""
-# Optionally set node affinity for backend pod
-backendNodeAffinityHostName: ""
+serviceAccountName: deepfence-console
 
-topologyResources:
-  requests:
-    cpu: 1000m
-    memory: 2Gi
-  limits:
-    cpu: 16000m
-    memory: 32Gi
+api:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_api_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
 
-elasticsearchResources:
-  requests:
-    cpu: 200m
-    memory: 2Gi
-  limits:
-    cpu: 8000m
-    memory: 8Gi
-elasticsearchHeapSize: "2g"
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+backend:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_api_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  initContainerRequired: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+
+celery:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_api_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+diagnosis:
+  replicaCount: 1
+  nodeMetrics: "false"
+  image:
+    repository: deepfenceio/deepfence_diagnosis_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+discovery:
+  # Show console vm in management console UI
+  runConsoleDiscovery: true
+  image:
+    repository: deepfenceio/deepfence_discovery_ce
+    pullPolicy: Always
+  enableGraphReport: true
+  clusterName: ""
+
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
+    - effect: NoExecute
+      operator: Exists
+
+  service:
+    type: ClusterIP
+
+topology:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_discovery_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 16000m
+      memory: 32Gi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+fetcher:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_fetcher_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+router:
+  replicaCount: 1
+  uiServiceName: "deepfence-ui"
+  image:
+    repository: deepfenceio/deepfence_router_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  setAntiAffinity: false
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+
+redis:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_redis_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  initContainerRequired: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+secretScanner:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_secret_scanner_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+vulnerabilityMapper:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_vulnerability_mapper_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 50m
+    limits:
+      cpu: 16000m
+      memory: 32Gi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+internalRouter:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_router_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  setAntiAffinity: false
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+packageScanner:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_package_scanner_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+ui:
+  runUIPod: true
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_ui_ce
+    pullPolicy: Always
+  imagePullSecrets: 
+      - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 50m
+    limits:
+      cpu: 16000m
+      memory: 32Gi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
+elasticsearch:
+  # Replication factor for elasticsearch
+  # Recommended: 3+ for production, 1 for dev setup, minikube
+  replicaCount: 3
+  image:
+    repository: deepfenceio/deepfence_elastic_ce
+    pullPolicy: Always
+  imagePullSecrets:
+  - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 2Gi
+    limits:
+      cpu: 8000m
+      memory: 8Gi
+  heapSize: "2g"
+
+  autoscaling:
+    enabled: false
+  
+  nodeSelector: {}
+  
+  tolerations: []
+  
+  service:
+    type: ClusterIP
+
+postgresqlPgpool:
+  image:
+    name: docker.io/deepfenceio/pgpool:4.2.5-debian-10-r37
+    pullPolicy: IfNotPresent
+
+  nodeSelector: {}
+  
+  tolerations: []
+  
+  service:
+    type: ClusterIP
+
+postgresql:
+  image:
+    name: docker.io/deepfenceio/postgresql-repmgr:12.8.0-debian-10-r71
+    pullPolicy: IfNotPresent
+
+  nodeSelector: {}
+  
+  tolerations: []
+  
+  service:
+    type: ClusterIP
+
+
 
 defaultResourceLimits:
   requests:
     cpu: 50m
     memory: 40Mi
+    # ephemeralStorage: 10Gi
   limits:
     cpu: 16000m
     memory: 32Gi
-setDefaultResourceLimits: "false"
-
-enablePacketCaptureService: "true"
-
-serviceAccountName: deepfence-console
-
-namespace: default
-
-nameOverride: ""
-fullnameOverride: ""
+setDefaultResourceLimits: false

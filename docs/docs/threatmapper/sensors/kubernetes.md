@@ -17,7 +17,9 @@ helm show values deepfence/deepfence-agent
 
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
-    --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0
+    --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0 \
+    --namespace deepfence \
+    --create-namespace
 ```
 
 ## Install a named version of the ThreatMapper Sensor
@@ -28,7 +30,9 @@ You should seek to ensure that the version number of the sensors matches the ver
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0
-    --set image.tag=1.4.0 --set image.clusterAgentImageTag=1.4.0
+    --set image.tag=1.4.0 --set image.clusterAgentImageTag=1.4.0 \
+    --namespace deepfence \
+    --create-namespace
 ```
 
 ## Perform a rolling upgrade of the ThreatMapper Sensors
@@ -46,7 +50,7 @@ helm upgrade deepfence-agent deepfence/deepfence-agent \
 ## Delete the ThreatMapper Sensor
 
 ```bash
-helm delete deepfence-agent
+helm delete deepfence-agent -n deepfence
 ```
 
 ## Fine-tune the Helm deployment
@@ -63,6 +67,8 @@ helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml
 #   containerdSock - set to false if agent fails to start on some Kubernetes platforms e.g. Minikube 
 vim deepfence_agent_values.yaml
 
-helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent
+helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
+    --namespace deepfence \
+    --create-namespace
 ```
 
