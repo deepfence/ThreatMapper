@@ -16,7 +16,6 @@ registry:
 
 image:
   tag: 1.4.0
-  pullPolicy: Always
   pullSecretName: docker-deepfence-secret
 
 # Use custom ssl certificate for Deepfence UI
