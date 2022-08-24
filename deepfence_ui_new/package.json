@@ -24,8 +24,8 @@
     "react-query": "^3.39.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.10",
-    "@playwright/test": "^1.25.0",
+    "@babel/core": "^7.18.13",
+    "@playwright/test": "^1.25.1",
     "@storybook/addon-actions": "^6.5.10",
     "@storybook/addon-essentials": "^6.5.10",
     "@storybook/addon-interactions": "^6.5.10",
@@ -36,8 +36,8 @@
     "@testing-library/react": "^13.3.0",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
-    "@typescript-eslint/eslint-plugin": "^5.33.1",
-    "@typescript-eslint/parser": "^5.33.1",
+    "@typescript-eslint/eslint-plugin": "^5.34.0",
+    "@typescript-eslint/parser": "^5.34.0",
     "@vitejs/plugin-react": "^2.0.1",
     "@vitest/coverage-c8": "^0.22.1",
     "autoprefixer": "^10.4.8",
