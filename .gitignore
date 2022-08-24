@@ -1,4 +1,5 @@
 .idea
 .DS_Store
 .vscode
+!deepfence_ui_new/.vscode
 deepfence_agent/tools/apache/scope/proto/
