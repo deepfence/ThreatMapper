@@ -17,7 +17,7 @@ from models.user import User, Role, Company, Invite, PasswordReset
 from models.user_activity_log import UserActivityLog
 from collections import defaultdict
 from models.integration import Integration
-from models.notification import VulnerabilityNotification, UserActivityNotification
+from models.notification import VulnerabilityNotification, UserActivityNotification, ComplianceReportNotification
 from utils.common import password_policy_check, unique_execution_id, \
     mask_url, mask_api_key
 from utils.custom_exception import InvalidUsage, NotFound, Forbidden, MultipleCompaniesFound, DFError
@@ -31,7 +31,7 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
-    INVITE_EXPIRY
+    INVITE_EXPIRY, NOTIFICATION_TYPE_COMPLIANCE
 from utils import constants
 from config.redisconfig import redis
 from utils.response import set_response
@@ -2020,6 +2020,8 @@ class IntegrationView(MethodView):
             create_notification(VulnerabilityNotification)
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             create_notification(UserActivityNotification)
+        elif notification_type == NOTIFICATION_TYPE_COMPLIANCE:
+            create_notification(ComplianceReportNotification)
 
     @jwt_required()
     @non_read_only_user
