@@ -586,6 +586,7 @@ func (r *RedisCache) formatTopologyContainerImageData(nodeSummaries detailed.Nod
 		}
 		dfTopology.SecretScanStatusTime = nodeIdSecretStatusTimeMap[dfTopology.ImageNameWithTag]
 		dfTopology.MalwareScanStatusTime = nodeIdMalwareStatusTimeMap[dfTopology.ImageNameWithTag]
+		dfTopology.MalwareScanStatus = nodeIdMalwareStatusMap[dfTopology.ImageNameWithTag]
 		if dfTopology.Pseudo == false {
 			noOfImages += 1
 			if dfTopology.ImageName != "" && !InArray(dfTopology.ImageName, filtersImageName) {
