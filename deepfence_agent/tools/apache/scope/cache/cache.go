@@ -353,9 +353,11 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 		nodeIdSecretStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
 	}
 	r.nodeStatus.Lock()
-	r.nodeStatus.MalwareScanStatus = nodeIdMalwareStatusMap
-	r.nodeStatus.MalwareScanStatusTime = nodeIdMalwareStatusTimeMap
+	r.nodeStatus.MalwareScanStatus = nodeIdSecretStatusMap
+	r.nodeStatus.MalwareScanStatusTime = nodeIdSecretStatusTimeMap
 	r.nodeStatus.Unlock()
+	nodeIdMalwareStatusMap := make(map[string]string)
+	nodeIdMalwareStatusTimeMap := make(map[string]string)
 	nodeIdAggsBkt, ok = malwareResp.Aggregations.Terms("node_id")
 	if !ok {
 		return nil
