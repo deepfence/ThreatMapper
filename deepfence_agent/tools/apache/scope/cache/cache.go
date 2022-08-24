@@ -32,7 +32,8 @@ func NewRedisCache(topologyID string) *RedisCache {
 		topologyOptionsScope: TopologyOptions{NodeType: nodeType, Params: TopologyParams{Format: TopologyFormatScope}},
 		topologyOptionsDf:    TopologyOptions{NodeType: nodeType, Params: TopologyParams{Format: TopologyFormatDeepfence}},
 		filterRedisKey:       TopologyFilterPrefix + strings.ToUpper(nodeType),
-		nodeStatus:           NodeStatus{VulnerabilityScanStatus: make(map[string]string), SecretScanStatus: make(map[string]string)}, VulnerabilityScanStatus: make(map[string]string)
+		nodeStatus:           NodeStatus{VulnerabilityScanStatus: make(map[string]string), SecretScanStatus: make(map[string]string), MalwareScanStatus: make(map[string]string)},
+
 	}
 	r.redisPool, r.redisDbNum = NewRedisPool()
 	r.topologyOptionsScope.TopologyOptionsValidate()
