@@ -150,8 +150,8 @@ func (r *RedisCache) formatTopologyHostData(nodeSummaries detailed.NodeSummaries
 	nodeIdVulnerabilityStatusTimeMap = r.nodeStatus.VulnerabilityScanStatusTime
 	nodeIdSecretStatusMap = r.nodeStatus.SecretScanStatus
 	nodeIdSecretStatusTimeMap = r.nodeStatus.SecretScanStatusTime
-	nodeIdMalwareStatusMap  = r.nodeStatus.MalwareStatus
-	nodeIdMalwareStatusTimeMap = r.nodeStatus.MalwareStatusTime
+	nodeIdMalwareStatusMap  = r.nodeStatus.MalwareScanStatus
+	nodeIdMalwareStatusTimeMap = r.nodeStatus.MalwareScanStatusTime
 	r.nodeStatus.RUnlock()
 	var filtersHostName, filtersKernelVersion, filtersOs, filtersCloudProvider, filtersInstanceType []string
 	var filtersAvailabilityZone, filtersDataCenter, filtersZone, filtersLocation, filtersSKU []string

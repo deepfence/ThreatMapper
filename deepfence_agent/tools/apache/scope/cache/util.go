@@ -22,8 +22,8 @@ type NodeStatus struct {
 	VulnerabilityScanStatusTime map[string]string
 	SecretScanStatus            map[string]string
 	SecretScanStatusTime        map[string]string
-	MalwareScanStatus            map[string]string
-	MalwareScanStatusTime        map[string]string
+	MalwareScanStatus           map[string]string
+	MalwareScanStatusTime       map[string]string
 	sync.RWMutex
 }
 
@@ -440,8 +440,8 @@ type DeepfenceTopology struct {
 	VulnerabilityScanStatusTime  string              `json:"vulnerability_scan_status_time,omitempty"`
 	SecretScanStatus             string              `json:"secret_scan_status,omitempty"`
 	SecretScanStatusTime         string              `json:"secret_scan_status_time,omitempty"`
-	MalwareScanStatus             string              `json:"malware_scan_status,omitempty"`
-	MalwareScanStatusTime         string              `json:"malware_scan_status_time,omitempty"`
+	MalwareScanStatus             string             `json:"malware_scan_status,omitempty"`
+	MalwareScanStatusTime         string             `json:"malware_scan_status_time,omitempty"`
 }
 
 type TopologyFilterNumberOption struct {
