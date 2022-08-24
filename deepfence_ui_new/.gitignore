@@ -29,3 +29,6 @@ coverage
 
 *.env
 !.env.sample
+
+# rollup bundle analysis file
+stats.html

@@ -2,6 +2,7 @@
 /// <reference types="vite/client" />
 
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv } from 'vite';
 import { configDefaults } from 'vitest/config';
 
@@ -9,7 +10,7 @@ import { configDefaults } from 'vitest/config';
 export default defineConfig(({ mode }) => {
   const viteEnv = loadEnv(mode, '.');
   return {
-    plugins: [react()],
+    plugins: [react(), ...(mode === 'production' ? [visualizer()] : [])],
     test: {
       includeSource: ['src/**/*.test.{ts, tsx}'],
       exclude: [...configDefaults.exclude, 'e2e/**'],
