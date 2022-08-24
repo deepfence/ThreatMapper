@@ -47,13 +47,15 @@ type NodeStatus struct {
 	VulnerabilityScanStatusTime map[string]string
 	ComplianceScanStatus        map[string]string
 	ComplianceScanStatusTime    map[string]string
+	MalwareScanStatus           map[string]string
+	MalwareScanStatusTime       map[string]string
 	SecretScanStatus            map[string]string
 	SecretScanStatusTime        map[string]string
 	NodeSeverity                map[string]string
 	sync.RWMutex
 }
 
-func (st *Status) getNodeStatus() (map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string) {
+func (st *Status) getNodeStatus() (map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string, map[string]string) {
 	st.nodeStatus.RLock()
 	nodeIdVulnerabilityStatusMap := st.nodeStatus.VulnerabilityScanStatus
 	nodeIdVulnerabilityStatusTimeMap := st.nodeStatus.VulnerabilityScanStatusTime
@@ -62,8 +64,10 @@ func (st *Status) getNodeStatus() (map[string]string, map[string]string, map[str
 	nodeSeverityMap := st.nodeStatus.NodeSeverity
 	nodeIdSecretStatusMap := st.nodeStatus.SecretScanStatus
 	nodeIdSecretStatusTimeMap := st.nodeStatus.SecretScanStatusTime
+	nodeIdMalwareStatusMap := st.nodeStatus.MalwareScanStatus
+	nodeIdMalwareStatusTimeMap := st.nodeStatus.MalwareScanStatusTime
 	st.nodeStatus.RUnlock()
-	return nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdComplianceStatusMap, nodeIdComplianceStatusTimeMap, nodeSeverityMap, nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap
+	return nodeIdVulnerabilityStatusMap, nodeIdVulnerabilityStatusTimeMap, nodeIdComplianceStatusMap, nodeIdComplianceStatusTimeMap, nodeSeverityMap, nodeIdSecretStatusMap, nodeIdSecretStatusTimeMap, nodeIdMalwareStatusMap, nodeIdMalwareStatusTimeMap
 }
 
 func (st *Status) getNodeSeverity() (map[string]string, error) {
