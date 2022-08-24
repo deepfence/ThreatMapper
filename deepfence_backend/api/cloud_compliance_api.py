@@ -3,6 +3,7 @@ import os
 import re
 from datetime import datetime
 import time
+from functools import reduce
 from sqlalchemy import func, exc
 from urllib.parse import unquote
 from config.app import db
@@ -807,7 +808,7 @@ def cloud_compliance_node_scans():
     if invalidComplianceCheckType:
         raise InvalidUsage("Invalid compliance_check_type: {0}".format(compliance_check_type))
 
-    filters = {"compliance_check_type": compliance_check_type, "scan_status": "COMPLETED"}
+    filters = {"compliance_check_type": compliance_check_type, "scan_status": ["COMPLETED", "ERROR", "IN_PROGRESS", "QUEUED"]}
     if request.args.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
         filters["kubernetes_cluster_id"] = node_id
     else:
@@ -827,6 +828,53 @@ def cloud_compliance_node_scans():
     es_index = CLOUD_COMPLIANCE_LOGS_INDEX
     if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
         es_index = COMPLIANCE_LOGS_INDEX
+    aggs_compliance_scan = {
+        "scan_id": {
+            "terms": {
+                "field": "scan_id.keyword",
+                "size": ES_TERMS_AGGR_SIZE,
+                "order": {"scan_recent_timestamp": "desc"}
+            },
+            "aggs": {
+                "scan_recent_timestamp": {
+                    "max": {
+                        "field": "@timestamp"
+                    }
+                },
+                "scan_time_sort": {
+                    "bucket_sort": {
+                        "sort": [
+                            {"scan_recent_timestamp": {"order": "desc"}}
+                        ],
+                        "from": start_index,
+                        "size": page_size
+                    }
+                },
+                "latest_scan_details": {
+                    "top_hits": {
+                        "sort": [
+                            {
+                                "_script": {
+                                    "type": "number",
+                                    "script": {
+                                        "lang": "painless",
+                                        "source": "params.sortOrder.indexOf(doc['scan_status.keyword'].value)",
+                                        "params": {"sortOrder": ["COMPLETED", "ERROR", "QUEUED", "IN_PROGRESS"]}
+                                    },
+                                    "order": "asc"
+                                }
+                            }
+                        ],
+                        "_source": "*",
+                        "size": 1
+                    }
+                }
+            }
+        }
+    }
+    compliance_scan_resp = ESConn.aggregation_helper(
+        es_index, filters, aggs_compliance_scan, number, TIME_UNIT_MAPPING.get(time_unit),
+        lucene_query_string, add_masked_filter=False)
     es_resp = ESConn.search_by_and_clause(
         es_index, filters, start_index, sort_order, number=number,
         time_unit=TIME_UNIT_MAPPING.get(time_unit), size=page_size, lucene_query_string=lucene_query_string)
@@ -839,13 +887,21 @@ def cloud_compliance_node_scans():
             if added_scan_id.get(source.get("scan_id", ""), False):
                 continue
             else:
-                added_scan_id[source.get("scan_id", "")] =  True
+                added_scan_id[source.get("scan_id", "")] = True
             result = source.get("result", {})
             total = result.get("pass", 0) + result.get("warn", 0) + result.get("note", 1)
             checks_passed = result.get("pass", 0)
             total = 1 if total == 0 else total
             source["result"]["compliance_percentage"] = (checks_passed * 100) / total
             es_resp.get("hits").append(scan)
+    else:
+        if "aggregations" in compliance_scan_resp:
+            es_hits = list(map(lambda x: x.get("latest_scan_details", {}).get("hits", {}).get("hits", []),
+                          compliance_scan_resp["aggregations"]["scan_id"]["buckets"]))
+            if any(es_hits):
+                es_resp["hits"] = reduce(lambda a, b: a + b, es_hits)
+            else:
+                es_resp["hits"] = []
     es_resp["node_type"] = request.args.get("node_type", "")
     return set_response(data=es_resp)
 
