@@ -270,7 +270,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 	var nodeIdVulnerabilityStatusMap, nodeIdComplianceStatusMap, nodeSeverityMap, nodeIdSecretStatusMap, nodeIdMalwareStatusMap map[string]string
 	var nodeIdMalwareStatusMap map[string]string
 	if ignoreMetadata == false {
-		nodeIdVulnerabilityStatusMap, _, nodeIdComplianceStatusMap, _, nodeSeverityMap, nodeIdSecretStatusMap, nodeIdMalwareStatusMap  _ = nStatus.getNodeStatus()
+		nodeIdVulnerabilityStatusMap, _, nodeIdComplianceStatusMap, _, nodeSeverityMap, nodeIdSecretStatusMap, _, nodeIdMalwareStatusMap,_ = nStatus.getNodeStatus()
 	}
 	childrenCount := make(map[string]map[string]int)
 
