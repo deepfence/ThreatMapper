@@ -17,6 +17,7 @@ bin/SecretScanner: ./SecretScanner/**/*.go
 
 bin/YaraHunter: ./YaraHunter/**/*.go
 	(cd YaraHunter && make)
+	pwd && ls
 	mkdir $(PWD)/bin/yara-hunter/
 	cp $(PWD)/YaraHunter $(PWD)/bin/yara-hunter/
 	cp $(PWD)/YaraHunter/config.yaml $(PWD)/bin/yara-hunter/
