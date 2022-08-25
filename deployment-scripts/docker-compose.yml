@@ -372,14 +372,14 @@ services:
   
   deepfence-YaraHunter:
     container_name: deepfence-YaraHunter
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_yara_hunter_ce:${DF_IMG_TAG:-1.4.0}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-1.4.0}
     ulimits:
       core: 0
     restart: always
     networks:
       - deepfence_net
     entrypoint: /home/deepfence/usr/YaraHunter
-    command: ["-config-path","/home/deepfence/usr", "-http-port", "8011"]
+    command: ["-config-path","/home/deepfence/usr", "-http-port", "8012"]
     logging:
       driver: "json-file"
       options:
