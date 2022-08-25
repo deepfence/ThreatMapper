@@ -14,7 +14,7 @@ describe('query hook', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data?.name).toBe('mocked-react-query');
+    expect(result.current.data?.userId).toBe(1);
   });
 
   test('failure query hook', async () => {

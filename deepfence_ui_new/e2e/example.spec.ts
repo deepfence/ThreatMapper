@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-test('test example e2e', async ({ page }) => {
-  await page.goto('http://localhost:5173');
+test('test example e2e', async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}`);
 
   // create a locator
-  const locator = page.locator('text=query');
-  const text = await locator.innerHTML();
+  const locator = page.locator('text=UserId: 1');
+  const text = await locator.innerText();
 
   // Expects locator has text query
-  await expect(text).toBe('query');
+  await expect(text).toBe('UserId: 1');
 });

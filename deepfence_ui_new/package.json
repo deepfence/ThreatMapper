@@ -16,7 +16,8 @@
     "build-storybook": "build-storybook",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "playwright": "npx playwright test"
+    "playwright": "npx playwright test",
+    "playwright:debug": "npx playwright test --debug"
   },
   "dependencies": {
     "react": "^18.2.0",

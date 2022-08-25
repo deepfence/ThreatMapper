@@ -8,7 +8,7 @@ export const Example = () => {
 
   return (
     <div>
-      <h1>{data?.name}</h1>
+      <h1>UserId: {data?.userId}</h1>
     </div>
   );
 };
