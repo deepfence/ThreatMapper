@@ -378,7 +378,7 @@ services:
     restart: always
     networks:
       - deepfence_net
-    entrypoint: /home/deepfence/usr/YaraHunter
+    entrypoint: /home/deepfence/usr/YaRadare
     command: ["-config-path","/home/deepfence/usr", "-http-port", "8012"]
     logging:
       driver: "json-file"
