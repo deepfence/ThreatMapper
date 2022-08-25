@@ -21,12 +21,6 @@ if [ $build_result -ne 0 ]
 then
     exit 1
 fi
-make bin/YaraHunter
-build_result=$?
-if [ $build_result -ne 0 ]
-then
-    exit 1
-fi
 make bin/compliance
 build_result=$?
 if [ $build_result -ne 0 ]
