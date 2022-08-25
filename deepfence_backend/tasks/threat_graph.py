@@ -693,7 +693,7 @@ def _topology_cloud_report():
             }
         }
         cloud_report["CloudProvider"]["nodes"][scope_id] = report
-        if topology_count["cloud_provider"] not in topology_cloud_providers:
+        if cloud_provider not in topology_cloud_providers:
             topology_count["cloud_provider"] += 1
     # requests.post("http://deepfence-topology:8004/topology-api/report", json=cloud_report,
     #               headers={"Content-type": "application/json"})
