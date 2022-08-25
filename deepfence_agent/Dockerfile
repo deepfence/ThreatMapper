@@ -1,6 +1,7 @@
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS build
+FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS malware_build
 
 FROM debian:bullseye-slim
 
@@ -13,6 +14,8 @@ ENV CHECKPOINT_DISABLE=true \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
     PACKAGE_SCAN_CONCURRENCY=1
+
+    
 
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \
@@ -47,6 +50,7 @@ COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/docker_bin /home/deepfence/bin
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
+COPY --from=malware_build  /home/deepfence/usr/YaRadare /usr/local/bin/YaraHunter
 
 RUN rm -rf /usr/local/bin/compliance_check/*.go \
     && chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
