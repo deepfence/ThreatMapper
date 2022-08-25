@@ -43,7 +43,7 @@ service:
 
 # User can create separate k8s service for agents if required.
 # One use case for this is to deploy external load balancer for browser access and internal load balancer for agent communication.
-createSeparateServiceForAgents: "false"
+createSeparateServiceForAgents: false
 
 agentService:
   # Configuration for ports 8000 to 8010, accessed from agents

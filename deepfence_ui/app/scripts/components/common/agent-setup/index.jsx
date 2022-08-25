@@ -21,9 +21,12 @@ const getK8sInstructions = () => {
 helm repo update
 
 helm install deepfence-agent deepfence/deepfence-agent \\
-  --version ${process.env.__PRODUCTVERSION__} \\
   --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
-  --set deepfenceKey=${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'}`;
+  --set deepfenceKey=${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'} \\
+  --set image.tag=${process.env.__PRODUCTVERSION__} \\
+  --set image.clusterAgentImageTag=${process.env.__PRODUCTVERSION__} \\
+  --namespace deepfence \\
+  --create-namespace`;
 };
 
 export const AgentSetup = () => {

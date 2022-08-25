@@ -269,7 +269,6 @@ services:
       - deepfence-postgres
     volumes:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
-      - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: /app/code/dockerify/api/entrypoint.sh
     logging:
       driver: "json-file"
@@ -290,7 +289,6 @@ services:
       - deepfence-postgres
     volumes:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
-      - /var/run/docker.sock:/var/run/docker.sock
     logging:
       driver: "json-file"
       options:

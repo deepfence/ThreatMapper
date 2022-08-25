@@ -10,10 +10,7 @@ registry:
   password: ""
   # If kubernetes secret is already defined externally, change following value to false
   # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  createRegistrySecret: "true"
-
-# Set this value to false if using external secrets file
-createDeepfenceNamespace: "true"
+  createRegistrySecret: true
 
 image:
   # deepfence agent runs as a daemonset in all nodes in the cluster
@@ -31,9 +28,7 @@ managementConsolePort: "443"
 # Auth: Get deepfence api key from UI -> Settings -> User Management
 deepfenceKey: ""
 # If kubernetes secret is already defined externally, change following value to false
-createDeepfenceKeySecret: "true"
-
-namespace: deepfence
+createDeepfenceKeySecret: true
 
 # Suffix cloud instance id to hostnames
 instanceIdSuffix: "N"
@@ -46,13 +41,13 @@ userDefinedTags: ""
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
 clusterName: ""
 
-enableGraphReport: "true"
+enableGraphReport: true
 
 # Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
 mountContainerRuntimeSocket:
-  dockerSock: "false"
+  dockerSock: false
   dockerSockPath: "/var/run/docker.sock"
-  containerdSock: "true"
+  containerdSock: true
   containerdSockPath: "/run/containerd/containerd.sock"
 
 resources:
