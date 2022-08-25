@@ -47,7 +47,7 @@ COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
-COPY plugins/docker_bin /home/deepfence/bin
+#COPY plugins/docker_bin /home/deepfence/bin
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=malware_build  /home/deepfence/usr/YaRadare /usr/local/bin/YaraHunter
