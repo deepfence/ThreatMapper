@@ -1356,7 +1356,6 @@ class ESConn:
                            lucene_query_string=None, add_masked_filter=True, get_only_query=False):
         should_objects = []
         range_query = None
-        print(index_name, filters, aggs, number, time_unit)
         if number and time_unit and time_unit != 'all':
             print("it is coming to the time unit if else condition")
             rounding_time_unit = get_rounding_time_unit(time_unit)
