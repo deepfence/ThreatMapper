@@ -441,11 +441,13 @@ def compliance_pdf_report(filters, lucene_query_string, number, time_unit, domai
     return final_html
 
 
-def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, resource):
+def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, resource, node_type):
     if len(resource.get("cve_severity", "")) > 0:
         resource["cve_severity"] = resource.get("cve_severity", "").split(",")
     else:
         resource["cve_severity"] = []
+    
+    filters["node_type"] = filters.get("type",[] )
     node_filters = deepcopy(filters)
     filters_applied = deepcopy(node_filters)
     del node_filters["type"]
@@ -460,6 +462,8 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             filters_cve_scan = {**filters_cve_scan, **node_filters_for_cve_scan_index}
     and_terms = []
     for key, value in filters.items():
+        if key == "image_name_with_tag":
+            continue
         if type(value) is not list:
             value = [value]
         if value:
@@ -480,6 +484,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             number, time_unit, rounding_time_unit)}}})
 
     query_body = {"query": {"bool": {"must": and_terms}}, "sort": [{"@timestamp": {"order": "desc"}}]}
+
 
     filters_applied = {**filters_applied, **resource}
     filters_applied = {k: v for k, v in filters_applied.items() if v}
@@ -1133,7 +1138,7 @@ def generate_pdf_report(report_id, filters, node_type,
         if resource_type == CVE_ES_TYPE:
             final_html += vulnerability_pdf_report(filters=filters, lucene_query_string=lucene_query_string,
                                                    number=number, time_unit=time_unit,
-                                                   resource=resource.get("filter", {}))
+                                                   resource=resource.get("filter", {}), node_type=node_type)
         elif resource_type == COMPLIANCE_ES_TYPE:
             if node_type == "aws" or node_type == "gcp" or node_type == "azure":
                 final_html += compliance_pdf_report_cloud(filters=filters,
