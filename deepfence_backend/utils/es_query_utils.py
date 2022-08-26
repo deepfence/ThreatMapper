@@ -1,5 +1,4 @@
-from deepfence_backend.utils.constants import MALWARE_SCAN_INDEX
-from utils.constants import CVE_INDEX, ES_TERMS_AGGR_SIZE, SECRET_SCAN_INDEX, CVE_ES_TYPE
+from utils.constants import CVE_INDEX, MALWARE_SCAN_INDEX, ES_TERMS_AGGR_SIZE, SECRET_SCAN_INDEX, CVE_ES_TYPE
 from utils.esconn import ESConn
 
 
