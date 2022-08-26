@@ -142,7 +142,6 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     number = duration.get("duration", {}).get('number')
     time_unit = duration.get("duration", {}).get('time_unit')
     no_node_filters_set = False
-    print("filters", filters)
     if not filters:
         filters = {"type": node_type}
     elif not filters.get("type", None):
@@ -151,9 +150,6 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     # filters["node_type"] = [node_type]
     
     # In filters, only node_type is set, no other filters like host_name, image_name, etc
-    print("filters", filters)
-    print("node_type", node_type)
-    print("duratiion", duration)
     if len(filters) == 1:
         no_node_filters_set = True
 
@@ -169,12 +165,10 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     pod_names = []
 
     
-    print("filters1", filters)
 
     buffer = io.BytesIO()
     wb = xlsxwriter.Workbook(buffer, {'in_memory': True, 'strings_to_urls': False, 'strings_to_formulas': False})
     for resource in resources:
-        print(1)
         resource_type = resource.get('type')
         if resource_type not in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
             continue
@@ -194,12 +188,10 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             ws.write(row, col, header)
             col += 1
         # here changing the header to default format to align with the code
-        print(2)
         if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-source"]
 
         if not filtered_node_list and no_node_filters_set is False:
-            print(3)
             # User is trying to filter and download report for old node, which does not exist now
             proceed = False
             if node_type == NODE_TYPE_HOST and filters.get("host_name"):
@@ -209,9 +201,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             if node_type == NODE_TYPE_CONTAINER_IMAGE and filters.get("image_name_with_tag"):
                 proceed = True
             if not proceed:
-                print(4)
                 continue
-        print("filters2", filters)
         resource_filter = resource.get("filter", {})
         and_terms = []
         cve_scan_id_list = []
@@ -253,7 +243,6 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                     CVE_INDEX, {**{"type": CVE_ES_TYPE}, **filters }, aggs, number, time_unit, None
                 )
 
-                print("query", ESConn.aggregation_helper( CVE_INDEX, {**{"type": CVE_ES_TYPE}, **filters }, aggs, number, time_unit, None, get_only_query=True ))
 
                 if "aggregations" in aggs_response:
                     for image_aggr in aggs_response["aggregations"]["cve_container_image"]["buckets"]:
