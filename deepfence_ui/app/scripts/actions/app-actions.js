@@ -87,6 +87,7 @@ import {
   getRegistryImagesTags,
   getSecretScanStatus,
   startSecretScan,
+  startMalwareScan,
   secretsScanRegistryImages,
   getSecretScanData,
   getSecretScanResults,
@@ -946,6 +947,17 @@ export function startSecretScanAction(params) {
   ];
   return genericThunkAction(actionTypes, startSecretScan, params);
 }
+
+export function startMalwareScanActiondc(params) {
+  const actionTypes = [
+    ActionTypes.START_MALWARE_SCAN_REQUEST,
+    ActionTypes.START_MALWARE_SCAN_SUCCESS,
+    ActionTypes.START_MALWARE_SCAN_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, startMalwareScan, params);
+}
+
+
 
 export function getCVEScanStatusAction(imageId) {
   return dispatch => {
