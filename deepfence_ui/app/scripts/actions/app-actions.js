@@ -948,7 +948,7 @@ export function startSecretScanAction(params) {
   return genericThunkAction(actionTypes, startSecretScan, params);
 }
 
-export function startMalwareScanActiondc(params) {
+export function startMalwareScanAction(params) {
   const actionTypes = [
     ActionTypes.START_MALWARE_SCAN_REQUEST,
     ActionTypes.START_MALWARE_SCAN_SUCCESS,
