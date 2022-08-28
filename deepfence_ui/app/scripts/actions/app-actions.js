@@ -89,13 +89,21 @@ import {
   startSecretScan,
   startMalwareScan,
   secretsScanRegistryImages,
+  malwareScanRegistryImages,
   getSecretScanData,
+  getMalwareScanData,
   getSecretScanResults,
+  getMalwareScanResults,
   getTopSecretScanContainerAndHosts,
   getSecretScanReportChart,
   getSecretScanChartData,
   secretScanMaskDocs,
   secretScanUnmaskDocs,
+  getTopMalwareScanContainerAndHosts,
+  getMalwareScanReportChart,
+  getMalwareScanChartData,
+  malwareScanMaskDocs,
+  malwareScanUnmaskDocs,
   stopCVEScan,
   getSBOMByScanId,
   getRuntimeBomData,
@@ -1392,6 +1400,7 @@ export function scanRegistryImagesAction(params) {
   return genericThunkAction(actionTypes, scanRegistryImages, params);
 }
 
+
 export function secretsScanRegistryImagesAction(params) {
   const actionTypes = [
     ActionTypes.SECRETS_SCAN_REGISTRY_IMAGES_REQUEST,
@@ -1399,6 +1408,15 @@ export function secretsScanRegistryImagesAction(params) {
     ActionTypes.SECRETS_SCAN_REGISTRY_IMAGES_FAILURE,
   ];
   return genericThunkAction(actionTypes, secretsScanRegistryImages, params);
+}
+
+export function malwareScanRegistryImagesAction(params) {
+  const actionTypes = [
+    ActionTypes.SECRETS_SCAN_REGISTRY_IMAGES_REQUEST,
+    ActionTypes.SECRETS_SCAN_REGISTRY_IMAGES_SUCCESS,
+    ActionTypes.SECRETS_SCAN_REGISTRY_IMAGES_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, malwareScanRegistryImages, params);
 }
 
 export function saveRegistryCredentialAction(params) {
@@ -1869,6 +1887,61 @@ export function secretScanMaskDocsAction(params) {
 export function secretScanUnmaskDocsAction(params) {
   return (dispatch) => secretScanUnmaskDocs(dispatch, params);
 }
+
+
+export function getMalwareScanDataAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_MALWARE_SCAN_DATA_REQUEST,
+    ActionTypes.GET_MALWARE_SCAN_DATA_SUCCESS,
+    ActionTypes.GET_MALWARE_SCAN_DATA_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanData, params);
+}
+
+export function getMalwareScanResultsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_MALWARE_SCAN_RESULTS_REQUEST,
+    ActionTypes.GET_MALWARE_SCAN_RESULTS_SUCCESS,
+    ActionTypes.GET_MALWARE_SCAN_RESULTS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanResults, params);
+}
+
+export function getTopMalwareScanContainerAndHostsAction(params) {
+  const actionTypes = [
+    ActionTypes.TOP_MALWARE_SCAN_NODES_REQUEST,
+    ActionTypes.TOP_MALWARE_SCAN_NODES_SUCCESS,
+    ActionTypes.TOP_MALWARE_SCAN_NODES_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getTopMalwareScanContainerAndHosts, params);
+}
+
+export function getMalwareScanReportChartAction(params) {
+  const actionTypes = [
+    ActionTypes.TOP_MALWARE_SCAN_REPORT_REQUEST,
+    ActionTypes.TOP_MALWARE_SCAN_REPORT_SUCCESS,
+    ActionTypes.TOP_MALWARE_SCAN_REPORT_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getSecretScanReportChart, params);
+}
+
+export function getMalwareScanChartDataAction(params) {
+  const actionTypes = [
+    ActionTypes.MALWARE_SCAN_CHART_REQUEST,
+    ActionTypes.MALWARE_SCAN_CHART_SUCCESS,
+    ActionTypes.MALWARE_SCAN_CHART_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanChartData, params);
+}
+
+export function malwareScanMaskDocsAction(params) {
+  return (dispatch) => malwareScanMaskDocs(dispatch, params);
+}
+
+export function malwareScanUnmaskDocsAction(params) {
+  return (dispatch) => malwareScanUnmaskDocs(dispatch, params);
+}
+
 
 // multi cloud
 export function setTopologyGraphAPI(api) {

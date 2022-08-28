@@ -384,7 +384,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-        
+         
   deepfence-package-scanner:
     container_name: deepfence-package-scanner
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-1.4.0}
