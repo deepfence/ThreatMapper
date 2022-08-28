@@ -22,6 +22,7 @@ import {
   TIME_BOUNDARY_OPTIONS,
 } from '../constants/dashboard-refresh-config';
 import { SecretScannerReducer } from './secret-scanner-reducer';
+import { MalwareScannerReducer } from './malware-scanner-reducer';
 
 const error = debug('scope:error');
 
@@ -1989,6 +1990,7 @@ export function rootReducer(state = initialState, action) {
       state = state.set('form', formReducer(state.get('form'), action));
       state = state.set('cve', CVEReducer(state.get('cve'), action));
       state = state.set('secretScanner', SecretScannerReducer(state.get('secretScanner'), action));
+      state = state.set('malwareScanner', MalwareScannerReducer(state.get('malwareScanner'), action));
       state = state.set(
         'compliance',
         ComplianceReducer(state.get('compliance'), action)

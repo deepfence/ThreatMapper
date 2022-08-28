@@ -360,6 +360,30 @@ secretScanner:
   service:
     type: ClusterIP
 
+malwareScanner:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_malware_scanner_ce
+    pullPolicy: Always
+  imagePullMalware: 
+      - name: docker-deepfence-malware
+  nameOverride: ""
+  fullnameOverride: ""
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
 vulnerabilityMapper:
   replicaCount: 1
   image:
