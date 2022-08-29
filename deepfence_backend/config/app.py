@@ -1,4 +1,5 @@
 import logging
+from deepfence_backend.api import malware_scan_api
 from flask import Flask
 from celery import Celery
 import os
@@ -62,6 +63,7 @@ def register_blueprints(app):
     app.register_blueprint(reports_api.reports_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(setting_api.setting_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(secret_scan_api.secret_api, url_prefix=API_URL_PREFIX)
+    app.register_blueprint(malware_scan_api.malware_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(license_api.license_api, url_prefix=API_URL_PREFIX)
 
 
