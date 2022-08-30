@@ -124,7 +124,8 @@ import {
   getServicesForCloudAccount,
   getAttackGraphData,
   getAttackGraphNodeInfo,
-  refreshCloudComplianceResources
+  refreshCloudComplianceResources,
+  getMalwareScanStatus
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -944,6 +945,16 @@ export function getSecretScanStatusAction(imageId) {
     ActionTypes.SECRET_SCAN_STATUS_FAILURE,
   ];
   return genericThunkAction(actionTypes, getSecretScanStatus, { imageId });
+}
+
+
+export function getMalwareScanStatusAction(imageId) {
+  const actionTypes = [
+    ActionTypes.MALWARE_SCAN_CHART_REQUEST,
+    ActionTypes.MALWARE_SCAN_CHART_SUCCESS,
+    ActionTypes.MALWARE_SCAN_CHART_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanStatus, { imageId });
 }
 
 
@@ -1922,7 +1933,7 @@ export function getMalwareScanReportChartAction(params) {
     ActionTypes.TOP_MALWARE_SCAN_REPORT_SUCCESS,
     ActionTypes.TOP_MALWARE_SCAN_REPORT_FAILURE,
   ];
-  return genericThunkAction(actionTypes, getSecretScanReportChart, params);
+  return genericThunkAction(actionTypes, getMalwareScanReportChart, params);
 }
 
 export function getMalwareScanChartDataAction(params) {
