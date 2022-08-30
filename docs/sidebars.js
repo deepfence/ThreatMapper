@@ -21,7 +21,6 @@ const sidebars = {
     },
 
     'threatmapper/index',
-    'threatmapper/threatgraph',
 
     {
       type: 'category',
@@ -35,7 +34,7 @@ const sidebars = {
         'threatmapper/architecture/cloudscanner',
         'threatmapper/architecture/sensors',
         'threatmapper/architecture/requirements',
-
+        'threatmapper/architecture/threatgraph',
       ],
     },
     'threatmapper/demo',
