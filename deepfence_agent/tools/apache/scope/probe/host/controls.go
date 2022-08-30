@@ -23,7 +23,7 @@ const (
 	StartSecretsScan      = "secret_scan_start"
 	secretScanSocket      = "/tmp/secretScanner.sock"
 	StartMalwareScan      = "malware_scan_start"
-	malwareScanSocket      = "/tmp/malwareScanner.sock"
+	malwareScanSocket      = "/tmp/yaraHunter.sock"
 	unixProtocol          = "unix"
 	tcpProtocol           = "tcp"
 )
