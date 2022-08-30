@@ -151,7 +151,7 @@ SCOPE_KUBE_CONTROLLER_API_CONTROL_URL = "http://deepfence-topology:8004/topology
 
 SECRET_SCAN_API_URL = "http://deepfence-secret-scanner:8011/secret-scan"
 PACKAGE_SCANNER_REGISTRY_API_URL = "http://deepfence-package-scanner:8005/registry"
-MALWARE_SCAN_API_URL = "http://deepfence-secret-scanner:8011/malware-scan"
+MALWARE_SCAN_API_URL = "http://deepfence-yara-hunter:8012/malware-scan"
 
 CUSTOMER_UNIQUE_ID = os.getenv('CUSTOMER_UNIQUE_ID', None)
 CVE_INDEX = "cve"

@@ -370,8 +370,8 @@ services:
       options:
         max-size: "1g"
   
-  deepfence-YaraHunter:
-    container_name: deepfence-YaraHunter
+  deepfence-yara-hunter:
+    container_name: deepfence-yara-hunter
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-1.4.0}
     ulimits:
       core: 0
