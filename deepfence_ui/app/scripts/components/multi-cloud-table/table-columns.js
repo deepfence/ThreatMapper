@@ -153,13 +153,17 @@ export const addCheckbox = (cols, selections, Cb) => {
     accessor: 'checkbox',
     maxWidth: 40,
     resizable: false,
-    Cell: row => (
-      <input
-        type="checkbox"
-        defaultChecked={selections.includes(row.original.id)}
-        onChange={() => Cb(row)}
-      />
-    ),
+    Cell: row => {
+      const nodeType = row?.original?.node_type ?? '';
+      if (!['host', 'container', 'container_image'].includes(nodeType)) return '';
+      return (
+        <input
+          type="checkbox"
+          defaultChecked={selections.includes(row.original.id)}
+          onChange={() => Cb(row)}
+        />
+      );
+    }
   };
   return [...cols, checkbox];
 };
