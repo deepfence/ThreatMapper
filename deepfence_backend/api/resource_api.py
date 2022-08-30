@@ -914,7 +914,7 @@ def enumerate_node_filters():
         resource_types = resource_types_str.split(",")
     resource_filters = []
     for resource_type in resource_types:
-        if resource_type not in [constants.CVE_ES_TYPE, constants.SECRET_SCAN_ES_TYPE, constants.COMPLIANCE_ES_TYPE]:
+        if resource_type not in [constants.CVE_ES_TYPE, constants.SECRET_SCAN_ES_TYPE, constants.COMPLIANCE_ES_TYPE, constants.MALWARE_SCAN_ES_TYPE]:
             print('Invalid resource_type {}. Skipping'.format(resource_type))
             continue
         if resource_type == constants.CVE_ES_TYPE:
