@@ -58,6 +58,8 @@ RUN apt-get update  \
     && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.2.1.tar.gz \
     && tar -zxf v4.2.1.tar.gz \
     && cd yara-4.2.1 \
+    && ls \
+    && pwd \
     && ./configure --prefix=/usr/local/yara --disable-dotnet --enable-magic --enable-cuckoo \
     && make \
     && make install \
