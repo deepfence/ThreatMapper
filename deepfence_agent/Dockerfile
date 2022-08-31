@@ -52,14 +52,12 @@ FROM golang:1.18.3-bullseye AS builder
 MAINTAINER DeepFence
 
 RUN apt-get update  \
-    && apt-get -qq -y --no-install-recommends install build-essential automake libtool make gcc pkg-config libssl-dev \
+    && apt-get -qq -y --no-install-recommends install build-essential autoconf automake libtool make gcc pkg-config libssl-dev git protoc-gen-go \
     libjansson-dev libmagic-dev \
     && cd /root  \
     && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.2.1.tar.gz \
     && tar -zxf v4.2.1.tar.gz \
-    && ls \
     && cd yara-4.2.1 \
-    && ls \
     && ./configure --prefix=/usr/local/yara --disable-dotnet --enable-magic --enable-cuckoo \
     && make \
     && make install \
