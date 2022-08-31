@@ -70,9 +70,9 @@ const sidebars = {
             id: 'threatmapper/cloudscanner/index'
           },
           items: [
-            'threatmapper/cloudscanner/amazon',
+            'threatmapper/cloudscanner/aws',
             'threatmapper/cloudscanner/azure',
-            'threatmapper/cloudscanner/google',
+            'threatmapper/cloudscanner/gcp',
             'threatmapper/cloudscanner/other',
            ],
         },
@@ -87,8 +87,8 @@ const sidebars = {
           items: [
             'threatmapper/sensors/kubernetes',
             'threatmapper/sensors/docker',
-            'threatmapper/sensors/amazon-ecs',
-            'threatmapper/sensors/amazon-fargate',
+            'threatmapper/sensors/aws-ecs',
+            'threatmapper/sensors/aws-fargate',
             'threatmapper/sensors/azure-aks',
             'threatmapper/sensors/google-gke',
             'threatmapper/sensors/linux-host',

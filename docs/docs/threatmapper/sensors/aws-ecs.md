@@ -1,17 +1,17 @@
 ---
-title: Amazon ECS (EC2 Provider)
+title: AWS ECS (EC2 Provider)
 ---
 
-# Amazon ECS (EC2 Provider)
+# AWS ECS (EC2 Provider)
 
 *Deployed as a daemon service using a task definition*
 
-In Amazon ECS, the ThreatStryker sensors are deployed as a daemon service using task definition.
+In AWS ECS, the ThreatStryker sensors are deployed as a daemon service using task definition.
 
 
-# Installing on Amazon ECS (EC2 Provider)
+# Installing on AWS ECS (EC2 Provider)
 
-1. Set up Amazon ECS by following the steps outlined here: [Set up to use Amazon ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/get-set-up-for-amazon-ecs.html)
+1. Set up AWS ECS by following the steps outlined here: [Set up to use AWS ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/get-set-up-for-amazon-ecs.html)
 
 2. Add the Deepfence Quay secrets provided to AWS secrets manager by following the steps outlined here: [Private registry authentication for tasks](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/private-auth.html)
 

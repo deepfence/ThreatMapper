@@ -16,7 +16,7 @@ The console allows you to:
 * Scan container registries for vulnerabilities, to review workloads before they are deployed.
 * Scan image builds during the CI/CD pipeline, supporting CircleCI, Jenkins, and GitLab.
 * Scan containers and host filesystems for unprotected secrets, including access tokens, keys and passwords.
-* Configure integrations with external notification, SIEM and ticketing systems, including Slack, PagerDuty, Jira, Splunk, ELK, Sumo Logic, and Amazon S3.
+* Configure integrations with external notification, SIEM and ticketing systems, including Slack, PagerDuty, Jira, Splunk, ELK, Sumo Logic, and AWS S3.
 ThreatMapper supports multiple production deployments simultaneously, so that you can visualize and scan workloads across a large production estate.
 
 ### ThreatMapper Compliance Posture Scanning

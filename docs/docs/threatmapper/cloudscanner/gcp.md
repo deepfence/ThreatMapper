@@ -1,5 +1,5 @@
 ---
-title: Google GCP
+title: Google Compute Platform
 ---
 
 # Configuring Cloud Scanner for Google Cloud Platform

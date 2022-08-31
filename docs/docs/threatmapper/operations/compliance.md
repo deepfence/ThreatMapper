@@ -25,14 +25,14 @@ You can test individual benchmarks, or you can combine a test (scan) to include 
 
 The benchmarks available vary by cloud provider:
 
-| Benchmark | Amazon ECS | Azure | Google GCP | Kubernetes Host | Linux Host |
-|-----------|------------|-------|------------|-----------------|------------|
-| CIS       | Y          | Y     | Y          |                 |            |
-| GDPR      | Y          |       |            | Y               | Y          |
-| HIPAA     | Y          | Y     |            | Y               | Y          |
-| PCI-DSS   | Y          |       |            | Y               | Y          |
-| SOC-2     | Y          |       |            |                 |            |
-| NIST      | Y          | Y     |            | Y               | Y          |
+| Benchmark | AWS | Azure | GCP | Kubernetes Host | Linux Host |
+|-----------|-----|-------|-----|-----------------|------------|
+| CIS       | Y   | Y     | Y   |                 |            |
+| GDPR      | Y   |       |     | Y               | Y          |
+| HIPAA     | Y   | Y     |     | Y               | Y          |
+| PCI-DSS   | Y   |       |     | Y               | Y          |
+| SOC-2     | Y   |       |     |                 |            |
+| NIST      | Y   | Y     |     | Y               | Y          |
 
 ## Start a Scan
 
