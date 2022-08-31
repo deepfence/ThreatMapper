@@ -1,14 +1,14 @@
 ---
-title: AWS ECS
+title: AWS
 ---
 
 # Configuring Cloud Scanner for Amazon Web Services
 
-Cloud Scanner is deployed as a task within your AWS ECS infrastructure. The ThreatMapper console provides a simple terraform script to perform the deployment.
+Cloud Scanner is deployed as a task within your AWS infrastructure. The ThreatMapper console provides a simple terraform script to perform the deployment.
 
-| ![Compliance Install - AWS ECS](../img/compliance-install-aws.jpg) |
+| ![Compliance Install - AWS](../img/compliance-install-aws.jpg) |
 | :--: |
-| Compliance Install - AWS ECS |
+| Compliance Install - AWS |
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
