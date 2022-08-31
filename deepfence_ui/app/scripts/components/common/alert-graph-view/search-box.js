@@ -54,6 +54,9 @@ class SearchBox extends React.Component {
             this.props.dispatch(setSearchBarValue({searchQuery: searchBoxValue}));
 
             this.updateSearchQuery(`${searchBoxValue}`);
+            this.setState({
+              searchBarValue:''
+            })
           }
         }.bind(this));
 
@@ -70,7 +73,7 @@ class SearchBox extends React.Component {
   }
 
   updateSearchQuery(filter) {
-    this.setState({searchQuery :[...this.state.searchQuery, filter]}, function stateUpdateComplete() {
+    this.setState({searchQuery :[...this.props.searchQuery, filter]}, function stateUpdateComplete() {
       this.props.dispatch(setSearchQuery({searchQuery: this.state.searchQuery}));
 
       // Filters view
