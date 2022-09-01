@@ -7,6 +7,7 @@ import os
 from utils.helper import rmdir_recursive
 from models.notification import RunningNotification
 from models.container_image_registry import RegistryCredential
+from utils.neo4j import Neo4jGraph
 
 internal_api = Blueprint("internal_api", __name__)
 
@@ -73,5 +74,20 @@ def get_registry_credential():
             raise InvalidUsage("credential not found")
         res = {"registry_type": registry_credential.registry_type, **registry_credential.credentials}
         return set_response(data=res)
+    except Exception as ex:
+        raise InternalError(str(ex))
+
+@internal_api.route("/neo4j-ingest", methods=["POST"])
+def ingest_neo4j_entry():
+    try:
+        if not request.is_json:
+            raise InvalidUsage("Missing JSON in request")
+        graph = Neo4jGraph()
+        if type(request.json) is list:
+            for entry in request.json:
+                graph.add_entry(entry)
+        else:
+            graph.add_entry(request.json)
+        return set_response(data="Ok")
     except Exception as ex:
         raise InternalError(str(ex))
