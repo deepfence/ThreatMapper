@@ -12,7 +12,7 @@ export const Example = () => {
 
   return (
     <div>
-      <h1 className="bg-red-500 dark:bg-green-300">{data?.name}</h1>
+      <h1>UserId: {data?.userId}</h1>
       <div className="p-9">
         <Checkbox />
       </div>

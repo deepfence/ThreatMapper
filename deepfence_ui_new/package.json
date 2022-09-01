@@ -16,7 +16,8 @@
     "build-storybook": "build-storybook",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "playwright": "npx playwright test"
+    "playwright": "npx playwright test",
+    "playwright:debug": "npx playwright test --debug"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.0",

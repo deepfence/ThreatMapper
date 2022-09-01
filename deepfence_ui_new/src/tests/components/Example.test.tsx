@@ -22,13 +22,13 @@ describe('example component', () => {
         return res(
           ctx.status(200),
           ctx.json({
-            name: 'query',
+            userId: 1,
           }),
         );
       }),
     );
 
     const { findByText } = renderWithClient(<Example />);
-    expect(await findByText(/query/i)).toBeDefined();
+    expect(await findByText(/userid: 1/i)).toBeDefined();
   });
 });
