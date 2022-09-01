@@ -69,8 +69,6 @@ COPY --from=malware_build /usr/local/yara /usr/local/yara
 
 RUN mkdir -p /home/deepfence/bin/yara-hunter \
     && apt-get update && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \
-    && RUN cd /usr/local/ \
-    && tar -xzf yara.tar.gz \
     && rm -rf /usr/local/bin/compliance_check/*.go \
     && chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
