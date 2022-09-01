@@ -54,6 +54,7 @@ COPY --from=malware_build  /home/deepfence/usr/YaRadare /home/deepfence/usr/YaRa
 COPY --from=malware_build  /home/deepfence/rules /home/deepfence/rules
 COPY --from=malware_build /home/deepfence/usr/config.yaml /home/deepfence/usr/yara-hunter/config.yaml
 COPY --from=malware_build /usr/local/yara /usr/local/yara
+COPY --from=malware_build /usr/local/yara/lib /usr/local/lib
 
 
 
