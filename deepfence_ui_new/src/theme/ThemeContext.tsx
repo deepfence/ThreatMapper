@@ -50,22 +50,29 @@ export const useThemeMode = (
     if (!mode) {
       return;
     }
-
     document.documentElement.classList.toggle('dark');
-
-    savePreference(mode);
-    setMode(mode == 'dark' ? 'light' : 'dark');
+    const newPreference = mode == 'dark' ? 'light' : 'dark';
+    setMode(newPreference);
+    savePreference(newPreference);
   };
 
   if (usePreferences) {
     useEffect(() => {
+      // check system theme
       const userPreference =
         !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const userMode =
-        localStorage.getItem('theme') || (userPreference ? 'dark' : 'light');
+      /**
+       * Check user had applied theme choice, if so set the theme otherwise set system preference theme.
+       */
+      const userAppliedTheme = localStorage.getItem('theme');
 
-      if (userMode) {
-        setMode(userMode);
+      if (!userAppliedTheme) {
+        const userMode = userPreference ? 'dark' : 'light';
+        if (userMode) {
+          setMode(userMode);
+        }
+      } else {
+        setMode(userAppliedTheme);
       }
     }, []);
 
@@ -73,9 +80,6 @@ export const useThemeMode = (
       if (!mode) {
         return;
       }
-
-      savePreference(mode);
-
       if (mode != 'dark') {
         document.documentElement.classList.remove('dark');
       } else {

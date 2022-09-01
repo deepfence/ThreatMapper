@@ -20,6 +20,7 @@ export const Example = () => {
         onClick={() => {
           toggleMode?.();
         }}
+        className="bg-teal-600 dark:bg-slate-300"
       >
         toggle theme
       </button>
