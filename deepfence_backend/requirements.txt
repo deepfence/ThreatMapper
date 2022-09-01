@@ -46,3 +46,4 @@ croniter==1.3.5
 pdfkit==1.0.0
 jsonschema==4.5.1
 networkx==2.8.2
+py2neo==2021.2.3

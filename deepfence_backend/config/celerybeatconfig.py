@@ -51,7 +51,7 @@ beat_schedule = {
     },
     'compute_threat_graph': {
         'task': 'tasks.threat_graph.compute_threat_graph',
-        'schedule': timedelta(minutes=5),
+        'schedule': timedelta(minutes=1),
         'args': [],
         'relative': False,
     },

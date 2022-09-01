@@ -1252,6 +1252,22 @@ func processResourceNode(docs []CloudComplianceDoc) {
 	}
 }
 
+func send_to_neo4j(json []byte) error {
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", "http://deepfence-api:9997/neo4j-ingest", bytes.NewBuffer(json))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	_, err = ioutil.ReadAll(resp.Body)
+	return err
+}
+
 func ingest(respWrite http.ResponseWriter, req *http.Request) {
 	// Send data to elasticsearch
 	defer req.Body.Close()
@@ -1267,6 +1283,7 @@ func ingest(respWrite http.ResponseWriter, req *http.Request) {
 	docType := req.URL.Query().Get("doc_type")
 	docType = convertRootESIndexToCustomerSpecificESIndex(docType)
 	go ingestInBackground(docType, body)
+	go send_to_neo4j(body)
 	respWrite.WriteHeader(http.StatusOK)
 	fmt.Fprintf(respWrite, "Ok")
 }

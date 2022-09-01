@@ -273,6 +273,29 @@ services:
       options:
         max-size: "1g"
 
+  neo4j-db:
+    container_name: neo4j-db
+    image: neo4j:latest
+    ulimits:
+      core: 0
+    restart: on-failure
+    tmpfs:
+      - /tmp
+    networks:
+      - deepfence_net
+    volumes:
+      - deepfence_neo4j_data:/data:rw
+    ports:
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4JLABS_PLUGINS=["apoc"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
   deepfence-celery:
     container_name: deepfence-celery
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.1}
@@ -367,7 +390,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-        
+
   deepfence-package-scanner:
     container_name: deepfence-package-scanner
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-1.4.1}
@@ -389,6 +412,8 @@ services:
 
 volumes:
   deepfence_data:
+    driver: local
+  deepfence_neo4j_data:
     driver: local
 
 networks:
