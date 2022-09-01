@@ -48,16 +48,6 @@ COPY create_cgroups.sh /home/deepfence/created-cgroups.sh
 COPY plugins/docker_bin /home/deepfence/bin
 
 
-FROM golang:1.18.3-bullseye AS builder
-MAINTAINER DeepFence
-
-RUN apt-get update  \
-    && apt-get -qq -y --no-install-recommends install build-essential automake libtool make gcc pkg-config libssl-dev git protoc-gen-go \
-    libjansson-dev libmagic-dev 
-
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1 \
-    && go install    google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0
-
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=malware_build  /home/deepfence/usr/YaRadare /home/deepfence/usr/YaRadare
