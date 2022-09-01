@@ -52,18 +52,8 @@ FROM golang:1.18.3-bullseye AS builder
 MAINTAINER DeepFence
 
 RUN apt-get update  \
-    && apt-get -qq -y --no-install-recommends install build-essential autoconf automake libtool make gcc pkg-config libssl-dev git protoc-gen-go \
-    libjansson-dev libmagic-dev \
-    && cd /root  \
-    && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.2.1.tar.gz \
-    && tar -zxf v4.2.1.tar.gz \
-    && cd yara-4.2.1 \
-    && autoconf \
-    && ./configure --prefix=/usr/local/yara --disable-dotnet --enable-magic --enable-cuckoo \
-    && make \
-    && make install \
-    && cd /usr/local/ \
-    && tar -czf yara.tar.gz yara
+    && apt-get -qq -y --no-install-recommends install build-essential automake libtool make gcc pkg-config libssl-dev git protoc-gen-go \
+    libjansson-dev libmagic-dev 
 
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1 \
     && go install    google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0
@@ -73,10 +63,12 @@ COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=malware_build  /home/deepfence/usr/YaRadare /home/deepfence/usr/YaRadare
 COPY --from=malware_build  /home/deepfence/rules /home/deepfence/rules
 COPY --from=malware_build /home/deepfence/usr/config.yaml /home/deepfence/usr/yara-hunter/config.yaml
+COPY --from=malware_build /usr/local/yara /usr/local/yara
 
 
 
 RUN mkdir -p /home/deepfence/bin/yara-hunter \
+    && apt-get update && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \
     && RUN cd /usr/local/ \
     && tar -xzf yara.tar.gz \
     && rm -rf /usr/local/bin/compliance_check/*.go \
