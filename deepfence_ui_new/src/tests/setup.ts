@@ -1,7 +1,11 @@
+import ResizeObserver from 'resize-observer-polyfill';
 import 'whatwg-fetch';
 
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll } from 'vitest';
+
+// fix error of: ReferenceError: ResizeObserver is not defined
+global.ResizeObserver = ResizeObserver;
 
 import { handlers } from './utils';
 
