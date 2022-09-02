@@ -55,11 +55,11 @@ const RadioItem: FC<ItemProps> = (props) => {
           'cursor-pointer': !disabled,
         })}
         onClick={() => {
-          // always focus when click on label
+          // always focus radio button when click on label
           if (onValueChange && !disabled) {
             buttonRef?.current?.focus();
           }
-          // value !== selected is to avoid callback when click the same label again and again
+          // value !== selected is to avoid onChange when click on the same label multiple times
           if (onValueChange && !disabled && value !== selected) {
             onValueChange(value);
           }
@@ -104,6 +104,6 @@ const Radio: FC<Props> = (props) => {
   );
 };
 
-Radio.displayName = 'RadioGroup';
+Radio.displayName = 'Radio';
 
 export default Radio;
