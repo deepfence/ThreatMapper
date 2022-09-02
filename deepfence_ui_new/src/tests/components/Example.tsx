@@ -33,7 +33,7 @@ export const Example = () => {
       >
         <div title="Radio Group" className="p-4 dark:bg-gray-900">
           <Radio
-            defaultValue="test1"
+            defaultValue="test2"
             onValueChange={(val) => console.log('Radio selected value:', val)}
             name="test1"
             required

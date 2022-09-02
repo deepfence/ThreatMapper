@@ -55,9 +55,12 @@ const RadioItem: FC<ItemProps> = (props) => {
           'cursor-pointer': !disabled,
         })}
         onClick={() => {
+          // always focus when click on label
+          if (onValueChange && !disabled) {
+            buttonRef?.current?.focus();
+          }
           // value !== selected is to avoid callback when click the same label again and again
           if (onValueChange && !disabled && value !== selected) {
-            buttonRef?.current?.focus();
             onValueChange(value);
           }
         }}
@@ -69,7 +72,7 @@ const RadioItem: FC<ItemProps> = (props) => {
 };
 
 const Radio: FC<Props> = (props) => {
-  const { options, name, value, onValueChange, ...rest } = props;
+  const { options, name, defaultValue, onValueChange, ...rest } = props;
   const [selected, setSelected] = useState('');
 
   const onChange = (value: string) => {
@@ -80,7 +83,7 @@ const Radio: FC<Props> = (props) => {
     <RadioGroupPrimitive.Root
       onValueChange={onChange}
       data-testid={`radio-group-${name}`}
-      value={selected}
+      value={selected || defaultValue}
       {...rest}
       className="flex flex-col space-y-2"
     >
