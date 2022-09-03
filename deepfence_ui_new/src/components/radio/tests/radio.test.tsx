@@ -43,7 +43,7 @@ describe(`Component Radio`, () => {
     const { getByTestId } = renderWithClient(
       <Radio name="test" options={radioOptions} />,
     );
-    const firstRadio = getByTestId('radio-item-value1');
+    const firstRadio = getByTestId('radio-item-r1');
     expect(firstRadio).toBeDisabled();
   });
 });

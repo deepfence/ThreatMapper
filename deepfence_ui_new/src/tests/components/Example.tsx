@@ -1,5 +1,4 @@
 import { Checkbox } from '../../components/checkbox/Checkbox';
-import Radio from '../../components/radio/Radio';
 import { useTheme } from '../../theme/ThemeContext';
 import { useRepoData } from './hooks';
 
@@ -32,28 +31,7 @@ export const Example = () => {
         }}
       >
         <div title="Radio Group" className="p-4 dark:bg-gray-900">
-          <Radio
-            defaultValue="test2"
-            onValueChange={(val) => console.log('Radio selected value:', val)}
-            name="test1"
-            required
-            options={[
-              {
-                value: 'test1',
-                label: 'Test 1',
-                disabled: true,
-              },
-              {
-                label: 'Test 2',
-                value: 'test2',
-              },
-              {
-                label: 'Test 3',
-                value: 'test3',
-              },
-            ]}
-          ></Radio>
-          <button>submit</button>
+          Your test component
         </div>
       </form>
     </div>
