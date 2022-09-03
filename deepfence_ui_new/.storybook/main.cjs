@@ -12,6 +12,7 @@ module.exports = {
         },
       },
     },
+    '@storybook/addon-a11y',
     'storybook-dark-mode',
   ],
   framework: '@storybook/react',
