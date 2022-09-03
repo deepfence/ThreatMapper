@@ -56,8 +56,27 @@ DefaultSelected.args = {
   defaultValue: 'apple',
   options: [
     {
-      label: 'Disabled',
-      value: 'disabled',
+      label: 'Mango',
+      value: 'mango',
+    },
+    {
+      label: 'Apple',
+      value: 'apple',
+    },
+    {
+      label: 'Kiwi',
+      value: 'kiwi',
+    },
+  ],
+};
+export const RowRadio = Template.bind({});
+RowRadio.args = {
+  name: 'Fruits',
+  direction: 'row',
+  options: [
+    {
+      label: 'Mango',
+      value: 'Mango',
     },
     {
       label: 'Apple',

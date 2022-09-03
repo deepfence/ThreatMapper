@@ -4,12 +4,23 @@ import { RadioGroupProps } from '@radix-ui/react-radio-group';
 import cx from 'classnames';
 import { FC, useState } from 'react';
 
+type Direction = 'col' | 'row';
 type Props = RadioGroupProps & {
+  direction?: Direction;
   options: { value: string; label: string; disabled?: boolean; id?: string }[];
 };
 
+const isRow = (direction: Direction) => direction === 'row';
+
 const Radio: FC<Props> = (props) => {
-  const { options, name, defaultValue, onValueChange, ...rest } = props;
+  const {
+    options,
+    name,
+    direction = 'col',
+    defaultValue,
+    onValueChange,
+    ...rest
+  } = props;
   const [selected, setSelected] = useState(defaultValue);
 
   const onChange = (value: string) => {
@@ -22,7 +33,10 @@ const Radio: FC<Props> = (props) => {
       onValueChange={onChange}
       data-testid={`radio-group-${name}`}
       value={selected}
-      className="space-y-2"
+      className={cx({
+        'flex flex-col space-y-2': !isRow(direction),
+        'flex flex-row space-x-2': isRow(direction),
+      })}
       {...rest}
     >
       {options.map((option) => {
