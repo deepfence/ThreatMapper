@@ -1,3 +1,4 @@
+import { themes } from '@storybook/theming';
 import '../src/index.css'; // import tailwind styles
 
 export const parameters = {
@@ -8,33 +9,11 @@ export const parameters = {
       date: /Date$/,
     },
   },
-  themes: {
-    clearable: false,
-    list: [
-      {
-        name: 'Light',
-        class: [],
-        color: '#F9FAFB', // gray-50
-        default: true,
-      },
-      {
-        name: 'Dark',
-        class: ['dark'],
-        color: '#111928', // gray-900
-      },
-    ],
-  },
-  backgrounds: {
-    default: 'Light',
-    values: [
-      {
-        name: 'Light',
-        value: '#F9FAFB', // gray-50
-      },
-      {
-        name: 'Dark',
-        value: '#111928', // gray-900
-      },
-    ],
+  darkMode: {
+    darkClass: 'dark',
+    classTarget: 'html',
+    stylePreview: true,
+    dark: { ...themes.dark, appContentBg: '#111928' },
+    light: { ...themes.normal, appContentBg: '#F9FAFB' },
   },
 };
