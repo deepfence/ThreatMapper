@@ -68,9 +68,16 @@ func processCompliance(compliance []byte, bulkp *elastic.BulkProcessor) {
 	docId := fmt.Sprintf("%x", md5.Sum([]byte(doc.ScanId+doc.TestNumber)))
 	doc.DocId = docId
 
-	bulkp.Add(elastic.NewBulkUpdateRequest().Index(complianceScanIndexName).
-		Id(docId).Script(elastic.NewScriptStored("default_upsert").Param("event", doc)).
-		Upsert(doc).ScriptedUpsert(true).RetryOnConflict(3))
+	event, err := json.Marshal(doc)
+	if err != nil {
+		log.Errorf("error marshal updated compliance data: %s", err)
+		return
+	} else {
+		bulkp.Add(elastic.NewBulkUpdateRequest().Index(complianceScanIndexName).
+			Id(docId).Script(elastic.NewScriptStored("default_upsert").Param("event", doc)).
+			Upsert(doc).ScriptedUpsert(true).RetryOnConflict(3))
+		complianceTaskQueue <- event
+	}
 }
 
 func processCloudCompliance(compliance []byte, bulkp *elastic.BulkProcessor) {
@@ -84,7 +91,14 @@ func processCloudCompliance(compliance []byte, bulkp *elastic.BulkProcessor) {
 	docId := fmt.Sprintf("%x", md5.Sum([]byte(doc.ScanID+doc.ControlID+doc.Resource+doc.Group)))
 	doc.DocId = docId
 
-	bulkp.Add(elastic.NewBulkUpdateRequest().Index(cloudComplianceScanIndexName).
-		Id(docId).Script(elastic.NewScriptStored("default_upsert").Param("event", doc)).
-		Upsert(doc).ScriptedUpsert(true).RetryOnConflict(3))
+	event, err := json.Marshal(doc)
+	if err != nil {
+		log.Errorf("error marshal updated compliance data: %s", err)
+		return
+	} else {
+		bulkp.Add(elastic.NewBulkUpdateRequest().Index(cloudComplianceScanIndexName).
+			Id(docId).Script(elastic.NewScriptStored("default_upsert").Param("event", doc)).
+			Upsert(doc).ScriptedUpsert(true).RetryOnConflict(3))
+		complianceTaskQueue <- event
+	}
 }

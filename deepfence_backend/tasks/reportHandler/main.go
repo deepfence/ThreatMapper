@@ -27,6 +27,7 @@ import (
 
 type NotificationSettings struct {
 	vulnerabilityNotificationsSet bool
+	complianceNotificationsSet    bool
 	sync.RWMutex
 }
 
@@ -36,6 +37,7 @@ var (
 	pgDB                   *sqlx.DB
 	redisAddr              string
 	vulnerabilityTaskQueue chan []byte
+	complianceTaskQueue    chan []byte
 	celeryCli              *gocelery.CeleryClient
 	notificationSettings   NotificationSettings
 	esClient               *elastic.Client
@@ -110,8 +112,10 @@ func init() {
 		}
 	}
 	vulnerabilityTaskQueue = make(chan []byte, 10000)
+	complianceTaskQueue = make(chan []byte, 10000)
 	notificationSettings = NotificationSettings{
 		vulnerabilityNotificationsSet: false,
+		complianceNotificationsSet:    false,
 	}
 
 	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
@@ -247,6 +251,7 @@ func main() {
 	}
 	go syncPoliciesAndNotifications()
 	go batchMessages(ctx, resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
+	go batchMessages(ctx, resourceTypeCompliance, &complianceTaskQueue, 100)
 
 	// load cve's from db
 	maskedCVELock.Lock()

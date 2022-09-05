@@ -16,6 +16,7 @@ import (
 
 const (
 	resourceTypeVulnerability = "vulnerability"
+	resourceTypeCompliance    = "compliance"
 	celeryNotificationTask    = "tasks.notification_worker.notification_task"
 )
 
