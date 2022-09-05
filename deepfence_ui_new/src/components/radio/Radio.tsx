@@ -54,7 +54,7 @@ const Radio: FC<Props> = (props) => {
                 className={cx(
                   'rounded-full py-2 w-4 h-4',
                   'radix-state-checked:bg-blue-600 dark:radix-state-checked:bg-blue-600',
-                  'focus:ring-2 focus:ring-blue-200 dark:focus:ring-2 dark:focus:ring-blue-800',
+                  'focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-2 dark:focus:ring-blue-800',
                   'radix-state-unchecked:ring-1 ring-gray-300 bg-gray-50 dark:radix-state-unchecked:ring-1 dark:ring-gray-600 dark:bg-gray-700',
                   'radix-state-disabled:pointer-events-none',
                   'disabled:cursor-not-allowed',

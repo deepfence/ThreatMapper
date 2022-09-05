@@ -4,6 +4,8 @@ import cx from 'classnames';
 import React, { useId } from 'react';
 import { FaCheck } from 'react-icons/fa';
 
+import { Typography } from '../typography/Typography';
+
 export type CheckboxProps = CheckboxPrimitive.CheckboxProps & {
   label?: string;
 };
@@ -32,7 +34,11 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       {label?.length ? (
         <LabelPrimitive.Label
           htmlFor={id ?? internalId}
-          className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400 cursor-default"
+          className={cx(
+            Typography.size.xs,
+            Typography.weight.normal,
+            'ml-2 text-gray-500 dark:text-gray-400 cursor-default',
+          )}
         >
           {label}
         </LabelPrimitive.Label>
