@@ -44,7 +44,6 @@ const Switch = (props: SwitchProps) => {
             'pl-2 text-xs font-normal text-gray-500 dark:text-gray-400 cursor-default',
             {
               'cursor-not-allowed': disabled,
-              'cursor-pointer': !disabled,
             },
           )}
         >
