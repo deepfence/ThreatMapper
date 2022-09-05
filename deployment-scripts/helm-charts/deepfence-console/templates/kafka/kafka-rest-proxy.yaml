@@ -8,7 +8,7 @@ metadata:
     app: deepfence-console
     {{- include "deepfence-console.labels" . | nindent 4 }}
     name: deepfence-rest-proxy
-  namespace: {{ .Release.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   serviceName: deepfence-rest-proxy
   replicas: {{ .Values.kafkaRestProxy.replicaCount }}
@@ -75,7 +75,7 @@ metadata:
   labels:
     app: deepfence-console
     {{- include "deepfence-console.labels" . | nindent 4 }}
-  namespace: {{ .Release.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   type: ClusterIP
   selector:
