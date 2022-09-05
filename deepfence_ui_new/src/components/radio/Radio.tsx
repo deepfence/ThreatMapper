@@ -7,7 +7,7 @@ import { FC, useState } from 'react';
 type Direction = 'col' | 'row';
 type Props = RadioGroupProps & {
   direction?: Direction;
-  options: { value: string; label: string; disabled?: boolean; id?: string }[];
+  options: { value: string; label: string; disabled?: boolean; id?: string | number }[];
 };
 
 const isRow = (direction: Direction) => direction === 'row';
@@ -47,15 +47,15 @@ const Radio: FC<Props> = (props) => {
           return (
             <div key={_id} className="flex items-center">
               <RadioGroupPrimitive.Item
-                id={_id}
+                id={_id + ''}
                 value={value}
                 data-testid={`radio-item-${_id}`}
                 disabled={disabled}
                 className={cx(
                   'rounded-full py-2 w-4 h-4',
                   'radix-state-checked:bg-blue-600 dark:radix-state-checked:bg-blue-600',
-                  'focus:ring-4 focus:ring-blue-200 dark:focus:ring-4 dark:focus:ring-blue-800',
-                  'radix-state-unchecked:bg-gray-50 ring-1 ring-gray-300 dark:radix-state-unchecked:ring-1 dark:ring-gray-600 dark:bg-gray-700',
+                  'focus:ring-2 focus:ring-blue-200 dark:focus:ring-2 dark:focus:ring-blue-800',
+                  'radix-state-unchecked:ring-1 ring-gray-300 bg-gray-50 dark:radix-state-unchecked:ring-1 dark:ring-gray-600 dark:bg-gray-700',
                   'radix-state-disabled:pointer-events-none',
                   'disabled:cursor-not-allowed',
                 )}
@@ -73,8 +73,8 @@ const Radio: FC<Props> = (props) => {
                 />
               </RadioGroupPrimitive.Item>
               <Label
-                htmlFor={_id}
-                className={cx('px-2 text-gray-500 text-xs', {
+                htmlFor={_id + ''}
+                className={cx('px-2 text-gray-500 text-xs dark:text-gray-400', {
                   'cursor-not-allowed': disabled,
                   'cursor-pointer': !disabled,
                 })}
