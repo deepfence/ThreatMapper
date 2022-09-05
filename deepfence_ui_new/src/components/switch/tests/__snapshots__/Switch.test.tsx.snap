@@ -1,0 +1,102 @@
+// Vitest Snapshot v1
+
+exports[`Component Switch > render switch without label 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="flex items-center"
+      >
+        <button
+          aria-checked="false"
+          class="group items-center radix-state-checked:bg-blue-600 radix-state-unchecked:bg-gray-200 dark:radix-state-unchecked:bg-gray-600 relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-[40px] transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 disabled:cursor-not-allowed"
+          data-state="unchecked"
+          data-testid="switch-:r0:"
+          id=":r0:"
+          role="switch"
+          type="button"
+          value="on"
+        >
+          <span
+            class="group-radix-state-checked:translate-x-[1.125rem] group-radix-state-unchecked:ring-1 ring-blue-200 translate-x-[0.125rem] dark:group-radix-state-unchecked:ring-0 pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out dark:group-radix-state-unchecked:bg-gray-400 dark:group-radix-state-checked: bg-white"
+            data-state="unchecked"
+          />
+        </button>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="flex items-center"
+    >
+      <button
+        aria-checked="false"
+        class="group items-center radix-state-checked:bg-blue-600 radix-state-unchecked:bg-gray-200 dark:radix-state-unchecked:bg-gray-600 relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-[40px] transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 disabled:cursor-not-allowed"
+        data-state="unchecked"
+        data-testid="switch-:r0:"
+        id=":r0:"
+        role="switch"
+        type="button"
+        value="on"
+      >
+        <span
+          class="group-radix-state-checked:translate-x-[1.125rem] group-radix-state-unchecked:ring-1 ring-blue-200 translate-x-[0.125rem] dark:group-radix-state-unchecked:ring-0 pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out dark:group-radix-state-unchecked:bg-gray-400 dark:group-radix-state-checked: bg-white"
+          data-state="unchecked"
+        />
+      </button>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
