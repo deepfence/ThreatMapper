@@ -57,8 +57,10 @@ const sidebars = {
           items: [
             'threatmapper/console/docker',
             'threatmapper/console/kubernetes',
+            'threatmapper/console/managed-database',
             'threatmapper/console/initial-configuration',
             'threatmapper/console/manage-users',
+            'threatmapper/console/database-export-import',
           ],
         },
 
