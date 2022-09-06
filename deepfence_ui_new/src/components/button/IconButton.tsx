@@ -38,8 +38,7 @@ const IconButton = forwardRef<HTMLButtonElement, Props>(
         className={cx(
           'flex flex-row items-center justify-center',
           `${classes.size[size]}`,
-          'rounded-full',
-          'focus:outline-none select-none',
+          'rounded-full focus:outline-none select-none',
           {
             [classes.color.primary]: color === 'primary' && !outline,
             [classes.outline.primary]: outline && color === 'primary',
