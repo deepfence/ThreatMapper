@@ -140,6 +140,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
+	log.Info("started conrext background",context.Background(), req)
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	if req.GetPath() != "" && err == nil && res != nil {
 		if scanDir == HostMountDir {
