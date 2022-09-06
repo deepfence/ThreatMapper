@@ -19,6 +19,7 @@ import (
 
 	"github.com/Jeffail/tunny"
 	"github.com/weaveworks/scope/common/xfer"
+	log "github.com/sirupsen/logrus"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 )
