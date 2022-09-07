@@ -73,7 +73,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           'flex flex-row items-center justify-center',
           `${Typography.weight.medium}`,
           `${classes.size[size]}`,
-          'rounded-lg focus:outline-none',
+          'rounded-lg focus:outline-none select-none',
           {
             [classes.color.primary]: color === 'primary' && !outline,
             [classes.outline.primary]: outline && color === 'primary',
