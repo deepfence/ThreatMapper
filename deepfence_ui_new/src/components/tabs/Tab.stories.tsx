@@ -54,7 +54,9 @@ const WithContent = () => {
   const [tab, setTab] = useState('tab1');
   return (
     <Tab value={tab} defaultValue={tab} tabs={tabs2} onValueChange={(v) => setTab(v)}>
-      You are now on {tabs2.find((t) => t.value === tab)?.label}
+      <div className="h-full p-2 dark:text-white">
+        You are now on {tabs2.find((t) => t.value === tab)?.label}
+      </div>
     </Tab>
   );
 };
