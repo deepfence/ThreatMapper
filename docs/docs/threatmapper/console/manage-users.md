@@ -49,14 +49,14 @@ If the 'App Password' facility is not available, please refer to your Google Wor
 
 Copy the password that has been generated, and enter it into **App Password** field.  Save settings.
 
-### Configuring Amazon SES
+### Configuring AWS SES
 
 :::info
 For more information, see [Using Amazon Simple Email Service](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email.html).
 :::
 
  * Provide an email address to identify the email sender
- * Specify an [Amazon SES Region](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html)
+ * Specify an [AWS SES Region](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html)
  * Provide the Access and Secret keys (see here: [Programmatic Access](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys))
 
 Save the email configuration.

@@ -63,7 +63,7 @@ ThreatMapper consists of two components:
 
 ### The Management Console
 
-You [deploy the Management Console first](https://docs.deepfence.io/threatmapper/console/), on a suitable docker host or Kubernetes cluster.  For example, on Docker:
+You [deploy the Management Console first](https://community.deepfence.io/docs/threatmapper/console/), on a suitable docker host or Kubernetes cluster.  For example, on Docker:
 
 ```shell script
 # Docker installation process for ThreatMapper Management Console

@@ -1,10 +1,10 @@
 ---
-title: Amazon Fargate
+title: AWS Fargate
 ---
 
-# Amazon Fargate
+# AWS Fargate
 
-On Amazon Fargate, the ThreatMapper sensor agents are deployed as a sidecar container, using a task definition. 
+On AWS Fargate, the ThreatMapper sensor agents are deployed as a sidecar container, using a task definition. 
 
 :::danger
 

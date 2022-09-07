@@ -21,7 +21,6 @@ const sidebars = {
     },
 
     'threatmapper/index',
-    'threatmapper/threatgraph',
 
     {
       type: 'category',
@@ -35,7 +34,7 @@ const sidebars = {
         'threatmapper/architecture/cloudscanner',
         'threatmapper/architecture/sensors',
         'threatmapper/architecture/requirements',
-
+        'threatmapper/architecture/threatgraph',
       ],
     },
     'threatmapper/demo',
@@ -58,8 +57,10 @@ const sidebars = {
           items: [
             'threatmapper/console/docker',
             'threatmapper/console/kubernetes',
+            'threatmapper/console/managed-database',
             'threatmapper/console/initial-configuration',
             'threatmapper/console/manage-users',
+            'threatmapper/console/database-export-import',
           ],
         },
 
@@ -71,9 +72,9 @@ const sidebars = {
             id: 'threatmapper/cloudscanner/index'
           },
           items: [
-            'threatmapper/cloudscanner/amazon',
+            'threatmapper/cloudscanner/aws',
             'threatmapper/cloudscanner/azure',
-            'threatmapper/cloudscanner/google',
+            'threatmapper/cloudscanner/gcp',
             'threatmapper/cloudscanner/other',
            ],
         },
@@ -88,8 +89,8 @@ const sidebars = {
           items: [
             'threatmapper/sensors/kubernetes',
             'threatmapper/sensors/docker',
-            'threatmapper/sensors/amazon-ecs',
-            'threatmapper/sensors/amazon-fargate',
+            'threatmapper/sensors/aws-ecs',
+            'threatmapper/sensors/aws-fargate',
             'threatmapper/sensors/azure-aks',
             'threatmapper/sensors/google-gke',
             'threatmapper/sensors/linux-host',
