@@ -2196,6 +2196,19 @@ export function deleteScans(params = {}) {
   }).then(errorHandler);
 }
 
+export function stopCSPMScan(params = {}) {
+  const { scan_id } = params
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance/stop_scan/${scan_id}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function getUserAuditLog(params = {}) {
   const url = `${backendElasticApiEndPoint()}/user-activity-log`;
   return fetch(url, {

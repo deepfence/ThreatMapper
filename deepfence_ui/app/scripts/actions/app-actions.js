@@ -115,7 +115,8 @@ import {
   getServicesForCloudAccount,
   getAttackGraphData,
   getAttackGraphNodeInfo,
-  refreshCloudComplianceResources
+  refreshCloudComplianceResources,
+  stopCSPMScan
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1686,6 +1687,15 @@ export function deleteScanActions(params) {
     ActionTypes.DELETE_SCAN_FAILURE,
   ];
   return genericThunkAction(actionTypes, deleteScans, params);
+}
+
+export function stopCSPMScanAction(params) {
+  const actionTypes = [
+    ActionTypes.STOP_CSPM_SCAN_REQUEST,
+    ActionTypes.STOP_CSPM_SCAN_SUCCESS,
+    ActionTypes.STOP_CSPM_SCAN_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, stopCSPMScan, params);
 }
 
 export function userUpdateViewClearAction() {

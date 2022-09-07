@@ -6,6 +6,7 @@ import {
   showModal,
   deleteScanActions,
   toaster,
+  stopCSPMScanAction,
 } from '../../actions/app-actions';
 import NotificationToaster from '../common/notification-toaster/notification-toaster';
 
@@ -40,6 +41,20 @@ class HostReportRowDetail extends React.PureComponent {
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
       onConfirmButtonClick: () => this.deleteScanActions(scanId),
+      contentStyles: {
+        width: '375px',
+      },
+    };
+    this.props.dispatch(showModal('DIALOG_MODAL', params));
+  }
+
+  handleStopScanDialog(scanId) {
+    const params = {
+      dialogTitle: 'Stop Scan ?',
+      dialogBody: 'Are you sure you want to stop this scan?',
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      onConfirmButtonClick: () => this.stopScanActions(scanId),
       contentStyles: {
         width: '375px',
       },
@@ -84,6 +99,30 @@ class HostReportRowDetail extends React.PureComponent {
     };
     return this.props
       .dispatch(deleteScanActions(params))
+      .then(successHandler, apiErrorHandler);
+  }
+
+  stopScanActions(scanId) {
+    const params = {
+      scan_id: scanId,
+      doc_type: 'compliance',
+      time_unit: 'all',
+      number: '0',
+    };
+    const successHandler = response => {
+      const { success, error: apiError } = response;
+      if (success) {
+        this.props.dispatch(toaster('Stopping scan'));
+        setTimeout(this.props.onDelete, 2000);
+      } else {
+        this.props.dispatch(toaster(`ERROR: ${apiError.message}`));
+      }
+    };
+    const apiErrorHandler = () => {
+      this.props.dispatch(toaster('Something went wrong'));
+    };
+    return this.props
+      .dispatch(stopCSPMScanAction(params))
       .then(successHandler, apiErrorHandler);
   }
 
@@ -157,7 +196,8 @@ class HostReportRowDetail extends React.PureComponent {
             ...testValueColumns,
             {
               Header: '',
-              maxWidth: 60,
+              maxWidth: 120,
+              minWidth: 100,
               accessor: 'scan_id',
               Cell: cell => (
                 <div>
@@ -171,9 +211,17 @@ class HostReportRowDetail extends React.PureComponent {
                   />
                   <i
                     className="fa fa-trash-o red cursor"
+                    style={{ marginRight: '10px' }}
                     onClick={e => {
                       e.stopPropagation();
                       this.handleDeleteDialogScans(cell.value);
+                    }}
+                  />
+                  <i
+                    className="fa fa-ban red"
+                    onClick={e => {
+                      e.stopPropagation();
+                      this.handleStopScanDialog(cell.value);
                     }}
                   />
                 </div>
