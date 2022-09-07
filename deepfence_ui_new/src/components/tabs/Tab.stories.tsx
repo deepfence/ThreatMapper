@@ -1,4 +1,5 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { useState } from 'react';
 import { FaAdn, FaAffiliatetheme, FaAirbnb } from 'react-icons/fa';
 
 import Tab from './Tabs';
@@ -32,47 +33,29 @@ Default.args = {
   tabs,
 };
 
-export const WithIcon = Template.bind({});
-WithIcon.args = {
-  tabs: [
-    {
-      label: 'Tab One',
-      value: 'Tab1',
-      icon: <FaAdn />,
-    },
-    {
-      label: 'Tab Two',
-      value: 'Tab2',
-      icon: <FaAffiliatetheme />,
-    },
-    {
-      label: 'Tab Three',
-      value: 'Tab3',
-      icon: <FaAirbnb />,
-    },
-  ],
+const tabs2 = [
+  {
+    label: 'Tab One',
+    value: 'tab1',
+    icon: <FaAdn />,
+  },
+  {
+    label: 'Tab Two',
+    value: 'tab2',
+    icon: <FaAffiliatetheme />,
+  },
+  {
+    label: 'Tab Three',
+    value: 'tab3',
+    icon: <FaAirbnb />,
+  },
+];
+const WithContent = () => {
+  const [tab, setTab] = useState('tab1');
+  return (
+    <Tab value={tab} defaultValue={tab} tabs={tabs2} onValueChange={(v) => setTab(v)}>
+      You are now on {tabs2.find((t) => t.value === tab)?.label}
+    </Tab>
+  );
 };
-
-export const WithContent = Template.bind({});
-WithContent.args = {
-  tabs: [
-    {
-      label: 'Tab One',
-      value: 'Tab1',
-      icon: <FaAdn />,
-    },
-    {
-      label: 'Tab Two',
-      value: 'Tab2',
-      icon: <FaAffiliatetheme />,
-    },
-    {
-      label: 'Tab Three',
-      value: 'Tab3',
-      icon: <FaAirbnb />,
-    },
-  ],
-  value: 'tab1',
-  defaultValue: 'tab1',
-  children: 'This is dummy content. Place your tab component base on your click.',
-};
+export const TabWithContent = WithContent.bind({});
