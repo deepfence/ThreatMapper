@@ -54,28 +54,15 @@ WithStartAndEndIcon.args = {
   endIcon: <AiOutlineCheck />,
 };
 
-export const SuccessInput = Template.bind({});
-SuccessInput.args = {
-  placeholder: 'test@deepfence.io',
-  startIcon: <AiOutlineMail />,
-  color: 'success',
-};
-
 export const WithSuccessCaption = Template.bind({});
 WithSuccessCaption.args = {
   placeholder: 'test@deepfence.io',
   startIcon: <AiOutlineMail />,
   endIcon: <AiOutlineCheck />,
   label: 'Username',
+  value: 'hello',
   helperText: 'Sent successfully.',
   color: 'success',
-};
-
-export const ErrorInput = Template.bind({});
-ErrorInput.args = {
-  placeholder: 'test@deepfence.io',
-  startIcon: <AiOutlineMail />,
-  color: 'error',
 };
 
 export const ErrorWithCaption = Template.bind({});
@@ -83,5 +70,6 @@ ErrorWithCaption.args = {
   placeholder: 'test@deepfence.io',
   startIcon: <AiOutlineMail />,
   color: 'error',
+  value: 'hello',
   helperText: 'Please enter valid username.',
 };

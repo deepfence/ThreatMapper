@@ -27,9 +27,17 @@ type IconProps = {
 
 export const classes = {
   color: {
-    default: 'border-gray-300 text-gray-500',
-    error: 'border-red-500 text-red-700 focus:ring-0',
-    success: 'border-green-500 text-green-700 focus:ring-0',
+    default: cx(
+      'border-gray-300 text-gray-500',
+      'focus:border-blue-600 focus:text-gray-900',
+      'dark:border-gray-600 dark:text-gray-400',
+      'dark:focus:border-blue-600 dark:focus:text-white dark:active:text-white',
+    ),
+    error: cx('border-red-500 text-red-700', 'focus:border-red-500 focus:text-red-500'),
+    success: cx(
+      'border-green-500 text-green-700',
+      'focus:border-green-500 focus:text-green-500',
+    ),
   },
   size: {
     sm: `${Typography.size.sm} p-3`,
@@ -112,7 +120,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         {label && (
           <LabelPrimitive.Root
             htmlFor={inputId}
-            className={cx(`${Typography.weight.medium} text-gray-900`)}
+            className={cx(`${Typography.weight.medium} text-gray-900 dark:text-white`)}
           >
             {label}
           </LabelPrimitive.Root>
@@ -122,8 +130,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           {endIcon && <RightIcon icon={endIcon} sizing={sizing} color={color} />}
           <input
             className={cx(
-              'block w-full border rounded-lg bg-gray-50 box-border',
-              'focus:outline-none focus:ring-1 focus:ring-blue-600',
+              'block w-full border box-border rounded-lg bg-gray-50 dark:bg-gray-700',
+              'focus:outline-none',
               `${classes.color[color]}`,
               `${classes.size[sizing]}`,
               `${Typography.weight.normal}`,
