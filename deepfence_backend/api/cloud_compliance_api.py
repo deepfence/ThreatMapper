@@ -1295,6 +1295,68 @@ def register_cloud_resource(cloud_provider):
     return set_response(data={}, status=200)
 
 
+@cloud_compliance_api.route("/cloud_compliance/kubernetes", methods=["POST"],
+                            endpoint="api_v1_5_register_kubernetes_compliance")
+@jwt_required()
+@non_read_only_user
+def register_kubernetes():
+    if not request.is_json:
+        raise InvalidUsage("Missing JSON post data in request")
+
+    post_data = request.json
+    if not post_data.get("node_id", None):
+        raise InvalidUsage("Node ID is required for kube registration")
+    kubernetes_id = post_data.get("node_id", None)
+    updated_at_timestamp = datetime.now().timestamp()
+    node = None
+    compliance_scan_node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"])
+    if compliance_scan_node_details_str:
+        node = json.loads(compliance_scan_node_details_str)
+    if node and updated_at_timestamp > node["updated_at"]:
+        node["updated_at"] = updated_at_timestamp
+    elif not node:
+        node = {
+            "node_id": post_data["node_id"],
+            "cloud_provider": COMPLIANCE_KUBERNETES_HOST,
+            "account_id": post_data["cloud_account"],
+            "updated_at": updated_at_timestamp
+        }
+    redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"], json.dumps(node))
+    cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=kubernetes_id).first()
+    if not cloud_compliance_node:
+        cloud_compliance_node = CloudComplianceNode(
+            node_id=kubernetes_id,
+            node_name=kubernetes_id,
+            cloud_provider=COMPLIANCE_KUBERNETES_HOST,
+        )
+        try:
+            cloud_compliance_node.save()
+        except exc.IntegrityError as e:
+            app.logger.error("Duplicate cloud compliance kube node {}".format(e))
+            print(e)
+            raise InvalidUsage("Duplicate cloud compliance kube node")
+
+    current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id)
+    if not current_pending_scans_str:
+        return set_response(data={"scans": {}}, status=200)
+    current_pending_scans = json.loads(current_pending_scans_str)
+    pending_scans_available = False
+    scan_list = {}
+    for scan in current_pending_scans:
+        filters = {
+            "node_id": kubernetes_id,
+            "scan_id": scan["scan_id"],
+            "scan_status": ["IN_PROGRESS", "ERROR", "COMPLETED"]
+        }
+        compliance_log = ESConn.search_by_and_clause(COMPLIANCE_LOGS_INDEX, filters, size=1)
+        if not compliance_log.get("hits", []):
+            pending_scans_available = True
+            scan_list[scan["scan_id"]] = scan
+    if not pending_scans_available:
+        redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id, "")
+    return set_response(data={"scans": scan_list}, status=200)
+
+
 @cloud_compliance_api.route("/cloud-compliance/cloud_resources/<path:account_id>", methods=["GET"])
 @jwt_required()
 def cloud_resources(account_id):
