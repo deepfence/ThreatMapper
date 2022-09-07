@@ -441,13 +441,9 @@ def cloud_compliance_scan_nodes():
         return set_response({"nodes": nodes_list})
     if cloud_provider == "kubernetes":
         nodes_list = []
-        kube_nodes = {}
-        hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
-        for host_id, host in hosts.items():
-            if host.get("kubernetes_cluster_name", None) is not None and host.get("is_ui_vm", False) is False:
-                kube_nodes[host.get("kubernetes_cluster_id")] = host.get("kubernetes_cluster_name")
-        for node_id, name in kube_nodes.items():
-            nodes_list.append({"node_name": name, "node_id": node_id, "enabled": True})
+        cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
+        for node in cloud_compliance_nodes:
+            nodes_list.append({"node_name": node.node_id, "node_id": node.node_id, "enabled": True})
         return set_response({"nodes": nodes_list})
 
     cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
