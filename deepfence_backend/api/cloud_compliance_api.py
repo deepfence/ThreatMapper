@@ -1004,20 +1004,38 @@ def start_cloud_compliance_scan(node_id):
 
     if post_data.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
         for compliance_check_type in post_data.get("compliance_check_type", []):
-            if post_data.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
-                hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
-                scan_id = node_id + "_" + compliance_check_type + "_" + datetime.now().strftime(
-                    "%Y-%m-%dT%H:%M:%S") + ".000"
-                for host_id, host in hosts.items():
-                    if host.get("kubernetes_cluster_id", None) == node_id:
-                        node = Node.get_node(0, host.get("scope_id", ""), "host")
-                        try:
-                            node.compliance_start_scan(compliance_check_type, None, scan_id)
-                        except DFError as e:
-                            return set_response(error=e.message, status=400)
-            else:
+            if post_data.get("node_type", "") == COMPLIANCE_LINUX_HOST:
                 node = Node.get_node(0, node_id, "host")
                 node.compliance_start_scan(compliance_check_type, None)
+        if post_data.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
+            scan_id = node_id + "_" + datetime.now().strftime(
+                "%Y-%m-%dT%H:%M:%S") + ".000"
+            time_time = time.time()
+            es_doc = {
+                "total_checks": 0,
+                "result": {},
+                "node_id": node_id,
+                "node_type": COMPLIANCE_KUBERNETES_HOST,
+                "compliance_check_type": "hipaa",
+                "masked": "false",
+                "node_name": "",
+                "host_name": node_id,
+                "scan_status": "QUEUED",
+                "scan_message": "",
+                "scan_id": scan_id,
+                "time_stamp": int(time_time * 1000.0),
+                "kubernetes_cluster_id": node_id,
+                "kubernetes_cluster_name": node_id,
+                "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] + "Z"
+            }
+            ESConn.create_doc(COMPLIANCE_LOGS_INDEX, es_doc)
+            scan_list = [{
+                "scan_id": scan_id,
+                "scan_type": "hipaa",
+                "account_id": node_id
+            }]
+            redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id, json.dumps(scan_list))
+
         return set_response(data={"message": "Scans queued successfully"}, status=200)
 
     if node_id.endswith(";<cloud_org>"):
