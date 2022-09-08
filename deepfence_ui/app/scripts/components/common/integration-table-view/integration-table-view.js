@@ -90,7 +90,7 @@ class IntegrationTableView extends React.Component {
             :
             <div className= 'green-dot'></div>}
             </td>
-            { record.notification_type && <td style={workBreakStyles}> {resourceValueIndex[record.notification_type]} </td> }
+            { record.notification_type && <td style={workBreakStyles}> {resourceValueIndex[record.notification_type] === undefined ? 'Cloudtrail Alerts' : resourceValueIndex[record.notification_type] } </td> }
             { record.email && <td style={workBreakStyles}>{ record.email }</td> }
             { record.channel && <td style={workBreakStyles}>{ record.channel }</td> }
             { record.webhook_url && <td

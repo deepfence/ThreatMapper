@@ -69,4 +69,8 @@ export const NOTIFICATION_RESOURCE_OPTIONS = [
     label: 'User Activities',
     value: 'user_activity',
   },
+  {
+    label: 'CloudTrail Alerts',
+    value: 'cloudtrail_alert',
+  }
 ];

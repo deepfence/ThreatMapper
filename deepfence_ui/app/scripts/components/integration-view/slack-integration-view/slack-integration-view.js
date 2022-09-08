@@ -35,9 +35,13 @@ const resourceCollection = [
     name: 'Compliance Results',
     value: 'compliance',
   },
+  {
+    name: 'CloudTrail Alerts',
+    value: 'cloudtrail_alert',
+  },
 ];
 
-const allNodeType = 'host,container_image,pod';
+const allNodeType = 'host,container_image,pod,aws';
 
 class SlackIntegrationView extends React.Component {
   constructor() {
@@ -51,6 +55,7 @@ class SlackIntegrationView extends React.Component {
       duration: '',
       submitted: false,
       filters: {},
+      cloudTrailValue: {},
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -61,6 +66,7 @@ class SlackIntegrationView extends React.Component {
     this.handleDeleteDialog = this.handleDeleteDialog.bind(this);
     this.handleResourceChange = this.handleResourceChange.bind(this);
     this.getModalContent = this.getModalContent.bind(this);
+    this.seCloudtrailOptions = this.seCloudtrailOptions.bind(this);
   }
 
   componentDidMount() {
@@ -75,7 +81,7 @@ class SlackIntegrationView extends React.Component {
     const params = {
       node_type: allNodeType,
       filters:
-        'host_name,container_name,image_name_with_tag,user_defined_tags,kubernetes_namespace,kubernetes_cluster_name',
+        'host_name,container_name,image_name_with_tag,user_defined_tags,kubernetes_namespace,kubernetes_cluster_name,cloudtrail_trail',
     };
     return dispatch(enumerateFiltersAction(params));
   }
@@ -166,6 +172,7 @@ class SlackIntegrationView extends React.Component {
       duration = {},
       resourceType,
       filters,
+      cloudTrailValue,
     } = this.state;
 
     if (!resourceType) {
@@ -174,6 +181,16 @@ class SlackIntegrationView extends React.Component {
         isError: true,
       });
       return;
+    }
+
+    if (resourceType && resourceType.value === 'cloudtrail_alerts') {
+      if (Object.keys(cloudTrailValue).length === 0) {
+        this.setState({
+          integrationAddResponse: 'CloudTrail selection in mandatory',
+          isError: true,
+        });
+        return;
+      }
     }
 
     this.setState({
@@ -186,6 +203,19 @@ class SlackIntegrationView extends React.Component {
       return acc;
     }, {});
 
+    const apiCloudTrailFilters = Object.keys(cloudTrailValue).reduce(
+      (acc, key) => {
+        acc[key] = cloudTrailValue[key].map(el => el.value);
+        return acc;
+      },
+      {}
+    );
+
+    const filterObject = {
+      ...apiFilters, 
+      ...apiCloudTrailFilters
+    }
+
     if (webHookUrl && slackChannel) {
       let params = {
         webhook_url: webHookUrl,
@@ -194,7 +224,7 @@ class SlackIntegrationView extends React.Component {
         duration: duration.value,
         integration_type: 'slack',
         notification_type: resourceType.value,
-        filters: apiFilters,
+        filters: filterObject,
       };
       this.props.dispatch(submitIntegrationRequest(params));
     }
@@ -228,10 +258,30 @@ class SlackIntegrationView extends React.Component {
     );
   }
 
+  seCloudtrailOptions(name, value) {
+    this.setState({
+      cloudTrailValue: {
+        ...this.state.cloudTrailValue,
+        cloudtrail_trail: value,
+      },
+    });
+  }
+
   getSlackIntegrationFormView() {
-    const { webHookUrl, slackChannel, submitted } = this.state;
+    const {
+      webHookUrl,
+      slackChannel,
+      submitted,
+      resourceType,
+      cloudTrailValue,
+    } = this.state;
     const { showSeverityOptions = false, showDurationOptions = false } =
       this.state;
+    const cloudTrailOptions =
+      this.props.nodeFilters &&
+      this.props.nodeFilters.filter(item => {
+        if (item.label === 'CloudTrail') return item;
+      });
     return (
       <div className="form-wrapper">
         <form name="form">
@@ -313,6 +363,38 @@ class SlackIntegrationView extends React.Component {
                   </div>
                 </div>
               </div>
+              {resourceType && resourceType.value === 'cloudtrail_alert' && (
+                <div className="row">
+                  <div className="col">
+                    <div
+                      className="form-group df-select-field"
+                      style={{ width: '250px' }}
+                    >
+                      {cloudTrailOptions.map(filter => (
+                        <div className="search-form">
+                          <br />
+                          <DFSelect
+                            options={filter.options.map(el => ({
+                              label: el,
+                              value: el,
+                            }))}
+                            name={filter.name}
+                            placeholder={`${filter.label}`}
+                            onChange={selectedOptions =>
+                              this.seCloudtrailOptions(
+                                filter.name,
+                                selectedOptions
+                              )
+                            }
+                            value={cloudTrailValue[filter.name]}
+                            isMulti
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               <br />
               <div className="row">
                 {showSeverityOptions && (
