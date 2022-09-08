@@ -60,7 +60,8 @@ api: certs
 ui:
 	git log --format="%h" -n 1 > $(DEEPFENCE_UI_DIR)/console_version.txt && \
 	echo $(VERSION) > $(DEEPFENCE_UI_DIR)/product_version.txt && \
-	docker build -f $(DEEPFENCE_UI_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_UI_DIR)
+	docker build -f $(DEEPFENCE_UI_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_UI_DIR) && \
+	rm -rf $(DEEPFENCE_UI_DIR)/console_version.txt $(DEEPFENCE_UI_DIR)/product_version.txt
 
 .PHONY: fetcher
 fetcher:

@@ -185,10 +185,24 @@ class ComplianceReportNotification(Notification):
         UniqueConstraint('alert_level', 'integration_id', name='compliance_report_notification_constraint'),)
 
     compliance_report_doc_fields_map = {
-        "node_name": "Node", "test_category": "Test Category", "compliance_check_type": "Compliance Check Type",
-        "test_rationale": "Test Rationale", "test_severity": "Test Severity", "@timestamp": "@timestamp",
-        "test_info": "Info", "test_number": "Test ID", "test_desc": "Test Description", "status": "Test Status",
-        "host_name": "Host Name"}
+        "@timestamp": "@timestamp",
+        "account_id": "Account",
+        "cloud_provider": "Cloud Provider",
+        "compliance_check_type": "Compliance Check Type",
+        "control_id": "Control Id",
+        "description": "Description",
+        "host_name": "Host Name",
+        "node_name": "Node",
+        "reason": "Reason",
+        "region": "Region",
+        "resource": "Resource",
+        "service": "Service",
+        "status": "Test Status",
+        "test_category": "Test Category",
+        "test_info": "Info",
+        "test_number": "Test ID",
+        "title": "Title"
+    }
 
     def pretty_print(self):
         conf = self.integration.pretty_print()

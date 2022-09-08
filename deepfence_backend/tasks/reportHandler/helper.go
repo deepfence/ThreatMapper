@@ -157,11 +157,24 @@ func syncPoliciesAndNotificationsSettings() {
 	if err != nil {
 		log.Error(err)
 	}
+	var complianceNotificationCount int
+	row = pgDB.QueryRow("SELECT COUNT(*) FROM compliance_report_notification where duration_in_mins=-1")
+	err = row.Scan(&complianceNotificationCount)
+	if err != nil {
+		log.Error(err)
+	}
 	notificationSettings.Lock()
 	if vulnerabilityNotificationCount > 0 {
 		notificationSettings.vulnerabilityNotificationsSet = true
+		log.Info("vulnerability notifications are enabled")
 	} else {
 		notificationSettings.vulnerabilityNotificationsSet = false
+	}
+	if complianceNotificationCount > 0 {
+		log.Info("compliance notifications are enabled")
+		notificationSettings.complianceNotificationsSet = true
+	} else {
+		notificationSettings.complianceNotificationsSet = false
 	}
 	notificationSettings.Unlock()
 }

@@ -164,6 +164,7 @@ func init() {
 }
 
 func createNotificationCeleryTask(resourceType string, messages []interface{}) {
+	log.Infof("create celery task for %s", resourceType)
 	kwargs := make(map[string]interface{})
 	kwargs["notification_type"] = resourceType
 	kwargs["data"] = messages
@@ -179,6 +180,13 @@ func createCeleryTasks(resourceType string, messages []interface{}) {
 		vulnerabilityNotificationsSet := notificationSettings.vulnerabilityNotificationsSet
 		notificationSettings.RUnlock()
 		if vulnerabilityNotificationsSet {
+			createNotificationCeleryTask(resourceType, messages)
+		}
+	} else if resourceType == resourceTypeCompliance {
+		notificationSettings.RLock()
+		complianceNotificationsSet := notificationSettings.complianceNotificationsSet
+		notificationSettings.RUnlock()
+		if complianceNotificationsSet {
 			createNotificationCeleryTask(resourceType, messages)
 		}
 	}
