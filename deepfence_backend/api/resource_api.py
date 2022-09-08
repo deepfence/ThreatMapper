@@ -1330,9 +1330,20 @@ def node_action():
         if user.role.name not in [constants.USER_ROLES.ADMIN_USER, constants.USER_ROLES.NORMAL_USER]:
             raise Forbidden("User not permitted to perform this action")
 
+    action_args = post_data.get("action_args", {})
+    if action_args and type(action_args) != dict:
+        raise InvalidUsage("action_args should be in json format")
+    if not action_args:
+        action_args = {}
+        
     node_ids = post_data.get("node_id_list", [])
     if type(node_ids) != list:
         node_ids = []
+        
+    node_id = action_args.get("node_id", None)
+    if not node_ids and node_id:
+        node_ids = [node_id]
+
     registry_images = post_data.get("registry_images", {})
     if type(registry_images) != dict:
         registry_images = {}
@@ -1344,11 +1355,7 @@ def node_action():
     node_action_details = {"node_type": node_type, "include_dead_nodes": include_dead_nodes,
                            "file_type": post_data.get("file_type", "xlsx")}
 
-    action_args = post_data.get("action_args", {})
-    if action_args and type(action_args) != dict:
-        raise InvalidUsage("action_args should be in json format")
-    if not action_args:
-        action_args = {}
+    
     node_action_details["priority"] = action_args.get("priority", False)
     accepted_action_args = ["cron", "description", "scan_type", "filters", "resources", "compliance_check_type",
                             "report_email", "durationValues", "registry_credentials", "delete_resources", "node_id"]
