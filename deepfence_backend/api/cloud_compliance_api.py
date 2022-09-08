@@ -1332,7 +1332,7 @@ def register_kubernetes():
         node = {
             "node_id": post_data["node_id"],
             "cloud_provider": COMPLIANCE_KUBERNETES_HOST,
-            "account_id": post_data["cloud_account"],
+            "account_id": post_data["node_id"],
             "updated_at": updated_at_timestamp
         }
     redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"], json.dumps(node))
