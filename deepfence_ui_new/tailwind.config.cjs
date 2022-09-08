@@ -220,6 +220,8 @@ module.exports = {
         'scale-in': 'scale-in 0.2s ease-in-out',
         'slide-down': 'slide-down 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-up': 'slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        // modal
+        'modal-in': 'scale-in 150ms cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards',
       },
     },
   },
