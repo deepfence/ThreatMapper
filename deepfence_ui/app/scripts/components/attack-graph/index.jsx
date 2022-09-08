@@ -104,7 +104,13 @@ export const AttackGraph = () => {
 
   useEffect(() => {
     dispatch(breadcrumbChange([{ name: 'Threat Graph' }]));
+    const intervalId = setInterval(() => {
+      dispatch(getAttackGraphDataAction());
+    }, 5 * 60 * 1000);
     dispatch(getAttackGraphDataAction());
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   useEffect(() => {
