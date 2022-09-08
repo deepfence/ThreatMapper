@@ -17,6 +17,7 @@ import (
 
 type NotificationSettings struct {
 	vulnerabilityNotificationsSet bool
+	complianceNotificationsSet    bool
 	sync.RWMutex
 }
 
@@ -26,6 +27,7 @@ var (
 	postgresDb              *sql.DB
 	redisAddr               string
 	vulnerabilityTaskQueue  chan []byte
+	complianceTaskQueue     chan []byte
 	celeryCli               *gocelery.CeleryClient
 	resourcePubsubToChanMap map[string]chan []byte
 	notificationSettings    NotificationSettings
@@ -69,17 +71,20 @@ func init() {
 		}
 	}
 	vulnerabilityTaskQueue = make(chan []byte, 10000)
+	complianceTaskQueue = make(chan []byte, 10000)
 	resourcePubsubToChanMap = map[string]chan []byte{
 		vulnerabilityRedisPubsubName: vulnerabilityTaskQueue,
+		complianceRedisPubsubName:    complianceTaskQueue,
 	}
 	notificationSettings = NotificationSettings{
 		vulnerabilityNotificationsSet: false,
+		complianceNotificationsSet:    false,
 	}
 }
 
 func initRedisPubsub() {
 	redisPubSub = &redis.PubSubConn{Conn: redisPool.Get()}
-	err := redisPubSub.Subscribe(vulnerabilityRedisPubsubName)
+	err := redisPubSub.Subscribe(vulnerabilityRedisPubsubName, complianceRedisPubsubName)
 	if err != nil {
 		gracefulExit(err)
 	}
@@ -142,7 +147,14 @@ func batchMessages(resourceType string, resourceChan *chan []byte, batchSize int
 					notificationSettings.RLock()
 					vulnerabilityNotificationsSet := notificationSettings.vulnerabilityNotificationsSet
 					notificationSettings.RUnlock()
-					if vulnerabilityNotificationsSet == true {
+					if vulnerabilityNotificationsSet {
+						createNotificationCeleryTask(resourceType, messages)
+					}
+				} else if resourceType == resourceTypeCompliance {
+					notificationSettings.RLock()
+					complianceNotificationsSet := notificationSettings.complianceNotificationsSet
+					notificationSettings.RUnlock()
+					if complianceNotificationsSet {
 						createNotificationCeleryTask(resourceType, messages)
 					}
 				}
@@ -161,5 +173,6 @@ func main() {
 	}
 	go syncPoliciesAndNotifications()
 	go batchMessages(resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
+	go batchMessages(resourceTypeCompliance, &complianceTaskQueue, 100)
 	receiveMessagesFromRedisPubsub()
 }

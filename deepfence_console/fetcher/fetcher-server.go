@@ -30,6 +30,7 @@ import (
 
 const (
 	redisVulnerabilityChannel = "vulnerability_task_queue"
+	redisComplianceChannel    = "compliance_task_queue"
 )
 
 var (
@@ -1000,11 +1001,28 @@ func ingestInBackground(docType string, body []byte) error {
 		for _, complianceDoc := range complianceDocs {
 			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanID+complianceDoc.ControlID+complianceDoc.Resource+complianceDoc.Group)))
 			complianceDoc.DocId = docId
-			bulkIndexReq := elastic.NewBulkUpdateRequest()
-			bulkIndexReq.Index(cloudComplianceIndexName).Id(docId).
-				Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
-				Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
-			bulkService.Add(bulkIndexReq)
+			event, err := json.Marshal(complianceDoc)
+			if err == nil {
+				bulkIndexReq := elastic.NewBulkUpdateRequest()
+				bulkIndexReq.Index(cloudComplianceIndexName).Id(docId).
+					Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
+					Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
+				bulkService.Add(bulkIndexReq)
+				retryCount := 0
+				for {
+					_, err = redisConn.Do("PUBLISH", redisComplianceChannel, string(event))
+					if err == nil {
+						break
+					}
+					if retryCount > 1 {
+						fmt.Println(fmt.Sprintf("Error publishing cloud compliance document to %s - exiting", redisComplianceChannel), err)
+						break
+					}
+					fmt.Println(fmt.Sprintf("Error publishing cloud compliance document to %s - trying again", redisComplianceChannel), err)
+					retryCount += 1
+					time.Sleep(5 * time.Second)
+				}
+			}
 		}
 		bulkResp, err := bulkService.Do(context.Background())
 		if err != nil {
@@ -1043,11 +1061,28 @@ func ingestInBackground(docType string, body []byte) error {
 		for _, complianceDoc := range complianceDocs {
 			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanId+complianceDoc.TestNumber)))
 			complianceDoc.DocId = docId
-			bulkIndexReq := elastic.NewBulkUpdateRequest()
-			bulkIndexReq.Index(complianceIndexName).Id(docId).
-				Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
-				Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
-			bulkService.Add(bulkIndexReq)
+			event, err := json.Marshal(complianceDoc)
+			if err == nil {
+				bulkIndexReq := elastic.NewBulkUpdateRequest()
+				bulkIndexReq.Index(complianceIndexName).Id(docId).
+					Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
+					Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
+				bulkService.Add(bulkIndexReq)
+				retryCount := 0
+				for {
+					_, err = redisConn.Do("PUBLISH", redisComplianceChannel, string(event))
+					if err == nil {
+						break
+					}
+					if retryCount > 1 {
+						fmt.Println(fmt.Sprintf("Error publishing compliance document to %s - exiting", redisComplianceChannel), err)
+						break
+					}
+					fmt.Println(fmt.Sprintf("Error publishing compliance document to %s - trying again", redisComplianceChannel), err)
+					retryCount += 1
+					time.Sleep(5 * time.Second)
+				}
+			}
 		}
 		bulkResp, err := bulkService.Do(context.Background())
 		if err != nil {
