@@ -1,5 +1,6 @@
 import * as DropdownPrimitive from '@radix-ui/react-dropdown-menu';
 import cx from 'classnames';
+import React from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { Typography } from '../typography/Typography';
@@ -39,9 +40,9 @@ export const Dropdown: React.FC<DropdownProps> = (props) => {
 };
 Dropdown.displayName = 'Dropdown';
 
-export const DropdwonItem: React.FC<DropdownPrimitive.DropdownMenuItemProps> = (
-  props,
-) => {
+export const DropdwonItem: React.ForwardRefExoticComponent<
+  DropdownPrimitive.DropdownMenuItemProps & React.RefAttributes<HTMLDivElement>
+> = React.forwardRef((props, forwardedRef) => {
   const { children, className, ...rest } = props;
   const classes = twMerge(
     cx(
@@ -53,16 +54,16 @@ export const DropdwonItem: React.FC<DropdownPrimitive.DropdownMenuItemProps> = (
     className,
   );
   return (
-    <DropdownPrimitive.Item className={classes} {...rest}>
+    <DropdownPrimitive.Item className={classes} {...rest} ref={forwardedRef}>
       {children}
     </DropdownPrimitive.Item>
   );
-};
+});
 
-export const DropdownSeparator: React.FC<DropdownPrimitive.DropdownMenuSeparatorProps> = (
-  props,
-) => {
+export const DropdownSeparator: React.ForwardRefExoticComponent<
+  DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
+> = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
   const classes = twMerge(cx('h-[1px] bg-gray-200 dark:bg-gray-600'), className);
-  return <DropdownPrimitive.Separator className={classes} {...rest} />;
-};
+  return <DropdownPrimitive.Separator className={classes} {...rest} ref={forwardedRef} />;
+});
