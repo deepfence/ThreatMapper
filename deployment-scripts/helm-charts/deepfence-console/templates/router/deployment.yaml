@@ -27,7 +27,7 @@ spec:
       serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
         {{- if .Values.saas_deployment }}
-        - name: promtail-sidecar-deepfence-api
+        - name: promtail-sidecar-deepfence-router
           image: grafana/promtail:2.5.0
           args:
           - '-config.expand-env'
