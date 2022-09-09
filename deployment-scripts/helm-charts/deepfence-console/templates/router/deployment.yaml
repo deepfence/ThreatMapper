@@ -32,7 +32,7 @@ spec:
           args:
           - '-config.expand-env'
           - '-config.file=/etc/promtail/config.yml'
-          - '-client.external-labels=cluster={{ .Values.saas_env.clusterName }},env={{ .Values.saas_env.name }},clustertype=workloads,container=deepfence-api'
+          - '-client.external-labels=cluster={{ .Values.saas_env.clusterName }},env={{ .Values.saas_env.name }},clustertype=workloads,container=deepfence-router'
           env:
           - name: NODE_NAME
             valueFrom:
