@@ -129,9 +129,3 @@ DangerWithOutlineIcon.args = {
   size: 'xs',
   startIcon: <FaAmazon />,
 };
-
-export const DefaultRoundedWithIcon = Template.bind({});
-DefaultRoundedWithIcon.args = {
-  size: 'xs',
-  startIcon: <FaAmazon />,
-};

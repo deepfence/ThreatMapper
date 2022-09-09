@@ -1,5 +1,6 @@
 import cx from 'classnames';
 import React, { ComponentProps } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 import { Typography } from '../typography/Typography';
 
@@ -7,13 +8,14 @@ export type ButtonShape = 'default';
 export type ColorType = 'default' | 'primary' | 'danger' | 'success';
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-interface ButtonProps extends Omit<ComponentProps<'button'>, 'className' | 'color'> {
+interface ButtonProps extends Omit<ComponentProps<'button'>, 'color'> {
   size?: SizeType;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   shape?: ButtonShape;
   outline?: boolean;
   color?: ColorType;
+  className?: string;
 }
 
 export const classes = {
@@ -36,7 +38,7 @@ export const classes = {
   },
   outline: {
     default:
-      'bg-white text-gray-800 ring-1 ring-gray-900 hover:bg-gray-800 hover:text-white focus:ring-2 focus:ring-gray-200',
+      'bg-white text-gray-800 ring-1 ring-gray-900 hover:bg-gray-800 hover:text-white focus:ring-1 focus:ring-gray-200 dark:ring-white',
     primary:
       'bg-white ring-1 ring-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white focus:ring-2 focus:ring-blue-300',
     danger:
@@ -62,37 +64,50 @@ export const classes = {
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { children, size = 'md', color, disabled, outline, startIcon, endIcon, ...props },
+    {
+      children,
+      size = 'md',
+      color,
+      disabled,
+      outline,
+      startIcon,
+      endIcon,
+      className,
+      ...props
+    },
     ref,
   ) => {
     return (
       <button
         ref={ref}
         disabled={disabled}
-        className={cx(
-          'flex flex-row items-center justify-center',
-          `${Typography.weight.medium}`,
-          `${classes.size[size]}`,
-          'rounded-lg focus:outline-none select-none',
-          {
-            [classes.color.primary]: color === 'primary' && !outline,
-            [classes.outline.primary]: outline && color === 'primary',
+        className={twMerge(
+          cx(
+            'flex flex-row items-center justify-center',
+            `${Typography.weight.medium}`,
+            `${classes.size[size]}`,
+            'rounded-lg focus:outline-none select-none',
+            {
+              [classes.color.primary]: color === 'primary' && !outline,
+              [classes.outline.primary]: outline && color === 'primary',
 
-            [classes.color.default]:
-              (color === undefined && !outline) || (color === 'default' && !outline),
-            [classes.outline.default]:
-              (color === undefined && outline) || (color === 'default' && outline),
+              [classes.color.default]:
+                (color === undefined && !outline) || (color === 'default' && !outline),
+              [classes.outline.default]:
+                (color === undefined && outline) || (color === 'default' && outline),
 
-            [classes.color.danger]: color === 'danger' && !outline,
-            [classes.outline.danger]: color === 'danger' && outline,
+              [classes.color.danger]: color === 'danger' && !outline,
+              [classes.outline.danger]: color === 'danger' && outline,
 
-            [classes.color.success]: color === 'success' && !outline,
-            [classes.outline.success]: color === 'success' && outline,
+              [classes.color.success]: color === 'success' && !outline,
+              [classes.outline.success]: color === 'success' && outline,
 
-            [classes.disabled]: disabled,
-            'dark:text-white dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-2 dark:focus:ring-gray-400':
-              outline,
-          },
+              [classes.disabled]: disabled,
+              'dark:text-white dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-2 dark:focus:ring-gray-400':
+                outline,
+            },
+          ),
+          className,
         )}
         {...props}
       >
