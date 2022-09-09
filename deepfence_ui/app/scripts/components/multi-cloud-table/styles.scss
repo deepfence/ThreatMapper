@@ -79,11 +79,14 @@
 
 .scan-status {
   color: $text-secondary;
-  display: inline-flex !important;
+  display: inline-block !important;
   @include vertical-align;
   text-transform: capitalize;
   padding: 0 20px 0 20px;
-  min-width: 135px;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 
   &.error {
     border: 1px solid $color-error-outline;
