@@ -10,7 +10,8 @@ type ChildrenType = {
   children: React.ReactNode;
 };
 export interface ModalProps extends DialogPrimitive.DialogProps {
-  triggerElement?: React.ReactNode;
+  onOpenChange: (value: boolean) => void;
+  width?: string;
   title?: string;
   footer?: React.ReactNode;
 }
@@ -64,35 +65,41 @@ const ModalFooter: FC<ChildrenType> = ({ children }) => {
   return (
     <>
       <Separator className="h-px block bg-gray-200 dark:bg-gray-600" />
-      <div className="h-[85px] p-6">{children}</div>
+      <div className="p-6">{children}</div>
     </>
   );
 };
 
+// TODO: To make modal body scrollable with fixed header and footer
+// TODO: To focus on the trigger element after modal is closed
+
 export const Modal: FC<ModalProps> = ({
-  triggerElement,
   title,
   children,
   footer,
+  width = 'w-4/12', // 33.333333%
+  onOpenChange,
   ...rest
 }) => {
+  const _onOpenChange = (value: boolean) => {
+    onOpenChange(value);
+  };
+
   return (
-    <DialogPrimitive.Root {...rest}>
-      <DialogPrimitive.Trigger asChild={triggerElement !== undefined}>
-        {triggerElement}
-      </DialogPrimitive.Trigger>
+    <DialogPrimitive.Root {...rest} onOpenChange={_onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="z-20 fixed inset-0 bg-black/50 dark:bg-black/80 animate-overlay-in flex justify-center items-center">
+        <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 dark:bg-black/80 animate-overlay-in h-full">
           <DialogPrimitive.Content
             className={cx(
-              'animate-modal-in z-50 max-h-[90vh] relative inset-0 overflow-y-auto overflow-x-hidden focus:outline-none',
+              'max-h-[90vh] relative top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] inset-0 overflow-y-auto overflow-x-hidden focus:outline-none',
               'border rounded-lg border-gray-200 bg-white text-gray-900',
               'dark:bg-gray-700 dark:border-gray-600 dark:text-white',
-              'min-w-[300px] max-w-[90%]',
+              'max-w-[90%]',
+              `${width}`,
             )}
           >
             <ModalHeader title={title} />
-            <div className="p-6 overflow-auto max-h-[65vh]">{children}</div>
+            <div className="p-6 overflow-y-auto h-full">{children}</div>
             <ModalFooter>{footer}</ModalFooter>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>

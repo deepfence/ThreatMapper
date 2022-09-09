@@ -1,4 +1,5 @@
 import { ComponentMeta } from '@storybook/react';
+import { useRef, useState } from 'react';
 
 import Button from '../button/Button';
 import Modal from './Modal';
@@ -7,63 +8,132 @@ export default {
   title: 'Components/Modal',
   component: Modal,
   argTypes: {
-    onChange: { action: 'onChange' },
+    onOpenChange: { action: 'onOpenChange' },
   },
 } as ComponentMeta<typeof Modal>;
 
 export const DefaultOpenModal = () => {
-  return <Modal defaultOpen={true}>This is a content</Modal>;
+  const [, setOpen] = useState(false);
+  return (
+    <Modal defaultOpen={true} onOpenChange={() => setOpen(false)}>
+      This is a content
+    </Modal>
+  );
 };
 
 export const ModalWithTrigger = () => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
   return (
-    <Modal
-      triggerElement={<Button color="primary">Open Modal</Button>}
-      title="Modal Title"
-      footer={<div className={''}>This is Footer</div>}
-    >
-      <div className="dark:text-white">This is a content</div>
-    </Modal>
+    <>
+      <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
+        Click to open
+      </Button>
+      <Modal
+        title="Modal Title"
+        footer={<div className={''}>This is Footer</div>}
+        open={open}
+        onOpenChange={() => setOpen(false)}
+      >
+        <div className="dark:text-white">This is a content</div>
+      </Modal>
+    </>
   );
 };
 
 export const WithoutTitle = () => {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Modal
-      triggerElement={<Button color="primary">Open Modal</Button>}
-      footer={<div className={''}>This is Footer</div>}
-    >
-      <div className="dark:text-white">This is a content</div>
-    </Modal>
+    <>
+      <Button color="primary" onClick={() => setOpen(true)}>
+        Click to open
+      </Button>
+      <Modal
+        footer={<div className={''}>This is Footer</div>}
+        open={open}
+        onOpenChange={() => setOpen(false)}
+      >
+        <div className="dark:text-white">This is a content</div>
+      </Modal>
+    </>
   );
 };
 
 export const WithoutFooter = () => {
+  const [open, setOpen] = useState(false);
   return (
-    <Modal
-      triggerElement={<Button color="primary">Open Modal</Button>}
-      title="Modal Title"
-    >
-      <div className="dark:text-white">This is a content</div>
-    </Modal>
+    <>
+      <Button color="primary" onClick={() => setOpen(true)}>
+        Click to open
+      </Button>
+      <Modal title="Modal Title" open={open} onOpenChange={() => setOpen(false)}>
+        <div className="dark:text-white">This is a content</div>
+      </Modal>
+    </>
   );
 };
 
 export const JustContentWithTrigger = () => {
+  const [open, setOpen] = useState(false);
   return (
-    <Modal triggerElement={<Button color="primary">Open Modal</Button>}>
-      <div className="dark:text-white">This is a content</div>
-    </Modal>
+    <>
+      <Button color="primary" onClick={() => setOpen(true)}>
+        Click to open
+      </Button>
+      <Modal open={open} onOpenChange={() => setOpen(false)}>
+        <div className="dark:text-white">This is a content</div>
+      </Modal>
+    </>
   );
 };
 export const LongContent = () => {
+  const [open, setOpen] = useState(false);
   return (
-    <Modal
-      triggerElement={<Button color="primary">Open Modal</Button>}
-      title="Modal Title"
-      footer={<div className={''}>This is Footer</div>}
-    >
-      <div className="dark:text-white">This is a content</div>
-    </Modal>
+    <>
+      <Button color="primary" onClick={() => setOpen(true)}>
+        Click to open
+      </Button>
+      <Modal
+        title="Modal Title"
+        open={open}
+        footer={<div className={''}>This is Footer</div>}
+        onOpenChange={() => setOpen(false)}
+      >
+        <div className="dark:text-white">
+          {Array.from(Array(20).keys()).map((k) => (
+            <p key={k}>This is a content</p>
+          ))}
+        </div>
+      </Modal>
+    </>
+  );
+};
+
+export const FullWidth = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button color="primary" onClick={() => setOpen(true)}>
+        Click to open
+      </Button>
+      <Modal
+        title="Modal Title"
+        open={open}
+        footer={<div className={''}>This is Footer</div>}
+        onOpenChange={() => setOpen(false)}
+        width="w-full"
+      >
+        <div className="dark:text-white">
+          {Array.from(Array(10).keys()).map((k) => (
+            <p className="text-center" key={k}>
+              It is a long established fact that a reader will be distracted by the
+              readable content of a page when looking at its layout
+            </p>
+          ))}
+        </div>
+      </Modal>
+    </>
   );
 };
