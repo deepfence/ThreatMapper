@@ -17,7 +17,7 @@ from models.user import User, Role, Company, Invite, PasswordReset
 from models.user_activity_log import UserActivityLog
 from collections import defaultdict
 from models.integration import Integration
-from models.notification import VulnerabilityNotification, UserActivityNotification
+from models.notification import VulnerabilityNotification, UserActivityNotification, CloudtrailAlertNotification
 from utils.common import password_policy_check, unique_execution_id, \
     mask_url, mask_api_key
 from utils.custom_exception import InvalidUsage, NotFound, Forbidden, MultipleCompaniesFound, DFError
@@ -31,7 +31,7 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
-    INVITE_EXPIRY, CVE_ES_TYPE
+    INVITE_EXPIRY, CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, FILTER_TYPE_CLOUDTRAIL_TRAIL
 from utils import constants
 from config.redisconfig import redis
 from utils.response import set_response
@@ -1387,10 +1387,15 @@ class IntegrationView(MethodView):
             for notif in UserActivityNotification.query.filter(
                     UserActivityNotification.user_id.in_(active_user_ids)).all():
                 response[notif.integration.integration_type].append(notif.pretty_print())
+            for notif in CloudtrailAlertNotification.query.filter(
+                    CloudtrailAlertNotification.user_id.in_(active_user_ids)).all():
+                response[notif.integration.integration_type].append(notif.pretty_print())
         else:
             for notif in user.vulnerability_notifications:
                 response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in user.user_activity_notification:
+                response[notif.integration.integration_type].append(notif.pretty_print())
+            for notif in user.cloudtrail_alert_notification:
                 response[notif.integration.integration_type].append(notif.pretty_print())
 
         for integration_type, notifications in response.items():
@@ -1513,6 +1518,8 @@ class IntegrationView(MethodView):
             notification = VulnerabilityNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             notification = UserActivityNotification.query.filter_by(id=id).one_or_none()
+        elif notification_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT:
+            notification = CloudtrailAlertNotification.query.filter_by(id=id).one_or_none()
 
         notification_json = None
         if notification is not None:
@@ -1984,6 +1991,17 @@ class IntegrationView(MethodView):
         if notification_type == NOTIFICATION_TYPE_USER_ACTIVITY and integration_type not in [
             INTEGRATION_TYPE_SUMO_LOGIC, INTEGRATION_TYPE_ES, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_S3]:
             raise InvalidUsage("User activities logs only supported in SIEM / S3 integration")
+        # CloudTrail Alerts only supported in SIEM and Notifications
+        if notification_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT and integration_type not in [
+            INTEGRATION_TYPE_SUMO_LOGIC, INTEGRATION_TYPE_ES, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_EMAIL,
+            INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_PAGERDUTY, INTEGRATION_TYPE_MICROSOFT_TEAMS, INTEGRATION_TYPE_HTTP,
+            INTEGRATION_TYPE_GOOGLE_CHRONICLE]:
+            raise InvalidUsage("Cloudtrail alerts only supported in SIEM / Notification integration")
+
+        if notification_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT:
+            selected_trails = filters.get(FILTER_TYPE_CLOUDTRAIL_TRAIL, [])
+            if not selected_trails:
+                raise InvalidUsage("Need to select at least one trail for Cloudtrail alert integration")
 
         try:
             integration = getattr(self, "handle_{0}_post".format(integration_type))(request_json, user)
@@ -2020,6 +2038,8 @@ class IntegrationView(MethodView):
             create_notification(VulnerabilityNotification)
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             create_notification(UserActivityNotification)
+        elif notification_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT:
+            create_notification(CloudtrailAlertNotification)
 
     @jwt_required()
     @non_read_only_user

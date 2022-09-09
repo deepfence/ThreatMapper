@@ -156,6 +156,8 @@ def save_integrations_status(notification_id, resource_type, msg):
     notification_obj = None
     if resource_type == CVE_ES_TYPE:
         notification_obj = VulnerabilityNotification
+    elif resource_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT:
+        notification_obj = CloudtrailAlertNotification
     else:
         return
     event = notification_obj.query.filter_by(id=notification_id).one_or_none()

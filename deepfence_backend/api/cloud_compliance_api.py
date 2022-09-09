@@ -25,7 +25,8 @@ from utils.constants import TIME_UNIT_MAPPING, ALL_INDICES, \
     CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, CLOUD_COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
     PENDING_CLOUD_COMPLIANCE_SCANS_KEY, CLOUD_COMPLIANCE_LOGS_ES_TYPE, NODE_TYPE_HOST, COMPLIANCE_LINUX_HOST, \
     COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, COMPLIANCE_KUBERNETES_HOST, CSPM_RESOURCES, CSPM_RESOURCE_LABELS, \
-    CSPM_RESOURCES_INVERTED, CLOUD_RESOURCES_CACHE_KEY, CLOUD_COMPLIANCE_REFRESH_INVENTORY
+    CSPM_RESOURCES_INVERTED, CLOUD_RESOURCES_CACHE_KEY, CLOUD_COMPLIANCE_REFRESH_INVENTORY, \
+    FILTER_TYPE_CLOUDTRAIL_TRAIL
 from utils.custom_exception import InvalidUsage, DFError
 import json
 from utils.resource import get_nodes_list, get_default_params
@@ -1145,6 +1146,7 @@ def register_cloud_account():
     org_account_id = post_data.get("org_acc_id", None)
     updated_at_timestamp = datetime.now().timestamp()
     scan_list = {}
+    cloudtrail_trails = []
 
     # get refresh status and set false
     do_refresh = redis.hget(CLOUD_COMPLIANCE_REFRESH_INVENTORY, post_data["node_id"])
@@ -1242,9 +1244,25 @@ def register_cloud_account():
                 print(e)
                 raise InvalidUsage("Duplicate cloud compliance node")
 
+        if post_data["cloud_provider"] == "aws":
+            cloudtrail_alerts_notifications = CloudtrailAlertNotification.query.filter().all()
+            account_trails_map = defaultdict(list)
+            for notification in cloudtrail_alerts_notifications:
+                for trail in notification.filters.get(FILTER_TYPE_CLOUDTRAIL_TRAIL, []):
+                    account_id, trail_name = trail.split("/", 1)
+                    node_id = "aws-{};<cloud_account>".format(account_id)
+                    if node_id in account_trails_map:
+                        if trail_name not in account_trails_map.get(node_id, []):
+                            trail_item = {
+                                "account_id": account_id,
+                                "trail_name": trail_name
+                            }
+                            cloudtrail_trails.append(trail_item)
+                            account_trails_map[node_id].append(trail_name)
+
         current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, post_data["node_id"])
         if not current_pending_scans_str:
-            return set_response(data={"scans": {}, "refresh": do_refresh}, status=200)
+            return set_response(data={"scans": {}, "cloudtrail_trails": cloudtrail_trails, "refresh": do_refresh}, status=200)
         current_pending_scans = json.loads(current_pending_scans_str)
         for scan in current_pending_scans:
             filters = {
@@ -1258,7 +1276,7 @@ def register_cloud_account():
         if not scan_list:
             redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, post_data["node_id"], "")
 
-    return set_response(data={"scans": scan_list, "refresh": do_refresh}, status=200)
+    return set_response(data={"scans": scan_list, "cloudtrail_trails": cloudtrail_trails, "refresh": do_refresh}, status=200)
 
 
 @cloud_compliance_api.route("/cloud_compliance/cloud_resource/<path:cloud_provider>", methods=["POST"],

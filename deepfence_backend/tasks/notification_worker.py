@@ -1,12 +1,12 @@
 import json
 from config.app import celery_app, app as flask_app
 from config.redisconfig import redis
-from models.notification import VulnerabilityNotification
+from models.notification import VulnerabilityNotification, CloudtrailAlertNotification
 from models.user import User
 from tasks.notification import filter_vulnerability_notification
 from models.integration import Integration
 from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, \
-    NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_POD, CVE_ES_TYPE
+    NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_POD, CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT
 from utils.helper import websocketio_channel_name_format
 
 
@@ -47,6 +47,22 @@ def notification_task(self, **kwargs):
                         integration.send(notification.format_content(filtered_cve_list),
                                          summary="Deepfence - Vulnerabilities Subscription",
                                          notification_id=notification.id, resource_type=CVE_ES_TYPE)
+                    except Exception as ex:
+                        flask_app.logger.error("Error sending notification: {0}".format(ex))
+            elif notification_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT:
+                cloudtrail_notifications = CloudtrailAlertNotification.query.filter(
+                    CloudtrailAlertNotification.user_id.in_(active_user_ids),
+                    CloudtrailAlertNotification.duration_in_mins == -1).all()
+                for notification in cloudtrail_notifications:
+                    for cloudtrail_doc in data:
+                        if not cloudtrail_doc.get("region") and cloudtrail_doc.get("cloud_provider"):
+                            cloudtrail_doc["region"] = "global"
+                    try:
+                        integration = integrations.get(notification.integration_id)
+                        integration.send(notification.format_content(data),
+                                         summary="Deepfence - Cloudtrail Alerts Subscription",
+                                         notification_id=notification.id,
+                                         resource_type=NOTIFICATION_TYPE_CLOUDTRAIL_ALERT)
                     except Exception as ex:
                         flask_app.logger.error("Error sending notification: {0}".format(ex))
     except Exception as exc:

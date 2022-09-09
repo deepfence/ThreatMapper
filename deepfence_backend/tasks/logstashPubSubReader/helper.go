@@ -11,7 +11,9 @@ import (
 
 const (
 	resourceTypeVulnerability    = "vulnerability"
+	resourceTypeCloudTrailAlert  = "cloudtrail_alert"
 	vulnerabilityRedisPubsubName = "vulnerability_task_queue"
+	cloudTrailRedisPubsubName    = "cloudtrail_task_queue"
 	celeryNotificationTask       = "tasks.notification_worker.notification_task"
 )
 
@@ -78,11 +80,19 @@ func syncPoliciesAndNotificationsSettings() {
 	if err != nil {
 		log.Println(err)
 	}
+	var cloudTrailNotificationCount int
+	row := postgresDb.QueryRow("SELECT COUNT(*) FROM cloudtrail_alert_notification")
+	err := row.Scan(&cloudTrailNotificationCount)
 	notificationSettings.Lock()
 	if vulnerabilityNotificationCount > 0 {
 		notificationSettings.vulnerabilityNotificationsSet = true
 	} else {
 		notificationSettings.vulnerabilityNotificationsSet = false
+	}
+	if cloudTrailNotificationCount > 0 {
+		notificationSettings.cloudTrailNotificationsSet = true
+	} else {
+		notificationSettings.cloudTrailNotificationsSet = false
 	}
 	notificationSettings.Unlock()
 }

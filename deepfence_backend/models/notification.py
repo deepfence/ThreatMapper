@@ -2,7 +2,8 @@ from sqlalchemy.sql import func
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from config.app import db
-from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPE_USER_ACTIVITY, CVE_ES_TYPE
+from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPE_USER_ACTIVITY, CVE_ES_TYPE, \
+    NOTIFICATION_TYPE_CLOUDTRAIL_ALERT
 
 
 class Notification(db.Model):
@@ -169,6 +170,56 @@ class UserActivityNotification(Notification):
 
     def __repr__(self):
         return "<UserActivityNotification {}>".format(self.id)
+
+
+class CloudtrailAlertNotification(Notification):
+    id = db.Column(db.Integer, primary_key=True)
+
+    integration_id = db.Column(db.Integer, db.ForeignKey('integration.id'), nullable=False)
+    integration = db.relationship('Integration', backref=db.backref('cloudtrail_alert_notification', lazy=True))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('cloudtrail_alert_notification', lazy=True))
+
+    #cursor_id for last send log id
+    cursor_id = db.Column(db.Integer, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint('filters', 'integration_id', name='cloudtrail_alert_notification_constraint'),)
+
+    def pretty_print(self):
+        conf = self.integration.pretty_print()
+        filters = self.filters
+        if not filters:
+            filters = {}
+        conf.update({
+            "id": self.id,
+            "alert_level": self.alert_level,
+            "duration_in_mins": self.duration_in_mins,
+            "user_id": self.user_id,
+            "created_at": str(self.created_at),
+            "updated_at": str(self.updated_at),
+            "notification_type": NOTIFICATION_TYPE_CLOUDTRAIL_ALERT,
+            "filters": filters,
+        })
+        return conf
+
+    @classmethod
+    def format_content(cls, contents):
+        if len(contents) > 1:
+            return {"contents": contents, "prefix": "",
+                    "dump_indent": 4, "iteration_prefix": "CloudTrail Event #{}"}
+        else:
+            return {"contents": contents, "prefix": "",
+                    "dump_indent": 4, "iteration_prefix": ""}
+
+    def send(self, contents, **kwargs):
+        self.integration.send(self.format_content(contents),
+                              summary="Deepfence - Cloudtrail Alert Subscription",
+                              notification_id=kwargs["notification_id"], resource_type="")
+
+    def __repr__(self):
+        return "<CloudtrailAlertNotification {}>".format(self.id)
 
 
 class RunningNotification(db.Model):
