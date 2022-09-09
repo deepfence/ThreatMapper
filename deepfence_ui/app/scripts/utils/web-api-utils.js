@@ -1395,21 +1395,6 @@ export function getSecretScanStatus(params = {}) {
   }).then(errorHandler);
 }
 
-
-export function getMalwareScanStatus(params = {}) {
-  const { imageId } = params;
-  const imageIdEscaped = encodeURIComponent(imageId);
-  const url = `${backendElasticApiEndPoint()}/malware-scan/${imageIdEscaped}`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  }).then(errorHandler);
-}
-
 export function saveGceCredentialKey({
   dispatch,
   credentials_key,
@@ -1766,19 +1751,6 @@ export function startSecretScan(params = {}) {
   }).then(errorHandler);
 }
 
-export function startMalwareScan(params = {}) {
-  const { nodeId, nodeType } = params;
-  const url = `${backendElasticApiEndPoint()}/node/0/malware_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  }).then(errorHandler);
-}
-
 export function getTopAttackPathsForNode(params = {}) {
   const { hostName, nodeType, scopeId, containerImage } = params;
   const url = `${backendElasticApiEndPoint()}/node/0/attack_path?node_type=${nodeType ?? ''}&host_name=${hostName ?? ''}&scope_id=${scopeId ?? ''}&container_image=${containerImage ?? ''}`;
@@ -1881,20 +1853,6 @@ export function secretsScanRegistryImages(params = {}) {
     },
   }).then(errorHandler);
 }
-
-export function malwareScanRegistryImages(params = {}) {
-  const url = `${backendElasticApiEndPoint()}/malware/scan_registry`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'POST',
-    body: JSON.stringify(params),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  }).then(errorHandler);
-}
-
 
 export function saveRegistryCredentials(params = {}) {
   const url = `${backendElasticApiEndPoint()}/vulnerability/container_image_registry`;
@@ -2382,44 +2340,6 @@ export function getSecretScanData(params = {}) {
   });
 }
 
-export function getMalwareScanData(params = {}) {
-  const {
-    dispatch,
-    filters,
-    start_index,
-    size,
-    lucene_query: luceneQuery = []
-  } = params;
-  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-
-  let url = `${backendElasticApiEndPoint()}/malware/node_report?lucene_query=${luceneQueryEscaped}`;
-  const body = {
-    filters,
-    start_index,
-    size,
-  };
-  return doRequest({
-    url,
-    method: 'POST',
-    data: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-      'cache-control': 'no-cache',
-    },
-    error: error => {
-      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
-        // dispatch(receiveLogoutResponse());
-        refreshAuthToken();
-      } else if (error.status === 403) {
-        dispatch(receiveClearDashBoardResponse());
-      } else {
-        log(`Error in api modal details request: ${error}`);
-      }
-    },
-  });
-}
-
 export function getSecretScanResults(params = {}) {
   const {
     dispatch,
@@ -2430,43 +2350,6 @@ export function getSecretScanResults(params = {}) {
   } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
   let url = `${backendElasticApiEndPoint()}/secret/scan_results?lucene_query=${luceneQueryEscaped}`;
-  const body = {
-    filters,
-    start_index,
-    size,
-  };
-  return doRequest({
-    url,
-    method: 'POST',
-    data: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-      'cache-control': 'no-cache',
-    },
-    error: error => {
-      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
-        // dispatch(receiveLogoutResponse());
-        refreshAuthToken();
-      } else if (error.status === 403) {
-        dispatch(receiveClearDashBoardResponse());
-      } else {
-        log(`Error in api modal details request: ${error}`);
-      }
-    },
-  });
-}
-
-export function getMalwareScanResults(params = {}) {
-  const {
-    dispatch,
-    filters,
-    start_index,
-    size,
-    lucene_query: luceneQuery = [],
-  } = params;
-  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  let url = `${backendElasticApiEndPoint()}/malware/scan_results?lucene_query=${luceneQueryEscaped}`;
   const body = {
     filters,
     start_index,
@@ -2511,24 +2394,6 @@ export function getTopSecretScanContainerAndHosts(params) {
   }).then(errorHandler);
 }
 
-
-export function getTopMalwareScanContainerAndHosts(params) {
-
-  const { luceneQuery = [] } = params;
-
-  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-
-  const url = `${backendElasticApiEndPoint()}/malware/top_exposing_nodes?lucene_query=${luceneQueryEscaped}`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  }).then(errorHandler);
-}
-
 export function getSecretScanReportChart(params) {
   const { globalSearchQuery = [] } = params;
 
@@ -2545,60 +2410,8 @@ export function getSecretScanReportChart(params) {
   }).then(errorHandler);
 }
 
-export function getMalwareScanReportChart(params) {
-  const { globalSearchQuery = [] } = params;
-
-  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(globalSearchQuery));
-
-  const url = `${backendElasticApiEndPoint()}/malware/report?lucene_query=${luceneQueryEscaped}`;
-  return fetch(url, {
-    credentials: 'same-origin',
-    method: 'GET',
-    headers: {
-      // 'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-  }).then(errorHandler);
-}
-
 export function getSecretScanChartData(params, dispatch) {
   let url = `${backendElasticApiEndPoint()}/secret/secret_severity_chart?number=${params.number
-    }&time_unit=${params.time_unit}`;
-  if (params.lucene_query.length !== 0) {
-    const luceneQuery = getLuceneQuery(params.lucene_query);
-    url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
-  }
-  let body = {};
-  const { scan_id } = params;
-  body = {
-    filters: {
-      scan_id,
-    },
-  };
-  return doRequest({
-    url,
-    method: 'POST',
-    data: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-      'cache-control': 'no-cache',
-    },
-    error: error => {
-      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
-        // dispatch(receiveLogoutResponse());
-        refreshAuthToken();
-      } else if (error.status === 403) {
-        dispatch(receiveClearDashBoardResponse());
-      } else {
-        log(`Error in api modal details request: ${error}`);
-      }
-    },
-  });
-}
-
-export function getMalwareScanChartData(params, dispatch) {
-  let url = `${backendElasticApiEndPoint()}/malware/malware_severity_chart?number=${params.number
     }&time_unit=${params.time_unit}`;
   if (params.lucene_query.length !== 0) {
     const luceneQuery = getLuceneQuery(params.lucene_query);
@@ -2682,57 +2495,6 @@ export function secretScanUnmaskDocs(dispatch, params) {
     },
   });
 };
-
-export function malwareScanMaskDocs(dispatch, params) {
-  let url = `${backendElasticApiEndPoint()}/malware/mask-doc`;
-  return doRequest({
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-    data: JSON.stringify(params),
-    url,
-    success: response => {
-      if (response.status === 204) {
-        getCloudCredentials(dispatch);
-      }
-    },
-    error: error => {
-      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
-        refreshAuthToken();
-      } else {
-        log(`Error in api login ${error}`);
-      }
-    },
-  });
-};
-
-export function malwareScanUnmaskDocs(dispatch, params) {
-  let url = `${backendElasticApiEndPoint()}/malware/unmask-doc`;
-  return doRequest({
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: getAuthHeader(),
-    },
-    data: JSON.stringify(params),
-    url,
-    success: response => {
-      if (response.status === 204) {
-        getCloudCredentials(dispatch);
-      }
-    },
-    error: error => {
-      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
-        refreshAuthToken();
-      } else {
-        log(`Error in api login ${error}`);
-      }
-    },
-  });
-};
-
 
 export function startComplianceScan(params ={}) {
   const { nodeId, checkTypes, cloudType} = params;
@@ -3090,3 +2852,237 @@ export function getAttackGraphNodeInfo(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function startMalwareScan(params = {}) {
+  const { nodeId, nodeType } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/malware_scan_start?scope_id=${nodeId}&node_type=${nodeType}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getMalwareScanStatus(params = {}) {
+  const { imageId } = params;
+  const imageIdEscaped = encodeURIComponent(imageId);
+  const url = `${backendElasticApiEndPoint()}/malware-scan/${imageIdEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function malwareScanRegistryImages(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/malware/scan_registry`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getMalwareScanData(params = {}) {
+  const {
+    dispatch,
+    filters,
+    start_index,
+    size,
+    lucene_query: luceneQuery = []
+  } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  let url = `${backendElasticApiEndPoint()}/malware/node_report?lucene_query=${luceneQueryEscaped}`;
+  const body = {
+    filters,
+    start_index,
+    size,
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
+export function getMalwareScanResults(params = {}) {
+  const {
+    dispatch,
+    filters,
+    start_index,
+    size,
+    lucene_query: luceneQuery = [],
+  } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+  let url = `${backendElasticApiEndPoint()}/malware/scan_results?lucene_query=${luceneQueryEscaped}`;
+  const body = {
+    filters,
+    start_index,
+    size,
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
+export function getTopMalwareScanContainerAndHosts(params) {
+
+  const { luceneQuery = [] } = params;
+
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  const url = `${backendElasticApiEndPoint()}/malware/top_exposing_nodes?lucene_query=${luceneQueryEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getMalwareScanReportChart(params) {
+  const { globalSearchQuery = [] } = params;
+
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(globalSearchQuery));
+
+  const url = `${backendElasticApiEndPoint()}/malware/report?lucene_query=${luceneQueryEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      // 'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function getMalwareScanChartData(params, dispatch) {
+  let url = `${backendElasticApiEndPoint()}/malware/malware_severity_chart?number=${params.number
+    }&time_unit=${params.time_unit}`;
+  if (params.lucene_query.length !== 0) {
+    const luceneQuery = getLuceneQuery(params.lucene_query);
+    url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
+  }
+  let body = {};
+  const { scan_id } = params;
+  body = {
+    filters: {
+      scan_id,
+    },
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
+export function malwareScanMaskDocs(dispatch, params) {
+  let url = `${backendElasticApiEndPoint()}/malware/mask-doc`;
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(params),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};
+
+export function malwareScanUnmaskDocs(dispatch, params) {
+  let url = `${backendElasticApiEndPoint()}/malware/unmask-doc`;
+  return doRequest({
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    data: JSON.stringify(params),
+    url,
+    success: response => {
+      if (response.status === 204) {
+        getCloudCredentials(dispatch);
+      }
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        refreshAuthToken();
+      } else {
+        log(`Error in api login ${error}`);
+      }
+    },
+  });
+};
