@@ -31,7 +31,7 @@ export const classes = {
       'border-gray-300 text-gray-500',
       'focus:border-blue-600 focus:text-gray-900',
       'dark:border-gray-600 dark:text-gray-400',
-      'dark:focus:border-blue-600 dark:focus:text-white dark:active:text-white',
+      'dark:focus:border-blue-800 dark:focus:text-white dark:active:text-white',
     ),
     error: cx('border-red-500 text-red-700', 'focus:border-red-500 focus:text-red-500'),
     success: cx(
