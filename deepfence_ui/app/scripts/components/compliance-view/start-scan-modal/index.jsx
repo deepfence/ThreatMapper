@@ -312,20 +312,8 @@ const checkTypes = {
   ],
   kubernetes: [
     {
-      id: 'hipaa',
-      displayName: 'HIPAA',
-    },
-    {
-      id: 'gdpr',
-      displayName: 'GDPR',
-    },
-    {
-      id: 'pci',
-      displayName: 'PCI',
-    },
-    {
-      id: 'nist',
-      displayName: 'NIST',
+      id: 'cis',
+      displayName: 'CIS',
     },
   ],
   gcp: [
