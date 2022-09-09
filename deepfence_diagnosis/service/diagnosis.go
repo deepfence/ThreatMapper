@@ -33,6 +33,7 @@ var (
 const (
 	CELERY_CONTAINER                 = "deepfence-celery"
 	VULNERABILITY_CONTAINER_LOG_PATH = "/var/log/vulnerability_scan_logs/"
+	HAPROXY_LOGS_PATH                = "/var/log/haproxy"
 )
 
 func init() {
@@ -225,6 +226,93 @@ func addSupervisorLogsDocker(container types.Container, tarWriter *tar.Writer) e
 	return nil
 }
 
+func addHaproxyLogsKubernetes(pod v1.Pod, tarWriter *tar.Writer) error {
+
+	if !strings.Contains(pod.Name, "router") {
+		return nil
+	}
+
+	randID := uuid.New().String()
+	tmpFolder := "/tmp/" + randID + "/haproxy-logs/" + pod.Name
+	_ = os.MkdirAll(tmpFolder, os.ModePerm)
+	command := fmt.Sprintf("kubectl cp %s/%s:%s %s",
+		pod.Namespace, pod.Name, HAPROXY_LOGS_PATH, tmpFolder)
+	_, err := ExecuteCommand(command)
+	if err != nil {
+		return err
+	}
+	filepath.Walk(tmpFolder,
+		func(file string, fi os.FileInfo, err error) error {
+			// generate tar header
+			header, herr := tar.FileInfoHeader(fi, file)
+			if herr != nil {
+				return herr
+			}
+
+			// here number 3 has been used to cut some nested path values in tar writer
+			// like if path is /tmp/some1/some2/some3 then dir structure in tar will be /some2/some3
+			header.Name = strings.Join(strings.Split(filepath.ToSlash(file), "/")[3:], "/")
+
+			if err := tarWriter.WriteHeader(header); err != nil {
+				return err
+			}
+			// if not a dir, write file content
+			if !fi.IsDir() {
+				data, err := os.Open(file)
+				if err != nil {
+					return err
+				}
+				if _, err := io.Copy(tarWriter, data); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	)
+	os.RemoveAll("/tmp/" + randID)
+	return nil
+}
+
+func addHaproxyLogsDocker(container types.Container, tarWriter *tar.Writer) error {
+	containerName := strings.Trim(container.Names[0], "/")
+
+	if !strings.Contains(containerName, "router") {
+		return nil
+	}
+
+	tarStream, err := copyFromContainer(container.ID, HAPROXY_LOGS_PATH)
+	if err != nil {
+		return nil
+	}
+
+	tr := tar.NewReader(tarStream)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break // end of tar archive
+		}
+		if err != nil {
+			break
+		}
+		logBytes, err := ioutil.ReadAll(tr)
+		if err != nil {
+			break
+		}
+		if hdr.FileInfo().IsDir() {
+			hdr.Name = containerName
+		} else {
+			hdr.Name = containerName + "/" + hdr.Name
+		}
+		if err := tarWriter.WriteHeader(hdr); err != nil {
+			break
+		}
+		if _, err := tarWriter.Write(logBytes); err != nil {
+			break
+		}
+	}
+	return nil
+}
+
 func (t *diagnosisT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	filename := "deepfence-logs"
 	// w.Header().Set("Content-Encoding", "gzip")
@@ -302,6 +390,10 @@ func (t *diagnosisT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				fmt.Println(err)
 			}
+			err = addHaproxyLogsKubernetes(pod, tarWriter)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	} else {
 		values := r.URL.Query()
@@ -316,7 +408,6 @@ func (t *diagnosisT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Filters: containerFilters,
 			All:     true,
 		})
-		celeryContainer, _ := getContainer(CELERY_CONTAINER, containers)
 
 		logOptions := types.ContainerLogsOptions{
 			ShowStdout: true,
@@ -324,6 +415,7 @@ func (t *diagnosisT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Tail:       tail,
 		}
 
+		celeryContainer, _ := getContainer(CELERY_CONTAINER, containers)
 		// get vulnerability mapper logs
 		if celeryContainer.Names != nil {
 			err := addVulnerabilityLogsDocker(celeryContainer, tarWriter)
@@ -360,6 +452,10 @@ func (t *diagnosisT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			err = addSupervisorLogsDocker(container, tarWriter)
+			if err != nil {
+				fmt.Println(err)
+			}
+			err = addHaproxyLogsDocker(container, tarWriter)
 			if err != nil {
 				fmt.Println(err)
 			}
