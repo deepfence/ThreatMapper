@@ -27,12 +27,12 @@ spec:
       serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
         {{- if .Values.saas_deployment }}
-        - name: promtail-sidecar-deepfence-api
+        - name: promtail-sidecar-deepfence-router
           image: grafana/promtail:2.5.0
           args:
           - '-config.expand-env'
           - '-config.file=/etc/promtail/config.yml'
-          - '-client.external-labels=cluster={{ .Values.saas_env.clusterName }},env={{ .Values.saas_env.name }},clustertype=workloads,container=deepfence-api'
+          - '-client.external-labels=cluster={{ .Values.saas_env.clusterName }},env={{ .Values.saas_env.name }},clustertype=workloads,container=deepfence-router'
           env:
           - name: NODE_NAME
             valueFrom:
