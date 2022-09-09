@@ -36,4 +36,12 @@ data:
             node_name: ${NODE_NAME}
             namespace: ${NAMESPACE_NAME}
             __path__: "/var/log/supervisor/*.log"
+        - targets:
+          - localhost
+          labels:
+            job: haproxy-logs
+            pod: ${POD_NAME}
+            node_name: ${NODE_NAME}
+            namespace: ${NAMESPACE_NAME}
+            __path__: "/var/log/haproxy/*.log"
 {{- end }}
