@@ -1012,7 +1012,7 @@ def start_cloud_compliance_scan(node_id):
                 "result": {},
                 "node_id": node_id,
                 "node_type": COMPLIANCE_KUBERNETES_HOST,
-                "compliance_check_type": "hipaa",
+                "compliance_check_type": "cis",
                 "masked": "false",
                 "node_name": "",
                 "host_name": node_id,
@@ -1027,7 +1027,7 @@ def start_cloud_compliance_scan(node_id):
             ESConn.create_doc(COMPLIANCE_LOGS_INDEX, es_doc)
             scan_list = [{
                 "scan_id": scan_id,
-                "scan_type": "hipaa",
+                "scan_type": "cis",
                 "account_id": node_id
             }]
             redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id, json.dumps(scan_list))
