@@ -41,3 +41,10 @@ WithRowsAndColumnn.args = {
   rows: 10,
   cols: 30,
 };
+
+export const CustomWidth = Template.bind({});
+CustomWidth.args = {
+  placeholder: 'Hello Deepfence',
+  label: 'Comment',
+  width: 'w-4/12',
+};
