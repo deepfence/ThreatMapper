@@ -31,7 +31,7 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
-    INVITE_EXPIRY
+    INVITE_EXPIRY, CVE_ES_TYPE
 from utils import constants
 from config.redisconfig import redis
 from utils.response import set_response
@@ -2161,7 +2161,7 @@ def notify_to_integrations():
 
     missing_alerts = []
     notified_alerts = []
-    allowed_indices = [CVE_INDEX]
+    allowed_indices = [CVE_ES_TYPE]
 
     index_wise_content_list = defaultdict(list)
     for doc in docs:
@@ -2187,7 +2187,7 @@ def notify_to_integrations():
                                   user_notifications}.values()
             for notification in user_notifications:
                 try:
-                    notification.send(docs_list)
+                    notification.send(docs_list, notification_id=notification.id)
                 except Exception as ex:
                     app.logger.error("Error sending notification: {0}".format(ex))
 
