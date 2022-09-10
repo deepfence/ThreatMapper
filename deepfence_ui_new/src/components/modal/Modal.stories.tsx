@@ -35,6 +35,7 @@ export const ModalWithTrigger = () => {
         footer={<div className={''}>This is Footer</div>}
         open={open}
         onOpenChange={() => setOpen(false)}
+        elementToFocusOnCloseRef={ref}
       >
         <div className="dark:text-white">This is a content</div>
       </Modal>
@@ -44,16 +45,18 @@ export const ModalWithTrigger = () => {
 
 export const WithoutTitle = () => {
   const [open, setOpen] = useState(false);
+  const ref = useRef(null);
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
         Click to open
       </Button>
       <Modal
         footer={<div className={''}>This is Footer</div>}
         open={open}
         onOpenChange={() => setOpen(false)}
+        elementToFocusOnCloseRef={ref}
       >
         <div className="dark:text-white">This is a content</div>
       </Modal>
