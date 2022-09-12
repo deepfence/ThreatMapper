@@ -6,14 +6,18 @@ import { HiX } from 'react-icons/hi';
 
 import Separator from '../separator/Separator';
 
+interface FocusableElement {
+  focus(options?: FocusOptions): void;
+}
+
 type ChildrenType = {
   children: React.ReactNode;
 };
 export interface ModalProps extends DialogPrimitive.DialogProps {
-  onOpenChange: (value: boolean) => void;
   width?: string;
   title?: string;
   footer?: React.ReactNode;
+  elementToFocusOnCloseRef?: React.RefObject<FocusableElement>;
 }
 
 const ModalHeader: FC<{ title?: string }> = ({ title }) => {
@@ -71,22 +75,17 @@ const ModalFooter: FC<ChildrenType> = ({ children }) => {
 };
 
 // TODO: To make modal body scrollable with fixed header and footer
-// TODO: To focus on the trigger element after modal is closed
 
 export const Modal: FC<ModalProps> = ({
   title,
   children,
   footer,
+  elementToFocusOnCloseRef,
   width = 'w-4/12', // 33.333333%
-  onOpenChange,
   ...rest
 }) => {
-  const _onOpenChange = (value: boolean) => {
-    onOpenChange(value);
-  };
-
   return (
-    <DialogPrimitive.Root {...rest} onOpenChange={_onOpenChange}>
+    <DialogPrimitive.Root {...rest}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 dark:bg-black/80 animate-overlay-in h-full">
           <DialogPrimitive.Content
@@ -97,6 +96,7 @@ export const Modal: FC<ModalProps> = ({
               'max-w-[90%]',
               `${width}`,
             )}
+            onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           >
             <ModalHeader title={title} />
             <div className="p-6 overflow-y-auto h-full">{children}</div>

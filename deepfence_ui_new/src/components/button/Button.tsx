@@ -15,6 +15,7 @@ interface ButtonProps extends Omit<ComponentProps<'button'>, 'color'> {
   shape?: ButtonShape;
   outline?: boolean;
   color?: ColorType;
+  className?: string;
 }
 
 export const classes = {
@@ -37,7 +38,7 @@ export const classes = {
   },
   outline: {
     default:
-      'bg-white text-gray-800 ring-1 ring-gray-900 hover:bg-gray-800 hover:text-white focus:ring-2 focus:ring-gray-200',
+      'bg-white text-gray-800 ring-1 ring-gray-900 hover:bg-gray-800 hover:text-white focus:ring-1 focus:ring-gray-200 dark:ring-white',
     primary:
       'bg-white ring-1 ring-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white focus:ring-2 focus:ring-blue-300',
     danger:
