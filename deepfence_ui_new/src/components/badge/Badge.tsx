@@ -75,7 +75,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
           {icon && (
             <IconContext.Provider
               value={{
-                className: cx(`${classes.color[color]} ${classes.icon[sizing]}`),
+                className: cx(`${classes.icon[sizing]}`),
               }}
             >
               {icon}

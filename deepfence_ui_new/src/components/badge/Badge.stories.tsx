@@ -98,3 +98,33 @@ export const WithCloseAction = () => {
     </>
   );
 };
+
+export const CustomColor = () => {
+  const dummy = [
+    {
+      id: 'default',
+      value: 'default',
+      label: 'Default',
+    },
+  ];
+  const [badges] = useState(dummy);
+  return (
+    <>
+      <div className="flex gap-2">
+        {badges.map(({ id, label, value }, i) => (
+          <Badge
+            key={i}
+            label={label}
+            id={id}
+            value={value}
+            color={value as ColorType}
+            sizing="md"
+            icon={<HiInformationCircle />}
+            isRemove={true}
+            className={'bg-lime-700 text-teal-300'}
+          />
+        ))}
+      </div>
+    </>
+  );
+};
