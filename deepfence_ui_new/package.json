@@ -30,6 +30,7 @@
     "@radix-ui/react-tabs": "^1.0.0",
     "@radix-ui/react-tooltip": "^1.0.0",
     "@storybook/addon-a11y": "^6.5.10",
+    "ariakit": "2.0.0-next.41",
     "classnames": "^2.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

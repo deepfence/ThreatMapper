@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 const tailwindRadix = require('tailwindcss-radix');
+const plugin = require('tailwindcss/plugin');
 
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
@@ -196,7 +197,7 @@ module.exports = {
           '0%': { opacity: 0, transform: 'translateX(2px)' },
           '100%': { opacity: 1, transform: 'translateX(0)' },
         },
-        // dropdown menu
+        // dropdown menu & select
         'scale-in': {
           '0%': { opacity: 0, transform: 'scale(0)' },
           '100%': { opacity: 1, transform: 'scale(1)' },
@@ -216,7 +217,7 @@ module.exports = {
         'slide-right-fade': 'slide-right-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-down-fade': 'slide-down-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-left-fade': 'slide-left-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-        // dropdown menu
+        // dropdown menu & select
         'scale-in': 'scale-in 0.2s ease-in-out',
         'slide-down': 'slide-down 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-up': 'slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -225,5 +226,11 @@ module.exports = {
       },
     },
   },
-  plugins: [tailwindRadix()],
+  plugins: [
+    tailwindRadix(),
+    plugin(({ addVariant }) => {
+      addVariant('data-active-item', '&[data-active-item]');
+      addVariant('data-focus-visible', '&[data-focus-visible]');
+    }),
+  ],
 };
