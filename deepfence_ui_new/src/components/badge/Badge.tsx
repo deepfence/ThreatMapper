@@ -67,7 +67,6 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
               `${Typography.weight.normal} inline-flex gap-1.5 justify-center items-center rounded-md text-gray-900 dark:text-white`,
               `${classes.size[sizing]}`,
               `${classes.color[color]}`,
-              'flex',
             ),
             className,
           )}
@@ -90,7 +89,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
               className="rounded ml-0.5 p-px hover:text-black hover:scale-105 focus:ring-1 focus:ring-blue-600 focus:outline-none "
               onClick={() => onRemove?.({ id: _id, value: value })}
               name={label}
-              aria-label="label"
+              aria-label={label}
             >
               <HiX />
             </button>
