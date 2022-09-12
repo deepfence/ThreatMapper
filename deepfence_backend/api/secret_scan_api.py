@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import json
 from datetime import datetime
 
@@ -431,7 +432,9 @@ def secret_scan_results():
         "node_type": constants.NODE_TYPE_CONTAINER_IMAGE,
         "image_name_with_tag_list": registry_images["image_name_with_tag_list"]}
     response = requests.post(constants.SECRET_SCAN_API_URL, data=scan_details)
+    
     status_code = response.status_code
+    logger.info("reached here", status_code)
     if status_code != 200:
         InternalError(response.text)
     return set_response("Ok")
