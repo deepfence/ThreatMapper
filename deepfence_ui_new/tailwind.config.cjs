@@ -210,6 +210,12 @@ module.exports = {
           '0%': { opacity: 0, transform: 'translateY(10px)' },
           '100%': { opacity: 1, transform: 'translateY(0)' },
         },
+        'slide-right-in': {
+          '100%': { right: 0 },
+        },
+        'slide-right-out': {
+          '0%': { right: 0 },
+        },
       },
       animation: {
         // tooltip
@@ -223,6 +229,8 @@ module.exports = {
         'slide-up': 'slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         // modal
         'modal-in': 'scale-in 150ms cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards',
+        'slide-right-in': 'slide-right-in 0.5s forwards',
+        'slide-right-out': 'slide-right-out 0.50s forwards',
       },
     },
   },
