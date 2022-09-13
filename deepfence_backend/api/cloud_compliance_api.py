@@ -6,6 +6,7 @@ import time
 from sqlalchemy import func, exc
 from urllib.parse import unquote
 from config.app import db
+from models.notification import CloudtrailAlertNotification
 from utils.decorators import non_read_only_user
 from models.cloud_resource_node import CloudResourceNode
 from models.compliance_rules_disabled import ComplianceRulesDisabled
@@ -1251,7 +1252,7 @@ def register_cloud_account():
                 for trail in notification.filters.get(FILTER_TYPE_CLOUDTRAIL_TRAIL, []):
                     account_id, trail_name = trail.split("/", 1)
                     node_id = "aws-{};<cloud_account>".format(account_id)
-                    if node_id in account_trails_map:
+                    if node_id not in account_trails_map:
                         if trail_name not in account_trails_map.get(node_id, []):
                             trail_item = {
                                 "account_id": account_id,
