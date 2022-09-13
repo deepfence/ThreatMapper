@@ -187,6 +187,11 @@ class CloudtrailAlertNotification(Notification):
     __table_args__ = (
         UniqueConstraint('filters', 'integration_id', name='cloudtrail_alert_notification_constraint'),)
 
+    cloudtrail_alert_doc_fields_map = {
+        "eventName": "Event Name", "eventSource": "Event Source", "eventTime": "Event Time", "eventID": "Event ID",
+        "awsRegion": "AWS Region", "@timestamp": "@timestamp", "sourceIPAddress": "Source IP Address",
+        "eventType": "Event Type", "recipientAccountId": "Recipient Account ID"}
+
     def pretty_print(self):
         conf = self.integration.pretty_print()
         filters = self.filters
@@ -207,11 +212,11 @@ class CloudtrailAlertNotification(Notification):
     @classmethod
     def format_content(cls, contents):
         if len(contents) > 1:
-            return {"contents": contents, "prefix": "",
-                    "dump_indent": 4, "iteration_prefix": "CloudTrail Event #{}"}
+            return {"contents": contents, "prefix": "", "dump_indent": 4,
+                    "iteration_prefix": "CloudTrail Event #{}", "doc_fields_map": cls.cloudtrail_alert_doc_fields_map}
         else:
             return {"contents": contents, "prefix": "",
-                    "dump_indent": 4, "iteration_prefix": ""}
+                    "dump_indent": 4, "iteration_prefix": "", "doc_fields_map": cls.cloudtrail_alert_doc_fields_map}
 
     def send(self, contents, **kwargs):
         self.integration.send(self.format_content(contents),
