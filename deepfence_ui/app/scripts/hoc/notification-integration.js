@@ -16,7 +16,7 @@ import { getIntegrations } from '../utils/web-api-utils';
 import {
   DURATION_DROPDOWN_COLLECTION,
   NOTIFICATION_RESOURCE_OPTIONS,
-  NOTIFICATION_RESOURCE_OPTIONS_CLOUDTRAIL,
+  NOTIFICATION_RESOURCE_OPTIONS_CLOUDTRAIL
 } from '../constants/dropdown-option-collection';
 import AdvanceFilterOption, {
   AdvancedFilterModalContent,
