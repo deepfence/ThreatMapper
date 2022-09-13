@@ -6,7 +6,7 @@ from models.user import User
 from tasks.notification import filter_vulnerability_notification
 from models.integration import Integration
 from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, \
-    NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_POD, CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT
+    NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_POD, CVE_ES_TYPE, CLOUDTRAIL_ALERT_ES_TYPE
 from utils.helper import websocketio_channel_name_format
 
 
@@ -49,7 +49,7 @@ def notification_task(self, **kwargs):
                                          notification_id=notification.id, resource_type=CVE_ES_TYPE)
                     except Exception as ex:
                         flask_app.logger.error("Error sending notification: {0}".format(ex))
-            elif notification_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT:
+            elif notification_type == CLOUDTRAIL_ALERT_ES_TYPE:
                 cloudtrail_notifications = CloudtrailAlertNotification.query.filter(
                     CloudtrailAlertNotification.user_id.in_(active_user_ids),
                     CloudtrailAlertNotification.duration_in_mins == -1).all()
@@ -62,7 +62,7 @@ def notification_task(self, **kwargs):
                         integration.send(notification.format_content(data),
                                          summary="Deepfence - Cloudtrail Alerts Subscription",
                                          notification_id=notification.id,
-                                         resource_type=NOTIFICATION_TYPE_CLOUDTRAIL_ALERT)
+                                         resource_type=CLOUDTRAIL_ALERT_ES_TYPE)
                     except Exception as ex:
                         flask_app.logger.error("Error sending notification: {0}".format(ex))
     except Exception as exc:
