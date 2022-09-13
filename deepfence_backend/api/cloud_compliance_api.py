@@ -442,8 +442,71 @@ def cloud_compliance_scan_nodes():
     if cloud_provider == "kubernetes":
         nodes_list = []
         cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
+        node_ids = []
         for node in cloud_compliance_nodes:
-            nodes_list.append({"node_name": node.node_id, "node_id": node.node_id, "enabled": (datetime.now().timestamp() - node["updated_at"] < 250.0)})
+            nodes_list.append({"node_name": node.node_id, "node_id": node.node_id,
+                               "enabled": (datetime.now().timestamp() - node["updated_at"] < 250.0)})
+            node_ids.append(node.node_id)
+        filters = {
+            "scan_status": "COMPLETED",
+            "node_id": node_ids
+        }
+        aggs = {
+            "node_id": {
+                "terms": {
+                    "field": "node_id.keyword",
+                    "size": ES_TERMS_AGGR_SIZE
+                },
+                "aggs": {
+                    "compliance_check_type": {
+                        "terms": {
+                            "field": "compliance_check_type.keyword",
+                            "size": ES_TERMS_AGGR_SIZE
+                        },
+                        "aggs": {
+                            "docs": {
+                                "top_hits": {
+                                    "size": 1,
+                                    "sort": [{"@timestamp": {"order": "desc"}}],
+                                    "_source": {"includes": ["result"]}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        aggs_response = ESConn.aggregation_helper(COMPLIANCE_LOGS_INDEX, filters, aggs, number,
+                                                  TIME_UNIT_MAPPING.get(time_unit), lucene_query_string)
+        node_compliance_percentage = {}
+        if "aggregations" in aggs_response:
+            cloud_total = defaultdict(int)
+            for node_id_aggr in aggs_response['aggregations']['node_id']['buckets']:
+                total = defaultdict(int)
+                for compliance_check_type_aggr in node_id_aggr['compliance_check_type']['buckets']:
+                    if compliance_check_type_aggr["key"] not in COMPLIANCE_CHECK_TYPES.get(cloud_provider, []):
+                        continue
+                    result_docs = compliance_check_type_aggr.get('docs', {}).get('hits', {}).get('hits', [])
+                    if result_docs:
+                        result = result_docs[0]['_source']['result']
+                        if result['alarm'] > 0:
+                            total['alarm'] += result['alarm']
+                            cloud_total['alarm'] += result['alarm']
+                        if result['info'] > 0:
+                            total['info'] += result['info']
+                            cloud_total['info'] += result['info']
+                        if result['ok'] > 0:
+                            total['ok'] += result['ok']
+                            cloud_total['ok'] += result['ok']
+                        if result['skip'] > 0:
+                            total['skip'] += result['skip']
+                            cloud_total['skip'] += result['skip']
+                if total:
+                    node_compliance_percentage[node_id_aggr['key']] = \
+                        (total['ok'] + total['info']) * 100 / \
+                        (total['ok'] + total['info'] + total['alarm'] + total['skip'])
+        for node_item in nodes_list:
+            node_item["compliance_percentage"] = node_compliance_percentage.get(node_item["node_id"], 0.0)
         return set_response({"nodes": nodes_list})
 
     cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
