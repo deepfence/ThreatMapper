@@ -445,7 +445,7 @@ def cloud_compliance_scan_nodes():
         node_ids = []
         for node in cloud_compliance_nodes:
             nodes_list.append({"node_name": node.node_id, "node_id": node.node_id,
-                               "enabled": (datetime.now().timestamp() - node.updated_at < 250.0)})
+                               "enabled": (datetime.now().timestamp() - node.updated_at.timestamp() < 250.0)})
             node_ids.append(node.node_id)
         filters = {
             "scan_status": "COMPLETED",
