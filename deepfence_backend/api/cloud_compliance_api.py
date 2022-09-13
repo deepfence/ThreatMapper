@@ -443,7 +443,7 @@ def cloud_compliance_scan_nodes():
         nodes_list = []
         cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
         for node in cloud_compliance_nodes:
-            nodes_list.append({"node_name": node.node_id, "node_id": node.node_id, "enabled": True})
+            nodes_list.append({"node_name": node.node_id, "node_id": node.node_id, "enabled": (datetime.now().timestamp() - node["updated_at"] < 250.0)})
         return set_response({"nodes": nodes_list})
 
     cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
@@ -837,8 +837,12 @@ def cloud_compliance_node_scans():
             else:
                 added_scan_id[source.get("scan_id", "")] =  True
             result = source.get("result", {})
-            total = result.get("pass", 0) + result.get("warn", 0) + result.get("note", 1)
-            checks_passed = result.get("pass", 0)
+            if request.args.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
+                total = result.get("alarm", 0) + result.get("error", 0) + result.get("ok", 1) + result.get("info", 1)
+                checks_passed = result.get("ok", 0)
+            else:
+                total = result.get("pass", 0) + result.get("warn", 0) + result.get("note", 1)
+                checks_passed = result.get("pass", 0)
             total = 1 if total == 0 else total
             source["result"]["compliance_percentage"] = (checks_passed * 100) / total
             es_resp.get("hits").append(scan)
