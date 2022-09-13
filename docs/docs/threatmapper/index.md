@@ -23,7 +23,7 @@ Your 'Shift Left' initiatives enable you to deliver secure applications to produ
 #### Discover:
 
 * **Discover Running Workloads:** ThreatMapper scans your platforms and identifies pods, containers, applications, and infrastructure.  Use ThreatMapper to discover the topology of your applications and attack surface.
-* **Discover Cloud and Infrastructure Assets:** ThreatMapper queries platform APIs to map assets and their inter-relationships, and calcualate a topology graph.
+* **Discover Cloud and Infrastructure Assets:** ThreatMapper queries platform APIs to map assets and their interrelationships, and calculate a topology graph.
 
 #### Find Threats:
 

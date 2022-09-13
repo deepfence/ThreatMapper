@@ -54,7 +54,7 @@ Select the compliance benchmarks you wish to run on the target cloud instance or
 
 You can preview the controls that will be run for each benchmark, and you can select an action to mask (or unmask) specific controls.
 
-Click **Start Scan** once you have completed your select.  The Cloud Connector or Sensor Agent will then perform the scan and in due course, will submit the results to your ThreatMapper console.
+Click **Start Scan** once you have completed your selection. The Cloud Connector or Sensor Agent will then perform the scan and in due course, will submit the results to your ThreatMapper console.
 
 ## Inspecting Scan Results
 

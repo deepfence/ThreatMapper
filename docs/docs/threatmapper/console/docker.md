@@ -10,7 +10,7 @@ You can install the Management Console on a single Docker host or [in a dedicate
 
 ## Install the ThreatMapper Management Console - Single Docker Host
 
-The following instructions explain how to get started with a docker-based install on a single host system:
+The following instructions explain how to get started with a docker-based installation on a single host system:
 
 1. Prepare the host by installing the necessary docker and docker-compose packages. [Increase Virtual Memory settings](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html) as required by the ElasticSearch component:
 

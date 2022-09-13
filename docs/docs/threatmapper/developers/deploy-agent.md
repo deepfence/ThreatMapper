@@ -4,7 +4,7 @@ title: Deploy Sensors
 
 # Deploy custom ThreatMapper Sensor Agents
 
-You should first [build the management console an dagents](build) and push the images to a suitable repository.  You can then adapt the standard installation instructions ([Docker](../sensors/docker), [Kubernetes](../sensors/kubernetes)) to refer to your custom images rather than the Deepfence-provided ones.
+You should first [build the management console and agents](build) and push the images to a suitable repository.  You can then adapt the standard installation instructions ([Docker](../sensors/docker), [Kubernetes](../sensors/kubernetes)) to refer to your custom images rather than the Deepfence-provided ones.
 
 
 ## Installing and Running the Sensor Agents on a Docker Host
@@ -33,7 +33,7 @@ docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=ho
 Refer to the [Kubernetes Installation Instructions](../sensors/kubernetes) along with the modifications below.
 :::
 
-You can use these instructions for helm-based installs in standalone and hosted Kubernetes clusters
+You can use these instructions for helm-based installations in standalone and hosted Kubernetes clusters
 
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper

@@ -26,7 +26,7 @@ For your convenience, the ThreatMapper management console provides the default i
 | :--: |
 | Default Agent Setup (URL and Key masked) |
 
-More detailed instuctions are as follows:
+More detailed instructions are as follows:
 
 ```mdx-code-block
 import DocCardList from '@theme/DocCardList';

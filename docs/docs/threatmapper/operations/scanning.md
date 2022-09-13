@@ -24,7 +24,7 @@ The first thing you may want to do is to start a Vulnerability scan of some of y
 
 2. Chose what you would like to scan:
    * ThreatMapper scans the base operating system, and optionally runs language scans on the object.
-   * Under **Advanced Options**, you can chose to extend the scan to a wider set of objects, such as a Kubernetes namespace or entire Kubernetes cluster.
+   * Under **Advanced Options**, you can choose to extend the scan to a wider set of objects, such as a Kubernetes namespace or entire Kubernetes cluster.
 
    ![Vulnerability Scan - choose what to scan](../img/vulnscan-2.jpg)
 

@@ -25,5 +25,5 @@ When you run a compliance scan, you can select which benchmarks you wish to meas
 For full information, refer to [Operations: Compliance Scanning](../operations/compliance).
 
 :::tip Maximizing Coverage
-For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your AQzure infrastructure using Cloud Scanner, and [scan selected VMs deployed within Azure](other) using the Sensor Agent.
+For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your Azure infrastructure using Cloud Scanner, and [scan selected VMs deployed within Azure](other) using the Sensor Agent.
 :::

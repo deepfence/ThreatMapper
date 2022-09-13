@@ -62,7 +62,7 @@ Refer to the [Kubernetes Installation Instructions](../console/kubernetes) along
 
 4. Optional: enable external access with the `deepfence-router` package:
 
-    Refer to the the instructions to install the [Router](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-router), typically as follows:
+    Refer to the instructions to install the [Router](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-router), typically as follows:
    
     ```bash
     # Create the values file
