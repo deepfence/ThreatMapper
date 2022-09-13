@@ -207,9 +207,9 @@ class MicrosoftIntegrationView extends React.Component {
     );
 
     const filterObject = {
-      ...apiFilters, 
-      ...apiCloudTrailFilters
-    }
+      ...apiFilters,
+      ...apiCloudTrailFilters,
+    };
 
     if (webHookUrl) {
       const params = {
@@ -379,12 +379,14 @@ class MicrosoftIntegrationView extends React.Component {
                   )}
                 </div>
               </div>
-              <div>
-                <AdvanceFilterOption
-                  modalContent={this.getModalContent}
-                  filters={this.props.nodeFilters}
-                />
-              </div>
+              {resourceType && resourceType.value !== 'cloudtrail_alert' && (
+                <div>
+                  <AdvanceFilterOption
+                    modalContent={this.getModalContent}
+                    filters={this.props.nodeFilters}
+                  />
+                </div>
+              )}
               <br />
               <div className="form-group">
                 <button

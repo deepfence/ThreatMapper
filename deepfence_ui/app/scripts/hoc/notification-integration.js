@@ -190,9 +190,9 @@ const withIntegrationForm = WrappedComponent => {
       );
 
       const filterObject = {
-        ...apiFilters, 
-        ...apiCloudTrailFilters
-      }
+        ...apiFilters,
+        ...apiCloudTrailFilters,
+      };
 
       if (childFormComplete) {
         const params = {
@@ -407,12 +407,16 @@ const withIntegrationForm = WrappedComponent => {
                 )}
               </div>
               <br />
-              <div>
-                <AdvanceFilterOption
-                  modalContent={this.getModalContent}
-                  filters={this.props.nodeFilters}
-                />
-              </div>
+              {!cloudtrailCheck &&
+                resourceType &&
+                resourceType.value !== 'cloudtrail_alert' && (
+                  <div>
+                    <AdvanceFilterOption
+                      modalContent={this.getModalContent}
+                      filters={this.props.nodeFilters}
+                    />
+                  </div>
+                )}
               <br />
               <div className="form-group">{this.getEnabledBtnView()}</div>
             </div>
