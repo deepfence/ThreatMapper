@@ -205,7 +205,7 @@ COMPLIANCE_CHECK_TYPES = {
     COMPLIANCE_PROVIDER_GCP: ["cis", "cft-scorecard"],
     COMPLIANCE_PROVIDER_AZURE: ["cis", "nist", "hipaa"],
     COMPLIANCE_LINUX_HOST: ["hipaa", "gdpr", "pci", "nist"],
-    COMPLIANCE_KUBERNETES_HOST: ["hipaa", "gdpr", "pci", "nist"]
+    COMPLIANCE_KUBERNETES_HOST: ["cis"]
 }
 CSPM_RESOURCES = {
     "aws_s3_bucket": "aws_s3",
