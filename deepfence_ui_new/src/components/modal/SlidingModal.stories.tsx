@@ -53,6 +53,8 @@ export const WithoutTitle = () => {
   );
 };
 
+const Footer = () => <div>Footer</div>;
+
 export const LongContent = () => {
   const [open, setOpen] = useState(false);
   return (
@@ -60,9 +62,14 @@ export const LongContent = () => {
       <Button color="primary" onClick={() => setOpen(true)}>
         Click to open
       </Button>
-      <SlidingModal title="Modal Title" open={open} onOpenChange={() => setOpen(false)}>
+      <SlidingModal
+        title="Modal Title"
+        open={open}
+        onOpenChange={() => setOpen(false)}
+        footer={<Footer />}
+      >
         <div className="dark:text-white">
-          {Array.from(Array(20).keys()).map((k) => (
+          {Array.from(Array(30).keys()).map((k) => (
             <p key={k}>This is a content</p>
           ))}
         </div>
