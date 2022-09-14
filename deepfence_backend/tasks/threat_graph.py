@@ -5,7 +5,7 @@ from utils.scope import fetch_topology_data
 from utils.esconn import ESConn
 from utils.helper import get_topology_network_graph, get_recent_scan_ids, split_list_into_chunks
 from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, CLOUD_AWS, CLOUD_GCP, \
-    CLOUD_AZURE, THREAT_GRAPH_CACHE_KEY, THREAT_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
+    CLOUD_AZURE, NODE_TYPE_POD, NODE_TYPE_PROCESS, THREAT_GRAPH_CACHE_KEY, THREAT_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
     CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_INDEX, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, SECRET_SCAN_LOGS_INDEX, \
     TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
     SECRET_SCAN_INDEX, CLOUD_TOPOLOGY_COUNT
@@ -639,6 +639,21 @@ def _compute_threat_graph():
     neo4jg.add_host_entry({"node_id": internet_node_id(CLOUD_GCP), "node_type":"", "depth": 0,"cloud_provider": CLOUD_GCP})
     neo4jg.add_host_entry({"node_id": internet_node_id(pvt_cloud), "node_type":"", "depth": 0,"cloud_provider": pvt_cloud})
     neo4jg.add_host_entry({"node_id": outgoing_internet_host_id, "node_type":""})
+
+    topology_processes = fetch_topology_data(NODE_TYPE_PROCESS, format="scope")
+    for node_id, node_details in topology_processes.items():
+        if not node_details.get("adjacency"):
+            continue
+        neo4jg.add_host_process(node_details)
+        for adja in node_details.get("adjacency"):
+            neo4jg.add_connection_proc(node_details["id"], adja)
+    topology_pods = fetch_topology_data(NODE_TYPE_POD, format="scope")
+    for node_id, node_details in topology_pods.items():
+        if not node_details.get("adjacency"):
+            continue
+        neo4jg.add_pod_entry(node_details)
+        for adja in node_details.get("adjacency"):
+            neo4jg.add_connection_entry(node_details["id"], adja)
 
     topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
     topology_containers = fetch_topology_data(NODE_TYPE_CONTAINER, format="scope")
