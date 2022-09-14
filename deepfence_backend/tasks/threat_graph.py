@@ -14,6 +14,7 @@ from collections import defaultdict
 import json
 import requests
 import arrow
+from neo4j import GraphDatabase
 
 incoming_internet_host_id = "in-theinternet"
 outgoing_internet_host_id = "out-theinternet"
@@ -601,6 +602,135 @@ def attack_paths_to_graph(attack_paths, info):
             res.append(entry)
     return res
 
+def insert_into_neo4j():
+    topology_processes = fetch_topology_data(NODE_TYPE_PROCESS, format="scope")
+    process_nodes_batch = []
+    process_edges_batch = []
+    process_parent_batch = []
+    for node_id, node_details in topology_processes.items():
+        if not node_details.get("adjacency"):
+            continue
+        parent = node_details["id"].split(';')[0]
+        host_id = node_details["id"]
+        process_nodes_batch.append({'node_id': host_id})
+        process_parent_batch.append({'left': parent, 'right': host_id})
+        for adja in node_details.get("adjacency"):
+            process_edges_batch.append({'left': node_details["id"], 'right': adja})
+    topology_pods = fetch_topology_data(NODE_TYPE_POD, format="scope")
+
+    pod_nodes_batch = []
+    pod_edges_batch = []
+    for node_id, node_details in topology_pods.items():
+        if not node_details.get("adjacency"):
+            continue
+        host_id = node_details["id"].split(';')[0]
+        pod_nodes_batch.append({'node_id': host_id})
+        for adja in node_details.get("adjacency"):
+            pod_edges_batch.append({'left': node_details["id"], 'right': adja})
+
+    topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
+    topology_containers = fetch_topology_data(NODE_TYPE_CONTAINER, format="scope")
+    host_cloud = {}
+
+    host_nodes_batch = []
+    host_edges_batch = []
+    for node_id, node_details in topology_hosts.items():
+        node_name = node_details.get("name", node_details.get("label"))
+        host_id = node_id.split(';')[0]
+        if node_details.get("pseudo", False):
+            if node_name == "The Internet":
+                host_nodes_batch.append({'node_id': node_id, 'node_type': ''})
+                for node in node_details.get("adjacency", []):
+                    id = node.split(';')[0]
+                    if id == incoming_internet_host_id:
+                        for cp in ALL_CLOUD_PROVIDERS:
+                            host_edges_batch.append({'left': internet_node_id(cp), 'right': node_id})
+                    else:
+                        host_edges_batch.append({'left': node_id, 'right': id})
+            continue
+        cp = ""
+        for metadata in node_details.get("metadata", []):
+            if metadata["id"] == "cloud_provider":
+                cp = metadata["value"]
+                break
+        if cp not in CLOUD_PROVIDERS:
+            cp = pvt_cloud
+        if cp == CLOUD_GCP:
+            cp = CLOUD_GCP
+        host_cloud[node_id] = cp
+        host_nodes_batch.append({'node_id': node_id, 'node_type': 'host', 'cloud_provider': cp})
+        for node in node_details.get("adjacency", []):
+            id = node.split(';')[0]
+            if id == incoming_internet_host_id:
+                for cp in ALL_CLOUD_PROVIDERS:
+                    host_edges_batch.append({'left': internet_node_id(cp), 'right': node_id})
+            else:
+                host_edges_batch.append({'left': node_id, 'right': id})
+
+    container_nodes_batch = []
+    container_edges_batch = []
+    for node_id, node_details in topology_containers.items():
+        node_name = node_details.get("name", node_details.get("label"))
+        if node_details.get("pseudo", False):
+            if node_name == "The Internet":
+                container_nodes_batch.append({'node_id': node_id, 'node_type': ''})
+                host_id = node_id.split(';')[0]
+                for node in node_details.get("adjacency", []):
+                    node_id = node.split(';')[0]
+                    if node_id == incoming_internet_host_id:
+                        for cp in ALL_CLOUD_PROVIDERS:
+                            container_edges_batch.append({'left': internet_node_id(cp), 'right': node_id})
+                    else:
+                        container_edges_batch.append({'left': host_id, 'right': node_id})
+            continue
+        host_name = node_details.get("labelMinor")
+        if not host_name:
+            continue
+        cp = host_cloud.get(host_name, pvt_cloud)
+        container_nodes_batch.append({'node_id': node_id, 'node_type': 'container', 'cloud_provider': cp})
+        host_id = node_id.split(';')[0]
+        for node in node_details.get("adjacency", []):
+            node_id = node.split(';')[0]
+            if node_id == incoming_internet_host_id:
+                for cp in ALL_CLOUD_PROVIDERS:
+                    container_edges_batch.append({'left': internet_node_id(cp), 'right': node_id})
+            else:
+                container_edges_batch.append({'left': host_id, 'right': node_id})
+
+    driver = GraphDatabase.driver("bolt://neo4j-db:7687", auth=("neo4j", "password"))
+
+    try:
+        with driver.session() as session:
+            with session.begin_transaction() as tx:
+                    tx.run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE")
+                    tx.run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE")
+                    tx.commit()
+    except:
+        print('constraints already existing')
+
+
+    print(len(host_nodes_batch))
+    print(len(container_nodes_batch))
+    print(len(process_nodes_batch))
+    print(len(pod_nodes_batch))
+
+    print(len(host_edges_batch))
+    print(len(container_edges_batch))
+    print(len(process_edges_batch))
+    print(len(pod_edges_batch))
+    with driver.session() as session:
+        with session.begin_transaction() as tx:
+            tx.run("UNWIND $batch as row MERGE (n:Node{node_id:row.node_id}) SET n+= row", batch=host_nodes_batch)
+            tx.run("UNWIND $batch as row MERGE (n:Node{node_id:row.node_id}) SET n+= row", batch=container_nodes_batch)
+            tx.run("UNWIND $batch as row MERGE (n:Process{node_id:row.node_id}) SET n+= row", batch=process_nodes_batch)
+            tx.run("UNWIND $batch as row MERGE (n:Node{node_id:row.node_id}) SET n+= row", batch=pod_nodes_batch)
+            tx.run("UNWIND $batch as row MATCH (n:Node{node_id: row.left}),(m:Node{node_id: row.right}) MERGE (n)-[:CONNECTED]->(m) ", batch=host_edges_batch)
+            tx.run("UNWIND $batch as row MATCH (n:Node{node_id: row.left}),(m:Node{node_id: row.right}) MERGE (n)-[:CONNECTED]->(m) ", batch=container_edges_batch)
+            tx.run("UNWIND $batch as row MATCH (n:Process{node_id: row.left}),(m:Process{node_id: row.right}) MERGE (n)-[:CONNECTED]->(m) ", batch=process_edges_batch)
+            tx.run("UNWIND $batch as row MATCH (n:Node{node_id: row.left}),(m:Node{node_id: row.right}) MERGE (n)-[:CONNECTED]->(m) ", batch=pod_edges_batch)
+            tx.run("UNWIND $batch as row MATCH (n:Node{node_id: row.left}),(m:Process{node_id: row.right}) MERGE (n)-[:RUNS]->(m) ", batch=process_parent_batch)
+            tx.commit()
+
 
 
 def _compute_threat_graph():
@@ -633,73 +763,12 @@ def _compute_threat_graph():
 
     # Get topology data
     neo4jg = Neo4jGraph()
-    neo4jg.clear_connections()
+    #neo4jg.clear_connections()
     neo4jg.add_host_entry({"node_id": internet_node_id(CLOUD_AWS), "node_type":"", "depth": 0,"cloud_provider": CLOUD_AWS})
     neo4jg.add_host_entry({"node_id": internet_node_id(CLOUD_AZURE), "node_type":"", "depth": 0,"cloud_provider": CLOUD_AZURE})
     neo4jg.add_host_entry({"node_id": internet_node_id(CLOUD_GCP), "node_type":"", "depth": 0,"cloud_provider": CLOUD_GCP})
     neo4jg.add_host_entry({"node_id": internet_node_id(pvt_cloud), "node_type":"", "depth": 0,"cloud_provider": pvt_cloud})
     neo4jg.add_host_entry({"node_id": outgoing_internet_host_id, "node_type":""})
-
-    topology_processes = fetch_topology_data(NODE_TYPE_PROCESS, format="scope")
-    for node_id, node_details in topology_processes.items():
-        if not node_details.get("adjacency"):
-            continue
-        neo4jg.add_host_process(node_details)
-        for adja in node_details.get("adjacency"):
-            neo4jg.add_connection_proc(node_details["id"], adja)
-    topology_pods = fetch_topology_data(NODE_TYPE_POD, format="scope")
-    for node_id, node_details in topology_pods.items():
-        if not node_details.get("adjacency"):
-            continue
-        neo4jg.add_pod_entry(node_details)
-        for adja in node_details.get("adjacency"):
-            neo4jg.add_connection_entry(node_details["id"], adja)
-
-    topology_hosts = fetch_topology_data(NODE_TYPE_HOST, format="scope")
-    topology_containers = fetch_topology_data(NODE_TYPE_CONTAINER, format="scope")
-    host_cloud = {}
-    cloud_vms = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP: {}, pvt_cloud: {}}
-    cloud_containers = {CLOUD_AWS: {}, CLOUD_AZURE: {}, CLOUD_GCP: {}, pvt_cloud: {}}
-    for node_id, node_details in topology_hosts.items():
-        node_name = node_details.get("name", node_details.get("label"))
-        if node_details.get("pseudo", False):
-            if node_name == "The Internet":
-                add_node_neo4j(neo4jg, node_id, node_details)
-                for cp, nodes in cloud_vms.items():
-                    cloud_vms[cp][node_id] = node_details
-            continue
-        cp = ""
-        for metadata in node_details.get("metadata", []):
-            if metadata["id"] == "cloud_provider":
-                cp = metadata["value"]
-                break
-        if cp not in CLOUD_PROVIDERS:
-            cp = pvt_cloud
-        if cp == CLOUD_GCP:
-            cp = CLOUD_GCP
-        host_cloud[node_details.get("label", "")] = cp
-        cloud_vms[cp][node_id] = node_details
-        add_node_neo4j(neo4jg, node_id, node_details)
-    for node_id, node_details in topology_containers.items():
-        node_name = node_details.get("name", node_details.get("label"))
-        if node_details.get("pseudo", False):
-            if node_name == "The Internet":
-                add_node_neo4j(neo4jg, node_id, node_details)
-                for cp, nodes in cloud_containers.items():
-                    cloud_containers[cp][node_id] = node_details
-            continue
-        host_name = node_details.get("labelMinor")
-        if not host_name:
-            continue
-        cp = host_cloud.get(host_name, pvt_cloud)
-        cloud_containers[cp][node_id] = node_details
-        add_node_neo4j(neo4jg, node_id, node_details)
-
-    for cloud_provider in ALL_CLOUD_PROVIDERS:
-        graph[cloud_provider] = get_topology_network_graph(cloud_vms[cloud_provider], graph[cloud_provider],
-                                                           node_type=NODE_TYPE_HOST, include_nodes=include_nodes)
-        graph[cloud_provider] = get_topology_network_graph(cloud_containers[cloud_provider], graph[cloud_provider],
-                                                           node_type=NODE_TYPE_CONTAINER, include_nodes=include_nodes)
 
     threat_graph = {
         CLOUD_AWS: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
@@ -707,8 +776,6 @@ def _compute_threat_graph():
         CLOUD_GCP: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
         pvt_cloud: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}}
     }
-    #threat_graph_paths = defaultdict(dict)
-    threat_graph_node = {}
 
     attack_paths, infos = get_attack_paths_neo4j(neo4jg)
     for cloud_provider in ALL_CLOUD_PROVIDERS:
