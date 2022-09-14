@@ -1,5 +1,18 @@
 #!/bin/bash
 
+readonly RSYSLOG_PID="/var/run/rsyslogd.pid"
+
+start_rsyslog() {
+  rm -f $RSYSLOG_PID
+  rsyslogd -n 2>&1
+}
+
+start_crond() {
+  chmod 644 /etc/logrotate.d/haproxy
+  (crontab -l; echo "*/10 * * * * /usr/sbin/logrotate -vf /etc/logrotate.conf" ) | crontab -
+  crond
+}
+
 cat /usr/local/etc/haproxy/deepfence.crt /usr/local/etc/haproxy/deepfence.key > /usr/local/etc/haproxy/deepfence.pem
 
 # Override default cert files by copying user provided certificates for nginx (if present)
@@ -36,4 +49,6 @@ done
 
 echo "Starting router"
 
+start_rsyslog &
+start_crond &
 exec "$@"

@@ -26,12 +26,12 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     PASSWORD_CHANGE_EMAIL_SUBJECT, PASSWORD_CHANGE_EMAIL_HTML, PASSWORD_RESET_EMAIL_HTML, PASSWORD_RESET_EMAIL_SUBJECT, \
     PASSWORD_RESET_CODE_EXPIRY, PASSWORD_RESET_SUCCESS_EMAIL_SUBJECT, PASSWORD_RESET_SUCCESS_EMAIL_HTML, \
     INTEGRATION_TYPES, DURATION_IN_MINS, \
-    CVE_INDEX, INTEGRATION_TYPE_EMAIL, INTEGRATION_TYPE_ES, INTEGRATION_TYPE_SUMO_LOGIC, \
+    INTEGRATION_TYPE_EMAIL, INTEGRATION_TYPE_ES, INTEGRATION_TYPE_SUMO_LOGIC, \
     INTEGRATION_TYPE_HTTP, INTEGRATION_TYPE_JIRA, INTEGRATION_TYPE_PAGERDUTY, INTEGRATION_TYPE_S3, \
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
-    INVITE_EXPIRY
+    INVITE_EXPIRY, CVE_ES_TYPE
 from utils import constants
 from config.redisconfig import redis
 from utils.response import set_response
@@ -2161,7 +2161,7 @@ def notify_to_integrations():
 
     missing_alerts = []
     notified_alerts = []
-    allowed_indices = [CVE_INDEX]
+    allowed_indices = [CVE_ES_TYPE]
 
     index_wise_content_list = defaultdict(list)
     for doc in docs:
@@ -2180,14 +2180,14 @@ def notify_to_integrations():
 
     for index_name, docs_list in index_wise_content_list.items():
         user_notifications = None
-        if index_name == CVE_INDEX:
+        if index_name == CVE_ES_TYPE:
             user_notifications = user.vulnerability_notifications
         if user_notifications:
             user_notifications = {str(notification.integration_id): notification for notification in
                                   user_notifications}.values()
             for notification in user_notifications:
                 try:
-                    notification.send(docs_list)
+                    notification.send(docs_list, notification_id=notification.id)
                 except Exception as ex:
                     app.logger.error("Error sending notification: {0}".format(ex))
 

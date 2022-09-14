@@ -31,6 +31,10 @@ const resourceCollection = [
     name: 'Vulnerabilities',
     value: 'vulnerability',
   },
+  {
+    name: 'Compliance Results',
+    value: 'compliance',
+  },
 ];
 
 const allNodeType = 'host,container_image,pod';

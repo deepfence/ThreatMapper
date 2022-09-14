@@ -10,13 +10,13 @@ A single ThreatMapper Console can manage multiple workload types, and on-premise
 
 ## Before You Begin
 
-Before you install the Sensors, obtain the Management Console URL and API key as described in the [Initial Configuration](../console/initial-configuration).
+Before you install the Sensors, obtain the Management Console URL and API key as described in the [Initial Configuration](/threatmapper/console/initial-configuration).
 
 You should take care to install the sensor version that matches your Management Console version, as compatibility across versions is not guaranteed.
 
-Review the architecture for the Sensor Agent, as described in [Architecture: Sensor Agent container](../architecture/sensors).
+Review the architecture for the Sensor Agent, as described in [Architecture: Sensor Agent container](/threatmapper/architecture/sensors).
 
-Review the requirements for the Sensor Agent container, as described in [System Requirements](../architecture/requirements).
+Review the requirements for the Sensor Agent container, as described in [System Requirements](/threatmapper/architecture/requirements).
 
 ## Installing the ThreatMapper Sensors
 
@@ -26,7 +26,7 @@ For your convenience, the ThreatMapper management console provides the default i
 | :--: |
 | Default Agent Setup (URL and Key masked) |
 
-More detailed instuctions are as follows:
+More detailed instructions are as follows:
 
 ```mdx-code-block
 import DocCardList from '@theme/DocCardList';

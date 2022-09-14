@@ -6,7 +6,7 @@ title: Other Platforms
 
 ThreatMapper can perform compliance posture scanning on linux hosts and Kubernetes master and worker nodes.
 
-Scanning is done directly, using a local [Sensor Agent](../sensors) rather than by using the Cloud Scanner task employed by the cloud platform integrations.
+Scanning is done directly, using a local [Sensor Agent](/threatmapper/sensors) rather than by using the Cloud Scanner task employed by the cloud platform integrations.
 
 ## What Compliance Scans are Performed?
 
@@ -15,7 +15,7 @@ The sensor agent has direct visibility into the configuration of the base operat
 
 When you run a compliance scan, you can select which benchmarks you wish to measure against, and ThreatMapper will then evaluate the appropriate controls and present the results, by benchmark, once the scan has completed.
 
-For full information, refer to [Operations: Compliance Scanning](../operations/compliance).
+For full information, refer to [Operations: Compliance Scanning](/threatmapper/operations/compliance).
 
 
 :::tip Maximizing Coverage

@@ -2,7 +2,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from config.app import db
-from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPE_USER_ACTIVITY
+from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPE_USER_ACTIVITY, CVE_ES_TYPE
 
 
 class Notification(db.Model):
@@ -84,7 +84,7 @@ class VulnerabilityNotification(Notification):
         "cve_container_image": "Container image", "@timestamp": "@timestamp", "cve_attack_vector": "Attack Vector",
         "cve_container_name": "Container Name", "host_name": "Host Name", "cve_overall_score": "CVE Overall Score",
         "cve_type": "CVE Type", "cve_link": "CVE Link", "cve_fixed_in": "CVE Fixed In", "cve_cvss_score": "CVSS Score",
-        "cve_caused_by_package": "CVE Caused By Package", "cve_overall_score": "CVE Overall Score"}
+        "cve_caused_by_package": "CVE Caused By Package"}
 
     def pretty_print(self):
         conf = self.integration.pretty_print()
@@ -114,7 +114,8 @@ class VulnerabilityNotification(Notification):
                     "doc_fields_map": cls.vulnerability_doc_fields_map}
 
     def send(self, contents, **kwargs):
-        self.integration.send(self.format_content(contents), summary="Deepfence - Vulnerabilities Subscription")
+        self.integration.send(self.format_content(contents), summary="Deepfence - Vulnerabilities Subscription",
+                              notification_id=kwargs["notification_id"], resource_type=CVE_ES_TYPE)
 
     def __repr__(self):
         return "<VulnerabilityNotification {}>".format(self.id)
@@ -129,7 +130,7 @@ class UserActivityNotification(Notification):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('user_activity_notification', lazy=True))
 
-    #cursor_id for last send log id
+    # cursor_id for last send log id
     cursor_id = db.Column(db.Integer, nullable=True)
 
     __table_args__ = (

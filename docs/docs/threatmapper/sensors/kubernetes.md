@@ -6,7 +6,7 @@ title: Kubernetes
 
 In Kubernetes, the ThreatMapper sensors are deployed as a daemonset in the Kubernetes cluster, using a helm chart.
 
-## Quick Install of ThreatMapper Sensors
+## Quick Installation of ThreatMapper Sensors
 
 Install and start the latest release of the deepfence sensor.  Replace `x.x.x.x` with the IP address of the Management Console and `C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0` with the API key.
 
