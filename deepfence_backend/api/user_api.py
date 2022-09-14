@@ -1605,7 +1605,7 @@ class IntegrationView(MethodView):
         except Exception:
             raise InvalidUsage("Invalid webhook url")
         if response.status_code != 200:
-            raise InvalidUsage(response.text)
+            raise InvalidUsage("Please Check your webhook URL, Microsoft can not process request with this URL")
         config = json.dumps({"webhook_url": webhook_url})
         integration = Integration.query.filter_by(integration_type=INTEGRATION_TYPE_MICROSOFT_TEAMS,
                                                   config=config).one_or_none()
