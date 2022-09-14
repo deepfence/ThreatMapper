@@ -20,7 +20,7 @@ class Neo4jGraph:
         if 'kubernetes_cluster_name' in host:
             host["kubernetes_cluster_name"] = entry["kubernetes_cluster_name"]
 
-        host["node_type"] = entry["node_type"]
+        host["node_type"] = entry.get("node_type", "")
         host["node_id"] = entry["node_id"]
         host["cloud_provider"] = entry.get("cloud_provider", "")
         host["depth"] = entry.get("depth", "")
@@ -37,6 +37,35 @@ class Neo4jGraph:
         scan_node = Node(type, **scan)
         self.db.merge(scan_node, type, "scan_id")
         return scan_node
+
+    def add_host_process(self, entry):
+        host_id = entry["id"].split(';')[0]
+        host_node = self.add_host_entry({'node_id':host_id})
+
+        process = {}
+        process["id"] = entry["id"]
+        #process["metadata"] = entry["metadata"]
+
+        process_node = Node("Process", **process)
+        self.db.merge(process_node, "Process", "id")
+
+        self.db.merge(Relationship(host_node, 'RUNS', process_node))
+        return process_node
+
+    def add_pod_entry(self, entry):
+        host_id = entry["id"].split(';')[0]
+
+        host  = {}
+        host["node_type"] = "pod"
+        host["node_id"] = host_id
+        host["cloud_provider"] = entry.get("cloud_provider", "")
+        host["depth"] = entry.get("depth", "")
+        #host["metadata"] = entry["metadata"]
+
+        host_node = Node('Node', **host)
+        self.db.merge(host_node, 'Node', 'node_id')
+        return host_node
+
 
     def add_cve_entry(self, entry):
         host_node = self.add_host_entry(entry)
@@ -105,6 +134,11 @@ class Neo4jGraph:
             self.add_secret_entry(entry)
         elif "name" in entry:
             self.add_compliance_entry(entry)
+
+    def add_connection_proc(self, node_id1, node_id2):
+        self.db.run("""
+        MATCH (n1:Process{node_id: $entry1}), (n2:Process{node_id: $entry2})
+        MERGE (n1) -[:CONNECTED]-> (n2)""", entry1=node_id1, entry2=node_id2)
 
     def add_connection_entry(self, node_id1, node_id2):
         self.db.run("""
