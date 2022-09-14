@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom';
 
-import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { renderWithClient } from '../../../tests/utils';
@@ -24,7 +23,6 @@ describe(`Component Tabs`, () => {
       </Tabs>,
     );
     expect(getByTestId('tabs-testid').childNodes.length).toEqual(2);
-    screen.debug();
     expect(getByText('Tab Content')).toBeInTheDocument();
   });
 });

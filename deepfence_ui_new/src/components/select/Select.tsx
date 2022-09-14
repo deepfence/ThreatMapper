@@ -38,6 +38,7 @@ export interface SelectProps<T extends Value = Value> {
 
 type IconProps = {
   icon: React.ReactNode;
+  name?: string;
   color?: ColorType;
   sizing?: SizeType;
 };
@@ -46,12 +47,14 @@ export const LeftIcon = ({
   icon,
   color = COLOR_DEFAULT,
   sizing = SIZE_DEFAULT,
+  name,
 }: IconProps) => {
   return (
     <span
       className={cx(
         'pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3',
       )}
+      data-testid={`ariakit-select-icon-${name}`}
     >
       <IconContext.Provider
         value={{
@@ -143,7 +146,9 @@ export function Select<T extends Value>({
     if (!select?.value?.length) {
       return placeholder ?? '';
     } else if (Array.isArray(select.value)) {
-      return `${select.value.length} items selected`;
+      return `${select.value.length} ${
+        select.value.length > 1 ? 'items' : 'item'
+      } selected`;
     }
     return select.value;
   }, [select.value, placeholder]);
@@ -154,6 +159,7 @@ export function Select<T extends Value>({
         <AriakitSelectLabel
           state={select}
           className={cx(`${Typography.weight.medium} text-gray-900 dark:text-white`)}
+          data-testid={`ariakit-label-${name}`}
         >
           {label}
         </AriakitSelectLabel>
@@ -175,11 +181,14 @@ export function Select<T extends Value>({
                 'h-[52px]': sizing === 'md',
               },
             )}
+            data-testid={`ariakit-select-${name}`}
           >
             {placeholderValue}
             <SelectArrow sizing={sizing} color={color} />
           </AriaKitSelect>
-          {startIcon && <LeftIcon icon={startIcon} sizing={sizing} color={color} />}
+          {startIcon && (
+            <LeftIcon icon={startIcon} sizing={sizing} color={color} name={name} />
+          )}
         </div>
         <AriakitSelectPopover
           portal
@@ -192,6 +201,7 @@ export function Select<T extends Value>({
             'max-h-[min(var(--popover-available-height,315px),315px)] overflow-y-auto',
             'animate-slide-down',
           )}
+          data-testid={`ariakit-portal-${name}`}
         >
           {defaultValue === '' ? <AriakitSelectItem value="" /> : null}
           {children}
@@ -226,5 +236,11 @@ export const SelectItem = (props: SelectItemProps<'div'>) => {
     ),
     props?.className,
   );
-  return <AriakitSelectItem {...props} className={classes} />;
+  return (
+    <AriakitSelectItem
+      {...props}
+      className={classes}
+      data-testid={`ariakit-selectitem-${props.value}`}
+    />
+  );
 };
