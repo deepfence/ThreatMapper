@@ -1,8 +1,9 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import cx from 'classnames';
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 import { IconContext } from 'react-icons';
 import { HiX } from 'react-icons/hi';
+import { useUpdateStateIfMounted } from '../hooks/useUpdateStateIfMounted';
 
 import Separator from '../separator/Separator';
 
@@ -82,19 +83,40 @@ export const Modal: FC<ModalProps> = ({
   footer,
   elementToFocusOnCloseRef,
   width = 'w-4/12', // 33.333333%
+  open,
   ...rest
 }) => {
+  const state = useUpdateStateIfMounted(open);
+  const wasOpen = state[0];
+  const setWasOpen = state[1];
+
+  useEffect(() => {
+    setWasOpen(open);
+  }, [open]);
+
   return (
-    <DialogPrimitive.Root {...rest}>
+    <DialogPrimitive.Root open={wasOpen} {...rest}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 dark:bg-black/80 animate-overlay-in h-full">
+        <DialogPrimitive.Overlay
+          className={cx(
+            'fixed inset-0 bg-black/50 dark:bg-black/50 flex justify-center items-center',
+            {
+              'animate-opacity-in': wasOpen,
+              // 'animate-opacity-out': !wasOpen, TODO: Add animation on close of modal
+            },
+          )}
+        >
           <DialogPrimitive.Content
             className={cx(
-              'max-h-[90vh] relative top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] inset-0 overflow-y-auto overflow-x-hidden focus:outline-none',
+              'max-h-[90vh] relative flex flex-col overflow-x-hidden focus:outline-none',
               'border rounded-lg border-gray-200 bg-white text-gray-900',
               'dark:bg-gray-700 dark:border-gray-600 dark:text-white',
               'max-w-[90%]',
               `${width}`,
+              {
+                'animate-pop-in': wasOpen,
+                'animate-pop-out': !wasOpen,
+              },
             )}
             onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           >

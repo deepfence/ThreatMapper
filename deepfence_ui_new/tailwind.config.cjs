@@ -216,6 +216,29 @@ module.exports = {
         'slide-right-out': {
           '0%': { right: 0 },
         },
+        'opacity-in': {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        },
+        'opacity-out': {
+          '100%': { opacity: 0.5 },
+          '0%': { opacity: 0 },
+        },
+        'slide-opacity-out': {
+          '0%': { opacity: 1 },
+          '50%': { opacity: 0.7 },
+          '20%': { opacity: 0.5 },
+          '70%': { opacity: 0.2 },
+          '100%': { opacity: 0 },
+        },
+        'pop-in': {
+          '0%': { opacity: 0, transform: 'scale(.96)' },
+          '100%': { opacity: 1, transform: 'scale(1)' },
+        },
+        'pop-out': {
+          '100%': { opacity: 1, transform: 'scale(1)' },
+          '0%': { opacity: 0, transform: 'scale(0.96)' },
+        },
       },
       animation: {
         // tooltip
@@ -228,9 +251,13 @@ module.exports = {
         'slide-down': 'slide-down 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-up': 'slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
         // modal
-        'modal-in': 'scale-in 150ms cubic-bezier(0.165, 0.840, 0.440, 1.000) forwards',
+        'pop-in': 'pop-in 0.5s ease',
+        'pop-out': 'pop-out 0.5s ease',
         'slide-right-in': 'slide-right-in 0.5s forwards',
-        'slide-right-out': 'slide-right-out 0.50s forwards',
+        'slide-right-out': 'slide-right-out 0.5s forwards',
+        'slide-opacity-out': 'slide-opacity-out 0.3s ease',
+        'opacity-out': 'opacity-out 0.5s ease',
+        'opacity-in': 'opacity-in 0.5s ease',
       },
     },
   },

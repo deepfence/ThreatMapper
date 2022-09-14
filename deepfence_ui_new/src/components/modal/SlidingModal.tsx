@@ -42,7 +42,7 @@ const ModalHeader: FC<{ title?: string }> = ({ title }) => {
           'focus:outline-none focus:ring-1 foucs:ring-blue-800',
           {
             'top-[22px]': title,
-            'top-[10px]': !title,
+            'top-[8px]': !title,
           },
         )}
       >
