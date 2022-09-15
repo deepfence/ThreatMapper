@@ -193,10 +193,7 @@ func (st *Status) updateScanStatusData() error {
 
 	nodeIdSecretStatusMap := make(map[string]string)
 	nodeIdSecretStatusTimeMap := make(map[string]string)
-	nodeIdMalwareStatusMap := make(map[string]string)
-	nodeIdMalwareStatusTimeMap := make(map[string]string)
 	secretResp := mSearchResult.Responses[2]
-	malwareResp := mSearchResult.Responses[3]
 	nodeIdAggsBkt, ok = secretResp.Aggregations.Terms("node_id")
 	if !ok {
 		return nil
@@ -237,7 +234,9 @@ func (st *Status) updateScanStatusData() error {
 	st.nodeStatus.SecretScanStatusTime = nodeIdSecretStatusTimeMap
 	st.nodeStatus.Unlock()
 
-
+	nodeIdMalwareStatusMap := make(map[string]string)
+	nodeIdMalwareStatusTimeMap := make(map[string]string)
+	malwareResp := mSearchResult.Responses[3]
 	nodeIdAggsBkt, ok = malwareResp.Aggregations.Terms("node_id")
 	if !ok {
 		return nil
@@ -273,6 +272,10 @@ func (st *Status) updateScanStatusData() error {
 		nodeIdMalwareStatusMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestStatus
 		nodeIdMalwareStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
 	}
+	st.nodeStatus.Lock()
+	st.nodeStatus.MalwareScanStatus = nodeIdMalwareStatusMap
+	st.nodeStatus.MalwareScanStatusTime = nodeIdMalwareStatusTimeMap
+	st.nodeStatus.Unlock()
 
 	nodeIdComplianceStatusMap := make(map[string]string)
 	nodeIdComplianceStatusTimeMap := make(map[string]string)
