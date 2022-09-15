@@ -8,6 +8,7 @@ import ComplianceTable from '../compliance-table';
 
 export const AzureTerraFormScript = withRouter(props => {
   const [collapsed, setCollapsed] = useState(true);
+  const terraformLink = "https://registry.terraform.io/modules/deepfence/cloud-scanner/azure/latest/examples/single-subscription#usage";
 
   return (
     <div
@@ -44,6 +45,8 @@ export const AzureTerraFormScript = withRouter(props => {
             <p>
               Deploy Deepfence Compliance Scanner with Terraform using the code
               samples below for a single subscription.
+              <br/>
+              <a target="_blank" rel="noreferrer" href={terraformLink}>{terraformLink}</a>
             </p>
           </div>
           <h6 style={{ color: 'white', marginTop: '20px' }}>
