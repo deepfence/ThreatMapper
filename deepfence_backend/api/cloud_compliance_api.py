@@ -27,7 +27,7 @@ from utils.constants import TIME_UNIT_MAPPING, ALL_INDICES, \
     PENDING_CLOUD_COMPLIANCE_SCANS_KEY, CLOUD_COMPLIANCE_LOGS_ES_TYPE, NODE_TYPE_HOST, COMPLIANCE_LINUX_HOST, \
     COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, COMPLIANCE_KUBERNETES_HOST, CSPM_RESOURCES, CSPM_RESOURCE_LABELS, \
     CSPM_RESOURCES_INVERTED, CLOUD_RESOURCES_CACHE_KEY, CLOUD_COMPLIANCE_REFRESH_INVENTORY, \
-    FILTER_TYPE_CLOUDTRAIL_TRAIL
+    FILTER_TYPE_CLOUDTRAIL_TRAIL, CLOUDTRAIL_ALERT_INDEX
 from utils.custom_exception import InvalidUsage, DFError
 import json
 from utils.resource import get_nodes_list, get_default_params
@@ -991,6 +991,47 @@ def compliance_rules(compliance_check_type):
         } for rule in rules]
     }
     return set_response(data=response)
+
+
+@cloud_compliance_api.route("/compliance/cloudtrail_alerts", methods=["GET"])
+@jwt_required()
+def cloudtrail_alerts():
+    # required fields
+    number = request.args.get("number")
+    time_unit = request.args.get("time_unit")
+
+    if number:
+        try:
+            number = int(number)
+        except ValueError:
+            raise InvalidUsage("Number should be an integer value.")
+
+    if bool(number is not None) ^ bool(time_unit):
+        raise InvalidUsage("Require both number and time_unit or ignore both of them.")
+
+    if time_unit and time_unit not in TIME_UNIT_MAPPING.keys():
+        raise InvalidUsage("time_unit should be one of these, month/day/hour/minute")
+
+    lucene_query_string = request.args.get("lucene_query")
+    if lucene_query_string:
+        lucene_query_string = urllib.parse.unquote(lucene_query_string)
+    else:
+        lucene_query_string = ""
+
+    filters = {}
+    filters = request.args.get("filters", filters)
+
+    page_size = 10
+    start_index = 0
+    page_size = request.args.get("size", page_size)
+    start_index = request.args.get("start_index", start_index)
+    sort_order = request.args.get("sort_order", "desc")
+    es_index = CLOUDTRAIL_ALERT_INDEX
+    es_resp = ESConn.search_by_and_clause(
+        es_index, filters, start_index, sort_order, number=number,
+        time_unit=TIME_UNIT_MAPPING.get(time_unit), size=page_size, lucene_query_string=lucene_query_string)
+
+    return set_response(data=es_resp)
 
 
 @cloud_compliance_api.route("/cloud-compliance-scan/<path:node_id>/start", methods=["POST"],
