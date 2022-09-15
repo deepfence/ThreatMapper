@@ -1,15 +1,16 @@
 import '@testing-library/jest-dom';
 
+import { fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { beforeEach, describe, it } from 'vitest';
-import { Checkbox } from '../components/checkbox/Checkbox';
 
+import Button from '../components/button/Button';
 import { renderWithClient } from '../tests/utils';
 import theme from '../theme/default';
 import {
-  ThemeProvider,
   THEME_DARK,
   THEME_LIGHT,
+  ThemeProvider,
   useThemeMode,
 } from '../theme/ThemeContext';
 
@@ -20,7 +21,9 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={{ theme, toggleMode }}>
-        <Checkbox label="Check" id="test" />
+        <Button onClick={() => toggleMode?.()} data-testid="button-theme-toggle">
+          Change Theme
+        </Button>
       </ThemeProvider>
     </QueryClientProvider>
   );
@@ -31,30 +34,34 @@ beforeEach(() => {
 });
 
 describe('THEME', () => {
-  it('check a component has system theme style', () => {
-    let aClassStyle = 'radix-state-unchecked:bg-gray-50';
+  it('system preference theme applied', () => {
+    let themeMode = '';
     const userPreferenceDark =
       !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (userPreferenceDark) {
-      aClassStyle = 'radix-state-unchecked:dark:bg-gray-700';
+      themeMode = THEME_DARK;
     }
-    const { getByTestId } = renderWithClient(<App />);
-    const checkbox = getByTestId('checkbox-test');
-    expect(checkbox).toBeDefined();
-    expect(checkbox).toHaveClass(aClassStyle);
+    renderWithClient(<App />);
+    const html = document.getElementsByTagName('html');
+    const theme = html.item(0)?.className;
+    expect(theme).toEqual(themeMode);
   });
-  it('check a component has light theme style', () => {
+  it('user preference theme applied, can toggle change theme', () => {
     localStorage.setItem('theme', THEME_LIGHT);
     const { getByTestId } = renderWithClient(<App />);
-    const checkbox = getByTestId('checkbox-test');
-    expect(checkbox).toBeDefined();
-    expect(checkbox).toHaveClass('radix-state-unchecked:bg-gray-50');
-  });
 
-  it('check component has dark theme style', () => {
-    localStorage.setItem('theme', THEME_DARK);
-    const { getByTestId: getByTestId2 } = renderWithClient(<App />);
-    const checkboxDark = getByTestId2('checkbox-test');
-    expect(checkboxDark).toHaveClass('radix-state-unchecked:dark:bg-gray-700');
+    let html = document.getElementsByTagName('html');
+    let theme = html.item(0)?.className;
+
+    expect(theme).toEqual(''); // tailwind ignore light class for light mode theme
+
+    const btn = getByTestId('button-theme-toggle');
+    expect(btn).toBeDefined();
+
+    fireEvent.click(btn);
+
+    html = document.getElementsByTagName('html');
+    theme = html.item(0)?.className;
+    expect(theme).toEqual(THEME_DARK);
   });
 });

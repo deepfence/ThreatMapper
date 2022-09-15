@@ -2,8 +2,8 @@ import '@testing-library/jest-dom';
 
 import { describe, expect, it } from 'vitest';
 
-import { renderWithClient } from '../../../tests/utils';
-import Radio from '../Radio';
+import { renderWithClient } from '../../tests/utils';
+import Radio from './Radio';
 
 describe(`Component Radio`, () => {
   it(`render two radio elements`, () => {

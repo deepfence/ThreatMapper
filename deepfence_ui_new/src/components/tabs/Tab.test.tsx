@@ -2,8 +2,8 @@ import '@testing-library/jest-dom';
 
 import { describe, expect, it } from 'vitest';
 
-import { renderWithClient } from '../../../tests/utils';
-import Tabs from '../Tabs';
+import { renderWithClient } from '../../tests/utils';
+import Tabs from './Tabs';
 
 describe(`Component Tabs`, () => {
   it(`render two tabs`, () => {
