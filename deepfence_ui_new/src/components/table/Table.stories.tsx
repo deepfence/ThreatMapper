@@ -200,16 +200,6 @@ const TemplateWithManualPagination: ComponentStory<typeof Table<Fruit>> = (args)
 
   const columns = useMemo(
     () => [
-      columnHelper.display({
-        id: 'expander',
-        header: () => null,
-        cell: ({ row }) => {
-          return <RowExpander row={row} />;
-        },
-        minSize: 0,
-        size: 10,
-        maxSize: 10,
-      }),
       columnHelper.accessor('id', {
         cell: (info) => info.getValue(),
         header: () => 'ID',
@@ -256,3 +246,6 @@ const TemplateWithManualPagination: ComponentStory<typeof Table<Fruit>> = (args)
 
 export const DefaultWithManualPagination = TemplateWithManualPagination.bind({});
 DefaultWithManualPagination.args = {};
+
+export const WithColumnResizing = TemplateWithManualPagination.bind({});
+WithColumnResizing.args = { enableColumnResizing: true };

@@ -29,6 +29,7 @@ export interface TableProps<TData extends RowData> {
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
   getRowCanExpand?: (row: Row<TData>) => boolean;
   striped?: boolean;
+  enableColumnResizing?: boolean;
   enablePagination?: boolean;
   manualPagination?: boolean;
   pageIndex?: number;
@@ -56,6 +57,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     striped,
     renderSubComponent,
     getRowCanExpand,
+    enableColumnResizing = false,
     enablePagination,
     manualPagination,
     pageIndex = 0,
@@ -71,6 +73,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     getPaginationRowModel: getPaginationRowModel(),
     getRowCanExpand,
     columnResizeMode: 'onChange',
+    enableColumnResizing,
     meta: {
       striped,
     },
@@ -157,12 +160,12 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
       {header.isPlaceholder
         ? null
         : flexRender(header.column.columnDef.header, header.getContext())}
-      {false && header.column.getCanResize() && (
+      {header.column.getCanResize() && (
         // eslint-disable-next-line jsx-a11y/no-static-element-interactions
         <div
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
-          className={`absolute right-0 top-0 h-full w-1 bg-gray-500 cursor-col-resize select-none`}
+          className={`absolute right-0 top-0 h-full w-1 bg-gray-200 dark:bg-gray-600 cursor-col-resize select-none`}
         ></div>
       )}
     </th>
