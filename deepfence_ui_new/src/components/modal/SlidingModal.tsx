@@ -1,9 +1,10 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import cx from 'classnames';
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { FC, useEffect } from 'react';
 import { IconContext } from 'react-icons';
 import { HiX } from 'react-icons/hi';
 
+import { useUpdateStateIfMounted } from '../hooks/useUpdateStateIfMounted';
 import Separator from '../separator/Separator';
 
 interface FocusableElement {
@@ -23,12 +24,7 @@ export interface ModalProps extends DialogPrimitive.DialogProps {
 const ModalHeader: FC<{ title?: string }> = ({ title }) => {
   return (
     <>
-      <div
-        className={cx({
-          'h-[76px]': title,
-          'h-[36px]': !title,
-        })}
-      >
+      <div className={'w-full'}>
         {title && (
           <>
             <DialogPrimitive.Title className={cx('p-6')}>{title}</DialogPrimitive.Title>
@@ -46,7 +42,7 @@ const ModalHeader: FC<{ title?: string }> = ({ title }) => {
           'focus:outline-none focus:ring-1 foucs:ring-blue-800',
           {
             'top-[22px]': title,
-            'top-[10px]': !title,
+            'top-[8px]': !title,
           },
         )}
       >
@@ -74,30 +70,6 @@ const ModalFooter: FC<ChildrenType> = ({ children }) => {
   );
 };
 
-function useUpdateStateIfMounted<T>(initialValue: T) {
-  const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  const useStateResult = useState(initialValue);
-  const state = useStateResult[0];
-  const setState = useStateResult[1];
-
-  const setStateIfMounted = (value: T) => {
-    if (isMountedRef.current === true) {
-      setState(value);
-    }
-  };
-
-  return [state, setStateIfMounted] as const;
-}
-
 export const SlidingModal: FC<ModalProps> = ({
   title,
   children,
@@ -116,26 +88,33 @@ export const SlidingModal: FC<ModalProps> = ({
   }, [open]);
 
   return (
-    <DialogPrimitive.Root {...rest} open={wasOpen}>
+    <DialogPrimitive.Root open={wasOpen} {...rest}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50 dark:bg-black/80 h-full" />
-        <DialogPrimitive.Content
-          className={cx(
-            'fixed h-[100vh] top-0 -right-[100%] overflow-y-auto overflow-x-hidden focus:outline-none',
-            'border rounded-l-lg border-gray-200 bg-white text-gray-900',
-            'dark:bg-gray-700 dark:border-gray-600 dark:text-white',
-            `${width}`,
-            {
-              'animate-slide-right-out': !wasOpen,
-              'animate-slide-right-in': wasOpen,
-            },
-          )}
-          onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
+        <DialogPrimitive.Overlay
+          className={cx('inset-0 bg-black/50 dark:bg-black/50 fixed', {
+            'animate-opacity-in': wasOpen,
+            'animate-slide-opacity-out': !wasOpen,
+          })}
         >
-          <ModalHeader title={title} />
-          <div className="p-6">{children}</div>
-          <ModalFooter>{footer}</ModalFooter>
-        </DialogPrimitive.Content>
+          <DialogPrimitive.Content
+            className={cx(
+              'flex flex-col h-[100vh] fixed -right-[100%]',
+              'overflow-hidden focus:outline-none',
+              'bg-white text-gray-900',
+              'dark:bg-gray-700 dark:text-white',
+              `${width}`,
+              {
+                'animate-slide-right-out': !wasOpen,
+                'animate-slide-right-in': wasOpen,
+              },
+            )}
+            onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
+          >
+            <ModalHeader title={title} />
+            <div className="p-6 overflow-y-auto flex-auto">{children}</div>
+            <ModalFooter>{footer}</ModalFooter>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Overlay>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );
