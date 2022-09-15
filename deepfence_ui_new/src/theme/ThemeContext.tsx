@@ -4,6 +4,9 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import defaultTheme from './default';
 import type { Theme } from './Theme';
 
+export const THEME_LIGHT = 'light';
+export const THEME_DARK = 'dark';
+
 export type Mode = string | undefined | 'light' | 'dark';
 
 interface ThemeContextProps {

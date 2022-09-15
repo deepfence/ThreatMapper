@@ -25,6 +25,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
           'radix-state-checked:bg-blue-600',
           className,
         )}
+        data-testid={`checkbox-${id}`}
         {...rest}
       >
         <CheckboxPrimitive.Indicator>
