@@ -4,8 +4,11 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   Header,
   HeaderGroup,
+  OnChangeFn,
+  PaginationState,
   Row,
   RowData,
   RowModel,
@@ -17,6 +20,7 @@ import { createContext, Fragment, useContext } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 
 import IconButton from '../button/IconButton';
+import Pagination from '../pagination/Pagination';
 import { Typography } from '../typography/Typography';
 
 export interface TableProps<TData extends RowData> {
@@ -25,6 +29,12 @@ export interface TableProps<TData extends RowData> {
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
   getRowCanExpand?: (row: Row<TData>) => boolean;
   striped?: boolean;
+  enablePagination?: boolean;
+  manualPagination?: boolean;
+  pageIndex?: number;
+  pageSize?: number;
+  pageCount?: number;
+  onPaginationChange?: OnChangeFn<PaginationState>;
 }
 
 interface TableContextValues<TData extends RowData> {
@@ -40,17 +50,43 @@ function useTableContext<TData extends RowData>() {
 }
 
 export function Table<TData extends RowData>(props: TableProps<TData>) {
-  const { data, columns, striped, renderSubComponent, getRowCanExpand } = props;
+  const {
+    data,
+    columns,
+    striped,
+    renderSubComponent,
+    getRowCanExpand,
+    enablePagination,
+    manualPagination,
+    pageIndex = 0,
+    pageSize = 10,
+    pageCount = -1,
+    onPaginationChange,
+  } = props;
   const TableContext = createTableContext<TData>();
   const table = useReactTable<TData>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getRowCanExpand,
     columnResizeMode: 'onChange',
     meta: {
       striped,
     },
+    state: {
+      ...(manualPagination
+        ? {
+            pagination: {
+              pageIndex,
+              pageSize,
+            },
+          }
+        : {}),
+    },
+    ...(manualPagination
+      ? { manualPagination: true, onPaginationChange, pageCount }
+      : {}),
   });
 
   const [headerGroups, rowModel] = [table.getHeaderGroups(), table.getRowModel()];
@@ -61,14 +97,31 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
         className={cx(
           `overflow-hidden`,
           `shadow-[0px_1px_3px_rgba(0,_0,_0,_0.1),_0px_1px_2px_-1px_rgba(0,_0,_0,_0.1)] dark:shadow-sm`,
-          `rounded-lg border-spacing-0 dark:border dark:border-gray-700`,
+          `rounded-lg dark:border dark:border-gray-700`,
         )}
       >
-        <table className={cx(`w-full bg-white dark:bg-gray-800`)}>
+        <table
+          className={cx(
+            `w-full bg-white dark:bg-gray-800 border-spacing-0 border-collapse`,
+          )}
+          cellPadding="0"
+          cellSpacing="0"
+        >
           <TableHead headerGroups={headerGroups} />
           <TableBody rowModel={rowModel} />
         </table>
       </div>
+      {enablePagination ? (
+        <div className="mt-4 flex justify-end">
+          <Pagination
+            currentPage={table.getState().pagination.pageIndex + 1}
+            onPageChange={(page) => {
+              table.setPageIndex(page - 1);
+            }}
+            totalPageCount={table.getPageCount()}
+          />
+        </div>
+      ) : null}
     </TableContext.Provider>
   );
 }
