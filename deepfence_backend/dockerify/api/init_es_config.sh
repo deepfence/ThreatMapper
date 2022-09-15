@@ -37,7 +37,7 @@ add_template () {
     template_code=`curl -s -o /dev/null -w "%{http_code}" "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1?pretty"`
     if [ "$template_code" != "200" ]; then
         curl -XPUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/_template/df_template_1" -H 'Content-Type: application/json' -d '{
-            "index_patterns": '"$(create_index_pattern '("alert" "cve" "cve-scan" "compliance" "compliance-scan-logs" "cloud-compliance-scan-logs" "cloud-compliance-scan")')"',
+            "index_patterns": '"$(create_index_pattern '("alert" "cve" "cve-scan" "compliance" "compliance-scan-logs" "cloud-compliance-scan-logs" "cloud-compliance-scan" "cloudtrail-alert")')"',
             "settings": {
                 "number_of_shards": 1,
                 "index": {
@@ -589,6 +589,62 @@ add_index() {
         },
         "scan_message": {
           "type": "text"
+        }
+      }
+    }
+  }'
+  echo ""
+  curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "cloudtrail-alert")" -H 'Content-Type: application/json' -d'
+  {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "eventType": {
+          "type": "text"
+        },
+        "eventCategory": {
+          "type": "text"
+        },
+        "eventID": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "eventSource": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "eventName": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 512
+            }
+          }
+        },
+        "awsRegion": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "time_stamp": {
+          "type": "long"
         }
       }
     }
