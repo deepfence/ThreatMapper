@@ -81,6 +81,8 @@ describe(`Component Select`, () => {
       fireEvent.click(selectItemApple);
     });
 
+    expect(onChange).toHaveBeenCalledTimes(1);
+
     rerender(
       <Select
         value={'Apple'}
