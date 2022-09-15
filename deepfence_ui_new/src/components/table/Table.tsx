@@ -87,9 +87,6 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     columnResizeMode: 'onChange',
     enableColumnResizing,
     enableSorting: true,
-    meta: {
-      striped,
-    },
     state: {
       ...(enablePagination && manualPagination
         ? {
