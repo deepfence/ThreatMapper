@@ -1,5 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { useMemo } from 'react';
+import { SortingState } from '@tanstack/react-table';
+import { sortBy } from 'lodash-es';
+import { useMemo, useState } from 'react';
 
 import { createColumnHelper, RowExpander, Table } from './Table';
 
@@ -141,3 +143,210 @@ export const StripedWithSubcomponent = TemplateWithSubcomponent.bind({});
 StripedWithSubcomponent.args = {
   striped: true,
 };
+
+const TemplateWithAutoPagination: ComponentStory<typeof Table<Fruit>> = (args) => {
+  const columnHelper = createColumnHelper<Fruit>();
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+        header: () => 'ID',
+      }),
+      columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        cell: (info) => info.getValue(),
+        header: () => <span>Name</span>,
+      }),
+      columnHelper.accessor('taste', {
+        header: () => 'Taste',
+        cell: (info) => info.renderValue(),
+      }),
+    ],
+    [],
+  );
+
+  const data = useMemo(() => {
+    const data: Fruit[] = [];
+    for (let i = 0; i < 995; i++) {
+      data.push({
+        id: i,
+        name: `Fruit ${i}`,
+        taste: `Taste ${i}`,
+      });
+    }
+    return data;
+  }, []);
+  return <Table {...args} data={data} columns={columns} enablePagination />;
+};
+
+export const DefaultWithAutoPagination = TemplateWithAutoPagination.bind({});
+DefaultWithAutoPagination.args = {};
+
+const TemplateWithManualPagination: ComponentStory<typeof Table<Fruit>> = (args) => {
+  const columnHelper = createColumnHelper<Fruit>();
+  const [{ pageIndex, pageSize }, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+        header: () => 'ID',
+      }),
+      columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        cell: (info) => info.getValue(),
+        header: () => <span>Name</span>,
+      }),
+      columnHelper.accessor('taste', {
+        header: () => 'Taste',
+        cell: (info) => info.renderValue(),
+      }),
+    ],
+    [],
+  );
+
+  const data = useMemo(() => {
+    const data: Fruit[] = [];
+    for (let i = 0; i < 995; i++) {
+      data.push({
+        id: i,
+        name: `Fruit ${i}`,
+        taste: `Taste ${i}`,
+      });
+    }
+    return data.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
+  }, [pageIndex]);
+
+  return (
+    <Table
+      {...args}
+      data={data}
+      columns={columns}
+      enablePagination
+      manualPagination
+      pageCount={100}
+      pageSize={pageSize}
+      pageIndex={pageIndex}
+      onPaginationChange={setPagination}
+    />
+  );
+};
+
+export const DefaultWithManualPagination = TemplateWithManualPagination.bind({});
+DefaultWithManualPagination.args = {};
+
+export const WithColumnResizing = TemplateWithManualPagination.bind({});
+WithColumnResizing.args = { enableColumnResizing: true };
+
+const TemplateWithAutoSorting: ComponentStory<typeof Table<Fruit>> = (args) => {
+  const columnHelper = createColumnHelper<Fruit>();
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+        header: () => 'ID',
+      }),
+      columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        cell: (info) => info.getValue(),
+        header: () => <span>Name</span>,
+      }),
+      columnHelper.accessor('taste', {
+        header: () => 'Taste',
+        cell: (info) => info.renderValue(),
+      }),
+    ],
+    [],
+  );
+
+  const data = useMemo(() => {
+    const data: Fruit[] = [];
+    for (let i = 0; i < 995; i++) {
+      data.push({
+        id: i,
+        name: `Fruit ${i}`,
+        taste: `Taste ${i}`,
+      });
+    }
+    return data;
+  }, []);
+  return <Table {...args} data={data} columns={columns} enablePagination enableSorting />;
+};
+
+export const DefaultWithAutoSorting = TemplateWithAutoSorting.bind({});
+DefaultWithAutoSorting.args = {};
+
+const TemplateWithManualSorting: ComponentStory<typeof Table<Fruit>> = (args) => {
+  const columnHelper = createColumnHelper<Fruit>();
+  const [{ pageIndex, pageSize }, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const [sort, setSort] = useState<SortingState>([]);
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+        header: () => 'ID',
+      }),
+      columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        cell: (info) => info.getValue(),
+        header: () => <span>Name</span>,
+      }),
+      columnHelper.accessor('taste', {
+        header: () => 'Taste',
+        cell: (info) => info.renderValue(),
+      }),
+    ],
+    [],
+  );
+
+  const data = useMemo(() => {
+    let data: Fruit[] = [];
+
+    for (let i = 0; i < 995; i++) {
+      data.push({
+        id: i,
+        name: `Fruit ${i}`,
+        taste: `Taste ${i}`,
+      });
+    }
+
+    if (sort.length) {
+      data = sortBy(data, [sort[0].id]);
+      if (sort[0].desc) {
+        data.reverse();
+      }
+    }
+    return data.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
+  }, [pageIndex, sort]);
+
+  return (
+    <Table
+      {...args}
+      data={data}
+      columns={columns}
+      enablePagination
+      manualPagination
+      pageCount={100}
+      pageSize={pageSize}
+      pageIndex={pageIndex}
+      onPaginationChange={setPagination}
+      enableSorting
+      manualSorting
+      sortingState={sort}
+      onSortingChange={setSort}
+    />
+  );
+};
+
+export const DefaultWithManualSorting = TemplateWithManualSorting.bind({});
+DefaultWithManualSorting.args = {};

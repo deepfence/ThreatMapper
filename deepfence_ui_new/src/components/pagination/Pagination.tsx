@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { ComponentProps, memo } from 'react';
+import { memo } from 'react';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,7 +10,6 @@ type PageButtonProps = {
   label: string | number | JSX.Element;
   className: string;
   disabled: boolean;
-  key: ComponentProps<'button'>['key'];
   onPageChange?: () => void;
 };
 
@@ -20,7 +19,7 @@ type OnPageChangeProps = {
 type Props = Pick<PaginationProps, 'currentPage' | 'totalPageCount'> & OnPageChangeProps;
 
 const PageButton = memo(
-  ({ label, onPageChange, disabled, className, key }: PageButtonProps) => {
+  ({ label, onPageChange, disabled, className }: PageButtonProps) => {
     return (
       <button
         className={twMerge(
@@ -38,7 +37,6 @@ const PageButton = memo(
         onClick={() => {
           onPageChange?.();
         }}
-        key={key}
         disabled={disabled}
       >
         {label}
