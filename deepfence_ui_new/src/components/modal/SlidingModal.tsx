@@ -3,8 +3,8 @@ import cx from 'classnames';
 import React, { FC, useEffect } from 'react';
 import { IconContext } from 'react-icons';
 import { HiX } from 'react-icons/hi';
-import { useUpdateStateIfMounted } from '../hooks/useUpdateStateIfMounted';
 
+import { useUpdateStateIfMounted } from '../hooks/useUpdateStateIfMounted';
 import Separator from '../separator/Separator';
 
 interface FocusableElement {

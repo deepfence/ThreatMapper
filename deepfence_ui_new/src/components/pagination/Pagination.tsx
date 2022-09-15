@@ -2,6 +2,7 @@ import cx from 'classnames';
 import { ComponentProps, memo } from 'react';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
+
 import { PaginationProps, usePagination } from '../hooks/usePagination';
 import { Typography } from '../typography/Typography';
 
