@@ -1166,6 +1166,9 @@ def register_cloud_account():
             "updated_at": updated_at_timestamp
         }
         redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, node["node_id"], json.dumps(node))
+        if post_data["cloud_provider"] == "aws":
+            cloudtrail_alerts_notifications = CloudtrailAlertNotification.query.filter().all()
+            account_trails_map = defaultdict(list)
         for monitored_account_id, monitored_node_id in monitored_account_ids.items():
             node = None
             compliance_scan_node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_node_id)
@@ -1196,6 +1199,21 @@ def register_cloud_account():
                     app.logger.error("Duplicate cloud compliance node {}".format(e))
                     print(e)
                     raise InvalidUsage("Duplicate cloud compliance node")
+
+            if post_data["cloud_provider"] == "aws":
+                for notification in cloudtrail_alerts_notifications:
+                    for trail in notification.filters.get(FILTER_TYPE_CLOUDTRAIL_TRAIL, []):
+                        account_id, trail_name = trail.split("/", 1)
+                        if account_id != monitored_account_id:
+                            continue
+                        node_id = "aws-{};<cloud_account>".format(account_id)
+                        if trail_name not in account_trails_map.get(node_id, []):
+                            trail_item = {
+                                "account_id": account_id,
+                                "trail_name": trail_name
+                            }
+                            cloudtrail_trails.append(trail_item)
+                            account_trails_map[node_id].append(trail_name)
 
             current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, monitored_node_id)
             if not current_pending_scans_str:
@@ -1251,15 +1269,16 @@ def register_cloud_account():
             for notification in cloudtrail_alerts_notifications:
                 for trail in notification.filters.get(FILTER_TYPE_CLOUDTRAIL_TRAIL, []):
                     account_id, trail_name = trail.split("/", 1)
+                    if account_id != post_data["cloud_account"]:
+                        continue
                     node_id = "aws-{};<cloud_account>".format(account_id)
-                    if node_id not in account_trails_map:
-                        if trail_name not in account_trails_map.get(node_id, []):
-                            trail_item = {
-                                "account_id": account_id,
-                                "trail_name": trail_name
-                            }
-                            cloudtrail_trails.append(trail_item)
-                            account_trails_map[node_id].append(trail_name)
+                    if trail_name not in account_trails_map.get(node_id, []):
+                        trail_item = {
+                            "account_id": account_id,
+                            "trail_name": trail_name
+                        }
+                        cloudtrail_trails.append(trail_item)
+                        account_trails_map[node_id].append(trail_name)
 
         current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, post_data["node_id"])
         if not current_pending_scans_str:
