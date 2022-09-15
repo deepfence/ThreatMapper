@@ -5,6 +5,7 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   Header,
   HeaderGroup,
   OnChangeFn,
@@ -12,12 +13,14 @@ import {
   Row,
   RowData,
   RowModel,
+  SortingState,
   useReactTable,
 } from '@tanstack/react-table';
 import cx from 'classnames';
 import { once } from 'lodash-es';
 import { createContext, Fragment, useContext } from 'react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
+import { HiOutlineChevronDown, HiOutlineChevronUp } from 'react-icons/hi';
 
 import IconButton from '../button/IconButton';
 import Pagination from '../pagination/Pagination';
@@ -36,6 +39,10 @@ export interface TableProps<TData extends RowData> {
   pageSize?: number;
   pageCount?: number;
   onPaginationChange?: OnChangeFn<PaginationState>;
+  enableSorting?: boolean;
+  manualSorting?: boolean;
+  sortingState?: SortingState;
+  onSortingChange?: OnChangeFn<SortingState>;
 }
 
 interface TableContextValues<TData extends RowData> {
@@ -64,6 +71,10 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     pageSize = 10,
     pageCount = -1,
     onPaginationChange,
+    enableSorting,
+    manualSorting,
+    sortingState,
+    onSortingChange,
   } = props;
   const TableContext = createTableContext<TData>();
   const table = useReactTable<TData>({
@@ -71,14 +82,16 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getRowCanExpand,
     columnResizeMode: 'onChange',
     enableColumnResizing,
+    enableSorting: true,
     meta: {
       striped,
     },
     state: {
-      ...(manualPagination
+      ...(enablePagination && manualPagination
         ? {
             pagination: {
               pageIndex,
@@ -86,10 +99,16 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
             },
           }
         : {}),
+      ...(enableSorting && manualSorting
+        ? {
+            sorting: sortingState,
+          }
+        : {}),
     },
-    ...(manualPagination
+    ...(enablePagination && manualPagination
       ? { manualPagination: true, onPaginationChange, pageCount }
       : {}),
+    ...(enableSorting && manualSorting ? { manualSorting: true, onSortingChange } : {}),
   });
 
   const [headerGroups, rowModel] = [table.getHeaderGroups(), table.getRowModel()];
@@ -154,12 +173,24 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
         Typography.size.xs,
         Typography.weight.semibold,
         Typography.decoration.uppercase,
+        { 'cursor-pointer select-none': header.column.getCanSort() },
       )}
       style={{ width: header.getSize() }}
+      onClick={header.column.getToggleSortingHandler()}
     >
-      {header.isPlaceholder
-        ? null
-        : flexRender(header.column.columnDef.header, header.getContext())}
+      <div className="w-full h-full flex">
+        {header.isPlaceholder
+          ? null
+          : flexRender(header.column.columnDef.header, header.getContext())}
+        <span className="ml-1">
+          {header.column.getCanSort() &&
+            {
+              desc: <HiOutlineChevronDown />,
+              asc: <HiOutlineChevronUp />,
+            }[header.column.getIsSorted() as string]}
+        </span>
+      </div>
+
       {header.column.getCanResize() && (
         // eslint-disable-next-line jsx-a11y/no-static-element-interactions
         <div
@@ -176,7 +207,7 @@ function TableBody<TData>({ rowModel }: { rowModel: RowModel<TData> }) {
   const { striped, renderSubComponent } = useTableContext<TData>();
   return (
     <tbody>
-      {rowModel.rows.map((row) => (
+      {rowModel.rows.map((row, rowIdx) => (
         <Fragment key={row.id}>
           <tr
             className={cx(
@@ -188,7 +219,12 @@ function TableBody<TData>({ rowModel }: { rowModel: RowModel<TData> }) {
             )}
           >
             {row.getVisibleCells().map((cell) => (
-              <Td cell={cell} key={cell.id} totalRows={rowModel.rows.length} />
+              <Td
+                rowIdx={rowIdx}
+                cell={cell}
+                key={cell.id}
+                totalRows={rowModel.rows.length}
+              />
             ))}
           </tr>
           {row.getIsExpanded() && (
@@ -210,9 +246,11 @@ function TableBody<TData>({ rowModel }: { rowModel: RowModel<TData> }) {
 function Td<TData>({
   cell,
   totalRows,
+  rowIdx,
 }: {
   cell: Cell<TData, unknown>;
   totalRows: number;
+  rowIdx: number;
 }) {
   const { striped } = useTableContext<TData>();
 
@@ -225,7 +263,7 @@ function Td<TData>({
         Typography.weight.normal,
         {
           'border-b border-gray-200 dark:border-gray-700':
-            !striped && cell.row.index !== totalRows - 1,
+            !striped && rowIdx !== totalRows - 1,
         },
       )}
     >
