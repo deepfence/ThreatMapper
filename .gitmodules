@@ -14,3 +14,7 @@
 	path = deepfence_agent/plugins/compliance
 	url = https://github.com/deepfence/compliance
 	branch = main
+[submodule "deepfence_agent/plugins/YaraHunter"]
+	path = deepfence_agent/plugins/YaraHunter
+	url = git@github.com:deepfence/YaraHunter.git
+	branch = yarahuntergrpcserver
