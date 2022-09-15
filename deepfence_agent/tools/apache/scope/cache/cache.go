@@ -316,7 +316,6 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 	nodeIdSecretStatusMap := make(map[string]string)
 	nodeIdSecretStatusTimeMap := make(map[string]string)
 	secretResp := mSearchResult.Responses[1]
-	malwareResp := mSearchResult.Responses[2]
 	nodeIdAggsBkt, ok = secretResp.Aggregations.Terms("node_id")
 	if !ok {
 		return nil
@@ -353,11 +352,13 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 		nodeIdSecretStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
 	}
 	r.nodeStatus.Lock()
-	r.nodeStatus.MalwareScanStatus = nodeIdSecretStatusMap
-	r.nodeStatus.MalwareScanStatusTime = nodeIdSecretStatusTimeMap
+	r.nodeStatus.SecretScanStatus = nodeIdSecretStatusMap
+	r.nodeStatus.SecretScanStatusTime = nodeIdSecretStatusTimeMap
 	r.nodeStatus.Unlock()
+	
 	nodeIdMalwareStatusMap := make(map[string]string)
 	nodeIdMalwareStatusTimeMap := make(map[string]string)
+	malwareResp := mSearchResult.Responses[2]
 	nodeIdAggsBkt, ok = malwareResp.Aggregations.Terms("node_id")
 	if !ok {
 		return nil
@@ -394,8 +395,8 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 		nodeIdMalwareStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
 	}
 	r.nodeStatus.Lock()
-	r.nodeStatus.SecretScanStatus = nodeIdSecretStatusMap
-	r.nodeStatus.SecretScanStatusTime = nodeIdSecretStatusTimeMap
+	r.nodeStatus.MalwareScanStatus = nodeIdMalwareStatusMap
+	r.nodeStatus.MalwareScanStatusTime = nodeIdMalwareStatusTimeMap
 	r.nodeStatus.Unlock()
 	return nil
 }
