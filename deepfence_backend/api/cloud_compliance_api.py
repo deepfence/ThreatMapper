@@ -568,7 +568,7 @@ def cloud_compliance_scan_nodes():
         for node in nodes_list:
             node["compliance_percentage"] = node_compliance_percentage.get(node["node_id"],0.0)
             nodes.append(node)
-        return set_response({"nodes": nodes_list})
+        return set_response({"nodes": nodes})
 
     cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
 
