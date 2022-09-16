@@ -17,7 +17,7 @@ Connect to your GKE cluster using gcloud shell.
 | :--: |
 | *Connect to the Cluster* |
 
-### Grant Permisstions
+### Grant Permissions
 
 Grant permissions for the installation with following command (required for k8s up to v1.11):
 

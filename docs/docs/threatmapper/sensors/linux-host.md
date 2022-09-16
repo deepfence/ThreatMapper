@@ -8,7 +8,7 @@ On a Linux-based bare-metal or virtual machine workload, the ThreatMapper sensor
 
 ## ThreatMapper Sensor Agents
 
-Install a docker runtime on the Linux host. Refer to the [Prerequisites for the Sensor Agents](../architecture#threatmapper-sensor-containers) for minimum supported platforms.
+Install a docker runtime on the Linux host. Refer to the [Prerequisites for the Sensor Agents](/threatmapper/architecture#threatmapper-sensor-containers) for minimum supported platforms.
 
 Run the following command to start the Sensor Agent on the host. You can find the Deepfence API key under
  `Setting>User Management>API Key`.

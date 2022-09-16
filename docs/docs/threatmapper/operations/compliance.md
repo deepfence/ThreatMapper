@@ -25,26 +25,26 @@ You can test individual benchmarks, or you can combine a test (scan) to include 
 
 The benchmarks available vary by cloud provider:
 
-| Benchmark | Amazon ECS | Azure | Google GCP | Kubernetes Host | Linux Host |
-| ------- | --- | --- | --- | --- | --- |
-| CIS     |  Y  |  Y  |  Y  |     |     |
-| GDPR    |  Y  |     |     |  Y  |  Y  |
-| HIPAA   |  Y  |  Y  |     |  Y  |  Y  |
-| PCI-DSS |  Y  |     |     |  Y  |  Y  |
-| SOC-2   |  Y  |     |     |     |     |
-| NIST    |  Y  |  Y  |     |  Y  |  Y  |
+| Benchmark | AWS | Azure | GCP | Kubernetes Host | Linux Host |
+|-----------|-----|-------|-----|-----------------|------------|
+| CIS       | Y   | Y     | Y   |                 |            |
+| GDPR      | Y   |       |     | Y               | Y          |
+| HIPAA     | Y   | Y     |     | Y               | Y          |
+| PCI-DSS   | Y   |       |     | Y               | Y          |
+| SOC-2     | Y   |       |     |                 |            |
+| NIST      | Y   | Y     |     | Y               | Y          |
 
 ## Start a Scan
 
 Begin on the **Posture** page in the ThreatMapper console.
 
-Select a cloud instance that you have [configured previously](../cloudscanner/).  You may have several instances of a given cloud type:
+Select a cloud instance that you have [configured previously](/threatmapper/cloudscanner/).  You may have several instances of a given cloud type:
 
 | ![Cloud Compliance Scan - Select](../img/compliance-scan-1.jpg) |
 | :--: |
 | Select target for Cloud Compliance Scan |
 
-If you want to scan a host (Linux host or Kubernetes master or slave node), ensure that the [threatmapper sensor](../sensors) is deployed on that host.
+If you want to scan a host (Linux host or Kubernetes master or slave node), ensure that the [threatmapper sensor](/threatmapper/sensors) is deployed on that host.
 
 Select the compliance benchmarks you wish to run on the target cloud instance or host:
 
@@ -54,7 +54,7 @@ Select the compliance benchmarks you wish to run on the target cloud instance or
 
 You can preview the controls that will be run for each benchmark, and you can select an action to mask (or unmask) specific controls.
 
-Click **Start Scan** once you have completed your select.  The Cloud Connector or Sensor Agent will then perform the scan and in due course, will submit the results to your ThreatMapper console.
+Click **Start Scan** once you have completed your selection. The Cloud Connector or Sensor Agent will then perform the scan and in due course, will submit the results to your ThreatMapper console.
 
 ## Inspecting Scan Results
 
@@ -83,4 +83,3 @@ The Inventory provides an alternative, asset-centric view which presents the num
 | View the Inventory for a Compliance Scan |
 
 You can explore individual types, view a list of the discovered resources of that type and the most recent scan results for each resource.
-

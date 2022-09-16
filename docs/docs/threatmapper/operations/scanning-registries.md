@@ -4,11 +4,11 @@ title: Scanning Registries
 
 # Scanning Registries
 
-ThreatMapper can scan container registries, on-demand or on a regular schedule.  This enables you to catch vulnerabilities in applications that are staged for production.
+You can scan for vulnerabilities in images stored in AWS ECR, Azure Container Registry, Google Cloud Container Registry, Docker Hub, Docker Self-Hosted Private Registry, Quay, Harbor, Gitlab and JFrog from the registry scanning dashboard.
 
 ![Supported Registries](../img/registry-1.jpg)
 
-## Scanning Registries
+## Add Registries
 
 Select the appropriate registry type, and **+ Add Registry**.  The credentials for each registry depends on the registry type; for example, to connect to a DockerHub Registry, use the following details:
 

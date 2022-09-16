@@ -1,10 +1,10 @@
 ---
-title: Amazon Fargate
+title: AWS Fargate
 ---
 
-# Amazon Fargate
+# AWS Fargate
 
-On Amazon Fargate, the ThreatMapper sensor agents are deployed as a sidecar container, using a task definition. 
+On AWS Fargate, the ThreatMapper sensor agents are deployed as a sidecar container, using a task definition. 
 
 :::danger
 
@@ -29,7 +29,7 @@ Grant IAM permissions for ECS task execution role to access this secret as outli
 
    * Name - provide an appropriate name
    * Task Role - select an IAM role that contains the ```AmazonECSTaskExecutionRolePolicy```
-   * Task Execution Role - select the IAM role that ontains the policy that references the correct AWS secrets to access the private repositories.  This can be the same IAM role as specified in the Task Role if the role contains the AmazonECSTaskExecutionRolePolicy and the policies referencing the AWS secrets.
+   * Task Execution Role - select the IAM role that contains the policy that references the correct AWS secrets to access the private repositories.  This can be the same IAM role as specified in the Task Role if the role contains the AmazonECSTaskExecutionRolePolicy and the policies referencing the AWS secrets.
    * CPU and Memory - 0.5 vCPU, 1.0 Gb is appropriate
    * Define the sidecar containers - 
       * Name - deepfence-agent

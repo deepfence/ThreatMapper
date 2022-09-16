@@ -4,14 +4,14 @@ title: Deploy Console
 
 # Deploy a custom ThreatMapper Console
 
-You should first [build the management console](build) and push the images to a suitable repository.  You can then adapt the standard installation instructions ([Docker](../console/docker), [Kubernetes](../console/kubernetes)) to refer to your custom images rather than the Deepfence-provided ones.
+You should first [build the management console](build) and push the images to a suitable repository.  You can then adapt the standard installation instructions ([Docker](/threatmapper/console/docker), [Kubernetes](/threatmapper/console/kubernetes)) to refer to your custom images rather than the Deepfence-provided ones.
 
 
 
 ## Installing and Running the Management Console on a Docker Host
 
 :::tip
-Refer to the [Docker Installation Instructions](../console/docker) along with the modifications below.
+Refer to the [Docker Installation Instructions](/threatmapper/console/docker) along with the modifications below.
 :::
 
 1. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/master/deployment-scripts/docker-compose.yml) to the system that will host the Console
@@ -31,12 +31,12 @@ Refer to the [Docker Installation Instructions](../console/docker) along with th
 ## Installing and Running the Management Console in a Kubernetes Cluster
 
 :::tip
-Refer to the [Kubernetes Installation Instructions](../console/kubernetes) along with the modifications below.
+Refer to the [Kubernetes Installation Instructions](/threatmapper/console/kubernetes) along with the modifications below.
 :::
 
 1. Prepare the cluster, installing the storage driver and metrics service
 
-    Follow the instructions to install the OpenEBS storage and metrics server: [Installation Instructions](../console/kubernetes)
+    Follow the instructions to install the OpenEBS storage and metrics server: [Installation Instructions](/threatmapper/console/kubernetes)
 
 
 2. Install your Management Console
@@ -62,7 +62,7 @@ Refer to the [Kubernetes Installation Instructions](../console/kubernetes) along
 
 4. Optional: enable external access with the `deepfence-router` package:
 
-    Refer to the the instructions to install the [Router](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-router), typically as follows:
+    Refer to the instructions to install the [Router](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-router), typically as follows:
    
     ```bash
     # Create the values file

@@ -62,7 +62,30 @@ export const NOTIFICATION_RESOURCE_OPTIONS = [
     value: 'vulnerability',
   },
   {
+    label: 'Compliance Results',
+    value: 'compliance',
+  },
+  {
     label: 'User Activities',
     value: 'user_activity',
+  },
+];
+
+export const NOTIFICATION_RESOURCE_OPTIONS_CLOUDTRAIL = [
+  {
+    label: 'Vulnerabilities',
+    value: 'vulnerability',
+  },
+  {
+    label: 'Compliance Results',
+    value: 'compliance',
+  },
+  {
+    label: 'User Activities',
+    value: 'user_activity',
+  },
+  {
+    label: 'CloudTrail Alerts',
+    value: 'cloudtrail_alert',
   }
 ];
