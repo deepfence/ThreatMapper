@@ -1,7 +1,7 @@
 /* eslint-disable react/button-has-type */
 import React, { useState } from 'react';
 
-import { backendElasticApiEndPoint } from '../../../utils/web-api-utils';
+import { downloadApiEndPoint } from '../../../utils/web-api-utils';
 
 export const DbFileUploader = () => {
   const [selectedFile, setSelectedFile] = useState();
@@ -13,7 +13,7 @@ export const DbFileUploader = () => {
     setIsFilePicked(true);
   };
   const handleSubmission = () => {
-    const url = `${process.env.API_BASE_URL}/df-api/upload-vulnerability-db`;
+    const url = `${downloadApiEndPoint()}/upload-vulnerability-db`;
     const formData = new FormData();
 
     formData.append('file', selectedFile);

@@ -9,6 +9,7 @@ import { ComplianceStats } from '../compliance-stats';
 
 export const AwsTerraFormScript = withRouter(props => {
   const [collapsed, setCollapsed] = useState(true);
+  const terraformLink = "https://registry.terraform.io/modules/deepfence/cloud-scanner/aws/latest/examples/single-account-ecs#usage";
 
   return (
     <div
@@ -48,6 +49,8 @@ export const AwsTerraFormScript = withRouter(props => {
               <br />
               For information on AWS Organizations and account types, see AWS
               docs.
+              <br/>
+              <a target="_blank" rel="noreferrer" href={terraformLink}>{terraformLink}</a>
             </p>
           </div>
           <h6 style={{ color: 'white', marginTop: '20px' }}>

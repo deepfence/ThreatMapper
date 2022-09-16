@@ -8,6 +8,7 @@ import ComplianceTable from '../compliance-table';
 
 export const GcpTerraFormScript = withRouter(props => {
   const [collapsed, setCollapsed] = useState(true);
+  const terraformLink = "https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage";
 
   return (
     <div
@@ -44,6 +45,8 @@ export const GcpTerraFormScript = withRouter(props => {
             <p>
               Deploy Deepfence Compliance Scanner with Terraform using the code
               samples below for a single project.
+              <br/>
+              <a target="_blank" rel="noreferrer" href={terraformLink}>{terraformLink}</a>
             </p>
           </div>
           <h6 style={{ color: 'white', marginTop: '20px' }}>

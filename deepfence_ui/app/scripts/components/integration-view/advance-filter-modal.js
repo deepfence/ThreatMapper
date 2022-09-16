@@ -63,9 +63,12 @@ export const AdvancedFilterModalContent = ({
 
   const filterValues = filters || initialFilters;
 
+  // eslint-disable-next-line array-callback-return
+  const nodeFiltersOptions = nodeFilters && nodeFilters.filter(item => { if (item.label !== 'CloudTrail') return item;});
+
   return (
     <div className="form-group df-select-field" style={{ width: '250px' }}>
-      {nodeFilters.map(filter => (
+      {nodeFiltersOptions.map(filter => (
         <div className="search-form" key={filter.name}>
           <br />
           <DFSelect

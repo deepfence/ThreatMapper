@@ -12,7 +12,7 @@ The console allows you to:
 * Configure Infrastructure API access and interrogate platform configurations.
 * Visualize and drill down into Kubernetes clusters, virtual machines, containers and images, running processes, and network connections in near real time.
 * Invoke vulnerability scans on running containers and applications and review the results, ranked by risk-of-exploit.
-* Invoke compliance scans on infrastrucutre configuration ('agentless') and on infrastructure hosts ('agent-based'), manually or automatically when they are added to a cluster.
+* Invoke compliance scans on infrastructure configuration ('agentless') and on infrastructure hosts ('agent-based'), manually or automatically when they are added to a cluster.
 * Scan container registries for vulnerabilities, to review workloads before they are deployed.
 * Scan image builds during the CI/CD pipeline, supporting CircleCI, Jenkins, and GitLab.
 * Scan containers and host filesystems for unprotected secrets, including access tokens, keys and passwords.

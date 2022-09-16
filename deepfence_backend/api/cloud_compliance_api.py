@@ -6,6 +6,7 @@ import time
 from sqlalchemy import func, exc
 from urllib.parse import unquote
 from config.app import db
+from models.notification import CloudtrailAlertNotification
 from utils.decorators import non_read_only_user
 from models.cloud_resource_node import CloudResourceNode
 from models.compliance_rules_disabled import ComplianceRulesDisabled
@@ -25,7 +26,8 @@ from utils.constants import TIME_UNIT_MAPPING, ALL_INDICES, \
     CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, CLOUD_COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
     PENDING_CLOUD_COMPLIANCE_SCANS_KEY, CLOUD_COMPLIANCE_LOGS_ES_TYPE, NODE_TYPE_HOST, COMPLIANCE_LINUX_HOST, \
     COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, COMPLIANCE_KUBERNETES_HOST, CSPM_RESOURCES, CSPM_RESOURCE_LABELS, \
-    CSPM_RESOURCES_INVERTED, CLOUD_RESOURCES_CACHE_KEY, CLOUD_COMPLIANCE_REFRESH_INVENTORY
+    CSPM_RESOURCES_INVERTED, CLOUD_RESOURCES_CACHE_KEY, CLOUD_COMPLIANCE_REFRESH_INVENTORY, \
+    FILTER_TYPE_CLOUDTRAIL_TRAIL, CLOUDTRAIL_ALERT_INDEX
 from utils.custom_exception import InvalidUsage, DFError
 import json
 from utils.resource import get_nodes_list, get_default_params
@@ -430,6 +432,7 @@ def cloud_compliance_scan_nodes():
         lucene_query_string = ""
 
     cloud_provider = request.args.get("cloud_provider")
+
     if cloud_provider == "linux":
         hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
         nodes_list = []
@@ -438,7 +441,67 @@ def cloud_compliance_scan_nodes():
                     and host.get("is_ui_vm", False) is False:
                 nodes_list.append(
                     {"node_name": host.get("host_name", ""), "node_id": host.get("scope_id", ""), "enabled": True})
-        return set_response({"nodes": nodes_list})
+        node_ids = [x["node_id"] for x in nodes_list]
+        filters = {
+            "scan_status": "COMPLETED",
+            "node_id": node_ids
+        }
+        aggs = {
+            "node_id": {
+                "terms": {
+                    "field": "node_id.keyword",
+                    "size": ES_TERMS_AGGR_SIZE
+                },
+                "aggs": {
+                    "compliance_check_type": {
+                        "terms": {
+                            "field": "compliance_check_type.keyword",
+                            "size": ES_TERMS_AGGR_SIZE
+                        },
+                        "aggs": {
+                            "docs": {
+                                "top_hits": {
+                                    "size": 1,
+                                    "sort": [{"@timestamp": {"order": "desc"}}],
+                                    "_source": {"includes": ["result"]}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        aggs_response = ESConn.aggregation_helper(COMPLIANCE_LOGS_INDEX, filters, aggs, number,
+                                                TIME_UNIT_MAPPING.get(time_unit), lucene_query_string)
+        node_compliance_percentage = {}
+        if "aggregations" in aggs_response:
+            cloud_total = defaultdict(int)
+            for node_id_aggr in aggs_response['aggregations']['node_id']['buckets']:
+                total = defaultdict(int)
+                for compliance_check_type_aggr in node_id_aggr['compliance_check_type']['buckets']:
+                    if compliance_check_type_aggr["key"] not in COMPLIANCE_CHECK_TYPES.get(cloud_provider, []):
+                        continue
+                    result_docs = compliance_check_type_aggr.get('docs', {}).get('hits', {}).get('hits', [])
+                    if result_docs:
+                        result = result_docs[0]['_source']['result']
+                        if result['note'] > 0:
+                            total['note'] += result['note']
+                        if result['warn'] > 0:
+                            total['warn'] += result['warn']
+                        if result['pass'] > 0:
+                            total['pass'] += result['pass']
+                        if result['info'] > 0:
+                            total['info'] += result['info']
+                if total:
+                    node_compliance_percentage[node_id_aggr['key']] = \
+                        (total['pass'] + total['info']) * 100 / \
+                        (total['pass'] + total['info'] + total['note'] + total['warn'])
+        nodes = []
+        for node in nodes_list:
+            node["compliance_percentage"] = node_compliance_percentage.get(node["node_id"],0.0)
+            nodes.append(node)
+        return set_response({"nodes": nodes})
+
     if cloud_provider == "kubernetes":
         nodes_list = []
         kube_nodes = {}
@@ -448,7 +511,66 @@ def cloud_compliance_scan_nodes():
                 kube_nodes[host.get("kubernetes_cluster_id")] = host.get("kubernetes_cluster_name")
         for node_id, name in kube_nodes.items():
             nodes_list.append({"node_name": name, "node_id": node_id, "enabled": True})
-        return set_response({"nodes": nodes_list})
+        node_ids = [x["node_id"] for x in nodes_list]
+        filters = {
+            "scan_status": "COMPLETED",
+            "kubernetes_cluster_id": node_ids
+        }
+        aggs = {
+            "node_id": {
+                "terms": {
+                    "field": "kubernetes_cluster_id.keyword",
+                    "size": ES_TERMS_AGGR_SIZE
+                },
+                "aggs": {
+                    "compliance_check_type": {
+                        "terms": {
+                            "field": "compliance_check_type.keyword",
+                            "size": ES_TERMS_AGGR_SIZE
+                        },
+                        "aggs": {
+                            "docs": {
+                                "top_hits": {
+                                    "size": 1,
+                                    "sort": [{"@timestamp": {"order": "desc"}}],
+                                    "_source": {"includes": ["result"]}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        aggs_response = ESConn.aggregation_helper(COMPLIANCE_LOGS_INDEX, filters, aggs, number,
+                                                TIME_UNIT_MAPPING.get(time_unit), lucene_query_string)
+        node_compliance_percentage = {}
+        if "aggregations" in aggs_response:
+            cloud_total = defaultdict(int)
+            for node_id_aggr in aggs_response['aggregations']['node_id']['buckets']:
+                total = defaultdict(int)
+                for compliance_check_type_aggr in node_id_aggr['compliance_check_type']['buckets']:
+                    if compliance_check_type_aggr["key"] not in COMPLIANCE_CHECK_TYPES.get(cloud_provider, []):
+                        continue
+                    result_docs = compliance_check_type_aggr.get('docs', {}).get('hits', {}).get('hits', [])
+                    if result_docs:
+                        result = result_docs[0]['_source']['result']
+                        if result['note'] > 0:
+                            total['note'] += result['note']
+                        if result['warn'] > 0:
+                            total['warn'] += result['warn']
+                        if result['pass'] > 0:
+                            total['pass'] += result['pass']
+                        if result['info'] > 0:
+                            total['info'] += result['info']
+                if total:
+                    node_compliance_percentage[node_id_aggr['key']] = \
+                        (total['pass'] + total['info']) * 100 / \
+                        (total['pass'] + total['info'] + total['note'] + total['warn'])
+        nodes = []
+        for node in nodes_list:
+            node["compliance_percentage"] = node_compliance_percentage.get(node["node_id"],0.0)
+            nodes.append(node)
+        return set_response({"nodes": nodes})
 
     cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
 
@@ -991,6 +1113,47 @@ def compliance_rules(compliance_check_type):
     return set_response(data=response)
 
 
+@cloud_compliance_api.route("/compliance/cloudtrail_alerts", methods=["GET"])
+@jwt_required()
+def cloudtrail_alerts():
+    # required fields
+    number = request.args.get("number")
+    time_unit = request.args.get("time_unit")
+
+    if number:
+        try:
+            number = int(number)
+        except ValueError:
+            raise InvalidUsage("Number should be an integer value.")
+
+    if bool(number is not None) ^ bool(time_unit):
+        raise InvalidUsage("Require both number and time_unit or ignore both of them.")
+
+    if time_unit and time_unit not in TIME_UNIT_MAPPING.keys():
+        raise InvalidUsage("time_unit should be one of these, month/day/hour/minute")
+
+    lucene_query_string = request.args.get("lucene_query")
+    if lucene_query_string:
+        lucene_query_string = urllib.parse.unquote(lucene_query_string)
+    else:
+        lucene_query_string = ""
+
+    filters = {}
+    filters = request.args.get("filters", filters)
+
+    page_size = 10
+    start_index = 0
+    page_size = request.args.get("size", page_size)
+    start_index = request.args.get("start_index", start_index)
+    sort_order = request.args.get("sort_order", "desc")
+    es_index = CLOUDTRAIL_ALERT_INDEX
+    es_resp = ESConn.search_by_and_clause(
+        es_index, filters, start_index, sort_order, number=number,
+        time_unit=TIME_UNIT_MAPPING.get(time_unit), size=page_size, lucene_query_string=lucene_query_string)
+
+    return set_response(data=es_resp)
+
+
 @cloud_compliance_api.route("/cloud-compliance-scan/<path:node_id>/start", methods=["POST"],
                             endpoint="api_v1_5_start_cloud_compliance_scan")
 @jwt_required()
@@ -1145,6 +1308,7 @@ def register_cloud_account():
     org_account_id = post_data.get("org_acc_id", None)
     updated_at_timestamp = datetime.now().timestamp()
     scan_list = {}
+    cloudtrail_trails = []
 
     # get refresh status and set false
     do_refresh = redis.hget(CLOUD_COMPLIANCE_REFRESH_INVENTORY, post_data["node_id"])
@@ -1163,6 +1327,9 @@ def register_cloud_account():
             "updated_at": updated_at_timestamp
         }
         redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, node["node_id"], json.dumps(node))
+        if post_data["cloud_provider"] == "aws":
+            cloudtrail_alerts_notifications = CloudtrailAlertNotification.query.filter().all()
+            account_trails_map = defaultdict(list)
         for monitored_account_id, monitored_node_id in monitored_account_ids.items():
             node = None
             compliance_scan_node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_node_id)
@@ -1193,6 +1360,21 @@ def register_cloud_account():
                     app.logger.error("Duplicate cloud compliance node {}".format(e))
                     print(e)
                     raise InvalidUsage("Duplicate cloud compliance node")
+
+            if post_data["cloud_provider"] == "aws":
+                for notification in cloudtrail_alerts_notifications:
+                    for trail in notification.filters.get(FILTER_TYPE_CLOUDTRAIL_TRAIL, []):
+                        account_id, trail_name = trail.split("/", 1)
+                        if account_id != monitored_account_id:
+                            continue
+                        node_id = "aws-{};<cloud_account>".format(account_id)
+                        if trail_name not in account_trails_map.get(node_id, []):
+                            trail_item = {
+                                "account_id": account_id,
+                                "trail_name": trail_name
+                            }
+                            cloudtrail_trails.append(trail_item)
+                            account_trails_map[node_id].append(trail_name)
 
             current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, monitored_node_id)
             if not current_pending_scans_str:
@@ -1242,9 +1424,26 @@ def register_cloud_account():
                 print(e)
                 raise InvalidUsage("Duplicate cloud compliance node")
 
+        if post_data["cloud_provider"] == "aws":
+            cloudtrail_alerts_notifications = CloudtrailAlertNotification.query.filter().all()
+            account_trails_map = defaultdict(list)
+            for notification in cloudtrail_alerts_notifications:
+                for trail in notification.filters.get(FILTER_TYPE_CLOUDTRAIL_TRAIL, []):
+                    account_id, trail_name = trail.split("/", 1)
+                    if account_id != post_data["cloud_account"]:
+                        continue
+                    node_id = "aws-{};<cloud_account>".format(account_id)
+                    if trail_name not in account_trails_map.get(node_id, []):
+                        trail_item = {
+                            "account_id": account_id,
+                            "trail_name": trail_name
+                        }
+                        cloudtrail_trails.append(trail_item)
+                        account_trails_map[node_id].append(trail_name)
+
         current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, post_data["node_id"])
         if not current_pending_scans_str:
-            return set_response(data={"scans": {}, "refresh": do_refresh}, status=200)
+            return set_response(data={"scans": {}, "cloudtrail_trails": cloudtrail_trails, "refresh": do_refresh}, status=200)
         current_pending_scans = json.loads(current_pending_scans_str)
         for scan in current_pending_scans:
             filters = {
@@ -1258,7 +1457,7 @@ def register_cloud_account():
         if not scan_list:
             redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, post_data["node_id"], "")
 
-    return set_response(data={"scans": scan_list, "refresh": do_refresh}, status=200)
+    return set_response(data={"scans": scan_list, "cloudtrail_trails": cloudtrail_trails, "refresh": do_refresh}, status=200)
 
 
 @cloud_compliance_api.route("/cloud_compliance/cloud_resource/<path:cloud_provider>", methods=["POST"],

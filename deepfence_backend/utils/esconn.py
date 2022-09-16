@@ -1357,7 +1357,6 @@ class ESConn:
         should_objects = []
         range_query = None
         if number and time_unit and time_unit != 'all':
-            print("it is coming to the time unit if else condition")
             rounding_time_unit = get_rounding_time_unit(time_unit)
             range_query = {
                 "range": {

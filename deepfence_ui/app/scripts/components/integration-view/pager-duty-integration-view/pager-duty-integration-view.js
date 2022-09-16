@@ -36,8 +36,12 @@ const resourceCollection = [
     name: 'Compliance Results',
     value: 'compliance',
   },
+  {
+    name: 'CloudTrail Alerts',
+    value: 'cloudtrail_alert',
+  },
 ];
-const allNodeType = 'host,container_image,pod';
+const allNodeType = 'host,container_image,pod,aws';
 
 class PagerDutyIntegrationView extends React.Component {
   constructor() {
@@ -51,6 +55,7 @@ class PagerDutyIntegrationView extends React.Component {
       duration: '',
       submitted: false,
       filters: [],
+      cloudTrailValue: {},
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -61,6 +66,7 @@ class PagerDutyIntegrationView extends React.Component {
     this.deleteIntegration = this.deleteIntegration.bind(this);
     this.handleDeleteDialog = this.handleDeleteDialog.bind(this);
     this.getModalContent = this.getModalContent.bind(this);
+    this.seCloudtrailOptions = this.seCloudtrailOptions.bind(this);
   }
 
   componentDidMount() {
@@ -75,7 +81,7 @@ class PagerDutyIntegrationView extends React.Component {
     const params = {
       node_type: allNodeType,
       filters:
-        'host_name,container_name,image_name_with_tag,user_defined_tags,kubernetes_namespace,kubernetes_cluster_name',
+        'host_name,container_name,image_name_with_tag,user_defined_tags,kubernetes_namespace,kubernetes_cluster_name,cloudtrail_trail',
     };
     return dispatch(enumerateFiltersAction(params));
   }
@@ -166,6 +172,7 @@ class PagerDutyIntegrationView extends React.Component {
       duration = {},
       resourceType,
       filters,
+      cloudTrailValue,
     } = this.state;
 
     if (!resourceType) {
@@ -174,6 +181,16 @@ class PagerDutyIntegrationView extends React.Component {
         isError: true,
       });
       return;
+    }
+
+    if (resourceType && resourceType.value === 'cloudtrail_alerts') {
+      if (Object.keys(cloudTrailValue).length === 0) {
+        this.setState({
+          integrationAddResponse: 'CloudTrail selection in mandatory',
+          isError: true,
+        });
+        return;
+      }
     }
 
     this.setState({
@@ -186,6 +203,19 @@ class PagerDutyIntegrationView extends React.Component {
       return acc;
     }, {});
 
+    const apiCloudTrailFilters = Object.keys(cloudTrailValue).reduce(
+      (acc, key) => {
+        acc[key] = cloudTrailValue[key].map(el => el.value);
+        return acc;
+      },
+      {}
+    );
+
+    const filterObject = {
+      ...apiFilters,
+      ...apiCloudTrailFilters,
+    };
+
     if (serviceKey) {
       let params = {
         service_key: serviceKey,
@@ -194,7 +224,7 @@ class PagerDutyIntegrationView extends React.Component {
         duration: duration.value,
         integration_type: 'pagerduty',
         notification_type: resourceType.value,
-        filters: apiFilters,
+        filters: filterObject,
       };
       this.props.dispatch(submitIntegrationRequest(params));
     }
@@ -230,11 +260,26 @@ class PagerDutyIntegrationView extends React.Component {
     );
   }
 
+  seCloudtrailOptions(name, value) {
+    this.setState({
+      cloudTrailValue: {
+        ...this.state.cloudTrailValue,
+        cloudtrail_trail: value,
+      },
+    });
+  }
+
   getPagerDutyIntegrationFormView() {
-    const { serviceKey, apiKey, submitted } = this.state;
+    const { serviceKey, apiKey, submitted, resourceType, cloudTrailValue } =
+      this.state;
     const { showSeverityOptions = false, showDurationOptions = false } =
       this.state;
     const { nodeFilters = [] } = this.props;
+    const cloudTrailOptions =
+      this.props.nodeFilters &&
+      this.props.nodeFilters.filter(item => {
+        if (item.label === 'CloudTrail') return item;
+      });
     const columnStyle = {
       padding: '0px 60px',
     };
@@ -317,7 +362,38 @@ class PagerDutyIntegrationView extends React.Component {
                     </div>
                   </div>
                 </div>
-                <br />
+                {resourceType && resourceType.value === 'cloudtrail_alert' && (
+                  <div className="row">
+                    <div className="col">
+                      <div
+                        className="form-group df-select-field"
+                        style={{ width: '250px' }}
+                      >
+                        {cloudTrailOptions.map(filter => (
+                          <div className="search-form">
+                            <br />
+                            <DFSelect
+                              options={filter.options.map(el => ({
+                                label: el,
+                                value: el,
+                              }))}
+                              name={filter.name}
+                              placeholder={`${filter.label}`}
+                              onChange={selectedOptions =>
+                                this.seCloudtrailOptions(
+                                  filter.name,
+                                  selectedOptions
+                                )
+                              }
+                              value={cloudTrailValue[filter.name]}
+                              isMulti
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="row">
                   {showSeverityOptions && (
                     <div className="col-md-6">
@@ -353,12 +429,14 @@ class PagerDutyIntegrationView extends React.Component {
                     </div>
                   )}
                 </div>
-                <div>
-                  <AdvanceFilterOption
-                    modalContent={this.getModalContent}
-                    filters={this.props.nodeFilters}
-                  />
-                </div>
+                {resourceType && resourceType.value !== 'cloudtrail_alert' && (
+                  <div>
+                    <AdvanceFilterOption
+                      modalContent={this.getModalContent}
+                      filters={this.props.nodeFilters}
+                    />
+                  </div>
+                )}
                 <br />
                 <div className="form-group">{this.getEnabledBtnView()}</div>
                 <div className="error-msg-container">
