@@ -2608,9 +2608,9 @@ export function refreshCloudComplianceResources(params = {}) {
 
 // scan list for speific node and check type.
 export function getComplianceScanList(params = {}) {
-  const { lucene_query: luceneQuery = [], nodeId, checkType, cloudType } = params;
+  const { lucene_query: luceneQuery = [], nodeId, checkType, cloudType, from = 0, number, time_unit } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/scans?number=30&size=100&time_unit=day&lucene_query=${luceneQueryEscaped}&node_id=${nodeId}&compliance_check_type=${checkType}&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/scans?number=${number}&time_unit=${time_unit}&size=10&start_index=${from}&lucene_query=${luceneQueryEscaped}&node_id=${nodeId}&compliance_check_type=${checkType}&node_type=${cloudType}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',
@@ -2623,9 +2623,9 @@ export function getComplianceScanList(params = {}) {
 
 // centre chart data scan results.
 export function getComplianceChartData(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, nodeId, scanId, cloudType} = params;
+  const { lucene_query: luceneQuery = [], checkType, nodeId, cloudType, number, time_unit } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/summary?number=30&time_unit=day&lucene_query=${luceneQueryEscaped}&node_id=${nodeId}&compliance_check_type=${checkType}&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/summary?number=${number}&time_unit=${time_unit}&lucene_query=${luceneQueryEscaped}&node_id=${nodeId}&compliance_check_type=${checkType}&node_type=${cloudType}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'GET',

@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import HostReportContainer from './host-report-container';
 import ComplianceTotalTestReportContainer from './total-test-report-container';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
-import { getComplianceChartDataAction  } from '../../actions';
 import { dateTimeFormat } from '../../utils/time-utils';
 
 const testValueConfigCloud = [
@@ -44,13 +43,6 @@ const testValueConfigHosts = [
   },
 ];
 class PCISummary extends React.PureComponent {
-
-  componentDidMount() {
-    const cloudType = window.location.hash.split('/').reverse()[3];
-    const checkType = window.location.hash.split('/').reverse()[0];
-    const nodeId = window.location.hash.split('/').reverse()[2];
-    this.props.dispatch(getComplianceChartDataAction({nodeId, checkType, cloudType}));
-  }
 
   render() {
     const {

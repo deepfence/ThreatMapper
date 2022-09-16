@@ -1742,7 +1742,7 @@ export function rootReducer(state = initialState, action) {
     }
 
     case ActionTypes.GET_COMPLIANCE_SCAN_LIST_SUCCESS: {
-      const { payload: { data: { hits = [], total = 0, node_type } = {} } = {} } = action;
+      const { payload: { data: { hits = [], total: { value: total = 0} = {}, node_type } = {} } = {} } = action;
 
       /* eslint-disable no-underscore-dangle */
       const scans = hits.map(hit => ({
@@ -1751,6 +1751,7 @@ export function rootReducer(state = initialState, action) {
       }));
       state = state.set('compliance_scan_list_loader', false);
       state = state.set('compliance_scan_list', scans)
+      state = state.set('compliance_scan_list_total', total)
       state = state.set('compliance_node_type', node_type)
       return state;
     }
@@ -1761,7 +1762,12 @@ export function rootReducer(state = initialState, action) {
     }
 
     case ActionTypes.GET_COMPLIANCE_CHART_REQUEST: {
-      state = state.set('compliance_chart_data_loader', true);
+      const {
+        initiatedByPollable
+      } = action.input || {};
+      if (!initiatedByPollable) {
+        state = state.set('compliance_chart_data_loader', true);
+      }
       return state;
     }
 

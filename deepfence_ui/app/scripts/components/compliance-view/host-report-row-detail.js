@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unused-state */
 import React from 'react';
-import DFTable from '../common/df-table/index';
+import { DfTableV2 } from '../common/df-table-v2';
 import { dateTimeFormat } from '../../utils/time-utils';
 import {
   showModal,
@@ -12,7 +12,7 @@ import NotificationToaster from '../common/notification-toaster/notification-toa
 class HostReportRowDetail extends React.PureComponent {
   constructor(props) {
     super(props);
-    this.state = { tableAction: false, cellValue: 0 };
+    this.state = { tableAction: false, cellValue: 0, page: 0 };
     this.handleDeleteDialogScans = this.handleDeleteDialogScans.bind(this);
     this.deleteScanActions = this.deleteScanActions.bind(this);
     this.handleActionEditDelete = this.handleActionEditDelete.bind(this);
@@ -28,8 +28,10 @@ class HostReportRowDetail extends React.PureComponent {
   }
 
   handlePageChange(pageNumber) {
-    this.tableChangeHandler({
-      page: pageNumber,
+    this.setState({ page: 0 }, () => {
+      this.tableChangeHandler({
+        page: pageNumber,
+      });
     });
   }
 
@@ -95,27 +97,25 @@ class HostReportRowDetail extends React.PureComponent {
       handleDownload,
       isToasterVisible,
       scanType,
+      totalRows,
     } = this.props;
     return (
-      <div>
-        <DFTable
-          data={this.props.data}
+      <div style={{ paddingTop: '64px' }}>
+        <DfTableV2
+          page={this.state.page}
+          data={data}
           showPagination
-          manual
-          pages={data.length}
+          totalRows={totalRows}
+          defaultPageSize={10}
           onPageChange={this.handlePageChange}
-          getTrProps={(scanType, rowInfo) => ({
-            onClick: () => {
-              rowClickHandler(
-                rowInfo.original.node_id,
-                rowInfo.original.scan_id,
-                scanType
-              );
-            },
-            style: {
-              cursor: 'pointer',
-            },
-          })}
+          manual
+          onRowClick={row => {
+            rowClickHandler(
+              row.original.node_id,
+              row.original.scan_id,
+              scanType
+            );
+          }}
           columns={[
             {
               Header: 'Timestamp',
@@ -125,7 +125,6 @@ class HostReportRowDetail extends React.PureComponent {
             {
               Header: 'Status',
               accessor: 'scan_status',
-              minWidth: 100,
               Cell: cell => (
                 <div
                   className={
@@ -141,12 +140,15 @@ class HostReportRowDetail extends React.PureComponent {
             {
               Header: 'Compliance %',
               id: 'compliancePercentage',
+              maxWidth: 40,
+              width: 40,
+              minWidth: 40,
               Cell: row => {
                 return (
                   <div>
-                    {row.original?.result?.compliance_percentage
+                    {row.row?.original?.result?.compliance_percentage
                       ? Number(
-                          row.original?.result?.compliance_percentage
+                          row.row?.original?.result?.compliance_percentage
                         )?.toFixed?.(0)
                       : '0'}
                     %
@@ -157,7 +159,9 @@ class HostReportRowDetail extends React.PureComponent {
             ...testValueColumns,
             {
               Header: '',
-              maxWidth: 60,
+              maxWidth: 40,
+              width: 40,
+              minWidth: 40,
               accessor: 'scan_id',
               Cell: cell => (
                 <div>
