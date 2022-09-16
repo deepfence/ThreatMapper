@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	resourceTypeVulnerability = "vulnerability"
-	resourceTypeCompliance    = "compliance"
-	celeryNotificationTask    = "tasks.notification_worker.notification_task"
+	resourceTypeVulnerability   = "vulnerability"
+	resourceTypeCompliance      = "compliance"
+	resourceTypeCloudTrailAlert = "cloudtrail-alert"
+	celeryNotificationTask      = "tasks.notification_worker.notification_task"
 )
 
 func getRedisDbNumber() int {
@@ -163,6 +164,12 @@ func syncPoliciesAndNotificationsSettings() {
 	if err != nil {
 		log.Error(err)
 	}
+	var cloudTrailNotificationCount int
+	row = pgDB.QueryRow("SELECT COUNT(*) FROM cloudtrail_alert_notification where duration_in_mins=-1")
+	err = row.Scan(&cloudTrailNotificationCount)
+	if err != nil {
+		log.Println(err)
+	}
 	notificationSettings.Lock()
 	if vulnerabilityNotificationCount > 0 {
 		notificationSettings.vulnerabilityNotificationsSet = true
@@ -175,6 +182,12 @@ func syncPoliciesAndNotificationsSettings() {
 		notificationSettings.complianceNotificationsSet = true
 	} else {
 		notificationSettings.complianceNotificationsSet = false
+	}
+	if cloudTrailNotificationCount > 0 {
+		log.Info("cloudtrail notifications are enabled")
+		notificationSettings.cloudTrailNotificationsSet = true
+	} else {
+		notificationSettings.cloudTrailNotificationsSet = false
 	}
 	notificationSettings.Unlock()
 }

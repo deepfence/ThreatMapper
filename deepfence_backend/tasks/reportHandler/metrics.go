@@ -64,6 +64,10 @@ var (
 		Name: "compliance_scan_logs_total",
 		Help: "Total number of compliance scan log records processed",
 	})
+	cloudTrailAlertsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "cloud_trail_alerts_total",
+		Help: "Total number of cloud trail alert records processed",
+	})
 )
 
 func getLagByTopic(ctx context.Context, kafkaBrokers string, groupID string) {

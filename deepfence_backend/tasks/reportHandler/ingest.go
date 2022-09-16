@@ -24,6 +24,7 @@ var (
 	cloudComplianceScanLogsIndexName = ToCustomerSpecificESIndex("cloud-compliance-scan-logs")
 	complianceScanIndexName          = ToCustomerSpecificESIndex("compliance")
 	complianceScanLogsIndexName      = ToCustomerSpecificESIndex("compliance-scan-logs")
+	cloudTrailAlertsIndexName        = ToCustomerSpecificESIndex("cloudtrail-alert")
 )
 
 //ToCustomerSpecificESIndex : convert root ES index to customer specific ES index
@@ -213,6 +214,10 @@ func processReports(
 			if err := addToES(complianceLog, complianceScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process compliance logs error: %s", err.Error())
 			}
+
+		case cloudTrailAlert := <-topicChannels[cloudTrailAlertsIndexName]:
+			cloudTrailAlertsProcessed.Inc()
+			processCloudTrailAlert(cloudTrailAlert, bulkp)
 		}
 	}
 }

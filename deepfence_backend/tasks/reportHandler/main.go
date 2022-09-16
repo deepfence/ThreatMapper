@@ -28,6 +28,7 @@ import (
 type NotificationSettings struct {
 	vulnerabilityNotificationsSet bool
 	complianceNotificationsSet    bool
+	cloudTrailNotificationsSet    bool
 	sync.RWMutex
 }
 
@@ -38,6 +39,7 @@ var (
 	redisAddr              string
 	vulnerabilityTaskQueue chan []byte
 	complianceTaskQueue    chan []byte
+	cloudTrailTaskQueue    chan []byte
 	celeryCli              *gocelery.CeleryClient
 	notificationSettings   NotificationSettings
 	esClient               *elastic.Client
@@ -113,9 +115,11 @@ func init() {
 	}
 	vulnerabilityTaskQueue = make(chan []byte, 10000)
 	complianceTaskQueue = make(chan []byte, 10000)
+	cloudTrailTaskQueue = make(chan []byte, 10000)
 	notificationSettings = NotificationSettings{
 		vulnerabilityNotificationsSet: false,
 		complianceNotificationsSet:    false,
+		cloudTrailNotificationsSet:    false,
 	}
 
 	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
@@ -189,6 +193,13 @@ func createCeleryTasks(resourceType string, messages []interface{}) {
 		if complianceNotificationsSet {
 			createNotificationCeleryTask(resourceType, messages)
 		}
+	} else if resourceType == resourceTypeCloudTrailAlert {
+		notificationSettings.RLock()
+		cloudTrailNotificationsSet := notificationSettings.cloudTrailNotificationsSet
+		notificationSettings.RUnlock()
+		if cloudTrailNotificationsSet {
+			createNotificationCeleryTask(resourceType, messages)
+		}
 	}
 }
 
@@ -260,6 +271,7 @@ func main() {
 	go syncPoliciesAndNotifications()
 	go batchMessages(ctx, resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
 	go batchMessages(ctx, resourceTypeCompliance, &complianceTaskQueue, 100)
+	go batchMessages(ctx, resourceTypeCloudTrailAlert, &cloudTrailTaskQueue, 100)
 
 	// load cve's from db
 	maskedCVELock.Lock()
@@ -288,6 +300,7 @@ func main() {
 		cloudComplianceScanLogsIndexName,
 		complianceScanIndexName,
 		complianceScanLogsIndexName,
+		cloudTrailAlertsIndexName,
 	}
 	log.Info("topics list: ", topics)
 
