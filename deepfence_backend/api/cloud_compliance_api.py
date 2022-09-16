@@ -445,9 +445,13 @@ def cloud_compliance_scan_nodes():
         node_ids = []
         for node in cloud_compliance_nodes:
             node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, node.node_id)
-            node_details = json.loads(node_details_str)
+            updated_at = node.updated_at.timestamp()
+            if node_details_str:
+                node_details = json.loads(node_details_str)
+                if node_details.get("updated_at", 0) > updated_at:
+                    updated_at = node_details.get("updated_at", 0)
             nodes_list.append({"node_name": node.node_id, "node_id": node.node_id,
-                               "enabled": (datetime.now().timestamp() - node_details.get("updated_at", 0) < 250.0)})
+                               "enabled": ((datetime.now().timestamp() - updated_at) < 250.0)})
             node_ids.append(node.node_id)
         filters = {
             "scan_status": "COMPLETED",
