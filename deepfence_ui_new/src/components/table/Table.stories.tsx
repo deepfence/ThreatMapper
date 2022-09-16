@@ -3,7 +3,12 @@ import { SortingState } from '@tanstack/react-table';
 import { sortBy } from 'lodash-es';
 import { useMemo, useState } from 'react';
 
-import { createColumnHelper, RowExpander, Table } from './Table';
+import {
+  createColumnHelper,
+  getRowExpanderColumn,
+  getRowSelectionColumn,
+  Table,
+} from './Table';
 
 export default {
   title: 'Components/Table',
@@ -75,13 +80,8 @@ const TemplateWithSubcomponent: ComponentStory<typeof Table<Fruit>> = (args) => 
 
   const columns = useMemo(
     () => [
-      columnHelper.display({
-        id: 'expander',
-        header: () => null,
-        cell: ({ row }) => {
-          return <RowExpander row={row} />;
-        },
-        minSize: 0,
+      getRowExpanderColumn(columnHelper, {
+        minSize: 10,
         size: 10,
         maxSize: 10,
       }),
@@ -350,3 +350,56 @@ const TemplateWithManualSorting: ComponentStory<typeof Table<Fruit>> = (args) =>
 
 export const DefaultWithManualSorting = TemplateWithManualSorting.bind({});
 DefaultWithManualSorting.args = {};
+
+const TemplateWithRowSelection: ComponentStory<typeof Table<Fruit>> = (args) => {
+  const columnHelper = createColumnHelper<Fruit>();
+
+  const columns = useMemo(
+    () => [
+      getRowSelectionColumn(columnHelper, {
+        size: 100,
+        minSize: 100,
+        maxSize: 100,
+      }),
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+        header: () => 'ID',
+        size: 1500,
+        minSize: 1000,
+        maxSize: 2000,
+      }),
+      columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        cell: (info) => info.getValue(),
+        header: () => <span>Name</span>,
+        size: 1500,
+        minSize: 1000,
+        maxSize: 2000,
+      }),
+      columnHelper.accessor('taste', {
+        header: () => 'Taste',
+        cell: (info) => info.renderValue(),
+        size: 1500,
+        minSize: 1000,
+        maxSize: 2000,
+      }),
+    ],
+    [],
+  );
+
+  const data = useMemo(() => {
+    const data: Fruit[] = [];
+    for (let i = 0; i < 995; i++) {
+      data.push({
+        id: i,
+        name: `Fruit ${i}`,
+        taste: `Taste ${i}`,
+      });
+    }
+    return data;
+  }, []);
+  return <Table {...args} data={data} columns={columns} enablePagination enableSorting />;
+};
+
+export const DefaultWithRowSelection = TemplateWithRowSelection.bind({});
+DefaultWithRowSelection.args = {};

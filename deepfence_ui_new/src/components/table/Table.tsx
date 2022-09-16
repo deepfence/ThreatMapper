@@ -1,7 +1,9 @@
 import {
   Cell,
   ColumnDef,
+  ColumnHelper,
   createColumnHelper,
+  DisplayColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
@@ -23,6 +25,7 @@ import { FaMinus, FaPlus } from 'react-icons/fa';
 import { HiOutlineChevronDown, HiOutlineChevronUp } from 'react-icons/hi';
 
 import IconButton from '../button/IconButton';
+import { Checkbox } from '../checkbox/Checkbox';
 import Pagination from '../pagination/Pagination';
 import { Typography } from '../typography/Typography';
 
@@ -165,7 +168,7 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
       key={header.id}
       colSpan={header.colSpan}
       className={cx(
-        'relative border-0 text-gray-500 dark:text-white p-4 text-left',
+        'relative border-0 text-gray-500 dark:text-white',
         'border-b border-gray-200 dark:border-gray-700',
         Typography.size.xs,
         Typography.weight.semibold,
@@ -173,9 +176,12 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
         { 'cursor-pointer select-none': header.column.getCanSort() },
       )}
       style={{ width: header.getSize() }}
-      onClick={header.column.getToggleSortingHandler()}
     >
-      <div className="w-full h-full flex">
+      <div // eslint-disable-line jsx-a11y/click-events-have-key-events,jsx-a11y/interactive-supports-focus
+        className="w-full h-full flex p-4"
+        onClick={header.column.getToggleSortingHandler()}
+        role="button"
+      >
         {header.isPlaceholder
           ? null
           : flexRender(header.column.columnDef.header, header.getContext())}
@@ -187,14 +193,13 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
             }[header.column.getIsSorted() as string]}
         </span>
       </div>
-
       {header.column.getCanResize() && (
-        // eslint-disable-next-line jsx-a11y/no-static-element-interactions
         <div
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
           className={`absolute right-0 top-0 h-full w-1 bg-gray-200 dark:bg-gray-600 cursor-col-resize select-none`}
-        ></div>
+          aria-hidden="true"
+        />
       )}
     </th>
   );
@@ -210,6 +215,7 @@ function TableBody<TData>({ rowModel }: { rowModel: RowModel<TData> }) {
             className={cx(
               {
                 'bg-gray-50 dark:bg-gray-700': striped && row.index % 2 !== 0,
+                '!bg-gray-100 dark:!bg-gray-600': row.getIsSelected(),
               },
               `hover:!bg-gray-100 dark:hover:!bg-gray-600`,
               'transition-colors',
@@ -269,16 +275,74 @@ function Td<TData>({
   );
 }
 
-export function RowExpander<TData extends RowData>({ row }: { row: Row<TData> }) {
-  return row.getCanExpand() ? (
-    <IconButton
-      color="primary"
-      icon={row.getIsExpanded() ? <FaMinus /> : <FaPlus />}
-      onClick={row.getToggleExpandedHandler()}
-      outline
-      size="xs"
-    />
-  ) : null;
+export function getRowExpanderColumn<TData extends RowData>(
+  columnHelper?: ColumnHelper<TData>,
+  options?: Omit<
+    DisplayColumnDef<TData, unknown>,
+    'id' | 'header' | 'cell' | 'enableResizing'
+  >,
+): ColumnDef<TData, unknown> {
+  const colHelper = columnHelper ?? createColumnHelper<TData>();
+  return colHelper.display({
+    id: 'expander',
+    header: () => null,
+    cell: ({ row }) => {
+      return row.getCanExpand() ? (
+        <IconButton
+          color="primary"
+          icon={row.getIsExpanded() ? <FaMinus /> : <FaPlus />}
+          onClick={row.getToggleExpandedHandler()}
+          outline
+          size="xs"
+        />
+      ) : null;
+    },
+    enableResizing: false,
+    ...options,
+  });
+}
+
+export function getRowSelectionColumn<TData extends RowData>(
+  columnHelper?: ColumnHelper<TData>,
+  options?: Omit<
+    DisplayColumnDef<TData, unknown>,
+    'id' | 'header' | 'cell' | 'enableResizing'
+  >,
+): ColumnDef<TData, unknown> {
+  const colHelper = columnHelper ?? createColumnHelper<TData>();
+  return colHelper.display({
+    id: 'selection',
+    header: ({ table }) => {
+      return (
+        <Checkbox
+          checked={
+            table.getIsSomeRowsSelected() ? 'indeterminate' : table.getIsAllRowsSelected()
+          }
+          onCheckedChange={(state) => {
+            table.getToggleAllRowsSelectedHandler()({
+              target: {
+                checked: state === true,
+              },
+            });
+          }}
+        />
+      );
+    },
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(state) => {
+          row.getToggleSelectedHandler()({
+            target: {
+              checked: state === true,
+            },
+          });
+        }}
+      />
+    ),
+    enableResizing: false,
+    ...options,
+  });
 }
 
 export { createColumnHelper };
