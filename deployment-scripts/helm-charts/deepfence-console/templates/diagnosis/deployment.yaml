@@ -53,6 +53,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
+            - name: DOCKER_SOCKET_PATH
+              value: "{{ .Values.mountContainerRuntimeSocket.dockerSockPath }}"
+            {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.containerdSock }}
+            - name: CONTAINERD_SOCKET_PATH
+              value: "{{ .Values.mountContainerRuntimeSocket.containerdSockPath }}"
+            {{ end }}
           ports:
             - name: http
               containerPort: 8009
