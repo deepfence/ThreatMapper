@@ -152,7 +152,7 @@ function TableHead<TData>({ headerGroups }: { headerGroups: HeaderGroup<TData>[]
   return (
     <thead className="bg-gray-50 dark:bg-gray-700">
       {headerGroups.map((headerGroup) => (
-        <tr key={headerGroup.id}>
+        <tr key={headerGroup.id} data-testid="table-header-row">
           {headerGroup.headers.map((header) => (
             <Th header={header} key={header.id} />
           ))}
