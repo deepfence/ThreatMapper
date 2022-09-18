@@ -56,8 +56,5 @@ describe(`Component Table`, () => {
     expect(getAllByRole('row').length).toEqual(3);
     const cells = getAllByRole('cell');
     expect(cells.length).toEqual(6);
-    expect(cells[0]).toHaveStyle({
-      ['border-bottom-width']: '1px',
-    });
   });
 });
