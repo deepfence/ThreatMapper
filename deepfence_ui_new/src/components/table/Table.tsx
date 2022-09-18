@@ -21,8 +21,9 @@ import {
 import cx from 'classnames';
 import { once } from 'lodash-es';
 import { createContext, Fragment, useContext } from 'react';
+import { IconContext } from 'react-icons';
 import { FaMinus, FaPlus } from 'react-icons/fa';
-import { HiOutlineChevronDown, HiOutlineChevronUp } from 'react-icons/hi';
+import { HiChevronDown, HiChevronUp, HiOutlineSelector } from 'react-icons/hi';
 
 import IconButton from '../button/IconButton';
 import { Checkbox } from '../checkbox/Checkbox';
@@ -31,7 +32,7 @@ import { Typography } from '../typography/Typography';
 
 export interface TableProps<TData extends RowData> {
   data: TData[];
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<TData, any>[]; // eslint-disable-line @typescript-eslint/no-explicit-any
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
   getRowCanExpand?: (row: Row<TData>) => boolean;
   striped?: boolean;
@@ -68,13 +69,13 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     renderSubComponent,
     getRowCanExpand,
     enableColumnResizing = false,
-    enablePagination,
+    enablePagination = false,
     manualPagination,
     pageIndex = 0,
     pageSize = 10,
     pageCount = -1,
     onPaginationChange,
-    enableSorting,
+    enableSorting = false,
     manualSorting,
     sortingState,
     onSortingChange,
@@ -89,7 +90,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     getRowCanExpand,
     columnResizeMode: 'onChange',
     enableColumnResizing,
-    enableSorting: true,
+    enableSorting,
     state: {
       ...(enablePagination && manualPagination
         ? {
@@ -177,21 +178,28 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
       )}
       style={{ width: header.getSize() }}
     >
-      <div // eslint-disable-line jsx-a11y/click-events-have-key-events,jsx-a11y/interactive-supports-focus
+      <div // eslint-disable-line jsx-a11y/click-events-have-key-events,jsx-a11y/interactive-supports-focus,jsx-a11y/no-static-element-interactions
         className="w-full h-full flex p-4"
         onClick={header.column.getToggleSortingHandler()}
-        role="button"
       >
         {header.isPlaceholder
           ? null
           : flexRender(header.column.columnDef.header, header.getContext())}
-        <span className="ml-1">
-          {header.column.getCanSort() &&
-            {
-              desc: <HiOutlineChevronDown />,
-              asc: <HiOutlineChevronUp />,
-            }[header.column.getIsSorted() as string]}
-        </span>
+        {header.column.getCanSort() ? (
+          <span className="ml-1 flex items-center">
+            <IconContext.Provider
+              value={{
+                size: '0.8rem',
+              }}
+            >
+              {header.column.getIsSorted() === 'asc' ? <HiChevronUp /> : null}
+              {header.column.getIsSorted() === 'desc' ? <HiChevronDown /> : null}
+              {!header.column.getIsSorted() ? (
+                <HiOutlineSelector className="stroke-gray-400" />
+              ) : null}
+            </IconContext.Provider>
+          </span>
+        ) : null}
       </div>
       {header.column.getCanResize() && (
         <div

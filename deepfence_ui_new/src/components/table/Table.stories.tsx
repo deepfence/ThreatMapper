@@ -259,6 +259,7 @@ const TemplateWithAutoSorting: ComponentStory<typeof Table<Fruit>> = (args) => {
       columnHelper.accessor('taste', {
         header: () => 'Taste',
         cell: (info) => info.renderValue(),
+        enableSorting: false,
       }),
     ],
     [],
