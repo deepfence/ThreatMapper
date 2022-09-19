@@ -194,7 +194,7 @@ describe(`Component Table`, () => {
       );
     };
 
-    const { getByTestId, getByRole, queryByText, rerender } = renderWithClient(
+    const { getByTestId, getByRole, queryByText } = renderWithClient(
       <ManualPaginationTable />,
     );
 
@@ -212,4 +212,9 @@ describe(`Component Table`, () => {
       expect(getByRole('cell', { name: /fruit 20/i })).toBeInTheDocument();
     });
   });
+
+  it.todo('resizable table should work correctly.');
+  it.todo('table with automatic sorting should work correctly.');
+  it.todo('table with manual sorting should work correctly.');
+  it.todo('table with row selection enabled should work correctly.');
 });
