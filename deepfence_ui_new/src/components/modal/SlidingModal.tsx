@@ -27,7 +27,12 @@ const ModalHeader: FC<{ title?: string }> = ({ title }) => {
       <div className={'w-full'}>
         {title && (
           <>
-            <DialogPrimitive.Title className={cx('p-6')}>{title}</DialogPrimitive.Title>
+            <DialogPrimitive.Title
+              className={cx('p-6')}
+              data-testid="sliding-modal-title"
+            >
+              {title}
+            </DialogPrimitive.Title>
             <Separator className="h-px block bg-gray-200 dark:bg-gray-600" />
           </>
         )}
@@ -45,6 +50,8 @@ const ModalHeader: FC<{ title?: string }> = ({ title }) => {
             'top-[8px]': !title,
           },
         )}
+        id={'sliding-modal-close-button'}
+        data-testid={'sliding-modal-close-button'}
       >
         <IconContext.Provider
           value={{
@@ -65,7 +72,9 @@ const ModalFooter: FC<ChildrenType> = ({ children }) => {
   return (
     <>
       <Separator className="h-px block bg-gray-200 dark:bg-gray-600" />
-      <div className="p-6">{children}</div>
+      <div className="p-6" data-testid="sliding-modal-footer">
+        {children}
+      </div>
     </>
   );
 };
