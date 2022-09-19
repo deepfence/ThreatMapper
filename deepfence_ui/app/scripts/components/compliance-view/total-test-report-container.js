@@ -3,18 +3,44 @@ import { connect } from 'react-redux';
 import { getComplianceChartDataAction } from '../../actions';
 import ComplianceTotalTestReport from './total-test-report';
 import Loader from '../loader';
+import pollable from '../common/header-view/pollable';
 
 const loaderStyle = {
   top: '50%',
 };
 
 class ComplianceTotalTestReportContainer extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.getComplianceChartData = this.getComplianceChartData.bind(this);
+  }
+
   componentDidMount() {
+    const { registerPolling, startPolling, alertPanelHistoryBound } = this.props;
+    registerPolling(this.getComplianceChartData);
+    startPolling({
+      alertPanelHistoryBound,
+    });
+  }
+
+  getComplianceChartData(pollParams = {}) {
+    const { alertPanelHistoryBound, initiatedByPollable } = pollParams;
     const cloudType = window.location.hash.split('/').reverse()[3];
-    const { nodeId, checkType } = this.props;
-    this.props.dispatch(
-      getComplianceChartDataAction({ nodeId, checkType, cloudType })
-    );
+    const { dispatch, nodeId, checkType } = this.props;
+    const params = {
+      nodeId,
+      checkType,
+      cloudType,
+      initiatedByPollable,
+      ...(alertPanelHistoryBound.value
+        ? { number: alertPanelHistoryBound.value.number }
+        : {}),
+      ...(alertPanelHistoryBound.value
+        ? { time_unit: alertPanelHistoryBound.value.time_unit }
+        : {}),
+    };
+
+    return dispatch(getComplianceChartDataAction(params));
   }
 
   render() {
@@ -46,4 +72,4 @@ const mapStateToProps = state => ({
   chartData: state.get('compliance_chart_data'),
 });
 
-export default connect(mapStateToProps)(ComplianceTotalTestReportContainer);
+export default connect(mapStateToProps)(pollable()(ComplianceTotalTestReportContainer));
