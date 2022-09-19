@@ -21,6 +21,7 @@ export interface TextInputProps
 
 type IconProps = {
   icon: React.ReactNode;
+  id?: string;
   color?: ColorType;
   sizing?: SizeType;
 };
@@ -50,6 +51,7 @@ const SIZE_DEFAULT = 'sm';
 
 export const LeftIcon = ({
   icon,
+  id,
   color = COLOR_DEFAULT,
   sizing = SIZE_DEFAULT,
 }: IconProps) => {
@@ -58,6 +60,7 @@ export const LeftIcon = ({
       className={cx(
         'pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3',
       )}
+      data-testid={`textinput-start-icon-${id}`}
     >
       <IconContext.Provider
         value={{
@@ -75,6 +78,7 @@ export const LeftIcon = ({
 
 export const RightIcon = ({
   icon,
+  id,
   color = COLOR_DEFAULT,
   sizing = SIZE_DEFAULT,
 }: IconProps) => {
@@ -83,6 +87,7 @@ export const RightIcon = ({
       className={cx(
         'pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3',
       )}
+      data-testid={`textinput-end-icon-${id}`}
     >
       <IconContext.Provider
         value={{
@@ -114,20 +119,22 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     ref,
   ) => {
     const internalId = useId();
-    const inputId = id ? id : internalId;
+    const _id = id ? id : internalId;
     return (
       <div className="flex flex-col gap-2">
         {label && (
           <LabelPrimitive.Root
-            htmlFor={inputId}
+            htmlFor={_id}
             className={cx(`${Typography.weight.medium} text-gray-900 dark:text-white`)}
           >
             {label}
           </LabelPrimitive.Root>
         )}
         <div className="relative">
-          {startIcon && <LeftIcon icon={startIcon} sizing={sizing} color={color} />}
-          {endIcon && <RightIcon icon={endIcon} sizing={sizing} color={color} />}
+          {startIcon && (
+            <LeftIcon icon={startIcon} sizing={sizing} color={color} id={_id} />
+          )}
+          {endIcon && <RightIcon icon={endIcon} sizing={sizing} color={color} id={_id} />}
           <input
             className={cx(
               'block w-full border box-border rounded-lg bg-gray-50 dark:bg-gray-700',
@@ -145,8 +152,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             )}
             disabled={disabled}
             ref={ref}
-            id={inputId}
-            data-testid={inputId}
+            id={_id}
+            data-testid={`textinput-${_id}`}
             {...rest}
           />
         </div>
