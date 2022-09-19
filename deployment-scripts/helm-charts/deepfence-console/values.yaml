@@ -91,8 +91,10 @@ saas_env:
 
 mountContainerRuntimeSocket:
   dockerSock: false
+  # Change if socket path is not the following
   dockerSockPath: "/var/run/docker.sock"
   containerdSock: true
+  # Change if socket path is not the following
   containerdSockPath: "/run/containerd/containerd.sock"
 
 serviceAccountName: deepfence-console

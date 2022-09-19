@@ -30,6 +30,7 @@ import (
 
 const (
 	redisVulnerabilityChannel = "vulnerability_task_queue"
+	redisCloudTrailChannel    = "cloudtrail_task_queue"
 )
 
 var (
@@ -45,6 +46,7 @@ var (
 	cloudComplianceLogsIndexName = convertRootESIndexToCustomerSpecificESIndex("cloud-compliance-scan-logs")
 	complianceIndexName          = convertRootESIndexToCustomerSpecificESIndex("compliance")
 	complianceLogsIndexName      = convertRootESIndexToCustomerSpecificESIndex("compliance-scan-logs")
+	cloudTrailAlertsIndexName    = convertRootESIndexToCustomerSpecificESIndex("cloudtrail-alert")
 	resourceToNodeTypeMap        = map[string]string{"CloudWatch": "aws_cloudwatch_log_group", "VPC": "aws_vpc", "CloudTrail": "aws_cloudtrail_trail", "Config": "aws_config_rule", "KMS": "aws_kms_key", "S3": "aws_s3_bucket", "IAM": "aws_iam_user", "EBS": "aws_ebs_volume", "RDS": "aws_rds_db_cluster"}
 )
 
@@ -147,6 +149,69 @@ type CloudComplianceDoc struct {
 	ControlID           string `json:"control_id"`
 	Description         string `json:"description"`
 	Severity            string `json:"severity"`
+}
+
+type WebIdentitySessionContext struct {
+	FederatedProvider string                 `json:"federatedProvider,omitempty"`
+	Attributes        map[string]interface{} `json:"attributes,omitempty"`
+}
+
+type SessionContext struct {
+	Attributes          map[string]interface{}    `json:"attributes,omitempty"`
+	SessionIssuer       map[string]interface{}    `json:"sessionIssuer,omitempty"`
+	WebIdFederationData WebIdentitySessionContext `json:"webIdFederationData,omitempty"`
+}
+
+type UserIdentity struct {
+	IdentityType     string         `json:"type,omitempty"`
+	PrincipalId      string         `json:"principalId,omitempty"`
+	Arn              string         `json:"arn,omitempty"`
+	AccountId        string         `json:"accountId,omitempty"`
+	AccessKeyId      string         `json:"accessKeyId,omitempty"`
+	UserName         string         `json:"userName,omitempty"`
+	InvokedBy        string         `json:"invokedBy,omitempty"`
+	SessionContext   SessionContext `json:"sessionContext,omitempty"`
+	IdentityProvider string         `json:"identityProvider,omitempty"`
+}
+
+type CloudTrailLogEvent struct {
+	DocId                        string                   `json:"doc_id,omitempty"`
+	Type                         string                   `json:"type,omitempty"`
+	TimeStamp                    int64                    `json:"time_stamp,omitempty"`
+	Timestamp                    string                   `json:"@timestamp,omitempty"`
+	Masked                       string                   `json:"masked,omitempty"`
+	EventVersion                 string                   `json:"eventVersion,omitempty"`
+	UserIdentity                 UserIdentity             `json:"userIdentity,omitempty"`
+	EventTime                    string                   `json:"eventTime,omitempty"`
+	EventName                    string                   `json:"eventName,omitempty"`
+	EventSource                  string                   `json:"eventSource,omitempty"`
+	AwsRegion                    string                   `json:"awsRegion,omitempty"`
+	SourceIPAddress              string                   `json:"sourceIPAddress,omitempty"`
+	UserAgent                    string                   `json:"userAgent,omitempty"`
+	RequestID                    string                   `json:"requestID,omitempty"`
+	ErrorCode                    string                   `json:"errorCode,omitempty"`
+	ErrorMessage                 string                   `json:"errorMessage,omitempty"`
+	RequestParameters            map[string]interface{}   `json:"requestParameters,omitempty"`
+	ResponseElements             map[string]interface{}   `json:"responseElements,omitempty"`
+	ServiceEventDetails          map[string]interface{}   `json:"serviceEventDetails,omitempty"`
+	AdditionalEventData          map[string]interface{}   `json:"additionalEventData,omitempty"`
+	EventID                      string                   `json:"eventID,omitempty"`
+	ReadOnly                     bool                     `json:"readOnly,omitempty"`
+	ManagementEvent              bool                     `json:"managementEvent,omitempty"`
+	Resources                    []map[string]interface{} `json:"resources,omitempty"`
+	AccountId                    string                   `json:"accountId,omitempty"`
+	EventCategory                string                   `json:"eventCategory,omitempty"`
+	EventType                    string                   `json:"eventType,omitempty"`
+	ApiVersion                   string                   `json:"apiVersion,omitempty"`
+	RecipientAccountId           string                   `json:"recipientAccountId,omitempty"`
+	SharedEventID                string                   `json:"sharedEventID,omitempty"`
+	Annotation                   string                   `json:"annotation,omitempty"`
+	VpcEndpointId                string                   `json:"vpcEndpointId,omitempty"`
+	InsightDetails               map[string]interface{}   `json:"insightDetails,omitempty"`
+	Addendum                     map[string]interface{}   `json:"addendum,omitempty"`
+	EdgeDeviceDetails            map[string]interface{}   `json:"edgeDeviceDetails,omitempty"`
+	TlsDetails                   map[string]interface{}   `json:"tlsDetails,omitempty"`
+	SessionCredentialFromConsole string                   `json:"sessionCredentialFromConsole,omitempty"`
 }
 
 func (v *VulnerabilityDbUpdater) runGrypeUpdate() error {
@@ -1075,6 +1140,48 @@ func ingestInBackground(docType string, body []byte) error {
 			}
 		}
 		bulkService.Do(context.Background())
+	} else if docType == cloudTrailAlertsIndexName {
+		var cloudTrailDocs []CloudTrailLogEvent
+		err := json.Unmarshal(body, &cloudTrailDocs)
+		if err != nil {
+			return err
+		}
+		bulkService := elastic.NewBulkService(esClient)
+		for _, cloudTrailDoc := range cloudTrailDocs {
+			docId := fmt.Sprintf("%x", md5.Sum([]byte(cloudTrailDoc.EventID)))
+			cloudTrailDoc.DocId = docId
+			bulkIndexReq := elastic.NewBulkUpdateRequest()
+			bulkIndexReq.Index(cloudTrailAlertsIndexName).Id(docId).
+				Script(elastic.NewScriptStored("default_upsert").Param("event", cloudTrailDoc)).
+				Upsert(cloudTrailDoc).ScriptedUpsert(true).RetryOnConflict(3)
+			bulkService.Add(bulkIndexReq)
+			event, err := json.Marshal(cloudTrailDoc)
+			if err == nil {
+				retryCount := 0
+				for {
+					_, err = redisConn.Do("PUBLISH", redisCloudTrailChannel, string(event))
+					if err == nil {
+						break
+					}
+					if retryCount > 1 {
+						fmt.Println(fmt.Sprintf("Error publishing cloudtrail alert document to %s - exiting", redisCloudTrailChannel), err)
+						break
+					}
+					fmt.Println(fmt.Sprintf("Error publishing cloudtrail alert document to %s - trying again", redisCloudTrailChannel), err)
+					retryCount += 1
+					time.Sleep(5 * time.Second)
+				}
+			}
+		}
+		bulkResp, err := bulkService.Do(context.Background())
+		if err != nil {
+			log.Println("err cloudtrail-alert " + err.Error())
+		}
+		failed := bulkResp.Failed()
+		log.Printf("cloudtrail alert bulk response Succeeded=%d Failed=%d\n", len(bulkResp.Succeeded()), len(failed))
+		for _, r := range failed {
+			log.Printf("error cloudtrail-alert doc %s %s", r.Error.Type, r.Error.Reason)
+		}
 	} else {
 		bulkService := elastic.NewBulkService(esClient)
 		bulkIndexReq := elastic.NewBulkIndexRequest()
