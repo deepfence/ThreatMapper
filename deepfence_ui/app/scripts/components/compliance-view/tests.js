@@ -197,7 +197,7 @@ class ComplianceTests extends React.PureComponent {
       page: pageNumber,
     });
     this.setState({
-      page: pageNumber
+      page: pageNumber,
     });
   }
 
@@ -256,6 +256,8 @@ class ComplianceTests extends React.PureComponent {
       !isLoading &&
       tests.length &&
       tests[0]?._source?.type === 'cloud-compliance-scan';
+
+    const hostType = window.location.hash.split('/').reverse()[0];
 
     return (
       <>
@@ -349,14 +351,22 @@ class ComplianceTests extends React.PureComponent {
                 },
               },
               {
-                Header: isCloud ? 'Reason' : 'Description',
+                /* eslint-disable no-nested-ternary */
+                Header: isCloud
+                  ? 'Reason'
+                  : hostType === 'kubernetes'
+                  ? 'Rationale'
+                  : 'Description',
                 id: '_source.Reason',
                 minWidth: 400,
                 Cell: ({ row }) => {
                   return (
                     <div className="truncate">
-                      {row.original._source.reason ||
-                        row.original._source.description}
+                      {isCloud
+                        ? row.original._source.reason
+                        : hostType === 'kubernetes'
+                        ? row.original._source.test_rationale
+                        : row.original._source.description}
                     </div>
                   );
                 },
