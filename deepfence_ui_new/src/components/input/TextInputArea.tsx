@@ -25,18 +25,21 @@ const classes = {
 
 const COLOR_DEFAULT = 'default';
 
-export const TextInputArea = forwardRef<HTMLInputElement, TextInputAreaProps>(
-  ({
-    label,
-    id,
-    sizing = 'sm',
-    cols,
-    disabled,
-    helperText,
-    color = COLOR_DEFAULT,
-    width = '',
-    ...rest
-  }) => {
+export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>(
+  (
+    {
+      label,
+      id,
+      sizing = 'sm',
+      cols,
+      disabled,
+      helperText,
+      color = COLOR_DEFAULT,
+      width = '',
+      ...rest
+    },
+    ref,
+  ) => {
     const internalId = useId();
     const _id = id ? id : internalId;
 
@@ -69,6 +72,7 @@ export const TextInputArea = forwardRef<HTMLInputElement, TextInputAreaProps>(
             id={_id}
             data-testid={`textinputarea-${_id}`}
             cols={cols}
+            ref={ref}
             {...rest}
           />
         </div>
