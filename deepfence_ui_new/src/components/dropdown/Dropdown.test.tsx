@@ -6,7 +6,7 @@ import { renderWithClient } from '../../tests/utils';
 import { Dropdown, DropdownSeparator, DropdwonItem } from './Dropdown';
 
 describe('Component Dropdown', () => {
-  it('Dropdown', () => {
+  it('render with item, style props', () => {
     const items = ['First Action', 'Second Action', 'Third Action', 'Fourth Action'];
     const component = (
       <Dropdown

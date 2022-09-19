@@ -71,6 +71,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
             className,
           )}
           id={_id}
+          data-testid={`badge-${_id}`}
         >
           {icon && (
             <IconContext.Provider

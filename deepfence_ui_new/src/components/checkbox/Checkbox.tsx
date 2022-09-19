@@ -24,11 +24,12 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
   }, [checked]);
 
   const internalId = useId();
+  const _id = id ? id : internalId;
 
   return (
     <div className="flex items-center">
       <CheckboxPrimitive.Root
-        id={id ?? internalId}
+        id={_id}
         className={cx(
           'flex h-4 w-4 shrink-0 items-center justify-center rounded',
           'focus:outline-none focus:ring-blue-200 focus:ring-2 dark:focus:ring-blue-800',
@@ -40,7 +41,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
           'transition-colors',
           className,
         )}
-        data-testid={`checkbox-${id}`}
+        data-testid={`checkbox-${_id}`}
         checked={checked}
         onCheckedChange={(state) => {
           if (onCheckedChange) {
@@ -62,7 +63,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       </CheckboxPrimitive.Root>
       {label?.length ? (
         <LabelPrimitive.Label
-          htmlFor={id ?? internalId}
+          htmlFor={_id}
           className={cx(
             Typography.size.xs,
             Typography.weight.normal,

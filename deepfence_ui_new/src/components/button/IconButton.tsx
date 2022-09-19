@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { ComponentProps, forwardRef } from 'react';
+import { ComponentProps, forwardRef, useId } from 'react';
 import { IconContext } from 'react-icons';
 
 import { classes as buttonClasses, ColorType, SizeType } from './Button';
@@ -30,10 +30,15 @@ const classes = {
 };
 
 const IconButton = forwardRef<HTMLButtonElement, Props>(
-  ({ size = 'md', color, disabled, outline, icon, ...props }, ref) => {
+  ({ size = 'md', color, disabled, outline, icon, id, ...props }, ref) => {
+    const internalId = useId();
+    const _id = id ? id : internalId;
+
     return (
       <button
         ref={ref}
+        id={_id}
+        data-testid={`icon-button-${_id}`}
         disabled={disabled}
         className={cx(
           'flex flex-row items-center justify-center',
