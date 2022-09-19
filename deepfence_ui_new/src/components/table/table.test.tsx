@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { fireEvent, waitFor } from '@testing-library/react';
+import { useMemo, useState } from 'react';
 
 import { renderWithClient } from '../../tests/utils';
 import { getRowExpanderColumn, Table, TableProps } from './Table';
@@ -165,6 +166,50 @@ describe(`Component Table`, () => {
 
     await waitFor(() => {
       expect(getByRole('button', { name: /10/i })).toBeInTheDocument();
+    });
+  });
+
+  it('table with manual pagination should work', async () => {
+    const ManualPaginationTable = () => {
+      const [{ pageIndex, pageSize }, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 20,
+      });
+      const data = useMemo(() => {
+        const data = createDummyFruitData(995);
+        return data.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
+      }, [pageIndex]);
+
+      return (
+        <Table
+          data={data}
+          columns={defaultColumns}
+          enablePagination
+          manualPagination
+          pageSize={pageSize}
+          pageIndex={pageIndex}
+          pageCount={50}
+          onPaginationChange={setPagination}
+        />
+      );
+    };
+
+    const { getByTestId, getByRole, queryByText, rerender } = renderWithClient(
+      <ManualPaginationTable />,
+    );
+
+    expect(getByTestId('pagination-container')).toBeInTheDocument();
+    expect(getByRole('button', { name: /1/i })).toBeInTheDocument();
+    expect(getByRole('button', { name: /50/i })).toBeInTheDocument();
+    expect(getByRole('button', { name: /next/i })).toBeInTheDocument();
+    expect(getByRole('button', { name: /previous/i })).toBeInTheDocument();
+    expect(getByRole('cell', { name: /fruit 0/i })).toBeInTheDocument();
+
+    fireEvent.click(getByRole('button', { name: /2/i }));
+
+    await waitFor(() => {
+      expect(queryByText('fruit 0')).not.toBeInTheDocument();
+      expect(getByRole('cell', { name: /fruit 20/i })).toBeInTheDocument();
     });
   });
 });
