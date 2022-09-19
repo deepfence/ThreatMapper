@@ -20,7 +20,7 @@ import {
 } from '@tanstack/react-table';
 import cx from 'classnames';
 import { once } from 'lodash-es';
-import { createContext, Fragment, useContext } from 'react';
+import { createContext, Fragment, useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { HiChevronDown, HiChevronUp, HiOutlineSelector } from 'react-icons/hi';
@@ -81,6 +81,22 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     onSortingChange,
   } = props;
   const TableContext = createTableContext<TData>();
+
+  const [internalPaginationState, setInternalPaginationState] = useState<PaginationState>(
+    {
+      pageIndex,
+      pageSize,
+    },
+  );
+
+  useEffect(() => {
+    if (enablePagination && !manualPagination) {
+      setInternalPaginationState((prev) => {
+        return { ...prev, pageSize };
+      });
+    }
+  }, [manualPagination, enablePagination, pageSize]);
+
   const table = useReactTable<TData>({
     data,
     columns,
@@ -100,6 +116,11 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
             },
           }
         : {}),
+      ...(enablePagination && !manualPagination
+        ? {
+            pagination: internalPaginationState,
+          }
+        : {}),
       ...(enableSorting && manualSorting
         ? {
             sorting: sortingState,
@@ -108,6 +129,9 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     },
     ...(enablePagination && manualPagination
       ? { manualPagination: true, onPaginationChange, pageCount }
+      : {}),
+    ...(enablePagination && !manualPagination
+      ? { onPaginationChange: setInternalPaginationState }
       : {}),
     ...(enableSorting && manualSorting ? { manualSorting: true, onSortingChange } : {}),
   });
@@ -135,7 +159,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
         </table>
       </div>
       {enablePagination ? (
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex justify-end" data-testid="pagination-container">
           <Pagination
             currentPage={table.getState().pagination.pageIndex + 1}
             onPageChange={(page) => {

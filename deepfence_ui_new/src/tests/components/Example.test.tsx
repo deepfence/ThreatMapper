@@ -5,7 +5,7 @@ import { server } from '../setup';
 import { renderWithClient } from '../utils';
 import { Example } from './Example';
 
-describe('example component', () => {
+describe.skip('example component', () => {
   it('display a loader', async () => {
     server.use(
       rest.get('*', (req, res, ctx) => {
