@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import React, { ComponentProps } from 'react';
+import React, { ComponentProps, useId } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { Typography } from '../typography/Typography';
@@ -66,6 +66,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
+      id,
       size = 'md',
       color,
       disabled,
@@ -77,9 +78,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
+    const internalId = useId();
+    const _id = id ? id : internalId;
+
     return (
       <button
         ref={ref}
+        id={_id}
+        data-testid={`button-${_id}`}
         disabled={disabled}
         className={twMerge(
           cx(
@@ -111,9 +117,23 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        {startIcon && <span className={cx(classes.startIcon[size])}>{startIcon}</span>}
+        {startIcon && (
+          <span
+            className={cx(classes.startIcon[size])}
+            data-testid={`button-icon-start-${_id}`}
+          >
+            {startIcon}
+          </span>
+        )}
         {children}
-        {endIcon && <span className={cx(classes.endIcon[size])}>{endIcon}</span>}
+        {endIcon && (
+          <span
+            className={cx(classes.endIcon[size])}
+            data-testid={`button-icon-end-${_id}`}
+          >
+            {endIcon}
+          </span>
+        )}
       </button>
     );
   },

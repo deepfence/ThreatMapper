@@ -3,14 +3,17 @@ import cx from 'classnames';
 import { ComponentProps, forwardRef, useId } from 'react';
 
 import { Typography } from '../typography/Typography';
+import HelperText from './HelperText';
 
 export type SizeType = 'sm' | 'md';
+export type ColorType = 'default' | 'error' | 'success';
 export interface TextInputAreaProps
   extends Omit<ComponentProps<'textarea'>, 'ref' | 'color' | 'className'> {
   label?: string;
-  width: string;
+  width?: string;
   helperText?: string;
   sizing?: SizeType;
+  color?: ColorType;
 }
 
 const classes = {
@@ -20,16 +23,28 @@ const classes = {
   },
 };
 
+const COLOR_DEFAULT = 'default';
+
 export const TextInputArea = forwardRef<HTMLInputElement, TextInputAreaProps>(
-  ({ label, id, sizing = 'sm', cols, disabled, width, ...rest }) => {
+  ({
+    label,
+    id,
+    sizing = 'sm',
+    cols,
+    disabled,
+    helperText,
+    color = COLOR_DEFAULT,
+    width = '',
+    ...rest
+  }) => {
     const internalId = useId();
-    const inputId = id ? id : internalId;
+    const _id = id ? id : internalId;
 
     return (
       <div className={cx('flex flex-col gap-2')}>
         {label && (
           <LabelPrimitive.Root
-            htmlFor={inputId}
+            htmlFor={_id}
             className={cx(`${Typography.weight.medium} text-gray-900 dark:text-white`)}
           >
             {label}
@@ -51,12 +66,20 @@ export const TextInputArea = forwardRef<HTMLInputElement, TextInputAreaProps>(
               `${width}`,
             )}
             disabled={disabled}
-            id={inputId}
-            data-testid={inputId}
+            id={_id}
+            data-testid={`textinputarea-${_id}`}
             cols={cols}
             {...rest}
-          ></textarea>
+          />
         </div>
+        {helperText && (
+          <HelperText
+            sizing={sizing}
+            color={color}
+            text={helperText}
+            className="mb-2.5"
+          />
+        )}
       </div>
     );
   },
