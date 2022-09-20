@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import HostReportContainer from './host-report-container';
 import ComplianceTotalTestReportContainer from './total-test-report-container';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
-import { getComplianceChartDataAction  } from '../../actions';
 import { dateTimeFormat } from '../../utils/time-utils';
 
 const testValueConfig = [
@@ -27,14 +26,6 @@ const testValueConfig = [
 
 
 class Soc2Summary extends React.PureComponent {
-
-  componentDidMount() {
-    const cloudType = window.location.hash.split('/').reverse()[3];
-    const checkType = window.location.hash.split('/').reverse()[0];
-    const nodeId = window.location.hash.split('/').reverse()[2];
-    this.props.dispatch(getComplianceChartDataAction({nodeId, checkType, cloudType}));
-  }
-
   render() {
     const {
       location: urlLocation,
@@ -48,7 +39,7 @@ class Soc2Summary extends React.PureComponent {
             <h4>Compliance tests</h4>
             <h5>Overview of the overall compliance</h5>
           </div>
-          {scanTimeStamp !== undefined && 
+          {scanTimeStamp !== undefined &&
             <div style={{display: 'flex', flexDirection: 'row-reverse', paddingTop: '23px'}}>Last scanned on {dateTimeFormat(scanTimeStamp)}</div>
           }
           <div className="report">
