@@ -56,7 +56,6 @@ class ComplianceDetailsView extends React.PureComponent {
       lastUnderscoreIndex + 1
     );
     const timeOfScan = moment.utc(timeOfScanStr);
-    let cloudType = '';
 
     const { isSideNavCollapsed, isFiltersViewVisible } = this.props;
     const divClassName = classnames(
@@ -66,25 +65,13 @@ class ComplianceDetailsView extends React.PureComponent {
     const contentClassName = classnames('navigation', {
       'with-filters': isFiltersViewVisible,
     });
-    const scanType = window.location.hash.split('/').reverse()[0];
-    if (scanId.includes('aws')) {
-      cloudType = 'aws';
-    } else if (scanId.includes('azure')) {
-      cloudType = 'azure';
-    } else if (scanId.includes('gcp')) {
-      cloudType = 'gcp';
-    } else if (scanType === 'linux') {
-      cloudType = 'linux';
-    } else if (scanType === 'kubernetes') {
-      cloudType = 'kubernetes';
-    }
     const scanIdFormatted = scanId.split('_')[0];
 
     const urlSearchParams = new URLSearchParams(
       this.props.location?.search ?? ''
     );
 
-    const {location} = this.props;
+    const {location, cloudType} = this.props;
 
     return (
       <div className="compliance-details">
@@ -230,6 +217,7 @@ class ComplianceDetailsView extends React.PureComponent {
 function mapStateToProps(state) {
   return {
     isSideNavCollapsed: state.get('isSideNavCollapsed'),
+    cloudType: state.get('compliance_node_type'),
     isFiltersViewVisible: state.get('isFiltersViewVisible'),
   };
 }

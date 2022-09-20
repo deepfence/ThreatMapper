@@ -504,17 +504,21 @@ def cloud_compliance_scan_nodes():
 
     if cloud_provider == "kubernetes":
         nodes_list = []
-        kube_nodes = {}
-        hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
-        for host_id, host in hosts.items():
-            if host.get("kubernetes_cluster_name", None) is not None and host.get("is_ui_vm", False) is False:
-                kube_nodes[host.get("kubernetes_cluster_id")] = host.get("kubernetes_cluster_name")
-        for node_id, name in kube_nodes.items():
-            nodes_list.append({"node_name": name, "node_id": node_id, "enabled": True})
-        node_ids = [x["node_id"] for x in nodes_list]
+        cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
+        node_ids = []
+        for node in cloud_compliance_nodes:
+            node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, node.node_id)
+            updated_at = node.updated_at.timestamp()
+            if node_details_str:
+                node_details = json.loads(node_details_str)
+                if node_details.get("updated_at", 0) > updated_at:
+                    updated_at = node_details.get("updated_at", 0)
+            nodes_list.append({"node_name": node.node_id, "node_id": node.node_id,
+                               "enabled": ((datetime.now().timestamp() - updated_at) < 250.0)})
+            node_ids.append(node.node_id)
         filters = {
             "scan_status": "COMPLETED",
-            "kubernetes_cluster_id": node_ids
+            "node_id": node_ids
         }
         aggs = {
             "node_id": {
@@ -542,7 +546,7 @@ def cloud_compliance_scan_nodes():
             }
         }
         aggs_response = ESConn.aggregation_helper(COMPLIANCE_LOGS_INDEX, filters, aggs, number,
-                                                TIME_UNIT_MAPPING.get(time_unit), lucene_query_string)
+                                                  TIME_UNIT_MAPPING.get(time_unit), lucene_query_string)
         node_compliance_percentage = {}
         if "aggregations" in aggs_response:
             cloud_total = defaultdict(int)
@@ -554,23 +558,25 @@ def cloud_compliance_scan_nodes():
                     result_docs = compliance_check_type_aggr.get('docs', {}).get('hits', {}).get('hits', [])
                     if result_docs:
                         result = result_docs[0]['_source']['result']
-                        if result['note'] > 0:
-                            total['note'] += result['note']
-                        if result['warn'] > 0:
-                            total['warn'] += result['warn']
-                        if result['pass'] > 0:
-                            total['pass'] += result['pass']
+                        if result['alarm'] > 0:
+                            total['alarm'] += result['alarm']
+                            cloud_total['alarm'] += result['alarm']
                         if result['info'] > 0:
                             total['info'] += result['info']
+                            cloud_total['info'] += result['info']
+                        if result['ok'] > 0:
+                            total['ok'] += result['ok']
+                            cloud_total['ok'] += result['ok']
+                        if result['skip'] > 0:
+                            total['skip'] += result['skip']
+                            cloud_total['skip'] += result['skip']
                 if total:
                     node_compliance_percentage[node_id_aggr['key']] = \
-                        (total['pass'] + total['info']) * 100 / \
-                        (total['pass'] + total['info'] + total['note'] + total['warn'])
-        nodes = []
-        for node in nodes_list:
-            node["compliance_percentage"] = node_compliance_percentage.get(node["node_id"],0.0)
-            nodes.append(node)
-        return set_response({"nodes": nodes})
+                        (total['ok'] + total['info']) * 100 / \
+                        (total['ok'] + total['info'] + total['alarm'] + total['skip'])
+        for node_item in nodes_list:
+            node_item["compliance_percentage"] = node_compliance_percentage.get(node_item["node_id"], 0.0)
+        return set_response({"nodes": nodes_list})
 
     cloud_compliance_nodes = CloudComplianceNode.query.filter_by(cloud_provider=cloud_provider).all()
 
@@ -963,8 +969,12 @@ def cloud_compliance_node_scans():
             else:
                 added_scan_id[source.get("scan_id", "")] =  True
             result = source.get("result", {})
-            total = result.get("pass", 0) + result.get("warn", 0) + result.get("note", 1)
-            checks_passed = result.get("pass", 0)
+            if request.args.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
+                total = result.get("alarm", 0) + result.get("error", 0) + result.get("ok", 1) + result.get("info", 1)
+                checks_passed = result.get("ok", 0)
+            else:
+                total = result.get("pass", 0) + result.get("warn", 0) + result.get("note", 1)
+                checks_passed = result.get("pass", 0)
             total = 1 if total == 0 else total
             source["result"]["compliance_percentage"] = (checks_passed * 100) / total
             es_resp.get("hits").append(scan)
@@ -1167,20 +1177,38 @@ def start_cloud_compliance_scan(node_id):
 
     if post_data.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
         for compliance_check_type in post_data.get("compliance_check_type", []):
-            if post_data.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
-                hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
-                scan_id = node_id + "_" + compliance_check_type + "_" + datetime.now().strftime(
-                    "%Y-%m-%dT%H:%M:%S") + ".000"
-                for host_id, host in hosts.items():
-                    if host.get("kubernetes_cluster_id", None) == node_id:
-                        node = Node.get_node(0, host.get("scope_id", ""), "host")
-                        try:
-                            node.compliance_start_scan(compliance_check_type, None, scan_id)
-                        except DFError as e:
-                            return set_response(error=e.message, status=400)
-            else:
+            if post_data.get("node_type", "") == COMPLIANCE_LINUX_HOST:
                 node = Node.get_node(0, node_id, "host")
                 node.compliance_start_scan(compliance_check_type, None)
+        if post_data.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
+            scan_id = node_id + "_" + datetime.now().strftime(
+                "%Y-%m-%dT%H:%M:%S") + ".000"
+            time_time = time.time()
+            es_doc = {
+                "total_checks": 0,
+                "result": {},
+                "node_id": node_id,
+                "node_type": COMPLIANCE_KUBERNETES_HOST,
+                "compliance_check_type": "cis",
+                "masked": "false",
+                "node_name": "",
+                "host_name": node_id,
+                "scan_status": "QUEUED",
+                "scan_message": "",
+                "scan_id": scan_id,
+                "time_stamp": int(time_time * 1000.0),
+                "kubernetes_cluster_id": node_id,
+                "kubernetes_cluster_name": node_id,
+                "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] + "Z"
+            }
+            ESConn.create_doc(COMPLIANCE_LOGS_INDEX, es_doc)
+            scan_list = [{
+                "scan_id": scan_id,
+                "scan_type": "cis",
+                "account_id": node_id
+            }]
+            redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id, json.dumps(scan_list))
+
         return set_response(data={"message": "Scans queued successfully"}, status=200)
 
     if node_id.endswith(";<cloud_org>"):
@@ -1492,6 +1520,68 @@ def register_cloud_resource(cloud_provider):
                 continue
     redis.hset(CLOUD_RESOURCES_CACHE_KEY, cloud_provider, json.dumps(post_data))
     return set_response(data={}, status=200)
+
+
+@cloud_compliance_api.route("/cloud_compliance/kubernetes", methods=["POST"],
+                            endpoint="api_v1_5_register_kubernetes_compliance")
+@jwt_required()
+@non_read_only_user
+def register_kubernetes():
+    if not request.is_json:
+        raise InvalidUsage("Missing JSON post data in request")
+
+    post_data = request.json
+    if not post_data.get("node_id", None):
+        raise InvalidUsage("Node ID is required for kube registration")
+    kubernetes_id = post_data.get("node_id", None)
+    updated_at_timestamp = datetime.now().timestamp()
+    node = None
+    compliance_scan_node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"])
+    if compliance_scan_node_details_str:
+        node = json.loads(compliance_scan_node_details_str)
+    if node and updated_at_timestamp > node["updated_at"]:
+        node["updated_at"] = updated_at_timestamp
+    elif not node:
+        node = {
+            "node_id": post_data["node_id"],
+            "cloud_provider": COMPLIANCE_KUBERNETES_HOST,
+            "account_id": post_data["node_id"],
+            "updated_at": updated_at_timestamp
+        }
+    redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"], json.dumps(node))
+    cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=kubernetes_id).first()
+    if not cloud_compliance_node:
+        cloud_compliance_node = CloudComplianceNode(
+            node_id=kubernetes_id,
+            node_name=kubernetes_id,
+            cloud_provider=COMPLIANCE_KUBERNETES_HOST,
+        )
+        try:
+            cloud_compliance_node.save()
+        except exc.IntegrityError as e:
+            app.logger.error("Duplicate cloud compliance kube node {}".format(e))
+            print(e)
+            raise InvalidUsage("Duplicate cloud compliance kube node")
+
+    current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id)
+    if not current_pending_scans_str:
+        return set_response(data={"scans": {}}, status=200)
+    current_pending_scans = json.loads(current_pending_scans_str)
+    pending_scans_available = False
+    scan_list = {}
+    for scan in current_pending_scans:
+        filters = {
+            "node_id": kubernetes_id,
+            "scan_id": scan["scan_id"],
+            "scan_status": ["IN_PROGRESS", "ERROR", "COMPLETED"]
+        }
+        compliance_log = ESConn.search_by_and_clause(COMPLIANCE_LOGS_INDEX, filters, size=1)
+        if not compliance_log.get("hits", []):
+            pending_scans_available = True
+            scan_list[scan["scan_id"]] = scan
+    if not pending_scans_available:
+        redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id, "")
+    return set_response(data={"scans": scan_list}, status=200)
 
 
 @cloud_compliance_api.route("/cloud-compliance/cloud_resources/<path:account_id>", methods=["GET"])

@@ -77,28 +77,10 @@ export const AzureComplianceViewMenu = [
 
 export const KubernetesComplianceViewMenu = [
   {
-    id: 'hipaa',
-    displayName: 'HIPAA',
-    component: HIPAASummary,
-    link: '/compliance/hipaa',
-  },
-  {
-    id: 'gdpr',
-    displayName: 'GDPR',
-    component: GdprSummary,
-    link: '/compliance/gdpr',
-  },
-  {
-    id: 'pci',
-    displayName: 'PCI',
-    component: PCISummary,
-    link: '/compliance/pci',
-  },
-  {
-    id: 'nist',
-    displayName: 'NIST',
-    component: NISTSummary,
-    link: '/compliance/nist',
+    id: 'cis',
+    displayName: 'CIS',
+    component: CISSummary,
+    link: '/compliance/cis',
   },
 ];
 
