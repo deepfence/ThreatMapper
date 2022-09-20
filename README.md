@@ -89,8 +89,8 @@ The following production platforms are supported by ThreatMapper sensor agents:
 
  * [Kubernetes](https://community.deepfence.io/docs/threatmapper/sensors/kubernetes/): ThreatMapper sensors are deployed as a daemonset in the Kubernetes cluster, using a helm chart.
  * [Docker](https://community.deepfence.io/docs/threatmapper/sensors/docker/): ThreatMapper sensors are deployed as a lightweight container.
- * [Amazon ECS](https://community.deepfence.io/docs/threatmapper/sensors/amazon-ecs): ThreatMapper sensors are deployed as a daemon service using a task definition.
- * [AWS Fargate](https://community.deepfence.io/docs/threatmapper/sensors/amazon-fargate): ThreatMapper sensors are deployed as a sidecar container, using a task definition.
+ * [Amazon ECS](https://community.deepfence.io/docs/threatmapper/sensors/aws-ecs): ThreatMapper sensors are deployed as a daemon service using a task definition.
+ * [AWS Fargate](https://community.deepfence.io/docs/threatmapper/sensors/aws-fargate): ThreatMapper sensors are deployed as a sidecar container, using a task definition.
  * [Google Kubernetes Engine](https://community.deepfence.io/docs/threatmapper/sensors/google-gke/): ThreatMapper sensors are deployed as a daemonset in the GKE cluster.
  * [Azure Kubernetes Service](https://community.deepfence.io/docs/threatmapper/sensors/azure-aks/): ThreatMapper sensors are deployed as a daemonset in the AKS cluster.
  * [Bare-Metal or Virtual Machines](https://community.deepfence.io/docs/threatmapper/sensors/linux-host/): ThreatMapper sensors are deployed within a lightweight Docker runtime.
