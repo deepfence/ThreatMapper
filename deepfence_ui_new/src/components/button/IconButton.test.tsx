@@ -8,7 +8,7 @@ import { renderWithClient } from '../../tests/utils';
 import IconButton from './IconButton';
 
 describe(`Component IconButton`, () => {
-  it(`render with label, color, icon, onClick`, () => {
+  it(`render with color, icon, onClick`, () => {
     const onClick = vi.fn();
     const { getByTestId } = renderWithClient(
       <IconButton id="id" color="primary" icon={<FaPlus />} onClick={onClick} />,

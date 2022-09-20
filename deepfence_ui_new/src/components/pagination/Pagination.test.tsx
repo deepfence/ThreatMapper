@@ -214,4 +214,62 @@ describe(`Component Pagination`, () => {
       }),
     ).toBeInTheDocument();
   });
+
+  it('ignore previous and next click when current page is at extreme end', () => {
+    const UI = () => {
+      const [currentPage, setCurrentPage] = useState(1);
+      return (
+        <Pagination
+          currentPage={currentPage}
+          totalPageCount={3}
+          onPageChange={(page) => setCurrentPage(page)}
+          siblingCount={2}
+        />
+      );
+    };
+    const { getByRole } = renderWithClient(<UI />);
+
+    const previousButton = getByRole('button', {
+      name: 'Previous',
+    });
+    const nextButton = getByRole('button', {
+      name: 'Next',
+    });
+
+    // default page 1 is highlighted
+    expect(
+      getByRole('button', {
+        name: /1/,
+      }),
+    ).toHaveClass('text-blue-600 bg-blue-100');
+    fireEvent.click(previousButton);
+    // page 1 is still highlighted
+    expect(
+      getByRole('button', {
+        name: /1/,
+      }),
+    ).toHaveClass('text-blue-600 bg-blue-100');
+
+    fireEvent.click(
+      getByRole('button', {
+        name: /3/,
+      }),
+    );
+
+    // page 3 is highlighted
+
+    expect(
+      getByRole('button', {
+        name: /3/,
+      }),
+    ).toHaveClass('text-blue-600 bg-blue-100');
+
+    fireEvent.click(nextButton);
+    // page 3 is still highlighted
+    expect(
+      getByRole('button', {
+        name: /3/,
+      }),
+    ).toHaveClass('text-blue-600 bg-blue-100');
+  });
 });
