@@ -109,6 +109,14 @@ api:
   nameOverride: ""
   fullnameOverride: ""
 
+  resources:
+    requests:
+      cpu: 50m
+      memory: 150Mi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -133,6 +141,14 @@ backend:
   initContainerRequired: true
   nameOverride: ""
   fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 512Mi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
 
   autoscaling:
     enabled: false
@@ -159,6 +175,14 @@ celery:
   nameOverride: ""
   fullnameOverride: ""
 
+  resources:
+    requests:
+      cpu: 50m
+      memory: 1Gi
+    limits:
+      cpu: 8000m
+      memory: 8Gi
+
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -183,6 +207,14 @@ diagnosis:
       - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 2000m
+      memory: 200Mi
 
   autoscaling:
     enabled: false
@@ -211,6 +243,14 @@ discovery:
       - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 150Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
 
   autoscaling:
     enabled: false
@@ -272,6 +312,14 @@ fetcher:
   nameOverride: ""
   fullnameOverride: ""
 
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -296,6 +344,14 @@ router:
       - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
 
   autoscaling:
     enabled: false
@@ -324,6 +380,14 @@ redis:
   nameOverride: ""
   fullnameOverride: ""
 
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 8000m
+      memory: 16Gi
+
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -347,6 +411,15 @@ secretScanner:
       - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 40Mi
+      # ephemeral-storage: 10Gi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
 
   autoscaling:
     enabled: false
@@ -374,11 +447,11 @@ vulnerabilityMapper:
 
   resources:
     requests:
-      memory: 100Mi
       cpu: 50m
+      memory: 100Mi
     limits:
-      cpu: 16000m
-      memory: 32Gi
+      cpu: 4000m
+      memory: 4Gi
 
   autoscaling:
     enabled: false
@@ -404,6 +477,14 @@ internalRouter:
   nameOverride: ""
   fullnameOverride: ""
 
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -428,6 +509,15 @@ packageScanner:
       - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 1Gi
+      # ephemeral-storage: 10Gi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
 
   autoscaling:
     enabled: false
@@ -456,11 +546,11 @@ ui:
 
   resources:
     requests:
-      memory: 1Gi
       cpu: 50m
+      memory: 40Mi
     limits:
-      cpu: 16000m
-      memory: 32Gi
+      cpu: 2000m
+      memory: 2Gi
 
   autoscaling:
     enabled: false
@@ -512,6 +602,14 @@ postgresqlPgpool:
     name: docker.io/deepfenceio/pgpool:4.2.5-debian-10-r37
     pullPolicy: IfNotPresent
 
+  resources:
+    requests:
+      cpu: 50m
+      memory: 40Mi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
   nodeSelector: {}
   
   tolerations: []
@@ -524,21 +622,17 @@ postgresql:
     name: docker.io/deepfenceio/postgresql-repmgr:12.8.0-debian-10-r71
     pullPolicy: IfNotPresent
 
+  resources:
+    requests:
+      cpu: 50m
+      memory: 40Mi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
   nodeSelector: {}
   
   tolerations: []
   
   service:
     type: ClusterIP
-
-
-
-defaultResourceLimits:
-  requests:
-    cpu: 50m
-    memory: 40Mi
-    # ephemeralStorage: 10Gi
-  limits:
-    cpu: 16000m
-    memory: 32Gi
-setDefaultResourceLimits: false
