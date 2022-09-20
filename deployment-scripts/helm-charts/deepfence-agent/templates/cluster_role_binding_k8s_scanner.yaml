@@ -1,0 +1,14 @@
+{{- if .Values.deployKspm }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: superreader
+roleRef:
+  kind: ClusterRole
+  name: superreader
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: superreader
+    namespace: deepfence
+{{- end }}

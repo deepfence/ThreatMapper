@@ -36,10 +36,14 @@ instanceIdSuffix: "N"
 # comma separated list of tags (labels) to set for all agents
 userDefinedTags: ""
 
-# (Optional) Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
+# Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
+# Required when deployKspm is true
 clusterName: ""
+
+# Add Kspm pod for compliance checks
+deployKspm: true
 
 enableGraphReport: true
 

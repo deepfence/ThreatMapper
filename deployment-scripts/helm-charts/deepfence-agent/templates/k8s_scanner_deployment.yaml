@@ -1,0 +1,31 @@
+{{- if .Values.deployKspm }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-scanner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: k8s-scanner
+  template:
+    metadata:
+      labels:
+        name: k8s-scanner
+    spec:
+      containers:
+        - name: k8s-scanner
+          image: deepfenceio/k8s-scanner:latest
+          imagePullPolicy: Always
+          args:
+            - -mgmt-console-url={{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}
+            - -mgmt-console-port={{ required "managementConsolePort is required" .Values.managementConsolePort }}
+            - -deepfence-key={{ required "deepfenceKey is required" .Values.deepfenceKey }}
+            - -node-id={{ required "clusterName is required" .Values.clusterName }}
+            - -debug=true
+          securityContext:
+            privileged: true
+          ports:
+            - containerPort: 80
+      serviceAccountName: superreader
+{{- end }}
