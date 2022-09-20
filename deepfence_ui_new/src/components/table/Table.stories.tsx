@@ -1,5 +1,5 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
-import { SortingState } from '@tanstack/react-table';
+import { RowSelectionState, SortingState } from '@tanstack/react-table';
 import { sortBy } from 'lodash-es';
 import { useMemo, useState } from 'react';
 
@@ -354,6 +354,7 @@ DefaultWithManualSorting.args = {};
 
 const TemplateWithRowSelection: ComponentStory<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
   const columns = useMemo(
     () => [
@@ -399,7 +400,28 @@ const TemplateWithRowSelection: ComponentStory<typeof Table<Fruit>> = (args) => 
     }
     return data;
   }, []);
-  return <Table {...args} data={data} columns={columns} enablePagination enableSorting />;
+  return (
+    <>
+      <div data-testid="selected-rows">
+        {Object.keys(rowSelectionState)
+          .map((id) => `"${id}"`)
+          .join(', ')}
+      </div>
+      <Table
+        {...args}
+        data={data}
+        columns={columns}
+        enablePagination
+        enableSorting
+        enableRowSelection
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
+        getRowId={({ id }) => {
+          return `id-${id}`;
+        }}
+      />
+    </>
+  );
 };
 
 export const DefaultWithRowSelection = TemplateWithRowSelection.bind({});

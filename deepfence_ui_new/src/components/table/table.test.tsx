@@ -1,10 +1,13 @@
 import '@testing-library/jest-dom';
 
-import { fireEvent, waitFor } from '@testing-library/react';
+import { RowSelectionState, SortingState } from '@tanstack/react-table';
+import { waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { sortBy } from 'lodash-es';
 import { useMemo, useState } from 'react';
 
 import { renderWithClient } from '../../tests/utils';
-import { getRowExpanderColumn, Table, TableProps } from './Table';
+import { getRowExpanderColumn, getRowSelectionColumn, Table, TableProps } from './Table';
 
 interface Fruit {
   id: number;
@@ -33,6 +36,7 @@ const defaultColumns = [
   },
   {
     accessorKey: 'description',
+    enableResizing: false,
   },
 ];
 
@@ -54,6 +58,7 @@ const BasicTable = ({
 
 describe(`Component Table`, () => {
   it('should render a basic table', async () => {
+    const user = userEvent.setup();
     const { getByRole, getAllByTestId, getAllByRole } = renderWithClient(<BasicTable />);
     expect(getByRole('table')).toBeInTheDocument();
     expect(getAllByTestId('table-header-row').length).toEqual(1);
@@ -69,7 +74,7 @@ describe(`Component Table`, () => {
         expect(cell.outerHTML).toMatchSnapshot(`cells without border ${index}`);
       }
     });
-    fireEvent.mouseOver(rows[2]);
+    await user.hover(rows[2]);
 
     await waitFor(() => {
       expect(rows[2]).toMatchSnapshot('row with hover state on normal table');
@@ -77,6 +82,7 @@ describe(`Component Table`, () => {
   });
 
   it('should render a striped table', async () => {
+    const user = userEvent.setup();
     const { getByRole, getAllByTestId, getAllByRole } = renderWithClient(
       <BasicTable
         tableProps={{
@@ -95,7 +101,7 @@ describe(`Component Table`, () => {
     expect(rows[2]).toMatchSnapshot('even rows should have darker background');
     expect(cells[1]).toMatchSnapshot(`cells should not have border`);
 
-    fireEvent.mouseOver(rows[2]);
+    await user.hover(rows[2]);
 
     await waitFor(() => {
       expect(rows[2]).toMatchSnapshot('row with hover state on striped table');
@@ -103,6 +109,7 @@ describe(`Component Table`, () => {
   });
 
   it('expandable rows should expand correctly', async () => {
+    const user = userEvent.setup();
     const { getAllByRole, getByText, queryByText } = renderWithClient(
       <BasicTable
         dataLength={5}
@@ -122,7 +129,7 @@ describe(`Component Table`, () => {
 
     expect(queryByText('row id 2')).not.toBeInTheDocument();
 
-    fireEvent.click(expanderButtons[1]);
+    await user.click(expanderButtons[1]);
 
     await waitFor(() => {
       expect(getByText('row id 2')).toBeInTheDocument();
@@ -130,6 +137,7 @@ describe(`Component Table`, () => {
   });
 
   it('table with auto pagination should work', async () => {
+    const user = userEvent.setup();
     const { getByTestId, getByRole, queryByText, rerender } = renderWithClient(
       <BasicTable
         dataLength={100}
@@ -147,7 +155,7 @@ describe(`Component Table`, () => {
     expect(getByRole('button', { name: /previous/i })).toBeInTheDocument();
     expect(getByRole('cell', { name: /fruit 0/i })).toBeInTheDocument();
 
-    fireEvent.click(getByRole('button', { name: /2/i }));
+    await user.click(getByRole('button', { name: /2/i }));
 
     await waitFor(() => {
       expect(queryByText('fruit 0')).not.toBeInTheDocument();
@@ -170,6 +178,8 @@ describe(`Component Table`, () => {
   });
 
   it('table with manual pagination should work', async () => {
+    const user = userEvent.setup();
+
     const ManualPaginationTable = () => {
       const [{ pageIndex, pageSize }, setPagination] = useState({
         pageIndex: 0,
@@ -205,7 +215,7 @@ describe(`Component Table`, () => {
     expect(getByRole('button', { name: /previous/i })).toBeInTheDocument();
     expect(getByRole('cell', { name: /fruit 0/i })).toBeInTheDocument();
 
-    fireEvent.click(getByRole('button', { name: /2/i }));
+    await user.click(getByRole('button', { name: /2/i }));
 
     await waitFor(() => {
       expect(queryByText('fruit 0')).not.toBeInTheDocument();
@@ -213,8 +223,212 @@ describe(`Component Table`, () => {
     });
   });
 
-  it.todo('resizable table should work correctly.');
-  it.todo('table with automatic sorting should work correctly.');
-  it.todo('table with manual sorting should work correctly.');
-  it.todo('table with row selection enabled should work correctly.');
+  it('resizable table should show resize handlers on headers', () => {
+    const { getByTestId, queryByTestId } = renderWithClient(
+      <BasicTable
+        dataLength={10}
+        tableProps={{
+          enableColumnResizing: true,
+        }}
+      />,
+    );
+    expect(getByTestId('column-resizer-id')).toBeInTheDocument();
+    expect(getByTestId('column-resizer-name')).toBeInTheDocument();
+    expect(queryByTestId('column-resizer-description')).not.toBeInTheDocument();
+  });
+
+  it('table with automatic sorting should work correctly', async () => {
+    const user = userEvent.setup();
+    const { getAllByRole, getByRole, getByTestId, queryByTestId } = renderWithClient(
+      <BasicTable
+        dataLength={100}
+        tableProps={{
+          enableSorting: true,
+          enablePagination: true,
+          pageSize: 10,
+        }}
+      />,
+    );
+    const rows = getAllByRole('row');
+    expect(rows.length).toEqual(11);
+    expect(rows[1].children.item(0)?.textContent).toEqual('0');
+    expect(rows[10].children.item(0)?.textContent).toEqual('9');
+    expect(getByTestId('column-unsorted-indicator-id')).toBeInTheDocument();
+    await user.click(getByRole('columnheader', { name: /id/i }));
+
+    await waitFor(() => {
+      const rows = getAllByRole('row');
+      expect(queryByTestId('column-unsorted-indicator-id')).not.toBeInTheDocument();
+      expect(queryByTestId('column-ascending-indicator-id')).not.toBeInTheDocument();
+      expect(getByTestId('column-descending-indicator-id')).toBeInTheDocument();
+      expect(rows.length).toEqual(11);
+      expect(rows[1].children.item(0)?.textContent).toEqual('99');
+      expect(rows[10].children.item(0)?.textContent).toEqual('90');
+    });
+
+    await user.click(getByRole('columnheader', { name: /id/i }));
+
+    await waitFor(() => {
+      const rows = getAllByRole('row');
+      expect(queryByTestId('column-unsorted-indicator-id')).not.toBeInTheDocument();
+      expect(queryByTestId('column-descending-indicator-id')).not.toBeInTheDocument();
+      expect(getByTestId('column-ascending-indicator-id')).toBeInTheDocument();
+      expect(rows.length).toEqual(11);
+      expect(rows[1].children.item(0)?.textContent).toEqual('0');
+      expect(rows[10].children.item(0)?.textContent).toEqual('9');
+    });
+
+    await user.click(getByRole('columnheader', { name: /id/i }));
+
+    await waitFor(() => {
+      const rows = getAllByRole('row');
+      expect(queryByTestId('column-ascending-indicator-id')).not.toBeInTheDocument();
+      expect(queryByTestId('column-descending-indicator-id')).not.toBeInTheDocument();
+      expect(getByTestId('column-unsorted-indicator-id')).toBeInTheDocument();
+      expect(rows.length).toEqual(11);
+      expect(rows[1].children.item(0)?.textContent).toEqual('0');
+      expect(rows[10].children.item(0)?.textContent).toEqual('9');
+    });
+  });
+
+  it('table with manual sorting should work correctly', async () => {
+    const user = userEvent.setup();
+    const ManualSortedTable = () => {
+      const [{ pageIndex, pageSize }, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 10,
+      });
+      const [sort, setSort] = useState<SortingState>([]);
+      const data = useMemo(() => {
+        let data = createDummyFruitData(100);
+        if (sort.length) {
+          data = sortBy(data, [sort[0].id]);
+          if (sort[0].desc) {
+            data.reverse();
+          }
+        }
+        return data.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
+      }, [pageIndex, sort]);
+
+      return (
+        <Table
+          data={data}
+          columns={defaultColumns}
+          enablePagination
+          manualPagination
+          pageSize={pageSize}
+          pageIndex={pageIndex}
+          pageCount={10}
+          onPaginationChange={setPagination}
+          enableSorting
+          manualSorting
+          sortingState={sort}
+          onSortingChange={setSort}
+        />
+      );
+    };
+    const { getAllByRole, getByRole, getByTestId, queryByTestId } = renderWithClient(
+      <ManualSortedTable />,
+    );
+    const rows = getAllByRole('row');
+    expect(rows.length).toEqual(11);
+    expect(rows[1].children.item(0)?.textContent).toEqual('0');
+    expect(rows[10].children.item(0)?.textContent).toEqual('9');
+    expect(getByTestId('column-unsorted-indicator-id')).toBeInTheDocument();
+    await user.click(getByRole('columnheader', { name: /id/i }));
+
+    await waitFor(() => {
+      const rows = getAllByRole('row');
+      expect(queryByTestId('column-unsorted-indicator-id')).not.toBeInTheDocument();
+      expect(queryByTestId('column-ascending-indicator-id')).not.toBeInTheDocument();
+      expect(getByTestId('column-descending-indicator-id')).toBeInTheDocument();
+      expect(rows.length).toEqual(11);
+      expect(rows[1].children.item(0)?.textContent).toEqual('99');
+      expect(rows[10].children.item(0)?.textContent).toEqual('90');
+    });
+
+    await user.click(getByRole('columnheader', { name: /id/i }));
+
+    await waitFor(() => {
+      const rows = getAllByRole('row');
+      expect(queryByTestId('column-unsorted-indicator-id')).not.toBeInTheDocument();
+      expect(queryByTestId('column-descending-indicator-id')).not.toBeInTheDocument();
+      expect(getByTestId('column-ascending-indicator-id')).toBeInTheDocument();
+      expect(rows.length).toEqual(11);
+      expect(rows[1].children.item(0)?.textContent).toEqual('0');
+      expect(rows[10].children.item(0)?.textContent).toEqual('9');
+    });
+
+    await user.click(getByRole('columnheader', { name: /id/i }));
+
+    await waitFor(() => {
+      const rows = getAllByRole('row');
+      expect(queryByTestId('column-ascending-indicator-id')).not.toBeInTheDocument();
+      expect(queryByTestId('column-descending-indicator-id')).not.toBeInTheDocument();
+      expect(getByTestId('column-unsorted-indicator-id')).toBeInTheDocument();
+      expect(rows.length).toEqual(11);
+      expect(rows[1].children.item(0)?.textContent).toEqual('0');
+      expect(rows[10].children.item(0)?.textContent).toEqual('9');
+    });
+  });
+
+  it('table with row selection enabled should work correctly', async () => {
+    const user = userEvent.setup();
+    const TableWithRowSelection = () => {
+      const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+      return (
+        <>
+          <div data-testid="selected-rows">
+            {Object.keys(rowSelectionState)
+              .map((id) => `"${id}"`)
+              .join(', ')}
+          </div>
+          <BasicTable
+            dataLength={10}
+            tableProps={{
+              columns: [getRowSelectionColumn(), ...defaultColumns],
+              enableSorting: true,
+              enablePagination: true,
+              pageSize: 10,
+              enableRowSelection: true,
+              rowSelectionState,
+              onRowSelectionChange: setRowSelectionState,
+              getRowId: ({ id }) => {
+                return `id-${id}`;
+              },
+            }}
+          />
+        </>
+      );
+    };
+    const { getAllByRole, getByTestId } = renderWithClient(<TableWithRowSelection />);
+
+    let [selectAllCheckBox, ...checkboxes] = getAllByRole('checkbox');
+    expect(selectAllCheckBox).toBeInTheDocument();
+    expect(checkboxes.length).toEqual(10);
+    expect(getByTestId('selected-rows')).toHaveTextContent('');
+
+    await user.click(checkboxes[4]);
+
+    await waitFor(() => {
+      expect(getByTestId('selected-rows').textContent).toContain(`"id-4"`);
+    });
+
+    [selectAllCheckBox, ...checkboxes] = getAllByRole('checkbox');
+    await user.click(checkboxes[5]);
+
+    await waitFor(() => {
+      expect(getByTestId('selected-rows').textContent).toContain(`"id-4"`);
+      expect(getByTestId('selected-rows').textContent).toContain(`"id-5"`);
+    });
+
+    [selectAllCheckBox, ...checkboxes] = getAllByRole('checkbox');
+    await user.click(selectAllCheckBox);
+
+    await waitFor(() => {
+      checkboxes.forEach((checkbox, index) => {
+        expect(getByTestId('selected-rows').textContent).toContain(`"id-${index}"`);
+      });
+    });
+  });
 });

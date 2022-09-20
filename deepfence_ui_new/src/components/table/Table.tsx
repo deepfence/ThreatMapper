@@ -15,7 +15,9 @@ import {
   Row,
   RowData,
   RowModel,
+  RowSelectionState,
   SortingState,
+  TableOptions,
   useReactTable,
 } from '@tanstack/react-table';
 import cx from 'classnames';
@@ -47,6 +49,10 @@ export interface TableProps<TData extends RowData> {
   manualSorting?: boolean;
   sortingState?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
+  enableRowSelection?: boolean;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  rowSelectionState?: RowSelectionState;
+  getRowId?: TableOptions<TData>['getRowId'];
 }
 
 interface TableContextValues<TData extends RowData> {
@@ -79,6 +85,10 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     manualSorting,
     sortingState,
     onSortingChange,
+    enableRowSelection = false,
+    onRowSelectionChange,
+    rowSelectionState,
+    getRowId,
   } = props;
   const TableContext = createTableContext<TData>();
 
@@ -89,6 +99,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     },
   );
 
+  // react to change in page size
   useEffect(() => {
     if (enablePagination && !manualPagination) {
       setInternalPaginationState((prev) => {
@@ -107,6 +118,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     columnResizeMode: 'onChange',
     enableColumnResizing,
     enableSorting,
+    enableRowSelection,
     state: {
       ...(enablePagination && manualPagination
         ? {
@@ -126,6 +138,11 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
             sorting: sortingState,
           }
         : {}),
+      ...(enableRowSelection && rowSelectionState
+        ? {
+            rowSelection: rowSelectionState,
+          }
+        : {}),
     },
     ...(enablePagination && manualPagination
       ? { manualPagination: true, onPaginationChange, pageCount }
@@ -134,6 +151,16 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
       ? { onPaginationChange: setInternalPaginationState }
       : {}),
     ...(enableSorting && manualSorting ? { manualSorting: true, onSortingChange } : {}),
+    ...(enableRowSelection
+      ? {
+          onRowSelectionChange,
+        }
+      : {}),
+    ...(getRowId
+      ? {
+          getRowId,
+        }
+      : {}),
   });
 
   const [headerGroups, rowModel] = [table.getHeaderGroups(), table.getRowModel()];
@@ -201,11 +228,9 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
         { 'cursor-pointer select-none': header.column.getCanSort() },
       )}
       style={{ width: header.getSize() }}
+      onClick={header.column.getToggleSortingHandler()}
     >
-      <div // eslint-disable-line jsx-a11y/click-events-have-key-events,jsx-a11y/interactive-supports-focus,jsx-a11y/no-static-element-interactions
-        className="w-full h-full flex p-4"
-        onClick={header.column.getToggleSortingHandler()}
-      >
+      <div className="w-full h-full flex p-4">
         {header.isPlaceholder
           ? null
           : flexRender(header.column.columnDef.header, header.getContext())}
@@ -216,10 +241,17 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
                 size: '0.8rem',
               }}
             >
-              {header.column.getIsSorted() === 'asc' ? <HiChevronUp /> : null}
-              {header.column.getIsSorted() === 'desc' ? <HiChevronDown /> : null}
+              {header.column.getIsSorted() === 'asc' ? (
+                <HiChevronUp data-testid={`column-ascending-indicator-${header.id}`} />
+              ) : null}
+              {header.column.getIsSorted() === 'desc' ? (
+                <HiChevronDown data-testid={`column-descending-indicator-${header.id}`} />
+              ) : null}
               {!header.column.getIsSorted() ? (
-                <HiOutlineSelector className="stroke-gray-400" />
+                <HiOutlineSelector
+                  className="stroke-gray-400"
+                  data-testid={`column-unsorted-indicator-${header.id}`}
+                />
               ) : null}
             </IconContext.Provider>
           </span>
@@ -231,6 +263,7 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
           onTouchStart={header.getResizeHandler()}
           className={`absolute right-0 top-0 h-full w-1 bg-gray-200 dark:bg-gray-600 cursor-col-resize select-none`}
           aria-hidden="true"
+          data-testid={`column-resizer-${header.id}`}
         />
       )}
     </th>
