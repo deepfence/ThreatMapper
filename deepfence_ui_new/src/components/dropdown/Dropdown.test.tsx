@@ -2,7 +2,7 @@ import '@testing-library/jest-dom';
 
 import { describe } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { Dropdown, DropdownSeparator, DropdwonItem } from './Dropdown';
 
 describe('Component Dropdown', () => {
@@ -27,7 +27,7 @@ describe('Component Dropdown', () => {
       </Dropdown>
     );
 
-    const { getByRole } = renderWithClient(component);
+    const { getByRole } = renderUI(component);
     for (const item of items) {
       expect(
         getByRole('menuitem', {

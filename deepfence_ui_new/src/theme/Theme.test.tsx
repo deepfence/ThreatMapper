@@ -1,31 +1,19 @@
 import '@testing-library/jest-dom';
 
 import { fireEvent } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import { beforeEach, describe, it } from 'vitest';
 
 import Button from '../components/button/Button';
-import { renderWithClient } from '../tests/utils';
-import theme from '../theme/default';
-import {
-  THEME_DARK,
-  THEME_LIGHT,
-  ThemeProvider,
-  useThemeMode,
-} from '../theme/ThemeContext';
-
-const queryClient = new QueryClient();
+import { renderUI } from '../tests/utils';
+import { THEME_DARK, THEME_LIGHT, useTheme } from '../theme/ThemeContext';
 
 const App = () => {
-  const { toggleMode } = useThemeMode(true);
+  const theme = useTheme();
+  const { toggleMode } = theme;
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={{ theme, toggleMode }}>
-        <Button onClick={() => toggleMode?.()} data-testid="button-theme-toggle">
-          Change Theme
-        </Button>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <Button onClick={() => toggleMode?.()} data-testid="button-theme-toggle">
+      Change Theme
+    </Button>
   );
 };
 
@@ -41,14 +29,14 @@ describe('THEME', () => {
     if (userPreferenceDark) {
       themeMode = THEME_DARK;
     }
-    renderWithClient(<App />);
+    renderUI(<App />);
     const html = document.getElementsByTagName('html');
     const theme = html.item(0)?.className;
     expect(theme).toEqual(themeMode);
   });
   it('user preference theme applied, can toggle change theme', () => {
     localStorage.setItem('theme', THEME_LIGHT);
-    const { getByTestId } = renderWithClient(<App />);
+    const { getByTestId } = renderUI(<App />);
 
     let html = document.getElementsByTagName('html');
     let theme = html.item(0)?.className;
@@ -56,7 +44,7 @@ describe('THEME', () => {
     expect(theme).toEqual(''); // tailwind ignore light class for light mode theme
 
     const btn = getByTestId('button-theme-toggle');
-    expect(btn).toBeDefined();
+    expect(btn).toBeInTheDocument();
 
     fireEvent.click(btn);
 

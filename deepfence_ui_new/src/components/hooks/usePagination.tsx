@@ -52,7 +52,7 @@ const getPaginationRange = ({
     const leftRange = range(1, leftItemCount);
 
     /**
-     * Do not show dots when totalPageCount is 8 and leftItemCount + 1 equal to 8
+     * Do not show right dots when totalPageCount is 8
      */
     if (leftItemCount + 1 < totalPageCount) {
       return [...leftRange, dots, totalPageCount];
@@ -67,7 +67,14 @@ const getPaginationRange = ({
   if (shouldShowLeftDots && !shouldShowRightDots) {
     const rightItemCount = 3 + 2 * siblingCount;
     const rightRange = range(totalPageCount - rightItemCount + 1, totalPageCount);
-    return [firstPageIndex, dots, ...rightRange];
+    /**
+     * Do not show right dots when totalPageCount is 8
+     */
+    if (rightItemCount + 1 < totalPageCount) {
+      return [firstPageIndex, dots, ...rightRange];
+    } else {
+      return [firstPageIndex, ...rightRange];
+    }
   }
 
   /*

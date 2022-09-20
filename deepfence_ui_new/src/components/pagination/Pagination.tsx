@@ -16,10 +16,11 @@ type PageButtonProps = {
 type OnPageChangeProps = {
   onPageChange: (page: number) => void;
 };
-type Props = Pick<PaginationProps, 'currentPage' | 'totalPageCount'> & OnPageChangeProps;
+type Props = Pick<PaginationProps, 'currentPage' | 'totalPageCount' | 'siblingCount'> &
+  OnPageChangeProps;
 
 const PageButton = memo(
-  ({ label, onPageChange, disabled, className }: PageButtonProps) => {
+  ({ label, onPageChange, disabled, className, ...rest }: PageButtonProps) => {
     return (
       <button
         className={twMerge(
@@ -38,6 +39,7 @@ const PageButton = memo(
           onPageChange?.();
         }}
         disabled={disabled}
+        {...rest}
       >
         {label}
       </button>
@@ -45,11 +47,16 @@ const PageButton = memo(
   },
 );
 
-export const Pagination = ({ currentPage, onPageChange, totalPageCount }: Props) => {
+export const Pagination = ({
+  currentPage,
+  onPageChange,
+  totalPageCount,
+  siblingCount = 2,
+}: Props) => {
   const pagination = usePagination({
     currentPage,
     totalPageCount,
-    siblingCount: 2,
+    siblingCount,
   });
   const onPrevious = () => {
     if (currentPage === 1) {
@@ -90,6 +97,7 @@ export const Pagination = ({ currentPage, onPageChange, totalPageCount }: Props)
                 key={page + index}
                 disabled={true}
                 className={'px-2 py-1.5 focus:border-gray-300 focus:dark:border-gray-700'}
+                data-testid="pagination-button-dots"
               />
             );
           }

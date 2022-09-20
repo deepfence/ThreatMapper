@@ -4,13 +4,13 @@ import { fireEvent } from '@testing-library/react';
 import { AiOutlineCheck, AiOutlineMail } from 'react-icons/ai';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { TextInput } from './TextInput';
 
 describe(`Component TextInput`, () => {
   it(`render with placehoder, label, onChange, startIcon, endIcon, helperText`, () => {
     const onChange = vi.fn();
-    const { getByTestId, getByPlaceholderText, getByRole } = renderWithClient(
+    const { getByTestId, getByPlaceholderText, getByRole } = renderUI(
       <TextInput
         placeholder="test@email.com"
         id="id"
@@ -21,26 +21,26 @@ describe(`Component TextInput`, () => {
         helperText="Email length should not exceed 50 characters"
       />,
     );
-    expect(getByPlaceholderText('test@email.com')).toBeDefined();
+    expect(getByPlaceholderText('test@email.com')).toBeInTheDocument();
 
     expect(
       getByRole('label', {
         name: 'Email',
       }),
-    ).toBeDefined();
+    ).toBeInTheDocument();
 
     expect(
       getByRole('label', {
         name: 'Email length should not exceed 50 characters',
       }),
-    ).toBeDefined();
+    ).toBeInTheDocument();
 
     const textInput = getByTestId('textinput-id');
     const textInputStartIcon = getByTestId('textinput-start-icon-id');
     const textInputEndIcon = getByTestId('textinput-end-icon-id');
 
-    expect(textInputStartIcon).toBeDefined();
-    expect(textInputEndIcon).toBeDefined();
+    expect(textInputStartIcon).toBeInTheDocument();
+    expect(textInputEndIcon).toBeInTheDocument();
 
     // action
     fireEvent.change(textInput, { target: { value: 'hello' } });

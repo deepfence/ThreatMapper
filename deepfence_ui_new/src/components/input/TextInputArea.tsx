@@ -70,9 +70,9 @@ export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>
             )}
             disabled={disabled}
             id={_id}
+            ref={ref}
             data-testid={`textinputarea-${_id}`}
             cols={cols}
-            ref={ref}
             {...rest}
           />
         </div>

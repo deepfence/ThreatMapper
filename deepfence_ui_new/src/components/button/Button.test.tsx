@@ -4,13 +4,13 @@ import { fireEvent } from '@testing-library/react';
 import { FaPlus } from 'react-icons/fa';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import Button from './Button';
 
 describe(`Component Button`, () => {
   it(`render with label, color, startIcon, endIcon, onClick`, () => {
     const onClick = vi.fn();
-    const { getByTestId, getByRole, getByText } = renderWithClient(
+    const { getByTestId, getByRole, getByText } = renderUI(
       <Button
         id="id"
         color="primary"
@@ -26,14 +26,14 @@ describe(`Component Button`, () => {
     const endIconId = getByTestId('button-icon-end-id');
     expect(getByText('Test button')).toBeInTheDocument();
     expect(buttonId).toHaveClass('bg-blue-600');
-    expect(startIconId).toBeDefined();
-    expect(endIconId).toBeDefined();
+    expect(startIconId).toBeInTheDocument();
+    expect(endIconId).toBeInTheDocument();
 
     // action
     const button = getByRole('button', {
       name: 'Test button',
     });
-    expect(button).toBeDefined();
+    expect(button).toBeInTheDocument();
 
     fireEvent.click(button);
     expect(onClick).toHaveBeenCalledOnce();

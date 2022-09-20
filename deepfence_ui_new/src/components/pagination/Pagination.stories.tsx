@@ -17,7 +17,6 @@ export const NoDots = Template.bind({});
 NoDots.args = {
   currentPage: 1,
   onPageChange: (page) => {
-    console.log('page is:', page);
     return page + '';
   },
   totalPageCount: 5,
@@ -27,17 +26,15 @@ export const LeftDots = Template.bind({});
 LeftDots.args = {
   currentPage: 5,
   onPageChange: (page) => {
-    console.log('page is:', page);
     return page + '';
   },
-  totalPageCount: 8,
+  totalPageCount: 9,
 };
 
 export const RightDots = Template.bind({});
 RightDots.args = {
   currentPage: 2,
   onPageChange: (page) => {
-    console.log('page is:', page);
     return page + '';
   },
   totalPageCount: 9,
@@ -47,7 +44,6 @@ export const LeftRightDots = Template.bind({});
 LeftRightDots.args = {
   currentPage: 15,
   onPageChange: (page) => {
-    console.log('page is:', page);
     return page + '';
   },
   totalPageCount: 20,
@@ -57,7 +53,6 @@ export const TwoDigits = Template.bind({});
 TwoDigits.args = {
   currentPage: 150,
   onPageChange: (page) => {
-    console.log('page is:', page);
     return page + '';
   },
   totalPageCount: 200,
@@ -70,6 +65,7 @@ export const OnPageChange = () => {
       currentPage={currentPage}
       totalPageCount={200}
       onPageChange={(page) => setCurrentPage(page)}
+      siblingCount={2}
     />
   );
 };

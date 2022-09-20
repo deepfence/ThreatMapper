@@ -3,17 +3,17 @@ import '@testing-library/jest-dom';
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import Switch from './Switch';
 
 describe(`Component Switch`, () => {
   it(`render switch with label`, () => {
-    renderWithClient(<Switch label="With Label" />);
+    renderUI(<Switch label="With Label" />);
     expect(screen.getByText('With Label')).toBeInTheDocument();
   });
 
   it(`render switch with label and disabled state`, () => {
-    const { getByTestId } = renderWithClient(
+    const { getByTestId } = renderUI(
       <Switch label="With Label" id="test-label-id" disabled />,
     );
     const switchBtn = getByTestId('switch-test-label-id');

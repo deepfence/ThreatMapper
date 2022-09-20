@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import Button from '../button/Button';
 import { Modal } from './Modal';
 
@@ -20,10 +20,8 @@ import { Modal } from './Modal';
 
 describe(`Component Modal`, () => {
   it(`open by default`, () => {
-    const { getByText } = renderWithClient(
-      <Modal defaultOpen={true}>This is a content</Modal>,
-    );
-    expect(getByText('This is a content')).toBeDefined();
+    const { getByText } = renderUI(<Modal defaultOpen={true}>This is a content</Modal>);
+    expect(getByText('This is a content')).toBeInTheDocument();
   });
 
   it(`open modal by on click and auto focus on close`, async () => {
@@ -48,7 +46,7 @@ describe(`Component Modal`, () => {
         </>
       );
     };
-    const { getByTestId, queryByText, getByText } = renderWithClient(<UI />);
+    const { getByTestId, queryByText, getByText } = renderUI(<UI />);
     expect(queryByText('This is a content')).toBeNull();
 
     const openBtnForModal = getByTestId('button-trigger-id');
@@ -94,7 +92,7 @@ describe(`Component Modal`, () => {
         </>
       );
     };
-    const { getByTestId, queryByText, getByText } = renderWithClient(<UI />);
+    const { getByTestId, queryByText, getByText } = renderUI(<UI />);
     expect(queryByText('This is a content')).toBeNull();
 
     const openBtnForModal = getByTestId('button-trigger-id');

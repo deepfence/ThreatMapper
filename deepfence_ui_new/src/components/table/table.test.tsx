@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { sortBy } from 'lodash-es';
 import { useMemo, useState } from 'react';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { getRowExpanderColumn, getRowSelectionColumn, Table, TableProps } from './Table';
 
 interface Fruit {
@@ -59,7 +59,7 @@ const BasicTable = ({
 describe(`Component Table`, () => {
   it('should render a basic table', async () => {
     const user = userEvent.setup();
-    const { getByRole, getAllByTestId, getAllByRole } = renderWithClient(<BasicTable />);
+    const { getByRole, getAllByTestId, getAllByRole } = renderUI(<BasicTable />);
     expect(getByRole('table')).toBeInTheDocument();
     expect(getAllByTestId('table-header-row').length).toEqual(1);
     expect(getAllByRole('columnheader').length).toEqual(3);
@@ -83,7 +83,7 @@ describe(`Component Table`, () => {
 
   it('should render a striped table', async () => {
     const user = userEvent.setup();
-    const { getByRole, getAllByTestId, getAllByRole } = renderWithClient(
+    const { getByRole, getAllByTestId, getAllByRole } = renderUI(
       <BasicTable
         tableProps={{
           striped: true,
@@ -110,7 +110,7 @@ describe(`Component Table`, () => {
 
   it('expandable rows should expand correctly', async () => {
     const user = userEvent.setup();
-    const { getAllByRole, getByText, queryByText } = renderWithClient(
+    const { getAllByRole, getByText, queryByText } = renderUI(
       <BasicTable
         dataLength={5}
         tableProps={{
@@ -138,7 +138,7 @@ describe(`Component Table`, () => {
 
   it('table with auto pagination should work', async () => {
     const user = userEvent.setup();
-    const { getByTestId, getByRole, queryByText, rerender } = renderWithClient(
+    const { getByTestId, getByRole, queryByText, rerender } = renderUI(
       <BasicTable
         dataLength={100}
         tableProps={{
@@ -204,9 +204,7 @@ describe(`Component Table`, () => {
       );
     };
 
-    const { getByTestId, getByRole, queryByText } = renderWithClient(
-      <ManualPaginationTable />,
-    );
+    const { getByTestId, getByRole, queryByText } = renderUI(<ManualPaginationTable />);
 
     expect(getByTestId('pagination-container')).toBeInTheDocument();
     expect(getByRole('button', { name: /1/i })).toBeInTheDocument();
@@ -224,7 +222,7 @@ describe(`Component Table`, () => {
   });
 
   it('resizable table should show resize handlers on headers', () => {
-    const { getByTestId, queryByTestId } = renderWithClient(
+    const { getByTestId, queryByTestId } = renderUI(
       <BasicTable
         dataLength={10}
         tableProps={{
@@ -239,7 +237,7 @@ describe(`Component Table`, () => {
 
   it('table with automatic sorting should work correctly', async () => {
     const user = userEvent.setup();
-    const { getAllByRole, getByRole, getByTestId, queryByTestId } = renderWithClient(
+    const { getAllByRole, getByRole, getByTestId, queryByTestId } = renderUI(
       <BasicTable
         dataLength={100}
         tableProps={{
@@ -327,7 +325,7 @@ describe(`Component Table`, () => {
         />
       );
     };
-    const { getAllByRole, getByRole, getByTestId, queryByTestId } = renderWithClient(
+    const { getAllByRole, getByRole, getByTestId, queryByTestId } = renderUI(
       <ManualSortedTable />,
     );
     const rows = getAllByRole('row');
@@ -401,7 +399,7 @@ describe(`Component Table`, () => {
         </>
       );
     };
-    const { getAllByRole, getByTestId } = renderWithClient(<TableWithRowSelection />);
+    const { getAllByRole, getByTestId } = renderUI(<TableWithRowSelection />);
 
     let [selectAllCheckBox, ...checkboxes] = getAllByRole('checkbox');
     expect(selectAllCheckBox).toBeInTheDocument();
