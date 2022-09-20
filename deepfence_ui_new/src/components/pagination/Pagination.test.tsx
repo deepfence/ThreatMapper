@@ -4,7 +4,7 @@ import { fireEvent, getAllByRole } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { Pagination } from './Pagination';
 
 /**
@@ -17,7 +17,7 @@ describe(`Component Pagination`, () => {
     [3, 5],
   ])('render pagination with (%i) pages with total of (%i)', (input, expected) => {
     const onPageChange = vi.fn();
-    const { getByRole, getAllByRole } = renderWithClient(
+    const { getByRole, getAllByRole } = renderUI(
       <Pagination
         currentPage={1}
         totalPageCount={input}
@@ -42,7 +42,7 @@ describe(`Component Pagination`, () => {
     */
     const totalRenderPage = 11; // includes Previous, Next and Dots pages
     const onPageChange = vi.fn();
-    const { getAllByRole, getAllByTestId } = renderWithClient(
+    const { getAllByRole, getAllByTestId } = renderUI(
       <Pagination
         currentPage={5}
         totalPageCount={20}
@@ -68,7 +68,7 @@ describe(`Component Pagination`, () => {
       Only Left dot page is present if current page is at the end of page. 
     */
     const onPageChange = vi.fn();
-    const { getAllByRole, getAllByTestId } = renderWithClient(
+    const { getAllByRole, getAllByTestId } = renderUI(
       <Pagination
         currentPage={8}
         totalPageCount={10}
@@ -90,7 +90,7 @@ describe(`Component Pagination`, () => {
     */
     const totalRenderPage = 11; // includes Previous, Next and Dots pages
     const onPageChange = vi.fn();
-    const { getAllByRole, getAllByTestId } = renderWithClient(
+    const { getAllByRole, getAllByTestId } = renderUI(
       <Pagination
         currentPage={2}
         totalPageCount={10}
@@ -118,7 +118,7 @@ describe(`Component Pagination`, () => {
         />
       );
     };
-    const { getByRole } = renderWithClient(<UI />);
+    const { getByRole } = renderUI(<UI />);
 
     const previousButton = getByRole('button', {
       name: 'Previous',
@@ -163,7 +163,7 @@ describe(`Component Pagination`, () => {
         />
       );
     };
-    const { getAllByRole, getByRole, getAllByTestId } = renderWithClient(<UI />);
+    const { getAllByRole, getByRole, getAllByTestId } = renderUI(<UI />);
     const dotsPage = getAllByTestId('pagination-button-dots');
     const pages = getAllByRole('button');
     expect(pages[2]).toEqual(dotsPage[0]);
@@ -195,7 +195,7 @@ describe(`Component Pagination`, () => {
       );
     };
     const totalRenderPage = 11;
-    const { getAllByRole, getByRole, getAllByTestId } = renderWithClient(<UI />);
+    const { getAllByRole, getByRole, getAllByTestId } = renderUI(<UI />);
     const dotsPage = getAllByTestId('pagination-button-dots');
     let pages = getAllByRole('button');
     expect(pages[totalRenderPage - 3]).toEqual(dotsPage[0]);
@@ -227,7 +227,7 @@ describe(`Component Pagination`, () => {
         />
       );
     };
-    const { getByRole } = renderWithClient(<UI />);
+    const { getByRole } = renderUI(<UI />);
 
     const previousButton = getByRole('button', {
       name: 'Previous',

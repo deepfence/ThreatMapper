@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { Table, TableProps } from './Table';
 
 interface Fruit {
@@ -49,7 +49,7 @@ const BasicTable = ({
 
 describe(`Component Table`, () => {
   it('should render a basic table', () => {
-    const { getByRole, getAllByTestId, getAllByRole } = renderWithClient(<BasicTable />);
+    const { getByRole, getAllByTestId, getAllByRole } = renderUI(<BasicTable />);
     expect(getByRole('table')).toBeInTheDocument();
     expect(getAllByTestId('table-header-row').length).toEqual(1);
     expect(getAllByRole('columnheader').length).toEqual(3);

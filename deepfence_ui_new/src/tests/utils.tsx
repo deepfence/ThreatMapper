@@ -1,50 +1,28 @@
-import { render } from '@testing-library/react';
+import { render, RenderOptions } from '@testing-library/react';
 import { rest } from 'msw';
-import * as React from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import React, { FC, ReactElement } from 'react';
+
+import theme from '../theme/default';
+import { ThemeProvider, useThemeMode } from '../theme/ThemeContext';
 
 export const handlers = [
-  rest.get('*/react-query', (req, res, ctx) => {
+  rest.get('*/api', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
-        name: 'mocked-react-query',
+        name: 'test',
       }),
     );
   }),
 ];
 
-const createTestQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
-    // logger: {
-    //     log: console.log,
-    //     warn: console.warn,
-    //     error: () => {},
-    // }
-  });
+const AllTheProviders: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { toggleMode } = useThemeMode(true);
+  return <ThemeProvider value={{ theme, toggleMode }}>{children}</ThemeProvider>;
+};
 
-export function renderWithClient(ui: React.ReactElement) {
-  const testQueryClient = createTestQueryClient();
-  const { rerender, ...result } = render(
-    <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>,
-  );
-  return {
-    ...result,
-    rerender: (rerenderUi: React.ReactElement) =>
-      rerender(
-        <QueryClientProvider client={testQueryClient}>{rerenderUi}</QueryClientProvider>,
-      ),
-  };
-}
+const renderUI = (ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>
+  render(ui, { wrapper: AllTheProviders, ...options });
 
-export function createWrapper() {
-  const testQueryClient = createTestQueryClient();
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={testQueryClient}>{children}</QueryClientProvider>
-  );
-}
+export * from '@testing-library/react';
+export { renderUI };

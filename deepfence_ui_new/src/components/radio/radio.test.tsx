@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import Radio from './Radio';
 
 describe(`Component Radio`, () => {
@@ -18,9 +18,7 @@ describe(`Component Radio`, () => {
         id: 'r2',
       },
     ];
-    const { getByTestId } = renderWithClient(
-      <Radio name="test" options={radioOptions} />,
-    );
+    const { getByTestId } = renderUI(<Radio name="test" options={radioOptions} />);
     expect(getByTestId('radio-group-test').childNodes.length).toEqual(2);
   });
 
@@ -38,9 +36,7 @@ describe(`Component Radio`, () => {
         id: 'r2',
       },
     ];
-    const { getByTestId } = renderWithClient(
-      <Radio name="test" options={radioOptions} />,
-    );
+    const { getByTestId } = renderUI(<Radio name="test" options={radioOptions} />);
     const firstRadio = getByTestId('radio-item-r1');
     expect(firstRadio).toBeDisabled();
   });

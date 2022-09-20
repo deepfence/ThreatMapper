@@ -3,13 +3,13 @@ import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { TextInputArea } from './TextInputArea';
 
 describe(`Component TextInputArea`, () => {
   it(`render with placehoder, label, onChange, startIcon, endIcon, helperText, style width`, () => {
     const onChange = vi.fn();
-    const { getByTestId, getByPlaceholderText, getByRole } = renderWithClient(
+    const { getByTestId, getByPlaceholderText, getByRole } = renderUI(
       <TextInputArea
         placeholder="test@email.com"
         id="id"

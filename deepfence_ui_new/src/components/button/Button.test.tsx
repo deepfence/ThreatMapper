@@ -4,13 +4,13 @@ import { fireEvent } from '@testing-library/react';
 import { FaPlus } from 'react-icons/fa';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import Button from './Button';
 
 describe(`Component Button`, () => {
   it(`render with label, color, startIcon, endIcon, onClick`, () => {
     const onClick = vi.fn();
-    const { getByTestId, getByRole, getByText } = renderWithClient(
+    const { getByTestId, getByRole, getByText } = renderUI(
       <Button
         id="id"
         color="primary"

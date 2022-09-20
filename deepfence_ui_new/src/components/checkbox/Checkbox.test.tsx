@@ -3,13 +3,13 @@ import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { Checkbox } from './Checkbox';
 
 describe(`Component Checkbox`, () => {
   it(`render with label, style props, onCheckedChange`, () => {
     const onCheckedChange = vi.fn();
-    const { getByTestId, getByText } = renderWithClient(
+    const { getByTestId, getByText } = renderUI(
       <Checkbox
         label="Like"
         id="id"

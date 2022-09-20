@@ -2,7 +2,7 @@ import '@testing-library/jest-dom';
 
 import { describe, expect, it } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import Tabs from './Tabs';
 
 describe(`Component Tabs`, () => {
@@ -17,7 +17,7 @@ describe(`Component Tabs`, () => {
         label: 'Tab two',
       },
     ];
-    const { getByTestId, getByText } = renderWithClient(
+    const { getByTestId, getByText } = renderUI(
       <Tabs tabs={tabs} defaultValue={'tab1'} value={'tab1'}>
         <span>Tab Content</span>
       </Tabs>,

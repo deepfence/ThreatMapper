@@ -4,13 +4,13 @@ import { fireEvent } from '@testing-library/react';
 import { AiOutlineCheck, AiOutlineMail } from 'react-icons/ai';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { TextInput } from './TextInput';
 
 describe(`Component TextInput`, () => {
   it(`render with placehoder, label, onChange, startIcon, endIcon, helperText`, () => {
     const onChange = vi.fn();
-    const { getByTestId, getByPlaceholderText, getByRole } = renderWithClient(
+    const { getByTestId, getByPlaceholderText, getByRole } = renderUI(
       <TextInput
         placeholder="test@email.com"
         id="id"

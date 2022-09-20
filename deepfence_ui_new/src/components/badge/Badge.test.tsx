@@ -4,13 +4,13 @@ import { fireEvent } from '@testing-library/react';
 import { FaPlus } from 'react-icons/fa';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import Badge from './Badge';
 
 describe(`Component Badge`, () => {
   it(`render with label, color, icon, onRemove`, () => {
     const onRemove = vi.fn();
-    const { getByTestId, getByRole, getByText } = renderWithClient(
+    const { getByTestId, getByRole, getByText } = renderUI(
       <Badge
         label="Test badge"
         id="test-label-id"

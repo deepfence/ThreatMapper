@@ -4,13 +4,13 @@ import { fireEvent } from '@testing-library/react';
 import { FaPlus } from 'react-icons/fa';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import IconButton from './IconButton';
 
 describe(`Component IconButton`, () => {
   it(`render with color, icon, onClick`, () => {
     const onClick = vi.fn();
-    const { getByTestId } = renderWithClient(
+    const { getByTestId } = renderUI(
       <IconButton id="id" color="primary" icon={<FaPlus />} onClick={onClick} />,
     );
     const buttonId = getByTestId('icon-button-id');

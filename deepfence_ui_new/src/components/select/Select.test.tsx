@@ -5,12 +5,12 @@ import { useState } from 'react';
 import { AiOutlineMail } from 'react-icons/ai';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderWithClient } from '../../tests/utils';
+import { renderUI } from '../../tests/utils';
 import { Select, SelectItem } from './Select';
 
 describe(`Component Select`, () => {
   it(`render with label`, () => {
-    const { getByTestId } = renderWithClient(
+    const { getByTestId } = renderUI(
       <Select value={''} name="fruit" label="Fruit" placeholder="Select a fruit">
         <SelectItem value="Apple" />
         <SelectItem value="Banana" />
@@ -25,7 +25,7 @@ describe(`Component Select`, () => {
     ['Grape', 'Grape'],
     [['Grape', 'Banana'], '2 items selected'],
   ])('render with default value and value', (a, expected) => {
-    const { getByTestId } = renderWithClient(
+    const { getByTestId } = renderUI(
       <Select<typeof a> value={a} name="fruit" label="Fruit">
         <SelectItem value="Apple" />
         <SelectItem value="Banana" />
@@ -36,7 +36,7 @@ describe(`Component Select`, () => {
   });
 
   it(`render with icon`, () => {
-    const { getByTestId } = renderWithClient(
+    const { getByTestId } = renderUI(
       <Select
         value={''}
         name="fruit"
@@ -54,7 +54,7 @@ describe(`Component Select`, () => {
 
   it(`on select pick item correctly`, () => {
     const onChange = vi.fn((value) => value);
-    const { getByTestId, rerender } = renderWithClient(
+    const { getByTestId, rerender } = renderUI(
       <Select
         name="fruit"
         label="Fruit"
@@ -105,7 +105,7 @@ describe(`Component Select`, () => {
         </form>
       );
     };
-    const { getByTestId } = renderWithClient(<UI />);
+    const { getByTestId } = renderUI(<UI />);
 
     const selectBtn = getByTestId('ariakit-select-fruit');
     expect(selectBtn).toHaveTextContent('Select a fruit');
