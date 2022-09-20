@@ -638,12 +638,39 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 	respWrite.WriteHeader(http.StatusOK)
 }
 
-func updateVulnerabilityMapperDB() {
+func handleVulnerabilityFeedRefresh(respWrite http.ResponseWriter, req *http.Request) {
+
+	defer req.Body.Close()
+	if req.Method != "POST" {
+		http.Error(respWrite, "Invalid request", http.StatusInternalServerError)
+		return
+	}
+	// 1: fetch the latest db inside
+	err := vulnerabilityDbUpdater.runGrypeUpdate()
+	if err == nil {
+		http.Error(respWrite, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// 2: Call update in mapper to trigger manual update from fetcher
+	resCode := updateVulnerabilityMapperDB()
+	if resCode == http.StatusOK {
+		_, err := fmt.Fprintf(respWrite, "vulnerability db updated")
+		if err != nil {
+			http.Error(respWrite, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	respWrite.WriteHeader(http.StatusOK)
+}
+
+func updateVulnerabilityMapperDB() int {
 	response, err := http.Post("http://deepfence-vulnerability-mapper:8001/vulnerability-mapper-api/db-update", "text/plain", nil)
 	if err != nil {
 		errMsg := "Error while calling vulnerability mapper api. " + err.Error()
 		fmt.Println(errMsg)
-		return
+		return response.StatusCode
 	}
 
 	defer response.Body.Close()
@@ -651,9 +678,9 @@ func updateVulnerabilityMapperDB() {
 	if response.StatusCode != 200 {
 		errMsg := "Error while calling vulnerability mapper api. " + response.Status
 		fmt.Println(errMsg)
-		return
+		return response.StatusCode
 	}
-	return
+	return response.StatusCode
 }
 
 type registryCredentialRequest struct {
@@ -1478,6 +1505,7 @@ func main() {
 	// Vulnerability database
 	httpMux.HandleFunc("/vulnerability-db/listing.json", vulnerabilityDbListing)
 	httpMux.HandleFunc("/df-api/upload-vulnerability-db", handleVulnerabilityFeedTarUpload)
+	httpMux.HandleFunc("/df-api/refresh-vulnerability-db", handleVulnerabilityFeedRefresh)
 
 	fmt.Println("fetcher server is starting")
 
