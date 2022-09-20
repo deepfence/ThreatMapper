@@ -56,7 +56,7 @@ describe('THEME', () => {
     expect(theme).toEqual(''); // tailwind ignore light class for light mode theme
 
     const btn = getByTestId('button-theme-toggle');
-    expect(btn).toBeDefined();
+    expect(btn).toBeInTheDocument();
 
     fireEvent.click(btn);
 

@@ -26,14 +26,14 @@ describe(`Component Button`, () => {
     const endIconId = getByTestId('button-icon-end-id');
     expect(getByText('Test button')).toBeInTheDocument();
     expect(buttonId).toHaveClass('bg-blue-600');
-    expect(startIconId).toBeDefined();
-    expect(endIconId).toBeDefined();
+    expect(startIconId).toBeInTheDocument();
+    expect(endIconId).toBeInTheDocument();
 
     // action
     const button = getByRole('button', {
       name: 'Test button',
     });
-    expect(button).toBeDefined();
+    expect(button).toBeInTheDocument();
 
     fireEvent.click(button);
     expect(onClick).toHaveBeenCalledOnce();

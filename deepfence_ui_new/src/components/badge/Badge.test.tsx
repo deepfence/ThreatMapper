@@ -24,13 +24,13 @@ describe(`Component Badge`, () => {
     const badgeIconId = getByTestId('badge-icon');
     expect(getByText('Test badge')).toBeInTheDocument();
     expect(badgeId).toHaveClass('text-blue-900');
-    expect(badgeIconId).toBeDefined();
+    expect(badgeIconId).toBeInTheDocument();
 
     // action
     const removeBtn = getByRole('button', {
       name: 'Test badge',
     });
-    expect(removeBtn).toBeDefined();
+    expect(removeBtn).toBeInTheDocument();
 
     fireEvent.click(removeBtn);
     expect(onRemove).toHaveBeenCalledOnce();

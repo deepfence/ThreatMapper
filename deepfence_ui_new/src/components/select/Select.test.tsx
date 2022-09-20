@@ -75,7 +75,7 @@ describe(`Component Select`, () => {
     });
 
     const selectItemApple = getByTestId('ariakit-selectitem-Apple');
-    expect(selectItemApple).toBeDefined();
+    expect(selectItemApple).toBeInTheDocument();
 
     act(() => {
       fireEvent.click(selectItemApple);
@@ -115,9 +115,9 @@ describe(`Component Select`, () => {
     });
 
     const selectItemBanana = getByTestId('ariakit-selectitem-Banana');
-    expect(selectItemBanana).toBeDefined();
+    expect(selectItemBanana).toBeInTheDocument();
     const selectItemGrape = getByTestId('ariakit-selectitem-Grape');
-    expect(selectItemGrape).toBeDefined();
+    expect(selectItemGrape).toBeInTheDocument();
 
     act(() => {
       fireEvent.click(selectItemBanana);

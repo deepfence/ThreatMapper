@@ -23,7 +23,7 @@ describe(`Component Modal`, () => {
     const { getByText } = renderWithClient(
       <Modal defaultOpen={true}>This is a content</Modal>,
     );
-    expect(getByText('This is a content')).toBeDefined();
+    expect(getByText('This is a content')).toBeInTheDocument();
   });
 
   it(`open modal by on click and auto focus on close`, async () => {

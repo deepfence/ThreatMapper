@@ -19,19 +19,19 @@ describe(`Component TextInputArea`, () => {
         width="w-4/12"
       />,
     );
-    expect(getByPlaceholderText('test@email.com')).toBeDefined();
+    expect(getByPlaceholderText('test@email.com')).toBeInTheDocument();
 
     expect(
       getByRole('label', {
         name: 'Comments',
       }),
-    ).toBeDefined();
+    ).toBeInTheDocument();
 
     expect(
       getByRole('label', {
         name: 'Put your comments',
       }),
-    ).toBeDefined();
+    ).toBeInTheDocument();
 
     const textInputArea = getByTestId('textinputarea-id');
 

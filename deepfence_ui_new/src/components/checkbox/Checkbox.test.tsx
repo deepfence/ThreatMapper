@@ -19,9 +19,9 @@ describe(`Component Checkbox`, () => {
       />,
     );
     const checkboxLike = getByTestId('checkbox-id');
-    expect(checkboxLike).toBeDefined();
+    expect(checkboxLike).toBeInTheDocument();
 
-    expect(getByText('Like')).toBeDefined();
+    expect(getByText('Like')).toBeInTheDocument();
     expect(checkboxLike).toHaveClass('bg-slate-100');
 
     // action
