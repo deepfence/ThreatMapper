@@ -310,6 +310,45 @@ func vulnerabilityDbListing(respWrite http.ResponseWriter, req *http.Request) {
 	respWrite.Write(content)
 }
 
+func vulnerabilityDbLatestListing(respWrite http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
+	if req.Method != http.MethodGet {
+		http.Error(respWrite, "invalid request", http.StatusInternalServerError)
+		return
+	}
+	if vulnerabilityDbUpdater == nil {
+		http.Error(respWrite, "updater not initialized", http.StatusInternalServerError)
+		return
+	}
+	vulnerabilityDbUpdater.RLock()
+	vulnerabilityDbListingJson := vulnerabilityDbUpdater.vulnerabilityDbListingJson
+	vulnerabilityDbUpdater.RUnlock()
+
+	// get latest from v3
+	latestLisiting := getLatestFromListingJSONV3(vulnerabilityDbListingJson.Available.V3)
+
+	content, err := json.Marshal(latestLisiting)
+	if err != nil {
+		http.Error(respWrite, "latest listing.json marshal error", http.StatusInternalServerError)
+		return
+	}
+	respWrite.Header().Set("content-type", "application/json")
+	respWrite.Write(content)
+}
+
+func getLatestFromListingJSONV3(listing []VulnerabilityDbDetail) VulnerabilityDbDetail {
+	latest := VulnerabilityDbDetail{}
+	for _, feed := range listing {
+		if latest.Built.IsZero() {
+			latest = feed
+			continue
+		}
+		if feed.Built.After(latest.Built) {
+			latest = feed
+		}
+	}
+	return latest
+}
 func sha256sum(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -1504,6 +1543,7 @@ func main() {
 
 	// Vulnerability database
 	httpMux.HandleFunc("/vulnerability-db/listing.json", vulnerabilityDbListing)
+	httpMux.HandleFunc("/df-api/latest-listing.json", vulnerabilityDbLatestListing)
 	httpMux.HandleFunc("/df-api/upload-vulnerability-db", handleVulnerabilityFeedTarUpload)
 	httpMux.HandleFunc("/df-api/refresh-vulnerability-db", handleVulnerabilityFeedRefresh)
 
