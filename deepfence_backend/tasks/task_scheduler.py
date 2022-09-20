@@ -1,5 +1,7 @@
 import arrow
 from config.app import celery_app, app
+from models.cloud_compliance_node import CloudComplianceNode
+from models.compliance_rules import ComplianceRules
 from models.container_image_registry import RegistryCredential
 from models.scheduler import Scheduler
 from models.setting import Setting
@@ -7,6 +9,9 @@ from croniter import croniter
 from utils import constants
 import time
 from datetime import datetime
+
+from utils.constants import COMPLIANCE_KUBERNETES_HOST, COMPLIANCE_LOGS_INDEX, PENDING_CLOUD_COMPLIANCE_SCANS_KEY, \
+    COMPLIANCE_LINUX_HOST, CLOUD_COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_LOGS_ES_TYPE
 from utils.helper import websocketio_channel_name_format, get_image_cve_status
 from config.redisconfig import redis
 from utils.esconn import ESConn
@@ -228,6 +233,98 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                 for lock_key in redis_lock_keys:
                     redis.delete(lock_key)
                 redis_pipe.execute()
+        elif action in [constants.NODE_ACTION_COMPLIANCE_START_SCAN, constants.NODE_ACTION_SCHEDULE_COMPLIANCE_SCAN]:
+
+            try:
+                node_type = node_action_details.get("node_type", "")
+                node_id = node_action_details.get("node_id", "")
+                if node_type == COMPLIANCE_KUBERNETES_HOST:
+                    scan_id = node_id + "_" + datetime.now().strftime(
+                        "%Y-%m-%dT%H:%M:%S") + ".000"
+                    time_time = time.time()
+                    es_doc = {
+                        "total_checks": 0,
+                        "result": {},
+                        "node_id": node_id,
+                        "node_type": COMPLIANCE_KUBERNETES_HOST,
+                        "compliance_check_type": "cis",
+                        "masked": "false",
+                        "node_name": "",
+                        "host_name": node_id,
+                        "scan_status": "QUEUED",
+                        "scan_message": "",
+                        "scan_id": scan_id,
+                        "time_stamp": int(time_time * 1000.0),
+                        "kubernetes_cluster_id": node_id,
+                        "kubernetes_cluster_name": node_id,
+                        "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][
+                                                                                      :3] + "Z"
+                    }
+                    ESConn.create_doc(COMPLIANCE_LOGS_INDEX, es_doc)
+                    scan_list = [{
+                        "scan_id": scan_id,
+                        "scan_type": "cis",
+                        "account_id": node_id
+                    }]
+                    redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id, json.dumps(scan_list))
+                elif node_type == COMPLIANCE_LINUX_HOST:
+                    for compliance_check_type in node_action_details.get("compliance_check_type", []):
+                        node = Node.get_node(0, node_id, "host")
+                        node.compliance_start_scan(compliance_check_type, None)
+                else:
+                    if node_id.endswith(";<cloud_org>"):
+                        accounts = CloudComplianceNode.query.filter_by(org_account_id=node_id).all()
+                    else:
+                        accounts = [CloudComplianceNode.query.filter_by(node_id=node_id).first()]
+                    if not accounts:
+                        return set_response(data={"message": "node_id not found"}, status=404)
+                    cloud_provider = node_action_details.get("node_type", "")
+
+                    for account in accounts:
+                        scan_list = []
+                        current_pending_scans = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, account.node_id)
+
+                        if current_pending_scans:
+                            scan_list.extend(json.loads(current_pending_scans))
+
+                        for compliance_check_type in node_action_details.get("compliance_check_type", []):
+                            enabled_rules = ComplianceRules.get_rules_with_status(
+                                compliance_check_type=compliance_check_type,
+                                cloud_provider=cloud_provider,
+                                node_id=account.node_id)
+                            controls = [compliance_rule.test_number for compliance_rule in
+                                        list(filter(lambda x: x.is_enabled, enabled_rules))]
+                            if controls:
+                                time_time = time.time()
+                                scan_id = account.node_id + "_" + compliance_check_type + "_" + datetime.now().strftime(
+                                    "%Y-%m-%dT%H:%M:%S") + ".000"
+                                es_doc = {
+                                    "total_checks": 0,
+                                    "result": {},
+                                    "node_id": account.node_id,
+                                    "compliance_check_type": compliance_check_type,
+                                    "masked": "false",
+                                    "node_name": "",
+                                    "type": CLOUD_COMPLIANCE_LOGS_ES_TYPE,
+                                    "scan_status": "QUEUED",
+                                    "scan_message": "",
+                                    "scan_id": scan_id,
+                                    "time_stamp": int(time_time * 1000.0),
+                                    "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") +
+                                                  repr(time_time).split('.')[1][:3] +
+                                                  "Z"
+                                }
+                                ESConn.create_doc(CLOUD_COMPLIANCE_LOGS_INDEX, es_doc)
+                                scan_list.append({
+                                    "scan_id": scan_id,
+                                    "scan_type": compliance_check_type,
+                                    "controls": controls,
+                                    "account_id": account.node_name
+                                })
+                        redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, account.node_id, json.dumps(scan_list))
+            except Exception as ex:
+                save_scheduled_task_status("Error: " + str(ex))
+                app.logger.error(ex)
         elif action == constants.NODE_ACTION_CVE_SCAN_STOP:
             if node_type == constants.NODE_TYPE_REGISTRY_IMAGE:
                 from config.app import celery_app
