@@ -513,7 +513,7 @@ def cloud_compliance_scan_nodes():
                 node_details = json.loads(node_details_str)
                 if node_details.get("updated_at", 0) > updated_at:
                     updated_at = node_details.get("updated_at", 0)
-            nodes_list.append({"node_name": node.node_id, "node_id": node.node_id,
+            nodes_list.append({"node_name": node.node_name, "node_id": node.node_id,
                                "enabled": ((datetime.now().timestamp() - updated_at) < 250.0)})
             node_ids.append(node.node_id)
         filters = {
@@ -1534,6 +1534,7 @@ def register_kubernetes():
     if not post_data.get("node_id", None):
         raise InvalidUsage("Node ID is required for kube registration")
     kubernetes_id = post_data.get("node_id", None)
+    kubernetes_cluster_name = post_data.get("node_name", kubernetes_id)
     updated_at_timestamp = datetime.now().timestamp()
     node = None
     compliance_scan_node_details_str = redis.hget(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"])
@@ -1553,7 +1554,7 @@ def register_kubernetes():
     if not cloud_compliance_node:
         cloud_compliance_node = CloudComplianceNode(
             node_id=kubernetes_id,
-            node_name=kubernetes_id,
+            node_name=kubernetes_cluster_name,
             cloud_provider=COMPLIANCE_KUBERNETES_HOST,
         )
         try:
