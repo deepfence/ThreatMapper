@@ -175,7 +175,7 @@ celery:
 
 diagnosis:
   replicaCount: 1
-  nodeMetrics: "false"
+  nodeMetrics: false
   image:
     repository: deepfenceio/deepfence_diagnosis_ce
     pullPolicy: Always
