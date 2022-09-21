@@ -1,23 +1,17 @@
 import type { Dispatch, FC, ReactNode, SetStateAction } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import defaultTheme from './default';
-import type { Theme } from './Theme';
-
 export const THEME_LIGHT = 'light';
 export const THEME_DARK = 'dark';
 
 export type Mode = string | undefined | 'light' | 'dark';
 
 interface ThemeContextProps {
-  theme: Theme;
   mode?: Mode;
   toggleMode?: () => void | null;
 }
 
-export const ThemeContext = createContext<ThemeContextProps>({
-  theme: defaultTheme,
-});
+export const ThemeContext = createContext<ThemeContextProps>({});
 
 interface ThemeProviderProps {
   children: ReactNode;
