@@ -31,9 +31,9 @@ const actionOptionsIndex = fromJS({
 });
 
 const actionOptionsByType = {
-  host: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
-  container: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
-  container_image: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
+  host: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan', 'start_malware_scan'],
+  container: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan', 'start_malware_scan'],
+  container_image: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan', 'start_malware_scan'],
 };
 
 const getIntersection = (array1, array2) =>
