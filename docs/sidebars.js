@@ -66,7 +66,7 @@ const sidebars = {
 
         {
           type: 'category',
-          label: 'Cloud Scanner task',
+          label: 'Cloud Scanner',
           link: {
             type: 'doc',
             id: 'threatmapper/cloudscanner/index'
@@ -81,6 +81,16 @@ const sidebars = {
 
         {
           type: 'category',
+          label: 'Kubernetes Scanner',
+          link: {
+            type: 'doc',
+            id: 'threatmapper/kubernetes-scanner/index'
+          },
+          items: [],
+        },
+
+        {
+          type: 'category',
           label: 'Sensor Agent container',
           link: {
             type: 'doc',
@@ -91,8 +101,6 @@ const sidebars = {
             'threatmapper/sensors/docker',
             'threatmapper/sensors/aws-ecs',
             'threatmapper/sensors/aws-fargate',
-            'threatmapper/sensors/azure-aks',
-            'threatmapper/sensors/google-gke',
             'threatmapper/sensors/linux-host',
           ],
         },
