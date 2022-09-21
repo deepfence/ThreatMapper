@@ -24,6 +24,6 @@ appVersion: 1.4.0
 
 dependencies:
   - name: deepfence-k8s-scanner
-    version: "1.16.0"
+    version: "0.1.0"
     repository: https://deepfence-helm-charts.s3.amazonaws.com/deepfence-k8s-scanner
     condition: deployKspm

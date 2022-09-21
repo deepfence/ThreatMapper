@@ -22,11 +22,11 @@ image:
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
-managementConsoleUrl: ""
-managementConsolePort: "443"
+managementConsoleUrl: &managementConsoleUrl ""
+managementConsolePort: &managementConsolePort "443"
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
-deepfenceKey: ""
+deepfenceKey: &deepfenceKey ""
 # If kubernetes secret is already defined externally, change following value to false
 createDeepfenceKeySecret: true
 
@@ -40,7 +40,7 @@ userDefinedTags: ""
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
 # Required if deployKspm is true
-clusterName: ""
+clusterName: &clusterName ""
 
 # Deploy Kubernetes Security Posture Management pod along with agent
 deployKspm: false
@@ -89,3 +89,11 @@ serviceAccount:
 
 nameOverride: ""
 fullnameOverride: ""
+
+deepfence-k8s-scanner:
+  managementConsoleUrl: *managementConsoleUrl
+  managementConsolePort: *managementConsolePort
+  deepfenceKey: *deepfenceKey
+  clusterName: *clusterName
+  image:
+    tag: "1.0.0"
