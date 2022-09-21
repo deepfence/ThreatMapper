@@ -39,11 +39,10 @@ userDefinedTags: ""
 # Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
-# Required if deployKspm is true
 clusterName: &clusterName ""
 
-# Deploy Kubernetes Security Posture Management pod along with agent
-deployKspm: false
+# Deploy Deepfence Kubernetes Scanner helm chart along with agent
+deployKubernetesScanner: false
 
 enableGraphReport: true
 

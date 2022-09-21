@@ -12,6 +12,7 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=40.40.40.40 \
     --set deepfenceKey="" \
+    --set clusterName="prod-cluster" \
     --namespace deepfence \
     --create-namespace
 ```
@@ -63,7 +64,7 @@ instanceIdSuffix: "N"
 ```
 - (Optional) Set kubernetes cluster name
 ```yaml
-# (Optional) Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
+# Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
 clusterName: ""
