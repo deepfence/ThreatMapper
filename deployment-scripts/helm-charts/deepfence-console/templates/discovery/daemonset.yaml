@@ -25,7 +25,6 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
       volumes:
 {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
         - name: docker-sock
