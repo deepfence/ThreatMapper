@@ -3,7 +3,7 @@
 // React imports
 import React from 'react';
 import { connect } from 'react-redux';
-import {Map} from 'immutable';
+import { Map } from 'immutable';
 
 // Custom component imports
 import ChangePasswordView from './change-password-view';
@@ -13,6 +13,9 @@ import UserList from './user-list';
 import {
   fetchUserProfile,
   resetAPIKeyAction,
+  getThreatIntelVersionAction,
+  upgradeThreatIntelVersionAction,
+  toaster,
 } from '../../../actions/app-actions';
 import { EMPTY_STATE_TEXT } from '../../../constants/naming';
 import AppLoader from '../../common/app-loader/app-loader';
@@ -25,26 +28,33 @@ class UserProfileView extends React.Component {
       isUserProfileFlow: false,
       isChangePasswordFlow: false,
       isInviteFlow: false,
-      isEyeHidden: true
+      isEyeHidden: true,
     };
     this.resetButtonHandler = this.resetButtonHandler.bind(this);
+    this.UpgradeThreatIntelButton = this.UpgradeThreatIntelButton.bind(this);
   }
 
   componentDidMount() {
     this.props.dispatch(fetchUserProfile());
+    this.props.dispatch(getThreatIntelVersionAction());
     this.toggleView('profileView');
   }
 
   UNSAFE_componentWillReceiveProps(newProps) {
     if (newProps.userProfile) {
       this.setState({
-        userProfile: newProps.userProfile || this.props.userProfile
+        userProfile: newProps.userProfile || this.props.userProfile,
       });
     }
   }
 
   resetButtonHandler() {
-    this.props.dispatch(resetAPIKeyAction()); 
+    this.props.dispatch(resetAPIKeyAction());
+  }
+
+  UpgradeThreatIntelButton() {
+    this.props.dispatch(upgradeThreatIntelVersionAction());
+    this.props.dispatch(toaster('Threat Intel version upgraded'));
   }
 
   toggleView(view) {
@@ -52,89 +62,137 @@ class UserProfileView extends React.Component {
       this.setState({
         isUserProfileFlow: true,
         isChangePasswordFlow: false,
-        isInviteFlow: false
+        isInviteFlow: false,
       });
     } else if (view == 'changePasswordFlow') {
       this.setState({
         isUserProfileFlow: false,
         isChangePasswordFlow: true,
-        isInviteFlow: false
+        isInviteFlow: false,
       });
     } else if (view == 'inviteFlow') {
       this.setState({
         isUserProfileFlow: false,
         isChangePasswordFlow: false,
-        isInviteFlow: true
+        isInviteFlow: true,
       });
     }
   }
 
   renderAPIKeyColumn() {
-    const {userProfileMeta=Map(), userProfile} = this.props;
+    const { userProfileMeta = Map(), userProfile } = this.props;
     if (userProfileMeta.get('loading')) {
       return (
         <div>
-          <Loader small/>
+          <Loader small />
         </div>
-      )
+      );
     }
     return (
       <div>
-          <div>
-            <span> 
-              {this.state.isEyeHidden ? "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" : userProfile.api_key}
-            </span>
-            <i className="fa fa-eye cursor ml-2" onClick = { () => this.setState(prevState => ({isEyeHidden: !prevState.isEyeHidden}))} />
-            {!this.state.isEyeHidden && <button
+        <div>
+          <span>
+            {this.state.isEyeHidden
+              ? '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *'
+              : userProfile.api_key}
+          </span>
+          <i
+            className="fa fa-eye cursor ml-2"
+            onClick={() =>
+              this.setState(prevState => ({
+                isEyeHidden: !prevState.isEyeHidden,
+              }))
+            }
+          />
+          {!this.state.isEyeHidden && (
+            <button
               className="df-btn danger-btn pull-right mr-2"
               onClick={this.resetButtonHandler}
             >
               Reset Key
-           </button>}
-           {!this.state.isEyeHidden && <button
+            </button>
+          )}
+          {!this.state.isEyeHidden && (
+            <button
               className="df-btn primary-btn pull-right mr-2"
-              onClick={ () =>  navigator.clipboard.writeText(userProfile.api_key)}
+              onClick={() => navigator.clipboard.writeText(userProfile.api_key)}
             >
               Copy Key
-           </button>}
-          </div>
-        {userProfileMeta.get('error') && 
+            </button>
+          )}
+        </div>
+        {userProfileMeta.get('error') && (
           <div className="error-message-small">
             {userProfileMeta.get('error')}
           </div>
-        }
+        )}
       </div>
-    )
+    );
+  }
+
+  renderThreatIntelVersion() {
+    const { threatIntel } = this.props;
+    const threatIntelParsed = threatIntel?.split('/').reverse()[0];
+    const threatIntelVerion = threatIntelParsed?.split('.')[0];
+    return (
+      <div>
+        <div>
+          <span>{threatIntelVerion}</span>
+          <button
+            className="df-btn primary-btn pull-right mr-2"
+            onClick={this.UpgradeThreatIntelButton}
+          >
+            Upgrade Version
+          </button>
+        </div>
+      </div>
+    );
   }
 
   getUserProfileView() {
     return (
-      <div className="user-details-wrapper">      
+      <div className="user-details-wrapper">
         <div className="col-sm-6 col-md-6 col-lg-6">
           <div className="user-details-row">
             <div className="user-details-key">First name</div>
-            <div className="user-details-value">{this.state.userProfile.first_name}</div>
+            <div className="user-details-value">
+              {this.state.userProfile.first_name}
+            </div>
           </div>
           <div className="user-details-row">
             <div className="user-details-key">Last name</div>
-            <div className="user-details-value">{this.state.userProfile.last_name}</div>
+            <div className="user-details-value">
+              {this.state.userProfile.last_name}
+            </div>
           </div>
           <div className="user-details-row">
             <div className="user-details-key">Email</div>
-            <div className="user-details-value">{this.state.userProfile.email}</div>
+            <div className="user-details-value">
+              {this.state.userProfile.email}
+            </div>
           </div>
-            <div className="user-details-row">
+          <div className="user-details-row">
             <div className="user-details-key">Company</div>
-            <div className="user-details-value">{this.state.userProfile.company}</div>
+            <div className="user-details-value">
+              {this.state.userProfile.company}
+            </div>
           </div>
           <div className="user-details-row">
             <div className="user-details-key">Role</div>
-            <div className="user-details-value">{this.state.userProfile.role}</div>
+            <div className="user-details-value">
+              {this.state.userProfile.role}
+            </div>
           </div>
           <div className="user-details-row">
             <div className="user-details-key">API Key</div>
             <div className="user-details-value">
-            {this.renderAPIKeyColumn()}
+              {this.renderAPIKeyColumn()}
+            </div>
+          </div>
+          <div className="user-details-row">
+            <div className="user-details-key">Threat Intel Version</div>
+            <div className="user-details-value">
+              {this.renderThreatIntelVersion()}
             </div>
           </div>
         </div>
@@ -143,32 +201,59 @@ class UserProfileView extends React.Component {
   }
 
   getProfileView() {
-    return(
+    return (
       <div className="user-profile-view-wrapper">
         <div className="profile-container">
           <div className="btn-container">
             <div className="col-md-6 col-lg-6 no-padding">
-              <div className="btn-wrapper" style={{justifyContent: 'left'}}>
-                { !this.state.isUserProfileFlow && <div className="go-back-btn" onClick={()=> this.toggleView('profileView')}>
-                  <i className="fa fa-arrow-left" aria-hidden="true"></i> <span style={{paddingLeft: '5px', color: '#0276C9', fontSize: '15px'}}> Go Back</span>
-                </div>}
+              <div className="btn-wrapper" style={{ justifyContent: 'left' }}>
+                {!this.state.isUserProfileFlow && (
+                  <div
+                    className="go-back-btn"
+                    onClick={() => this.toggleView('profileView')}
+                  >
+                    <i className="fa fa-arrow-left" aria-hidden="true"></i>{' '}
+                    <span
+                      style={{
+                        paddingLeft: '5px',
+                        color: '#0276C9',
+                        fontSize: '15px',
+                      }}
+                    >
+                      {' '}
+                      Go Back
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="col-md-6 col-lg-6 no-padding">
-              {this.state.isUserProfileFlow &&
-              <div className="btn-wrapper">
-                <div className="u-m-btn-change-password change-password-user-management" onClick={()=> this.toggleView('changePasswordFlow')}>Change Password</div>
-                {this.state.userProfile.role == 'admin' && <div className="u-m-btn-send-invite" onClick={()=> this.toggleView('inviteFlow')}>Send Invite</div>}
-              </div>}
+              {this.state.isUserProfileFlow && (
+                <div className="btn-wrapper">
+                  <div
+                    className="u-m-btn-change-password change-password-user-management"
+                    onClick={() => this.toggleView('changePasswordFlow')}
+                  >
+                    Change Password
+                  </div>
+                  {this.state.userProfile.role == 'admin' && (
+                    <div
+                      className="u-m-btn-send-invite"
+                      onClick={() => this.toggleView('inviteFlow')}
+                    >
+                      Send Invite
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          { this.state.isUserProfileFlow && this.getUserProfileView() }
+          {this.state.isUserProfileFlow && this.getUserProfileView()}
 
-          { this.state.isChangePasswordFlow && <ChangePasswordView /> }
+          {this.state.isChangePasswordFlow && <ChangePasswordView />}
 
-          { this.state.isInviteFlow && <InviteView /> }
-
+          {this.state.isInviteFlow && <InviteView />}
         </div>
       </div>
     );
@@ -179,11 +264,15 @@ class UserProfileView extends React.Component {
       height: '400px',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     };
-    return(
+    return (
       <div style={emptyStateWrapper}>
-        { (response == undefined) ? <AppLoader /> : <div className='empty-state-text'>{ EMPTY_STATE_TEXT }</div> }
+        {response == undefined ? (
+          <AppLoader />
+        ) : (
+          <div className="empty-state-text">{EMPTY_STATE_TEXT}</div>
+        )}
       </div>
     );
   }
@@ -201,7 +290,9 @@ class UserProfileView extends React.Component {
   render() {
     return (
       <div>
-        { this.checkDataAvailabilityStatus(this.state.userProfile) ? this.getProfileView() : this.getEmptyState(this.state.userProfile) }
+        {this.checkDataAvailabilityStatus(this.state.userProfile)
+          ? this.getProfileView()
+          : this.getEmptyState(this.state.userProfile)}
         <UserList />
       </div>
     );
@@ -212,9 +303,8 @@ function mapStateToProps(state) {
   return {
     userProfile: state.get('userProfile'),
     userProfileMeta: state.get('userProfileMeta'),
+    threatIntel: state.getIn(['threatIntel', 'version', 'data']),
   };
 }
 
-export default connect(
-  mapStateToProps
-)(UserProfileView);
+export default connect(mapStateToProps)(UserProfileView);
