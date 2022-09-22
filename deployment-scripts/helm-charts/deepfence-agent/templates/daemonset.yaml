@@ -83,7 +83,7 @@ spec:
             - name: INSTANCE_ID_SUFFIX
               value: "{{ .Values.instanceIdSuffix }}"
             - name: DF_CLUSTER_NAME
-              value: "{{ required .Values.clusterName }}"
+              value: "{{ required "clusterName is required" .Values.clusterName }}"
             - name: AGENT_HOSTNAME
               valueFrom:
                 fieldRef:
