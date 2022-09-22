@@ -79,7 +79,7 @@
 
 .scan-status {
   color: $text-secondary;
-  display: inline-block !important;
+  display: inline-flex !important;
   @include vertical-align;
   text-transform: capitalize;
   padding: 0 20px 0 20px;
@@ -102,6 +102,10 @@
 }
 .error {
   color: $color-error-outline;
+  & .fa.fa-info-circle {
+    padding-left: 6px;
+    cursor: text;
+  }
 }
 .complete {
   color: $color-success-outline;
