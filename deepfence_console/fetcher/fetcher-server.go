@@ -222,6 +222,22 @@ func (v *VulnerabilityDbUpdater) runGrypeUpdate() error {
 	return nil
 }
 
+func (v *VulnerabilityDbUpdater) runGrypeDBList(format string) (string, error) {
+	var stdout string
+	var stdErr string
+	var exitCode int
+	if format == "" {
+		stdout, stdErr, exitCode = runCommand("/usr/local/bin/grype", "db", "list")
+	} else {
+		stdout, stdErr, exitCode = runCommand("/usr/local/bin/grype", "db", "list", "-o", format)
+	}
+
+	if exitCode != 0 {
+		return "", errors.New(stdErr)
+	}
+	return stdout, nil
+}
+
 func (v *VulnerabilityDbUpdater) updateVulnerabilityDbListing() error {
 	v.RLock()
 	grypeVulnerabilityDbPath := v.grypeVulnerabilityDbPath
@@ -320,12 +336,19 @@ func vulnerabilityDbLatestListing(respWrite http.ResponseWriter, req *http.Reque
 		http.Error(respWrite, "updater not initialized", http.StatusInternalServerError)
 		return
 	}
-	vulnerabilityDbUpdater.RLock()
-	vulnerabilityDbListingJson := vulnerabilityDbUpdater.vulnerabilityDbListingJson
-	vulnerabilityDbUpdater.RUnlock()
+	listingString, err := vulnerabilityDbUpdater.runGrypeDBList("json")
+	if err != nil {
+		http.Error(respWrite, "db list json error: ", http.StatusInternalServerError)
+		return
+	}
+	var vulnerabilityDbListingJson []VulnerabilityDbDetail
+	err = json.Unmarshal([]byte(listingString), &vulnerabilityDbListingJson)
+	if err != nil {
+		http.Error(respWrite, "db list json string unmarshal error: ", http.StatusInternalServerError)
+		return
+	}
 
-	// get latest from v3
-	latestLisiting := getLatestFromListingJSONV3(vulnerabilityDbListingJson.Available.V3)
+	latestLisiting := getLatestFromListingJSONV3(vulnerabilityDbListingJson)
 
 	content, err := json.Marshal(latestLisiting)
 	if err != nil {
@@ -678,29 +701,28 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 }
 
 func handleVulnerabilityFeedRefresh(respWrite http.ResponseWriter, req *http.Request) {
-
-	defer req.Body.Close()
 	if req.Method != "POST" {
 		http.Error(respWrite, "Invalid request", http.StatusInternalServerError)
 		return
 	}
 	// 1: fetch the latest db inside
 	err := vulnerabilityDbUpdater.runGrypeUpdate()
-	if err == nil {
+	if err != nil {
 		http.Error(respWrite, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// 2: Call update in mapper to trigger manual update from fetcher
 	resCode := updateVulnerabilityMapperDB()
-	if resCode == http.StatusOK {
-		_, err := fmt.Fprintf(respWrite, "vulnerability db updated")
-		if err != nil {
-			http.Error(respWrite, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	if resCode != http.StatusOK {
+		http.Error(respWrite, "Error while calling vulnerability mapper api.", resCode)
 	}
 
+	_, err = fmt.Fprintf(respWrite, "vulnerability db updated")
+	if err != nil {
+		http.Error(respWrite, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	respWrite.WriteHeader(http.StatusOK)
 }
 
@@ -709,7 +731,7 @@ func updateVulnerabilityMapperDB() int {
 	if err != nil {
 		errMsg := "Error while calling vulnerability mapper api. " + err.Error()
 		fmt.Println(errMsg)
-		return response.StatusCode
+		return http.StatusBadGateway
 	}
 
 	defer response.Body.Close()
