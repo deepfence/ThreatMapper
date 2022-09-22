@@ -77,10 +77,10 @@ export const AzureComplianceViewMenu = [
 
 export const KubernetesComplianceViewMenu = [
   {
-    id: 'cis',
-    displayName: 'CIS',
+    id: 'nsa-cisa',
+    displayName: 'NSA & CISA',
     component: CISSummary,
-    link: '/compliance/cis',
+    link: '/compliance/nsa-cisa',
   },
 ];
 

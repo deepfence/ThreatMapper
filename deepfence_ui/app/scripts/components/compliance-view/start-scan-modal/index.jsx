@@ -312,8 +312,8 @@ const checkTypes = {
   ],
   kubernetes: [
     {
-      id: 'cis',
-      displayName: 'CIS',
+      id: 'nsa-cisa',
+      displayName: 'NSA & CISA',
     },
   ],
   gcp: [
