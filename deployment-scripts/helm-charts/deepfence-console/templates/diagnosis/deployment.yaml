@@ -75,14 +75,7 @@ spec:
             name: containerd-sock
 {{ end }}
           resources:
-            requests:
-              memory: {{ .Values.defaultResourceLimits.requests.memory }}
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-            limits:
-              memory: 200Mi
-{{- if .Values.setDefaultResourceLimits }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
+            {{- toYaml .Values.diagnosis.resources | nindent 12 }}
       {{- with .Values.diagnosis.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

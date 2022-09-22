@@ -24,11 +24,10 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
         - name: deepfence-ui
           image: "{{ .Values.registry.imagePrefix }}{{ .Values.ui.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: Always
+          imagePullPolicy: "{{ .Values.ui.image.pullPolicy }}"
           ports:
             - containerPort: 4042
           env:
@@ -37,14 +36,7 @@ spec:
             - name: PASSWORD_LOGIN_ENABLED
               value: "true"
           resources:
-            requests:
-              memory: {{ .Values.defaultResourceLimits.requests.memory }}
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-            limits:
-              memory: 512Mi
-{{- if .Values.setDefaultResourceLimits }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
+            {{- toYaml .Values.ui.resources | nindent 12 }}
       {{- with .Values.ui.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

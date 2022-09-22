@@ -25,7 +25,6 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
       volumes:
 {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
         - name: docker-sock
@@ -94,14 +93,7 @@ spec:
           securityContext:
             privileged: true
           resources:
-            requests:
-              cpu: 150m
-              memory: {{ .Values.defaultResourceLimits.requests.memory }}
-            limits:
-              memory: 1Gi
-{{- if .Values.setDefaultResourceLimits }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
+            {{- toYaml .Values.discovery.resources | nindent 12 }}
       {{- with .Values.discovery.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

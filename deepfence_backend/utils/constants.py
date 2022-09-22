@@ -141,8 +141,6 @@ REGISTRY_TYPE_GCLOUD = "google_container_registry"
 REGISTRY_TYPE_AZURE = "azure_container_registry"
 REGISTRY_TYPE_GITLAB = "gitlab"
 
-ANALYZER_SERVER_URL = "https://{service}:4043/{action}"
-
 SCOPE_NODE_DETAIL_API_URL = "http://deepfence-topology:8004/topology-api/topology/{topology_id}/{scope_id}"
 SCOPE_HOST_API_CONTROL_URL = "http://deepfence-topology:8004/topology-api/control/{probe_id}/{host_name}%3B%3Chost%3E/{action}"
 SCOPE_CONTAINER_API_CONTROL_URL = "http://deepfence-topology:8004/topology-api/control/{probe_id}/{container_id}%3B%3Ccontainer%3E/{action}"
