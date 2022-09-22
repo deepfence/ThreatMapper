@@ -1917,7 +1917,7 @@ def mask_doc():
         raise InvalidUsage("Missing docs value")
     node_type = request.json.get("node_type", "")
     index = CLOUD_COMPLIANCE_INDEX
-    if node_type == COMPLIANCE_LINUX_HOST:
+    if node_type == COMPLIANCE_LINUX_HOST or node_type == COMPLIANCE_KUBERNETES_HOST:
         index = COMPLIANCE_INDEX
     docs_to_be_masked = []
     for doc_id in doc_ids_to_be_masked:
@@ -1938,7 +1938,7 @@ def mask_doc():
         raise InvalidUsage("Missing docs value")
     node_type = request.json.get("node_type", "")
     index = CLOUD_COMPLIANCE_INDEX
-    if node_type == COMPLIANCE_LINUX_HOST:
+    if node_type == COMPLIANCE_LINUX_HOST or node_type == COMPLIANCE_KUBERNETES_HOST:
         index = COMPLIANCE_INDEX
     docs_to_be_unmasked = []
     for doc_id in doc_ids_to_be_unmasked:
