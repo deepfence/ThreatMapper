@@ -82,6 +82,7 @@ def register_extensions(app):
     from models.scheduler import Scheduler
     from models.user_activity_log import UserActivityLog
     from models.email_configuration import EmailConfiguration
+    from models.masked_cve import MaskedCVE
     from models.cloud_compliance_node import CloudComplianceNode
     from models.cloud_resource_node import CloudResourceNode
 

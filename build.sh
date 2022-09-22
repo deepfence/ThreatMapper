@@ -70,6 +70,22 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
+echo "Building kafka broker"
+docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-latest} --rm=true -f kafka-broker-Dockerfile .
+
+if [ ! $? -eq 0 ]; then
+    echo "Building postgres failed. Exiting"
+    exit 1
+fi
+
+echo "Building kafka rest proxy"
+docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_rest_proxy_ce:${DF_IMG_TAG:-latest} --rm=true -f kafka-rest-proxy-Dockerfile .
+
+if [ ! $? -eq 0 ]; then
+    echo "Building postgres failed. Exiting"
+    exit 1
+fi
+
 echo "Building deepfence_router image"
 docker build -f $DEEPFENCE_BACKEND_DIR/dockerify/haproxy/Dockerfile --build-arg is_dev_build=${IS_DEV_BUILD:-false} -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_BACKEND_DIR
 

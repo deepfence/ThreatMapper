@@ -18,7 +18,9 @@ ENV ENABLE_AUTH=true \
     REDIS_HOST=deepfence-redis \
     REDIS_PORT=6379 \
     IS_DEV_BUILD=$is_dev_build \
-    UI_SERVICE_NAME=deepfence-ui
+    UI_SERVICE_NAME=deepfence-ui \
+    CUSTOMER_UNIQUE_ID="" \
+    KAFKA_REST_PROXY=deepfence-rest-proxy:8082
 
 COPY --from=minica-builder /go/minica.pem /usr/local/etc/haproxy/deepfence.crt
 COPY --from=minica-builder /go/minica-key.pem /usr/local/etc/haproxy/deepfence.key

@@ -151,6 +151,21 @@ spec:
                 configMapKeyRef:
                   name: "main-cm-{{ include "deepfence-console.fullname" . }}"
                   key: redis_port
+            - name: KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
+                  key: kafka_brokers
+            - name: KAFKA_TOPIC_REPLICAS
+              valueFrom:
+                configMapKeyRef:
+                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
+                  key: kafka_topic_replicas
+            - name: KAFKA_TOPIC_RETENTION_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
+                  key: kafka_topic_retention_ms
           resources:
             requests:
               memory: 512Mi
