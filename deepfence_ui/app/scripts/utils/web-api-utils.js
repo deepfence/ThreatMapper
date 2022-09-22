@@ -2854,3 +2854,28 @@ export function getAttackGraphNodeInfo(params = {}) {
     },
   }).then(errorHandler);
 }
+
+export function getThreatIntelVersion() {
+  const url = new URL(`${downloadApiEndPoint()}/latest-listing.json`);
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'deepfence-key': localStorage.getItem('dfApiKey'),
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
+export function upgradeThreatIntelVersion(params = {}) {
+  const url = new URL(`${downloadApiEndPoint()}/refresh-vulnerability-db`);
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    body: JSON.stringify(params),
+    headers: {
+      'deepfence-key': localStorage.getItem('dfApiKey'),
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}

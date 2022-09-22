@@ -115,7 +115,9 @@ import {
   getServicesForCloudAccount,
   getAttackGraphData,
   getAttackGraphNodeInfo,
-  refreshCloudComplianceResources
+  refreshCloudComplianceResources,
+  getThreatIntelVersion,
+  upgradeThreatIntelVersion
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -2108,4 +2110,22 @@ export function getAttackGraphNodeIssuesAction(params) {
     ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_FAILURE,
   ];
   return genericThunkAction(actionTypes, searchDocsWrapper, params);
+}
+
+export function getThreatIntelVersionAction(params) {
+  const actionTypes = [
+    ActionTypes.THREAT_INTEL_VERSION_REQUEST,
+    ActionTypes.THREAT_INTEL_VERSION_SUCCESS,
+    ActionTypes.THREAT_INTEL_VERSION_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getThreatIntelVersion, params);
+}
+
+export function upgradeThreatIntelVersionAction(params) {
+  const actionTypes = [
+    ActionTypes.UPGRADE_THREAT_INTEL_VERSION_REQUEST,
+    ActionTypes.UPGRADE_THREAT_INTEL_VERSION_SUCCESS,
+    ActionTypes.UPGRADE_THREAT_INTEL_VERSION_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, upgradeThreatIntelVersion, params);
 }

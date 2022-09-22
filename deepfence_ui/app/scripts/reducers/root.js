@@ -1990,6 +1990,58 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
+    case ActionTypes.THREAT_INTEL_VERSION_REQUEST: {
+      const { input: { type }} = action;
+      state = state.setIn(['threatIntel', 'version', 'loading'], true);
+      return state;
+    }
+
+    case ActionTypes.THREAT_INTEL_VERSION_SUCCESS: {
+      const {
+        payload: {
+          url
+        },
+        input: { type }
+      } = action;
+      state = state.setIn(['threatIntel', 'version', 'loading'], false);
+      state = state.setIn(['threatIntel', 'version', 'data'], url);
+      state = state.setIn(['threatIntel', 'version', 'error'], null);
+      return state;
+    }
+
+    case ActionTypes.THREAT_INTEL_VERSION_FAILURE: {
+      const { input: { type }} = action;
+      state = state.setIn(['threatIntel', 'version', 'loading'], false);
+      state = state.setIn(['threatIntel', 'version', 'error'], 'An error occured getting Threat Intel Version.');
+      return state;
+    }
+
+    case ActionTypes.UPGRADE_THREAT_INTEL_VERSION_REQUEST: {
+      const { input: { type }} = action;
+      state = state.setIn(['upgradeThreatIntel', 'version', 'loading'], true);
+      return state;
+    }
+
+    case ActionTypes.UPGRADE_THREAT_INTEL_VERSION_SUCCESS: {
+      const {
+        payload: {
+          url
+        },
+        input: { type }
+      } = action;
+      state = state.setIn(['upgradeThreatIntel', 'version', 'loading'], false);
+      state = state.setIn(['upgradeThreatIntel', 'version', 'data'], url);
+      state = state.setIn(['upgradeThreatIntel', 'version', 'error'], null);
+      return state;
+    }
+
+    case ActionTypes.UPGRADE_THREAT_INTEL_VERSION_FAILURE: {
+      const { input: { type }} = action;
+      state = state.setIn(['upgradeThreatIntel', 'version', 'loading'], false);
+      state = state.setIn(['upgradeThreatIntel', 'version', 'error'], 'An error occured getting Threat Intel Version.');
+      return state;
+    }
+
     default: {
       // forwarding unknown action types to redux-form reducer.
       state = state.set('form', formReducer(state.get('form'), action));
