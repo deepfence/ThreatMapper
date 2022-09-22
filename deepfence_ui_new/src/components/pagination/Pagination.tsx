@@ -1,10 +1,12 @@
 import cx from 'classnames';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
 import { PaginationProps, usePagination } from '../hooks/usePagination';
 import { Typography } from '../typography/Typography';
+
+export type SizeType = 'sm' | 'md';
 
 type PageButtonProps = {
   label: string | number | JSX.Element;
@@ -13,11 +15,13 @@ type PageButtonProps = {
   onPageChange?: () => void;
 };
 
-type OnPageChangeProps = {
+type OwnProps = {
   onPageChange: (page: number) => void;
+  totalRows: number;
+  pageSize?: number;
+  sizing?: SizeType;
 };
-type Props = Pick<PaginationProps, 'currentPage' | 'totalPageCount' | 'siblingCount'> &
-  OnPageChangeProps;
+type Props = Pick<PaginationProps, 'currentPage' | 'siblingCount'> & OwnProps;
 
 const PageButton = memo(
   ({ label, onPageChange, disabled, className, ...rest }: PageButtonProps) => {
@@ -48,16 +52,53 @@ const PageButton = memo(
 );
 
 export const Pagination = ({
-  currentPage,
+  currentPage = 1,
+  pageSize = 10,
   onPageChange,
-  totalPageCount,
+  totalRows = 1,
   siblingCount = 2,
+  sizing = 'sm',
 }: Props) => {
+  const totalPageCount = Math.ceil(totalRows / pageSize);
   const pagination = usePagination({
     currentPage,
     totalPageCount,
     siblingCount,
   });
+
+  const currentShowing = useMemo(() => {
+    /**
+     * For page 1, start count will always be 1
+     * end count can either be total available rows or calculated value
+     * 
+     * At page between first and last, start count will be cuurentPage * pageSize - pageSize + 1 because
+     * eg: currentPage is 2, total page is 3, pageSize is 5
+     * For first page start count is 1 and end count is 5. [1-5]
+     * For second page start count must be 6 (2 * 5 - 5 + 1 = 10 - 5 + 1 = 6) [6-10]
+
+     * At last page total rows can be lesser than total available rows, so end count is max set to total rows
+     * At last page start count cannot go beyond total rows, so set to last page - 1 * pageSize
+     * 
+     * At page 1 total rows could be less than total available rows
+     */
+    let startCount = 1;
+    let endCount = 1;
+
+    startCount = currentPage * pageSize - pageSize + 1;
+    endCount = currentPage * pageSize;
+
+    if (endCount >= totalRows) {
+      startCount = (currentPage - 1) * pageSize + 1;
+      endCount = totalRows;
+    }
+
+    if (currentPage == 1) {
+      startCount = 1;
+      endCount = pageSize > totalRows ? totalRows : pageSize;
+    }
+    return [startCount, endCount];
+  }, [currentPage, totalRows]);
+
   const onPrevious = () => {
     if (currentPage === 1) {
       return;
@@ -72,11 +113,29 @@ export const Pagination = ({
     onPageChange(currentPage + 1);
   };
 
+  if (totalPageCount === 0) {
+    return null;
+  }
+
   return (
-    <div className="w-fit">
+    <div className="flex justify-between items-center">
+      <div
+        className={`${Typography.weight.normal} ${
+          Typography.size[sizing as keyof typeof Typography.size]
+        } text-gray-500 dark:text-gray-400`}
+      >
+        Showing{' '}
+        <span className="text-black dark:text-white">
+          {currentShowing[0]}-{currentShowing[1]}
+        </span>
+        <span> of</span>
+        <span className="text-black dark:text-white"> {totalRows}</span>
+      </div>
       <div
         className={cx(
-          `flex flex-row flex-nowrap ${Typography.weight.medium} ${Typography.size.sm}`,
+          `flex flex-row flex-nowrap ${Typography.weight.medium} ${
+            Typography.size[sizing as keyof typeof Typography.size]
+          }`,
           'bg-white text-gray-500',
           'dark:bg-gray-800 dark:text-gray-400',
         )}

@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 
-import { fireEvent, getAllByRole } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -13,28 +13,31 @@ import { Pagination } from './Pagination';
 
 describe(`Component Pagination`, () => {
   it.each([
-    [7, 9],
-    [3, 5],
-  ])('render pagination with (%i) pages with total of (%i)', (input, expected) => {
-    const onPageChange = vi.fn();
-    const { getByRole, getAllByRole } = renderUI(
-      <Pagination
-        currentPage={1}
-        totalPageCount={input}
-        onPageChange={onPageChange}
-        siblingCount={2}
-      />,
-    );
-    // check all number pages are present
-    for (let i = 1; i <= input; i++) {
-      expect(
-        getByRole('button', {
-          name: new RegExp(i + ''),
-        }),
-      ).toBeInTheDocument();
-    }
-    expect(getAllByRole('button').length).toEqual(expected);
-  });
+    [7, 70, 9],
+    [3, 30, 5],
+  ])(
+    'render pagination with (%i) pages with total of (%i)',
+    (input, totalRows, totalButtons) => {
+      const onPageChange = vi.fn();
+      const { getByRole, getAllByRole } = renderUI(
+        <Pagination
+          currentPage={1}
+          totalRows={totalRows}
+          onPageChange={onPageChange}
+          siblingCount={2}
+        />,
+      );
+      // check all number pages are present
+      for (let i = 1; i <= input; i++) {
+        expect(
+          getByRole('button', {
+            name: new RegExp(i + ''),
+          }),
+        ).toBeInTheDocument();
+      }
+      expect(getAllByRole('button').length).toEqual(totalButtons);
+    },
+  );
 
   it(`Pagination has left and right dots disabled button which are placed at correct position`, () => {
     /*
@@ -45,7 +48,7 @@ describe(`Component Pagination`, () => {
     const { getAllByRole, getAllByTestId } = renderUI(
       <Pagination
         currentPage={5}
-        totalPageCount={20}
+        totalRows={100}
         onPageChange={onPageChange}
         siblingCount={2}
       />,
@@ -71,7 +74,7 @@ describe(`Component Pagination`, () => {
     const { getAllByRole, getAllByTestId } = renderUI(
       <Pagination
         currentPage={8}
-        totalPageCount={10}
+        totalRows={90}
         onPageChange={onPageChange}
         siblingCount={2}
       />,
@@ -93,7 +96,7 @@ describe(`Component Pagination`, () => {
     const { getAllByRole, getAllByTestId } = renderUI(
       <Pagination
         currentPage={2}
-        totalPageCount={10}
+        totalRows={100}
         onPageChange={onPageChange}
         siblingCount={2}
       />,
@@ -112,7 +115,7 @@ describe(`Component Pagination`, () => {
       return (
         <Pagination
           currentPage={currentPage}
-          totalPageCount={10}
+          totalRows={100}
           onPageChange={(page) => setCurrentPage(page)}
           siblingCount={2}
         />
@@ -157,7 +160,7 @@ describe(`Component Pagination`, () => {
       return (
         <Pagination
           currentPage={currentPage}
-          totalPageCount={10}
+          totalRows={100}
           onPageChange={(page) => setCurrentPage(page)}
           siblingCount={2}
         />
@@ -188,7 +191,7 @@ describe(`Component Pagination`, () => {
       return (
         <Pagination
           currentPage={currentPage}
-          totalPageCount={10}
+          totalRows={100}
           onPageChange={(page) => setCurrentPage(page)}
           siblingCount={2}
         />
@@ -221,7 +224,7 @@ describe(`Component Pagination`, () => {
       return (
         <Pagination
           currentPage={currentPage}
-          totalPageCount={3}
+          totalRows={30} // set to 3 pages
           onPageChange={(page) => setCurrentPage(page)}
           siblingCount={2}
         />
@@ -271,5 +274,31 @@ describe(`Component Pagination`, () => {
         name: /3/,
       }),
     ).toHaveClass('text-blue-600 bg-blue-100');
+  });
+
+  it('display showing rows count of total rows', () => {
+    const onPageChange = vi.fn();
+    const { container } = renderUI(
+      <Pagination
+        currentPage={1}
+        totalRows={5}
+        onPageChange={onPageChange}
+        siblingCount={2}
+      />,
+    );
+    expect(container).toHaveTextContent('Showing 1-5 of 5');
+  });
+
+  it('no pagination component when totalRows is zero', () => {
+    const onPageChange = vi.fn();
+    const { container } = renderUI(
+      <Pagination
+        currentPage={1}
+        totalRows={0}
+        onPageChange={onPageChange}
+        siblingCount={2}
+      />,
+    );
+    expect(container.firstChild).toBeNull();
   });
 });

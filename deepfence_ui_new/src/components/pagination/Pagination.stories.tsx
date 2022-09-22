@@ -19,7 +19,7 @@ NoDots.args = {
   onPageChange: (page) => {
     return page + '';
   },
-  totalPageCount: 5,
+  totalRows: 30,
 };
 
 export const LeftDots = Template.bind({});
@@ -28,7 +28,7 @@ LeftDots.args = {
   onPageChange: (page) => {
     return page + '';
   },
-  totalPageCount: 9,
+  totalRows: 90,
 };
 
 export const RightDots = Template.bind({});
@@ -37,7 +37,7 @@ RightDots.args = {
   onPageChange: (page) => {
     return page + '';
   },
-  totalPageCount: 9,
+  totalRows: 100,
 };
 
 export const LeftRightDots = Template.bind({});
@@ -46,26 +46,41 @@ LeftRightDots.args = {
   onPageChange: (page) => {
     return page + '';
   },
-  totalPageCount: 20,
+  totalRows: 200,
 };
 
 export const TwoDigits = Template.bind({});
 TwoDigits.args = {
-  currentPage: 150,
+  currentPage: 100,
   onPageChange: (page) => {
     return page + '';
   },
-  totalPageCount: 200,
+  totalRows: 200000,
+  pageSize: 100,
 };
 
-export const OnPageChange = () => {
-  const [currentPage, setCurrentPage] = useState(150);
+export const ExactPageData = () => {
+  const [currentPage, setCurrentPage] = useState(1);
   return (
     <Pagination
       currentPage={currentPage}
-      totalPageCount={200}
       onPageChange={(page) => setCurrentPage(page)}
       siblingCount={2}
+      pageSize={10}
+      totalRows={100}
+    />
+  );
+};
+
+export const SinglePageData = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  return (
+    <Pagination
+      currentPage={currentPage}
+      onPageChange={(page) => setCurrentPage(page)}
+      siblingCount={2}
+      pageSize={10}
+      totalRows={100}
     />
   );
 };
