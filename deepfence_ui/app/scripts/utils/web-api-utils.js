@@ -2685,14 +2685,9 @@ export function getResultDonutData(params = {}) {
 export function complianceMaskDocs(dispatch, params) {
   const url = `${backendElasticApiEndPoint()}/compliance/mask_doc`;
   const { cloudType, selectedDocIndexValues } = params;
-  let nodeType = '';
-  if (cloudType === 'linux' || cloudType === 'k8s') {
-    nodeType = 'linux';
-  }
-  else nodeType = ''
   const requestBody = {
     docs: selectedDocIndexValues,
-    node_type: nodeType,
+    node_type: cloudType,
   };
   return doRequest({
     method: 'POST',
@@ -2721,14 +2716,9 @@ export function complianceMaskDocs(dispatch, params) {
 export function complianceUnmaskDocs(dispatch, params) {
   const url = `${backendElasticApiEndPoint()}/compliance/unmask_doc`;
   const { cloudType, selectedDocIndexValues } = params;
-  let nodeType = '';
-  if (cloudType === 'linux' || cloudType === 'k8s') {
-    nodeType = 'linux';
-  }
-  else nodeType = ''
   const requestBody = {
     docs: selectedDocIndexValues,
-    node_type: nodeType,
+    node_type: cloudType,
   };
   return doRequest({
     method: 'POST',
