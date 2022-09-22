@@ -1,4 +1,5 @@
 import CISSummary from './summary-cis';
+import NSACISASummary from './summary-nsa-cisa';
 import NISTSummary from './summary-nist';
 import PCISummary from './summary-pci';
 import HIPAASummary from './summary-hipaa';
@@ -79,7 +80,7 @@ export const KubernetesComplianceViewMenu = [
   {
     id: 'nsa-cisa',
     displayName: 'NSA & CISA',
-    component: CISSummary,
+    component: NSACISASummary,
     link: '/compliance/nsa-cisa',
   },
 ];
