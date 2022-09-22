@@ -72,6 +72,8 @@ class ComplianceDetailsView extends React.PureComponent {
     );
 
     const {location, cloudType} = this.props;
+    const urlCloudType = window.location.hash.split('/').reverse()[0];
+    const cloudTypeCheck = cloudType || urlCloudType
 
     return (
       <div className="compliance-details">
@@ -82,7 +84,7 @@ class ComplianceDetailsView extends React.PureComponent {
         <div className={divClassName}>
           <HeaderView />
           <div className="" style={{ paddingTop: '64px' }} />
-          {cloudType === 'kubernetes' && (
+          {cloudTypeCheck === 'kubernetes' && (
             <div
               className="go-back-btn"
               style={{
@@ -92,7 +94,7 @@ class ComplianceDetailsView extends React.PureComponent {
               }}
               onClick={() =>
                 this.props.history.push(
-                  `/compliance/${cloudType}/${scanIdFormatted}/standard/${this.props.match.params.checkType}`
+                  `/compliance/${cloudTypeCheck}/${scanIdFormatted}/standard/${this.props.match.params.checkType}`
                 )
               }
             >
@@ -109,7 +111,7 @@ class ComplianceDetailsView extends React.PureComponent {
               </span>
             </div>
           )}
-          {cloudType !== 'kubernetes' && !urlSearchParams.get('resource') && location.state === undefined ? (
+          {cloudTypeCheck !== 'kubernetes' && !urlSearchParams.get('resource') && location.state === undefined ? (
             <div
               className="go-back-btn"
               style={{
@@ -119,7 +121,7 @@ class ComplianceDetailsView extends React.PureComponent {
               }}
               onClick={() =>
                 this.props.history.push(
-                  `/compliance/${cloudType}/${nodeId}/standard/${this.props.match.params.checkType}`
+                  `/compliance/${cloudTypeCheck}/${nodeId}/standard/${this.props.match.params.checkType}`
                 )
               }
             >
@@ -146,7 +148,7 @@ class ComplianceDetailsView extends React.PureComponent {
               }}
               onClick={() =>
                 this.props.history.push(
-                  `/compliance/cloud-inventory/${cloudType}/${nodeId}/${urlSearchParams.get('serviceId')}`
+                  `/compliance/cloud-inventory/${cloudTypeCheck}/${nodeId}/${urlSearchParams.get('serviceId')}`
                 )
               }
             >
@@ -176,7 +178,7 @@ class ComplianceDetailsView extends React.PureComponent {
                 scanId={scanId}
                 checkType={checkType}
                 timeOfScan={timeOfScan}
-                cloudType={cloudType}
+                cloudType={cloudTypeCheck}
                 resource={urlSearchParams.get('resource')}
               />
             </div>
@@ -185,7 +187,7 @@ class ComplianceDetailsView extends React.PureComponent {
                 nodeId={nodeId}
                 scanId={scanId}
                 checkType={checkType}
-                cloudType={cloudType}
+                cloudType={cloudTypeCheck}
                 resource={urlSearchParams.get('resource')}
               />
             </div>
@@ -203,7 +205,7 @@ class ComplianceDetailsView extends React.PureComponent {
               nodeId={nodeId}
               scanId={scanId}
               checkType={checkType}
-              cloudType={cloudType}
+              cloudType={cloudTypeCheck}
               resource={urlSearchParams.get('resource')}
             />
           </div>
