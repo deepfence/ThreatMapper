@@ -55,6 +55,7 @@ require (
 	github.com/nats-io/gnatsd v0.8.1-0.20160607194326-f2c17eb159e1 // indirect
 	github.com/nats-io/nats v1.2.1-0.20160607194537-ce9cdc9addff
 	github.com/nats-io/nuid v0.0.0-20160402145409-a5152d67cf63 // indirect
+	github.com/neo4j/neo4j-go-driver/v4 v4.4.4 // indirect
 	github.com/opencontainers/runc v1.0.0-rc5 // indirect
 	github.com/openebs/k8s-snapshot-client v0.0.0-20180831100134-a6506305fb16
 	github.com/opentracing/opentracing-go v1.1.0
@@ -67,8 +68,8 @@ require (
 	github.com/richo/GOSHOUT v0.0.0-20210103052837-9a2e452d4c18
 	github.com/romana/ipset v1.0.0
 	github.com/romana/rlog v0.0.0-20171115192701-f018bc92e7d7 // indirect
-	github.com/shirou/gopsutil v3.21.2+incompatible
 	github.com/russross/blackfriday v0.0.0-20151020174500-a18a46c9b943 // indirect
+	github.com/shirou/gopsutil v3.21.2+incompatible
 	github.com/shurcooL/sanitized_anchor_name v0.0.0-20150822220530-244f5ac324cb // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spaolacci/murmur3 v0.0.0-20150829172844-0d12bf811670

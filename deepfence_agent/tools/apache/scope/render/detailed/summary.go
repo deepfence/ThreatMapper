@@ -544,10 +544,8 @@ func Summaries(ctx context.Context, rc RenderContext, rns report.Nodes, adjacenc
 
 	result := NodeSummaries{}
 	for id, node := range rns {
-		if adjacency == false {
-			node.Adjacency = report.MakeIDList()
-		}
-		if summary, ok := MakeNodeSummary(rc, node, ignoreMetadata, ignoreMetrics); ok {
+		summary, ok := MakeNodeSummary(rc, node, ignoreMetadata, ignoreMetrics)
+		if ok {
 			for i, m := range summary.Metrics {
 				summary.Metrics[i] = m.Summary()
 			}

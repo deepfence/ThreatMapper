@@ -3,6 +3,14 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+	"reflect"
+	"strings"
+	"sync"
+	"time"
+
 	ot "github.com/opentracing/opentracing-go"
 	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
@@ -11,12 +19,6 @@ import (
 	"github.com/weaveworks/scope/render"
 	"github.com/weaveworks/scope/render/detailed"
 	"github.com/weaveworks/scope/report"
-	"net/http"
-	"net/url"
-	"reflect"
-	"strings"
-	"sync"
-	"time"
 )
 
 const (
@@ -274,7 +276,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 	for _, nodeFilter := range topologyFilters {
 		nodeChildrenCount := make(map[string]int)
 		for _, c := range nodeFilter.Children {
-			adjacency := false
+			adjacency := true
 			if c.TopologyID == cloudProvidersID {
 				adjacency = true
 			}
@@ -292,18 +294,27 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 			if err != nil {
 				continue
 			}
+			rend := render.Render(ctx, re, renderer, filter)
+
+			//for k, node := range rend.Nodes {
+			//	fmt.Printf("after2 -> %v adjacency: %v\n", k, len(node.Adjacency))
+			//}
+
+			summaries := detailed.Summaries(
+				ctx,
+				RenderContextForReporter(wc.rep, re),
+				rend.Nodes,
+				adjacency,
+			)
+
 			nodeSummaries = detailed.CensorNodeSummaries(
-				detailed.Summaries(
-					ctx,
-					RenderContextForReporter(wc.rep, re),
-					render.Render(ctx, re, renderer, filter).Nodes,
-					adjacency,
-				),
+				summaries,
 				wc.censorCfg,
 			)
 			var vulnerabilityScanStatus, complianceScanStatus, nodeSeverity, secretScanStatus string
 			var ok bool
 			counter := 0
+
 			for k, v := range nodeSummaries {
 				if adjacency == false && v.Pseudo == true {
 					continue
@@ -369,20 +380,40 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 	}
 
 	newConnections := make(detailed.TopologyConnectionSummaries)
-	if ignoreConnections == false {
-		// Once we expand cloud provider, we have k8s clusters and regions at the same level, so we will not get correct edges
-		if leafChildTopologyID != cloudProvidersID {
-			leafChildTopologyID = processesID
-		}
-		renderer, filter, err := topologyRegistry.RendererForTopology(leafChildTopologyID, map[string][]string{}, re)
-		if err == nil {
-			newConnections = detailed.GetTopologyConnectionSummaries(
-				ctx,
-				newTopo,
-				render.Render(ctx, re, renderer, filter).Nodes,
-			)
-		}
+	s, err := wc.rep.AdminSummary(nil, time.Now())
+	var connections []PairConn
+	json.Unmarshal([]byte(s), &connections)
+	//c, ok := wc.rep.(*neo4jCollector)
+	//if ok {
+	//	connections := c.GetConnections()
+	//	fmt.Printf("connections: %v\n", connections)
+	for i, v := range connections {
+		newConnections[fmt.Sprintf("%v", i)] = detailed.ConnectionSummary{Source: v.Left + ";<host>", Target: v.Right + ";<host>"}
 	}
+	//} else if ignoreConnections == false {
+	//	// Once we expand cloud provider, we have k8s clusters and regions at the same level, so we will not get correct edges
+	//	if leafChildTopologyID != cloudProvidersID {
+	//		leafChildTopologyID = hostsID
+	//	}
+	//	renderer, filter, err := topologyRegistry.RendererForTopology(leafChildTopologyID, map[string][]string{}, re)
+	//	if err == nil {
+
+	//		nodes := render.Render(ctx, re, renderer, filter).Nodes
+	//		for k, node := range nodes {
+	//			//fmt.Printf("after -> %v adjacency: %v\n", k, len(node.Adjacency))
+	//			node.Adjacency = []string{"thomas-agent;<host>"}
+	//			nodes[k] = node
+	//		}
+	//		newConnections = detailed.GetTopologyConnectionSummaries(
+	//			ctx,
+	//			newTopo,
+	//			nodes,
+	//		)
+	//	} else {
+	//		fmt.Printf("Render3 WS: %v\n", err)
+	//	}
+	//}
+	fmt.Printf("connections in-mem: %v\n", len(newConnections))
 
 	if len(removedTopology) > 0 {
 		removedNodes := make(map[string]struct{})
@@ -410,11 +441,11 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 		},
 	}
 	if len(newConnections) > 1000 {
-		wc.Lock()
-		wc.ignoreConnections = true
-		wc.Unlock()
-		ignoreConnections = true
-		newConnections = detailed.TopologyConnectionSummaries{}
+		//wc.Lock()
+		//wc.ignoreConnections = true
+		//wc.Unlock()
+		//ignoreConnections = true
+		//newConnections = detailed.TopologyConnectionSummaries{}
 		topologyConnectionDiff.Metadata.RecommendedView = "table"
 	}
 	topologyConnectionDiff.Edges = detailed.GetConnectionDiff(wc.previousConnections, newConnections)

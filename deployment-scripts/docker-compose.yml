@@ -79,6 +79,8 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
+    environment:
+      - LOG_LEVEL=debug
 
   deepfence-console-agent:
     container_name: deepfence-console-agent
@@ -286,8 +288,8 @@ services:
     volumes:
       - deepfence_neo4j_data:/data:rw
     ports:
-      - "127.0.0.1:7474:7474"
-      - "127.0.0.1:7687:7687"
+      - "0.0.0.0:7474:7474"
+      - "0.0.0.0:7687:7687"
     environment:
       - NEO4J_AUTH=neo4j/password
       - NEO4JLABS_PLUGINS=["apoc"]

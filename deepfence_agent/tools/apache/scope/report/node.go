@@ -12,25 +12,25 @@ import (
 // about a given node in a given topology, along with the edges (aka
 // adjacency) emanating from the node.
 type Node struct {
-	ID             string          `json:"id,omitempty"`
-	Topology       string          `json:"topology,omitempty"`
-	Sets           Sets            `json:"sets,omitempty"`
-	Adjacency      IDList          `json:"adjacency,omitempty"`
-	Latest         StringLatestMap `json:"latest,omitempty"`
-	Metrics        Metrics         `json:"metrics,omitempty" deepequal:"nil==empty"`
-	Parents        Sets            `json:"parents,omitempty"`
-	Children       NodeSet         `json:"children,omitempty"`
+	ID        string          `json:"id,omitempty"`
+	Topology  string          `json:"topology,omitempty"`
+	Sets      Sets            `json:"sets,omitempty"`
+	Adjacency IDList          `json:"adjacency,omitempty"`
+	Latest    StringLatestMap `json:"latest,omitempty"`
+	Metrics   Metrics         `json:"metrics,omitempty" deepequal:"nil==empty"`
+	Parents   Sets            `json:"parents,omitempty"`
+	Children  NodeSet         `json:"children,omitempty"`
 }
 
 // MakeNode creates a new Node with no initial metadata.
 func MakeNode(id string) Node {
 	return Node{
-		ID:             id,
-		Sets:           MakeSets(),
-		Adjacency:      MakeIDList(),
-		Latest:         MakeStringLatestMap(),
-		Metrics:        Metrics{},
-		Parents:        MakeSets(),
+		ID:        id,
+		Sets:      MakeSets(),
+		Adjacency: MakeIDList(),
+		Latest:    MakeStringLatestMap(),
+		Metrics:   Metrics{},
+		Parents:   MakeSets(),
 	}
 }
 
@@ -189,14 +189,14 @@ func (n Node) Merge(other Node) Node {
 		panic("Cannot merge nodes with different topology types: " + topology + " != " + other.Topology)
 	}
 	return Node{
-		ID:             id,
-		Topology:       topology,
-		Sets:           n.Sets.Merge(other.Sets),
-		Adjacency:      n.Adjacency.Merge(other.Adjacency),
-		Latest:         n.Latest.Merge(other.Latest),
-		Metrics:        n.Metrics.Merge(other.Metrics),
-		Parents:        n.Parents.Merge(other.Parents),
-		Children:       n.Children.Merge(other.Children),
+		ID:        id,
+		Topology:  topology,
+		Sets:      n.Sets.Merge(other.Sets),
+		Adjacency: n.Adjacency.Merge(other.Adjacency),
+		Latest:    n.Latest.Merge(other.Latest),
+		Metrics:   n.Metrics.Merge(other.Metrics),
+		Parents:   n.Parents.Merge(other.Parents),
+		Children:  n.Children.Merge(other.Children),
 	}
 }
 
@@ -237,4 +237,24 @@ func (n *Node) UnsafeUnMerge(other Node) bool {
 	// counters and children are not created in the probe so we don't check those
 	// metrics don't overlap so just check if we have any
 	return remove && len(n.Metrics) == 0
+}
+
+func (n *Node) ToDataMap() map[string]string {
+	res := map[string]string{}
+	id_type := strings.Split(n.ID, ";")
+	if len(id_type) == 2 {
+		res["node_id"] = id_type[0]
+		if len(id_type[1]) > 2 {
+			res["node_type"] = id_type[1][1 : len(id_type[1])-1]
+		} else {
+			res["node_type"] = id_type[1]
+		}
+	} else {
+		res["node_id"] = n.ID
+		res["node_type"] = ""
+	}
+	n.Latest.ForEach(func(k string, _ time.Time, v string) {
+		res[k] = v
+	})
+	return res
 }
