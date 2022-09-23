@@ -18,6 +18,8 @@ var (
 	cveScanLogsIndexName             = ToCustomerSpecificESIndex("cve-scan")
 	secretScanIndexName              = ToCustomerSpecificESIndex("secret-scan")
 	secretScanLogsIndexName          = ToCustomerSpecificESIndex("secret-scan-logs")
+	malwareScanIndexName              = ToCustomerSpecificESIndex("malware-scan")
+	malwareScanLogsIndexName          = ToCustomerSpecificESIndex("malware-scan-logs")
 	sbomArtifactsIndexName           = ToCustomerSpecificESIndex("sbom-artifact")
 	sbomCveScanIndexName             = ToCustomerSpecificESIndex("sbom-cve-scan")
 	cloudComplianceScanIndexName     = ToCustomerSpecificESIndex("cloud-compliance-scan")
@@ -191,7 +193,7 @@ func processReports(
 
 		case malwareLog := <-topicChannels[malwareScanLogsIndexName]:
 			malwareLogsProcessed.Inc()
-			if err := addToES(secretLog, malwareScanLogsIndexName, bulkp); err != nil {
+			if err := addToES(malwareLog, malwareScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process malware scan log error: %s", err.Error())
 			}
 
