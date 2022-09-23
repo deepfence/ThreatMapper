@@ -182,6 +182,19 @@ func processReports(
 			if err := addToES(secretLog, secretScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process secret scan log error: %s", err.Error())
 			}
+		
+		case malware := <-topicChannels[malwareScanIndexName]:
+			malwareProcessed.Inc()
+			if err := addToES(malware, malwareScanIndexName, bulkp); err != nil {
+				log.Errorf("failed to process malware scan error: %s", err.Error())
+			}
+
+		case malwareLog := <-topicChannels[malwareScanLogsIndexName]:
+			malwareLogsProcessed.Inc()
+			if err := addToES(secretLog, malwareScanLogsIndexName, bulkp); err != nil {
+				log.Errorf("failed to process malware scan log error: %s", err.Error())
+			}
+
 
 		case sbomArtifact := <-topicChannels[sbomArtifactsIndexName]:
 			sbomArtifactsProcessed.Inc()
