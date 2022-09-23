@@ -294,6 +294,8 @@ func main() {
 		cveScanLogsIndexName,
 		secretScanIndexName,
 		secretScanLogsIndexName,
+		malwareScanIndexName,
+		malwareScanLogsIndexName,
 		sbomArtifactsIndexName,
 		sbomCveScanIndexName,
 		cloudComplianceScanIndexName,

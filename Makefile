@@ -8,13 +8,14 @@ DEEPFENCE_DIAG_DIR=$(PWD)/deepfence_diagnosis
 DEEPFENCE_FETCHER_DIR=$(DEEPFENCE_CONSOLE_DIR)/fetcher
 VULNERABILITY_MAPPER_DIR=$(PWD)/vulnerability_mapper
 SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
+MALWARE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/YaraHunter/
 PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 IMAGE_REPOSITORY?=deepfenceio
 DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="3.6.0"
 
-default: certs init-container vulnerability-mapper elasticsearch redis postgres kafka-broker kafka-rest-proxy router api ui fetcher diagnosis agent secretscanner packagescanner
+default: certs init-container vulnerability-mapper elasticsearch redis postgres kafka-broker kafka-rest-proxy router api ui fetcher diagnosis agent secretscanner malwarescanner packagescanner
 
 .PHONY: certs
 certs:
@@ -81,10 +82,15 @@ agent:
 bootstrap-agent-plugins:
 	cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh && cd - && \
 	cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh && cd - 
+	cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh && cd -
 
 .PHONY: secretscanner
 secretscanner: bootstrap-agent-plugins
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG) -f $(SECRET_SCANNER_DIR)/Dockerfile $(SECRET_SCANNER_DIR)
+
+.PHONY: malwarescanner
+malwarescanner: bootstrap-agent-plugins
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG) -f $(MALWARE_SCANNER_DIR)/Dockerfile $(MALWARE_SCANNER_DIR)
 
 .PHONY: packagescanner
 packagescanner:	

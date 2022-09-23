@@ -40,6 +40,14 @@ var (
 		Name: "secret_scan_logs_total",
 		Help: "Total number of secret scan log records processed",
 	})
+	malwareProcessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "malware_scan_total",
+		Help: "Total number of malware scan records processed",
+	})
+	malwareLogsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "malware_scan_logs_total",
+		Help: "Total number of malware scan log records processed",
+	})
 	sbomArtifactsProcessed = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "sbom_artifacts_total",
 		Help: "Total number of sbom artifacts processed",
