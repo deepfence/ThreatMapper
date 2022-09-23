@@ -102,6 +102,12 @@ func collectorFactory(userIDer multitenant.UserIDer, collectorURL, s3URL string,
 			return nil, err
 		}
 		return asyncCollector, nil
+	} else if collectorURL == "neo4j" {
+		neo4jCollector, err := app.NewNeo4jCollector(window)
+		if err != nil {
+			return nil, err
+		}
+		return neo4jCollector, nil
 	}
 
 	parsed, err := url.Parse(collectorURL)

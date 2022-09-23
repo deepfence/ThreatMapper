@@ -5,8 +5,8 @@ import (
 )
 
 var CloudProviderRenderer = renderParents(
-	report.Host, []string{report.CloudProvider}, "",
-	HostRenderer,
+	report.CloudRegion, []string{report.CloudProvider}, "",
+	CloudRegionRenderer,
 )
 
 var CloudRegionRenderer = renderParents(

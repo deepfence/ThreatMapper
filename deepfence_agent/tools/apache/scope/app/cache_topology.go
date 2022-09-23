@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
+	"time"
+
 	redisCache "github.com/weaveworks/scope/cache"
 	"github.com/weaveworks/scope/render"
 	"github.com/weaveworks/scope/render/detailed"
 	"github.com/weaveworks/scope/report"
-	"time"
 )
 
 func CacheTopology(reporter Reporter) {
@@ -45,7 +46,8 @@ func CacheTopology(reporter Reporter) {
 						return
 					}
 					rc := RenderContextForReporter(reporter, rep)
-					r.Update(detailed.Summaries(ctx, rc, render.Render(ctx, rc.Report, renderer, filter).Nodes, true))
+					rend := render.Render(ctx, rc.Report, renderer, filter).Nodes
+					r.Update(detailed.Summaries(ctx, rc, rend, true))
 				}(topologyID, r)
 			}
 		}
