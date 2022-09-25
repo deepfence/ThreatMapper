@@ -18,6 +18,7 @@ helm show values deepfence/deepfence-agent
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0 \
+    --set clusterName="prod-cluster" \
     --namespace deepfence \
     --create-namespace
 ```
@@ -30,7 +31,9 @@ You should seek to ensure that the version number of the sensors matches the ver
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0
-    --set image.tag=1.4.0 --set image.clusterAgentImageTag=1.4.0 \
+    --set image.tag=1.4.0 \
+    --set image.clusterAgentImageTag=1.4.0 \
+    --set clusterName="prod-cluster" \
     --namespace deepfence \
     --create-namespace
 ```
@@ -44,7 +47,9 @@ helm repo update deepfence
 helm upgrade deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=C8TtyEtNB0gBo1wGhpeAZICNSAaGWw71BSdS2kLELY0
-    --set image.tag=1.4.0 --set image.clusterAgentImageTag=1.4.0
+    --set image.tag=1.4.0 \
+    --set image.clusterAgentImageTag=1.4.0 \
+    --set clusterName="prod-cluster"
 ```
 
 ## Delete the ThreatMapper Sensor

@@ -6,7 +6,6 @@ import { connect } from 'react-redux';
 import { getComplianceScanListAction } from '../../actions/app-actions';
 import pollable from '../common/header-view/pollable';
 import HostReportRowDetail from './host-report-row-detail';
-import AppLoader from '../common/app-loader/app-loader';
 
 class HostReport extends React.PureComponent {
   constructor(props) {
@@ -89,7 +88,7 @@ class HostReport extends React.PureComponent {
   getComplianceHostReport(pollParams = {}) {
     const { dispatch, checkType, filterValues = {}, nodeId } = this.props;
     const cloudType = window.location.hash.split('/').reverse()[3];
-    const { globalSearchQuery, initiatedByPollable } = pollParams;
+    const { globalSearchQuery, initiatedByPollable, page = 0, alertPanelHistoryBound } = pollParams;
 
     const params = {
       checkType,
@@ -97,6 +96,13 @@ class HostReport extends React.PureComponent {
       nodeId,
       cloudType,
       initiatedByPollable,
+      from: page * 10,
+      ...(alertPanelHistoryBound.value
+        ? { number: alertPanelHistoryBound.value.number }
+        : {}),
+      ...(alertPanelHistoryBound.value
+        ? { time_unit: alertPanelHistoryBound.value.time_unit }
+        : {}),
     };
     return dispatch(getComplianceScanListAction(params));
   }
@@ -125,7 +131,7 @@ class HostReport extends React.PureComponent {
 
   render() {
     const { redirect, link } = this.state;
-    const { isToasterVisible, isLoading } = this.props;
+    const { isToasterVisible } = this.props;
     if (redirect) {
       return <Redirect to={link} />;
     }
@@ -133,7 +139,9 @@ class HostReport extends React.PureComponent {
     const testValueColumnsWithValues = testValueConfig.map(el => ({
       Header: el.value,
       accessor: `result.${el.value}`,
-      maxWidth: 90,
+      maxWidth: 30,
+      width: 30,
+      minWidth: 30,
       Cell: row => (
         <div>
           <div className={`compliance-${checkType}-${el.value} value`}>
@@ -147,23 +155,20 @@ class HostReport extends React.PureComponent {
         <div style={{ marginBottom: '-45px', display: 'flex' }}>
           <div className="d-flex justify-content-end"></div>
         </div>
-        {isLoading === true ? (
-          <AppLoader />
-        ) : (
-          <HostReportRowDetail
-            data={this.props?.scanList || []}
-            rowClickHandler={(nodeId, scanId) =>
-              this.rowClickHandler(nodeId, scanId, scanType)
-            }
-            testValueColumns={testValueColumnsWithValues}
-            handleDownload={this.handleDownload}
-            dispatch={this.props.dispatch}
-            isToasterVisible={isToasterVisible}
-            onDelete={this.getComplianceHostReport}
-            scanType={this.props?.scanType || []}
-            updatePollParams={this.props?.updatePollParams}
-          />
-        )}
+        <HostReportRowDetail
+          data={this.props?.scanList || []}
+          totalRows={this.props.scanListTotal ?? 0}
+          rowClickHandler={(nodeId, scanId) =>
+            this.rowClickHandler(nodeId, scanId, scanType)
+          }
+          testValueColumns={testValueColumnsWithValues}
+          handleDownload={this.handleDownload}
+          dispatch={this.props.dispatch}
+          isToasterVisible={isToasterVisible}
+          onDelete={this.getComplianceHostReport}
+          scanType={this.props?.scanType || []}
+          updatePollParams={this.props?.updatePollParams}
+        />
       </div>
     );
   }
@@ -173,6 +178,7 @@ function mapStateToProps(state) {
   return {
     isLoading: state.get('compliance_scan_list_loader'),
     scanList: state.get('compliance_scan_list'),
+    scanListTotal: state.get('compliance_scan_list_total'),
     scanType: state.get('compliance_node_type'),
     isLicenseActive: state.get('isLicenseActive'),
     isLicenseExpired: state.get('isLicenseExpired'),

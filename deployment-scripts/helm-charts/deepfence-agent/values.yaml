@@ -22,11 +22,11 @@ image:
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
-managementConsoleUrl: ""
-managementConsolePort: "443"
+managementConsoleUrl: &managementConsoleUrl ""
+managementConsolePort: &managementConsolePort "443"
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
-deepfenceKey: ""
+deepfenceKey: &deepfenceKey ""
 # If kubernetes secret is already defined externally, change following value to false
 createDeepfenceKeySecret: true
 
@@ -36,18 +36,23 @@ instanceIdSuffix: "N"
 # comma separated list of tags (labels) to set for all agents
 userDefinedTags: ""
 
-# (Optional) Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
+# Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
-clusterName: ""
+clusterName: &clusterName ""
+
+# Deploy Deepfence Kubernetes Scanner helm chart along with agent
+deployKubernetesScanner: false
 
 enableGraphReport: true
 
 # Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
 mountContainerRuntimeSocket:
   dockerSock: false
+  # Change if socket path is not the following
   dockerSockPath: "/var/run/docker.sock"
   containerdSock: true
+  # Change if socket path is not the following
   containerdSockPath: "/run/containerd/containerd.sock"
 
 resources:
@@ -83,3 +88,11 @@ serviceAccount:
 
 nameOverride: ""
 fullnameOverride: ""
+
+deepfence-k8s-scanner:
+  managementConsoleUrl: *managementConsoleUrl
+  managementConsolePort: *managementConsolePort
+  deepfenceKey: *deepfenceKey
+  clusterName: *clusterName
+  image:
+    tag: "1.0.0"

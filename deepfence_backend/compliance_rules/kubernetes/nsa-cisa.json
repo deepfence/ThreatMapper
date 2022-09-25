@@ -1,0 +1,302 @@
+[
+  {
+    "test_number": "control.replicaset_memory_request",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should have a memory request",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.network_policy_default_deny_egress",
+    "test_category": "Kubernetes/NetworkPolicy",
+    "test_desc": "Namespaces should have a default network policy to deny all egress traffic",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.network_policy_default_deny_ingress",
+    "test_category": "Kubernetes/NetworkPolicy",
+    "test_desc": "Namespaces should have a default network policy to deny all ingress traffic",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.pod_volume_host_path",
+    "test_category": "Kubernetes/Pod",
+    "test_desc": "Pod containers should not allow privilege escalation",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_container_privilege_disabled",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should not have privileged access",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_container_privilege_disabled",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should not have privileged access",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.pod_container_privilege_disabled",
+    "test_category": "Kubernetes/Pod",
+    "test_desc": "Pod containers should not have privileged access",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_container_privilege_disabled",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should not have privileged access",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_container_privilege_escalation_disabled",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should not allow privilege escalation",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_container_privilege_escalation_disabled",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should not allow privilege escalation",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.pod_container_privilege_escalation_disabled",
+    "test_category": "Kubernetes/Pod",
+    "test_desc": "Pod containers should not allow privilege escalation",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_container_privilege_escalation_disabled",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should not allow privilege escalation",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_host_network_access_disabled",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should not run with host network access",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_host_network_access_disabled",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should not run with host network access",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.pod_host_network_access_disabled",
+    "test_category": "Kubernetes",
+    "test_desc": "Pod containers should not run with host network access",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_host_network_access_disabled",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should not run with host network access",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_hostpid_hostipc_sharing_disabled",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should not share the host process namespace",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_hostpid_hostipc_sharing_disabled",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should not share the host process namespace",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.pod_hostpid_hostipc_sharing_disabled",
+    "test_category": "Kubernetes/Pod",
+    "test_desc": "Pod containers should not share the host process namespace",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_hostpid_hostipc_sharing_disabled",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should not share the host process namespace",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_immutable_container_filesystem",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should run with a read only root file system",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_immutable_container_filesystem",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should run with a read only root file system",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.pod_immutable_container_filesystem",
+    "test_category": "Kubernetes/Pod",
+    "test_desc": "Pod containers should run with a read only root file system",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_immutable_container_filesystem",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should run with a read only root file system",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_non_root_container",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should not run with root privileges",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_non_root_container",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should not run with root privileges",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.pod_non_root_container",
+    "test_category": "Kubernetes/Pod",
+    "test_desc": "Pod containers should not run with root privileges",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_non_root_container",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should not run with root privileges",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.pod_service_account_token_disabled",
+    "test_category": "Kubernetes/Pod",
+    "test_desc": "Automatic mapping of the service account tokens should be disabled in Pod",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.service_account_token_disabled",
+    "test_category": "Kubernetes/ServiceAccount",
+    "test_desc": "Automatic mapping of the service account tokens should be disabled in service account",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_cpu_limit",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should have a CPU limit",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_cpu_limit",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should have a CPU limit",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.namespace_limit_range_default_cpu_limit",
+    "test_category": "Kubernetes/Namespace",
+    "test_desc": "Namespaces should have default CPU limit in limitRange policy",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.namespace_resource_quota_cpu_limit",
+    "test_category": "Kubernetes/Namespace",
+    "test_desc": "Namespaces should be restricted on CPU usage with resourceQuota CPU limit",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_cpu_limit",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should have a CPU limit",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_cpu_request",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should have a CPU request",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_cpu_request",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should have a CPU request",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.namespace_limit_range_default_cpu_request",
+    "test_category": "Kubernetes/Namespace",
+    "test_desc": "Namespaces should have default CPU request in limitRange policy",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.namespace_resource_quota_cpu_request",
+    "test_category": "Kubernetes/Namespace",
+    "test_desc": "Namespaces should have resourceQuota CPU request",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_cpu_request",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should have a CPU request",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.endpoint_api_serve_on_secure_port",
+    "test_category": "Kubernetes/Endpoint",
+    "test_desc": "Kubernetes API should serve on secure port",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_memory_limit",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should have a memory limit",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_memory_limit",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should have a memory limit",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.namespace_limit_range_default_memory_limit",
+    "test_category": "Kubernetes/Namespace",
+    "test_desc": "Namespaces should have default memory limit in limitRange policy",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.namespace_resource_quota_memory_limit",
+    "test_category": "Kubernetes/Namespace",
+    "test_desc": "Namespaces should be restricted on memory usage with resourceQuota memory limit",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.replicaset_memory_limit",
+    "test_category": "Kubernetes/ReplicaSet",
+    "test_desc": "ReplicaSet containers should have a memory limit",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.daemonset_memory_request",
+    "test_category": "Kubernetes/DaemonSet",
+    "test_desc": "DaemonSet containers should have a memory request",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.deployment_memory_request",
+    "test_category": "Kubernetes/Deployment",
+    "test_desc": "Deployment containers should have a memory request",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.namespace_limit_range_default_memory_request",
+    "test_category": "Kubernetes/Namespace",
+    "test_desc": "Namespaces should have default memory request in limitRange policy",
+    "test_rationale": ""
+  },
+  {
+    "test_number": "control.namespace_resource_quota_memory_request",
+    "test_category": "Kubernetes/Namespace",
+    "test_desc": "Namespaces should have resourceQuota memory request",
+    "test_rationale": ""
+  }
+]

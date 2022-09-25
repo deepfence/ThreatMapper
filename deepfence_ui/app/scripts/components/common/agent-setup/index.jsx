@@ -25,6 +25,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
   --set deepfenceKey=${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'} \\
   --set image.tag=${process.env.__PRODUCTVERSION__} \\
   --set image.clusterAgentImageTag=${process.env.__PRODUCTVERSION__} \\
+  --set clusterName=prod-cluster-1 \\
   --namespace deepfence \\
   --create-namespace`;
 };

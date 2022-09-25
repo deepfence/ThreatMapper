@@ -24,7 +24,6 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
       volumes:
 {{- if .Values.saas_deployment }}
         - name: varlog
@@ -158,14 +157,7 @@ spec:
               containerPort: 9998
               protocol: TCP
           resources:
-            requests:
-              memory: 150Mi
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-            limits:
-              memory: 4Gi
-{{- if .Values.setDefaultResourceLimits }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
+            {{- toYaml .Values.api.resources | nindent 12 }}
       {{- with .Values.api.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

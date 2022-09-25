@@ -4,6 +4,8 @@ title: Google Compute Platform
 
 # Configuring Cloud Scanner for Google Cloud Platform
 
+https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage
+
 Cloud Scanner is deployed as a task within your Google Cloud Platform instance. The ThreatMapper console provides a simple terraform script to perform the deployment.
 
 | ![Compliance Install - Google Compute Platform](../img/compliance-install-gcp.jpg) |

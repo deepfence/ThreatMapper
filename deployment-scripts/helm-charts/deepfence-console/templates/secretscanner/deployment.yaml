@@ -41,17 +41,7 @@ spec:
           {{- end }}
           args: ["-config-path", "/home/deepfence/usr", "-http-port", "8011"]
           resources:
-            requests:
-              memory: 100Mi
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-{{- if (.Values.defaultResourceLimits.requests).ephemeralStorage }}
-              ephemeral-storage: {{ .Values.defaultResourceLimits.requests.ephemeralStorage }}
-{{- end }}
-            limits:
-              memory: 4Gi
-{{- if .Values.setDefaultResourceLimits }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
+            {{- toYaml .Values.secretScanner.resources | nindent 12 }}
       {{- with .Values.secretScanner.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

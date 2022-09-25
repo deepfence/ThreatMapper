@@ -24,7 +24,6 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
         - name: deepfence-topology
           env:

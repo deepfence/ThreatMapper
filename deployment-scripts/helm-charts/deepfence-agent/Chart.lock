@@ -1,0 +1,6 @@
+dependencies:
+- name: deepfence-k8s-scanner
+  repository: https://deepfence-helm-charts.s3.amazonaws.com/deepfence-k8s-scanner
+  version: 0.1.0
+digest: sha256:e887e3c89427a09d59ae7286194141ee083d30504a8a3aab2edddbc3d97b30ba
+generated: "2022-09-22T23:41:55.629898+05:30"

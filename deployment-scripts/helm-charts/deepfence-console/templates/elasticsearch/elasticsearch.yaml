@@ -71,12 +71,7 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 10
           resources:
-            requests:
-              cpu: {{ .Values.elasticsearch.resources.requests.cpu }}
-              memory: {{ .Values.elasticsearch.resources.requests.memory }}
-            limits:
-              cpu: {{ .Values.elasticsearch.resources.limits.cpu }}
-              memory: {{ .Values.elasticsearch.resources.limits.memory }}
+            {{- toYaml .Values.elasticsearch.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
               name: deepfence-data

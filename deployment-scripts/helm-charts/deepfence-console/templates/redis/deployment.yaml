@@ -38,25 +38,17 @@ spec:
 {{ end }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
         - name: deepfence-redis
           image: "{{ .Values.registry.imagePrefix }}{{ .Values.redis.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: Always
+          imagePullPolicy: "{{ .Values.redis.image.pullPolicy }}"
           env:
             - name: INITIALIZE_REDIS
               value: "Y"
           ports:
             - containerPort: 6379
           resources:
-            requests:
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-              memory: {{ .Values.defaultResourceLimits.requests.memory }}
-            limits:
-{{- if .Values.setDefaultResourceLimits }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
-              memory: 16Gi
+            {{- toYaml .Values.redis.resources | nindent 12 }}
       {{- with .Values.redis.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

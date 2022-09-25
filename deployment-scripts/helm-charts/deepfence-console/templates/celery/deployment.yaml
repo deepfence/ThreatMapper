@@ -24,7 +24,6 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
       volumes:
 {{- if .Values.saas_deployment }}
         - name: varlog
@@ -164,14 +163,8 @@ spec:
               name: data
 
           resources:
-            requests:
-              memory: 1Gi
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-            limits:
-              memory: 8Gi
-{{- if .Values.setDefaultResourceLimits }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
+            {{- toYaml .Values.celery.resources | nindent 12 }}
+
       {{- with .Values.celery.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

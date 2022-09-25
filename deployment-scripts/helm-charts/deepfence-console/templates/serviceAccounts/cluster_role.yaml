@@ -1,0 +1,18 @@
+{{- if not .Values.saas_deployment }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: deepfence-console
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  - pods/log
+  verbs:
+  - get
+  - list
+  - watch
+{{- end }}

@@ -24,7 +24,6 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
         {{- if .Values.saas_deployment }}
         - name: promtail-sidecar-deepfence-router
@@ -132,14 +131,7 @@ spec:
               readOnly: true
           {{- end }}
           resources:
-            requests:
-              memory: 100Mi
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-{{- if .Values.setDefaultResourceLimits }}
-            limits:
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-              memory: {{ .Values.defaultResourceLimits.limits.memory }}
-{{- end }}
+            {{- toYaml .Values.router.resources | nindent 12 }}
       {{- with .Values.router.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
