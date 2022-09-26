@@ -47,17 +47,7 @@ spec:
           ports:
           - containerPort: 8005
           resources:
-            requests:
-              memory: 1Gi
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-{{- if (.Values.defaultResourceLimits.requests).ephemeralStorage }}
-              ephemeral-storage: {{ .Values.defaultResourceLimits.requests.ephemeralStorage }}
-{{- end }}
-{{- if .Values.setDefaultResourceLimits }}
-            limits:
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-              memory: {{ .Values.defaultResourceLimits.limits.memory }}
-{{- end }}
+            {{- toYaml .Values.packageScanner.resources | nindent 12 }}
       {{- with .Values.packageScanner.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

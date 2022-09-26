@@ -60,7 +60,7 @@ class ComplianceTestCategoryReport extends React.PureComponent {
       return;
     }
     const { globalSearchQuery: existingQuery = [], dispatch } = this.props;
-    if (cloudType === 'linux') {
+    if (['linux', 'kubernetes'].includes(cloudType)) {
       newSearchParams = {
         test_category: point.node,
       };

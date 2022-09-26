@@ -259,8 +259,6 @@ services:
     tmpfs:
       - /tmp
     environment:
-      ANALYZER_REPLICATION_FACTOR: 1
-      ANALYZER_SERVICE_NAME_PREFIX: "deepfence-analyzer-"
       ELASTICSEARCH_SCHEME: "http"
     networks:
       - deepfence_net

@@ -4,6 +4,8 @@ title: AWS
 
 # Configuring Cloud Scanner for Amazon Web Services
 
+https://registry.terraform.io/modules/deepfence/cloud-scanner/aws/latest/examples/single-account-ecs#usage
+
 Cloud Scanner is deployed as a task within your AWS infrastructure. The ThreatMapper console provides a simple terraform script to perform the deployment.
 
 | ![Compliance Install - AWS](../img/compliance-install-aws.jpg) |

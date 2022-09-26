@@ -309,14 +309,7 @@ spec:
             successThreshold: 1
             failureThreshold: 5
           resources:
-            requests:
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-              memory: {{ .Values.defaultResourceLimits.requests.memory }}
-{{- if .Values.setDefaultResourceLimits }}
-            limits:
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-              memory: {{ .Values.defaultResourceLimits.limits.memory }}
-{{- end }}
+            {{- toYaml .Values.postgresqlPgpool.resources | nindent 12 }}
       {{- with .Values.postgresqlPgpool.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -517,14 +510,7 @@ spec:
             successThreshold: 1
             failureThreshold: 6
           resources:
-            requests:
-              memory: {{ .Values.defaultResourceLimits.requests.memory }}
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-{{- if .Values.setDefaultResourceLimits }}
-            limits:
-              memory: {{ .Values.defaultResourceLimits.limits.memory }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
+            {{- toYaml .Values.postgresql.resources | nindent 12 }}
           volumeMounts:
             {{- if ((.Values.postgresql).extendedConf) }}
             - name: postgresql-extended-config

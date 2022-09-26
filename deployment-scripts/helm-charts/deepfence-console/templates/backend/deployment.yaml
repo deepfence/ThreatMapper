@@ -24,7 +24,6 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
-      serviceAccountName: {{ .Values.serviceAccountName }}
 {{- if .Values.backend.initContainerRequired }}
       initContainers:
       - name: init-sysctl
@@ -167,14 +166,7 @@ spec:
                   name: "main-cm-{{ include "deepfence-console.fullname" . }}"
                   key: kafka_topic_retention_ms
           resources:
-            requests:
-              memory: 512Mi
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-            limits:
-              memory: 4Gi
-{{- if .Values.setDefaultResourceLimits }}
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-{{- end }}
+            {{- toYaml .Values.backend.resources | nindent 12 }}
           ports:
             - name: http
               containerPort: 4041

@@ -24,8 +24,7 @@ const testValueConfig = [
   },
 ];
 
-
-class Soc2Summary extends React.PureComponent {
+class CISSummary extends React.PureComponent {
   render() {
     const {
       location: urlLocation,
@@ -45,17 +44,17 @@ class Soc2Summary extends React.PureComponent {
           <div className="report">
             <div className="total-test-report">
               <ComplianceTotalTestReportContainer
-                checkType="soc2"
+                checkType='nsa-cisa'
                 nodeId={this.props.match.params.nodeid}
               />
             </div>
           </div>
         </div>
         <div className="chart-wrapper table-wrapper">
-          <div className="table relative">
+          <div className="table relative table-compliance-cis">
             <HostReportContainer
-            nodeId={this.props.match.params.nodeid}
-              checkType="soc2"
+              checkType='nsa-cisa'
+              nodeId={this.props.match.params.nodeid}
               testValueConfig={testValueConfig}
               urlLocation={urlLocation}
             />
@@ -68,8 +67,8 @@ class Soc2Summary extends React.PureComponent {
 
 function mapStateToProps(state) {
   return {
-    chartData: state.get('compliance_chart_data')
+    chartData: state.get('compliance_chart_data'),
   };
 }
 
-export default connect(mapStateToProps)(injectModalTrigger(Soc2Summary));
+export default connect(mapStateToProps)(injectModalTrigger(CISSummary));

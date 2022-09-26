@@ -117,14 +117,7 @@ spec:
               name: data
 
           resources:
-            requests:
-              cpu: {{ .Values.defaultResourceLimits.requests.cpu }}
-              memory: {{ .Values.defaultResourceLimits.requests.memory }}
-{{- if .Values.setDefaultResourceLimits }}
-            limits:
-              cpu: {{ .Values.defaultResourceLimits.limits.cpu }}
-              memory: {{ .Values.defaultResourceLimits.limits.memory }}
-{{- end }}
+            {{- toYaml .Values.fetcher.resources | nindent 12 }}
       {{- with .Values.fetcher.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

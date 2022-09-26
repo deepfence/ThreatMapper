@@ -16,7 +16,7 @@ export const ScanStatus = ({ status, tooltipText }) => {
         label = <span className="scan-status never-scanned ">{humanString}</span>;
         break;
       case 'error':
-        label = <span className="scan-status error">{humanString}</span>;
+        label = <span className="scan-status error">{humanString}<span className='fa fa-info-circle'/></span>;
         break;
       case 'complete':
         label = <span className="scan-status complete">{humanString}</span>;
