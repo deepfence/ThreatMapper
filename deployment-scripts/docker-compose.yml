@@ -93,6 +93,7 @@ services:
     environment:
     - MGMT_CONSOLE_URL=127.0.0.1
     - MGMT_CONSOLE_PORT=8443
+    - DEEPFENCE_KEY=""
     network_mode: "host"
     volumes:
     - /sys/kernel/debug:/sys/kernel/debug:rw
