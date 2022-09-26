@@ -204,14 +204,14 @@ const AccountListTable = ({
         {
           Header: 'Account ID',
           accessor: 'node_name',
-          width: 70,
-          maxWidth: 70,
-          minWidth: 70,
+          width: 80,
+          maxWidth: 80,
+          minWidth: 80,
         },
         {
           Header: 'Cloud Provider',
           accessor: 'cloud_provider',
-          width: 50,
+          width: 70,
           maxWidth: 70,
           minWidth: 50,
         },
@@ -227,7 +227,7 @@ const AccountListTable = ({
             }
             return '-';
           },
-          width: 50,
+          width: 70,
           maxWidth: 70,
           minWidth: 50,
         },
@@ -248,13 +248,13 @@ const AccountListTable = ({
         },
         {
           Header: 'Actions',
-          width: 140,
-          minWidth: 140,
+          width: 90,
+          minWidth: 90,
           accessor: 'id',
           disableSortBy: true,
           Cell: cell => {
             return (
-              <div style={{ display: 'flex', marginLeft: '-10px' }}>
+              <div style={{ display: 'flex', marginLeft: '-16px' }}>
                 <button
                  type="button"
                  className="action-btn-icons"
