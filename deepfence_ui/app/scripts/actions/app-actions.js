@@ -115,7 +115,8 @@ import {
   getServicesForCloudAccount,
   getAttackGraphData,
   getAttackGraphNodeInfo,
-  refreshCloudComplianceResources
+  refreshCloudComplianceResources,
+  updateProviderVersion
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1954,6 +1955,15 @@ export function refreshCloudComplianceResourcesAction(params) {
     ActionTypes.REFRESH_CLOUD_COMPLIANCE_RESOURCES_FAILURE,
   ];
   return genericThunkAction(actionTypes, refreshCloudComplianceResources, params);
+}
+
+export function updateProviderVersionAction(params) {
+  const actionTypes = [
+    ActionTypes.SET_UPDATE_PROVIER_VERSION_REQUEST,
+    ActionTypes.SET_UPDATE_PROVIER_VERSION_SUCCESS,
+    ActionTypes.SET_UPDATE_PROVIER_VERSION_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, updateProviderVersion, params);
 }
 
 export function complianceScheduleScanAction(params) {

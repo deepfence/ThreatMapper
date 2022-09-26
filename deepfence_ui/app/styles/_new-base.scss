@@ -5703,3 +5703,14 @@ input[name='phoneNumber']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+.action-btn-icons {
+  background-color: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  color: $color-primary;
+  .icons {
+    padding: 4px 12px;
+  }
+}

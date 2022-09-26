@@ -2606,6 +2606,20 @@ export function refreshCloudComplianceResources(params = {}) {
   }).then(errorHandler);
 }
 
+// update provider version
+export function updateProviderVersion(params = {}) {
+  const { nodeId } = params;
+  const url = `${backendElasticApiEndPoint()}/cloud-compliance/${nodeId}/update`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 // scan list for speific node and check type.
 export function getComplianceScanList(params = {}) {
   const { lucene_query: luceneQuery = [], nodeId, checkType, cloudType, from = 0, number, time_unit } = params;

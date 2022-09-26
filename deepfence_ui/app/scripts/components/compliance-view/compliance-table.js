@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 import isNil from 'lodash/isNil';
+import ReactTooltip from "react-tooltip";
 import { DfTableV2 } from '../common/df-table-v2';
 import pollable from '../common/header-view/pollable';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
@@ -9,11 +10,14 @@ import {
   clearStartComplianceScanErrrorAction,
   getComplianceCloudCredentialsAction,
   refreshCloudComplianceResourcesAction,
+  updateProviderVersionAction,
   toaster,
 } from '../../actions/app-actions';
 import AppLoader from '../common/app-loader/app-loader';
 
 import { StartScanModalContent } from './start-scan-modal';
+
+const CLOUD_TYPE_TO_UPDATE_VERSION = ['aws', 'azure', 'gcp']
 
 const ComplianceTable = withRouter(props => {
   const dispatch = useDispatch();
@@ -95,6 +99,13 @@ const ComplianceTable = withRouter(props => {
     );
   };
 
+  const updateProviderVersion = nodeId => {
+    dispatch(updateProviderVersionAction({ nodeId }));
+    dispatch(
+      toaster('Update of ECS task version has been submitted.')
+    );
+  };
+
   return (
     <div style={{ marginBottom: '75px', marginTop: '8px' }}>
       <div style={{ color: 'white' }} className="name heading">
@@ -113,6 +124,7 @@ const ComplianceTable = withRouter(props => {
               refreshDisabledIds
             )}
             refreshDisabledIds={refreshDisabledIds}
+            updateProviderVersion={updateProviderVersion}
           />
         </div>
       )}
@@ -138,6 +150,7 @@ const AccountListTable = ({
   handleViewRules,
   doRefresh,
   refreshDisabledIds = [],
+  updateProviderVersion
 }) => {
   return (
     <DfTableV2
@@ -241,15 +254,15 @@ const AccountListTable = ({
           disableSortBy: true,
           Cell: cell => {
             return (
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', marginLeft: '-10px' }}>
                 <button
-                  type="button"
-                  className="primary-btn"
-                  onClick={e => {
-                    e.stopPropagation();
-                    if (cell.row.original.enabled === true) {
-                      handleViewRules(cell);
-                    }
+                 type="button"
+                 className="action-btn-icons"
+                 onClick={e => {
+                  e.stopPropagation();
+                  if (cell.row.original.enabled === true) {
+                    handleViewRules(cell);
+                  }
                   }}
                   disabled={!cell.row.original.enabled}
                   title={
@@ -258,33 +271,31 @@ const AccountListTable = ({
                       : ''
                   }
                 >
+                  <ReactTooltip place="top" id="start-scan" effect="solid">Start Scan</ReactTooltip>
                   <i
-                    className="fa fa-play"
+                    className="fa fa-play icons"
                     aria-hidden="true"
-                    style={{ paddingRight: '4px' }}
+                    data-tip data-for="start-scan"
                   />
-                  Start scan
                 </button>
-                <Link
-                  to={`/compliance/${cloudType}/${cell.row.original.node_id}/standard`}
-                >
+                <Link to={`/compliance/${cloudType}/${cell.row.original.node_id}/standard`}>
                   <button
-                    type="button"
-                    tabIndex={-1}
-                    className="primary-btn"
-                    onClick={e => e.stopPropagation()}
-                    title={
-                      !cell.row.original.last_scanned_ts
-                        ? 'Account has never been scanned'
-                        : `Last scanned at ${cell.row.original.last_scanned_ts}`
+                  type="button"
+                  tabIndex={-1}
+                  className="action-btn-icons"
+                  onClick={e => e.stopPropagation()}
+                  title={
+                    !cell.row.original.last_scanned_ts
+                      ? 'Account has never been scanned'
+                      : `Last scanned at ${cell.row.original.last_scanned_ts}`
                     }
                   >
+                    <ReactTooltip place="top" id="view-scan-result">View scan results</ReactTooltip>
                     <i
-                      className="fa fa-list-alt"
+                      className="fa fa-list-alt icons"
                       aria-hidden="true"
-                      style={{ paddingRight: '4px' }}
+                      data-tip data-for="view-scan-result"
                     />
-                    View scan results
                   </button>
                 </Link>
                 {cell.row.original.cloud_provider?.length ? (
@@ -295,49 +306,70 @@ const AccountListTable = ({
                       <button
                         type="button"
                         tabIndex={-1}
-                        className="primary-btn"
+                        className='action-btn-icons'
                         onClick={e => e.stopPropagation()}
                         disabled={!cell.row.original.enabled}
                         title={
-                          cell.row.original.enabled === false
-                            ? 'Account is inactive'
-                            : ''
-                        }
-                      >
+                        cell.row.original.enabled === false
+                          ? 'Account is inactive'
+                          : ''
+                         }>
+                        <ReactTooltip place="top" id="view-inventory">View inventory</ReactTooltip>
                         <i
-                          className="fa fa-list-ol"
+                          className="fa fa-list-ol icons"
                           aria-hidden="true"
-                          style={{ paddingRight: '4px' }}
+                          data-tip data-for="view-inventory"
                         />
-                        View inventory
                       </button>
                     </Link>
                     <button
                       type="button"
-                      className="primary-btn"
+                      className='action-btn-icons'
                       onClick={e => {
                         e.stopPropagation();
                         if (cell.row.original.enabled === true) {
                           doRefresh(cell.row.original.node_id);
                         }
-                      }}
-                      disabled={
+                        }}
+                        disabled={
                         !cell.row.original.enabled ||
                         cell.row.original.refreshDisabled
-                      }
-                      title={
+                        }
+                        title={
                         cell.row.original.enabled === false
                           ? 'Account is inactive'
                           : ''
-                      }
-                    >
-                      <i
-                        className="fa fa-refresh"
+                        }>
+                       <ReactTooltip place="top" id="refresh">Refresh Inventory</ReactTooltip>
+                       <i
+                        className="fa fa-refresh icons"
                         aria-hidden="true"
-                        style={{ paddingRight: '4px' }}
+                        data-tip data-for="refresh"
                       />
-                      Refresh
                     </button>
+                    { (CLOUD_TYPE_TO_UPDATE_VERSION.includes(cloudType) && cell.row.original.update_available) &&
+                      <button
+                      type="button"
+                      className='action-btn-icons'
+                      style={{color: '#cccc00'}}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (cell.row.original.enabled === true) {
+                          updateProviderVersion?.(cell.row.original.node_id);
+                        }
+                        }}
+                        disabled={
+                        !cell.row.original.enabled
+                        }
+                        >
+                       <ReactTooltip place="top" id="version">Update ECS Task Version</ReactTooltip>
+                       <i
+                        className="fa fa-upload icons"
+                        aria-hidden="true"
+                        data-tip data-for="version"
+                      />
+                    </button>
+                    }
                   </>
                 ) : null}
               </div>
