@@ -79,12 +79,15 @@ spec:
           #   initialDelaySeconds: 30
           #   periodSeconds: 30
           resources:
-            requests:
-              cpu: {{ .Values.kafkaBroker.resources.requests.cpu }}
-              memory: {{ .Values.kafkaBroker.resources.requests.memory }}
-            limits:
-              cpu: {{ .Values.kafkaBroker.resources.limits.cpu }}
-              memory: {{ .Values.kafkaBroker.resources.limits.memory }}
+            {{- toYaml .Values.kafkaBroker.resources | nindent 12 }}
+      {{- with .Values.kafkaBroker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kafkaBroker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
           volumeMounts:
             - name: deepfence-kafka-data
               mountPath: /data

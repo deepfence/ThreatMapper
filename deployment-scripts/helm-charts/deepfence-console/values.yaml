@@ -654,10 +654,6 @@ kafkaBroker:
   image:
     repository: deepfenceio/deepfence_kafka_broker_ce
     pullPolicy: Always
-  imagePullSecrets:
-  - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
 
   resources:
     requests:
@@ -682,10 +678,6 @@ kafkaRestProxy:
   image:
     repository: deepfenceio/deepfence_kafka_rest_proxy_ce
     pullPolicy: Always
-  imagePullSecrets:
-  - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
 
   resources:
     requests:
