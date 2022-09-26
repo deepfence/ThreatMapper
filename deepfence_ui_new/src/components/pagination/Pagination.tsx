@@ -3,7 +3,7 @@ import { memo, useMemo } from 'react';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { PaginationProps, usePagination } from '../hooks/usePagination';
+import { usePagination, UsePaginationOptions } from '../hooks/usePagination';
 import { Typography } from '../typography/Typography';
 
 export type SizeType = 'sm' | 'md';
@@ -21,7 +21,8 @@ type OwnProps = {
   pageSize?: number;
   sizing?: SizeType;
 };
-type Props = Pick<PaginationProps, 'currentPage' | 'siblingCount'> & OwnProps;
+type Props = Partial<Pick<UsePaginationOptions, 'currentPage' | 'siblingCount'>> &
+  OwnProps;
 
 const PageButton = memo(
   ({ label, onPageChange, disabled, className, ...rest }: PageButtonProps) => {
@@ -34,8 +35,7 @@ const PageButton = memo(
             'px-3 py-1.5 border-r border-y border-gray-300 dark:border-gray-700',
             'hover:bg-gray-100 hover:text-gray-700',
             'dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white',
-            'focus:ring-1 focus:ring-inset foucs:ring-blue-600',
-            'dark:focus:border-blue-800',
+            'focus:outline-none focus:ring-1 focus:ring-inset foucs:ring-blue-600',
           ),
           className,
         )}
@@ -55,7 +55,7 @@ export const Pagination = ({
   currentPage = 1,
   pageSize = 10,
   onPageChange,
-  totalRows = 1,
+  totalRows,
   siblingCount = 2,
   sizing = 'sm',
 }: Props) => {

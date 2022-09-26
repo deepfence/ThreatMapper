@@ -43,7 +43,7 @@ export interface TableProps<TData extends RowData> {
   manualPagination?: boolean;
   pageIndex?: number;
   pageSize?: number;
-  pageCount?: number;
+  totalRows?: number;
   onPaginationChange?: OnChangeFn<PaginationState>;
   enableSorting?: boolean;
   manualSorting?: boolean;
@@ -79,7 +79,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     manualPagination,
     pageIndex = 0,
     pageSize = 10,
-    pageCount = -1,
+    totalRows = 0,
     onPaginationChange,
     enableSorting = false,
     manualSorting,
@@ -145,7 +145,11 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
         : {}),
     },
     ...(enablePagination && manualPagination
-      ? { manualPagination: true, onPaginationChange, pageCount }
+      ? {
+          manualPagination: true,
+          onPaginationChange,
+          pageCount: totalRows ? Math.ceil(totalRows / pageSize) : -1,
+        }
       : {}),
     ...(enablePagination && !manualPagination
       ? { onPaginationChange: setInternalPaginationState }
@@ -186,13 +190,14 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
         </table>
       </div>
       {enablePagination ? (
-        <div className="mt-4 flex justify-end" data-testid="pagination-container">
+        <div className="mt-4 w-full" data-testid="pagination-container">
           <Pagination
             currentPage={table.getState().pagination.pageIndex + 1}
             onPageChange={(page) => {
               table.setPageIndex(page - 1);
             }}
-            totalPageCount={table.getPageCount()}
+            pageSize={table.getState().pagination.pageSize}
+            totalRows={manualPagination ? totalRows : data.length}
           />
         </div>
       ) : null}

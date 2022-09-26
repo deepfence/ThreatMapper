@@ -198,7 +198,7 @@ describe(`Component Table`, () => {
           manualPagination
           pageSize={pageSize}
           pageIndex={pageIndex}
-          pageCount={50}
+          totalRows={995}
           onPaginationChange={setPagination}
         />
       );
@@ -316,7 +316,7 @@ describe(`Component Table`, () => {
           manualPagination
           pageSize={pageSize}
           pageIndex={pageIndex}
-          pageCount={10}
+          totalRows={100}
           onPaginationChange={setPagination}
           enableSorting
           manualSorting

@@ -228,7 +228,7 @@ const TemplateWithManualPagination: ComponentStory<typeof Table<Fruit>> = (args)
       columns={columns}
       enablePagination
       manualPagination
-      pageCount={100}
+      totalRows={995}
       pageSize={pageSize}
       pageIndex={pageIndex}
       onPaginationChange={setPagination}
@@ -337,7 +337,7 @@ const TemplateWithManualSorting: ComponentStory<typeof Table<Fruit>> = (args) =>
       columns={columns}
       enablePagination
       manualPagination
-      pageCount={100}
+      totalRows={995}
       pageSize={pageSize}
       pageIndex={pageIndex}
       onPaginationChange={setPagination}
