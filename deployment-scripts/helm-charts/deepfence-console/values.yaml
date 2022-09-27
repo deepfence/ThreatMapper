@@ -74,7 +74,7 @@ db:
     broker: deepfence-kafka-broker:9092
     kafka_topic_replicas: 3
     kafka_topic_retention_ms: "86400000"
-    # set this to new value when kafka resplicas is >1 
+    # set this to new value when kafka resplicas is >1
     # to generate download kafka and run "kafka-storage random-uuid"
     # storageUUID: ""
     storageUUID: hNQ55qppT5GGybF52ZGlOQ
@@ -678,10 +678,6 @@ kafkaBroker:
   image:
     repository: deepfenceio/deepfence_kafka_broker_ce
     pullPolicy: Always
-  imagePullSecrets:
-  - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
 
   resources:
     requests:
@@ -706,10 +702,6 @@ kafkaRestProxy:
   image:
     repository: deepfenceio/deepfence_kafka_rest_proxy_ce
     pullPolicy: Always
-  imagePullSecrets:
-  - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
 
   resources:
     requests:
@@ -728,14 +720,3 @@ kafkaRestProxy:
   
   service:
     type: ClusterIP
-
-
-defaultResourceLimits:
-  requests:
-    cpu: 50m
-    memory: 40Mi
-    # ephemeralStorage: 10Gi
-  limits:
-    cpu: 16000m
-    memory: 32Gi
-setDefaultResourceLimits: false

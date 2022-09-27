@@ -59,12 +59,15 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 30
           resources:
-            requests:
-              cpu: {{ .Values.kafkaRestProxy.resources.requests.cpu }}
-              memory: {{ .Values.kafkaRestProxy.resources.requests.memory }}
-            limits:
-              cpu: {{ .Values.kafkaRestProxy.resources.limits.cpu }}
-              memory: {{ .Values.kafkaRestProxy.resources.limits.memory }}
+            {{- toYaml .Values.kafkaRestProxy.resources | nindent 12 }}
+      {{- with .Values.kafkaRestProxy.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kafkaRestProxy.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
 ---
