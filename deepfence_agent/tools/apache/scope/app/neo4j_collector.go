@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -16,19 +17,16 @@ import (
 type neo4jCollector struct {
 	driver      neo4j.Driver
 	network_map map[string]string
-	ingester    chan report.Report
+	ingester    chan *report.Report
 }
 
 type neo4jIngestionData struct {
 	Process_batch  []map[string]string
 	Node_batch     []map[string]string
-	Endpoint_batch []map[string]string
 
 	Process_edges_batch  []map[string]string
 	Node_edges_batch     []map[string]string
 	Endpoint_edges_batch []map[string]string
-
-	Endpoint_parent_batch []map[string]string
 }
 
 func prepareNeo4jIngestion(rpt *report.Report, network_map map[string]string) neo4jIngestionData {
@@ -50,30 +48,29 @@ func prepareNeo4jIngestion(rpt *report.Report, network_map map[string]string) ne
 	for _, n := range rpt.Endpoint.Nodes {
 		node_info := n.ToDataMap()
 		if hni, ok := node_info["host_node_id"]; ok {
-			vals := strings.Split(node_info["node_id"], ";")
-			vs := strings.Split(hni, ";")
-			network_map[vals[1]] = vs[0]
-			processes_to_keep[vs[0]+node_info["pid"]] = struct{}{}
+			first := strings.IndexByte(node_info["node_id"], ';')
+			second := strings.IndexByte(node_info["node_id"][first+1:], ';') + first + 1
+			middle := strings.IndexByte(hni, ';')
+			network_map[node_info["node_id"][first+1:second]] = hni[:middle]
+			processes_to_keep[hni[:middle]+node_info["pid"]] = struct{}{}
 		}
 	}
 
 	fmt.Printf("net_map size: %v\n", len(network_map))
 
-	endpoint_batch := []map[string]string{}
 	endpoint_edges_batch := []map[string]string{}
-	endpoint_parent_batch := []map[string]string{}
 ENDPOINTS:
 	for _, n := range rpt.Endpoint.Nodes {
 		node_info := n.ToDataMap()
 		if _, ok := node_info["host_node_id"]; !ok {
-			vals := strings.Split(node_info["node_id"], ";")
-			if val2, ok2 := network_map[vals[1]]; ok2 {
+			first := strings.IndexByte(node_info["node_id"], ';')
+			second := strings.IndexByte(node_info["node_id"][first+1:], ';') + first + 1
+			if val2, ok2 := network_map[node_info["node_id"][first+1:second]]; ok2 {
 				node_info["host_node_id"] = val2
 			} else {
 				continue ENDPOINTS
 			}
 		}
-		//endpoint_batch = append(endpoint_batch, node_info)
 		for _, i := range n.Adjacency {
 			if n.ID != i {
 				vals := strings.Split(i, ";")
@@ -111,7 +108,8 @@ ENDPOINTS:
 			if !ok {
 				continue
 			}
-			host = strings.Split(host, ";")[0]
+			middle := strings.IndexByte(host, ';')
+			host = host[:middle]
 		}
 		container_edges_batch = append(container_edges_batch,
 			map[string]string{"left": host, "right": node_info["node_id"]})
@@ -128,7 +126,8 @@ ENDPOINTS:
 			if !ok {
 				continue
 			}
-			host = strings.Split(host, ";")[0]
+			middle := strings.IndexByte(host, ';')
+			host = host[:middle]
 		}
 		pod_edges_batch = append(pod_edges_batch,
 			map[string]string{"left": host, "right": node_info["node_id"]})
@@ -141,7 +140,6 @@ ENDPOINTS:
 	node_edges_batch = append(node_edges_batch, pod_edges_batch...)
 
 	return neo4jIngestionData{
-		Endpoint_batch:       endpoint_batch,
 		Endpoint_edges_batch: endpoint_edges_batch,
 
 		Process_batch: process_batch,
@@ -149,8 +147,6 @@ ENDPOINTS:
 
 		Process_edges_batch: process_edges_batch,
 		Node_edges_batch:    node_edges_batch,
-
-		Endpoint_parent_batch: endpoint_parent_batch,
 	}
 }
 
@@ -170,10 +166,6 @@ func (nc *neo4jCollector) ingestIntoNeo4j(rpt report.Report) error {
 	}
 	defer tx.Close()
 
-	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
-		return err
-	}
-
 	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TNode{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Node_batch}); err != nil {
 		return err
 	}
@@ -190,11 +182,7 @@ func (nc *neo4jCollector) ingestIntoNeo4j(rpt report.Report) error {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TEndpoint{node_id: row.right}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Endpoint_parent_batch}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TNode{node_id: row.right}) MERGE (n)-[:CONNECTS {pid: row.pid, ppid: row.ppid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TNode{node_id: row.right}) CREATE (n)-[:CONNECTS {pid: row.pid, ppid: row.ppid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
 
@@ -332,6 +320,7 @@ func addProcessesToTopology(tx neo4j.Transaction, topology report.Topology) erro
 		}
 		new_node := report.MakeNodeWith(m["node_id"], m)
 		new_node.Topology = report.Process
+		new_node.Parents = new_node.Parents.AddString(report.Host, m["host_node_id"])
 		topology.AddNode(new_node)
 	}
 
@@ -386,9 +375,29 @@ func (nc *neo4jCollector) WaitOn(_ context.Context, _ chan struct{}) {
 func (nc *neo4jCollector) UnWait(_ context.Context, _ chan struct{}) {
 }
 
+var acc sync.Mutex
+var seen_once map[string]struct{}
 func (nc *neo4jCollector) Add(_ context.Context, rpt report.Report, _ []byte) error {
+
+	if len(nc.ingester) > 1000 {
+		for k, _ := range rpt.Host.Nodes {
+			acc.Lock()
+			_, ok := seen_once[k]
+			acc.Unlock()
+			if ok {
+				log.Printf("dropped")
+				return nil
+			}
+		}
+	}
+
 	select {
-	case nc.ingester <- rpt:
+	case nc.ingester <- &rpt:
+	acc.Lock()
+	for k, _ := range rpt.Host.Nodes {
+		seen_once[k] = struct {}{}
+	}
+	acc.Unlock()
 	default:
 		log.Printf("ingester channel full")
 		return fmt.Errorf("ingester channel full")
@@ -398,6 +407,7 @@ func (nc *neo4jCollector) Add(_ context.Context, rpt report.Report, _ []byte) er
 
 func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 	driver, err := neo4j.NewDriver("bolt://neo4j-db:7687", neo4j.BasicAuth("neo4j", "password", ""))
+	seen_once = map[string]struct{}{}
 
 	if err != nil {
 		return nil, err
@@ -406,10 +416,8 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 	nc := &neo4jCollector{
 		driver:      driver,
 		network_map: map[string]string{},
-		ingester: make(chan report.Report, 2000),
+		ingester: make(chan *report.Report, 10000),
 	}
-
-	batcher := make(chan report.Report)
 
 	go func () {
 		batch := report.MakeReport()
@@ -417,24 +425,15 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 		for {
 			select {
 			case rpt:=<-nc.ingester:
-				batch.UnsafeMerge(rpt)
+				batch.UnsafeMerge(*rpt)
 			    i += 1
 				if i == 100 {
-					batcher <- batch
+					err := nc.ingestIntoNeo4j(batch)
+					if err != nil {
+						log.Printf("err: %v", err)
+					}
 					batch = report.MakeReport()
 					i = 0
-				}
-			}
-		}
-	}()
-
-	go func () {
-		for {
-			select {
-			case rpt:=<-batcher:
-				err := nc.ingestIntoNeo4j(rpt)
-				if err != nil {
-					log.Printf("err: %v", err)
 				}
 			}
 		}
