@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
-	"crypto/md5"
 	"errors"
 	"fmt"
 	"io"
