@@ -247,7 +247,10 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 	reportTimestamp := wc.startReportingAt.Add(timestampDelta)
 	span.LogFields(otlog.String("opened-at", wc.channelOpenedAt.String()),
 		otlog.String("timestamp", reportTimestamp.String()))
+
+	start := time.Now()
 	re, err := wc.rep.Report(ctx, reportTimestamp)
+	fmt.Printf("Report gen: %v\n", time.Since(start))
 	if err != nil {
 		return errors.Wrap(err, "Error generating report")
 	}
@@ -273,6 +276,42 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 	}
 	childrenCount := make(map[string]map[string]int)
 
+	//connected_processes := map[string][]string{}
+	s, err := wc.rep.AdminSummary(nil, time.Now())
+	var connections []PairConn
+	json.Unmarshal([]byte(s), &connections)
+
+	simpleFilters := map[string]struct{}{}
+	for _, nodeFilter := range topologyFilters {
+		simpleFilters[nodeFilter.NodeId] = struct{}{}
+	}
+
+	newConnections := make(detailed.TopologyConnectionSummaries)
+	for _, v := range connections {
+		leftProcess := v.Left + ";" + v.LeftPid
+		rightProcess := v.Right + ";" + v.RightPid
+		leftHost := v.Left + ";<host>"
+		rightHost := v.Right + ";<host>"
+		if _, ok := simpleFilters[leftHost]; ok {
+			if _, ok2 := simpleFilters[rightHost]; ok2 {
+				newConnections[leftProcess+rightProcess] = detailed.ConnectionSummary{Source: leftProcess, Target: rightProcess}
+			} else {
+				newConnections[leftProcess+rightHost] = detailed.ConnectionSummary{Source: leftProcess, Target: rightHost}
+			}
+		} else {
+			newConnections[leftHost+rightHost] = detailed.ConnectionSummary{Source: leftHost, Target: rightHost}
+		}
+	}
+	fmt.Printf("Connections gen: %v\n", time.Since(start))
+	//fmt.Printf("connections processes: %v\n", len(connected_processes))
+
+	//for i, proc := range re.Process.Nodes {
+	//	if vals, ok := connected_processes[proc.ID]; ok {
+	//		proc.Adjacency = report.MakeIDList(vals...)
+	//		re.Process.Nodes[i] = proc
+	//	}
+	//}
+
 	for _, nodeFilter := range topologyFilters {
 		nodeChildrenCount := make(map[string]int)
 		for _, c := range nodeFilter.Children {
@@ -294,7 +333,14 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 			if err != nil {
 				continue
 			}
+
+			//if c.TopologyID == "processes" {
+			//	fmt.Printf("Doing PROCESS RENDER====%v %v %v\n", wc.values, filtersMap, c.Filters)
+			//}
 			rend := render.Render(ctx, re, renderer, filter)
+			//if c.TopologyID == "processes" {
+			//	fmt.Printf("Done PROCESS RENDER====%v, %v\n", len(rend.Nodes), rend.Filtered)
+			//}
 
 			//for k, node := range rend.Nodes {
 			//	fmt.Printf("after2 -> %v adjacency: %v\n", k, len(node.Adjacency))
@@ -379,38 +425,23 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 		childrenCount[nodeFilter.NodeId] = nodeChildrenCount
 	}
 
-	newConnections := make(detailed.TopologyConnectionSummaries)
-	s, err := wc.rep.AdminSummary(nil, time.Now())
-	var connections []PairConn
-	json.Unmarshal([]byte(s), &connections)
-	//c, ok := wc.rep.(*neo4jCollector)
-	//if ok {
-	//	connections := c.GetConnections()
-	//	fmt.Printf("connections: %v\n", connections)
-	for i, v := range connections {
-		newConnections[fmt.Sprintf("%v", i)] = detailed.ConnectionSummary{Source: v.Left + ";<host>", Target: v.Right + ";<host>"}
-	}
-	//} else if ignoreConnections == false {
+	fmt.Printf("Render gen: %v\n", time.Since(start))
+
+	//newConnections := make(detailed.TopologyConnectionSummaries)
+	//if ignoreConnections == false {
 	//	// Once we expand cloud provider, we have k8s clusters and regions at the same level, so we will not get correct edges
 	//	if leafChildTopologyID != cloudProvidersID {
-	//		leafChildTopologyID = hostsID
+	//		leafChildTopologyID = processesID
 	//	}
 	//	renderer, filter, err := topologyRegistry.RendererForTopology(leafChildTopologyID, map[string][]string{}, re)
 	//	if err == nil {
 
 	//		nodes := render.Render(ctx, re, renderer, filter).Nodes
-	//		for k, node := range nodes {
-	//			//fmt.Printf("after -> %v adjacency: %v\n", k, len(node.Adjacency))
-	//			node.Adjacency = []string{"thomas-agent;<host>"}
-	//			nodes[k] = node
-	//		}
 	//		newConnections = detailed.GetTopologyConnectionSummaries(
 	//			ctx,
 	//			newTopo,
 	//			nodes,
 	//		)
-	//	} else {
-	//		fmt.Printf("Render3 WS: %v\n", err)
 	//	}
 	//}
 	fmt.Printf("connections in-mem: %v\n", len(newConnections))
@@ -465,6 +496,8 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 			return errors.Wrap(err, "cannot serialize topology diff")
 		}
 	}
+
+	fmt.Printf("Diff gen: %v\n", time.Since(start))
 	return nil
 }
 

@@ -44,11 +44,13 @@ type endpoints2Processes struct {
 }
 
 func (e endpoints2Processes) Render(ctx context.Context, rpt report.Report) Nodes {
+
 	if len(rpt.Process.Nodes) == 0 {
 		return Nodes{}
 	}
 	endpoints := SelectEndpoint.Render(ctx, rpt).Nodes
-	return MapEndpoints(
+
+	proc_nodes := MapEndpoints(
 		func(n report.Node) string {
 			pid, ok := n.Latest.Lookup(report.PID)
 			if !ok {
@@ -63,6 +65,8 @@ func (e endpoints2Processes) Render(ctx context.Context, rpt report.Report) Node
 			}
 			return report.MakeProcessNodeID(hostID, pid)
 		}, report.Process).Render(ctx, rpt)
+
+	return proc_nodes
 }
 
 // When there is more than one connection originating from a source

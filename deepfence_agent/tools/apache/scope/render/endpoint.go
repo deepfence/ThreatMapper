@@ -36,7 +36,8 @@ func (e mapEndpoints) Render(ctx context.Context, rpt report.Report) Nodes {
 	//}
 	local := LocalNetworks(rpt)
 	endpoints := SelectEndpoint.Render(ctx, rpt)
-	ret := newJoinResults(TopologySelector(e.topology).Render(ctx, rpt).Nodes)
+	proc_nodes := TopologySelector(e.topology).Render(ctx, rpt).Nodes
+	ret := newJoinResults(proc_nodes)
 
 	for _, n := range endpoints.Nodes {
 		// Nodes without a hostid are mapped to pseudo nodes, if

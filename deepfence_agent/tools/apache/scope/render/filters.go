@@ -191,7 +191,7 @@ func ColorConnected(r Renderer) Renderer {
 		Renderer: r,
 		RenderFunc: func(input Nodes) Nodes {
 			output := input.Copy()
-			for id := range connected(input.Nodes) {
+			for id := range input.Nodes {
 				output[id] = output[id].WithLatest(IsConnectedMark, mtime.Now(), "true")
 			}
 			return Nodes{Nodes: output, Filtered: input.Filtered}
