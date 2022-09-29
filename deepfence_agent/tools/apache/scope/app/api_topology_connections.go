@@ -248,9 +248,9 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 	span.LogFields(otlog.String("opened-at", wc.channelOpenedAt.String()),
 		otlog.String("timestamp", reportTimestamp.String()))
 
-	start := time.Now()
+	//start := time.Now()
 	re, err := wc.rep.Report(ctx, reportTimestamp)
-	fmt.Printf("Report gen: %v\n", time.Since(start))
+	//fmt.Printf("Report gen: %v\n", time.Since(start))
 	if err != nil {
 		return errors.Wrap(err, "Error generating report")
 	}
@@ -302,7 +302,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 			newConnections[leftHost+rightHost] = detailed.ConnectionSummary{Source: leftHost, Target: rightHost}
 		}
 	}
-	fmt.Printf("Connections gen: %v\n", time.Since(start))
+	//fmt.Printf("Connections gen: %v\n", time.Since(start))
 	//fmt.Printf("connections processes: %v\n", len(connected_processes))
 
 	//for i, proc := range re.Process.Nodes {
@@ -425,7 +425,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 		childrenCount[nodeFilter.NodeId] = nodeChildrenCount
 	}
 
-	fmt.Printf("Render gen: %v\n", time.Since(start))
+	//fmt.Printf("Render gen: %v\n", time.Since(start))
 
 	//newConnections := make(detailed.TopologyConnectionSummaries)
 	//if ignoreConnections == false {
@@ -497,7 +497,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 		}
 	}
 
-	fmt.Printf("Diff gen: %v\n", time.Since(start))
+	//fmt.Printf("Diff gen: %v\n", time.Since(start))
 	return nil
 }
 
