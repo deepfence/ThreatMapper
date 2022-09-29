@@ -531,7 +531,7 @@ const Reports = props => {
       if (resourceTypeText && resourceTypeText.includes('cve') && cve_severity) {
         resourceData.push({
           type: 'cve',
-          filter: { severity: cve_severity.map(el => el.value).join(','), masked: maskedFilter },
+          filter: { cve_severity: cve_severity.map(el => el.value).join(','), masked: maskedFilter },
         });
       }
       if (resourceTypeText && resourceTypeText.includes('cve') && !cve_severity) {
