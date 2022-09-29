@@ -67,7 +67,6 @@ const Dropdown = (props) => {
 
 const Option = props => (
   <div>
-    {props.label &&
     <components.Option {...props}>
       <input
         type="checkbox"
@@ -78,7 +77,6 @@ const Option = props => (
       />
       <label htmlFor={`options-${props.value}`}>{props.label}</label>
     </components.Option>
-    }
   </div>
 );
 
@@ -125,7 +123,6 @@ class DFSelectTrigger extends React.Component {
       minSelectedCount = 0,
       ...rest
     } = this.props;
-    const parsedValue =value?.filter(s => s.label!== '')
 
     const {
       isOpen,
@@ -136,8 +133,8 @@ class DFSelectTrigger extends React.Component {
       ...options,
     ];
     if (minSelectedCount) {
-      if (parsedValue && parsedValue.length && parsedValue.length === minSelectedCount) {
-        const optionValues = parsedValue.map(el => el.value);
+      if (value && value.length && value.length === minSelectedCount) {
+        const optionValues = value.map(el => el.value);
         selectOptions = options.map(el => ({
           ...el,
           ...(optionValues.includes(el.value) ? {isDisabled: true} : {}),
@@ -176,7 +173,7 @@ class DFSelectTrigger extends React.Component {
             isMulti
             controlShouldRenderValue={false}
             hideSelectedOptions={false}
-            value={parsedValue}
+            value={value}
             {...rest}
           />
         </Dropdown>

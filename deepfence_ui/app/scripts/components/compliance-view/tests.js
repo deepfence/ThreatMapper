@@ -15,6 +15,74 @@ import pollable from '../common/header-view/pollable';
 import { ComplianceTestModal } from './test-modal';
 import { DfTableV2 } from '../common/df-table-v2';
 
+const cloudColumns = [
+  {
+    Header: 'Timestamp',
+    accessor: row => {
+      return dateTimeFormat(row._source['@timestamp']);
+    },
+    id: '_source.timestamp',
+    width: 100,
+    minWidth: 50,
+    Cell: ({ value }) => {
+      return (
+        <div className="truncate" title={value}>
+          {value}
+        </div>
+      );
+    },
+  },
+  {
+    Header: 'Status',
+    id: '_source.status',
+    width: 70,
+    minWidth: 60,
+    Cell: ({ row }) => {
+      return (
+        <div
+          className={`compliance-${row.original._source.compliance_check_type}-${row.original._source.status} label box`}
+        >
+          {row.original._source.status}
+        </div>
+      );
+    },
+  },
+  {
+    Header: 'Service',
+    accessor: '_source.service',
+    id: '_source.service',
+    width: 80,
+    minWidth: 80,
+    Cell: ({ value }) => {
+      return (
+        <div className="truncate" title={value}>
+          {value}
+        </div>
+      );
+    },
+  },
+  {
+    Header: 'Resource',
+    id: '_source.Resource',
+    minWidth: 150,
+    Cell: ({ row }) => {
+      return (
+        <div className="truncate">
+          {row.original._source.resource || row.original._source.node_name}
+        </div>
+      );
+    },
+  },
+  {
+    Header: 'Reason',
+    id: '_source.Reason',
+    minWidth: 400,
+    Cell: ({ row }) => {
+      return <div className="truncate">{row.original._source.reason}</div>;
+    },
+  },
+];
+
 class ComplianceTests extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -251,13 +319,18 @@ class ComplianceTests extends React.PureComponent {
     test.hits?.forEach(t => {
       tests.push(t);
     });
+    const hostType = window.location.hash.split('/').reverse()[0];
+    let cloudCheck;
+
+    if (hostType === 'aws' || hostType === 'gcp' || hostType === 'azure') {
+      cloudCheck = true;
+    }
 
     const isCloud =
-      !isLoading &&
-      tests.length &&
-      tests[0]?._source?.type === 'cloud-compliance-scan';
-
-    const hostType = window.location.hash.split('/').reverse()[0];
+      cloudCheck ||
+      (!isLoading &&
+        tests.length &&
+        tests[0]?._source?.type === 'cloud-compliance-scan');
 
     return (
       <>
@@ -291,87 +364,68 @@ class ComplianceTests extends React.PureComponent {
               this.handleDescClick(rowInfo.original._source.doc_id);
             }}
             onPageChange={this.handlePageChange}
-            columns={[
-              {
-                Header: 'Timestamp',
-                accessor: row => {
-                  return dateTimeFormat(row._source['@timestamp']);
-                },
-                id: '_source.timestamp',
-                width: 100,
-                minWidth: 50,
-                Cell: ({ value }) => {
-                  return (
-                    <div className="truncate" title={value}>
-                      {value}
-                    </div>
-                  );
-                },
-              },
-              {
-                Header: 'Status',
-                id: '_source.status',
-                width: 70,
-                minWidth: 60,
-                Cell: ({ row }) => {
-                  return (
-                    <div
-                      className={`compliance-${row.original._source.compliance_check_type}-${row.original._source.status} label box`}
-                    >
-                      {row.original._source.status}
-                    </div>
-                  );
-                },
-              },
-              {
-                Header: isCloud ? 'Service' : '',
-                accessor: '_source.service',
-                id: 'service',
-                width: isCloud ? 80 : 10,
-                minWidth: 80,
-                Cell: ({ value }) => {
-                  return (
-                    <div className="truncate" title={value}>
-                      {value || ''}
-                    </div>
-                  );
-                },
-              },
-              {
-                Header: isCloud ? 'Resource' : 'Node name',
-                id: '_source.Resource',
-                minWidth: 150,
-                Cell: ({ row }) => {
-                  return (
-                    <div className="truncate">
-                      {row.original._source.resource ||
-                        row.original._source.node_name}
-                    </div>
-                  );
-                },
-              },
-              {
-                /* eslint-disable no-nested-ternary */
-                Header: isCloud
-                  ? 'Reason'
-                  : hostType === 'kubernetes'
-                  ? 'Rationale'
-                  : 'Description',
-                id: '_source.Reason',
-                minWidth: 400,
-                Cell: ({ row }) => {
-                  return (
-                    <div className="truncate">
-                      {isCloud
-                        ? row.original._source.reason
-                        : hostType === 'kubernetes'
-                        ? row.original._source.test_rationale
-                        : row.original._source.description}
-                    </div>
-                  );
-                },
-              },
-            ]}
+            columns={
+              isCloud
+                ? cloudColumns
+                : [
+                    {
+                      Header: 'Timestamp',
+                      accessor: row => {
+                        return dateTimeFormat(row._source['@timestamp']);
+                      },
+                      id: '_source.timestamp',
+                      width: 100,
+                      minWidth: 50,
+                      Cell: ({ value }) => {
+                        return (
+                          <div className="truncate" title={value}>
+                            {value}
+                          </div>
+                        );
+                      },
+                    },
+                    {
+                      Header: 'Status',
+                      id: '_source.status',
+                      width: 70,
+                      minWidth: 60,
+                      Cell: ({ row }) => {
+                        return (
+                          <div
+                            className={`compliance-${row.original._source.compliance_check_type}-${row.original._source.status} label box`}
+                          >
+                            {row.original._source.status}
+                          </div>
+                        );
+                      },
+                    },
+                    {
+                      Header: 'Node name',
+                      id: '_source.Resource',
+                      minWidth: 150,
+                      Cell: ({ row }) => {
+                        return (
+                          <div className="truncate">
+                            {row.original._source.node_name}
+                          </div>
+                        );
+                      },
+                    },
+                    {
+                      Header: hostType === 'kubernetes' ? 'Rationale' : 'Description',
+                      id: '_source.Reason',
+                      minWidth: 400,
+                      Cell: ({ row }) => {
+                        return (
+                          <div className="truncate">
+                            {row.original._source.test_rationale ||
+                              row.original._source.description}
+                          </div>
+                        );
+                      },
+                    },
+                  ]
+            }
           />
           {this.state.isTestModalOpen && this.state.testData ? (
             <ComplianceTestModal
