@@ -15,21 +15,22 @@ import (
 )
 
 const (
-	worker_size = 100
-	db_queue_size = 100
-	batch_size = 1000
-	resolver_batch_size = 50
+	worker_size         = 100
+	db_queue_size       = 100
+	batch_size          = 500
+	resolver_batch_size = 1000
+	ingester_size       = 25000
 )
 
 type EndpointResolvers struct {
 	network_map      map[string]string
-	hostport_hostpid map[string]string
+	hostport_hostpid map[string]map[string]string
 }
 
 func NewEndpointResolvers() EndpointResolvers {
 	return EndpointResolvers{
 		network_map:      map[string]string{},
-		hostport_hostpid: map[string]string{},
+		hostport_hostpid: map[string]map[string]string{},
 	}
 }
 
@@ -40,8 +41,8 @@ type neo4jCollector struct {
 	resolvers        EndpointResolvers
 	batcher          chan neo4jIngestionData
 	resolvers_update chan EndpointResolvers
-	resolvers_queue  []chan *report.Report
-	preparers_queue  []chan *report.Report
+	resolvers_queue  chan *report.Report
+	preparers_queue  chan *report.Report
 }
 
 type neo4jIngestionData struct {
@@ -50,10 +51,10 @@ type neo4jIngestionData struct {
 	Container_batch []map[string]string
 	Pod_batch       []map[string]string
 
-	Process_edges_batch   []map[string]string
-	Container_edges_batch []map[string]string
-	Pod_edges_batch       []map[string]string
-	Endpoint_edges_batch  []map[string]string
+	Process_edges_batch   []map[string]interface{}
+	Container_edges_batch []map[string]interface{}
+	Pod_edges_batch       []map[string]interface{}
+	Endpoint_edges_batch  []map[string]interface{}
 
 	Endpoint_batch []map[string]string
 	Endpoint_edges []map[string]string
@@ -90,7 +91,7 @@ func (nd *neo4jIngestionData) merge(other *neo4jIngestionData) {
 	nd.Endpoint_edges = append(nd.Endpoint_edges, other.Endpoint_edges...)
 }
 
-func computeResolvers(rpt *report.Report) EndpointResolvers{
+func computeResolvers(rpt *report.Report) EndpointResolvers {
 	resolvers := NewEndpointResolvers()
 
 	for _, n := range rpt.Host.Nodes {
@@ -100,6 +101,7 @@ func computeResolvers(rpt *report.Report) EndpointResolvers{
 		for k, _ := range result {
 			resolvers.network_map[k] = node_info["host_name"]
 		}
+		resolvers.hostport_hostpid[node_info["host_name"]] = map[string]string{}
 	}
 
 	for _, n := range rpt.Endpoint.Nodes {
@@ -108,30 +110,42 @@ func computeResolvers(rpt *report.Report) EndpointResolvers{
 			first := strings.IndexByte(node_info["node_id"], ';')
 			second := strings.IndexByte(node_info["node_id"][first+1:], ';') + first + 1
 			middle := strings.IndexByte(hni, ';')
-			resolvers.network_map[node_info["node_id"][first+1:second]] = hni[:middle]
-			resolvers.hostport_hostpid[node_info["node_id"][first+1:]] = fmt.Sprintf("%v;%v", node_info["node_id"][first+1:second], node_info["pid"])
+			node_host := node_info["node_id"][first+1 : second]
+			node_port := node_info["node_id"][second+1:]
+			resolvers.network_map[node_host] = hni[:middle]
+			if _, ok := resolvers.hostport_hostpid[node_host]; !ok {
+				resolvers.hostport_hostpid[node_host] = map[string]string{}
+			}
+			resolvers.hostport_hostpid[node_host][node_port] = fmt.Sprintf("%v;%v", node_info["node_id"][first+1:second], node_info["pid"])
 		}
 	}
 
 	return resolvers
 }
 
-func min (a, b int) int {
+func min(a, b int) int {
 	if a < b {
 		return a
 	}
 	return b
 }
 
-func (nc * neo4jCollector) resolversUpdater() {
+func (nc *neo4jCollector) resolversUpdater() {
 	for {
 		select {
 		case <-time.After(time.Second * 10):
 			elements := min(len(nc.resolvers_update), resolver_batch_size)
 			start := time.Now()
 			nc.resolver_access.Lock()
-			for i:= 0; i < elements; i++ {
-				resolver:=<-nc.resolvers_update
+			if len(nc.resolvers.network_map) > 10000 {
+				nc.resolvers.network_map = map[string]string{}
+			}
+
+			if len(nc.resolvers.hostport_hostpid) > 50000 {
+				nc.resolvers.hostport_hostpid = map[string]map[string]string{}
+			}
+			for i := 0; i < elements; i++ {
+				resolver := <-nc.resolvers_update
 				nc.resolvers.merge(&resolver)
 			}
 			fmt.Printf("resolver merge time: %v for %v elements\n", time.Since(start), elements)
@@ -140,6 +154,17 @@ func (nc * neo4jCollector) resolversUpdater() {
 			nc.resolver_access.Unlock()
 		}
 	}
+}
+
+func concatMaps(input map[string][]string) []map[string]interface{} {
+	res := make([]map[string]interface{}, 0, len(input))
+	for k, e := range input {
+		sub := map[string]interface{}{}
+		sub["source"] = k
+		sub["destinations"] = e
+		res = append(res, sub)
+	}
+	return res
 }
 
 func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo4jIngestionData {
@@ -160,7 +185,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo
 		}
 	}
 
-	endpoint_edges_batch := []map[string]string{}
+	endpoint_edges_batch := []map[string]interface{}{}
 	endpoint_batch := []map[string]string{}
 	endpoint_edges := []map[string]string{}
 ENDPOINTS:
@@ -185,6 +210,7 @@ ENDPOINTS:
 			host_name = node_info["host_node_id"]
 		}
 		if len(node_info["pid"]) > 0 {
+			edges := []map[string]string{}
 			for _, i := range n.Adjacency {
 				if n.ID != i {
 					first := strings.IndexByte(i, ';')
@@ -193,36 +219,37 @@ ENDPOINTS:
 						if host_name == host {
 							continue
 						}
-						rightpid, ok := resolvers.hostport_hostpid[i[first+1:]]
+						rightpid, ok := resolvers.hostport_hostpid[i[first+1:second]][i[second+1:]]
 						if ok {
 							first := strings.IndexByte(rightpid, ';')
-							endpoint_edges_batch = append(endpoint_edges_batch,
-								map[string]string{"left": host_name, "right": host, "left_pid": node_info["pid"], "right_pid": rightpid[first+1:]})
+							edges = append(edges,
+								map[string]string{"destination": host, "left_pid": node_info["pid"], "right_pid": rightpid[first+1:]})
 						}
 					}
 					//endpoint_edges = append(endpoint_edges, map[string]string{"left": node_info["node_id"], "right": i})
 				}
 			}
+			endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": host_name, "edges": edges})
 		}
 	}
 
 	//fmt.Printf("edges: %v\n", endpoint_edges_batch)
 	process_batch := []map[string]string{}
-	process_edges_batch := []map[string]string{}
+	process_edges_batch := map[string][]string{}
 	for _, n := range rpt.Process.Nodes {
 		node_info := n.ToDataMap()
+		host := node_info["node_id"]
 		node_info["node_id"] += ";"
 		node_info["node_id"] += node_info["pid"]
 		if _, ok := processes_to_keep[node_info["node_id"]]; !ok {
 			continue
 		}
 		process_batch = append(process_batch, node_info)
-		process_edges_batch = append(process_edges_batch,
-			map[string]string{"left": node_info["host_name"], "right": node_info["node_id"]})
+		process_edges_batch[host] = append(process_edges_batch[host], node_info["node_id"])
 	}
 
 	container_batch := []map[string]string{}
-	container_edges_batch := []map[string]string{}
+	container_edges_batch := map[string][]string{}
 	for _, n := range rpt.Container.Nodes {
 		node_info := n.ToDataMap()
 		container_batch = append(container_batch, node_info)
@@ -235,12 +262,11 @@ ENDPOINTS:
 			middle := strings.IndexByte(host, ';')
 			host = host[:middle]
 		}
-		container_edges_batch = append(container_edges_batch,
-			map[string]string{"left": host, "right": node_info["node_id"]})
+		container_edges_batch[host] = append(container_edges_batch[host], node_info["node_id"])
 	}
 
 	pod_batch := []map[string]string{}
-	pod_edges_batch := []map[string]string{}
+	pod_edges_batch := map[string][]string{}
 	for _, n := range rpt.Pod.Nodes {
 		node_info := n.ToDataMap()
 		pod_batch = append(pod_batch, node_info)
@@ -253,21 +279,20 @@ ENDPOINTS:
 			middle := strings.IndexByte(host, ';')
 			host = host[:middle]
 		}
-		pod_edges_batch = append(pod_edges_batch,
-			map[string]string{"left": host, "right": node_info["node_id"]})
+		pod_edges_batch[host] = append(pod_edges_batch[host], node_info["node_id"])
 	}
 
 	return neo4jIngestionData{
 		Endpoint_edges_batch: endpoint_edges_batch,
 
-		Process_batch: process_batch,
-		Host_batch:    host_batch,
-		Container_batch:    container_batch,
-		Pod_batch:    pod_batch,
+		Process_batch:   process_batch,
+		Host_batch:      host_batch,
+		Container_batch: container_batch,
+		Pod_batch:       pod_batch,
 
-		Process_edges_batch: process_edges_batch,
-		Container_edges_batch: container_edges_batch,
-		Pod_edges_batch: pod_edges_batch,
+		Process_edges_batch:   concatMaps(process_edges_batch),
+		Container_edges_batch: concatMaps(container_edges_batch),
+		Pod_edges_batch:       concatMaps(pod_edges_batch),
 
 		Endpoint_batch: endpoint_batch,
 		Endpoint_edges: endpoint_edges,
@@ -505,6 +530,40 @@ func (nc *neo4jCollector) Add(_ context.Context, rpt report.Report, _ []byte) er
 	return nil
 }
 
+func (nc *neo4jCollector) CleanDB() error {
+	session, err := nc.driver.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	time_ms := 60_000
+
+	if _, err = tx.Run("match (n:TNode) WHERE n.updated_at < TIMESTAMP()-$time_ms match (n) -[:HOSTS]->(m) detach delete n detach delete m", map[string]interface{}{"time_ms": time_ms}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("match (n:TContainer) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": time_ms}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("match (n:TPod) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": time_ms}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("match (n:TProcess) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": time_ms}); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 	session, err := nc.driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
@@ -518,37 +577,57 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 	}
 	defer tx.Close()
 
-	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TNode{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Host_batch}); err != nil {
+	//if _, err := tx.Run("UNWIND $batch_host as row MERGE (n:TNode{node_id:row.node_id}) SET n+= row UNWIND $batch_container as row MERGE (c:TContainer{node_id:row.node_id}) SET c += row UNWIND $batch_pod as row MERGE (p:TPod{node_id:row.node_id}) SET c += row UNWIND $batch_process as row MERGE (proc:TProcess{node_id:row.node_id}) SET proc += row",
+	//	map[string]interface{}{"batch_host": batches.Host_batch, "batch_container": batches.Container_batch, "batch_pod": batches.Pod_batch, "batch_process": batches.Process_batch}); err != nil {
+	//	return err
+	//}
+
+	start := time.Now()
+
+	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TNode{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Host_batch}); err != nil {
 		return err
 	}
 
-	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TContainer{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Container_batch}); err != nil {
+	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TContainer{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Container_batch}); err != nil {
 		return err
 	}
 
-	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TPod{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
+	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TPod{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:TProcess{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Process_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MERGE (n:TProcess{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Process_batch}); err != nil {
 		return err
 	}
+
+	fmt.Printf("DB nodes: %v\n", time.Since(start))
+	start = time.Now()
 
 	//if _, err = tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
 	//	return err
 	//}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TContainer{node_id: row.right}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Container_edges_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:TContainer{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Container_edges_batch}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TPod{node_id: row.right}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:TPod{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TProcess{node_id: row.right}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Process_edges_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:TProcess{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Process_edges_batch}); err != nil {
 		return err
 	}
+
+	fmt.Printf("DB edge: %v\n", time.Since(start))
+	start = time.Now()
+	//if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TPod{node_id: row.right}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
+	//	return err
+	//}
+
+	//if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TProcess{node_id: row.right}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Process_edges_batch}); err != nil {
+	//	return err
+	//}
 
 	//if _, err = tx.Run("UNWIND $batch as row MATCH (n:TEndpoint{node_id: row.left}),(m:TEndpoint{node_id: row.right}) MERGE (n)-[:CONNECTS]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges}); err != nil {
 	//	return err
@@ -558,9 +637,14 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TNode{node_id: row.right}) MERGE (n)-[:CONNECTS {left_pid: row.left_pid, right_pid: row.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
+	//if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TNode{node_id: row.right}) MERGE (n)-[:CONNECTS {left_pid: row.left_pid, right_pid: row.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
+	//	return err
+	//}
+
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.edges as row2  MATCH (m:TNode{node_id: row2.destination}) MERGE (n)-[:CONNECTS {left_pid: row2.left_pid, right_pid: row2.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
+	fmt.Printf("DB conn: %v\n", time.Since(start))
 
 	return tx.Commit()
 }
@@ -573,55 +657,47 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 	}
 
 	nc := &neo4jCollector{
-		driver:    driver,
-		resolvers: NewEndpointResolvers(),
-		ingester:  make(chan *report.Report, batch_size),
-		batcher:   make(chan neo4jIngestionData, batch_size),
-		resolvers_update: make(chan EndpointResolvers, batch_size),
-		resolvers_queue: make([]chan *report.Report, worker_size),
-		preparers_queue: make([]chan *report.Report, worker_size),
+		driver:           driver,
+		resolvers:        NewEndpointResolvers(),
+		ingester:         make(chan *report.Report, ingester_size),
+		batcher:          make(chan neo4jIngestionData, ingester_size),
+		resolvers_update: make(chan EndpointResolvers, ingester_size),
+		resolvers_queue:  make(chan *report.Report, worker_size*2),
+		preparers_queue:  make(chan *report.Report, worker_size),
 	}
 
 	for i := 0; i < worker_size; i++ {
-		nc.resolvers_queue[i] = make(chan *report.Report, batch_size)
-		nc.preparers_queue[i] = make(chan *report.Report, batch_size)
-		go func (i int) {
-			for rpt := range nc.resolvers_queue[i] {
+		go func() {
+			for rpt := range nc.resolvers_queue {
 				r := computeResolvers(rpt)
 				nc.resolvers_update <- r
 			}
-		}(i)
+		}()
 	}
 
 	for i := 0; i < worker_size; i++ {
-		go func (i int) {
-			for rpt := range nc.preparers_queue[i] {
+		go func() {
+			for rpt := range nc.preparers_queue {
 				nc.resolver_access.RLock()
 				batches := prepareNeo4jIngestion(rpt, &nc.resolvers)
 				nc.resolver_access.RUnlock()
 				nc.batcher <- batches
 			}
-		}(i)
+		}()
 	}
 
 	go func() {
-		i := 0
 		for rpt := range nc.ingester {
 			select {
-			case nc.preparers_queue[i] <- rpt:
+			case nc.preparers_queue <- rpt:
 			default:
 				log.Printf("preparer channel full\n")
 			}
 
 			select {
-			case nc.resolvers_queue[i] <- rpt:
+			case nc.resolvers_queue <- rpt:
 			default:
 				log.Printf("resolvers channel full\n")
-			}
-
-			i += 1
-			if i == worker_size {
-				i = 0
 			}
 		}
 	}()
@@ -631,6 +707,7 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 		batch := make([]neo4jIngestionData, batch_size)
 		size := 0
 		send := false
+		timeout := time.After(time.Second * 5)
 		for {
 			select {
 			case report := <-nc.batcher:
@@ -638,20 +715,23 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 				size += 1
 				if size == len(batch) {
 					send = true
-					size = 0
 				}
-			case <-time.After(time.Second * 5):
+			case <-timeout:
 				if size > 0 {
+					timeout = time.After(time.Second * 5)
 					send = true
-					size = 0
+				} else {
+					timeout = time.After(time.Second * 5)
 				}
 			}
 			if send {
+				timeout = time.After(time.Second * 5)
 				send = false
+				size = 0
 				final_batch := batch[0]
 				i := 1
 				for {
-					if i == batch_size {
+					if i == len(batch) {
 						break
 					}
 					final_batch.merge(&batch[i])
@@ -662,12 +742,12 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 				default:
 					log.Printf("DB channel full\n")
 				}
-				log.Printf("db queue size: %v/%v\n", len(db_pusher), db_queue_size)
 			}
 		}
 	}()
 
 	go func() {
+		clean_up := time.After(time.Minute * 1)
 		for {
 			select {
 			case batches := <-db_pusher:
@@ -676,6 +756,14 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 				fmt.Printf("DB push: %v\n", time.Since(start))
 				if err != nil {
 					fmt.Printf("push to neo4j err: %v\n", err)
+				}
+			case <-clean_up:
+				clean_up = time.After(time.Minute * 1)
+				start := time.Now()
+				err = nc.CleanDB()
+				fmt.Printf("DB clean: %v\n", time.Since(start))
+				if err != nil {
+					fmt.Printf("clean neo4j err: %v\n", err)
 				}
 			}
 		}
