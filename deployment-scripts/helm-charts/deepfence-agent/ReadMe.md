@@ -38,15 +38,15 @@ registry:
 ```yaml
 managementConsoleUrl: ""
 ```
-- (Optional) Set image tag
+- Set image tag
 ```yaml
 image:
   # deepfence agent runs as a daemonset in all nodes in the cluster
   name: deepfenceio/deepfence_agent_ce
-  tag: latest
+  tag: 1.4.1
   # cluster agent runs as a single pod
   clusterAgentImageName: deepfenceio/deepfence_discovery_ce
-  clusterAgentImageTag: latest
+  clusterAgentImageTag: 1.4.1
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 ```
@@ -62,12 +62,24 @@ Custom Amazon Machine Images might have same hostnames for multiple instances. T
 # Suffix cloud instance id to hostnames
 instanceIdSuffix: "N"
 ```
-- (Optional) Set kubernetes cluster name
+- Set kubernetes cluster name
 ```yaml
 # Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
 clusterName: ""
+```
+- Set container runtime socket path
+  By default, docker is disabled and containerd is enabled
+```yaml
+# Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
+mountContainerRuntimeSocket:
+  dockerSock: false
+  # Change if socket path is not the following
+  dockerSockPath: "/var/run/docker.sock"
+  containerdSock: true
+  # Change if socket path is not the following
+  containerdSockPath: "/run/containerd/containerd.sock"
 ```
 - Install deepfence-agent helm chart with values file
 ```bash

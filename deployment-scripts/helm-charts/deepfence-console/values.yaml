@@ -31,6 +31,10 @@ tls:
 # Configure port for browser / agents
 managementConsolePort: "443"
 
+# URL or ip address of Deepfence management console:
+# Example: deepfence.company.com, 11.22.33.44
+deepfenceUrl: ""
+
 volume:
   storageClass: openebs-hostpath
   # Change stoage class when using different PV provisioner.
@@ -77,7 +81,7 @@ clusterName: "df-console"
 
 # SaaS specific values
 saas_deployment: false
-saas_domain: ""
+saas_portal_url: ""
 
 awsALB:
   wafAnnotation: ""
