@@ -1,0 +1,12 @@
+{
+    "available": {
+      "3": [
+        {
+          "built": "2022-09-23T00:30:13.10358216Z",
+          "version": 3,
+          "url": "https://threat-intel.deepfence.io/vulnerability-db/releases/download/threatintel-2022-09-23_00-23-21/threatintel-vuln-2022-09-23_00-23-21.tar.gz",
+          "checksum": "7582133a5d644eb6fd9290139e1c650277bf6808e67c97858f6f842ffca75c8f"
+        }
+      ]
+    }
+  }
