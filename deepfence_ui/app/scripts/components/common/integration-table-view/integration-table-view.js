@@ -25,7 +25,6 @@ class IntegrationTableView extends React.Component {
       <tr style={{ border: 'none' }}>
         <th>status</th>
         {record.notification_type && <th> Resource </th>}
-        {record.error_msg && <th> Status </th>}
         {record.email && <th>Email</th>}
         {record.channel && <th>Channel</th>}
         {record.webhook_url && <th>Webhook url</th>}
@@ -141,7 +140,7 @@ class IntegrationTableView extends React.Component {
             </td>
           )}
           {record.jira_site_url && <td>{record.jira_site_url}</td>}
-          {record.filters && (
+          {record.filters.length > 0 && (
             <td
               className="truncate"
               style={wideColumnStyles}
