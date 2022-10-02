@@ -258,22 +258,3 @@ func (n *Node) ToDataMap() map[string]string {
 	})
 	return res
 }
-
-func (n *Node) ToLightDataMap() map[string]string {
-	res := map[string]string{}
-	id_type := strings.Split(n.ID, ";")
-	if len(id_type) == 2 {
-		res["node_id"] = id_type[0]
-	} else {
-		res["node_id"] = n.ID
-	}
-	v, ok := n.Latest.Lookup("node_host_id")
-	if ok {
-		res["node_host_id"] = v
-	}
-	v, ok = n.Latest.Lookup("pid")
-	if ok {
-		res["pid"] = v
-	}
-	return res
-}
