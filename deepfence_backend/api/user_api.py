@@ -1728,6 +1728,7 @@ class IntegrationView(MethodView):
         api_token = request_json.get("api_token")
         jira_project_key = request_json.get("jira_project_key")
         issue_type = request_json.get("issue_type", "Bug")
+        assignee = request_json.get("assignee", "")
 
         if not jira_site_url:
             raise InvalidUsage("jira_site_url is required")
@@ -1757,7 +1758,9 @@ class IntegrationView(MethodView):
             "api_token": api_token,
             "jira_project_key": jira_project_key,
             "issue_type": issue_type,
+            "assignee" : assignee
         })
+        
         integration = Integration.query.filter_by(integration_type=INTEGRATION_TYPE_JIRA, config=config).one_or_none()
         if not integration:
             integration = Integration(
