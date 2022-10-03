@@ -1728,7 +1728,7 @@ class IntegrationView(MethodView):
         api_token = request_json.get("api_token")
         jira_project_key = request_json.get("jira_project_key")
         issue_type = request_json.get("issue_type", "Bug")
-        assignee = request_json.get("assignee", None)
+        assignee = request_json.get("assignee", "")
 
         if not jira_site_url:
             raise InvalidUsage("jira_site_url is required")
