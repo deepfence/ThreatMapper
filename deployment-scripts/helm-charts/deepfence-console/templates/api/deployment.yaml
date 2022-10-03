@@ -151,6 +151,9 @@ spec:
             - name: http
               containerPort: 9998
               protocol: TCP
+            - name: internal
+              containerPort: 9997
+              protocol: TCP
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
       {{- with .Values.api.nodeSelector }}
