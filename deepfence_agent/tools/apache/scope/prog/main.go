@@ -298,7 +298,7 @@ func setupFlags(flags *flags) {
 	flag.StringVar(&flags.probe.token, serviceTokenFlag, "", "Token to authenticate with cloud.weave.works")
 	flag.StringVar(&flags.probe.token, probeTokenFlag, "", "Token to authenticate with cloud.weave.works")
 	flag.StringVar(&flags.probe.httpListen, "probe.http.listen", "", "listen address for HTTP profiling and instrumentation server")
-	flag.DurationVar(&flags.probe.publishInterval, "probe.publish.interval", 30*time.Second, "publish (output) interval")
+	flag.DurationVar(&flags.probe.publishInterval, "probe.publish.interval", 50*time.Second, "publish (output) interval")
 	flag.DurationVar(&flags.probe.spyInterval, "probe.spy.interval", 5*time.Second, "spy (scan) interval")
 	flag.IntVar(&flags.probe.ticksPerFullReport, "probe.full-report-every", 1, "publish full report every N times, deltas in between. Make sure N < (app.window / probe.publish.interval)")
 	flag.StringVar(&flags.probe.pluginsRoot, "probe.plugins.root", "/var/run/scope/plugins", "Root directory to search for plugins (disable plugins if blank)")

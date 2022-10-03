@@ -17,7 +17,7 @@ import (
 const (
 	workers_num         = 100
 	db_input_size       = 100
-	db_batch_size       = 500
+	db_batch_size       = 1_000
 	db_batch_timeout    = time.Second * 5
 	resolver_batch_size = 1_000
 	resolver_timeout    = time.Second * 10
@@ -40,13 +40,38 @@ func NewEndpointResolvers() EndpointResolvers {
 
 type neo4jCollector struct {
 	driver           neo4j.Driver
-	ingester         chan *report.Report
+	ingester         chan string
+	reports_access   sync.Mutex
+	report_buffers   map[string]*report.Report
 	resolvers_access sync.RWMutex
 	resolvers        EndpointResolvers
 	batcher          chan neo4jIngestionData
 	resolvers_update chan EndpointResolvers
 	resolvers_input  chan *report.Report
 	preparers_input  chan *report.Report
+}
+
+func (nc* neo4jCollector) enqueueReport(rpt *report.Report) error {
+	var probe_id string
+	for _, n := range rpt.Host.Nodes {
+		probe_id, _ = n.Latest.Lookup("control_probe_id")
+		if len(rpt.Host.Nodes) > 1 {
+			fmt.Printf("multiple probe ids: %v\n", probe_id)
+		}
+	}
+
+	nc.reports_access.Lock()
+	defer nc.reports_access.Unlock()
+	old, _ := nc.report_buffers[probe_id]
+	nc.report_buffers[probe_id] = rpt
+	if old == nil {
+		select {
+		case nc.ingester <- probe_id:
+		default:
+			return fmt.Errorf("ingester channel full")
+		}
+	}
+	return nil
 }
 
 type neo4jIngestionData struct {
@@ -500,12 +525,7 @@ func (nc *neo4jCollector) UnWait(_ context.Context, _ chan struct{}) {
 }
 
 func (nc *neo4jCollector) Add(_ context.Context, rpt report.Report, _ []byte) error {
-	select {
-	case nc.ingester <- &rpt:
-	default:
-		return fmt.Errorf("ingester channel full")
-	}
-	return nil
+	return nc.enqueueReport(&rpt)
 }
 
 func (nc *neo4jCollector) CleanUpDB() error {
@@ -622,7 +642,11 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 }
 
 func (nc *neo4jCollector) runIngester() {
-	for rpt := range nc.ingester {
+	for probe_id := range nc.ingester {
+		nc.reports_access.Lock()
+		rpt, _ := nc.report_buffers[probe_id]
+		nc.report_buffers[probe_id] = nil
+		nc.reports_access.Unlock()
 		select {
 		case nc.preparers_input <- rpt:
 		default:
@@ -683,14 +707,14 @@ func (nc *neo4jCollector) runDBPusher(db_pusher chan neo4jIngestionData) {
 		case batches := <-db_pusher:
 			start := time.Now()
 			err := nc.PushToDB(batches)
-			logrus.Debugf("DB push: %v", time.Since(start))
+			logrus.Infof("DB push: %v", time.Since(start))
 			if err != nil {
 				logrus.Errorf("push to neo4j err: %v", err)
 			}
 		case <-clean_up:
 			start := time.Now()
 			err := nc.CleanUpDB()
-			logrus.Debugf("DB clean: %v", time.Since(start))
+			logrus.Infof("DB clean: %v", time.Since(start))
 			if err != nil {
 				logrus.Errorf("clean neo4j err: %v", err)
 			}
@@ -740,7 +764,8 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 	nc := &neo4jCollector{
 		driver:           driver,
 		resolvers:        NewEndpointResolvers(),
-		ingester:         make(chan *report.Report, ingester_size),
+		ingester:         make(chan string, ingester_size),
+		report_buffers:   map[string]*report.Report{},
 		batcher:          make(chan neo4jIngestionData, ingester_size),
 		resolvers_update: make(chan EndpointResolvers, ingester_size),
 		resolvers_input:  make(chan *report.Report, ingester_size),
