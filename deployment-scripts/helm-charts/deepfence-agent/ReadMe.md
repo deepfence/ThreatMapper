@@ -27,7 +27,7 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 ```bash
 helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml
 ```
-- Edit values file and set docker hub username and password
+- (Optional) Edit values file and set docker hub username and password (if using your own registry)
 ```yaml
 registry:
   name: "https://index.docker.io/v1/"

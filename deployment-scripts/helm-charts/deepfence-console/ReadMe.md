@@ -34,8 +34,6 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 
 ### Install deepfence-console helm chart
 
-Docker hub credentials will be shared in email
-
 **Quick start**
 
 ```bash
@@ -57,7 +55,7 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 ```bash
 helm show values deepfence/deepfence-console > deepfence_console_values.yaml
 ```
-- Edit values file and set docker hub username and password
+- (Optional) Edit values file and set docker hub username and password (if using your own registry)
 ```yaml
 registry:
   name: "https://index.docker.io/v1/"
