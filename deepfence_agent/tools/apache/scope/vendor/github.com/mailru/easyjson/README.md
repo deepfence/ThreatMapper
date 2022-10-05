@@ -32,7 +32,7 @@ from [ffjson](https://github.com/pquerna/ffjson)).
 ```txt
 Usage of easyjson:
   -all
-	generate marshaler/unmarshalers for all structs in a file
+    	generate marshaler/unmarshalers for all structs in a file
   -build_tags string
         build tags to add to generated file
   -gen_build_flags string
@@ -40,23 +40,23 @@ Usage of easyjson:
   -byte
         use simple bytes instead of Base64Bytes for slice of bytes
   -leave_temps
-	do not delete temporary files
+    	do not delete temporary files
   -no_std_marshalers
-	don't generate MarshalJSON/UnmarshalJSON funcs
+    	don't generate MarshalJSON/UnmarshalJSON funcs
   -noformat
-	do not run 'gofmt -w' on output file
+    	do not run 'gofmt -w' on output file
   -omit_empty
-	omit empty fields by default
+    	omit empty fields by default
   -output_filename string
-	specify the filename of the output
+    	specify the filename of the output
   -pkg
-	process the whole package instead of just the given file
+    	process the whole package instead of just the given file
   -snake_case
-	use snake_case names instead of CamelCase by default
+    	use snake_case names instead of CamelCase by default
   -lower_camel_case
         use lowerCamelCase instead of CamelCase by default
   -stubs
-	only generate stubs for marshaler/unmarshaler funcs
+    	only generate stubs for marshaler/unmarshaler funcs
   -disallow_unknown_fields
         return error if some unknown field in json appeared
   -disable_members_unescape
@@ -65,7 +65,7 @@ Usage of easyjson:
 
 Using `-all` will generate marshalers/unmarshalers for all Go structs in the
 file excluding those structs whose preceding comment starts with `easyjson:skip`.
-For example:
+For example: 
 
 ```go
 //easyjson:skip
@@ -90,7 +90,7 @@ Additional option notes:
 
 * `-build_tags` will add the specified build tags to generated Go sources.
 
-* `-gen_build_flags` will execute the easyjson bootstapping code to launch the
+* `-gen_build_flags` will execute the easyjson bootstapping code to launch the 
   actual generator command with provided flags. Multiple arguments should be
   separated by space e.g. `-gen_build_flags="-mod=mod -x"`.
 
@@ -224,8 +224,8 @@ type Foo struct {
   typically for many uses/protocols the final, marshaled length of the JSON
   needs to be known prior to sending the data. Currently this is not possible
   with easyjson's architecture.
-
-* easyjson parser and codegen based on reflection, so it won't work on `package main`
+  
+* easyjson parser and codegen based on reflection, so it won't work on `package main` 
   files, because they cant be imported by parser.
 
 ## Benchmarks

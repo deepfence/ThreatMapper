@@ -4,6 +4,8 @@
 
 package elastic
 
+//go:generate easyjson bulk_delete_request.go
+
 import (
 	"encoding/json"
 	"fmt"
@@ -29,10 +31,14 @@ type BulkDeleteRequest struct {
 	ifPrimaryTerm *int64
 
 	source []string
+
+	useEasyJSON bool
 }
 
+//easyjson:json
 type bulkDeleteRequestCommand map[string]bulkDeleteRequestCommandOp
 
+//easyjson:json
 type bulkDeleteRequestCommandOp struct {
 	Index         string `json:"_index,omitempty"`
 	Type          string `json:"_type,omitempty"`
@@ -48,6 +54,16 @@ type bulkDeleteRequestCommandOp struct {
 // NewBulkDeleteRequest returns a new BulkDeleteRequest.
 func NewBulkDeleteRequest() *BulkDeleteRequest {
 	return &BulkDeleteRequest{}
+}
+
+// UseEasyJSON is an experimental setting that enables serialization
+// with github.com/mailru/easyjson, which should in faster serialization
+// time and less allocations, but removed compatibility with encoding/json,
+// usage of unsafe etc. See https://github.com/mailru/easyjson#issues-notes-and-limitations
+// for details. This setting is disabled by default.
+func (r *BulkDeleteRequest) UseEasyJSON(enable bool) *BulkDeleteRequest {
+	r.useEasyJSON = enable
+	return r
 }
 
 // Index specifies the Elasticsearch index to use for this delete request.
@@ -152,8 +168,13 @@ func (r *BulkDeleteRequest) Source() ([]string, error) {
 
 	var err error
 	var body []byte
-	// encoding/json
-	body, err = json.Marshal(command)
+	if r.useEasyJSON {
+		// easyjson
+		body, err = command.MarshalJSON()
+	} else {
+		// encoding/json
+		body, err = json.Marshal(command)
+	}
 	if err != nil {
 		return nil, err
 	}

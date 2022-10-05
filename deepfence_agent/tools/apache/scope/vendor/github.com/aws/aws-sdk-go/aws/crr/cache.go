@@ -34,8 +34,20 @@ func (c *EndpointCache) get(endpointKey string) (Endpoint, bool) {
 		return Endpoint{}, false
 	}
 
-	c.endpoints.Store(endpointKey, endpoint)
+	ev := endpoint.(Endpoint)
+	ev.Prune()
+
+	c.endpoints.Store(endpointKey, ev)
 	return endpoint.(Endpoint), true
+}
+
+// Has returns if the enpoint cache contains a valid entry for the endpoint key
+// provided.
+func (c *EndpointCache) Has(endpointKey string) bool {
+	endpoint, ok := c.get(endpointKey)
+	_, found := endpoint.GetValidAddress()
+
+	return ok && found
 }
 
 // Get will retrieve a weighted address  based off of the endpoint key. If an endpoint

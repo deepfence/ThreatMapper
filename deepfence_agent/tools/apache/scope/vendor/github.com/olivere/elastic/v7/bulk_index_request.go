@@ -4,6 +4,8 @@
 
 package elastic
 
+//go:generate easyjson bulk_index_request.go
+
 import (
 	"encoding/json"
 	"fmt"
@@ -31,10 +33,14 @@ type BulkIndexRequest struct {
 	ifPrimaryTerm   *int64
 
 	source []string
+
+	useEasyJSON bool
 }
 
+//easyjson:json
 type bulkIndexRequestCommand map[string]bulkIndexRequestCommandOp
 
+//easyjson:json
 type bulkIndexRequestCommandOp struct {
 	Index  string `json:"_index,omitempty"`
 	Id     string `json:"_id,omitempty"`
@@ -56,6 +62,16 @@ func NewBulkIndexRequest() *BulkIndexRequest {
 	return &BulkIndexRequest{
 		opType: "index",
 	}
+}
+
+// UseEasyJSON is an experimental setting that enables serialization
+// with github.com/mailru/easyjson, which should in faster serialization
+// time and less allocations, but removed compatibility with encoding/json,
+// usage of unsafe etc. See https://github.com/mailru/easyjson#issues-notes-and-limitations
+// for details. This setting is disabled by default.
+func (r *BulkIndexRequest) UseEasyJSON(enable bool) *BulkIndexRequest {
+	r.useEasyJSON = enable
+	return r
 }
 
 // Index specifies the Elasticsearch index to use for this index request.
@@ -204,8 +220,13 @@ func (r *BulkIndexRequest) Source() ([]string, error) {
 
 	var err error
 	var body []byte
-	// encoding/json
-	body, err = json.Marshal(command)
+	if r.useEasyJSON {
+		// easyjson
+		body, err = command.MarshalJSON()
+	} else {
+		// encoding/json
+		body, err = json.Marshal(command)
+	}
 	if err != nil {
 		return nil, err
 	}

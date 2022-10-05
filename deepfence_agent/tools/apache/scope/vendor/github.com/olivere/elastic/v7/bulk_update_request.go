@@ -4,6 +4,8 @@
 
 package elastic
 
+//go:generate easyjson bulk_update_request.go
+
 import (
 	"encoding/json"
 	"fmt"
@@ -36,10 +38,14 @@ type BulkUpdateRequest struct {
 	ifPrimaryTerm   *int64
 
 	source []string
+
+	useEasyJSON bool
 }
 
+//easyjson:json
 type bulkUpdateRequestCommand map[string]bulkUpdateRequestCommandOp
 
+//easyjson:json
 type bulkUpdateRequestCommandOp struct {
 	Index  string `json:"_index,omitempty"`
 	Type   string `json:"_type,omitempty"`
@@ -54,6 +60,7 @@ type bulkUpdateRequestCommandOp struct {
 	IfPrimaryTerm   *int64 `json:"if_primary_term,omitempty"`
 }
 
+//easyjson:json
 type bulkUpdateRequestCommandData struct {
 	DetectNoop     *bool       `json:"detect_noop,omitempty"`
 	Doc            interface{} `json:"doc,omitempty"`
@@ -67,6 +74,16 @@ type bulkUpdateRequestCommandData struct {
 // NewBulkUpdateRequest returns a new BulkUpdateRequest.
 func NewBulkUpdateRequest() *BulkUpdateRequest {
 	return &BulkUpdateRequest{}
+}
+
+// UseEasyJSON is an experimental setting that enables serialization
+// with github.com/mailru/easyjson, which should in faster serialization
+// time and less allocations, but removed compatibility with encoding/json,
+// usage of unsafe etc. See https://github.com/mailru/easyjson#issues-notes-and-limitations
+// for details. This setting is disabled by default.
+func (r *BulkUpdateRequest) UseEasyJSON(enable bool) *BulkUpdateRequest {
+	r.useEasyJSON = enable
+	return r
 }
 
 // Index specifies the Elasticsearch index to use for this update request.
@@ -253,8 +270,13 @@ func (r *BulkUpdateRequest) Source() ([]string, error) {
 
 	var err error
 	var body []byte
-	// encoding/json
-	body, err = json.Marshal(command)
+	if r.useEasyJSON {
+		// easyjson
+		body, err = command.MarshalJSON()
+	} else {
+		// encoding/json
+		body, err = json.Marshal(command)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -294,8 +316,13 @@ func (r *BulkUpdateRequest) Source() ([]string, error) {
 		data.Script = script
 	}
 
-	// encoding/json
-	body, err = json.Marshal(data)
+	if r.useEasyJSON {
+		// easyjson
+		body, err = data.MarshalJSON()
+	} else {
+		// encoding/json
+		body, err = json.Marshal(data)
+	}
 	if err != nil {
 		return nil, err
 	}

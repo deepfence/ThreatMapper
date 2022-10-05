@@ -31,6 +31,8 @@ import (
 	"syscall"
 	"unsafe"
 
+	_ "github.com/iovisor/gobpf/elf/include"
+	_ "github.com/iovisor/gobpf/elf/include/uapi/linux"
 	"github.com/iovisor/gobpf/pkg/bpffs"
 	"github.com/iovisor/gobpf/pkg/cpuonline"
 )
@@ -49,8 +51,8 @@ import (
 #include <assert.h>
 #include <sys/socket.h>
 #include <linux/unistd.h>
-#include "include/bpf.h"
-#include "include/bpf_map.h"
+#include <linux/bpf.h>
+#include "bpf_map.h"
 #include <poll.h>
 #include <linux/perf_event.h>
 #include <sys/resource.h>
@@ -77,7 +79,7 @@ static void bpf_apply_relocation(int fd, struct bpf_insn *insn)
 }
 
 static int bpf_create_map(enum bpf_map_type map_type, int key_size,
-	int value_size, int max_entries)
+	int value_size, int max_entries, int map_flags)
 {
 	int ret;
 	union bpf_attr attr;
@@ -87,6 +89,7 @@ static int bpf_create_map(enum bpf_map_type map_type, int key_size,
 	attr.key_size = key_size;
 	attr.value_size = value_size;
 	attr.max_entries = max_entries;
+	attr.map_flags = map_flags;
 
 	ret = syscall(__NR_bpf, BPF_MAP_CREATE, &attr, sizeof(attr));
 	if (ret < 0 && errno == EPERM) {
@@ -124,7 +127,8 @@ void create_bpf_obj_get(const char *pathname, void *attr)
 
 int get_pinned_obj_fd(const char *path)
 {
-	union bpf_attr attr = {};
+	union bpf_attr attr;
+	memset(&attr, 0, sizeof(attr));
 	create_bpf_obj_get(path, &attr);
 	return syscall(__NR_bpf, BPF_OBJ_GET, &attr, sizeof(attr));
 }
@@ -144,12 +148,14 @@ static bpf_map *bpf_load_map(bpf_map_def *map_def, const char *path)
 	switch (map_def->pinning) {
 	case 1: // PIN_OBJECT_NS
 		// TODO to be implemented
+		free(map);
 		return 0;
 	case 2: // PIN_GLOBAL_NS
 	case 3: // PIN_CUSTOM_NS
 		if (stat(path, &st) == 0) {
 			ret = get_pinned_obj_fd(path);
 			if (ret < 0) {
+				free(map);
 				return 0;
 			}
 			map->fd = ret;
@@ -161,16 +167,19 @@ static bpf_map *bpf_load_map(bpf_map_def *map_def, const char *path)
 	map->fd = bpf_create_map(map_def->type,
 		map_def->key_size,
 		map_def->value_size,
-		map_def->max_entries
+		map_def->max_entries,
+		map_def->map_flags
 	);
 
 	if (map->fd < 0) {
+		free(map);
 		return 0;
 	}
 
 	if (do_pin) {
 		ret = bpf_pin_object(map->fd, path);
 		if (ret < 0) {
+			free(map);
 			return 0;
 		}
 	}
@@ -225,23 +234,25 @@ static int bpf_prog_load(enum bpf_prog_type prog_type,
 
 static int bpf_update_element(int fd, void *key, void *value, unsigned long long flags)
 {
-	union bpf_attr attr = {
-		.map_fd = fd,
-		.key = ptr_to_u64(key),
-		.value = ptr_to_u64(value),
-		.flags = flags,
-	};
+	union bpf_attr attr;
+
+	memset(&attr, 0, sizeof(attr));
+	attr.map_fd = fd;
+	attr.key = ptr_to_u64(key);
+	attr.value = ptr_to_u64(value);
+	attr.flags = flags;
 
 	return syscall(__NR_bpf, BPF_MAP_UPDATE_ELEM, &attr, sizeof(attr));
 }
 
 
-static int perf_event_open_map(int pid, int cpu, int group_fd, unsigned long flags)
+static int perf_event_open_map(int pid, int cpu, int group_fd, unsigned long flags, int backward)
 {
 	struct perf_event_attr attr = {0,};
 	attr.type = PERF_TYPE_SOFTWARE;
 	attr.sample_type = PERF_SAMPLE_RAW;
 	attr.wakeup_events = 1;
+	attr.write_backward = !!backward;
 
 	attr.size = sizeof(struct perf_event_attr);
 	attr.config = 10; // PERF_COUNT_SW_BPF_OUTPUT
@@ -357,6 +368,11 @@ func elfReadMaps(file *elf.File, params map[string]SectionParams) (map[string]*M
 			continue
 		}
 
+		name := strings.TrimPrefix(section.Name, "maps/")
+		if oldMap, ok := maps[name]; ok {
+			return nil, fmt.Errorf("duplicate map: %q and %q", oldMap.Name, name)
+		}
+
 		data, err := section.Data()
 		if err != nil {
 			return nil, err
@@ -365,9 +381,14 @@ func elfReadMaps(file *elf.File, params map[string]SectionParams) (map[string]*M
 			return nil, fmt.Errorf("only one map with size %d bytes allowed per section (check bpf_map_def)", C.sizeof_struct_bpf_map_def)
 		}
 
-		name := strings.TrimPrefix(section.Name, "maps/")
-
 		mapDef := (*C.bpf_map_def)(unsafe.Pointer(&data[0]))
+
+		// check if the map size has to be changed
+		if p, ok := params[section.Name]; ok {
+			if p.MapMaxEntries != 0 {
+				mapDef.max_entries = C.uint(p.MapMaxEntries)
+			}
+		}
 
 		mapPath, err := createMapPath(mapDef, name, params[section.Name])
 		if err != nil {
@@ -381,9 +402,6 @@ func elfReadMaps(file *elf.File, params map[string]SectionParams) (map[string]*M
 			return nil, fmt.Errorf("error while loading map %q: %v", section.Name, err)
 		}
 
-		if oldMap, ok := maps[name]; ok {
-			return nil, fmt.Errorf("duplicate map: %q and %q", oldMap.Name, name)
-		}
 		maps[name] = &Map{
 			Name: name,
 			m:    cm,
@@ -466,9 +484,12 @@ func (b *Module) relocate(data []byte, rdata []byte) error {
 }
 
 type SectionParams struct {
-	PerfRingBufferPageCount   int
-	SkipPerfMapInitialization bool
-	PinPath                   string // path to be pinned, relative to "/sys/fs/bpf"
+	PerfRingBufferPageCount    int
+	SkipPerfMapInitialization  bool
+	PinPath                    string // path to be pinned, relative to "/sys/fs/bpf"
+	MapMaxEntries              int    // Used to override bpf map entries size
+	PerfRingBufferBackward     bool
+	PerfRingBufferOverwritable bool
 }
 
 // Load loads the BPF programs and BPF maps in the module. Each ELF section
@@ -539,18 +560,26 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 
 			isKprobe := strings.HasPrefix(secName, "kprobe/")
 			isKretprobe := strings.HasPrefix(secName, "kretprobe/")
+			isUprobe := strings.HasPrefix(secName, "uprobe/")
+			isUretprobe := strings.HasPrefix(secName, "uretprobe/")
 			isCgroupSkb := strings.HasPrefix(secName, "cgroup/skb")
 			isCgroupSock := strings.HasPrefix(secName, "cgroup/sock")
 			isSocketFilter := strings.HasPrefix(secName, "socket")
 			isTracepoint := strings.HasPrefix(secName, "tracepoint/")
 			isSchedCls := strings.HasPrefix(secName, "sched_cls/")
 			isSchedAct := strings.HasPrefix(secName, "sched_act/")
+			isXDP := strings.HasPrefix(secName, "xdp/")
 
 			var progType uint32
 			switch {
+
 			case isKprobe:
 				fallthrough
 			case isKretprobe:
+				fallthrough
+			case isUprobe:
+				fallthrough
+			case isUretprobe:
 				progType = uint32(C.BPF_PROG_TYPE_KPROBE)
 			case isCgroupSkb:
 				progType = uint32(C.BPF_PROG_TYPE_CGROUP_SKB)
@@ -564,9 +593,24 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 				progType = uint32(C.BPF_PROG_TYPE_SCHED_CLS)
 			case isSchedAct:
 				progType = uint32(C.BPF_PROG_TYPE_SCHED_ACT)
+			case isXDP:
+				progType = uint32(C.BPF_PROG_TYPE_XDP)
 			}
 
-			if isKprobe || isKretprobe || isCgroupSkb || isCgroupSock || isSocketFilter || isTracepoint || isSchedCls || isSchedAct {
+			// If Kprobe or Kretprobe for a syscall, use correct syscall prefix in section name
+			if b.compatProbe && (isKprobe || isKretprobe) {
+				str := strings.Split(secName, "/")
+				if (strings.HasPrefix(str[1], "SyS_")) || (strings.HasPrefix(str[1], "sys_")) {
+					name := strings.TrimPrefix(str[1], "SyS_")
+					name = strings.TrimPrefix(name, "sys_")
+					syscallFnName, err := GetSyscallFnName(name)
+					if err == nil {
+						secName = fmt.Sprintf("%s/%s", str[0], syscallFnName)
+					}
+				}
+			}
+
+			if isKprobe || isKretprobe || isUprobe || isUretprobe || isCgroupSkb || isCgroupSock || isSocketFilter || isTracepoint || isSchedCls || isSchedAct || isXDP {
 				rdata, err := rsection.Data()
 				if err != nil {
 					return err
@@ -601,6 +645,15 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 						fd:    int(progFd),
 						efd:   -1,
 					}
+				case isUprobe:
+					fallthrough
+				case isUretprobe:
+					b.uprobes[secName] = &Uprobe{
+						Name:  secName,
+						insns: insns,
+						fd:    int(progFd),
+						efds:  make(map[string]int),
+					}
 				case isCgroupSkb:
 					fallthrough
 				case isCgroupSock:
@@ -620,6 +673,7 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 						Name:  secName,
 						insns: insns,
 						fd:    int(progFd),
+						efd:   -1,
 					}
 				case isSchedCls:
 					fallthrough
@@ -628,6 +682,12 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 						Name:  secName,
 						insns: insns,
 						fd:    int(progFd),
+					}
+				case isXDP:
+					b.xdpPrograms[secName] = &XDPProgram{
+						Name: secName,
+						insns: insns,
+						fd: int(progFd),
 					}
 				}
 			}
@@ -643,18 +703,25 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 
 		isKprobe := strings.HasPrefix(secName, "kprobe/")
 		isKretprobe := strings.HasPrefix(secName, "kretprobe/")
+		isUprobe := strings.HasPrefix(secName, "uprobe/")
+		isUretprobe := strings.HasPrefix(secName, "uretprobe/")
 		isCgroupSkb := strings.HasPrefix(secName, "cgroup/skb")
 		isCgroupSock := strings.HasPrefix(secName, "cgroup/sock")
 		isSocketFilter := strings.HasPrefix(secName, "socket")
 		isTracepoint := strings.HasPrefix(secName, "tracepoint/")
 		isSchedCls := strings.HasPrefix(secName, "sched_cls/")
 		isSchedAct := strings.HasPrefix(secName, "sched_act/")
+		isXDP := strings.HasPrefix(secName, "xdp/")
 
 		var progType uint32
 		switch {
 		case isKprobe:
 			fallthrough
 		case isKretprobe:
+			fallthrough
+		case isUprobe:
+			fallthrough
+		case isUretprobe:
 			progType = uint32(C.BPF_PROG_TYPE_KPROBE)
 		case isCgroupSkb:
 			progType = uint32(C.BPF_PROG_TYPE_CGROUP_SKB)
@@ -668,9 +735,24 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 			progType = uint32(C.BPF_PROG_TYPE_SCHED_CLS)
 		case isSchedAct:
 			progType = uint32(C.BPF_PROG_TYPE_SCHED_ACT)
+		case isXDP:
+			progType = uint32(C.BPF_PROG_TYPE_XDP)
 		}
 
-		if isKprobe || isKretprobe || isCgroupSkb || isCgroupSock || isSocketFilter || isTracepoint || isSchedCls || isSchedAct {
+		// If Kprobe or Kretprobe for a syscall, use correct syscall prefix in section name
+		if b.compatProbe && (isKprobe || isKretprobe) {
+			str := strings.Split(secName, "/")
+			if (strings.HasPrefix(str[1], "SyS_")) || (strings.HasPrefix(str[1], "sys_")) {
+				name := strings.TrimPrefix(str[1], "SyS_")
+				name = strings.TrimPrefix(name, "sys_")
+				syscallFnName, err := GetSyscallFnName(name)
+				if err == nil {
+					secName = fmt.Sprintf("%s/%s", str[0], syscallFnName)
+				}
+			}
+		}
+
+		if isKprobe || isKretprobe || isUprobe || isUretprobe || isCgroupSkb || isCgroupSock || isSocketFilter || isTracepoint || isSchedCls || isSchedAct || isXDP {
 			data, err := section.Data()
 			if err != nil {
 				return err
@@ -700,6 +782,15 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 					fd:    int(progFd),
 					efd:   -1,
 				}
+			case isUprobe:
+				fallthrough
+			case isUretprobe:
+				b.uprobes[secName] = &Uprobe{
+					Name:  secName,
+					insns: insns,
+					fd:    int(progFd),
+					efds:  make(map[string]int),
+				}
 			case isCgroupSkb:
 				fallthrough
 			case isCgroupSock:
@@ -719,6 +810,7 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 					Name:  secName,
 					insns: insns,
 					fd:    int(progFd),
+					efd:   -1,
 				}
 			case isSchedCls:
 				fallthrough
@@ -728,11 +820,72 @@ func (b *Module) Load(parameters map[string]SectionParams) error {
 					insns: insns,
 					fd:    int(progFd),
 				}
+			case isXDP:
+				b.xdpPrograms[secName] = &XDPProgram{
+					Name: secName,
+					insns: insns,
+					fd: int(progFd),
+				}
 			}
 		}
 	}
 
 	return b.initializePerfMaps(parameters)
+}
+
+func createPerfRingBuffer(backward bool, overwriteable bool, pageCount int) ([]C.int, []*C.struct_perf_event_mmap_page, [][]byte, error) {
+	pageSize := os.Getpagesize()
+
+	cpus, err := cpuonline.Get()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to determine online cpus: %v", err)
+	}
+
+	pmuFds := make([]C.int, len(cpus))
+	headers := make([]*C.struct_perf_event_mmap_page, len(cpus))
+	bases := make([][]byte, len(cpus))
+
+	for i, cpu := range cpus {
+		cpuC := C.int(cpu)
+		backwardC := C.int(0)
+		if backward {
+			backwardC = 1
+		}
+		pmuFD, err := C.perf_event_open_map(-1 /* pid */, cpuC /* cpu */, -1 /* group_fd */, C.PERF_FLAG_FD_CLOEXEC, backwardC)
+		if pmuFD < 0 {
+			return nil, nil, nil, fmt.Errorf("perf_event_open for map error: %v", err)
+		}
+
+		// mmap
+		mmapSize := pageSize * (pageCount + 1)
+
+		// The 'overwritable' bit is set via PROT_WRITE, see:
+		// https://github.com/torvalds/linux/commit/9ecda41acb971ebd07c8fb35faf24005c0baea12
+		// "By mapping without 'PROT_WRITE', an overwritable ring buffer is created."
+		var prot int
+		if overwriteable {
+			prot = syscall.PROT_READ
+		} else {
+			prot = syscall.PROT_READ | syscall.PROT_WRITE
+		}
+
+		base, err := syscall.Mmap(int(pmuFD), 0, mmapSize, prot, syscall.MAP_SHARED)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("mmap error: %v", err)
+		}
+
+		// enable
+		_, _, err2 := syscall.Syscall(syscall.SYS_IOCTL, uintptr(pmuFD), C.PERF_EVENT_IOC_ENABLE, 0)
+		if err2 != 0 {
+			return nil, nil, nil, fmt.Errorf("error enabling perf event: %v", err2)
+		}
+
+		pmuFds[i] = pmuFD
+		headers[i] = (*C.struct_perf_event_mmap_page)(unsafe.Pointer(&base[0]))
+		bases[i] = base
+	}
+
+	return pmuFds, headers, bases, nil
 }
 
 func (b *Module) initializePerfMaps(parameters map[string]SectionParams) error {
@@ -741,8 +894,9 @@ func (b *Module) initializePerfMaps(parameters map[string]SectionParams) error {
 			continue
 		}
 
-		pageSize := os.Getpagesize()
 		b.maps[name].pageCount = 8 // reasonable default
+		backward := false
+		overwriteable := false
 
 		sectionName := "maps/" + name
 		if params, ok := parameters[sectionName]; ok {
@@ -755,6 +909,17 @@ func (b *Module) initializePerfMaps(parameters map[string]SectionParams) error {
 				}
 				b.maps[name].pageCount = params.PerfRingBufferPageCount
 			}
+			if params.PerfRingBufferBackward {
+				backward = true
+			}
+			if params.PerfRingBufferOverwritable {
+				overwriteable = true
+			}
+		}
+
+		pmuFds, headers, bases, err := createPerfRingBuffer(backward, overwriteable, b.maps[name].pageCount)
+		if err != nil {
+			return fmt.Errorf("cannot create perfring map %v", err)
 		}
 
 		cpus, err := cpuonline.Get()
@@ -762,38 +927,42 @@ func (b *Module) initializePerfMaps(parameters map[string]SectionParams) error {
 			return fmt.Errorf("failed to determine online cpus: %v", err)
 		}
 
-		for _, cpu := range cpus {
-			cpuC := C.int(cpu)
-			pmuFD, err := C.perf_event_open_map(-1 /* pid */, cpuC /* cpu */, -1 /* group_fd */, C.PERF_FLAG_FD_CLOEXEC)
-			if pmuFD < 0 {
-				return fmt.Errorf("perf_event_open for map error: %v", err)
-			}
-
-			// mmap
-			mmapSize := pageSize * (b.maps[name].pageCount + 1)
-
-			base, err := syscall.Mmap(int(pmuFD), 0, mmapSize, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_SHARED)
-			if err != nil {
-				return fmt.Errorf("mmap error: %v", err)
-			}
-
-			// enable
-			_, _, err2 := syscall.Syscall(syscall.SYS_IOCTL, uintptr(pmuFD), C.PERF_EVENT_IOC_ENABLE, 0)
-			if err2 != 0 {
-				return fmt.Errorf("error enabling perf event: %v", err2)
-			}
-
+		for index, cpu := range cpus {
 			// assign perf fd to map
-			ret, err := C.bpf_update_element(C.int(b.maps[name].m.fd), unsafe.Pointer(&cpuC), unsafe.Pointer(&pmuFD), C.BPF_ANY)
+			ret, err := C.bpf_update_element(C.int(b.maps[name].m.fd), unsafe.Pointer(&cpu), unsafe.Pointer(&pmuFds[index]), C.BPF_ANY)
 			if ret != 0 {
-				return fmt.Errorf("cannot assign perf fd to map %q: %v (cpu %d)", name, err, cpuC)
+				return fmt.Errorf("cannot assign perf fd to map %q: %v (cpu %d)", name, err, index)
 			}
-
-			b.maps[name].pmuFDs = append(b.maps[name].pmuFDs, pmuFD)
-			b.maps[name].headers = append(b.maps[name].headers, (*C.struct_perf_event_mmap_page)(unsafe.Pointer(&base[0])))
 		}
+
+		b.maps[name].pmuFDs = pmuFds
+		b.maps[name].headers = headers
+		b.maps[name].bases = bases
 	}
 
+	return nil
+}
+
+// PerfMapStop stops the BPF program from writing into the perf ring buffers.
+// However, the userspace program can still read the ring buffers.
+func (b *Module) PerfMapStop(mapName string) error {
+	m, ok := b.maps[mapName]
+	if !ok {
+		return fmt.Errorf("map %q not found", mapName)
+	}
+	if m.m.def._type != C.BPF_MAP_TYPE_PERF_EVENT_ARRAY {
+		return fmt.Errorf("%q is not a perf map", mapName)
+	}
+	cpus, err := cpuonline.Get()
+	if err != nil {
+		return fmt.Errorf("failed to determine online cpus: %v", err)
+	}
+	for _, cpu := range cpus {
+		err = b.DeleteElement(m, unsafe.Pointer(&cpu))
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -806,6 +975,7 @@ type Map struct {
 	// only for perf maps
 	pmuFDs    []C.int
 	headers   []*C.struct_perf_event_mmap_page
+	bases     [][]byte
 	pageCount int
 }
 
@@ -826,4 +996,11 @@ func (b *Module) Map(name string) *Map {
 
 func (m *Map) Fd() int {
 	return int(m.m.fd)
+}
+
+// GetProgFd returns the fd for a pinned bpf program at the given path
+func GetProgFd(pinPath string) int {
+	pathC := C.CString(pinPath)
+	defer C.free(unsafe.Pointer(pathC))
+	return int(C.get_pinned_obj_fd(pathC))
 }

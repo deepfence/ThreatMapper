@@ -116,6 +116,30 @@ func (b *Module) LookupElement(mp *Map, key, value unsafe.Pointer) error {
 	return nil
 }
 
+// LookupAndDeleteElement picks up and delete the element in the the map stored in mp.
+// The value is stored in the value unsafe.Pointer.
+func (b *Module) LookupAndDeleteElement(mp *Map, value unsafe.Pointer) error {
+	uba := C.union_bpf_attr{}
+	C.create_bpf_lookup_elem(
+		C.int(mp.m.fd),
+		unsafe.Pointer(nil),
+		value,
+		unsafe.Pointer(&uba),
+	)
+	ret, _, err := syscall.Syscall(
+		C.__NR_bpf,
+		C.BPF_MAP_LOOKUP_AND_DELETE_ELEM,
+		uintptr(unsafe.Pointer(&uba)),
+		unsafe.Sizeof(uba),
+	)
+
+	if ret != 0 || err != 0 {
+		return fmt.Errorf("unable to lookup and delete element: %s", err)
+	}
+
+	return nil
+}
+
 // DeleteElement deletes the given key in the the map stored in mp.
 // The key is stored in the key unsafe.Pointer.
 func (b *Module) DeleteElement(mp *Map, key unsafe.Pointer) error {
@@ -158,6 +182,9 @@ func (b *Module) LookupNextElement(mp *Map, key, nextKey, value unsafe.Pointer) 
 		uintptr(unsafe.Pointer(&uba)),
 		unsafe.Sizeof(uba),
 	)
+	if err == syscall.ENOENT {
+		return false, nil
+	}
 	if err != 0 {
 		return false, fmt.Errorf("unable to find next element: %s", err)
 	}

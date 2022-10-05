@@ -1,4 +1,3 @@
-//go:build linux
 // +build linux
 
 package tracer
@@ -32,46 +31,26 @@ func TracerAsset() ([]byte, error) {
 	return buf, nil
 }
 
-func loadBpfModule() (*bpflib.Module, error) {
-	retry := 1
-	var m *bpflib.Module
+func NewTracer(cb Callback) (*Tracer, error) {
 	buf, err := Asset("tcptracer-ebpf.o")
 	if err != nil {
 		return nil, fmt.Errorf("couldn't find asset: %s", err)
 	}
-	for {
-		reader := bytes.NewReader(buf)
-		m = bpflib.NewModuleFromReader(reader)
-		if m == nil {
-			return nil, fmt.Errorf("BPF not supported")
-		}
+	reader := bytes.NewReader(buf)
 
-		sectionParams := make(map[string]bpflib.SectionParams)
-		sectionParams["maps/tcp_event_ipv4"] = bpflib.SectionParams{PerfRingBufferPageCount: 256}
-		err = m.Load(sectionParams)
-		if err != nil {
-			return nil, err
-		}
-
-		err = m.EnableKprobes(maxActive)
-		if err == nil {
-			break
-		} else {
-			if retry == 0 {
-				return nil, err
-			}
-			err = m.Close()
-			if err != nil {
-				return nil, err
-			}
-			retry -= 1
-		}
+	m := bpflib.NewModuleFromReader(reader)
+	if m == nil {
+		return nil, fmt.Errorf("BPF not supported")
 	}
-	return m, nil
-}
 
-func NewTracer(cb Callback) (*Tracer, error) {
-	m, err := loadBpfModule()
+	sectionParams := make(map[string]bpflib.SectionParams)
+	sectionParams["maps/tcp_event_ipv4"] = bpflib.SectionParams{PerfRingBufferPageCount: 256}
+	err = m.Load(sectionParams)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.EnableKprobes(maxActive)
 	if err != nil {
 		return nil, err
 	}

@@ -458,9 +458,16 @@ func (s *SearchService) TypedKeys(enabled bool) *SearchService {
 	return s
 }
 
-// SeqNoPrimaryTerm specifies whether to return sequence number and
-// primary term of the last modification of each hit.
+// SeqNoPrimaryTerm is an alias for SeqNoAndPrimaryTerm.
+//
+// Deprecated: Use SeqNoAndPrimaryTerm.
 func (s *SearchService) SeqNoPrimaryTerm(enabled bool) *SearchService {
+	return s.SeqNoAndPrimaryTerm(enabled)
+}
+
+// SeqNoAndPrimaryTerm specifies whether to return sequence number and
+// primary term of the last modification of each hit.
+func (s *SearchService) SeqNoAndPrimaryTerm(enabled bool) *SearchService {
 	s.seqNoPrimaryTerm = &enabled
 	return s
 }
@@ -876,6 +883,7 @@ type SearchProfileShardResult struct {
 	ID           string                    `json:"id"`
 	Searches     []QueryProfileShardResult `json:"searches"`
 	Aggregations []ProfileResult           `json:"aggregations"`
+	Fetch        *ProfileResult            `json:"fetch"`
 }
 
 // QueryProfileShardResult is a container class to hold the profile results
@@ -901,12 +909,13 @@ type CollectorResult struct {
 // ProfileResult is the internal representation of a profiled query,
 // corresponding to a single node in the query tree.
 type ProfileResult struct {
-	Type          string           `json:"type"`
-	Description   string           `json:"description,omitempty"`
-	NodeTime      string           `json:"time,omitempty"`
-	NodeTimeNanos int64            `json:"time_in_nanos,omitempty"`
-	Breakdown     map[string]int64 `json:"breakdown,omitempty"`
-	Children      []ProfileResult  `json:"children,omitempty"`
+	Type          string                 `json:"type"`
+	Description   string                 `json:"description,omitempty"`
+	NodeTime      string                 `json:"time,omitempty"`
+	NodeTimeNanos int64                  `json:"time_in_nanos,omitempty"`
+	Breakdown     map[string]int64       `json:"breakdown,omitempty"`
+	Children      []ProfileResult        `json:"children,omitempty"`
+	Debug         map[string]interface{} `json:"debug,omitempty"`
 }
 
 // Aggregations (see search_aggs.go)
