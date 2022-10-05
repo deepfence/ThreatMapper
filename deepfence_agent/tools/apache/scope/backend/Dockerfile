@@ -1,4 +1,6 @@
 FROM golang:1.16.2
+RUN wget https://go.dev/dl/go1.19.2.linux-amd64.tar.gz
+RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.19.2.linux-amd64.tar.gz
 ENV SCOPE_SKIP_UI_ASSETS true
 RUN set -eux; \
    export arch_val="$(dpkg --print-architecture)"; \
@@ -17,11 +19,6 @@ RUN go clean -i net && \
    if [ "$arch_val" != "ppc64el" ]; then \
 	go install -race -tags netgo std; \
    fi; \
-    go get -tags netgo \
-		#github.com/fzipp/gocyclo \
-		golang.org/x/lint/golint \
-		github.com/kisielk/errcheck \
-		github.com/client9/misspell/cmd/misspell && \
 	chmod a+wr --recursive /usr/local/go && \
 	rm -rf /go/pkg/ /go/src/
 
