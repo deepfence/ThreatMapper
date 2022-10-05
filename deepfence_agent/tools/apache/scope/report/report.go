@@ -548,6 +548,7 @@ func MakeReport() Report {
 func (r Report) Copy() Report {
 	newReport := Report{
 		TS:       r.TS,
+		Host:     r.Host.Copy(),
 		DNS:      r.DNS.Copy(),
 		Sampling: r.Sampling,
 		Window:   r.Window,

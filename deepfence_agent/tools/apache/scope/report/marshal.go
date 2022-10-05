@@ -183,11 +183,11 @@ func fileType(path string) (msgpack int, gzipped bool, err error) {
 }
 
 func codecHandle(msgpack int) codec.Handle {
-	if (msgpack == 0) {
+	if msgpack == 0 {
 		return &codec.JsonHandle{}
-	} else if (msgpack == 1) {
+	} else if msgpack == 1 {
 		return &codec.MsgpackHandle{}
-	} else if (msgpack == 2) {
+	} else if msgpack == 2 {
 		return &codec.BincHandle{}
 	}
 	return nil
