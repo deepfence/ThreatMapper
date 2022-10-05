@@ -24,6 +24,7 @@ const (
 	ingester_size       = 25_000
 	db_clean_up_timeout = time.Minute * 2
 	max_entries_network = 100_000
+	enqueer_timeout     = time.Second * 30
 )
 
 type EndpointResolvers struct {
@@ -40,9 +41,8 @@ func NewEndpointResolvers() EndpointResolvers {
 
 type neo4jCollector struct {
 	driver           neo4j.Driver
-	ingester         chan string
-	reports_access   sync.Mutex
-	report_buffers   map[string]*report.Report
+	enqueer          chan *report.Report
+	ingester         chan map[string]*report.Report
 	resolvers_access sync.RWMutex
 	resolvers        EndpointResolvers
 	batcher          chan neo4jIngestionData
@@ -51,24 +51,32 @@ type neo4jCollector struct {
 	preparers_input  chan *report.Report
 }
 
-func (nc* neo4jCollector) enqueueReport(rpt *report.Report) error {
-	var probe_id string
-	for _, n := range rpt.Host.Nodes {
-		probe_id, _ = n.Latest.Lookup("control_probe_id")
-		if len(rpt.Host.Nodes) > 1 {
-			fmt.Printf("multiple probe ids: %v\n", probe_id)
-		}
-	}
-
-	nc.reports_access.Lock()
-	defer nc.reports_access.Unlock()
-	old, _ := nc.report_buffers[probe_id]
-	nc.report_buffers[probe_id] = rpt
-	if old == nil {
-		select {
-		case nc.ingester <- probe_id:
-		default:
-			return fmt.Errorf("ingester channel full")
+func (nc* neo4jCollector) runEnqueueReport() error {
+	report_buffer := map[string]*report.Report{}
+	timeout := time.After(enqueer_timeout)
+	i := 0
+	for {
+		select  {
+		case rpt:=<-nc.enqueer:
+			var probe_id string
+			for _, n := range rpt.Host.Nodes {
+				probe_id, _ = n.Latest.Lookup("control_probe_id")
+				if len(rpt.Host.Nodes) > 1 {
+					logrus.Errorf("multiple probe ids: %v", probe_id)
+				}
+			}
+			report_buffer[probe_id] = rpt
+			i += 1
+		case <- timeout:
+			fmt.Printf("Sending %v unique reports over %v received\n", len(report_buffer), i)
+			select {
+			case nc.ingester <- report_buffer:
+				report_buffer = map[string]*report.Report{}
+				i = 0
+			default:
+				return fmt.Errorf("ingester channel full")
+			}
+			timeout = time.After(enqueer_timeout)
 		}
 	}
 	return nil
@@ -525,7 +533,12 @@ func (nc *neo4jCollector) UnWait(_ context.Context, _ chan struct{}) {
 }
 
 func (nc *neo4jCollector) Add(_ context.Context, rpt report.Report, _ []byte) error {
-	return nc.enqueueReport(&rpt)
+	select {
+	case nc.enqueer <- &rpt:
+	default:
+		return fmt.Errorf("enqueer channel full")
+	}
+	return nil
 }
 
 func (nc *neo4jCollector) CleanUpDB() error {
@@ -642,21 +655,19 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 }
 
 func (nc *neo4jCollector) runIngester() {
-	for probe_id := range nc.ingester {
-		nc.reports_access.Lock()
-		rpt, _ := nc.report_buffers[probe_id]
-		nc.report_buffers[probe_id] = nil
-		nc.reports_access.Unlock()
-		select {
-		case nc.preparers_input <- rpt:
-		default:
-			logrus.Warnf("preparer channel full")
-		}
+	for reports := range nc.ingester {
+		for _, rpt := range reports {
+			select {
+			case nc.preparers_input <- rpt:
+			default:
+				logrus.Warnf("preparer channel full")
+			}
 
-		select {
-		case nc.resolvers_input <- rpt:
-		default:
-			logrus.Warnf("resolvers channel full")
+			select {
+			case nc.resolvers_input <- rpt:
+			default:
+				logrus.Warnf("resolvers channel full")
+			}
 		}
 	}
 }
@@ -764,8 +775,8 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 	nc := &neo4jCollector{
 		driver:           driver,
 		resolvers:        NewEndpointResolvers(),
-		ingester:         make(chan string, ingester_size),
-		report_buffers:   map[string]*report.Report{},
+		enqueer:          make(chan *report.Report, ingester_size),
+		ingester:         make(chan map[string]*report.Report, ingester_size),
 		batcher:          make(chan neo4jIngestionData, ingester_size),
 		resolvers_update: make(chan EndpointResolvers, ingester_size),
 		resolvers_input:  make(chan *report.Report, ingester_size),
@@ -786,6 +797,7 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 	go nc.resolversUpdater()
 
 	go nc.runIngester()
+	go nc.runEnqueueReport()
 
 	return nc, nil
 }
