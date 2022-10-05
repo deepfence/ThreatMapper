@@ -150,7 +150,7 @@ func appendIndexed(dst []byte, i uint64) []byte {
 // extended buffer.
 //
 // If f.Sensitive is true, "Never Indexed" representation is used. If
-// f.Sensitive is false and indexing is true, "Inremental Indexing"
+// f.Sensitive is false and indexing is true, "Incremental Indexing"
 // representation is used.
 func appendNewName(dst []byte, f HeaderField, indexing bool) []byte {
 	dst = append(dst, encodeTypeByte(indexing, f.Sensitive))
@@ -191,7 +191,7 @@ func appendTableSize(dst []byte, v uint32) []byte {
 // bit prefix, to dst and returns the extended buffer.
 //
 // See
-// http://http2.github.io/http2-spec/compression.html#integer.representation
+// https://httpwg.org/specs/rfc7541.html#integer.representation
 func appendVarInt(dst []byte, n byte, i uint64) []byte {
 	k := uint64((1 << n) - 1)
 	if i < k {

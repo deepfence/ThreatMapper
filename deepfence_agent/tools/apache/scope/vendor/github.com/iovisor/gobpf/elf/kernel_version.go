@@ -75,18 +75,23 @@ func currentVersionUbuntu() (uint32, error) {
 	return KernelVersionFromReleaseString(releaseString)
 }
 
-var debianVersionRegex = regexp.MustCompile(`.* SMP Debian (\d+\.\d+.\d+-\d+) .*`)
+var debianVersionRegex = regexp.MustCompile(`.* SMP Debian (\d+\.\d+.\d+-\d+)(?:\+[[:alnum:]]*)?.*`)
+
+func parseDebianVersion(str string) (uint32, error) {
+	match := debianVersionRegex.FindStringSubmatch(str)
+	if len(match) != 2 {
+		return 0, fmt.Errorf("failed to parse kernel version from /proc/version: %s", str)
+	}
+	return KernelVersionFromReleaseString(match[1])
+}
 
 func currentVersionDebian() (uint32, error) {
 	procVersion, err := ioutil.ReadFile("/proc/version")
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error reading /proc/version: %s", err)
 	}
-	match := debianVersionRegex.FindStringSubmatch(string(procVersion))
-	if len(match) != 2 {
-		return 0, fmt.Errorf("failed to get kernel version from /proc/version: %s", procVersion)
-	}
-	return KernelVersionFromReleaseString(match[1])
+
+	return parseDebianVersion(string(procVersion))
 }
 
 // CurrentKernelVersion returns the current kernel version in

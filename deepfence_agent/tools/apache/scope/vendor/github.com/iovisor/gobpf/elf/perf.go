@@ -24,12 +24,15 @@ import (
 	"sort"
 	"syscall"
 	"unsafe"
+
+	"github.com/iovisor/gobpf/pkg/cpuonline"
 )
 
 /*
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <linux/perf_event.h>
 #include <poll.h>
@@ -45,6 +48,12 @@ struct event_sample {
 struct read_state {
 	void *buf;
 	int buf_len;
+	// These two fields are for backward reading: as opposed to normal ring buffers,
+	// backward read buffers don't update the read pointer when reading.
+	// So we keep the state externally here.
+	uint64_t data_head_initialized;
+	uint64_t data_head;
+	uint64_t wrapped;
 };
 
 static int perf_event_read(int page_count, int page_size, void *_state,
@@ -100,6 +109,61 @@ static int perf_event_read(int page_count, int page_size, void *_state,
 
 	return e->header.type;
 }
+
+static int perf_event_dump_backward(int page_count, int page_size, void *_state,
+		    void *_header, void *_sample_ptr)
+{
+	volatile struct perf_event_mmap_page *header = _header;
+	uint64_t data_head = header->data_head;
+	uint64_t raw_size = (uint64_t)page_count * page_size;
+	void *base  = ((uint8_t *)header) + page_size;
+	struct read_state *state = _state;
+	struct perf_event_header *p, *head;
+	void **sample_ptr = (void **) _sample_ptr;
+	void *begin, *end;
+	uint64_t new_head;
+
+	if (state->data_head_initialized == 0) {
+		state->data_head_initialized = 1;
+		state->data_head = data_head & (raw_size - 1);
+	}
+
+	if ((state->wrapped && state->data_head >= data_head) || state->wrapped > 1) {
+		return 0;
+	}
+
+	begin = p = base + state->data_head;
+
+	if (p->type != PERF_RECORD_SAMPLE)
+		return 0;
+
+	new_head = (state->data_head + p->size) & (raw_size - 1);
+	end = base + new_head;
+
+	if (state->buf_len < p->size || !state->buf) {
+		state->buf = realloc(state->buf, p->size);
+		state->buf_len = p->size;
+	}
+
+	if (end < begin) {
+		uint64_t len = base + raw_size - begin;
+
+		memcpy(state->buf, begin, len);
+		memcpy((char *) state->buf + len, base, p->size - len);
+	} else {
+		memcpy(state->buf, begin, p->size);
+	}
+
+	*sample_ptr = state->buf;
+
+	if (new_head <= state->data_head) {
+		state->wrapped++;
+	}
+
+	state->data_head = new_head;
+
+	return p->type;
+}
 */
 import "C"
 
@@ -137,6 +201,106 @@ func InitPerfMap(b *Module, mapName string, receiverChan chan []byte, lostChan c
 		lostChan:     lostChan,
 		pollStop:     make(chan struct{}),
 	}, nil
+}
+
+func (pm *PerfMap) SwapAndDumpBackward() (out [][]byte) {
+	m, ok := pm.program.maps[pm.name]
+	if !ok {
+		// should not happen or only when pm.program is
+		// suddenly changed
+		panic(fmt.Sprintf("cannot find map %q", pm.name))
+	}
+
+	// step 1: create a new perf ring buffer
+	pmuFds, headers, bases, err := createPerfRingBuffer(true, true, pm.pageCount)
+	if err != nil {
+		return
+	}
+
+	cpus, err := cpuonline.Get()
+	if err != nil {
+		return
+	}
+
+	// step 2: swap file descriptors
+	// after it the ebpf programs will write to the new map
+	for index, cpu := range cpus {
+		// assign perf fd to map
+		err := pm.program.UpdateElement(m, unsafe.Pointer(&cpu), unsafe.Pointer(&pmuFds[index]), 0)
+		if err != nil {
+			return
+		}
+	}
+
+	// step 3: dump old buffer
+	out = pm.DumpBackward()
+
+	// step4: close old buffer
+	// unmap
+	for _, base := range m.bases {
+		err := syscall.Munmap(base)
+		if err != nil {
+			return
+		}
+	}
+
+	for _, fd := range m.pmuFDs {
+		// disable
+		_, _, err2 := syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd), C.PERF_EVENT_IOC_DISABLE, 0)
+		if err2 != 0 {
+			return
+		}
+
+		// close
+		if err := syscall.Close(int(fd)); err != nil {
+			return
+		}
+	}
+
+	// update file descriptors to new perf ring buffer
+	m.pmuFDs = pmuFds
+	m.headers = headers
+	m.bases = bases
+
+	return
+}
+
+func (pm *PerfMap) DumpBackward() (out [][]byte) {
+	incoming := OrderedBytesArray{timestamp: pm.timestamp}
+
+	m, ok := pm.program.maps[pm.name]
+	if !ok {
+		// should not happen or only when pm.program is
+		// suddenly changed
+		panic(fmt.Sprintf("cannot find map %q", pm.name))
+	}
+
+	cpuCount := len(m.pmuFDs)
+	pageSize := os.Getpagesize()
+	for cpu := 0; cpu < cpuCount; cpu++ {
+		state := C.struct_read_state{}
+	ringBufferLoop:
+		for {
+			var sample *PerfEventSample
+			ok := C.perf_event_dump_backward(C.int(pm.pageCount), C.int(pageSize),
+				unsafe.Pointer(&state), unsafe.Pointer(m.headers[cpu]),
+				unsafe.Pointer(&sample))
+			switch ok {
+			case 0:
+				break ringBufferLoop // nothing to read
+			case C.PERF_RECORD_SAMPLE:
+				size := sample.Size - 4
+				b := C.GoBytes(unsafe.Pointer(&sample.data), C.int(size))
+				incoming.bytesArray = append(incoming.bytesArray, b)
+			}
+		}
+	}
+
+	if incoming.timestamp != nil {
+		sort.Sort(incoming)
+	}
+
+	return incoming.bytesArray
 }
 
 // SetTimestampFunc registers a timestamp callback that will be used to
@@ -190,7 +354,7 @@ func (pm *PerfMap) PollStart() {
 				}
 
 				var harvestCount C.int
-				beforeHarvest := nowNanoseconds()
+				beforeHarvest := NowNanoseconds()
 				for cpu := 0; cpu < cpuCount; cpu++ {
 				ringBufferLoop:
 					for {
@@ -314,8 +478,8 @@ type PerfEventLost struct {
 	Lost uint64
 }
 
-// nowNanoseconds returns a time that can be compared to bpf_ktime_get_ns()
-func nowNanoseconds() uint64 {
+// NowNanoseconds returns a time that can be compared to bpf_ktime_get_ns()
+func NowNanoseconds() uint64 {
 	var ts syscall.Timespec
 	syscall.Syscall(syscall.SYS_CLOCK_GETTIME, 1 /* CLOCK_MONOTONIC */, uintptr(unsafe.Pointer(&ts)), 0)
 	sec, nsec := ts.Unix()

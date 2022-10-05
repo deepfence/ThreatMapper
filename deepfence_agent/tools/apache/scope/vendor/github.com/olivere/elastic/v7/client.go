@@ -26,7 +26,7 @@ import (
 
 const (
 	// Version is the current version of Elastic.
-	Version = "7.0.28"
+	Version = "7.0.32"
 
 	// DefaultURL is the default endpoint of Elasticsearch on the local machine.
 	// It is used e.g. when initializing a new Client without a specific URL.
@@ -84,6 +84,9 @@ const (
 )
 
 var (
+	// nilByte is used in JSON marshal/unmarshal
+	nilByte = []byte("null")
+
 	// ErrNoClient is raised when no Elasticsearch node is available.
 	ErrNoClient = errors.New("no Elasticsearch node available")
 
@@ -1499,7 +1502,7 @@ func (c *Client) PerformRequest(ctx context.Context, opt PerformRequestOptions) 
 	duration := time.Now().UTC().Sub(start)
 	c.infof("%s %s [status:%d, request:%.3fs]",
 		strings.ToUpper(opt.Method),
-		req.URL,
+		req.URL.Redacted(),
 		resp.StatusCode,
 		float64(int64(duration/time.Millisecond))/1000)
 
@@ -1691,11 +1694,17 @@ func (c *Client) CloseIndex(name string) *IndicesCloseService {
 }
 
 // FreezeIndex freezes an index.
+//
+// Deprecated: Frozen indices are deprecated because they provide no benefit
+// given improvements in heap memory utilization.
 func (c *Client) FreezeIndex(name string) *IndicesFreezeService {
 	return NewIndicesFreezeService(c).Index(name)
 }
 
 // UnfreezeIndex unfreezes an index.
+//
+// Deprecated: Frozen indices are deprecated because they provide no benefit
+// given improvements in heap memory utilization.
 func (c *Client) UnfreezeIndex(name string) *IndicesUnfreezeService {
 	return NewIndicesUnfreezeService(c).Index(name)
 }
@@ -1776,6 +1785,8 @@ func (c *Client) Aliases() *AliasesService {
 // in https://www.elastic.co/guide/en/elasticsearch/reference/7.9/indices-templates-v1.html.
 //
 // See e.g. IndexPutIndexTemplate and IndexPutComponentTemplate for the new version(s).
+//
+// Deprecated: Legacy index templates are deprecated in favor of composable templates.
 func (c *Client) IndexGetTemplate(names ...string) *IndicesGetTemplateService {
 	return NewIndicesGetTemplateService(c).Name(names...)
 }
@@ -1786,6 +1797,8 @@ func (c *Client) IndexGetTemplate(names ...string) *IndicesGetTemplateService {
 // in https://www.elastic.co/guide/en/elasticsearch/reference/7.9/indices-templates-v1.html.
 //
 // See e.g. IndexPutIndexTemplate and IndexPutComponentTemplate for the new version(s).
+//
+// Deprecated: Legacy index templates are deprecated in favor of composable templates.
 func (c *Client) IndexTemplateExists(name string) *IndicesExistsTemplateService {
 	return NewIndicesExistsTemplateService(c).Name(name)
 }
@@ -1796,6 +1809,8 @@ func (c *Client) IndexTemplateExists(name string) *IndicesExistsTemplateService 
 // in https://www.elastic.co/guide/en/elasticsearch/reference/7.9/indices-templates-v1.html.
 //
 // See e.g. IndexPutIndexTemplate and IndexPutComponentTemplate for the new version(s).
+//
+// Deprecated: Legacy index templates are deprecated in favor of composable templates.
 func (c *Client) IndexPutTemplate(name string) *IndicesPutTemplateService {
 	return NewIndicesPutTemplateService(c).Name(name)
 }
@@ -1806,6 +1821,8 @@ func (c *Client) IndexPutTemplate(name string) *IndicesPutTemplateService {
 // in https://www.elastic.co/guide/en/elasticsearch/reference/7.9/indices-templates-v1.html.
 //
 // See e.g. IndexPutIndexTemplate and IndexPutComponentTemplate for the new version(s).
+//
+// Deprecated: Legacy index templates are deprecated in favor of composable templates.
 func (c *Client) IndexDeleteTemplate(name string) *IndicesDeleteTemplateService {
 	return NewIndicesDeleteTemplateService(c).Name(name)
 }
@@ -2186,6 +2203,33 @@ func (c *Client) XPackSecurityDisableUser(username string) *XPackSecurityDisable
 // XPackSecurityDeleteUser deletes a user.
 func (c *Client) XPackSecurityDeleteUser(username string) *XPackSecurityDeleteUserService {
 	return NewXPackSecurityDeleteUserService(c).Username(username)
+}
+
+// -- X-Pack Rollup --
+
+// XPackRollupPut creates or updates a rollup job.
+func (c *Client) XPackRollupPut(jobId string) *XPackRollupPutService {
+	return NewXPackRollupPutService(c).JobId(jobId)
+}
+
+// XPackRollupGet gets a rollup job.
+func (c *Client) XPackRollupGet(jobId string) *XPackRollupGetService {
+	return NewXPackRollupGetService(c).JobId(jobId)
+}
+
+// XPackRollupDelete deletes a rollup job.
+func (c *Client) XPackRollupDelete(jobId string) *XPackRollupDeleteService {
+	return NewXPackRollupDeleteService(c).JobId(jobId)
+}
+
+// XPackRollupStart starts a rollup job.
+func (c *Client) XPackRollupStart(jobId string) *XPackRollupStartService {
+	return NewXPackRollupStartService(c).JobId(jobId)
+}
+
+// XPackRollupStop stops a rollup job.
+func (c *Client) XPackRollupStop(jobId string) *XPackRollupStopService {
+	return NewXPackRollupStopService(c).JobId(jobId)
 }
 
 // -- X-Pack Watcher --

@@ -104,7 +104,7 @@ func (w *workerWrapper) run() {
 				case <-w.interruptChan:
 					w.interruptChan = make(chan struct{})
 				}
-			case <-w.interruptChan:
+			case _, _ = <-w.interruptChan:
 				w.interruptChan = make(chan struct{})
 			}
 		case <-w.closeChan:

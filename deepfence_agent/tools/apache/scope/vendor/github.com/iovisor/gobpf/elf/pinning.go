@@ -16,14 +16,16 @@ import (
 #include <linux/unistd.h>
 #include <linux/bpf.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 extern __u64 ptr_to_u64(void *);
 
 int bpf_pin_object(int fd, const char *pathname)
 {
-	union bpf_attr attr = {};
+	union bpf_attr attr;
 
+	memset(&attr, 0, sizeof(attr));
 	attr.pathname = ptr_to_u64((void *)pathname);
 	attr.bpf_fd = fd;
 
@@ -59,7 +61,7 @@ func pinObject(fd int, pinPath string) error {
 	}
 	_, err = os.Stat(pinPath)
 	if err == nil {
-		return fmt.Errorf("aborting, found file at %q: %v", pinPath, err)
+		return fmt.Errorf("aborting, found file at %q", pinPath)
 	}
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to stat %q: %v", pinPath, err)

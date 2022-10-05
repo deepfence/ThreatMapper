@@ -359,3 +359,5 @@ At the same time, the file names of the services are renamed to match the REST A
 The REST API specification of Elasticsearch comes along with a test suite that official clients typically use to test for conformance. Up until now, Elastic didn't run this test suite. However, we are in the process of setting up infrastructure and tests to match this suite as well.
 
 This process in not completed though.
+
+
