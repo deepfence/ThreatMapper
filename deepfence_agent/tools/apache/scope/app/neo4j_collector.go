@@ -15,11 +15,11 @@ import (
 )
 
 const (
-	workers_num         = 100
+	workers_num         = 500
 	db_input_size       = 100
-	db_batch_size       = 1_000
+	db_batch_size       = 10_000
 	db_batch_timeout    = time.Second * 5
-	resolver_batch_size = 1_000
+	resolver_batch_size = 10_000
 	resolver_timeout    = time.Second * 10
 	ingester_size       = 25_000
 	db_clean_up_timeout = time.Minute * 2
@@ -51,13 +51,13 @@ type neo4jCollector struct {
 	preparers_input  chan *report.Report
 }
 
-func (nc* neo4jCollector) runEnqueueReport() {
+func (nc *neo4jCollector) runEnqueueReport() {
 	report_buffer := map[string]*report.Report{}
 	timeout := time.After(enqueer_timeout)
 	i := 0
 	for {
-		select  {
-		case rpt:=<-nc.enqueer:
+		select {
+		case rpt := <-nc.enqueer:
 			var probe_id string
 			for _, n := range rpt.Host.Nodes {
 				probe_id, _ = n.Latest.Lookup("control_probe_id")
@@ -67,7 +67,7 @@ func (nc* neo4jCollector) runEnqueueReport() {
 			}
 			report_buffer[probe_id] = rpt
 			i += 1
-		case <- timeout:
+		case <-timeout:
 			fmt.Printf("Sending %v unique reports over %v received\n", len(report_buffer), i)
 			select {
 			case nc.ingester <- report_buffer:
@@ -223,7 +223,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo
 			edges := make([]map[string]string, 0, len(n.Adjacency))
 			for _, i := range n.Adjacency {
 				if n.ID != i {
-					ip, port 	:= extractHostPortFromEndpointID(i)
+					ip, port := extractHostPortFromEndpointID(i)
 					if host, ok := resolvers.network_map[ip]; ok {
 						if host_name == host {
 							continue
