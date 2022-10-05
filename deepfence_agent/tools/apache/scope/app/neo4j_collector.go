@@ -51,7 +51,7 @@ type neo4jCollector struct {
 	preparers_input  chan *report.Report
 }
 
-func (nc* neo4jCollector) runEnqueueReport() error {
+func (nc* neo4jCollector) runEnqueueReport() {
 	report_buffer := map[string]*report.Report{}
 	timeout := time.After(enqueer_timeout)
 	i := 0
@@ -74,12 +74,11 @@ func (nc* neo4jCollector) runEnqueueReport() error {
 				report_buffer = map[string]*report.Report{}
 				i = 0
 			default:
-				return fmt.Errorf("ingester channel full")
+				logrus.Warnf("ingester channel full")
 			}
 			timeout = time.After(enqueer_timeout)
 		}
 	}
-	return nil
 }
 
 type neo4jIngestionData struct {
@@ -130,7 +129,7 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 		node_info := n.ToDataMap()
 		var result map[string]interface{}
 		json.Unmarshal([]byte(node_info["interface_ips"]), &result)
-		for k, _ := range result {
+		for k := range result {
 			resolvers.network_map[k] = node_info["host_name"]
 		}
 		resolvers.ipport_ippid[node_info["host_name"]] = map[string]string{}
@@ -836,4 +835,3 @@ func extractPidFromNodeID(hni string) string {
 	}
 	return hni
 }
-
