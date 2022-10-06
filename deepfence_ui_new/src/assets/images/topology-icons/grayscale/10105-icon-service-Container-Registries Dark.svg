@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="248.0px"
+   height="248.0px"
+   viewBox="0 0 248.0 248.0"
+   version="1.1"
+   id="SVGRoot"
+   sodipodi:docname="10105-icon-service-Container-Registries Dark.svg"
+   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)">
+  <defs
+     id="defs1402">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect2040"
+       is_visible="true"
+       lpeversion="1"
+       satellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,6.0755415,0,1 @ F,0,0,1,0,6.1445293,0,1 @ F,0,0,1,0,0,0,1"
+       unit="px"
+       method="auto"
+       mode="F"
+       radius="0"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="true"
+       hide_knots="false" />
+    <style
+       id="style1979">.cls-1{fill:url(#GreenGradient);}.cls-2{fill:#fff;}</style>
+    <linearGradient
+       id="GreenGradient"
+       x1="-522.53"
+       y1="465.47"
+       x2="-416.47"
+       y2="571.53"
+       gradientTransform="rotate(-90,-456.5,24.5)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#1b660f"
+         id="stop1981" />
+      <stop
+         offset="1"
+         stop-color="#6cae3e"
+         id="stop1983" />
+    </linearGradient>
+    <linearGradient
+       id="fcd6c6c7-e2eb-4a32-b914-3a8485585a1b"
+       x1="12.96"
+       y1="8.5609999"
+       x2="12.96"
+       y2="6.1409998"
+       gradientTransform="matrix(1,0,0,-1,0,20)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#333132"
+         id="stop7" />
+      <stop
+         offset="1"
+         stop-color="#5b5a5c"
+         id="stop9" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#101010"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.95676215"
+     inkscape:cx="91.64585"
+     inkscape:cy="124"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="true"
+     inkscape:window-width="1366"
+     inkscape:window-height="705"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     showguides="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1972" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata1405">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="BG" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Bounding Box" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Top">
+    <g
+       id="g847"
+       transform="translate(-0.19315289,-0.04989999)"
+       style="fill:#5e5c64">
+      <path
+         style="fill:#5e5c64;fill-opacity:0.326613;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         id="path885"
+         sodipodi:type="arc"
+         sodipodi:cx="154.57903"
+         sodipodi:cy="83.172447"
+         sodipodi:rx="111.24603"
+         sodipodi:ry="111.24603"
+         sodipodi:start="5.9893981"
+         sodipodi:end="5.9807042"
+         sodipodi:open="true"
+         sodipodi:arc-type="arc"
+         transform="rotate(16.68412)"
+         d="M 261.05862,50.957906 A 111.24603,111.24603 0 0 1 187.02492,189.58177 111.24603,111.24603 0 0 1 48.240476,115.84954 111.24603,111.24603 0 0 1 121.67088,-23.094829 111.24603,111.24603 0 0 1 260.77453,50.033412" />
+      <path
+         style="fill:#5e5c64;fill-opacity:1;stroke:#ffffff;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         id="path883-9"
+         sodipodi:type="arc"
+         sodipodi:cx="154.57903"
+         sodipodi:cy="83.172447"
+         sodipodi:rx="111.24604"
+         sodipodi:ry="111.24604"
+         sodipodi:start="5.9893981"
+         sodipodi:end="5.9807042"
+         sodipodi:open="true"
+         sodipodi:arc-type="arc"
+         transform="rotate(16.68412)"
+         d="M 261.05862,50.957904 A 111.24604,111.24604 0 0 1 187.02492,189.58178 111.24604,111.24604 0 0 1 48.240468,115.84955 111.24604,111.24604 0 0 1 121.67088,-23.094836 111.24604,111.24604 0 0 1 260.77453,50.03341" />
+    </g>
+    <g
+       id="g70"
+       transform="matrix(8.4229835,0,0,8.4229835,48.235263,42.481722)">
+      <path
+         d="m 7.43,8.178 2.589,-1.573 7.255,2.731 A 3.664,3.664 0 0 0 16.23,7.49 L 16.22,7.44 A 4.194,4.194 0 0 0 14,6.32 4.91,4.91 0 0 0 8.9,1.62 5.071,5.071 0 0 0 4.06,4.91 4.621,4.621 0 0 0 0,9.39 4.73,4.73 0 0 0 4.89,13.93 h 2.54 z"
+         fill="url(#bdf27dc6-025c-4805-8bfd-3a05defd3fbd)"
+         id="path14"
+         style="fill:#3e92e6;fill-opacity:1" />
+      <polygon
+         points="17.99,10.139 10.07,7.159 10.08,11.439 17.99,13.119 "
+         fill="#767676"
+         id="polygon16" />
+      <polyline
+         points="10.07 7.159 7.93 8.459 7.93 12.439 10.08 11.439"
+         fill="#999999"
+         id="polyline18" />
+      <polygon
+         points="13.68,9.119 13.68,11.499 14.4,11.699 14.4,9.369 "
+         fill="#a3a3a3"
+         id="polygon20" />
+      <polygon
+         points="12.96,11.319 12.96,8.889 12.24,8.629 12.24,11.119 "
+         fill="#a3a3a3"
+         id="polygon22" />
+      <polygon
+         points="15.12,9.619 15.12,11.889 15.82,12.079 15.84,9.859 "
+         fill="#a3a3a3"
+         id="polygon24" />
+      <polygon
+         points="10.81,8.159 10.81,10.749 11.53,10.929 11.53,8.399 "
+         fill="#a3a3a3"
+         id="polygon26" />
+      <polygon
+         points="17.27,12.469 17.27,10.349 16.55,10.099 16.55,12.269 "
+         fill="#a3a3a3"
+         id="polygon28" />
+      <path
+         id="ef0d1b54-a1e7-4cb9-a4e5-8a8518e7c127"
+         d="M 8.66,11.369 8.3,11.579 V 8.749 L 8.66,8.559 Z M 9.37,8.149 9,8.389 v 2.75 l 0.37,-0.2 z"
+         fill="#b3b3b3" />
+      <polygon
+         points="10.08,11.439 17.99,13.119 15.83,13.859 7.93,12.439 "
+         fill="url(#fcd6c6c7-e2eb-4a32-b914-3a8485585a1b)"
+         id="polygon31"
+         style="fill:url(#fcd6c6c7-e2eb-4a32-b914-3a8485585a1b)" />
+      <polygon
+         points="17.99,13.559 17.99,16.169 10.04,17.679 10.08,12.089 "
+         fill="#767676"
+         id="polygon33" />
+      <polygon
+         points="11.53,16.639 10.81,16.759 10.81,13.209 11.53,13.299 "
+         fill="#a3a3a3"
+         id="polygon35" />
+      <polygon
+         points="12.96,13.499 12.96,16.399 12.24,16.529 12.24,13.389 "
+         fill="#a3a3a3"
+         id="polygon37" />
+      <polygon
+         points="14.4,16.159 13.68,16.289 13.68,13.569 14.4,13.659 "
+         fill="#a3a3a3"
+         id="polygon39" />
+      <polygon
+         points="15.83,13.859 15.83,15.909 15.12,16.039 15.12,13.749 "
+         fill="#a3a3a3"
+         id="polygon41" />
+      <polygon
+         points="17.24,14.019 17.29,15.679 16.55,15.809 16.55,13.929 "
+         fill="#a3a3a3"
+         id="polygon43" />
+      <path
+         id="b9f25eb4-4c88-45c2-bc4d-f992757d7e0e"
+         d="m 7.93,16.4 v -3.26 l 2.16,-1 v 5.6 z"
+         fill="#999999" />
+      <path
+         id="eb9200a7-4693-4427-bdae-b33ce90ff7f2"
+         d="m 8.61,16.389 -0.32,-0.16 v -2.76 l 0.32,-0.15 z M 9.38,12.939 9,13.129 v 3.48 l 0.37,0.19 v -3.86 z"
+         fill="#b3b3b3" />
+    </g>
+  </g>
+</svg>

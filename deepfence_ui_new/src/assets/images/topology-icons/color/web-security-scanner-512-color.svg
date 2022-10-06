@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="248.0px"
+   height="248.0px"
+   viewBox="0 0 248.0 248.0"
+   version="1.1"
+   id="SVGRoot"
+   sodipodi:docname="web-security-scanner-512-color.svg"
+   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)">
+  <defs
+     id="defs1402">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect2040"
+       is_visible="true"
+       lpeversion="1"
+       satellites_param="F,0,0,1,0,0,0,1 @ F,0,0,1,0,6.0755415,0,1 @ F,0,0,1,0,6.1445293,0,1 @ F,0,0,1,0,0,0,1"
+       unit="px"
+       method="auto"
+       mode="F"
+       radius="0"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="true"
+       hide_knots="false" />
+    <style
+       id="style1979">.cls-1{fill:url(#GreenGradient);}.cls-2{fill:#fff;}</style>
+    <linearGradient
+       id="GreenGradient"
+       x1="-522.53"
+       y1="465.47"
+       x2="-416.47"
+       y2="571.53"
+       gradientTransform="rotate(-90,-288.67013,-93.777572)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#1b660f"
+         id="stop1981" />
+      <stop
+         offset="1"
+         stop-color="#6cae3e"
+         id="stop1983" />
+    </linearGradient>
+    <linearGradient
+       id="BlueGradient"
+       x1="-15.53"
+       y1="90.529999"
+       x2="90.529999"
+       y2="-15.53"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(284.58953,-17.797714)">
+      <stop
+         offset="0"
+         stop-color="#2e27ad"
+         id="stop4" />
+      <stop
+         offset="1"
+         stop-color="#527fff"
+         id="stop6" />
+    </linearGradient>
+    <linearGradient
+       id="BlueGradient-0"
+       x1="-135.73"
+       y1="248.64999"
+       x2="14.27"
+       y2="248.64999"
+       gradientTransform="matrix(1.2104658,-1.2104658,1.2104658,1.2104658,113.49179,-339.31459)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#2e27ad"
+         id="stop4-9" />
+      <stop
+         offset="1"
+         stop-color="#527fff"
+         id="stop6-8" />
+    </linearGradient>
+    <linearGradient
+       id="a"
+       gradientTransform="matrix(10.948793,0,0,-10.948793,-716.33299,1823.6321)"
+       gradientUnits="userSpaceOnUse"
+       x1="62.57"
+       x2="25.030001"
+       y1="150.13"
+       y2="85.110001">
+      <stop
+         offset="0"
+         stop-color="#0052cc"
+         id="stop2" />
+      <stop
+         offset=".92"
+         stop-color="#2684ff"
+         id="stop4-5" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#101010"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.6535746"
+     inkscape:cx="124"
+     inkscape:cy="124"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer2"
+     inkscape:document-rotation="0"
+     showgrid="true"
+     inkscape:window-width="1366"
+     inkscape:window-height="705"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:snap-global="false"
+     showguides="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid1972" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata1405">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="BG"
+     style="display:inline" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Bounding Box"
+     style="display:inline" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Top"
+     style="display:inline">
+    <path
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       id="path883"
+       sodipodi:type="arc"
+       sodipodi:cx="154.57903"
+       sodipodi:cy="83.172447"
+       sodipodi:rx="111.24604"
+       sodipodi:ry="111.24604"
+       sodipodi:start="5.9893981"
+       sodipodi:end="5.9807042"
+       sodipodi:open="true"
+       sodipodi:arc-type="arc"
+       d="M 261.05862,50.957904 A 111.24604,111.24604 0 0 1 187.02492,189.58178 111.24604,111.24604 0 0 1 48.240468,115.84955 111.24604,111.24604 0 0 1 121.67088,-23.094836 111.24604,111.24604 0 0 1 260.77453,50.03341"
+       transform="rotate(16.68412)" />
+    <g
+       id="g28"
+       transform="matrix(7.8980748,0,0,7.8980748,29.223102,31.223099)">
+      <circle
+         class="cls-1"
+         cx="11.44"
+         cy="11.5"
+         r="2.97"
+         id="circle8"
+         style="fill:#4285f4;fill-opacity:1" />
+      <circle
+         class="cls-2"
+         cx="4.02"
+         cy="10.79"
+         r="2.02"
+         id="circle10"
+         style="fill:#669df6;fill-opacity:1" />
+      <circle
+         class="cls-2"
+         cx="14.52"
+         cy="18.620001"
+         r="2.02"
+         id="circle12"
+         style="fill:#669df6;fill-opacity:1" />
+      <path
+         class="cls-2"
+         d="M 19.57,4.2 A 2.43,2.43 0 1 0 22,6.63 2.43,2.43 0 0 0 19.57,4.2 Z m 0,3.8 a 1.37,1.37 0 1 1 1.36,-1.37 v 0 A 1.37,1.37 0 0 1 19.57,8 Z"
+         id="path14"
+         style="fill:#669df6;fill-opacity:1" />
+      <path
+         class="cls-2"
+         d="M 18.2,6.68 A 8.29,8.29 0 0 0 13.14,3.36 L 12.86,4.7 A 6.95,6.95 0 1 1 4.64,10.08 6.88,6.88 0 0 1 6.51,6.61 l -1,-1 A 8.31,8.31 0 1 0 18.89,7.81 1.36,1.36 0 0 1 18.2,6.68 Z"
+         id="path16"
+         style="fill:#669df6;fill-opacity:1" />
+    </g>
+  </g>
+</svg>

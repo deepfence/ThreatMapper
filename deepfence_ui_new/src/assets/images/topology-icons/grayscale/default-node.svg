@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> <!-- Created with Vectornator for iOS (http://vectornator.io/) --><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg height="100%" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="100%" xmlns:vectornator="http://vectornator.io" version="1.1" viewBox="0 0 248 248">
+<metadata>
+<vectornator:setting key="DimensionsVisible" value="0"/>
+<vectornator:setting key="PencilOnly" value="0"/>
+<vectornator:setting key="SnapToPoints" value="0"/>
+<vectornator:setting key="OutlineMode" value="0"/>
+<vectornator:setting key="CMYKEnabledKey" value="0"/>
+<vectornator:setting key="RulersVisible" value="1"/>
+<vectornator:setting key="SnapToEdges" value="0"/>
+<vectornator:setting key="GuidesVisible" value="0"/>
+<vectornator:setting key="DisplayWhiteBackground" value="0"/>
+<vectornator:setting key="doHistoryDisabled" value="0"/>
+<vectornator:setting key="SnapToGuides" value="1"/>
+<vectornator:setting key="TimeLapseWatermarkDisabled" value="0"/>
+<vectornator:setting key="Units" value="Points"/>
+<vectornator:setting key="DynamicGuides" value="1"/>
+<vectornator:setting key="IsolateActiveLayer" value="0"/>
+<vectornator:setting key="SnapToGrid" value="0"/>
+</metadata>
+<defs/>
+<g id="Base-circle" vectornator:layerName="Base-circle">
+<g opacity="1">
+<path stroke="#f3f3f3" fill-rule="evenodd" stroke-width="1.5" d="M235.246+123.711C235.405+185.056+185.875+234.952+124.53+235.245C63.186+235.537+13.1825+186.116+12.7567+124.772C12.3308+63.4286+61.6435+13.3178+122.986+12.7586C184.329+12.1995+234.547+61.4031+235.239+122.744" fill="#707070" stroke-linecap="round" opacity="1" stroke-linejoin="round"/>
+<path stroke="#f3f3f3" fill-rule="evenodd" stroke-width="1.5" d="M234.036+123.715C234.194+184.392+185.202+233.746+124.525+234.035C63.8472+234.325+14.3873+185.44+13.9661+124.764C13.545+64.0871+62.3215+14.5211+122.997+13.9681C183.673+13.415+233.345+62.0837+234.03+122.758" fill="#707070" stroke-linecap="round" opacity="1" stroke-linejoin="round"/>
+</g>
+</g>
+<g id="top-circle" vectornator:layerName="top-circle">
+<g opacity="1">
+<path stroke="#f3f3f3" fill-rule="evenodd" stroke-width="4.5" d="M150.296+123.932C150.334+138.433+138.626+150.227+124.125+150.296C109.625+150.365+97.8047+138.683+97.7041+124.183C97.6034+109.682+109.26+97.8367+123.76+97.7045C138.261+97.5724+150.131+109.203+150.295+123.703" fill="#f3f3f3" stroke-linecap="round" opacity="1" stroke-linejoin="round"/>
+<path stroke="#f3f3f3" fill-rule="evenodd" stroke-width="4.5" d="M150.011+123.933C150.048+138.276+138.467+149.942+124.124+150.01C109.781+150.079+98.0895+138.523+97.99+124.181C97.8904+109.838+109.42+98.1212+123.763+97.9904C138.106+97.8597+149.847+109.364+150.009+123.706" fill="#f3f3f3" stroke-linecap="round" opacity="1" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>
