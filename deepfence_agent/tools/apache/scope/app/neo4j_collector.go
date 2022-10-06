@@ -17,9 +17,9 @@ import (
 const (
 	workers_num         = 500
 	db_input_size       = 100
-	db_batch_size       = 10_000
+	db_batch_size       = 1_000
 	db_batch_timeout    = time.Second * 5
-	resolver_batch_size = 10_000
+	resolver_batch_size = 1_000
 	resolver_timeout    = time.Second * 10
 	ingester_size       = 25_000
 	db_clean_up_timeout = time.Minute * 2
@@ -288,6 +288,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo
 				}
 			}
 		}
+		node_info["host_name"] = host
 		pod_batch = append(pod_batch, node_info)
 		pod_edges_batch[host] = append(pod_edges_batch[host], node_info["node_id"])
 	}
@@ -315,50 +316,183 @@ func (nc *neo4jCollector) Close() {
 	nc.driver.Close()
 }
 
-type PairConn struct {
-	Left     string `json:"left"`
-	Right    string `json:"right"`
-	LeftPid  string `json:"leftpid"`
-	RightPid string `json:"rightpid"`
-}
+func (nc *neo4jCollector) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
 
-func (nc *neo4jCollector) GetConnections() []PairConn {
-
-	session, err := nc.driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return []PairConn{}
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return []PairConn{}
-	}
-	defer tx.Close()
-	r, err := tx.Run("MATCH (n:TNode) -[r:CONNECTS]-> (m:TNode) return n.node_id, m.node_id, r.left_pid, r.right_pid", nil)
+	r, err := tx.Run("MATCH (n:TNode) -[r:CONNECTS]-> (m:TNode) return n.cloud_provider, n.cloud_region, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid", nil)
 
 	if err != nil {
-		return []PairConn{}
+		return []ConnectionSummary{}, err
 	}
 	edges, err := r.Collect()
 
 	if err != nil {
-		return []PairConn{}
+		return []ConnectionSummary{}, err
 	}
 
-	res := []PairConn{}
+	res := []ConnectionSummary{}
 	for _, edge := range edges {
-		if edge.Values[0].(string) != edge.Values[1].(string) {
-			res = append(res, PairConn{Left: edge.Values[0].(string), Right: edge.Values[1].(string), LeftPid: edge.Values[2].(string), RightPid: edge.Values[3].(string)})
+		if edge.Values[2].(string) != edge.Values[6].(string) {
+			res = append(res, ConnectionSummary{Source: fmt.Sprintf("%v;%v;%v;%v", edge.Values[0].(string), edge.Values[1].(string), edge.Values[2].(string), edge.Values[3].(string)), Target: fmt.Sprintf("%v;%v;%v;%v", edge.Values[4].(string), edge.Values[5].(string), edge.Values[6].(string), edge.Values[7].(string))})
 		}
 	}
 
-	return res
+	return res, nil
+}
+
+func (nc *neo4jCollector) getCloudProviders(tx neo4j.Transaction) ([]string, error) {
+	res := []string{}
+	r, err := tx.Run("MATCH (n:TNode) return n.cloud_provider", nil)
+
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		res = append(res, record.Values[0].(string))
+	}
+
+	return res, nil
+}
+
+func (nc *neo4jCollector) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[string][]string, error) {
+	res := map[string][]string{}
+	r, err := tx.Run("MATCH (n:TNode) WHERE n.cloud_provider IN $providers RETURN n.cloud_provider, n.cloud_region", map[string]interface{}{"providers": cloud_provider})
+
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		provider := record.Values[0].(string)
+		region := record.Values[1].(string)
+		if _, present := res[provider]; !present {
+			res[provider] = []string{}
+		}
+		res[provider] = append(res[provider], region)
+	}
+
+	return res, nil
+}
+
+func (nc *neo4jCollector) getHosts(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string) (map[string]map[string][]string, error) {
+	res := map[string]map[string][]string{}
+
+	r, err := tx.Run("MATCH (n:TNode) WHERE n.cloud_provider IN $providers AND n.cloud_region IN $regions return n.cloud_provider, n.cloud_region, n.node_id", map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions})
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		provider := record.Values[0].(string)
+		region := record.Values[1].(string)
+		host_id := record.Values[2].(string)
+		if _, present := res[provider]; !present {
+			res[provider] = map[string][]string{}
+		}
+
+		if _, present := res[provider][region]; !present {
+			res[provider][region] = []string{}
+		}
+
+		res[provider][region] = append(res[provider][region], host_id)
+	}
+
+	return res, nil
+}
+
+func (nc *neo4jCollector) getProcesses(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
+	res := map[string][]string{}
+
+	r, err := tx.Run("MATCH (n:TNode) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:TProcess) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		host_id := record.Values[0].(string)
+		process_id := record.Values[1].(string)
+		if _, present := res[host_id]; !present {
+			res[host_id] = []string{}
+		}
+		res[host_id] = append(res[host_id], process_id)
+	}
+
+	return res, nil
+}
+
+func (nc *neo4jCollector) getPods(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
+	res := map[string][]string{}
+
+	r, err := tx.Run("MATCH (n:TNode) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:TPod) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		host_id := record.Values[0].(string)
+		pod_id := record.Values[1].(string)
+		if _, present := res[host_id]; !present {
+			res[host_id] = []string{}
+		}
+		res[host_id] = append(res[host_id], pod_id)
+	}
+
+	return res, nil
+}
+
+func (nc *neo4jCollector) getContainers(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
+	res := map[string][]string{}
+
+	r, err := tx.Run("MATCH (n:TNode) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:TContainer) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		host_id := record.Values[0].(string)
+		container_id := record.Values[1].(string)
+		if _, present := res[host_id]; !present {
+			res[host_id] = []string{}
+		}
+		res[host_id] = append(res[host_id], container_id)
+	}
+
+	return res, nil
 }
 
 func addHostToTopology(tx neo4j.Transaction, host_topology report.Topology, cloud_provider report.Topology, cloud_region report.Topology) error {
 
-	r, err := tx.Run("MATCH (n:TNode{node_type: 'host'}) return n", nil)
+	r, err := tx.Run("MATCH (n:TNode) return n", nil)
 	if err != nil {
 		return err
 	}
@@ -480,6 +614,87 @@ func addProcessesToTopology(tx neo4j.Transaction, topology report.Topology) erro
 	return nil
 }
 
+type ConnectionSummary struct {
+	Source string `json:"source"`
+	Target string `json:"target"`
+}
+
+type RenderedGraph struct {
+	Hosts       map[string]map[string][]string
+	Processes   map[string][]string
+	Pods        map[string][]string
+	Containers  map[string][]string
+	Providers   []string
+	Regions     map[string][]string
+	Connections []ConnectionSummary
+}
+
+var (
+	cloud_filter  = []string{}
+	region_filter = []string{}
+	host_filter   = []string{}
+	access        = sync.Mutex{}
+)
+
+func ChangeFilters(c, r, h []string) {
+	access.Lock()
+	defer access.Unlock()
+	cloud_filter = c
+	region_filter = r
+	host_filter = h
+}
+
+func (nc *neo4jCollector) GetGraph(_ context.Context, _ time.Time) (RenderedGraph, error) {
+	res := RenderedGraph{}
+
+	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	access.Lock()
+	defer access.Unlock()
+	res.Connections, err = nc.GetConnections(tx)
+	if err != nil {
+		return res, err
+	}
+	res.Providers, err = nc.getCloudProviders(tx)
+	if err != nil {
+		return res, err
+	}
+
+	res.Regions, err = nc.getCloudRegions(tx, cloud_filter)
+	if err != nil {
+		return res, err
+	}
+
+	res.Hosts, err = nc.getHosts(tx, cloud_filter, region_filter)
+	if err != nil {
+		return res, err
+	}
+	res.Processes, err = nc.getProcesses(tx, host_filter)
+	if err != nil {
+		return res, err
+	}
+	res.Pods, err = nc.getPods(tx, host_filter)
+	if err != nil {
+		return res, err
+	}
+	res.Containers, err = nc.getContainers(tx, host_filter)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
 func (nc *neo4jCollector) Report(_ context.Context, _ time.Time) (report.Report, error) {
 	res := report.MakeReport()
 
@@ -519,8 +734,11 @@ func (nc *neo4jCollector) HasHistoricReports() bool {
 }
 
 // TODO: Add new API
-func (nc *neo4jCollector) AdminSummary(_ context.Context, _ time.Time) (string, error) {
-	res := nc.GetConnections()
+func (nc *neo4jCollector) AdminSummary(c context.Context, t time.Time) (string, error) {
+	res, err := nc.GetGraph(c, t)
+	if err != nil {
+		return "", err
+	}
 	b, err := json.Marshal(res)
 	return string(b), err
 }
@@ -624,25 +842,10 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 
 	logrus.Debugf("Upserting DB edges add took: %v", time.Since(start))
 	start = time.Now()
-	//if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TPod{node_id: row.right}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
-	//	return err
-	//}
-
-	//if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TProcess{node_id: row.right}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Process_edges_batch}); err != nil {
-	//	return err
-	//}
-
-	//if _, err = tx.Run("UNWIND $batch as row MATCH (n:TEndpoint{node_id: row.left}),(m:TEndpoint{node_id: row.right}) MERGE (n)-[:CONNECTS]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges}); err != nil {
-	//	return err
-	//}
 
 	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.node_id}) -[r:CONNECTS]-> (:TNode) detach delete r", map[string]interface{}{"batch": batches.Hosts}); err != nil {
 		return err
 	}
-
-	//if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.left}),(m:TNode{node_id: row.right}) MERGE (n)-[:CONNECTS {left_pid: row.left_pid, right_pid: row.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
-	//	return err
-	//}
 
 	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.edges as row2  MATCH (m:TNode{node_id: row2.destination}) MERGE (n)-[:CONNECTS {left_pid: row2.left_pid, right_pid: row2.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
