@@ -10,6 +10,7 @@ import (
 	ot "github.com/opentracing/opentracing-go"
 	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/weaveworks/scope/common/xfer"
@@ -67,6 +68,9 @@ func handleNode(ctx context.Context, renderer render.Renderer, transformer rende
 	// node is lost in the second step, we simply put it back.
 	nodes := renderer.Render(ctx, rc.Report)
 	node, ok := nodes.Nodes[nodeID]
+	for k, _ := range nodes.Nodes {
+		logrus.Infof("node ids: %v", k)
+	}
 	if !ok {
 		http.NotFound(w, r)
 		return
