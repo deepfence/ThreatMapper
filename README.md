@@ -2,6 +2,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers)
+[![Hacktoberfest](https://img.shields.io/github/hacktoberfest/2022/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
 [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
 [![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/docs/threatmapper)
 [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/docs/threatmapper/demo)
