@@ -29,43 +29,56 @@ import ForgotPasswordView from './auth-module/forgot-password-view/forgot-passwo
 import ResetPasswordView from './auth-module/reset-password-view/reset-password-view';
 import RegisterViaInviteView from './auth-module/register-via-invite-view/register-via-invite-view';
 import changePasswordView from './settings-view/user-profile-view/change-password-view';
-import { isPasswordInvalidated, isUserSessionActive, isUserSessionActiveAsync } from '../helpers/auth-helper';
+import {
+  isPasswordInvalidated,
+  isUserSessionActive,
+  isUserSessionActiveAsync,
+} from '../helpers/auth-helper';
 import Loader from './loader';
-
+import {
+  OnboardView,
+  OnboardPageCloud,
+  OnboardPage,
+} from './onboard-view/OnboardView';
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isUserSessionActive, setIsUserSessionActive] = useState(false);
 
-
   useEffect(() => {
-    isUserSessionActiveAsync().then((active) => {
+    isUserSessionActiveAsync().then(active => {
       setIsUserSessionActive(active);
       setIsAuthLoading(false);
     });
   }, []);
 
-  return <Route
-    {...rest}
-    render={props => {
-      const currentPath = props?.location?.pathname ?? '';
+  return (
+    <Route
+      {...rest}
+      render={props => {
+        const currentPath = props?.location?.pathname ?? '';
 
-      if (isAuthLoading) {
-        return <div style={{ marginTop: '400px' }}><Loader /></div>
-      }
+        if (isAuthLoading) {
+          return (
+            <div style={{ marginTop: '400px' }}>
+              <Loader />
+            </div>
+          );
+        }
 
-      if (isPasswordInvalidated() && currentPath !== '/change-password') {
-        return <Redirect to="/change-password" />
-      }
+        if (isPasswordInvalidated() && currentPath !== '/change-password') {
+          return <Redirect to="/change-password" />;
+        }
 
-      return isUserSessionActive ? (
-        <Component {...props} />
-      ) : (
-        <Redirect to="/login" />
-      )
-    }}
-  />
-}
+        return isUserSessionActive ? (
+          <Component {...props} />
+        ) : (
+          <Redirect to="/login" />
+        );
+      }}
+    />
+  );
+};
 
 class DeepFenceApp extends React.Component {
   constructor() {
@@ -132,7 +145,7 @@ class DeepFenceApp extends React.Component {
             <Route
               path="/user-agreement"
               target="_blank"
-              render={(props) => <EULAView {...props} />}
+              render={props => <EULAView {...props} />}
             />
 
             <PrivateRoute path="/topology" component={TopologyView} />
@@ -152,7 +165,16 @@ class DeepFenceApp extends React.Component {
             />
             <PrivateRoute path="/notification" component={NotificationsView} />
             <PrivateRoute path="/settings" component={SettingsView} />
-            <PrivateRoute path="/change-password" component={changePasswordView} />
+            <PrivateRoute path="/onboard" exact component={OnboardView} />
+            <PrivateRoute
+              path="/onboard/cloud-platform"
+              component={OnboardPageCloud}
+            />
+            <PrivateRoute path="/onboard/cloud-agent" component={OnboardPage} />
+            <PrivateRoute
+              path="/change-password"
+              component={changePasswordView}
+            />
 
             <PrivateRoute
               path="/compliance/summary/:nodeId/:checkType/:scanId/:scanType"
@@ -166,7 +188,10 @@ class DeepFenceApp extends React.Component {
               path="/compliance/cloud-inventory/:cloudtype/:nodeid"
               component={InventoryServicesView}
             />
-            <PrivateRoute path="/compliance/:cloudtype/:nodeid/:checkType" component={ComplianceSummary} />
+            <PrivateRoute
+              path="/compliance/:cloudtype/:nodeid/:checkType"
+              component={ComplianceSummary}
+            />
             <PrivateRoute path="/compliance" component={ComplianceViewHome} />
             <PrivateRoute path="/threat-graph" component={AttackGraph} />
 

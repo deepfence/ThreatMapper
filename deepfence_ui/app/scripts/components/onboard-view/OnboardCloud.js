@@ -27,7 +27,7 @@ const Tabs = styled.div`
 const SetupContent = styled.div`
   margin-left: 20%;
   overflow-y: scroll;
-  width: 100%;
+  width: 80%;
 `;
 
 const Gap = styled.div`
@@ -134,24 +134,44 @@ const AwsSetup = () => {
       <FormWrapper>
         <h5>1. Connect with Cloud Formation</h5>
         <span>
-          This is so simple, first select your AWS region and click on run cloud
-          formation.
+          First login to your aws account. Select your AWS region from the given
+          below dropdown and click on run cloud formation.
         </span>
 
-        <Action>
-          <DFSelect
-            options={REGION_OPTIONS.options.map(el => ({
-              value: el.value,
-              label: el.label,
-            }))}
-            onChange={e => setRegionValue(e.value)}
-            placeholder={REGION_OPTIONS.heading}
-            clearable={false}
-          />
-          <RunButton type="button">
-            Run cloud formation &nbsp;&nbsp;
-            <i className="fa fa-long-arrow-right" aria-hidden="true" />
-          </RunButton>
+        <Action id="awsActionId">
+          <div className="df-select-field">
+            <DFSelect
+              options={REGION_OPTIONS.options.map(el => ({
+                value: el.value,
+                label: el.label,
+              }))}
+              onChange={e => setRegionValue(e.value)}
+              placeholder={REGION_OPTIONS.heading}
+              clearable={false}
+              styles={{
+                option: (provided, state) => ({
+                  ...provided,
+                  backgroundColor: '#000',
+                  color: state.isSelected ? 'red' : 'blue',
+                }),
+              }}
+            />
+          </div>
+          {regionValue !== undefined && (
+            <RunButton type="button">
+              <a
+                href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  color: '#fff',
+                  ':textDecoration': 'none',
+                }}
+              >
+                Run cloud formation
+              </a>
+            </RunButton>
+          )}
         </Action>
       </FormWrapper>
       <Gap />
@@ -294,11 +314,18 @@ module "cloud-scanner_example_single-subscription" {
   );
 };
 
-export const Cloud = () => {
+/**
+ * Cloud component holds aws, gcp and azure instructions
+ * @param {*} props
+ * @returns
+ */
+
+export const Cloud = props => {
+  const { defaultCloud = 'aws' } = props;
   const [choosen, setChoosen] = useState({
-    aws: true,
-    azure: null,
-    gcp: null,
+    aws: defaultCloud === 'aws',
+    azure: defaultCloud === 'azure',
+    gcp: defaultCloud === 'gcp',
   });
   return (
     <Grid>
@@ -377,12 +404,24 @@ export const Cloud = () => {
     </Grid>
   );
 };
+
+/**
+ * CloudModal component will be called only when a new user onboard and not connected to Deepfence Console
+ * @param {open, setModal} props - open opens the modal
+ * setModal close the modal by setting to empty value of cloud
+ * @returns
+ */
+
 export const CloudModal = props => {
   const { open, setModal } = props;
 
+  if (!open) {
+    return null;
+  }
+
   return (
     <OnboardModal isOpen={open} setModal={setModal}>
-      <Cloud />
+      <Cloud {...props} />
     </OnboardModal>
   );
 };

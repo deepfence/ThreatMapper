@@ -1,18 +1,27 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useState } from 'react';
 import styled, { css } from 'styled-components';
 
+import { Redirect } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import cloud from '../../../images/onboard/cloud.svg';
 import kubernetes from '../../../images/onboard/kubernetes.svg';
 import hosting from '../../../images/onboard/hosting.svg';
 import registry from '../../../images/onboard/registry.svg';
 // import { OnboardModal } from './OnboardModal';
-import { CloudModal } from './CloudModal';
-import { HostModal } from './HostModal';
-import { KubernetesModal } from './KubernetesModal';
-import { RegistryMdal } from './RegistryModal';
+import { Cloud, CloudModal } from './OnboardCloud';
+import { HostModal, HostSetup } from './OnboardHost';
+import { KubernetesModal, KubernetesSetup } from './OnboardKubernetes';
+import { RegistryModal } from './OnboardRegistry';
+import { getUserRole } from '../../helpers/auth-helper';
+import {
+  ADMIN_SIDE_NAV_MENU_COLLECTION,
+  USER_SIDE_NAV_MENU_COLLECTION,
+} from '../../constants/menu-collection';
+import SideNavigation from '../common/side-navigation/side-navigation';
+import HeaderView from '../common/header-view/header-view';
 
 const HOST = 'host';
-const KUBERNETES = 'kubernetes';
+const KUBERNETES = 'k8s';
 const CLOUD = 'cloud';
 const REGISTRY = 'registry';
 
@@ -130,6 +139,9 @@ const Button = styled.button`
   &:hover {
     background: #3778e1;
   }
+  &:focus: {
+    outline: 1px solid #4c86e9;
+  }
 `;
 
 const reducer = (state, action) => {
@@ -147,17 +159,100 @@ const reducer = (state, action) => {
   }
 };
 
-export const OnboardView = () => {
-  const [type, dispatch] = useReducer(reducer, 'cloud');
+/**
+ * OnboardPageCloud is only called when user wants to look up set up instructions
+ * @param {*} location is from react-router-dom
+ * we send search in router to open a specific cloud type from set up instructions of posture page
+ * @returns
+ */
+
+export const OnboardPageCloud = ({ location }) => {
+  const cloudType = location?.search ? location.search.substring(1) : '';
+  const sideNavMenu = () => {
+    return getUserRole() === 'admin'
+      ? ADMIN_SIDE_NAV_MENU_COLLECTION
+      : USER_SIDE_NAV_MENU_COLLECTION;
+  };
+  const navs = sideNavMenu();
+
+  const isSideNavCollapsed = useSelector(state =>
+    state.get('isSideNavCollapsed')
+  );
+
+  const [activeSideNav] = useState(navs[0]);
+
+  return (
+    <>
+      <SideNavigation navMenuCollection={navs} activeMenu={activeSideNav} />
+      <HeaderView />
+      <div
+        className={`gap-header-view ${
+          isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'
+        }`}
+      >
+        <Cloud defaultCloud={cloudType} />
+      </div>
+    </>
+  );
+};
+
+export const OnboardPage = ({ location }) => {
+  const cloudType = location?.search ? location.search.substring(1) : '';
+  const sideNavMenu = () => {
+    return getUserRole() === 'admin'
+      ? ADMIN_SIDE_NAV_MENU_COLLECTION
+      : USER_SIDE_NAV_MENU_COLLECTION;
+  };
+  const navs = sideNavMenu();
+
+  const isSideNavCollapsed = useSelector(state =>
+    state.get('isSideNavCollapsed')
+  );
+
+  const [activeSideNav] = useState(navs[0]);
+
+  return (
+    <>
+      <SideNavigation navMenuCollection={navs} activeMenu={activeSideNav} />
+      <HeaderView />
+      <div
+        className={`gap-header-view ${
+          isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'
+        }`}
+      >
+        {cloudType === 'host' && <HostSetup />}
+        {cloudType === 'k8s' && <KubernetesSetup />}
+      </div>
+    </>
+  );
+};
+
+export const OnboardView = ({ location }) => {
+  const [type, dispatch] = useReducer(reducer, '');
+
+  // Since OnboardView is used both in onboarding time of a user as well as on nvaigate to lookup
+  // agent set up instructions, we redirect to non modal instructions page
+  if (location?.search !== '') {
+    const agentIn = location.search.substring(1);
+    if ([HOST, KUBERNETES].includes(agentIn)) {
+      return <Redirect to={`/onboard/${location?.search}`} />;
+    }
+    return <Redirect to={`/onboard/cloud${location?.search}`} />;
+  }
+
   return (
     <Onboard>
-      <CloudModal open={type === CLOUD} setModal={() => dispatch('')} />
+      <CloudModal
+        open={type === CLOUD}
+        setModal={() => dispatch('')}
+        defaultCloud="aws"
+      />
       <HostModal open={type === HOST} setModal={() => dispatch('')} />
       <KubernetesModal
         open={type === KUBERNETES}
         setModal={() => dispatch('')}
       />
-      <RegistryMdal open={type === REGISTRY} setModal={() => dispatch('')} />
+      <RegistryModal open={type === REGISTRY} setModal={() => dispatch('')} />
       <h3>Welcome to Deepfence</h3>
       <Infra>
         <Middle>

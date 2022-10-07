@@ -9,6 +9,9 @@ const CloseButton = styled.button`
   right: 10px;
   position: absolute;
   cursor: pointer;
+  &:focus {
+    outline: none;
+  }
 `;
 
 export const OnboardModal = ({ children, isOpen, setModal }) => (

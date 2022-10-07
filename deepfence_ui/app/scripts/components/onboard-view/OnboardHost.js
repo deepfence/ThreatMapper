@@ -67,7 +67,7 @@ const More = styled.p`
   margin-top: 18px;
 `;
 
-export const RegistrySetup = () => {
+export const HostSetup = () => {
   const [copy, copyToClipboard] = useCopyToClipboard();
 
   const licenseResponse = useSelector(state => state.get('licenseResponse'));
@@ -104,7 +104,7 @@ export const RegistrySetup = () => {
   );
 };
 
-export const RegistryMdal = props => {
+export const HostModal = props => {
   const { open, setModal } = props;
 
   if (!open) {
@@ -113,7 +113,7 @@ export const RegistryMdal = props => {
 
   return (
     <OnboardModal isOpen={open} setModal={setModal}>
-      <RegistrySetup />
+      <HostSetup />
     </OnboardModal>
   );
 };
