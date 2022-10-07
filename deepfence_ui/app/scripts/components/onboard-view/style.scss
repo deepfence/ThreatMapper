@@ -1,0 +1,24 @@
+.card {
+    background-color: #171717;
+    border-radius: 4px;
+    box-shadow: 0 12px 16px 0 rgb(0 0 0 / 20%);
+    border-radius: 4px;
+    width: 296px;
+    height: 200px;
+    padding: 22px 20px;
+    position: relative;
+    margin-right: 50px;
+    margin-top: 100px;
+
+    .card-logo {
+        background-color: #0e0e0e;
+        border-radius: 92px;
+        box-shadow: 0 8px 12px 0 rgb(0 0 0 / 16%);
+        width: 120px;
+        height: 120px;
+        position: absolute;
+        top: -60px;
+        padding: 10px;
+        margin-left: 60px;
+    }
+}
