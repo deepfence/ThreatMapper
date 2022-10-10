@@ -71,9 +71,22 @@ const More = styled.p`
 `;
 const Body = styled.div`
   color: #c0c0c0;
+  margin-top: 1em;
+`;
+const BackButton = styled.button`
+  all: unset;
+  color: #c0c0c0;
+  cursor: pointer;
+  &:focus {
+    outline: none;
+  }
+  &:hover {
+    color: #ffffff;
+  }
+  padding: 6px 8px;
 `;
 
-export const KubernetesSetup = () => {
+export const KubernetesSetup = props => {
   const [copy, copyToClipboard] = useCopyToClipboard();
   const licenseResponse = useSelector(state => state.get('licenseResponse'));
 
@@ -81,31 +94,42 @@ export const KubernetesSetup = () => {
     copyToClipboard(getK8sInstructions(licenseResponse));
   };
   return (
-    <Body>
-      <p>Please follow the instructions below to set-up deepfence agent.</p>
-      <Title>K8s:</Title>
-      <Code>
-        <CodeText>{getK8sInstructions(licenseResponse)}</CodeText>
-        <CopyButton
-          className={cx({
-            'fa fa-check': copy.value,
-            'fa fa-copy': !copy.value,
-          })}
-          onClick={onK8sCopyClick}
-          aria-hidden="true"
-        />
-      </Code>
-      <More>
-        For more details reference our{' '}
-        <a
-          href="https://docs.deepfence.io/threatstryker/docs/sensors/kubernetes"
-          target="_blank"
-          rel="noreferrer"
-        >
-          agent installation documentation.
-        </a>
-      </More>
-    </Body>
+    <>
+      {props.history && (
+        <BackButton onClick={props.history.goBack}>
+          <i className="fa fa-long-arrow-left" aria-hidden="true" />
+          &nbsp;Back
+        </BackButton>
+      )}
+      <Body>
+        <p>
+          Please follow the instructions below to set-up deepfence agent using
+          helm chart.
+        </p>
+        <Title>K8s:</Title>
+        <Code>
+          <CodeText>{getK8sInstructions(licenseResponse)}</CodeText>
+          <CopyButton
+            className={cx({
+              'fa fa-check': copy.value,
+              'fa fa-copy': !copy.value,
+            })}
+            onClick={onK8sCopyClick}
+            aria-hidden="true"
+          />
+        </Code>
+        <More>
+          For more details reference our{' '}
+          <a
+            href="https://docs.deepfence.io/threatstryker/docs/sensors/kubernetes"
+            target="_blank"
+            rel="noreferrer"
+          >
+            agent installation documentation.
+          </a>
+        </More>
+      </Body>
+    </>
   );
 };
 export const KubernetesModal = props => {

@@ -30,21 +30,29 @@ const SETUP_TYPES = [
     name: 'Cloud',
     icon: cloud,
     type: CLOUD,
+    description:
+      'Connect a cloud account to check for compliance misconfigurations',
   },
   {
     name: 'Kubernetes',
     icon: kubernetes,
     type: KUBERNETES,
+    description:
+      'Connect a Kubernetes cluster to check for vulnerabilities, secrets & malware & compliance misconfigurations',
   },
   {
     name: 'Host',
     icon: hosting,
     type: HOST,
+    description:
+      'Connect a Linux Host to check for vulnerabilities, secrets, malware & compliance misconfigurations',
   },
   {
     name: 'Registry',
     icon: registry,
     type: REGISTRY,
+    description:
+      'Connect a registry to check images for vulnerabilities secrets & malware',
   },
 ];
 
@@ -57,6 +65,7 @@ const CenterAlign = css`
 const Onboard = styled.div`
   ${CenterAlign}
   flex-direction: column;
+  align-items: center;
   background-color: rgba(16, 16, 16, 0.8);
 `;
 
@@ -68,27 +77,29 @@ const Middle = styled.div`
   gap: 20px;
   display: flex;
   flex-wrap: wrap;
-  width: 440px;
   justify-content: center;
+  @media (min-width: 620px) {
+    width: 640px;
+  }
 `;
 
 const Card = styled.div`
-  background-color: #fefefe;
+  background-color: #222222;
   border-radius: 4px;
   box-shadow: 0 12px 16px 0 rgb(0 0 0 / 10%);
   border-radius: 4px;
-  width: 200px;
-  height: 124px;
+  width: 300px;
+  height: 180px;
   padding: 22px 20px;
   position: relative;
   margin-top: 60px;
   display: flex;
   justify-content: center;
+  align-items: center;
   &:hover {
     transform: scale(1.05);
     transition: 0.2s all ease-in-out;
   }
-  cursor: pointer;
 `;
 
 const Logo = styled.div`
@@ -98,7 +109,7 @@ const Logo = styled.div`
   width: 72px;
   height: 72px;
   position: absolute;
-  top: -46px;
+  top: -40px;
   padding: 4px;
 `;
 
@@ -114,15 +125,21 @@ const ActionContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 136px;
-  padding-bottom: 16px;
+  width: 300px;
 `;
 
 const Title = styled.span`
   color: #000;
-  line-height: 32px;
   padding-left: 4px;
+  font-size: 14px;
   font-family: 'Source Sans Pro', sans-serif;
+`;
+
+const Description = styled.div`
+  color: #fff;
+  font-size: 14px;
+  font-family: 'Source Sans Pro', sans-serif;
+  text-align: center;
 `;
 
 const Button = styled.button`
@@ -134,8 +151,7 @@ const Button = styled.button`
   font-family: 'Source Sans Pro', sans-serif;
   line-height: 20px;
   text-align: center;
-  padding: 6px 18px;
-  border-radius: 4px;
+  padding: 10px 0px;
   cursor: pointer;
   &:hover {
     background: #1b52b1;
@@ -146,12 +162,13 @@ const Button = styled.button`
 `;
 
 const Landing = styled.div`
-  max-width: 700px;
+  max-width: 800px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   color: #fff;
   min-height: 100vh;
+  gap: 1.5rem;
   &:before {
     content: '';
     position: absolute;
@@ -199,7 +216,7 @@ const reducer = (state, action) => {
  * @returns
  */
 
-export const OnboardPageCloud = ({ location }) => {
+export const OnboardPageCloud = ({ location, ...rest }) => {
   const cloudType = location.state?.type;
   const sideNavMenu = () => {
     return getUserRole() === 'admin'
@@ -223,13 +240,13 @@ export const OnboardPageCloud = ({ location }) => {
           isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'
         }`}
       >
-        <Cloud defaultCloud={cloudType} />
+        <Cloud defaultCloud={cloudType} {...rest} />
       </div>
     </>
   );
 };
 
-export const OnboardPage = ({ location }) => {
+export const OnboardPage = ({ location, ...rest }) => {
   const cloudType = location?.search ? location.search.substring(1) : '';
   const sideNavMenu = () => {
     return getUserRole() === 'admin'
@@ -253,8 +270,8 @@ export const OnboardPage = ({ location }) => {
           isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'
         }`}
       >
-        {cloudType === 'host' && <HostSetup />}
-        {cloudType === 'k8s' && <KubernetesSetup />}
+        {cloudType === 'host' && <HostSetup {...rest} />}
+        {cloudType === 'k8s' && <KubernetesSetup {...rest} />}
       </div>
     </>
   );
@@ -283,19 +300,6 @@ export const OnboardView = ({ match }) => {
 
       <Landing>
         <MainHeading>Welcome to Deepfence Console</MainHeading>
-        <Text>
-          Deepfence Cloud is a hosted SaaS platform from which you can deploy
-          multiple ThreatStryker consoles and assign users to these consoles,
-          all from a single point of control. Deepfence Cloud manages console
-          upgrades, scaling and security for you, so you and your teams can
-          focus on the safe and secure operation of your enterprise cloud-native
-          applications.
-        </Text>
-
-        <Text>
-          Prior to use Deepfence Management Console, first setup/login to your
-          cloud account.
-        </Text>
         <Infra>
           <Middle>
             {SETUP_TYPES.map(type => {
@@ -310,9 +314,9 @@ export const OnboardView = ({ match }) => {
                       height="78"
                     />
                   </Logo>
+                  <Description>{type.description}</Description>
                   <Bottom>
                     <ActionContainer>
-                      <Title>{type.name}</Title>
                       <Button
                         type="button"
                         onClick={() => {

@@ -129,6 +129,19 @@ const Text = styled.p`
   font-size: 14px;
 `;
 
+const BackButton = styled.button`
+  all: unset;
+  color: #c0c0c0;
+  cursor: pointer;
+  &:focus {
+    outline: none;
+  }
+  &:hover {
+    color: #ffffff;
+  }
+  padding: 6px 8px;
+`;
+
 const terraformLink =
   'https://registry.terraform.io/modules/deepfence/cloud-scanner/aws/latest/examples/single-account-ecs#usage';
 
@@ -146,10 +159,6 @@ const AwsSetup = () => {
 
       <FormWrapper>
         <SubHeading>1. Connect with Cloud Formation</SubHeading>
-        <Text>
-          First login to your aws account. Select your AWS region from the given
-          below dropdown and click on run cloud formation.
-        </Text>
 
         <Action id="awsActionId">
           <div className="df-select-field">
@@ -372,80 +381,88 @@ export const Cloud = props => {
     gcp: defaultCloud === 'gcp',
   });
   return (
-    <Grid>
-      <Tabs>
-        <aside>
-          <CloudButton
-            type="button"
-            active={choosen.aws}
-            onClick={() => {
-              setChoosen({
-                aws: true,
-                azure: null,
-                gcp: null,
-              });
-            }}
-          >
-            <img
-              src={aws}
-              alt="Aws"
-              width="36"
-              height="36"
-              style={{
-                outline: 'none',
+    <>
+      {props.history && (
+        <BackButton onClick={props.history.goBack}>
+          <i className="fa fa-long-arrow-left" aria-hidden="true" />
+          &nbsp;Back
+        </BackButton>
+      )}
+      <Grid>
+        <Tabs>
+          <aside>
+            <CloudButton
+              type="button"
+              active={choosen.aws}
+              onClick={() => {
+                setChoosen({
+                  aws: true,
+                  azure: null,
+                  gcp: null,
+                });
               }}
-            />{' '}
-            AWS
-            {/* <RightArrow /> */}
-          </CloudButton>
-          <CloudButton
-            type="button"
-            active={choosen.gcp}
-            onClick={() => {
-              setChoosen({
-                aws: null,
-                azure: null,
-                gcp: true,
-              });
-            }}
-          >
-            <img
-              className="img-fluid"
-              src={gcp}
-              alt="Aws"
-              width="36"
-              height="36"
-            />{' '}
-            GCP
-          </CloudButton>
-          <CloudButton
-            type="button"
-            active={choosen.azure}
-            onClick={() => {
-              setChoosen({
-                aws: null,
-                azure: true,
-                gcp: null,
-              });
-            }}
-          >
-            <img
-              className="img-fluid"
-              src={azure}
-              alt="Aws"
-              width="36"
-              height="36"
-            />{' '}
-            AZURE
-          </CloudButton>
-        </aside>
-      </Tabs>
-      <SetupContent>
-        {choosen.aws && <AwsSetup />}
-        {choosen.gcp && <GcpSetup />}
-        {choosen.azure && <AzureSetup />}
-      </SetupContent>
-    </Grid>
+            >
+              <img
+                src={aws}
+                alt="Aws"
+                width="36"
+                height="36"
+                style={{
+                  outline: 'none',
+                }}
+              />{' '}
+              AWS
+              {/* <RightArrow /> */}
+            </CloudButton>
+            <CloudButton
+              type="button"
+              active={choosen.gcp}
+              onClick={() => {
+                setChoosen({
+                  aws: null,
+                  azure: null,
+                  gcp: true,
+                });
+              }}
+            >
+              <img
+                className="img-fluid"
+                src={gcp}
+                alt="Aws"
+                width="36"
+                height="36"
+              />{' '}
+              GCP
+            </CloudButton>
+            <CloudButton
+              type="button"
+              active={choosen.azure}
+              onClick={() => {
+                setChoosen({
+                  aws: null,
+                  azure: true,
+                  gcp: null,
+                });
+              }}
+            >
+              <img
+                className="img-fluid"
+                src={azure}
+                alt="Aws"
+                width="36"
+                height="36"
+              />{' '}
+              AZURE
+            </CloudButton>
+          </aside>
+        </Tabs>
+        <SetupContent>
+          {choosen.aws && <AwsSetup />}
+          {choosen.gcp && <GcpSetup />}
+          {choosen.azure && <AzureSetup />}
+        </SetupContent>
+      </Grid>
+    </>
   );
 };
 

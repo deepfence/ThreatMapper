@@ -22,10 +22,10 @@ export const OnboardModal = ({ children, isOpen, setModal }) => (
         backgroundColor: '#141414',
         border: 'none',
         borderRadius: 0,
-        top: '100px',
+        top: '80px',
       },
       overlay: {
-        backgroundColor: 'rgba(16, 16, 16, 0.8)',
+        backgroundColor: 'rgba(16, 16, 16, 0.9)',
       },
     }}
     onRequestClose={setModal}
