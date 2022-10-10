@@ -22,7 +22,12 @@ export const AwsTerraFormScript = withRouter(props => {
           marginBottom: 0,
         }}
         className="name heading"
-        to="/onboard/cloud-platform/?aws"
+        to={{
+          pathname: '/onboard/cloud-platform',
+          state: {
+            type: 'aws',
+          },
+        }}
       >
         Setup Instructions
       </Link>

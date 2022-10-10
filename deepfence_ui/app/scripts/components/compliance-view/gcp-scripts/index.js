@@ -20,7 +20,12 @@ export const GcpTerraFormScript = withRouter(props => {
           marginBottom: 0,
         }}
         className="name heading"
-        to="/onboard/cloud-platform/?gcp"
+        to={{
+          pathname: '/onboard/cloud-platform',
+          state: {
+            type: 'gcp',
+          },
+        }}
       >
         Setup Instructions
       </Link>

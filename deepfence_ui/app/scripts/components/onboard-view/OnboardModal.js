@@ -31,7 +31,7 @@ export const OnboardModal = ({ children, isOpen, setModal }) => (
     onRequestClose={setModal}
     ariaHideApp={false}
   >
-    <CloseButton onClick={setModal} type="button">
+    <CloseButton onClick={setModal}>
       <i className="fa fa-times" aria-hidden="true" />
     </CloseButton>
     {children}

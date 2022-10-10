@@ -20,7 +20,12 @@ export const AzureTerraFormScript = withRouter(props => {
           marginBottom: 0,
         }}
         className="name heading"
-        to="/onboard/cloud-platform/?azure"
+        to={{
+          pathname: '/onboard/cloud-platform',
+          state: {
+            type: 'azure',
+          },
+        }}
       >
         Setup Instructions
       </Link>

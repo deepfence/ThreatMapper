@@ -41,7 +41,7 @@ const Code = styled.div`
   border-radius: 8px;
   padding: 8px;
   position: relative;
-  font-size: 1rem;
+  font-size: 14px;
   line-height: 24px;
 `;
 
@@ -61,10 +61,18 @@ const CopyButton = styled.button`
   outline: none;
   border: none;
   color: #fff;
+  &:focus {
+    outline: none;
+  }
 `;
 
 const More = styled.p`
   margin-top: 18px;
+  font-size: 14px;
+`;
+
+const Body = styled.div`
+  color: #c0c0c0;
 `;
 
 export const HostSetup = () => {
@@ -76,7 +84,7 @@ export const HostSetup = () => {
     copyToClipboard(getDockerInstructions(licenseResponse));
   };
   return (
-    <>
+    <Body>
       <p>Please follow the instructions below to set-up deepfence agent.</p>
       <Title>Docker:</Title>
       <Code>
@@ -100,7 +108,7 @@ export const HostSetup = () => {
           agent installation documentation.
         </a>
       </More>
-    </>
+    </Body>
   );
 };
 

@@ -1,12 +1,12 @@
 import React, { useReducer, useState } from 'react';
 import styled, { css } from 'styled-components';
 
-import { Redirect } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import cloud from '../../../images/onboard/cloud.svg';
 import kubernetes from '../../../images/onboard/kubernetes.svg';
 import hosting from '../../../images/onboard/hosting.svg';
 import registry from '../../../images/onboard/registry.svg';
+import logo from '../../../images/onboard/logocloud.png';
 // import { OnboardModal } from './OnboardModal';
 import { Cloud, CloudModal } from './OnboardCloud';
 import { HostModal, HostSetup } from './OnboardHost';
@@ -57,6 +57,7 @@ const CenterAlign = css`
 const Onboard = styled.div`
   ${CenterAlign}
   flex-direction: column;
+  background-color: rgba(16, 16, 16, 0.8);
 `;
 
 const Infra = styled.div`
@@ -72,9 +73,9 @@ const Middle = styled.div`
 `;
 
 const Card = styled.div`
-  background-color: #171717;
+  background-color: #fefefe;
   border-radius: 4px;
-  box-shadow: 0 12px 16px 0 rgb(0 0 0 / 20%);
+  box-shadow: 0 12px 16px 0 rgb(0 0 0 / 10%);
   border-radius: 4px;
   width: 200px;
   height: 124px;
@@ -118,7 +119,7 @@ const ActionContainer = styled.div`
 `;
 
 const Title = styled.span`
-  color: #fff;
+  color: #000;
   line-height: 32px;
   padding-left: 4px;
   font-family: 'Source Sans Pro', sans-serif;
@@ -137,11 +138,43 @@ const Button = styled.button`
   border-radius: 4px;
   cursor: pointer;
   &:hover {
-    background: #3778e1;
+    background: #1b52b1;
   }
-  &:focus: {
-    outline: 1px solid #4c86e9;
+  &:focus {
+    outline: none;
   }
+`;
+
+const Landing = styled.div`
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #fff;
+  min-height: 100vh;
+  &:before {
+    content: '';
+    position: absolute;
+    display: flex;
+    align-items: center;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    transition: all 0.8s;
+    opacity: 0.3;
+    background: url(${logo});
+    background-repeat: no-repeat;
+  }
+`;
+
+const MainHeading = styled.h3`
+  text-align: center;
+`;
+
+const Text = styled.h3`
+  text-align: center;
+  font-size: 16px;
 `;
 
 const reducer = (state, action) => {
@@ -167,7 +200,7 @@ const reducer = (state, action) => {
  */
 
 export const OnboardPageCloud = ({ location }) => {
-  const cloudType = location?.search ? location.search.substring(1) : '';
+  const cloudType = location.state?.type;
   const sideNavMenu = () => {
     return getUserRole() === 'admin'
       ? ADMIN_SIDE_NAV_MENU_COLLECTION
@@ -227,18 +260,8 @@ export const OnboardPage = ({ location }) => {
   );
 };
 
-export const OnboardView = ({ location }) => {
+export const OnboardView = ({ match }) => {
   const [type, dispatch] = useReducer(reducer, '');
-
-  // Since OnboardView is used both in onboarding time of a user as well as on nvaigate to lookup
-  // agent set up instructions, we redirect to non modal instructions page
-  if (location?.search !== '') {
-    const agentIn = location.search.substring(1);
-    if ([HOST, KUBERNETES].includes(agentIn)) {
-      return <Redirect to={`/onboard/${location?.search}`} />;
-    }
-    return <Redirect to={`/onboard/cloud${location?.search}`} />;
-  }
 
   return (
     <Onboard>
@@ -252,40 +275,60 @@ export const OnboardView = ({ location }) => {
         open={type === KUBERNETES}
         setModal={() => dispatch('')}
       />
-      <RegistryModal open={type === REGISTRY} setModal={() => dispatch('')} />
-      <h3>Welcome to Deepfence</h3>
-      <Infra>
-        <Middle>
-          {SETUP_TYPES.map(type => {
-            return (
-              <Card key={type.name}>
-                <Logo>
-                  <img
-                    className="img-fluid p-1"
-                    src={type.icon}
-                    alt={type.name}
-                    width="78"
-                    height="78"
-                  />
-                </Logo>
-                <Bottom>
-                  <ActionContainer>
-                    <Title>{type.name}</Title>
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        dispatch(type.type);
-                      }}
-                    >
-                      Connect
-                    </Button>
-                  </ActionContainer>
-                </Bottom>
-              </Card>
-            );
-          })}
-        </Middle>
-      </Infra>
+      <RegistryModal
+        open={type === REGISTRY}
+        setModal={() => dispatch('')}
+        match={match}
+      />
+
+      <Landing>
+        <MainHeading>Welcome to Deepfence Console</MainHeading>
+        <Text>
+          Deepfence Cloud is a hosted SaaS platform from which you can deploy
+          multiple ThreatStryker consoles and assign users to these consoles,
+          all from a single point of control. Deepfence Cloud manages console
+          upgrades, scaling and security for you, so you and your teams can
+          focus on the safe and secure operation of your enterprise cloud-native
+          applications.
+        </Text>
+
+        <Text>
+          Prior to use Deepfence Management Console, first setup/login to your
+          cloud account.
+        </Text>
+        <Infra>
+          <Middle>
+            {SETUP_TYPES.map(type => {
+              return (
+                <Card key={type.name}>
+                  <Logo>
+                    <img
+                      className="img-fluid p-1"
+                      src={type.icon}
+                      alt={type.name}
+                      width="78"
+                      height="78"
+                    />
+                  </Logo>
+                  <Bottom>
+                    <ActionContainer>
+                      <Title>{type.name}</Title>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          dispatch(type.type);
+                        }}
+                      >
+                        Connect
+                      </Button>
+                    </ActionContainer>
+                  </Bottom>
+                </Card>
+              );
+            })}
+          </Middle>
+        </Infra>
+      </Landing>
     </Onboard>
   );
 };

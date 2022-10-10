@@ -31,7 +31,7 @@ const SetupContent = styled.div`
 `;
 
 const Gap = styled.div`
-  height: 30px;
+  height: 20px;
 `;
 
 const CloudButton = styled.button`
@@ -53,6 +53,7 @@ const CloudButton = styled.button`
   ${({ active }) =>
     active &&
     `
+    color: #0080ff;
     background-color: #2e2e2e;
     &:after {
         content: '';
@@ -88,14 +89,16 @@ const RunButton = styled.button`
   background-color: #2166da;
   border: none;
   color: #ffffff;
-  font-family: 'Source Sans Pro', sans-serif;
   line-height: 20px;
   text-align: center;
   padding: 6px 18px;
   border-radius: 4px;
   cursor: pointer;
   &:hover {
-    background: #3778e1;
+    background: #1b52b1;
+  }
+  & a:hover {
+    text-decoration: none;
   }
 `;
 
@@ -106,7 +109,7 @@ const PreTag = styled.pre`
   border-radius: 8px;
   padding: 8px;
   position: relative;
-  font-size: 1rem;
+  font-size: 14px;
   line-height: 24px;
   color: #cccccc;
   background: #000;
@@ -114,6 +117,16 @@ const PreTag = styled.pre`
 
 const Body = styled.div`
   padding: 1em;
+  color: #c0c0c0;
+`;
+
+const MainHeading = styled.h5``;
+const SubHeading = styled.p`
+  font-size: 16px;
+`;
+
+const Text = styled.p`
+  font-size: 14px;
 `;
 
 const terraformLink =
@@ -123,20 +136,20 @@ const AwsSetup = () => {
   const [regionValue, setRegionValue] = useState();
   return (
     <Body>
-      <h4>Connect your AWS Account</h4>
-      <p>
+      <MainHeading>Connect your AWS Account</MainHeading>
+      <Text>
         Deploy all modules for Deepfence Compliance Scanner for a single
         account. For information on AWS Organizations and account types, see AWS
         docs.
-      </p>
-      <p>You can connect your AWS account in two ways:</p>
+      </Text>
+      <Text>You can connect your AWS account in two ways:</Text>
 
       <FormWrapper>
-        <h5>1. Connect with Cloud Formation</h5>
-        <span>
+        <SubHeading>1. Connect with Cloud Formation</SubHeading>
+        <Text>
           First login to your aws account. Select your AWS region from the given
           below dropdown and click on run cloud formation.
-        </span>
+        </Text>
 
         <Action id="awsActionId">
           <div className="df-select-field">
@@ -158,17 +171,17 @@ const AwsSetup = () => {
             />
           </div>
           {regionValue !== undefined && (
-            <RunButton type="button">
+            <RunButton>
               <a
                 href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner`}
                 target="_blank"
                 rel="noreferrer"
                 style={{
                   color: '#fff',
-                  ':textDecoration': 'none',
                 }}
               >
-                Run cloud formation
+                Run cloud formation &nbsp;
+                <i className="fa fa-long-arrow-right" aria-hidden="true" />
               </a>
             </RunButton>
           )}
@@ -176,12 +189,12 @@ const AwsSetup = () => {
       </FormWrapper>
       <Gap />
       <FormWrapper>
-        <h5>2. Terraform</h5>
+        <SubHeading>2. Terraform</SubHeading>
         <p>Single Account</p>
-        <span>
+        <Text>
           Copy the code below and paste it into a .tf file on your local
           machine.
-        </span>
+        </Text>
         <PreTag>{`provider "aws" {
 region = "<AWS-REGION>; eg. us-east-1"
 }
@@ -195,7 +208,7 @@ deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXX
 }
 `}</PreTag>
 
-        <span>Then run the following commands:</span>
+        <Text>Then run the following commands:</Text>
 
         <PreTag>
           $ terraform init
@@ -205,10 +218,20 @@ deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXX
         </PreTag>
       </FormWrapper>
       <div>
-        <div>More details on terraform commands can be found here:</div>
-        <a target="_blank" rel="noreferrer" href={terraformLink}>
-          {terraformLink}
-        </a>
+        <div>
+          <Text
+            style={{
+              margin: 0,
+            }}
+          >
+            More details on terraform commands can be found here:
+          </Text>
+        </div>
+        <Text>
+          <a target="_blank" rel="noreferrer" href={terraformLink}>
+            {terraformLink}
+          </a>
+        </Text>
       </div>
     </Body>
   );
@@ -217,17 +240,17 @@ deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXX
 const GcpSetup = () => {
   return (
     <Body>
-      <h4>Connect your GCP Account</h4>
-      <p>
+      <MainHeading>Connect your GCP Account</MainHeading>
+      <Text>
         Deploy Deepfence Compliance Scanner with Terraform using the code
         samples below for a single project.
-      </p>
+      </Text>
       <FormWrapper>
-        <p>Single Account</p>
-        <span>
+        <SubHeading>Single Account</SubHeading>
+        <Text>
           Copy the code below and paste it into a .tf file on your local
           machine.
-        </span>
+        </Text>
         <PreTag>{`
 provider "google" {
    project = "<PROJECT_ID>; ex. dev1-123456"
@@ -248,7 +271,7 @@ module "cloud-scanner_example_single-project" {
 }
 `}</PreTag>
 
-        <span>Then run the following commands:</span>
+        <Text>Then run the following commands:</Text>
 
         <PreTag>
           $ terraform init
@@ -258,10 +281,20 @@ module "cloud-scanner_example_single-project" {
         </PreTag>
       </FormWrapper>
       <div>
-        <div>More details on terraform commands can be found here:</div>
-        <a target="_blank" rel="noreferrer" href={terraformLink}>
-          {terraformLink}
-        </a>
+        <div>
+          <Text
+            style={{
+              margin: 0,
+            }}
+          >
+            More details on terraform commands can be found here:
+          </Text>
+        </div>
+        <Text>
+          <a target="_blank" rel="noreferrer" href={terraformLink}>
+            {terraformLink}
+          </a>
+        </Text>
       </div>
     </Body>
   );
@@ -270,17 +303,17 @@ module "cloud-scanner_example_single-project" {
 const AzureSetup = () => {
   return (
     <Body>
-      <h4>Connect your AZURE Account</h4>
-      <p>
+      <MainHeading>Connect your AZURE Account</MainHeading>
+      <Text>
         Deploy Deepfence Compliance Scanner with Terraform using the code
         samples below for a single subscription.
-      </p>
+      </Text>
       <FormWrapper>
-        <p>Single Account</p>
-        <span>
+        <SubHeading>Single Account</SubHeading>
+        <Text>
           Copy the code below and paste it into a .tf file on your local
           machine.
-        </span>
+        </Text>
         <PreTag>{`provider "azurerm" {
   features {}
   subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
@@ -295,7 +328,7 @@ module "cloud-scanner_example_single-subscription" {
 }
 `}</PreTag>
 
-        <span>Then run the following commands:</span>
+        <Text>Then run the following commands:</Text>
 
         <PreTag>
           $ terraform init
@@ -305,10 +338,21 @@ module "cloud-scanner_example_single-subscription" {
         </PreTag>
       </FormWrapper>
       <div>
-        <div>More details on terraform commands can be found here:</div>
-        <a target="_blank" rel="noreferrer" href={terraformLink}>
-          {terraformLink}
-        </a>
+        <div>
+          <Text
+            style={{
+              margin: 0,
+            }}
+          >
+            More details on terraform commands can be found here:
+          </Text>
+          :
+        </div>
+        <Text>
+          <a target="_blank" rel="noreferrer" href={terraformLink}>
+            {terraformLink}
+          </a>
+        </Text>
       </div>
     </Body>
   );
