@@ -2844,3 +2844,23 @@ export function getAttackGraphNodeInfo(params = {}) {
     },
   }).then(errorHandler);
 }
+
+
+export function apiGetConnectedAgent(params = {}) {
+  const { nodeid, serviceid } = params;
+  // const url = `${backendElasticApiEndPoint()}/cloud-compliance/cloud_resource/${nodeid}?node_type=${encodeURIComponent(serviceid)}`;
+  // return fetch(url, {
+  //   credentials: 'same-origin',
+  //   method: 'GET',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //     Authorization: getAuthHeader(),
+  //   },
+  // }).then(errorHandler);
+  return Promise.resolve({
+    data: {
+      agent_connected: true,
+      connected_by: ['registres', ]
+    }
+  })
+}

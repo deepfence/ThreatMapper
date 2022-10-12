@@ -103,8 +103,8 @@ export const KubernetesSetup = props => {
       )}
       <Body>
         <p>
-          Please follow the instructions below to set-up deepfence agent using
-          helm chart.
+          Please install the deepfence-k8s-scanner helm chart to your Kubernetes
+          cluster to check for compliance misconfigurations.
         </p>
         <Title>K8s:</Title>
         <Code>

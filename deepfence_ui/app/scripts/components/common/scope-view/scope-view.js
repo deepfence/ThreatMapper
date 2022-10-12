@@ -20,8 +20,9 @@ import NodeFiltersPanel from '../../node-filter-panel';
 import './styles.scss';
 import { getWebsocketUrl } from '../../../utils/web-api-utils';
 import { showTopologyPanel } from '../../../actions';
+import { ConnectAgent } from '../../onboard-view/ConnectAgent';
 
-export const ScopeView = (props) => {
+export const ScopeView = props => {
   const dispatch = useDispatch();
 
   const wsURL = `${getWebsocketUrl()}/topology-api`;
@@ -51,6 +52,11 @@ export const ScopeView = (props) => {
     state.get('isSideNavCollapsed')
   );
 
+   // onboard api check user has atleast connect deepfence console
+   const agentConnected = useSelector(state =>
+    state.getIn(['agentConnection', 'data'])?.agent_connected
+  );
+
   return (
     <div>
       <SideNavigation
@@ -63,26 +69,28 @@ export const ScopeView = (props) => {
           isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'
         }`}
       >
-        <div className="deepfence-topology">
-          <div className="modals-wrapper">
-            {(isGraphViewMode || isTableViewMode) && (
-              <NodeDetailSliding isOpen={sidePanelOpen} />
-            )}
-            {isDonutDetailsModalVisible && <DonutDetailsModal />}
-          </div>
+        {agentConnected ? (
+          <div className="deepfence-topology">
+            <div className="modals-wrapper">
+              {(isGraphViewMode || isTableViewMode) && (
+                <NodeDetailSliding isOpen={sidePanelOpen} />
+              )}
+              {isDonutDetailsModalVisible && <DonutDetailsModal />}
+            </div>
 
-          {apiKey && 
-            <NodeFiltersPanel
-              apiKey={apiKey}
-              apiUrl={wsURL}
-            />
-          }
-          <div className="multi-cloud-view-selector">
-            <ViewModeSelector />
-            <i className="fa fa-bars hamburger-icon" onClick={toggleSidePanel}></i>
+            {apiKey && <NodeFiltersPanel apiKey={apiKey} apiUrl={wsURL} />}
+            <div className="multi-cloud-view-selector">
+              <ViewModeSelector />
+              <i
+                className="fa fa-bars hamburger-icon"
+                onClick={toggleSidePanel}
+              ></i>
+            </div>
+            <Nodes />
           </div>
-          <Nodes />
-        </div>
+        ) : (
+          <ConnectAgent page="topology" />
+        )}
       </div>
     </div>
   );

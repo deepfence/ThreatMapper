@@ -1990,6 +1990,31 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
+    case ActionTypes.GET_AGENT_CONNECTED_REQUEST: {
+      const { input: { type }} = action;
+      state = state.setIn(['agentConnection', type, 'loading'], false);
+      return state;
+    }
+
+    case ActionTypes.GET_AGENT_CONNECTED_SUCCESS: {
+      const {
+        payload: {
+          data
+        },
+        input: { type }
+      } = action;
+      state = state.setIn(['agentConnection', 'loading'], false);
+      state = state.setIn(['agentConnection', 'data'], data);
+      return state;
+    }
+
+    case ActionTypes.GET_AGENT_CONNECTED_FAILURE: {
+      const { input: { type }} = action;
+      state = state.setIn(['agentConnection', type, 'loading'], false);
+      state = state.setIn(['agentConnection', type, 'error'], 'An error occured while fetching onboard api.');
+      return state;
+    }
+
     default: {
       // forwarding unknown action types to redux-form reducer.
       state = state.set('form', formReducer(state.get('form'), action));

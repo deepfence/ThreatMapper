@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { Redirect, Route, HashRouter, Switch } from 'react-router-dom';
 
 // Custom components
@@ -40,10 +40,13 @@ import {
   OnboardPageCloud,
   OnboardPage,
 } from './onboard-view/OnboardView';
+import { getConnectedAgent } from '../actions';
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isUserSessionActive, setIsUserSessionActive] = useState(false);
+  const [isAgentConnected, setIsAgentConnected] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     isUserSessionActiveAsync().then(active => {
@@ -52,6 +55,16 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
     });
   }, []);
 
+  useEffect(() => {
+    // trigger onboard api after login or every refresh of token or page
+    if (isUserSessionActive) {
+      const result = dispatch(getConnectedAgent());
+      result.then(({ data }) => {
+        setIsAgentConnected(!!data?.agent_connected);
+      })
+    }
+  }, [isUserSessionActive]);
+  
   return (
     <Route
       {...rest}
@@ -68,6 +81,10 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
 
         if (isPasswordInvalidated() && currentPath !== '/change-password') {
           return <Redirect to="/change-password" />;
+        }
+
+        if (isUserSessionActive && !isAgentConnected && currentPath !== '/onboard') {
+          return <Redirect to="/onboard" />;
         }
 
         return isUserSessionActive ? (
@@ -87,7 +104,7 @@ class DeepFenceApp extends React.Component {
   }
 
   render() {
-    const { isTableJSONViewModal } = this.props;
+    const { isTableJSONViewModal, isAgentConnected } = this.props;
     return (
       <div className="dashboard-wrapper">
         <HashRouter>
@@ -199,7 +216,7 @@ class DeepFenceApp extends React.Component {
               path="*"
               render={() =>
                 isUserSessionActive() ? (
-                  <Redirect to="/topology" />
+                  isAgentConnected ? <Redirect to="/topology" /> : <Redirect to="/onboard" />
                 ) : (
                   <Redirect to="/login" />
                 )
@@ -218,6 +235,7 @@ class DeepFenceApp extends React.Component {
 function mapStateToProps(state) {
   return {
     isTableJSONViewModal: state.get('isTableJSONViewModal'),
+    isAgentConnected: state.getIn(['agentConnection', 'data'])?.agent_connected
   };
 }
 

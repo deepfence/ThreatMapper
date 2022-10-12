@@ -105,7 +105,10 @@ export const HostSetup = props => {
         </BackButton>
       )}
       <Body>
-        <p>Please follow the instructions below to set-up deepfence agent.</p>
+        <p>
+          Please install the deepfence sensors to your Linux VMs to check for
+          compliance misconfigurations.
+        </p>
         <Title>Docker:</Title>
         <Code>
           <CodeText>{getDockerInstructions(licenseResponse)}</CodeText>

@@ -115,7 +115,8 @@ import {
   getServicesForCloudAccount,
   getAttackGraphData,
   getAttackGraphNodeInfo,
-  refreshCloudComplianceResources
+  refreshCloudComplianceResources,
+  apiGetConnectedAgent
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -2108,4 +2109,12 @@ export function getAttackGraphNodeIssuesAction(params) {
     ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_FAILURE,
   ];
   return genericThunkAction(actionTypes, searchDocsWrapper, params);
+}
+export function getConnectedAgent(params) {
+  const actionTypes = [
+    ActionTypes.GET_AGENT_CONNECTED_REQUEST,
+    ActionTypes.GET_AGENT_CONNECTED_SUCCESS,
+    ActionTypes.GET_AGENT_CONNECTED_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, apiGetConnectedAgent, params);
 }

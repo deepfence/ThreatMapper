@@ -142,7 +142,7 @@ const AccountListTable = ({
   return (
     <DfTableV2
       noMargin
-      noDataText="No accounts are configured, please use instructions above to setup an account."
+      noDataText="No accounts are configured, please use setup instructions above to setup an account."
       data={nodes}
       hideExpander
       renderRowSubComponent={({ row: { original } }) => {

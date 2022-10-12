@@ -41,10 +41,10 @@ const CloudButton = styled.button`
   padding: 0;
   border-radius: 0px;
   align-items: center;
-  justify-content: space-around;
   width: 100%;
   height: 40px;
   cursor: pointer;
+  border-left: 1px solid transparent;
   &:focus {
     outline: none;
     background-color: #2e2e2e;
@@ -54,20 +54,24 @@ const CloudButton = styled.button`
     active &&
     `
     color: #0080ff;
+    border-left: 1px solid #0080ff;
     background-color: #2e2e2e;
     &:after {
-        content: '';
-        display: block;
-        position: absolute;
-        left: 100%;
-        width: 0;
-        height: 0;
-        border-top: 20px solid transparent;
-        border-right: 20px solid transparent;
-        border-bottom: 20px solid transparent;
-        border-left: 20px solid #2e2e2e;
-      }
+      content: '';
+      display: block;
+      position: absolute;
+      left: 100%;
+      width: 0;
+      height: 0;
+      border-top: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 20px solid transparent;
+      border-left: 20px solid #2e2e2e;
+    }
   `}
+  & span {
+    padding-left: 10px;
+  }
 `;
 
 const FormWrapper = styled.div`
@@ -141,6 +145,11 @@ const BackButton = styled.button`
   }
   padding: 6px 8px;
 `;
+
+const CloudImg = styled.img`
+  margin-left: auto;
+  padding-right: 20px
+`
 
 const terraformLink =
   'https://registry.terraform.io/modules/deepfence/cloud-scanner/aws/latest/examples/single-account-ecs#usage';
@@ -402,7 +411,8 @@ export const Cloud = props => {
                 });
               }}
             >
-              <img
+              <span>AWS</span>
+              <CloudImg
                 src={aws}
                 alt="Aws"
                 width="36"
@@ -410,9 +420,7 @@ export const Cloud = props => {
                 style={{
                   outline: 'none',
                 }}
-              />{' '}
-              AWS
-              {/* <RightArrow /> */}
+              />
             </CloudButton>
             <CloudButton
               type="button"
@@ -425,14 +433,14 @@ export const Cloud = props => {
                 });
               }}
             >
-              <img
+              <span>GCP</span>
+              <CloudImg
                 className="img-fluid"
                 src={gcp}
                 alt="Aws"
                 width="36"
                 height="36"
-              />{' '}
-              GCP
+              />
             </CloudButton>
             <CloudButton
               type="button"
@@ -445,14 +453,14 @@ export const Cloud = props => {
                 });
               }}
             >
-              <img
+              <span>AZURE</span>
+              <CloudImg
                 className="img-fluid"
                 src={azure}
                 alt="Aws"
                 width="36"
                 height="36"
-              />{' '}
-              AZURE
+              />
             </CloudButton>
           </aside>
         </Tabs>

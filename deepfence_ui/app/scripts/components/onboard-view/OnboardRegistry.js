@@ -11,14 +11,6 @@ import {
   listRegistryImagesAction,
 } from '../../actions';
 import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
-// import ecrLogo from '../../../images/ecr.svg';
-// import azureLogo from '../../../images/azure.svg';
-// import dockerLogo from '../../../images/docker.svg';
-// import gcrLogo from '../../../images/gcr.svg';
-// import gitlabLogo from '../../../images/gitlab.svg';
-// import jfrogLogo from '../../../images/jfrog.svg';
-// import harborLogo from '../../../images/harbor.svg';
-// import redHatLogo from '../../../images/red-hat.svg';
 
 const Title = styled.h6`
   font-weight: 20;
@@ -43,8 +35,16 @@ const RegistryBox = styled.div`
   border-radius: 4px;
 `;
 const RegistryList = injectModalTrigger(props => {
+  const {history} = props;
   const [selectedRegistry, setSelectedRegistry] = useState({});
   const dispatch = useDispatch();
+
+  const clearAction = () => dispatch(clearContainerImageRegistryAddFormAction);
+  const saveAction = params => dispatch(saveRegistryCredentialAction(params));
+  const listRegistryImagesAction = params =>
+    dispatch(listRegistryImagesAction(params));
+  const listRegistryCredentialsAction = params =>
+    dispatch(listRegistryCredentialsAction(params));
 
   function getRegistry() {
     listRegistryCredentialsAction({
@@ -70,23 +70,30 @@ const RegistryList = injectModalTrigger(props => {
       ...values,
       registry_type: selectedRegistry.id,
     };
-    const promise = saveAction(params);
-    promise.then((response = {}) => {
-      getRegistry();
-      const { data } = response;
-      if (data) {
-        // The response from get Images is required
-        // to calculate total images which will be
-        // shown in credentials table
-        getImages(data);
-      }
-    });
-    return promise;
+    props.setModal();
+    history.push('./onboard')
+    // const promise = saveAction(params);
+    // promise.then((response = {}) => {
+    //   getRegistry();
+    //   const { data } = response;
+    //   if (data) {
+    //     // The response from get Images is required
+    //     // to calculate total images which will be
+    //     // shown in credentials table
+    //     getImages(data);
+    //     console.log('======')
+    //     // setSelectedRegistry({});
+    //     history.push('./onboard')
+    //   }
+    // });
+    return Promise.resolve({});
   };
   function renderModalContent() {
     const {
       hideModal, // from injectTrigger
-    } = selectedRegistry;
+    } = props;
+
+    console.log('hideModal', hideModal)
 
     return (
       <CredentialsForm
@@ -100,14 +107,9 @@ const RegistryList = injectModalTrigger(props => {
     );
   }
 
-  const clearAction = () => dispatch(clearContainerImageRegistryAddFormAction);
-  const saveAction = () => dispatch(saveRegistryCredentialAction);
-  const listRegistryImagesAction = () => dispatch(listRegistryImagesAction);
-  const listRegistryCredentialsAction = () =>
-    dispatch(listRegistryCredentialsAction);
-
   useEffect(() => {
     if (selectedRegistry.id) {
+      console.log('----selectedRegistry', selectedRegistry)
       const modalProps = {
         title: 'Save Registry Credentials',
         modalContent: renderModalContent,
@@ -156,7 +158,7 @@ export const RegistryModal = props => {
   const { open, setModal } = props;
   return (
     <OnboardModal isOpen={open} setModal={setModal}>
-      <RegistryList />
+      <RegistryList history={props.history} setModal={setModal}/>
     </OnboardModal>
   );
 };

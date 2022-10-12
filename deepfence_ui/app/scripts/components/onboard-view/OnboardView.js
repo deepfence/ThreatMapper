@@ -30,6 +30,7 @@ const SETUP_TYPES = [
     name: 'Cloud',
     icon: cloud,
     type: CLOUD,
+    connected: 0,
     description:
       'Connect a cloud account to check for compliance misconfigurations',
   },
@@ -37,6 +38,7 @@ const SETUP_TYPES = [
     name: 'Kubernetes',
     icon: kubernetes,
     type: KUBERNETES,
+    connected: 0,
     description:
       'Connect a Kubernetes cluster to check for vulnerabilities, secrets & malware & compliance misconfigurations',
   },
@@ -44,6 +46,7 @@ const SETUP_TYPES = [
     name: 'Host',
     icon: hosting,
     type: HOST,
+    connected: 2,
     description:
       'Connect a Linux Host to check for vulnerabilities, secrets, malware & compliance misconfigurations',
   },
@@ -51,6 +54,7 @@ const SETUP_TYPES = [
     name: 'Registry',
     icon: registry,
     type: REGISTRY,
+    connected: 0,
     description:
       'Connect a registry to check images for vulnerabilities secrets & malware',
   },
@@ -67,6 +71,17 @@ const Onboard = styled.div`
   flex-direction: column;
   align-items: center;
   background-color: rgba(16, 16, 16, 0.8);
+  height: 100vh;
+  & > img:first-child {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    top: 0;
+    left: 0;
+    transition: all 0.8s;
+    opacity: 0.8;
+    z-index: -1;
+  }
 `;
 
 const Infra = styled.div`
@@ -89,11 +104,12 @@ const Card = styled.div`
   box-shadow: 0 12px 16px 0 rgb(0 0 0 / 10%);
   border-radius: 4px;
   width: 300px;
-  height: 180px;
+  height: 190px;
   padding: 22px 20px;
   position: relative;
   margin-top: 60px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   &:hover {
@@ -128,18 +144,12 @@ const ActionContainer = styled.div`
   width: 300px;
 `;
 
-const Title = styled.span`
-  color: #000;
-  padding-left: 4px;
-  font-size: 14px;
-  font-family: 'Source Sans Pro', sans-serif;
-`;
-
 const Description = styled.div`
   color: #fff;
   font-size: 14px;
   font-family: 'Source Sans Pro', sans-serif;
   text-align: center;
+  padding-bottom: 1em;
 `;
 
 const Button = styled.button`
@@ -161,37 +171,55 @@ const Button = styled.button`
   }
 `;
 
+const GoToDashboardButton = styled.button`
+  all: unset;
+  font-size: 15px;
+  background-color: #222222;
+  border-radius: 4px;
+  margin: 0 10px;
+  color: #f2f2f2;
+  font-family: 'Source Sans Pro', sans-serif;
+  line-height: 20px;
+  text-align: center;
+  padding: 10px 0px;
+  cursor: pointer;
+  &:hover {
+    background: #1a1a1a;
+    color: #fff;
+  }
+  &:focus {
+    outline: none;
+  }
+  ${({disabled}) => disabled && `
+    color: #737373;
+    
+    &:hover {
+      background: #222222;
+      color: #737373;
+    }
+  `
+  }
+`
+
 const Landing = styled.div`
   max-width: 800px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   color: #fff;
-  min-height: 100vh;
   gap: 1.5rem;
-  &:before {
-    content: '';
-    position: absolute;
-    display: flex;
-    align-items: center;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    transition: all 0.8s;
-    opacity: 0.3;
-    background: url(${logo});
-    background-repeat: no-repeat;
-  }
+  
 `;
 
 const MainHeading = styled.h3`
   text-align: center;
+  margin: 0;
 `;
 
-const Text = styled.h3`
-  text-align: center;
-  font-size: 16px;
+const Connected = styled.div`
+  font-size: 12px;
+  padding: 4px 8px;
+  color: #a4a2a2;
 `;
 
 const reducer = (state, action) => {
@@ -247,7 +275,7 @@ export const OnboardPageCloud = ({ location, ...rest }) => {
 };
 
 export const OnboardPage = ({ location, ...rest }) => {
-  const cloudType = location?.search ? location.search.substring(1) : '';
+  const cloudType = location.state?.type;
   const sideNavMenu = () => {
     return getUserRole() === 'admin'
       ? ADMIN_SIDE_NAV_MENU_COLLECTION
@@ -277,9 +305,13 @@ export const OnboardPage = ({ location, ...rest }) => {
   );
 };
 
-export const OnboardView = ({ match }) => {
+export const OnboardView = ({ match, ...rest }) => {
   const [type, dispatch] = useReducer(reducer, '');
-
+  const heading = rest.history.location.state?.from ? 'Connect' : 'Welcome';
+     // onboard api check user has atleast connect deepfence console
+     const agentConnected = useSelector(state =>
+      state.getIn(['agentConnection', 'data'])?.agent_connected
+    );
   return (
     <Onboard>
       <CloudModal
@@ -296,10 +328,11 @@ export const OnboardView = ({ match }) => {
         open={type === REGISTRY}
         setModal={() => dispatch('')}
         match={match}
+        {...rest}
       />
-
+     <img src={logo} alt="logo"/>
       <Landing>
-        <MainHeading>Welcome to Deepfence Console</MainHeading>
+        <MainHeading>{heading} to Deepfence Console</MainHeading>
         <Infra>
           <Middle>
             {SETUP_TYPES.map(type => {
@@ -315,7 +348,9 @@ export const OnboardView = ({ match }) => {
                     />
                   </Logo>
                   <Description>{type.description}</Description>
+                  
                   <Bottom>
+                  <Connected>{type.connected} connected</Connected>
                     <ActionContainer>
                       <Button
                         type="button"
@@ -323,7 +358,7 @@ export const OnboardView = ({ match }) => {
                           dispatch(type.type);
                         }}
                       >
-                        Connect
+                        Connect {type.connected ? 'More' : ''}
                       </Button>
                     </ActionContainer>
                   </Bottom>
@@ -332,7 +367,14 @@ export const OnboardView = ({ match }) => {
             })}
           </Middle>
         </Infra>
+        <GoToDashboardButton onClick={() => {
+          rest.history.push('/topology')
+        }}
+        disabled={!agentConnected}
+        >Go To Application Dashboard</GoToDashboardButton>
       </Landing>
     </Onboard>
   );
 };
+
+// export const OnboardView = ConnectAgent;
