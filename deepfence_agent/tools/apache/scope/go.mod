@@ -21,6 +21,7 @@ require (
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000
 	github.com/dustin/go-humanize v0.0.0-20160923163517-bd88f87ad3a4
 	github.com/fsouza/go-dockerclient v1.3.0
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gogo/protobuf v1.3.0
 	github.com/goji/httpauth v0.0.0-20160601135302-2da839ab0f4d
 	github.com/golang/protobuf v1.5.2
@@ -78,9 +79,10 @@ require (
 	github.com/Microsoft/go-winio v0.4.11 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/containerd/continuity v0.0.0-20180814194400-c7c5070e6f6e // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/docker v1.4.2-0.20180827131323-0c5f8d2b9b23 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.3.3 // indirect
