@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/report"
+	redis2 "github.com/go-redis/redis/v8"
 )
 
 const (
@@ -29,14 +30,47 @@ const (
 
 type EndpointResolvers struct {
 	network_map  map[string]string
-	ipport_ippid map[string]map[string]string
+	ipport_ippid map[string]string
+}
+
+type EndpointResolversCache struct {
+	rdb          *redis2.Client
 }
 
 func NewEndpointResolvers() EndpointResolvers {
 	return EndpointResolvers{
 		network_map:  map[string]string{},
-		ipport_ippid: map[string]map[string]string{},
+		ipport_ippid: map[string]string{},
 	}
+}
+
+func NewEndpointResolversCache() EndpointResolversCache {
+	rdb := redis2.NewClient(&redis2.Options{
+		Addr:     "deepfence-redis:6379",
+		Password: "",
+		DB:       0,
+	})
+	return EndpointResolversCache{
+		rdb: rdb,
+	}
+}
+
+func (erc *EndpointResolversCache) push_maps(er *EndpointResolvers) {
+	erc.rdb.HSet(context.Background(), "network_map", er.network_map)
+	erc.rdb.HSet(context.Background(), "ipportpid_map", er.ipport_ippid)
+}
+
+func (erc *EndpointResolversCache) get_host(ip string) (string, bool) {
+	res, err := erc.rdb.HGet(context.Background(), "network_map", ip).Result()
+	return res, err == nil
+}
+
+func (erc *EndpointResolversCache) get_ip_pid(ip_port string) (string, bool) {
+	res, err := erc.rdb.HGet(context.Background(), "ipportpid_map", ip_port).Result()
+	return res, err == nil
+}
+
+func (erc *EndpointResolversCache) Close() {
 }
 
 type neo4jCollector struct {
@@ -44,7 +78,7 @@ type neo4jCollector struct {
 	enqueer          chan *report.Report
 	ingester         chan map[string]*report.Report
 	resolvers_access sync.RWMutex
-	resolvers        EndpointResolvers
+	resolvers        EndpointResolversCache
 	batcher          chan neo4jIngestionData
 	resolvers_update chan EndpointResolvers
 	resolvers_input  chan *report.Report
@@ -132,7 +166,6 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 		for k := range result {
 			resolvers.network_map[k] = node_info["host_name"]
 		}
-		resolvers.ipport_ippid[node_info["host_name"]] = map[string]string{}
 	}
 
 	for _, n := range rpt.Endpoint.Nodes {
@@ -140,10 +173,7 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 		if hni, ok := node_info["host_node_id"]; ok {
 			node_ip, node_port := extractHostPortFromEndpointID(node_info["node_id"])
 			resolvers.network_map[node_ip] = extractHostFromHostNodeID(hni)
-			if _, ok := resolvers.ipport_ippid[node_ip]; !ok {
-				resolvers.ipport_ippid[node_ip] = map[string]string{}
-			}
-			resolvers.ipport_ippid[node_ip][node_port] = fmt.Sprintf("%v;%v", node_ip, node_info["pid"])
+			resolvers.ipport_ippid[node_ip+node_port] = fmt.Sprintf("%v;%v", node_ip, node_info["pid"])
 		}
 	}
 
@@ -155,23 +185,22 @@ func (nc *neo4jCollector) resolversUpdater() {
 		select {
 		case <-time.After(resolver_timeout):
 			elements := min(len(nc.resolvers_update), resolver_batch_size)
+			if elements == 0 {
+				continue
+			}
 			start := time.Now()
-			nc.resolvers_access.Lock()
-			if len(nc.resolvers.network_map) > max_entries_network {
-				nc.resolvers.network_map = map[string]string{}
-			}
-
-			if len(nc.resolvers.ipport_ippid) > max_entries_network {
-				nc.resolvers.ipport_ippid = map[string]map[string]string{}
-			}
-			for i := 0; i < elements; i++ {
+			//nc.resolvers_access.Lock()
+			batch_resolver := <-nc.resolvers_update
+			for i := 1; i < elements; i++ {
 				resolver := <-nc.resolvers_update
-				nc.resolvers.merge(&resolver)
+				batch_resolver.merge(&resolver)
 			}
+		    // TODO add cleanup based on HLEN
+			nc.resolvers.push_maps(&batch_resolver)
 			logrus.Debugf("resolver merge time: %v for %v elements", time.Since(start), elements)
-			logrus.Debugf("net_map size: %v", len(nc.resolvers.network_map))
-			logrus.Debugf("hostport : %v", len(nc.resolvers.ipport_ippid))
-			nc.resolvers_access.Unlock()
+			//logrus.Debugf("net_map size: %v", len(nc.resolvers.network_map))
+			//logrus.Debugf("hostport : %v", len(nc.resolvers.ipport_ippid))
+			//nc.resolvers_access.Unlock()
 		}
 	}
 }
@@ -184,7 +213,7 @@ func concatMaps(input map[string][]string) []map[string]interface{} {
 	return res
 }
 
-func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo4jIngestionData {
+func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache) neo4jIngestionData {
 	hosts := make([]map[string]string, 0, len(rpt.Host.Nodes))
 	host_batch := make([]map[string]string, 0, len(rpt.Host.Nodes))
 	for _, n := range rpt.Host.Nodes {
@@ -210,7 +239,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo
 		node_info := n.ToDataMap()
 		if _, ok := node_info["host_node_id"]; !ok {
 			host, _ := extractHostPortFromEndpointID(node_info["node_id"])
-			if val, ok := resolvers.network_map[host]; ok {
+			if val, ok := resolvers.get_host(host); ok {
 				node_info["host_node_id"] = val
 			} else {
 				continue
@@ -224,11 +253,11 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo
 			for _, i := range n.Adjacency {
 				if n.ID != i {
 					ip, port := extractHostPortFromEndpointID(i)
-					if host, ok := resolvers.network_map[ip]; ok {
+					if host, ok := resolvers.get_host(ip); ok {
 						if host_name == host {
 							continue
 						}
-						right_ippid, ok := resolvers.ipport_ippid[ip][port]
+						right_ippid, ok := resolvers.get_ip_pid(ip+port)
 						if ok {
 							rightpid := extractPidFromNodeID(right_ippid)
 							edges = append(edges,
@@ -282,7 +311,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo
 			if ok {
 				host = extractHostFromHostNodeID(hni)
 			} else {
-				host, ok = resolvers.network_map[node_info["kubernetes_ip"]]
+				host, ok = resolvers.get_host(node_info["kubernetes_ip"])
 				if !ok {
 					continue
 				}
@@ -314,6 +343,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolvers) neo
 
 func (nc *neo4jCollector) Close() {
 	nc.driver.Close()
+	nc.resolvers.Close()
 }
 
 func (nc *neo4jCollector) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
@@ -976,7 +1006,7 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 
 	nc := &neo4jCollector{
 		driver:           driver,
-		resolvers:        NewEndpointResolvers(),
+		resolvers:        NewEndpointResolversCache(),
 		enqueer:          make(chan *report.Report, ingester_size),
 		ingester:         make(chan map[string]*report.Report, ingester_size),
 		batcher:          make(chan neo4jIngestionData, ingester_size),
