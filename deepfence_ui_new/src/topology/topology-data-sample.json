@@ -1,0 +1,195 @@
+{
+  "nodes": {
+    "add": [
+      {
+        "id": "service-gcloud-metadata.google.internal",
+        "label": "metadata.google.internal",
+        "labelMinor": "",
+        "rank": "service-gcloud-metadata.google.internal",
+        "shape": "gcloud",
+        "pseudo": true,
+        "adjacency": ["gcp;<cloud_provider>"],
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "service-github-api.github.com",
+        "label": "api.github.com",
+        "labelMinor": "",
+        "rank": "service-github-api.github.com",
+        "shape": "github",
+        "pseudo": true,
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "digital_ocean;<cloud_provider>",
+        "label": "DigitalOcean",
+        "labelMinor": "",
+        "rank": "digital_ocean",
+        "shape": "digital_ocean",
+        "metadata": [
+          {
+            "id": "name",
+            "label": "Name",
+            "value": "digital_ocean",
+            "priority": 1
+          },
+          {
+            "id": "label",
+            "label": "Label",
+            "value": "DigitalOcean",
+            "priority": 2
+          }
+        ],
+        "adjacency": [
+          "aws;<cloud_provider>",
+          "digital_ocean;<cloud_provider>",
+          "out-theinternet"
+        ],
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "service-dropbox-www-env.dropbox-dns.com",
+        "label": "www-env.dropbox-dns.com",
+        "labelMinor": "",
+        "rank": "service-dropbox-www-env.dropbox-dns.com",
+        "shape": "dropbox",
+        "pseudo": true,
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "gcp;<cloud_provider>",
+        "label": "Google Cloud",
+        "labelMinor": "",
+        "rank": "gcp",
+        "shape": "gcp",
+        "metadata": [
+          { "id": "name", "label": "Name", "value": "gcp", "priority": 1 },
+          {
+            "id": "label",
+            "label": "Label",
+            "value": "Google Cloud",
+            "priority": 2
+          }
+        ],
+        "adjacency": [
+          "gcp;<cloud_provider>",
+          "out-theinternet",
+          "service-gcloud-metadata.google.internal"
+        ],
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "aws;<cloud_provider>",
+        "label": "AWS",
+        "labelMinor": "",
+        "rank": "aws",
+        "shape": "aws",
+        "metadata": [
+          { "id": "name", "label": "Name", "value": "aws", "priority": 1 },
+          { "id": "label", "label": "Label", "value": "AWS", "priority": 2 }
+        ],
+        "adjacency": [
+          "aws;<cloud_provider>",
+          "out-theinternet",
+          "service-bootstrap-maxcdn.bootstrapcdn.com",
+          "service-dropbox-www-env.dropbox-dns.com",
+          "service-elasticloadbalancing-license-server-lb-1223168382.us-east-1.elb.amazonaws.com",
+          "service-github-api.github.com"
+        ],
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "service-elasticloadbalancing-license-server-lb-1223168382.us-east-1.elb.amazonaws.com",
+        "label": "license-server-lb-1223168382.us-east-1.elb.amazonaws.com",
+        "labelMinor": "",
+        "rank": "service-elasticloadbalancing-license-server-lb-1223168382.us-east-1.elb.amazonaws.com",
+        "shape": "elasticloadbalancing",
+        "pseudo": true,
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "service-bootstrap-maxcdn.bootstrapcdn.com",
+        "label": "maxcdn.bootstrapcdn.com",
+        "labelMinor": "",
+        "rank": "service-bootstrap-maxcdn.bootstrapcdn.com",
+        "shape": "bootstrap",
+        "pseudo": true,
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "in-theinternet",
+        "label": "The Internet",
+        "labelMinor": "Inbound connections",
+        "rank": "in-theinternet",
+        "shape": "cloud",
+        "pseudo": true,
+        "adjacency": ["aws;<cloud_provider>", "digital_ocean;<cloud_provider>"],
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "out-theinternet",
+        "label": "The Internet",
+        "labelMinor": "Outbound connections",
+        "rank": "out-theinternet",
+        "shape": "cloud",
+        "pseudo": true,
+        "immediate_parent_id": ""
+      }
+    ],
+    "update": null,
+    "remove": null,
+    "reset": true
+  },
+  "edges": {
+    "add": [
+      {
+        "source": "digital_ocean;<cloud_provider>",
+        "target": "aws;<cloud_provider>"
+      },
+      { "source": "gcp;<cloud_provider>", "target": "out-theinternet" },
+      {
+        "source": "aws;<cloud_provider>",
+        "target": "service-github-api.github.com"
+      },
+      { "source": "in-theinternet", "target": "aws;<cloud_provider>" },
+      { "source": "gcp;<cloud_provider>", "target": "gcp;<cloud_provider>" },
+      {
+        "source": "aws;<cloud_provider>",
+        "target": "service-bootstrap-maxcdn.bootstrapcdn.com"
+      },
+      {
+        "source": "digital_ocean;<cloud_provider>",
+        "target": "digital_ocean;<cloud_provider>"
+      },
+      { "source": "aws;<cloud_provider>", "target": "aws;<cloud_provider>" },
+      {
+        "source": "gcp;<cloud_provider>",
+        "target": "service-gcloud-metadata.google.internal"
+      },
+      {
+        "source": "service-gcloud-metadata.google.internal",
+        "target": "gcp;<cloud_provider>"
+      },
+      { "source": "aws;<cloud_provider>", "target": "out-theinternet" },
+      {
+        "source": "aws;<cloud_provider>",
+        "target": "service-dropbox-www-env.dropbox-dns.com"
+      },
+      {
+        "source": "aws;<cloud_provider>",
+        "target": "service-elasticloadbalancing-license-server-lb-1223168382.us-east-1.elb.amazonaws.com"
+      },
+      {
+        "source": "in-theinternet",
+        "target": "digital_ocean;<cloud_provider>"
+      },
+      {
+        "source": "digital_ocean;<cloud_provider>",
+        "target": "out-theinternet"
+      }
+    ],
+    "remove": null
+  },
+  "reset": true,
+  "metadata": { "children_count": { "": { "cloud-providers": 10 } } }
+}
