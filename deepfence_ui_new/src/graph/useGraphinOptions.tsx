@@ -37,10 +37,9 @@ const DEFAULT_OPTIONS: OptionsWithoutContainer = {
   groupByTypes: false,
   defaultNode: {
     style: {
-      // DO NOT set .fill here, as it breaks image nodes.
-      stroke: COLORS.NODE_OUTLINE,
-      lineWidth: 2,
-      cursor: 'pointer',
+      keyshape: {
+        stroke: COLORS.NODE_OUTLINE,
+      },
     },
     labelCfg: {
       ...LABEL_CFG,
@@ -49,11 +48,13 @@ const DEFAULT_OPTIONS: OptionsWithoutContainer = {
   defaultEdge: {
     type: 'cubic',
     size: 2,
-    color: COLORS.EDGE,
     style: {
       opacity: 0.6,
+      stroke: COLORS.EDGE,
       endArrow: {
         path: G6.Arrow.triangle(4, 6, 12),
+        stroke: COLORS.EDGE,
+        fill: COLORS.EDGE,
         opacity: 0.6,
         strokeOpacity: 0.6,
         fillOpacity: 0.6,

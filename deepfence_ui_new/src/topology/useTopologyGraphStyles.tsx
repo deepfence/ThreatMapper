@@ -1,6 +1,7 @@
 import { IUserEdge, IUserNode, NodeStyle } from '@antv/graphin';
 import { useMemo } from 'react';
 
+import { COLORS } from '../graph/theme';
 import { arrayTransformByFunction, basename, ellipsize } from '../graph/utils';
 import { getNodeIcon } from '../utils/node-icons';
 import { nodeSize, nodeTypeMapping } from './utils';
@@ -161,7 +162,15 @@ const addEdgeAttributes = (edgeData: IUserEdge[]) => {
     if (edge.source == edge.target) {
       return null;
     }
-    return { ...edge, id: `${edge.source}-${edge.target}` };
+    return {
+      ...edge,
+      id: `${edge.source}-${edge.target}`,
+      style: {
+        keyshape: {
+          stroke: COLORS.EDGE,
+        },
+      },
+    };
   };
   return arrayTransformByFunction<IUserEdge>(edgeData, addId);
 };
