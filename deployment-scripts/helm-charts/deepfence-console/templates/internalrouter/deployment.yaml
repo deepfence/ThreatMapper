@@ -24,6 +24,8 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: false
       containers:
         - image: "{{ .Values.registry.imagePrefix }}{{ .Values.internalRouter.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.router.image.pullPolicy }}
