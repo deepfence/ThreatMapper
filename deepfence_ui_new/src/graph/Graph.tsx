@@ -19,8 +19,7 @@ const { Hoverable, FitView } = Behaviors;
 export const Graph = (props: GraphProps) => {
   const { data, options, layout, children, hoverable } = props;
   return (
-    <Graphin data={data} options={options} layout={layout}>
-      <FitView />
+    <Graphin data={data} options={options} layout={layout} fitView>
       {hoverable?.canHover && <Hoverable bindType={hoverable.type} />}
       {children}
     </Graphin>
