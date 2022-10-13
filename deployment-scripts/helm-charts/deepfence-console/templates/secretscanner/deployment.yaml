@@ -24,6 +24,8 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: false
       containers:
         - name: deepfence-secret-scanner
           image: "{{ .Values.registry.imagePrefix }}{{ .Values.secretScanner.image.repository }}:{{ .Values.image.tag }}"

@@ -219,6 +219,8 @@ spec:
       securityContext:
         fsGroup: 1001
       # Auxiliary vars to populate environment variables
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: false
       containers:
         - name: pgpool
           image: {{ .Values.postgresqlPgpool.image.name }}
@@ -387,6 +389,8 @@ spec:
         - name: data
           mountPath: /bitnami/postgresql
       {{- end }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: false
       containers:
         - name: postgresql
           lifecycle:
