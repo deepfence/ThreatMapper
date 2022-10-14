@@ -1,7 +1,7 @@
 import { INode } from '@antv/g6-core';
-import { GraphinContext, IG6GraphEvent, Utils } from '@antv/graphin';
+import { Behaviors, GraphinContext, IG6GraphEvent, Utils } from '@antv/graphin';
 import { compact } from 'lodash-es';
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 
 import topologyData from '../topology/topology-data-sample.json';
 import { useTopologyGraphStyles } from '../topology/useTopologyGraphStyles';
@@ -18,6 +18,7 @@ const Topology = () => {
       const { item: node } = e;
       (node as INode)?.getEdges?.()?.forEach?.((edge) => {
         // if not combo set edge to active
+        console.log(edge);
         graph.setItemState(edge, 'active', active);
       });
     };
@@ -31,15 +32,12 @@ const Topology = () => {
 
 export const Demo = () => {
   const { options } = useGraphinOptions({});
-  const { edges, nodes } = useTopologyGraphStyles({
-    nodes: topologyData.nodes.add,
-    edges: topologyData.edges.add,
-  });
-
-  console.log({
-    nodes: nodes,
-    edges: edges,
-  });
+  const { edges, nodes } = useMemo(() => {
+    return useTopologyGraphStyles({
+      nodes: topologyData.nodes.add,
+      edges: topologyData.edges.add,
+    });
+  }, []);
 
   return (
     <Graph
@@ -47,7 +45,7 @@ export const Demo = () => {
         nodes: compact(nodes),
         edges: edges,
       }}
-      options={options}
+      options={{ ...options }}
       layout={{ type: 'dagre' }}
       hoverable={{ canHover: true, type: 'node' }}
     >

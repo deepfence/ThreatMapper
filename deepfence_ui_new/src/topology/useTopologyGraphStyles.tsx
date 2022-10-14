@@ -138,23 +138,6 @@ const createGraphinNodeStyles = (node: IUserNode) => {
   return nodes;
 };
 
-type ArrayElementType<T> = T extends (infer E)[] ? E[] : T[];
-type StringIndexType<S> = { [key: string]: S | StringIndexType<S> };
-// type ApiDataType = {
-//   nodes: {
-//     add: ArrayElementType<StringIndexType<string>>;
-//     update: null;
-//     remove: null;
-//     reset: boolean;
-//   };
-//   reset: boolean;
-//   edges: {
-//     add: ArrayElementType<StringIndexType<string>>;
-//     remove: null;
-//   };
-//   metadata: { children_count: StringIndexType<number> };
-// };
-
 type ST = { source: string; target: string };
 
 const addEdgeAttributes = (edgeData: IUserEdge[]) => {
@@ -185,6 +168,7 @@ type TData = {
 };
 
 export const useTopologyGraphStyles = (data: TData) => {
+  // graphin edges
   const edges = useMemo(() => {
     if (!data.edges) {
       return [];
@@ -192,6 +176,7 @@ export const useTopologyGraphStyles = (data: TData) => {
     return createGraphinEdgeStyles(data.edges);
   }, [data.edges]);
 
+  // graphin nodes
   const nodes = useMemo(() => {
     return data.nodes.map((node: IUserNode) => {
       const _node = createGraphinNodeStyles(node);
