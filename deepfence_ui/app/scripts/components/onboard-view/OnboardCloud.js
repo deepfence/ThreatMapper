@@ -148,8 +148,8 @@ const BackButton = styled.button`
 
 const CloudImg = styled.img`
   margin-left: auto;
-  padding-right: 20px
-`
+  padding-right: 20px;
+`;
 
 const terraformLink =
   'https://registry.terraform.io/modules/deepfence/cloud-scanner/aws/latest/examples/single-account-ecs#usage';
@@ -364,7 +364,6 @@ module "cloud-scanner_example_single-subscription" {
           >
             More details on terraform commands can be found here:
           </Text>
-          :
         </div>
         <Text>
           <a target="_blank" rel="noreferrer" href={terraformLink}>

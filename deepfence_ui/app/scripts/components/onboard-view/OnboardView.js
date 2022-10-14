@@ -1,7 +1,8 @@
-import React, { useReducer, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import styled, { css } from 'styled-components';
 
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import Tippy from '@tippyjs/react';
 import cloud from '../../../images/onboard/cloud.svg';
 import kubernetes from '../../../images/onboard/kubernetes.svg';
 import hosting from '../../../images/onboard/hosting.svg';
@@ -19,6 +20,7 @@ import {
 } from '../../constants/menu-collection';
 import SideNavigation from '../common/side-navigation/side-navigation';
 import HeaderView from '../common/header-view/header-view';
+import { getConnectedAgent } from '../../actions';
 
 const HOST = 'host';
 const KUBERNETES = 'k8s';
@@ -30,7 +32,6 @@ const SETUP_TYPES = [
     name: 'Cloud',
     icon: cloud,
     type: CLOUD,
-    connected: 0,
     description:
       'Connect a cloud account to check for compliance misconfigurations',
   },
@@ -38,7 +39,6 @@ const SETUP_TYPES = [
     name: 'Kubernetes',
     icon: kubernetes,
     type: KUBERNETES,
-    connected: 0,
     description:
       'Connect a Kubernetes cluster to check for vulnerabilities, secrets & malware & compliance misconfigurations',
   },
@@ -46,7 +46,6 @@ const SETUP_TYPES = [
     name: 'Host',
     icon: hosting,
     type: HOST,
-    connected: 2,
     description:
       'Connect a Linux Host to check for vulnerabilities, secrets, malware & compliance misconfigurations',
   },
@@ -54,7 +53,6 @@ const SETUP_TYPES = [
     name: 'Registry',
     icon: registry,
     type: REGISTRY,
-    connected: 0,
     description:
       'Connect a registry to check images for vulnerabilities secrets & malware',
   },
@@ -190,16 +188,17 @@ const GoToDashboardButton = styled.button`
   &:focus {
     outline: none;
   }
-  ${({disabled}) => disabled && `
+  ${({ disabled }) =>
+    disabled &&
+    `
     color: #737373;
-    
+    cursor: auto;
     &:hover {
       background: #222222;
       color: #737373;
     }
-  `
-  }
-`
+  `}
+`;
 
 const Landing = styled.div`
   max-width: 800px;
@@ -208,7 +207,6 @@ const Landing = styled.div`
   justify-content: center;
   color: #fff;
   gap: 1.5rem;
-  
 `;
 
 const MainHeading = styled.h3`
@@ -220,6 +218,15 @@ const Connected = styled.div`
   font-size: 12px;
   padding: 4px 8px;
   color: #a4a2a2;
+`;
+
+const Ul = styled.ul`
+  padding: 0px 10px;
+  margin: 0;
+  font-size: 12px;
+  & ul {
+    padding: 0;
+  }
 `;
 
 const reducer = (state, action) => {
@@ -305,13 +312,24 @@ export const OnboardPage = ({ location, ...rest }) => {
   );
 };
 
+const ConnectedPopup = props => {
+  return <div>Hello</div>;
+};
+
 export const OnboardView = ({ match, ...rest }) => {
   const [type, dispatch] = useReducer(reducer, '');
+  const apiDispatch = useDispatch();
   const heading = rest.history.location.state?.from ? 'Connect' : 'Welcome';
-     // onboard api check user has atleast connect deepfence console
-     const agentConnected = useSelector(state =>
-      state.getIn(['agentConnection', 'data'])?.agent_connected
-    );
+  // onboard api check user has atleast connect deepfence console
+  const agent = useSelector(state => state.getIn(['agentConnection', 'data']));
+
+
+  useEffect(() => {
+    setInterval(() => {
+      // apiDispatch(getConnectedAgent());
+    }, 3000);
+    // trigger onboard api after login or every refresh of token or page
+  }, []);
   return (
     <Onboard>
       <CloudModal
@@ -330,7 +348,7 @@ export const OnboardView = ({ match, ...rest }) => {
         match={match}
         {...rest}
       />
-     <img src={logo} alt="logo"/>
+      <img src={logo} alt="logo" />
       <Landing>
         <MainHeading>{heading} to Deepfence Console</MainHeading>
         <Infra>
@@ -348,9 +366,40 @@ export const OnboardView = ({ match, ...rest }) => {
                     />
                   </Logo>
                   <Description>{type.description}</Description>
-                  
+
                   <Bottom>
-                  <Connected>{type.connected} connected</Connected>
+                    <Tippy
+                      hideOnClick
+                      interactive
+                      content={
+                        agent?.[type.type]?.length > 0 ? (
+                          <div>
+                            {agent[type?.type]?.map(c => {
+                              return (
+                                <Ul key={c}>
+                                  <li>{c}</li>
+                                </Ul>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: '12px',
+                            }}
+                          >
+                            0 connected
+                          </span>
+                        )
+                      }
+                      placement="top-start"
+                      trigger="mouseenter"
+                    >
+                      <Connected>
+                        {agent?.[type?.type]?.length ?? 0} connected
+                      </Connected>
+                    </Tippy>
+
                     <ActionContainer>
                       <Button
                         type="button"
@@ -367,11 +416,14 @@ export const OnboardView = ({ match, ...rest }) => {
             })}
           </Middle>
         </Infra>
-        <GoToDashboardButton onClick={() => {
-          rest.history.push('/topology')
-        }}
-        disabled={!agentConnected}
-        >Go To Application Dashboard</GoToDashboardButton>
+        <GoToDashboardButton
+          onClick={() => {
+            rest.history.push('/topology');
+          }}
+          disabled={!agent?.connected}
+        >
+          Go To Application Dashboard
+        </GoToDashboardButton>
       </Landing>
     </Onboard>
   );

@@ -274,6 +274,10 @@ const DfTableV2 = ({
     };
   }
 
+  if (data === null) {
+    data = []
+  }
+
   const tableInstance = useTable(
     {
       columns: rtColumns,

@@ -21,8 +21,7 @@ const Text = styled.div`
   }
   padding: 8px 14px;
   border-radius: 4px;
-  margin-top: 35%;
-  
+  margin-top: 25%;
 `;
 
 const U = styled.u`
@@ -62,44 +61,50 @@ const Information = [
         <U>
           <Link to="/onboard/cloud-agent/?k8s">Kubernetes cluster&nbsp;</Link>
         </U>
-        to check for vulnerabilities, secrets & malware &
-        compliance misconfigurations.
+        to check for vulnerabilities, secrets & malware & compliance
+        misconfigurations.
       </Text>
     ),
   },
   {
     page: 'attack-graph',
     component: (
-    <Text>
-        Connect to&nbsp;
+      <Text>
+        Connect&nbsp;
         <U>
-        <Link to={{
-            pathname: '/onboard',
-            state: {
-            from: 'attack-graph',
-            }
-        }}>Deepfence Agent&nbsp;</Link>
+          <Link
+            to={{
+              pathname: '/onboard',
+              state: {
+                from: 'attack-graph',
+              },
+            }}
+          >
+            Deepfence Agent&nbsp;
+          </Link>
         </U>
-        to check for vulnerabilities compliance
-        misconfigurations.
-    </Text>
+        to check for vulnerabilities compliance misconfigurations.
+      </Text>
     ),
   },
   {
     page: 'vulnerabilities',
     component: (
       <Text>
-        Connect to&nbsp;
+        Connect&nbsp;
         <U>
-        <Link to={{
-            pathname: '/onboard',
-            state: {
-              from: 'vulnerabilities',
-            }
-          }}>Deepfence Agent&nbsp;</Link>
+          <Link
+            to={{
+              pathname: '/onboard',
+              state: {
+                from: 'vulnerabilities',
+              },
+            }}
+          >
+            Deepfence Agent&nbsp;
+          </Link>
         </U>
-        to check for vulnerabilities compliance
-        misconfigurations.
+        to check for vulnerabilities compliance misconfigurations.
       </Text>
     ),
   },
@@ -107,14 +112,18 @@ const Information = [
     page: 'secrets',
     component: (
       <Text>
-        Connect to&nbsp;
+        Connect&nbsp;
         <U>
-          <Link to={{
-            pathname: '/onboard',
-            state: {
-              from: 'secrets',
-            }
-          }}>Deepfence Agent&nbsp;</Link>
+          <Link
+            to={{
+              pathname: '/onboard',
+              state: {
+                from: 'secrets',
+              },
+            }}
+          >
+            Deepfence Agent&nbsp;
+          </Link>
         </U>
         to check for secrets compliance misconfigurations.
       </Text>

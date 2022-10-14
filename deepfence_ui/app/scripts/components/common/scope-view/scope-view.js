@@ -52,11 +52,8 @@ export const ScopeView = props => {
     state.get('isSideNavCollapsed')
   );
 
-   // onboard api check user has atleast connect deepfence console
-   const agentConnected = useSelector(state =>
-    state.getIn(['agentConnection', 'data'])?.agent_connected
-  );
-
+  // onboard api check user has atleast connect deepfence console
+  const agent = useSelector(state => state.getIn(['agentConnection', 'data']));
   return (
     <div>
       <SideNavigation
@@ -69,7 +66,9 @@ export const ScopeView = props => {
           isSideNavCollapsed ? 'collapse-side-nav' : 'expand-side-nav'
         }`}
       >
-        {agentConnected ? (
+        {agent && agent.connected &&
+        (agent.connectedWith.includes('host') ||
+          agent.connectedWith.includes('k8s')) ? (
           <div className="deepfence-topology">
             <div className="modals-wrapper">
               {(isGraphViewMode || isTableViewMode) && (

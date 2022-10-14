@@ -1998,13 +1998,17 @@ export function rootReducer(state = initialState, action) {
 
     case ActionTypes.GET_AGENT_CONNECTED_SUCCESS: {
       const {
-        payload: {
-          data
-        },
-        input: { type }
+        payload: { data },
+        input: { type },
       } = action;
+      const _data = {
+        connected: true,
+        connectedWith: ['registry'],
+        registry: ['registry name one', 'registry name two'],
+        host: ['host name one', 'host name two'],
+      };
       state = state.setIn(['agentConnection', 'loading'], false);
-      state = state.setIn(['agentConnection', 'data'], data);
+      state = state.setIn(['agentConnection', 'data'], _data);
       return state;
     }
 

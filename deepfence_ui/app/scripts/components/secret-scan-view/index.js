@@ -16,7 +16,6 @@ import {
   breadcrumbChange,
 } from '../../actions/app-actions';
 import pollable from '../common/header-view/pollable';
-import { ConnectAgent } from '../onboard-view/ConnectAgent';
 
 const menu = [
   {
@@ -45,11 +44,6 @@ const SecretScanHome = props => {
   );
   const globalSearchQuery = useSelector(state =>
     state.get('globalSearchQuery')
-  );
-
-  // onboard api check user has atleast connect deepfence console
-  const agentConnected = useSelector(state =>
-    state.getIn(['agentConnection', 'data'])?.agent_connected
   );
 
   useEffect(() => {
@@ -98,58 +92,52 @@ const SecretScanHome = props => {
         navMenuCollection={sideNavMenuCollection}
         activeMenu={activeMenu}
       />
-      <HeaderView />
-      {agentConnected ? (
-        <>
-          <div style={{ overflow: 'hidden' }}>
-            <div className={divClassName}>
-              <SecretScanStatsView />
-            </div>
-          </div>
-          <div className="summary">
-            <div className="tab-links">
-              <div className="df-tabs">
-                <div className="tabheading">
-                  <ul>
-                    {menu.map(menuItem => (
-                      <Route
-                        key={menuItem.id}
-                        path={`${match.path}/${menuItem.id}`}
-                        /* eslint-disable react/no-children-prop */
-                        children={({ match: linkMatch }) => (
-                          <li
-                            key={menuItem.id}
-                            className={classnames('tab', { active: linkMatch })}
-                          >
-                            <Link to={`${match.url}/${menuItem.id}`}>
-                              {menuItem.displayName}
-                            </Link>
-                          </li>
-                        )}
-                      />
-                    ))}
-                  </ul>
-                </div>
+      <div style={{ overflow: 'hidden' }}>
+        <HeaderView />
+        <div className={divClassName}>
+          <SecretScanStatsView />
+        </div>
+      </div>
+      <div className="summary">
+        <div className="tab-links">
+          <div className="df-tabs">
+            <div className="tabheading">
+              <ul>
                 {menu.map(menuItem => (
                   <Route
                     key={menuItem.id}
-                    exact
                     path={`${match.path}/${menuItem.id}`}
-                    render={props => <menuItem.component {...props} />}
+                    /* eslint-disable react/no-children-prop */
+                    children={({ match: linkMatch }) => (
+                      <li
+                        key={menuItem.id}
+                        className={classnames('tab', { active: linkMatch })}
+                      >
+                        <Link to={`${match.url}/${menuItem.id}`}>
+                          {menuItem.displayName}
+                        </Link>
+                      </li>
+                    )}
                   />
                 ))}
-                <Route
-                  exact
-                  path={match.path}
-                  render={() => <Redirect to={`${match.url}/${menu[0].id}`} />}
-                />
-              </div>
+              </ul>
             </div>
+            {menu.map(menuItem => (
+              <Route
+                key={menuItem.id}
+                exact
+                path={`${match.path}/${menuItem.id}`}
+                render={props => <menuItem.component {...props} />}
+              />
+            ))}
+            <Route
+              exact
+              path={match.path}
+              render={() => <Redirect to={`${match.url}/${menu[0].id}`} />}
+            />
           </div>
-        </>
-      ) : (
-        <ConnectAgent page="secrets" />
-      )}
+        </div>
+      </div>
     </div>
   );
 };
