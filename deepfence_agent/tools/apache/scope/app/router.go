@@ -116,14 +116,14 @@ func RegisterTopologyRoutes(router *mux.Router, r Reporter, capabilities map[str
 		gzipHandler(requestContextDecorator(makeRawReportHandler(r))))
 	get.Handle("/topology-api/probes",
 		gzipHandler(requestContextDecorator(makeProbeHandler(r))))
-	get.Handle("/topology-api/topology-graph",
-		requestContextDecorator(captureReporter(r, handleTopologyGraph))).
-		Name("api_topology_graph")
 }
 
 // RegisterReportPostHandler registers the handler for report submission
-func RegisterReportPostHandler(a Adder, router *mux.Router) {
+func RegisterReportPostHandler(a Adder, router *mux.Router, r Reporter) {
 	post := router.Methods("POST").Subrouter()
+	post.Handle("/topology-api/topology-graph",
+		requestContextDecorator(captureReporter(r, handleTopologyGraph))).
+		Name("api_topology_graph")
 	post.HandleFunc("/topology-api/report", requestContextDecorator(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		var (
 			buf    = &bytes.Buffer{}

@@ -86,17 +86,17 @@ func handleTopologyGraph(
 		Hosts:     []string{},
 	}
 
-	if p := r.Form.Get("providers"); p != "" {
+	if p := r.PostForm.Get("providers"); p != "" {
 		ps := strings.Split(p, ",")
 		filters.Providers = append(filters.Providers, ps...)
 	}
 
-	if r := r.Form.Get("regions"); r != "" {
+	if r := r.PostForm.Get("regions"); r != "" {
 		rs := strings.Split(r, ",")
 		filters.Regions = append(filters.Regions, rs...)
 	}
 
-	if h := r.Form.Get("hosts"); h != "" {
+	if h := r.PostForm.Get("hosts"); h != "" {
 		hs := strings.Split(h, ",")
 		filters.Hosts = append(filters.Hosts, hs...)
 	}

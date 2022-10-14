@@ -66,7 +66,7 @@ func router(collector app.Collector, controlRouter app.ControlRouter, pipeRouter
 	}
 	router.Path("/metrics").Handler(promhttp.Handler())
 
-	app.RegisterReportPostHandler(collector, router)
+	app.RegisterReportPostHandler(collector, router, collector)
 	app.RegisterControlRoutes(router, controlRouter)
 	app.RegisterPipeRoutes(router, pipeRouter)
 	app.RegisterTopologyRoutes(router, app.WebReporter{Reporter: collector, MetricsGraphURL: metricsGraphURL}, capabilities)
