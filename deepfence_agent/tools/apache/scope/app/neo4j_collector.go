@@ -171,7 +171,10 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 	for _, n := range rpt.Endpoint.Nodes {
 		node_info := n.ToDataMap()
 		if hni, ok := node_info["host_node_id"]; ok {
-			node_ip, node_port := extractHostPortFromEndpointID(node_info["node_id"])
+			node_ip, node_port := extractIPPortFromEndpointID(node_info["node_id"])
+			if node_ip == "127.0.0.1" {
+				continue
+			}
 			resolvers.network_map[node_ip] = extractHostFromHostNodeID(hni)
 			resolvers.ipport_ippid[node_ip+node_port] = fmt.Sprintf("%v;%v", node_ip, node_info["pid"])
 		}
@@ -238,10 +241,11 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	for _, n := range rpt.Endpoint.Nodes {
 		node_info := n.ToDataMap()
 		if _, ok := node_info["host_node_id"]; !ok {
-			host, _ := extractHostPortFromEndpointID(node_info["node_id"])
-			if val, ok := resolvers.get_host(host); ok {
+			node_ip, _ := extractIPPortFromEndpointID(node_info["node_id"])
+			if val, ok := resolvers.get_host(node_ip); ok {
 				node_info["host_node_id"] = val
 			} else {
+				// This includes skipping all endpoint having 127.0.0.1
 				continue
 			}
 		}
@@ -252,7 +256,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			edges := make([]map[string]string, 0, len(n.Adjacency))
 			for _, i := range n.Adjacency {
 				if n.ID != i {
-					ip, port := extractHostPortFromEndpointID(i)
+					ip, port := extractIPPortFromEndpointID(i)
 					if host, ok := resolvers.get_host(ip); ok {
 						if host_name == host {
 							continue
@@ -699,12 +703,10 @@ func (nc *neo4jCollector) GetGraph(_ context.Context, _ time.Time) (RenderedGrap
 	if err != nil {
 		return res, err
 	}
-
 	res.Regions, err = nc.getCloudRegions(tx, cloud_filter)
 	if err != nil {
 		return res, err
 	}
-
 	res.Hosts, err = nc.getHosts(tx, cloud_filter, region_filter)
 	if err != nil {
 		return res, err
@@ -1047,7 +1049,7 @@ func mapMerge(a, b *[]map[string]string) {
 	}
 }
 
-func extractHostPortFromEndpointID(node_id string) (string, string) {
+func extractIPPortFromEndpointID(node_id string) (string, string) {
 	first := strings.IndexByte(node_id, ';')
 	second := strings.IndexByte(node_id[first+1:], ';') + first + 1
 	return node_id[first+1 : second], node_id[second+1:]

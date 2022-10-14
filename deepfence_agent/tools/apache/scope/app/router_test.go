@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"context"
+
 	"github.com/gorilla/mux"
 	"github.com/ugorji/go/codec"
 
@@ -43,7 +44,7 @@ func TestReportPostHandler(t *testing.T) {
 	test := func(contentType string, encoder func(interface{}) ([]byte, error)) {
 		router := mux.NewRouter()
 		c := app.NewCollector(1 * time.Minute)
-		app.RegisterReportPostHandler(c, router)
+		app.RegisterReportPostHandler(c, router, c)
 		ts := httptest.NewServer(router)
 		defer ts.Close()
 
