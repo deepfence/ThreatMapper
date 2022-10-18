@@ -22,6 +22,7 @@ const (
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
 	isUIvm                string
+	hostID                string
 	cri                   client.RuntimeServiceClient
 	criImageClient        client.ImageServiceClient
 	kubernetesClusterId   string
@@ -29,12 +30,13 @@ type Reporter struct {
 }
 
 // NewReporter makes a new Reporter
-func NewReporter(cri client.RuntimeServiceClient, criImageClient client.ImageServiceClient) *Reporter {
+func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient client.ImageServiceClient) *Reporter {
 	isUIvm := "false"
 	if dfUtils.IsThisHostUIMachine() {
 		isUIvm = "true"
 	}
 	reporter := &Reporter{
+		hostID:                hostID,
 		cri:                   cri,
 		criImageClient:        criImageClient,
 		isUIvm:                isUIvm,
@@ -85,15 +87,18 @@ func (r *Reporter) containerTopology() (report.Topology, error) {
 }
 
 func (r *Reporter) getNode(c *client.Container) report.Node {
+	imageName, imageTag := docker.ParseImageDigest(c.ImageRef)
 	latests := map[string]string{
 		docker.ContainerName:       c.Metadata.Name,
 		docker.ContainerID:         c.Id,
 		docker.ContainerState:      getState(c),
 		docker.ContainerStateHuman: getState(c),
 		//docker.ContainerRestartCount: fmt.Sprintf("%v", c.Metadata.Attempt),
-		docker.ImageID:   trimImageID(c.ImageRef),
-		docker.ImageName: c.Image.Image,
+		docker.ImageID:   trimImageID(c.Image.GetImage()),
+		docker.ImageName: imageName,
+		docker.ImageTag:  imageTag,
 		IsUiVm:           r.isUIvm,
+		"host_name":      r.hostID,
 	}
 	if r.kubernetesClusterName != "" {
 		latests[k8sClusterName] = r.kubernetesClusterName
@@ -145,19 +150,23 @@ func getImage(image *client.Image) report.Node {
 	// logrus.Infof("images: %v", image)
 	// image format: sha256:ab21abc2d2c34c2b2d2c23bbcf23gg23f23
 	imageID := trimImageID(image.Id)
+	nodeID := imageID
 	latests := map[string]string{
 		docker.ImageID:        imageID,
 		docker.ImageSize:      humanize.Bytes(uint64(image.Size())),
 		docker.ImageCreatedAt: time.Unix(0, 0).Format("2006-01-02T15:04:05") + "Z",
 	}
+	if len(image.RepoDigests) > 0 {
+		nodeID = image.RepoDigests[0]
+	}
 	if len(image.RepoTags) > 0 {
 		imageFullName := image.RepoTags[0]
 		latests[docker.ImageName] = docker.ImageNameWithoutTag(imageFullName)
 		latests[docker.ImageTag] = docker.ImageNameTag(imageFullName)
+	} else if len(image.RepoDigests) > 0 {
+		latests[docker.ImageName], latests[docker.ImageTag] = docker.ParseImageDigest(image.RepoDigests[0])
 	}
-	result := report.MakeNodeWith(report.MakeContainerImageNodeID(imageID), latests).WithParents(report.MakeSets().
-		Add(report.ContainerImage, report.MakeStringSet(report.MakeContainerImageNodeID(imageID))),
-	)
+	result := report.MakeNodeWith(report.MakeContainerImageNodeID(nodeID), latests)
 	// todo: remove if useless
 	result = result.AddPrefixPropertyList(docker.LabelPrefix, nil)
 	return result

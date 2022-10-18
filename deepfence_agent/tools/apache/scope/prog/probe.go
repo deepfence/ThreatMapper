@@ -386,7 +386,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		if err != nil {
 			log.Errorf("CRI: failed to start registry: %v", err)
 		} else {
-			p.AddReporter(cri.NewReporter(runtimeClient, imageClient))
+			p.AddReporter(cri.NewReporter(runtimeClient, hostID, imageClient))
 		}
 	}
 

@@ -18,7 +18,7 @@ var nonUnixSocketsTest = []struct {
 
 func TestParseNonUnixEndpointUrl(t *testing.T) {
 	for _, tt := range nonUnixSocketsTest {
-		_, err := cri.NewCRIClient(tt.endpoint)
+		_, _, err := cri.NewCRIClient(tt.endpoint)
 
 		assert.Equal(t, tt.errorMessage, err.Error())
 	}
@@ -33,7 +33,7 @@ var unixSocketsTest = []string{
 
 func TestParseUnixEndpointUrl(t *testing.T) {
 	for _, tt := range unixSocketsTest {
-		client, err := cri.NewCRIClient(tt)
+		client, _, err := cri.NewCRIClient(tt)
 
 		assert.Equal(t, nil, err)
 		assert.NotEqual(t, nil, client)
