@@ -2,8 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { formValueSelector } from 'redux-form/immutable';
 
+import { isEqual } from 'lodash';
 import MaskForm from './mask-form';
-import { nodeFilterValueSelector } from '../../../selectors/node-filters';
+import { nodeFilterValueSelector, resetTablePageIndexSelector } from '../../../selectors/node-filters';
 import { DfTableV2 } from '../../common/df-table-v2';
 import pollable from '../../common/header-view/pollable';
 import {
@@ -28,6 +29,7 @@ class SecretScanTableV2 extends React.Component {
     this.state = {
       isSecretsModalOpen: false,
       secretsData: null,
+      page: 0
     };
   }
 
@@ -54,6 +56,9 @@ class SecretScanTableV2 extends React.Component {
   }
 
   handlePageChange(pageNumber) {
+    this.setState({
+      page: pageNumber
+    })
     this.tableChangeHandler({
       page: pageNumber,
     });
@@ -120,6 +125,13 @@ class SecretScanTableV2 extends React.Component {
     }
     if (Object.keys(options).length > 0) {
       this.getSecrets(options);
+    }
+    // reset paginatino page to 0
+    if (!isEqual(oldProps.resetPageIndexData, this.props.resetPageIndexData)) {
+      /* eslint-disable */
+      this.setState({
+        page: 0
+      })
     }
   }
 
@@ -262,6 +274,7 @@ class SecretScanTableV2 extends React.Component {
             onRowClick={row => this.handleRowClick(row)}
             columnCustomizable
             onPageChange={this.handlePageChange}
+            page={this.state.page}
             multiSelectOptions={{
               actions: [
                 {
@@ -346,6 +359,7 @@ function mapStateToProps(state) {
       'values',
       'masking_docs',
     ]),
+    resetPageIndexData: resetTablePageIndexSelector(state),
   };
 }
 
