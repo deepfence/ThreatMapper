@@ -16,7 +16,7 @@ WORKDIR /
 COPY tools/apache/scope/docker/deepfence_exe deepfence/usr/local/discovery/deepfence-discovery
 COPY fargate/bin/ deepfence/bin/
 COPY etc/certs/* deepfence/etc/filebeat/
-COPY plugins/docker_bin/ deepfence/bin/
+COPY plugins/bin/ deepfence/bin/
 COPY --from=build /go/syft/syftCli /deepfence/usr/local/bin/syft
 
 COPY run_discovery.sh /deepfence/home/deepfence/

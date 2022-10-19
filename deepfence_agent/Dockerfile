@@ -39,12 +39,12 @@ COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-disc
 COPY tools/apache/compliance_check /usr/local/bin/compliance_check
 COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
 COPY plugins/compliance/config.json /usr/local/bin/compliance_check/config.json
-COPY plugins/docker_bin/compliance /usr/local/bin/compliance_check/compliance
+COPY plugins/bin/compliance /usr/local/bin/compliance_check/compliance
 COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
-COPY plugins/docker_bin /home/deepfence/bin
+COPY plugins/bin /home/deepfence/bin
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
 
