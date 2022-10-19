@@ -27,7 +27,6 @@ class ComplianceTestCategoryReport extends React.PureComponent {
     const { nodeId, scanId, checkType, cloudType, resource } = this.props;
     const {
       globalSearchQuery,
-      alertPanelHistoryBound = this.props.alertPanelHistoryBound || {},
       initiatedByPollable,
     } = pollParams;
     const page = 0;
@@ -41,13 +40,8 @@ class ComplianceTestCategoryReport extends React.PureComponent {
       lucene_query: globalSearchQuery,
       resource,
       cloudType,
-      // Conditionally adding number and time_unit fields
-      ...(alertPanelHistoryBound.value
-        ? { number: alertPanelHistoryBound.value.number }
-        : {}),
-      ...(alertPanelHistoryBound.value
-        ? { time_unit: alertPanelHistoryBound.value.time_unit }
-        : {}),
+      number: 0,
+      time_unit: 'all',
       initiatedByPollable,
     };
     this.props.dispatch(getComplianceBarChartAction(params));

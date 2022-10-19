@@ -32,7 +32,6 @@ class ComplianceTestStatusReport extends React.PureComponent {
   getReport(pollParams) {
     const {
       globalSearchQuery,
-      alertPanelHistoryBound = this.props.alertPanelHistoryBound || {},
       initiatedByPollable,
     } = pollParams;
     const { nodeId, scanId, checkType, cloudType, resource } = this.props;
@@ -43,13 +42,8 @@ class ComplianceTestStatusReport extends React.PureComponent {
       cloudType,
       resource,
       lucene_query: globalSearchQuery,
-      // Conditionally adding number and time_unit fields
-      ...(alertPanelHistoryBound.value
-        ? { number: alertPanelHistoryBound.value.number }
-        : {}),
-      ...(alertPanelHistoryBound.value
-        ? { time_unit: alertPanelHistoryBound.value.time_unit }
-        : {}),
+      number: 0,
+      time_unit: 'all',
       initiatedByPollable,
     };
     this.props.dispatch(getResultDonutDataAction(params));
