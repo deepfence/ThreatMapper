@@ -16,16 +16,19 @@ import (
 )
 
 const (
-	workers_num         = 500
-	db_input_size       = 100
-	db_batch_size       = 1_000
-	db_batch_timeout    = time.Second * 5
-	resolver_batch_size = 1_000
-	resolver_timeout    = time.Second * 10
-	ingester_size       = 25_000
-	db_clean_up_timeout = time.Minute * 2
-	max_entries_network = 100_000
-	enqueer_timeout     = time.Second * 30
+	REDIS_NETWORK_MAP_KEY   = "network_map"
+	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
+	workers_num             = 500
+	db_input_size           = 100
+	db_batch_size           = 1_000
+	db_batch_timeout        = time.Second * 5
+	resolver_batch_size     = 1_000
+	resolver_timeout        = time.Second * 10
+	ingester_size           = 25_000
+	db_clean_up_timeout     = time.Minute * 2
+	max_network_maps_size   = 1024 * 1024 * 1024 // 1 GB per maps
+	enqueer_timeout         = time.Second * 30
+	localhost_ip            = "127.0.0.1"
 )
 
 type EndpointResolvers struct {
@@ -55,18 +58,29 @@ func NewEndpointResolversCache() EndpointResolversCache {
 	}
 }
 
+func (erc *EndpointResolversCache) clean_maps() {
+	if v, _ := erc.rdb.MemoryUsage(context.Background(), REDIS_NETWORK_MAP_KEY).Result(); v > max_network_maps_size {
+		logrus.Debugf("Memory usage for %v reached limit", REDIS_NETWORK_MAP_KEY)
+		erc.rdb.HDel(context.Background(), REDIS_NETWORK_MAP_KEY)
+	}
+	if v, _ := erc.rdb.MemoryUsage(context.Background(), REDIS_IPPORTPID_MAP_KEY).Result(); v > max_network_maps_size {
+		logrus.Debugf("Memory usage for %v reached limit", REDIS_IPPORTPID_MAP_KEY)
+		erc.rdb.HDel(context.Background(), REDIS_IPPORTPID_MAP_KEY)
+	}
+}
+
 func (erc *EndpointResolversCache) push_maps(er *EndpointResolvers) {
-	erc.rdb.HSet(context.Background(), "network_map", er.network_map)
-	erc.rdb.HSet(context.Background(), "ipportpid_map", er.ipport_ippid)
+	erc.rdb.HSet(context.Background(), REDIS_NETWORK_MAP_KEY, er.network_map)
+	erc.rdb.HSet(context.Background(), REDIS_IPPORTPID_MAP_KEY, er.ipport_ippid)
 }
 
 func (erc *EndpointResolversCache) get_host(ip string) (string, bool) {
-	res, err := erc.rdb.HGet(context.Background(), "network_map", ip).Result()
+	res, err := erc.rdb.HGet(context.Background(), REDIS_NETWORK_MAP_KEY, ip).Result()
 	return res, err == nil
 }
 
 func (erc *EndpointResolversCache) get_ip_pid(ip_port string) (string, bool) {
-	res, err := erc.rdb.HGet(context.Background(), "ipportpid_map", ip_port).Result()
+	res, err := erc.rdb.HGet(context.Background(), REDIS_IPPORTPID_MAP_KEY, ip_port).Result()
 	return res, err == nil
 }
 
@@ -172,7 +186,7 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 		node_info := n.ToDataMap()
 		if hni, ok := node_info["host_node_id"]; ok {
 			node_ip, node_port := extractIPPortFromEndpointID(node_info["node_id"])
-			if node_ip == "127.0.0.1" {
+			if node_ip == localhost_ip {
 				continue
 			}
 			resolvers.network_map[node_ip] = extractHostFromHostNodeID(hni)
@@ -198,7 +212,7 @@ func (nc *neo4jCollector) resolversUpdater() {
 				resolver := <-nc.resolvers_update
 				batch_resolver.merge(&resolver)
 			}
-		    // TODO add cleanup based on HLEN
+			nc.resolvers.clean_maps()
 			nc.resolvers.push_maps(&batch_resolver)
 			logrus.Debugf("resolver merge time: %v for %v elements", time.Since(start), elements)
 			//logrus.Debugf("net_map size: %v", len(nc.resolvers.network_map))
