@@ -7,6 +7,8 @@ import { ComplianceTestModal } from './test-modal';
 
 export const SingleComplianceResult = props => {
   const docId = props.match?.params?.docId;
+  const complianceType = props.match?.params?.complianceType;
+
   const dispatch = useDispatch();
 
   const { testData, testDataLoading } = useSelector(state => {
@@ -20,9 +22,16 @@ export const SingleComplianceResult = props => {
   });
 
   useEffect(() => {
-    dispatch(getSingleComplianceResultAction({ docId }));
+    dispatch(
+      getSingleComplianceResultAction({
+        docId,
+        complianceType:
+          complianceType?.toLowerCase?.() === 'compliance'
+            ? 'compliance'
+            : 'cloud-compliance-scan',
+      })
+    );
   }, []);
-
 
   useEffect(() => {
     if (!testDataLoading && !testData) {

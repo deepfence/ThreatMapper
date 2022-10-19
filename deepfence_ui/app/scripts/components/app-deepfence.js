@@ -155,7 +155,7 @@ class DeepFenceApp extends React.Component {
             <PrivateRoute path="/settings" component={SettingsView} />
             <PrivateRoute path="/change-password" component={changePasswordView} />
 
-            <PrivateRoute path="/compliance/result/:docId" component={SingleComplianceResult} />
+            <PrivateRoute path="/:complianceType(compliance|cloud-compliance)?/result/:docId" component={SingleComplianceResult} />
             <PrivateRoute
               path="/compliance/summary/:nodeId/:checkType/:scanId/:scanType"
               component={ComplianceDetailsView}

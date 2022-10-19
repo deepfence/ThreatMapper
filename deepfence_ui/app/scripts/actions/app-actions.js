@@ -2110,14 +2110,14 @@ export function getAttackGraphNodeIssuesAction(params) {
   return genericThunkAction(actionTypes, searchDocsWrapper, params);
 }
 
-export function getSingleComplianceResultAction({docId}) {
+export function getSingleComplianceResultAction({ docId, complianceType }) {
   const actionTypes = [
     ActionTypes.GET_SINGLE_COMPLIANCE_REQUEST,
     ActionTypes.GET_SINGLE_COMPLIANCE_SUCCESS,
     ActionTypes.GET_SINGLE_COMPLIANCE_FAILURE,
   ];
   return genericThunkAction(actionTypes, searchDocsWrapper, {
-    type: 'compliance',
+    type: complianceType,
     query: {
       from: 0,
       size: 1,
