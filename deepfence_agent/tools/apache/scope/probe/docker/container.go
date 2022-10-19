@@ -450,10 +450,7 @@ func ImageNameWithoutTag(imageName string) string {
 
 func ParseImageDigest(imageDigest string) (string, string) {
 	digestSplit := strings.Split(imageDigest, "@")
-	if len(digestSplit) > 1 {
-		return digestSplit[0], digestSplit[1]
-	}
-	return digestSplit[0], ""
+	return digestSplit[0], "<none>"
 }
 
 // ImageNameTag splits the image name apart, returning the version tag, if possible
