@@ -21,7 +21,7 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && echo 'deb https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list \
     && curl -L https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key | sudo apt-key add - \
     && apt-get update \
-    && apt-get -y install skopeo \
+    && apt-get -y install skopeo podman \
     && echo "Installing docker" \
     && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
@@ -55,13 +55,17 @@ RUN rm -rf /usr/local/bin/compliance_check/*.go \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_services \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.7.0/vessel-v0.7.0-linux-amd64.tar.gz \
-    && tar -xzf vessel-v0.7.0-linux-amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.8.0/vessel_v0.8.0_linux_amd64.tar.gz \
+    && tar -xzf vessel_v0.8.0_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel-v0.7.0-linux-amd64.tar.gz \
+    && rm -rf vessel_v0.8.0_linux_amd64.tar.gz \
     && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v0.23.0/nerdctl-0.23.0-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-0.23.0-linux-amd64.tar.gz \
-    && rm nerdctl-0.23.0-linux-amd64.tar.gz
+    && rm nerdctl-0.23.0-linux-amd64.tar.gz \
+    && VERSION="v1.24.1" \
+    && curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz \
+    && tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin \
+    && rm -f crictl-$VERSION-linux-amd64.tar.gz
 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
 
