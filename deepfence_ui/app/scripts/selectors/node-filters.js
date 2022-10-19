@@ -73,10 +73,9 @@ const globalSearchCreateSelector = createSelector(
 export const resetTablePageIndexSelector = createSelector(
   historyBoundCreateSelector,
   globalSearchCreateSelector,
-  (bound,refresh,search) => {
+  (bound,search) => {
     return {
       bound,
-      refresh,
       search
     }
   }
