@@ -8,25 +8,12 @@ const containerRuntimeDropdown = [
   {
     name: 'containerd',
     value:
-      '--set mountContainerRuntimeSocket.containerdSock=true --set mountContainerRuntimeSocket.dockerSock =false',
+      '--set mountContainerRuntimeSocket.containerdSock=true --set mountContainerRuntimeSocket.dockerSock=false',
   },
   {
     name: 'docker',
     value:
-      '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock =true',
-  },
-];
-
-const socketPathDropdown = [
-  {
-    name: 'containerd',
-    value:
-      '--set mountContainerRuntimeSocket.containerdSockPath="/run/containerd/containerd.sock"',
-  },
-  {
-    name: 'docker',
-    value:
-      '--set mountContainerRuntimeSocket.dockerSockPath="/var/run/docker.sock"',
+      '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true',
   },
 ];
 
@@ -35,10 +22,10 @@ export const AgentSetup = () => {
 
   const [state, copyToClipboard] = useCopyToClipboard();
 
-  const [clusterName, setClusterName] = useState('');
-  const [namespace, setNamespace] = useState('');
-  const [containerRuntime, setContainerRuntime] = useState(null);
-  const [socketPath, setSocketPath] = useState(null);
+  const [clusterName, setClusterName] = useState('prod-cluster');
+  const [namespace, setNamespace] = useState('deepfence');
+  const [containerRuntime, setContainerRuntime] = useState(containerRuntimeDropdown[0].value);
+  const [socketPath, setSocketPath] = useState();
 
   function onDockerCopyClick() {
     copyToClipboard(getDockerInstructions());
@@ -56,9 +43,27 @@ export const AgentSetup = () => {
     }
   }, [state]);
 
+  useEffect(() => {
+    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true'){
+      setSocketPath('/var/run/docker.sock')
+    }
+    else{
+      setSocketPath('/run/containerd/containerd.sock')
+    }
+  }, [containerRuntime])
+
+
 
 
   const getK8sInstructions = () => {
+    let socketPathValue;
+    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=true --set mountContainerRuntimeSocket.dockerSock=false'){
+      socketPathValue = `containerdSockPath="${socketPath}"`
+    }
+    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true'){
+      socketPathValue = `dockerSockPath="${socketPath}"`
+    }
+
     return `helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm repo update
 
@@ -71,8 +76,8 @@ helm install deepfence-agent deepfence/deepfence-agent \\
   --set image.clusterAgentImageTag=${process.env.__PRODUCTVERSION__} \\
   --set clusterName=${clusterName} \\
   --namespace ${namespace || 'deepfence'} \\
-  ${containerRuntime || '--set {container_runtime}'} \\
-  ${socketPath || '--set {socket_path}'} \\
+  ${containerRuntime} \\
+  --set mountContainerRuntimeSocket.${socketPathValue}
   --create-namespace`;
   };
 
@@ -92,6 +97,26 @@ helm install deepfence-agent deepfence/deepfence-agent \\
 
   return (
     <div className={styles.wrapper}>
+      <p>Please follow the instructions below to set-up deepfence agent.</p>
+      <div className={styles.setupHeader}>Docker:</div>
+      <div className={styles.codeBlock}>
+        {getDockerInstructions()}
+        <i
+          className={`fa fa-copy ${styles.copyButton}`}
+          onClick={onDockerCopyClick}
+        />
+      </div>
+      <p>
+        For more details reference our{' '}
+        <a
+          href="https://community.deepfence.io/docs/threatmapper/sensors/docker"
+          target="_blank"
+          rel="noreferrer"
+        >
+          agent installation documentation.
+        </a>
+      </p>
+      <div className={styles.setupHeader}>K8s:</div>
       <div className="form-wrapper" style={{ width: 'max-content' }}>
         <form name="form">
           <div className="row" style={{ width: 'fit-content' }}>
@@ -101,6 +126,9 @@ helm install deepfence-agent deepfence/deepfence-agent \\
                   <div className="form-group">
                     <label htmlFor="cluster-name">
                       <input
+                        style={{
+                          paddingLeft: '18px'
+                        }}
                         type="text"
                         className="form-control"
                         name="cluster-name"
@@ -108,7 +136,6 @@ helm install deepfence-agent deepfence/deepfence-agent \\
                         value={clusterName}
                         onChange={e => setClusterName(e.target.value)}
                       />
-                      <span className="help-text">Ex. prod-cluster</span>
                     </label>
                   </div>
                 </div>
@@ -118,8 +145,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
                     <label htmlFor="namespace">
                       <input
                         style={{
-                          background: '#303030',
-                          color: '#999999',
+                          paddingLeft: '18px'
                         }}
                         type="text"
                         className="form-control"
@@ -128,7 +154,6 @@ helm install deepfence-agent deepfence/deepfence-agent \\
                         value={namespace}
                         onChange={e => setNamespace(e.target.value)}
                       />
-                      <span className="help-text">Ex. deepfence</span>
                     </label>
                   </div>
                 </div>
@@ -150,6 +175,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
                             background: '#303030',
                             color: '#999999',
                           }}
+                          defaultValue={containerRuntimeDropdown[0].value}
                           onChange={e => setContainerRuntime(e.target.value)}
                         >
                           {containerRuntimeDropdown.map(s => (
@@ -165,30 +191,22 @@ helm install deepfence-agent deepfence/deepfence-agent \\
 
                 {containerRuntime && (
                   <div className="col">
-                    <div className="form-field">
+                    <div className="form-group">
                       <div className="label" htmlFor="dir-sev">
                         Select Socket Path
                       </div>
-                      <div>
-                        <div>
-                          <select
-                            className="form-select"
-                            style={{
-                              width: '230px',
-                              height: '40px',
-                              background: '#303030',
-                              color: '#999999',
-                            }}
-                            onChange={e => setSocketPath(e.target.value)}
-                          >
-                            {socketPathDropdown.map(s => (
-                              <option value={s.value} key={s.name}>
-                                {s.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
+                      <label htmlFor="socketPath">
+                      <input
+                        style={{
+                          paddingLeft: '18px'
+                        }}
+                        type="text"
+                        className="form-control"
+                        name="socketPath"
+                        value={socketPath}
+                        onChange={e => setSocketPath(e.target.value)}
+                      />
+                    </label>
                     </div>
                   </div>
                 )}
@@ -197,28 +215,6 @@ helm install deepfence-agent deepfence/deepfence-agent \\
           </div>
         </form>
       </div>
-      <br />
-
-      <p>Please follow the instructions below to set-up deepfence agent.</p>
-      <div className={styles.setupHeader}>Docker:</div>
-      <div className={styles.codeBlock}>
-        {getDockerInstructions()}
-        <i
-          className={`fa fa-copy ${styles.copyButton}`}
-          onClick={onDockerCopyClick}
-        />
-      </div>
-      <p>
-        For more details reference our{' '}
-        <a
-          href="https://community.deepfence.io/docs/threatmapper/sensors/docker"
-          target="_blank"
-          rel="noreferrer"
-        >
-          agent installation documentation.
-        </a>
-      </p>
-      <div className={styles.setupHeader}>K8s:</div>
       <div className={styles.codeBlock}>
         {getK8sInstructions()}
         <i
