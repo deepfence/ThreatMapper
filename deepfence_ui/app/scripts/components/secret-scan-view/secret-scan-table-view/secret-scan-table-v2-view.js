@@ -90,6 +90,8 @@ class SecretScanTableV2 extends React.Component {
     const idValue = Object.keys(value).map(key => value[key]);
 
     const { secretScanUnmaskDocsAction: action } = this.props;
+    // Mask and unmask will reset page to 1
+    this.handlePageChange(0)
     return action({ docs: idValue });
   }
 
@@ -101,6 +103,8 @@ class SecretScanTableV2 extends React.Component {
     const idValue = Object.keys(value).map(key => value[key]);
 
     const { secretScanMaskDocsAction: action } = this.props;
+    // Mask and unmask will reset page to 1
+    this.handlePageChange(0)
     return action({
       docs: idValue,
     });
@@ -110,7 +114,13 @@ class SecretScanTableV2 extends React.Component {
     const { registerPolling } = this.props;
     registerPolling(this.getSecrets);
   }
-
+  
+  /**
+   * 
+   * Mask and unmask will reset page to 1
+   * Toggle mask will reset page to 1
+   * Filters and from bound changed will reset page to 1
+   */
   componentDidUpdate(oldProps) {
     const newProps = this.props;
     const options = {};
@@ -121,18 +131,21 @@ class SecretScanTableV2 extends React.Component {
       options.filters = newProps.filterValues;
     }
     if (newProps.hideMasked !== oldProps.hideMasked) {
+      // Toggle mask will reset page to 1
+      this.handlePageChange(0)
       options.hideMasked = newProps.hideMasked;
     }
     if (Object.keys(options).length > 0) {
       this.getSecrets(options);
     }
-    // reset paginatino page to 0
+    // Filters and from bound changed will reset page to 1
     if (!isEqual(oldProps.resetPageIndexData, this.props.resetPageIndexData)) {
       /* eslint-disable */
       this.setState({
         page: 0
       })
     }
+    
   }
 
   getSecrets(params) {
