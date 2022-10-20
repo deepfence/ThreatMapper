@@ -240,7 +240,8 @@ class CveScanRegistryImages:
 
 
 class CveScanECRImages(CveScanRegistryImages):
-    def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region_name, registry_id, target_account_role_arn, use_iam_role,is_public):
+    def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region_name, registry_id, target_account_role_arn,
+                 use_iam_role, is_public):
         super().__init__()
         self.use_iam_role = str(use_iam_role).lower()
         self.aws_access_key_id = aws_access_key_id
@@ -263,7 +264,8 @@ class CveScanECRImages(CveScanRegistryImages):
                         aws_session_token=credentials['SessionToken']
                     )
                     if self.is_public == "true":
-                        self.ecr_client = session.client(REGISTRY_TYPE_ECR_PUBLIC, region_name=AWS_PUBLIC_REGISTRY_REGION)
+                        self.ecr_client = session.client(REGISTRY_TYPE_ECR_PUBLIC,
+                                                         region_name=AWS_PUBLIC_REGISTRY_REGION)
                     else:
                         self.ecr_client = session.client(REGISTRY_TYPE_ECR, region_name=aws_region_name)
                 else:
@@ -272,18 +274,20 @@ class CveScanECRImages(CveScanRegistryImages):
                     creds = provider.load().get_frozen_credentials()
                     if self.is_public == "true":
                         self.ecr_client = boto3.client(
-                        REGISTRY_TYPE_ECR_PUBLIC, region_name=AWS_PUBLIC_REGISTRY_REGION, aws_access_key_id=creds.access_key,
-                        aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
+                            REGISTRY_TYPE_ECR_PUBLIC, region_name=AWS_PUBLIC_REGISTRY_REGION,
+                            aws_access_key_id=creds.access_key,
+                            aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
                     else:
                         self.ecr_client = boto3.client(
-                        REGISTRY_TYPE_ECR, region_name=aws_region_name, aws_access_key_id=creds.access_key,
-                        aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
+                            REGISTRY_TYPE_ECR, region_name=aws_region_name, aws_access_key_id=creds.access_key,
+                            aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
             except:
                 raise DFError("Error: Could not assume instance role")
         else:
             if self.is_public == "true":
                 self.ecr_client = boto3.client(
-                    REGISTRY_TYPE_ECR_PUBLIC, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+                    REGISTRY_TYPE_ECR_PUBLIC, aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key,
                     region_name=AWS_PUBLIC_REGISTRY_REGION)
             else:
                 self.ecr_client = boto3.client(
@@ -451,17 +455,19 @@ class CveScanDockerHubImages(CveScanRegistryImages):
                         filter_past_days=max_days):
         images_list = []
         try:
+            headers = {}
             resp = requests.post(self.docker_hub_url + "/users/login/",
                                  json={"username": self.docker_hub_username, "password": self.docker_hub_password})
             cookies = resp.cookies
             auth_token = resp.json().get("token", "")
             if not auth_token:
                 return images_list
+            headers["Authorization"] = "JWT " + auth_token
             image_from_date = datetime.now() - timedelta(days=filter_past_days)
             image_from_date = image_from_date.replace(hour=0, minute=0, second=0, microsecond=0)
             resp = requests.get(
                 self.docker_hub_url + "/repositories/" + self.docker_hub_namespace + "/?page_size=100",
-                cookies=cookies)
+                headers=headers, cookies=cookies)
             if resp.status_code != 200:
                 return images_list
             resp = resp.json()
@@ -471,7 +477,7 @@ class CveScanDockerHubImages(CveScanRegistryImages):
             while next_url:
                 resp = requests.get(
                     self.docker_hub_url + "/repositories/" + self.docker_hub_namespace +
-                    "/?page_size=100&page={0}".format(page_no), cookies=cookies)
+                    "/?page_size=100&page={0}".format(page_no), headers=headers, cookies=cookies)
                 if resp.status_code != 200:
                     break
                 resp = resp.json()
@@ -494,7 +500,7 @@ class CveScanDockerHubImages(CveScanRegistryImages):
                 try:
                     resp = requests.get(
                         self.docker_hub_url + "/repositories/{0}/{1}/tags?page_size=100".format(
-                            result["namespace"], result["name"]), cookies=cookies)
+                            result["namespace"], result["name"]), headers=headers, cookies=cookies)
                 except:
                     continue
                 if resp.status_code != 200:
