@@ -61,6 +61,7 @@ const sidebars = {
             'threatmapper/console/initial-configuration',
             'threatmapper/console/manage-users',
             'threatmapper/console/database-export-import',
+            'threatmapper/console/troubleshooting',
           ],
         },
 

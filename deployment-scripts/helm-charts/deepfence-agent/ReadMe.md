@@ -80,6 +80,9 @@ mountContainerRuntimeSocket:
   containerdSock: true
   # Change if socket path is not the following
   containerdSockPath: "/run/containerd/containerd.sock"
+  crioSock: false
+  # Change if socket path is not the following
+  crioSockPath: "/var/run/crio/crio.sock"
 ```
 - Install deepfence-agent helm chart with values file
 ```bash

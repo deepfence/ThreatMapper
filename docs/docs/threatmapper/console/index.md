@@ -25,5 +25,11 @@ import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
 ## Post-Installation Tasks
 
 ```mdx-code-block
-<DocCardList items={useCurrentSidebarCategory().items.filter( item => item.label.includes( "Installation" ) == false )}/>
+<DocCardList items={useCurrentSidebarCategory().items.filter( item => item.label.includes( "Installation" ) == false && item.label.includes( "Troubleshooting" ) == false )}/>
+```
+
+## Troubleshooting
+
+```mdx-code-block
+<DocCardList items={useCurrentSidebarCategory().items.filter( item => item.label.includes( "Troubleshooting" ) == true )}/>
 ```

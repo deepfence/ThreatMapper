@@ -3,14 +3,14 @@ entries:
   deepfence-agent:
   - apiVersion: v2
     appVersion: 1.4.1
-    created: "2022-10-19T20:47:24.336967+05:30"
+    created: "2022-10-20T20:58:56.059281+05:30"
     dependencies:
     - condition: deployKubernetesScanner
       name: deepfence-k8s-scanner
       repository: https://deepfence-helm-charts.s3.amazonaws.com/deepfence-k8s-scanner
       version: 0.1.0
     description: Deepfence Agent - Helm chart for Kubernetes
-    digest: 50b340a1b7cb76180804ab46eeb22af0cdd79778a140b616952cef7362424c35
+    digest: 69d2f844bd3cd205804bf53322d62966188ed4b0b6a97356fb8b4ebbf9d04006
     name: deepfence-agent
     type: application
     urls:
@@ -149,9 +149,9 @@ entries:
   deepfence-console:
   - apiVersion: v2
     appVersion: 1.4.1
-    created: "2022-10-19T20:47:24.340685+05:30"
+    created: "2022-10-20T20:58:56.06389+05:30"
     description: Deepfence Console - Helm chart for Kubernetes
-    digest: d97ee1f6ac31e14f975383f2a4bd4aa1a69ae653cd473d86f17d2ca3ac3c63e4
+    digest: 974162b73b4819e73672a91884553798d0c3c275d8465a654696cfb84a62ce0c
     name: deepfence-console
     type: application
     urls:
@@ -388,4 +388,4 @@ entries:
     urls:
     - deepfence-router-1.0.0.tgz
     version: 1.0.0
-generated: "2022-10-19T20:47:24.335763+05:30"
+generated: "2022-10-20T20:58:56.057993+05:30"

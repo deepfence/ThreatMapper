@@ -60,12 +60,12 @@ pre code {
 
 
 /* hide the toc */
-.theme-doc-toc-desktop {
-  display: none;
-}
-.table-of-contents {
-  display: none;
-}
+/*.theme-doc-toc-desktop {*/
+/*  display: none;*/
+/*}*/
+/*.table-of-contents {*/
+/*  display: none;*/
+/*}*/
 
 .theme-doc-sidebar-container {
   background-color: rgba(127,127,127,0.1);
