@@ -8,12 +8,17 @@ const containerRuntimeDropdown = [
   {
     name: 'containerd',
     value:
-      '--set mountContainerRuntimeSocket.containerdSock=true --set mountContainerRuntimeSocket.dockerSock=false',
+      '--set mountContainerRuntimeSocket.containerdSock=true --set mountContainerRuntimeSocket.dockerSock=false --set mountContainerRuntimeSocket.crioSock=false',
   },
   {
     name: 'docker',
     value:
-      '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true',
+      '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true --set mountContainerRuntimeSocket.crioSock=false',
+  },
+  {
+    name: 'cri-o',
+    value:
+      '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=false --set mountContainerRuntimeSocket.crioSock=true',
   },
 ];
 
@@ -44,8 +49,11 @@ export const AgentSetup = () => {
   }, [state]);
 
   useEffect(() => {
-    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true'){
+    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true --set mountContainerRuntimeSocket.crioSock=false'){
       setSocketPath('/var/run/docker.sock')
+    }
+    else if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=false --set mountContainerRuntimeSocket.crioSock=true'){
+      setSocketPath('/var/run/crio/crio.sock')
     }
     else{
       setSocketPath('/run/containerd/containerd.sock')
@@ -57,11 +65,14 @@ export const AgentSetup = () => {
 
   const getK8sInstructions = () => {
     let socketPathValue;
-    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=true --set mountContainerRuntimeSocket.dockerSock=false'){
+    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=true --set mountContainerRuntimeSocket.dockerSock=false --set mountContainerRuntimeSocket.crioSock=false'){
       socketPathValue = `containerdSockPath="${socketPath}"`
     }
-    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true'){
+    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=true --set mountContainerRuntimeSocket.crioSock=false'){
       socketPathValue = `dockerSockPath="${socketPath}"`
+    }
+    if(containerRuntime === '--set mountContainerRuntimeSocket.containerdSock=false --set mountContainerRuntimeSocket.dockerSock=false --set mountContainerRuntimeSocket.crioSock=true'){
+      socketPathValue = `crioSockPath="${socketPath}"`
     }
 
     return `helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
@@ -75,9 +86,9 @@ helm install deepfence-agent deepfence/deepfence-agent \\
   --set image.tag=${process.env.__PRODUCTVERSION__} \\
   --set image.clusterAgentImageTag=${process.env.__PRODUCTVERSION__} \\
   --set clusterName=${clusterName} \\
-  --namespace ${namespace || 'deepfence'} \\
   ${containerRuntime} \\
-  --set mountContainerRuntimeSocket.${socketPathValue}
+  --set mountContainerRuntimeSocket.${socketPathValue} \\
+  --namespace ${namespace || 'deepfence'} \\
   --create-namespace`;
   };
 
@@ -124,15 +135,20 @@ helm install deepfence-agent deepfence/deepfence-agent \\
               <div className="row" style={{ width: 'max-content' }}>
                 <div className="col">
                   <div className="form-group">
+                    <div className="label">
+                      Enter Cluster Name
+                    </div>
                     <label htmlFor="cluster-name">
                       <input
                         style={{
+                          width: '230px',
+                          height: '40px',
                           paddingLeft: '18px'
                         }}
                         type="text"
                         className="form-control"
                         name="cluster-name"
-                        placeholder="Enter Prod Cluster"
+                        placeholder="Cluster Name"
                         value={clusterName}
                         onChange={e => setClusterName(e.target.value)}
                       />
@@ -142,15 +158,20 @@ helm install deepfence-agent deepfence/deepfence-agent \\
 
                 <div className="col">
                   <div className="form-group">
+                    <div className="label">
+                      Enter Namespace
+                    </div>
                     <label htmlFor="namespace">
                       <input
                         style={{
+                          width: '230px',
+                          height: '40px',
                           paddingLeft: '18px'
                         }}
                         type="text"
                         className="form-control"
                         name="namespace"
-                        placeholder="Enter Namespace"
+                        placeholder="Namespace"
                         value={namespace}
                         onChange={e => setNamespace(e.target.value)}
                       />
@@ -193,11 +214,13 @@ helm install deepfence-agent deepfence/deepfence-agent \\
                   <div className="col">
                     <div className="form-group">
                       <div className="label" htmlFor="dir-sev">
-                        Select Socket Path
+                        Enter Socket Path
                       </div>
                       <label htmlFor="socketPath">
                       <input
                         style={{
+                          width: '230px',
+                          height: '40px',
                           paddingLeft: '18px'
                         }}
                         type="text"
