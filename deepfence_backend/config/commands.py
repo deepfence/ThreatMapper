@@ -1,9 +1,9 @@
-import datetime
 import click
 from models.user import Role, User, Company
 from models.df_cluster import DFCluster
 from uuid import getnode
 from utils.constants import USER_ROLES
+from utils.common import password_policy_check
 
 
 @click.command("initialize")
@@ -29,3 +29,29 @@ def initialize():
         df_cluster.save()
 
     print("Finished creating user roles")
+
+
+@click.command("reset-password")
+@click.option('--email', prompt="Enter your email address", help='registered email address')
+@click.option('--password', prompt="Enter new password", help='new password', hide_input=True, confirmation_prompt=True)
+def reset_password(email, password):
+    email = str(email).strip()
+    if not email:
+        print("email is required")
+        return
+    password = str(password).strip()
+    if not password:
+        print("password is required")
+        return
+    user = User.query.filter_by(email=email).one_or_none()
+    if not user:
+        print("No user found with entered email address")
+        return
+    is_password_valid, msg = password_policy_check(password)
+    if not is_password_valid:
+        print(msg)
+        return
+    user.set_password(password)
+    user.password_invalidated = False
+    user.save()
+    print("Password successfully changed")
