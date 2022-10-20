@@ -28,18 +28,28 @@ spec:
       serviceAccountName: {{ .Values.serviceAccountName }}
       automountServiceAccountToken: false
       volumes:
-{{- if .Values.mountContainerRuntimeSocket.dockerSock }}
+        {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
         - name: docker-sock
           hostPath:
             path: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
             type: Socket
-{{ end }}
-{{- if .Values.mountContainerRuntimeSocket.containerdSock }}
+        {{ end }}
+        {{- if .Values.mountContainerRuntimeSocket.containerdSock }}
         - name: containerd-sock
           hostPath:
             path: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
             type: Socket
-{{ end }}
+        {{ end }}
+        {{- if .Values.mountContainerRuntimeSocket.crioSock }}
+        - name: crio-sock
+          hostPath:
+            path: {{ .Values.mountContainerRuntimeSocket.crioSockPath }}
+            type: Socket
+        - hostPath:
+            path: /var/lib/containers
+            type: Directory
+          name: containers
+        {{- end }}
         - name: kernel-sys
           hostPath:
             path: /sys/kernel/debug
@@ -77,19 +87,29 @@ spec:
             - name: CONTAINERD_SOCKET_PATH
               value: "{{ .Values.mountContainerRuntimeSocket.containerdSockPath }}"
             {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.crioSock }}
+            - name: CRIO_SOCKET_PATH
+              value: "{{ .Values.mountContainerRuntimeSocket.crioSockPath }}"
+            {{ end }}
           ports:
             - name: http
               containerPort: 8009
               protocol: TCP
           volumeMounts:
-{{- if .Values.mountContainerRuntimeSocket.dockerSock }}
+            {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
             - mountPath: {{ .Values.mountContainerRuntimeSocket.dockerSockPath }}
               name: docker-sock
-{{ end }}
-{{- if .Values.mountContainerRuntimeSocket.containerdSock }}
+            {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.containerdSock }}
             - mountPath: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
               name: containerd-sock
-{{ end }}
+            {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.crioSock }}
+            - mountPath: {{ .Values.mountContainerRuntimeSocket.crioSockPath }}
+              name: crio-sock
+            - mountPath: /var/lib/containers
+              name: containers
+            {{ end }}
             - mountPath: /sys/kernel/debug
               name: kernel-sys
           securityContext:

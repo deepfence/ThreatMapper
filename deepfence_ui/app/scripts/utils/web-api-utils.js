@@ -2637,7 +2637,7 @@ export function getComplianceChartData(params = {}) {
 }
 
 export function getComplianceBarChart(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType} = params;
+  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit} = params;
   const requestBody = {
     scan_id: scanId,
   };
@@ -2645,7 +2645,7 @@ export function getComplianceBarChart(params = {}) {
     requestBody.filters = { resource };
   }
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_category_report?&lucene_query=${luceneQueryEscaped}&number=30&time_unit=day&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_category_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
@@ -2660,7 +2660,7 @@ export function getComplianceBarChart(params = {}) {
 
 // Donut chart Scan Results
 export function getResultDonutData(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType} = params;
+  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit} = params;
   const filters = {};
   if (resource) {
     filters.resource = resource;
@@ -2670,7 +2670,7 @@ export function getResultDonutData(params = {}) {
     filters
   };
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_status_report?&lucene_query=${luceneQueryEscaped}&number=30&time_unit=day&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_status_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
@@ -2781,7 +2781,7 @@ export function getScanResults(params = {}) {
     filters,
   };
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/compliance/search?from=${from}&size=20&lucene_query=${luceneQueryEscaped}&number=30&time_unit=day&hideMasked=${hideMasked}&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/compliance/search?from=${from}&size=20&lucene_query=${luceneQueryEscaped}&number=0&time_unit=all&hideMasked=${hideMasked}&node_type=${cloudType}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
