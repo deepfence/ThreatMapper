@@ -75,7 +75,6 @@ const RecursiveTable = ({
       getTrProps={(state, rowInfo) => (
         {
           onClick: (e) => {
-            debugger
             // show sidebar panel when click on row item except checkbox or expand button click
             if (
               !e.target.className.includes('rt-expander') &&
