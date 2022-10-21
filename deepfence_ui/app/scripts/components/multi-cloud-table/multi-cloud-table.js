@@ -77,7 +77,7 @@ export const MultiCloudTreeTable = withRouter(({
     { label: 'Show all', value: '' },
     { label: 'Never Scanned', value: 'never_scanned' }
   ]
-  
+
 
   const addVulnerabilityFilter = e => {
       setVulerabilityfilter(e.value);
@@ -149,7 +149,18 @@ export const MultiCloudTreeTable = withRouter(({
       if (table.current === null) {
         return;
       }
-      table.current.removeChildren(node.children);
+      const removedExpandedChildren = table.current.removeChildren(node.children);
+      // we need to tell server to collpase expanded children too,
+      // so we can expand them again. Otherwise server would not know that the childrens are collpased
+      // and when ui will try to expand them, server will return nothing and ui will hang in loading state
+      for (const removedExpandedChild of removedExpandedChildren) {
+        const topo_node_type = modelNodeTypeToTopologyType(removedExpandedChild.node_type);
+        client.current.collapseNode(
+          removedExpandedChild.id,
+          topo_node_type,
+          {},
+        );
+      }
 
       const topo_node_type = modelNodeTypeToTopologyType(node.node_type);
       client.current.collapseNode(
@@ -177,8 +188,8 @@ export const MultiCloudTreeTable = withRouter(({
     classNamePrefix="select"
     className="select-filter"
     onChange={addVulnerabilityFilter}
-  /> 
-    </div>}  
+  />
+    </div>}
     {count === 0 ? <div className="absolute-center" style={{fontSize: '25px'}}>
       No Rows Available
     </div> : (table.current === null)  ?  <ShimmerLoaderRow numberOfRows={3} />:
