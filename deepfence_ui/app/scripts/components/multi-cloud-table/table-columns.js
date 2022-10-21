@@ -162,6 +162,7 @@ export const addCheckbox = (cols, selections, Cb) => {
           type="checkbox"
           defaultChecked={selections.includes(row.original.id)}
           onChange={() => Cb(row)}
+          className='action-checkbox'
         />
       );
     }
