@@ -2,8 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { formValueSelector } from 'redux-form/immutable';
 
+import { isEqual } from 'lodash';
 import MaskForm from './mask-form';
-import { nodeFilterValueSelector } from '../../../selectors/node-filters';
+import { nodeFilterValueSelector, resetTablePageIndexSelector } from '../../../selectors/node-filters';
 import { DfTableV2 } from '../../common/df-table-v2';
 import pollable from '../../common/header-view/pollable';
 import {
@@ -28,6 +29,7 @@ class SecretScanTableV2 extends React.Component {
     this.state = {
       isSecretsModalOpen: false,
       secretsData: null,
+      page: 0
     };
   }
 
@@ -54,6 +56,9 @@ class SecretScanTableV2 extends React.Component {
   }
 
   handlePageChange(pageNumber) {
+    this.setState({
+      page: pageNumber
+    })
     this.tableChangeHandler({
       page: pageNumber,
     });
@@ -85,6 +90,8 @@ class SecretScanTableV2 extends React.Component {
     const idValue = Object.keys(value).map(key => value[key]);
 
     const { secretScanUnmaskDocsAction: action } = this.props;
+    // Mask and unmask will reset page to 1
+    this.handlePageChange(0)
     return action({ docs: idValue });
   }
 
@@ -96,6 +103,8 @@ class SecretScanTableV2 extends React.Component {
     const idValue = Object.keys(value).map(key => value[key]);
 
     const { secretScanMaskDocsAction: action } = this.props;
+    // Mask and unmask will reset page to 1
+    this.handlePageChange(0)
     return action({
       docs: idValue,
     });
@@ -105,7 +114,13 @@ class SecretScanTableV2 extends React.Component {
     const { registerPolling } = this.props;
     registerPolling(this.getSecrets);
   }
-
+  
+  /**
+   * 
+   * Mask and unmask will reset page to 1
+   * Toggle mask will reset page to 1
+   * Filters and from bound changed will reset page to 1
+   */
   componentDidUpdate(oldProps) {
     const newProps = this.props;
     const options = {};
@@ -116,11 +131,21 @@ class SecretScanTableV2 extends React.Component {
       options.filters = newProps.filterValues;
     }
     if (newProps.hideMasked !== oldProps.hideMasked) {
+      // Toggle mask will reset page to 1
+      this.handlePageChange(0)
       options.hideMasked = newProps.hideMasked;
     }
     if (Object.keys(options).length > 0) {
       this.getSecrets(options);
     }
+    // Filters and from bound changed will reset page to 1
+    if (!isEqual(oldProps.resetPageIndexData, this.props.resetPageIndexData)) {
+      /* eslint-disable */
+      this.setState({
+        page: 0
+      })
+    }
+    
   }
 
   getSecrets(params) {
@@ -262,6 +287,7 @@ class SecretScanTableV2 extends React.Component {
             onRowClick={row => this.handleRowClick(row)}
             columnCustomizable
             onPageChange={this.handlePageChange}
+            page={this.state.page}
             multiSelectOptions={{
               actions: [
                 {
@@ -346,6 +372,7 @@ function mapStateToProps(state) {
       'values',
       'masking_docs',
     ]),
+    resetPageIndexData: resetTablePageIndexSelector(state),
   };
 }
 

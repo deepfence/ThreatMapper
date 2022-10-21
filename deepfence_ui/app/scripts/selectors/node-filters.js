@@ -48,3 +48,35 @@ export const createCustomSelector = (formName) => {
 
   return selectorCache[formName];
 };
+
+const historyBoundCreateSelector = createSelector(
+  [
+    state => {
+      return state.get('alertPanelHistoryBound')
+    },
+  ],
+  (data) =>  data
+);
+
+const globalSearchCreateSelector = createSelector(
+  [
+    state => state.get('globalSearchQuery')
+  ],
+  (data) =>  data
+);
+/**
+ * table page index will reset to 0 if anyone of these values are changed
+ * i) lucence search
+ * ii) from selection change
+ *
+ */
+export const resetTablePageIndexSelector = createSelector(
+  historyBoundCreateSelector,
+  globalSearchCreateSelector,
+  (bound,search) => {
+    return {
+      bound,
+      search
+    }
+  }
+);

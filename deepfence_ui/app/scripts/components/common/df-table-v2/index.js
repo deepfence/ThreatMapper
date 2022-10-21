@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import classNames from 'classnames';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { useExpanded, useFlexLayout, usePagination, useResizeColumns, useSortBy, useTable, useRowSelect } from 'react-table';
 import { useDispatch } from 'react-redux';
 import Pagination from './pagination';
@@ -208,7 +208,7 @@ function useColumnFilter({
 * @param {Object[]} props.multiSelectOptions.columnConfig - column config for multi select
 * @param {Object[]} props.multiSelectOptions.columnConfig.accessor - accessor property name for selection
 */
-const DfTableV2 = ({
+const DfTableV2 = forwardRef(({
   columns,
   data,
   renderRowSubComponent,
@@ -232,7 +232,7 @@ const DfTableV2 = ({
   onCellClick,
   getRowStyle,
   getCellStyle,
-}) => {
+}, ref) => {
   defaultPageSize = getDefaultPageSize({
     showPagination,
     inputDefaultPageSize: defaultPageSize,
@@ -342,6 +342,14 @@ const DfTableV2 = ({
   useEffect(() => {
     if (manual && onSortChange) onSortChange(sortBy);
   }, [sortBy]);
+
+  useImperativeHandle(ref, () => {
+    return {
+      resetPageIndex: () => {
+        gotoPage(0);
+      }
+    }
+  })
 
   return (
     <div className={styles.tableContainer}>
@@ -485,7 +493,7 @@ const DfTableV2 = ({
       </div>) : null}
     </div>
   );
-};
+});
 
 function MultiselectActions({
   toggleAllPageRowsSelected,
