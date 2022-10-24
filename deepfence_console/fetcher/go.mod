@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/gomodule/redigo v1.8.8
 	github.com/lib/pq v1.10.4
+	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
 	github.com/olivere/elastic/v7 v7.0.32
 )
 
