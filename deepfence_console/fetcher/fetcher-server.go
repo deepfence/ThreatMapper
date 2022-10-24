@@ -1276,6 +1276,11 @@ func ingest(respWrite http.ResponseWriter, req *http.Request) {
 		return
 	}
 	docType := req.URL.Query().Get("doc_type")
+	f, _ := os.OpenFile("/tmp/toto", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	defer f.Close()
+	f.WriteString(docType)
+	f.WriteString("\n")
+	f.WriteString(string(body))
 	docType = convertRootESIndexToCustomerSpecificESIndex(docType)
 	go ingestInBackground(docType, body)
 	go send_to_neo4j(body)
