@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -8,11 +9,11 @@ import (
 	"sync"
 	"time"
 
+	redis2 "github.com/go-redis/redis/v8"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/report"
-	redis2 "github.com/go-redis/redis/v8"
 )
 
 const (
@@ -182,6 +183,7 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 		}
 	}
 
+	var buf bytes.Buffer
 	for _, n := range rpt.Endpoint.Nodes {
 		node_info := n.ToDataMap()
 		if hni, ok := node_info["host_node_id"]; ok {
@@ -190,7 +192,11 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 				continue
 			}
 			resolvers.network_map[node_ip] = extractHostFromHostNodeID(hni)
-			resolvers.ipport_ippid[node_ip+node_port] = fmt.Sprintf("%v;%v", node_ip, node_info["pid"])
+			buf.Reset()
+			buf.WriteString(node_ip)
+			buf.WriteByte(';')
+			buf.WriteString(node_info["pid"])
+			resolvers.ipport_ippid[node_ip+node_port] = buf.String()
 		}
 	}
 
@@ -240,11 +246,16 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	}
 
 	processes_to_keep := map[string]struct{}{}
+	var buf bytes.Buffer
 	for _, n := range rpt.Endpoint.Nodes {
 		node_info := n.ToDataMap()
 		if hni, ok := node_info["host_node_id"]; ok {
 			host := extractHostFromHostNodeID(hni)
-			host_pid := fmt.Sprintf("%s;%s", host, node_info["pid"])
+			buf.Reset()
+			buf.WriteString(host)
+			buf.WriteByte(';')
+			buf.WriteString(node_info["pid"])
+			host_pid := buf.String()
 			processes_to_keep[host_pid] = struct{}{}
 		}
 	}
@@ -378,9 +389,28 @@ func (nc *neo4jCollector) GetConnections(tx neo4j.Transaction) ([]ConnectionSumm
 	}
 
 	res := []ConnectionSummary{}
+	var buf bytes.Buffer
 	for _, edge := range edges {
 		if edge.Values[2].(string) != edge.Values[6].(string) {
-			res = append(res, ConnectionSummary{Source: fmt.Sprintf("%v;%v;%v;%v", edge.Values[0].(string), edge.Values[1].(string), edge.Values[2].(string), edge.Values[3].(string)), Target: fmt.Sprintf("%v;%v;%v;%v", edge.Values[4].(string), edge.Values[5].(string), edge.Values[6].(string), edge.Values[7].(string))})
+			buf.Reset()
+			buf.WriteString(edge.Values[0].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[1].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[2].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[3].(string))
+			src := buf.String()
+			buf.Reset()
+			buf.WriteString(edge.Values[4].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[5].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[6].(string))
+			buf.WriteByte(';')
+			buf.WriteString(edge.Values[7].(string))
+			target := buf.String()
+			res = append(res, ConnectionSummary{Source: src, Target: target})
 		}
 	}
 
