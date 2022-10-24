@@ -38,7 +38,7 @@ type EndpointResolvers struct {
 }
 
 type EndpointResolversCache struct {
-	rdb          *redis2.Client
+	rdb *redis2.Client
 }
 
 func NewEndpointResolvers() EndpointResolvers {
@@ -286,7 +286,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 						if host_name == host {
 							continue
 						}
-						right_ippid, ok := resolvers.get_ip_pid(ip+port)
+						right_ippid, ok := resolvers.get_ip_pid(ip + port)
 						if ok {
 							rightpid := extractPidFromNodeID(right_ippid)
 							edges = append(edges,
@@ -568,129 +568,129 @@ func (nc *neo4jCollector) getContainers(tx neo4j.Transaction, hosts []string) (m
 	return res, nil
 }
 
-func addHostToTopology(tx neo4j.Transaction, host_topology report.Topology, cloud_provider report.Topology, cloud_region report.Topology) error {
-
-	r, err := tx.Run("MATCH (n:TNode) return n", nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-	records, err := r.Collect()
-
-	if err != nil {
-		return err
-	}
-
-	for _, record := range records {
-		node := record.Values[0].(neo4j.Node)
-		m := map[string]string{}
-		for k, v := range node.Props {
-			m[k] = fmt.Sprintf("%v", v)
-		}
-		new_host_node := report.MakeNodeWith(m["node_id"]+";<host>", m)
-		new_host_node.Topology = report.Host
-
-		new_cp_node := report.MakeNodeWith(m["cloud_provider"]+";<cloud_provider>", map[string]string{})
-		new_cp_node.Topology = report.CloudProvider
-		new_cp_node.Latest = new_cp_node.Latest.Set("name", time.Now(), m["cloud_provider"])
-		new_cp_node.Latest = new_cp_node.Latest.Set("label", time.Now(), m["cloud_provider"])
-
-		new_region_node := report.MakeNodeWith(m["cloud_region"]+";<cloud_region>", map[string]string{})
-		new_region_node.Topology = report.CloudRegion
-		new_region_node.Latest = new_region_node.Latest.Set("name", time.Now(), m["cloud_region"])
-		new_region_node.Latest = new_region_node.Latest.Set("label", time.Now(), m["cloud_region"])
-
-		//new_region_node.Children.UnsafeAdd(new_host_node)
-		//new_cp_node.Children.UnsafeAdd(new_region_node)
-		new_region_node.Parents = new_region_node.Parents.AddString(report.CloudProvider, m["cloud_provider"]+";<cloud_provider>")
-		new_host_node.Parents = new_host_node.Parents.AddString(report.CloudRegion, m["cloud_region"]+";<cloud_region>")
-
-		host_topology.AddNode(new_host_node)
-		cloud_provider.AddNode(new_cp_node)
-		cloud_region.AddNode(new_region_node)
-	}
-
-	return nil
-}
-
-func addContainersToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:TContainer) return n", nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-	records, err := r.Collect()
-
-	if err != nil {
-		return err
-	}
-
-	for _, record := range records {
-		node := record.Values[0].(neo4j.Node)
-		m := map[string]string{}
-		for k, v := range node.Props {
-			m[k] = fmt.Sprintf("%v", v)
-		}
-		new_node := report.MakeNodeWith(m["node_id"]+";<container>", m)
-		new_node.Topology = report.Container
-		topology.AddNode(new_node)
-	}
-
-	return nil
-}
-
-func addPodsToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:TPod) return n", nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-	records, err := r.Collect()
-
-	if err != nil {
-		return err
-	}
-
-	for _, record := range records {
-		node := record.Values[0].(neo4j.Node)
-		m := map[string]string{}
-		for k, v := range node.Props {
-			m[k] = fmt.Sprintf("%v", v)
-		}
-		new_node := report.MakeNodeWith(m["node_id"]+";<pod>", m)
-		new_node.Topology = report.Pod
-		topology.AddNode(new_node)
-	}
-
-	return nil
-}
-
-func addProcessesToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:TProcess) return n", nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-	records, err := r.Collect()
-
-	if err != nil {
-		return err
-	}
-
-	for _, record := range records {
-		node := record.Values[0].(neo4j.Node)
-		m := map[string]string{}
-		for k, v := range node.Props {
-			m[k] = fmt.Sprintf("%v", v)
-		}
-		new_node := report.MakeNodeWith(m["host_name"]+";"+m["pid"], m)
-		new_node.Topology = report.Process
-		new_node.Parents = new_node.Parents.AddString(report.Host, m["host_node_id"])
-		topology.AddNode(new_node)
-	}
-
-	return nil
-}
+//func addHostToTopology(tx neo4j.Transaction, host_topology report.Topology, cloud_provider report.Topology, cloud_region report.Topology) error {
+//
+//	r, err := tx.Run("MATCH (n:TNode) return n", nil)
+//	if err != nil {
+//		return err
+//	}
+//	defer tx.Close()
+//	records, err := r.Collect()
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//	for _, record := range records {
+//		node := record.Values[0].(neo4j.Node)
+//		m := map[string]string{}
+//		for k, v := range node.Props {
+//			m[k] = fmt.Sprintf("%v", v)
+//		}
+//		new_host_node := report.MakeNodeWith(m["node_id"]+";<host>", m)
+//		new_host_node.Topology = report.Host
+//
+//		new_cp_node := report.MakeNodeWith(m["cloud_provider"]+";<cloud_provider>", map[string]string{})
+//		new_cp_node.Topology = report.CloudProvider
+//		new_cp_node.Latest = new_cp_node.Latest.Set("name", time.Now(), m["cloud_provider"])
+//		new_cp_node.Latest = new_cp_node.Latest.Set("label", time.Now(), m["cloud_provider"])
+//
+//		new_region_node := report.MakeNodeWith(m["cloud_region"]+";<cloud_region>", map[string]string{})
+//		new_region_node.Topology = report.CloudRegion
+//		new_region_node.Latest = new_region_node.Latest.Set("name", time.Now(), m["cloud_region"])
+//		new_region_node.Latest = new_region_node.Latest.Set("label", time.Now(), m["cloud_region"])
+//
+//		//new_region_node.Children.UnsafeAdd(new_host_node)
+//		//new_cp_node.Children.UnsafeAdd(new_region_node)
+//		new_region_node.Parents = new_region_node.Parents.AddString(report.CloudProvider, m["cloud_provider"]+";<cloud_provider>")
+//		new_host_node.Parents = new_host_node.Parents.AddString(report.CloudRegion, m["cloud_region"]+";<cloud_region>")
+//
+//		host_topology.AddNode(new_host_node)
+//		cloud_provider.AddNode(new_cp_node)
+//		cloud_region.AddNode(new_region_node)
+//	}
+//
+//	return nil
+//}
+//
+//func addContainersToTopology(tx neo4j.Transaction, topology report.Topology) error {
+//	r, err := tx.Run("MATCH (n:TContainer) return n", nil)
+//	if err != nil {
+//		return err
+//	}
+//	defer tx.Close()
+//	records, err := r.Collect()
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//	for _, record := range records {
+//		node := record.Values[0].(neo4j.Node)
+//		m := map[string]string{}
+//		for k, v := range node.Props {
+//			m[k] = fmt.Sprintf("%v", v)
+//		}
+//		new_node := report.MakeNodeWith(m["node_id"]+";<container>", m)
+//		new_node.Topology = report.Container
+//		topology.AddNode(new_node)
+//	}
+//
+//	return nil
+//}
+//
+//func addPodsToTopology(tx neo4j.Transaction, topology report.Topology) error {
+//	r, err := tx.Run("MATCH (n:TPod) return n", nil)
+//	if err != nil {
+//		return err
+//	}
+//	defer tx.Close()
+//	records, err := r.Collect()
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//	for _, record := range records {
+//		node := record.Values[0].(neo4j.Node)
+//		m := map[string]string{}
+//		for k, v := range node.Props {
+//			m[k] = fmt.Sprintf("%v", v)
+//		}
+//		new_node := report.MakeNodeWith(m["node_id"]+";<pod>", m)
+//		new_node.Topology = report.Pod
+//		topology.AddNode(new_node)
+//	}
+//
+//	return nil
+//}
+//
+//func addProcessesToTopology(tx neo4j.Transaction, topology report.Topology) error {
+//	r, err := tx.Run("MATCH (n:TProcess) return n", nil)
+//	if err != nil {
+//		return err
+//	}
+//	defer tx.Close()
+//	records, err := r.Collect()
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//	for _, record := range records {
+//		node := record.Values[0].(neo4j.Node)
+//		m := map[string]string{}
+//		for k, v := range node.Props {
+//			m[k] = fmt.Sprintf("%v", v)
+//		}
+//		new_node := report.MakeNodeWith(m["host_name"]+";"+m["pid"], m)
+//		new_node.Topology = report.Process
+//		new_node.Parents = new_node.Parents.AddString(report.Host, m["host_node_id"])
+//		topology.AddNode(new_node)
+//	}
+//
+//	return nil
+//}
 
 type ConnectionSummary struct {
 	Source string `json:"source"`
@@ -786,10 +786,10 @@ func (nc *neo4jCollector) Report(_ context.Context, _ time.Time) (report.Report,
 	}
 	defer tx.Close()
 
-	addHostToTopology(tx, res.Host, res.CloudProvider, res.CloudRegion)
-	addContainersToTopology(tx, res.Container)
-	addPodsToTopology(tx, res.Pod)
-	addProcessesToTopology(tx, res.Process)
+	//addHostToTopology(tx, res.Host, res.CloudProvider, res.CloudRegion)
+	//addContainersToTopology(tx, res.Container)
+	//addPodsToTopology(tx, res.Pod)
+	//addProcessesToTopology(tx, res.Process)
 
 	res.Host = res.Host.WithMetricTemplates(host.MetricTemplates)
 	res.Host = res.Host.WithMetadataTemplates(host.MetadataTemplates)
@@ -1039,6 +1039,7 @@ func (nc *neo4jCollector) applyDBConstraints() error {
 	session.Run("CREATE CONSTRAINT ON (n:TContainer) ASSERT n.node_id IS UNIQUE", nil)
 	session.Run("CREATE CONSTRAINT ON (n:TPod) ASSERT n.node_id IS UNIQUE", nil)
 	session.Run("CREATE CONSTRAINT ON (n:TProcess) ASSERT n.node_id IS UNIQUE", nil)
+	session.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", nil)
 
 	return nil
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
+	hst "github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/render"
 	"github.com/weaveworks/scope/render/detailed"
 	"github.com/weaveworks/scope/report"
@@ -380,6 +381,44 @@ func graphToSummaries(graph RenderedGraph, region_filter []string, host_filter [
 						Label: host,
 						Shape: report.Host,
 					},
+					Metrics: []report.MetricRow{
+						{ID: hst.CPUUsage, Metric: &report.Metric{},  Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
+						{ID: hst.MemoryUsage, Metric: &report.Metric{}, Label: "Memory", Value: 0.0, Format: report.FilesizeFormat, Priority: 2},
+						{ID: hst.Load1, Metric: &report.Metric{}, Label: "Load (1m)", Value: 0.0, Format: report.DefaultFormat, Group: "load", Priority: 11},
+					},
+					Metadata: []report.MetadataRow{
+						{
+							ID:       "name",
+							Label:    "Name",
+							Value:    host,
+							Priority: 1,
+						},
+						{
+							ID:       "label",
+							Label:    "Label",
+							Value:    host,
+							Priority: 2,
+						},
+						{ID: report.KernelVersion, Label: "Kernel version", Value: report.FromLatest, Priority: 1},
+						{ID: report.Uptime, Label: "Uptime", Value: report.FromLatest, Priority: 2},
+						{ID: report.HostName, Label: "Hostname", Value: host, Priority: 11},
+						{ID: report.OS, Label: "OS", Value: report.FromLatest, Priority: 12},
+						{ID: hst.LocalNetworks, Label: "Local networks", Value: report.FromSets, Priority: 13},
+						{ID: hst.InterfaceNames, Label: "Interface Names", Value: report.FromLatest, Priority: 15},
+						//PublicIpAddr:   {ID: PublicIpAddr, Label: "Public IP Address", Value: report.FromLatest, Priority: 16},
+						{ID: hst.ProbeId, Label: "Probe ID", Value: report.FromLatest, Priority: 17},
+						//ScopeVersion:  {ID: ScopeVersion, Label: "Scope version", Value: report.FromLatest, Priority: 14},
+						{ID: hst.InterfaceIPs, Label: "All Interface IP's", Value: report.FromLatest, Priority: 21},
+						{ID: report.CloudProvider, Label: "Cloud Provider", Value: report.FromLatest, Priority: 22},
+						{ID: report.CloudRegion, Label: "Cloud Region", Value: report.FromLatest, Priority: 23},
+						{ID: hst.CloudMetadata, Label: "Cloud Metadata", Value: report.FromLatest, Priority: 24},
+						{ID: report.KubernetesClusterId, Label: "Kubernetes Cluster Id", Value: report.FromLatest, Priority: 25},
+						{ID: report.KubernetesClusterName, Label: "Kubernetes Cluster Name", Value: report.FromLatest, Priority: 26},
+						{ID: hst.UserDfndTags, Label: "User Defined Tags", Value: report.FromLatest, Priority: 27},
+						{ID: hst.AgentVersion, Label: "Sensor Version", Value: report.FromLatest, Priority: 28},
+						{ID: hst.IsUiVm, Label: "UI vm", Value: "yes", Priority: 29},
+						{ID: hst.AgentRunning, Label: "Sensor", Value: "yes", Priority: 33},
+					},
 					Type: "host",
 				}
 			}
@@ -395,6 +434,20 @@ func graphToSummaries(graph RenderedGraph, region_filter []string, host_filter [
 					Label: id,
 					Shape: report.Process,
 				},
+				Metadata: []report.MetadataRow{
+					{
+						ID:       "name",
+						Label:    "Name",
+						Value:    id,
+						Priority: 1,
+					},
+					{
+						ID:       "label",
+						Label:    "Label",
+						Value:    id,
+						Priority: 2,
+					},
+				},
 				Type: "process",
 			}
 		}
@@ -408,6 +461,20 @@ func graphToSummaries(graph RenderedGraph, region_filter []string, host_filter [
 					ID:    id,
 					Label: id,
 					Shape: report.Pod,
+				},
+				Metadata: []report.MetadataRow{
+					{
+						ID:       "name",
+						Label:    "Name",
+						Value:    id,
+						Priority: 1,
+					},
+					{
+						ID:       "label",
+						Label:    "Label",
+						Value:    id,
+						Priority: 2,
+					},
 				},
 				Type: "pod",
 			}
