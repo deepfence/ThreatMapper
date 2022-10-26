@@ -108,6 +108,28 @@ type DfCveStruct struct {
 	ExploitPOC                 string   `json:"exploit_poc"`
 }
 
+type CloudResource struct {
+	AccountID             string `json:"account_id"`
+	Arn                   string `json:"arn"`
+	BlockPublicAcls       bool   `json:"block_public_acls,omitempty"`
+	BlockPublicPolicy     bool   `json:"block_public_policy,omitempty"`
+	BucketPolicyIsPublic  bool   `json:"bucket_policy_is_public,omitempty"`
+	RestrictPublicBuckets bool   `json:"restrict_public_buckets,omitempty"`
+	ID                    string `json:"id"`
+	IgnorePublicAcls      bool   `json:"ignore_public_acls,omitempty"`
+	Name                  string `json:"name"`
+	//Policy                interface{} `json:"policy"`
+	Region         string `json:"region"`
+	ResourceID     string `json:"resource_id"`
+	InstanceID     string `json:"instance_id"`
+	SecurityGroups []struct {
+		GroupName string `json:"GroupName"`
+		GroupID   string `json:"GroupId"`
+	} `json:"security_groups"`
+	//SecurityGroups []map[string]string `json:"security_groups"`
+	VpcID string `json:"vpc_id,omitempty"`
+}
+
 type SecretStruct struct {
 	Rule     map[string]interface{} `json:"Rule"`
 	Severity map[string]interface{} `json:"Severity"`
@@ -134,6 +156,22 @@ func CVEsToMaps(ms []DfCveStruct) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		res = append(res, v.ToMap())
+	}
+	return res
+}
+
+func ResourceToMaps(ms []CloudResource) []map[string]interface{} {
+	res := []map[string]interface{}{}
+	for _, v := range ms {
+		res = append(res, v.ToMap())
+	}
+	return res
+}
+
+func ResourceToMapsStrip(ms []CloudResource) []map[string]interface{} {
+	res := []map[string]interface{}{}
+	for _, v := range ms {
+		res = append(res, v.ToMapStrip())
 	}
 	return res
 }
@@ -165,5 +203,26 @@ func (c *DfCveStruct) ToMap() map[string]interface{} {
 	}
 	bb := map[string]interface{}{}
 	err = json.Unmarshal(out, &bb)
+	return bb
+}
+
+func (c *CloudResource) ToMap() map[string]interface{} {
+	out, err := json.Marshal(*c)
+	if err != nil {
+		return nil
+	}
+	bb := map[string]interface{}{}
+	err = json.Unmarshal(out, &bb)
+	return bb
+}
+
+func (c *CloudResource) ToMapStrip() map[string]interface{} {
+	out, err := json.Marshal(*c)
+	if err != nil {
+		return nil
+	}
+	bb := map[string]interface{}{}
+	err = json.Unmarshal(out, &bb)
+	delete(bb, "security_groups")
 	return bb
 }

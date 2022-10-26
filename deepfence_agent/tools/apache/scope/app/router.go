@@ -237,11 +237,6 @@ func NewVersion(version, downloadURL string) {
 
 func apiHandler(rep Reporter, capabilities map[string]bool) CtxHandlerFunc {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		//report, err := rep.Report(ctx, time.Now())
-		//if err != nil {
-		//	respondWith(w, http.StatusInternalServerError, err)
-		//	return
-		//}
 		respondWith(ctx, w, http.StatusOK, xfer.Details{
 			ID:           UniqueID,
 			Version:      Version,

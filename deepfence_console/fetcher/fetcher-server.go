@@ -895,6 +895,9 @@ func ingestInBackground(docType string, body []byte) error {
 	redisConn := redisPool.Get()
 	defer redisConn.Close()
 	currTime := getCurrentTime()
+
+	log.Printf("docType = %v", docType)
+	log.Printf("body = %v", string(body))
 	if docType == cveIndexName {
 		var dfCveStructList []types.DfCveStruct
 		err := json.Unmarshal(body, &dfCveStructList)
@@ -1128,18 +1131,40 @@ func ingestInBackground(docType string, body []byte) error {
 		for _, r := range failed {
 			log.Printf("error cloudtrail-alert doc %s %s", r.Error.Type, r.Error.Reason)
 		}
-	} else {
-		var secrets []types.SecretStruct
-		err := json.Unmarshal(body, &secrets)
+
+	} else if docType == "secret-scan" {
+		var secret map[string]interface{}
+		err := json.Unmarshal(body, &secret)
 		if err == nil {
 			client := topology.NewTopologyClient()
 			if client != nil {
-				err = client.AddSecrets(secrets)
+				err = client.AddSecrets([]map[string]interface{}{secret})
 				if err != nil {
-					log.Println("err secrets " + err.Error())
+					log.Println("err secret " + err.Error())
+				} else {
+					log.Println("Added secret")
 				}
 			}
 		}
+		bulkService := elastic.NewBulkService(esClient)
+		bulkIndexReq := elastic.NewBulkIndexRequest()
+		bulkIndexReq.Index(docType).Doc(string(body))
+		bulkService.Add(bulkIndexReq)
+		res, _ := bulkService.Do(context.Background())
+		if res != nil && res.Errors {
+			for _, item := range res.Items {
+				resItem := item["index"]
+				if resItem != nil {
+					fmt.Println(resItem.Index)
+					fmt.Println("status:" + strconv.Itoa(resItem.Status))
+					if resItem.Error != nil {
+						fmt.Println("Error Type:" + resItem.Error.Type)
+						fmt.Println("Error Reason: " + resItem.Error.Reason)
+					}
+				}
+			}
+		}
+	} else {
 		bulkService := elastic.NewBulkService(esClient)
 		bulkIndexReq := elastic.NewBulkIndexRequest()
 		bulkIndexReq.Index(docType).Doc(string(body))
@@ -1233,15 +1258,41 @@ func ingest(respWrite http.ResponseWriter, req *http.Request) {
 		return
 	}
 	docType := req.URL.Query().Get("doc_type")
-	f, _ := os.OpenFile("/tmp/toto", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	defer f.Close()
-	f.WriteString("\n")
-	f.WriteString(docType)
-	f.WriteString("\n")
-	f.WriteString(string(body))
 	docType = convertRootESIndexToCustomerSpecificESIndex(docType)
 	go ingestInBackground(docType, body)
 	//go send_to_neo4j(body)
+	respWrite.WriteHeader(http.StatusOK)
+	fmt.Fprintf(respWrite, "Ok")
+}
+
+func ingestCloudResources(respWrite http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
+	if req.Method != "POST" {
+		http.Error(respWrite, "invalid request", http.StatusInternalServerError)
+		return
+	}
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+	var cloud_resources []types.CloudResource
+	err = json.Unmarshal(body, &cloud_resources)
+	if err == nil {
+		client := topology.NewTopologyClient()
+		if client != nil {
+			err = client.AddCloudResources(cloud_resources)
+			if err != nil {
+				log.Println("cloud err: " + err.Error())
+			} else {
+				log.Println("Added resource")
+			}
+		}
+	} else {
+		http.Error(respWrite, "Error unmarshalling request body", http.StatusInternalServerError)
+		return
+	}
+
 	respWrite.WriteHeader(http.StatusOK)
 	fmt.Fprintf(respWrite, "Ok")
 }
@@ -1449,6 +1500,7 @@ func main() {
 	httpMux.HandleFunc("/df-api/registry-credential", registryCredential)
 	httpMux.HandleFunc("/df-api/packet-capture-config", packetCaptureConfig)
 	httpMux.HandleFunc("/df-api/ingest", ingest)
+	httpMux.HandleFunc("/df-api/ingest/cloud_resources", ingestCloudResources)
 	httpMux.HandleFunc("/df-api/masked-cve-id", maskedCveId)
 	// Get user defined tags for a host
 	httpMux.HandleFunc("/df-api/user-defined-tags", handleUserDefinedTags)

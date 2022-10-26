@@ -277,7 +277,7 @@ services:
 
   neo4j-db:
     container_name: neo4j-db
-    image: neo4j:latest
+    image: neo4j:4.4.12
     ulimits:
       core: 0
     restart: on-failure
