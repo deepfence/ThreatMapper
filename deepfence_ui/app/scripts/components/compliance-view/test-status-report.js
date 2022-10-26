@@ -33,8 +33,10 @@ class ComplianceTestStatusReport extends React.PureComponent {
     const {
       globalSearchQuery,
       initiatedByPollable,
+      alertPanelHistoryBound
     } = pollParams;
     const { nodeId, scanId, checkType, cloudType, resource } = this.props;
+    const bound = alertPanelHistoryBound?.value ? alertPanelHistoryBound.value : {}
     const params = {
       nodeId,
       scanId,
@@ -45,6 +47,7 @@ class ComplianceTestStatusReport extends React.PureComponent {
       number: 0,
       time_unit: 'all',
       initiatedByPollable,
+      ...bound,
     };
     this.props.dispatch(getResultDonutDataAction(params));
   }

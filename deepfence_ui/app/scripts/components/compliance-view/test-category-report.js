@@ -28,7 +28,9 @@ class ComplianceTestCategoryReport extends React.PureComponent {
     const {
       globalSearchQuery,
       initiatedByPollable,
+      alertPanelHistoryBound
     } = pollParams;
+    const bound = alertPanelHistoryBound?.value ? alertPanelHistoryBound.value : {}
     const page = 0;
     const pageSize = 20;
     const params = {
@@ -43,6 +45,7 @@ class ComplianceTestCategoryReport extends React.PureComponent {
       number: 0,
       time_unit: 'all',
       initiatedByPollable,
+      ...bound,
     };
     this.props.dispatch(getComplianceBarChartAction(params));
   }

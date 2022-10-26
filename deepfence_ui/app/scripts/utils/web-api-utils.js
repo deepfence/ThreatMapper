@@ -2756,6 +2756,8 @@ export function getScanResults(params = {}) {
     page,
     cloudType,
     hideMasked,
+    number,
+    time_unit
   } = params;
   const from = page ? page * pageSize : page;
   let filters = {};
@@ -2781,7 +2783,7 @@ export function getScanResults(params = {}) {
     filters,
   };
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/compliance/search?from=${from}&size=20&lucene_query=${luceneQueryEscaped}&number=0&time_unit=all&hideMasked=${hideMasked}&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/compliance/search?from=${from}&size=20&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&hideMasked=${hideMasked}&node_type=${cloudType}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',

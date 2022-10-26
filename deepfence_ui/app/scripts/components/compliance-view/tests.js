@@ -211,8 +211,10 @@ class ComplianceTests extends React.PureComponent {
       hideMasked,
       resource,
       globalSearchQuery = [],
+      alertPanelHistoryBound = {}
     } = this.props;
     const { page = 0 } = params;
+    const bound = alertPanelHistoryBound?.value ? alertPanelHistoryBound.value : {}
     return dispatch(
       getScanResultsAction({
         nodeId,
@@ -224,6 +226,7 @@ class ComplianceTests extends React.PureComponent {
         pageSize: 20,
         resource,
         lucene_query: globalSearchQuery,
+        ...bound,
         ...params,
       })
     );
