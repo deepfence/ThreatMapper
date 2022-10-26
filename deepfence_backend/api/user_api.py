@@ -36,7 +36,7 @@ from utils import constants
 from config.redisconfig import redis
 from utils.response import set_response
 from utils.esconn import ESConn
-from utils.decorators import user_permission, non_read_only_user
+from utils.decorators import  non_read_only_user, admin_user_only
 from flask_restful import Api
 from utils.helper import validateJiraCredentials, validate_url, \
     validate_email, redact_sensitive_info, validate_domain, validate_ip, modify_es_index
@@ -820,7 +820,7 @@ def logout():
 
 @user_api.route("/users/invite/send", methods=["POST"])
 @jwt_required()
-@user_permission(USER_ROLES.ADMIN_USER)
+@admin_user_only
 def send_invite():
     """
     Send user invitation. Only admin can send an invitation.
