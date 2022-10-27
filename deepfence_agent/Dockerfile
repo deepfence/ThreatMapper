@@ -55,10 +55,10 @@ RUN rm -rf /usr/local/bin/compliance_check/*.go \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_services \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.8.0/vessel_v0.8.0_linux_amd64.tar.gz \
-    && tar -xzf vessel_v0.8.0_linux_amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.8.0/vessel_v0.8.1_linux_amd64.tar.gz \
+    && tar -xzf vessel_v0.8.1_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel_v0.8.0_linux_amd64.tar.gz \
+    && rm -rf vessel_v0.8.1_linux_amd64.tar.gz \
     && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v0.23.0/nerdctl-0.23.0-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-0.23.0-linux-amd64.tar.gz \
     && rm nerdctl-0.23.0-linux-amd64.tar.gz \
