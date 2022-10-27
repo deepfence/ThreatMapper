@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import ReactTable from 'react-table-6';
 import { showTopologyPanel } from '../../actions';
@@ -6,6 +6,31 @@ import { NODE_TYPE } from '../../constants/topology-multicloud';
 import { ShimmerLoaderRow } from '../shimmer-loader/shimmer-row';
 import './styles.scss';
 import { addCheckbox, getColumnsForTypes } from './table-columns';
+
+
+const ShimmerWithTimeout = ({ message = 'No Data' }) => {
+  const [timeoutExpired, setTimeoutExpired] = useState(false);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setTimeoutExpired(true);
+    }, 15000);
+
+    return () => {
+      clearTimeout(timeoutId);
+    }
+  }, []);
+
+  if (timeoutExpired) {
+    return (
+      <div className="empty-row">
+        {message}
+      </div>
+    );
+  }
+  return <ShimmerLoaderRow numberOfRows={1} />
+}
+
 
 let selectedItems = [];
 const RecursiveTable = ({
@@ -26,7 +51,7 @@ const RecursiveTable = ({
       );
     }
     return (
-      <ShimmerLoaderRow numberOfRows={1} />
+      <ShimmerWithTimeout />
     );
   }
 
