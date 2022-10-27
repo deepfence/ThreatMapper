@@ -55,7 +55,7 @@ RUN rm -rf /usr/local/bin/compliance_check/*.go \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_services \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.8.0/vessel_v0.8.1_linux_amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.8.1/vessel_v0.8.1_linux_amd64.tar.gz \
     && tar -xzf vessel_v0.8.1_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
     && rm -rf vessel_v0.8.1_linux_amd64.tar.gz \
