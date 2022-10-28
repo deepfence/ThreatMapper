@@ -537,8 +537,8 @@ def _compute_threat_graph():
             if not meta:
                 continue
             try:
-                shortest_paths_generator_in = nx.shortest_simple_paths(
-                    graph[cloud_provider], incoming_internet_host_id, node_id)
+                shortest_paths_generator_in = nx.all_simple_paths(
+                    graph[cloud_provider], incoming_internet_host_id, node_id, 2)
                 for _, path in enumerate(shortest_paths_generator_in):
                     p = []
                     p_str = ""

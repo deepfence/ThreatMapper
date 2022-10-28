@@ -14,6 +14,7 @@ class JiraIntegrationForm extends React.PureComponent {
       username: '',
       password: '',
       jiraProjectKey: '',
+      jiraAssignee: '',
       issueType: '',
       integration_type: 'jira',
       isAuthToken: true,
@@ -30,6 +31,7 @@ class JiraIntegrationForm extends React.PureComponent {
         username: this.state.username,
         password: this.state.password,
         jira_project_key: this.state.jiraProjectKey,
+        assignee: this.state.jiraAssignee,
         issue_type: this.state.issueType,
         api_token: this.state.api_token,
       };
@@ -49,7 +51,14 @@ class JiraIntegrationForm extends React.PureComponent {
 
   render() {
     const {
-      jiraSiteUrl, username, password, jiraProjectKey, issueType, api_token, isAuthToken
+      jiraSiteUrl,
+      username,
+      password,
+      jiraProjectKey,
+      issueType,
+      api_token,
+      isAuthToken,
+      jiraAssignee,
     } = this.state;
 
     const { submitted } = this.props;
@@ -57,7 +66,7 @@ class JiraIntegrationForm extends React.PureComponent {
       {
         label: 'API Token',
         value: 'apitoken',
-        checked: isAuthToken
+        checked: isAuthToken,
       },
       {
         label: 'Password',
@@ -70,7 +79,11 @@ class JiraIntegrationForm extends React.PureComponent {
       <div>
         <div className="row">
           <div className="col-md-4">
-            <div className={`form-group ${(submitted && !jiraSiteUrl ? 'has-error' : '')}`}>
+            <div
+              className={`form-group ${
+                submitted && !jiraSiteUrl ? 'has-error' : ''
+              }`}
+            >
               <label htmlFor="jiraSiteUrl">
                 <i className="fa fa-link" aria-hidden="true" />
                 <input
@@ -86,14 +99,18 @@ class JiraIntegrationForm extends React.PureComponent {
               <span className="help-text">
                 Ex. https://[organization].atlassian.net/
               </span>
-              <div className="help-text">
-                Version: 7.13
-              </div>
-              {submitted && !jiraSiteUrl && <div className="field-error">Jira Site URL is required</div>}
+              <div className="help-text">Version: 7.13</div>
+              {submitted && !jiraSiteUrl && (
+                <div className="field-error">Jira Site URL is required</div>
+              )}
             </div>
           </div>
           <div className="col-md-4">
-            <div className={`form-group ${(submitted && !username ? 'has-error' : '')}`}>
+            <div
+              className={`form-group ${
+                submitted && !username ? 'has-error' : ''
+              }`}
+            >
               <label htmlFor="username">
                 <i className="fa fa-user" aria-hidden="true" />
                 <input
@@ -106,7 +123,11 @@ class JiraIntegrationForm extends React.PureComponent {
                   autoComplete="off"
                 />
               </label>
-              {submitted && !username && <div className="field-error">Please Enter a Valid Email Address</div>}
+              {submitted && !username && (
+                <div className="field-error">
+                  Please Enter a Valid Email Address
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -115,7 +136,10 @@ class JiraIntegrationForm extends React.PureComponent {
             <div className="form-group row">
               {radioButtons.map(option => (
                 <div key={option.value}>
-                  <label htmlFor={option.value} className="col-sm-12 col-form-label radio-label">
+                  <label
+                    htmlFor={option.value}
+                    className="col-sm-12 col-form-label radio-label"
+                  >
                     <input
                       type="radio"
                       value={option.value}
@@ -136,7 +160,11 @@ class JiraIntegrationForm extends React.PureComponent {
         <div className="row">
           <div className="col-md-4">
             {!isAuthToken && (
-              <div className={`form-group ${(submitted && !password ? 'has-error' : '')}`}>
+              <div
+                className={`form-group ${
+                  submitted && !password ? 'has-error' : ''
+                }`}
+              >
                 <label htmlFor="password">
                   <i className="fa fa-lock" aria-hidden="true" />
                   <input
@@ -149,11 +177,17 @@ class JiraIntegrationForm extends React.PureComponent {
                     autoComplete="off"
                   />
                 </label>
-                {submitted && !password && <div className="field-error">Password is required</div>}
+                {submitted && !password && (
+                  <div className="field-error">Password is required</div>
+                )}
               </div>
             )}
             {isAuthToken && (
-              <div className={`form-group ${(submitted && !api_token ? 'has-error' : '')}`}>
+              <div
+                className={`form-group ${
+                  submitted && !api_token ? 'has-error' : ''
+                }`}
+              >
                 <label htmlFor="api_token">
                   <i className="fa fa-key" aria-hidden="true" />
                   <input
@@ -166,7 +200,9 @@ class JiraIntegrationForm extends React.PureComponent {
                     autoComplete="off"
                   />
                 </label>
-                {submitted && !api_token && <div className="field-error">API Token is required</div>}
+                {submitted && !api_token && (
+                  <div className="field-error">API Token is required</div>
+                )}
               </div>
             )}
           </div>
@@ -174,7 +210,11 @@ class JiraIntegrationForm extends React.PureComponent {
 
         <div className="row mt-4">
           <div className="col-md-4">
-            <div className={`form-group ${(submitted && !jiraProjectKey ? 'has-error' : '')}`}>
+            <div
+              className={`form-group ${
+                submitted && !jiraProjectKey ? 'has-error' : ''
+              }`}
+            >
               <label htmlFor="jiraProjectKey">
                 <i className="fa fa-folder" aria-hidden="true" />
                 <input
@@ -187,11 +227,17 @@ class JiraIntegrationForm extends React.PureComponent {
                   autoComplete="off"
                 />
               </label>
-              {submitted && !jiraProjectKey && <div className="field-error">Jira Project Key is required</div>}
+              {submitted && !jiraProjectKey && (
+                <div className="field-error">Jira Project Key is required</div>
+              )}
             </div>
           </div>
           <div className="col-md-4">
-            <div className={`form-group ${(submitted && !issueType ? 'has-error' : '')}`}>
+            <div
+              className={`form-group ${
+                submitted && !issueType ? 'has-error' : ''
+              }`}
+            >
               <label htmlFor="issueType">
                 <i className="fa fa-globe" aria-hidden="true" />
                 <input
@@ -203,11 +249,29 @@ class JiraIntegrationForm extends React.PureComponent {
                   onChange={this.handleChange}
                   autoComplete="off"
                 />
-                <span className="help-text">
-                  Case sensitive
-                </span>
+                <span className="help-text">Case sensitive</span>
               </label>
-              {submitted && !issueType && <div className="field-error">Issue Type is required</div>}
+              {submitted && !issueType && (
+                <div className="field-error">Issue Type is required</div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-4">
+            <div className="form-group">
+              <label htmlFor="jiraAssignee">
+                <i className="fa fa-user" aria-hidden="true" />
+                <input
+                  type="text"
+                  className="form-control"
+                  name="jiraAssignee"
+                  placeholder="Jira Assignee (Optional)"
+                  value={jiraAssignee}
+                  onChange={this.handleChange}
+                  autoComplete="off"
+                />
+              </label>
             </div>
           </div>
         </div>

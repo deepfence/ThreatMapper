@@ -1563,6 +1563,9 @@ def register_kubernetes():
             app.logger.error("Duplicate cloud compliance kube node {}".format(e))
             print(e)
             raise InvalidUsage("Duplicate cloud compliance kube node")
+    elif kubernetes_cluster_name != cloud_compliance_node.node_name:
+        cloud_compliance_node.node_name = kubernetes_cluster_name
+        cloud_compliance_node.save()
 
     current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id)
     if not current_pending_scans_str:

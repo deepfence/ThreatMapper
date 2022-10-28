@@ -50,7 +50,7 @@ if [[ "$MODE" == "discovery" ]]; then
   then
     export $(cat .env | sed 's/#.*//g' | xargs)
   fi
-  if [[ "$CONTAINER_RUNTIME" == "containerd" ]]; then
+  if [[ "$CONTAINER_RUNTIME" == "containerd" ]] || [[ "$CONTAINER_RUNTIME"  = "crio" ]]; then
     exec -a deepfence-discovery /home/deepfence/deepfence_exe --mode=probe --probe-only --weave=false --probe.no-controls=true --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.docker=false --probe.cri=true --probe.cri.endpoint="$CRI_ENDPOINT" --probe.insecure=true --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "http://$TOPOLOGY_IP:8004"
   else
     exec -a deepfence-discovery /home/deepfence/deepfence_exe --mode=probe --probe-only --weave=false --probe.no-controls=true --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.docker=true --probe.cri=false --probe.insecure=true --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "http://$TOPOLOGY_IP:8004"

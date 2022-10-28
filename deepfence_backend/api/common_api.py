@@ -12,7 +12,7 @@ import urllib.parse
 from utils.response import set_response
 from utils.helper import split_list_into_chunks, get_deepfence_logs, get_process_ids_for_pod, md5_hash
 from utils.esconn import ESConn, GroupByParams
-from utils.decorators import user_permission, non_read_only_user, admin_user_only
+from utils.decorators import non_read_only_user, admin_user_only
 from collections import defaultdict, Counter
 from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICES, \
     CVE_SCAN_LOGS_INDEX, SCOPE_TOPOLOGY_COUNT, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, NODE_TYPE_POD, ES_MAX_CLAUSE, \
@@ -590,7 +590,7 @@ def search_corelation():
 
 @common_api.route("/unmask-doc", methods=["POST"])
 @jwt_required()
-@user_permission(USER_ROLES.ADMIN_USER)
+@admin_user_only
 def unmask_doc():
     """
     Unmask a document. Specify type (alert or cve)
@@ -720,7 +720,7 @@ def unmask_doc():
 
 @common_api.route("/mask-doc", methods=["POST"])
 @jwt_required()
-@user_permission(USER_ROLES.ADMIN_USER)
+@admin_user_only
 def mask_doc():
     """
     Mask a document. Specify type (alert or cve)
@@ -856,7 +856,7 @@ def mask_doc():
 
 @common_api.route("/docs/delete", methods=["POST"])
 @jwt_required()
-@user_permission(USER_ROLES.ADMIN_USER)
+@admin_user_only
 def delete_resources():
     """
     Delete cve based on a query.
@@ -1193,7 +1193,7 @@ def cve_scan_detail(node_id):
 
 @common_api.route("/docs/delete_by_id", methods=["POST"])
 @jwt_required()
-@user_permission(USER_ROLES.ADMIN_USER)
+@admin_user_only
 def delete_docs_by_id():
     """
     Delete multiple documents by id

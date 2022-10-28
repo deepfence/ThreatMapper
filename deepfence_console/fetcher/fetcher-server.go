@@ -582,7 +582,7 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 		return
 	}
 
-	if handler.Filename != filepath.Clean(handler.Filename) || !strings.HasPrefix(handler.Filename, "/data") {
+	if handler.Filename != filepath.Clean(handler.Filename) {
 		http.Error(respWrite, "Invalid request", http.StatusBadRequest)
 		return
 	}
@@ -618,14 +618,19 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 		msg := "Complete"
 		if err != nil {
 			msg = "Error while extracting file: " + err.Error()
+			log.Println("updateVulnerabilityDb extractTarFile " + err.Error())
+			return
 		}
 		statusFile, statusFileErr := os.OpenFile(extractFolder+"/extract_status.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		if statusFileErr == nil {
 			_, _ = statusFile.WriteString(msg)
 			statusFile.Close()
 		}
-		vulnerabilityDbUpdater.updateVulnerabilityDbListing()
-
+		err := vulnerabilityDbUpdater.updateVulnerabilityDbListing()
+		if err != nil {
+			log.Println("updateVulnerabilityDbListing " + err.Error())
+			return
+		}
 		// call mapper api to update grype db
 		updateVulnerabilityMapperDB()
 	}()
@@ -1497,7 +1502,7 @@ func main() {
 	log.Fatal(server.ListenAndServe())
 }
 
-//convertRootESIndexToCustomerSpecificESIndex : convert root ES index to customer specific ES index
+// convertRootESIndexToCustomerSpecificESIndex : convert root ES index to customer specific ES index
 func convertRootESIndexToCustomerSpecificESIndex(rootIndex string) string {
 	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
 	if customerUniqueId != "" {

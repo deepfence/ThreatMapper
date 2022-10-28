@@ -38,7 +38,7 @@ from utils import constants
 from config.redisconfig import redis
 from utils.response import set_response
 from utils.esconn import ESConn
-from utils.decorators import user_permission, non_read_only_user
+from utils.decorators import  non_read_only_user, admin_user_only
 from flask_restful import Api
 from utils.helper import validateJiraCredentials, validate_url, \
     validate_email, redact_sensitive_info, validate_domain, validate_ip, modify_es_index
@@ -822,7 +822,7 @@ def logout():
 
 @user_api.route("/users/invite/send", methods=["POST"])
 @jwt_required()
-@user_permission(USER_ROLES.ADMIN_USER)
+@admin_user_only
 def send_invite():
     """
     Send user invitation. Only admin can send an invitation.
@@ -1621,7 +1621,7 @@ class IntegrationView(MethodView):
         except Exception:
             raise InvalidUsage("Invalid webhook url")
         if response.status_code != 200:
-            raise InvalidUsage(response.text)
+            raise InvalidUsage("Error configuring the teams integration. Please check the webhook url.")
         config = json.dumps({"webhook_url": webhook_url})
         integration = Integration.query.filter_by(integration_type=INTEGRATION_TYPE_MICROSOFT_TEAMS,
                                                   config=config).one_or_none()
@@ -1737,6 +1737,7 @@ class IntegrationView(MethodView):
         api_token = request_json.get("api_token")
         jira_project_key = request_json.get("jira_project_key")
         issue_type = request_json.get("issue_type", "Bug")
+        assignee = request_json.get("assignee", "")
 
         if not jira_site_url:
             raise InvalidUsage("jira_site_url is required")
@@ -1766,7 +1767,9 @@ class IntegrationView(MethodView):
             "api_token": api_token,
             "jira_project_key": jira_project_key,
             "issue_type": issue_type,
+            "assignee" : assignee
         })
+        
         integration = Integration.query.filter_by(integration_type=INTEGRATION_TYPE_JIRA, config=config).one_or_none()
         if not integration:
             integration = Integration(

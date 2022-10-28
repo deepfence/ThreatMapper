@@ -12,18 +12,19 @@
 }
 
 .wrapper {
-  display: flex;
+  display: grid;
+  grid-template-columns: 75% 25%;
 }
 
 .controlsWrapper {
   display: flex;
   align-items: center;
-  padding: 13px;
-  justify-self: flex-end;
-  margin-left: auto;
+  gap: 2px;
+  flex-wrap: wrap;
+  position: relative;
+  justify-content: flex-end;
 
   :global(button) {
-    margin-left: 6px;
     border: none;
     border-radius: 4px;
     background-color: #2e2e2e;
@@ -37,17 +38,19 @@
 }
 .closeButton {
   cursor: pointer;
-  padding: 4px 12px;
-  display: flex;
-  align-items: center;
-  margin-right: -24px;
+  font-size: 20px;
+  top: 0;
+  right: -30px;
+  position: absolute;
 }
 
 .contentWrapper {
   display: flex;
   flex: 1;
-  gap: 80px;
-  max-width: 75%;
+  gap: 4em;
+  @media screen and (max-width: 1024px) {
+    gap: 1.5em;
+  }
 }
 
 .alertSummaryItem {
@@ -64,7 +67,7 @@
   .alertSummaryItemContent {
     color: $text-primary;
     font-weight: bold;
-    font-size: 28px;
+    font-size: 24px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -75,7 +78,7 @@
 .actionButton {
   padding: 6px 8px !important;
   font-size: 12px;
-  min-width: 80px;
+  min-width: 0;
   height: 32px;
 }
 

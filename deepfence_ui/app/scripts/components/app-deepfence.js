@@ -33,6 +33,7 @@ import RegisterViaInviteView from './auth-module/register-via-invite-view/regist
 import changePasswordView from './settings-view/user-profile-view/change-password-view';
 import { isPasswordInvalidated, isUserSessionActive, isUserSessionActiveAsync } from '../helpers/auth-helper';
 import Loader from './loader';
+import { SingleComplianceResult } from './compliance-view/single-result';
 
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
@@ -156,6 +157,7 @@ class DeepFenceApp extends React.Component {
             <PrivateRoute path="/settings" component={SettingsView} />
             <PrivateRoute path="/change-password" component={changePasswordView} />
 
+            <PrivateRoute path="/:complianceType(compliance|cloud-compliance)?/result/:docId" component={SingleComplianceResult} />
             <PrivateRoute
               path="/compliance/summary/:nodeId/:checkType/:scanId/:scanType"
               component={ComplianceDetailsView}

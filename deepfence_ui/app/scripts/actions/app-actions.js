@@ -2201,3 +2201,23 @@ export function malwareScanMaskDocsAction(params) {
 export function malwareScanUnmaskDocsAction(params) {
   return (dispatch) => malwareScanUnmaskDocs(dispatch, params);
 }
+
+export function getSingleComplianceResultAction({ docId, complianceType }) {
+  const actionTypes = [
+    ActionTypes.GET_SINGLE_COMPLIANCE_REQUEST,
+    ActionTypes.GET_SINGLE_COMPLIANCE_SUCCESS,
+    ActionTypes.GET_SINGLE_COMPLIANCE_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, searchDocsWrapper, {
+    type: complianceType,
+    query: {
+      from: 0,
+      size: 1,
+    },
+    filters: {
+      doc_id: docId,
+    },
+    sort_by: '@timestamp',
+    sort_order: 'desc'
+  });
+}

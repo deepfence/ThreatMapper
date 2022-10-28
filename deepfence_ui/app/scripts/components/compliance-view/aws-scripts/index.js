@@ -99,9 +99,7 @@ export const AwsTerraFormScript = withRouter(props => {
               {regionValue && (
                 <div style={{ marginBottom: '20px' }}>
                   <a
-                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review
-   ?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template
-   &stackName=Deepfence-Cloud-Scanner`}
+                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner`}
                     disabled={regionValue === undefined}
                     target="_blank"
                     rel="noreferrer"

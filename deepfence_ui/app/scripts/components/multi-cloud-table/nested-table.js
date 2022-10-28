@@ -75,8 +75,11 @@ const RecursiveTable = ({
       getTrProps={(state, rowInfo) => (
         {
           onClick: (e) => {
-            // check if clicked item is table data using it's class name
-            if (e.target.className === 'rt-td') {
+            // show sidebar panel when click on row item except checkbox or expand button click
+            if (
+              !e.target.className.includes('rt-expander') &&
+              !e.target.className.includes('action-checkbox')
+            ) {
               dispatch(showTopologyPanel(true));
             }
             return onNodeClicked({ id: rowInfo.original.id, label: rowInfo.original.label });

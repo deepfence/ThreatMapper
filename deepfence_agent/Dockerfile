@@ -13,7 +13,7 @@ ENV CHECKPOINT_DISABLE=true \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
-    PACKAGE_SCAN_CONCURRENCY=1 
+    PACKAGE_SCAN_CONCURRENCY=1
 
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \
@@ -22,7 +22,7 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && echo 'deb https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list \
     && curl -L https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key | sudo apt-key add - \
     && apt-get update \
-    && apt-get -y install skopeo \
+    && apt-get -y install skopeo podman \
     && echo "Installing docker" \
     && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
@@ -50,12 +50,12 @@ COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-disc
 COPY tools/apache/compliance_check /usr/local/bin/compliance_check
 COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
 COPY plugins/compliance/config.json /usr/local/bin/compliance_check/config.json
-COPY plugins/docker_bin/compliance /usr/local/bin/compliance_check/compliance
+COPY plugins/bin/compliance /usr/local/bin/compliance_check/compliance
 COPY tools/apache/scope/docker/agent_check.sh /home/deepfence/
 COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
-COPY create_cgroups.sh /home/deepfence/created-cgroups.sh
-COPY plugins/docker_bin /home/deepfence/bin
+COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
+COPY plugins/bin /home/deepfence/bin
 
 
 
@@ -78,13 +78,17 @@ RUN mkdir -p /home/deepfence/bin/yara-hunter \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_services \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.7.0/vessel-v0.7.0-linux-amd64.tar.gz \
-    && tar -xzf vessel-v0.7.0-linux-amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.8.1/vessel_v0.8.1_linux_amd64.tar.gz \
+    && tar -xzf vessel_v0.8.1_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel-v0.7.0-linux-amd64.tar.gz \
+    && rm -rf vessel_v0.8.1_linux_amd64.tar.gz \
     && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v0.23.0/nerdctl-0.23.0-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-0.23.0-linux-amd64.tar.gz \
-    && rm nerdctl-0.23.0-linux-amd64.tar.gz
+    && rm nerdctl-0.23.0-linux-amd64.tar.gz \
+    && VERSION="v1.24.1" \
+    && curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz \
+    && tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin \
+    && rm -f crictl-$VERSION-linux-amd64.tar.gz
 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
 

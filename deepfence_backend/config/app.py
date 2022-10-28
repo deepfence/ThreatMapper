@@ -99,6 +99,7 @@ def register_error_handlers(app):
 
 def register_commands(app):
     app.cli.add_command(commands.initialize)
+    app.cli.add_command(commands.reset_password)
 
 
 def configure_jwt():

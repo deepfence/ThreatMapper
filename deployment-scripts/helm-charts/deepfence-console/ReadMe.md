@@ -9,7 +9,7 @@
 
 ### Setup Storage
 OpenEBS storage is needed only for locally running postgresql and elasticsearch.
-When using cloud provided PersistentVolume or cloud managed databases, no need to setup OpenEBS.
+When using cloud provided PersistentVolume or cloud managed databases, no need to set up OpenEBS.
 
 #### OpenEBS Local PV provisioner
 ```bash
@@ -34,8 +34,6 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 
 ### Install deepfence-console helm chart
 
-Docker hub credentials will be shared in email
-
 **Quick start**
 
 ```bash
@@ -57,22 +55,23 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 ```bash
 helm show values deepfence/deepfence-console > deepfence_console_values.yaml
 ```
-- Edit values file and set docker hub username and password
+- (Optional) Edit values file and set docker hub username and password (if using your own registry)
 ```yaml
 registry:
   name: "https://index.docker.io/v1/"
-  username: "<>"
-  password: "<>"
+  imagePrefix: ""
+  username: ""
+  password: ""
 ```
-- (Optional) Set image tag
+- Set image tag
 ```yaml
 image:
-  tag: latest
+  tag: 1.4.1
 ```
 - (Optional) Set custom ssl certificate.
 
 Certificates should be in the current directory and have names *.key and *.crt. 
-If not set, deepfence provided self signed certificate will be used.
+If not set, deepfence provided self-signed certificate will be used.
 ```yaml
 # Use custom ssl certificate for Deepfence UI
 # Copy *.key and *.crt file to current directory (same directory as values.yaml file)
@@ -91,11 +90,11 @@ volume:
 - (Optional) Set database
 
 Deepfence uses elasticsearch, postgres, redis, which are deployed in-cluster by default in HA mode.
-It can be easily configured to use cloud managed databases like RDS for postgres, AWS elasticsearch service for elasticsearch, AWS elasticashe for redis.
+It can be easily configured to use cloud managed databases like RDS for postgres, AWS elasticsearch service for elasticsearch.
 Set the hostnames and ports accordingly.
 ```yaml
 db:
-  #  Change following values if using externally managed database
+  #  Change following values accordingly if using externally managed database
   postgresUserDb:
     host: deepfence-postgres
     port: "5432"
@@ -104,11 +103,29 @@ db:
     dbname: "users"
     sslmode: "disable"
   elasticsearch:
+    scheme: "http"
     host: deepfence-es
     port: "9200"
+    user: ""
+    password: ""
   redis:
     host: deepfence-redis
     port: "6379"
+```
+- Set container runtime socket path
+  By default, docker is disabled and containerd is enabled
+```yaml
+# Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
+mountContainerRuntimeSocket:
+  dockerSock: false
+  # Change if socket path is not the following
+  dockerSockPath: "/var/run/docker.sock"
+  containerdSock: true
+  # Change if socket path is not the following
+  containerdSockPath: "/run/containerd/containerd.sock"
+  crioSock: false
+  # Change if socket path is not the following
+  crioSockPath: "/var/run/crio/crio.sock"
 ```
 - Install deepfence-console helm chart with values file
 ```bash

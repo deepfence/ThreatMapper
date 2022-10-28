@@ -25,6 +25,7 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
       serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: true
       volumes:
 {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
       - name: docker-sock

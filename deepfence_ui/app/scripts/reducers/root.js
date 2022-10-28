@@ -1966,6 +1966,33 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
+    case ActionTypes.GET_SINGLE_COMPLIANCE_REQUEST: {
+      const {
+        filters: { doc_id }
+      } = action.input || {};
+      state = state.setIn(['compliance_single_result', doc_id, 'loading'], true);
+      return state;
+    }
+
+    case ActionTypes.GET_SINGLE_COMPLIANCE_SUCCESS: {
+      const {
+        filters: { doc_id }
+      } = action.input || {};
+      const data = action?.payload?.data?.hits?.[0] ?? null;
+      state = state.setIn(['compliance_single_result', doc_id, 'loading'], false);
+      state = state.setIn(['compliance_single_result', doc_id, 'data'], data);
+      return state;
+    }
+
+    case ActionTypes.GET_SINGLE_COMPLIANCE_FAILURE: {
+      const {
+        filters: { doc_id }
+      } = action.input || {};
+      state = state.setIn(['compliance_single_result', doc_id, 'loading'], false);
+      state = state.setIn(['compliance_single_result', doc_id, 'data'], null);
+      return state;
+    }
+
     case ActionTypes.RESOURCES_FOR_CLOUD_SERVICE_REQUEST: {
       const {
         input: { nodeid, serviceid },

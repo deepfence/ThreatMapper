@@ -37,7 +37,8 @@ building_image(){
     build_result=$?
     if [ $build_result -ne 0 ]
     then
-        echo "Scope plugins build failed, proceeding with build nonetheless"
+        echo "Scope plugins build failed, bailing out"
+        exit 1
     fi
 
     echo "Building Fluentbit deepfence output plugin"

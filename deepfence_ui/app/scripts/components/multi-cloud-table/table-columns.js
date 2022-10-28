@@ -177,12 +177,14 @@ export const addCheckbox = (cols, selections, Cb) => {
     resizable: false,
     Cell: row => {
       const nodeType = row?.original?.node_type ?? '';
-      if (!['host', 'container', 'container_image'].includes(nodeType)) return '';
+      const isUIVM = row?.original?.is_ui_vm === 'true'
+      if (!['host', 'container', 'container_image'].includes(nodeType) || isUIVM) return '';
       return (
         <input
           type="checkbox"
           defaultChecked={selections.includes(row.original.id)}
           onChange={() => Cb(row)}
+          className='action-checkbox'
         />
       );
     }

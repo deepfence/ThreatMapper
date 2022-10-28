@@ -24,6 +24,8 @@ spec:
     spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: false
       volumes:
 {{- if .Values.saas_deployment }}
         - name: varlog
@@ -155,6 +157,9 @@ spec:
           ports:
             - name: http
               containerPort: 9998
+              protocol: TCP
+            - name: internal
+              containerPort: 9997
               protocol: TCP
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}

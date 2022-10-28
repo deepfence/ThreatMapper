@@ -8,7 +8,7 @@ On a Linux-based bare-metal or virtual machine workload, the ThreatMapper sensor
 
 ## ThreatMapper Sensor Agents
 
-Install a docker runtime on the Linux host. Refer to the [Prerequisites for the Sensor Agents](/threatmapper/architecture#threatmapper-sensor-containers) for minimum supported platforms.
+Install a docker runtime on the Linux host. Refer to the [Prerequisites for the Sensor Agents](/docs/threatmapper/architecture#threatmapper-sensor-containers) for minimum supported platforms.
 
 Run the following command to start the Sensor Agent on the host. You can find the Deepfence API key under
  `Setting>User Management>API Key`.
@@ -33,7 +33,7 @@ You should seek to ensure that the version number of the sensors matches the ver
 To start a named [tagged release](https://github.com/deepfence/ThreatMapper/releases) of the ThreatMapper sensor, tag the container appropriately:
 
 ```bash
-# Install tagged release 1.4.0
+# Install tagged release 1.4.1
 docker run -dit --cpus=".2" --name=deepfence-agent \
   --restart on-failure --pid=host --net=host --privileged=true \
   -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced \
@@ -41,7 +41,7 @@ docker run -dit --cpus=".2" --name=deepfence-agent \
   -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" \
   -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
   -e USER_DEFINED_TAGS="" \
-  deepfenceio/deepfence_agent_ce:1.4.0
+  deepfenceio/deepfence_agent_ce:1.4.1
 ```
 
 

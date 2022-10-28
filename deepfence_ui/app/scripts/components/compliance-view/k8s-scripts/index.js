@@ -8,6 +8,7 @@ import ComplianceTable from '../compliance-table';
 
 export const K8sTerraFormScript = withRouter(() => {
   const [collapsed, setCollapsed] = useState(true);
+  const docsLink = 'https://community.deepfence.io/docs/threatmapper/kubernetes-scanner/';
 
   return (
     <div
@@ -42,8 +43,11 @@ export const K8sTerraFormScript = withRouter(() => {
         >
           <div style={{ paddingTop: '17px' }}>
             <p>
-              Please install the deepfence sensor demonset to your Kubernetes
-              cluster to check for compliance misconfigurations
+              Please install the deepfence-k8s-scanner helm chart to your Kubernetes cluster to check for compliance misconfigurations
+              <br/>
+              <a target="_blank" rel="noreferrer" href={docsLink}>
+                {docsLink}
+              </a>
             </p>
           </div>
         </div>

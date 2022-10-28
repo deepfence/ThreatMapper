@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { useUpdateEffect } from 'react-use';
 import {
@@ -10,6 +10,7 @@ import pollable from '../common/header-view/pollable';
 import SecretScanImageReportDetails from './secret-scan-image-report-details';
 import NodesFilter from '../../charts/nodes-filter';
 import { DfTableV2 } from '../common/df-table-v2';
+import { resetTablePageIndexSelector } from '../../selectors/node-filters';
 
 const SecretScanImageReport = props => {
   const {
@@ -23,6 +24,7 @@ const SecretScanImageReport = props => {
   const [redirect, setRedirect] = useState(false);
   const [link, setLink] = useState('');
   const [rowCountValue, setRowCountValue] = useState(10);
+  const [page, setPage] = useState(0);
 
   const columns = [
     {
@@ -64,13 +66,16 @@ const SecretScanImageReport = props => {
     },
   ];
 
+  const globals = useSelector(state =>  resetTablePageIndexSelector(state));
+
   useUpdateEffect(() => {
     updatePollParams({
       filters: filterValues,
       page: 0
     });
+    setPage(0)
     dispatch(saveImageReportTableStateAction({ pageNumber: 0 }));
-  }, [filterValues]);
+  }, [globals]);
 
   useEffect(() => {
     // pollable: register the function which needs to be polled
@@ -133,6 +138,7 @@ const SecretScanImageReport = props => {
   };
 
   const handlePageChange = pageNumber => {
+    setPage(pageNumber)
     tableChangeHandler({
       page: pageNumber,
     });
@@ -219,7 +225,7 @@ const SecretScanImageReport = props => {
         showPagination
         manual
         defaultPageSize={rowCountValue}
-        page={savedTablePageNumber}
+        page={page}
         totalRows={total}
         onPageChange={pageNumber => handlePageChange(pageNumber)}
       />

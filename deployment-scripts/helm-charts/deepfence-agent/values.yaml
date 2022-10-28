@@ -15,10 +15,10 @@ registry:
 image:
   # deepfence agent runs as a daemonset in all nodes in the cluster
   name: deepfenceio/deepfence_agent_ce
-  tag: 1.4.0
+  tag: 1.4.1
   # cluster agent runs as a single pod
   clusterAgentImageName: deepfenceio/deepfence_discovery_ce
-  clusterAgentImageTag: 1.4.0
+  clusterAgentImageTag: 1.4.1
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
@@ -54,6 +54,9 @@ mountContainerRuntimeSocket:
   containerdSock: true
   # Change if socket path is not the following
   containerdSockPath: "/run/containerd/containerd.sock"
+  crioSock: false
+  # Change if socket path is not the following
+  crioSockPath: "/var/run/crio/crio.sock"
 
 resources:
   requests:

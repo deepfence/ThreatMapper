@@ -27,7 +27,7 @@ helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmap
 ```bash
 helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml
 ```
-- Edit values file and set docker hub username and password
+- (Optional) Edit values file and set docker hub username and password (if using your own registry)
 ```yaml
 registry:
   name: "https://index.docker.io/v1/"
@@ -38,15 +38,15 @@ registry:
 ```yaml
 managementConsoleUrl: ""
 ```
-- (Optional) Set image tag
+- Set image tag
 ```yaml
 image:
   # deepfence agent runs as a daemonset in all nodes in the cluster
   name: deepfenceio/deepfence_agent_ce
-  tag: latest
+  tag: 1.4.1
   # cluster agent runs as a single pod
   clusterAgentImageName: deepfenceio/deepfence_discovery_ce
-  clusterAgentImageTag: latest
+  clusterAgentImageTag: 1.4.1
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 ```
@@ -62,12 +62,27 @@ Custom Amazon Machine Images might have same hostnames for multiple instances. T
 # Suffix cloud instance id to hostnames
 instanceIdSuffix: "N"
 ```
-- (Optional) Set kubernetes cluster name
+- Set kubernetes cluster name
 ```yaml
 # Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
 clusterName: ""
+```
+- Set container runtime socket path
+  By default, docker is disabled and containerd is enabled
+```yaml
+# Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.
+mountContainerRuntimeSocket:
+  dockerSock: false
+  # Change if socket path is not the following
+  dockerSockPath: "/var/run/docker.sock"
+  containerdSock: true
+  # Change if socket path is not the following
+  containerdSockPath: "/run/containerd/containerd.sock"
+  crioSock: false
+  # Change if socket path is not the following
+  crioSockPath: "/var/run/crio/crio.sock"
 ```
 - Install deepfence-agent helm chart with values file
 ```bash

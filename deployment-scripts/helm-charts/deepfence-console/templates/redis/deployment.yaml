@@ -38,6 +38,8 @@ spec:
 {{ end }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: false
       containers:
         - name: deepfence-redis
           image: "{{ .Values.registry.imagePrefix }}{{ .Values.redis.image.repository }}:{{ .Values.image.tag }}"

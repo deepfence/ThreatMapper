@@ -18,6 +18,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 docker_config_path_prefix = "/tmp/docker_config_"
 REGISTRY_TYPE_ECR = "ecr"
+REGISTRY_TYPE_ECR_PUBLIC = "ecr-public"
 REGISTRY_TYPE_DOCKER_HUB = "docker_hub"
 REGISTRY_TYPE_QUAY = "quay"
 REGISTRY_TYPE_DOCKER_PVT = "docker_private_registry"
@@ -26,6 +27,7 @@ REGISTRY_TYPE_JFROG = "jfrog_container_registry"
 REGISTRY_TYPE_GCLOUD = "google_container_registry"
 REGISTRY_TYPE_AZURE = "azure_container_registry"
 REGISTRY_TYPE_GITLAB = "gitlab"
+AWS_PUBLIC_REGISTRY_REGION = "us-east-1"
 config_json = "config.json"
 max_days = 3650
 audit_file = "/root/entrypoint.sh"
@@ -239,13 +241,14 @@ class CveScanRegistryImages:
 
 class CveScanECRImages(CveScanRegistryImages):
     def __init__(self, aws_access_key_id, aws_secret_access_key, aws_region_name, registry_id, target_account_role_arn,
-                 use_iam_role):
+                 use_iam_role, is_public):
         super().__init__()
         self.use_iam_role = str(use_iam_role).lower()
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_region_name = aws_region_name
         self.target_account_role_arn = target_account_role_arn
+        self.is_public = str(is_public).lower()
         if self.use_iam_role == "true":
             try:
                 if target_account_role_arn:
@@ -260,20 +263,36 @@ class CveScanECRImages(CveScanRegistryImages):
                         aws_secret_access_key=credentials['SecretAccessKey'],
                         aws_session_token=credentials['SessionToken']
                     )
-                    self.ecr_client = session.client(REGISTRY_TYPE_ECR, region_name=aws_region_name)
+                    if self.is_public == "true":
+                        self.ecr_client = session.client(REGISTRY_TYPE_ECR_PUBLIC,
+                                                         region_name=AWS_PUBLIC_REGISTRY_REGION)
+                    else:
+                        self.ecr_client = session.client(REGISTRY_TYPE_ECR, region_name=aws_region_name)
                 else:
                     provider = InstanceMetadataProvider(
                         iam_role_fetcher=InstanceMetadataFetcher(timeout=1, num_attempts=2))
                     creds = provider.load().get_frozen_credentials()
-                    self.ecr_client = boto3.client(
-                        REGISTRY_TYPE_ECR, region_name=aws_region_name, aws_access_key_id=creds.access_key,
-                        aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
+                    if self.is_public == "true":
+                        self.ecr_client = boto3.client(
+                            REGISTRY_TYPE_ECR_PUBLIC, region_name=AWS_PUBLIC_REGISTRY_REGION,
+                            aws_access_key_id=creds.access_key,
+                            aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
+                    else:
+                        self.ecr_client = boto3.client(
+                            REGISTRY_TYPE_ECR, region_name=aws_region_name, aws_access_key_id=creds.access_key,
+                            aws_secret_access_key=creds.secret_key, aws_session_token=creds.token)
             except:
                 raise DFError("Error: Could not assume instance role")
         else:
-            self.ecr_client = boto3.client(
-                REGISTRY_TYPE_ECR, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
-                region_name=aws_region_name)
+            if self.is_public == "true":
+                self.ecr_client = boto3.client(
+                    REGISTRY_TYPE_ECR_PUBLIC, aws_access_key_id=aws_access_key_id,
+                    aws_secret_access_key=aws_secret_access_key,
+                    region_name=AWS_PUBLIC_REGISTRY_REGION)
+            else:
+                self.ecr_client = boto3.client(
+                    REGISTRY_TYPE_ECR, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+                    region_name=aws_region_name)
         self.registry_type = REGISTRY_TYPE_ECR
         self.registry_id = registry_id if registry_id else None
         self.docker_config_path = docker_config_path_prefix + REGISTRY_TYPE_ECR
@@ -309,7 +328,8 @@ class CveScanECRImages(CveScanRegistryImages):
                         break
                 if done:
                     break
-        except:
+        except Exception as e:
+            logging.error(e)
             pass
         if not repo_list:
             return images_list
@@ -435,17 +455,19 @@ class CveScanDockerHubImages(CveScanRegistryImages):
                         filter_past_days=max_days):
         images_list = []
         try:
+            headers = {}
             resp = requests.post(self.docker_hub_url + "/users/login/",
                                  json={"username": self.docker_hub_username, "password": self.docker_hub_password})
             cookies = resp.cookies
             auth_token = resp.json().get("token", "")
             if not auth_token:
                 return images_list
+            headers["Authorization"] = "JWT " + auth_token
             image_from_date = datetime.now() - timedelta(days=filter_past_days)
             image_from_date = image_from_date.replace(hour=0, minute=0, second=0, microsecond=0)
             resp = requests.get(
                 self.docker_hub_url + "/repositories/" + self.docker_hub_namespace + "/?page_size=100",
-                cookies=cookies)
+                headers=headers, cookies=cookies)
             if resp.status_code != 200:
                 return images_list
             resp = resp.json()
@@ -455,7 +477,7 @@ class CveScanDockerHubImages(CveScanRegistryImages):
             while next_url:
                 resp = requests.get(
                     self.docker_hub_url + "/repositories/" + self.docker_hub_namespace +
-                    "/?page_size=100&page={0}".format(page_no), cookies=cookies)
+                    "/?page_size=100&page={0}".format(page_no), headers=headers, cookies=cookies)
                 if resp.status_code != 200:
                     break
                 resp = resp.json()
@@ -478,7 +500,7 @@ class CveScanDockerHubImages(CveScanRegistryImages):
                 try:
                     resp = requests.get(
                         self.docker_hub_url + "/repositories/{0}/{1}/tags?page_size=100".format(
-                            result["namespace"], result["name"]), cookies=cookies)
+                            result["namespace"], result["name"]), headers=headers, cookies=cookies)
                 except:
                     continue
                 if resp.status_code != 200:
