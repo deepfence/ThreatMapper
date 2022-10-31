@@ -2,9 +2,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Cloud Provider: aws, azure, gcp, ibm_cloud, open_stack
-# cloudProvider is required to set appropriate LoadBalancer annotations
-cloudProvider: ""
+namespace: default
+
+nameOverride: ""
+fullnameOverride: ""
 
 # Configure port for browser / agents
 managementConsolePort: "443"
@@ -15,7 +16,7 @@ service:
   # When exposing the service in an on premisses Kubernetes cluster, select NodePort as type
   # Also, possible to use Ingress as type when ingress controller is installed
   type: LoadBalancer # NodePort/Ingress
-  # Nodeport configuration. Only used when selecting NodePort in the service type
+  # NodePort configuration. Only used when the service type is NodePort
   nodePortHttps: ""
   nodePortHttp: ""
   #  Using static ip address for load balancer
@@ -24,25 +25,59 @@ service:
   # - Azure: https://docs.microsoft.com/en-us/azure/aks/static-ip
   # loadBalancerIP: "1.2.3.4"
   loadBalancerIP: ""
-  # - AWS: (v1.16+) https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.16
-  # Static ip for NLB: awsEipAllocations: "eipalloc-0123456789abcdefg,eipalloc-0123456789hijklmn"
-  awsEipAllocations: ""
-  # LoadBalancer type: external or internal
-  loadBalancerType: "external"
-  # If loadBalancerType is "external", we recommend setting loadBalancerSourceRanges to the ip address / CIDR ranges
-  # of your laptop's ip or corporate CIDR range. If this is set empty, ports 443 and 80 will be open to the public internet.
+  # If loadBalancerType is "external", we recommend setting loadBalancerSourceRanges
+  # to the ip address / CIDR ranges of your laptop's ip or corporate CIDR range. 
+  # If this is set empty, ports 443 and 80 will be open to the public internet.
   # Example: ["143.231.0.0/16","210.57.79.18/32"]
   loadBalancerSourceRanges: []
-  # ACM SSL certificate for AWS Classic LoadBalancer (This cannot be set if awsEipAllocations is set)
-  # https://aws.amazon.com/premiumsupport/knowledge-center/terminate-https-traffic-eks-acm/
-  # Example: "arn:aws:acm:{region}:{user id}:certificate/{id}"
-  awsLoadBalancerAcmArn: ""
+
   # externalIPs: When kubernetes is not cloud managed, add public ip addresses of kubernetes nodes to externalIPs
   externalIPs: []
   externalTrafficPolicy: "Cluster"
 
+  annotations: {}
+    ## aws
+    ## as default aws creates classic load balancer, to change to nlb use below annotation
+    ## https://kubernetes.io/docs/concepts/services-networking/service/#aws-nlb-support
+    # service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+
+    ## AWS: (v1.16+) https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.16
+    ## Static ip for NLB
+    ## Example: "eipalloc-0123456789abcdefg,eipalloc-0123456789hijklmn"
+    # service.beta.kubernetes.io/aws-load-balancer-eip-allocations: ""
+
+    ## ACM SSL certificate for AWS Classic LoadBalancer
+    ## This cannot be set if aws-load-balancer-eip-allocations is set
+    ## https://kubernetes.io/docs/concepts/services-networking/service/#ssl-support-on-aws
+    ## https://aws.amazon.com/premiumsupport/knowledge-center/terminate-https-traffic-eks-acm/
+    ## Example: "arn:aws:acm:{region}:{user id}:certificate/{id}"
+    # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
+    # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "https"
+    # service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+
+    ## if internal load balancer is required
+    ## set this based on cloud provider
+
+    ## aws
+    ## https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+    # service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+    ## azure
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+
+    ## gcp
+    # networking.gke.io/load-balancer-type: "Internal"
+    # cloud.google.com/load-balancer-type: "Internal"
+
+    ## ibm cloud
+    # service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type: "private"
+
+    ## openstack
+    # service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
+
+
 # User can create separate k8s service for agents if required.
-# One use case for this is to deploy external load balancer for browser access and internal load balancer for agent communication.
+# One use case for this is to deploy external load balancer for browser access for management console and internal load balancer for agent communication.
 createSeparateServiceForAgents: false
 
 agentService:
@@ -55,24 +90,76 @@ agentService:
   # - Azure: https://docs.microsoft.com/en-us/azure/aks/static-ip
   # loadBalancerIP: "1.2.3.4"
   loadBalancerIP: ""
-  # - AWS: (v1.16+) https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.16
-  # Static ip for NLB: awsEipAllocations: "eipalloc-0123456789abcdefg,eipalloc-0123456789hijklmn"
-  awsEipAllocations: ""
-  # LoadBalancer type: external or internal
-  loadBalancerType: "internal"
   # If loadBalancerType is "external", we recommend setting loadBalancerSourceRanges to the ip address / CIDR ranges
   # of your laptop's ip or corporate CIDR range. If this is set empty, ports 443 and 80 will be open to the public internet.
   # Example: ["143.231.0.0/16","210.57.79.18/32"]
   loadBalancerSourceRanges: []
-  # ACM SSL certificate for AWS Classic LoadBalancer (This cannot be set if awsEipAllocations is set)
-  # https://aws.amazon.com/premiumsupport/knowledge-center/terminate-https-traffic-eks-acm/
-  # Example: "arn:aws:acm:{region}:{user id}:certificate/{id}"
-  awsLoadBalancerAcmArn: ""
   # externalIPs: When kubernetes is not cloud managed, add public ip addresses of kubernetes nodes to externalIPs
   externalIPs: []
   externalTrafficPolicy: "Cluster"
 
-namespace: default
+  annotations: {}
+    ## aws
+    ## as default aws creates classic load balancer, to change to nlb use below annotation
+    ## https://kubernetes.io/docs/concepts/services-networking/service/#aws-nlb-support
+    # service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 
-nameOverride: ""
-fullnameOverride: ""
+    ## AWS: (v1.16+) https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.16
+    ## Static ip for NLB
+    ## Example: "eipalloc-0123456789abcdefg,eipalloc-0123456789hijklmn"
+    # service.beta.kubernetes.io/aws-load-balancer-eip-allocations: ""
+
+    ## ACM SSL certificate for AWS Classic LoadBalancer
+    ## This cannot be set if aws-load-balancer-eip-allocations is set
+    ## https://kubernetes.io/docs/concepts/services-networking/service/#ssl-support-on-aws
+    ## https://aws.amazon.com/premiumsupport/knowledge-center/terminate-https-traffic-eks-acm/
+    ## Example: "arn:aws:acm:{region}:{user id}:certificate/{id}"
+    # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ""
+    # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "https"
+    # service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+
+    ## https://kubernetes.io/docs/concepts/services-networking/service/#other-elb-annotations
+    ## if internal load balancer is required
+    ## set this based on cloud provider
+
+    ## aws
+    ## https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+    # service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+    ## azure
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+
+    ## gcp
+    # networking.gke.io/load-balancer-type: "Internal"
+    # cloud.google.com/load-balancer-type: "Internal"
+
+    ## ibm cloud
+    # service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type: "private"
+
+    ## openstack
+    # service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
+
+
+# ingress configuration for console
+ingress:
+  ## name of the ingress class for ingress provider installed on the cluster, cannot be empty
+  ## Example: nginx
+  class: ""
+  ## annotations to customize ingress
+  annotations: {}
+    ## nginx ingress annotations
+    # nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # nginx.ingress.kubernetes.io/proxy-body-size: 200m
+
+    ## aws alb annotations
+    ## aws load balancer controller needs to be installed on the cluster for these annotations to work
+    ## documentation aws load balancer controller https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.4/guide/ingress/annotations/
+    # alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    # alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    ## arn of the certificate available on aws certificate manager
+    # alb.ingress.kubernetes.io/certificate-arn: ""
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=3600
+    # alb.ingress.kubernetes.io/target-type: ip

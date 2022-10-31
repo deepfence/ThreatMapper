@@ -7,47 +7,30 @@ metadata:
     app: deepfence-router
     {{- include "deepfence-router.labels" . | nindent 4 }}
   namespace: {{ .Values.namespace }}
-  {{- if or (.Values.service.awsEipAllocations) (.Values.service.awsLoadBalancerAcmArn) (and (eq "internal" .Values.service.loadBalancerType) (.Values.cloudProvider)) }}
+  {{- with .Values.service.annotations }}
   annotations:
-    {{- if .Values.service.awsEipAllocations }}
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "{{ .Values.service.awsEipAllocations }}"
-    {{- else if .Values.service.awsLoadBalancerAcmArn }}
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "{{ .Values.service.awsLoadBalancerAcmArn }}"
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "ssl"
-    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-    {{- end }}
-    {{- if eq "internal" .Values.service.loadBalancerType }}
-    {{- if eq "aws" .Values.cloudProvider }}
-    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
-    {{- else if eq "azure" .Values.cloudProvider }}
-    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    {{- else if eq "gcp" .Values.cloudProvider }}
-    networking.gke.io/load-balancer-type: "Internal"
-    cloud.google.com/load-balancer-type: "Internal"
-    {{- else if eq "ibm_cloud" .Values.cloudProvider }}
-    service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type: "private"
-    {{- else if eq "open_stack" .Values.cloudProvider }}
-    service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
-    {{- end }}
-    {{- end }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-{{- if .Values.service.externalIPs }}
+  {{- if .Values.service.externalIPs }}
   externalIPs:
-{{ toYaml .Values.service.externalIPs | indent 4 }}
-{{- end }}
-{{- if .Values.service.loadBalancerIP }}
+  {{ toYaml .Values.service.externalIPs | indent 4 }}
+  {{- end }}
+  {{- if .Values.service.loadBalancerIP }}
   loadBalancerIP: "{{ .Values.service.loadBalancerIP }}"
-{{- end }}
-{{- if .Values.service.loadBalancerSourceRanges }}
+  {{- end }}
+  {{- if .Values.service.loadBalancerSourceRanges }}
   loadBalancerSourceRanges:
-{{ toYaml .Values.service.loadBalancerSourceRanges | indent 4 }}
-{{- end }}
+  {{ toYaml .Values.service.loadBalancerSourceRanges | indent 4 }}
+  {{- end }}
   {{- if  eq "LoadBalancer" .Values.service.type   }}
   externalTrafficPolicy: "{{ .Values.service.externalTrafficPolicy }}"
   {{- end }}
+  {{- if eq "Ingress" .Values.service.type }}
+  type: ClusterIP
+  {{- else }}
   type: {{ .Values.service.type }}
+  {{- end }}
   selector:
     name: {{ .Values.service.name }}
   ports:
@@ -77,88 +60,3 @@ spec:
       nodePort: 30008
       {{- end }}
       {{- end }}
----
-{{- if eq .Values.service.type "Ingress" }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: deepfence-router-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: 200m
-spec:
-  ingressClassName: nginx
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Values.service.name }}
-                port:
-                  number: 443
-{{- end }}
----
-{{- if .Values.createSeparateServiceForAgents }}
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Values.agentService.name }}
-  labels:
-    app: deepfence-router
-    {{- include "deepfence-router.labels" . | nindent 4 }}
-  namespace: {{ .Values.namespace }}
-  {{- if or (.Values.agentService.awsEipAllocations) (.Values.agentService.awsLoadBalancerAcmArn) (and (eq "internal" .Values.agentService.loadBalancerType) (.Values.cloudProvider)) }}
-  annotations:
-    {{- if .Values.agentService.awsEipAllocations }}
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "{{ .Values.agentService.awsEipAllocations }}"
-    {{- else if .Values.agentService.awsLoadBalancerAcmArn }}
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "{{ .Values.agentService.awsLoadBalancerAcmArn }}"
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "ssl"
-    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-    {{- end }}
-    {{- if eq "internal" .Values.agentService.loadBalancerType }}
-    {{- if eq "aws" .Values.cloudProvider }}
-    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
-    {{- else if eq "azure" .Values.cloudProvider }}
-    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    {{- else if eq "gcp" .Values.cloudProvider }}
-    networking.gke.io/load-balancer-type: "Internal"
-    cloud.google.com/load-balancer-type: "Internal"
-    {{- else if eq "ibm_cloud" .Values.cloudProvider }}
-    service.kubernetes.io/ibm-load-balancer-cloud-provider-ip-type: "private"
-    {{- else if eq "open_stack" .Values.cloudProvider }}
-    service.beta.kubernetes.io/openstack-internal-load-balancer: "true"
-    {{- end }}
-    {{- end }}
-  {{- end }}
-spec:
-{{- if .Values.agentService.externalIPs }}
-  externalIPs:
-{{ toYaml .Values.agentService.externalIPs | indent 4 }}
-{{- end }}
-{{- if .Values.agentService.loadBalancerIP }}
-  loadBalancerIP: "{{ .Values.agentService.loadBalancerIP }}"
-{{- end }}
-{{- if .Values.agentService.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges:
-{{ toYaml .Values.agentService.loadBalancerSourceRanges | indent 4 }}
-{{- end }}
-  externalTrafficPolicy: "{{ .Values.agentService.externalTrafficPolicy }}"
-  type: {{ .Values.agentService.type }}
-  selector:
-    name: {{ .Values.service.name }}
-  ports:
-    - name: https-port
-      port: {{ required "managementConsolePort is required" .Values.managementConsolePort }}
-      protocol: TCP
-      targetPort: 443
-    - name: http-port
-      port: 80
-      protocol: TCP
-      targetPort: 80
-{{- end }}
----
