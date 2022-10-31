@@ -274,6 +274,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				continue
 			}
 		}
+		//node_info["adja"] = strings.Join(n.Adjacency, ",")
 		//endpoint_batch = append(endpoint_batch, node_info)
 
 		host_name := extractHostFromHostNodeID(node_info["host_node_id"])
@@ -292,6 +293,9 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 							edges = append(edges,
 								map[string]string{"destination": host, "left_pid": node_info["pid"], "right_pid": rightpid})
 						}
+					} else {
+						edges = append(edges,
+							map[string]string{"destination": "out-the-internet", "left_pid": node_info["pid"], "right_pid": "0"})
 					}
 					//endpoint_edges = append(endpoint_edges, map[string]string{"left": node_info["node_id"], "right": i})
 				}
@@ -299,6 +303,30 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": host_name, "edges": edges})
 		}
 	}
+
+	// Handle inbound from internet
+	edges := []map[string]string{}
+	for _, n := range rpt.Endpoint.Nodes {
+		node_info := n.ToDataMap()
+		if _, ok := node_info["host_node_id"]; !ok {
+			node_ip, _ := extractIPPortFromEndpointID(node_info["node_id"])
+			if val, ok := resolvers.get_host(node_ip); ok {
+				node_info["host_node_id"] = val
+			} else {
+				// This includes skipping all endpoint having 127.0.0.1
+				continue
+			}
+		}
+		//node_info["adja"] = strings.Join(n.Adjacency, ",")
+		//endpoint_batch = append(endpoint_batch, node_info)
+
+		host_name := extractHostFromHostNodeID(node_info["host_node_id"])
+		if len(node_info["pid"]) > 0 && len(n.Adjacency) == 0 {
+			edges = append(edges,
+				map[string]string{"destination": host_name, "left_pid": "0", "right_pid": node_info["pid"]})
+		}
+	}
+	endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": "in-the-internet", "edges": edges})
 
 	process_batch := make([]map[string]string, 0, len(rpt.Process.Nodes))
 	process_edges_batch := map[string][]string{}
@@ -901,7 +929,7 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 	start = time.Now()
 
 	//if _, err = tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
-	//	return err
+		//return err
 	//}
 
 	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:TContainer{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Container_edges_batch}); err != nil {
@@ -1046,6 +1074,9 @@ func (nc *neo4jCollector) applyDBConstraints() error {
 	session.Run("CREATE CONSTRAINT ON (n:CveScan) ASSERT n.node_id IS UNIQUE", nil)
 	session.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", nil)
 	session.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", nil)
+
+	session.Run("MERGE (n:TNode{node_id:'in-the-internet'})", nil)
+	session.Run("MERGE (n:TNode{node_id:'out-the-internet'})", nil)
 
 	return nil
 }
