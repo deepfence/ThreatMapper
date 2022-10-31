@@ -405,7 +405,7 @@ func (nc *neo4jCollector) Close() {
 
 func (nc *neo4jCollector) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
 
-	r, err := tx.Run("MATCH (n:TNode) -[r:CONNECTS]-> (m:TNode) return n.cloud_provider, n.cloud_region, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid", nil)
+	r, err := tx.Run("MATCH (n:Node) -[r:CONNECTS]-> (m:Node) return n.cloud_provider, n.cloud_region, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid", nil)
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -447,7 +447,7 @@ func (nc *neo4jCollector) GetConnections(tx neo4j.Transaction) ([]ConnectionSumm
 
 func (nc *neo4jCollector) getCloudProviders(tx neo4j.Transaction) ([]string, error) {
 	res := []string{}
-	r, err := tx.Run("MATCH (n:TNode) return n.cloud_provider", nil)
+	r, err := tx.Run("MATCH (n:Node) return n.cloud_provider", nil)
 
 	if err != nil {
 		return res, err
@@ -467,7 +467,7 @@ func (nc *neo4jCollector) getCloudProviders(tx neo4j.Transaction) ([]string, err
 
 func (nc *neo4jCollector) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[string][]string, error) {
 	res := map[string][]string{}
-	r, err := tx.Run("MATCH (n:TNode) WHERE n.cloud_provider IN $providers RETURN n.cloud_provider, n.cloud_region", map[string]interface{}{"providers": cloud_provider})
+	r, err := tx.Run("MATCH (n:Node) WHERE n.cloud_provider IN $providers RETURN n.cloud_provider, n.cloud_region", map[string]interface{}{"providers": cloud_provider})
 
 	if err != nil {
 		return res, err
@@ -493,7 +493,7 @@ func (nc *neo4jCollector) getCloudRegions(tx neo4j.Transaction, cloud_provider [
 func (nc *neo4jCollector) getHosts(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string) (map[string]map[string][]string, error) {
 	res := map[string]map[string][]string{}
 
-	r, err := tx.Run("MATCH (n:TNode) WHERE n.cloud_provider IN $providers AND n.cloud_region IN $regions return n.cloud_provider, n.cloud_region, n.node_id", map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions})
+	r, err := tx.Run("MATCH (n:Node) WHERE n.cloud_provider IN $providers AND n.cloud_region IN $regions return n.cloud_provider, n.cloud_region, n.node_id", map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions})
 	if err != nil {
 		return res, err
 	}
@@ -524,7 +524,7 @@ func (nc *neo4jCollector) getHosts(tx neo4j.Transaction, cloud_provider []string
 func (nc *neo4jCollector) getProcesses(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
 	res := map[string][]string{}
 
-	r, err := tx.Run("MATCH (n:TNode) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:TProcess) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
+	r, err := tx.Run("MATCH (n:Node) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:Process) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
 	if err != nil {
 		return res, err
 	}
@@ -549,7 +549,7 @@ func (nc *neo4jCollector) getProcesses(tx neo4j.Transaction, hosts []string) (ma
 func (nc *neo4jCollector) getPods(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
 	res := map[string][]string{}
 
-	r, err := tx.Run("MATCH (n:TNode) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:TPod) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
+	r, err := tx.Run("MATCH (n:Node) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:Pod) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
 	if err != nil {
 		return res, err
 	}
@@ -574,7 +574,7 @@ func (nc *neo4jCollector) getPods(tx neo4j.Transaction, hosts []string) (map[str
 func (nc *neo4jCollector) getContainers(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
 	res := map[string][]string{}
 
-	r, err := tx.Run("MATCH (n:TNode) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:TContainer) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
+	r, err := tx.Run("MATCH (n:Node) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:Container) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
 	if err != nil {
 		return res, err
 	}
@@ -598,7 +598,7 @@ func (nc *neo4jCollector) getContainers(tx neo4j.Transaction, hosts []string) (m
 
 func addHostToTopology(tx neo4j.Transaction, host_topology report.Topology, cloud_provider report.Topology, cloud_region report.Topology) error {
 
-	r, err := tx.Run("MATCH (n:TNode) return n", nil)
+	r, err := tx.Run("MATCH (n:Node) return n", nil)
 	if err != nil {
 		return err
 	}
@@ -642,7 +642,7 @@ func addHostToTopology(tx neo4j.Transaction, host_topology report.Topology, clou
 }
 
 func addContainersToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:TContainer) return n", nil)
+	r, err := tx.Run("MATCH (n:Container) return n", nil)
 	if err != nil {
 		return err
 	}
@@ -668,7 +668,7 @@ func addContainersToTopology(tx neo4j.Transaction, topology report.Topology) err
 }
 
 func addPodsToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:TPod) return n", nil)
+	r, err := tx.Run("MATCH (n:Pod) return n", nil)
 	if err != nil {
 		return err
 	}
@@ -694,7 +694,7 @@ func addPodsToTopology(tx neo4j.Transaction, topology report.Topology) error {
 }
 
 func addProcessesToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:TProcess) return n", nil)
+	r, err := tx.Run("MATCH (n:Process) return n", nil)
 	if err != nil {
 		return err
 	}
@@ -875,19 +875,19 @@ func (nc *neo4jCollector) CleanUpDB() error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("match (n:TNode) WHERE n.updated_at < TIMESTAMP()-$time_ms match (n) -[:HOSTS]->(m) detach delete n detach delete m", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run("match (n:Node) WHERE n.updated_at < TIMESTAMP()-$time_ms match (n) -[:HOSTS]->(m) detach delete n detach delete m", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("match (n:TContainer) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run("match (n:Container) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("match (n:TPod) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run("match (n:Pod) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("match (n:TProcess) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run("match (n:Process) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
 		return err
 	}
 
@@ -909,19 +909,19 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 
 	start := time.Now()
 
-	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TNode{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Host_batch}); err != nil {
+	if _, err := tx.Run("UNWIND $batch as row MERGE (n:Node{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Host_batch}); err != nil {
 		return err
 	}
 
-	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TContainer{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Container_batch}); err != nil {
+	if _, err := tx.Run("UNWIND $batch as row MERGE (n:Container{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Container_batch}); err != nil {
 		return err
 	}
 
-	if _, err := tx.Run("UNWIND $batch as row MERGE (n:TPod{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
+	if _, err := tx.Run("UNWIND $batch as row MERGE (n:Pod{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:TProcess{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Process_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Process{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Process_batch}); err != nil {
 		return err
 	}
 
@@ -929,29 +929,29 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 	start = time.Now()
 
 	//if _, err = tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
-		//return err
+	//return err
 	//}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:TContainer{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Container_edges_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:Container{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Container_edges_batch}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:TPod{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:Pod{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:TProcess{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Process_edges_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:Process{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Process_edges_batch}); err != nil {
 		return err
 	}
 
 	logrus.Debugf("Upserting DB edges add took: %v", time.Since(start))
 	start = time.Now()
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.node_id}) -[r:CONNECTS]-> (:TNode) detach delete r", map[string]interface{}{"batch": batches.Hosts}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.node_id}) -[r:CONNECTS]-> (:Node) detach delete r", map[string]interface{}{"batch": batches.Hosts}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MATCH (n:TNode{node_id: row.source}) WITH n, row UNWIND row.edges as row2  MATCH (m:TNode{node_id: row2.destination}) MERGE (n)-[:CONNECTS {left_pid: row2.left_pid, right_pid: row2.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.source}) WITH n, row UNWIND row.edges as row2  MATCH (m:Node{node_id: row2.destination}) MERGE (n)-[:CONNECTS {left_pid: row2.left_pid, right_pid: row2.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
 
@@ -1063,10 +1063,10 @@ func (nc *neo4jCollector) applyDBConstraints() error {
 		return err
 	}
 
-	session.Run("CREATE CONSTRAINT ON (n:TNode) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:TContainer) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:TPod) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:TProcess) ASSERT n.node_id IS UNIQUE", nil)
+	session.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", nil)
+	session.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", nil)
+	session.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", nil)
+	session.Run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE", nil)
 	session.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", nil)
 	session.Run("CREATE CONSTRAINT ON (n:SecretScan) ASSERT n.node_id IS UNIQUE", nil)
 	session.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", nil)
@@ -1075,8 +1075,8 @@ func (nc *neo4jCollector) applyDBConstraints() error {
 	session.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", nil)
 	session.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", nil)
 
-	session.Run("MERGE (n:TNode{node_id:'in-the-internet'})", nil)
-	session.Run("MERGE (n:TNode{node_id:'out-the-internet'})", nil)
+	session.Run("MERGE (n:Node{node_id:'in-the-internet'})", nil)
+	session.Run("MERGE (n:Node{node_id:'out-the-internet'})", nil)
 
 	return nil
 }
