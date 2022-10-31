@@ -3,4 +3,4 @@ appVersion: 1.4.1
 description: Deepfence Router - Helm chart for Kubernetes
 name: deepfence-router
 type: application
-version: 1.4.5
+version: 1.4.7
