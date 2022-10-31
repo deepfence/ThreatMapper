@@ -447,7 +447,7 @@ func (nc *neo4jCollector) GetConnections(tx neo4j.Transaction) ([]ConnectionSumm
 
 func (nc *neo4jCollector) getCloudProviders(tx neo4j.Transaction) ([]string, error) {
 	res := []string{}
-	r, err := tx.Run("MATCH (n:Node) return n.cloud_provider", nil)
+	r, err := tx.Run("MATCH (n:Node) where n.cloud_provider <> 'internet' return n.cloud_provider", nil)
 
 	if err != nil {
 		return res, err
@@ -951,6 +951,10 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 		return err
 	}
 
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: 'in-the-internet'}) -[r:CONNECTS]-> (n:Node{node_id: row.node_id}) detach delete r", map[string]interface{}{"batch": batches.Hosts}); err != nil {
+		return err
+	}
+
 	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.source}) WITH n, row UNWIND row.edges as row2  MATCH (m:Node{node_id: row2.destination}) MERGE (n)-[:CONNECTS {left_pid: row2.left_pid, right_pid: row2.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
@@ -1062,23 +1066,29 @@ func (nc *neo4jCollector) applyDBConstraints() error {
 	if err != nil {
 		return err
 	}
+	defer session.Close()
 
-	session.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:SecretScan) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:Cve) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:CveScan) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", nil)
-	session.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", nil)
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
 
-	session.Run("MERGE (n:Node{node_id:'in-the-internet'})", nil)
-	session.Run("MERGE (n:Node{node_id:'out-the-internet'})", nil)
+	tx.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:SecretScan) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:Cve) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:CveScan) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("MERGE (n:Node{node_id:'in-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
+	tx.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 
-	return nil
+	return tx.Commit()
 }
 
 func NewNeo4jCollector(_ time.Duration) (Collector, error) {
@@ -1099,7 +1109,10 @@ func NewNeo4jCollector(_ time.Duration) (Collector, error) {
 		preparers_input:  make(chan *report.Report, ingester_size),
 	}
 
-	nc.applyDBConstraints()
+	err = nc.applyDBConstraints()
+	if err != nil {
+		logrus.Errorf("Neo4j prep err: %v", err)
+	}
 
 	for i := 0; i < workers_num; i++ {
 		go nc.runResolver()

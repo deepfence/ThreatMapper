@@ -147,63 +147,74 @@ class Neo4jGraph:
 
     def compute_threat_graph(self, cloud_providers):
 
-        # Remove all self connected relationship
-        self.db.run("""
-        MATCH (n:Node) -[r:CONNECTED]->(n)
-        DELETE r
-        """)
+        ## Remove all self connected relationship
+        #self.db.run("""
+        #MATCH (n:Node) -[r:CONNECTED]->(n)
+        #DELETE r
+        #""")
 
-        # Compute num of Cve for each Node
-        self.db.run("""
-        MATCH (m)--> (s:CveScan)
-        WITH max(s.time_stamp) as most_recent, m
-        MATCH (m)-->(s:CveScan {time_stamp: most_recent})-->(c:Cve)
-        WITH m, count(distinct c) as num_cve
-        SET m.num_cve = num_cve
-        """)
+        ## Compute num of Cve for each Node
+        #self.db.run("""
+        #MATCH (m)--> (s:CveScan)
+        #WITH max(s.time_stamp) as most_recent, m
+        #MATCH (m)-->(s:CveScan {time_stamp: most_recent})-->(c:Cve)
+        #WITH m, count(distinct c) as num_cve
+        #SET m.num_cve = num_cve
+        #""")
 
-        # Compute num of Secret for each Node
-        self.db.run("""
-        MATCH (m)--> (s:SecretScan)
-        WITH max(s.time_stamp) as most_recent, m
-        MATCH (m)-->(s:SecretScan {time_stamp: most_recent})-->(c:Secret)
-        WITH m, count(distinct c) as num_secrets
-        SET m.num_secrets = num_secrets
-        """)
+        ## Compute num of Secret for each Node
+        #self.db.run("""
+        #MATCH (m)--> (s:SecretScan)
+        #WITH max(s.time_stamp) as most_recent, m
+        #MATCH (m)-->(s:SecretScan {time_stamp: most_recent})-->(c:Secret)
+        #WITH m, count(distinct c) as num_secrets
+        #SET m.num_secrets = num_secrets
+        #""")
 
-        # Compute num of Compliance for each Node
-        self.db.run("""
-        MATCH (m)--> (s:ComplianceScan)
-        WITH max(s.time_stamp) as most_recent, m
-        MATCH (m)-->(s:ComplianceScan {time_stamp: most_recent})-->(c:Compliance)
-        WITH m, count(distinct c) as num_compliance
-        SET m.num_compliance = num_compliance
-        """)
+        ## Compute num of Compliance for each Node
+        #self.db.run("""
+        #MATCH (m)--> (s:ComplianceScan)
+        #WITH max(s.time_stamp) as most_recent, m
+        #MATCH (m)-->(s:ComplianceScan {time_stamp: most_recent})-->(c:Compliance)
+        #WITH m, count(distinct c) as num_compliance
+        #SET m.num_compliance = num_compliance
+        #""")
 
-        # Prepare sums
-        self.db.run("""
-        MATCH (n:Node)
-        SET n.sum_cve = COALESCE(n.num_cve, 0), n.sum_secrets =
-                    COALESCE(n.num_secrets, 0), n.sum_compliance =
-                    COALESCE(n.num_compliance, 0);""")
+        ## Prepare sums
+        #self.db.run("""
+        #MATCH (n:Node)
+        #SET n.sum_cve = COALESCE(n.num_cve, 0), n.sum_secrets =
+        #            COALESCE(n.num_secrets, 0), n.sum_compliance =
+        #            COALESCE(n.num_compliance, 0);""")
 
-        # Add sums
-        self.db.run("""
-        MATCH (n:Node) -[:CONNECTED]->(m:Node)
-        SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0),
-        n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0),
-        n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0);""")
+        ## Add sums
+        #self.db.run("""
+        #MATCH (n:Node) -[:CONNECTED]->(m:Node)
+        #SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0),
+        #n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0),
+        #n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0);""")
 
         all = {}
         for cloud_provider in cloud_providers:
-            res = self.db.run("""
-            CALL apoc.nodes.group(['Root', 'Node'], ['node_type', 'depth',
-            'cloud_provider'], [{`*`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum',
-            node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect'},{`*`: 'count'}], {selfRels: false})
-            YIELD node, relationships
-            WHERE apoc.any.property(node, 'cloud_provider') = '"""+cloud_provider+"""'
-            AND apoc.any.property(node, 'depth') IS NOT NULL
-            RETURN node, relationships""")
+            if cloud_provider == 'others':
+                res = self.db.run("""
+                CALL apoc.nodes.group(['Node'], ['node_type', 'depth',
+                'cloud_provider'], [{`*`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum',
+                node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect'},{`*`: 'count'}], {selfRels: false})
+                YIELD node, relationships
+                WHERE apoc.any.property(node, 'depth') IS NOT NULL
+                AND NOT apoc.any.property(node, 'cloud_provider') IN ['aws', 'gcp', 'azure']
+                AND apoc.any.property(node, 'cloud_provider') <> 'internet'
+                RETURN node, relationships""")
+            else:
+                res = self.db.run("""
+                CALL apoc.nodes.group(['Node'], ['node_type', 'depth',
+                'cloud_provider'], [{`*`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum',
+                node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect'},{`*`: 'count'}], {selfRels: false})
+                YIELD node, relationships
+                WHERE apoc.any.property(node, 'depth') IS NOT NULL
+                AND apoc.any.property(node, 'cloud_provider') = '"""+cloud_provider+"""'
+                RETURN node, relationships""")
 
             tab = res.to_table()
             nodes_tree = {}

@@ -1490,6 +1490,21 @@ func main() {
 	vulnerabilityDbUpdater = NewVulnerabilityDbUpdater()
 	go vulnerabilityDbUpdater.updateVulnerabilityDb()
 
+	client := topology.NewTopologyClient()
+	if client == nil {
+		fmt.Printf("Error creating neo4j client")
+	}
+
+	go func() {
+		for {
+			select {
+			case <-time.After(30 * time.Second):
+				err := client.ComputeThreatGraph()
+				fmt.Printf("Threat graph generated %v\n", err)
+			}
+		}
+	}()
+
 	httpMux := http.NewServeMux()
 	httpMux.HandleFunc("/df-api/uploadMultiPart", handleMultiPartPostMethod)
 	httpMux.HandleFunc("/df-api/deleteDumps", handleDeleteDumpsMethod)

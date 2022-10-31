@@ -310,8 +310,36 @@ func graphToSummaries(graph RenderedGraph, region_filter []string, host_filter [
 			target = right_splits[1] + ";<cloud_region>"
 		}
 
+		if source == "internet;<cloud_region>" {
+			source = "in-the-internet"
+		}
+		if target == "internet;<cloud_region>" {
+			target = "out-the-internet"
+		}
 		fmt.Printf("%v -> %v\n", source, target)
 		edges[source+target] = detailed.ConnectionSummary{Source: source, Target: target}
+	}
+
+	nodes["in-the-internet"] = detailed.NodeSummary{
+		ImmediateParentID: "",
+		BasicNodeSummary: detailed.BasicNodeSummary{
+			ID:     "in-the-internet",
+			Rank:   "in-theinternet",
+			Label:  "The Internet",
+			Shape:  "cloud",
+			Pseudo: true,
+		},
+	}
+
+	nodes["out-the-internet"] = detailed.NodeSummary{
+		ImmediateParentID: "",
+		BasicNodeSummary: detailed.BasicNodeSummary{
+			ID:     "out-the-internet",
+			Rank:   "out-theinternet",
+			Label:  "The Internet",
+			Shape:  "cloud",
+			Pseudo: true,
+		},
 	}
 
 	for _, cp := range graph.Providers {
@@ -382,7 +410,7 @@ func graphToSummaries(graph RenderedGraph, region_filter []string, host_filter [
 						Shape: report.Host,
 					},
 					Metrics: []report.MetricRow{
-						{ID: hst.CPUUsage, Metric: &report.Metric{},  Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
+						{ID: hst.CPUUsage, Metric: &report.Metric{}, Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
 						{ID: hst.MemoryUsage, Metric: &report.Metric{}, Label: "Memory", Value: 0.0, Format: report.FilesizeFormat, Priority: 2},
 						{ID: hst.Load1, Metric: &report.Metric{}, Label: "Load (1m)", Value: 0.0, Format: report.DefaultFormat, Group: "load", Priority: 11},
 					},
