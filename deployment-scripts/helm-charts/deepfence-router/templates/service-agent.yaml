@@ -1,0 +1,40 @@
+---
+{{- if .Values.createSeparateServiceForAgents }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.agentService.name }}
+  labels:
+    app: deepfence-router
+    {{- include "deepfence-router.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.agentService.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.agentService.externalIPs }}
+  externalIPs:
+  {{ toYaml .Values.agentService.externalIPs | indent 4 }}
+  {{- end }}
+  {{- if .Values.agentService.loadBalancerIP }}
+  loadBalancerIP: "{{ .Values.agentService.loadBalancerIP }}"
+  {{- end }}
+  {{- if .Values.agentService.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+  {{ toYaml .Values.agentService.loadBalancerSourceRanges | indent 4 }}
+  {{- end }}
+  externalTrafficPolicy: "{{ .Values.agentService.externalTrafficPolicy }}"
+  type: {{ .Values.agentService.type }}
+  selector:
+    name: {{ .Values.service.name }}
+  ports:
+    - name: https-port
+      port: {{ required "managementConsolePort is required" .Values.managementConsolePort }}
+      protocol: TCP
+      targetPort: 443
+    - name: http-port
+      port: 80
+      protocol: TCP
+      targetPort: 80
+{{- end }}
