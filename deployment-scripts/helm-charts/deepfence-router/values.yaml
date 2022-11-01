@@ -2,8 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace: default
-
 nameOverride: ""
 fullnameOverride: ""
 
@@ -15,7 +13,7 @@ service:
   # Select the type of service to be used. 
   # When exposing the service in an on premisses Kubernetes cluster, select NodePort as type
   # Also, possible to use Ingress as type when ingress controller is installed
-  type: LoadBalancer # NodePort/Ingress
+  type: LoadBalancer # LoadBalancer/NodePort/Ingress/ClusterIP
   # NodePort configuration. Only used when the service type is NodePort
   nodePortHttps: ""
   nodePortHttp: ""
@@ -35,14 +33,14 @@ service:
   externalIPs: []
   externalTrafficPolicy: "Cluster"
 
-  annotations: {}
+  annotations:
     ## aws
     ## as default aws creates classic load balancer, to change to nlb use below annotation
     ## https://kubernetes.io/docs/concepts/services-networking/service/#aws-nlb-support
-    # service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 
-    ## AWS: (v1.16+) https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.16
     ## Static ip for NLB
+    ## https://docs.aws.amazon.com/eks/latest/userguide/network-load-balancing.html
     ## Example: "eipalloc-0123456789abcdefg,eipalloc-0123456789hijklmn"
     # service.beta.kubernetes.io/aws-load-balancer-eip-allocations: ""
 
@@ -81,9 +79,9 @@ service:
 createSeparateServiceForAgents: false
 
 agentService:
-  # Configuration for ports 8000 to 8010, accessed from agents
+  # Configuration service accessed by agents
   name: deepfence-agent-router
-  type: LoadBalancer
+  type: LoadBalancer # LoadBalancer/NodePort/Ingress/ClusterIP
   #  Using static ip address for load balancer
   # - Google Cloud: https://cloud.google.com/kubernetes-engine/docs/tutorials/configuring-domain-name-static-ip
   # loadBalancerIP: "1.2.3.4"
@@ -98,14 +96,14 @@ agentService:
   externalIPs: []
   externalTrafficPolicy: "Cluster"
 
-  annotations: {}
+  annotations:
     ## aws
     ## as default aws creates classic load balancer, to change to nlb use below annotation
     ## https://kubernetes.io/docs/concepts/services-networking/service/#aws-nlb-support
-    # service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 
-    ## AWS: (v1.16+) https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-1.16
     ## Static ip for NLB
+    ## https://docs.aws.amazon.com/eks/latest/userguide/network-load-balancing.html
     ## Example: "eipalloc-0123456789abcdefg,eipalloc-0123456789hijklmn"
     # service.beta.kubernetes.io/aws-load-balancer-eip-allocations: ""
 
@@ -144,13 +142,15 @@ agentService:
 ingress:
   ## name of the ingress class for ingress provider installed on the cluster, cannot be empty
   ## Example: nginx
-  class: ""
+  class: nginx
+  ## host example: threat.example.com
+  host: ""
   ## annotations to customize ingress
-  annotations: {}
+  annotations:
     ## nginx ingress annotations
-    # nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    # nginx.ingress.kubernetes.io/proxy-body-size: 200m
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 200m
 
     ## aws alb annotations
     ## aws load balancer controller needs to be installed on the cluster for these annotations to work

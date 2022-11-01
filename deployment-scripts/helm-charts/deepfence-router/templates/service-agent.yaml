@@ -7,7 +7,7 @@ metadata:
   labels:
     app: deepfence-router
     {{- include "deepfence-router.labels" . | nindent 4 }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   {{- with .Values.agentService.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
