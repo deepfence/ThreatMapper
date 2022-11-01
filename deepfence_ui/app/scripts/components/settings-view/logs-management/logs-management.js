@@ -28,6 +28,14 @@ const resourceCollection = [
     name: 'Secrets',
     value: 'secret-scan',
   },
+  {
+    name: 'Malwares',
+    value: 'malware-scan',
+  },
+  {
+    name: 'Compliances',
+    value: 'compliance-scan',
+  },
 ];
 
 const durationOption = [
