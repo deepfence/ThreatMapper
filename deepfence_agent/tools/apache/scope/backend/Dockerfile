@@ -1,6 +1,4 @@
-FROM golang:1.16.2
-RUN wget https://go.dev/dl/go1.19.2.linux-amd64.tar.gz
-RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.19.2.linux-amd64.tar.gz
+FROM golang:1.19.2-buster
 ENV SCOPE_SKIP_UI_ASSETS true
 RUN set -eux; \
    export arch_val="$(dpkg --print-architecture)"; \
