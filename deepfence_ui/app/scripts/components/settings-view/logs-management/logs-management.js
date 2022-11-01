@@ -29,10 +29,6 @@ const resourceCollection = [
     value: 'secret-scan',
   },
   {
-    name: 'Malwares',
-    value: 'malware-scan',
-  },
-  {
     name: 'Compliances',
     value: 'compliance-scan',
   },
