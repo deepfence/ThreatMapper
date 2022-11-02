@@ -35,6 +35,6 @@ type ConnIter interface {
 // If processes is true it'll additionally try to lookup the process owning the
 // connection, filling in the Proc field. You will need to run this as root to
 // find all processes.
-func Connections(processes bool, tcpStatesSlice []uint) (ConnIter, error) {
-	return cbConnections(processes, tcpStates)
+func Connections(processes bool, tcpStatesSlice []uint, localIpList []string) (ConnIter, error) {
+	return cbConnections(processes, tcpStatesSlice, localIpList)
 }

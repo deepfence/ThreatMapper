@@ -46,8 +46,9 @@ TCPF_LISTEN	     = 10,
 TCPF_CLOSING	 = 11,
 TCPF_NEW_SYN_RECV = 12,
 */
+
 // cbConnections sets Connections()
-var cbConnections = func(processes bool, tcpStates []uint, localIpList []string) (ConnIter, error) {
+var cbConnections = func(processes bool, tcpStates []uint, localIps []string) (ConnIter, error) {
 	// buffer for contents of /proc/<pid>/net/tcp
 	buf := bufPool.Get().(*bytes.Buffer)
 	buf.Reset()
@@ -66,7 +67,7 @@ var cbConnections = func(processes bool, tcpStates []uint, localIpList []string)
 	}
 
 	return &pnConnIter{
-		pn:    NewProcNet(buf.Bytes(), tcpStates),
+		pn:    NewProcNet(buf.Bytes(), tcpStates, localIps),
 		buf:   buf,
 		procs: procs,
 	}, nil

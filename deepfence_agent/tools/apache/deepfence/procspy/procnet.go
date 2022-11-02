@@ -14,15 +14,17 @@ type ProcNet struct {
 	wantedStates            []uint
 	bytesLocal, bytesRemote [16]byte
 	seen                    map[uint64]struct{}
+	localIps                []string
 }
 
 // NewProcNet gives a new ProcNet parser.
-func NewProcNet(b []byte, wantedState []uint) *ProcNet {
+func NewProcNet(b []byte, wantedState []uint, localIps []string) *ProcNet {
 	return &ProcNet{
 		b:            b,
 		c:            Connection{},
 		wantedStates: wantedState,
 		seen:         map[uint64]struct{}{},
+		localIps:     localIps,
 	}
 }
 
@@ -79,7 +81,7 @@ again:
 
 	p.c.LocalAddress, p.c.LocalPort = scanAddressNA(local, &p.bytesLocal)
 	p.c.RemoteAddress, p.c.RemotePort = scanAddressNA(remote, &p.bytesRemote)
-	remoteInLocal, _ := dfUtils.InArray(p.c.RemoteAddress.String(), localIps)
+	remoteInLocal, _ := dfUtils.InArray(p.c.RemoteAddress.String(), p.localIps)
 	if remoteInLocal {
 		p.c.InOutBoundType = "inbound"
 	} else {

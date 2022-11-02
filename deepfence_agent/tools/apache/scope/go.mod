@@ -152,4 +152,4 @@ replace github.com/deepfence/df-utils => ../deepfence/df-utils
 
 replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence/df-utils/cloud_metadata
 
-replace github.com/deepfence/procspy => ./vendor/github.com/deepfence/procspy
+replace github.com/weaveworks/tcptracer-bpf => ../deepfence/tcptracer-bpf
