@@ -18,7 +18,16 @@ ENV ENABLE_AUTH=true \
     REDIS_HOST=deepfence-redis \
     REDIS_PORT=6379 \
     IS_DEV_BUILD=$is_dev_build \
-    UI_SERVICE_NAME=deepfence-ui
+    UI_SERVICE_NAME=deepfence-ui \
+    UI_SERVICE_PORT=4042 \
+    API_SERVICE_HOST=deepfence-api \
+    API_SERVICE_PORT=9998 \
+    TOPOLOGY_SERVICE_HOST=deepfence-topology \
+    TOPOLOGY_SERVICE_PORT=8004 \
+    VULNERABILITY_MAPPER_SERVICE_HOST=deepfence-vulnerability-mapper \
+    VULNERABILITY_MAPPER_SERVICE_PORT=8001 \
+    FETCHER_SERVICE_HOST=deepfence-fetcher \
+    FETCHER_SERVICE_PORT=8006
 
 COPY --from=minica-builder /go/minica.pem /usr/local/etc/haproxy/deepfence.crt
 COPY --from=minica-builder /go/minica-key.pem /usr/local/etc/haproxy/deepfence.key
