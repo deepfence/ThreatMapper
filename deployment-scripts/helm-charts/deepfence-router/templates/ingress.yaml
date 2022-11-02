@@ -1,0 +1,27 @@
+{{- if eq .Values.service.type "Ingress" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: deepfence-router-ingress
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ required "ingress class name is required" .Values.ingress.class }}
+  rules:
+  - http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Values.service.name }}
+              port:
+                number: 443
+    {{- with .Values.ingress.host }}
+    host: {{ . }}
+    {{- end }}
+{{- end }}
+

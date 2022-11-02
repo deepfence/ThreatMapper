@@ -14,6 +14,7 @@ from utils.constants import FILTER_TYPE_IMAGE_NAME_WITH_TAG, CVE_ES_TYPE, USER_D
     NODE_TYPE_POD, FILTER_TYPE_HOST_NAME, FILTER_TYPE_IMAGE_NAME, FILTER_TYPE_KUBE_CLUSTER_NAME, \
     FILTER_TYPE_KUBE_NAMESPACE, FILTER_TYPE_TAGS, NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
     CLOUDTRAIL_ALERT_ES_TYPE
+import datetime
 
 
 @celery_app.task
@@ -479,12 +480,17 @@ def send_notification_to_s3(self, s3_conf, payload, notification_id, resource_ty
     with app.app_context():
         try:
             import boto3
+
+            def default(o):
+                if isinstance(o, (datetime.date, datetime.datetime)):
+                    return o.isoformat()
+
             s3_key = "{0}/{1}.json".format(s3_conf["folder_path"], get_epochtime())
             s3_client = boto3.client('s3', aws_access_key_id=s3_conf["aws_access_key"],
                                      region_name=s3_conf["region_name"],
                                      aws_secret_access_key=s3_conf["aws_secret_key"])
             s3_client.put_object(Bucket=s3_conf["s3_bucket"], Key=s3_key,
-                                 Body=json.dumps(payload), ContentType='application/json')
+                                 Body=json.dumps(payload, indent=4, sort_keys=True, default=default), ContentType='application/json')
             save_integrations_status(notification_id, resource_type, "")
         except Exception as exc:
             app.logger.error("S3 notification failed, error:[{}]".format(exc))
