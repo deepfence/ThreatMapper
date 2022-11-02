@@ -31,10 +31,10 @@ gocode:
 	# go build -o tools/apache/licensegen/licensegen tools/apache/licensegen/licensegen.go
 
 	echo "Building agent authenticator..."
-	$(CD) misc/deepfence/df-utils/agent_auth && env CGO_ENABLED=0 go build -o agentAuth $(GOFLAGS) .
+	$(CD) tools/apache/deepfence/df-utils/agent_auth && env CGO_ENABLED=0 go build -o agentAuth $(GOFLAGS) .
 
 	echo "Building go binary for cloud metadata instance id..."
-	$(CD) misc/deepfence/df-utils/get_cloud_instance_id && env CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .
+	$(CD) tools/apache/deepfence/df-utils/get_cloud_instance_id && env CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .
 
 	echo "Building compliance checker"
 	$(CD) tools/apache/compliance_check/ && go build -o deepfence_compliance_check $(GOFLAGS) *.go
@@ -42,6 +42,6 @@ gocode:
 install:
 
 clean:
-	$(RM) misc/deepfence/df-utils/agentAuth
-	$(RM) misc/deepfence/df-utils/getCloudInstanceId
+	$(RM) tools/apache/deepfence/df-utils/agentAuth
+	$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
 	cd tools/apache/scope && make realclean

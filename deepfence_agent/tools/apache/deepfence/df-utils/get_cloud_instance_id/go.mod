@@ -1,4 +1,4 @@
-module github.com/deepfence/ThreatMapper/deepfence_agent/misc/deepfence/df-utils/get_cloud_instance_id
+module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/deepfence/df-utils/get_cloud_instance_id
 
 go 1.17
 

@@ -1,4 +1,4 @@
-module github.com/deepfence/ThreatMapper/deepfence_agent/misc/deepfence/df-utils/cloud_metadata
+module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
 go 1.17
 

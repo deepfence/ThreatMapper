@@ -1,4 +1,4 @@
-module github.com/deepfence/ThreatStryker/deepfence_agent/misc/deepfence/procspy
+module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/deepfence/procspy
 
 go 1.17
 

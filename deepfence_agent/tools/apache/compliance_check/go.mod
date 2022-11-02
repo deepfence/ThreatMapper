@@ -2,9 +2,9 @@ module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance
 
 go 1.17
 
-replace github.com/deepfence/df-utils => ../../../misc/deepfence/df-utils/
+replace github.com/deepfence/df-utils => ../deepfence/df-utils/
 
-replace github.com/deepfence/df-utils/osrelease => ../../../misc/deepfence/df-utils/osrelease
+replace github.com/deepfence/df-utils/osrelease => ../deepfence/df-utils/osrelease
 
 require github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 

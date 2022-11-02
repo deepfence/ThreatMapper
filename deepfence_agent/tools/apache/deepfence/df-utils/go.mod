@@ -1,4 +1,4 @@
-module github.com/deepfence/ThreatMapper/deepfence_agent/misc/deepfence/df-utils
+module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/deepfence/df-utils
 
 go 1.17
 
