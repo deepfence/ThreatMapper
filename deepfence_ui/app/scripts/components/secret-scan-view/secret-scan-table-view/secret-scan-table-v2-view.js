@@ -29,7 +29,8 @@ class SecretScanTableV2 extends React.Component {
     this.state = {
       isSecretsModalOpen: false,
       secretsData: null,
-      page: 0
+      page: 0,
+      deletedValues: []
     };
   }
 
@@ -79,6 +80,8 @@ class SecretScanTableV2 extends React.Component {
     );
 
     const { deleteDocsByIdAction: action } = this.props;
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({deletedValues: [...this.state.deletedValues, ...params.ids]});
     return action(params);
   }
 
@@ -114,9 +117,9 @@ class SecretScanTableV2 extends React.Component {
     const { registerPolling } = this.props;
     registerPolling(this.getSecrets);
   }
-  
+
   /**
-   * 
+   *
    * Mask and unmask will reset page to 1
    * Toggle mask will reset page to 1
    * Filters and from bound changed will reset page to 1
@@ -145,7 +148,7 @@ class SecretScanTableV2 extends React.Component {
         page: 0
       })
     }
-    
+
   }
 
   getSecrets(params) {
@@ -182,6 +185,14 @@ class SecretScanTableV2 extends React.Component {
       scan_id: this.props.scanId,
     };
 
+    let start_index = page ? page * pageSize : page
+
+    if(this.state.deletedValues.length > 0) {
+      if(this.props.total - this.state.deletedValues.length < start_index + pageSize) {
+        start_index -= this.state.deletedValues.length;
+      }
+    }
+
     const apiParams = {
       lucene_query: globalSearchQuery,
       // Conditionally adding number and time_unit fields
@@ -192,7 +203,7 @@ class SecretScanTableV2 extends React.Component {
         ? { time_unit: alertPanelHistoryBound.value.time_unit }
         : {}),
       filters,
-      start_index: page ? page * pageSize : page,
+      start_index,
       node_filters: nodeFilters,
       size: pageSize,
     };
