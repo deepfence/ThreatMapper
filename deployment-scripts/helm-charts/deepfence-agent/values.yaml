@@ -97,5 +97,6 @@ deepfence-k8s-scanner:
   managementConsolePort: *managementConsolePort
   deepfenceKey: *deepfenceKey
   clusterName: *clusterName
+  createDeepfenceKeySecret: false
   image:
     tag: "1.0.0"
