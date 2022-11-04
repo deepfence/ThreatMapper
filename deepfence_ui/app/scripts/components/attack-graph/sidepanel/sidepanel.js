@@ -155,6 +155,7 @@ const DialogData = ({ nodeData, nodeDataLoading, onStatClick }) => {
                 <div
                   className={styles.stat}
                   onClick={() => {
+                    node.top_exploitable = true;
                     onStatClick({
                       nodeData: node,
                       type: 'vulnerabilities',
