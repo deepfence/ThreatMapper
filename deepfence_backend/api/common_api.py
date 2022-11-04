@@ -6,11 +6,11 @@ from collections import defaultdict
 from flask import current_app as app
 from flask_jwt_extended import jwt_required
 import networkx as nx
-from api.vulnerability_api import get_top_vulnerable_nodes_helper
 from models.notification import RunningNotification
 import urllib.parse
 from utils.response import set_response
-from utils.helper import split_list_into_chunks, get_deepfence_logs, get_process_ids_for_pod, md5_hash
+from utils.helper import split_list_into_chunks, get_deepfence_logs, get_process_ids_for_pod, \
+    get_top_exploitable_vulnerabilities
 from utils.esconn import ESConn, GroupByParams
 from utils.decorators import non_read_only_user, admin_user_only
 from collections import defaultdict, Counter
@@ -1588,7 +1588,7 @@ def attack_path():
 
     top_attack_paths = {}
     node_utils = NodeUtils()
-    top_vulnerablities = get_top_vulnerable_nodes_helper(
+    top_vulnerablities = get_top_exploitable_vulnerabilities(
         number, time_unit, lucene_query_string, size=ES_TERMS_AGGR_SIZE)
     if not top_vulnerablities:
         return set_response(data=[])

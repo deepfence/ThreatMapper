@@ -2,7 +2,8 @@ from config.app import celery_app, app as flask_app
 from config.redisconfig import redis
 from utils.scope import fetch_topology_data
 from utils.esconn import ESConn
-from utils.helper import get_topology_network_graph, get_recent_scan_ids, split_list_into_chunks
+from utils.helper import get_topology_network_graph, get_recent_scan_ids, split_list_into_chunks, \
+    get_top_exploitable_vulnerabilities
 from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, CLOUD_AWS, CLOUD_GCP, \
     CLOUD_AZURE, THREAT_GRAPH_CACHE_KEY, THREAT_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
     CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_INDEX, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, SECRET_SCAN_LOGS_INDEX, \
@@ -11,7 +12,6 @@ from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE
 import networkx as nx
 from collections import defaultdict
 import json
-import requests
 import arrow
 
 incoming_internet_host_id = "in-theinternet"
@@ -435,7 +435,15 @@ def get_mis_config_count(index_name, logs_index_name, aggs_field):
 
 
 def get_vulnerability_count():
-    return get_mis_config_count(CVE_INDEX, CVE_SCAN_LOGS_INDEX, "cve_container_image")
+    top_vulnerablities = get_top_exploitable_vulnerabilities(number, time_unit, None, size=1000)
+    vulnerability_count = {}
+    for vulnerability in top_vulnerablities:
+        if vulnerability["_source"]["cve_container_image"] in vulnerability_count:
+            vulnerability_count[vulnerability["_source"]["cve_container_image"]]["count"] += 1
+        else:
+            vulnerability_count[vulnerability["_source"]["cve_container_image"]] = {
+                "scan_id": {vulnerability["_source"]["scan_id"]: CVE_INDEX}, "count": 1}
+    return vulnerability_count
 
 
 def get_compliance_count():
@@ -447,7 +455,8 @@ def get_cloud_compliance_count():
 
 
 def get_secrets_count():
-    return get_mis_config_count(SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, "node_id")
+    # return get_mis_config_count(SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, "node_id")
+    return {}
 
 
 def _compute_threat_graph():
