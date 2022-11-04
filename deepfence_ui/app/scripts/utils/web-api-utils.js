@@ -1266,7 +1266,6 @@ export function searchDocsWrapper({
   sort_order,
   top_exploitable
 } = params) {
-  debugger
   return searchDocs(type, query, filters, fields, node_filters, sort_by, sort_order, top_exploitable);
 }
 
