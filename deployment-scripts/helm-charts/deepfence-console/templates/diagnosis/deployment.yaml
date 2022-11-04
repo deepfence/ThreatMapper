@@ -39,6 +39,12 @@ spec:
           path: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
           type: Socket
 {{ end }}
+{{- if .Values.mountContainerRuntimeSocket.crioSock }}
+      - name: crio-sock
+        hostPath:
+          path: {{ .Values.mountContainerRuntimeSocket.crioSockPath }}
+          type: Socket
+{{ end }}
       containers:
         - name: deepfence-diagnosis
           image: "{{ .Values.registry.imagePrefix }}{{ .Values.diagnosis.image.repository }}:{{ .Values.image.tag }}"
@@ -62,6 +68,10 @@ spec:
             - name: CONTAINERD_SOCKET_PATH
               value: "{{ .Values.mountContainerRuntimeSocket.containerdSockPath }}"
             {{ end }}
+            {{- if .Values.mountContainerRuntimeSocket.crioSock }}
+            - name: CRIO_SOCKET_PATH
+              value: "{{ .Values.mountContainerRuntimeSocket.crioSockPath }}"
+            {{ end }}
           ports:
             - name: http
               containerPort: 8009
@@ -74,6 +84,10 @@ spec:
 {{- if .Values.mountContainerRuntimeSocket.containerdSock }}
           - mountPath: {{ .Values.mountContainerRuntimeSocket.containerdSockPath }}
             name: containerd-sock
+{{ end }}
+{{- if .Values.mountContainerRuntimeSocket.crioSock }}
+          - mountPath: {{ .Values.mountContainerRuntimeSocket.crioSockPath }}
+            name: crio-sock
 {{ end }}
           resources:
             {{- toYaml .Values.diagnosis.resources | nindent 12 }}

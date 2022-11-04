@@ -100,18 +100,18 @@ spec:
                   key: pg_ssl_mode
             - name: ELASTICSEARCH_HOST
               valueFrom:
-                configMapKeyRef:
-                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
-                  key: elasticsearch_host
+                secretKeyRef:
+                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: es_host
             - name: ELASTICSEARCH_PORT
               valueFrom:
-                configMapKeyRef:
-                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
-                  key: elasticsearch_port
+                secretKeyRef:
+                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: es_port
             - name: ELASTICSEARCH_SCHEME
               valueFrom:
-                configMapKeyRef:
-                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
+                secretKeyRef:
+                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
                   key: es_scheme
             {{- if .Values.db.elasticsearch.user }}
             - name: ELASTICSEARCH_USER
@@ -136,14 +136,14 @@ spec:
             {{- end }}
             - name: REDIS_HOST
               valueFrom:
-                configMapKeyRef:
-                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
-                  key: redis_host
+                secretKeyRef:
+                  name: "redis-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: host
             - name: REDIS_PORT
               valueFrom:
-                configMapKeyRef:
-                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
-                  key: redis_port
+                secretKeyRef:
+                  name: "redis-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: port
           volumeMounts:
 {{- if .Values.saas_deployment }}
             - name: varlog
