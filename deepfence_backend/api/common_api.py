@@ -315,8 +315,6 @@ def search():
         size_arg = int(size_arg)
     except ValueError:
         raise InvalidUsage("Size should be an integer value.")
-    original_size_arg = size_arg
-    original_from_arg = from_arg
 
     sort_order = request.args.get("sort_order", "desc")
 
@@ -334,6 +332,8 @@ def search():
         raise InvalidUsage("From parameter should be a positive integer value.")
     if (from_arg + size_arg) > max_result_window:
         raise InvalidUsage("FROM + SIZE cannot exceed {}".format(max_result_window))
+    original_size_arg = size_arg
+    original_from_arg = from_arg
 
     if not request.is_json:
         raise InvalidUsage("Missing JSON in request")
