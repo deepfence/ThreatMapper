@@ -101,6 +101,7 @@ function VulnerabilityTable({ nodeData }) {
       },
       sort_by: sortBy ?? 'cve_severity',
       sort_order: sortOrder,
+      top_exploitable: nodeData.top_exploitable,
     };
     dispatch(getAttackGraphNodeIssuesAction(params));
   }, [nodeData, page, sortBy, sortOrder]);
