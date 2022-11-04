@@ -25,7 +25,8 @@ from utils.constants import USER_ROLES, TIME_UNIT_MAPPING, CVE_INDEX, ALL_INDICE
 from utils.scope import fetch_topology_data
 from utils.node_helper import determine_node_status
 from datetime import datetime, timedelta
-from utils.helper import is_network_attack_vector, get_topology_network_graph, modify_es_index
+from utils.helper import is_network_attack_vector, get_topology_network_graph, modify_es_index, \
+    get_top_exploitable_vulnerabilities
 from utils.node_utils import NodeUtils
 from flask.views import MethodView
 from utils.custom_exception import InvalidUsage, InternalError, DFError, NotFound
@@ -314,6 +315,8 @@ def search():
         size_arg = int(size_arg)
     except ValueError:
         raise InvalidUsage("Size should be an integer value.")
+    original_size_arg = size_arg
+    original_from_arg = from_arg
 
     sort_order = request.args.get("sort_order", "desc")
 
@@ -375,6 +378,11 @@ def search():
                 }
             }
         ]
+    top_exploitable = request.args.get("top_exploitable", default=False, type=bool)
+    if top_exploitable:
+        if index_name == CVE_INDEX:
+            from_arg = 0
+            size_arg = 10000 - from_arg
     search_response = ESConn.search_by_and_clause(
         index_name,
         filters,
@@ -415,10 +423,32 @@ def search():
                     value_array.append(value_bucket["key"])
             values_for_response[key] = value_array
 
-    # Add max_result_window to the response.
+    if top_exploitable:
+        if index_name == CVE_INDEX:
+            top_vulnerablities = get_top_exploitable_vulnerabilities(number, time_unit, None, size=1000)
+            top_vulnerablities_index = {}
+            for cve in top_vulnerablities:
+                top_vulnerablities_index[cve["_source"]["cve_id"] + ":" + cve["_source"]["cve_container_image"] +
+                                         ":" + cve["_source"]["cve_caused_by_package"]] = True
+            hits = []
+            count = 0
+            for cve in search_response.get("hits", []):
+                unique_id = cve["_source"]["cve_id"] + ":" + cve["_source"]["cve_container_image"] + ":" + \
+                            cve["_source"]["cve_caused_by_package"]
+                if unique_id not in top_vulnerablities_index:
+                    continue
+                if count < original_from_arg or len(hits) >= original_size_arg:
+                    count += 1
+                    continue
+                count += 1
+                hits.append(cve)
+            search_response["hits"] = hits
+            search_response["total"] = count
+
     search_response["max_result_window"] = max_result_window
     search_response["values_for"] = values_for_response
-    search_response["total"] = search_response.get("total", {}).get("value", 0)
+    if not top_exploitable:
+        search_response["total"] = search_response.get("total", {}).get("value", 0)
     return set_response(data=search_response)
 
 

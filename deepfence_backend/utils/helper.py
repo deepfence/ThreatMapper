@@ -29,7 +29,6 @@ import shutil
 import networkx as nx
 import time
 from collections import defaultdict
-from resource_models.node import NodeUtils
 from utils.esconn import ESConn
 
 requests.packages.urllib3.disable_warnings()
@@ -1077,6 +1076,8 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
         top_vulnerabilities.extend(resp.get("hits", []))
     host_graph = get_topology_network_graph(topology_data[0])
     image_graph = get_topology_network_graph(topology_data[1])
+
+    from resource_models.node import NodeUtils
     node_utils = NodeUtils()
     incoming_internet_host_id = node_utils.get_df_id_from_scope_id("in-theinternet", NODE_TYPE_HOST)
     outgoing_internet_host_id = node_utils.get_df_id_from_scope_id("out-theinternet", NODE_TYPE_HOST)
