@@ -1066,13 +1066,12 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
     top_vulnerabilities = []
     recent_scan_id_chunks = split_list_into_chunks(recent_scan_ids, ES_MAX_CLAUSE)
     sort_expression = "cve_overall_score:desc"
-    # Select top MAX_TOP_EXPLOITABLE_VULNERABILITIES number of vulnerabilities with highest score
+    # Select top MAX_TOP_EXPLOITABLE_VULNERABILITIES number of vulnerabilities with the highest score
     for scan_id_chunk in recent_scan_id_chunks:
         filters = {"masked": False, "scan_id": scan_id_chunk}
-        resp = ESConn.search_by_and_clause(CVE_INDEX, filters, 0,
-                                           number=number, time_unit=TIME_UNIT_MAPPING.get(time_unit),
-                                           lucene_query_string=lucene_query_string,
-                                           size=ES_TERMS_AGGR_SIZE, custom_sort_expression=sort_expression)
+        resp = ESConn.search_by_and_clause(
+            CVE_INDEX, filters, 0, number=number, time_unit=TIME_UNIT_MAPPING.get(time_unit),
+            lucene_query_string=lucene_query_string, size=ES_TERMS_AGGR_SIZE, custom_sort_expression=sort_expression)
         top_vulnerabilities.extend(resp.get("hits", []))
     host_graph = get_topology_network_graph(topology_data[0])
     image_graph = get_topology_network_graph(topology_data[1])
@@ -1121,7 +1120,7 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
         cve_id = cve_doc.get("cve_id")
         node_name = cve_doc.get('cve_container_image', '')
         network_attack_vector = is_network_attack_vector(cve_doc.get("cve_attack_vector", ""))
-        if not network_attack_vector and cve_doc.get('cve_severity') == "low":
+        if not network_attack_vector and cve_doc.get('cve_severity') != "critical":
             continue
         exploitability_score = 0
         if network_attack_vector:
@@ -1171,8 +1170,8 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
     uniq_top_vulnerabilities = list(uniq_map.values())
     uniq_top_vulnerabilities.sort(
         key=lambda x: (
-            cve_severity_map[x.get('_source', {}).get('cve_severity', '')],
             x.get('_source', {}).get('exploitability_score'),
+            cve_severity_map[x.get('_source', {}).get('cve_severity', '')],
             x.get('_source', {}).get('exploit_present'),
             x.get('_source', {}).get('cve_cvss_score', 0),
         ),
