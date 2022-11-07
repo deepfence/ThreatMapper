@@ -105,20 +105,10 @@ spec:
             - name: varlog
               mountPath: /var/log/haproxy
           {{- end }}
-          {{- if .Values.tls.pemfile }}
-            - name: deepfence-cert-volume
-              mountPath: /usr/local/etc/haproxy/deepfence.pem
-              subPath: deepfence.pem
-          {{- end }}
-          {{- if and .Values.tls.certFile .Values.tls.keyFile }}
-            - name: deepfence-ui-ssl-cert-file
-              mountPath: /etc/deepfence/certs/deepfence.crt
-              subPath: deepfence.crt
-              readOnly: true
-            - name: deepfence-ui-ssl-key-file
-              mountPath: /etc/deepfence/certs/deepfence.key
-              subPath: deepfence.key
-              readOnly: true
+          {{- if or .Values.tls.secretName (and .Values.tls.cert .Values.tls.key) }}
+          - name: certs
+            mountPath: /etc/deepfence/certs
+            readOnly: true
           {{- end }}
           resources:
             {{- toYaml .Values.router.resources | nindent 12 }}
@@ -143,18 +133,14 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-      {{- if .Values.tls.pemfile }}
-        - name: deepfence-cert-volume
-          configMap:
-            name: deepfence-cert
-      {{- end }}
-      {{- if and .Values.tls.certFile .Values.tls.keyFile }}
-        - name: deepfence-ui-ssl-cert-file
-          configMap:
-            name: deepfence-ui-ssl-cert
-        - name: deepfence-ui-ssl-key-file
-          configMap:
-            name: deepfence-ui-ssl-cert
+      {{- if .Values.tls.secretName }}
+      - name: certs
+        secret:
+          secretName: {{ .Values.tls.secretName }}
+      {{- else if and .Values.tls.cert .Values.tls.key }}
+      - name: certs
+        secret:
+          secretName: deepfence-ui-ssl-cert
       {{- end }}
       {{- if .Values.saas_deployment }}
         - name: varlog

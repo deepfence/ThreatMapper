@@ -70,16 +70,33 @@ image:
 ```
 - (Optional) Set custom ssl certificate.
 
-Certificates should be in the current directory and have names *.key and *.crt. 
-If not set, deepfence provided self-signed certificate will be used.
-```yaml
-# Use custom ssl certificate for Deepfence UI
-# Copy *.key and *.crt file to current directory (same directory as values.yaml file)
-# Supported file extensions are .crt and .key (.pem, .cert not supported)
-tls:
-  certFile: "my_server.crt"
-  keyFile: "my_server.key"
-```
+Custom certificates can be configured using two options existing secret or directly pass cert and key in helm chart values. Provide one off the two options to configure custom certificates. If not set, deepfence provided self-signed certificate will be used.
+
+  - To pass certificates in values file use below format
+  ```yaml
+  tls:
+    cert: |-
+      -----BEGIN CERTIFICATE-----
+      MIIFCTCCAvGgAwIBAgIUNshy8GFTjfUR7inZ1JCcN+tDuh4wDQYJKoZIhvcNAQEL
+      .....
+      JY7f+DC42mQvWWXbll+I60CEtZyExtfBEbSihOR2NoG3WMhXEGAXO5C/jEnSDHKt
+      BMepE4d9+TQFcPQ/OKSlP8FB2nPKZJdM+JlXDFWqeKvbdYS4QErRLd33qUmq
+      -----END CERTIFICATE-----
+    key: |-
+      -----BEGIN PRIVATE KEY-----
+      MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQDECeUraonCz/89
+      .....
+      uK1Rv6SE6KrBFb8JYEpjyjiAlVUGDANqbMtB2dvJ/GD6vTch/kLyZ95x7+V0qXGV
+      bHEvWp7ugCTFhurM+lla0d+ElDO2
+      -----END PRIVATE KEY-----
+  ```
+
+  - If you already have a tls certificate available on cluster in the same namespace as that of the console as tls secret, then pass the name of the secret to helm chart values as shown in below example
+  ```yaml
+  tls:
+    secretName: console-tls-certs
+  ```
+
 - (Optional) Set storage class
 
 Deepfence uses Local Volume Provisioner by default. It can be changed to any cloud managed Persistent Volumes, value will be `default` in most clouds.
