@@ -93,7 +93,6 @@ $(SCOPE_EXE) $(RUNSVINIT) lint tests shell prog/staticui/staticui.go prog/extern
 		-v $(shell pwd)/.pkg:/go/pkg:delegated,z \
 		-v $(shell pwd)/.cache:/go/cache:delegated,z \
 		-v $(shell pwd)/.go/src:/go/src:delegated,z \
-		-v $(shell pwd)/../deepfence:/go/src/github.com/weaveworks/scope/vendor/github.com/deepfence:delegated,z \
 		-u $(shell id -u ${USER}):$(shell id -g ${USER}) \
 		--net=host \
 		-e HOME=/go/src/github.com/weaveworks/scope \

@@ -57,8 +57,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/tylerb/graceful v1.2.15
 	github.com/typetypetype/conntrack v1.0.0
-	github.com/ugorji/go/codec v1.2.7
-	github.com/ugorji/go/codec/codecgen v1.2.7
+	github.com/ugorji/go v0.0.0-20170918222552-54210f4e076c
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
 	github.com/vishvananda/netns v0.0.1
 	github.com/weaveworks/billing-client v0.5.0
