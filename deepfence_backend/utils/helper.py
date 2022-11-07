@@ -29,7 +29,7 @@ import shutil
 import networkx as nx
 import time
 from collections import defaultdict
-from utils.esconn import ESConn
+
 
 requests.packages.urllib3.disable_warnings()
 
@@ -1066,6 +1066,8 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
     top_vulnerabilities = []
     recent_scan_id_chunks = split_list_into_chunks(recent_scan_ids, ES_MAX_CLAUSE)
     sort_expression = "cve_overall_score:desc"
+
+    from utils.esconn import ESConn
     # Select top MAX_TOP_EXPLOITABLE_VULNERABILITIES number of vulnerabilities with the highest score
     for scan_id_chunk in recent_scan_id_chunks:
         filters = {"masked": False, "scan_id": scan_id_chunk}
