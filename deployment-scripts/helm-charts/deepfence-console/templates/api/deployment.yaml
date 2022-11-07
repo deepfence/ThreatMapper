@@ -101,48 +101,48 @@ spec:
             - name: ELASTICSEARCH_HOST
               valueFrom:
                 secretKeyRef:
-                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  name: es-secret-{{ include "deepfence-console.fullname" . }}
                   key: es_host
             - name: ELASTICSEARCH_PORT
               valueFrom:
                 secretKeyRef:
-                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  name: es-secret-{{ include "deepfence-console.fullname" . }}
                   key: es_port
             - name: ELASTICSEARCH_SCHEME
               valueFrom:
                 secretKeyRef:
-                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  name: es-secret-{{ include "deepfence-console.fullname" . }}
                   key: es_scheme
             {{- if .Values.db.elasticsearch.user }}
             - name: ELASTICSEARCH_USER
               valueFrom:
                 secretKeyRef:
-                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  name: es-secret-{{ include "deepfence-console.fullname" . }}
                   key: es_user
             {{- end }}
             {{- if .Values.db.elasticsearch.password }}
             - name: ELASTICSEARCH_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  name: es-secret-{{ include "deepfence-console.fullname" . }}
                   key: es_password
             {{- end }}
             {{- if .Values.saas_deployment }}
             - name: CUSTOMER_UNIQUE_ID
               valueFrom:
                 secretKeyRef:
-                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  name: es-secret-{{ include "deepfence-console.fullname" . }}
                   key: es_customer_unique_id
             {{- end }}
             - name: REDIS_HOST
               valueFrom:
                 secretKeyRef:
-                  name: "redis-secret-{{ include "deepfence-console.fullname" . }}"
+                  name: redis-secret-{{ include "deepfence-console.fullname" . }}
                   key: host
             - name: REDIS_PORT
               valueFrom:
                 secretKeyRef:
-                  name: "redis-secret-{{ include "deepfence-console.fullname" . }}"
+                  name: redis-secret-{{ include "deepfence-console.fullname" . }}
                   key: port
           volumeMounts:
 {{- if .Values.saas_deployment }}
