@@ -42,6 +42,7 @@ from utils.resource import filter_node_for_vulnerabilities, get_default_params
 from utils.resource import encrypt_cloud_credential
 from resource_models.node import Node
 from utils.common import get_rounding_time_unit
+import time
 
 common_api = Blueprint("common_api", __name__)
 
@@ -1145,9 +1146,9 @@ def delete_resources():
                     
                 
                 
-                query_compliance_doc = {
+                query_compliance_doc_update = {
                     "script": {
-                        "source": "ctx._source.result.warn = 0; if (ctx._source.result.info + ctx._source.result.warn + ctx._source.result.pass + ctx._source.result.note == 0) { ctx.op = \"delete\" } else {ctx.op = \"noop\"}",
+                        "source": f"ctx._source.result.{status} = 0",
                         "lang": "painless"
                     },
                     "query": {
@@ -1157,9 +1158,9 @@ def delete_resources():
                     }
                 }
                 
-                query_cloud_compliance_doc = {
+                query_compliance_doc_delete = {
                     "script": {
-                        "source": "ctx._source.result.alarm = 0; if (ctx._source.result.info + ctx._source.result.ok + ctx._source.result.skip + ctx._source.result.note == 0) { ctx.op = \"delete\" } else {ctx.op = \"noop\"}",
+                        "source": "if (ctx._source.result.info + ctx._source.result.warn + ctx._source.result.pass + ctx._source.result.note == 0) { ctx.op = \"delete\" } else {ctx.op = \"noop\"}",
                         "lang": "painless"
                     },
                     "query": {
@@ -1169,13 +1170,37 @@ def delete_resources():
                     }
                 }
                 
-                ESConn.update_by_query(index=CLOUD_COMPLIANCE_INDEX,body=query_cloud_compliance_doc )
-                ESConn.update_by_query(index=COMPLIANCE_LOGS_INDEX,body=query_compliance_doc )
+                query_cloud_compliance_doc_update = {
+                    "script": {
+                        "source": f"ctx._source.result.{status} = 0",
+                        "lang": "painless"
+                    },
+                    "query": {
+                        "bool": {
+                            "must": and_terms
+                        }
+                    }
+                }
                 
+                query_cloud_compliance_doc_delete = {
+                    "script": {
+                        "source": "if (ctx._source.result.info + ctx._source.result.ok + ctx._source.result.skip + ctx._source.result.alarm == 0) { ctx.op = \"delete\" } else {ctx.op = \"noop\"}",
+                        "lang": "painless"
+                    },
+                    "query": {
+                        "bool": {
+                            "must": and_terms
+                        }
+                    }
+                }
                 
-                
+                ESConn.update_by_query(index=CLOUD_COMPLIANCE_INDEX,body=query_cloud_compliance_doc_update )
+                ESConn.update_by_query(index=COMPLIANCE_LOGS_INDEX,body=query_compliance_doc_update )
+                time.sleep(15)
+                ESConn.update_by_query(index=CLOUD_COMPLIANCE_INDEX,body=query_cloud_compliance_doc_delete )
+                ESConn.update_by_query(index=COMPLIANCE_LOGS_INDEX,body=query_compliance_doc_delete )
+                 
         message = "Successfully scheduled deletion of selected compliance scan reports"
-
     else:
         raise InvalidUsage("doc_type is invalid")
 
