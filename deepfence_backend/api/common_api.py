@@ -41,6 +41,7 @@ from flask_jwt_extended import get_jwt_identity
 from utils.resource import filter_node_for_vulnerabilities, get_default_params
 from utils.resource import encrypt_cloud_credential
 from resource_models.node import Node
+from utils.common import get_rounding_time_unit
 
 common_api = Blueprint("common_api", __name__)
 
@@ -904,6 +905,7 @@ def delete_resources():
     _type = request.json.get("doc_type")
     index_name = modify_es_index(_type)
     scan_id = request.json.get("scan_id")
+    status = request.json.get("status", "")
     only_masked = bool(request.json.get("only_masked", False))
     only_dead_nodes = bool(request.json.get("only_dead_nodes", False))
     dead_nodes_since_days = int(request.json.get("dead_nodes_since_days", 0))
@@ -1053,6 +1055,9 @@ def delete_resources():
         node_names_to_delete = []
         cloud_compliance_filters = {"type": CLOUD_COMPLIANCE_ES_TYPE}
         cloud_compliance_log_filters = {"type": CLOUD_COMPLIANCE_LOGS_ES_TYPE}
+        if status:
+            filters["status"] = status
+            cloud_compliance_filters["status"] = status
         if scan_id:
             filters["scan_id"] = scan_id
             scan_log_filters["scan_id"] = scan_id
@@ -1111,11 +1116,64 @@ def delete_resources():
             ESConn.bulk_delete(COMPLIANCE_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
             ESConn.bulk_delete(CLOUD_COMPLIANCE_INDEX, cloud_compliance_filters, number, TIME_UNIT_MAPPING[time_unit])
 
-            if not only_masked:
+            if not only_masked and not status:
                 ESConn.bulk_delete(COMPLIANCE_LOGS_INDEX, scan_log_filters, number,
                                    TIME_UNIT_MAPPING[time_unit])
                 ESConn.bulk_delete(CLOUD_COMPLIANCE_LOGS_INDEX, cloud_compliance_log_filters, number,
                                    TIME_UNIT_MAPPING[time_unit])
+                
+            if status:
+                and_terms =  [
+                        {
+                            "terms": {
+                                "scan_status.keyword": [ "COMPLETED" ]
+                            }
+                        }
+                    ]
+                
+                time_unit = TIME_UNIT_MAPPING[time_unit]
+                
+                if time_unit != 'all':
+                    rounding_time_unit = get_rounding_time_unit(time_unit)
+                    and_terms.append({
+                        "range": {
+                            "@timestamp": {
+                                "gt": "now-{0}{1}/{2}".format(number, time_unit, rounding_time_unit)
+                            }
+                        }
+                    })
+                    
+                
+                
+                query_compliance_doc = {
+                    "script": {
+                        "source": "ctx._source.result.warn = 0; if (ctx._source.result.info + ctx._source.result.warn + ctx._source.result.pass + ctx._source.result.note == 0) { ctx.op = \"delete\" } else {ctx.op = \"noop\"}",
+                        "lang": "painless"
+                    },
+                    "query": {
+                        "bool": {
+                            "must": and_terms
+                        }
+                    }
+                }
+                
+                query_cloud_compliance_doc = {
+                    "script": {
+                        "source": "ctx._source.result.alarm = 0; if (ctx._source.result.info + ctx._source.result.ok + ctx._source.result.skip + ctx._source.result.note == 0) { ctx.op = \"delete\" } else {ctx.op = \"noop\"}",
+                        "lang": "painless"
+                    },
+                    "query": {
+                        "bool": {
+                            "must": and_terms
+                        }
+                    }
+                }
+                
+                ESConn.update_by_query(index=CLOUD_COMPLIANCE_INDEX,body=query_cloud_compliance_doc )
+                ESConn.update_by_query(index=COMPLIANCE_LOGS_INDEX,body=query_compliance_doc )
+                
+                
+                
         message = "Successfully scheduled deletion of selected compliance scan reports"
 
     else:
