@@ -49,8 +49,8 @@ spec:
               value: "http://0.0.0.0:8082"
             - name: KAFKA_REST_BOOTSTRAP_SERVERS
               valueFrom:
-                configMapKeyRef:
-                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
+                secretKeyRef:
+                  name: kafka-secret-{{ include "deepfence-console.fullname" . }}
                   key: kafka_brokers
           livenessProbe:
             httpGet:

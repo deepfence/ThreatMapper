@@ -146,8 +146,8 @@ spec:
                   key: port
             - name: KAFKA_BROKERS
               valueFrom:
-                configMapKeyRef:
-                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
+                secretKeyRef:
+                  name: kafka-secret-{{ include "deepfence-console.fullname" . }}
                   key: kafka_brokers
           volumeMounts:
 {{- if .Values.saas_deployment }}

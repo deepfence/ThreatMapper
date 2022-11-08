@@ -67,7 +67,10 @@ spec:
             - name: KAFKA_LOG_DIRS
               value: /data/kafka
             - name: STORAGE_UUID
-              value: {{ .Values.db.kafka.storageUUID }}
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret-{{ include "deepfence-console.fullname" . }}
+                  key: kafka_storageUUID
           # livenessProbe:
           #   tcpSocket:
           #     port: 9092

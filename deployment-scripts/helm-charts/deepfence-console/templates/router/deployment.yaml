@@ -95,8 +95,8 @@ spec:
               value: "k8s"
             - name: KAFKA_REST_PROXY
               valueFrom:
-                configMapKeyRef:
-                  name: "main-cm-{{ include "deepfence-console.fullname" . }}"
+                secretKeyRef:
+                  name: kafka-secret-{{ include "deepfence-console.fullname" . }}
                   key: kafka_rest_proxy
             {{- if .Values.saas_deployment }}
             - name: CUSTOMER_UNIQUE_ID
