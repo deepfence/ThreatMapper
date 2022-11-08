@@ -11,6 +11,8 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence/df-utils/cl
 
 replace github.com/weaveworks/tcptracer-bpf => ../deepfence/tcptracer-bpf
 
+replace github.com/ugorji/go => ../deepfence/ugorji/go
+
 require (
 	camlistore.org v0.0.0-20171230002226-a5a65f0d8b22
 	github.com/Jeffail/tunny v0.1.4
@@ -57,7 +59,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/tylerb/graceful v1.2.15
 	github.com/typetypetype/conntrack v1.0.0
-	github.com/ugorji/go v0.0.0-20170918222552-54210f4e076c
+	github.com/ugorji/go v1.1.4
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
 	github.com/vishvananda/netns v0.0.1
 	github.com/weaveworks/billing-client v0.5.0
