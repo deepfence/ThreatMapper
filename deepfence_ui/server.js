@@ -5,6 +5,12 @@ const HttpProxyRules = require('http-proxy-rules');
 const compression = require('compression');
 
 const app = express();
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1');
+  next();
+});
 
 const BACKEND_HOST = process.env.BACKEND_HOST || 'deepfence-topology';
 const BACKEND_PORT = process.env.BACKEND_PORT || '8004';
