@@ -25,6 +25,9 @@ const complianceStatusCollection = [
   { name: 'Note', value: 'note' },
   { name: 'Pass', value: 'pass' },
   { name: 'Warn', value: 'warn' },
+  { name: 'Alarm', value: 'alarm' },
+  { name: 'Ok', value: 'ok' },
+  { name: 'Skip', value: 'skip' },
   { name: 'All', value: '' },
 ];
 
@@ -127,8 +130,8 @@ const VulnerabilityManagementView = props => {
     };
     // api need key as status not severity for compliance
     if (docType === COMPLIANCE) {
-        delete params.severity;
-        params.status = selectedSeverity;
+      delete params.severity;
+      params.status = selectedSeverity;
     }
     props.dispatch(submitAlertsDeleteRequest(params));
   };
@@ -138,7 +141,7 @@ const VulnerabilityManagementView = props => {
       marginTop: '15px',
     };
     // option is different for compliance resource
-    let optionList = []
+    let optionList = [];
     if (docType === COMPLIANCE) {
       optionList = complianceStatusCollection.map(el => el);
     } else {
@@ -164,8 +167,16 @@ const VulnerabilityManagementView = props => {
             {resourceCollection.map(option => {
               return (
                 <div key={option.value} className="severity-option">
-                  <input type="radio" value={option.value} name="docType" id={`delete-severity-doctype-${option.value}`} />
-                  <label htmlFor={`delete-severity-doctype-${option.value}`} className="radio-label">
+                  <input
+                    type="radio"
+                    value={option.value}
+                    name="docType"
+                    id={`delete-severity-doctype-${option.value}`}
+                  />
+                  <label
+                    htmlFor={`delete-severity-doctype-${option.value}`}
+                    className="radio-label"
+                  >
                     {option.name}
                   </label>
                 </div>
@@ -178,7 +189,9 @@ const VulnerabilityManagementView = props => {
               onChange={() => handleRadioButtonChange(event)}
               style={{ paddingTop: '20px' }}
             >
-              <div className="wrapper-heading">{docType === COMPLIANCE ? 'Choose Status' : 'Choose Severity'}</div>
+              <div className="wrapper-heading">
+                {docType === COMPLIANCE ? 'Choose Status' : 'Choose Severity'}
+              </div>
               {severityList.map(option => {
                 return (
                   <div key={option.value} className="severity-option">
@@ -189,7 +202,10 @@ const VulnerabilityManagementView = props => {
                       checked={option.value === selectedSeverity}
                       id={`delete-severity-${option.value}`}
                     />
-                    <label htmlFor={`delete-severity-${option.value}`} className="radio-label">
+                    <label
+                      htmlFor={`delete-severity-${option.value}`}
+                      className="radio-label"
+                    >
                       {option.name}
                     </label>
                   </div>
@@ -205,18 +221,18 @@ const VulnerabilityManagementView = props => {
             <div className="duration-container df-select-field">
               <DFSelect
                 options={durationOptions}
-                onChange={(selected) => handleDropDownChange(selected)}
+                onChange={selected => handleDropDownChange(selected)}
                 value={selectedDuration}
                 clearable={false}
                 simpleValue
               />
             </div>
-              <div
-                className="btn-delete"
-                onClick={() => handleSeverityDeletionSubmit()}
-              >
-                Delete
-              </div>
+            <div
+              className="btn-delete"
+              onClick={() => handleSeverityDeletionSubmit()}
+            >
+              Delete
+            </div>
           </div>
         </div>
         <div className="error-msg-container" style={errorMsgContainer}>
