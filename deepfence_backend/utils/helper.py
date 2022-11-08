@@ -6,7 +6,7 @@ from utils.constants import NODE_TYPE_CONTAINER, NODE_TYPE_PROCESS_BY_NAME, NODE
     DEEPFENCE_CONSOLE_CPU_MEMORY_STATE_URL, REDIS_KEY_PREFIX_CLUSTER_AGENT_PROBE_ID, EMPTY_POD_SCOPE_ID, \
     ES_TERMS_AGGR_SIZE, SENSITIVE_KEYS, REDACT_STRING, VULNERABILITY_LOG_PATH, TIME_UNIT_MAPPING, CVE_SCAN_LOGS_INDEX, \
     CVE_INDEX, SECRET_SCAN_LOGS_INDEX, MALWARE_SCAN_LOGS_INDEX, CUSTOMER_UNIQUE_ID, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, \
-    COMPLIANCE_LOGS_INDEX
+    COMPLIANCE_LOGS_INDEX, ES_MAX_CLAUSE
 import hashlib
 import requests
 import string
@@ -28,6 +28,8 @@ from config.redisconfig import redis
 import shutil
 import networkx as nx
 import time
+from collections import defaultdict
+
 
 requests.packages.urllib3.disable_warnings()
 
@@ -1076,3 +1078,183 @@ def set_vulnerability_status_for_packages(open_files_list, number, time_unit, lu
 
     return open_files_list_final
 
+
+def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, size=1000, filter_host_name=None):
+    topology_data = redis.mget([
+        websocketio_channel_name_format(NODE_TYPE_HOST + "?format=deepfence")[1],
+        websocketio_channel_name_format(NODE_TYPE_CONTAINER_IMAGE + "?format=deepfence")[1],
+        websocketio_channel_name_format(NODE_TYPE_CONTAINER + "?format=deepfence")[1]
+    ])
+    topology_data = [
+        json.loads(topology_data[0]) if topology_data[0] else {},
+        json.loads(topology_data[1]) if topology_data[1] else {},
+        json.loads(topology_data[2]) if topology_data[2] else {}
+    ]
+    active_nodes = {}
+    for node_id, host_details in topology_data[0].items():
+        if filter_host_name:
+            if not host_details.get("host_name") == filter_host_name:
+                continue
+        if host_details.get("host_name") and not host_details.get("pseudo", False) and \
+                not host_details.get("is_ui_vm", False):
+            active_nodes[host_details["host_name"]] = host_details.get("uptime", 0)
+    if not active_nodes:
+        return []
+    image_creation_time = {}
+    datetime_now = datetime.now()
+    datetime_str = datetime_now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    for node_id, image_details in topology_data[1].items():
+        if not image_details.get("name") or image_details.get("pseudo", False):
+            continue
+        if filter_host_name:
+            image_found_in_host = False
+            for parent in image_details.get("parents", []):
+                if parent["type"] == NODE_TYPE_HOST and parent["label"] == filter_host_name:
+                    image_found_in_host = True
+            if not image_found_in_host:
+                continue
+        datetime_created = datetime.strptime(
+            image_details.get("docker_image_created_at", datetime_str), "%Y-%m-%dT%H:%M:%SZ")
+        duration = datetime_now - datetime_created
+        image_creation_time[image_details["name"]] = int(duration.total_seconds())
+    for node_id, container_details in topology_data[2].items():
+        if container_details.get("docker_container_state") != "running":
+            continue
+        if filter_host_name:
+            if container_details.get("host_name") != filter_host_name:
+                continue
+        image_name_with_tag = container_details.get("image_name_with_tag")
+        if not image_name_with_tag:
+            continue
+        # Use image build time for containers if available, otherwise use container uptime
+        active_nodes[image_name_with_tag] = image_creation_time.get(
+            image_name_with_tag, container_details.get("docker_container_uptime", 0))
+    recent_scan_ids = get_recent_scan_ids(CVE_SCAN_LOGS_INDEX, number, time_unit, None,
+                                          {"action": "COMPLETED", "node_id": list(active_nodes.keys())})
+    if not recent_scan_ids:
+        return []
+    top_vulnerabilities = []
+    recent_scan_id_chunks = split_list_into_chunks(recent_scan_ids, ES_MAX_CLAUSE)
+    sort_expression = "cve_overall_score:desc"
+
+    from utils.esconn import ESConn
+    # Select top MAX_TOP_EXPLOITABLE_VULNERABILITIES number of vulnerabilities with the highest score
+    for scan_id_chunk in recent_scan_id_chunks:
+        filters = {"masked": False, "scan_id": scan_id_chunk}
+        resp = ESConn.search_by_and_clause(
+            CVE_INDEX, filters, 0, number=number, time_unit=TIME_UNIT_MAPPING.get(time_unit),
+            lucene_query_string=lucene_query_string, size=ES_TERMS_AGGR_SIZE, custom_sort_expression=sort_expression)
+        top_vulnerabilities.extend(resp.get("hits", []))
+    host_graph = get_topology_network_graph(topology_data[0])
+    image_graph = get_topology_network_graph(topology_data[1])
+
+    from resource_models.node import NodeUtils
+    node_utils = NodeUtils()
+    incoming_internet_host_id = node_utils.get_df_id_from_scope_id("in-theinternet", NODE_TYPE_HOST)
+    outgoing_internet_host_id = node_utils.get_df_id_from_scope_id("out-theinternet", NODE_TYPE_HOST)
+    incoming_internet_image_id = node_utils.get_df_id_from_scope_id("in-theinternet", NODE_TYPE_CONTAINER_IMAGE)
+    outgoing_internet_image_id = node_utils.get_df_id_from_scope_id("out-theinternet", NODE_TYPE_CONTAINER_IMAGE)
+    node_with_incoming_connections = {}
+    for vulnerability in top_vulnerabilities:
+        cve_doc = vulnerability.get("_source", {})
+        node_name = cve_doc.get('cve_container_image', '')
+        if node_with_incoming_connections.get(node_name):
+            continue
+        node_type = cve_doc.get("node_type")
+        if node_type == NODE_TYPE_HOST:
+            node_graph = host_graph
+            scope_id = node_name + ";<" + NODE_TYPE_HOST + ">"
+            internet_node_id = [incoming_internet_host_id, outgoing_internet_host_id]
+        else:
+            node_graph = image_graph
+            scope_id = node_name + ";<" + NODE_TYPE_CONTAINER_IMAGE + ">"
+            internet_node_id = [incoming_internet_image_id, outgoing_internet_image_id]
+        try:
+            node_id = node_utils.get_df_id_from_scope_id(scope_id, node_type)
+            if nx.has_path(node_graph, internet_node_id[0], node_id):
+                node_with_incoming_connections[node_name] = True
+            elif nx.has_path(node_graph, node_id, internet_node_id[1]):
+                node_with_incoming_connections[node_name] = True
+            else:
+                node_with_incoming_connections[node_name] = False
+        except:
+            node_with_incoming_connections[node_name] = False
+    # Sort based on the combine score of cve_score and scaled image build time/uptime and send top 10 vulnerabilities
+    # Formula = cve_score * (1+weight), Weight = min(imageBuildTime or uptime/year, 1)
+    max_uptime = 365 * 24 * 60 * 60
+    uniq_map = {}
+    # (attack_vector, live_connection)
+    attack_vector_map = {
+        0: ("local", False), 1: ("network", False), 2: ("network", True)
+    }
+    for vulnerability in top_vulnerabilities:
+        cve_doc = vulnerability.get("_source", {})
+        cve_id = cve_doc.get("cve_id")
+        node_name = cve_doc.get('cve_container_image', '')
+        network_attack_vector = is_network_attack_vector(cve_doc.get("cve_attack_vector", ""))
+        if not network_attack_vector and cve_doc.get('cve_severity') != "critical":
+            continue
+        exploitability_score = 0
+        if network_attack_vector:
+            if node_with_incoming_connections.get(node_name):
+                exploitability_score = 2
+            else:
+                exploitability_score = 1
+        exploit_poc = vulnerability['_source'].get("exploit_poc", "")
+        exploit_present = 1 if exploit_poc else 0
+        # append this image if this cve present in more than one images
+        # introducing a new field
+        if cve_id in uniq_map:
+            prev_vulnerability = uniq_map.get(cve_id)
+            if prev_vulnerability['_source']['cve_overall_score'] > vulnerability['_source']['cve_overall_score']:
+                vulnerability = prev_vulnerability
+            vulnerable_images = prev_vulnerability.get('_source', {}).get('vulnerable_images', [])
+            if node_name not in vulnerable_images:
+                vulnerable_images.append(node_name)
+            vulnerability['_source']['vulnerable_images'] = vulnerable_images
+            new_exp_score = max(exploitability_score,
+                                prev_vulnerability.get('_source', {}).get('exploitability_score', []))
+            vulnerability['_source']['exploitability_score'] = new_exp_score
+            vulnerability['_source']['attack_vector'] = attack_vector_map[new_exp_score][0]
+            vulnerability['_source']['live_connection'] = attack_vector_map[new_exp_score][1]
+            prev_exploit_poc = prev_vulnerability['_source'].get("exploit_poc", "")
+            vulnerability['_source']['exploit_poc'] = exploit_poc or prev_exploit_poc
+            vulnerability['_source']['exploit_present'] = max(
+                exploit_present,
+                1 if prev_exploit_poc else 0
+            )
+        else:
+            vulnerability['_source']['vulnerable_images'] = [node_name]
+            vulnerability['_source']['exploitability_score'] = exploitability_score
+            vulnerability['_source']['attack_vector'] = attack_vector_map[exploitability_score][0]
+            vulnerability['_source']['live_connection'] = attack_vector_map[exploitability_score][1]
+            vulnerability['_source']['exploit_present'] = exploit_present
+        vulnerability['_source']['uscore'] = ((1 + (
+                min(max_uptime, active_nodes.get(cve_doc.get("cve_container_image"), 0)) /
+                (float)(max_uptime))) * cve_doc.get("cve_cvss_score"))
+        uniq_map[cve_doc.get("cve_id")] = vulnerability
+    cve_severity_map = defaultdict(int)
+    cve_severity_map['low'] = 1
+    cve_severity_map['medium'] = 2
+    cve_severity_map['high'] = 3
+    cve_severity_map['critical'] = 4
+    # Select top 10 uniq vulnerabilities
+    uniq_top_vulnerabilities = list(uniq_map.values())
+    uniq_top_vulnerabilities.sort(
+        key=lambda x: (
+            x.get('_source', {}).get('exploitability_score'),
+            cve_severity_map[x.get('_source', {}).get('cve_severity', '')],
+            x.get('_source', {}).get('exploit_present'),
+            x.get('_source', {}).get('cve_cvss_score', 0),
+        ),
+        reverse=True
+    )
+    rank = 0
+    current_uscore = None
+    for vulnerability in uniq_top_vulnerabilities:
+        if current_uscore != vulnerability.get('_source').get('uscore'):
+            current_uscore = vulnerability.get('_source').get('uscore')
+            vulnerability['_source']['rank'] = rank = rank + 1
+        else:
+            vulnerability['_source']['rank'] = rank
+    return uniq_top_vulnerabilities[:size]

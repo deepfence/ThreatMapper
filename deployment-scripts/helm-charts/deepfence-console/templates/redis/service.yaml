@@ -13,7 +13,6 @@ spec:
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     name: deepfence-redis
-
   ports:
     - name: deepfence-redis-port
       port: 6379

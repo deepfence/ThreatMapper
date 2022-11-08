@@ -17,16 +17,32 @@ image:
   pullSecretName: docker-deepfence-secret
 
 # Use custom ssl certificate for Deepfence UI
-# Copy *.key and *.crt file to current directory (same directory as values.yaml file)
-# Supported file extensions are .crt and .key (.pem, .cert not supported)
-# tls:
-#  certFile: "server.crt"
-#  keyFile: "server.key"
+# custom certificates can be configured using two options
+# existing secret or base64 encoded cert and key string
+# provide one off the two options to configure custom certificates
 tls:
-  certFile: ""
-  keyFile: ""
-# for SaaS deployments
-  pemfile: ""
+  # provide secret name which contains tls cert and key
+  # reference: https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets
+  # make sure to create secret in the same namespace as that of the console
+  secretName: ""
+  # embed given cert and key as secret and mount to router pod
+  # provide certificate and key in below example format
+  # cert: |-
+  #   -----BEGIN CERTIFICATE-----
+  #   MIIFCTCCAvGgAwIBAgIUNshy8GFTjfUR7inZ1JCcN+tDuh4wDQYJKoZIhvcNAQEL
+  #   .....
+  #   JY7f+DC42mQvWWXbll+I60CEtZyExtfBEbSihOR2NoG3WMhXEGAXO5C/jEnSDHKt
+  #   BMepE4d9+TQFcPQ/OKSlP8FB2nPKZJdM+JlXDFWqeKvbdYS4QErRLd33qUmq
+  #   -----END CERTIFICATE-----
+  # key: |-
+  #   -----BEGIN PRIVATE KEY-----
+  #   MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQDECeUraonCz/89
+  #   .....
+  #   uK1Rv6SE6KrBFb8JYEpjyjiAlVUGDANqbMtB2dvJ/GD6vTch/kLyZ95x7+V0qXGV
+  #   bHEvWp7ugCTFhurM+lla0d+ElDO2
+  #   -----END PRIVATE KEY-----
+  cert: ""
+  key: ""
 
 # Configure port for browser / agents
 managementConsolePort: "443"
