@@ -563,8 +563,11 @@ class CveScanDockerPrivateRegistryImages(CveScanRegistryImages):
     def validate(self):
         try:
             verify, cert = self.get_self_signed_certs()
+            auth = None
+            if self.docker_pvt_registry_username != "" or self.docker_pvt_registry_username is None:
+                auth = (self.docker_pvt_registry_username, self.docker_pvt_registry_password)
             resp = requests.get(self.docker_pvt_registry_url + "/v2/_catalog", verify=verify, cert=cert,
-                                auth=(self.docker_pvt_registry_username, self.docker_pvt_registry_password))
+                                auth=auth)
             if resp.status_code == 200:
                 return True
             else:
