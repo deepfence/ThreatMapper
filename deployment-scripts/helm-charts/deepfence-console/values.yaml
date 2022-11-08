@@ -99,7 +99,7 @@ db:
     storageUUID: hNQ55qppT5GGybF52ZGlOQ
     ## topic configurations
     kafka_topic_replicas: 3
-    kafka_topic_retention_ms: 86400000
+    kafka_topic_retention_ms: "86400000" # values needs to be quoted
 
 # (Optional) Set custom name for the cluster and hostname prefix for console vm's to easily identify in Deepfence UI.
 # Example: df-console or deepfence-console
