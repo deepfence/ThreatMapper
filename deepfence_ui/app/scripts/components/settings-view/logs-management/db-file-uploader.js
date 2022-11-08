@@ -15,6 +15,11 @@ export const DbFileUploader = () => {
     }
   };
   const handleSubmission = () => {
+    if (!selectedFile?.name?.toLowerCase?.().endsWith?.('.tar.gz')) {
+      setError('Invalid file type, only tar.gz file is allowed');
+      return;
+    }
+
     const url = `${downloadApiEndPoint()}/upload-vulnerability-db`;
     const formData = new FormData();
 
