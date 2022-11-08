@@ -1148,7 +1148,7 @@ def delete_resources():
                 
                 query_compliance_doc_update = {
                     "script": {
-                        "source": f"ctx._source.result.{status} = 0",
+                        "source": f"ctx._source.result.{status} = 0;" + "if (ctx._source.result.info + ctx._source.result.warn + ctx._source.result.pass + ctx._source.result.note == 0) { ctx.op = \"delete\" }",
                         "lang": "painless"
                     },
                     "query": {
@@ -1158,21 +1158,10 @@ def delete_resources():
                     }
                 }
                 
-                query_compliance_doc_delete = {
-                    "script": {
-                        "source": "if (ctx._source.result.info + ctx._source.result.warn + ctx._source.result.pass + ctx._source.result.note == 0) { ctx.op = \"delete\" } else {ctx.op = \"noop\"}",
-                        "lang": "painless"
-                    },
-                    "query": {
-                        "bool": {
-                            "must": and_terms
-                        }
-                    }
-                }
                 
                 query_cloud_compliance_doc_update = {
                     "script": {
-                        "source": f"ctx._source.result.{status} = 0",
+                        "source": f"ctx._source.result.{status} = 0;" + "if (ctx._source.result.info + ctx._source.result.ok + ctx._source.result.skip + ctx._source.result.alarm == 0) { ctx.op = \"delete\" }" ,
                         "lang": "painless"
                     },
                     "query": {
@@ -1182,23 +1171,10 @@ def delete_resources():
                     }
                 }
                 
-                query_cloud_compliance_doc_delete = {
-                    "script": {
-                        "source": "if (ctx._source.result.info + ctx._source.result.ok + ctx._source.result.skip + ctx._source.result.alarm == 0) { ctx.op = \"delete\" } else {ctx.op = \"noop\"}",
-                        "lang": "painless"
-                    },
-                    "query": {
-                        "bool": {
-                            "must": and_terms
-                        }
-                    }
-                }
                 
                 ESConn.update_by_query(index=CLOUD_COMPLIANCE_INDEX,body=query_cloud_compliance_doc_update )
                 ESConn.update_by_query(index=COMPLIANCE_LOGS_INDEX,body=query_compliance_doc_update )
-                time.sleep(15)
-                ESConn.update_by_query(index=CLOUD_COMPLIANCE_INDEX,body=query_cloud_compliance_doc_delete )
-                ESConn.update_by_query(index=COMPLIANCE_LOGS_INDEX,body=query_compliance_doc_delete )
+                
                  
         message = "Successfully scheduled deletion of selected compliance scan reports"
     else:

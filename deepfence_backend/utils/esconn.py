@@ -1503,7 +1503,6 @@ class ESConn:
     @staticmethod
     def update_by_query(**kwargs):
         try:
-            print("kwargs",kwargs)
             resp = EL_CLIENT.update_by_query(**kwargs)
         except Exception as e:
             raise e
