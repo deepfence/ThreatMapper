@@ -442,6 +442,9 @@ class CveScanDockerHubImages(CveScanRegistryImages):
 
     def validate(self):
         try:
+            print("not authenticating for empty username")
+            if self.docker_hub_username == "" or self.docker_hub_username is None:
+                return True
             resp = requests.post(self.docker_hub_url + "/users/login/",
                                  json={"username": self.docker_hub_username, "password": self.docker_hub_password})
             if resp.status_code == 200:
