@@ -459,18 +459,22 @@ class CveScanDockerHubImages(CveScanRegistryImages):
         images_list = []
         try:
             headers = {}
-            resp = requests.post(self.docker_hub_url + "/users/login/",
-                                 json={"username": self.docker_hub_username, "password": self.docker_hub_password})
-            cookies = resp.cookies
-            auth_token = resp.json().get("token", "")
-            if not auth_token:
-                return images_list
-            headers["Authorization"] = "JWT " + auth_token
+            cookies = None
+            if not (self.docker_hub_username == "" or self.docker_hub_username is None):
+                resp = requests.post(self.docker_hub_url + "/users/login/",
+                                     json={"username": self.docker_hub_username, "password": self.docker_hub_password})
+                cookies = resp.cookies
+                auth_token = resp.json().get("token", "")
+                if not auth_token:
+                    return images_list
+                headers["Authorization"] = "JWT " + auth_token
             image_from_date = datetime.now() - timedelta(days=filter_past_days)
             image_from_date = image_from_date.replace(hour=0, minute=0, second=0, microsecond=0)
             resp = requests.get(
                 self.docker_hub_url + "/repositories/" + self.docker_hub_namespace + "/?page_size=100",
                 headers=headers, cookies=cookies)
+            print(resp)
+            print(resp.status_code)
             if resp.status_code != 200:
                 return images_list
             resp = resp.json()
