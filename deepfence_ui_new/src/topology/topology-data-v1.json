@@ -1,0 +1,87 @@
+{
+  "nodes": {
+    "add": [
+      {
+        "id": "out-theinternet",
+        "label": "The Internet",
+        "labelMinor": "Outbound connections",
+        "rank": "out-theinternet",
+        "shape": "cloud",
+        "pseudo": true,
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "in-theinternet",
+        "label": "The Internet",
+        "labelMinor": "Inbound connections",
+        "rank": "in-theinternet",
+        "shape": "cloud",
+        "pseudo": true,
+        "adjacency": [
+          "aws;\u003ccloud_provider\u003e",
+          "azure;\u003ccloud_provider\u003e"
+        ],
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "aws;\u003ccloud_provider\u003e",
+        "label": "AWS",
+        "labelMinor": "",
+        "rank": "aws",
+        "shape": "aws",
+        "metadata": [
+          { "id": "name", "label": "Name", "value": "aws", "priority": 1.0 },
+          { "id": "label", "label": "Label", "value": "AWS", "priority": 2.0 }
+        ],
+        "adjacency": ["aws;\u003ccloud_provider\u003e", "out-theinternet"],
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "azure;\u003ccloud_provider\u003e",
+        "label": "Azure",
+        "labelMinor": "",
+        "rank": "azure",
+        "shape": "azure",
+        "metadata": [
+          { "id": "name", "label": "Name", "value": "azure", "priority": 1.0 },
+          { "id": "label", "label": "Label", "value": "Azure", "priority": 2.0 }
+        ],
+        "immediate_parent_id": ""
+      },
+      {
+        "id": "digital_ocean;\u003ccloud_provider\u003e",
+        "label": "DigitalOcean",
+        "labelMinor": "",
+        "rank": "digital_ocean",
+        "shape": "digital_ocean",
+        "metadata": [
+          { "id": "name", "label": "Name", "value": "digital_ocean", "priority": 1.0 },
+          { "id": "label", "label": "Label", "value": "DigitalOcean", "priority": 2.0 }
+        ],
+        "adjacency": ["digital_ocean;\u003ccloud_provider\u003e"],
+        "immediate_parent_id": ""
+      }
+    ],
+    "update": null,
+    "remove": null,
+    "reset": true
+  },
+  "edges": {
+    "add": [
+      {
+        "source": "aws;\u003ccloud_provider\u003e",
+        "target": "aws;\u003ccloud_provider\u003e"
+      },
+      { "source": "aws;\u003ccloud_provider\u003e", "target": "out-theinternet" },
+      {
+        "source": "digital_ocean;\u003ccloud_provider\u003e",
+        "target": "digital_ocean;\u003ccloud_provider\u003e"
+      },
+      { "source": "in-theinternet", "target": "aws;\u003ccloud_provider\u003e" },
+      { "source": "in-theinternet", "target": "azure;\u003ccloud_provider\u003e" }
+    ],
+    "remove": null
+  },
+  "reset": true,
+  "metadata": { "children_count": { "": { "cloud-providers": 5 } } }
+}

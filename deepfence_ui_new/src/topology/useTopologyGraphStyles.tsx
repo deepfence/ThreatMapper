@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { COLORS } from '../graph/theme';
 import { arrayTransformByFunction, basename, ellipsize } from '../graph/utils';
 import { getNodeIcon } from '../utils/node-icons';
-import { nodeSize, nodeTypeMapping } from './utils';
+import { nodeSize, serverToUINodeMap } from './utils';
 
 export type ApiNodeType = {
   id: string;
@@ -33,7 +33,7 @@ const getNodeId = (nodeData: IUserNode) => {
 const getNodeType = (nodeData: IUserNode) => {
   // we expect if type exist then it is a process node
   const [, type] = nodeData.id.split(';', 2);
-  let nodeType = nodeTypeMapping(type);
+  let nodeType = serverToUINodeMap(type);
   if (nodeType == undefined) {
     if (type) {
       nodeType = 'process';
@@ -82,11 +82,18 @@ const addNodeAttributes = (nodeData: IUserNode) => {
   }
   nodeData.id = nodeId;
 
+  let parent_id = nodeData.immediate_parent_id;
+  if (parent_id === '') {
+    parent_id = 'root';
+  }
+
+  // nodeData.parent_id = parent_id;
+
   const nodeType = getNodeType(nodeData);
   if (!nodeType) {
     return;
   }
-  nodeData.nodeType = nodeType;
+  nodeData.node_type = nodeType;
 
   const size = getNodeSize(nodeType);
   if (size) {
@@ -120,6 +127,7 @@ const createGraphinNodeStyles = (node: IUserNode) => {
   };
 
   const nodes: N = {
+    ...nodeData,
     id: nodeData.id,
     keyshape: {
       size: nodeData.size,
@@ -184,11 +192,12 @@ export const useTopologyGraphStyles = (data: TData) => {
         return {
           id: _node.id,
           style: _node,
+          node_type: _node.node_type,
+          parent_id: _node.parent_id,
         };
       }
     });
   }, [data.nodes]);
-
   return {
     edges,
     nodes,

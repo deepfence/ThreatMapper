@@ -1,0 +1,51 @@
+{
+  "nodes": {
+    "add": [
+      {
+        "id": "eastus-azure;\u003ccloud_region\u003e",
+        "label": "eastus",
+        "labelMinor": "azure",
+        "rank": "eastus",
+        "shape": "azure-cloud_region",
+        "metadata": [
+          { "id": "name", "label": "Name", "value": "eastus", "priority": 1.0 },
+          {
+            "id": "cloud_provider",
+            "label": "Cloud Provider",
+            "value": "azure",
+            "priority": 2.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "azure;\u003ccloud_provider\u003e",
+            "label": "Azure",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "immediate_parent_id": "azure;\u003ccloud_provider\u003e"
+      }
+    ],
+    "update": null,
+    "remove": null
+  },
+  "edges": {
+    "add": [
+      { "source": "in-theinternet", "target": "eastus-azure;\u003ccloud_region\u003e" }
+    ],
+    "remove": [
+      { "source": "in-theinternet", "target": "azure;\u003ccloud_provider\u003e" },
+      {
+        "source": "digital_ocean;\u003ccloud_provider\u003e",
+        "target": "digital_ocean;\u003ccloud_provider\u003e"
+      }
+    ]
+  },
+  "reset": false,
+  "metadata": {
+    "children_count": {
+      "": { "cloud-providers": 5 },
+      "azure;\u003ccloud_provider\u003e": { "cloud-regions": 1, "kubernetes-clusters": 0 }
+    }
+  }
+}
