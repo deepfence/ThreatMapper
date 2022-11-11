@@ -7,15 +7,17 @@ const nest = (items, id = null, link = 'parent_id') => items
   .filter(item => item[link] === id)
   .map(item => ({ ...item, children: nest(items, item.id) }));
 
-const recursiveRemoveChildren = (data, children) => {
+const recursiveRemoveChildren = (data, children, removedExpandedChildren) => {
   if (children) {
     for (const i in children) {
       const child = children[i];
-      if (child.children) {
-        data = recursiveRemoveChildren(data, child.children);
+      const childHasChildren = !!child?.children?.length;
+      if (childHasChildren) {
+        data = recursiveRemoveChildren(data, child.children, removedExpandedChildren);
       }
       const index = data.findIndex(item => item.id === child.id);
       if (index > -1) {
+        if (childHasChildren) removedExpandedChildren.push(data.get(index))
         data = data.delete(index);
       }
     }
@@ -29,14 +31,6 @@ export class MultiCloudTable {
     this.data = makeList(data);
     this.tableOptions = tableOptions;
     this.reRenderCb = reRenderCb;
-  }
-
-  addData(parentId, children) {
-    // add parentId to children
-    children.forEach((child) => {
-      child.parent_id = parentId;
-    });
-    this.data = children;
   }
 
   updateData(parentId, delta) {
@@ -84,12 +78,11 @@ export class MultiCloudTable {
     return this.data;
   }
 
-  removeData(data, id) {
-    this.data = this.data.delete(data);
-  }
-
+  // returns removed children that were expanded
   removeChildren(children) {
-    this.data = recursiveRemoveChildren(this.data, children);
+    const removedExpandedChildren = [];
+    this.data = recursiveRemoveChildren(this.data, children, removedExpandedChildren);
+    return removedExpandedChildren;
   }
 
   getTableTreeData() {

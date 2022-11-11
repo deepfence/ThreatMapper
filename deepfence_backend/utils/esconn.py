@@ -6,7 +6,7 @@ from elasticsearch import helpers
 from elasticsearch import Elasticsearch
 from elasticsearch.client.indices import IndicesClient
 
-from utils.constants import CVE_SCAN_LOGS_INDEX, ES_TERMS_AGGR_SIZE, \
+from utils.constants import COMPLIANCE_INDEX, CVE_SCAN_LOGS_INDEX, ES_TERMS_AGGR_SIZE, \
     TIME_UNIT_MAPPING, SECRET_SCAN_LOGS_INDEX, MALWARE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX
 from utils.common import (
     sort_expression,
@@ -498,6 +498,8 @@ class ESConn:
         body.update(q)
         res = EL_CLIENT.search(index=index_name, body=body, _source=_source)
         return res
+
+
 
     @staticmethod
     def msearch(body):
@@ -1372,8 +1374,14 @@ class ESConn:
         }
         if and_terms_must_not:
             body["query"]["bool"]["must_not"] = and_terms_must_not
+        # print("body", index_name, body)
         EL_CLIENT.delete_by_query(index=index_name, body=body,
                                   wait_for_completion=wait_for_completion)
+
+
+
+
+
 
     @staticmethod
     def critical_notifications(index_name, field_name, filters, start_date, end_date='now'):

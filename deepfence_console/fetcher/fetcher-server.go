@@ -381,11 +381,10 @@ func handleMultiPartPostMethod(respWrite http.ResponseWriter, req *http.Request)
 	}
 	fileName := req.Header.Get("DF_FILE_NAME")
 	if fileName == "" {
-		http.Error(respWrite, "Required information missing",
-			http.StatusInternalServerError)
+		http.Error(respWrite, "Required information missing", http.StatusInternalServerError)
 		return
 	}
-	if fileName != filepath.Clean(fileName) || !strings.HasPrefix(fileName, "/data") {
+	if fileName != filepath.Clean(fileName) || !strings.HasPrefix(fileName, "/data") || strings.HasSuffix(fileName, ".exe") || strings.HasSuffix(fileName, ".sh") {
 		http.Error(respWrite, "Invalid request", http.StatusBadRequest)
 		return
 	}
@@ -576,45 +575,56 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 	req.ParseMultipartForm(150 << 20)
 
 	inputFilePtr, handler, errVal := req.FormFile("file")
-	if handler == nil {
-		errMsg := "Error while getting data from client "
-		http.Error(respWrite, errMsg, http.StatusInternalServerError)
+	if errVal != nil || handler == nil {
+		http.Error(respWrite, errVal.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer inputFilePtr.Close()
 
-	if handler.Filename != filepath.Clean(handler.Filename) {
-		http.Error(respWrite, "Invalid request", http.StatusBadRequest)
+	if !strings.HasSuffix(handler.Filename, ".tar.gz") || handler.Filename != filepath.Clean(handler.Filename) {
+		http.Error(respWrite, "Uploaded file should be a .tar.gz archive", http.StatusBadRequest)
 		return
 	}
 
 	// Create file
-	dst, err := os.Create("/tmp/" + handler.Filename)
+	fileName := "/tmp/" + handler.Filename
+	dst, err := os.Create(fileName)
 	if err != nil {
 		http.Error(respWrite, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer dst.Close()
-
-	if errVal != nil {
-		errMsg := "Error while writing post data. " + errVal.Error()
-		http.Error(respWrite, errMsg, http.StatusInternalServerError)
-		return
-	}
-	defer inputFilePtr.Close()
 	_, copyErr := io.Copy(dst, inputFilePtr)
-
-	// remove the tar.gz file after extraction
-	defer os.Remove("/tmp/" + handler.Filename)
-
 	if copyErr != nil {
+		dst.Close()
 		errMsg := "Error while writing post data. " + copyErr.Error()
 		http.Error(respWrite, errMsg, http.StatusInternalServerError)
 		return
 	}
-	extractFolder := "/root/.cache/grype/db/3"
+	dst.Sync()
+	dst.Close()
+
+	file, err := os.Open(fileName)
+	if err != nil {
+		http.Error(respWrite, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+	buf := make([]byte, 512)
+	_, err = file.Read(buf)
+	if err != nil {
+		http.Error(respWrite, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if http.DetectContentType(buf) != "application/x-gzip" {
+		http.Error(respWrite, "Uploaded file should be a .tar.gz archive", http.StatusBadRequest)
+		return
+	}
+
 	go func() {
-		dst.Sync()
-		err = extractTarFile("/tmp/"+handler.Filename, extractFolder)
+		// remove the tar.gz file after extraction
+		defer os.Remove(fileName)
+		extractFolder := "/root/.cache/grype/db/3"
+		err = extractTarFile(fileName, extractFolder)
 		msg := "Complete"
 		if err != nil {
 			msg = "Error while extracting file: " + err.Error()
@@ -634,12 +644,11 @@ func handleVulnerabilityFeedTarUpload(respWrite http.ResponseWriter, req *http.R
 		// call mapper api to update grype db
 		updateVulnerabilityMapperDB()
 	}()
+	respWrite.WriteHeader(http.StatusOK)
 	_, err = fmt.Fprintf(respWrite, "vulnerability db updated")
 	if err != nil {
 		fmt.Println(handler.Filename, err)
 	}
-
-	respWrite.WriteHeader(http.StatusOK)
 }
 
 func updateVulnerabilityMapperDB() {

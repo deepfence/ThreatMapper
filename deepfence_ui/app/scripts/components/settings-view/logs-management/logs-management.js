@@ -19,6 +19,19 @@ const severityCollection = [
   { name: 'All', value: '' },
 ];
 
+// For resource compliance deletion, options are status
+const complianceStatusCollection = [
+  { name: 'Info', value: 'info' },
+  { name: 'Note', value: 'note' },
+  { name: 'Pass', value: 'pass' },
+  { name: 'Warn', value: 'warn' },
+  { name: 'Alarm', value: 'alarm' },
+  { name: 'Ok', value: 'ok' },
+  { name: 'Skip', value: 'skip' },
+  { name: 'All', value: '' },
+];
+
+const COMPLIANCE = 'compliance';
 const resourceCollection = [
   {
     name: 'Vulnerabilities',
@@ -30,7 +43,7 @@ const resourceCollection = [
   },
   {
     name: 'Compliances',
-    value: 'compliance-scan',
+    value: COMPLIANCE,
   },
   {
     name: 'Malwares',
@@ -119,6 +132,11 @@ const VulnerabilityManagementView = props => {
       doc_type: docType,
       time_unit: duration.time_unit,
     };
+    // api need key as status not severity for compliance
+    if (docType === COMPLIANCE) {
+      delete params.severity;
+      params.status = selectedSeverity;
+    }
     props.dispatch(submitAlertsDeleteRequest(params));
   };
 
@@ -126,7 +144,14 @@ const VulnerabilityManagementView = props => {
     const errorMsgContainer = {
       marginTop: '15px',
     };
-    const severityList = severityCollection.map(el => el);
+    // option is different for compliance resource
+    let optionList = [];
+    if (docType === COMPLIANCE) {
+      optionList = complianceStatusCollection.map(el => el);
+    } else {
+      optionList = severityCollection.map(el => el);
+    }
+    const severityList = optionList;
     const durationOptions = durationOption.map(el => ({
       value: JSON.stringify({
         number: el.number,
@@ -146,8 +171,16 @@ const VulnerabilityManagementView = props => {
             {resourceCollection.map(option => {
               return (
                 <div key={option.value} className="severity-option">
-                  <input type="radio" value={option.value} name="docType" id={`delete-severity-doctype-${option.value}`} />
-                  <label htmlFor={`delete-severity-doctype-${option.value}`} className="radio-label">
+                  <input
+                    type="radio"
+                    value={option.value}
+                    name="docType"
+                    id={`delete-severity-doctype-${option.value}`}
+                  />
+                  <label
+                    htmlFor={`delete-severity-doctype-${option.value}`}
+                    className="radio-label"
+                  >
                     {option.name}
                   </label>
                 </div>
@@ -160,7 +193,9 @@ const VulnerabilityManagementView = props => {
               onChange={() => handleRadioButtonChange(event)}
               style={{ paddingTop: '20px' }}
             >
-              <div className="wrapper-heading">Choose Severity</div>
+              <div className="wrapper-heading">
+                {docType === COMPLIANCE ? 'Choose Status' : 'Choose Severity'}
+              </div>
               {severityList.map(option => {
                 return (
                   <div key={option.value} className="severity-option">
@@ -171,7 +206,10 @@ const VulnerabilityManagementView = props => {
                       checked={option.value === selectedSeverity}
                       id={`delete-severity-${option.value}`}
                     />
-                    <label htmlFor={`delete-severity-${option.value}`} className="radio-label">
+                    <label
+                      htmlFor={`delete-severity-${option.value}`}
+                      className="radio-label"
+                    >
                       {option.name}
                     </label>
                   </div>
@@ -187,18 +225,18 @@ const VulnerabilityManagementView = props => {
             <div className="duration-container df-select-field">
               <DFSelect
                 options={durationOptions}
-                onChange={(selected) => handleDropDownChange(selected)}
+                onChange={selected => handleDropDownChange(selected)}
                 value={selectedDuration}
                 clearable={false}
                 simpleValue
               />
             </div>
-              <div
-                className="btn-delete"
-                onClick={() => handleSeverityDeletionSubmit()}
-              >
-                Delete
-              </div>
+            <div
+              className="btn-delete"
+              onClick={() => handleSeverityDeletionSubmit()}
+            >
+              Delete
+            </div>
           </div>
         </div>
         <div className="error-msg-container" style={errorMsgContainer}>
