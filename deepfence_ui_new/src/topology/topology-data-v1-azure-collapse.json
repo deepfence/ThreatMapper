@@ -1,0 +1,15 @@
+{
+  "nodes": { "add": null, "update": null, "remove": null },
+  "edges": {
+    "add": [
+      { "source": "azure;\u003ccloud_provider\u003e", "target": "out-theinternet" },
+      {
+        "source": "digital_ocean;\u003ccloud_provider\u003e",
+        "target": "digital_ocean;\u003ccloud_provider\u003e"
+      }
+    ],
+    "remove": null
+  },
+  "reset": false,
+  "metadata": { "children_count": { "": { "cloud-providers": 5 } } }
+}

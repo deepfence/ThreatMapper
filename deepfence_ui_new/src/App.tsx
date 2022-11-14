@@ -1,5 +1,5 @@
-import { Demo } from './graph/Demo';
+import { Demo2 } from './graph/Demo2';
 
 export default () => {
-  return <Demo />;
+  return <Demo2 />;
 };

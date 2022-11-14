@@ -1,4 +1,4 @@
-import { IUserEdge, IUserNode, NodeStyle } from '@antv/graphin';
+// import { IUserEdge, IUserNode, NodeStyle } from '@antv/graphin';
 import { useMemo } from 'react';
 
 import { COLORS } from '../graph/theme';

@@ -2,15 +2,15 @@
  * General Graph utilities
  */
 
-import {
-  Graph,
-  GraphinData,
-  IG6GraphEvent,
-  IUserEdge,
-  IUserNode,
-  Utils,
-} from '@antv/graphin';
-import { Combo } from '@antv/graphin/lib/typings/type';
+// import {
+//   Graph,
+//   GraphinData,
+//   IG6GraphEvent,
+//   IUserEdge,
+//   IUserNode,
+//   Utils,
+// } from '@antv/graphin';
+// import { Combo } from '@antv/graphin/lib/typings/type';
 
 type GraphinItemType = IUserNode | IUserEdge | Combo[] | undefined | null;
 export type GraphItem = IG6GraphEvent['item'];
@@ -50,6 +50,28 @@ export function arrayTransformByFunction<T>(
   }, []);
 }
 
+export const debounce = (cb: () => void, ms = 500) => {
+  let timer = null;
+
+  return (...args) => {
+    let cb_args = args;
+    const doCall = () => {
+      cb(...cb_args);
+      cb_args = null;
+    };
+
+    if (timer === null) {
+      timer = setTimeout(() => {
+        timer = null;
+
+        if (cb_args !== null) {
+          doCall();
+        }
+      }, ms);
+    }
+  };
+};
+
 export const basename = (path: string) => {
   const i = path.lastIndexOf('/');
   if (i >= 0) {
@@ -66,9 +88,18 @@ export const ellipsize = (text: string, n: number) => {
   return text.substring(0, n - 3) + '...';
 };
 
-export const itemSetExpanded = (item) => {
+const ExpandState = {
+  EXPANDING: 'EXPANDING',
+  EXPANDED: 'EXPANDED',
+};
+
+export const itemSetExpanded = (item: GraphItem) => {
   const model = item.get('model');
   model.expand_state = ExpandState.EXPANDED;
+};
+
+export const itemIsExpanding = (item: GraphItem) => {
+  return item.get('model').expand_state === ExpandState.EXPANDING;
 };
 
 export const itemIsExpanded = (item: GraphItem) => {
@@ -78,6 +109,22 @@ export const itemIsExpanded = (item: GraphItem) => {
 const itemUnsetExpanded = (item: GraphItem) => {
   const model = item?.get?.('model');
   delete model.expand_state;
+};
+
+export const nodeToFront = (node) => {
+  node.toFront();
+  for (const edge of node.getEdges()) {
+    edge.toFront();
+  }
+
+  if (node.getType() !== 'combo') {
+    return;
+  }
+
+  const children = node.getChildren();
+  for (const node of children.nodes) {
+    nodeToFront(node);
+  }
 };
 
 export const removeNodeItem = (graph: Graph, item: GraphItem) => {
