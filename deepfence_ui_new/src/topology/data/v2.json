@@ -1,0 +1,116 @@
+{
+  "nodes": {
+    "add": [
+      {
+        "id": "ap-south-1-aws;\u003ccloud_region\u003e",
+        "label": "ap-south-1",
+        "labelMinor": "aws",
+        "rank": "ap-south-1",
+        "shape": "aws-cloud_region",
+        "metadata": [
+          { "id": "name", "label": "Name", "value": "ap-south-1", "priority": 1.0 },
+          {
+            "id": "cloud_provider",
+            "label": "Cloud Provider",
+            "value": "aws",
+            "priority": 2.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "immediate_parent_id": "aws;\u003ccloud_provider\u003e"
+      },
+      {
+        "id": "us-east-2-aws;\u003ccloud_region\u003e",
+        "label": "us-east-2",
+        "labelMinor": "aws",
+        "rank": "us-east-2",
+        "shape": "aws-cloud_region",
+        "metadata": [
+          { "id": "name", "label": "Name", "value": "us-east-2", "priority": 1.0 },
+          {
+            "id": "cloud_provider",
+            "label": "Cloud Provider",
+            "value": "aws",
+            "priority": 2.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "immediate_parent_id": "aws;\u003ccloud_provider\u003e"
+      },
+      {
+        "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+        "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+        "labelMinor": "",
+        "rank": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+        "shape": "kubernetes_cluster",
+        "metadata": [
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 1.0
+          },
+          { "id": "cloud_provider", "label": "Cloud", "value": "aws", "priority": 2.0 }
+        ],
+        "parents": [
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "immediate_parent_id": "aws;\u003ccloud_provider\u003e"
+      }
+    ],
+    "update": null,
+    "remove": null
+  },
+  "edges": {
+    "add": [
+      {
+        "source": "ap-south-1-aws;\u003ccloud_region\u003e",
+        "target": "ap-south-1-aws;\u003ccloud_region\u003e"
+      },
+      {
+        "source": "ap-south-1-aws;\u003ccloud_region\u003e",
+        "target": "out-theinternet"
+      },
+      { "source": "in-theinternet", "target": "us-east-2-aws;\u003ccloud_region\u003e" },
+      {
+        "source": "us-east-2-aws;\u003ccloud_region\u003e",
+        "target": "us-east-2-aws;\u003ccloud_region\u003e"
+      }
+    ],
+    "remove": [
+      { "source": "in-theinternet", "target": "aws;\u003ccloud_provider\u003e" },
+      {
+        "source": "aws;\u003ccloud_provider\u003e",
+        "target": "aws;\u003ccloud_provider\u003e"
+      },
+      { "source": "aws;\u003ccloud_provider\u003e", "target": "out-theinternet" },
+      {
+        "source": "digital_ocean;\u003ccloud_provider\u003e",
+        "target": "digital_ocean;\u003ccloud_provider\u003e"
+      }
+    ]
+  },
+  "reset": false,
+  "metadata": {
+    "children_count": {
+      "aws;\u003ccloud_provider\u003e": { "kubernetes-clusters": 1, "cloud-regions": 2 },
+      "": { "cloud-providers": 5 }
+    }
+  }
+}

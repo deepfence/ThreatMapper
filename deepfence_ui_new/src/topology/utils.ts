@@ -2,33 +2,36 @@
  * Topology Graph utilities
  */
 
-import { IGraph } from '@antv/g6';
+import { IGraph, Item } from '@antv/g6';
 
 import {
   collapseNode,
   finishExpandingNode,
   itemExpandsAsCombo,
+  itemIsExpanded,
+  itemIsExpanding,
 } from '../graph/graphManager/expand-collapse';
 // import { IG6GraphEvent, IUserNode } from '@antv/graphin';
 import { COLORS, PALETTE } from '../graph/theme';
-import { IStringIndex } from '../graph/types';
-import { GraphItem, itemIsExpanded, itemIsExpanding } from '../graph/utils';
+import { ApiNodeItemType, ICustomNode, IItem, INode, IStringIndex } from '../graph/types';
 import { pointAround } from './gforce';
 import { StringIndexType } from './topology-client';
 
 export interface IAPIData {
   nodes: {
-    add: IStringIndex<string>[];
-    update: IStringIndex<string>[];
-    remove: IStringIndex<string>[];
+    add: ApiNodeItemType[];
+    update: ApiNodeItemType[];
+    remove: string[];
+    reset?: boolean;
   };
   edges: {
-    add: IStringIndex<string>[];
-    update: IStringIndex<string>[];
-    remove: IStringIndex<string>[];
+    add: ApiNodeItemType[];
+    update: ApiNodeItemType[];
+    remove: ApiNodeItemType[]; // edge remove is not string array in api response though node remove is
+    reset?: boolean;
   };
   reset: boolean;
-  metadata: IStringIndex<string>;
+  metadata: ApiNodeItemType;
 }
 
 export const nodeSize = (node_type: string) => {
@@ -41,12 +44,14 @@ export const nodeSize = (node_type: string) => {
   return size;
 };
 
-export const modelParentsToTopologyParents = (nodes) => {
-  const ret = {};
+export const modelParentsToTopologyParents = (nodes: ICustomNode[]) => {
+  const ret: IStringIndex<string> = {};
 
   for (const node of nodes) {
-    const node_type = modelNodeTypeToTopologyNodeType(node.node_type);
-    ret[node_type] = node.id;
+    const node_type = uiToServerNodeMap(node.node_type);
+    if (node_type !== null) {
+      ret[node_type] = node.id;
+    }
   }
 
   return ret;
@@ -72,7 +77,7 @@ export const modelNodeTypeToTopologyChildrenTypes = (
   return types[type];
 };
 
-export const uiToServerNodeParents = (nodes: IUserNode[]) => {
+export const uiToServerNodeParents = (nodes: ICustomNode[]) => {
   const ret: { [key: string]: string } = {};
 
   for (const node of nodes) {
@@ -139,7 +144,7 @@ export const getConditionalFontSize = (node_type: string) => {
 };
 
 // collapse or expand cases
-export const itemExpands = (item: IG6GraphEvent['item']) => {
+export const itemExpands = (item: IItem) => {
   const model = item?.get?.('model');
 
   switch (model.node_type) {
@@ -175,9 +180,9 @@ const cloudInfo = () => {
   };
 };
 
-const removeNodesCombo = (graph, item, nodes) => {
+const removeNodesCombo = (graph: IGraph, item: Item, nodes: string[]) => {
   const model = item.get('model');
-  const node_id = model.id;
+  const node_id: string = model.id;
   const combo_id = `${node_id}-combo`;
   const combo_model = graph.findById(combo_id).get('model');
   const combo_children_ids = combo_model.children_ids;
@@ -189,7 +194,7 @@ const removeNodesCombo = (graph, item, nodes) => {
     }
     combo_children_ids.delete(node_id);
 
-    const item = graph.findById(node_id);
+    const item = graph.findById(node_id) as ICustomNode;
     if (itemIsExpanded(item)) {
       collapseNode(graph, item);
     }
@@ -197,7 +202,7 @@ const removeNodesCombo = (graph, item, nodes) => {
   }
 };
 
-const addNodesCombo = (graph, item, nodes) => {
+const addNodesCombo = (graph: IGraph, item: IItem, nodes: ApiNodeItemType[]) => {
   const model = item.get('model');
   const node_id = model.id;
   const combo_id = `${node_id}-combo`;
@@ -235,7 +240,7 @@ const addNodesCombo = (graph, item, nodes) => {
   }
 };
 
-export const updateComboNode = (graph, item, delta) => {
+export const updateComboNode = (graph: IGraph, item: IItem, delta: IAPIData['nodes']) => {
   if (delta.remove) {
     removeNodesCombo(graph, item, delta.remove);
   }
@@ -245,13 +250,12 @@ export const updateComboNode = (graph, item, delta) => {
   }
 };
 
-const removeNodesSimple = (graph, item, nodes) => {
+const removeNodesSimple = (graph: IGraph, item: Item, nodes: string[]) => {
   const model = item.get('model');
-  const node_id = model.id;
   const children_ids = model.children_ids;
 
   for (const child_node_id of nodes) {
-    const child = graph.findById(child_node_id);
+    const child = graph.findById(child_node_id) as ICustomNode;
     if (!child || !children_ids.has(child_node_id)) {
       console.error('trying to remove an unknown child', child_node_id);
       continue;
@@ -259,13 +263,13 @@ const removeNodesSimple = (graph, item, nodes) => {
     children_ids.delete(child_node_id);
 
     if (itemIsExpanded(child)) {
-      collapseNode(graph, child);
+      collapseNode(graph, child, undefined, false);
     }
     removeNodeItem(graph, child);
   }
 };
 
-const addNodesSimple = (graph, item, nodes) => {
+const addNodesSimple = (graph: IGraph, item: Item, nodes: ApiNodeItemType[]) => {
   const model = item.get('model');
   const node_id = model.id;
   const children_ids = model.children_ids;
@@ -289,7 +293,7 @@ const addNodesSimple = (graph, item, nodes) => {
       cloudInfo,
       style: { ...nodeStyle(node, cloudInfo?.nodeStyle) },
       children_ids: new Set(),
-    });
+    }) as Item;
     graph.addItem('edge', {
       ...pseudoEdge(node_id, node.id),
       style: { ...model.cloudInfo?.edgeStyle },
@@ -299,9 +303,9 @@ const addNodesSimple = (graph, item, nodes) => {
   }
 };
 
-export const updateSimpleNode = (graph, item, delta) => {
+export const updateSimpleNode = (graph: IGraph, item: Item, delta: IAPIData['nodes']) => {
   if (delta.remove) {
-    removeNodesSimple(graph, item, delta.remove);
+    removeNodesSimple(graph, item, delta.remove as string[]);
   }
 
   if (delta.add) {
@@ -309,7 +313,7 @@ export const updateSimpleNode = (graph, item, delta) => {
   }
 };
 
-export const updateGraphNode = (graph, item, delta) => {
+export const updateGraphNode = (graph: IGraph, item: IItem, delta: IAPIData['nodes']) => {
   if (itemIsExpanding(item)) {
     finishExpandingNode(graph, item);
   }
@@ -321,50 +325,7 @@ export const updateGraphNode = (graph, item, delta) => {
   return updateSimpleNode(graph, item, delta);
 };
 
-export const updateNode = (graph: IGraph, item: GraphItem, nodes) => {
-  const model = item.get('model');
-  const node_id = model.id;
-  const children_ids = model.children_ids || new Set();
-  const cloudInfo = model.cloudInfo;
-
-  for (const node of nodes) {
-    const item = graph.findById(node.id);
-    if (item !== undefined) {
-      console.error(
-        `trying to add node that is already in the graph (parent=${node_id})`,
-        node,
-      );
-      continue;
-    }
-    const node_item = graph.addItem('node', {
-      ...node,
-      parent_id: node_id,
-      cloudInfo,
-      // style: { ...nodeStyle(node, cloudInfo?.nodeStyle) },
-      children_ids: new Set(),
-    });
-    graph.addItem('edge', {
-      ...pseudoEdge(node_id, node.id),
-      // style: { ...model.cloudInfo?.edgeStyle },
-    });
-    graph.updateItem(node.id, {
-      style: {
-        label: {
-          value: 'New Node Label',
-        },
-        keyshape: {
-          size: 80,
-          stroke: '#ff9f0f',
-          fill: '#ff9f0ea6',
-        },
-      },
-    });
-    children_ids.add(node.id);
-    node_item.refresh();
-  }
-};
-
-export const removeNodeItem = (graph: IGraph, item: GraphItem) => {
+export const removeNodeItem = (graph: IGraph, item: INode) => {
   for (const edge of item.getEdges()) {
     const edge_model = edge.get('model');
     if (edge_model.connection) {
@@ -377,7 +338,7 @@ export const removeNodeItem = (graph: IGraph, item: GraphItem) => {
 
 const nodeStyle = (node: StringIndexType<any>, override: StringIndexType<any>) => {
   let style: StringIndexType<string> = {};
-  const fill = {
+  const fill: IStringIndex<string> = {
     cloud: COLORS.CLOUD_PROVIDER,
     region: COLORS.REGION,
     host: COLORS.HOST,
@@ -399,7 +360,7 @@ const nodeStyle = (node: StringIndexType<any>, override: StringIndexType<any>) =
 
 export const updateGraphRootNodes = (graph: IGraph, delta: StringIndexType<any>) => {
   for (const node_id of delta.remove || []) {
-    const node = graph.findById(node_id);
+    const node = graph.findById(node_id) as INode;
     if (node === undefined) {
       console.error('trying to remove unknown root node', node_id);
       continue;
@@ -418,18 +379,18 @@ export const updateGraphRootNodes = (graph: IGraph, delta: StringIndexType<any>)
       x: pointAround(center_x),
       y: pointAround(center_y),
       cloudInfo: info,
-      style: nodeStyle(node, info?.nodeStyle),
+      style: nodeStyle(node, info?.nodeStyle ?? {}),
       children_ids: new Set(),
     });
   }
 };
 
-export const updateGraphEdges = (graph: IGraph, delta: EdgeDeltaType) => {
-  const removeEdge = (item: GraphItem) => {
+export const updateGraphEdges = (graph: IGraph, delta: IAPIData['edges']) => {
+  const removeEdge = (item: IItem) => {
     const model = item.get('model');
-    // if (model.connection === true) {
-    // }
-    graph.removeItem(model.id);
+    if (model.connection === true) {
+      graph.removeItem(model.id);
+    }
   };
 
   if (delta.reset) {
@@ -480,18 +441,19 @@ export const updateGraphEdges = (graph: IGraph, delta: EdgeDeltaType) => {
   }
 };
 
-export const getParents = (graph: IGraph, item: GraphItem) => {
-  const parents = [];
+export const getParents = (graph: IGraph, item: Item) => {
+  const parents: string[] = [];
 
-  let parent_id = item.get('model').parent_id;
+  let parent_id: string = item.get('model').parent_id;
   while (parent_id) {
-    let parent = graph.findById(parent_id);
+    let parent: ICustomNode = graph.findById(parent_id) as ICustomNode;
     if (parent) {
-      parent = parent.get('model');
+      parent = parent.get<ICustomNode>('model');
+      if (parent.node_type !== 'combo') {
+        parents.unshift(parent_id);
+      }
     }
-    if (parent.node_type !== 'combo') {
-      parents.unshift(parent_id);
-    }
+
     parent_id = parent.parent_id;
   }
 

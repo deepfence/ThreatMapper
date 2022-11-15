@@ -1,15 +1,14 @@
 /* eslint-disable */
 
 import { pointAround } from '../../topology/gforce';
-import { IGraph } from '../types';
-import { GraphItem } from '../utils';
+import { ICustomEdge, ICustomNode, IGraph, IItem, INode } from '../types';
 
 /* eslint-disable */
-export const expandNode = (item: GraphItem) => {
+export const expandNode = (item: IItem) => {
   itemSetExpanding(item);
 };
 
-export const finishExpandingNode = (graph: IGraph, item: GraphItem) => {
+export const finishExpandingNode = (graph: IGraph, item: IItem) => {
   const model = item.get('model');
 
   if (itemExpandsAsCombo(item)) {
@@ -19,12 +18,12 @@ export const finishExpandingNode = (graph: IGraph, item: GraphItem) => {
   return finishExpandSimpleNode(graph, item);
 };
 
-const finishExpandSimpleNode = (graph: IGraph, item: GraphItem) => {
+const finishExpandSimpleNode = (graph: IGraph, item: IItem) => {
   itemSetExpanded(item);
   graph.emit('df-track-item', { item });
 };
 
-const finishExpandCombo = (graph: IGraph, item: GraphItem) => {
+const finishExpandCombo = (graph: IGraph, item: IItem) => {
   const model = item.get('model');
   const node_id = model.id;
   const combo_id = `${node_id}-combo`;
@@ -50,7 +49,7 @@ const finishExpandCombo = (graph: IGraph, item: GraphItem) => {
   const combo_model = combo.get('model');
 
   const center_id = `${combo_id}-center`;
-  const center = graph.addItem('node', {
+  graph.addItem('node', {
     id: center_id,
     node_type: 'combo_center',
     parent_id: combo_id,
@@ -93,9 +92,9 @@ const finishExpandCombo = (graph: IGraph, item: GraphItem) => {
 
 export const collapseNode = (
   graph: IGraph,
-  item: GraphItem,
-  onNodeCollapsed: (item: GraphItem) => void,
-  isChild: boolean,
+  item: ICustomNode,
+  onNodeCollapsed?: (item: IItem) => void,
+  isChild?: boolean,
 ) => {
   if (itemExpandsAsCombo(item)) {
     return collapseCombo(graph, item, onNodeCollapsed, isChild);
@@ -105,20 +104,19 @@ export const collapseNode = (
 
 const collapseSimpleNode = (
   graph: IGraph,
-  item: GraphItem,
-  onNodeCollapsed: (item: GraphItem) => void,
-  isChild: boolean,
+  item: ICustomNode,
+  onNodeCollapsed?: (item: IItem) => void,
+  isChild?: boolean,
 ) => {
-  const model = item.get('model');
-  const node_id = model.id;
+  const model = item.get<ICustomNode>('model');
 
-  for (const edge of item.getOutEdges()) {
+  for (const edge of item.getOutEdges() as ICustomEdge[]) {
     graph.removeItem(edge.id);
   }
 
   if (model.children_ids) {
     for (const child_id of model.children_ids) {
-      const child = graph.findById(child_id);
+      const child: ICustomNode = graph.findById(child_id) as ICustomNode; // simple custom node
 
       if (itemIsExpanded(child)) {
         collapseNode(graph, child, onNodeCollapsed, true);
@@ -138,9 +136,9 @@ const collapseSimpleNode = (
 
 const collapseCombo = (
   graph: IGraph,
-  item: GraphItem,
-  onNodeCollapsed: (item: GraphItem) => void,
-  isChild: boolean,
+  item: ICustomNode,
+  onNodeCollapsed?: (item: IItem) => void,
+  isChild?: boolean,
 ) => {
   const model = item.get('model');
 
@@ -151,7 +149,7 @@ const collapseCombo = (
     if (combo_model.children_ids) {
       for (const child_id of combo_model.children_ids) {
         combo_model.children_ids.delete(child_id);
-        const child = graph.findById(child_id);
+        const child = graph.findById(child_id) as ICustomNode;
         if (itemIsExpanded(child)) {
           collapseNode(graph, child, onNodeCollapsed, true);
         }
@@ -165,8 +163,8 @@ const collapseCombo = (
   collapseSimpleNode(graph, item, onNodeCollapsed, isChild);
 };
 
-export const itemExpandsAsCombo = (item: GraphItem) => {
-  const model = item.get('model');
+export const itemExpandsAsCombo = (item: IItem | null) => {
+  const model = item?.get('model');
   return (
     model.node_type === 'kubernetes_cluster' ||
     model.node_type === 'host' ||
@@ -175,7 +173,7 @@ export const itemExpandsAsCombo = (item: GraphItem) => {
   );
 };
 
-export const itemExpands = (item: GraphItem) => {
+export const itemExpands = (item: IItem) => {
   const model = item.get('model');
 
   switch (model.node_type) {
@@ -197,7 +195,7 @@ export const pseudoEdge = (source: string, target: string) => ({
   pseudo: true,
 });
 
-export const removeNodeItem = (graph: IGraph, item: GraphItem) => {
+export const removeNodeItem = (graph: IGraph, item: INode) => {
   for (const edge of item.getEdges()) {
     const edge_model = edge.get('model');
     if (edge_model.connection) {
@@ -215,25 +213,25 @@ const ExpandState = {
   EXPANDED: 'EXPANDED',
 };
 
-const itemSetExpanding = (item: GraphItem) => {
+const itemSetExpanding = (item: IItem) => {
   const model = item.get('model');
   model.expand_state = ExpandState.EXPANDING;
 };
 
-const itemSetExpanded = (item: GraphItem) => {
+const itemSetExpanded = (item: IItem) => {
   const model = item.get('model');
   model.expand_state = ExpandState.EXPANDED;
 };
 
-const itemUnsetExpanded = (item: GraphItem) => {
+const itemUnsetExpanded = (item: IItem) => {
   const model = item.get('model');
   delete model.expand_state;
 };
 
-export const itemIsExpanding = (item: GraphItem) => {
+export const itemIsExpanding = (item: IItem) => {
   return item.get('model').expand_state === ExpandState.EXPANDING;
 };
 
-export const itemIsExpanded = (item: GraphItem) => {
+export const itemIsExpanded = (item: IItem) => {
   return item.get('model').expand_state !== undefined;
 };

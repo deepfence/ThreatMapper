@@ -1,12 +1,30 @@
 {
-  "nodes": { "add": null, "update": null, "remove": null },
+  "nodes": {
+    "add": null,
+    "update": [
+      {
+        "id": "in-theinternet",
+        "label": "The Internet",
+        "labelMinor": "Inbound connections",
+        "rank": "in-theinternet",
+        "shape": "cloud",
+        "pseudo": true,
+        "adjacency": [
+          "aws;\u003ccloud_provider\u003e",
+          "azure;\u003ccloud_provider\u003e"
+        ],
+        "immediate_parent_id": ""
+      }
+    ],
+    "remove": null
+  },
   "edges": {
     "add": [
-      { "source": "azure;\u003ccloud_provider\u003e", "target": "out-theinternet" },
       {
         "source": "digital_ocean;\u003ccloud_provider\u003e",
         "target": "digital_ocean;\u003ccloud_provider\u003e"
-      }
+      },
+      { "source": "in-theinternet", "target": "azure;\u003ccloud_provider\u003e" }
     ],
     "remove": null
   },

@@ -1,0 +1,211 @@
+{
+  "nodes": {
+    "add": [
+      {
+        "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+        "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+        "labelMinor": "ap-south-1.compute.internal",
+        "rank": "ap-south-1.compute.internal",
+        "shape": "circle",
+        "metadata": [
+          {
+            "id": "kernel_version",
+            "label": "Kernel version",
+            "value": "5.4.204-113.362.amzn2.x86_64 #1 SMP Wed Jul 13 21:34:30 UTC 2022",
+            "priority": 1.0
+          },
+          {
+            "id": "uptime",
+            "label": "Uptime",
+            "value": "3610046",
+            "priority": 2.0,
+            "dataType": "duration"
+          },
+          {
+            "id": "host_name",
+            "label": "Hostname",
+            "value": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "priority": 11.0
+          },
+          { "id": "os", "label": "OS", "value": "linux", "priority": 12.0 },
+          {
+            "id": "local_networks",
+            "label": "Local networks",
+            "value": "127.0.0.1/8, 172.31.0.51/20, 172.31.10.75/20, 172.31.6.177/20",
+            "priority": 13.0
+          },
+          {
+            "id": "interfaceNames",
+            "label": "Interface Names",
+            "value": "lo;eth0;eni6a43cf09a55;eni2540508d298;eni1afef98df3d;eni171f0de2ad3;eni8e6067e0167;eth1;enief9ceaadf15;eni72977ea64ae;eni3cd23d6e566;eni83f34ec4d36;eth2;eni207a7f5a8b0;eni693067b67c5;eni1194f45a4e5;eni99f45f20705",
+            "priority": 15.0
+          },
+          {
+            "id": "probeId",
+            "label": "Probe ID",
+            "value": "9958341267ba37d",
+            "priority": 17.0
+          },
+          {
+            "id": "interface_ips",
+            "label": "All Interface IP's",
+            "value": "{\"172.31.0.51\":\"255.255.240.0\",\"172.31.10.75\":\"255.255.240.0\",\"172.31.6.177\":\"255.255.240.0\"}",
+            "priority": 21.0
+          },
+          {
+            "id": "cloud_provider",
+            "label": "Cloud Provider",
+            "value": "aws",
+            "priority": 22.0
+          },
+          {
+            "id": "cloud_region",
+            "label": "Cloud Region",
+            "value": "ap-south-1",
+            "priority": 23.0
+          },
+          {
+            "id": "cloud_metadata",
+            "label": "Cloud Metadata",
+            "value": "{\"cloud_provider\":\"aws\",\"instance_id\":\"i-0208bf569cc5b5207\",\"public_ip\":[\"13.233.150.187\"],\"private_ip\":[\"172.31.0.51\"],\"instance_type\":\"t3.medium\",\"hostname\":\"ip-172-31-0-51.ap-south-1.compute.internal\",\"id\":\"i-0208bf569cc5b5207\",\"label\":\"AWS\",\"region\":\"ap-south-1\",\"zone\":\"ap-south-1b\"}",
+            "priority": 24.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 25.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 26.0
+          },
+          {
+            "id": "user_defined_tags",
+            "label": "User Defined Tags",
+            "value": "",
+            "priority": 27.0
+          },
+          {
+            "id": "version",
+            "label": "Sensor Version",
+            "value": "1.4.0-61794632-1663344248160922",
+            "priority": 28.0
+          },
+          { "id": "is_ui_vm", "label": "UI vm", "value": "false", "priority": 29.0 },
+          { "id": "agent_running", "label": "Sensor", "value": "yes", "priority": 33.0 },
+          {
+            "id": "vulnerability_scan_status",
+            "label": "Vulnerability Scan Status",
+            "value": "never_scanned",
+            "priority": 50.0
+          },
+          {
+            "id": "compliance_scan_status",
+            "label": "Compliance Scan Status",
+            "value": "never_scanned",
+            "priority": 51.0
+          },
+          {
+            "id": "node_severity",
+            "label": "Node Severity",
+            "value": "",
+            "priority": 52.0
+          },
+          {
+            "id": "secret_scan_status",
+            "label": "Secret Scan Status",
+            "value": "never_scanned",
+            "priority": 50.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "ap-south-1-aws;\u003ccloud_region\u003e",
+            "label": "ap-south-1",
+            "topologyId": "cloud-regions"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "host_cpu_usage_percent",
+            "label": "CPU",
+            "format": "percent",
+            "value": 20.03,
+            "priority": 1.0,
+            "samples": null,
+            "min": 15.621890547263682,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "host_mem_usage_bytes",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 3.48250112e9,
+            "priority": 2.0,
+            "samples": null,
+            "min": 3.48250112e9,
+            "max": 4.062695424e9,
+            "url": ""
+          },
+          {
+            "id": "load1",
+            "label": "Load (1m)",
+            "group": "load",
+            "value": 1.8,
+            "priority": 11.0,
+            "samples": null,
+            "min": 1.53,
+            "max": 1.8,
+            "url": ""
+          }
+        ],
+        "immediate_parent_id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e"
+      }
+    ],
+    "update": null,
+    "remove": null
+  },
+  "edges": {
+    "add": [
+      {
+        "source": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+        "target": "out-theinternet"
+      },
+      {
+        "source": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+        "target": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      }
+    ],
+    "remove": [
+      {
+        "source": "ap-south-1-aws;\u003ccloud_region\u003e",
+        "target": "ap-south-1-aws;\u003ccloud_region\u003e"
+      },
+      { "source": "ap-south-1-aws;\u003ccloud_region\u003e", "target": "out-theinternet" }
+    ]
+  },
+  "reset": false,
+  "metadata": {
+    "children_count": {
+      "": { "cloud-providers": 5 },
+      "aws;\u003ccloud_provider\u003e": { "cloud-regions": 2, "kubernetes-clusters": 1 },
+      "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e": {
+        "hosts": 1
+      }
+    }
+  }
+}

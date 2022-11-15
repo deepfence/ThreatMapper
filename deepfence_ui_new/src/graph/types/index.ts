@@ -1,10 +1,12 @@
-import { Edge, IGraph as Graph, Node } from '@antv/g6';
-import { GraphOptions, IG6GraphEvent } from '@antv/g6-core';
+import { IEdge, IG6GraphEvent, IGraph as Graph, INode as NodeType, Item } from '@antv/g6';
+import { GraphOptions } from '@antv/g6-core';
 import { GForceLayoutOptions } from '@antv/layout';
 
-import { SourceTargetType } from '../topology/builder';
+import { IAPIData } from '../../topology/utils';
 
-export type GraphItem = IG6GraphEvent['item'];
+export type IItem = Item;
+export type INode = NodeType;
+export type IEvent = IG6GraphEvent;
 
 export type IGraph = Graph;
 
@@ -13,6 +15,8 @@ export type OptionsWithoutContainer = Omit<GraphOptions, 'container'>;
 export interface IStringIndex<TValue> {
   [key: string]: TValue;
 }
+
+export type PointTuple = [number, number];
 
 export interface ApiNodeItemType extends IStringIndex<any> {
   id: string;
@@ -28,11 +32,13 @@ export interface ApiNodeItemType extends IStringIndex<any> {
   labelCfg: object;
   pseudo: boolean;
   nodeType: string;
+  reset?: boolean;
 }
 
 export type APIDeltaType = {
   add: ApiNodeItemType[];
-  remove: ApiNodeItemType[];
+  update: ApiNodeItemType[];
+  remove: string[]; // remove sends string array by api
   reset: boolean;
 };
 
@@ -42,13 +48,10 @@ export type UpdateDeltaType = {
   };
   node?: {
     node_id: string;
-    delta: APIDeltaType;
+    delta: IAPIData['nodes'];
   };
   edges?: {
-    delta: {
-      add: SourceTargetType[];
-      remove: SourceTargetType[];
-    };
+    delta: IAPIData['edges'];
   };
   add?: ApiNodeItemType[];
   remove?: ApiNodeItemType[];
@@ -68,6 +71,16 @@ export type InputLayoutOptions = {
 };
 export type OutputLayoutOptions = {
   options: GForceLayoutOptions;
-  nodes: Node[];
-  edges: Edge[];
+  nodes: INode[];
+  edges: IEdge[];
 };
+export interface ICustomNode extends INode {
+  id: string;
+  node_type: string;
+  parent_id: string;
+  children_ids: Set<string>;
+}
+
+export interface ICustomEdge extends IEdge {
+  id: string;
+}

@@ -10,20 +10,18 @@ import {
 } from '../../topology/utils';
 import { UpdateManagerType, useGraphUpdateManager } from '../graphManager/updateManager';
 import { LayoutType, useLayoutManager } from '../graphManager/useLayoutManager';
-import { GraphItem, IGraph } from '../types';
+import { ICustomNode, IEvent, IGraph, IItem } from '../types';
 import { debounce, nodeToFront } from '../utils';
-import { topologyEdgesToDelta, topologyNodesToDelta } from './builder';
+import { topologyEdgesToDelta, topologyNodesToDelta } from './transform';
 
 export const useToplogy = (graph: IGraph | null) => {
-  const updateManagerRef = useRef<Partial<UpdateManagerType>>({
-    resume: undefined,
-  });
+  const updateManagerRef = useRef<Partial<UpdateManagerType>>({});
   const layoutManagerRef = useRef<LayoutType>();
 
   // current process node
-  const trackedItem = useRef<GraphItem>(null);
+  const trackedItem = useRef<ICustomNode | null>(null);
 
-  const setTrackedItem = (item: GraphItem) => {
+  const setTrackedItem = (item: ICustomNode | null) => {
     trackedItem.current = item;
   };
 
@@ -66,9 +64,10 @@ export const useToplogy = (graph: IGraph | null) => {
     const edges_delta = topologyEdgesToDelta(data.edges);
     const nodes_delta = topologyNodesToDelta(graph, data.nodes);
 
-    if (edges_delta !== null) {
+    if (edges_delta !== null && edges_delta.remove) {
       updateEdges?.({
         add: [],
+        update: [],
         remove: edges_delta.remove,
         reset: data.reset,
       });
@@ -92,14 +91,14 @@ export const useToplogy = (graph: IGraph | null) => {
       }
     }
     if (edges_delta !== null) {
-      updateEdges?.({ add: edges_delta.add, remove: [] });
+      updateEdges?.({ add: edges_delta.add, remove: [], update: [] });
     }
-    graph?.on('df-track-item', (e) => {
-      setTrackedItem(e.item);
+    graph?.on('df-track-item', (e: IEvent) => {
+      setTrackedItem(e.item as ICustomNode);
     });
   };
 
-  function callExpandApi(item: GraphItem) {
+  function callExpandApi(item: IItem) {
     if (graph === null || item === null) {
       return;
     }
@@ -110,7 +109,8 @@ export const useToplogy = (graph: IGraph | null) => {
       console.error("node can't be expanded", node);
       return;
     }
-    const parents = getParents(graph, item).map((id: string) =>
+
+    const parents = getParents(graph, graph.findById(node.id)).map((id: string) =>
       graph.findById(id).get('model'),
     );
 

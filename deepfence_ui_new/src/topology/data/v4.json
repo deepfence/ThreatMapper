@@ -1,0 +1,2513 @@
+{
+  "nodes": {
+    "add": [
+      {
+        "id": "a261691c-56fa-4b98-b92d-f5d18a2cce4e;\u003cpod\u003e",
+        "label": "coredns-758dbf67f7-rb6jf",
+        "labelMinor": "1 container",
+        "rank": "kube-system/coredns-758dbf67f7-rb6jf",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.8.245",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "kube-system",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:23Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "b1c7429a-d2c3-4135-a9ff-f3d8b8845924;\u003cdeployment\u003e",
+            "label": "coredns",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "2bbe1ed4-12f2-47c7-baa2-dc1584562e17;\u003cservice\u003e",
+            "label": "kube-dns",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.07,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.0758031623931624,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 1.1804672e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 1.1804672e7,
+            "max": 1.7825792e8,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_eks.amazonaws.com/component",
+                "entries": { "value": "coredns", "label": "eks.amazonaws.com/component" }
+              },
+              {
+                "id": "label_k8s-app",
+                "entries": { "label": "k8s-app", "value": "kube-dns" }
+              },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "758dbf67f7" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "559cc384-a4a3-43be-82fa-a70cff2e1175;\u003cpod\u003e",
+        "label": "aws-node-cn7mh",
+        "labelMinor": "1 container",
+        "rank": "kube-system/aws-node-cn7mh",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.0.51",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "kube-system",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:10:06Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_is_in_host_network",
+            "label": "Host Network",
+            "value": "true",
+            "priority": 8.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "e0bd0e64-b6f7-421a-8a4d-7eef96f08ab2;\u003cdaemonset\u003e",
+            "label": "aws-node",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.0,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.0,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 3.4971648e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 3.4971648e7,
+            "max": 4.062695424e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_app.kubernetes.io/name",
+                "entries": { "label": "app.kubernetes.io/name", "value": "aws-node" }
+              },
+              {
+                "id": "label_controller-revision-hash",
+                "entries": { "label": "controller-revision-hash", "value": "654c56466d" }
+              },
+              {
+                "id": "label_k8s-app",
+                "entries": { "value": "aws-node", "label": "k8s-app" }
+              },
+              {
+                "id": "label_pod-template-generation",
+                "entries": { "label": "pod-template-generation", "value": "2" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "419db85a-d601-48dd-a238-6f7744cb253e;\u003cpod\u003e",
+        "label": "front-end-6649c54d45-pn86m",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/front-end-6649c54d45-pn86m",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.4.85",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:25Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "71175af7-7d04-489e-b497-6157c4f1ed51;\u003cdeployment\u003e",
+            "label": "front-end",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "5a2eca43-c4a3-4abb-8f34-377ebaf6a158;\u003cservice\u003e",
+            "label": "front-end",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.0,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.003959471153846154,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 7.3412608e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 7.3121792e7,
+            "max": 1.048576e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_name",
+                "entries": { "label": "name", "value": "front-end" }
+              },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "6649c54d45" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "491074cb-a9d1-499e-b8a1-0ae4e6af12c8;\u003cpod\u003e",
+        "label": "carts-db-6c6c68b747-87h4m",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/carts-db-6c6c68b747-87h4m",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.2.173",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:25Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "1ba1d8c7-6838-4bae-8ae6-f1c1131dc75d;\u003cdeployment\u003e",
+            "label": "carts-db",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "2ad7b76e-4964-4f7d-ab3f-1f0440077b81;\u003cservice\u003e",
+            "label": "carts-db",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.34,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.15270211267605632,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 6.7751936e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 6.7751936e7,
+            "max": 4.062695424e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              { "id": "label_name", "entries": { "label": "name", "value": "carts-db" } },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "6c6c68b747" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "fea2f5da-6471-44aa-bb0d-6ca95d1c28ee;\u003cpod\u003e",
+        "label": "rabbitmq-5bcbb547d7-fqf8t",
+        "labelMinor": "2 containers",
+        "rank": "sock-shop/rabbitmq-5bcbb547d7-fqf8t",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.15.61",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "2",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:26Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "21bac1d2-0134-47e8-aac6-4755d0cb1877;\u003cdeployment\u003e",
+            "label": "rabbitmq",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "42237801-e5fa-49be-99c6-0c3a37645f63;\u003cservice\u003e",
+            "label": "rabbitmq",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              { "id": "label_name", "entries": { "label": "name", "value": "rabbitmq" } },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "5bcbb547d7" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "a47e24ef-22fe-4e47-9be9-520534be20e4;\u003cpod\u003e",
+        "label": "session-db-7cf97f8d4f-gmsr5",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/session-db-7cf97f8d4f-gmsr5",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.8.16",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-08-18T15:16:28Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "84d3a66f-e1c0-4fa9-ac58-a7846785c6ad;\u003cdeployment\u003e",
+            "label": "session-db",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "d498f8b1-690a-437e-a011-1f9cd73aa670;\u003cservice\u003e",
+            "label": "session-db",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.06,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.05704613636363636,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 3.022848e6,
+            "priority": 2.0,
+            "samples": null,
+            "min": 3.022848e6,
+            "max": 4.062695424e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_name",
+                "entries": { "label": "name", "value": "session-db" }
+              },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "7cf97f8d4f" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "a6b99e02-be2c-45ca-93d3-805ede0d7f43;\u003cpod\u003e",
+        "label": "orders-db-659949975f-cjngf",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/orders-db-659949975f-cjngf",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.1.235",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:25Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "05f71f8b-366e-4b1f-b510-cb5ef913f6df;\u003cdeployment\u003e",
+            "label": "orders-db",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "5c361391-4029-403e-a74c-077aa046b005;\u003cservice\u003e",
+            "label": "orders-db",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.18,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.1531888940092166,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 6.9812224e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 6.9808128e7,
+            "max": 4.062695424e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_name",
+                "entries": { "value": "orders-db", "label": "name" }
+              },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "value": "659949975f", "label": "pod-template-hash" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "912462c7-7cf8-4b4e-9ac3-83c062008c8a;\u003cpod\u003e",
+        "label": "deepfence-cluster-agent-6585c7b7b4-hwlwz",
+        "labelMinor": "1 container",
+        "rank": "deepfence/deepfence-cluster-agent-6585c7b7b4-hwlwz",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.0.51",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "deepfence",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:23Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_is_in_host_network",
+            "label": "Host Network",
+            "value": "true",
+            "priority": 8.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "2b45a887-e706-4c89-a6ff-7ab521093854;\u003cdeployment\u003e",
+            "label": "deepfence-cluster-agent",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.0,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.003021659574468085,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 4.2364928e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 4.2364928e7,
+            "max": 1.610612736e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_app.kubernetes.io/instance",
+                "entries": {
+                  "value": "deepfence-agent",
+                  "label": "app.kubernetes.io/instance"
+                }
+              },
+              {
+                "id": "label_app.kubernetes.io/name",
+                "entries": {
+                  "value": "deepfence-cluster-agent",
+                  "label": "app.kubernetes.io/name"
+                }
+              },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "value": "6585c7b7b4", "label": "pod-template-hash" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "2c17d62b-53f8-4340-b281-435c0a00143e;\u003cpod\u003e",
+        "label": "shipping-7f7999ffb7-2d7sw",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/shipping-7f7999ffb7-2d7sw",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.1.28",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-08-18T15:16:28Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "bc6cddd7-1517-4fab-b063-9f329939f280;\u003cdeployment\u003e",
+            "label": "shipping",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "eb58a909-d97f-430f-a6f8-303493e52302;\u003cservice\u003e",
+            "label": "shipping",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.05,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.04893740909090909,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 2.52370944e8,
+            "priority": 2.0,
+            "samples": null,
+            "min": 2.52370944e8,
+            "max": 5.24288e8,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              { "id": "label_name", "entries": { "label": "name", "value": "shipping" } },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "value": "7f7999ffb7", "label": "pod-template-hash" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "745af55f-6592-45bb-a9bb-5b80538b8311;\u003cpod\u003e",
+        "label": "kube-proxy-c9rwx",
+        "labelMinor": "1 container",
+        "rank": "kube-system/kube-proxy-c9rwx",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.0.51",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "kube-system",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:10:06Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_is_in_host_network",
+            "label": "Host Network",
+            "value": "true",
+            "priority": 8.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "bac3b587-d0d8-40f0-bea9-f3570d6e40e1;\u003cdaemonset\u003e",
+            "label": "kube-proxy",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.0,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.0,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 1.419264e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 1.419264e7,
+            "max": 4.062695424e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_controller-revision-hash",
+                "entries": { "label": "controller-revision-hash", "value": "7f647b9c5d" }
+              },
+              {
+                "id": "label_k8s-app",
+                "entries": { "label": "k8s-app", "value": "kube-proxy" }
+              },
+              {
+                "id": "label_pod-template-generation",
+                "entries": { "value": "1", "label": "pod-template-generation" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "70f944da-d773-474e-ba6e-ebe69d5450c6;\u003cpod\u003e",
+        "label": "user-888469b9f-k2ttn",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/user-888469b9f-k2ttn",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.14.99",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:26Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "854ece41-791d-4162-a9f7-d8d778e6340c;\u003cdeployment\u003e",
+            "label": "user",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "fc24b3d8-32b1-4e8e-955c-774436756a8c;\u003cservice\u003e",
+            "label": "user",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.0,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.0,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 5.148672e6,
+            "priority": 2.0,
+            "samples": null,
+            "min": 5.148672e6,
+            "max": 2.097152e8,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              { "id": "label_name", "entries": { "label": "name", "value": "user" } },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "888469b9f" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "7dd5d8c6-54ed-46c0-8fc2-e6c26156ede5;\u003cpod\u003e",
+        "label": "queue-master-5f6d6d4796-vqw5p",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/queue-master-5f6d6d4796-vqw5p",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.8.44",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:26Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "6096bd5f-8be6-45ea-8ec3-d111ed56c35f;\u003cdeployment\u003e",
+            "label": "queue-master",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "02a29379-1721-4771-a1b5-a6bb4d0f0070;\u003cservice\u003e",
+            "label": "queue-master",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.04,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.04200448780487805,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 2.085888e8,
+            "priority": 2.0,
+            "samples": null,
+            "min": 2.085888e8,
+            "max": 5.24288e8,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_name",
+                "entries": { "label": "name", "value": "queue-master" }
+              },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "5f6d6d4796" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "c62b09f3-35b7-47f9-b25c-ca31fda3f431;\u003cpod\u003e",
+        "label": "orders-7664c64d75-sq8bl",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/orders-7664c64d75-sq8bl",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.13.160",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:25Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "950a4cd0-2268-4301-9414-5b46ee4e7c66;\u003cdeployment\u003e",
+            "label": "orders",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "46f43495-1472-4081-b167-c314302c5d7b;\u003cservice\u003e",
+            "label": "orders",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.04,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.03769190909090909,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 2.6669056e8,
+            "priority": 2.0,
+            "samples": null,
+            "min": 2.6669056e8,
+            "max": 5.24288e8,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              { "id": "label_name", "entries": { "value": "orders", "label": "name" } },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "7664c64d75" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "0ef5d9be-cd6e-4d3e-b89d-be6f4ede28ce;\u003cpod\u003e",
+        "label": "user-db-6df7444fc-7z7c7",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/user-db-6df7444fc-7z7c7",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.10.70",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:26Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "49b085fd-e742-48ce-a857-03921348acbf;\u003cdeployment\u003e",
+            "label": "user-db",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "afc79152-baba-49d8-b2d1-3ced3a3d6e43;\u003cservice\u003e",
+            "label": "user-db",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.2,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.1834911374407583,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 3.61472e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 3.61472e7,
+            "max": 4.062695424e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              { "id": "label_name", "entries": { "value": "user-db", "label": "name" } },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "6df7444fc" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "0e6f3809-a8f3-4c06-9353-95d9d5f18139;\u003cpod\u003e",
+        "label": "coredns-758dbf67f7-gmm2g",
+        "labelMinor": "1 container",
+        "rank": "kube-system/coredns-758dbf67f7-gmm2g",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.10.54",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "kube-system",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:25Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "b1c7429a-d2c3-4135-a9ff-f3d8b8845924;\u003cdeployment\u003e",
+            "label": "coredns",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "2bbe1ed4-12f2-47c7-baa2-dc1584562e17;\u003cservice\u003e",
+            "label": "kube-dns",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.11,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.0569303196347032,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 1.1603968e7,
+            "priority": 2.0,
+            "samples": null,
+            "min": 1.1603968e7,
+            "max": 1.7825792e8,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_eks.amazonaws.com/component",
+                "entries": { "label": "eks.amazonaws.com/component", "value": "coredns" }
+              },
+              {
+                "id": "label_k8s-app",
+                "entries": { "label": "k8s-app", "value": "kube-dns" }
+              },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "label": "pod-template-hash", "value": "758dbf67f7" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "296f36da-806e-410e-9137-077360daf528;\u003cpod\u003e",
+        "label": "deepfence-agent-lmk8q",
+        "labelMinor": "1 container",
+        "rank": "deepfence/deepfence-agent-lmk8q",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.0.51",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "deepfence",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:10:06Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_is_in_host_network",
+            "label": "Host Network",
+            "value": "true",
+            "priority": 8.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "656ba71e-aee3-4805-8e9d-fd36fb43ea8c;\u003cdaemonset\u003e",
+            "label": "deepfence-agent",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.61,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.6108812195121951,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 1.07044864e8,
+            "priority": 2.0,
+            "samples": null,
+            "min": 1.07044864e8,
+            "max": 1.610612736e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_app.kubernetes.io/instance",
+                "entries": {
+                  "label": "app.kubernetes.io/instance",
+                  "value": "deepfence-agent"
+                }
+              },
+              {
+                "id": "label_app.kubernetes.io/name",
+                "entries": {
+                  "label": "app.kubernetes.io/name",
+                  "value": "deepfence-agent"
+                }
+              },
+              {
+                "id": "label_controller-revision-hash",
+                "entries": { "label": "controller-revision-hash", "value": "789fcc6bf5" }
+              },
+              {
+                "id": "label_pod-template-generation",
+                "entries": { "label": "pod-template-generation", "value": "1" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      },
+      {
+        "id": "16730c70-d320-4877-adac-2c0754e47085;\u003cpod\u003e",
+        "label": "catalogue-db-96f6f6b4c-dk7sn",
+        "labelMinor": "1 container",
+        "rank": "sock-shop/catalogue-db-96f6f6b4c-dk7sn",
+        "shape": "pod",
+        "metadata": [
+          {
+            "id": "kubernetes_state",
+            "label": "State",
+            "value": "Running",
+            "priority": 2.0
+          },
+          {
+            "id": "kubernetes_ip",
+            "label": "IP",
+            "value": "172.31.9.131",
+            "priority": 3.0,
+            "dataType": "ip"
+          },
+          {
+            "id": "container",
+            "label": "# Containers",
+            "value": "1",
+            "priority": 4.0,
+            "dataType": "number"
+          },
+          {
+            "id": "kubernetes_namespace",
+            "label": "Namespace",
+            "value": "sock-shop",
+            "priority": 5.0
+          },
+          {
+            "id": "kubernetes_created",
+            "label": "Created",
+            "value": "2022-10-04T10:09:25Z",
+            "priority": 6.0,
+            "dataType": "datetime"
+          },
+          {
+            "id": "kubernetes_restart_count",
+            "label": "Restart #",
+            "value": "0",
+            "priority": 7.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 9.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 10.0
+          },
+          {
+            "id": "control_probe_id",
+            "label": "Probe ID",
+            "value": "20f1101b8b4fa52a",
+            "priority": 11.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "04359b9a-637b-49a9-a56a-6ef20b45264e;\u003cdeployment\u003e",
+            "label": "catalogue-db",
+            "topologyId": "kube-controllers"
+          },
+          {
+            "id": "3ff734c0-2faf-422f-af25-3b3fdeef4bcc;\u003cservice\u003e",
+            "label": "catalogue-db",
+            "topologyId": "services"
+          },
+          {
+            "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+            "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "topologyId": "hosts"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "docker_cpu_total_usage",
+            "label": "CPU",
+            "format": "percent",
+            "value": 0.02,
+            "priority": 1.0,
+            "samples": null,
+            "min": 0.02342101265822785,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "docker_memory_usage",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 1.9265536e8,
+            "priority": 2.0,
+            "samples": null,
+            "min": 1.9265536e8,
+            "max": 4.062695424e9,
+            "url": ""
+          }
+        ],
+        "tables": [
+          {
+            "id": "kubernetes_labels_",
+            "label": "Kubernetes labels",
+            "type": "property-list",
+            "columns": null,
+            "rows": [
+              {
+                "id": "label_name",
+                "entries": { "label": "name", "value": "catalogue-db" }
+              },
+              {
+                "id": "label_pod-template-hash",
+                "entries": { "value": "96f6f6b4c", "label": "pod-template-hash" }
+              }
+            ]
+          }
+        ],
+        "immediate_parent_id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e"
+      }
+    ],
+    "update": [
+      {
+        "id": "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e",
+        "label": "ip-172-31-0-51.ap-south-1.compute.internal",
+        "labelMinor": "ap-south-1.compute.internal",
+        "rank": "ap-south-1.compute.internal",
+        "shape": "circle",
+        "metadata": [
+          {
+            "id": "kernel_version",
+            "label": "Kernel version",
+            "value": "5.4.204-113.362.amzn2.x86_64 #1 SMP Wed Jul 13 21:34:30 UTC 2022",
+            "priority": 1.0
+          },
+          {
+            "id": "uptime",
+            "label": "Uptime",
+            "value": "3610106",
+            "priority": 2.0,
+            "dataType": "duration"
+          },
+          {
+            "id": "host_name",
+            "label": "Hostname",
+            "value": "ip-172-31-0-51.ap-south-1.compute.internal",
+            "priority": 11.0
+          },
+          { "id": "os", "label": "OS", "value": "linux", "priority": 12.0 },
+          {
+            "id": "local_networks",
+            "label": "Local networks",
+            "value": "127.0.0.1/8, 172.31.0.51/20, 172.31.10.75/20, 172.31.6.177/20",
+            "priority": 13.0
+          },
+          {
+            "id": "interfaceNames",
+            "label": "Interface Names",
+            "value": "lo;eth0;eni6a43cf09a55;eni2540508d298;eni1afef98df3d;eni171f0de2ad3;eni8e6067e0167;eth1;enief9ceaadf15;eni72977ea64ae;eni3cd23d6e566;eni83f34ec4d36;eth2;eni207a7f5a8b0;eni693067b67c5;eni1194f45a4e5;eni99f45f20705",
+            "priority": 15.0
+          },
+          {
+            "id": "probeId",
+            "label": "Probe ID",
+            "value": "9958341267ba37d",
+            "priority": 17.0
+          },
+          {
+            "id": "interface_ips",
+            "label": "All Interface IP's",
+            "value": "{\"172.31.0.51\":\"255.255.240.0\",\"172.31.10.75\":\"255.255.240.0\",\"172.31.6.177\":\"255.255.240.0\"}",
+            "priority": 21.0
+          },
+          {
+            "id": "cloud_provider",
+            "label": "Cloud Provider",
+            "value": "aws",
+            "priority": 22.0
+          },
+          {
+            "id": "cloud_region",
+            "label": "Cloud Region",
+            "value": "ap-south-1",
+            "priority": 23.0
+          },
+          {
+            "id": "cloud_metadata",
+            "label": "Cloud Metadata",
+            "value": "{\"cloud_provider\":\"aws\",\"instance_id\":\"i-0208bf569cc5b5207\",\"public_ip\":[\"13.233.150.187\"],\"private_ip\":[\"172.31.0.51\"],\"instance_type\":\"t3.medium\",\"hostname\":\"ip-172-31-0-51.ap-south-1.compute.internal\",\"id\":\"i-0208bf569cc5b5207\",\"label\":\"AWS\",\"region\":\"ap-south-1\",\"zone\":\"ap-south-1b\"}",
+            "priority": 24.0
+          },
+          {
+            "id": "kubernetes_cluster_id",
+            "label": "Kubernetes Cluster Id",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 25.0
+          },
+          {
+            "id": "kubernetes_cluster_name",
+            "label": "Kubernetes Cluster Name",
+            "value": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "priority": 26.0
+          },
+          {
+            "id": "user_defined_tags",
+            "label": "User Defined Tags",
+            "value": "",
+            "priority": 27.0
+          },
+          {
+            "id": "version",
+            "label": "Sensor Version",
+            "value": "1.4.0-61794632-1663344248160922",
+            "priority": 28.0
+          },
+          { "id": "is_ui_vm", "label": "UI vm", "value": "false", "priority": 29.0 },
+          { "id": "agent_running", "label": "Sensor", "value": "yes", "priority": 33.0 },
+          {
+            "id": "vulnerability_scan_status",
+            "label": "Vulnerability Scan Status",
+            "value": "never_scanned",
+            "priority": 50.0
+          },
+          {
+            "id": "compliance_scan_status",
+            "label": "Compliance Scan Status",
+            "value": "never_scanned",
+            "priority": 51.0
+          },
+          {
+            "id": "node_severity",
+            "label": "Node Severity",
+            "value": "",
+            "priority": 52.0
+          },
+          {
+            "id": "secret_scan_status",
+            "label": "Secret Scan Status",
+            "value": "never_scanned",
+            "priority": 50.0
+          }
+        ],
+        "parents": [
+          {
+            "id": "ap-south-1-aws;\u003ccloud_region\u003e",
+            "label": "ap-south-1",
+            "topologyId": "cloud-regions"
+          },
+          {
+            "id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e",
+            "label": "c6217c0f-db01-476c-b6ea-f9ea15fe7358",
+            "topologyId": "kubernetes-clusters"
+          },
+          {
+            "id": "aws;\u003ccloud_provider\u003e",
+            "label": "AWS",
+            "topologyId": "cloud-providers"
+          }
+        ],
+        "metrics": [
+          {
+            "id": "host_cpu_usage_percent",
+            "label": "CPU",
+            "format": "percent",
+            "value": 28.85,
+            "priority": 1.0,
+            "samples": null,
+            "min": 15.115115115115115,
+            "max": 100.0,
+            "url": ""
+          },
+          {
+            "id": "host_mem_usage_bytes",
+            "label": "Memory",
+            "format": "filesize",
+            "value": 3.484884992e9,
+            "priority": 2.0,
+            "samples": null,
+            "min": 3.481485312e9,
+            "max": 4.062695424e9,
+            "url": ""
+          },
+          {
+            "id": "load1",
+            "label": "Load (1m)",
+            "group": "load",
+            "value": 1.88,
+            "priority": 11.0,
+            "samples": null,
+            "min": 1.69,
+            "max": 1.88,
+            "url": ""
+          }
+        ],
+        "immediate_parent_id": "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e"
+      }
+    ],
+    "remove": null
+  },
+  "edges": { "add": null, "remove": null },
+  "reset": false,
+  "metadata": {
+    "children_count": {
+      "c6217c0f-db01-476c-b6ea-f9ea15fe7358;\u003ckubernetes_cluster\u003e": {
+        "hosts": 1
+      },
+      "ip-172-31-0-51.ap-south-1.compute.internal;\u003chost\u003e": { "pods": 17 },
+      "": { "cloud-providers": 5 },
+      "aws;\u003ccloud_provider\u003e": { "cloud-regions": 2, "kubernetes-clusters": 1 }
+    }
+  }
+}

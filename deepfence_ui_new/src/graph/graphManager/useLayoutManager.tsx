@@ -1,18 +1,21 @@
-import { Edge, Layout, Node } from '@antv/g6';
+import { ICombo, IEdge, INode, Item, Layout, Node } from '@antv/g6';
 
-import { BASE_NODE_STRENGTH, gForceLayout } from '../../topology/gforce';
+import { BASE_NODE_STRENGTH, gForceLayout, nodeStrength } from '../../topology/gforce';
 import {
   ApiNodeItemType,
   IGraph,
+  IItem,
   InputLayoutOptions,
   IStringIndex,
   LayoutOptions,
   OutputLayoutOptions,
+  PointTuple,
 } from '../types';
+import { itemExpandsAsCombo } from './expand-collapse';
 
 class LayoutExecutor {
   layout: typeof Layout;
-  constructor(nodes: Node[], edges: Edge[], options: OutputLayoutOptions['options']) {
+  constructor(nodes: INode[], edges: IEdge[], options: OutputLayoutOptions['options']) {
     this.layout = new Layout.gForce(options);
     this.layout.init({ nodes, edges });
   }
@@ -21,6 +24,77 @@ class LayoutExecutor {
     this.layout.execute();
   }
 }
+
+const buildLayout = (graph: IGraph, node_id: string, options?: InputLayoutOptions) => {
+  let item = undefined;
+  if (node_id !== 'root') {
+    item = graph.findById(node_id);
+    if (item === undefined) {
+      console.warn('aborting layout of node that no longer exists', node_id);
+      return;
+    }
+  }
+
+  if (node_id === 'root' || !itemExpandsAsCombo(item)) {
+    return buildRootLayout(graph, options);
+  } else {
+    return buildComboLayout(graph, item as Item, options);
+  }
+};
+
+const buildComboLayout = (graph: IGraph, item: IItem, options?: InputLayoutOptions) => {
+  const model = item?.get('model');
+  const node_id = model.id;
+  const combo_id = `${node_id}-combo`;
+
+  const combo = graph.findById(combo_id) as ICombo;
+  const combo_model = combo.get('model');
+
+  let { nodes } = combo.getChildren();
+  nodes = nodes.map((n: INode) => n.get('model'));
+
+  const center = graph.findById(combo_model.center_ids[0]) as ICombo;
+  const edges = center.getOutEdges().map((e: IEdge) => e.get('model'));
+
+  const center_model: {
+    x: number;
+    y: number;
+  } = center.get('model');
+
+  if (options?.expanding) {
+    edges.push(...center.getInEdges().map((e: IEdge) => e.get('model')));
+    nodes.push(model);
+  }
+
+  model.fx = model.x;
+  model.fy = model.y;
+
+  const num_nodes = nodes.length;
+
+  return {
+    nodes,
+    edges,
+    options: {
+      ...gForceLayout(graph),
+      center: [center_model.x, center_model.y] as PointTuple,
+
+      nodeStrength: (node: Node) => {
+        return nodeStrength(node, num_nodes);
+      },
+
+      tick: () => {
+        if (options?.refreshOnTick !== false) {
+          graph.refreshPositions();
+        }
+      },
+      onLayoutEnd: () => {
+        model.fx = null;
+        model.fy = null;
+        graph.refreshPositions();
+      },
+    },
+  };
+};
 
 const buildRootLayout = (
   graph: IGraph,
@@ -45,8 +119,8 @@ const buildRootLayout = (
     }
   }
 
-  edges = edges.filter((e) => nodes[e.source] && nodes[e.target]) as Edge[];
-  const _nodes = Object.values(nodes) as Node[];
+  edges = edges.filter((e) => nodes[e.source] && nodes[e.target]) as IEdge[];
+  const _nodes = Object.values(nodes) as INode[];
 
   const center_x = graph.getWidth() / 2;
   const center_y = graph.getHeight() / 2;
@@ -94,8 +168,8 @@ export const useLayoutManager = (graph: IGraph | null, opts: LayoutOptions) => {
     graph?.emit('afterlayout');
   }
   const buildExecutor = (
-    nodes: Node[],
-    edges: Edge[],
+    nodes: INode[],
+    edges: IEdge[],
     options: OutputLayoutOptions['options'],
   ) => {
     return new LayoutExecutor(nodes, edges, {
@@ -143,11 +217,12 @@ export const useLayoutManager = (graph: IGraph | null, opts: LayoutOptions) => {
       }
     }
   };
+
   const startLayout = (node_id: string) => {
     const _opts: InputLayoutOptions | undefined = layouts[node_id];
     delete layouts[node_id];
 
-    const layout = buildRootLayout(graph, _opts);
+    const layout = buildLayout(graph, node_id, _opts);
     if (!layout) {
       return maybeStartNextLayout();
     }

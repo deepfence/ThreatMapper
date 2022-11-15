@@ -1,11 +1,11 @@
 import {
+  IAPIData,
   updateGraphEdges,
   updateGraphNode,
   updateGraphRootNodes,
 } from '../../topology/utils';
-import { SourceTargetType } from '../topology/builder';
 import { APIDeltaType, IGraph, InputLayoutOptions, UpdateDeltaType } from '../types';
-import { itemIsExpanded, itemIsExpanding } from '../utils';
+import { itemIsExpanded, itemIsExpanding } from './expand-collapse';
 import { LayoutType } from './useLayoutManager';
 
 export type UpdateManagerType = {
@@ -45,7 +45,7 @@ export const useGraphUpdateManager = (
     updateGraphRootNodes(graph!, delta);
     queueLayout('root');
   }
-  function processNodeUpdate(node_id: string, delta: APIDeltaType) {
+  function processNodeUpdate(node_id: string, delta: IAPIData['nodes']) {
     const item = graph?.findById(node_id);
     if (item === undefined) {
       console.error("received update for a node that doesn't exist", node_id, delta);
@@ -61,7 +61,7 @@ export const useGraphUpdateManager = (
 
     const expanding = itemIsExpanding(item);
 
-    updateGraphNode(graph, item, delta);
+    updateGraphNode(graph!, item, delta);
 
     let size = 0;
     if (!delta) {
@@ -83,10 +83,7 @@ export const useGraphUpdateManager = (
     }
   }
 
-  function processEdgesUpdate(delta: {
-    add: SourceTargetType[];
-    remove: SourceTargetType[];
-  }) {
+  function processEdgesUpdate(delta: IAPIData['edges']) {
     updateGraphEdges(graph!, delta);
   }
 
@@ -114,6 +111,7 @@ export const useGraphUpdateManager = (
   }
 
   function processLayouts() {
+    console.log('layouts:', layouts);
     for (const { node_id, options } of layouts) {
       layout?.(node_id, options);
     }
@@ -128,16 +126,12 @@ export const useGraphUpdateManager = (
     maybeProcess();
   };
 
-  const updateEdges = (delta: {
-    add: SourceTargetType[];
-    remove: SourceTargetType[];
-    reset?: boolean;
-  }) => {
+  const updateEdges = (delta: IAPIData['edges']) => {
     updates.push({ edges: { delta } });
     maybeProcess();
   };
 
-  const updateNode = (node_id: string, delta: APIDeltaType) => {
+  const updateNode = (node_id: string, delta: IAPIData['nodes']) => {
     updates.push({ node: { node_id, delta } });
     maybeProcess();
   };

@@ -1,6 +1,6 @@
-import { nodeSize, serverToUINodeMap } from '../../topology/utils';
+import { IAPIData, nodeSize, serverToUINodeMap } from '../../topology/utils';
 import { getNodeIcon } from '../../utils/node-icons';
-import { ApiNodeItemType, IGraph } from '../types';
+import { APIDeltaType, ApiNodeItemType, IGraph, IStringIndex } from '../types';
 import { arrayTransformByFunction, basename, ellipsize } from '../utils';
 
 export type SourceTargetType = { source: string; target: string };
@@ -17,7 +17,7 @@ export const topologyNodeToModel = (topo_node: ApiNodeItemType) => {
 
   model.id = topo_node.id;
   // this has got to be the worst API I've ever seen!?
-  const [id, type] = topo_node.id.split(';', 2);
+  const [, type] = topo_node.id.split(';', 2);
   model.node_type = serverToUINodeMap(type);
   if (model.node_type == undefined) {
     if (type) {
@@ -57,26 +57,17 @@ export const topologyNodeToModel = (topo_node: ApiNodeItemType) => {
   return model;
 };
 
-type NodeFunctionType = {
-  add: any[];
-  update: any[];
-  remove: any[];
-};
-
-export type StringIndexType<TValue> = {
-  [key: string]: TValue;
-};
-
-export const topologyNodesToDelta = (graph: IGraph, data: any) => {
-  const len = (k: string) => (!data[k] ? 0 : data[k].length);
+export const topologyNodesToDelta = (graph: IGraph, data: IAPIData['nodes']) => {
+  const len = (k: Exclude<keyof IAPIData['nodes'], 'reset'>) =>
+    !data[k] ? 0 : data[k].length;
   if (len('add') === 0 && len('update') === 0 && len('remove') === 0) {
     return null;
   }
 
-  const delta: StringIndexType<NodeFunctionType> = {};
-  const node_delta = (node_id: string): NodeFunctionType => {
+  const delta: IStringIndex<APIDeltaType> = {};
+  const node_delta = (node_id: string): APIDeltaType => {
     if (delta[node_id] === undefined) {
-      delta[node_id] = { add: [], update: [], remove: [] };
+      delta[node_id] = { add: [], update: [], remove: [], reset: false };
     }
     return delta[node_id];
   };
@@ -91,7 +82,9 @@ export const topologyNodesToDelta = (graph: IGraph, data: any) => {
         }
 
         // add pseudo nodes only at the root
-        if (!node.pseudo || parent_id == 'root') node_delta(parent_id).add.push(node);
+        if (!node.pseudo || parent_id == 'root') {
+          node_delta(parent_id).add.push(node);
+        }
       }
     }
   }
@@ -118,7 +111,7 @@ export const topologyNodesToDelta = (graph: IGraph, data: any) => {
 // -----end node formation/updation-----
 
 // -----start edge formation/updation-----
-const topologyEdgeToModel = (edge: SourceTargetType) => {
+const topologyEdgeToModel = (edge: ApiNodeItemType) => {
   if (edge.source == edge.target) {
     return null;
   }
@@ -126,22 +119,21 @@ const topologyEdgeToModel = (edge: SourceTargetType) => {
   return { ...edge, id: `${edge.source}-${edge.target}` };
 };
 
-export const topologyEdgesToDelta = (data: { [key: string]: any[] }) => {
-  const len = (k: string) => (!data[k] ? 0 : data[k].length);
+export const topologyEdgesToDelta = (edges: IAPIData['edges']) => {
+  const len = (k: Exclude<keyof IAPIData['edges'], 'reset'>) =>
+    !edges[k] ? 0 : edges[k].length;
+
   if (len('add') === 0 && len('remove') === 0) {
     return null;
   }
 
-  const delta: {
-    add: SourceTargetType[];
-    remove: SourceTargetType[];
-  } = { add: [], remove: [] };
-  if (data.add) {
-    delta.add = arrayTransformByFunction(data.add, topologyEdgeToModel);
+  const delta: IAPIData['edges'] = { add: [], remove: [], update: [] };
+  if (edges.add) {
+    delta.add = arrayTransformByFunction(edges.add, topologyEdgeToModel);
   }
 
-  if (data.remove) {
-    delta.remove = arrayTransformByFunction(data.remove, topologyEdgeToModel);
+  if (edges.remove) {
+    delta.remove = arrayTransformByFunction(edges.remove, topologyEdgeToModel);
   }
 
   return delta;
