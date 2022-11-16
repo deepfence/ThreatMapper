@@ -1,5 +1,21 @@
 /**
  * Topology Graph utilities
+ *
+ * How Topology graph is working?
+ * 1. To render a graph we need nodes and edges
+ * 2. Backend sends these nodes and edges as delta, frontend transform these data into g6 structure with additional
+ * attributes store in each node model which could be either simple node or combo node. The attributes help in node expansion and collapsion
+ * 3. Each time a new node is received or old node is deleted backend sends only those information. Graph dynamically
+ * update graph.
+ * 4. Topology uses GForce layout to put corresponding nodes close to each other with an attempt to put meaningful nodes in the
+ * center of the screen
+ * 5. For combo nodes, the nodes are group by a circle and all nodes inside it are attracted towards center of circle. This is achieved with
+ * the help of a node which is invisible to user and it helps to pull all of those nodes otherwise random nodes may appear on top of combo circle.
+ * 6. Graph has node, edges, children nodes and edges. Each time a new data is received, we need to update them. This take place in such way:
+ *   a) remove all edges mentioned in api data
+ *   b) removes all nodes including child nodes and edges mentioned in api data and add new nodes in case of node expansion
+ *   c) add edges to newly connected nodes
+ *
  */
 
 import { IGraph, Item } from '@antv/g6';

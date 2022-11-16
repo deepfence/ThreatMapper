@@ -38,7 +38,7 @@ export interface ApiNodeItemType extends IStringIndex<any> {
 export type APIDeltaType = {
   add: ApiNodeItemType[];
   update: ApiNodeItemType[];
-  remove: string[]; // remove sends string array by api
+  remove: string[]; // backend api sends remove as string array
   reset: boolean;
 };
 
