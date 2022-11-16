@@ -1,10 +1,13 @@
 /* eslint-disable */
+import { ICombo } from '@antv/g6';
+
+import { ICustomEdge, ICustomNode, IGraph, INode, IStringIndex } from '../types';
 
 export const BASE_NODE_STRENGTH = 6000;
 
 // We use gForceLayout and properties can be found here: https://g6.antv.vision/en/docs/api/graphLayout/gforce
 
-export const gForceLayout = (graph) => {
+export const gForceLayout = (graph: IGraph) => {
   return {
     preventOverlap: true,
 
@@ -16,7 +19,7 @@ export const gForceLayout = (graph) => {
 
     linkDistance: linkDistance,
 
-    edgeStrength: (edge) => {
+    edgeStrength: (edge: ICustomEdge) => {
       if (edge.combo_pseudo_center) {
         return 2000;
       }
@@ -30,7 +33,7 @@ export const gForceLayout = (graph) => {
   };
 };
 
-export const linkDistance = (edge) => {
+export const linkDistance = (edge: ICustomEdge) => {
   if (edge.combo_pseudo_inner) {
     // setting this to non-zero creates a "hole" inside combos
     return -1;
@@ -45,21 +48,12 @@ export const linkDistance = (edge) => {
   return 250;
 };
 
-export const initNodesAroundCenter = (nodes, x, y, r = 10) => {
-  for (const node of nodes) {
-    if (node.x === undefined) {
-      node.x = pointAround(x, r);
-      node.y = pointAround(y, r);
-    }
-  }
-};
-
-export const pointAround = (point, r = 10) => {
+export const pointAround = (point: number, r = 10) => {
   return point - r + Math.random() * r * 2;
 };
 
-export const nodeStrength = (node, num_nodes) => {
-  const mul = {
+export const nodeStrength = (node: ICustomNode, num_nodes: number) => {
+  const mul: IStringIndex<number> = {
     host: 10,
   };
 

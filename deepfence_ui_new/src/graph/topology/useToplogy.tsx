@@ -1,43 +1,26 @@
 import { useRef } from 'react';
 
-import {
-  getParents,
-  IAPIData,
-  modelNodeTypeToTopologyChildrenTypes,
-  TopologyNodeType,
-  uiToServerNodeMap,
-  uiToServerNodeParents,
-} from '../../topology/utils';
 import { UpdateManagerType, useGraphUpdateManager } from '../graphManager/updateManager';
 import { LayoutType, useLayoutManager } from '../graphManager/useLayoutManager';
-import { ICustomNode, IEvent, IGraph, IItem } from '../types';
-import { debounce, nodeToFront } from '../utils';
+import { IGraph } from '../types';
 import { topologyEdgesToDelta, topologyNodesToDelta } from './transform';
+import { IAPIData } from './utils';
 
-export const useToplogy = (graph: IGraph | null) => {
+export const useToplogy = (
+  graph: IGraph | null,
+  options: {
+    tick: () => void;
+  },
+) => {
   const updateManagerRef = useRef<Partial<UpdateManagerType>>({});
-  const layoutManagerRef = useRef<LayoutType>();
-
-  // current process node
-  const trackedItem = useRef<ICustomNode | null>(null);
-
-  const setTrackedItem = (item: ICustomNode | null) => {
-    trackedItem.current = item;
-  };
+  const layoutManagerRef = useRef<LayoutType>({});
 
   // create layout manager
   const { layout } = useLayoutManager(graph, {
-    tick: debounce(() => {
-      if (trackedItem.current) {
-        nodeToFront(trackedItem.current);
-        graph?.focusItem(trackedItem.current, true);
-      }
-    }, 500),
-
+    tick: options.tick,
     onLayoutStart: () => {
       updateManagerRef.current?.pause?.();
     },
-
     onLayoutEnd: () => {
       updateManagerRef.current?.resume?.();
     },
@@ -45,10 +28,11 @@ export const useToplogy = (graph: IGraph | null) => {
 
   // create graph update manager
 
-  const { updateRootNodes, updateEdges, updateNode, pause, resume } =
+  const { updateRootNodes, updateEdges, updateNode, processLayouts, pause, resume } =
     useGraphUpdateManager(graph, layoutManagerRef.current?.layout);
 
   updateManagerRef.current = {
+    processLayouts,
     pause,
     resume,
   };
@@ -93,42 +77,11 @@ export const useToplogy = (graph: IGraph | null) => {
     if (edges_delta !== null) {
       updateEdges?.({ add: edges_delta.add, remove: [], update: [] });
     }
-    graph?.on('df-track-item', (e: IEvent) => {
-      setTrackedItem(e.item as ICustomNode);
-    });
+
+    updateManagerRef.current?.processLayouts?.();
   };
 
-  function callExpandApi(item: IItem) {
-    if (graph === null || item === null) {
-      return;
-    }
-    const node = item.get?.('model');
-
-    const topo_node_type = uiToServerNodeMap(node.node_type);
-    if (!topo_node_type) {
-      console.error("node can't be expanded", node);
-      return;
-    }
-
-    const parents = getParents(graph, graph.findById(node.id)).map((id: string) =>
-      graph.findById(id).get('model'),
-    );
-
-    const nodeTypeIdMapForParent = uiToServerNodeParents(parents);
-
-    const kubernetes =
-      nodeTypeIdMapForParent[TopologyNodeType.KUBERNETES_CLUSTER] !== undefined;
-
-    const topo_children_types = modelNodeTypeToTopologyChildrenTypes(node.node_type, {
-      kubernetes,
-    });
-    if (topo_children_types === undefined) {
-      console.log('node can not be expanded', node);
-      return;
-    }
-  }
-
   return {
-    update,
+    update, // update is the only api to be called everytime we received data
   };
 };

@@ -1,8 +1,8 @@
 import { ICombo, IEdge, INode, Item, Layout, Node } from '@antv/g6';
 
-import { BASE_NODE_STRENGTH, gForceLayout, nodeStrength } from '../../topology/gforce';
 import {
   ApiNodeItemType,
+  ICustomNode,
   IGraph,
   IItem,
   InputLayoutOptions,
@@ -12,6 +12,7 @@ import {
   PointTuple,
 } from '../types';
 import { itemExpandsAsCombo } from './expand-collapse';
+import { BASE_NODE_STRENGTH, gForceLayout, nodeStrength } from './gforce';
 
 class LayoutExecutor {
   layout: typeof Layout;
@@ -26,7 +27,7 @@ class LayoutExecutor {
 }
 
 const buildLayout = (graph: IGraph, node_id: string, options?: InputLayoutOptions) => {
-  let item = undefined;
+  let item = null;
   if (node_id !== 'root') {
     item = graph.findById(node_id);
     if (item === undefined) {
@@ -36,14 +37,18 @@ const buildLayout = (graph: IGraph, node_id: string, options?: InputLayoutOption
   }
 
   if (node_id === 'root' || !itemExpandsAsCombo(item)) {
-    return buildRootLayout(graph, options);
+    return buildNormalLayout(graph, options);
   } else {
     return buildComboLayout(graph, item as Item, options);
   }
 };
 
-const buildComboLayout = (graph: IGraph, item: IItem, options?: InputLayoutOptions) => {
-  const model = item?.get('model');
+const buildComboLayout = (
+  graph: IGraph,
+  comboItem: IItem,
+  options?: InputLayoutOptions,
+) => {
+  const model = comboItem?.get('model');
   const node_id = model.id;
   const combo_id = `${node_id}-combo`;
 
@@ -78,7 +83,7 @@ const buildComboLayout = (graph: IGraph, item: IItem, options?: InputLayoutOptio
       ...gForceLayout(graph),
       center: [center_model.x, center_model.y] as PointTuple,
 
-      nodeStrength: (node: Node) => {
+      nodeStrength: (node: ICustomNode) => {
         return nodeStrength(node, num_nodes);
       },
 
@@ -96,18 +101,23 @@ const buildComboLayout = (graph: IGraph, item: IItem, options?: InputLayoutOptio
   };
 };
 
-const buildRootLayout = (
+const buildNormalLayout = (
   graph: IGraph,
   options?: InputLayoutOptions,
 ): OutputLayoutOptions => {
   const nodes: Partial<ApiNodeItemType> = {};
   let edges = [];
 
+  // nodes are already added to graph at this time
+  // we extract nodes and edges to build gForce options
+
   for (const node of graph.getNodes()) {
+    // model is actually a g6 graph node
     const model = node.get('model');
     if (!model || model.comboId) {
       continue;
     }
+    // store node model by id in a map
     nodes[model.id] = model;
 
     for (const edge of node.getEdges()) {
@@ -120,6 +130,7 @@ const buildRootLayout = (
   }
 
   edges = edges.filter((e) => nodes[e.source] && nodes[e.target]) as IEdge[];
+  // retrieves nodes model
   const _nodes = Object.values(nodes) as INode[];
 
   const center_x = graph.getWidth() / 2;

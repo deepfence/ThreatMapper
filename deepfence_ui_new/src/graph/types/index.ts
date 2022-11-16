@@ -2,7 +2,7 @@ import { IEdge, IG6GraphEvent, IGraph as Graph, INode as NodeType, Item } from '
 import { GraphOptions } from '@antv/g6-core';
 import { GForceLayoutOptions } from '@antv/layout';
 
-import { IAPIData } from '../../topology/utils';
+import { IAPIData } from '../topology/utils';
 
 export type IItem = Item;
 export type INode = NodeType;
@@ -83,4 +83,6 @@ export interface ICustomNode extends INode {
 
 export interface ICustomEdge extends IEdge {
   id: string;
+  combo_pseudo_inner: string;
+  combo_pseudo_center: string;
 }

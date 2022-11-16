@@ -3,7 +3,7 @@ import {
   updateGraphEdges,
   updateGraphNode,
   updateGraphRootNodes,
-} from '../../topology/utils';
+} from '../topology/utils';
 import { APIDeltaType, IGraph, InputLayoutOptions, UpdateDeltaType } from '../types';
 import { itemIsExpanded, itemIsExpanding } from './expand-collapse';
 import { LayoutType } from './useLayoutManager';
@@ -12,6 +12,7 @@ export type UpdateManagerType = {
   updateRootNodes: (delta: APIDeltaType) => void;
   updateEdges: (delta: APIDeltaType) => void;
   updateNode: (node_id: string, delta: APIDeltaType) => void;
+  processLayouts: () => void;
   resume: () => void;
   pause: () => void;
 };
@@ -34,7 +35,6 @@ export const useGraphUpdateManager = (
   function maybeProcess() {
     if (!paused) {
       processUpdates();
-      processLayouts();
     }
   }
 
@@ -60,7 +60,6 @@ export const useGraphUpdateManager = (
     }
 
     const expanding = itemIsExpanding(item);
-
     updateGraphNode(graph!, item, delta);
 
     let size = 0;
@@ -87,6 +86,10 @@ export const useGraphUpdateManager = (
     updateGraphEdges(graph!, delta);
   }
 
+  /**
+   * we call processUpdates for each of node update and edge update
+   * and queue layouts is pushed on node updates and not in edge update
+   */
   function processUpdates() {
     for (const up of updates) {
       if (up.root) {
@@ -110,8 +113,12 @@ export const useGraphUpdateManager = (
     updates = [];
   }
 
+  /**
+   * layouts store with node data that received from api data which are
+   * required to update the graph and layout function queue each of these nodes and
+   * start layout nodes and edges
+   */
   function processLayouts() {
-    console.log('layouts:', layouts);
     for (const { node_id, options } of layouts) {
       layout?.(node_id, options);
     }
@@ -149,6 +156,7 @@ export const useGraphUpdateManager = (
     updateRootNodes,
     updateEdges,
     updateNode,
+    processLayouts,
     resume,
     pause,
   };

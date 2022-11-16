@@ -18,20 +18,20 @@
  *
  */
 
-import { IGraph, Item } from '@antv/g6';
+import { ICombo, IGraph, Item } from '@antv/g6';
 
+import { StringIndexType } from '../../topology/topology-client';
 import {
   collapseNode,
   finishExpandingNode,
   itemExpandsAsCombo,
   itemIsExpanded,
   itemIsExpanding,
-} from '../graph/graphManager/expand-collapse';
+} from '../graphManager/expand-collapse';
+import { pointAround } from '../graphManager/gforce';
 // import { IG6GraphEvent, IUserNode } from '@antv/graphin';
-import { COLORS, PALETTE } from '../graph/theme';
-import { ApiNodeItemType, ICustomNode, IItem, INode, IStringIndex } from '../graph/types';
-import { pointAround } from './gforce';
-import { StringIndexType } from './topology-client';
+import { COLORS, PALETTE } from '../theme';
+import { ApiNodeItemType, ICustomNode, IItem, INode, IStringIndex } from '../types';
 
 export interface IAPIData {
   nodes: {
@@ -474,4 +474,29 @@ export const getParents = (graph: IGraph, item: Item) => {
   }
 
   return parents;
+};
+
+export const onHoverNode = (item: ICustomNode, hover: boolean) => {
+  const model = item.get('model');
+  if (model.node_type === 'process') {
+    if (hover) {
+      item.update({ label: model.label_full });
+      item.toFront();
+    } else {
+      item.update({ label: model.label_short });
+    }
+  }
+};
+
+export const fixCombo = (graph: IGraph, combo: ICombo) => {
+  const model = combo.get('model');
+  const bbox = combo.getBBox();
+  const { centerX, centerY } = bbox;
+
+  const center_id = model.center_ids[0];
+  const center = graph.findById(center_id);
+  const center_model = center.get('model');
+
+  center_model.fx = centerX;
+  center_model.fy = centerY;
 };

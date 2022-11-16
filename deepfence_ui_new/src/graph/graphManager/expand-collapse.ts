@@ -1,7 +1,7 @@
 /* eslint-disable */
 
-import { pointAround } from '../../topology/gforce';
 import { ICustomEdge, ICustomNode, IGraph, IItem, INode } from '../types';
+import { pointAround } from './gforce';
 
 /* eslint-disable */
 export const expandNode = (item: IItem) => {

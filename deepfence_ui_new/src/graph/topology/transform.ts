@@ -1,7 +1,7 @@
-import { IAPIData, nodeSize, serverToUINodeMap } from '../../topology/utils';
 import { getNodeIcon } from '../../utils/node-icons';
 import { APIDeltaType, ApiNodeItemType, IGraph, IStringIndex } from '../types';
 import { arrayTransformByFunction, basename, ellipsize } from '../utils';
+import { IAPIData, nodeSize, serverToUINodeMap } from './utils';
 
 export type SourceTargetType = { source: string; target: string };
 
