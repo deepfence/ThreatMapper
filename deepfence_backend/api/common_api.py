@@ -809,6 +809,7 @@ def mask_doc():
     if type(request.json) != dict:
         raise InvalidUsage("Request data invalid")
     docs_to_be_masked = request.json.get("docs")
+    node_type = request.json.get("node_type", "")
 
     cve_id_list = request.json.get("cve_id_list")
     if cve_id_list:
@@ -835,14 +836,16 @@ def mask_doc():
             all_docs_to_be_masked.append(doc)
 
     if cve_docs_to_be_masked:
-        mask_across_images = request.json.get("mask_across_images", False)
+        mask_across_nodes = request.json.get("mask_across_nodes", False)
         resp = ESConn.mget(body={"docs": cve_docs_to_be_masked}, _source=["cve_id", "cve_container_image"])
-        if mask_across_images:
+        if mask_across_nodes:
             cve_id_list = []
             for es_doc in resp:
                 if es_doc.get("_source", {}).get("cve_id", ""):
                     cve_id_list.append(es_doc["_source"]["cve_id"])
             filters = {"cve_id": cve_id_list, "masked": "false"}
+            if node_type:
+                filters["node_type"] = node_type
             es_resp = ESConn.search_by_and_clause(CVE_INDEX, filters, 0, size=49999, _source=["_id"])
             all_docs_to_be_masked.extend(es_resp.get("hits", []))
         else:
