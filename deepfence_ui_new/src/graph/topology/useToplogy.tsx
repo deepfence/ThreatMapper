@@ -77,7 +77,8 @@ export const useToplogy = (
     if (edges_delta !== null) {
       updateEdges?.({ add: edges_delta.add, remove: [], update: [] });
     }
-
+    // TODO: Lets check calling processLayouts after all nodes and edges are created cause issue or not.
+    // this actually helps to layout once with edges and nodes
     updateManagerRef.current?.processLayouts?.();
   };
 

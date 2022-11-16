@@ -256,7 +256,7 @@ const addNodesCombo = (graph: IGraph, item: IItem, nodes: ApiNodeItemType[]) => 
   }
 };
 
-export const updateComboNode = (graph: IGraph, item: IItem, delta: IAPIData['nodes']) => {
+const updateComboNode = (graph: IGraph, item: IItem, delta: IAPIData['nodes']) => {
   if (delta.remove) {
     removeNodesCombo(graph, item, delta.remove);
   }
@@ -319,7 +319,7 @@ const addNodesSimple = (graph: IGraph, item: Item, nodes: ApiNodeItemType[]) => 
   }
 };
 
-export const updateSimpleNode = (graph: IGraph, item: Item, delta: IAPIData['nodes']) => {
+const updateSimpleNode = (graph: IGraph, item: Item, delta: IAPIData['nodes']) => {
   if (delta.remove) {
     removeNodesSimple(graph, item, delta.remove as string[]);
   }
@@ -328,7 +328,7 @@ export const updateSimpleNode = (graph: IGraph, item: Item, delta: IAPIData['nod
     addNodesSimple(graph, item, delta.add);
   }
 };
-
+// updateGraphNode will be called to update nodes after api data is received
 export const updateGraphNode = (graph: IGraph, item: IItem, delta: IAPIData['nodes']) => {
   if (itemIsExpanding(item)) {
     finishExpandingNode(graph, item);
@@ -401,6 +401,7 @@ export const updateGraphRootNodes = (graph: IGraph, delta: StringIndexType<any>)
   }
 };
 
+// updateGraphEdges will be called to update edges after api data is received
 export const updateGraphEdges = (graph: IGraph, delta: IAPIData['edges']) => {
   const removeEdge = (item: IItem) => {
     const model = item.get('model');
@@ -416,7 +417,6 @@ export const updateGraphEdges = (graph: IGraph, delta: IAPIData['edges']) => {
   }
 
   if (delta.add) {
-    const r = [];
     for (const edge of delta.add) {
       const source = graph.findById(edge.source)?.get('model');
       if (source === undefined) {
@@ -434,13 +434,7 @@ export const updateGraphEdges = (graph: IGraph, delta: IAPIData['edges']) => {
         style: source.cloudInfo?.edgeStyle,
         connection: true,
       });
-      r.push({
-        ...edge,
-        style: source.cloudInfo?.edgeStyle,
-        connection: true,
-      });
     }
-    return r;
   }
 
   if (delta.remove) {

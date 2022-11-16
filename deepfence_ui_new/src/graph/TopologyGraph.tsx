@@ -84,6 +84,7 @@ export const TopologyGraph = () => {
       }
     }
 
+    // all graph listeners are defined here
     graph.on('node:click', (e: IEvent) => {
       const { item: node } = e;
       countRef.current = countRef.current + 1;
@@ -149,7 +150,7 @@ export const TopologyGraph = () => {
     graph.on('combo:dragend', (e: IEvent) => {
       try {
         const combo = e.item as ICombo;
-        // not sure this actually does its task
+        // TODO: not sure this actually does its task, enable commented code below when problem is seen
         // fixCombo(graph, combo);
       } catch (e) {
         console.error('exception handling dragend', e);

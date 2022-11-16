@@ -49,6 +49,8 @@ const finishExpandCombo = (graph: IGraph, item: IItem) => {
   const combo_model = combo.get('model');
 
   const center_id = `${combo_id}-center`;
+  // This node will be an invisible node that lie at the center of combo layout nodes which
+  // helps to pull all other nodes at its center
   graph.addItem('node', {
     id: center_id,
     node_type: 'combo_center',
@@ -133,7 +135,7 @@ const collapseSimpleNode = (
     onNodeCollapsed(item);
   }
 };
-
+// collapse combo continuously check of children node and collapse all of them
 const collapseCombo = (
   graph: IGraph,
   item: ICustomNode,
@@ -163,6 +165,7 @@ const collapseCombo = (
   collapseSimpleNode(graph, item, onNodeCollapsed, isChild);
 };
 
+// this is the static things that will consider a node as combo or not
 export const itemExpandsAsCombo = (item: IItem | null) => {
   const model = item?.get('model');
   return (
@@ -173,6 +176,7 @@ export const itemExpandsAsCombo = (item: IItem | null) => {
   );
 };
 
+// nodes that can expand
 export const itemExpands = (item: IItem) => {
   const model = item.get('model');
 
@@ -188,7 +192,7 @@ export const itemExpands = (item: IItem) => {
 
   return false;
 };
-
+// TODO: seems pseudoEdge will be the edges after user expand a node
 export const pseudoEdge = (source: string, target: string) => ({
   source,
   target,

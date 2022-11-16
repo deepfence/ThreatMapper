@@ -74,6 +74,7 @@ export const useGraphUpdateManager = (
       size += delta.remove.length;
     }
 
+    // TODO: Explain me size concept used here, 30 threshold seems quite high
     if (size > 0) {
       queueLayout(node_id, {
         expanding,
