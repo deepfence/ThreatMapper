@@ -433,7 +433,8 @@ class CveScanDockerHubImages(CveScanRegistryImages):
         super().__init__()
         self.docker_config_path = docker_config_path_prefix + REGISTRY_TYPE_DOCKER_HUB
         self.registry_type = REGISTRY_TYPE_DOCKER_HUB
-        self.docker_config_file = "{0}/{1}".format(self.docker_config_path, config_json)
+        if not (docker_hub_username == "" or docker_hub_username is None):
+            self.docker_config_file = "{0}/{1}".format(self.docker_config_path, config_json)
         mkdir_recursive(self.docker_config_path)
         self.docker_hub_namespace = docker_hub_namespace
         self.docker_hub_username = docker_hub_username
@@ -442,6 +443,9 @@ class CveScanDockerHubImages(CveScanRegistryImages):
 
     def validate(self):
         try:
+            # not authenticating for empty username
+            if self.docker_hub_username == "" or self.docker_hub_username is None:
+                return True
             resp = requests.post(self.docker_hub_url + "/users/login/",
                                  json={"username": self.docker_hub_username, "password": self.docker_hub_password})
             if resp.status_code == 200:
@@ -456,13 +460,15 @@ class CveScanDockerHubImages(CveScanRegistryImages):
         images_list = []
         try:
             headers = {}
-            resp = requests.post(self.docker_hub_url + "/users/login/",
-                                 json={"username": self.docker_hub_username, "password": self.docker_hub_password})
-            cookies = resp.cookies
-            auth_token = resp.json().get("token", "")
-            if not auth_token:
-                return images_list
-            headers["Authorization"] = "JWT " + auth_token
+            cookies = None
+            if not (self.docker_hub_username == "" or self.docker_hub_username is None):
+                resp = requests.post(self.docker_hub_url + "/users/login/",
+                                     json={"username": self.docker_hub_username, "password": self.docker_hub_password})
+                cookies = resp.cookies
+                auth_token = resp.json().get("token", "")
+                if not auth_token:
+                    return images_list
+                headers["Authorization"] = "JWT " + auth_token
             image_from_date = datetime.now() - timedelta(days=filter_past_days)
             image_from_date = image_from_date.replace(hour=0, minute=0, second=0, microsecond=0)
             resp = requests.get(
@@ -531,10 +537,11 @@ class CveScanDockerHubImages(CveScanRegistryImages):
         return images_list
 
     def docker_login(self):
-        with open(self.docker_config_file, "w") as f:
-            auth_enc = base64.b64encode(
-                "{0}:{1}".format(self.docker_hub_username, self.docker_hub_password).encode('ascii')).decode("utf-8")
-            json.dump({"auths": {"https://index.docker.io/v1/": {"auth": auth_enc}}}, f)
+        if self.docker_hub_username:
+            with open(self.docker_config_file, "w") as f:
+                auth_enc = base64.b64encode(
+                    "{0}:{1}".format(self.docker_hub_username, self.docker_hub_password).encode('ascii')).decode("utf-8")
+                json.dump({"auths": {"https://index.docker.io/v1/": {"auth": auth_enc}}}, f)
 
 
 class CveScanDockerPrivateRegistryImages(CveScanRegistryImages):
@@ -543,7 +550,8 @@ class CveScanDockerPrivateRegistryImages(CveScanRegistryImages):
         super().__init__()
         self.docker_config_path = docker_config_path_prefix + REGISTRY_TYPE_DOCKER_PVT
         self.registry_type = REGISTRY_TYPE_DOCKER_PVT
-        self.docker_config_file = "{0}/{1}".format(self.docker_config_path, config_json)
+        if docker_pvt_registry_username:
+            self.docker_config_file = "{0}/{1}".format(self.docker_config_path, config_json)
         mkdir_recursive(self.docker_config_path)
         if not docker_pvt_registry_url:
             logging.error('CveScanDockerPrivateRegistryImages: empty registry_url')
@@ -563,8 +571,11 @@ class CveScanDockerPrivateRegistryImages(CveScanRegistryImages):
     def validate(self):
         try:
             verify, cert = self.get_self_signed_certs()
+            auth = None
+            if self.docker_pvt_registry_username != "" or self.docker_pvt_registry_username is None:
+                auth = (self.docker_pvt_registry_username, self.docker_pvt_registry_password)
             resp = requests.get(self.docker_pvt_registry_url + "/v2/_catalog", verify=verify, cert=cert,
-                                auth=(self.docker_pvt_registry_username, self.docker_pvt_registry_password))
+                                auth=auth)
             if resp.status_code == 200:
                 return True
             else:
@@ -581,7 +592,9 @@ class CveScanDockerPrivateRegistryImages(CveScanRegistryImages):
                         filter_past_days=max_days):
         images_list = []
         verify, cert = self.get_self_signed_certs()
-        auth = (self.docker_pvt_registry_username, self.docker_pvt_registry_password)
+        auth = None
+        if self.docker_pvt_registry_username:
+            auth = (self.docker_pvt_registry_username, self.docker_pvt_registry_password)
         catalog_resp = requests.get("{0}/v2/_catalog".format(self.docker_pvt_registry_url),
                                     verify=verify, cert=cert, auth=auth)
         if catalog_resp.status_code != 200:
@@ -671,11 +684,12 @@ class CveScanDockerPrivateRegistryImages(CveScanRegistryImages):
         return images_list
 
     def docker_login(self):
-        with open(self.docker_config_file, "w") as f:
-            auth_enc = base64.b64encode(
-                "{0}:{1}".format(self.docker_pvt_registry_username, self.docker_pvt_registry_password).encode(
-                    'ascii')).decode("utf-8")
-            json.dump({"auths": {self.docker_registry_name: {"auth": auth_enc}}}, f)
+        if self.docker_pvt_registry_username:
+            with open(self.docker_config_file, "w") as f:
+                auth_enc = base64.b64encode(
+                    "{0}:{1}".format(self.docker_pvt_registry_username, self.docker_pvt_registry_password).encode(
+                        'ascii')).decode("utf-8")
+                json.dump({"auths": {self.docker_registry_name: {"auth": auth_enc}}}, f)
 
 
 class CveScanAzureRegistryImages(CveScanDockerPrivateRegistryImages):

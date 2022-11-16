@@ -49,7 +49,7 @@ class RegistryCredential(db.Model):
     }
     non_mandatory_fields = {
         REGISTRY_TYPE_DOCKER_PVT: [],
-        REGISTRY_TYPE_DOCKER_HUB: [],
+        REGISTRY_TYPE_DOCKER_HUB: ["docker_hub_username", "docker_hub_password"],
         REGISTRY_TYPE_QUAY: ["quay_access_token"],
         REGISTRY_TYPE_ECR: ["aws_access_key_id", "aws_secret_access_key", "registry_id", "target_account_role_arn"],
         REGISTRY_TYPE_HARBOR: [],
