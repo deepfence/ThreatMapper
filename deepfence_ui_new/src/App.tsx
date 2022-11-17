@@ -1,5 +1,9 @@
 import { TopologyGraph } from './graph/TopologyGraph';
 
 export default () => {
-  return <TopologyGraph />;
+  return (
+    <div className="h-screen">
+      <TopologyGraph />
+    </div>
+  );
 };

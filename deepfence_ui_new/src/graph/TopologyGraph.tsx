@@ -182,5 +182,5 @@ export const TopologyGraph = () => {
     graph.on('node:mouseleave', onNodeMouseLeave(graph));
   }, [graph]);
 
-  return <div className="h-screen bg-black" ref={setContainer}></div>;
+  return <div className="h-full w-full bg-black" ref={setContainer}></div>;
 };
