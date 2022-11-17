@@ -35,6 +35,7 @@ export const useGraphUpdateManager = (
   function maybeProcess() {
     if (!paused) {
       processUpdates();
+      //   processLayouts();
     }
   }
 

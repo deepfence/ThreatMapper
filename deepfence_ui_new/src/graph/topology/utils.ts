@@ -31,7 +31,16 @@ import {
 import { pointAround } from '../graphManager/gforce';
 // import { IG6GraphEvent, IUserNode } from '@antv/graphin';
 import { COLORS, PALETTE } from '../theme';
-import { ApiNodeItemType, ICustomNode, IItem, INode, IStringIndex } from '../types';
+import {
+  ApiNodeItemType,
+  ICustomEdge,
+  ICustomNode,
+  IEdge,
+  IEvent,
+  IItem,
+  INode,
+  IStringIndex,
+} from '../types';
 
 export interface IAPIData {
   nodes: {
@@ -494,3 +503,31 @@ export const fixCombo = (graph: IGraph, combo: ICombo) => {
   center_model.fx = centerX;
   center_model.fy = centerY;
 };
+
+export function onNodeMouseEnter(graph: IGraph) {
+  return function onNodeMouseEnter(e: IEvent) {
+    const { item: node } = e;
+    (node as INode)?.getEdges?.()?.forEach?.((edge: IEdge) => {
+      if (
+        !edge?.getModel?.()?.combo_pseudo_center &&
+        !edge?.getModel?.()?.combo_pseudo_inner
+      ) {
+        graph.setItemState(edge, 'active', true);
+      }
+    });
+  };
+}
+
+export function onNodeMouseLeave(graph: IGraph) {
+  return function onNodeMouseLeave(e: IEvent) {
+    const { item: node } = e;
+    (node as INode)?.getEdges?.()?.forEach?.((edge: IEdge) => {
+      if (
+        !edge?.getModel?.()?.combo_pseudo_center &&
+        !edge?.getModel?.()?.combo_pseudo_inner
+      ) {
+        graph.setItemState(edge, 'active', false);
+      }
+    });
+  };
+}

@@ -1,4 +1,10 @@
-import { IEdge, IG6GraphEvent, IGraph as Graph, INode as NodeType, Item } from '@antv/g6';
+import {
+  IEdge as EdgeType,
+  IG6GraphEvent,
+  IGraph as Graph,
+  INode as NodeType,
+  Item,
+} from '@antv/g6';
 import { GraphOptions } from '@antv/g6-core';
 import { GForceLayoutOptions } from '@antv/layout';
 
@@ -6,6 +12,7 @@ import { IAPIData } from '../topology/utils';
 
 export type IItem = Item;
 export type INode = NodeType;
+export type IEdge = EdgeType;
 export type IEvent = IG6GraphEvent;
 
 export type IGraph = Graph;
@@ -83,6 +90,6 @@ export interface ICustomNode extends INode {
 
 export interface ICustomEdge extends IEdge {
   id: string;
-  combo_pseudo_inner: string;
-  combo_pseudo_center: string;
+  combo_pseudo_inner: boolean;
+  combo_pseudo_center: boolean;
 }

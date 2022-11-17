@@ -16,6 +16,8 @@ import {
   modelNodeTypeToTopologyChildrenTypes,
   modelParentsToTopologyParents,
   onHoverNode,
+  onNodeMouseEnter,
+  onNodeMouseLeave,
   TopologyNodeType,
   uiToServerNodeMap,
   uiToServerNodeParents,
@@ -151,7 +153,7 @@ export const TopologyGraph = () => {
       try {
         const combo = e.item as ICombo;
         // TODO: not sure this actually does its task, enable commented code below when problem is seen
-        // fixCombo(graph, combo);
+        fixCombo(graph, combo);
       } catch (e) {
         console.error('exception handling dragend', e);
       }
@@ -176,6 +178,8 @@ export const TopologyGraph = () => {
         setTrackedItem(null);
       }
     });
+    graph.on('node:mouseenter', onNodeMouseEnter(graph));
+    graph.on('node:mouseleave', onNodeMouseLeave(graph));
   }, [graph]);
 
   return <div className="h-screen bg-black" ref={setContainer}></div>;

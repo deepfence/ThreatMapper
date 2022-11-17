@@ -77,6 +77,7 @@ const finishExpandCombo = (graph: IGraph, item: IItem) => {
   // the combo. Since the combo edge above is skipped, we create this one to
   // keep the combo close to its parent. See the edgeStrength code handling
   // combo_pseudo.
+  // I see without this edge, combos are overlaped
   graph.addItem('edge', {
     ...pseudoEdge(node_id, center_id),
     combo_pseudo_center: true,
