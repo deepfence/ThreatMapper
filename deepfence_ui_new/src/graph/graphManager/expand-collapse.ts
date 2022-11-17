@@ -114,6 +114,8 @@ const collapseSimpleNode = (
   const model = item.get<ICustomNode>('model');
 
   for (const edge of item.getOutEdges() as ICustomEdge[]) {
+    // TODO: seems this id is always undefined and removeItem needs Item not string
+    // have doubt on it whether it is actully functioning
     graph.removeItem(edge.id);
   }
 
@@ -127,6 +129,7 @@ const collapseSimpleNode = (
       removeNodeItem(graph, child);
     }
 
+    // clearing children_ids set after nodes and combo nodes have been deleted
     model.children_ids.clear();
   }
 
@@ -151,6 +154,7 @@ const collapseCombo = (
     const combo_model = combo.get('model');
     if (combo_model.children_ids) {
       for (const child_id of combo_model.children_ids) {
+        // remove a child node from children_ids set
         combo_model.children_ids.delete(child_id);
         const child = graph.findById(child_id) as ICustomNode;
         if (itemIsExpanded(child)) {
@@ -209,7 +213,6 @@ export const removeNodeItem = (graph: IGraph, item: INode) => {
   }
 
   const model = item.get('model');
-  console.log('removing node', model.id);
   graph.removeItem(item);
 };
 

@@ -275,6 +275,8 @@ const updateComboNode = (graph: IGraph, item: IItem, delta: IAPIData['nodes']) =
   }
 };
 
+// TODO: seems that removeNodesSimple will be called on add of nodes or remove combo nodes
+
 const removeNodesSimple = (graph: IGraph, item: Item, nodes: string[]) => {
   const model = item.get('model');
   const children_ids = model.children_ids;

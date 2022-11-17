@@ -29,13 +29,17 @@ import { debounce, nodeToFront } from './utils';
 export const TopologyGraph = () => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const { graph } = useG6raph(container, {});
+
+  // focus current click node at center
+  const pullNodeAtCenter = () => {
+    if (trackedItem.current) {
+      nodeToFront(trackedItem.current);
+      graph?.focusItem(trackedItem.current, true);
+    }
+  };
+
   const { update } = useToplogy(graph, {
-    tick: debounce(() => {
-      if (trackedItem.current) {
-        nodeToFront(trackedItem.current);
-        graph?.focusItem(trackedItem.current, true);
-      }
-    }, 500),
+    tick: debounce(pullNodeAtCenter, 500),
   });
 
   const countRef = useRef(1);
@@ -104,13 +108,14 @@ export const TopologyGraph = () => {
               graph.findById(id).get<ICustomNode>('model'),
             );
             const mapParents = modelParentsToTopologyParents(parents);
-            console.log('mapParents', mapParents);
 
             // call api
             update(topologyDataAzureCollapse);
           },
           false,
         );
+        graph.emit('df-track-item', { item: node });
+        pullNodeAtCenter();
       } else {
         expandNode(node!);
         // callExpandApi
@@ -129,7 +134,6 @@ export const TopologyGraph = () => {
       }
     });
     // graph listeners
-    // focus current click node at center
     graph.on('df-track-item', (e: IEvent) => {
       setTrackedItem(e.item as ICustomNode);
     });
@@ -160,7 +164,6 @@ export const TopologyGraph = () => {
     });
 
     graph.on('combo:click', (e: IEvent) => {
-      console.log(e.item);
       graph?.focusItem(e.item!, true);
     });
 
