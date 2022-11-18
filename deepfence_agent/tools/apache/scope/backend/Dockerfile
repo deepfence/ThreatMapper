@@ -30,7 +30,7 @@ RUN export arch_val="$(dpkg --print-architecture)"; \
    fi;
 
 # Install Docker (client only)
-ENV DOCKERVERSION=17.09.1-ce
+ENV DOCKERVERSION=20.10.8
 RUN export arch_val="$(dpkg --print-architecture)"; \
     if [ "$arch_val" = "arm64" ]; then \
         curl -fsSLO https://download.docker.com/linux/static/stable/aarch64/docker-${DOCKERVERSION}.tgz; \
