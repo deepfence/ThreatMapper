@@ -20,8 +20,7 @@
     "playwright:debug": "npx playwright test --debug"
   },
   "dependencies": {
-    "@antv/graphin": "^2.7.12",
-    "@antv/graphin-components": "^2.4.0",
+    "@antv/g6": "^4.7.14",
     "@radix-ui/react-checkbox": "^1.0.0",
     "@radix-ui/react-dialog": "^1.0.0",
     "@radix-ui/react-dropdown-menu": "^1.0.0",

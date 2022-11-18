@@ -105,6 +105,10 @@ export const collapseNode = (
   return collapseSimpleNode(graph, item, onNodeCollapsed, isChild);
 };
 
+// TODO: collapseSimpleNode is called when removing simple nodes
+// however it is a confusion code between removeNodesSimple of utils
+// it may need to merge this two function
+
 const collapseSimpleNode = (
   graph: IGraph,
   item: ICustomNode,
@@ -114,8 +118,7 @@ const collapseSimpleNode = (
   const model = item.get<ICustomNode>('model');
 
   for (const edge of item.getOutEdges() as ICustomEdge[]) {
-    // TODO: seems this id is always undefined and removeItem needs Item not string
-    // have doubt on it whether it is actully functioning
+    // TODO: seems this id is always undefined
     graph.removeItem(edge.id);
   }
 

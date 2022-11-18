@@ -9,6 +9,7 @@ import topologyData from '../topology/topology-data-v1.json';
 import topologyDataAzureCollapse from '../topology/topology-data-v1-azure-collapse.json';
 import topologyDataAzureExpanded from '../topology/topology-data-v1-azure-expanded.json';
 import { collapseNode, expandNode, itemIsExpanded } from './graphManager/expand-collapse';
+import { useLayoutSize } from './graphManager/useLayoutSize';
 import { useToplogy } from './topology/useToplogy';
 import {
   fixCombo,
@@ -29,6 +30,7 @@ import { debounce, nodeToFront } from './utils';
 export const TopologyGraph = () => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const { graph } = useG6raph(container, {});
+  const [width, height] = useLayoutSize(container);
 
   // focus current click node at center
   const pullNodeAtCenter = () => {
@@ -52,6 +54,18 @@ export const TopologyGraph = () => {
   const setTrackedItem = (item: ICustomNode | null) => {
     trackedItem.current = item;
   };
+
+  useEffect(() => {
+    // update the graph size when the container element is resized by smaller height
+    if (graph !== null && width && height) {
+      // set graph height a minimum of 1000
+      // browser resize won't impact graph layout
+      if (height < 1000) {
+        graph.changeSize(width, height);
+      }
+      return;
+    }
+  }, [width, height]);
 
   useEffect(() => {
     if (!graph) {
