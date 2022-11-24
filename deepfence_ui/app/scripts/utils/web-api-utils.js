@@ -2991,6 +2991,23 @@ export function getMalwareScanReportChart(params) {
   }).then(errorHandler);
 }
 
+
+export function getMalwareScanClassReportChart(params) {
+  const { globalSearchQuery = [] } = params;
+
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(globalSearchQuery));
+
+  const url = `${backendElasticApiEndPoint()}/malware/class/report?lucene_query=${luceneQueryEscaped}`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      // 'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function getMalwareScanChartData(params, dispatch) {
   let url = `${backendElasticApiEndPoint()}/malware/malware_severity_chart?number=${params.number
     }&time_unit=${params.time_unit}`;
@@ -3026,6 +3043,43 @@ export function getMalwareScanChartData(params, dispatch) {
     },
   });
 }
+
+export function getMalwareScanClassChartData(params, dispatch) {
+  let url = `${backendElasticApiEndPoint()}/malware/class/malware_severity_chart?number=${params.number
+  }&time_unit=${params.time_unit}`;
+  if (params.lucene_query.length !== 0) {
+    const luceneQuery = getLuceneQuery(params.lucene_query);
+    url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
+  }
+  let body = {};
+  const { scan_id } = params;
+  body = {
+    filters: {
+      scan_id,
+    },
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
 
 export function malwareScanMaskDocs(dispatch, params) {
   let url = `${backendElasticApiEndPoint()}/malware/mask-doc`;
