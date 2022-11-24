@@ -1,0 +1,11 @@
+p, admin, user, delete
+p, admin, user, write
+p, admin, user, read
+p, user, user, write
+p, user, user, read
+p, read-only-user, user, read
+
+p, admin, all-users, write
+p, admin, all-users, write
+p, admin, all-users, read
+p, user, all-users, read
