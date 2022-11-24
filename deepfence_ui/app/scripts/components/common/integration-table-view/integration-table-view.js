@@ -131,7 +131,6 @@ class IntegrationTableView extends React.Component {
           {record.s3_bucket && <td>{record.s3_bucket}</td>}
           {record.folder_path && <td>{record.folder_path}</td>}
           {record.aws_access_key && <td>{record.aws_access_key}</td>}
-          {record.action && <td>{record.action}</td>}
           {record.duration_in_mins && (
             <td style={workBreakStyles}>
               {Number(record.duration_in_mins) > 0
@@ -140,6 +139,9 @@ class IntegrationTableView extends React.Component {
             </td>
           )}
           {record.jira_site_url && <td>{record.jira_site_url}</td>}
+          {record.jira_project_key && <td>{record.jira_project_key}</td>}
+          {record.username && <td>{record.username}</td>}
+          {record.issue_type && <td>{record.issue_type}</td>}
           {record.filters.length > 0 && (
             <td
               className="truncate"
@@ -150,14 +152,12 @@ class IntegrationTableView extends React.Component {
               {JSON.stringify(record.filters)}
             </td>
           )}
-          {record.jira_project_key && <td>{record.jira_project_key}</td>}
-          {record.username && <td>{record.username}</td>}
-          {record.issue_type && <td>{record.issue_type}</td>}
           {/*<td> {hostname.join(', ')} </td>
             <td> {imagename.join(', ')} </td>*/}
           <td> {userDefinedTags.join(', ')} </td>
           <td> {kubeCluster.join(', ')} </td>
           <td> {kubeNamespace.join(', ')} </td>
+          {record.action && <td>{record.action}</td>}
           <td className="text-center">
             <i
               className="fa fa-trash-o"

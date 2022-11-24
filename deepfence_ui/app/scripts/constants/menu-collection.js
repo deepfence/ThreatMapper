@@ -48,6 +48,9 @@ export const INTEGRATION_MENU_COLLECTION = [
   {
     name: 'microsoft_teams', isActive: false, icon: MICROSOFT_LOGO, displayName: 'Microsoft Teams', category: 'notification', bgcolor: '#0E0E0E', parent: 'Notification'
   },
+  {
+    name: 'aws-security-hub', isActive: true, icon: AWS_S3_LOGO, displayName: 'AWS Security Hub', category: 'siem', parent: 'SIEM'
+  },
 ];
 
 export const ADMIN_SIDE_NAV_MENU_COLLECTION = [
