@@ -22,16 +22,16 @@ func SetupRoutes(r *chi.Mux) {
 
 			// current user
 			r.Route("/user", func(r chi.Router) {
-				r.Get("/", authorization.CasbinHandler("user:read", handler.GetUser))
-				r.Put("/", authorization.CasbinHandler("user:write", handler.UpdateUser))
-				r.Delete("/", authorization.CasbinHandler("user:delete", handler.DeleteUser))
+				r.Get("/", authorization.CasbinHandler("user", "read", handler.GetUser))
+				r.Put("/", authorization.CasbinHandler("user", "write", handler.UpdateUser))
+				r.Delete("/", authorization.CasbinHandler("user", "delete", handler.DeleteUser))
 			})
 
 			// manage other users
 			r.Route("/users/{userId}", func(r chi.Router) {
-				r.Get("/", authorization.CasbinHandler("all-users:read", handler.GetUser))
-				r.Put("/", authorization.CasbinHandler("all-users:write", handler.UpdateUser))
-				r.Delete("/", authorization.CasbinHandler("all-users:delete", handler.DeleteUser))
+				r.Get("/", authorization.CasbinHandler("all-users", "read", handler.GetUser))
+				r.Put("/", authorization.CasbinHandler("all-users", "write", handler.UpdateUser))
+				r.Delete("/", authorization.CasbinHandler("all-users", "delete", handler.DeleteUser))
 			})
 		})
 	})

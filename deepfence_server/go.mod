@@ -8,7 +8,7 @@ require (
 	github.com/go-chi/jwtauth/v5 v5.1.0
 	github.com/go-chi/render v1.0.2
 	github.com/google/uuid v1.3.0
-	github.com/sirupsen/logrus v1.9.0
+	github.com/rs/zerolog v1.28.0
 	github.com/swaggest/openapi-go v0.2.26
 )
 
@@ -23,6 +23,8 @@ require (
 	github.com/lestrrat-go/iter v1.0.2 // indirect
 	github.com/lestrrat-go/jwx/v2 v2.0.6 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/swaggest/jsonschema-go v0.3.42 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f // indirect

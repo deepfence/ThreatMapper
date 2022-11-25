@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
+	"flag"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,8 +14,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/swaggest/openapi-go/openapi3"
+)
+
+var (
+	verbosity = flag.String("verbose", "info", "log level")
 )
 
 type Config struct {
@@ -24,18 +29,15 @@ type Config struct {
 }
 
 func main() {
-	customFormatter := new(logrus.TextFormatter)
-	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	logrus.SetFormatter(customFormatter)
-	customFormatter.FullTimestamp = true
+	flag.Parse()
 
 	config, err := initialize()
 	if err != nil {
-		logrus.Error(err.Error())
+		log.Error().Msg(err.Error())
 		return
 	}
 
-	logrus.Info("starting deepfence-server")
+	log.Info().Msg("starting deepfence-server")
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -51,30 +53,49 @@ func main() {
 		signal.Notify(sigint, os.Interrupt)
 		<-sigint
 		if err := httpServer.Shutdown(context.Background()); err != nil {
-			logrus.Errorf("http server shutdown error: %v", err)
+			log.Error().Msgf("http server shutdown error: %v", err)
 		}
 		close(idleConnectionsClosed)
 	}()
 
 	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-		logrus.Errorf("http server ListenAndServe error: %v", err)
+		log.Error().Msgf("http server ListenAndServe error: %v", err)
+		return
 	}
 
 	<-idleConnectionsClosed
 
-	logrus.Info("deepfence-server stopped")
+	log.Info().Msg("deepfence-server stopped")
 }
 
 func initialize() (Config, error) {
-
-	redisEndpoint, has := os.LookupEnv("REDIS_ENDPOINT")
-	if !has {
-		return Config{}, errors.New("REDIS_ENDPOINT undefined")
+	// logger
+	// Default log level
+	switch *verbosity {
+	case zerolog.LevelTraceValue:
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	case zerolog.LevelDebugValue:
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	case zerolog.LevelInfoValue:
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	case zerolog.LevelWarnValue:
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	case zerolog.LevelErrorValue:
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case zerolog.LevelFatalValue:
+		zerolog.SetGlobalLevel(zerolog.FatalLevel)
+	default:
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	httpListenEndpoint, has := os.LookupEnv("HTTP_LISTEN_ENDPOINT")
-	if !has {
-		return Config{}, errors.New("LOOPBACK undefined")
+	//redisEndpoint, has := os.LookupEnv("REDIS_ENDPOINT")
+	//if !has {
+	//	return Config{}, errors.New("REDIS_ENDPOINT undefined")
+	//}
+
+	httpListenEndpoint := os.Getenv("HTTP_LISTEN_ENDPOINT")
+	if httpListenEndpoint == "" {
+		httpListenEndpoint = "8080"
 	}
 
 	// JWT
@@ -111,7 +132,7 @@ func initialize() (Config, error) {
 	}
 	//schema, err := common.OpenAPI.Spec.MarshalYAML()
 	return Config{
-		RedisEndpoint:      redisEndpoint,
-		HttpListenEndpoint: httpListenEndpoint,
+		RedisEndpoint:      "",
+		HttpListenEndpoint: ":" + httpListenEndpoint,
 	}, nil
 }
