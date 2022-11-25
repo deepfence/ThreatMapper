@@ -2,6 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
+	"net/http"
+	"os"
+	"os/signal"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
@@ -11,10 +16,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/swaggest/openapi-go/openapi3"
-	"net/http"
-	"os"
-	"os/signal"
 )
+
+type Config struct {
+	RedisEndpoint      string
+	HttpListenEndpoint string
+}
 
 func main() {
 	customFormatter := new(logrus.TextFormatter)
@@ -22,7 +29,7 @@ func main() {
 	logrus.SetFormatter(customFormatter)
 	customFormatter.FullTimestamp = true
 
-	err := initialize()
+	config, err := initialize()
 	if err != nil {
 		logrus.Error(err.Error())
 		return
@@ -36,7 +43,7 @@ func main() {
 
 	router.SetupRoutes(r)
 
-	httpServer := http.Server{Addr: ":8080", Handler: r}
+	httpServer := http.Server{Addr: config.HttpListenEndpoint, Handler: r}
 
 	idleConnectionsClosed := make(chan struct{})
 	go func() {
@@ -58,7 +65,18 @@ func main() {
 	logrus.Info("deepfence-server stopped")
 }
 
-func initialize() error {
+func initialize() (Config, error) {
+
+	redisEndpoint, has := os.LookupEnv("REDIS_ENDPOINT")
+	if !has {
+		return Config{}, errors.New("REDIS_ENDPOINT undefined")
+	}
+
+	httpListenEndpoint, has := os.LookupEnv("HTTP_LISTEN_ENDPOINT")
+	if !has {
+		return Config{}, errors.New("LOOPBACK undefined")
+	}
+
 	// JWT
 	common.TokenAuth = jwtauth.New("HS256", uuid.New(), nil)
 
@@ -66,7 +84,7 @@ func initialize() error {
 	// authorization
 	common.CasbinEnforcer, err = casbin.NewEnforcer("authorization/casbin_model.conf", "authorization/casbin_policy.csv")
 	if err != nil {
-		return err
+		return Config{}, err
 	}
 
 	// OpenAPI generation
@@ -92,5 +110,8 @@ func initialize() error {
 		},
 	}
 	//schema, err := common.OpenAPI.Spec.MarshalYAML()
-	return nil
+	return Config{
+		RedisEndpoint:      redisEndpoint,
+		HttpListenEndpoint: httpListenEndpoint,
+	}, nil
 }
