@@ -2,12 +2,14 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
-	"os/signal"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_worker/router"
 	"github.com/hibiken/asynq"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
@@ -15,18 +17,36 @@ type Config struct {
 	RedisDb       string
 }
 
-func main() {
-	customFormatter := new(logrus.TextFormatter)
-	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	logrus.SetFormatter(customFormatter)
-	customFormatter.FullTimestamp = true
+type AsynqLogger struct{}
 
-	logrus.Info("starting deepfence-worker")
+func (a AsynqLogger) Debug(args ...interface{}) {
+	log.Debug().Msg(fmt.Sprint(args...))
+}
+
+func (a AsynqLogger) Info(args ...interface{}) {
+	log.Info().Msg(fmt.Sprint(args...))
+}
+
+func (a AsynqLogger) Warn(args ...interface{}) {
+	log.Warn().Msg(fmt.Sprint(args...))
+}
+
+func (a AsynqLogger) Error(args ...interface{}) {
+	log.Error().Msg(fmt.Sprint(args...))
+}
+
+func (a AsynqLogger) Fatal(args ...interface{}) {
+	log.Fatal().Msg(fmt.Sprint(args...))
+}
+
+func main() {
 
 	config, err := initialize()
 	if err != nil {
-		logrus.Fatalf("Initialize failed: %v", err)
+		log.Fatal().Msgf("Initialize failed: %v", err)
 	}
+
+	log.Info().Msgf("starting deepfence-worker")
 
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{Addr: config.RedisEndpoint},
@@ -37,31 +57,42 @@ func main() {
 				"default":  3,
 				"low":      1,
 			},
+			Logger: AsynqLogger{},
 		},
 	)
 
 	r := asynq.NewServeMux()
 	router.SetupRoutes(r)
 
-	idleConnectionsClosed := make(chan struct{})
-	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, os.Interrupt)
-		<-sigint
-		srv.Shutdown()
-		close(idleConnectionsClosed)
-	}()
-
 	if err := srv.Run(r); err != nil {
-		logrus.Errorf("Server run error: %v", err)
+		log.Fatal().Msgf("Server run error: %v", err)
 	}
 
-	<-idleConnectionsClosed
-
-	logrus.Info("deepfence-worker stopped")
+	log.Info().Msg("deepfence-worker stopped")
 }
 
 func initialize() (Config, error) {
+
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC1123Z})
+
+	verbosity, _ := os.LookupEnv("WORKER_LOG_LEVEL")
+
+	switch verbosity {
+	case zerolog.LevelTraceValue:
+		zerolog.SetGlobalLevel(zerolog.TraceLevel)
+	case zerolog.LevelDebugValue:
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	case zerolog.LevelInfoValue:
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	case zerolog.LevelWarnValue:
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	case zerolog.LevelErrorValue:
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case zerolog.LevelFatalValue:
+		zerolog.SetGlobalLevel(zerolog.FatalLevel)
+	default:
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
 
 	redisEndpoint, has := os.LookupEnv("REDIS_ENDPOINT")
 	if !has {
