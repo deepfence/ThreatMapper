@@ -261,9 +261,6 @@ module.exports = {
       },
     },
   },
-  corePlugins: {
-    preflight: false,
-  },
   plugins: [
     tailwindRadix(),
     plugin(({ addVariant }) => {
