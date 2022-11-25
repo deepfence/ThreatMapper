@@ -14,7 +14,8 @@ import (
 )
 
 var (
-	verbosity = flag.String("verbose", "info", "log level")
+	verbosity   = flag.String("verbose", "info", "log level")
+	openapiDocs = flag.Bool("api-docs", false, "serve openapi documentation")
 )
 
 type Config struct {
@@ -36,7 +37,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	err = router.SetupRoutes(r)
+	err = router.SetupRoutes(r, config.HttpListenEndpoint, *openapiDocs)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
@@ -74,7 +75,6 @@ func initialize() (Config, error) {
 		httpListenEndpoint = "8080"
 	}
 
-	//schema, err := common.OpenAPI.Spec.MarshalYAML()
 	return Config{
 		HttpListenEndpoint: ":" + httpListenEndpoint,
 	}, nil

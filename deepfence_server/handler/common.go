@@ -25,3 +25,13 @@ func (h *Handler) AsyncPing(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msgf("ping sent %v", info)
 	return
 }
+
+func (h *Handler) OpenApiDocsHandler(w http.ResponseWriter, r *http.Request) {
+	apiDocs, err := h.OpenApiDocs.Json()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(apiDocs)
+}

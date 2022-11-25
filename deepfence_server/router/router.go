@@ -4,12 +4,15 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
+	"os"
+	"strings"
 )
 
-func SetupRoutes(r *chi.Mux) error {
+func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 	// JWT
 	tokenAuth := getTokenAuth()
 
@@ -19,10 +22,13 @@ func SetupRoutes(r *chi.Mux) error {
 		return err
 	}
 
+	openApiDocs := apiDocs.InitializeOpenAPIReflector()
+
 	dfHandler := &handler.Handler{
-		TokenAuth:    tokenAuth,
-		AuthEnforcer: authEnforcer,
-		OpenAPI:      apiDocs.NewOpenAPIReflector(),
+		TokenAuth:      tokenAuth,
+		AuthEnforcer:   authEnforcer,
+		OpenApiDocs:    openApiDocs,
+		SaasDeployment: IsSaasDeployment(),
 	}
 
 	r.Route("/deepfence", func(r chi.Router) {
@@ -31,7 +37,12 @@ func SetupRoutes(r *chi.Mux) error {
 
 		// public apis
 		r.Group(func(r chi.Router) {
+			openApiDocs.AddLoginOperation()
 			r.Post("/login", dfHandler.LoginHandler)
+			if deployOpenapiDocs {
+				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi-docs", serverPort)
+				r.Get("/openapi-docs", dfHandler.OpenApiDocsHandler)
+			}
 		})
 
 		// authenticated apis
@@ -65,4 +76,11 @@ func getTokenAuth() *jwtauth.JWTAuth {
 
 func getAuthorizationHandler() (*casbin.Enforcer, error) {
 	return casbin.NewEnforcer("auth/model.conf", "auth/policy.csv")
+}
+
+func IsSaasDeployment() bool {
+	if strings.ToLower(os.Getenv("SAAS_DEPLOYMENT")) == "true" {
+		return true
+	}
+	return false
 }

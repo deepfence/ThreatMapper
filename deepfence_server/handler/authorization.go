@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/go-chi/jwtauth/v5"
-	"github.com/go-chi/render"
 	"net/http"
 )
 
@@ -10,18 +9,18 @@ func (h *Handler) AuthHandler(resource, permission string, handlerFunc http.Hand
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, claims, err := jwtauth.FromContext(r.Context())
 		if err != nil {
-			render.Status(r, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		enforce, err := h.AuthEnforcer.Enforce([]interface{}{claims["role"].(string), resource, permission}...)
 		if err != nil {
-			render.Status(r, http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if enforce {
 			handlerFunc(w, r)
 		} else {
-			render.Status(r, http.StatusUnauthorized)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 	}

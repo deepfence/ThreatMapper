@@ -20,7 +20,8 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     WORKER_REDIS_HOST=deepfence-redis \
     WORKER_REDIS_PORT=6379 \
     REDIS_DB_NUMBER=0 \
-    HTTP_LISTEN_ENDPOINT=:8080
+    HTTP_LISTEN_ENDPOINT=8080 \
+    SAAS_DEPLOYMENT=false
 
 COPY --from=build /tmp/deepfence_server /usr/local/bin/deepfence_server
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
