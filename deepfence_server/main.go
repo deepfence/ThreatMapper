@@ -7,16 +7,11 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/casbin/casbin/v2"
-	"github.com/deepfence/ThreatMapper/deepfence_server/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/jwtauth/v5"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/swaggest/openapi-go/openapi3"
 )
 
 var (
@@ -43,7 +38,11 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	router.SetupRoutes(r)
+	err = router.SetupRoutes(r)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return
+	}
 
 	httpServer := http.Server{Addr: config.HttpListenEndpoint, Handler: r}
 
@@ -98,38 +97,6 @@ func initialize() (Config, error) {
 		httpListenEndpoint = "8080"
 	}
 
-	// JWT
-	common.TokenAuth = jwtauth.New("HS256", uuid.New(), nil)
-
-	var err error
-	// authorization
-	common.CasbinEnforcer, err = casbin.NewEnforcer("authorization/casbin_model.conf", "authorization/casbin_policy.csv")
-	if err != nil {
-		return Config{}, err
-	}
-
-	// OpenAPI generation
-	description := "Deepfence ThreatMapper API Documentation"
-	common.OpenAPI = &openapi3.Reflector{
-		Spec: &openapi3.Spec{
-			Openapi: "3.0.3",
-			Info: openapi3.Info{
-				Title:          "Deepfence ThreatMapper",
-				Description:    &description,
-				TermsOfService: nil,
-				Contact:        nil,
-				License:        nil,
-				Version:        "2.0.0",
-			},
-			ExternalDocs:  nil,
-			Servers:       nil,
-			Security:      nil,
-			Tags:          nil,
-			Paths:         openapi3.Paths{},
-			Components:    nil,
-			MapOfAnything: nil,
-		},
-	}
 	//schema, err := common.OpenAPI.Spec.MarshalYAML()
 	return Config{
 		RedisEndpoint:      "",
