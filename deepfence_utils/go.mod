@@ -1,12 +1,10 @@
-module github.com/deepfence/ThreatMapper/deepfence_worker
+module github.com/deepfence/ThreatMapper/deepfence_utils
 
 go 1.19
 
-replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils/
-
 require (
-	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/hibiken/asynq v0.23.0
+	github.com/rs/zerolog v1.28.0
 )
 
 require (
@@ -18,10 +16,8 @@ require (
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
-	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
+	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 )

@@ -8,10 +8,9 @@ import (
 	"os/signal"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -19,7 +18,6 @@ var (
 )
 
 type Config struct {
-	RedisEndpoint      string
 	HttpListenEndpoint string
 }
 
@@ -69,28 +67,7 @@ func main() {
 
 func initialize() (Config, error) {
 	// logger
-	// Default log level
-	switch *verbosity {
-	case zerolog.LevelTraceValue:
-		zerolog.SetGlobalLevel(zerolog.TraceLevel)
-	case zerolog.LevelDebugValue:
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	case zerolog.LevelInfoValue:
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	case zerolog.LevelWarnValue:
-		zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	case zerolog.LevelErrorValue:
-		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
-	case zerolog.LevelFatalValue:
-		zerolog.SetGlobalLevel(zerolog.FatalLevel)
-	default:
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	}
-
-	//redisEndpoint, has := os.LookupEnv("REDIS_ENDPOINT")
-	//if !has {
-	//	return Config{}, errors.New("REDIS_ENDPOINT undefined")
-	//}
+	log.Initialize(*verbosity)
 
 	httpListenEndpoint := os.Getenv("HTTP_LISTEN_ENDPOINT")
 	if httpListenEndpoint == "" {
@@ -99,7 +76,6 @@ func initialize() (Config, error) {
 
 	//schema, err := common.OpenAPI.Spec.MarshalYAML()
 	return Config{
-		RedisEndpoint:      "",
 		HttpListenEndpoint: ":" + httpListenEndpoint,
 	}, nil
 }
