@@ -41,7 +41,7 @@ export default defineConfig(() => {
       lib: {
         entry: path.resolve(root, 'src/main.ts'),
         name: 'ui-components',
-        fileName: (format) => `ui-components.${format}.js`,
+        fileName: (format) => `index.${format}.js`,
       },
       rollupOptions: {
         external: ['react'],

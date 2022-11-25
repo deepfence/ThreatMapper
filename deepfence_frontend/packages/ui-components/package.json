@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "module": "dist/ui-components.es.js",
-  "types": "dist/ui-components.es.d.ts",
+  "module": "dist/index.es.js",
+  "types": "dist/index.es.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/ui-components.es.js"
+      "import": "./dist/index.es.js"
     },
-    "./dist/style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css"
   },
   "sideEffects": false,
   "files": [
@@ -18,9 +18,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "lint": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --ignore-path ./.gitignore",
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
-    "lint:format": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\" ",
-    "lint": "npm run lint:format && npm run lint:fix",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "test": "vitest",
@@ -82,10 +81,8 @@
     "eslint-plugin-simple-import-sort": "^8.0.0",
     "eslint-plugin-storybook": "^0.6.7",
     "jsdom": "^20.0.0",
-    "lint-staged": "^13.0.3",
     "msw": "^0.47.3",
     "postcss": "^8.4.16",
-    "prettier": "^2.7.1",
     "react": "^18.2.0",
     "resize-observer-polyfill": "^1.5.1",
     "storybook-dark-mode": "^1.1.2",
@@ -98,14 +95,5 @@
   },
   "engines": {
     "node": ">=16"
-  },
-  "lint-staged": {
-    "src/**/*.+(js|jsx|json|ts|tsx)": [
-      "npm run lint:format",
-      "npm run lint:fix"
-    ],
-    "src/**/*.+(css|md)": [
-      "npm run lint:format"
-    ]
   }
 }
