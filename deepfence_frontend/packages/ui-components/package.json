@@ -16,7 +16,6 @@
     "dist"
   ],
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --ignore-path ./.gitignore",
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
@@ -46,7 +45,8 @@
     "tailwindcss-radix": "^2.6.0"
   },
   "peerDependencies": {
-    "react": "^18.2.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.1",
@@ -77,14 +77,16 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsx-a11y": "^6.6.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.31.8",
+    "eslint-plugin-react": "^7.31.11",
     "eslint-plugin-simple-import-sort": "^8.0.0",
     "eslint-plugin-storybook": "^0.6.7",
     "jsdom": "^20.0.0",
     "msw": "^0.47.3",
     "postcss": "^8.4.16",
     "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "resize-observer-polyfill": "^1.5.1",
+    "rollup-plugin-visualizer": "^5.8.3",
     "storybook-dark-mode": "^1.1.2",
     "tailwindcss": "^3.1.8",
     "typescript": "^4.8.3",
