@@ -1,3 +1,5 @@
+import './index.css';
+
 import { useState } from 'react';
 import { Button } from 'ui-components';
 
@@ -7,8 +9,8 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <div className="App">
-      <Button size="md" color="danger">
+    <div className="ml-[50px]">
+      <Button size="sm" color="primary">
         test
       </Button>
       <div>
