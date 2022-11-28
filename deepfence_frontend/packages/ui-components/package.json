@@ -22,9 +22,7 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "test": "vitest",
-    "coverage": "vitest run --coverage",
-    "playwright": "npx playwright test",
-    "playwright:debug": "npx playwright test --debug"
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.0",
@@ -50,7 +48,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.19.1",
-    "@playwright/test": "^1.25.2",
     "@storybook/addon-a11y": "^6.5.13",
     "@storybook/addon-actions": "^6.5.13",
     "@storybook/addon-essentials": "^6.5.13",

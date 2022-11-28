@@ -1,8 +1,8 @@
-// import { Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
 
-export default class LoginPage {
-  page: any;
-  constructor(page: any) {
+export class LoginPage {
+  readonly page: Page;
+  constructor(page: Page) {
     this.page = page;
   }
 

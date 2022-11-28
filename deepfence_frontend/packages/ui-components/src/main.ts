@@ -2,6 +2,7 @@ import './index.css';
 
 export { default as Button } from './components/button/Button';
 export { default as IconButton } from './components/button/IconButton';
+export { Card } from './components/card/Card';
 export { Checkbox } from './components/checkbox/Checkbox';
 export { Dropdown } from './components/dropdown/Dropdown';
 export { default as TextInput } from './components/input/TextInput';
