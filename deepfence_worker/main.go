@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/deepfence/ThreatMapper/deepfence_utils/connection"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/router"
 	"github.com/hibiken/asynq"
@@ -13,8 +13,13 @@ func main() {
 
 	log.Info().Msgf("starting deepfence-worker")
 
+	ctx := directory.NewGlobalContext()
+	redisAddr, err := directory.RedisEndpoint(ctx)
+	if err != nil {
+		log.Fatal().Msgf("Directory error: %v", err)
+	}
 	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: connection.GlobalRedisEndpoint()},
+		asynq.RedisClientOpt{Addr: redisAddr.Str()},
 		asynq.Config{
 			Concurrency: 10,
 			Queues: map[string]int{
