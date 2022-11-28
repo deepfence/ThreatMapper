@@ -14,12 +14,12 @@ func main() {
 	log.Info().Msgf("starting deepfence-worker")
 
 	ctx := directory.NewGlobalContext()
-	redisAddr, err := directory.RedisEndpoint(ctx)
+	redisConfig, err := directory.GetRedisConfig(ctx)
 	if err != nil {
 		log.Fatal().Msgf("Directory error: %v", err)
 	}
 	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: redisAddr.Str()},
+		asynq.RedisClientOpt{Addr: redisConfig.Endpoint},
 		asynq.Config{
 			Concurrency: 10,
 			Queues: map[string]int{

@@ -5,31 +5,23 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/hibiken/asynq"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func get_client[T redis.Client | asynq.Client](ctx context.Context, pool map[NamespaceID]*T, new_client func(DBEndpoints) *T) *T {
+func get_client[T *redis.Client | *asynq.Client | *neo4j.Driver](ctx context.Context, pool map[NamespaceID]T, new_client func(DBConfigs) (T, error)) (T, error) {
 	key, err := ExtractNamespace(ctx)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	val, has := pool[key]
 	if has {
-		return val
+		return val, nil
 	}
 
-	client := new_client(directory[key])
+	client, err := new_client(directory[key])
+	if err != nil {
+		return nil, err
+	}
 	pool[key] = client
-	return client
-}
-
-func (r RedisAddr) Str() string {
-	return string(r)
-}
-
-func (r Neo4jAddr) Str() string {
-	return string(r)
-}
-
-func (r PosgresAddr) Str() string {
-	return string(r)
+	return client, nil
 }

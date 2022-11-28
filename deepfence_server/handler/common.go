@@ -19,7 +19,12 @@ func (h *Handler) AsyncPing(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msgf("could not create task: %v", err)
 	}
 	ctx := directory.NewGlobalContext()
-	info, err := directory.WorkerClient(ctx).Enqueue(task)
+	client, err := directory.WorkerClient(ctx)
+	if err != nil {
+		log.Error().Msgf("could not get client: %v", err)
+		return
+	}
+	info, err := client.Enqueue(task)
 	if err != nil {
 		log.Error().Msgf("could not enqueue task: %v", err)
 	}

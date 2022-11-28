@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-func NewCustomerContext() context.Context {
+func NewAccountContext() context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, NAMESPACE_KEY, NONSAAS_DIR_KEY)
 	return ctx

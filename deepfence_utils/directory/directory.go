@@ -14,28 +14,84 @@ const (
 )
 
 type NamespaceID string
-type RedisAddr string
-type Neo4jAddr string
-type PosgresAddr string
 
-type DBEndpoints struct {
-	RedisEndpoint RedisAddr
-	Neo4jEndpoint Neo4jAddr
-	PostgresDB    PosgresAddr
+type RedisConfig struct {
+	Endpoint string
+	Password string
+	Database int
 }
 
-var directory map[NamespaceID]DBEndpoints
+type Neo4jConfig struct {
+	Endpoint string
+	Username string
+	Password string
+}
+
+type PosgresConfig struct {
+	Endpoint string
+	Username string
+	Password string
+	Database string
+}
+
+type DBConfigs struct {
+	Redis    RedisConfig
+	Neo4j    *Neo4jConfig
+	Postgres PosgresConfig
+}
+
+var directory map[NamespaceID]DBConfigs
 
 func init() {
 	redisEndpoint, has := os.LookupEnv("REDIS_ENDPOINT")
 	if !has {
-		log.Fatal().Msg("REDIS_ENDPOINT undefined")
+		redisEndpoint = "localhost:6379"
+		log.Warn().Msgf("REDIS_ENDPOINT defaults to: %v", redisEndpoint)
 	}
 
-	directory = map[NamespaceID]DBEndpoints{}
-	directory[GLOBAL_DIR_KEY] = DBEndpoints{
-		RedisEndpoint: RedisAddr(redisEndpoint),
-		Neo4jEndpoint: "127.0.0.1:7474",
-		PostgresDB:    "127.0.0.1:5432",
+	saasMode := false
+	saasModeOn, has := os.LookupEnv("SAAS_MODE")
+	if !has {
+		log.Warn().Msg("SAAS_MODE defaults to: off")
+	} else if saasModeOn == "on" {
+		saasMode = true
+	}
+
+	directory = map[NamespaceID]DBConfigs{}
+
+	if !saasMode {
+		directory[NONSAAS_DIR_KEY] = DBConfigs{
+			Redis: RedisConfig{
+				Endpoint: redisEndpoint,
+				Password: "",
+				Database: 0,
+			},
+			Neo4j: &Neo4jConfig{
+				Endpoint: "bolt://localhost:7687",
+				Username: "neo4j",
+				Password: "password",
+			},
+			Postgres: PosgresConfig{
+				Endpoint: "localhost:5432",
+				Username: "",
+				Password: "",
+				Database: "default",
+			},
+		}
+	}
+
+	directory[GLOBAL_DIR_KEY] = DBConfigs{
+		Redis: RedisConfig{
+			Endpoint: redisEndpoint,
+			Password: "",
+			Database: 0,
+		},
+		Neo4j: nil,
+		Postgres: PosgresConfig{
+			Endpoint: "localhost:5432",
+			Username: "",
+			Password: "",
+			Database: "global",
+		},
 	}
 }

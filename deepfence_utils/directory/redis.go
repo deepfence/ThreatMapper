@@ -13,26 +13,26 @@ func init() {
 	redis_clients_pool = map[NamespaceID]*redis.Client{}
 }
 
-func new_redis_client(endpoints DBEndpoints) *redis.Client {
+func new_redis_client(endpoints DBConfigs) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
-		Addr:     endpoints.RedisEndpoint.Str(),
-		Password: "",
-		DB:       0,
-	})
+		Addr:     endpoints.Redis.Endpoint,
+		Password: endpoints.Redis.Endpoint,
+		DB:       endpoints.Redis.Database,
+	}), nil
 }
 
-func RedisClient(ctx context.Context) *redis.Client {
+func RedisClient(ctx context.Context) (*redis.Client, error) {
 	return get_client(ctx, redis_clients_pool, new_redis_client)
 }
 
-func RedisEndpoint(ctx context.Context) (RedisAddr, error) {
+func GetRedisConfig(ctx context.Context) (RedisConfig, error) {
 	namespace, err := ExtractNamespace(ctx)
 	if err != nil {
-		return "", err
+		return RedisConfig{}, err
 	}
 	endpoints, has := directory[namespace]
 	if !has {
-		return "", errors.New("Missing direcotry entry")
+		return RedisConfig{}, errors.New("Missing direcotry entry")
 	}
-	return endpoints.RedisEndpoint, nil
+	return endpoints.Redis, nil
 }
