@@ -13,6 +13,9 @@ Here are some important resources:
 
 ## How can I contribute?
 
+### I want to build ThreatMapper
+
+If you want to build all the ThreatMapper images, run `make` inside main repo. It would build all the ThreatMapper images. And to build image individually, run `make <service-name>` example: `make api` or `make ui`. Check Makefile for more info.
 ### I'm having difficulty installing, operating or building ThreatMapper
 
 Head over to our [Community Slack](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) and share what's going on.  It's generally useful to include details of your installation, as ThreatMapper is under constant development and we fix bugs fast. `docker images list` and `docker ps -a`, or the equivalent Kubernetes commands are a good start.  Logs from any containers that may be misbehaving are also useful.
