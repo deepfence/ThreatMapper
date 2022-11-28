@@ -17,12 +17,13 @@
     "@testing-library/user-event": "^14.4.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "ui-components": "*"
+    "ui-components": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/react": "^13.4.0",
     "@types/react": "^18.0.24",
     "@types/react-dom": "^18.0.8",
+    "@types/testing-library__jest-dom": "^5.14.5",
     "@typescript-eslint/eslint-plugin": "^5.44.0",
     "@typescript-eslint/parser": "^5.44.0",
     "@vitejs/plugin-react": "^2.2.0",
