@@ -1,0 +1,98 @@
+{
+  "name": "ui-components",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "module": "dist/index.es.js",
+  "types": "dist/index.es.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "lint": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --ignore-path ./.gitignore",
+    "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook",
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@radix-ui/react-checkbox": "^1.0.0",
+    "@radix-ui/react-dialog": "^1.0.0",
+    "@radix-ui/react-dropdown-menu": "^1.0.0",
+    "@radix-ui/react-label": "^1.0.0",
+    "@radix-ui/react-radio-group": "^1.0.0",
+    "@radix-ui/react-separator": "^1.0.0",
+    "@radix-ui/react-switch": "^1.0.0",
+    "@radix-ui/react-tabs": "^1.0.0",
+    "@radix-ui/react-tooltip": "^1.0.0",
+    "@tanstack/react-table": "^8.5.13",
+    "ariakit": "2.0.0-next.41",
+    "classnames": "^2.3.2",
+    "lodash-es": "^4.17.21",
+    "react-icons": "^4.4.0",
+    "tailwind-merge": "^1.6.0",
+    "tailwindcss-radix": "^2.6.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.19.1",
+    "@storybook/addon-a11y": "^6.5.13",
+    "@storybook/addon-actions": "^6.5.13",
+    "@storybook/addon-essentials": "^6.5.13",
+    "@storybook/addon-interactions": "^6.5.13",
+    "@storybook/addon-links": "^6.5.13",
+    "@storybook/addon-postcss": "^2.0.0",
+    "@storybook/builder-vite": "^0.2.5",
+    "@storybook/react": "^6.5.13",
+    "@storybook/testing-library": "^0.0.13",
+    "@storybook/theming": "^6.5.13",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
+    "@types/lodash-es": "^4.17.6",
+    "@types/react": "^18.0.20",
+    "@types/react-dom": "^18.0.9",
+    "@types/testing-library__jest-dom": "^5.14.5",
+    "@typescript-eslint/eslint-plugin": "^5.37.0",
+    "@typescript-eslint/parser": "^5.37.0",
+    "@vitejs/plugin-react": "^2.1.0",
+    "@vitest/coverage-c8": "^0.23.4",
+    "autoprefixer": "^10.4.11",
+    "babel-loader": "^8.2.5",
+    "eslint": "^8.23.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsx-a11y": "^6.6.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.31.11",
+    "eslint-plugin-simple-import-sort": "^8.0.0",
+    "eslint-plugin-storybook": "^0.6.7",
+    "jsdom": "^20.0.0",
+    "postcss": "^8.4.16",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "resize-observer-polyfill": "^1.5.1",
+    "rollup-plugin-visualizer": "^5.8.3",
+    "storybook-dark-mode": "^1.1.2",
+    "tailwindcss": "^3.1.8",
+    "typescript": "^4.8.3",
+    "vite": "^3.1.2",
+    "vite-plugin-dts": "^1.7.1",
+    "vitest": "^0.23.4"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
