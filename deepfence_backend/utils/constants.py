@@ -96,10 +96,11 @@ INTEGRATION_TYPE_GOOGLE_CHRONICLE = "google_chronicle"
 INTEGRATION_TYPE_JIRA = "jira"
 INTEGRATION_TYPE_SUMO_LOGIC = "sumo_logic"
 INTEGRATION_TYPE_MICROSOFT_TEAMS = "microsoft_teams"
+INTEGRATION_TYPE_AWS_SECURITY_HUB = "aws_security_hub"
 INTEGRATION_TYPES = [
     INTEGRATION_TYPE_EMAIL, INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_PAGERDUTY, INTEGRATION_TYPE_SPLUNK,
     INTEGRATION_TYPE_ES, INTEGRATION_TYPE_S3, INTEGRATION_TYPE_HTTP, INTEGRATION_TYPE_JIRA, INTEGRATION_TYPE_SUMO_LOGIC,
-    INTEGRATION_TYPE_MICROSOFT_TEAMS, INTEGRATION_TYPE_GOOGLE_CHRONICLE]
+    INTEGRATION_TYPE_MICROSOFT_TEAMS, INTEGRATION_TYPE_GOOGLE_CHRONICLE, INTEGRATION_TYPE_AWS_SECURITY_HUB]
 
 NOTIFICATION_TYPE_VULNERABILITY = "vulnerability"
 NOTIFICATION_TYPE_COMPLIANCE = "compliance"
@@ -209,6 +210,25 @@ COMPLIANCE_CHECK_TYPES = {
     COMPLIANCE_PROVIDER_AZURE: ["cis", "nist", "hipaa"],
     COMPLIANCE_LINUX_HOST: ["hipaa", "gdpr", "pci", "nist"],
     COMPLIANCE_KUBERNETES_HOST: ["nsa-cisa"]
+}
+COMPLIANCE_TYPE_ASFF_MAPPING = {
+    "hipaa": "Software and Configuration Checks/Industry and Regulatory Standards/HIPAA Controls (USA)",
+    "gdpr": "Software and Configuration Checks/Industry and Regulatory Standards/GDPR Controls (Europe)",
+    "pci": "Software and Configuration Checks/Industry and Regulatory Standards/PCI-DSS",
+    "nist": "Software and Configuration Checks/Industry and Regulatory Standards/NIST 800-53 Controls (USA)",
+    "aws-foundational-security": "Software and Configuration Checks/Industry and Regulatory Standards/" +
+                                 "AWS Foundational Security Best Practices",
+    "cis": "Software and Configuration Checks/Industry and Regulatory Standards/CIS Host Hardening Benchmarks",
+    "soc2": "Software and Configuration Checks/Industry and Regulatory Standards/SOC 2"
+}
+COMPLIANCE_STATUS_ASFF_MAPPING = {
+    "alarm": "FAILED",
+    "ok": "PASSED",
+    "info": "NOT_AVAILABLE",
+    "skip": "NOT_AVAILABLE",
+    "note": "NOT_AVAILABLE",
+    "pass": "PASSED",
+    "warn": "WARNING"
 }
 CSPM_RESOURCES = {
     "aws_s3_bucket": "aws_s3",
@@ -625,9 +645,10 @@ FILTER_TYPE_IMAGE_NAME = "image_name"
 FILTER_TYPE_IMAGE_NAME_WITH_TAG = "image_name_with_tag"
 FILTER_TYPE_TAGS = "user_defined_tags"
 FILTER_TYPE_CLOUDTRAIL_TRAIL = "cloudtrail_trail"
+FILTER_TYPE_AWS_ACCOUNT_ID = "aws_account_id"
 INTEGRATION_FILTER_TYPES = [FILTER_TYPE_KUBE_NAMESPACE, FILTER_TYPE_KUBE_CLUSTER_NAME, FILTER_TYPE_HOST_NAME,
                             FILTER_TYPE_IMAGE_NAME, FILTER_TYPE_TAGS, FILTER_TYPE_IMAGE_NAME_WITH_TAG,
-                            FILTER_TYPE_CLOUDTRAIL_TRAIL]
+                            FILTER_TYPE_CLOUDTRAIL_TRAIL, FILTER_TYPE_AWS_ACCOUNT_ID]
 DEEPFENCE_KEY = "deepfence-key"
 
 # all text fields needs .keyword in es query for sorting

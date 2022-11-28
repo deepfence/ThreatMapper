@@ -1152,6 +1152,17 @@ def enumerate_node_filters():
                 "required": True
             }
             response["filters"].append(item)
+        if "aws_account_id" in filters_needed:
+            cloudtrail_resources = CloudComplianceNode.query.filter_by(cloud_provider=CLOUD_AWS).all()
+            account_options = map(lambda x: x.node_name, cloudtrail_resources)
+            item = {
+                "label": "AWS Account",
+                "name": "aws_account_id",
+                "options": list(account_options),
+                "type": "string",
+                "required": True
+            }
+            response["filters"].append(item)
     if resource_filters and response.get('filters'):
         merged_filters = resource_filters + response.get('filters')
         # merged_filters = list(filter(lambda x: x.get('name') in [y.get('name') for y in response.get('filters')],
