@@ -577,10 +577,6 @@ export function rootReducer(state = initialState, action) {
         'availableSumoLogicIntegrations',
         action.response.sumo_logic
       );
-      state = state.set(
-        'availableAWSSecurityHubIntegrations',
-        action.response.aws_security_hub
-      );
       state = state.set('IntegrationStatus', action.response);
       return state;
     }
