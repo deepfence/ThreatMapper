@@ -1,5 +1,11 @@
+/*eslint-disable*/
+
+// React imports
 import React from 'react';
 import { connect } from 'react-redux';
+
+// Custom component imports
+import SeverityDropdownView from '../../common/severity-radio-button-collection/severity-radio-button-collection';
 import DFSelect from '../../common/multi-select/app';
 import IntegrationTableView from '../../common/integration-table-view/integration-table-view';
 
@@ -11,12 +17,15 @@ import {
   enumerateFiltersAction,
 } from '../../../actions/app-actions';
 import { getIntegrations } from '../../../utils/web-api-utils';
+import { DURATION_DROPDOWN_COLLECTION } from '../../../constants/dropdown-option-collection';
 import AppLoader from '../../common/app-loader/app-loader';
-
 import {
   FEATURE_BLOCKED_ALERT_MESSAGE,
   NO_INTEGRATION_FOUND_ALERT_MESSAGE,
 } from '../../../constants/visualization-config';
+import AdvanceFilterOption, {
+  AdvancedFilterModalContent,
+} from '../advance-filter-modal';
 
 const resourceCollection = [
   {
@@ -26,42 +35,24 @@ const resourceCollection = [
   {
     name: 'Compliance Results',
     value: 'compliance',
-  }
+  },
+  // {
+  //   name: 'AWS Security Hub',
+  //   value: 'aws_security_hub',
+  // },
 ];
 
 const allNodeType = 'host,container_image,pod,aws';
-
-const isDataAvailable = (data) => {
-  let result;
-  if (data && data.length > 0) {
-    result = true;
-  } else {
-    result = false;
-  }
-  return result;
-}
-const getDisabledBtnView = () => {
-  return (
-    <button type="button" className="app-btn">
-      Subscribe
-    </button>
-  );
-}
-
-const getEnabledBtnView = (handleSubmit) => {
-  return (
-    <button type="button" className="app-btn" onClick={handleSubmit}>
-      Subscribe
-    </button>
-  );
-}
 
 class AWSSecurityHubIntegrationView extends React.Component {
   constructor() {
     super();
     this.state = {
+      email: '',
+      severity: '',
       isSuccess: false,
       isError: false,
+      duration: '',
       submitted: false,
       filters: {},
       cloudTrailValue: {},
@@ -74,8 +65,12 @@ class AWSSecurityHubIntegrationView extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleResourceChange = this.handleResourceChange.bind(this);
+    this.handleRadioButtonState = this.handleRadioButtonState.bind(this);
+    this.handleDurationDropDownState =
+      this.handleDurationDropDownState.bind(this);
     this.deleteIntegration = this.deleteIntegration.bind(this);
     this.handleDeleteDialog = this.handleDeleteDialog.bind(this);
+    this.getModalContent = this.getModalContent.bind(this);
     this.seCloudtrailOptions = this.seCloudtrailOptions.bind(this);
   }
 
@@ -118,8 +113,9 @@ class AWSSecurityHubIntegrationView extends React.Component {
       });
     }
 
-    if (newProps.licenseResponse) {
+    if (newProps.availableAWSSecurityHubIntegrations && newProps.licenseResponse) {
       this.setState({
+        availableAWSSecurityHubIntegrations: newProps.availableAWSSecurityHubIntegrations,
         isDemoModeEnabled: newProps.licenseResponse.demo_mode,
       });
     }
@@ -138,10 +134,30 @@ class AWSSecurityHubIntegrationView extends React.Component {
     this.setState({ [name]: value });
   }
 
+  handleRadioButtonState(selectedSeverity) {
+    this.setState({
+      severity: selectedSeverity,
+    });
+  }
+
+  handleDurationDropDownState(selectedDuration) {
+    this.setState({
+      duration: selectedDuration,
+    });
+  }
+
   handleResourceChange(e) {
     const selectedOption = e;
+    let showSeverityOptions = false;
+    let showDurationOptions = false;
+    let duration = 0;
     this.setState({
+      docType: selectedOption,
+      showSeverityOptions,
+      showDurationOptions,
       resourceType: selectedOption,
+      severity: '',
+      duration,
     });
   }
 
@@ -149,6 +165,8 @@ class AWSSecurityHubIntegrationView extends React.Component {
     e.preventDefault();
     this.setState({ submitted: true });
     const {
+      severity,
+      duration = {},
       resourceType,
       filters,
       cloudTrailValue,
@@ -204,7 +222,9 @@ class AWSSecurityHubIntegrationView extends React.Component {
       ...apiAWSAccountFilters,
     };
 
-    const params = {
+    let params = {
+      // alert_level: severity,
+      // duration: duration.value,
       aws_access_key: this.state.awsAccessKey,
       aws_secret_key: this.state.awsSecretKey,
       region_name: this.state.awsRegion,
@@ -216,24 +236,47 @@ class AWSSecurityHubIntegrationView extends React.Component {
     this.props.dispatch(submitIntegrationRequest(params));
   }
 
-  
+  getDisabledBtnView() {
+    return (
+      <button type="button" className="app-btn">
+        Subscribe
+      </button>
+    );
+  }
 
-  
+  getEnabledBtnView() {
+    return (
+      <button type="button" className="app-btn" onClick={this.handleSubmit}>
+        Subscribe
+      </button>
+    );
+  }
+
+  getModalContent() {
+    const setFilters = filters => {
+      this.setState({ filters });
+    };
+
+    return (
+      <AdvancedFilterModalContent
+        nodeFilters={this.props.nodeFilters}
+        initialFilters={this.state.filters}
+        onFiltersChanged={setFilters}
+      />
+    );
+  }
 
   seCloudtrailOptions(name, value) {
     this.setState({
       cloudTrailValue: {
-        // eslint-disable-next-line
         ...this.state.cloudTrailValue,
         cloudtrail_trail: value,
       },
     });
   }
-
   setAwsSecurityOptions(name, value) {
     this.setState({
       awsSecurityAccountFilter: {
-        // eslint-disable-next-line
         ...this.state.awsSecurityAccountFilter,
         aws_account_id: value,
       },
@@ -249,14 +292,16 @@ class AWSSecurityHubIntegrationView extends React.Component {
       awsSecurityAccountFilter,
     } = this.state;
     const {
+      showSeverityOptions = false,
+      showDurationOptions = false,
       awsAccessKey,
       awsSecretKey,
       awsRegion,
     } = this.state;
     const cloudTrailOptions =
       this.props.nodeFilters &&
-      this.props.nodeFilters.filter((item) => {
-        return item.label === 'CloudTrail';
+      this.props.nodeFilters.filter(item => {
+        if (item.label === 'CloudTrail') return item;
       });
     const columnStyle = {
       padding: '0px 60px',
@@ -265,7 +310,7 @@ class AWSSecurityHubIntegrationView extends React.Component {
     const AWSAccountOptions =
       this.props.nodeFilters &&
       this.props.nodeFilters.filter(item => {
-        return item.name === 'aws_account_id';
+        if (item.name === 'aws_account_id') return item;
       });
 
     return (
@@ -386,7 +431,7 @@ class AWSSecurityHubIntegrationView extends React.Component {
               <div className="col-md-4">
                 <div className="form-group df-select-field">
                   {AWSAccountOptions?.map(resource => (
-                    <div className="search-form" key={resource.value}>
+                    <div className="search-form">
                       <br />
                       <DFSelect
                         options={resource.options.map(el => ({
@@ -407,7 +452,7 @@ class AWSSecurityHubIntegrationView extends React.Component {
                     </div>
                   ))}
                   {submitted &&
-                    (!awsSecurityAccountFilter.aws_account_id ||
+                    (!awsSecurityAccountFilter['aws_account_id'] ||
                       awsSecurityAccountFilter?.aws_account_id?.length ===
                         0) && (
                       <div
@@ -431,7 +476,7 @@ class AWSSecurityHubIntegrationView extends React.Component {
                     style={{ width: '250px' }}
                   >
                     {cloudTrailOptions.map(filter => (
-                      <div className="search-form" key={filter.value}>
+                      <div className="search-form">
                         <br />
                         <DFSelect
                           options={filter.options.map(el => ({
@@ -455,6 +500,35 @@ class AWSSecurityHubIntegrationView extends React.Component {
                 </div>
               </div>
             )}
+            <div className="row">
+              {showSeverityOptions && (
+                <div className="col-md-6">
+                  <div className="severity-container">
+                    <SeverityDropdownView
+                      onDropdownCheckedCallback={value =>
+                        this.handleRadioButtonState(value)
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="col-md-6">
+                {showDurationOptions && (
+                  <div className="duration-container df-select-field">
+                    <DFSelect
+                      options={DURATION_DROPDOWN_COLLECTION.options.map(el => ({
+                        value: el.value,
+                        label: el.display,
+                      }))}
+                      onChange={this.handleDurationDropDownState}
+                      placeholder={DURATION_DROPDOWN_COLLECTION.heading}
+                      value={this.state.duration}
+                      clearable={false}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="error-msg-container">
               {this.state.isError && (
                 <div className="auth-error-msg">
@@ -465,8 +539,8 @@ class AWSSecurityHubIntegrationView extends React.Component {
             <br />
             <div className="form-group">
               {isDemoModeEnabled
-                ? getDisabledBtnView()
-                : getEnabledBtnView(this.handleSubmit)}
+                ? this.getDisabledBtnView()
+                : this.getEnabledBtnView()}
             </div>
             <div className="error-msg-container">
               {this.state.isSuccess && (
@@ -482,7 +556,7 @@ class AWSSecurityHubIntegrationView extends React.Component {
   }
 
   deleteIntegration(record) {
-    const params = {
+    let params = {
       id: record.id,
       notification_type: record.notification_type,
     };
@@ -527,7 +601,7 @@ class AWSSecurityHubIntegrationView extends React.Component {
     };
     return (
       <div style={emptyStateWrapper}>
-        {data === undefined ? <AppLoader /> : this.getEmptyStateView()}
+        {data == undefined ? <AppLoader /> : this.getEmptyStateView()}
       </div>
     );
   }
@@ -543,6 +617,16 @@ class AWSSecurityHubIntegrationView extends React.Component {
     );
   }
 
+  isDataAvailable(data) {
+    let result;
+    if (data && data.length > 0) {
+      result = true;
+    } else {
+      result = false;
+    }
+    return result;
+  }
+
   render() {
     const { availableAWSSecurityHubIntegrations } = this.props;
     return (
@@ -551,7 +635,7 @@ class AWSSecurityHubIntegrationView extends React.Component {
           {this.getIntegrationFormView()}
         </div>
         <div className="integration-list-section">
-          {isDataAvailable(availableAWSSecurityHubIntegrations)
+          {this.isDataAvailable(availableAWSSecurityHubIntegrations)
             ? this.getIntegrationTableView()
             : this.getTableEmptyState(availableAWSSecurityHubIntegrations)}
         </div>
