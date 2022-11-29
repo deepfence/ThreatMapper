@@ -239,6 +239,22 @@ module.exports = {
           '100%': { opacity: 1, transform: 'scale(1)' },
           '0%': { opacity: 0, transform: 'scale(0.96)' },
         },
+        'accordion-slide-down': {
+          from: {
+            height: 0,
+          },
+          to: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+        },
+        'accordion-slide-up': {
+          from: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+          to: {
+            height: 0,
+          },
+        },
       },
       animation: {
         // tooltip
@@ -258,6 +274,8 @@ module.exports = {
         'slide-opacity-out': 'slide-opacity-out 0.3s ease',
         'opacity-out': 'opacity-out 0.5s ease',
         'opacity-in': 'opacity-in 0.5s ease',
+        'accordion-open': 'accordion-slide-down 100ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'accordion-closed': 'accordion-slide-up 100ms cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },
