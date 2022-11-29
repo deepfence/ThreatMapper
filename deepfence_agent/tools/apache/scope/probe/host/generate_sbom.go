@@ -2,10 +2,11 @@ package host
 
 import (
 	"context"
+	"os"
+
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
-	"os"
 )
 
 const (
@@ -39,6 +40,8 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 	var nodeType string
 	if imageName == "host" {
 		nodeType = "host"
+	} else if containerName != "" {
+		nodeType = "container"
 	} else {
 		nodeType = "container_image"
 	}
