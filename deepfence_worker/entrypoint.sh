@@ -6,6 +6,4 @@ until pg_isready -h "${POSTGRES_USER_DB_HOST}" -p "${POSTGRES_USER_DB_PORT}" -U 
   sleep 5
 done
 
-# TODO: migrate db
-
 exec "$@"

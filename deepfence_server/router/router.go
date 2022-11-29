@@ -38,8 +38,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 
 		// public apis
 		r.Group(func(r chi.Router) {
-			openApiDocs.AddLoginOperation()
-			r.Post("/login", dfHandler.LoginHandler)
+			openApiDocs.AddUserAuthOperations()
+			r.Post("/user/register", dfHandler.RegisterUser)
+			r.Post("/auth/token", dfHandler.ApiAuthHandler)
+			r.Post("/user/login", dfHandler.LoginHandler)
 			if deployOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi-docs", serverPort)
 				r.Get("/openapi-docs", dfHandler.OpenApiDocsHandler)
@@ -71,7 +73,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 			r.Use(jwtauth.Verifier(tokenAuth))
 			r.Use(jwtauth.Authenticator)
 
-			r.Post("/logout", dfHandler.LogoutHandler)
+			r.Post("/user/logout", dfHandler.LogoutHandler)
 
 			// current user
 			r.Route("/user", func(r chi.Router) {

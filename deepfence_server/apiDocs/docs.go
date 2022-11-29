@@ -72,8 +72,15 @@ func (d *OpenApiDocs) Yaml() ([]byte, error) {
 	return d.reflector.Spec.MarshalYAML()
 }
 
-func (d *OpenApiDocs) AddOperation(method string, path string, request interface{}, response interface{}) {
-	operation := openapi3.Operation{}
+func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string, tags []string, queryParams []openapi3.ParameterOrRef, security []map[string][]string, request interface{}, response interface{}) {
+	operation := openapi3.Operation{
+		Tags:        tags,
+		Summary:     &summary,
+		Description: &description,
+		ID:          &id,
+		Parameters:  queryParams,
+		Security:    security,
+	}
 	err := d.reflector.SetRequest(&operation, request, method)
 	if err != nil {
 		log.Error().Msgf("Docs SetRequest %s %s: %s", method, path, err.Error())

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"net/http"
 	"os"
 	"os/signal"
@@ -26,6 +27,11 @@ func main() {
 	flag.Parse()
 
 	config, err := initialize()
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return
+	}
+	err = initializeDatabase()
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
@@ -78,4 +84,31 @@ func initialize() (Config, error) {
 	return Config{
 		HttpListenEndpoint: ":" + httpListenEndpoint,
 	}, nil
+}
+
+func initializeDatabase() error {
+	ctx := context.Background()
+	pgConn, err := model.NewPostgresDBConnection()
+	if err != nil {
+		return err
+	}
+	roles, err := pgConn.Queries.GetRoles(ctx)
+	if err != nil {
+		return err
+	}
+	if len(roles) == 0 {
+		_, err = pgConn.Queries.CreateRole(ctx, model.AdminRole)
+		if err != nil {
+			return err
+		}
+		_, err = pgConn.Queries.CreateRole(ctx, model.UserRole)
+		if err != nil {
+			return err
+		}
+		_, err = pgConn.Queries.CreateRole(ctx, model.ReadOnlyRole)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

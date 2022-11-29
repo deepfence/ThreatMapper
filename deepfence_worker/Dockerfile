@@ -1,6 +1,7 @@
 FROM golang:1.19-alpine3.16 AS build
 
 ADD deepfence_worker /go/deepfence_worker/
+ADD deepfence_utils /go/deepfence_utils/
 WORKDIR /go/deepfence_worker/
 RUN apk add --no-cache git \
     && go mod tidy \
