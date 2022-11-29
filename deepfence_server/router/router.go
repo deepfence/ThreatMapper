@@ -46,6 +46,26 @@ func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 			}
 		})
 
+		// topology apis TODO: remove -api
+		r.Route("/topology-api", func(r chi.Router) {
+			r.Post("/report", dfHandler.IngestAgentReport)
+			r.Post("/graph", dfHandler.GetTopologyGraph)
+		})
+
+		// topology apis TODO: remove -api
+		r.Route("/threat", func(r chi.Router) {
+			r.Post("/graph", dfHandler.GetThreatGraph)
+		})
+
+		// topology apis TODO: remove -api
+		r.Route("/df-api/ingest", func(r chi.Router) {
+			r.Post("/cves", dfHandler.IngestCVEReportHandler)
+			r.Post("/secrets", dfHandler.IngestSecretReportHandler)
+			r.Post("/compliance", dfHandler.IngestComplianceReportHandler)
+			r.Post("/cloud-compliance", dfHandler.IngestCloudComplianceReportHandler)
+			r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
+		})
+
 		// authenticated apis
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(tokenAuth))
@@ -67,11 +87,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 				r.Delete("/", dfHandler.AuthHandler("all-users", "delete", dfHandler.DeleteUser))
 			})
 
-			// topology apis TODO: remove -api
-			r.Route("/topology-api", func(r chi.Router) {
-				r.Post("/report", dfHandler.IngestAgentReport)
-				r.Post("/graph", dfHandler.GetTopologyGraph)
-			})
 		})
 	})
 	return nil
