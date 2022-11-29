@@ -1,6 +1,9 @@
 package router
 
 import (
+	"os"
+	"strings"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -8,8 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
-	"os"
-	"strings"
 )
 
 func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
@@ -64,6 +65,12 @@ func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 				r.Get("/", dfHandler.AuthHandler("all-users", "read", dfHandler.GetUser))
 				r.Put("/", dfHandler.AuthHandler("all-users", "write", dfHandler.UpdateUser))
 				r.Delete("/", dfHandler.AuthHandler("all-users", "delete", dfHandler.DeleteUser))
+			})
+
+			// topology apis TODO: remove -api
+			r.Route("/topology-api", func(r chi.Router) {
+				r.Post("/report", dfHandler.IngestAgentReport)
+				r.Post("/graph", dfHandler.GetTopologyGraph)
 			})
 		})
 	})

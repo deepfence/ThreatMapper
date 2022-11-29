@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	redis2 "github.com/go-redis/redis/v8"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/sirupsen/logrus"
-	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/report"
 )
 
@@ -49,15 +49,11 @@ func NewEndpointResolvers() EndpointResolvers {
 	}
 }
 
-func NewEndpointResolversCache() EndpointResolversCache {
-	rdb := redis2.NewClient(&redis2.Options{
-		Addr:     "deepfence-redis:6379",
-		Password: "",
-		DB:       0,
-	})
+func newEndpointResolversCache(ctx context.Context) (EndpointResolversCache, error) {
+	rdb, err := directory.RedisClient(ctx)
 	return EndpointResolversCache{
 		rdb: rdb,
-	}
+	}, err
 }
 
 func (erc *EndpointResolversCache) clean_maps() {
@@ -89,9 +85,9 @@ func (erc *EndpointResolversCache) get_ip_pid(ip_port string) (string, bool) {
 func (erc *EndpointResolversCache) Close() {
 }
 
-type neo4jCollector struct {
-	driver           neo4j.Driver
-	enqueer          chan *report.Report
+type neo4jIngester struct {
+	driver           *neo4j.Driver
+	enqueuer         chan *report.Report
 	ingester         chan map[string]*report.Report
 	resolvers_access sync.RWMutex
 	resolvers        EndpointResolversCache
@@ -101,13 +97,13 @@ type neo4jCollector struct {
 	preparers_input  chan *report.Report
 }
 
-func (nc *neo4jCollector) runEnqueueReport() {
+func (nc *neo4jIngester) runEnqueueReport() {
 	report_buffer := map[string]*report.Report{}
 	timeout := time.After(enqueer_timeout)
 	i := 0
 	for {
 		select {
-		case rpt := <-nc.enqueer:
+		case rpt := <-nc.enqueuer:
 			var probe_id string
 			for _, n := range rpt.Host.Nodes {
 				probe_id, _ = n.Latest.Lookup("control_probe_id")
@@ -204,7 +200,7 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 	return resolvers
 }
 
-func (nc *neo4jCollector) resolversUpdater() {
+func (nc *neo4jIngester) resolversUpdater() {
 	for {
 		select {
 		case <-time.After(resolver_timeout):
@@ -399,472 +395,21 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	}
 }
 
-func (nc *neo4jCollector) Close() {
-	nc.driver.Close()
+func (nc *neo4jIngester) Close() {
 	nc.resolvers.Close()
 }
 
-func (nc *neo4jCollector) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
-
-	r, err := tx.Run("MATCH (n:Node) -[r:CONNECTS]-> (m:Node) return n.cloud_provider, n.cloud_region, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid", nil)
-
-	if err != nil {
-		return []ConnectionSummary{}, err
-	}
-	edges, err := r.Collect()
-
-	if err != nil {
-		return []ConnectionSummary{}, err
-	}
-
-	res := []ConnectionSummary{}
-	var buf bytes.Buffer
-	for _, edge := range edges {
-		if edge.Values[2].(string) != edge.Values[6].(string) {
-			buf.Reset()
-			buf.WriteString(edge.Values[0].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[1].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[2].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[3].(string))
-			src := buf.String()
-			buf.Reset()
-			buf.WriteString(edge.Values[4].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[5].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[6].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[7].(string))
-			target := buf.String()
-			res = append(res, ConnectionSummary{Source: src, Target: target})
-		}
-	}
-
-	return res, nil
-}
-
-func (nc *neo4jCollector) getCloudProviders(tx neo4j.Transaction) ([]string, error) {
-	res := []string{}
-	r, err := tx.Run("MATCH (n:Node) where n.cloud_provider <> 'internet' return n.cloud_provider", nil)
-
-	if err != nil {
-		return res, err
-	}
-	records, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		res = append(res, record.Values[0].(string))
-	}
-
-	return res, nil
-}
-
-func (nc *neo4jCollector) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[string][]string, error) {
-	res := map[string][]string{}
-	r, err := tx.Run("MATCH (n:Node) WHERE n.cloud_provider IN $providers RETURN n.cloud_provider, n.cloud_region", map[string]interface{}{"providers": cloud_provider})
-
-	if err != nil {
-		return res, err
-	}
-	records, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		provider := record.Values[0].(string)
-		region := record.Values[1].(string)
-		if _, present := res[provider]; !present {
-			res[provider] = []string{}
-		}
-		res[provider] = append(res[provider], region)
-	}
-
-	return res, nil
-}
-
-func (nc *neo4jCollector) getHosts(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string) (map[string]map[string][]string, error) {
-	res := map[string]map[string][]string{}
-
-	r, err := tx.Run("MATCH (n:Node) WHERE n.cloud_provider IN $providers AND n.cloud_region IN $regions return n.cloud_provider, n.cloud_region, n.node_id", map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions})
-	if err != nil {
-		return res, err
-	}
-	records, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		provider := record.Values[0].(string)
-		region := record.Values[1].(string)
-		host_id := record.Values[2].(string)
-		if _, present := res[provider]; !present {
-			res[provider] = map[string][]string{}
-		}
-
-		if _, present := res[provider][region]; !present {
-			res[provider][region] = []string{}
-		}
-
-		res[provider][region] = append(res[provider][region], host_id)
-	}
-
-	return res, nil
-}
-
-func (nc *neo4jCollector) getProcesses(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
-	res := map[string][]string{}
-
-	r, err := tx.Run("MATCH (n:Node) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:Process) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
-	if err != nil {
-		return res, err
-	}
-	records, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		host_id := record.Values[0].(string)
-		process_id := record.Values[1].(string)
-		if _, present := res[host_id]; !present {
-			res[host_id] = []string{}
-		}
-		res[host_id] = append(res[host_id], process_id)
-	}
-
-	return res, nil
-}
-
-func (nc *neo4jCollector) getPods(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
-	res := map[string][]string{}
-
-	r, err := tx.Run("MATCH (n:Node) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:Pod) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
-	if err != nil {
-		return res, err
-	}
-	records, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		host_id := record.Values[0].(string)
-		pod_id := record.Values[1].(string)
-		if _, present := res[host_id]; !present {
-			res[host_id] = []string{}
-		}
-		res[host_id] = append(res[host_id], pod_id)
-	}
-
-	return res, nil
-}
-
-func (nc *neo4jCollector) getContainers(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
-	res := map[string][]string{}
-
-	r, err := tx.Run("MATCH (n:Node) WHERE n.host_name IN $hosts WITH n MATCH (n)-[:HOSTS]->(m:Container) return n.node_id, m.node_id", map[string]interface{}{"hosts": hosts})
-	if err != nil {
-		return res, err
-	}
-	records, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		host_id := record.Values[0].(string)
-		container_id := record.Values[1].(string)
-		if _, present := res[host_id]; !present {
-			res[host_id] = []string{}
-		}
-		res[host_id] = append(res[host_id], container_id)
-	}
-
-	return res, nil
-}
-
-func addHostToTopology(tx neo4j.Transaction, host_topology report.Topology, cloud_provider report.Topology, cloud_region report.Topology) error {
-
-	r, err := tx.Run("MATCH (n:Node) return n", nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-	records, err := r.Collect()
-
-	if err != nil {
-		return err
-	}
-
-	for _, record := range records {
-		node := record.Values[0].(neo4j.Node)
-		m := map[string]string{}
-		for k, v := range node.Props {
-			m[k] = fmt.Sprintf("%v", v)
-		}
-		new_host_node := report.MakeNodeWith(m["node_id"]+";<host>", m)
-		new_host_node.Topology = report.Host
-
-		new_cp_node := report.MakeNodeWith(m["cloud_provider"]+";<cloud_provider>", map[string]string{})
-		new_cp_node.Topology = report.CloudProvider
-		new_cp_node.Latest = new_cp_node.Latest.Set("name", time.Now(), m["cloud_provider"])
-		new_cp_node.Latest = new_cp_node.Latest.Set("label", time.Now(), m["cloud_provider"])
-
-		new_region_node := report.MakeNodeWith(m["cloud_region"]+";<cloud_region>", map[string]string{})
-		new_region_node.Topology = report.CloudRegion
-		new_region_node.Latest = new_region_node.Latest.Set("name", time.Now(), m["cloud_region"])
-		new_region_node.Latest = new_region_node.Latest.Set("label", time.Now(), m["cloud_region"])
-
-		//new_region_node.Children.UnsafeAdd(new_host_node)
-		//new_cp_node.Children.UnsafeAdd(new_region_node)
-		new_region_node.Parents = new_region_node.Parents.AddString(report.CloudProvider, m["cloud_provider"]+";<cloud_provider>")
-		new_host_node.Parents = new_host_node.Parents.AddString(report.CloudRegion, m["cloud_region"]+";<cloud_region>")
-
-		host_topology.AddNode(new_host_node)
-		cloud_provider.AddNode(new_cp_node)
-		cloud_region.AddNode(new_region_node)
-	}
-
-	return nil
-}
-
-func addContainersToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:Container) return n", nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-	records, err := r.Collect()
-
-	if err != nil {
-		return err
-	}
-
-	for _, record := range records {
-		node := record.Values[0].(neo4j.Node)
-		m := map[string]string{}
-		for k, v := range node.Props {
-			m[k] = fmt.Sprintf("%v", v)
-		}
-		new_node := report.MakeNodeWith(m["node_id"]+";<container>", m)
-		new_node.Topology = report.Container
-		topology.AddNode(new_node)
-	}
-
-	return nil
-}
-
-func addPodsToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:Pod) return n", nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-	records, err := r.Collect()
-
-	if err != nil {
-		return err
-	}
-
-	for _, record := range records {
-		node := record.Values[0].(neo4j.Node)
-		m := map[string]string{}
-		for k, v := range node.Props {
-			m[k] = fmt.Sprintf("%v", v)
-		}
-		new_node := report.MakeNodeWith(m["node_id"]+";<pod>", m)
-		new_node.Topology = report.Pod
-		topology.AddNode(new_node)
-	}
-
-	return nil
-}
-
-func addProcessesToTopology(tx neo4j.Transaction, topology report.Topology) error {
-	r, err := tx.Run("MATCH (n:Process) return n", nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-	records, err := r.Collect()
-
-	if err != nil {
-		return err
-	}
-
-	for _, record := range records {
-		node := record.Values[0].(neo4j.Node)
-		m := map[string]string{}
-		for k, v := range node.Props {
-			m[k] = fmt.Sprintf("%v", v)
-		}
-		new_node := report.MakeNodeWith(m["host_name"]+";"+m["pid"], m)
-		new_node.Topology = report.Process
-		new_node.Parents = new_node.Parents.AddString(report.Host, m["host_node_id"])
-		topology.AddNode(new_node)
-	}
-
-	return nil
-}
-
-type ConnectionSummary struct {
-	Source string `json:"source"`
-	Target string `json:"target"`
-}
-
-type RenderedGraph struct {
-	Hosts       map[string]map[string][]string
-	Processes   map[string][]string
-	Pods        map[string][]string
-	Containers  map[string][]string
-	Providers   []string
-	Regions     map[string][]string
-	Connections []ConnectionSummary
-}
-
-var (
-	cloud_filter  = []string{}
-	region_filter = []string{}
-	host_filter   = []string{}
-	access        = sync.Mutex{}
-)
-
-func ChangeFilters(c, r, h []string) {
-	access.Lock()
-	defer access.Unlock()
-	cloud_filter = c
-	region_filter = r
-	host_filter = h
-}
-
-func (nc *neo4jCollector) GetGraph(_ context.Context, _ time.Time) (RenderedGraph, error) {
-	res := RenderedGraph{}
-
-	session, err := nc.driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return res, err
-	}
-	defer tx.Close()
-
-	access.Lock()
-	defer access.Unlock()
-	res.Connections, err = nc.GetConnections(tx)
-	if err != nil {
-		return res, err
-	}
-	res.Providers, err = nc.getCloudProviders(tx)
-	if err != nil {
-		return res, err
-	}
-	res.Regions, err = nc.getCloudRegions(tx, cloud_filter)
-	if err != nil {
-		return res, err
-	}
-	res.Hosts, err = nc.getHosts(tx, cloud_filter, region_filter)
-	if err != nil {
-		return res, err
-	}
-	res.Processes, err = nc.getProcesses(tx, host_filter)
-	if err != nil {
-		return res, err
-	}
-	res.Pods, err = nc.getPods(tx, host_filter)
-	if err != nil {
-		return res, err
-	}
-	res.Containers, err = nc.getContainers(tx, host_filter)
-	if err != nil {
-		return res, err
-	}
-
-	return res, nil
-}
-
-func (nc *neo4jCollector) Report(_ context.Context, _ time.Time) (report.Report, error) {
-	res := report.MakeReport()
-
-	session, err := nc.driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return res, err
-	}
-	defer tx.Close()
-
-	addHostToTopology(tx, res.Host, res.CloudProvider, res.CloudRegion)
-	addContainersToTopology(tx, res.Container)
-	addPodsToTopology(tx, res.Pod)
-	addProcessesToTopology(tx, res.Process)
-
-	res.Host = res.Host.WithMetricTemplates(host.MetricTemplates)
-	res.Host = res.Host.WithMetadataTemplates(host.MetadataTemplates)
-	res.CloudProvider = res.CloudProvider.WithMetadataTemplates(host.CloudProviderMetadataTemplates)
-	res.CloudRegion = res.CloudRegion.WithMetadataTemplates(host.CloudRegionMetadataTemplates)
-	//res.Process = res.Process.WithMetricTemplates(host.MetricTemplates)
-	//res.Process = res.Process.WithMetadataTemplates(host.MetadataTemplates)
-
-	return res, nil
-}
-
-func (nc *neo4jCollector) HasReports(_ context.Context, _ time.Time) (bool, error) {
-	return true, nil
-}
-
-func (nc *neo4jCollector) HasHistoricReports() bool {
-	return true
-}
-
-// TODO: Add new API
-func (nc *neo4jCollector) AdminSummary(c context.Context, t time.Time) (string, error) {
-	res, err := nc.GetGraph(c, t)
-	if err != nil {
-		return "", err
-	}
-	b, err := json.Marshal(res)
-	return string(b), err
-}
-
-func (nc *neo4jCollector) WaitOn(_ context.Context, _ chan struct{}) {
-}
-
-func (nc *neo4jCollector) UnWait(_ context.Context, _ chan struct{}) {
-}
-
-func (nc *neo4jCollector) Add(_ context.Context, rpt report.Report, _ []byte) error {
+func (nc *neo4jIngester) Ingest(ctx context.Context, rpt report.Report) error {
 	select {
-	case nc.enqueer <- &rpt:
+	case nc.enqueuer <- &rpt:
 	default:
-		return fmt.Errorf("enqueer channel full")
+		return fmt.Errorf("enqueuer channel full")
 	}
 	return nil
 }
 
-func (nc *neo4jCollector) CleanUpDB() error {
-	session, err := nc.driver.Session(neo4j.AccessModeWrite)
+func (nc *neo4jIngester) CleanUpDB() error {
+	session, err := nc.neo4jClient().Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return err
 	}
@@ -895,8 +440,8 @@ func (nc *neo4jCollector) CleanUpDB() error {
 	return tx.Commit()
 }
 
-func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
-	session, err := nc.driver.Session(neo4j.AccessModeWrite)
+func (nc *neo4jIngester) PushToDB(batches neo4jIngestionData) error {
+	session, err := nc.neo4jClient().Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return err
 	}
@@ -965,7 +510,7 @@ func (nc *neo4jCollector) PushToDB(batches neo4jIngestionData) error {
 	return tx.Commit()
 }
 
-func (nc *neo4jCollector) runIngester() {
+func (nc *neo4jIngester) runIngester() {
 	for reports := range nc.ingester {
 		for _, rpt := range reports {
 			select {
@@ -983,7 +528,7 @@ func (nc *neo4jCollector) runIngester() {
 	}
 }
 
-func (nc *neo4jCollector) runDBBatcher(db_pusher chan neo4jIngestionData) {
+func (nc *neo4jIngester) runDBBatcher(db_pusher chan neo4jIngestionData) {
 	batch := make([]neo4jIngestionData, db_batch_size)
 	size := 0
 	send := false
@@ -1022,7 +567,7 @@ func (nc *neo4jCollector) runDBBatcher(db_pusher chan neo4jIngestionData) {
 	}
 }
 
-func (nc *neo4jCollector) runDBPusher(db_pusher chan neo4jIngestionData) {
+func (nc *neo4jIngester) runDBPusher(db_pusher chan neo4jIngestionData) {
 	clean_up := time.After(db_clean_up_timeout)
 	for {
 		select {
@@ -1045,14 +590,14 @@ func (nc *neo4jCollector) runDBPusher(db_pusher chan neo4jIngestionData) {
 	}
 }
 
-func (nc *neo4jCollector) runResolver() {
+func (nc *neo4jIngester) runResolver() {
 	for rpt := range nc.resolvers_input {
 		r := computeResolvers(rpt)
 		nc.resolvers_update <- r
 	}
 }
 
-func (nc *neo4jCollector) runPreparer() {
+func (nc *neo4jIngester) runPreparer() {
 	for rpt := range nc.preparers_input {
 		nc.resolvers_access.RLock()
 		batches := prepareNeo4jIngestion(rpt, &nc.resolvers)
@@ -1061,9 +606,9 @@ func (nc *neo4jCollector) runPreparer() {
 	}
 }
 
-func (nc *neo4jCollector) applyDBConstraints() error {
+func (nc *neo4jIngester) applyDBConstraints() error {
 
-	session, err := nc.driver.Session(neo4j.AccessModeWrite)
+	session, err := nc.neo4jClient().Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return err
 	}
@@ -1092,17 +637,27 @@ func (nc *neo4jCollector) applyDBConstraints() error {
 	return tx.Commit()
 }
 
-func NewNeo4jCollector(_ time.Duration) (Collector, error) {
-	driver, err := neo4j.NewDriver("bolt://neo4j-db:7687", neo4j.BasicAuth("neo4j", "password", ""))
+func (nc *neo4jIngester) neo4jClient() neo4j.Driver {
+	return *nc.driver
+}
+
+func NewNeo4jCollector(ctx context.Context) (Ingester[report.Report], error) {
+	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	nc := &neo4jCollector{
+	rdb, err := newEndpointResolversCache(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	nc := &neo4jIngester{
 		driver:           driver,
-		resolvers:        NewEndpointResolversCache(),
-		enqueer:          make(chan *report.Report, ingester_size),
+		resolvers:        rdb,
+		enqueuer:         make(chan *report.Report, ingester_size),
 		ingester:         make(chan map[string]*report.Report, ingester_size),
 		batcher:          make(chan neo4jIngestionData, ingester_size),
 		resolvers_update: make(chan EndpointResolvers, ingester_size),

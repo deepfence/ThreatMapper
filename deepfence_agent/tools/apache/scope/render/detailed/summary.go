@@ -67,6 +67,7 @@ type NodeSummary struct {
 	Tables            []report.Table       `json:"tables,omitempty"`
 	Adjacency         report.IDList        `json:"adjacency,omitempty"`
 	ImmediateParentID string               `json:"immediate_parent_id"`
+	Type              string               `json:"type"`
 }
 
 var renderers = map[string]func(BasicNodeSummary, report.Node) BasicNodeSummary{
