@@ -43,6 +43,7 @@
     "playwright": "1.28.1",
     "postcss": "^8.4.19",
     "resize-observer-polyfill": "^1.5.1",
+    "tailwind-preset": "workspace:*",
     "tailwindcss": "^3.2.4",
     "typescript": "^4.6.4",
     "vite": "^3.2.3",
