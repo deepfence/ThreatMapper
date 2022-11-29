@@ -1,4 +1,4 @@
-FROM golang:1.16.2
+FROM golang:1.19.2-buster
 ENV SCOPE_SKIP_UI_ASSETS true
 RUN set -eux; \
    export arch_val="$(dpkg --print-architecture)"; \
@@ -17,11 +17,6 @@ RUN go clean -i net && \
    if [ "$arch_val" != "ppc64el" ]; then \
 	go install -race -tags netgo std; \
    fi; \
-    go get -tags netgo \
-		#github.com/fzipp/gocyclo \
-		golang.org/x/lint/golint \
-		github.com/kisielk/errcheck \
-		github.com/client9/misspell/cmd/misspell && \
 	chmod a+wr --recursive /usr/local/go && \
 	rm -rf /go/pkg/ /go/src/
 
@@ -35,7 +30,7 @@ RUN export arch_val="$(dpkg --print-architecture)"; \
    fi;
 
 # Install Docker (client only)
-ENV DOCKERVERSION=17.09.1-ce
+ENV DOCKERVERSION=20.10.8
 RUN export arch_val="$(dpkg --print-architecture)"; \
     if [ "$arch_val" = "arm64" ]; then \
         curl -fsSLO https://download.docker.com/linux/static/stable/aarch64/docker-${DOCKERVERSION}.tgz; \

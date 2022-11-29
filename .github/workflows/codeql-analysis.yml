@@ -17,11 +17,13 @@ on:
     branches: [ master ]
     paths-ignore:
       - 'deepfence_agent/tools/apache/scope/extras/example/**/*'
+      - 'deepfence_agent/tools/apache/deepfence/df-utils/**/*'
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
     paths-ignore:
       - 'deepfence_agent/tools/apache/scope/extras/example/**/*'
+      - 'deepfence_agent/tools/apache/deepfence/df-utils/**/*'
   schedule:
     - cron: '30 1 * * 0'
 

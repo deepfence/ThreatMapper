@@ -187,6 +187,8 @@ github.com/vishvananda/netns v0.0.0-20180720170159-13995c7128cc/go.mod h1:ZjcWmF
 github.com/weaveworks/billing-client v0.5.0/go.mod h1:2hsh1kpG6/oBsZK7rbuV8diCUc3OBY9trdjLL+PNJ18=
 github.com/weaveworks/common v0.0.0-20200310113808-2708ba4e60a4/go.mod h1:6enWAqfQBFrE8X/XdJwZr8IKgh1chStuFR0mjU/UOUw=
 github.com/weaveworks/go-checkpoint v0.0.0-20160428112813-62324982ab51/go.mod h1:qkbvw5GPibQ/Nf7IZJL0UoLwmJ6858b4S/hUWRd+cH4=
+github.com/weaveworks/procspy v0.0.0-20150706124340-cb970aa190c3 h1:UC4iN/yCDCObTBhKzo34/R2U6qptTPmqbzG6UiQVMUQ=
+github.com/weaveworks/procspy v0.0.0-20150706124340-cb970aa190c3/go.mod h1:cJTfuBcxkdbj8Mabk4PPdaf0AXv9TYEJmkFxKcWxYY4=
 github.com/weaveworks/promrus v1.2.0/go.mod h1:SaE82+OJ91yqjrE1rsvBWVzNZKcHYFtMUyS1+Ogs/KA=
 github.com/weaveworks/ps v0.0.0-20160725183535-70d17b2d6f76/go.mod h1:6YfgZlj+cWgxFlwYrm3aPt1rS1xDTD1SEqL0Ms3Zxks=
 github.com/weaveworks/scope v1.13.2 h1:iGKsd1cpF+KPwb/GzmyMaalmI20ptOt6xqpxMdTAH7U=

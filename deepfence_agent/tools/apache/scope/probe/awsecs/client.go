@@ -277,7 +277,7 @@ func (c ecsClientImpl) getTasks(taskARNs []string) {
 // don't appear to point to a service.
 func (c ecsClientImpl) matchTasksServices(taskARNs []string) (map[string]string, []string) {
 	deploymentMap := map[string]string{}
-	for _, serviceNameRaw := range c.serviceCache.Keys() {
+	for _, serviceNameRaw := range c.serviceCache.Keys(false) {
 		serviceName := serviceNameRaw.(string)
 		service, ok := c.getCachedService(serviceName)
 		if !ok {
@@ -288,7 +288,7 @@ func (c ecsClientImpl) matchTasksServices(taskARNs []string) (map[string]string,
 			deploymentMap[deployment] = serviceName
 		}
 	}
-	log.Debugf("Mapped %d deployments from %d services", len(deploymentMap), c.serviceCache.Len())
+	log.Debugf("Mapped %d deployments from %d services", len(deploymentMap), c.serviceCache.Len(false))
 
 	results := map[string]string{}
 	unmatched := []string{}
