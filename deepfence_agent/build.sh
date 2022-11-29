@@ -43,7 +43,7 @@ building_image(){
 
     echo "Building Scope"
     cd tools/apache/scope
-    make realclean && make scope.tar
+    make realclean && go mod vendor && make scope.tar
     build_result=$?
     if [ $build_result -ne 0 ]
     then

@@ -30,8 +30,8 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
         /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
     && mkdir /usr/local/bin/compliance_check && mkdir /usr/local/discovery
-COPY misc/deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
-COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
+COPY tools/apache/deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
+COPY tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
 COPY start_serverless_services.sh /usr/local/bin/start_services

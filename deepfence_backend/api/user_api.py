@@ -31,7 +31,8 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
-    INVITE_EXPIRY, CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, FILTER_TYPE_CLOUDTRAIL_TRAIL
+    INVITE_EXPIRY, CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, FILTER_TYPE_CLOUDTRAIL_TRAIL, \
+    INTEGRATION_TYPE_AWS_SECURITY_HUB, FILTER_TYPE_AWS_ACCOUNT_ID
 from utils import constants
 from config.redisconfig import redis
 from utils.response import set_response
@@ -1417,7 +1418,7 @@ class IntegrationView(MethodView):
                 for i in range(len(notifications)):
                     if notifications[i]['authorization_key'] != "":
                         notifications[i]['authorization_key'] = mask_api_key(notifications[i]['authorization_key'])
-            if integration_type == 's3':
+            if integration_type in ['s3', 'aws_security_hub']:
                 for i in range(len(notifications)):
                     notifications[i]['aws_access_key'] = mask_api_key(notifications[i]['aws_access_key'])
                     notifications[i]['aws_secret_key'] = mask_api_key(notifications[i]['aws_secret_key'])
@@ -1950,6 +1951,36 @@ class IntegrationView(MethodView):
                 raise InvalidUsage("A similar splunk integration already exists")
         return integration
 
+    def handle_aws_security_hub_post(self, request_json, user):
+        aws_account_id = request_json.get("filters", {}).get("aws_account_id")
+        aws_access_key = request_json.get("aws_access_key")
+        aws_secret_key = request_json.get("aws_secret_key")
+        region_name = request_json.get("region_name")
+        if not aws_account_id:
+            raise InvalidUsage("aws_account_id is required")
+        elif not aws_access_key:
+            raise InvalidUsage("aws_access_key is required")
+        elif not aws_secret_key:
+            raise InvalidUsage("aws_secret_key is required")
+        elif not region_name:
+            raise InvalidUsage("region_name is required")
+        config = json.dumps(
+            {"aws_account_id": aws_account_id, "aws_access_key": aws_access_key, "aws_secret_key": aws_secret_key,
+             "region_name": region_name})
+        integration = Integration.query.filter_by(integration_type=INTEGRATION_TYPE_AWS_SECURITY_HUB, config=config
+                                                  ).one_or_none()
+        if not integration:
+            integration = Integration(
+                user=user,
+                integration_type=INTEGRATION_TYPE_AWS_SECURITY_HUB,
+                config=config
+            )
+            try:
+                integration.save()
+            except sqlalchemy.exc.IntegrityError:
+                raise InvalidUsage("A similar Security Hub integration already exists")
+        return integration
+
     def post_helper(self, request_json):
         # Should be present in all type of integration.
         integration_type = request_json.get("integration_type")
@@ -2005,6 +2036,11 @@ class IntegrationView(MethodView):
             selected_trails = filters.get(FILTER_TYPE_CLOUDTRAIL_TRAIL, [])
             if not selected_trails:
                 raise InvalidUsage("Need to select at least one trail for Cloudtrail alert integration")
+
+        if integration_type == INTEGRATION_TYPE_AWS_SECURITY_HUB:
+            selected_accounts = filters.get(FILTER_TYPE_AWS_ACCOUNT_ID, [])
+            if not selected_accounts:
+                raise InvalidUsage("Need to select at least one account for AWS Security Hub integration")
 
         try:
             integration = getattr(self, "handle_{0}_post".format(integration_type))(request_json, user)

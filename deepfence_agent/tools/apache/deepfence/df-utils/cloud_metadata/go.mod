@@ -1,10 +1,8 @@
-module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check
+module github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
 go 1.19
 
-replace github.com/deepfence/df-utils => ../deepfence/df-utils/
-
-replace github.com/deepfence/df-utils/osrelease => ../deepfence/df-utils/osrelease
+replace github.com/deepfence/df-utils => ../../df-utils/
 
 require github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 
