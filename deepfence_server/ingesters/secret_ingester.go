@@ -46,7 +46,7 @@ func NewSecretIngester() Ingester[[]map[string]interface{}] {
 
 func (tc *SecretIngester) Ingest(ctx context.Context, cs []map[string]interface{}) error {
 	driver, err := directory.Neo4jClient(ctx)
-	session, err := (*driver).Session(neo4j.AccessModeWrite)
+	session, err := driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return err

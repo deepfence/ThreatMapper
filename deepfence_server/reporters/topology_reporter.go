@@ -9,7 +9,7 @@ import (
 )
 
 type neo4jTopologyReporter struct {
-	driver *neo4j.Driver
+	driver neo4j.Driver
 }
 
 func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
@@ -229,7 +229,7 @@ type TopologyFilters struct {
 func (nc *neo4jTopologyReporter) GetGraph(ctx context.Context, cloud_filter, region_filter, host_filter []string) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
-	session, err := (*nc.driver).Session(neo4j.AccessModeRead)
+	session, err := nc.driver.Session(neo4j.AccessModeRead)
 	if err != nil {
 		return res, err
 	}

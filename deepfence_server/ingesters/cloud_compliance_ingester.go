@@ -40,7 +40,7 @@ func NewCloudComplianceIngester() Ingester[[]ComplianceDoc] {
 
 func (tc *CloudComplianceIngester) Ingest(ctx context.Context, cs []CloudComplianceDoc) error {
 	driver, err := directory.Neo4jClient(ctx)
-	session, err := (*driver).Session(neo4j.AccessModeWrite)
+	session, err := driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return err

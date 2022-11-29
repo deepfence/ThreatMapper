@@ -43,7 +43,7 @@ func NewComplianceIngester() Ingester[[]ComplianceDoc] {
 
 func (tc *ComplianceIngester) Ingest(ctx context.Context, cs []ComplianceDoc) error {
 	driver, err := directory.Neo4jClient(ctx)
-	session, err := (*driver).Session(neo4j.AccessModeWrite)
+	session, err := driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return err

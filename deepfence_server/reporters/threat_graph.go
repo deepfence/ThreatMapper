@@ -10,7 +10,7 @@ import (
 )
 
 type ThreatGraphReporter struct {
-	driver *neo4j.Driver
+	driver neo4j.Driver
 }
 
 func NewThreatGraphReporter(ctx context.Context) (*ThreatGraphReporter, error) {
@@ -28,7 +28,7 @@ func NewThreatGraphReporter(ctx context.Context) (*ThreatGraphReporter, error) {
 }
 
 func (tc *ThreatGraphReporter) ComputeThreatGraph() error {
-	session, err := (*tc.driver).Session(neo4j.AccessModeWrite)
+	session, err := tc.driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return err
@@ -165,7 +165,7 @@ func build_attack_paths(paths AttackPaths, root int64, visited map[int64]struct{
 }
 
 func (tc *ThreatGraphReporter) GetRawThreatGraph() (map[string]AttackPaths, error) {
-	session, err := (*tc.driver).Session(neo4j.AccessModeRead)
+	session, err := tc.driver.Session(neo4j.AccessModeRead)
 
 	if err != nil {
 		return nil, err

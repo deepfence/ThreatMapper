@@ -9,7 +9,7 @@ import (
 )
 
 type CloudResourceIngester struct {
-	driver *neo4j.Driver
+	driver neo4j.Driver
 }
 
 type CloudResource struct {
@@ -56,7 +56,7 @@ func NewCloudResourceIngester() Ingester[[]CloudResource] {
 }
 
 func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource) error {
-	session, err := (*tc.driver).Session(neo4j.AccessModeWrite)
+	session, err := tc.driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 // TODO: Call somewhere
 func (tc *CloudComplianceIngester) LinkNodesWithCloudResources(ctx context.Context) error {
 	driver, err := directory.Neo4jClient(ctx)
-	session, err := (*driver).Session(neo4j.AccessModeWrite)
+	session, err := driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return err

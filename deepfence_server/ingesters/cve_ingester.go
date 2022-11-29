@@ -47,7 +47,7 @@ func NewCVEIngester() Ingester[[]DfCveStruct] {
 
 func (tc *CVEIngester) Ingest(ctx context.Context, cs []DfCveStruct) error {
 	driver, err := directory.Neo4jClient(ctx)
-	session, err := (*driver).Session(neo4j.AccessModeWrite)
+	session, err := driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return err

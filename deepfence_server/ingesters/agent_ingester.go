@@ -86,7 +86,7 @@ func (erc *EndpointResolversCache) Close() {
 }
 
 type neo4jIngester struct {
-	driver           *neo4j.Driver
+	driver           neo4j.Driver
 	enqueuer         chan *report.Report
 	ingester         chan map[string]*report.Report
 	resolvers_access sync.RWMutex
@@ -409,7 +409,7 @@ func (nc *neo4jIngester) Ingest(ctx context.Context, rpt report.Report) error {
 }
 
 func (nc *neo4jIngester) CleanUpDB() error {
-	session, err := nc.neo4jClient().Session(neo4j.AccessModeWrite)
+	session, err := nc.driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return err
 	}
@@ -441,7 +441,7 @@ func (nc *neo4jIngester) CleanUpDB() error {
 }
 
 func (nc *neo4jIngester) PushToDB(batches neo4jIngestionData) error {
-	session, err := nc.neo4jClient().Session(neo4j.AccessModeWrite)
+	session, err := nc.driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return err
 	}
@@ -608,7 +608,7 @@ func (nc *neo4jIngester) runPreparer() {
 
 func (nc *neo4jIngester) applyDBConstraints() error {
 
-	session, err := nc.neo4jClient().Session(neo4j.AccessModeWrite)
+	session, err := nc.driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return err
 	}
@@ -635,10 +635,6 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 	tx.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 
 	return tx.Commit()
-}
-
-func (nc *neo4jIngester) neo4jClient() neo4j.Driver {
-	return *nc.driver
 }
 
 func NewNeo4jCollector(ctx context.Context) (Ingester[report.Report], error) {

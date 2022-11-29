@@ -24,6 +24,10 @@ func new_neo4j_client(endpoints DBConfigs) (*neo4j.Driver, error) {
 	return &driver, nil
 }
 
-func Neo4jClient(ctx context.Context) (*neo4j.Driver, error) {
-	return get_client(ctx, neo4j_clients_pool, new_neo4j_client)
+func Neo4jClient(ctx context.Context) (neo4j.Driver, error) {
+	driver, err := get_client(ctx, neo4j_clients_pool, new_neo4j_client)
+	if err != nil {
+		return nil, err
+	}
+	return *driver, err
 }
