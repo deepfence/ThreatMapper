@@ -65,6 +65,7 @@ class Node(object):
             self.node_details_formatted = json.loads(topology_data_formatted).get(self.node_id, {})
         if not self.node_details_formatted:
             raise InvalidUsage("node not found")
+        print("self.node_details_formatted", self.node_details_formatted)
         self.host_name = self.node_details_formatted.get("host_name", "")
         self.is_ui_vm = self.node_details_formatted.get("is_ui_vm", False)
         self.pseudo = self.node_details_formatted.get("pseudo", False)
