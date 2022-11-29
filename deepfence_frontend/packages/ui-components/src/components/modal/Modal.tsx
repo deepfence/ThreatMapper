@@ -46,7 +46,7 @@ const ModalHeader: FC<{ title?: string }> = ({ title }) => {
           'text-gray-400 hover:text-gray-900 dark:hover:text-white',
           'hover:bg-gray-200 dark:hover:bg-gray-600',
           'absolute right-3.5 inline-flex items-center justify-center p-1',
-          'focus:outline-none focus:ring-1 foucs:ring-blue-800',
+          'focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-800',
           {
             'top-[22px]': title,
             'top-[10px]': !title,

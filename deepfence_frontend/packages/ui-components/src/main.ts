@@ -1,5 +1,6 @@
 import './index.css';
 
+export { Breadcrumb, BreadcrumbLink } from './components/breadcrumb/Breadcrumb';
 export { default as Button } from './components/button/Button';
 export { default as IconButton } from './components/button/IconButton';
 export { Card } from './components/card/Card';

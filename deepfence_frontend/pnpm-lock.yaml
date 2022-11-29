@@ -91,6 +91,7 @@ importers:
       '@radix-ui/react-label': ^1.0.0
       '@radix-ui/react-radio-group': ^1.0.0
       '@radix-ui/react-separator': ^1.0.0
+      '@radix-ui/react-slot': ^1.0.1
       '@radix-ui/react-switch': ^1.0.0
       '@radix-ui/react-tabs': ^1.0.0
       '@radix-ui/react-tooltip': ^1.0.0
@@ -152,6 +153,7 @@ importers:
       '@radix-ui/react-label': 1.0.0_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-radio-group': 1.1.0_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-separator': 1.0.1_biqbaboplfbrettd7655fr4n2y
+      '@radix-ui/react-slot': 1.0.1_react@18.2.0
       '@radix-ui/react-switch': 1.0.1_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-tabs': 1.0.1_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-tooltip': 1.0.2_2zx2umvpluuhvlq44va5bta2da
