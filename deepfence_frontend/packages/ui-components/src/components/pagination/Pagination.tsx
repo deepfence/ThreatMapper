@@ -35,7 +35,7 @@ const PageButton = memo(
             'px-3 py-1.5 border-r border-y border-gray-300 dark:border-gray-700',
             'hover:bg-gray-100 hover:text-gray-700',
             'dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white',
-            'focus:outline-none focus:ring-1 focus:ring-inset foucs:ring-blue-600',
+            'focus:outline-none focus:ring-1 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-800',
           ),
           className,
         )}
