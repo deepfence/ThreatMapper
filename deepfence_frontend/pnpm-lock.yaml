@@ -37,6 +37,7 @@ importers:
       react: ^18.2.0
       react-dom: ^18.2.0
       resize-observer-polyfill: ^1.5.1
+      tailwind-preset: workspace:*
       tailwindcss: ^3.2.4
       typescript: ^4.6.4
       ui-components: workspace:*
@@ -71,11 +72,15 @@ importers:
       playwright: 1.28.1
       postcss: 8.4.19
       resize-observer-polyfill: 1.5.1
+      tailwind-preset: link:../../packages/tailwind-preset
       tailwindcss: 3.2.4_postcss@8.4.19
       typescript: 4.9.3
       vite: 3.2.4
       vitest: 0.25.3
       whatwg-fetch: 3.6.2
+
+  packages/tailwind-preset:
+    specifiers: {}
 
   packages/ui-components:
     specifiers:
@@ -133,6 +138,7 @@ importers:
       rollup-plugin-visualizer: ^5.8.3
       storybook-dark-mode: ^1.1.2
       tailwind-merge: ^1.6.0
+      tailwind-preset: workspace:*
       tailwindcss: ^3.1.8
       tailwindcss-radix: ^2.6.0
       typescript: ^4.8.3
@@ -196,6 +202,7 @@ importers:
       resize-observer-polyfill: 1.5.1
       rollup-plugin-visualizer: 5.8.3
       storybook-dark-mode: 1.1.2_biqbaboplfbrettd7655fr4n2y
+      tailwind-preset: link:../tailwind-preset
       tailwindcss: 3.2.4_postcss@8.4.19
       typescript: 4.9.3
       vite: 3.2.4
