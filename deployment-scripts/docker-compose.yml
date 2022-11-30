@@ -93,6 +93,7 @@ services:
     environment:
     - MGMT_CONSOLE_URL=127.0.0.1
     - MGMT_CONSOLE_PORT=8443
+    - DEEPFENCE_KEY=""
     network_mode: "host"
     volumes:
     - /sys/kernel/debug:/sys/kernel/debug:rw
@@ -219,6 +220,8 @@ services:
     networks:
       - deepfence_net
     restart: always
+    environment:
+      KAFKA_REST_PROXY: "deepfence-rest-proxy:8082"
     ports:
       - "80:80"
       - "${MGMT_CONSOLE_PORT:-443}:443"
@@ -240,6 +243,7 @@ services:
     - "127.0.0.1:8443:443"
     environment:
       ENABLE_AUTH: "false"
+      KAFKA_REST_PROXY: "deepfence-rest-proxy:8082"
     restart: always
     volumes:
     - /etc/deepfence/certs:/etc/deepfence/certs/:ro
@@ -299,12 +303,18 @@ services:
       core: 0
     entrypoint: /app/code/dockerify/backend/entrypoint.sh
     restart: on-failure
+    environment:
+      - DEBUG=false
+      - KAFKA_BROKERS=deepfence-kafka-broker:9092
+    ports:
+      - "8181:8181"
     networks:
       - deepfence_net
     depends_on:
       - deepfence-init-container
       - deepfence-redis
       - deepfence-postgres
+      - deepfence-kafka-broker
     logging:
       driver: "json-file"
       options:
@@ -367,7 +377,22 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-        
+  
+  deepfence-yara-hunter:
+    container_name: deepfence-yara-hunter
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-1.4.0}
+    ulimits:
+      core: 0
+    restart: always
+    networks:
+      - deepfence_net
+    entrypoint: /home/deepfence/usr/YaRadare
+    command: ["-config-path","/home/deepfence/usr", "-http-port", "8012"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+         
   deepfence-package-scanner:
     container_name: deepfence-package-scanner
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-1.4.1}
@@ -382,6 +407,39 @@ services:
       PACKAGE_SCAN_CONCURRENCY: "5"
     entrypoint: /usr/local/bin/package-scanner
     command: ["-mode", "http-server", "-port", "8005"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-kafka-broker:
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-1.3.0}
+    hostname: deepfence-kafka-broker
+    container_name: deepfence-kafka-broker
+    ports:
+      - "127.0.0.1:9092:9092"
+      - "127.0.0.1:9101:9101"
+    volumes:
+      - deepfence_data:/data:rw
+    networks:
+      - deepfence_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
+  deepfence-rest-proxy:
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_rest_proxy_ce:${DF_IMG_TAG:-1.3.0}
+    depends_on:
+      - deepfence-kafka-broker
+    ports:
+      - "127.0.0.1:8082:8082"
+    hostname: deepfence-rest-proxy
+    container_name: deepfence-rest-proxy
+    environment:
+      - KAFKA_REST_BOOTSTRAP_SERVERS=deepfence-kafka-broker:9092
+    networks:
+      - deepfence_net
     logging:
       driver: "json-file"
       options:

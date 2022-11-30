@@ -22,12 +22,18 @@ const actionOptionsIndex = fromJS({
       triggerStartSecretsScanModal(param, triggerModal, dispatch),
     enabled: false,
   },
+  start_malware_scan: {
+    label: 'Start malware scan',
+    onClick: (param, triggerModal, dispatch) =>
+      triggerStartMalwareScanModal(param, triggerModal, dispatch),
+    enabled: false,
+  }
 });
 
 const actionOptionsByType = {
-  host: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
-  container: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
-  container_image: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan'],
+  host: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan', 'start_malware_scan'],
+  container: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan', 'start_malware_scan'],
+  container_image: ['start_vulnerability_scan', 'stop_vulnerability_scan', 'start_secrets_scan', 'start_malware_scan'],
 };
 
 const getIntersection = (array1, array2) =>
@@ -114,6 +120,19 @@ const triggerStartSecretsScanModal = (selectedDocIndex, triggerModal, dispatch) 
   return triggerModal('DIALOG_MODAL', modalProps);
 };
 
+const triggerStartMalwareScanModal = (selectedDocIndex, triggerModal, dispatch) => {
+  const modalProps = {
+    dialogTitle: 'Start Malware Scan',
+    dialogBody:
+      'Start malware scan on all selected nodes?',
+    confirmButtonText: 'Start Scan',
+    cancelButtonText: 'Cancel',
+    onConfirmButtonClick: () =>
+      bulkStartMalwareScan(selectedDocIndex, dispatch),
+  };
+  return triggerModal('DIALOG_MODAL', modalProps);
+};
+
 const bulkStartSecretsScan = async (selectedDocIndex, dispatch) => {
   const nodeListObject = nodeListWithType(selectedDocIndex);
   let successCount = 0;
@@ -139,6 +158,34 @@ const bulkStartSecretsScan = async (selectedDocIndex, dispatch) => {
     }
   }
   dispatch(toaster(`Request to start secrets scan on ${successCount} nodes queued successfully${errorCount ? ` , failed on ${errorCount} nodes.` : '.'}`));
+}
+
+
+const bulkStartMalwareScan = async (selectedDocIndex, dispatch) => {
+  const nodeListObject = nodeListWithType(selectedDocIndex);
+  let successCount = 0;
+  let errorCount = 0;
+  // eslint-disable-next-line no-unused-vars
+  for (const [node_type, node_id_list] of Object.entries(nodeListObject)) {
+    const apiParams = {
+      action: 'malware_scan_start',
+      node_type,
+      node_id_list,
+    };
+    try{
+      // eslint-disable-next-line no-await-in-loop
+      const response = await dispatch(scanRegistryImagesAction(apiParams));
+      const { success } = response;
+      if (success) {
+        successCount += node_id_list.length;
+      } else {
+        errorCount += node_id_list.length;
+      }
+    } catch (e) {
+      errorCount += node_id_list.length;
+    }
+  }
+  dispatch(toaster(`Request to start malware scan on ${successCount} nodes queued successfully${errorCount ? ` , failed on ${errorCount} nodes.` : '.'}`));
 }
 
 const bulkStopCVEScan = async (selectedDocIndex = [], paramsIm = Map(), dispatch) => {

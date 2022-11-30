@@ -430,6 +430,60 @@ add_index() {
       }'
       echo ""
   done
+
+  declare -a index_arr=("malware-scan" "malware-scan-logs")
+  for index_name in "${index_arr[@]}"
+  do
+      curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "${index_name}")" -H 'Content-Type: application/json' -d'
+      {
+        "mappings": {
+          "properties": {
+            "@timestamp": {
+              "type": "date"
+            },
+            "scan_id": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "node_id": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "time_stamp": {
+              "type": "long"
+            },
+            "Severity": {
+              "properties": {
+                "level": {
+                  "type": "text",
+                  "fields": {
+                    "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                    }
+                  }
+                },
+                "score": {
+                  "type": "float"
+                }
+              }
+            }
+          }
+        }
+      }'
+      echo ""
+  done
+
   curl -X PUT "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/$(create_index "compliance")" -H 'Content-Type: application/json' -d'
   {
     "mappings": {

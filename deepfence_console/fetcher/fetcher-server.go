@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
@@ -980,305 +979,305 @@ type dfCveStruct struct {
 	ExploitPOC                 string   `json:"exploit_poc"`
 }
 
-func ingestInBackground(docType string, body []byte) error {
-	redisConn := redisPool.Get()
-	defer redisConn.Close()
-	currTime := getCurrentTime()
-	if docType == cveIndexName {
-		var dfCveStructList []dfCveStruct
-		err := json.Unmarshal(body, &dfCveStructList)
-		if err != nil {
-			return err
-		}
-		bulkService := elastic.NewBulkService(esClient)
-		for _, cveStruct := range dfCveStructList {
-			cveStruct.Timestamp = currTime
-			if cveStruct.Cve_severity != "critical" && cveStruct.Cve_severity != "high" && cveStruct.Cve_severity != "medium" {
-				cveStruct.Cve_severity = "low"
-			}
-			cveStruct.Count = 1
-			cveStruct.CveTuple = fmt.Sprintf("%s|%s|%s", cveStruct.Cve_id, cveStruct.Cve_severity, cveStruct.Cve_container_image)
-			docId := fmt.Sprintf("%x", md5.Sum([]byte(
-				cveStruct.Scan_id+cveStruct.Cve_caused_by_package+cveStruct.Cve_container_image+cveStruct.Cve_id)))
-			cveStruct.DocId = docId
-			event, err := json.Marshal(cveStruct)
-			if err == nil {
-				bulkIndexReq := elastic.NewBulkIndexRequest()
-				bulkIndexReq.Index(cveIndexName).Id(docId).Doc(string(event))
-				bulkService.Add(bulkIndexReq)
-				retryCount := 0
-				for {
-					_, err = redisConn.Do("PUBLISH", redisVulnerabilityChannel, string(event))
-					if err == nil {
-						break
-					}
-					if retryCount > 1 {
-						fmt.Println(fmt.Sprintf("Error publishing cve document to %s - exiting", redisVulnerabilityChannel), err)
-						break
-					}
-					fmt.Println(fmt.Sprintf("Error publishing cve document to %s - trying again", redisVulnerabilityChannel), err)
-					retryCount += 1
-					time.Sleep(5 * time.Second)
-				}
-			}
-		}
-		bulkService.Do(context.Background())
-	} else if docType == cveScanLogsIndexName {
-		events := strings.Split(string(body), "\n")
-		bulkService := elastic.NewBulkService(esClient)
-		for _, event := range events {
-			if event != "" && strings.HasPrefix(event, "{") {
-				var cveScanMap map[string]interface{}
-				err := json.Unmarshal([]byte(event), &cveScanMap)
-				if err != nil {
-					continue
-				}
-				cveScanMap["masked"] = "false"
-				cveScanMap["@timestamp"] = currTime
-				bulkIndexReq := elastic.NewBulkIndexRequest()
-				bulkIndexReq.Index(cveScanLogsIndexName).Doc(cveScanMap)
-				bulkService.Add(bulkIndexReq)
-			}
-		}
-		bulkService.Do(context.Background())
-	} else if docType == sbomArtifactsIndexName {
-		bulkService := elastic.NewBulkService(esClient)
-		var artifacts []map[string]interface{}
-		err := json.Unmarshal(body, &artifacts)
-		if err != nil {
-			fmt.Println("Error reading artifacts: ", err.Error())
-		}
-		for _, artifact := range artifacts {
-			if len(artifact) == 0 {
-				continue
-			}
-			bulkIndexReq := elastic.NewBulkIndexRequest()
-			bulkIndexReq.Index(docType).Doc(artifact)
-			bulkService.Add(bulkIndexReq)
-		}
-		res, _ := bulkService.Do(context.Background())
-		if res != nil && res.Errors {
-			for _, item := range res.Items {
-				resItem := item["index"]
-				if resItem != nil {
-					if resItem.Error != nil {
-						fmt.Println(resItem.Index)
-						fmt.Println("Status: " + strconv.Itoa(resItem.Status))
-						fmt.Println("Error Type:" + resItem.Error.Type)
-						fmt.Println("Error Reason: " + resItem.Error.Reason)
-					}
-				}
-			}
-		}
-	} else if docType == cloudComplianceIndexName {
-		var complianceDocs []CloudComplianceDoc
-		err := json.Unmarshal(body, &complianceDocs)
-		if err != nil {
-			return err
-		}
-		bulkService := elastic.NewBulkService(esClient)
-		for _, complianceDoc := range complianceDocs {
-			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanID+complianceDoc.ControlID+complianceDoc.Resource+complianceDoc.Group)))
-			complianceDoc.DocId = docId
-			bulkIndexReq := elastic.NewBulkUpdateRequest()
-			bulkIndexReq.Index(cloudComplianceIndexName).Id(docId).
-				Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
-				Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
-			bulkService.Add(bulkIndexReq)
-		}
-		bulkResp, err := bulkService.Do(context.Background())
-		if err != nil {
-			log.Println("err cloud compliance " + err.Error())
-		}
-		failed := bulkResp.Failed()
-		log.Printf("cloud compliance bulk response Succeeded=%d Failed=%d\n",
-			len(bulkResp.Succeeded()), len(failed))
-		for _, r := range failed {
-			log.Printf("error cloud compliance doc %s %s", r.Error.Type, r.Error.Reason)
-		}
-		// processResourceNode(complianceDocs)
-	} else if docType == cloudComplianceLogsIndexName {
-		events := strings.Split(string(body), "\n")
-		bulkService := elastic.NewBulkService(esClient)
-		for _, event := range events {
-			if event != "" && strings.HasPrefix(event, "{") {
-				var cloudComplianceScanLog map[string]interface{}
-				err := json.Unmarshal([]byte(event), &cloudComplianceScanLog)
-				if err != nil {
-					continue
-				}
-				bulkIndexReq := elastic.NewBulkIndexRequest()
-				bulkIndexReq.Index(cloudComplianceLogsIndexName).Doc(cloudComplianceScanLog)
-				bulkService.Add(bulkIndexReq)
-			}
-		}
-		bulkService.Do(context.Background())
-	} else if docType == complianceIndexName {
-		var complianceDocs []ComplianceDoc
-		err := json.Unmarshal(body, &complianceDocs)
-		if err != nil {
-			return err
-		}
-		bulkService := elastic.NewBulkService(esClient)
-		for _, complianceDoc := range complianceDocs {
-			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanId+complianceDoc.TestNumber+complianceDoc.Resource+complianceDoc.TestRationale)))
-			complianceDoc.DocId = docId
-			bulkIndexReq := elastic.NewBulkUpdateRequest()
-			bulkIndexReq.Index(complianceIndexName).Id(docId).
-				Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
-				Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
-			bulkService.Add(bulkIndexReq)
-		}
-		bulkResp, err := bulkService.Do(context.Background())
-		if err != nil {
-			log.Println("err compliance " + err.Error())
-		}
-		failed := bulkResp.Failed()
-		log.Printf("compliance bulk response Succeeded=%d Failed=%d\n", len(bulkResp.Succeeded()), len(failed))
-		for _, r := range failed {
-			log.Printf("error compliance doc %s %s", r.Error.Type, r.Error.Reason)
-		}
-	} else if docType == complianceLogsIndexName {
-		events := strings.Split(string(body), "\n")
-		bulkService := elastic.NewBulkService(esClient)
-		for _, event := range events {
-			if event != "" && strings.HasPrefix(event, "{") {
-				var complianceScanLog map[string]interface{}
-				err := json.Unmarshal([]byte(event), &complianceScanLog)
-				if err != nil {
-					continue
-				}
-				bulkIndexReq := elastic.NewBulkIndexRequest()
-				bulkIndexReq.Index(complianceLogsIndexName).Doc(complianceScanLog)
-				bulkService.Add(bulkIndexReq)
-			}
-		}
-		bulkService.Do(context.Background())
-	} else if docType == cloudTrailAlertsIndexName {
-		var cloudTrailDocs []CloudTrailLogEvent
-		err := json.Unmarshal(body, &cloudTrailDocs)
-		if err != nil {
-			return err
-		}
-		bulkService := elastic.NewBulkService(esClient)
-		for _, cloudTrailDoc := range cloudTrailDocs {
-			docId := fmt.Sprintf("%x", md5.Sum([]byte(cloudTrailDoc.EventID)))
-			cloudTrailDoc.DocId = docId
-			bulkIndexReq := elastic.NewBulkUpdateRequest()
-			bulkIndexReq.Index(cloudTrailAlertsIndexName).Id(docId).
-				Script(elastic.NewScriptStored("default_upsert").Param("event", cloudTrailDoc)).
-				Upsert(cloudTrailDoc).ScriptedUpsert(true).RetryOnConflict(3)
-			bulkService.Add(bulkIndexReq)
-			event, err := json.Marshal(cloudTrailDoc)
-			if err == nil {
-				retryCount := 0
-				for {
-					_, err = redisConn.Do("PUBLISH", redisCloudTrailChannel, string(event))
-					if err == nil {
-						break
-					}
-					if retryCount > 1 {
-						fmt.Println(fmt.Sprintf("Error publishing cloudtrail alert document to %s - exiting", redisCloudTrailChannel), err)
-						break
-					}
-					fmt.Println(fmt.Sprintf("Error publishing cloudtrail alert document to %s - trying again", redisCloudTrailChannel), err)
-					retryCount += 1
-					time.Sleep(5 * time.Second)
-				}
-			}
-		}
-		bulkResp, err := bulkService.Do(context.Background())
-		if err != nil {
-			log.Println("err cloudtrail-alert " + err.Error())
-		}
-		failed := bulkResp.Failed()
-		log.Printf("cloudtrail alert bulk response Succeeded=%d Failed=%d\n", len(bulkResp.Succeeded()), len(failed))
-		for _, r := range failed {
-			log.Printf("error cloudtrail-alert doc %s %s", r.Error.Type, r.Error.Reason)
-		}
-	} else {
-		bulkService := elastic.NewBulkService(esClient)
-		bulkIndexReq := elastic.NewBulkIndexRequest()
-		bulkIndexReq.Index(docType).Doc(string(body))
-		bulkService.Add(bulkIndexReq)
-		res, _ := bulkService.Do(context.Background())
-		if res != nil && res.Errors {
-			for _, item := range res.Items {
-				resItem := item["index"]
-				if resItem != nil {
-					fmt.Println(resItem.Index)
-					fmt.Println("status:" + strconv.Itoa(resItem.Status))
-					if resItem.Error != nil {
-						fmt.Println("Error Type:" + resItem.Error.Type)
-						fmt.Println("Error Reason: " + resItem.Error.Reason)
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
+//func ingestInBackground(docType string, body []byte) error {
+//	redisConn := redisPool.Get()
+//	defer redisConn.Close()
+//	currTime := getCurrentTime()
+//	if docType == cveIndexName {
+//		var dfCveStructList []dfCveStruct
+//		err := json.Unmarshal(body, &dfCveStructList)
+//		if err != nil {
+//			return err
+//		}
+//		bulkService := elastic.NewBulkService(esClient)
+//		for _, cveStruct := range dfCveStructList {
+//			cveStruct.Timestamp = currTime
+//			if cveStruct.Cve_severity != "critical" && cveStruct.Cve_severity != "high" && cveStruct.Cve_severity != "medium" {
+//				cveStruct.Cve_severity = "low"
+//			}
+//			cveStruct.Count = 1
+//			cveStruct.CveTuple = fmt.Sprintf("%s|%s|%s", cveStruct.Cve_id, cveStruct.Cve_severity, cveStruct.Cve_container_image)
+//			docId := fmt.Sprintf("%x", md5.Sum([]byte(
+//				cveStruct.Scan_id+cveStruct.Cve_caused_by_package+cveStruct.Cve_container_image+cveStruct.Cve_id)))
+//			cveStruct.DocId = docId
+//			event, err := json.Marshal(cveStruct)
+//			if err == nil {
+//				bulkIndexReq := elastic.NewBulkIndexRequest()
+//				bulkIndexReq.Index(cveIndexName).Id(docId).Doc(string(event))
+//				bulkService.Add(bulkIndexReq)
+//				retryCount := 0
+//				for {
+//					_, err = redisConn.Do("PUBLISH", redisVulnerabilityChannel, string(event))
+//					if err == nil {
+//						break
+//					}
+//					if retryCount > 1 {
+//						fmt.Println(fmt.Sprintf("Error publishing cve document to %s - exiting", redisVulnerabilityChannel), err)
+//						break
+//					}
+//					fmt.Println(fmt.Sprintf("Error publishing cve document to %s - trying again", redisVulnerabilityChannel), err)
+//					retryCount += 1
+//					time.Sleep(5 * time.Second)
+//				}
+//			}
+//		}
+//		bulkService.Do(context.Background())
+//	} else if docType == cveScanLogsIndexName {
+//		events := strings.Split(string(body), "\n")
+//		bulkService := elastic.NewBulkService(esClient)
+//		for _, event := range events {
+//			if event != "" && strings.HasPrefix(event, "{") {
+//				var cveScanMap map[string]interface{}
+//				err := json.Unmarshal([]byte(event), &cveScanMap)
+//				if err != nil {
+//					continue
+//				}
+//				cveScanMap["masked"] = "false"
+//				cveScanMap["@timestamp"] = currTime
+//				bulkIndexReq := elastic.NewBulkIndexRequest()
+//				bulkIndexReq.Index(cveScanLogsIndexName).Doc(cveScanMap)
+//				bulkService.Add(bulkIndexReq)
+//			}
+//		}
+//		bulkService.Do(context.Background())
+//	} else if docType == sbomArtifactsIndexName {
+//		bulkService := elastic.NewBulkService(esClient)
+//		var artifacts []map[string]interface{}
+//		err := json.Unmarshal(body, &artifacts)
+//		if err != nil {
+//			fmt.Println("Error reading artifacts: ", err.Error())
+//		}
+//		for _, artifact := range artifacts {
+//			if len(artifact) == 0 {
+//				continue
+//			}
+//			bulkIndexReq := elastic.NewBulkIndexRequest()
+//			bulkIndexReq.Index(docType).Doc(artifact)
+//			bulkService.Add(bulkIndexReq)
+//		}
+//		res, _ := bulkService.Do(context.Background())
+//		if res != nil && res.Errors {
+//			for _, item := range res.Items {
+//				resItem := item["index"]
+//				if resItem != nil {
+//					if resItem.Error != nil {
+//						fmt.Println(resItem.Index)
+//						fmt.Println("Status: " + strconv.Itoa(resItem.Status))
+//						fmt.Println("Error Type:" + resItem.Error.Type)
+//						fmt.Println("Error Reason: " + resItem.Error.Reason)
+//					}
+//				}
+//			}
+//		}
+//	} else if docType == cloudComplianceIndexName {
+//		var complianceDocs []CloudComplianceDoc
+//		err := json.Unmarshal(body, &complianceDocs)
+//		if err != nil {
+//			return err
+//		}
+//		bulkService := elastic.NewBulkService(esClient)
+//		for _, complianceDoc := range complianceDocs {
+//			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanID+complianceDoc.ControlID+complianceDoc.Resource+complianceDoc.Group)))
+//			complianceDoc.DocId = docId
+//			bulkIndexReq := elastic.NewBulkUpdateRequest()
+//			bulkIndexReq.Index(cloudComplianceIndexName).Id(docId).
+//				Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
+//				Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
+//			bulkService.Add(bulkIndexReq)
+//		}
+//		bulkResp, err := bulkService.Do(context.Background())
+//		if err != nil {
+//			log.Println("err cloud compliance " + err.Error())
+//		}
+//		failed := bulkResp.Failed()
+//		log.Printf("cloud compliance bulk response Succeeded=%d Failed=%d\n",
+//			len(bulkResp.Succeeded()), len(failed))
+//		for _, r := range failed {
+//			log.Printf("error cloud compliance doc %s %s", r.Error.Type, r.Error.Reason)
+//		}
+//		// processResourceNode(complianceDocs)
+//	} else if docType == cloudComplianceLogsIndexName {
+//		events := strings.Split(string(body), "\n")
+//		bulkService := elastic.NewBulkService(esClient)
+//		for _, event := range events {
+//			if event != "" && strings.HasPrefix(event, "{") {
+//				var cloudComplianceScanLog map[string]interface{}
+//				err := json.Unmarshal([]byte(event), &cloudComplianceScanLog)
+//				if err != nil {
+//					continue
+//				}
+//				bulkIndexReq := elastic.NewBulkIndexRequest()
+//				bulkIndexReq.Index(cloudComplianceLogsIndexName).Doc(cloudComplianceScanLog)
+//				bulkService.Add(bulkIndexReq)
+//			}
+//		}
+//		bulkService.Do(context.Background())
+//	} else if docType == complianceIndexName {
+//		var complianceDocs []ComplianceDoc
+//		err := json.Unmarshal(body, &complianceDocs)
+//		if err != nil {
+//			return err
+//		}
+//		bulkService := elastic.NewBulkService(esClient)
+//		for _, complianceDoc := range complianceDocs {
+//			docId := fmt.Sprintf("%x", md5.Sum([]byte(complianceDoc.ScanId+complianceDoc.TestNumber+complianceDoc.Resource+complianceDoc.TestRationale)))
+//			complianceDoc.DocId = docId
+//			bulkIndexReq := elastic.NewBulkUpdateRequest()
+//			bulkIndexReq.Index(complianceIndexName).Id(docId).
+//				Script(elastic.NewScriptStored("default_upsert").Param("event", complianceDoc)).
+//				Upsert(complianceDoc).ScriptedUpsert(true).RetryOnConflict(3)
+//			bulkService.Add(bulkIndexReq)
+//		}
+//		bulkResp, err := bulkService.Do(context.Background())
+//		if err != nil {
+//			log.Println("err compliance " + err.Error())
+//		}
+//		failed := bulkResp.Failed()
+//		log.Printf("compliance bulk response Succeeded=%d Failed=%d\n", len(bulkResp.Succeeded()), len(failed))
+//		for _, r := range failed {
+//			log.Printf("error compliance doc %s %s", r.Error.Type, r.Error.Reason)
+//		}
+//	} else if docType == complianceLogsIndexName {
+//		events := strings.Split(string(body), "\n")
+//		bulkService := elastic.NewBulkService(esClient)
+//		for _, event := range events {
+//			if event != "" && strings.HasPrefix(event, "{") {
+//				var complianceScanLog map[string]interface{}
+//				err := json.Unmarshal([]byte(event), &complianceScanLog)
+//				if err != nil {
+//					continue
+//				}
+//				bulkIndexReq := elastic.NewBulkIndexRequest()
+//				bulkIndexReq.Index(complianceLogsIndexName).Doc(complianceScanLog)
+//				bulkService.Add(bulkIndexReq)
+//			}
+//		}
+//		bulkService.Do(context.Background())
+//	} else if docType == cloudTrailAlertsIndexName {
+//		var cloudTrailDocs []CloudTrailLogEvent
+//		err := json.Unmarshal(body, &cloudTrailDocs)
+//		if err != nil {
+//			return err
+//		}
+//		bulkService := elastic.NewBulkService(esClient)
+//		for _, cloudTrailDoc := range cloudTrailDocs {
+//			docId := fmt.Sprintf("%x", md5.Sum([]byte(cloudTrailDoc.EventID)))
+//			cloudTrailDoc.DocId = docId
+//			bulkIndexReq := elastic.NewBulkUpdateRequest()
+//			bulkIndexReq.Index(cloudTrailAlertsIndexName).Id(docId).
+//				Script(elastic.NewScriptStored("default_upsert").Param("event", cloudTrailDoc)).
+//				Upsert(cloudTrailDoc).ScriptedUpsert(true).RetryOnConflict(3)
+//			bulkService.Add(bulkIndexReq)
+//			event, err := json.Marshal(cloudTrailDoc)
+//			if err == nil {
+//				retryCount := 0
+//				for {
+//					_, err = redisConn.Do("PUBLISH", redisCloudTrailChannel, string(event))
+//					if err == nil {
+//						break
+//					}
+//					if retryCount > 1 {
+//						fmt.Println(fmt.Sprintf("Error publishing cloudtrail alert document to %s - exiting", redisCloudTrailChannel), err)
+//						break
+//					}
+//					fmt.Println(fmt.Sprintf("Error publishing cloudtrail alert document to %s - trying again", redisCloudTrailChannel), err)
+//					retryCount += 1
+//					time.Sleep(5 * time.Second)
+//				}
+//			}
+//		}
+//		bulkResp, err := bulkService.Do(context.Background())
+//		if err != nil {
+//			log.Println("err cloudtrail-alert " + err.Error())
+//		}
+//		failed := bulkResp.Failed()
+//		log.Printf("cloudtrail alert bulk response Succeeded=%d Failed=%d\n", len(bulkResp.Succeeded()), len(failed))
+//		for _, r := range failed {
+//			log.Printf("error cloudtrail-alert doc %s %s", r.Error.Type, r.Error.Reason)
+//		}
+//	} else {
+//		bulkService := elastic.NewBulkService(esClient)
+//		bulkIndexReq := elastic.NewBulkIndexRequest()
+//		bulkIndexReq.Index(docType).Doc(string(body))
+//		bulkService.Add(bulkIndexReq)
+//		res, _ := bulkService.Do(context.Background())
+//		if res != nil && res.Errors {
+//			for _, item := range res.Items {
+//				resItem := item["index"]
+//				if resItem != nil {
+//					fmt.Println(resItem.Index)
+//					fmt.Println("status:" + strconv.Itoa(resItem.Status))
+//					if resItem.Error != nil {
+//						fmt.Println("Error Type:" + resItem.Error.Type)
+//						fmt.Println("Error Reason: " + resItem.Error.Reason)
+//					}
+//				}
+//			}
+//		}
+//	}
+//	return nil
+//}
 
-func processResourceNode(docs []CloudComplianceDoc) {
-	if len(docs) == 0 {
-		return
-	}
-	accountId := docs[0].AccountID
-	postgresDb, err := sql.Open("postgres", psqlInfo)
-	if err != nil {
-		fmt.Println("Error in processing Resource Nodes: " + err.Error())
-		return
-	}
-	defer postgresDb.Close()
-	rows, err := postgresDb.Query("SELECT node_id,node_type from cloud_resource_node WHERE account_id=$1;", accountId)
-	if err != nil {
-		fmt.Println("Error in processing Resource Nodes retrieval: " + err.Error())
-		return
-	}
-	defer rows.Close()
-	nodeIdMap := make(map[string]string)
-	for rows.Next() {
-		var nodeId, nodeType string
-		err = rows.Scan(&nodeId, &nodeType)
-		if err == nil {
-			nodeIdMap[nodeId] = nodeType
-		} else {
-			fmt.Println("Error in processing Resource Nodes: row read" + err.Error())
-		}
-	}
-	for _, doc := range docs {
-		nodeType, found := nodeIdMap[doc.NodeID]
-		if found && nodeType == resourceToNodeTypeMap[doc.Resource] {
-			continue
-		} else {
-			sqlStatement := `INSERT INTO cloud_resource_node(node_id, node_type, node_name, cloud_provider, account_id, region, is_active)
-							 VALUES($1, $2, $3, $4, $5, $6, $7)`
-			_, err = postgresDb.Exec(sqlStatement, doc.NodeID, resourceToNodeTypeMap[doc.Resource], resourceToNodeTypeMap[doc.Resource], doc.CloudProvider, doc.AccountID, doc.Region, true)
-			if err != nil {
-				fmt.Println("Error in processing Resource Nodes: row insert" + err.Error())
-			}
-		}
-	}
-}
-
-func ingest(respWrite http.ResponseWriter, req *http.Request) {
-	// Send data to elasticsearch
-	defer req.Body.Close()
-	if req.Method != "POST" {
-		http.Error(respWrite, "invalid request", http.StatusInternalServerError)
-		return
-	}
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
-		return
-	}
-	docType := req.URL.Query().Get("doc_type")
-	docType = convertRootESIndexToCustomerSpecificESIndex(docType)
-	go ingestInBackground(docType, body)
-	respWrite.WriteHeader(http.StatusOK)
-	fmt.Fprintf(respWrite, "Ok")
-}
+//func processResourceNode(docs []CloudComplianceDoc) {
+//	if len(docs) == 0 {
+//		return
+//	}
+//	accountId := docs[0].AccountID
+//	postgresDb, err := sql.Open("postgres", psqlInfo)
+//	if err != nil {
+//		fmt.Println("Error in processing Resource Nodes: " + err.Error())
+//		return
+//	}
+//	defer postgresDb.Close()
+//	rows, err := postgresDb.Query("SELECT node_id,node_type from cloud_resource_node WHERE account_id=$1;", accountId)
+//	if err != nil {
+//		fmt.Println("Error in processing Resource Nodes retrieval: " + err.Error())
+//		return
+//	}
+//	defer rows.Close()
+//	nodeIdMap := make(map[string]string)
+//	for rows.Next() {
+//		var nodeId, nodeType string
+//		err = rows.Scan(&nodeId, &nodeType)
+//		if err == nil {
+//			nodeIdMap[nodeId] = nodeType
+//		} else {
+//			fmt.Println("Error in processing Resource Nodes: row read" + err.Error())
+//		}
+//	}
+//	for _, doc := range docs {
+//		nodeType, found := nodeIdMap[doc.NodeID]
+//		if found && nodeType == resourceToNodeTypeMap[doc.Resource] {
+//			continue
+//		} else {
+//			sqlStatement := `INSERT INTO cloud_resource_node(node_id, node_type, node_name, cloud_provider, account_id, region, is_active)
+//							 VALUES($1, $2, $3, $4, $5, $6, $7)`
+//			_, err = postgresDb.Exec(sqlStatement, doc.NodeID, resourceToNodeTypeMap[doc.Resource], resourceToNodeTypeMap[doc.Resource], doc.CloudProvider, doc.AccountID, doc.Region, true)
+//			if err != nil {
+//				fmt.Println("Error in processing Resource Nodes: row insert" + err.Error())
+//			}
+//		}
+//	}
+//}
+//
+//func ingest(respWrite http.ResponseWriter, req *http.Request) {
+//	// Send data to elasticsearch
+//	defer req.Body.Close()
+//	if req.Method != "POST" {
+//		http.Error(respWrite, "invalid request", http.StatusInternalServerError)
+//		return
+//	}
+//	body, err := ioutil.ReadAll(req.Body)
+//	if err != nil {
+//		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
+//		return
+//	}
+//	docType := req.URL.Query().Get("doc_type")
+//	docType = convertRootESIndexToCustomerSpecificESIndex(docType)
+//	go ingestInBackground(docType, body)
+//	respWrite.WriteHeader(http.StatusOK)
+//	fmt.Fprintf(respWrite, "Ok")
+//}
 
 type vulnerabilityScanNode struct {
 	NodeType string `json:"node_type"`
@@ -1482,7 +1481,8 @@ func main() {
 	httpMux.HandleFunc("/df-api/download/", handleDownload)
 	httpMux.HandleFunc("/df-api/registry-credential", registryCredential)
 	httpMux.HandleFunc("/df-api/packet-capture-config", packetCaptureConfig)
-	httpMux.HandleFunc("/df-api/ingest", ingest)
+	// moved to reportHandler
+	// httpMux.HandleFunc("/df-api/ingest", ingest)
 	httpMux.HandleFunc("/df-api/masked-cve-id", maskedCveId)
 	// Get user defined tags for a host
 	httpMux.HandleFunc("/df-api/user-defined-tags", handleUserDefinedTags)

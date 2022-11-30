@@ -1,0 +1,91 @@
+{{- if not .Values.saas_deployment }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: deepfence-rest-proxy
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    name: deepfence-rest-proxy
+  namespace: {{ .Release.Namespace }}
+spec:
+  serviceName: deepfence-rest-proxy
+  replicas: {{ .Values.kafkaRestProxy.replicaCount }}
+  selector:
+    matchLabels:
+      name: deepfence-rest-proxy
+  template:
+    metadata:
+      labels:
+        name: deepfence-rest-proxy
+        app: deepfence-console
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - deepfence-rest-proxy
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: rest-proxy
+          image: "{{ .Values.registry.imagePrefix }}{{ .Values.kafkaRestProxy.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.kafkaRestProxy.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8082
+          env:
+            - name: KAFKA_REST_HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KAFKA_REST_LISTENERS
+              value: "http://0.0.0.0:8082"
+            - name: KAFKA_REST_BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret-{{ include "deepfence-console.fullname" . }}
+                  key: kafka_brokers
+          livenessProbe:
+            httpGet:
+              port: 8082
+              path: /brokers
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.kafkaRestProxy.resources | nindent 12 }}
+      {{- with .Values.kafkaRestProxy.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kafkaRestProxy.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-rest-proxy
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    name: deepfence-rest-proxy
+  ports:
+    - name: http
+      port: 8082
+      protocol: TCP
+      targetPort: 8082
+{{ end }}

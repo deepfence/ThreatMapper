@@ -144,6 +144,11 @@ spec:
                 secretKeyRef:
                   name: redis-secret-{{ include "deepfence-console.fullname" . }}
                   key: port
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret-{{ include "deepfence-console.fullname" . }}
+                  key: kafka_brokers
           volumeMounts:
 {{- if .Values.saas_deployment }}
             - name: varlog

@@ -527,6 +527,39 @@ def start_secret(node_id):
     except Exception as ex:
         raise InternalError(str(ex))
 
+@resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_MALWARE_SCAN_START, methods=["GET", "POST"],
+                    endpoint="api_v1_5_malware_scan_start")
+@jwt_required()
+@non_read_only_user
+def start_malware(node_id):
+    try:
+        if not request.is_json:
+            raise InvalidUsage("Missing JSON post data in request")
+        node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+        if not node:
+            raise InvalidUsage("Node not found")
+        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+            node_json = node.pretty_print()
+            resources = [{
+                node_json["node_type"]: node_json,
+            }]
+            from tasks.user_activity import create_user_activity
+            jwt_identity = get_jwt_identity()
+            create_user_activity.delay(jwt_identity["id"], constants.ACTION_START, constants.EVENT_MALWARE_SCAN,
+                                       resources=resources, success=True)
+            return set_response(data=node.malware_start_scan())
+
+        else:
+            raise InvalidUsage(
+                "Control '{0}' not applicable for node type '{1}'".format(
+                    constants.NODE_ACTION_MALWARE_SCAN_START, node.type))
+    except DFError as err:
+        current_app.logger.error(
+            "NodeView: action={}; error={}".format(constants.NODE_ACTION_MALWARE_SCAN_START, err))
+        raise InvalidUsage(err.message)
+    except Exception as ex:
+        raise InternalError(str(ex))
+
 
 @resource_api.route("/get_logs", methods=["POST"], endpoint="api_v1_5_get_logs_from_agents")
 @jwt_required()
@@ -816,7 +849,7 @@ def get_node_detail(node_id):
 @jwt_required()
 def enumerate_node_filters():
     """
-    Enumerate Filters API
+    Enumerate Filters API   
     ---
     tags:
       - Enumerate
@@ -882,7 +915,7 @@ def enumerate_node_filters():
         resource_types = resource_types_str.split(",")
     resource_filters = []
     for resource_type in resource_types:
-        if resource_type not in [constants.CVE_ES_TYPE, constants.SECRET_SCAN_ES_TYPE, constants.COMPLIANCE_ES_TYPE]:
+        if resource_type not in [constants.CVE_ES_TYPE, constants.SECRET_SCAN_ES_TYPE, constants.COMPLIANCE_ES_TYPE, constants.MALWARE_SCAN_ES_TYPE]:
             print('Invalid resource_type {}. Skipping'.format(resource_type))
             continue
         if resource_type == constants.CVE_ES_TYPE:
@@ -1024,6 +1057,71 @@ def enumerate_node_filters():
                       resource_filters.append(details)
 
             node_types = [constants.NODE_TYPE_HOST]
+        elif resource_type == constants.MALWARE_SCAN_ES_TYPE:
+            scan_aggs = {
+                "node_type": {
+                    "terms": {"field": "node_type.keyword", "size": 10},
+                    "aggs": {"node_id": {
+                        "terms": {"field": "node_name.keyword", "size": ES_TERMS_AGGR_SIZE},
+                        "aggs": {
+                            "container_name": {
+                                "terms": {
+                                    "field": "container_name.keyword"
+                                }
+                            }
+                        }
+                    }}
+                }
+            }
+            malware_scan_aggs = ESConn.aggregation_helper(
+                constants.MALWARE_SCAN_LOGS_INDEX, {"scan_status": ["COMPLETE", "ERROR"]}, scan_aggs, number,
+                constants.TIME_UNIT_MAPPING.get(time_unit), lucene_query_string, add_masked_filter=False)
+            buckets = malware_scan_aggs.get("aggregations", {}).get("node_type", {}).get("buckets", [])
+            containers = []
+            images = []
+            hosts = []
+            filters_needed = "kubernetes_cluster_name"
+            for bucket in buckets:
+                node_type = bucket.get("key", "")
+                node_id_buckets = bucket.get("node_id", {}).get("buckets", [])
+                for node_id_bucket in node_id_buckets:
+                    node_id = node_id_bucket.get("key", "")
+                    if node_id:
+                        if node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
+                            images.append(node_id)
+                        if node_type == constants.NODE_TYPE_CONTAINER:
+                            containers.append(node_id_bucket.get("container_name", {}).get("buckets", [{}])[0].get("key", ""))
+                        if node_type == constants.NODE_TYPE_HOST:
+                            hosts.append(node_id)
+
+                if containers:
+                  details = {"label": "Container Name", "name": "container_name", "options": containers,
+                            "type": "string"}
+                  if node_types:
+                      if constants.NODE_TYPE_CONTAINER in node_types:
+                          resource_filters.append(details)
+                  else:
+                      resource_filters.append(details)
+
+                if images:
+                  details = {"label": "Image Name", "name": "image_name_with_tag", "options": images,
+                            "type": "string"}
+                  if node_types:
+                      if constants.NODE_TYPE_CONTAINER_IMAGE in node_types:
+                          resource_filters.append(details)
+                  else:
+                      resource_filters.append(details)
+
+                if hosts:
+                  details = {"label": "Hostname", "name": "host_name", "options": hosts, "type": "string"}
+                  if node_types:
+                      if constants.NODE_TYPE_HOST in node_types:
+                          resource_filters.append(details)
+                  else:
+                      resource_filters.append(details)
+
+            node_types = [constants.NODE_TYPE_HOST]
+
         elif resource_type == constants.COMPLIANCE_ES_TYPE:
             resource_filters.append(
                 {"label": "Masked", "name": "masked", "options": ["false", "true"], "type": "string",
@@ -1579,6 +1677,21 @@ def node_action():
                 create_user_activity.delay(jwt_identity["id"], constants.ACTION_START, constants.EVENT_SECRET_SCAN,
                                            resources=resources, success=True)
                 node.secret_start_scan()
+    elif action in [constants.NODE_ACTION_MALWARE_SCAN_START]:
+        for node_id in node_ids:
+            node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+            if not node:
+                raise InvalidUsage("Node not found")
+            if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+                node_json = node.pretty_print()
+                resources = [{
+                    node_json["node_type"]: node_json,
+                }]
+                from tasks.user_activity import create_user_activity
+                jwt_identity = get_jwt_identity()
+                create_user_activity.delay(jwt_identity["id"], constants.ACTION_START, constants.EVENT_MALWARE_SCAN,
+                                           resources=resources, success=True)
+                node.malware_start_scan()
 
     return set_response("Ok")
 

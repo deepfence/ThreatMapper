@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, Fragment } from 'react';
 import { useDispatch } from 'react-redux';
-import { getCVEScanStatusAction, getSecretScanStatusAction } from '../../../actions/app-actions';
+import { getCVEScanStatusAction, getSecretScanStatusAction, getMalwareScanStatusAction } from '../../../actions/app-actions';
 import pollable from '../../common/header-view/pollable';
 import { Devider } from './common';
 import { SecretScan } from './secret-scan';
+import { MalwareScan } from './malware-scan';
 import { VulnerabilityScan } from './vulnerability-scan';
 
 const scans = [
   VulnerabilityScan,
-  SecretScan
+  SecretScan,
+  MalwareScan
 ]
 
 // All the polling logic should be in this component
@@ -23,7 +25,8 @@ const ScanModal = (props) => {
   const pollingFunction = useCallback(({ imageId }) => {
     return Promise.all([
       dispatch(getCVEScanStatusAction(imageId)),
-      dispatch(getSecretScanStatusAction(id))
+      dispatch(getSecretScanStatusAction(id)),
+      dispatch(getMalwareScanStatusAction(id))
     ]);
   }, []);
 

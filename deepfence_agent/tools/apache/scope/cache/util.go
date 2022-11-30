@@ -22,6 +22,8 @@ type NodeStatus struct {
 	VulnerabilityScanStatusTime map[string]string
 	SecretScanStatus            map[string]string
 	SecretScanStatusTime        map[string]string
+	MalwareScanStatus           map[string]string
+	MalwareScanStatusTime       map[string]string
 	sync.RWMutex
 }
 
@@ -83,6 +85,7 @@ var (
 	statusMap             map[string]string
 	cveScanLogsEsIndex    = "cve-scan"
 	secretScanLogsEsIndex = "secret-scan-logs"
+	malwareScanLogsEsIndex = "malware-scan-logs"
 )
 
 func init() {
@@ -109,6 +112,7 @@ func init() {
 	if customerUniqueId != "" {
 		cveScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
 		secretScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
+		malwareScanLogsEsIndex += fmt.Sprintf("-%s", customerUniqueId)
 	}
 }
 
@@ -436,6 +440,8 @@ type DeepfenceTopology struct {
 	VulnerabilityScanStatusTime  string              `json:"vulnerability_scan_status_time,omitempty"`
 	SecretScanStatus             string              `json:"secret_scan_status,omitempty"`
 	SecretScanStatusTime         string              `json:"secret_scan_status_time,omitempty"`
+	MalwareScanStatus             string             `json:"malware_scan_status,omitempty"`
+	MalwareScanStatusTime         string             `json:"malware_scan_status_time,omitempty"`
 }
 
 type TopologyFilterNumberOption struct {

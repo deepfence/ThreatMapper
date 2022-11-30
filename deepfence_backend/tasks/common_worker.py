@@ -1091,7 +1091,6 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     final_html = template_env.get_template('detailed_secret_report_summary.html').render(**report_dict)
     return final_html
 
-
 def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resources,
                          include_dead_nodes, report_email):
     add_report_status_in_es(report_id=report_id, status="In Progress",
