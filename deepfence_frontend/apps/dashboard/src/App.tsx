@@ -1,12 +1,18 @@
 import './index.css';
 
-import { Login } from './pages/Login';
-import { ThemeProvider } from './theme/ThemeContext';
+import { RouterProvider } from 'react-router-dom';
+
+import { router } from './router/route';
+import { ThemeProvider, useThemeMode } from './theme/ThemeContext';
 
 function App() {
+  const { toggleMode } = useThemeMode(true);
+
   return (
-    <ThemeProvider value={{}}>
-      <Login />
+    <ThemeProvider value={{ toggleMode }}>
+      <div className="h-screen dark:bg-gray-900 bg-gray-200">
+        <RouterProvider router={router} />
+      </div>
     </ThemeProvider>
   );
 }
