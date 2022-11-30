@@ -115,7 +115,17 @@ import {
   getServicesForCloudAccount,
   getAttackGraphData,
   getAttackGraphNodeInfo,
-  refreshCloudComplianceResources
+  refreshCloudComplianceResources,
+  getMalwareScanStatus,
+  startMalwareScan,
+  malwareScanRegistryImages,
+  getMalwareScanData,
+  getMalwareScanResults,
+  getTopMalwareScanContainerAndHosts,
+  getMalwareScanReportChart,
+  getMalwareScanChartData,
+  malwareScanMaskDocs,
+  malwareScanUnmaskDocs,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -937,7 +947,6 @@ export function getSecretScanStatusAction(imageId) {
   return genericThunkAction(actionTypes, getSecretScanStatus, { imageId });
 }
 
-
 export function startSecretScanAction(params) {
   const actionTypes = [
     ActionTypes.START_SECRET_SCAN_REQUEST,
@@ -1379,6 +1388,7 @@ export function scanRegistryImagesAction(params) {
   ];
   return genericThunkAction(actionTypes, scanRegistryImages, params);
 }
+
 
 export function secretsScanRegistryImagesAction(params) {
   const actionTypes = [
@@ -2108,6 +2118,88 @@ export function getAttackGraphNodeIssuesAction(params) {
     ActionTypes.GET_ATTACK_GRAPH_NODE_ISSUES_FAILURE,
   ];
   return genericThunkAction(actionTypes, searchDocsWrapper, params);
+}
+
+// malware actions
+
+export function getMalwareScanStatusAction(imageId) {
+  const actionTypes = [
+    ActionTypes.MALWARE_SCAN_STATUS_REQUEST,
+    ActionTypes.MALWARE_SCAN_STATUS_SUCCESS,
+    ActionTypes.MALWARE_SCAN_STATUS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanStatus, { imageId });
+}
+
+export function startMalwareScanAction(params) {
+  const actionTypes = [
+    ActionTypes.START_MALWARE_SCAN_REQUEST,
+    ActionTypes.START_MALWARE_SCAN_SUCCESS,
+    ActionTypes.START_MALWARE_SCAN_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, startMalwareScan, params);
+}
+
+export function malwareScanRegistryImagesAction(params) {
+  const actionTypes = [
+    ActionTypes.MALWARE_SCAN_REGISTRY_IMAGES_REQUEST,
+    ActionTypes.MALWARE_SCAN_REGISTRY_IMAGES_SUCCESS,
+    ActionTypes.MALWARE_SCAN_REGISTRY_IMAGES_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, malwareScanRegistryImages, params);
+}
+
+export function getMalwareScanDataAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_MALWARE_SCAN_DATA_REQUEST,
+    ActionTypes.GET_MALWARE_SCAN_DATA_SUCCESS,
+    ActionTypes.GET_MALWARE_SCAN_DATA_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanData, params);
+}
+
+export function getMalwareScanResultsAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_MALWARE_SCAN_RESULTS_REQUEST,
+    ActionTypes.GET_MALWARE_SCAN_RESULTS_SUCCESS,
+    ActionTypes.GET_MALWARE_SCAN_RESULTS_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanResults, params);
+}
+
+export function getTopMalwareScanContainerAndHostsAction(params) {
+  const actionTypes = [
+    ActionTypes.TOP_MALWARE_SCAN_NODES_REQUEST,
+    ActionTypes.TOP_MALWARE_SCAN_NODES_SUCCESS,
+    ActionTypes.TOP_MALWARE_SCAN_NODES_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getTopMalwareScanContainerAndHosts, params);
+}
+
+export function getMalwareScanReportChartAction(params) {
+  const actionTypes = [
+    ActionTypes.TOP_MALWARE_SCAN_REPORT_REQUEST,
+    ActionTypes.TOP_MALWARE_SCAN_REPORT_SUCCESS,
+    ActionTypes.TOP_MALWARE_SCAN_REPORT_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanReportChart, params);
+}
+
+export function getMalwareScanChartDataAction(params) {
+  const actionTypes = [
+    ActionTypes.MALWARE_SCAN_CHART_REQUEST,
+    ActionTypes.MALWARE_SCAN_CHART_SUCCESS,
+    ActionTypes.MALWARE_SCAN_CHART_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareScanChartData, params);
+}
+
+export function malwareScanMaskDocsAction(params) {
+  return (dispatch) => malwareScanMaskDocs(dispatch, params);
+}
+
+export function malwareScanUnmaskDocsAction(params) {
+  return (dispatch) => malwareScanUnmaskDocs(dispatch, params);
 }
 
 export function getSingleComplianceResultAction({ docId, complianceType }) {

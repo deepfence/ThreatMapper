@@ -6,7 +6,7 @@ from utils.constants import NODE_TYPE_HOST, TOPOLOGY_HOSTS_PROBE_MAP_REDIS_KEY, 
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_POD, NODE_TYPE_REGISTRY_IMAGE, \
     REGISTRY_IMAGES_CACHE_KEY_PREFIX, CVE_SCAN_RUNNING_STATUS, CVE_SCAN_STATUS_COMPLETED, AES_SETTING_KEY, \
     CLOUD_CREDENTIAL_AES_SETTING_KEY, SECRET_SCAN_STATUS_COMPLETED
-from utils.helper import websocketio_channel_name_format, get_image_cve_status, get_image_secret_status
+from utils.helper import websocketio_channel_name_format, get_image_cve_status, get_image_secret_status, get_image_malware_status
 from utils.custom_exception import InvalidUsage
 from operator import itemgetter
 from datetime import datetime, timedelta
@@ -52,6 +52,7 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
     if not image_cve_status:
         image_cve_status = get_image_cve_status()
     image_secret_status = get_image_secret_status()
+    image_malware_status = get_image_malware_status()
     # merge registry_image_list and image index
     registry_image_list_with_status = []
     unique_images = set()
@@ -59,6 +60,7 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
         unique_images.add(reg_image["image_name"])
         cve_status = image_cve_status.get(reg_image["image_name_with_tag"], {})
         secret_status = image_secret_status.get(reg_image["image_name_with_tag"], {})
+        malware_status = image_malware_status.get(reg_image["image_name_with_tag"], {})
         if cve_status:
             reg_image["vulnerability_scan_status"] = status_map.get(
                 cve_status["action"], cve_never_scanned)
@@ -84,6 +86,19 @@ def get_scan_status_for_registry_images(registry_image_list, image_cve_status=No
             reg_image["secret_scan_status"] = cve_never_scanned
             reg_image["secret_scan_status_time"] = ""
             reg_image["secret_scan_status_msg"] = ""
+        if malware_status:
+            reg_image["malware_scan_status"] = status_map.get(
+                malware_status["scan_status"], cve_never_scanned)
+            reg_image["malware_scan_status_time"] = malware_status["@timestamp"]
+            if malware_status["scan_status"] == SECRET_SCAN_STATUS_COMPLETED:
+                total_scanned += 1
+            elif malware_status["scan_status"] in "IN_PROGRESS":
+                scan_in_progress += 1
+        else:
+            reg_image["malware_scan_status"] = cve_never_scanned
+            reg_image["malware_scan_status_time"] = ""
+            reg_image["malware_scan_status_msg"] = ""
+            
         registry_image_list_with_status.append(reg_image)
     return registry_image_list_with_status, total_scanned, scan_in_progress, len(unique_images)
 
@@ -509,6 +524,68 @@ def filter_node_for_secret_scan(node_filters):
         filters["kubernetes_cluster_name"] = k8_names
     return filters
 
+def filter_node_for_malware_scan(node_filters):
+    host_names = []
+    node_names = []
+    k8_names = []
+    k8s_namespaces = node_filters.get("kubernetes_namespace", [])
+    if k8s_namespaces and type(k8s_namespaces) != list:
+        k8s_namespaces = [k8s_namespaces]
+    if node_filters.get("host_name"):
+        host_names.extend(node_filters["host_name"])
+    if node_filters.get("kubernetes_cluster_name"):
+        k8_names.extend(node_filters["kubernetes_cluster_name"])
+    # host_filters = {k: v for k, v in node_filters.items() if k in ["kubernetes_cluster_name", "user_defined_tags"]}
+    # if host_filters:
+    #     hosts = get_nodes_list(get_default_params({"filters": {
+    #         "type": NODE_TYPE_HOST, **node_filters}, "size": 50000})).get("data", [])
+    #     if hosts:
+    #         for host in hosts:
+    #             if host.get("host_name") and host["host_name"] not in host_names:
+    #                 host_names.append(host["host_name"])
+    if node_filters.get("container_name"):
+        node_names.extend(node_filters["container_name"])
+    container_filters = {k: v for k, v in node_filters.items() if k in [
+        "user_defined_tags"]}
+    if container_filters:
+        containers = get_nodes_list(get_default_params({"filters": {
+            "type": NODE_TYPE_CONTAINER, **node_filters}, "size": 50000})).get("data", [])
+        if containers:
+            for container in containers:
+                if container.get("container_name") and container.get("host_name"):
+                    container_name = "{0}/{1}".format(
+                        container["host_name"], container["container_name"])
+                    if container_name not in node_names:
+                        if k8s_namespaces:
+                            for table in container.get("tables", []):
+                                if table.get("id") == "docker_label_":
+                                    for row in table.get("rows", []):
+                                        if row.get("id") == "label_io.kubernetes.pod.namespace":
+                                            if row.get("entries", {}).get("value", "") in k8s_namespaces:
+                                                node_names.append(
+                                                    container_name)
+                        else:
+                            node_names.append(container_name)
+    if node_filters.get("image_name_with_tag"):
+        node_names.extend(node_filters["image_name_with_tag"])
+    image_filters = {k: v for k, v in node_filters.items() if k in [
+        "user_defined_tags"]}
+    if image_filters:
+        images = get_nodes_list(get_default_params({"filters": {
+            "type": NODE_TYPE_CONTAINER_IMAGE, **node_filters}, "size": 50000})).get("data", [])
+        if images:
+            for image in images:
+                if image.get("image_name_with_tag") and image["image_name_with_tag"] not in node_names:
+                    node_names.append(image["image_name_with_tag"])
+    filters = {}
+    if host_names:
+        filters["node_name"] = host_names
+    if node_names:
+        node_names.extend(host_names)
+        filters["node_name"] = node_names
+    if k8_names:
+        filters["kubernetes_cluster_name"] = k8_names
+    return filters
 
 def get_active_node_images_count(node_filters):
     active_hosts = []

@@ -52,12 +52,13 @@ managementConsolePort: "443"
 deepfenceUrl: ""
 
 volume:
-  storageClass: openebs-hostpath
-  # Change stoage class when using different PV provisioner.
+  storageClass: ""
+  # Change storage class when using different PV provisioner.
   # For example, it will be 'openebs-hostpath' when using openebs
   # or it will be 'default' when using cloud managed Persistent Volumes.
   esStorage: 30Gi
   postgresStorage: 30Gi
+  kafkaStorage: 30Gi
 
 # If config update needed for postgres instance
 # postgresql:
@@ -89,6 +90,16 @@ db:
   redis:
     host: deepfence-redis
     port: "6379"
+  kafka_rest: deepfence-rest-proxy:8082
+  kafka:
+    broker: deepfence-kafka-broker:9092
+    ## set this to new value when kafka resplicas is >1
+    ## to generate download kafka and run "kafka-storage random-uuid"
+    ## storageUUID: ""
+    storageUUID: hNQ55qppT5GGybF52ZGlOQ
+    ## topic configurations
+    kafka_topic_replicas: 3
+    kafka_topic_retention_ms: "86400000" # values needs to be quoted
 
 # (Optional) Set custom name for the cluster and hostname prefix for console vm's to easily identify in Deepfence UI.
 # Example: df-console or deepfence-console
@@ -458,6 +469,38 @@ secretScanner:
   service:
     type: ClusterIP
 
+malwareScanner:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_malware_scanner_ce
+    pullPolicy: Always
+  imagePullMalware: 
+      - name: docker-deepfence-malware
+  nameOverride: ""
+  fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  service:
+    type: ClusterIP
+
 vulnerabilityMapper:
   replicaCount: 1
   image:
@@ -653,6 +696,56 @@ postgresql:
       cpu: 4000m
       memory: 8Gi
 
+  nodeSelector: {}
+  
+  tolerations: []
+  
+  service:
+    type: ClusterIP
+
+kafkaBroker:
+  # Replication factor for kafka-broker
+  # Recommended: 3+ for production, 1 for dev setup, minikube
+  replicaCount: 3
+  image:
+    repository: deepfenceio/deepfence_kafka_broker_ce
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
+  autoscaling:
+    enabled: false
+  
+  nodeSelector: {}
+  
+  tolerations: []
+  
+  service:
+    type: ClusterIP
+
+kafkaRestProxy:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_kafka_rest_proxy_ce
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  autoscaling:
+    enabled: false
+  
   nodeSelector: {}
   
   tolerations: []

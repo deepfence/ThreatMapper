@@ -3,7 +3,7 @@ import '@testing-library/jest-dom';
 import { describe } from 'vitest';
 
 import { renderUI } from '../../tests/utils';
-import { Dropdown, DropdownSeparator, DropdwonItem } from './Dropdown';
+import { Dropdown, DropdownItem, DropdownSeparator } from './Dropdown';
 
 describe('Component Dropdown', () => {
   it('render with item, style props', () => {
@@ -13,12 +13,12 @@ describe('Component Dropdown', () => {
         content={
           <>
             {items.map((item) => {
-              return <DropdwonItem key={item}>{item}</DropdwonItem>;
+              return <DropdownItem key={item}>{item}</DropdownItem>;
             })}
             <DropdownSeparator />
-            <DropdwonItem className="text-red-500 dark:text-red-500">
+            <DropdownItem className="text-red-500 dark:text-red-500">
               Sign Out
-            </DropdwonItem>
+            </DropdownItem>
           </>
         }
         open={true}

@@ -17,7 +17,8 @@ from models.user import User, Role, Company, Invite, PasswordReset
 from models.user_activity_log import UserActivityLog
 from collections import defaultdict
 from models.integration import Integration
-from models.notification import VulnerabilityNotification, UserActivityNotification, CloudtrailAlertNotification
+from models.notification import VulnerabilityNotification, UserActivityNotification, ComplianceReportNotification, \
+    CloudtrailAlertNotification
 from utils.common import password_policy_check, unique_execution_id, \
     mask_url, mask_api_key
 from utils.custom_exception import InvalidUsage, NotFound, Forbidden, MultipleCompaniesFound, DFError
@@ -31,7 +32,7 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
-    INVITE_EXPIRY, CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, FILTER_TYPE_CLOUDTRAIL_TRAIL, \
+    INVITE_EXPIRY, NOTIFICATION_TYPE_COMPLIANCE, CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, FILTER_TYPE_CLOUDTRAIL_TRAIL, \
     INTEGRATION_TYPE_AWS_SECURITY_HUB, FILTER_TYPE_AWS_ACCOUNT_ID
 from utils import constants
 from config.redisconfig import redis
@@ -1388,6 +1389,9 @@ class IntegrationView(MethodView):
             for notif in UserActivityNotification.query.filter(
                     UserActivityNotification.user_id.in_(active_user_ids)).all():
                 response[notif.integration.integration_type].append(notif.pretty_print())
+            for notif in ComplianceReportNotification.query.filter(
+                    ComplianceReportNotification.user_id.in_(active_user_ids)).all():
+                response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in CloudtrailAlertNotification.query.filter(
                     CloudtrailAlertNotification.user_id.in_(active_user_ids)).all():
                 response[notif.integration.integration_type].append(notif.pretty_print())
@@ -1395,6 +1399,8 @@ class IntegrationView(MethodView):
             for notif in user.vulnerability_notifications:
                 response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in user.user_activity_notification:
+                response[notif.integration.integration_type].append(notif.pretty_print())
+            for notif in user.compliance_report_notifications:
                 response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in user.cloudtrail_alert_notification:
                 response[notif.integration.integration_type].append(notif.pretty_print())
@@ -1519,6 +1525,8 @@ class IntegrationView(MethodView):
             notification = VulnerabilityNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             notification = UserActivityNotification.query.filter_by(id=id).one_or_none()
+        elif notification_type == NOTIFICATION_TYPE_COMPLIANCE:
+            notification = ComplianceReportNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT:
             notification = CloudtrailAlertNotification.query.filter_by(id=id).one_or_none()
 
@@ -2077,6 +2085,8 @@ class IntegrationView(MethodView):
             create_notification(VulnerabilityNotification)
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             create_notification(UserActivityNotification)
+        elif notification_type == NOTIFICATION_TYPE_COMPLIANCE:
+            create_notification(ComplianceReportNotification)
         elif notification_type == NOTIFICATION_TYPE_CLOUDTRAIL_ALERT:
             create_notification(CloudtrailAlertNotification)
 
