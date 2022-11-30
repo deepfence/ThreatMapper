@@ -1,11 +1,17 @@
 import './index.css';
 
+export { Avatar } from './components/avatar/Avatar';
 export { Breadcrumb, BreadcrumbLink } from './components/breadcrumb/Breadcrumb';
 export { default as Button } from './components/button/Button';
 export { default as IconButton } from './components/button/IconButton';
 export { Card } from './components/card/Card';
 export { Checkbox } from './components/checkbox/Checkbox';
-export { Dropdown } from './components/dropdown/Dropdown';
+export {
+  Dropdown,
+  DropdownItem,
+  DropdownSeparator,
+} from './components/dropdown/Dropdown';
+export { Error } from './components/error/Error';
 export { default as TextInput } from './components/input/TextInput';
 export { default as TextInputArea } from './components/input/TextInputArea';
 export { default as Modal } from './components/modal/Modal';

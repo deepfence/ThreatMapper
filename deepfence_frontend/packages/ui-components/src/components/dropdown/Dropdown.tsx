@@ -40,7 +40,7 @@ export const Dropdown: React.FC<DropdownProps> = (props) => {
 };
 Dropdown.displayName = 'Dropdown';
 
-export const DropdwonItem: React.ForwardRefExoticComponent<
+export const DropdownItem: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuItemProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { children, className, ...rest } = props;

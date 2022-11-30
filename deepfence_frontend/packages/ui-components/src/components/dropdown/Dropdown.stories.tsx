@@ -10,7 +10,7 @@ import {
 } from 'react-icons/hi';
 
 import Button from '../button/Button';
-import { Dropdown, DropdownSeparator, DropdwonItem } from './Dropdown';
+import { Dropdown, DropdownItem, DropdownSeparator } from './Dropdown';
 
 export default {
   title: 'Components/Dropdown',
@@ -30,12 +30,12 @@ const DefaultTemplate: ComponentStory<typeof Dropdown> = (args) => {
       {...args}
       content={
         <>
-          <DropdwonItem>First Action</DropdwonItem>
-          <DropdwonItem>Second Action</DropdwonItem>
-          <DropdwonItem>Third Action</DropdwonItem>
-          <DropdwonItem>Fourth Action</DropdwonItem>
+          <DropdownItem>First Action</DropdownItem>
+          <DropdownItem>Second Action</DropdownItem>
+          <DropdownItem>Third Action</DropdownItem>
+          <DropdownItem>Fourth Action</DropdownItem>
           <DropdownSeparator />
-          <DropdwonItem className="text-red-500 dark:text-red-500">Sign Out</DropdwonItem>
+          <DropdownItem className="text-red-500 dark:text-red-500">Sign Out</DropdownItem>
         </>
       }
     >
@@ -55,37 +55,37 @@ const TemplateForIcons: ComponentStory<typeof Dropdown> = (args) => {
       {...args}
       content={
         <>
-          <DropdwonItem>
+          <DropdownItem>
             <IconContext.Provider value={{ size: '18px' }}>
               <HiUserAdd />
             </IconContext.Provider>
             <span>First Action</span>
-          </DropdwonItem>
-          <DropdwonItem>
+          </DropdownItem>
+          <DropdownItem>
             <IconContext.Provider value={{ size: '18px' }}>
               <HiInboxIn />
             </IconContext.Provider>
             <span>Second Action</span>
-          </DropdwonItem>
-          <DropdwonItem>
+          </DropdownItem>
+          <DropdownItem>
             <IconContext.Provider value={{ size: '18px' }}>
               <HiInformationCircle />
             </IconContext.Provider>
             <span>Third Action</span>
-          </DropdwonItem>
-          <DropdwonItem>
+          </DropdownItem>
+          <DropdownItem>
             <IconContext.Provider value={{ size: '18px' }}>
               <HiPencilAlt />
             </IconContext.Provider>
             <span>Fourth Action</span>
-          </DropdwonItem>
+          </DropdownItem>
           <DropdownSeparator />
-          <DropdwonItem className="text-red-500 dark:text-red-500">
+          <DropdownItem className="text-red-500 dark:text-red-500">
             <IconContext.Provider value={{ size: '18px' }}>
               <HiLogout />
             </IconContext.Provider>
             <span>Sign Out</span>
-          </DropdwonItem>
+          </DropdownItem>
         </>
       }
     >
@@ -110,12 +110,12 @@ const ControlledTemplate: ComponentStory<typeof Dropdown> = (args) => {
       }}
       content={
         <>
-          <DropdwonItem>First Action</DropdwonItem>
-          <DropdwonItem>Second Action</DropdwonItem>
-          <DropdwonItem>Third Action</DropdwonItem>
-          <DropdwonItem>Fourth Action</DropdwonItem>
+          <DropdownItem>First Action</DropdownItem>
+          <DropdownItem>Second Action</DropdownItem>
+          <DropdownItem>Third Action</DropdownItem>
+          <DropdownItem>Fourth Action</DropdownItem>
           <DropdownSeparator />
-          <DropdwonItem className="text-red-500 dark:text-red-500">Sign Out</DropdwonItem>
+          <DropdownItem className="text-red-500 dark:text-red-500">Sign Out</DropdownItem>
         </>
       }
     >
