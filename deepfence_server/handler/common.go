@@ -22,16 +22,11 @@ func (h *Handler) AsyncPing(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msgf("could not create task: %v", err)
 	}
 	ctx := directory.NewGlobalContext()
-	client, err := directory.WorkerClient(ctx)
-	if err != nil {
-		log.Error().Msgf("could not get client: %v", err)
-		return
-	}
-	info, err := client.Enqueue(task)
+	err = directory.WorkerEnqueue(ctx, task)
 	if err != nil {
 		log.Error().Msgf("could not enqueue task: %v", err)
 	}
-	log.Info().Msgf("ping sent %v", info)
+	log.Info().Msgf("ping sent")
 	return
 }
 

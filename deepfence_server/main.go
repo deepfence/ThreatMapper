@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"net/http"
 	"os"
 	"os/signal"
+
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"

@@ -4,19 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/hibiken/asynq"
 )
 
 const PingTaskID = "ping"
 
 type PingPayload struct {
-	msg string
+	Msg string
 }
 
 func NewPingTask(msg string) (*asynq.Task, error) {
-	payload, err := json.Marshal(PingPayload{msg: msg})
+	payload, err := json.Marshal(PingPayload{Msg: msg})
 	if err != nil {
 		return nil, err
 	}
@@ -28,6 +28,6 @@ func HandlePingTask(ctx context.Context, t *asynq.Task) error {
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
-	log.Printf("Pong: %v", p.msg)
+	log.Info().Msgf("Pong: %v", p.Msg)
 	return nil
 }
