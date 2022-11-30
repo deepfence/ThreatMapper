@@ -4,12 +4,22 @@ import React from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
+import { Typography } from '../typography/Typography';
+
 export const Accordion = React.forwardRef<
   HTMLDivElement,
   AccordionPrimitive.AccordionSingleProps | AccordionPrimitive.AccordionMultipleProps
 >(({ children, className, ...rest }, forwardedRef) => (
   <AccordionPrimitive.Root
-    className={twMerge(cx('w-full', className))}
+    className={twMerge(
+      cx(
+        'w-full overflow-hidden',
+        'rounded-b-lg rounded-t-lg',
+        'border border-gray-200 dark:border-gray-700 dark:border-opacity-50', // border of container
+        'drop-shadow-[0px_1px_2px_rgba(0,_0,_0,_0.8),_0px_1px_2px_-1px_rgba(0,_0,_0,_0.1)]',
+        className,
+      ),
+    )}
     ref={forwardedRef}
     {...rest}
   >
@@ -29,9 +39,8 @@ export const AccordionItem = (props: AccordionItemProps) => {
       value={value}
       className={twMerge(
         cx(
-          'bg-gray-200 w-full overflow-hidden',
-          'border-x border-t last:border-b',
-          'first:rounded-t-lg last:rounded-b-lg',
+          'w-full overflow-hidden text-gray-900 dark:text-white dark:bg-gray-800 border-b last:border-b-0', // border bottom on each header trigger except last
+          'border-gray-200 dark:border-gray-700 dark:border-opacity-50',
           className,
         ),
       )}
@@ -46,12 +55,12 @@ export const AccordionTrigger = React.forwardRef<
   HTMLButtonElement,
   AccordionPrimitive.AccordionTriggerProps
 >(({ children, className, ...props }, forwardedRef) => (
-  <AccordionPrimitive.Header className={cx('bg-gray-100')}>
+  <AccordionPrimitive.Header className={cx('p-5')}>
     <AccordionPrimitive.Trigger
       className={cx(
-        'px-2 py-2', // update after design system is build
-        'flex outline-none text-gray-900 px-2 place-items-center',
+        'flex outline-none  place-items-center',
         'w-full group',
+        `leading-4 ${Typography.size.base} ${Typography.weight.medium}`,
         className,
       )}
       {...props}
@@ -74,8 +83,8 @@ export const AccordionContent = React.forwardRef<
 >(({ children, className, ...props }, forwardedRef) => (
   <AccordionPrimitive.Content
     className={cx(
-      'bg-white p-2 w-full',
-      'radix-state-open:border-t',
+      'bg-white dark:bg-gray-900 p-2 w-full text-gray-500 dark:text-gray-400 leading-[150%]',
+      'radix-state-open:border-t dark:radix-state-open:border-gray-700 dark:radix-state-open:border-opacity-50', // border top of its content
       'radix-state-open:animate-accordion-open',
       'radix-state-closed:animate-accordion-closed',
       className,
