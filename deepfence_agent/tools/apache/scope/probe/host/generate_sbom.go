@@ -2,10 +2,11 @@ package host
 
 import (
 	"context"
+	"os"
+
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
-	"os"
 )
 
 const (
@@ -32,13 +33,15 @@ func createPackageScannerClient() (pb.PackageScannerClient, error) {
 	return pb.NewPackageScannerClient(conn), nil
 }
 
-func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClusterName, containerName, scanType string) error {
+func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, kubernetesClusterName, containerName, scanType string) error {
 	ctx := context.Background()
 
 	hostName := scopeHostname.Get()
 	var nodeType string
 	if imageName == "host" {
 		nodeType = "host"
+	} else if containerName != "" {
+		nodeType = "container"
 	} else {
 		nodeType = "container_image"
 	}
@@ -62,6 +65,7 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, kubernetesClus
 		NodeType:              nodeType,
 		HostName:              hostName,
 		RegistryId:            "",
+		ContainerId:           containerId,
 	}
 	_, err = packageScannerClient.GenerateSBOM(ctx, sbomRequest)
 	if err != nil {
