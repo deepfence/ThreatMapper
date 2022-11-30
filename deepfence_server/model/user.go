@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/pbkdf2"
@@ -25,22 +26,21 @@ var (
 )
 
 type ApiToken struct {
-	ID            int32           `json:"id"`
-	Name          string          `json:"name"`
-	RoleName      string          `json:"role_name"`
-	CreatedByUser string          `json:"created_by_user"`
-	PgConn        *PostgresDBConn `json:"-"`
+	ID            int32  `json:"id"`
+	Name          string `json:"name"`
+	RoleName      string `json:"role_name"`
+	CreatedByUser string `json:"created_by_user"`
 }
 
 type Company struct {
-	ID          int32           `json:"id"`
-	Name        string          `json:"name"`
-	EmailDomain string          `json:"email_domain"`
-	PgConn      *PostgresDBConn `json:"-"`
+	ID          int32  `json:"id"`
+	Name        string `json:"name"`
+	EmailDomain string `json:"email_domain"`
 }
 
 func (c *Company) Create(ctx context.Context) (*postgresqlDb.Company, error) {
-	company, err := c.PgConn.Queries.CreateCompany(ctx, postgresqlDb.CreateCompanyParams{Name: c.Name, EmailDomain: c.EmailDomain})
+	pgClient, err := directory.PostgresClient(ctx)
+	company, err := pgClient.CreateCompany(ctx, postgresqlDb.CreateCompanyParams{Name: c.Name, EmailDomain: c.EmailDomain})
 	if err != nil {
 		return nil, err
 	}
@@ -48,14 +48,15 @@ func (c *Company) Create(ctx context.Context) (*postgresqlDb.Company, error) {
 }
 
 func (c *Company) GetDefaultUserGroup(ctx context.Context) (map[int32]string, error) {
-	groups, err := c.PgConn.Queries.GetUserGroups(ctx, c.ID)
+	pgClient, err := directory.PostgresClient(ctx)
+	groups, err := pgClient.GetUserGroups(ctx, c.ID)
 	if err != nil {
 		return nil, err
 	}
 	if len(groups) > 0 {
 		return map[int32]string{groups[0].ID: groups[0].Name}, nil
 	}
-	group, err := c.PgConn.Queries.CreateUserGroup(ctx, postgresqlDb.CreateUserGroupParams{
+	group, err := pgClient.CreateUserGroup(ctx, postgresqlDb.CreateUserGroupParams{
 		Name: DefaultUserGroup, CompanyID: c.ID, IsSystem: true})
 	if err != nil {
 		return nil, err
@@ -76,7 +77,6 @@ type User struct {
 	Role                string           `json:"role"`
 	RoleID              int32            `json:"role_id"`
 	PasswordInvalidated bool             `json:"password_invalidated"`
-	PgConn              *PostgresDBConn  `json:"-"`
 }
 
 func MapKeys(input map[int32]string) []int32 {
@@ -96,11 +96,12 @@ func GetEncodedPassword(inputPassword string) string {
 
 func (u *User) LoadFromDb(ctx context.Context) error {
 	// Set ID field and load other fields from db
-	user, err := u.PgConn.Queries.GetUser(ctx, u.ID)
+	pgClient, err := directory.PostgresClient(ctx)
+	user, err := pgClient.GetUser(ctx, u.ID)
 	if err != nil {
 		return err
 	}
-	company, err := u.PgConn.Queries.GetCompany(ctx, user.CompanyID)
+	company, err := pgClient.GetCompany(ctx, user.CompanyID)
 	if err != nil {
 		return err
 	}
@@ -121,7 +122,8 @@ func (u *User) Create(ctx context.Context) (*postgresqlDb.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	user, err := u.PgConn.Queries.CreateUser(ctx, postgresqlDb.CreateUserParams{
+	pgClient, err := directory.PostgresClient(ctx)
+	user, err := pgClient.CreateUser(ctx, postgresqlDb.CreateUserParams{
 		FirstName:           u.FirstName,
 		LastName:            u.LastName,
 		Email:               u.Email,

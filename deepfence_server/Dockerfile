@@ -3,8 +3,10 @@ FROM golang:1.19-alpine3.16 AS build
 ADD deepfence_server /go/deepfence_server/
 ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
+RUN mkdir -p /go/deepfence_agent/tools/apache
+ADD deepfence_agent/tools/apache /go/deepfence_agent/tools/apache
 WORKDIR /go/deepfence_server/
-RUN apk add --no-cache git \
+RUN apk add --no-cache git build-base libpcap-dev libcap-dev \
     && go mod tidy \
     && go build -o /tmp/deepfence_server
 
@@ -18,9 +20,13 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     POSTGRES_USER_DB_PASSWORD=cve \
     POSTGRES_USER_DB_NAME=users \
     POSTGRES_USER_DB_SSLMODE=disable \
-    WORKER_REDIS_HOST=deepfence-redis \
-    WORKER_REDIS_PORT=6379 \
+    REDIS_HOST=deepfence-redis \
+    REDIS_PORT=6379 \
     REDIS_DB_NUMBER=0 \
+    NEO4J_HOST=deepfence-neo4j \
+    NEO4J_BOLT_PORT=7687 \
+    NEO4J_USER=neo4j \
+    NEO4J_PASSWORD=password \
     HTTP_LISTEN_ENDPOINT=8080 \
     SAAS_DEPLOYMENT=false
 

@@ -2,6 +2,7 @@ package directory
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
@@ -28,26 +29,54 @@ type Neo4jConfig struct {
 }
 
 type PosgresConfig struct {
-	Endpoint string
+	Host     string
+	Port     int
 	Username string
 	Password string
 	Database string
+	SslMode  string
 }
 
 type DBConfigs struct {
-	Redis    RedisConfig
+	Redis    *RedisConfig
 	Neo4j    *Neo4jConfig
-	Postgres PosgresConfig
+	Postgres *PosgresConfig
 }
 
 var directory map[NamespaceID]DBConfigs
 
 func init() {
-	redisEndpoint, has := os.LookupEnv("REDIS_ENDPOINT")
-	if !has {
-		redisEndpoint = "localhost:6379"
-		log.Warn().Msgf("REDIS_ENDPOINT defaults to: %v", redisEndpoint)
+	redisEndpoint := os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	var redisDbNumber int
+	var err error
+	redisDbNumberStr := os.Getenv("REDIS_DB_NUMBER")
+	if redisDbNumberStr == "" {
+		redisDbNumber = 0
+	} else {
+		redisDbNumber, err = strconv.Atoi(redisDbNumberStr)
+		if err != nil {
+			redisDbNumber = 0
+		}
 	}
+
+	postgresHost := os.Getenv("POSTGRES_USER_DB_HOST")
+	var postgresPort int
+	postgresPortStr := os.Getenv("POSTGRES_USER_DB_PORT")
+	if postgresPortStr != "" {
+		postgresPort, err = strconv.Atoi(postgresPortStr)
+		if err != nil {
+			postgresPort = 5432
+		}
+	}
+	postgresUsername := os.Getenv("POSTGRES_USER_DB_USER")
+	postgresPassword := os.Getenv("POSTGRES_USER_DB_PASSWORD")
+	postgresDatabase := os.Getenv("POSTGRES_USER_DB_NAME")
+	postgresSslMode := os.Getenv("POSTGRES_USER_DB_SSLMODE")
+
+	neo4jEndpoint := "bolt://" + os.Getenv("NEO4J_HOST") + ":" + os.Getenv("NEO4J_BOLT_PORT")
+	neo4jUsername := os.Getenv("NEO4J_USER")
+	neo4jPassword := os.Getenv("NEO4J_PASSWORD")
 
 	saasMode := false
 	saasModeOn, has := os.LookupEnv("SAAS_MODE")
@@ -61,37 +90,34 @@ func init() {
 
 	if !saasMode {
 		directory[NONSAAS_DIR_KEY] = DBConfigs{
-			Redis: RedisConfig{
+			Redis: &RedisConfig{
 				Endpoint: redisEndpoint,
-				Password: "",
-				Database: 0,
+				Password: redisPassword,
+				Database: redisDbNumber,
 			},
 			Neo4j: &Neo4jConfig{
-				Endpoint: "bolt://localhost:7687",
-				Username: "neo4j",
-				Password: "password",
+				Endpoint: neo4jEndpoint,
+				Username: neo4jUsername,
+				Password: neo4jPassword,
 			},
-			Postgres: PosgresConfig{
-				Endpoint: "localhost:5432",
-				Username: "",
-				Password: "",
-				Database: "default",
-			},
+			Postgres: nil,
 		}
 	}
 
 	directory[GLOBAL_DIR_KEY] = DBConfigs{
-		Redis: RedisConfig{
+		Redis: &RedisConfig{
 			Endpoint: redisEndpoint,
-			Password: "",
-			Database: 0,
+			Password: redisPassword,
+			Database: redisDbNumber,
 		},
 		Neo4j: nil,
-		Postgres: PosgresConfig{
-			Endpoint: "localhost:5432",
-			Username: "",
-			Password: "",
-			Database: "global",
+		Postgres: &PosgresConfig{
+			Host:     postgresHost,
+			Port:     postgresPort,
+			Username: postgresUsername,
+			Password: postgresPassword,
+			Database: postgresDatabase,
+			SslMode:  postgresSslMode,
 		},
 	}
 }

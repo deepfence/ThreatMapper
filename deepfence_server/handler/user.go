@@ -1,15 +1,19 @@
 package handler
 
 import (
-	"context"
 	"fmt"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/render"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
+	httpext "github.com/go-playground/pkg/v5/net/http"
 	"net/http"
 	"regexp"
 	"unicode"
+)
+
+const (
+	MaxPostRequestSize = 100000 // 100 KB
 )
 
 var (
@@ -43,9 +47,9 @@ func ValidateText(text string, minLength, maxLength int, regex *regexp.Regexp, d
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	defer r.Body.Close()
-	err := render.Decode(r, &user)
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &user)
 	if err != nil {
-		render.Respond(w, r, http.StatusBadRequest, model.Response{Success: false})
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
 		return
 	}
 	errorFields := make(model.InvalidFields)
@@ -70,32 +74,31 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		errorFields["password"] = errorMsg
 	}
 	if len(errorFields) > 0 {
-		render.Respond(w, r, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
 		return
 	}
-	// temporary
-	pgConn, err := model.NewPostgresDBConnection()
+	ctx := directory.NewAccountContext()
+	pcClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	emailDomain, _ := model.GetEmailDomain(user.Email)
 	c := model.Company{Name: user.Company, EmailDomain: emailDomain}
-	ctx := context.Background()
 	company, err := c.Create(ctx)
 	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	c.ID = company.ID
 	userGroups, err := c.GetDefaultUserGroup(ctx)
 	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	role, err := pgConn.Queries.GetRoleByName(ctx, model.AdminRole)
+	role, err := pcClient.GetRoleByName(ctx, model.AdminRole)
 	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	u := model.User{
@@ -110,25 +113,24 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		RoleID:              role.ID,
 		PasswordInvalidated: false,
 		Password:            model.GetEncodedPassword(user.Password),
-		PgConn:              pgConn,
 	}
 	createdUser, err := u.Create(ctx)
 	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	u.ID = createdUser.ID
 	accessTokenID, accessToken, err := h.CreatePasswordGrantAccessToken(&user)
 	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	refreshToken, err := h.CreateRefreshToken(accessTokenID, u.ID, GrantTypePassword)
 	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	render.Respond(w, r, http.StatusOK, model.Response{Success: true, Data: model.ResponseAccessToken{
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: model.ResponseAccessToken{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}})
@@ -137,26 +139,22 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	_, claims, err := jwtauth.FromContext(r.Context())
 	if err != nil {
-		render.Respond(w, r, http.StatusBadRequest, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	userID, ok := claims["user_id"].(int64)
 	if !ok {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: "cannot parse jwt"})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: "cannot parse jwt"})
 		return
 	}
-	pgConn, err := model.NewPostgresDBConnection()
+	user := model.User{ID: userID}
+	ctx := directory.NewAccountContext()
+	err = user.LoadFromDb(ctx)
 	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	user := model.User{ID: userID, PgConn: pgConn}
-	err = user.LoadFromDb(r.Context())
-	if err != nil {
-		render.Respond(w, r, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
-		return
-	}
-	render.Respond(w, r, http.StatusOK, model.Response{Success: true, Data: user})
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: user})
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {

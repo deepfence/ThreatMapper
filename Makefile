@@ -15,7 +15,7 @@ DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="3.6.0"
 
-default: certs init-container vulnerability-mapper elasticsearch redis postgres kafka-broker kafka-rest-proxy router api ui fetcher diagnosis agent secretscanner malwarescanner packagescanner
+default: certs init-container vulnerability-mapper redis postgres kafka-broker router server worker ui fetcher agent secretscanner malwarescanner packagescanner
 
 .PHONY: certs
 certs:
@@ -29,10 +29,6 @@ init-container:
 vulnerability-mapper:
 	docker build -f $(VULNERABILITY_MAPPER_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_vulnerability_mapper_ce:$(DF_IMG_TAG) $(VULNERABILITY_MAPPER_DIR)
 
-.PHONY: elasticsearch
-elasticsearch:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_elastic_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/elastic-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
-
 .PHONY: redis
 redis:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/redis-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
@@ -45,17 +41,17 @@ postgres:
 kafka-broker:
 	docker build -t $(IMAGE_REPOSITORY)/deepfence_kafka_broker_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/kafka-broker-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
 
-.PHONY: kafka-rest-proxy
-kafka-rest-proxy:
-	docker build -t $(IMAGE_REPOSITORY)/deepfence_kafka_rest_proxy_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/kafka-rest-proxy-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
-
 .PHONY: router
 router:
 	docker build -f $(DEEPFENCE_BACKEND_DIR)/dockerify/haproxy/Dockerfile --build-arg is_dev_build=$(IS_DEV_BUILD) -t $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG) $(DEEPFENCE_BACKEND_DIR)
 
-.PHONY: api
-api: certs
-	docker build -f $(DEEPFENCE_BACKEND_DIR)/dockerify/api/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_api_ce:$(DF_IMG_TAG) $(DEEPFENCE_BACKEND_DIR)
+.PHONY: server
+server: certs
+	docker build -f $(DEEPFENCE_CONSOLE_DIR)/deepfence_server/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)
+
+.PHONY: worker
+worker:
+	docker build -f $(DEEPFENCE_CONSOLE_DIR)/deepfence_worker/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)
 
 .PHONY: ui
 ui:
@@ -67,10 +63,6 @@ ui:
 .PHONY: fetcher
 fetcher:
 	docker build -f $(DEEPFENCE_FETCHER_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_fetcher_ce:$(DF_IMG_TAG) $(DEEPFENCE_FETCHER_DIR)
-
-.PHONY: diagnosis
-diagnosis:
-	docker build -f $(DEEPFENCE_DIAG_DIR)/service/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_diagnosis_ce:$(DF_IMG_TAG) $(DEEPFENCE_DIAG_DIR)/service
 
 .PHONY: agent
 agent:

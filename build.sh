@@ -45,15 +45,6 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-echo "Creating elastic-search docker image. You can check $DOCKER_BUILD_LOG for status"
-docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-latest} --rm=true -f elastic-Dockerfile .
-
-if [ ! $? -eq 0 ]; then
-    echo "Error while creating elastic-search docker. Check $DOCKER_BUILD_LOG"
-    exit 1
-fi
-
-
 echo "Creating redis docker image. You can check $DOCKER_BUILD_LOG for status"
 docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-latest} --rm=true -f redis-Dockerfile .
 
@@ -78,14 +69,6 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-echo "Building kafka rest proxy"
-docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_rest_proxy_ce:${DF_IMG_TAG:-latest} --rm=true -f kafka-rest-proxy-Dockerfile .
-
-if [ ! $? -eq 0 ]; then
-    echo "Building postgres failed. Exiting"
-    exit 1
-fi
-
 echo "Building deepfence_router image"
 docker build -f $DEEPFENCE_BACKEND_DIR/dockerify/haproxy/Dockerfile --build-arg is_dev_build=${IS_DEV_BUILD:-false} -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_BACKEND_DIR
 
@@ -94,11 +77,19 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-echo "Building API image"
-docker build -f $DEEPFENCE_BACKEND_DIR/dockerify/api/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_BACKEND_DIR
+echo "Building server image"
+docker build -f $DEEPFENCE_CONSOLE_DIR/deepfence_server/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_server_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_CONSOLE_DIR
 
 if [ ! $? -eq 0 ]; then
-    echo "Building API image failed. Exiting"
+    echo "Building server image failed. Exiting"
+    exit 1
+fi
+
+echo "Building worker image"
+docker build -f $DEEPFENCE_CONSOLE_DIR/deepfence_worker/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_CONSOLE_DIR
+
+if [ ! $? -eq 0 ]; then
+    echo "Building worker image failed. Exiting"
     exit 1
 fi
 

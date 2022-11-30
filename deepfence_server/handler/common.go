@@ -3,13 +3,13 @@ package handler
 import (
 	"context"
 	"fmt"
-	"net/http"
-
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks"
+	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/opentracing/opentracing-go"
 	"github.com/ugorji/go/codec"
+	"net/http"
 )
 
 func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
@@ -36,8 +36,7 @@ func (h *Handler) OpenApiDocsHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(apiDocs)
+	httpext.JSONBytes(w, http.StatusOK, apiDocs)
 }
 
 func respondWith(ctx context.Context, w http.ResponseWriter, code int, response interface{}) {

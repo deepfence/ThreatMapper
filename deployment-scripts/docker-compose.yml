@@ -46,35 +46,28 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-
-  deepfence-fetcher:
-    container_name: deepfence-fetcher
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-1.4.1}
+        
+  deepfence-neo4j:
+    container_name: deepfence-neo4j
+    image: neo4j:5.2.0-community
     ulimits:
       core: 0
-    depends_on:
-      - deepfence-postgres
-    networks:
-      - deepfence_net
     restart: on-failure
+    networks:
+    - deepfence_net
+    environment:
+    - NEO4J_dbms_memory_pagecache_size=2600m
+    - NEO4J_dbms.memory.heap.initial_size=3800m
+    - NEO4J_dbms_memory_heap_max__size=3800m
+#    ports:
+#    - "127.0.0.1:7474:7474"
+#    - "127.0.0.1:7687:7687"
     volumes:
-      - deepfence_data:/data:rw
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
-  deepfence-topology:
-    container_name: deepfence-topology
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_discovery_ce:${DF_IMG_TAG:-1.4.1}
-    ulimits:
-      core: 0
-    networks:
-      - deepfence_net
-    ports:
-      - "127.0.0.1:8004:8004"
-    restart: on-failure
-    command: topology
+    - neo4j_data:/data:rw
+    - neo4j_logs:/logs:rw
+    - neo4j_plugins:/plugins:rw
+    depends_on:
+    - deepfence-init-container
     logging:
       driver: "json-file"
       options:
@@ -107,111 +100,6 @@ services:
       options:
         max-size: "1g"
 
-  deepfence-es:
-    container_name: deepfence-es-master
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.1}
-    restart: on-failure
-    networks:
-      - deepfence_net
-    volumes:
-      - deepfence_data:/data:rw
-    environment:
-      - DF_PROG_NAME="es_master"
-      - node.name=deepfence-es
-      #- discovery.seed_hosts=deepfence-es-slave1,deepfence-es-slave2
-      - cluster.initial_master_nodes=deepfence-es
-    ulimits:
-      core: 0
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    cap_add:
-      - IPC_LOCK
-    ports:
-      - "127.0.0.1:9200:9200"
-      - "127.0.0.1:9300:9300"
-    deploy:
-      resources:
-        limits:
-          memory: 4g
-        reservations:
-          memory: 2g
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
-  #  deepfence-es-slave1:
-  #    container_name: deepfence-es-slave1
-  #    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.1}
-  #    restart: on-failure
-  #    networks:
-  #      - deepfence_net
-  #    volumes:
-  #      - deepfence_data:/data:rw
-  #    environment:
-  #      - DF_PROG_NAME="es_slave1"
-  #      - node.name=deepfence-es-slave1
-  #      - discovery.seed_hosts=deepfence-es,deepfence-es-slave2
-  #      - cluster.initial_master_nodes=deepfence-es
-  #    ulimits:
-  #      core: 0
-  #      memlock:
-  #        soft: -1
-  #        hard: -1
-  #      nofile:
-  #        soft: 65536
-  #        hard: 65536
-  #    cap_add:
-  #      - IPC_LOCK
-  #    deploy:
-  #      resources:
-  #        limits:
-  #          memory: 4g
-  #        reservations:
-  #          memory: 2g
-  #    logging:
-  #      driver: "json-file"
-  #      options:
-  #        max-size: "1g"
-  #
-  #  deepfence-es-slave2:
-  #    container_name: deepfence-es-slave2
-  #    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.1}
-  #    restart: on-failure
-  #    networks:
-  #      - deepfence_net
-  #    volumes:
-  #      - deepfence_data:/data:rw
-  #    environment:
-  #      - DF_PROG_NAME="es_slave2"
-  #      - node.name=deepfence-es-slave2
-  #      - discovery.seed_hosts=deepfence-es,deepfence-es-slave1
-  #      - cluster.initial_master_nodes=deepfence-es
-  #    ulimits:
-  #      core: 0
-  #      memlock:
-  #        soft: -1
-  #        hard: -1
-  #      nofile:
-  #        soft: 65536
-  #        hard: 65536
-  #    cap_add:
-  #      - IPC_LOCK
-  #    deploy:
-  #      resources:
-  #        limits:
-  #          memory: 4g
-  #        reservations:
-  #          memory: 2g
-  #    logging:
-  #      driver: "json-file"
-  #      options:
-  #        max-size: "1g"
-
   deepfence-router:
     container_name: deepfence-router
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-1.4.1}
@@ -232,29 +120,9 @@ services:
       options:
         max-size: "1g"
 
-  deepfence-internal-router:
-    container_name: deepfence-internal-router
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-1.4.1}
-    ulimits:
-      core: 0
-    networks:
-      - deepfence_net
-    ports:
-    - "127.0.0.1:8443:443"
-    environment:
-      ENABLE_AUTH: "false"
-      KAFKA_REST_PROXY: "deepfence-rest-proxy:8082"
-    restart: always
-    volumes:
-    - /etc/deepfence/certs:/etc/deepfence/certs/:ro
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
-  deepfence-api:
-    container_name: deepfence-api
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.1}
+  deepfence-server:
+    container_name: deepfence-server
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_server_ce:${DF_IMG_TAG:-1.4.1}
     ulimits:
       core: 0
     tmpfs:
@@ -264,29 +132,6 @@ services:
     networks:
       - deepfence_net
     depends_on:
-      - deepfence-es
-      #- deepfence-es-slave1
-      #- deepfence-es-slave2
-      - deepfence-redis
-      - deepfence-postgres
-    volumes:
-      - /etc/docker/certs.d:/etc/docker/certs.d:ro
-    entrypoint: /app/code/dockerify/api/entrypoint.sh
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
-  deepfence-celery:
-    container_name: deepfence-celery
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.1}
-    ulimits:
-      core: 0
-    entrypoint: /app/code/dockerify/celery/entrypoint.sh
-    restart: on-failure
-    networks:
-      - deepfence_net
-    depends_on:
       - deepfence-redis
       - deepfence-postgres
     volumes:
@@ -296,25 +141,19 @@ services:
       options:
         max-size: "1g"
 
-  deepfence-backend:
-    container_name: deepfence-backend
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.1}
+  deepfence-worker:
+    container_name: deepfence-worker
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.4.1}
     ulimits:
       core: 0
-    entrypoint: /app/code/dockerify/backend/entrypoint.sh
     restart: on-failure
-    environment:
-      - DEBUG=false
-      - KAFKA_BROKERS=deepfence-kafka-broker:9092
-    ports:
-      - "8181:8181"
     networks:
       - deepfence_net
     depends_on:
-      - deepfence-init-container
       - deepfence-redis
       - deepfence-postgres
-      - deepfence-kafka-broker
+    volumes:
+      - /etc/docker/certs.d:/etc/docker/certs.d:ro
     logging:
       driver: "json-file"
       options:
@@ -330,21 +169,6 @@ services:
     restart: on-failure
     depends_on:
       - deepfence-topology
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
-  deepfence-diagnosis:
-    container_name: deepfence-diagnosis
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_diagnosis_ce:${DF_IMG_TAG:-1.4.1}
-    ulimits:
-      core: 0
-    networks:
-      - deepfence_net
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: always
     logging:
       driver: "json-file"
       options:
@@ -428,25 +252,14 @@ services:
       options:
         max-size: "1g"
 
-  deepfence-rest-proxy:
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_rest_proxy_ce:${DF_IMG_TAG:-1.3.0}
-    depends_on:
-      - deepfence-kafka-broker
-    ports:
-      - "127.0.0.1:8082:8082"
-    hostname: deepfence-rest-proxy
-    container_name: deepfence-rest-proxy
-    environment:
-      - KAFKA_REST_BOOTSTRAP_SERVERS=deepfence-kafka-broker:9092
-    networks:
-      - deepfence_net
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
 volumes:
   deepfence_data:
+    driver: local
+  neo4j_data:
+    driver: local
+  neo4j_logs:
+    driver: local
+  neo4j_plugins:
     driver: local
 
 networks:

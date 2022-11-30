@@ -17,12 +17,12 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 replace github.com/ugorji/go => ../deepfence_agent/tools/apache/deepfence/ugorji/go
 
 require (
-	github.com/ajg/form v1.5.1
 	github.com/casbin/casbin/v2 v2.58.0
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/jwtauth/v5 v5.1.0
+	github.com/go-playground/pkg/v5 v5.6.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
@@ -67,6 +67,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
+	github.com/go-playground/form/v4 v4.2.0 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
