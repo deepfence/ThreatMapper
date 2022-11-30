@@ -31,6 +31,7 @@ require (
 	github.com/swaggest/openapi-go v0.2.26
 	github.com/ugorji/go v1.1.4
 	github.com/weaveworks/scope v1.13.2
+	golang.org/x/crypto v0.1.0
 )
 
 require (
@@ -118,7 +119,6 @@ require (
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000 // indirect
 	github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/mod v0.6.0 // indirect
 	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect

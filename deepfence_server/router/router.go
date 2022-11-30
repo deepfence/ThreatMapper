@@ -49,17 +49,20 @@ func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 		})
 
 		// topology apis TODO: remove -api
+		openApiDocs.AddTopologyOperations()
 		r.Route("/topology-api", func(r chi.Router) {
 			r.Post("/report", dfHandler.IngestAgentReport)
 			r.Post("/graph", dfHandler.GetTopologyGraph)
 		})
 
 		// topology apis TODO: remove -api
+		openApiDocs.AddThreatGraphOperations()
 		r.Route("/threat", func(r chi.Router) {
 			r.Post("/graph", dfHandler.GetThreatGraph)
 		})
 
 		// topology apis TODO: remove -api
+		openApiDocs.AddIngestersOperations()
 		r.Route("/df-api/ingest", func(r chi.Router) {
 			r.Post("/cves", dfHandler.IngestCVEReportHandler)
 			r.Post("/secrets", dfHandler.IngestSecretReportHandler)
