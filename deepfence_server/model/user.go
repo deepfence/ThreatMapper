@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/pbkdf2"
@@ -38,8 +37,7 @@ type Company struct {
 	EmailDomain string `json:"email_domain"`
 }
 
-func (c *Company) Create(ctx context.Context) (*postgresqlDb.Company, error) {
-	pgClient, err := directory.PostgresClient(ctx)
+func (c *Company) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.Company, error) {
 	company, err := pgClient.CreateCompany(ctx, postgresqlDb.CreateCompanyParams{Name: c.Name, EmailDomain: c.EmailDomain})
 	if err != nil {
 		return nil, err
@@ -47,8 +45,7 @@ func (c *Company) Create(ctx context.Context) (*postgresqlDb.Company, error) {
 	return &company, nil
 }
 
-func (c *Company) GetDefaultUserGroup(ctx context.Context) (map[int32]string, error) {
-	pgClient, err := directory.PostgresClient(ctx)
+func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries) (map[int32]string, error) {
 	groups, err := pgClient.GetUserGroups(ctx, c.ID)
 	if err != nil {
 		return nil, err
@@ -94,9 +91,8 @@ func GetEncodedPassword(inputPassword string) string {
 	return base64.StdEncoding.EncodeToString(password)
 }
 
-func (u *User) LoadFromDb(ctx context.Context) error {
+func (u *User) LoadFromDb(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	// Set ID field and load other fields from db
-	pgClient, err := directory.PostgresClient(ctx)
 	user, err := pgClient.GetUser(ctx, u.ID)
 	if err != nil {
 		return err
@@ -117,12 +113,11 @@ func (u *User) LoadFromDb(ctx context.Context) error {
 	return nil
 }
 
-func (u *User) Create(ctx context.Context) (*postgresqlDb.User, error) {
+func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {
 	groupIDs, err := json.Marshal(MapKeys(u.Groups))
 	if err != nil {
 		return nil, err
 	}
-	pgClient, err := directory.PostgresClient(ctx)
 	user, err := pgClient.CreateUser(ctx, postgresqlDb.CreateUserParams{
 		FirstName:           u.FirstName,
 		LastName:            u.LastName,

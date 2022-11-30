@@ -46,24 +46,38 @@ type DBConfigs struct {
 var directory map[NamespaceID]DBConfigs
 
 func init() {
-	redisEndpoint := os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT")
+	redisHost, has := os.LookupEnv("REDIS_HOST")
+	if !has {
+		redisHost = "localhost"
+		log.Warn().Msgf("REDIS_HOST defaults to: %v", redisHost)
+	}
+	redisPort, has := os.LookupEnv("REDIS_PORT")
+	if !has {
+		redisPort = "6379"
+		log.Warn().Msgf("REDIS_PORT defaults to: %v", redisPort)
+	}
+	redisEndpoint := redisHost + ":" + redisPort
 	redisPassword := os.Getenv("REDIS_PASSWORD")
-	var redisDbNumber int
+	redisDbNumber := 0
 	var err error
 	redisDbNumberStr := os.Getenv("REDIS_DB_NUMBER")
-	if redisDbNumberStr == "" {
-		redisDbNumber = 0
-	} else {
+	if redisDbNumberStr != "" {
 		redisDbNumber, err = strconv.Atoi(redisDbNumberStr)
 		if err != nil {
 			redisDbNumber = 0
 		}
 	}
 
-	postgresHost := os.Getenv("POSTGRES_USER_DB_HOST")
-	var postgresPort int
+	postgresHost, has := os.LookupEnv("POSTGRES_USER_DB_HOST")
+	if !has {
+		postgresHost = "localhost"
+		log.Warn().Msgf("POSTGRES_USER_DB_HOST defaults to: %v", postgresHost)
+	}
+	postgresPort := 5432
 	postgresPortStr := os.Getenv("POSTGRES_USER_DB_PORT")
-	if postgresPortStr != "" {
+	if postgresPortStr == "" {
+		log.Warn().Msgf("POSTGRES_USER_DB_PORT defaults to: %d", postgresPort)
+	} else {
 		postgresPort, err = strconv.Atoi(postgresPortStr)
 		if err != nil {
 			postgresPort = 5432
@@ -74,7 +88,17 @@ func init() {
 	postgresDatabase := os.Getenv("POSTGRES_USER_DB_NAME")
 	postgresSslMode := os.Getenv("POSTGRES_USER_DB_SSLMODE")
 
-	neo4jEndpoint := "bolt://" + os.Getenv("NEO4J_HOST") + ":" + os.Getenv("NEO4J_BOLT_PORT")
+	neo4jHost, has := os.LookupEnv("NEO4J_HOST")
+	if !has {
+		neo4jHost = "localhost"
+		log.Warn().Msgf("NEO4J_HOST defaults to: %v", neo4jHost)
+	}
+	neo4jBoltPort, has := os.LookupEnv("NEO4J_BOLT_PORT")
+	if !has {
+		neo4jBoltPort = "7687"
+		log.Warn().Msgf("NEO4J_BOLT_PORT defaults to: %v", neo4jBoltPort)
+	}
+	neo4jEndpoint := "bolt://" + neo4jHost + ":" + neo4jBoltPort
 	neo4jUsername := os.Getenv("NEO4J_USER")
 	neo4jPassword := os.Getenv("NEO4J_PASSWORD")
 

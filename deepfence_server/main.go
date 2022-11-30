@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"net/http"
 	"os"
 	"os/signal"
@@ -88,25 +89,25 @@ func initialize() (Config, error) {
 }
 
 func initializeDatabase() error {
-	ctx := context.Background()
-	pgConn, err := model.NewPostgresDBConnection()
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
 	}
-	roles, err := pgConn.Queries.GetRoles(ctx)
+	roles, err := pgClient.GetRoles(ctx)
 	if err != nil {
 		return err
 	}
 	if len(roles) == 0 {
-		_, err = pgConn.Queries.CreateRole(ctx, model.AdminRole)
+		_, err = pgClient.CreateRole(ctx, model.AdminRole)
 		if err != nil {
 			return err
 		}
-		_, err = pgConn.Queries.CreateRole(ctx, model.UserRole)
+		_, err = pgClient.CreateRole(ctx, model.UserRole)
 		if err != nil {
 			return err
 		}
-		_, err = pgConn.Queries.CreateRole(ctx, model.ReadOnlyRole)
+		_, err = pgClient.CreateRole(ctx, model.ReadOnlyRole)
 		if err != nil {
 			return err
 		}

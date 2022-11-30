@@ -77,26 +77,26 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
 		return
 	}
-	ctx := directory.NewAccountContext()
-	pcClient, err := directory.PostgresClient(ctx)
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	emailDomain, _ := model.GetEmailDomain(user.Email)
 	c := model.Company{Name: user.Company, EmailDomain: emailDomain}
-	company, err := c.Create(ctx)
+	company, err := c.Create(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	c.ID = company.ID
-	userGroups, err := c.GetDefaultUserGroup(ctx)
+	userGroups, err := c.GetDefaultUserGroup(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	role, err := pcClient.GetRoleByName(ctx, model.AdminRole)
+	role, err := pgClient.GetRoleByName(ctx, model.AdminRole)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
@@ -114,7 +114,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		PasswordInvalidated: false,
 		Password:            model.GetEncodedPassword(user.Password),
 	}
-	createdUser, err := u.Create(ctx)
+	createdUser, err := u.Create(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
@@ -148,8 +148,9 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := model.User{ID: userID}
-	ctx := directory.NewAccountContext()
-	err = user.LoadFromDb(ctx)
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	err = user.LoadFromDb(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
