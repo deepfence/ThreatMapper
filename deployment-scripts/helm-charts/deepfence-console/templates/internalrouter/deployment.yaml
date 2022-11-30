@@ -67,6 +67,18 @@ spec:
               value: "false"
             - name: OPERATING_MODE
               value: "k8s"
+            - name: KAFKA_REST_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret-{{ include "deepfence-console.fullname" . }}
+                  key: kafka_rest_proxy
+            {{- if .Values.saas_deployment }}
+            - name: CUSTOMER_UNIQUE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: "es-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: es_customer_unique_id
+            {{- end }}
           volumeMounts:
           {{- if or .Values.tls.secretName (and .Values.tls.cert .Values.tls.key) }}
           - name: certs

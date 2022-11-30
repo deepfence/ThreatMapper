@@ -68,6 +68,9 @@ export const ADMIN_SIDE_NAV_MENU_COLLECTION = [
     name: 'Secrets', menuIcon: "nav-icon-secret", isActive: false, link: '/secret-scan'
   },
   {
+    name: 'Malwares', menuIcon: "nav-icon-malware", isActive: false, link: '/malware-scan'
+  },
+  {
     name: 'Posture', menuIcon: 'icon-compliance', isActive: false, link: '/compliance'
   },
   {
@@ -90,6 +93,9 @@ export const USER_SIDE_NAV_MENU_COLLECTION = [
   },
   {
     name: 'Secrets', menuIcon: "nav-icon-secret", isActive: false, link: '/secret-scan'
+  },
+  {
+    name: 'Malwares', menuIcon: "nav-icon-malware", isActive: false, link: '/malware-scan'
   },
   {
     name: 'Posture', menuIcon: 'icon-compliance', isActive: false, link: '/compliance'

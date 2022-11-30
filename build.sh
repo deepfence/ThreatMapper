@@ -9,6 +9,7 @@ DEEPFENCE_DIAG_DIR=$(pwd)/deepfence_diagnosis
 DEEPFENCE_FETCHER_DIR=$DEEPFENCE_CONSOLE_DIR/fetcher
 VULNERABILITY_MAPPER_DIR=$(pwd)/vulnerability_mapper
 SECRET_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/SecretScanner/
+MALWARE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/YaraHunter/
 PACKAGE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/package-scanner/
 
 cd $DEEPFENCE_AGENT_DIR/plugins
@@ -69,6 +70,22 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
+echo "Building kafka broker"
+docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-latest} --rm=true -f kafka-broker-Dockerfile .
+
+if [ ! $? -eq 0 ]; then
+    echo "Building postgres failed. Exiting"
+    exit 1
+fi
+
+echo "Building kafka rest proxy"
+docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_rest_proxy_ce:${DF_IMG_TAG:-latest} --rm=true -f kafka-rest-proxy-Dockerfile .
+
+if [ ! $? -eq 0 ]; then
+    echo "Building postgres failed. Exiting"
+    exit 1
+fi
+
 echo "Building deepfence_router image"
 docker build -f $DEEPFENCE_BACKEND_DIR/dockerify/haproxy/Dockerfile --build-arg is_dev_build=${IS_DEV_BUILD:-false} -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_BACKEND_DIR
 
@@ -121,11 +138,20 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
+echo "Building Malware Scanner Image"
+cd $MALWARE_SCANNER_DIR
+bash bootstrap.sh
+docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-latest} -f $MALWARE_SCANNER_DIR/Dockerfile $MALWARE_SCANNER_DIR
+if [ ! $? -eq 0 ]; then
+    echo "Building malware scanner image failed. Exiting"
+    exit 1
+fi
+
 echo "Building Package Scanner Image"
 cd $PACKAGE_SCANNER_DIR
 docker build --rm=true --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-latest} -f $PACKAGE_SCANNER_DIR/Dockerfile $PACKAGE_SCANNER_DIR
 if [ ! $? -eq 0 ]; then
-    echo "Building secret scanner image failed. Exiting"
+    echo "Building package scanner image failed. Exiting"
     exit 1
 fi
 

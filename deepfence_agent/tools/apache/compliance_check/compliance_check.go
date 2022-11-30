@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/internal/deepfence"
-	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/util"
-	dfUtils "github.com/deepfence/df-utils"
 	"os"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/internal/deepfence"
+	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/util"
+	dfUtils "github.com/deepfence/df-utils"
 )
 
 var (
@@ -139,7 +140,8 @@ func main() {
 		addToAllLog("Error initializing df client " + err.Error())
 		os.Exit(1)
 	}
-	err = dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
+	// err = dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
+	err = dfClient.WriteScanStatusToFile(dfLogDir, "", "QUEUED", 0, resultMap)
 	if err != nil {
 		addToAllLog("Error in sending Queued status to console" + err.Error())
 	}
@@ -147,7 +149,8 @@ func main() {
 	command := ""
 	stopLoggingInProgress := make(chan bool)
 	go func() {
-		err := dfClient.SendScanStatustoConsole("", "INPROGRESS", 0, resultMap)
+		// err := dfClient.SendScanStatustoConsole("", "INPROGRESS", 0, resultMap)
+		err := dfClient.WriteScanStatusToFile(dfLogDir, "", "INPROGRESS", 0, resultMap)
 		if err != nil {
 			addToAllLog("Error in sending in progress status to console" + err.Error())
 		}
@@ -155,7 +158,8 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				err := dfClient.SendScanStatustoConsole("", "SCAN_IN_PROGRESS", 0, resultMap)
+				// err := dfClient.SendScanStatustoConsole("", "SCAN_IN_PROGRESS", 0, resultMap)
+				err := dfClient.WriteScanStatusToFile(dfLogDir, "", "SCAN_IN_PROGRESS", 0, resultMap)
 				if err != nil {
 					addToAllLog("Error in sending inProgress status to console" + err.Error())
 				}
@@ -168,7 +172,8 @@ func main() {
 	logErrorAndExit := func(errMsg string) {
 		stopLoggingInProgress <- true
 		time.Sleep(2 * time.Second)
-		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		// err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		err := dfClient.WriteScanStatusToFile(dfLogDir, errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			addToAllLog("Error in sending Error status to console" + err.Error())
 		}
@@ -196,9 +201,10 @@ func main() {
 	time.Sleep(2 * time.Second)
 	addToAllLog(command)
 	if err != nil {
-		errMsg := fmt.Sprintf(err.Error())
+		errMsg := err.Error()
 		addToAllLog("Error from executing command: " + command + ", error:" + errMsg)
-		err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		// err := dfClient.SendScanStatustoConsole(errMsg, "ERROR", 0, resultMap)
+		err := dfClient.WriteScanStatusToFile(dfLogDir, errMsg, "ERROR", 0, resultMap)
 		if err != nil {
 			addToAllLog("Error in sending Error status to console" + err.Error())
 		}
@@ -251,11 +257,13 @@ func main() {
 			scanResult[compScan.Status] += 1
 		}
 	}
-	err = dfClient.SendComplianceResultToConsole(complianceScanResults)
+	// err = dfClient.SendComplianceResultToConsole(complianceScanResults)
+	err = dfClient.WriteComplianceResultToFile(dfLogDir, complianceScanResults)
 	if err != nil {
 		addToAllLog("Error in sending Compliance Result to console" + err.Error())
 	}
-	err = dfClient.SendScanStatustoConsole("", "COMPLETED", scanResult["pass"]+scanResult["info"]+scanResult["warn"]+scanResult["note"], scanResult)
+	// err = dfClient.SendScanStatustoConsole("", "COMPLETED", scanResult["pass"]+scanResult["info"]+scanResult["warn"]+scanResult["note"], scanResult)
+	err = dfClient.WriteScanStatusToFile(dfLogDir, "", "COMPLETED", scanResult["pass"]+scanResult["info"]+scanResult["warn"]+scanResult["note"], scanResult)
 	if err != nil {
 		addToAllLog("Error in send completed scan status to console:" + err.Error())
 	}
@@ -292,7 +300,7 @@ func readIgnoreFile(fileName string) []string {
 }
 
 func addToAllLog(message string) {
-	file, _ := os.OpenFile(dfLogDir+"/compliance-scan-logs/allLog.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	file, _ := os.OpenFile(dfLogDir+"/compliance-scan.logfile", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	dfUtils.AppendTextToFile(file, message+"\n")
 	file.Close()
 }

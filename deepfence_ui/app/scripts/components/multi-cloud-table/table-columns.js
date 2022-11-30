@@ -56,6 +56,19 @@ const hostColumns = [
   },
 },
 {
+  Header: 'malware scan',
+  accessor: 'malware_scan_status',
+  Cell: ({ original }) => {
+
+    const { malware_scan_status, is_ui_vm } = original;
+    // for UI VMs, secrets scan is not available
+    if (is_ui_vm === 'true') {
+      return <span className="scan-status not-available">Not Applicable</span>;
+    }
+    return <ScanStatus status={malware_scan_status} />;
+  },
+},
+{
   Header: 'OS',
   accessor: 'os',
   maxWidth: 60
@@ -111,7 +124,16 @@ const containerColumns = [{
     const { secret_scan_status } = original;
     return <ScanStatus status={secret_scan_status} />;
   },
-}];
+},
+{
+  Header: 'malware scan',
+  accessor: 'malware_scan_status',
+  Cell: ({ original }) => {
+    const { malware_scan_status } = original;
+    return <ScanStatus status={malware_scan_status} />;
+  },
+}
+];
 
 const setNameColumnWidth = (columns, depth, type) => {
   columns.map((column) => {

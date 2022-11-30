@@ -6,7 +6,7 @@ from utils.esconn import ESConn
 from utils.common import get_rounding_time_unit
 from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, COMPLIANCE_INDEX, NODE_TYPE_HOST, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, NODE_TYPE_POD, DEEPFENCE_SUPPORT_EMAIL, TIME_UNIT_MAPPING, \
-    ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE, COMPLIANCE_ES_TYPE, \
+    ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, MALWARE_SCAN_INDEX, SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE, COMPLIANCE_ES_TYPE, \
     NODE_TYPE_LINUX,CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE,CLOUD_COMPLIANCE_ES_TYPE
 from utils.esconn import ESConn
 from utils.helper import modify_es_index
@@ -23,13 +23,20 @@ header_fields = {
     "secret-scan-source": ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
                            'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type'],
     "secret-scan-header": ['Filename', 'Content', 'Name', 'Rule', 'Severity', 'Node Name', 'Container Name',
-                           'Kubernetes Cluster Name', 'NodeType']
+                           'Kubernetes Cluster Name', 'NodeType'],
+    "malware-scan-source": ['Match.full_filename', 'Match.matched_strings', 'rule_name', 'severity',
+                           'meta', 'meta_rules', 'file_severity_score', 'file_severity', 'summary', 'node_name',
+                           'container_name', 'kubernetes_cluster_name', 'node_type'],
+    "malware-scan-header": ['Filename', 'Content', 'Rule Name', 'Severity', 'Meta', 'Meta Rules', 
+                            'File Severity Score', 'File Severity' , 'Summary', 'Node Name', 'Container Name',
+                            'Kubernetes Cluster Name', 'NodeType']
 }
 
 sheet_name = {
     CVE_ES_TYPE: "Vulnerability",
     COMPLIANCE_ES_TYPE: "Compliance",
-    SECRET_SCAN_ES_TYPE: "Secrets"
+    SECRET_SCAN_ES_TYPE: "Secrets",
+    MALWARE_SCAN_ES_TYPE: "Malwares"
 }
 
 
@@ -170,10 +177,12 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     wb = xlsxwriter.Workbook(buffer, {'in_memory': True, 'strings_to_urls': False, 'strings_to_formulas': False})
     for resource in resources:
         resource_type = resource.get('type')
-        if resource_type not in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
+        if resource_type not in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE]:
             continue
         if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-header"]
+        if resource_type == MALWARE_SCAN_ES_TYPE:
+            headers = header_fields["malware-scan-header"]
         else:
             headers = header_fields[resource_type]
         ws = wb.add_worksheet(sheet_name[resource_type])
@@ -190,6 +199,9 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
         # here changing the header to default format to align with the code
         if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-source"]
+        # here changing the header to default format to align with the code
+        if resource_type == MALWARE_SCAN_ES_TYPE:
+            headers = header_fields["malware-scan-source"]
 
         if not filtered_node_list and no_node_filters_set is False:
             # User is trying to filter and download report for old node, which does not exist now
@@ -246,6 +258,52 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
 
                 if "aggregations" in aggs_response:
                     for image_aggr in aggs_response["aggregations"]["cve_container_image"]["buckets"]:
+                        latest_scan_id = ""
+                        latest_scan_time = 0
+                        for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
+                            if scan_id_aggr["scan_recent_timestamp"]["value"] > latest_scan_time:
+                                latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
+                                latest_scan_id = scan_id_aggr["key"]
+                        cve_scan_id_list.append(latest_scan_id)
+        elif resource_type == MALWARE_SCAN_ES_TYPE:
+            if "scan_id" not in resource_filter:
+                aggs = {
+                    "node_name": {
+                        "terms": {
+                            "field": "node_name.keyword",
+                            "size": ES_TERMS_AGGR_SIZE
+                        },
+                        "aggs": {
+                            "scan_id": {
+                                "terms": {
+                                    "field": "scan_id.keyword",
+                                    "size": ES_TERMS_AGGR_SIZE
+                                },
+                                "aggs": {
+                                    "scan_recent_timestamp": {
+                                        "max": {
+                                            "field": "@timestamp"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                filter_for_scan = {}
+                if len(filters.get("type", [])) != 0:
+                    filter_for_scan["node_type"] = filters.get("type")
+                if len(filters.get("host_name", [])) != 0:
+                    filter_for_scan["node_name"] = filters.get("host_name")
+                if len(filters.get("image_name_with_tag", [])) != 0:
+                    filter_for_scan["node_name"] = filters.get("image_name_with_tag")
+                if len(filters.get("container_name", [])) != 0:
+                    filter_for_scan["container_name"] = filters.get("container_name")
+                aggs_response = ESConn.aggregation_helper(
+                    MALWARE_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
+                )
+                if "aggregations" in aggs_response:
+                    for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
                         latest_scan_id = ""
                         latest_scan_time = 0
                         for scan_id_aggr in image_aggr["scan_id"]["buckets"]:

@@ -27,7 +27,9 @@ ENV ENABLE_AUTH=true \
     VULNERABILITY_MAPPER_SERVICE_HOST=deepfence-vulnerability-mapper \
     VULNERABILITY_MAPPER_SERVICE_PORT=8001 \
     FETCHER_SERVICE_HOST=deepfence-fetcher \
-    FETCHER_SERVICE_PORT=8006
+    FETCHER_SERVICE_PORT=8006 \
+    CUSTOMER_UNIQUE_ID="" \
+    KAFKA_REST_PROXY=deepfence-rest-proxy:8082
 
 COPY --from=minica-builder /go/minica.pem /usr/local/etc/haproxy/deepfence.crt
 COPY --from=minica-builder /go/minica-key.pem /usr/local/etc/haproxy/deepfence.key

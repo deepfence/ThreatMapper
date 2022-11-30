@@ -45,6 +45,10 @@ const resourceCollection = [
     name: 'Compliances',
     value: COMPLIANCE,
   },
+  {
+    name: 'Malwares',
+    value: 'malware-scan',
+  },
 ];
 
 const durationOption = [
