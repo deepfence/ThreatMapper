@@ -122,7 +122,6 @@ func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	if scanIdArg, ok := req.ControlArgs["scan_id"]; ok {
 		scanId = scanIdArg
 	}
-	log.Infof("container name %s ", containerName)
 	log.Infof("uploading %s tar to console...", imageName)
 	// call package scanner plugin
 	go func() {
