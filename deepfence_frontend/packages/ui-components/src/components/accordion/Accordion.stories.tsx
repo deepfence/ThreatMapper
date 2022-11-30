@@ -12,7 +12,11 @@ export default {
   component: Accordion,
 } as ComponentMeta<typeof Accordion>;
 
-const Items = [`Lorem Ipsum is simply dummy text of the printing and typesetting industry.`, 'Item 2', 'Item 3'];
+const Items = [
+  `Lorem Ipsum is simply dummy text of the printing and typesetting industry.`,
+  'Item 2',
+  'Item 3',
+];
 
 const DefaultTemplate: ComponentStory<typeof Accordion> = (args) => {
   return (
