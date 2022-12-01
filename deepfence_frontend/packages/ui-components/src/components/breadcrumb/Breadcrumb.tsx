@@ -8,28 +8,26 @@ import { twMerge } from 'tailwind-merge';
 import { Typography } from '../typography/Typography';
 
 type BreadcrumbLinkType = {
-  asChild: boolean;
   children: React.ReactNode;
+  asChild?: boolean;
   icon?: React.ReactNode;
   isLast?: boolean;
   separator?: React.ReactNode;
 };
 
-type BreadCrumbType = {
-  children: React.ReactNode[];
+type BreadCrumbProps = {
+  children: React.ReactNode | React.ReactNode[];
   separator?: React.ReactNode;
 };
 
-export function BreadcrumbLink({
-  asChild,
-  children,
-  icon,
-  isLast,
-  separator,
-}: BreadcrumbLinkType) {
-  const Comp = asChild ? Slot : 'span';
+export const BreadcrumbLink = React.forwardRef<
+  React.ElementRef<'button'>,
+  BreadcrumbLinkType
+>(({ asChild, children, icon, isLast, separator, ...props }, forwardedRef) => {
+  const Comp = asChild ? Slot : 'button';
   return (
     <Comp
+      {...props}
       className={twMerge(
         cx(
           `inline-flex items-center leading-[21px] item-center`,
@@ -40,6 +38,7 @@ export function BreadcrumbLink({
           },
         ),
       )}
+      ref={forwardedRef}
     >
       {icon && (
         <IconContext.Provider
@@ -63,25 +62,28 @@ export function BreadcrumbLink({
       )}
     </Comp>
   );
-}
+});
 
-export const Breadcrumb = ({ children, separator }: BreadCrumbType) => {
+export const Breadcrumb = ({ children, separator }: BreadCrumbProps) => {
   const childrenEl = React.Children.map<React.ReactNode, React.ReactNode>(
     children,
     function (child: React.ReactNode, index) {
-      const isLast = index === children.length - 1;
-
+      const isLast = index === React.Children.count(children) - 1;
       if (!React.isValidElement<BreadcrumbLinkType>(child)) {
         return child;
       }
 
       let elementChild: React.ReactElement<BreadcrumbLinkType> = child;
       if (child.props.children) {
-        elementChild = React.cloneElement<BreadcrumbLinkType>(elementChild, {
-          separator,
-          isLast,
-          ...child.props,
-        });
+        elementChild = React.cloneElement(
+          elementChild,
+          {
+            separator,
+            isLast,
+            ...child.props,
+          },
+          child.props.children,
+        );
       }
       return elementChild;
     },
