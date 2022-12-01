@@ -54,7 +54,7 @@ redis:
 
 .PHONY: postgres
 postgres:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_postgres_ce:$(DF_IMG_TAG) -f deepfence_postgres/postgres-Dockerfile ./deepfence_postgres
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_postgres_ce:$(DF_IMG_TAG) -f deepfence_postgres/Dockerfile ./deepfence_postgres
 
 .PHONY: kafka-broker
 kafka-broker:

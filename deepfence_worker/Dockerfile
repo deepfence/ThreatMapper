@@ -12,8 +12,8 @@ LABEL deepfence.role=system
 
 ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     POSTGRES_USER_DB_PORT=5432 \
-    POSTGRES_USER_DB_USER=cve \
-    POSTGRES_USER_DB_PASSWORD=cve \
+    POSTGRES_USER_DB_USER=deepfence \
+    POSTGRES_USER_DB_PASSWORD=deepfence \
     POSTGRES_USER_DB_NAME=users \
     POSTGRES_USER_DB_SSLMODE=disable \
     REDIS_HOST=deepfence-redis \

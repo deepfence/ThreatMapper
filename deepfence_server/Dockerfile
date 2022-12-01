@@ -15,8 +15,8 @@ LABEL deepfence.role=system
 
 ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     POSTGRES_USER_DB_PORT=5432 \
-    POSTGRES_USER_DB_USER=cve \
-    POSTGRES_USER_DB_PASSWORD=cve \
+    POSTGRES_USER_DB_USER=deepfence \
+    POSTGRES_USER_DB_PASSWORD=deepfence \
     POSTGRES_USER_DB_NAME=users \
     POSTGRES_USER_DB_SSLMODE=disable \
     REDIS_HOST=deepfence-redis \
@@ -30,10 +30,14 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     SAAS_DEPLOYMENT=false
 
 ADD deepfence_server/auth /auth
+ADD deepfence_utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 RUN apk add --no-cache --update bash curl libpcap \
     && apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main \
-    && chmod +x /entrypoint.sh
+    && chmod +x /entrypoint.sh \
+    && curl -L "https://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.tar.gz" | tar xvz \
+    && mv migrate /usr/local/bin/migrate \
+    && chmod +x /usr/local/bin/migrate
 COPY --from=build /go/deepfence_server/deepfence_server /usr/local/bin/deepfence_server
 
 EXPOSE 8080
