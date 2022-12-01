@@ -71,6 +71,12 @@ func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 			r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
 		})
 
+		r.Route("/scan/start", func(r chi.Router) {
+			r.Post("/cves", dfHandler.StartCVEScanHandler)
+			r.Post("/secrets", dfHandler.StartSecretScanHandler)
+			r.Post("/compliances", dfHandler.StartComplianceScanHandler)
+		})
+
 		// authenticated apis
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(tokenAuth))

@@ -6,9 +6,41 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 )
+
+func (h *Handler) StartCVEScanHandler(w http.ResponseWriter, r *http.Request) {
+	start_scan(w, r, ctl.StartCVEScan)
+}
+
+func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
+	start_scan(w, r, ctl.StartSecretScan)
+}
+
+func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
+	start_scan(w, r, ctl.StartComplianceScan)
+}
+
+func start_scan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
+	node_id := r.Form.Get("node_id")
+	if node_id == "" {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	ctx := directory.NewAccountContext()
+	controls.SetAgentActions(ctx, node_id, []ctl.Action{
+		{
+			ID:             action,
+			RequestPayload: nil,
+		},
+	})
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Ok")
+}
 
 func (h *Handler) IngestCVEReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCVEIngester()
