@@ -10,7 +10,7 @@ import { TextInput } from './TextInput';
 describe(`Component TextInput`, () => {
   it(`render with placehoder, label, onChange, startIcon, endIcon, helperText`, () => {
     const onChange = vi.fn();
-    const { getByTestId, getByPlaceholderText, getByRole } = renderUI(
+    const { getByTestId, getByPlaceholderText, getByText, getByLabelText } = renderUI(
       <TextInput
         placeholder="test@email.com"
         id="id"
@@ -23,17 +23,9 @@ describe(`Component TextInput`, () => {
     );
     expect(getByPlaceholderText('test@email.com')).toBeInTheDocument();
 
-    expect(
-      getByRole('label', {
-        name: 'Email',
-      }),
-    ).toBeInTheDocument();
+    expect(getByLabelText('Email')).toBeInTheDocument();
 
-    expect(
-      getByRole('label', {
-        name: 'Email length should not exceed 50 characters',
-      }),
-    ).toBeInTheDocument();
+    expect(getByText('Email length should not exceed 50 characters')).toBeInTheDocument();
 
     const textInput = getByTestId('textinput-id');
     const textInputStartIcon = getByTestId('textinput-start-icon-id');

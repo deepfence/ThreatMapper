@@ -1,4 +1,3 @@
-import * as LabelPrimitive from '@radix-ui/react-label';
 import cx from 'classnames';
 import { FC } from 'react';
 import { twMerge } from 'tailwind-merge';
@@ -29,7 +28,7 @@ export const classes = {
 
 export const HelperText: FC<Props> = ({ text, sizing = 'sm', color, className }) => {
   return (
-    <LabelPrimitive.Root
+    <p
       className={twMerge(
         cx(
           `${Typography.weight.normal} ${classes.color[color]}`,
@@ -39,7 +38,7 @@ export const HelperText: FC<Props> = ({ text, sizing = 'sm', color, className })
       )}
     >
       {text}
-    </LabelPrimitive.Root>
+    </p>
   );
 };
 
