@@ -40,7 +40,7 @@ const classes = {
   },
 };
 
-export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
+export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
   (
     {
       label,

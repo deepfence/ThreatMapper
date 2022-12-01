@@ -9,7 +9,7 @@ import { TextInputArea } from './TextInputArea';
 describe(`Component TextInputArea`, () => {
   it(`render with placehoder, label, onChange, startIcon, endIcon, helperText, style width`, () => {
     const onChange = vi.fn();
-    const { getByTestId, getByPlaceholderText, getByRole } = renderUI(
+    const { getByTestId, getByPlaceholderText, getByText, getByLabelText } = renderUI(
       <TextInputArea
         placeholder="test@email.com"
         id="id"
@@ -21,17 +21,9 @@ describe(`Component TextInputArea`, () => {
     );
     expect(getByPlaceholderText('test@email.com')).toBeInTheDocument();
 
-    expect(
-      getByRole('label', {
-        name: 'Comments',
-      }),
-    ).toBeInTheDocument();
+    expect(getByLabelText('Comments')).toBeInTheDocument();
 
-    expect(
-      getByRole('label', {
-        name: 'Put your comments',
-      }),
-    ).toBeInTheDocument();
+    expect(getByText('Put your comments')).toBeInTheDocument();
 
     const textInputArea = getByTestId('textinputarea-id');
 
