@@ -2996,7 +2996,7 @@ export function getMalwareScanReportChart(params) {
 }
 
 
-export function getMalwareScanClassReportChart(params) {
+export function getMalwareClassesChartReport(params) {
   const { globalSearchQuery = [] } = params;
 
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(globalSearchQuery));
@@ -3048,7 +3048,7 @@ export function getMalwareScanChartData(params, dispatch) {
   });
 }
 
-export function getMalwareScanClassChartData(params, dispatch) {
+export function getMalwareClassesChartData(params, dispatch) {
   let url = `${backendElasticApiEndPoint()}/malware/class/malware_severity_chart?number=${params.number
   }&time_unit=${params.time_unit}`;
   if (params.lucene_query.length !== 0) {
