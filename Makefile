@@ -3,7 +3,7 @@ PWD=$(shell pwd)
 DEEPFENCE_CONSOLE_DIR=$(PWD)/deepfence_console
 DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
 DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
-DEEPFENCE_UI_DIR=$(PWD)/deepfence_ui
+DEEPFENCE_FRONTEND_DIR=$(PWD)/deepfence_frontend
 DEEPFENCE_DIAG_DIR=$(PWD)/deepfence_diagnosis
 DEEPFENCE_FETCHER_DIR=$(DEEPFENCE_CONSOLE_DIR)/fetcher
 VULNERABILITY_MAPPER_DIR=$(PWD)/vulnerability_mapper
@@ -70,14 +70,10 @@ worker:
 
 .PHONY: ui
 ui:
-	git log --format="%h" -n 1 > $(DEEPFENCE_UI_DIR)/console_version.txt && \
-	echo $(VERSION) > $(DEEPFENCE_UI_DIR)/product_version.txt && \
-	docker build -f $(DEEPFENCE_UI_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_UI_DIR) && \
-	rm -rf $(DEEPFENCE_UI_DIR)/console_version.txt $(DEEPFENCE_UI_DIR)/product_version.txt
-
-#.PHONY: fetcher
-#fetcher:
-#	docker build -f $(DEEPFENCE_FETCHER_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_fetcher_ce:$(DF_IMG_TAG) $(DEEPFENCE_FETCHER_DIR)
+	git log --format="%h" -n 1 > $(DEEPFENCE_FRONTEND_DIR)/console_version.txt && \
+	echo $(VERSION) > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
+	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
+	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
 
 .PHONY: secretscanner
 secretscanner: bootstrap-agent-plugins
