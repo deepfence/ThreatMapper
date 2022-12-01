@@ -15,9 +15,9 @@ DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="3.6.0"
 
-default: console console_plugins agent
+default: console_plugins agent console
 
-.PHONY: console console_plugins agent
+.PHONY: console_plugins agent console
 console: certs vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins
 
 console_plugins: secretscanner malwarescanner packagescanner
