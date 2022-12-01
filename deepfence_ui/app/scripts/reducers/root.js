@@ -1747,6 +1747,44 @@ export function rootReducer(state = initialState, action) {
           'No data available');
       }
 
+      case ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_REQUEST: {
+        return state.setIn(['malwareClassesReport', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareClassesReport', 'status', 'loading'], false);
+        return state.setIn(['malwareClassesReport', 'data'], data);
+      }
+  
+      case ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_FAILURE: {
+        state = state.setIn(['malwareClassesReport', 'status', 'loading'], false);
+        state = state.setIn(['malwareClassesReport', 'data'], null);
+        return state.setIn(['malwareClassesReport', 'status', 'error'],
+          'No data available');
+      }
+  
+      case ActionTypes.MALWARE_CLASSES_CHART_REQUEST: {
+        return state.setIn(['malwareClassesChart', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.MALWARE_CLASSES_CHART_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareClassesChart', 'status', 'loading'], false);
+        return state.setIn(['malwareClassesChart', 'data'], data);
+      }
+  
+      case ActionTypes.MALWARE_CLASSES_CHART_FAILURE: {
+        state = state.setIn(['malwareClassesChart', 'status', 'loading'], false);
+        state = state.setIn(['malwareClassesChart', 'data'], null);
+        return state.setIn(['malwareClassesChart', 'status', 'error'],
+          'No data available');
+      }
+
     case ActionTypes.START_SCAN_COMPLIANCE_SUCCESS: {
       const {
         payload: { data, error },

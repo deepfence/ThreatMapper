@@ -24,6 +24,7 @@ import { InventoryServicesView } from './inventory/services';
 import { AttackGraph } from './attack-graph';
 import MalwareScanHome from './malware-scan-view/index';
 import MalwareScanResultsView from './malware-scan-view/malware-scan-results-view';
+import MalwareClassesResultsView from './malware-scan-view/malware-classes-results-view';
 
 import LoginView from './auth-module/login-view/login-view';
 import RegisterView from './auth-module/register-view/register-view';
@@ -176,6 +177,10 @@ class DeepFenceApp extends React.Component {
             <PrivateRoute
               path="/malware-scan/details/:scanId"
               component={MalwareScanResultsView}
+            />
+            <PrivateRoute
+              path="/malware-scan/details/:scanId"
+              component={MalwareClassesResultsView}
             />
             <PrivateRoute path="/malware-scan" component={MalwareScanHome} />
             <Route
