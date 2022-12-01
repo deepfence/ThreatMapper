@@ -139,6 +139,8 @@ services:
       - deepfence-redis
       - deepfence-postgres
       - deepfence-neo4j
+    ports:
+      - "8080:8080"
     volumes:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
     logging:
