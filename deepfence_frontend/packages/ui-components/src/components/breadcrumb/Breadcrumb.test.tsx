@@ -1,24 +1,26 @@
 import '@testing-library/jest-dom';
 
+import { forwardRef } from 'react';
 import { HiHome } from 'react-icons/hi';
 import { describe, expect, it } from 'vitest';
 
 import { renderUI } from '../../tests/utils';
 import { Breadcrumb, BreadcrumbLink } from './Breadcrumb';
 
-const Link = ({
-  children,
-  className,
-  testid,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  testid?: string;
-}) => (
-  <a href="/test" className={className} data-testid={testid}>
-    {children}
-  </a>
-);
+export const Link = forwardRef<
+  HTMLAnchorElement,
+  {
+    children: React.ReactNode;
+    testid?: string;
+    className?: string;
+  }
+>(({ children, className, testid }, forwardedRef) => {
+  return (
+    <a href="/test" className={className} ref={forwardedRef} data-testid={testid}>
+      {children}
+    </a>
+  );
+});
 
 describe(`Component Breadcrumb`, () => {
   it(`render correct number of breadcrumbs with icons`, () => {

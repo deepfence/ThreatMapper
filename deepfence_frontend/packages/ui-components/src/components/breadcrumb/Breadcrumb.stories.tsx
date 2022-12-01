@@ -1,4 +1,5 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { forwardRef } from 'react';
 import { HiChevronDoubleRight, HiHome } from 'react-icons/hi';
 
 import { Breadcrumb, BreadcrumbLink } from './Breadcrumb';
@@ -8,17 +9,19 @@ export default {
   component: Breadcrumb,
 } as ComponentMeta<typeof Breadcrumb>;
 
-const Link = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => (
-  <a href="/test" className={className}>
-    {children}
-  </a>
-);
+export const Link = forwardRef<
+  HTMLAnchorElement,
+  {
+    children: React.ReactNode;
+    className?: string;
+  }
+>(({ children, className }, forwardedRef) => {
+  return (
+    <a href="/test" className={className} ref={forwardedRef}>
+      {children}
+    </a>
+  );
+});
 
 const Template: ComponentStory<typeof Breadcrumb> = ({ separator }) => (
   <Breadcrumb separator={separator}>
