@@ -1,10 +1,28 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable react/destructuring-assignment */
 import React, { useRef } from 'react';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
+import Tippy from '@tippyjs/react';
 import { List } from 'react-virtualized';
 import useClickAway from 'react-use/lib/useClickAway';
 import Portal from "@reach/portal";
+
+const Option = (props) => {
+  const ref = useRef()
+  const span = ref.current;
+  const parentWidth = span?.parentElement?.clientWidth ?? 0;
+
+  return (
+    <Tippy
+      disabled={((span?.firstChild?.scrollWidth) ?? 0) <= parentWidth}
+      content={props.children}
+      placement="top-start">
+      <span ref={ref}>
+        <components.Option {...props}>{props.children}</components.Option>
+      </span>
+    </Tippy>
+  );
+};
 
 const Menu = props => {
   const ref = useRef(null);
@@ -241,6 +259,7 @@ class DFSearchableSelect extends React.Component {
           components={{
             DropdownIndicator,
             IndicatorSeparator: null,
+            Option,
             // if there are more than 50 opitons, switch to Virtualized list
             ...(options && options.length > 50
               ? { MenuList: VirtualizedList }

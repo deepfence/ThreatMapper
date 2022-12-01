@@ -10,7 +10,7 @@ The ThreatMapper Management Console ("Console") is a standalone application, imp
 
 Review the architecture for the Management Console, as described in [Architecture: Management Console](/docs/threatmapper/architecture/console).
 
-Review the requirements for the Management Console, as described in [System Requirements](/docs/threatmapper/architecture/requirements).
+Review the requirements for the Management Console, as described in [System Requirements](/docs/threatmapper/console/requirements).
 
 
 ## Installing the Management Console

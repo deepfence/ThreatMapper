@@ -13,8 +13,10 @@ from utils.common import get_epochtime
 from utils.constants import FILTER_TYPE_IMAGE_NAME_WITH_TAG, CVE_ES_TYPE, USER_DEFINED_TAGS, \
     NODE_TYPE_POD, FILTER_TYPE_HOST_NAME, FILTER_TYPE_IMAGE_NAME, FILTER_TYPE_KUBE_CLUSTER_NAME, \
     FILTER_TYPE_KUBE_NAMESPACE, FILTER_TYPE_TAGS, NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
-    CLOUDTRAIL_ALERT_ES_TYPE
+    CLOUDTRAIL_ALERT_ES_TYPE, COMPLIANCE_ES_TYPE, COMPLIANCE_LINUX_HOST, COMPLIANCE_TYPE_ASFF_MAPPING, \
+    COMPLIANCE_STATUS_ASFF_MAPPING
 import datetime
+from utils.scope import fetch_topology_data
 
 
 @celery_app.task
@@ -455,6 +457,134 @@ def send_google_chronicle_notification(self, chronicle_endpoint_conf, payload, n
                 "HTTP Endpoint notification failed. url:[{}], error:[{}]".format(chronicle_endpoint_conf["api_url"],
                                                                                  exc))
             save_integrations_status(notification_id, resource_type, "Error in HTTP endpoint: {0}".format(exc))
+
+
+def map_payload_to_findings(payload, resource_type, region, account_id):
+    findings = []
+    if resource_type == CVE_ES_TYPE:
+        hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="scope")
+        for cve in payload:
+            resources = []
+            if cve["node_type"] == NODE_TYPE_HOST:
+                scope_resource = hosts.get("{};<{}>".format(cve["host_name"], cve["node_type"]), None)
+                if scope_resource:
+                    cloud_metadata = list(filter(lambda x: x["id"] == "cloud_metadata",
+                                                 scope_resource.get("metadata", [])))
+                    if cloud_metadata:
+                        try:
+                            cloud_metadata_value = json.loads(cloud_metadata[0]["value"])
+                            resources.append({
+                                "Type": "AwsEc2Instance",
+                                "Id": "arn:aws:ec2:{}:{}:instance/{}".format(cloud_metadata_value["region"],
+                                                                             account_id,
+                                                                             cloud_metadata_value["instance_id"])
+                            })
+                        except ValueError:
+                            continue
+                    else:
+                        continue
+                else:
+                    continue
+            package_name = ""
+            package_version = ""
+            package_split = cve["cve_caused_by_package"].split(":", 1)
+            if package_split:
+                package_name = package_split[0]
+                package_version = package_split[1]
+
+            findings.append({
+                "ProductArn": "arn:aws:securityhub:{region}:{account_id}:product/{account_id}/default".format(
+                    region=region, account_id=account_id
+                ),
+                "AwsAccountId": account_id,
+                "CreatedAt": cve["@timestamp"],
+                "Description": cve["cve_description"],
+                "Title": cve["cve_id"],
+                "UpdatedAt": cve["@timestamp"],
+                "GeneratorId": "deepfence-vulnerability-mapper-v1-0",
+                "Id": "{}/{}/{}".format(region, account_id, cve["doc_id"]),
+                "Resources": resources,
+                "SchemaVersion": "2018-10-08",
+                "Severity": {"Label": cve["cve_severity"].upper(), "Original": str(cve["cve_cvss_score"])},
+                "Types": ["Software and Configuration Checks/Vulnerabilities/CVE"],
+                "Vulnerabilities": [{
+                    "Id": cve["cve_id"],
+                    "ReferenceUrls": [cve["cve_link"]],
+                    "VulnerablePackages": [{
+                        "Name": package_name,
+                        "Version": package_version,
+                    }]
+                }]
+            })
+        return findings
+    elif resource_type == COMPLIANCE_ES_TYPE:
+        hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="scope")
+        for compliance in payload:
+            resources = []
+            if compliance.get("compliance_node_type", "") == COMPLIANCE_LINUX_HOST:
+                scope_resource = hosts.get(compliance["node_id"], None)
+                if scope_resource:
+                    cloud_metadata = list(filter(lambda x: x["id"] == "cloud_metadata",
+                                                 scope_resource.get("metadata", [])))
+                    if cloud_metadata:
+                        try:
+                            cloud_metadata_value = json.loads(cloud_metadata[0]["value"])
+                            resources.append({
+                                "Type": "AwsEc2Instance",
+                                "Id": "arn:aws:ec2:{}:{}:instance/{}".format(cloud_metadata_value["region"],
+                                                                             account_id,
+                                                                             cloud_metadata_value["instance_id"])
+                            })
+                        except ValueError:
+                            continue
+                    else:
+                        continue
+                else:
+                    continue
+            findings.append({
+                "ProductArn": "arn:aws:securityhub:{region}:{account_id}:product/{account_id}/default".format(
+                    region=region, account_id=account_id
+                ),
+                "AwsAccountId": account_id,
+                "CreatedAt": compliance["@timestamp"],
+                "Description": compliance["description"],
+                "Title": compliance["test_category"],
+                "UpdatedAt": compliance["@timestamp"],
+                "GeneratorId": "deepfence-compliance-v1-0",
+                "Id": "{}/{}/{}".format(region, account_id, compliance["doc_id"]),
+                "Resources": resources,
+                "SchemaVersion": "2018-10-08",
+                "Severity": {"Label": compliance["status"].upper(), "Original": str(compliance["test_severity"])},
+                "Types": [COMPLIANCE_TYPE_ASFF_MAPPING.get(compliance["compliance_check_type"])],
+                "Compliance": {
+                    "Status": COMPLIANCE_STATUS_ASFF_MAPPING.get(compliance["status"])
+                }
+            })
+        return findings
+    else:
+        return findings
+
+
+@celery_app.task(bind=True, default_retry_delay=1 * 60)
+def send_aws_security_hub_notification(self, security_hub_conf, payload, notification_id, resource_type):
+    with app.app_context():
+        try:
+            import boto3
+
+            def default(o):
+                if isinstance(o, (datetime.date, datetime.datetime)):
+                    return o.isoformat()
+
+            security_hub_client = boto3.client('securityhub', aws_access_key_id=security_hub_conf["aws_access_key"],
+                                               region_name=security_hub_conf["region_name"],
+                                               aws_secret_access_key=security_hub_conf["aws_secret_key"])
+            findings = map_payload_to_findings(payload, resource_type, security_hub_conf["region_name"],
+                                               security_hub_conf["aws_account_id"][0])
+            security_hub_client.batch_import_findings(Findings=findings)
+            save_integrations_status(notification_id, resource_type, "")
+        except Exception as exc:
+            app.logger.error("Security Hub notification failed, error:[{}]".format(exc))
+            save_integrations_status(notification_id, resource_type, "Error in Security Hub: {0}".format(exc))
 
 
 @celery_app.task(bind=True, default_retry_delay=1 * 60)

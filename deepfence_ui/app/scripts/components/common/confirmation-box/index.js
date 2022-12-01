@@ -20,6 +20,7 @@ const renderRadioInput = ({ name, label, value, id } = {}) => (
       justifyContent: 'flex-start',
       alignItems: 'center',
     }}
+    key={id}
   >
     <Field component="input" type="radio" name={name} value={value} id={id} />
     <span className="label">{label}</span>

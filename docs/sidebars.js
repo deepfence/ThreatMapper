@@ -33,7 +33,6 @@ const sidebars = {
         'threatmapper/architecture/console',
         'threatmapper/architecture/cloudscanner',
         'threatmapper/architecture/sensors',
-        'threatmapper/architecture/requirements',
         'threatmapper/architecture/threatgraph',
       ],
     },
@@ -55,6 +54,7 @@ const sidebars = {
             id: 'threatmapper/console/index'
           },
           items: [
+            'threatmapper/console/requirements',
             'threatmapper/console/docker',
             'threatmapper/console/kubernetes',
             'threatmapper/console/managed-database',

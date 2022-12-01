@@ -41,7 +41,7 @@ func newReverseResolver() *reverseResolver {
 }
 
 // get the reverse resolution for an IP address if already in the cache, a
-// gcache.NotFoundKeyError error otherwise.
+// gcache.KeyNotFoundError error otherwise.
 func (r *reverseResolver) get(address string) ([]string, error) {
 	val, err := r.cache.Get(address)
 	if hostnames, ok := val.([]string); err == nil && ok {
@@ -50,7 +50,7 @@ func (r *reverseResolver) get(address string) ([]string, error) {
 	if _, ok := val.(struct{}); err == nil && ok {
 		return nil, errNotFound
 	}
-	if err == gcache.NotFoundKeyError {
+	if err == gcache.KeyNotFoundError {
 		// We trigger a asynchronous reverse resolution when not cached.
 		select {
 		case r.addresses <- address:

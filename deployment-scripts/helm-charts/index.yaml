@@ -3,6 +3,21 @@ entries:
   deepfence-agent:
   - apiVersion: v2
     appVersion: 1.4.1
+    created: "2022-11-15T22:32:51.803963+05:30"
+    dependencies:
+    - condition: deployKubernetesScanner
+      name: deepfence-k8s-scanner
+      repository: https://deepfence-helm-charts.s3.amazonaws.com/deepfence-k8s-scanner
+      version: 0.1.0
+    description: Deepfence Agent - Helm chart for Kubernetes
+    digest: 7447d51446d52b1ad4426eec56a8e405c6a963d9934cf948d566bf0036f70aea
+    name: deepfence-agent
+    type: application
+    urls:
+    - deepfence-agent-1.4.8.tgz
+    version: 1.4.8
+  - apiVersion: v2
+    appVersion: 1.4.1
     created: "2022-10-20T20:58:56.059281+05:30"
     dependencies:
     - condition: deployKubernetesScanner
@@ -147,6 +162,16 @@ entries:
     - deepfence-agent-1.0.0.tgz
     version: 1.0.0
   deepfence-console:
+  - apiVersion: v2
+    appVersion: 1.4.1
+    created: "2022-11-15T22:32:51.807447+05:30"
+    description: Deepfence Console - Helm chart for Kubernetes
+    digest: f476ebb0d4d4d2b61197f5eb7814c9e63410e25bbfde52e5d88dc2ccbf38ca9e
+    name: deepfence-console
+    type: application
+    urls:
+    - deepfence-console-1.4.8.tgz
+    version: 1.4.8
   - apiVersion: v2
     appVersion: 1.4.1
     created: "2022-10-20T20:58:56.06389+05:30"
@@ -310,6 +335,16 @@ entries:
   deepfence-router:
   - apiVersion: v2
     appVersion: 1.4.1
+    created: "2022-11-15T22:32:51.809063+05:30"
+    description: Deepfence Router - Helm chart for Kubernetes
+    digest: 07552c54469dbe886ca245e14ee50190ac0dd73ce29ae9a6f8f3a886e4d464be
+    name: deepfence-router
+    type: application
+    urls:
+    - deepfence-router-1.4.8.tgz
+    version: 1.4.8
+  - apiVersion: v2
+    appVersion: 1.4.1
     created: "2022-09-29T20:36:22.211172+05:30"
     description: Deepfence Router - Helm chart for Kubernetes
     digest: 6c2e861f4715e479da7c8b47d061ce632bd259fca9c1646affbe85d474990fcb
@@ -388,4 +423,4 @@ entries:
     urls:
     - deepfence-router-1.0.0.tgz
     version: 1.0.0
-generated: "2022-10-20T20:58:56.057993+05:30"
+generated: "2022-11-15T22:32:51.802598+05:30"
