@@ -38,7 +38,7 @@ type PosgresConfig struct {
 }
 
 type DBConfigs struct {
-	Redis    *RedisConfig
+	Redis    RedisConfig
 	Neo4j    *Neo4jConfig
 	Postgres *PosgresConfig
 }
@@ -46,6 +46,39 @@ type DBConfigs struct {
 var directory map[NamespaceID]DBConfigs
 
 func init() {
+
+	redisCfg := init_redis()
+
+	posgresCfg := init_posgres()
+
+	neo4jCfg := init_neo4j()
+
+	saasMode := false
+	saasModeOn, has := os.LookupEnv("SAAS_MODE")
+	if !has {
+		log.Warn().Msg("SAAS_MODE defaults to: off")
+	} else if saasModeOn == "on" {
+		saasMode = true
+	}
+
+	directory = map[NamespaceID]DBConfigs{}
+
+	if !saasMode {
+		directory[NONSAAS_DIR_KEY] = DBConfigs{
+			Redis:    redisCfg,
+			Neo4j:    &neo4jCfg,
+			Postgres: nil,
+		}
+	}
+
+	directory[GLOBAL_DIR_KEY] = DBConfigs{
+		Redis:    redisCfg,
+		Neo4j:    nil,
+		Postgres: &posgresCfg,
+	}
+}
+
+func init_redis() RedisConfig {
 	redisHost, has := os.LookupEnv("REDIS_HOST")
 	if !has {
 		redisHost = "localhost"
@@ -67,7 +100,15 @@ func init() {
 			redisDbNumber = 0
 		}
 	}
+	return RedisConfig{
+		Endpoint: redisEndpoint,
+		Password: redisPassword,
+		Database: redisDbNumber,
+	}
+}
 
+func init_posgres() PosgresConfig {
+	var err error
 	postgresHost, has := os.LookupEnv("POSTGRES_USER_DB_HOST")
 	if !has {
 		postgresHost = "localhost"
@@ -88,6 +129,17 @@ func init() {
 	postgresDatabase := os.Getenv("POSTGRES_USER_DB_NAME")
 	postgresSslMode := os.Getenv("POSTGRES_USER_DB_SSLMODE")
 
+	return PosgresConfig{
+		Host:     postgresHost,
+		Port:     postgresPort,
+		Username: postgresUsername,
+		Password: postgresPassword,
+		Database: postgresDatabase,
+		SslMode:  postgresSslMode,
+	}
+}
+
+func init_neo4j() Neo4jConfig {
 	neo4jHost, has := os.LookupEnv("NEO4J_HOST")
 	if !has {
 		neo4jHost = "localhost"
@@ -101,47 +153,9 @@ func init() {
 	neo4jEndpoint := "bolt://" + neo4jHost + ":" + neo4jBoltPort
 	neo4jUsername := os.Getenv("NEO4J_USER")
 	neo4jPassword := os.Getenv("NEO4J_PASSWORD")
-
-	saasMode := false
-	saasModeOn, has := os.LookupEnv("SAAS_MODE")
-	if !has {
-		log.Warn().Msg("SAAS_MODE defaults to: off")
-	} else if saasModeOn == "on" {
-		saasMode = true
-	}
-
-	directory = map[NamespaceID]DBConfigs{}
-
-	if !saasMode {
-		directory[NONSAAS_DIR_KEY] = DBConfigs{
-			Redis: &RedisConfig{
-				Endpoint: redisEndpoint,
-				Password: redisPassword,
-				Database: redisDbNumber,
-			},
-			Neo4j: &Neo4jConfig{
-				Endpoint: neo4jEndpoint,
-				Username: neo4jUsername,
-				Password: neo4jPassword,
-			},
-			Postgres: nil,
-		}
-	}
-
-	directory[GLOBAL_DIR_KEY] = DBConfigs{
-		Redis: &RedisConfig{
-			Endpoint: redisEndpoint,
-			Password: redisPassword,
-			Database: redisDbNumber,
-		},
-		Neo4j: nil,
-		Postgres: &PosgresConfig{
-			Host:     postgresHost,
-			Port:     postgresPort,
-			Username: postgresUsername,
-			Password: postgresPassword,
-			Database: postgresDatabase,
-			SslMode:  postgresSslMode,
-		},
+	return Neo4jConfig{
+		Endpoint: neo4jEndpoint,
+		Username: neo4jUsername,
+		Password: neo4jPassword,
 	}
 }

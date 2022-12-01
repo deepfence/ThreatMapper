@@ -25,14 +25,14 @@ func RedisClient(ctx context.Context) (*redis.Client, error) {
 	return get_client(ctx, redis_clients_pool, new_redis_client)
 }
 
-func GetRedisConfig(ctx context.Context) (*RedisConfig, error) {
+func GetRedisConfig(ctx context.Context) (RedisConfig, error) {
 	namespace, err := ExtractNamespace(ctx)
 	if err != nil {
-		return nil, err
+		return RedisConfig{}, err
 	}
 	endpoints, has := directory[namespace]
 	if !has {
-		return nil, errors.New("Missing direcotry entry")
+		return RedisConfig{}, errors.New("Missing direcotry entry")
 	}
 	return endpoints.Redis, nil
 }
