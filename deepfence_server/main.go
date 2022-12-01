@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	verbosity   = flag.String("verbose", "info", "log level")
-	openapiDocs = flag.Bool("api-docs", false, "serve openapi documentation")
+	verbosity        = flag.String("verbose", "info", "log level")
+	serveOpenapiDocs = flag.Bool("api-docs", true, "serve openapi documentation")
 )
 
 type Config struct {
@@ -45,7 +45,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	err = router.SetupRoutes(r, config.HttpListenEndpoint, *openapiDocs)
+	err = router.SetupRoutes(r, config.HttpListenEndpoint, *serveOpenapiDocs)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return

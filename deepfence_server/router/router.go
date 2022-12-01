@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
+func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 	// JWT
 	tokenAuth := getTokenAuth()
 
@@ -42,7 +42,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, deployOpenapiDocs bool) error {
 			r.Post("/user/register", dfHandler.RegisterUser)
 			r.Post("/auth/token", dfHandler.ApiAuthHandler)
 			r.Post("/user/login", dfHandler.LoginHandler)
-			if deployOpenapiDocs {
+			if serveOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi-docs", serverPort)
 				r.Get("/openapi-docs", dfHandler.OpenApiDocsHandler)
 			}
