@@ -15,15 +15,23 @@ DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="3.6.0"
 
-default: certs init-container vulnerability-mapper redis postgres kafka-broker router server worker ui fetcher agent secretscanner malwarescanner packagescanner
+default: console console_plugins agent
+
+.PHONY: console console_plugins agent
+console: certs vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins
+
+console_plugins: secretscanner malwarescanner packagescanner
+
+agent: agent
+
 
 .PHONY: certs
 certs:
-	cd $(DEEPFENCE_CONSOLE_DIR) && bash generate_certs.sh && cd -
+	(cd $(DEEPFENCE_CONSOLE_DIR) && bash generate_certs.sh)
 
-.PHONY: init-container
-init-container:
-	docker build -f $(DEEPFENCE_CONSOLE_DIR)/init-container/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_init_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)/init-container
+#.PHONY: init-container
+#init-container:
+#	docker build -f $(DEEPFENCE_CONSOLE_DIR)/init-container/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_init_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)/init-container
 
 .PHONY: vulnerability-mapper
 vulnerability-mapper:
@@ -31,15 +39,15 @@ vulnerability-mapper:
 
 .PHONY: redis
 redis:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/redis-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG) -f deepfence_redis/redis-Dockerfile ./deepfence_redis
 
 .PHONY: postgres
 postgres:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_postgres_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/postgres-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_postgres_ce:$(DF_IMG_TAG) -f deepfence_postgres/postgres-Dockerfile ./deepfence_postgres
 
 .PHONY: kafka-broker
 kafka-broker:
-	docker build -t $(IMAGE_REPOSITORY)/deepfence_kafka_broker_ce:$(DF_IMG_TAG) -f $(DEEPFENCE_CONSOLE_DIR)/kafka-broker-Dockerfile $(DEEPFENCE_CONSOLE_DIR)
+	docker build -t $(IMAGE_REPOSITORY)/deepfence_kafka_broker_ce:$(DF_IMG_TAG) -f ./deepfence_kafka/kafka-broker-Dockerfile ./deepfence_kafka
 
 .PHONY: router
 router:
@@ -47,11 +55,11 @@ router:
 
 .PHONY: server
 server: certs
-	docker build -f $(DEEPFENCE_CONSOLE_DIR)/deepfence_server/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)
+	docker build -f ./deepfence_server/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) .
 
 .PHONY: worker
 worker:
-	docker build -f $(DEEPFENCE_CONSOLE_DIR)/deepfence_worker/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)
+	docker build -f ./deepfence_worker/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) .
 
 .PHONY: ui
 ui:
@@ -60,20 +68,19 @@ ui:
 	docker build -f $(DEEPFENCE_UI_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_UI_DIR) && \
 	rm -rf $(DEEPFENCE_UI_DIR)/console_version.txt $(DEEPFENCE_UI_DIR)/product_version.txt
 
-.PHONY: fetcher
-fetcher:
-	docker build -f $(DEEPFENCE_FETCHER_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_fetcher_ce:$(DF_IMG_TAG) $(DEEPFENCE_FETCHER_DIR)
+#.PHONY: fetcher
+#fetcher:
+#	docker build -f $(DEEPFENCE_FETCHER_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_fetcher_ce:$(DF_IMG_TAG) $(DEEPFENCE_FETCHER_DIR)
 
 .PHONY: agent
 agent:
-	cd $(DEEPFENCE_AGENT_DIR) && \
-	export IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" && \
-	bash build.sh && cd -
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
 
 .PHONY: bootstrap-agent-plugins
 bootstrap-agent-plugins:
-	cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh && cd - && \
-	cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh && cd - 
+	cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh && cd -
+	cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh && cd -
 	cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh && cd -
 
 .PHONY: secretscanner
@@ -85,6 +92,5 @@ malwarescanner: bootstrap-agent-plugins
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG) -f $(MALWARE_SCANNER_DIR)/Dockerfile $(MALWARE_SCANNER_DIR)
 
 .PHONY: packagescanner
-packagescanner:	
+packagescanner:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
-

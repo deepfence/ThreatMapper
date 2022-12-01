@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine3.15 AS minica-builder
+FROM golang:1.19-alpine3.15 AS minica-builder
 COPY minica.go /go
 COPY genCert.sh /go
 WORKDIR /go

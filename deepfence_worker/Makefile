@@ -7,4 +7,7 @@ vendor:
 deepfence_worker: ./*.go ./**/*.go
 	go build
 
-.PHONY: vendor
+clean:
+	rm deepfence_worker
+
+.PHONY: vendor clean
