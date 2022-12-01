@@ -48,22 +48,19 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 			}
 		})
 
-		// topology apis TODO: remove -api
 		openApiDocs.AddTopologyOperations()
-		r.Route("/topology-api", func(r chi.Router) {
+		r.Route("/topology", func(r chi.Router) {
 			r.Post("/report", dfHandler.IngestAgentReport)
 			r.Post("/graph", dfHandler.GetTopologyGraph)
 		})
 
-		// topology apis TODO: remove -api
 		openApiDocs.AddThreatGraphOperations()
 		r.Route("/threat", func(r chi.Router) {
 			r.Post("/graph", dfHandler.GetThreatGraph)
 		})
 
-		// topology apis TODO: remove -api
 		openApiDocs.AddIngestersOperations()
-		r.Route("/df-api/ingest", func(r chi.Router) {
+		r.Route("/ingest", func(r chi.Router) {
 			r.Post("/cves", dfHandler.IngestCVEReportHandler)
 			r.Post("/secrets", dfHandler.IngestSecretReportHandler)
 			r.Post("/compliance", dfHandler.IngestComplianceReportHandler)
@@ -71,10 +68,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 			r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
 		})
 
+		openApiDocs.AddScansOperations()
 		r.Route("/scan/start", func(r chi.Router) {
-			r.Post("/cves", dfHandler.StartCVEScanHandler)
-			r.Post("/secrets", dfHandler.StartSecretScanHandler)
-			r.Post("/compliances", dfHandler.StartComplianceScanHandler)
+			r.Get("/cves", dfHandler.StartCVEScanHandler)
+			r.Get("/secrets", dfHandler.StartSecretScanHandler)
+			r.Get("/compliances", dfHandler.StartComplianceScanHandler)
 		})
 
 		// authenticated apis

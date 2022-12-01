@@ -1,18 +1,24 @@
 package apiDocs
 
 import (
+	"net/http"
+
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/swaggest/openapi-go/openapi3"
-	"net/http"
 )
 
 const (
-	tagAuthentication = "Authentication"
-	tagCommon         = "Common"
-	tagCompliance     = "Compliance"
-	tagTopology       = "Topology"
-	tagSecretScan     = "Secret Scan"
-	tagVulnerability  = "Vulnerability"
+	tagAuthentication  = "Authentication"
+	tagCommon          = "Common"
+	tagCompliance      = "Compliance"
+	tagCloudCompliance = "CloudCompliance"
+	tagCloudResources  = "CloudResources"
+	tagTopology        = "Topology"
+	tagThreat          = "Threat"
+	tagSecretScan      = "Secret Scan"
+	tagVulnerability   = "Vulnerability"
+
+	securityName = "bearer_token"
 )
 
 type UnauthorizedResponse struct {
@@ -60,6 +66,18 @@ func InitializeOpenAPIReflector() *OpenApiDocs {
 			Tags:     []openapi3.Tag{{Name: tagAuthentication}, {Name: tagCommon}, {Name: tagCompliance}, {Name: tagTopology}, {Name: tagSecretScan}, {Name: tagVulnerability}},
 		},
 	}
+
+	reflector.SpecEns().ComponentsEns().SecuritySchemesEns().WithMapOfSecuritySchemeOrRefValuesItem(
+		securityName,
+		openapi3.SecuritySchemeOrRef{
+			SecurityScheme: &openapi3.SecurityScheme{
+				HTTPSecurityScheme: (&openapi3.HTTPSecurityScheme{}).
+					WithScheme("bearer").
+					WithBearerFormat("JWT").
+					WithDescription("RW Access"),
+			},
+		},
+	)
 
 	return &OpenApiDocs{reflector: reflector, unauthorizedResponse: &UnauthorizedResponse{}}
 }
