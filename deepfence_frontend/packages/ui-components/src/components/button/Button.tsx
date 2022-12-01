@@ -2,7 +2,7 @@ import cx from 'classnames';
 import React, { ComponentProps, useId } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 export type ButtonShape = 'default';
 export type ColorType = 'default' | 'primary' | 'danger' | 'success';

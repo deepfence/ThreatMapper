@@ -8,7 +8,7 @@ import {
   getRowExpanderColumn,
   getRowSelectionColumn,
   Table,
-} from './Table';
+} from '@/components/table/Table';
 
 export default {
   title: 'Components/Table',

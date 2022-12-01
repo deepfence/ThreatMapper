@@ -5,7 +5,7 @@ import { IconContext } from 'react-icons';
 import { HiChevronRight } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 type BreadcrumbLinkType = {
   children: React.ReactNode;

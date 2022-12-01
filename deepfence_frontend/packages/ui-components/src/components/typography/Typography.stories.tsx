@@ -2,7 +2,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import cx from 'classnames';
 import React from 'react';
 
-import { Typography } from './Typography';
+import { Typography } from '@/components/typography/Typography';
 
 const Dummy = () => null;
 

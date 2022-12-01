@@ -2,7 +2,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 import { AiOutlineMail } from 'react-icons/ai';
 
-import { Select, SelectItem } from './Select';
+import { Select, SelectItem } from '@/components/select/Select';
 
 export default {
   title: 'Components/Select',

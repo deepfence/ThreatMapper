@@ -2,8 +2,8 @@ import * as LabelPrimitive from '@radix-ui/react-label';
 import cx from 'classnames';
 import { ComponentProps, forwardRef, useId } from 'react';
 
-import { Typography } from '../typography/Typography';
-import HelperText from './HelperText';
+import HelperText from '@/components/input/HelperText';
+import { Typography } from '@/components/typography/Typography';
 
 export type SizeType = 'sm' | 'md';
 export type ColorType = 'default' | 'error' | 'success';

@@ -1,8 +1,8 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 
-import Button from '../button/Button';
-import { Tooltip } from './Tooltip';
+import Button from '@/components/button/Button';
+import { Tooltip } from '@/components/tooltip/Tooltip';
 
 export default {
   title: 'Components/Tooltip',

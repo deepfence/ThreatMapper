@@ -2,7 +2,7 @@ import { CheckedState } from '@radix-ui/react-checkbox';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 
-import { Checkbox } from './Checkbox';
+import { Checkbox } from '@/components/checkbox/Checkbox';
 
 export default {
   title: 'Components/Checkbox',

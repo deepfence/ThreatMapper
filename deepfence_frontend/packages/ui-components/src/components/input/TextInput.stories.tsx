@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { AiOutlineCheck, AiOutlineMail } from 'react-icons/ai';
 
-import TextInput from './TextInput';
+import TextInput from '@/components/input/TextInput';
 
 export default {
   title: 'Components/TextInput',

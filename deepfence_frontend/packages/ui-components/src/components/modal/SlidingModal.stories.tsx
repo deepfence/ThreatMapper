@@ -1,8 +1,8 @@
 import { ComponentMeta } from '@storybook/react';
 import { useRef, useState } from 'react';
 
-import Button from '../button/Button';
-import SlidingModal from './SlidingModal';
+import Button from '@/components/button/Button';
+import SlidingModal from '@/components/modal/SlidingModal';
 
 export default {
   title: 'Components/SlidingModal',

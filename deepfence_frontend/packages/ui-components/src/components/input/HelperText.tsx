@@ -2,7 +2,7 @@ import cx from 'classnames';
 import { FC } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 export type ColorType = 'default' | 'error' | 'success';
 export type SizeType = 'sm' | 'md';

@@ -5,7 +5,7 @@ import { IconContext } from 'react-icons';
 import { HiX } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 export type SizeType = 'sm' | 'md';
 export type ColorType = 'default' | 'primary' | 'success' | 'danger';

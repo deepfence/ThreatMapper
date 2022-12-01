@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { FaAmazon } from 'react-icons/fa';
 
-import Button from './Button';
+import Button from '@/components/button/Button';
 
 export default {
   title: 'Components/Button',

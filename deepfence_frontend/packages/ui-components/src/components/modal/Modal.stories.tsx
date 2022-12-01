@@ -1,8 +1,8 @@
 import { ComponentMeta } from '@storybook/react';
 import { useRef, useState } from 'react';
 
-import Button from '../button/Button';
-import Modal from './Modal';
+import Button from '@/components/button/Button';
+import Modal from '@/components/modal/Modal';
 
 export default {
   title: 'Components/Modal',

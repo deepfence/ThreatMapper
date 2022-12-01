@@ -13,7 +13,7 @@ import { IconContext } from 'react-icons';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 export type SizeType = 'sm' | 'md';
 export type ColorType = 'default' | 'error' | 'success';

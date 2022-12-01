@@ -1,8 +1,8 @@
 import cx from 'classnames';
 
-import { Tooltip } from './components/tooltip/Tooltip';
-import { Typography } from './components/typography/Typography';
-import { ThemeProvider, useThemeMode } from './theme/ThemeContext';
+import { Tooltip } from '@/components/tooltip/Tooltip';
+import { Typography } from '@/components/typography/Typography';
+import { ThemeProvider, useThemeMode } from '@/theme/ThemeContext';
 
 function App() {
   const { toggleMode } = useThemeMode(true);

@@ -5,7 +5,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from './Accordion';
+} from '@/components/accordion/Accordion';
 
 export default {
   title: 'Components/Accordion',
