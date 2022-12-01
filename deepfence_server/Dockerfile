@@ -6,9 +6,8 @@ ADD deepfence_utils /go/deepfence_utils/
 RUN mkdir -p /go/deepfence_agent/tools/apache
 ADD deepfence_agent/tools/apache /go/deepfence_agent/tools/apache
 WORKDIR /go/deepfence_server/
-RUN apk add --no-cache git build-base libpcap-dev libcap-dev \
-    && go mod tidy \
-    && go build -o /tmp/deepfence_server
+RUN apk add --no-cache git build-base libpcap-dev libcap-dev
+RUN make
 
 FROM alpine:3.16
 MAINTAINER Deepfence Inc
@@ -32,10 +31,10 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
 
 ADD deepfence_server/auth /auth
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
-RUN apk add --no-cache --update bash curl \
+RUN apk add --no-cache --update bash curl libpcap \
     && apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main \
     && chmod +x /entrypoint.sh
-COPY --from=build /tmp/deepfence_server /usr/local/bin/deepfence_server
+COPY --from=build /go/deepfence_server/deepfence_server /usr/local/bin/deepfence_server
 
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]

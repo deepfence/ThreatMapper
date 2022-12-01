@@ -1,0 +1,23 @@
+FROM postgres:14.2-alpine3.15
+
+MAINTAINER Deepfence Inc
+LABEL deepfence.role=system
+
+ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
+    POSTGRES_USER_DB_PORT=5432 \
+    POSTGRES_USER_DB_USER=cve \
+    POSTGRES_USER_DB_PASSWORD=cve \
+    POSTGRES_USER_DB_NAME=users \
+    POSTGRES_USER_DB_SSLMODE=disable \
+    DF_PROG_NAME="postgres1" \
+    PGDATA="/data/postgres1/data"
+#ENV PGDATA /var/lib/postgresql/data
+#ENV POSTGRES_INITDB_XLOGDIR /var/log/postgresql/logs
+
+COPY create-pg-dirs.sh /usr/local/bin/
+COPY create-pg-db.sh /docker-entrypoint-initdb.d/
+RUN cp /usr/local/bin/docker-entrypoint.sh /usr/local/bin/new-docker-entrypoint.sh
+COPY postgres-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod 755 /usr/local/bin/create-pg-dirs.sh /docker-entrypoint-initdb.d/create-pg-db.sh /usr/local/bin/docker-entrypoint.sh
+#The script create-pd-dirs.sh will copy postgresql.conf file into PGDATA
+#COPY postgresql.conf /usr/local/

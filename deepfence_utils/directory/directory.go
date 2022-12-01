@@ -51,8 +51,6 @@ func init() {
 
 	posgresCfg := init_posgres()
 
-	neo4jCfg := init_neo4j()
-
 	saasMode := false
 	saasModeOn, has := os.LookupEnv("SAAS_MODE")
 	if !has {
@@ -64,6 +62,7 @@ func init() {
 	directory = map[NamespaceID]DBConfigs{}
 
 	if !saasMode {
+		neo4jCfg := init_neo4j()
 		directory[NONSAAS_DIR_KEY] = DBConfigs{
 			Redis:    redisCfg,
 			Neo4j:    &neo4jCfg,

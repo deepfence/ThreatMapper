@@ -1,19 +1,19 @@
 version: "3.7"
 services:
 
-  deepfence-init-container:
-    container_name: df-init-container
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-1.4.1}
-    privileged: true
-    ulimits:
-      core: 0
-    network_mode: "host"
-    pid: "host"
-    restart: "no"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
+  #deepfence-init-container:
+  #  container_name: df-init-container
+  #  image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-1.4.1}
+  #  privileged: true
+  #  ulimits:
+  #    core: 0
+  #  network_mode: "host"
+  #  pid: "host"
+  #  restart: "no"
+  #  logging:
+  #    driver: "json-file"
+  #    options:
+  #      max-size: "1g"
 
   deepfence-postgres:
     container_name: deepfence-postgres
@@ -40,65 +40,69 @@ services:
     restart: on-failure
     networks:
       - deepfence_net
-    depends_on:
-      - deepfence-init-container
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-        
-  deepfence-neo4j:
-    container_name: deepfence-neo4j
-    image: neo4j:5.2.0-community
-    ulimits:
-      core: 0
-    restart: on-failure
-    networks:
-    - deepfence_net
-    environment:
-    - NEO4J_dbms_memory_pagecache_size=2600m
-    - NEO4J_dbms.memory.heap.initial_size=3800m
-    - NEO4J_dbms_memory_heap_max__size=3800m
-#    ports:
-#    - "127.0.0.1:7474:7474"
-#    - "127.0.0.1:7687:7687"
-    volumes:
-    - neo4j_data:/data:rw
-    - neo4j_logs:/logs:rw
-    - neo4j_plugins:/plugins:rw
-    depends_on:
-    - deepfence-init-container
+    #depends_on:
+    #  - deepfence-init-container
     logging:
       driver: "json-file"
       options:
         max-size: "1g"
 
-  deepfence-console-agent:
-    container_name: deepfence-console-agent
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-1.4.1}
+  deepfence-neo4j:
+    container_name: deepfence-neo4j
+    image: neo4j:4.4.12
     ulimits:
       core: 0
-    deploy:
-      resources:
-        limits:
-          cpus: ".2"
     restart: on-failure
+    tmpfs:
+      - /tmp
+    networks:
+      - deepfence_net
     environment:
-    - MGMT_CONSOLE_URL=127.0.0.1
-    - MGMT_CONSOLE_PORT=8443
-    - DEEPFENCE_KEY=""
-    network_mode: "host"
+      - NEO4J_dbms_memory_pagecache_size=2600m
+      - NEO4J_dbms.memory.heap.initial_size=3800m
+      - NEO4J_dbms_memory_heap_max__size=3800m
+      - NEO4J_AUTH=neo4j/password
+      - NEO4JLABS_PLUGINS=["apoc"]
+    ports:
+      - "0.0.0.0:7474:7474"
+      - "0.0.0.0:7687:7687"
     volumes:
-    - /sys/kernel/debug:/sys/kernel/debug:rw
-    - /var/log/fenced
-    - /var/run/docker.sock:/var/run/docker.sock
-    - /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw
-    - /:/fenced/mnt/host/:ro
-    privileged: true
+      - deepfence_neo4j_data:/data:rw
+      - deepfence_neo4j_logs:/logs:rw
+      - deepfence_neo4j_plugins:/plugins:rw
+    #depends_on:
+    #  - deepfence-init-container
     logging:
       driver: "json-file"
       options:
         max-size: "1g"
+
+  #deepfence-console-agent:
+  #  container_name: deepfence-console-agent
+  #  image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-1.4.1}
+  #  ulimits:
+  #    core: 0
+  #  deploy:
+  #    resources:
+  #      limits:
+  #        cpus: ".2"
+  #  restart: on-failure
+  #  environment:
+  #  - MGMT_CONSOLE_URL=127.0.0.1
+  #  - MGMT_CONSOLE_PORT=8443
+  #  - DEEPFENCE_KEY=""
+  #  network_mode: "host"
+  #  volumes:
+  #  - /sys/kernel/debug:/sys/kernel/debug:rw
+  #  - /var/log/fenced
+  #  - /var/run/docker.sock:/var/run/docker.sock
+  #  - /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw
+  #  - /:/fenced/mnt/host/:ro
+  #  privileged: true
+  #  logging:
+  #    driver: "json-file"
+  #    options:
+  #      max-size: "1g"
 
   deepfence-router:
     container_name: deepfence-router
@@ -134,6 +138,7 @@ services:
     depends_on:
       - deepfence-redis
       - deepfence-postgres
+      - deepfence-neo4j
     volumes:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
     logging:
@@ -168,7 +173,7 @@ services:
       - deepfence_net
     restart: on-failure
     depends_on:
-      - deepfence-topology
+      - deepfence-server
     logging:
       driver: "json-file"
       options:
@@ -201,7 +206,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-  
+
   deepfence-yara-hunter:
     container_name: deepfence-yara-hunter
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-1.4.0}
@@ -216,7 +221,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-         
+
   deepfence-package-scanner:
     container_name: deepfence-package-scanner
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-1.4.1}
@@ -255,11 +260,11 @@ services:
 volumes:
   deepfence_data:
     driver: local
-  neo4j_data:
+  deepfence_neo4j_data:
     driver: local
-  neo4j_logs:
+  deepfence_neo4j_logs:
     driver: local
-  neo4j_plugins:
+  deepfence_neo4j_plugins:
     driver: local
 
 networks:

@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	_ "github.com/lib/pq"
 )
 
 var postgresClientsPool map[NamespaceID]*postgresqlDb.Queries

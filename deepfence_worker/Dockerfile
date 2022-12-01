@@ -3,9 +3,8 @@ FROM golang:1.19-alpine3.16 AS build
 ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
 WORKDIR /go/deepfence_worker/
-RUN apk add --no-cache git \
-    && go mod tidy \
-    && go build -o /tmp/deepfence_worker
+RUN apk add --no-cache git make
+RUN make
 
 FROM alpine:3.16
 MAINTAINER Deepfence Inc
@@ -26,7 +25,7 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     NEO4J_PASSWORD=password \
     SAAS_DEPLOYMENT=false
 
-COPY --from=build /tmp/deepfence_worker /usr/local/bin/deepfence_worker
+COPY --from=build /go/deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
 COPY deepfence_worker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

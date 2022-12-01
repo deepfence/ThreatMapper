@@ -1,12 +1,13 @@
 #!/bin/sh
 
-DEEPFENCE_CONSOLE_DIR=$(pwd)/deepfence_console
+DEEPFENCE_ROOT_DIR=$(pwd)
+#DEEPFENCE_CONSOLE_DIR=$(pwd)/deepfence_console
 DEEPFENCE_AGENT_DIR=$(pwd)/deepfence_agent
 DOCKER_BUILD_LOG="docker-build.log"
 DEEPFENCE_BACKEND_DIR=$(pwd)/deepfence_backend
 DEEPFENCE_UI_DIR=$(pwd)/deepfence_ui
 DEEPFENCE_DIAG_DIR=$(pwd)/deepfence_diagnosis
-DEEPFENCE_FETCHER_DIR=$DEEPFENCE_CONSOLE_DIR/fetcher
+#DEEPFENCE_FETCHER_DIR=$DEEPFENCE_CONSOLE_DIR/fetcher
 VULNERABILITY_MAPPER_DIR=$(pwd)/vulnerability_mapper
 SECRET_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/SecretScanner/
 MALWARE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/YaraHunter/
@@ -15,38 +16,39 @@ PACKAGE_SCANNER_DIR=$DEEPFENCE_AGENT_DIR/plugins/package-scanner/
 cd $DEEPFENCE_AGENT_DIR/plugins
 bash bootstrap.sh
 
-cd $DEEPFENCE_CONSOLE_DIR
-
-if [ ! -f certs/ssl/filebeat.crt ]; then
-    echo "SSL certificate not found! Grenerating SSL certificate...."
-    mkdir -p certs/ssl
-    sudo openssl genrsa -out certs/ssl/filebeat.key 2048
-    sudo openssl req -new -x509 -config self-signed-certificate.cnf -nodes -days 365 -key certs/ssl/filebeat.key -out certs/ssl/filebeat.crt
-    sudo chmod a+r certs/ssl/filebeat*
-else
-    echo "SSL certificate found"
-fi
-
-echo "Building init container image"
-cd $DEEPFENCE_CONSOLE_DIR/init-container
-docker build -f $DEEPFENCE_CONSOLE_DIR/init-container/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-latest} .
-
-if [ ! $? -eq 0 ]; then
-    echo "Building init container image failed. Exiting"
-    exit 1
-fi
-
-echo "Building Vulnerability mapper image"
-cd $DEEPFENCE_CONSOLE_DIR
-docker build -f $VULNERABILITY_MAPPER_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-latest} $VULNERABILITY_MAPPER_DIR
-
-if [ ! $? -eq 0 ]; then
-    echo "Building vulnerability mapper image failed. Exiting"
-    exit 1
-fi
+cd $DEEPFENCE_ROOT_DIR
+#cd $DEEPFENCE_CONSOLE_DIR
+#
+#if [ ! -f certs/ssl/filebeat.crt ]; then
+#    echo "SSL certificate not found! Grenerating SSL certificate...."
+#    mkdir -p certs/ssl
+#    sudo openssl genrsa -out certs/ssl/filebeat.key 2048
+#    sudo openssl req -new -x509 -config self-signed-certificate.cnf -nodes -days 365 -key certs/ssl/filebeat.key -out certs/ssl/filebeat.crt
+#    sudo chmod a+r certs/ssl/filebeat*
+#else
+#    echo "SSL certificate found"
+#fi
+#
+#echo "Building init container image"
+#cd $DEEPFENCE_CONSOLE_DIR/init-container
+#docker build -f $DEEPFENCE_CONSOLE_DIR/init-container/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-latest} .
+#
+#if [ ! $? -eq 0 ]; then
+#    echo "Building init container image failed. Exiting"
+#    exit 1
+#fi
+#
+#echo "Building Vulnerability mapper image"
+#cd $DEEPFENCE_CONSOLE_DIR
+#docker build -f $VULNERABILITY_MAPPER_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-latest} $VULNERABILITY_MAPPER_DIR
+#
+#if [ ! $? -eq 0 ]; then
+#    echo "Building vulnerability mapper image failed. Exiting"
+#    exit 1
+#fi
 
 echo "Creating redis docker image. You can check $DOCKER_BUILD_LOG for status"
-docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-latest} --rm=true -f redis-Dockerfile .
+docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-latest} --rm=true -f ./deepfence_redis/redis-Dockerfile ./deepfence_redis
 
 if [ ! $? -eq 0 ]; then
     echo "Error while creating redis docker. Check $DOCKER_BUILD_LOG"
@@ -54,7 +56,7 @@ if [ ! $? -eq 0 ]; then
 fi
 
 echo "Building postgres"
-docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-latest} --rm=true -f postgres-Dockerfile .
+docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-latest} --rm=true -f ./deepfence_postgres/postgres-Dockerfile ./deepfence_postgres
 
 if [ ! $? -eq 0 ]; then
     echo "Building postgres failed. Exiting"
@@ -62,10 +64,10 @@ if [ ! $? -eq 0 ]; then
 fi
 
 echo "Building kafka broker"
-docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-latest} --rm=true -f kafka-broker-Dockerfile .
+docker build --network host --tag=${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-latest} --rm=true -f ./deepfence_kafka/kafka-broker-Dockerfile ./deepfence_kafka
 
 if [ ! $? -eq 0 ]; then
-    echo "Building postgres failed. Exiting"
+    echo "Building kafka failed. Exiting"
     exit 1
 fi
 
@@ -78,7 +80,7 @@ if [ ! $? -eq 0 ]; then
 fi
 
 echo "Building server image"
-docker build -f $DEEPFENCE_CONSOLE_DIR/deepfence_server/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_server_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_CONSOLE_DIR
+docker build -f ./deepfence_server/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_server_ce:${DF_IMG_TAG:-latest} .
 
 if [ ! $? -eq 0 ]; then
     echo "Building server image failed. Exiting"
@@ -86,7 +88,7 @@ if [ ! $? -eq 0 ]; then
 fi
 
 echo "Building worker image"
-docker build -f $DEEPFENCE_CONSOLE_DIR/deepfence_worker/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_CONSOLE_DIR
+docker build -f ./deepfence_worker/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-latest} .
 
 if [ ! $? -eq 0 ]; then
     echo "Building worker image failed. Exiting"
@@ -104,13 +106,13 @@ if [ ! $? -eq 0 ]; then
 fi
 rm -rf $DEEPFENCE_UI_DIR/console_version.txt $DEEPFENCE_UI_DIR/product_version.txt
 
-echo "Building fetcher"
-docker build -f $DEEPFENCE_FETCHER_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_FETCHER_DIR
-
-if [ ! $? -eq 0 ]; then
-    echo "Building fetcher image failed. Exiting"
-    exit 1
-fi
+#echo "Building fetcher"
+#docker build -f $DEEPFENCE_FETCHER_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_FETCHER_DIR
+#
+#if [ ! $? -eq 0 ]; then
+#    echo "Building fetcher image failed. Exiting"
+#    exit 1
+#fi
 
 echo "Building diagnosis"
 docker build -f $DEEPFENCE_DIAG_DIR/service/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_diagnosis_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_DIAG_DIR/service
@@ -155,4 +157,4 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-cd $DEEPFENCE_CONSOLE_DIR
+cd $DEEPFENCE_ROOT_DIR
