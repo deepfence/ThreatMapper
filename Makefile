@@ -33,6 +33,17 @@ certs:
 #init-container:
 #	docker build -f $(DEEPFENCE_CONSOLE_DIR)/init-container/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_init_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)/init-container
 
+.PHONY: bootstrap-agent-plugins
+bootstrap-agent-plugins:
+	cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh && cd -
+	cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh && cd -
+	cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh && cd -
+
+.PHONY: agent
+agent:
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
+
 .PHONY: vulnerability-mapper
 vulnerability-mapper:
 	docker build -f $(VULNERABILITY_MAPPER_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_vulnerability_mapper_ce:$(DF_IMG_TAG) $(VULNERABILITY_MAPPER_DIR)
@@ -71,17 +82,6 @@ ui:
 #.PHONY: fetcher
 #fetcher:
 #	docker build -f $(DEEPFENCE_FETCHER_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_fetcher_ce:$(DF_IMG_TAG) $(DEEPFENCE_FETCHER_DIR)
-
-.PHONY: agent
-agent:
-	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
-
-.PHONY: bootstrap-agent-plugins
-bootstrap-agent-plugins:
-	cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh && cd -
-	cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh && cd -
-	cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh && cd -
 
 .PHONY: secretscanner
 secretscanner: bootstrap-agent-plugins

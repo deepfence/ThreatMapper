@@ -6,6 +6,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
 	github.com/hibiken/asynq v0.23.0
+	github.com/lib/pq v1.10.7
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
 	github.com/rs/zerolog v1.28.0
 )
