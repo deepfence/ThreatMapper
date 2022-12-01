@@ -1,0 +1,38 @@
+FROM golang:1.19-alpine3.16 AS minica-builder
+COPY minica.go /go
+COPY genCert.sh /go
+WORKDIR /go
+RUN apk add --no-cache bash
+RUN /bin/bash /go/genCert.sh
+
+
+FROM haproxy:2.6.6-alpine3.16
+MAINTAINER Deepfence Inc
+LABEL deepfence.role=system
+
+USER root
+
+ARG is_dev_build
+
+ENV ENABLE_AUTH=true \
+    IS_DEV_BUILD=$is_dev_build \
+    UI_SERVICE_NAME=deepfence-ui \
+    UI_SERVICE_PORT=4042 \
+    API_SERVICE_HOST=deepfence-server \
+    API_SERVICE_PORT=8080 \
+    CUSTOMER_UNIQUE_ID=""
+
+COPY --from=minica-builder /go/minica.pem /usr/local/etc/haproxy/deepfence.crt
+COPY --from=minica-builder /go/minica-key.pem /usr/local/etc/haproxy/deepfence.key
+COPY router-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN apk update --no-cache \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && apk add --no-cache bash lua5.3 lua5.3-socket curl rsyslog logrotate \
+    && rm -rf /var/cache/apk/* \
+    && mkdir -p /var/log/haproxy \
+    && touch /var/log/haproxy/haproxy.log
+
+COPY rsyslog.conf /etc/rsyslog.conf
+COPY logrotate.conf /etc/logrotate.d/haproxy
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg

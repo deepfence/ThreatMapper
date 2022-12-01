@@ -2,7 +2,7 @@ PWD=$(shell pwd)
 
 DEEPFENCE_CONSOLE_DIR=$(PWD)/deepfence_console
 DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
-DEEPFENCE_BACKEND_DIR=$(PWD)/deepfence_backend
+DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
 DEEPFENCE_UI_DIR=$(PWD)/deepfence_ui
 DEEPFENCE_DIAG_DIR=$(PWD)/deepfence_diagnosis
 DEEPFENCE_FETCHER_DIR=$(DEEPFENCE_CONSOLE_DIR)/fetcher
@@ -13,21 +13,17 @@ PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 IMAGE_REPOSITORY?=deepfenceio
 DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
-VERSION?="3.6.0"
+VERSION?="2.0.0"
 
 default: console_plugins agent console
 
 .PHONY: console_plugins agent console
-console: certs vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins
+console: vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins
 
 console_plugins: secretscanner malwarescanner packagescanner
 
 agent: agent
 
-
-.PHONY: certs
-certs:
-	(cd $(DEEPFENCE_CONSOLE_DIR) && bash generate_certs.sh)
 
 #.PHONY: init-container
 #init-container:
@@ -62,10 +58,10 @@ kafka-broker:
 
 .PHONY: router
 router:
-	docker build -f $(DEEPFENCE_BACKEND_DIR)/dockerify/haproxy/Dockerfile --build-arg is_dev_build=$(IS_DEV_BUILD) -t $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG) $(DEEPFENCE_BACKEND_DIR)
+	docker build --build-arg is_dev_build=$(IS_DEV_BUILD) -t $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG) $(DEEPFENCE_ROUTER_DIR)
 
 .PHONY: server
-server: certs
+server:
 	docker build -f ./deepfence_server/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) .
 
 .PHONY: worker
