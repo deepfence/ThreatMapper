@@ -37,6 +37,7 @@ importers:
       postcss: ^8.4.19
       react: ^18.2.0
       react-dom: ^18.2.0
+      react-icons: ^4.4.0
       react-router-dom: ^6.4.3
       resize-observer-polyfill: ^1.5.1
       tailwind-preset: workspace:*
@@ -52,6 +53,7 @@ importers:
       classnames: 2.3.2
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+      react-icons: 4.6.0_react@18.2.0
       react-router-dom: 6.4.3_biqbaboplfbrettd7655fr4n2y
       ui-components: link:../../packages/ui-components
     devDependencies:

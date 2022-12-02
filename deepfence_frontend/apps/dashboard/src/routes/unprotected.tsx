@@ -1,6 +1,6 @@
 import { lazy } from 'react';
-import { Error } from 'ui-components';
 
+import { Error } from '../components/error/Error';
 import { forgotPasswordAction } from '../features/auth/forget-password/ForgetPassword';
 import { loginAction } from '../features/auth/login/Login';
 

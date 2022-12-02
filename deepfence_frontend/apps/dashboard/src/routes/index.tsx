@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { Error } from 'ui-components';
 
+import { Error } from '../components/error/Error';
 import { protectedRoutes } from './protected';
 import { unprotectedRoutes } from './unprotected';
 
