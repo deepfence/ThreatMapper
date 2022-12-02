@@ -72,7 +72,8 @@ worker:
 ui:
 	git log --format="%h" -n 1 > $(DEEPFENCE_FRONTEND_DIR)/console_version.txt && \
 	echo $(VERSION) > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
-	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
+	docker build -f $(DEEPFENCE_FRONTEND_DIR)/build-Dockerfile -t deepfence_ui_build:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
+	docker build --build-arg DF_IMG_TAG=$(DF_IMG_TAG) --build-arg IMAGE_NAME=deepfence_ui_build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
 	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
 
 .PHONY: secretscanner

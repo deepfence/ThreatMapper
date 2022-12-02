@@ -1,11 +1,6 @@
-FROM node:16.11-bullseye-slim as build
-
-WORKDIR /home/deepfence/
-ADD . /home/deepfence/
-RUN apt-get update \
-    && npm install turbo pnpm typescript -g \
-    && pnpm install \
-    && pnpm run build
+ARG DF_IMG_TAG=latest
+ARG IMAGE_NAME=deepfence_ui_build
+FROM $IMAGE_NAME:$DF_IMG_TAG AS build
 
 FROM nginx:1.23-alpine
 MAINTAINER Deepfence Inc
