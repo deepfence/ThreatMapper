@@ -18,7 +18,7 @@ import (
 // ControlsAgentControls struct for ControlsAgentControls
 type ControlsAgentControls struct {
 	Beatrate *int32 `json:"beatrate,omitempty"`
-	Commands []map[string]interface{} `json:"commands,omitempty"`
+	Commands []ControlsAction `json:"commands,omitempty"`
 }
 
 // NewControlsAgentControls instantiates a new ControlsAgentControls object
@@ -71,9 +71,9 @@ func (o *ControlsAgentControls) SetBeatrate(v int32) {
 }
 
 // GetCommands returns the Commands field value if set, zero value otherwise (both if not set or set to explicit null).
-func (o *ControlsAgentControls) GetCommands() []map[string]interface{} {
+func (o *ControlsAgentControls) GetCommands() []ControlsAction {
 	if o == nil {
-		var ret []map[string]interface{}
+		var ret []ControlsAction
 		return ret
 	}
 	return o.Commands
@@ -82,7 +82,7 @@ func (o *ControlsAgentControls) GetCommands() []map[string]interface{} {
 // GetCommandsOk returns a tuple with the Commands field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *ControlsAgentControls) GetCommandsOk() ([]map[string]interface{}, bool) {
+func (o *ControlsAgentControls) GetCommandsOk() ([]ControlsAction, bool) {
 	if o == nil || isNil(o.Commands) {
     return nil, false
 	}
@@ -98,8 +98,8 @@ func (o *ControlsAgentControls) HasCommands() bool {
 	return false
 }
 
-// SetCommands gets a reference to the given []map[string]interface{} and assigns it to the Commands field.
-func (o *ControlsAgentControls) SetCommands(v []map[string]interface{}) {
+// SetCommands gets a reference to the given []ControlsAction and assigns it to the Commands field.
+func (o *ControlsAgentControls) SetCommands(v []ControlsAction) {
 	o.Commands = v
 }
 

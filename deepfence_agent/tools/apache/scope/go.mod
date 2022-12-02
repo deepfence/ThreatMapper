@@ -15,6 +15,8 @@ replace github.com/ugorji/go => ../deepfence/ugorji/go
 
 replace github.com/deepfence/ThreatMapper/deepfence_server_client => ../../../../deepfence_server_client
 
+replace github.com/deepfence/ThreatMapper/deepfence_utils => ../../../../deepfence_utils
+
 require (
 	camlistore.org v0.0.0-20171230002226-a5a65f0d8b22
 	github.com/Jeffail/tunny v0.1.4
@@ -31,6 +33,7 @@ require (
 	github.com/coocood/freecache v1.2.3
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000
+	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000
 	github.com/dustin/go-humanize v1.0.0
@@ -126,8 +129,8 @@ require (
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-colorable v0.1.6 // indirect
-	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect

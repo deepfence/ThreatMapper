@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Beatrate** | Pointer to **int32** |  | [optional] 
-**Commands** | Pointer to **[]map[string]interface{}** |  | [optional] 
+**Commands** | Pointer to [**[]ControlsAction**](ControlsAction.md) |  | [optional] 
 
 ## Methods
 
@@ -53,20 +53,20 @@ HasBeatrate returns a boolean if a field has been set.
 
 ### GetCommands
 
-`func (o *ControlsAgentControls) GetCommands() []map[string]interface{}`
+`func (o *ControlsAgentControls) GetCommands() []ControlsAction`
 
 GetCommands returns the Commands field if non-nil, zero value otherwise.
 
 ### GetCommandsOk
 
-`func (o *ControlsAgentControls) GetCommandsOk() (*[]map[string]interface{}, bool)`
+`func (o *ControlsAgentControls) GetCommandsOk() (*[]ControlsAction, bool)`
 
 GetCommandsOk returns a tuple with the Commands field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetCommands
 
-`func (o *ControlsAgentControls) SetCommands(v []map[string]interface{})`
+`func (o *ControlsAgentControls) SetCommands(v []ControlsAction)`
 
 SetCommands sets Commands field to given value.
 

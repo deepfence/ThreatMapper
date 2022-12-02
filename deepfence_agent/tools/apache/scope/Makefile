@@ -46,7 +46,7 @@ update-cri:
 protoc-gen-gofast:
 	@go get -u -v github.com/gogo/protobuf/protoc-gen-gofast
 
-# Use cri target to download latest cri proto files and regenerate CRI runtime files. 
+# Use cri target to download latest cri proto files and regenerate CRI runtime files.
 cri: update-cri protoc-gen-gofast
 	@cd $(GOPATH)/src;protoc --proto_path=$(GOPATH)/src --gofast_out=plugins=grpc:. github.com/weaveworks/scope/cri/runtime/api.proto
 
@@ -124,7 +124,7 @@ shell:
 tests: $(CODECGEN_TARGETS) prog/staticui/staticui.go prog/externalui/externalui.go
 	./tools/test -no-go-get -tags $(GO_BUILD_TAGS)
 
-lint: prog/staticui/staticui.go prog/externalui/externalui.go 
+lint: prog/staticui/staticui.go prog/externalui/externalui.go
 	./tools/lint
 
 prog/staticui/staticui.go:
@@ -134,73 +134,6 @@ prog/staticui/staticui.go:
 prog/externalui/externalui.go:
 	mkdir -p prog/externalui
 	$(NO_CROSS_COMP); go run -mod vendor github.com/mjibson/esc -o $@ -pkg externalui -prefix client/build-external -include '\.html$$' client/build-external
-
-endif
-
-ifeq ($(BUILD_IN_CONTAINER),true)
-
-SCOPE_UI_TOOLCHAIN=.cache/build_node_modules
-SCOPE_UI_TOOLCHAIN_UPTODATE=$(SCOPE_UI_TOOLCHAIN)/.uptodate
-SCOPE_UI_BUILD_CMD=$(SUDO) docker run $(RM) $(RUN_FLAGS) \
-			-v $(shell pwd)/.cache:/home/deepfence/scope/.cache:delegated,z \
-			-v $(shell pwd)/client:/home/deepfence/scope/client:delegated,z \
-			-v $(shell pwd)/$(SCOPE_UI_TOOLCHAIN):/home/deepfence/scope/client/node_modules:delegated,z \
-			-w /home/deepfence/scope/client \
-			-e HOME=/home/deepfence/scope/client \
-			-e NPM_CONFIG_LOGLEVEL=warn \
-			-e NPM_CONFIG_PROGRESS=false \
-			-e XDG_CACHE_HOME=/home/deepfence/scope/.cache \
-			-u $(shell id -u ${USER}):$(shell id -g ${USER})
-
-$(SCOPE_UI_TOOLCHAIN_UPTODATE): client/yarn.lock $(SCOPE_UI_BUILD_UPTODATE)
-	mkdir -p $(SCOPE_UI_TOOLCHAIN) client/node_modules
-	if test "true" != "$(SCOPE_SKIP_UI_ASSETS)"; then \
-		$(SCOPE_UI_BUILD_CMD) $(SCOPE_UI_BUILD_IMAGE) yarn install; \
-	fi
-	touch $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-
-client/build/index.html: $(shell find client/app -type f) $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-	mkdir -p client/build
-	if test "true" != "$(SCOPE_SKIP_UI_ASSETS)"; then \
-		$(SCOPE_UI_BUILD_CMD) $(SCOPE_UI_BUILD_IMAGE) yarn run build; \
-	fi
-
-client/build-external/index.html: $(shell find client/app -type f) $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-	mkdir -p client/build-external
-	if test "true" != "$(SCOPE_SKIP_UI_ASSETS)"; then \
-		$(SCOPE_UI_BUILD_CMD) $(SCOPE_UI_BUILD_IMAGE) yarn run build-external; \
-	fi
-
-client-test: $(shell find client/app/scripts -type f) $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-	$(SCOPE_UI_BUILD_CMD) $(SCOPE_UI_BUILD_IMAGE) yarn test
-
-client-lint: $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-	$(SCOPE_UI_BUILD_CMD) $(SCOPE_UI_BUILD_IMAGE) yarn run lint
-
-client-start: $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-	$(SCOPE_UI_BUILD_CMD) --net=host \
-		-e WEBPACK_SERVER_HOST \
-		$(SCOPE_UI_BUILD_IMAGE) yarn start
-
-client/bundle/weave-scope.tgz: $(shell find client/app -type f) $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-	$(SCOPE_UI_BUILD_CMD) $(SCOPE_UI_BUILD_IMAGE) yarn run bundle
-
-else
-
-SCOPE_UI_TOOLCHAIN=client/node_modules
-SCOPE_UI_TOOLCHAIN_UPTODATE=$(SCOPE_UI_TOOLCHAIN)/.uptodate
-
-$(SCOPE_UI_TOOLCHAIN_UPTODATE): client/yarn.lock
-	if test "true" = "$(SCOPE_SKIP_UI_ASSETS)"; then mkdir -p $(SCOPE_UI_TOOLCHAIN); else cd client && yarn install; fi
-	touch $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-
-client/build/index.html: $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-	mkdir -p client/build
-	if test "true" != "$(SCOPE_SKIP_UI_ASSETS)"; then cd client && yarn run build; fi
-
-client/build-external/index.html: $(SCOPE_UI_TOOLCHAIN_UPTODATE)
-	mkdir -p client/build-external
-	if test "true" != "$(SCOPE_SKIP_UI_ASSETS)"; then cd client && yarn run build-external; fi
 
 endif
 
@@ -229,7 +162,7 @@ ui-pkg-upload: client/bundle/weave-scope.tgz
 # rmi'ng images is desirable sometimes. Invoke `realclean` for that.
 clean:
 	# $(GO) clean ./...
-	rm -rf $(SCOPE_EXPORT) $(SCOPE_UI_TOOLCHAIN_UPTODATE) $(SCOPE_BACKEND_BUILD_UPTODATE) \
+	rm -rf $(SCOPE_EXPORT) $(SCOPE_BACKEND_BUILD_UPTODATE) \
 		$(SCOPE_EXE) $(RUNSVINIT) prog/staticui/staticui.go prog/externalui/externalui.go client/build/*.js client/build-external/*.js docker/weave .pkg \
 		$(CODECGEN_TARGETS) $(CODECGEN_DIR)/bin
 	rm -rf docker/deepfence*

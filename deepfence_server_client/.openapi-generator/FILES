@@ -18,6 +18,7 @@ docs/AuthenticationApi.md
 docs/CloudComplianceApi.md
 docs/CloudResourcesApi.md
 docs/ComplianceApi.md
+docs/ControlsAction.md
 docs/ControlsAgentControls.md
 docs/IngestersCloudComplianceDoc.md
 docs/IngestersCloudResource.md
@@ -40,6 +41,7 @@ go.mod
 go.sum
 model_api_docs_raw_report.go
 model_api_docs_unauthorized_response.go
+model_controls_action.go
 model_controls_agent_controls.go
 model_ingesters_cloud_compliance_doc.go
 model_ingesters_cloud_resource.go

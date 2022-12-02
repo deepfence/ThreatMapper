@@ -98,6 +98,7 @@ Class | Method | HTTP request | Description
 
  - [ApiDocsRawReport](docs/ApiDocsRawReport.md)
  - [ApiDocsUnauthorizedResponse](docs/ApiDocsUnauthorizedResponse.md)
+ - [ControlsAction](docs/ControlsAction.md)
  - [ControlsAgentControls](docs/ControlsAgentControls.md)
  - [IngestersCloudComplianceDoc](docs/IngestersCloudComplianceDoc.md)
  - [IngestersCloudResource](docs/IngestersCloudResource.md)

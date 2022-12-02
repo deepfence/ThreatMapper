@@ -1,13 +1,9 @@
 package main
 
 import (
-	"encoding/base64"
-	"fmt"
 	"math/rand"
-	"net"
 	"net/http"
 	_ "net/http/pprof"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -15,19 +11,18 @@ import (
 
 	"github.com/armon/go-metrics"
 	metrics_prom "github.com/armon/go-metrics/prometheus"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/common/logging"
-	"github.com/weaveworks/common/network"
 	"github.com/weaveworks/common/sanitize"
 	"github.com/weaveworks/common/signals"
 	"github.com/weaveworks/common/tracing"
 	"github.com/weaveworks/go-checkpoint"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/common/weave"
-	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/probe"
 	"github.com/weaveworks/scope/probe/appclient"
 	"github.com/weaveworks/scope/probe/awsecs"
@@ -111,10 +106,39 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 	}
 }
 
+func setControls() {
+	err := controls.RegisterControl(ctl.StartCVEScan, func(req ctl.StartCVEScanRequest) error {
+		log.Info("Start CVE Scan")
+		//TODO
+		return nil
+	})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+	err = controls.RegisterControl(ctl.StartSecretScan, func(req ctl.StartSecretScanRequest) error {
+		log.Info("Start Secret Scan")
+		//TODO
+		return nil
+	})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+	err = controls.RegisterControl(ctl.StartComplianceScan, func(req ctl.StartComplianceScanRequest) error {
+		log.Info("Start Compliance Scan")
+		//TODO
+		return nil
+	})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+}
+
 // Main runs the probe
 func probeMain(flags probeFlags, targets []appclient.Target) {
 	setLogLevel(flags.logLevel)
 	setLogFormatter(flags.logPrefix)
+
+	setControls()
 
 	if flags.basicAuth {
 		log.Infof("Basic authentication enabled")
@@ -175,29 +199,29 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	log.Infof("probe starting, version %s, ID %s", version, probeID)
 	//checkNewScopeVersion(flags)
 	handlerRegistry := controls.NewDefaultHandlerRegistry()
-	clientFactory := func(hostname string, url url.URL) (appclient.AppClient, error) {
-		token := flags.token
-		if url.User != nil {
-			token = url.User.Username()
-			url.User = nil // erase credentials, as we use a special header
-		}
+	//clientFactory := func(hostname string, url url.URL) (appclient.AppClient, error) {
+	//	token := flags.token
+	//	if url.User != nil {
+	//		token = url.User.Username()
+	//		url.User = nil // erase credentials, as we use a special header
+	//	}
 
-		if flags.basicAuth {
-			token = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", flags.username, flags.password)))
-		}
+	//	if flags.basicAuth {
+	//		token = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", flags.username, flags.password)))
+	//	}
 
-		probeConfig := appclient.ProbeConfig{
-			BasicAuth:    flags.basicAuth,
-			Token:        token,
-			ProbeVersion: version,
-			ProbeID:      probeID,
-			Insecure:     flags.insecure,
-		}
-		return appclient.NewAppClient(
-			probeConfig, hostname, url,
-			xfer.ControlHandlerFunc(handlerRegistry.HandleControlRequest),
-		)
-	}
+	//	probeConfig := appclient.ProbeConfig{
+	//		BasicAuth:    flags.basicAuth,
+	//		Token:        token,
+	//		ProbeVersion: version,
+	//		ProbeID:      probeID,
+	//		Insecure:     flags.insecure,
+	//	}
+	//	return appclient.NewAppClient(
+	//		probeConfig, hostname, url,
+	//		xfer.ControlHandlerFunc(handlerRegistry.HandleControlRequest),
+	//	)
+	//}
 
 	var clients interface {
 		probe.ReportPublisher
@@ -212,48 +236,48 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			controls.DummyPipeClient
 		})
 	} else {
-		multiClients := appclient.NewMultiAppClient(clientFactory, flags.noControls)
+		multiClients := appclient.NewOpenapiClient() //appclient.NewMultiAppClient(clientFactory, flags.noControls)
 		defer multiClients.Stop()
 
-		dnsLookupFn := net.LookupIP
-		if flags.resolver != "" {
-			dnsLookupFn = appclient.LookupUsing(flags.resolver)
-		}
-		resolver, err := appclient.NewResolver(appclient.ResolverConfig{
-			Targets:       targets,
-			ResolveDomain: flags.resolveDomain,
-			Lookup:        dnsLookupFn,
-			Set:           multiClients.Set,
-		})
-		if err != nil {
-			log.Fatalf("Failed to create resolver: %v", err)
-			return
-		}
-		defer resolver.Stop()
+		//dnsLookupFn := net.LookupIP
+		//if flags.resolver != "" {
+		//	dnsLookupFn = appclient.LookupUsing(flags.resolver)
+		//}
+		//resolver, err := appclient.NewResolver(appclient.ResolverConfig{
+		//	Targets:       targets,
+		//	ResolveDomain: flags.resolveDomain,
+		//	Lookup:        dnsLookupFn,
+		//	Set:           multiClients.Set,
+		//})
+		//if err != nil {
+		//	log.Fatalf("Failed to create resolver: %v", err)
+		//	return
+		//}
+		//defer resolver.Stop()
 
-		if flags.weaveEnabled && flags.weaveHostname != "" {
-			dockerBridgeIP, err := network.GetFirstAddressOf(flags.dockerBridge)
-			if err != nil {
-				log.Errorf("Error getting docker bridge ip: %v", err)
-			} else {
-				weaveDNSLookup := appclient.LookupUsing(dockerBridgeIP + ":53")
-				weaveTargets, err := appclient.ParseTargets([]string{flags.weaveHostname})
-				if err != nil {
-					log.Errorf("Failed to parse weave targets: %v", err)
-				} else {
-					weaveResolver, err := appclient.NewResolver(appclient.ResolverConfig{
-						Targets: weaveTargets,
-						Lookup:  weaveDNSLookup,
-						Set:     multiClients.Set,
-					})
-					if err != nil {
-						log.Errorf("Failed to create weave resolver: %v", err)
-					} else {
-						defer weaveResolver.Stop()
-					}
-				}
-			}
-		}
+		//if flags.weaveEnabled && flags.weaveHostname != "" {
+		//	dockerBridgeIP, err := network.GetFirstAddressOf(flags.dockerBridge)
+		//	if err != nil {
+		//		log.Errorf("Error getting docker bridge ip: %v", err)
+		//	} else {
+		//		weaveDNSLookup := appclient.LookupUsing(dockerBridgeIP + ":53")
+		//		weaveTargets, err := appclient.ParseTargets([]string{flags.weaveHostname})
+		//		if err != nil {
+		//			log.Errorf("Failed to parse weave targets: %v", err)
+		//		} else {
+		//			weaveResolver, err := appclient.NewResolver(appclient.ResolverConfig{
+		//				Targets: weaveTargets,
+		//				Lookup:  weaveDNSLookup,
+		//				Set:     multiClients.Set,
+		//			})
+		//			if err != nil {
+		//				log.Errorf("Failed to create weave resolver: %v", err)
+		//			} else {
+		//				defer weaveResolver.Stop()
+		//			}
+		//		}
+		//	}
+		//}
 		clients = multiClients
 	}
 

@@ -495,7 +495,8 @@ func main() {
 
 	switch flags.mode {
 	case "app":
-		appMain(flags.app)
+		fmt.Println("app is deprecated")
+		//appMain(flags.app)
 	case "probe":
 		probeMain(flags.probe, targets)
 	case "version":

@@ -1,7 +1,6 @@
 package appclient
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -18,7 +17,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/ugorji/go/codec"
 
-	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
 	"github.com/weaveworks/scope/common/xfer"
 )
 
