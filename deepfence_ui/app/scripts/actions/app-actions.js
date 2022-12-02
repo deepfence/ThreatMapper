@@ -124,6 +124,8 @@ import {
   getTopMalwareScanContainerAndHosts,
   getMalwareScanReportChart,
   getMalwareScanChartData,
+  getMalwareClassesChartReport,
+  getMalwareClassesChartData, 
   malwareScanMaskDocs,
   malwareScanUnmaskDocs,
 } from '../utils/web-api-utils';
@@ -2192,6 +2194,24 @@ export function getMalwareScanChartDataAction(params) {
     ActionTypes.MALWARE_SCAN_CHART_FAILURE,
   ];
   return genericThunkAction(actionTypes, getMalwareScanChartData, params);
+}
+
+export function getMalwareClassesChartReportAction(params) {
+  const actionTypes = [
+    ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_REQUEST,
+    ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_SUCCESS,
+    ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareClassesChartReport, params);
+}
+
+export function getMalwareClassesChartDataAction(params) {
+  const actionTypes = [
+    ActionTypes.MALWARE_CLASSES_CHART_REQUEST,
+    ActionTypes.MALWARE_CLASSES_CHART_SUCCESS,
+    ActionTypes.MALWARE_CLASSES_CHART_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareClassesChartData, params);
 }
 
 export function malwareScanMaskDocsAction(params) {
