@@ -2,7 +2,8 @@ import './index.css';
 
 import { RouterProvider } from 'react-router-dom';
 
-import { router } from './router/route';
+import { LazyLayout } from './components/lazy/LazyLayout';
+import { router } from './routes';
 import { ThemeProvider, useThemeMode } from './theme/ThemeContext';
 
 function App() {
@@ -10,9 +11,11 @@ function App() {
 
   return (
     <ThemeProvider value={{ toggleMode }}>
-      <div className="h-screen dark:bg-gray-900 bg-gray-200">
-        <RouterProvider router={router} />
-      </div>
+      <LazyLayout>
+        <div className="h-screen dark:bg-gray-900 bg-gray-200 relative">
+          <RouterProvider router={router} />
+        </div>
+      </LazyLayout>
     </ThemeProvider>
   );
 }

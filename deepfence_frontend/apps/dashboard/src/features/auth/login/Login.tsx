@@ -1,21 +1,23 @@
 import cx from 'classnames';
-import { useEffect } from 'react';
-import { Link, useFetcher } from 'react-router-dom';
+import { Link, redirect, useFetcher } from 'react-router-dom';
 import { Button, Card, TextInput } from 'ui-components';
 
-import { useAuth } from '../../../components/hooks/useAuth';
+import storage from '../../../utils/storage';
+
+export const loginAction = async ({
+  request,
+}: {
+  request: Request;
+  params: Record<string, unknown>;
+}) => {
+  storage.setAuth({ isLogin: true });
+  return redirect('/home', {});
+};
 
 export const Login = () => {
   const fetcher = useFetcher();
-  const auth = useAuth();
 
   const { data, state } = fetcher;
-
-  useEffect(() => {
-    if (data && data.success) {
-      auth.login();
-    }
-  }, [data]);
 
   return (
     <div className="h-full flex items-center justify-center">
@@ -42,11 +44,7 @@ export const Login = () => {
             </Button>
             <Link
               to="/forgot-password"
-              className={cx(
-                'text-sm text-blue-600 mt-6 text-center',
-                'hover:underline',
-                'outline-none focus-visible:ring-1 focus-visible:ring-gray-900 dark:focus-visible:ring-2 dark:focus-visible:ring-gray-400',
-              )}
+              className={cx('mt-6', 'hover:underline bg-transparent')}
             >
               Forgot password?
             </Link>

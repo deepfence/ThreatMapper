@@ -2,6 +2,17 @@ import cx from 'classnames';
 import { Link, useFetcher } from 'react-router-dom';
 import { Button, Card, TextInput } from 'ui-components';
 
+export const forgotPasswordAction = async ({
+  request,
+}: {
+  request: Request;
+  params: Record<string, unknown>;
+}) => {
+  return {
+    success: true,
+  };
+};
+
 export const ForgetPassword = () => {
   const fetcher = useFetcher();
   const { data, state } = fetcher;
