@@ -33,6 +33,28 @@ export const ModalWithTrigger = () => {
   );
 };
 
+export const TriggerFromLeft = () => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  return (
+    <>
+      <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
+        Click to open
+      </Button>
+      <SlidingModal
+        title="Modal Title"
+        open={open}
+        onOpenChange={() => setOpen(false)}
+        elementToFocusOnCloseRef={ref}
+        direction="left"
+      >
+        <div className="dark:text-white">This is a content</div>
+      </SlidingModal>
+    </>
+  );
+};
+
 export const WithoutTitle = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);

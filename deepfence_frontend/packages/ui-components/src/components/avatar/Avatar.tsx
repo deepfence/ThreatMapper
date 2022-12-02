@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { forwardRef } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineUser } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
@@ -32,28 +33,37 @@ const Child = ({ children }: { children: AvatarType['children'] }) => {
   );
 };
 
-export const Avatar = (props: AvatarType) => {
-  const {
-    asChild = false,
-    children = undefined,
-    src = '',
-    alt = '',
-    className = '',
-    onClick,
-  } = props;
-
-  return (
-    <button
-      onClick={onClick}
-      className={twMerge(
-        cx(
-          `inline-flex overflow-hidden relative justify-center items-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-600`,
-          `text-gray-700 dark:text-gray-100 ${Typography.size.lg}`,
-        ),
-        className,
-      )}
-    >
-      {!asChild ? <img src={src} alt={alt} className="p-2" /> : <Child>{children}</Child>}
-    </button>
-  );
-};
+export const Avatar = forwardRef<HTMLButtonElement, AvatarType>(
+  (
+    {
+      asChild = false,
+      children = undefined,
+      src = '',
+      alt = '',
+      className = '',
+      onClick,
+    },
+    ref,
+  ) => {
+    return (
+      <button
+        ref={ref}
+        onClick={onClick}
+        className={twMerge(
+          cx(
+            `inline-flex overflow-hidden relative justify-center items-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-600`,
+            `text-gray-700 dark:text-gray-100 ${Typography.size.lg}`,
+            'outline-none focus-visible:ring-1 focus-visible:ring-gray-900 dark:focus-visible:ring-2 dark:focus-visible:ring-gray-400',
+          ),
+          className,
+        )}
+      >
+        {!asChild ? (
+          <img src={src} alt={alt} className="p-2" />
+        ) : (
+          <Child>{children}</Child>
+        )}
+      </button>
+    );
+  },
+);

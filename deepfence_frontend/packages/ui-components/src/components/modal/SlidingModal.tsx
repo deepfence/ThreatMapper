@@ -15,6 +15,7 @@ type ChildrenType = {
   children: React.ReactNode;
 };
 export interface ModalProps extends DialogPrimitive.DialogProps {
+  direction?: 'left' | 'right';
   width?: string;
   title?: string;
   footer?: React.ReactNode;
@@ -86,6 +87,7 @@ export const SlidingModal: FC<ModalProps> = ({
   elementToFocusOnCloseRef,
   open,
   width = 'w-9/12', // 33.333333%
+  direction = 'right',
   ...rest
 }) => {
   const state = useUpdateStateIfMounted(open);
@@ -95,6 +97,14 @@ export const SlidingModal: FC<ModalProps> = ({
   useEffect(() => {
     setWasOpen(open);
   }, [open]);
+
+  let inAnimation = 'animate-slide-right-in';
+  let outAnimation = `animate-slide-right-out`;
+
+  if (direction === 'left') {
+    inAnimation = 'animate-slide-left-in';
+    outAnimation = 'animate-slide-left-out';
+  }
 
   return (
     <DialogPrimitive.Root open={wasOpen} {...rest}>
@@ -107,14 +117,16 @@ export const SlidingModal: FC<ModalProps> = ({
         >
           <DialogPrimitive.Content
             className={cx(
-              'flex flex-col h-[100vh] fixed -right-[100%]',
+              'flex flex-col h-[100vh] fixed',
               'overflow-hidden focus:outline-none',
               'bg-white text-gray-900',
-              'dark:bg-gray-700 dark:text-white',
+              'dark:bg-gray-700 dark:text-white ',
               `${width}`,
               {
-                'animate-slide-right-out': !wasOpen,
-                'animate-slide-right-in': wasOpen,
+                '-left-[100%]': direction === 'left',
+                '-right-[100%]': direction === 'right',
+                [inAnimation]: wasOpen,
+                [outAnimation]: !wasOpen,
               },
             )}
             onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}

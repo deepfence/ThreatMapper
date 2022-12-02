@@ -47,6 +47,12 @@ module.exports = {
         'slide-right-out': {
           '0%': { right: 0 },
         },
+        'slide-left-in': {
+          '100%': { left: 0 },
+        },
+        'slide-left-out': {
+          '0%': { left: 0 },
+        },
         'opacity-in': {
           '0%': { opacity: 0 },
           '100%': { opacity: 1 },
@@ -102,6 +108,8 @@ module.exports = {
         'pop-out': 'pop-out 0.5s ease',
         'slide-right-in': 'slide-right-in 0.5s forwards',
         'slide-right-out': 'slide-right-out 0.5s forwards',
+        'slide-left-in': 'slide-left-in 0.2s forwards',
+        'slide-left-out': 'slide-left-out 0.5s forwards',
         'slide-opacity-out': 'slide-opacity-out 0.3s ease',
         'opacity-out': 'opacity-out 0.5s ease',
         'opacity-in': 'opacity-in 0.5s ease',
