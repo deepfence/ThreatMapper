@@ -247,11 +247,13 @@ services:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-1.3.0}
     hostname: deepfence-kafka-broker
     container_name: deepfence-kafka-broker
+    # environment:
+    #   - KAFKA_LOG_DIRS=/var/lib/kafka/data
     ports:
       - "127.0.0.1:9092:9092"
       - "127.0.0.1:9101:9101"
     volumes:
-      - deepfence_data:/data:rw
+      - deepfence_kafka_broker:/var/lib/kafka/data:rw
     networks:
       - deepfence_net
     logging:
@@ -267,6 +269,8 @@ volumes:
   deepfence_neo4j_logs:
     driver: local
   deepfence_neo4j_plugins:
+    driver: local
+  deepfence_kafka_broker:
     driver: local
 
 networks:
