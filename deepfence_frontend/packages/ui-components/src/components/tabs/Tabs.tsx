@@ -4,7 +4,7 @@ import cx from 'classnames';
 import React from 'react';
 import { IconContext } from 'react-icons';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type TabProps = TabsPrimitive.TabsProps & {

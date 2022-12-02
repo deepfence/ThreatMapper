@@ -4,8 +4,8 @@ import { fireEvent } from '@testing-library/react';
 import { FaPlus } from 'react-icons/fa';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import Badge from './Badge';
+import Badge from '@/components/badge/Badge';
+import { renderUI } from '@/tests/utils';
 
 describe(`Component Badge`, () => {
   it(`render with label, color, icon, onRemove`, () => {

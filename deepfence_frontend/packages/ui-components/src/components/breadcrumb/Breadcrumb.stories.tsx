@@ -2,7 +2,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { forwardRef } from 'react';
 import { HiChevronDoubleRight, HiHome } from 'react-icons/hi';
 
-import { Breadcrumb, BreadcrumbLink } from './Breadcrumb';
+import { Breadcrumb, BreadcrumbLink } from '@/components/breadcrumb/Breadcrumb';
 
 export default {
   title: 'Components/BreadCrumb',

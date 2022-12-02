@@ -52,5 +52,10 @@ export default defineConfig(({ mode }) => {
       },
     },
     sourcemap: true,
+    resolve: {
+      alias: {
+        '@': path.resolve(root, './src'),
+      },
+    },
   };
 });

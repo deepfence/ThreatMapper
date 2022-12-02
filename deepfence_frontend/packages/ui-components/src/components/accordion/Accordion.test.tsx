@@ -3,13 +3,13 @@ import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from './Accordion';
+} from '@/components/accordion/Accordion';
+import { renderUI } from '@/tests/utils';
 
 const Items = ['Link 1', 'Link 2', 'Link 3'];
 

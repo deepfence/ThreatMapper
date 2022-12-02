@@ -3,8 +3,8 @@ import { memo, useMemo } from 'react';
 import { HiDotsHorizontal } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { usePagination, UsePaginationOptions } from '../hooks/usePagination';
-import { Typography } from '../typography/Typography';
+import { usePagination, UsePaginationOptions } from '@/components/hooks/usePagination';
+import { Typography } from '@/components/typography/Typography';
 
 export type SizeType = 'sm' | 'md';
 

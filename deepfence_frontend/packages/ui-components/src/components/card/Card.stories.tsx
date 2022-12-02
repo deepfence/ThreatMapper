@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 
-import { Typography } from '../typography/Typography';
-import { Card } from './Card';
+import { Card } from '@/components/card/Card';
+import { Typography } from '@/components/typography/Typography';
 
 export default {
   title: 'Components/Card',

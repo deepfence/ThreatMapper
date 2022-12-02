@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { AiOutlineMail } from 'react-icons/ai';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import { Select, SelectItem } from './Select';
+import { Select, SelectItem } from '@/components/select/Select';
+import { renderUI } from '@/tests/utils';
 
 describe(`Component Select`, () => {
   it(`render with label`, () => {
@@ -54,7 +54,7 @@ describe(`Component Select`, () => {
 
   it(`on select pick item correctly`, () => {
     const onChange = vi.fn((value) => value);
-    const { getByTestId, rerender } = renderUI(
+    const { getByTestId } = renderUI(
       <Select
         name="fruit"
         label="Fruit"

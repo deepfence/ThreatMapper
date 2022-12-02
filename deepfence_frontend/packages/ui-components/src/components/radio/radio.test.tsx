@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 
-import { renderUI } from '../../tests/utils';
-import Radio from './Radio';
+import Radio from '@/components/radio/Radio';
+import { renderUI } from '@/tests/utils';
 
 describe(`Component Radio`, () => {
   it(`render two radio elements`, () => {

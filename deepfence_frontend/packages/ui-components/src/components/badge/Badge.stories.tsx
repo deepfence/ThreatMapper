@@ -2,8 +2,8 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 import { HiInformationCircle } from 'react-icons/hi';
 
-import Button from '../button/Button';
-import Badge, { ColorType } from './Badge';
+import Badge, { ColorType } from '@/components/badge/Badge';
+import Button from '@/components/button/Button';
 
 export default {
   title: 'Components/Badge',

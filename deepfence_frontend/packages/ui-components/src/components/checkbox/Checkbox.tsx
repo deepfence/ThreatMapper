@@ -5,7 +5,7 @@ import { isNil } from 'lodash-es';
 import React, { useEffect, useId } from 'react';
 import { FaCheck, FaMinus } from 'react-icons/fa';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 export type CheckboxProps = CheckboxPrimitive.CheckboxProps & {
   label?: string;

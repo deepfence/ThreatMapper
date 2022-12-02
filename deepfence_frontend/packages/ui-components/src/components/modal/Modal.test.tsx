@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import Button from '../button/Button';
-import { Modal } from './Modal';
+import Button from '@/components/button/Button';
+import { Modal } from '@/components/modal/Modal';
+import { renderUI } from '@/tests/utils';
 
 /**
  * Why user-event???

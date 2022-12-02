@@ -3,8 +3,8 @@ import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import { TextInputArea } from './TextInputArea';
+import { TextInputArea } from '@/components/input/TextInputArea';
+import { renderUI } from '@/tests/utils';
 
 describe(`Component TextInputArea`, () => {
   it(`render with placehoder, label, onChange, startIcon, endIcon, helperText, style width`, () => {

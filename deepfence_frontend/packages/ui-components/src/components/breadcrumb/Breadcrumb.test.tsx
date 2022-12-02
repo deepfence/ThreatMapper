@@ -4,8 +4,8 @@ import { forwardRef } from 'react';
 import { HiHome } from 'react-icons/hi';
 import { describe, expect, it } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import { Breadcrumb, BreadcrumbLink } from './Breadcrumb';
+import { Breadcrumb, BreadcrumbLink } from '@/components/breadcrumb/Breadcrumb';
+import { renderUI } from '@/tests/utils';
 
 export const Link = forwardRef<
   HTMLAnchorElement,

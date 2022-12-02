@@ -6,8 +6,13 @@ import userEvent from '@testing-library/user-event';
 import { sortBy } from 'lodash-es';
 import { useMemo, useState } from 'react';
 
-import { renderUI } from '../../tests/utils';
-import { getRowExpanderColumn, getRowSelectionColumn, Table, TableProps } from './Table';
+import {
+  getRowExpanderColumn,
+  getRowSelectionColumn,
+  Table,
+  TableProps,
+} from '@/components/table/Table';
+import { renderUI } from '@/tests/utils';
 
 interface Fruit {
   id: number;

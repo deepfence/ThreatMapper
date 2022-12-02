@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { FaPlus } from 'react-icons/fa';
 
-import IconButton from './IconButton';
+import IconButton from '@/components/button/IconButton';
 
 export default {
   title: 'Components/Button/IconButton',

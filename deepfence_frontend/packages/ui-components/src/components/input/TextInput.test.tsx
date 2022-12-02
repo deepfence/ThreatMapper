@@ -4,8 +4,8 @@ import { fireEvent } from '@testing-library/react';
 import { AiOutlineCheck, AiOutlineMail } from 'react-icons/ai';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import { TextInput } from './TextInput';
+import { TextInput } from '@/components/input/TextInput';
+import { renderUI } from '@/tests/utils';
 
 describe(`Component TextInput`, () => {
   it(`render with placehoder, label, onChange, startIcon, endIcon, helperText`, () => {

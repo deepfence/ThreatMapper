@@ -4,8 +4,8 @@ import { fireEvent } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import { Pagination } from './Pagination';
+import { Pagination } from '@/components/pagination/Pagination';
+import { renderUI } from '@/tests/utils';
 
 /**
  * Total pages of max 11 will be rendered: Previous(1) +  Next(1) + pages(9) (number or dots) = 11

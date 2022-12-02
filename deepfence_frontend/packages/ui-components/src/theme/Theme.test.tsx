@@ -3,9 +3,9 @@ import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/react';
 import { beforeEach, describe, it } from 'vitest';
 
-import Button from '../components/button/Button';
-import { renderUI } from '../tests/utils';
-import { THEME_DARK, THEME_LIGHT, useTheme } from '../theme/ThemeContext';
+import Button from '@/components/button/Button';
+import { renderUI } from '@/tests/utils';
+import { THEME_DARK, THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const App = () => {
   const theme = useTheme();
