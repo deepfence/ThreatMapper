@@ -2,8 +2,12 @@ import '@testing-library/jest-dom';
 
 import { describe } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import { Dropdown, DropdownItem, DropdownSeparator } from './Dropdown';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownSeparator,
+} from '@/components/dropdown/Dropdown';
+import { renderUI } from '@/tests/utils';
 
 describe('Component Dropdown', () => {
   it('render with item, style props', () => {

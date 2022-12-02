@@ -3,8 +3,8 @@ import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import { Checkbox } from './Checkbox';
+import { Checkbox } from '@/components/checkbox/Checkbox';
+import { renderUI } from '@/tests/utils';
 
 describe(`Component Checkbox`, () => {
   it(`render with label, style props, onCheckedChange`, () => {

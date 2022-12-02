@@ -4,7 +4,7 @@ import React from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 export const Accordion = React.forwardRef<
   HTMLDivElement,

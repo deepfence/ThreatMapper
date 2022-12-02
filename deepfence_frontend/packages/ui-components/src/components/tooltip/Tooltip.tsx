@@ -1,7 +1,7 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import cx from 'classnames';
 
-import { Typography } from '../typography/Typography';
+import { Typography } from '@/components/typography/Typography';
 
 export interface TooltipProps
   extends Pick<TooltipPrimitive.TooltipProps, 'defaultOpen' | 'open' | 'onOpenChange'> {

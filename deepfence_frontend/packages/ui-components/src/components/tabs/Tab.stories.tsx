@@ -2,7 +2,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 import { FaAdn, FaAffiliatetheme, FaAirbnb } from 'react-icons/fa';
 
-import Tab from './Tabs';
+import Tab from '@/components/tabs/Tabs';
 
 export default {
   title: 'Components/Tab',

@@ -9,8 +9,12 @@ import {
   HiUserAdd,
 } from 'react-icons/hi';
 
-import Button from '../button/Button';
-import { Dropdown, DropdownItem, DropdownSeparator } from './Dropdown';
+import Button from '@/components/button/Button';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownSeparator,
+} from '@/components/dropdown/Dropdown';
 
 export default {
   title: 'Components/Dropdown',

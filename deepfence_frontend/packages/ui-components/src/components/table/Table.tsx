@@ -27,10 +27,10 @@ import { IconContext } from 'react-icons';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { HiChevronDown, HiChevronUp, HiOutlineSelector } from 'react-icons/hi';
 
-import IconButton from '../button/IconButton';
-import { Checkbox } from '../checkbox/Checkbox';
-import Pagination from '../pagination/Pagination';
-import { Typography } from '../typography/Typography';
+import IconButton from '@/components/button/IconButton';
+import { Checkbox } from '@/components/checkbox/Checkbox';
+import Pagination from '@/components/pagination/Pagination';
+import { Typography } from '@/components/typography/Typography';
 
 export interface TableProps<TData extends RowData> {
   data: TData[];

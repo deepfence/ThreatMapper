@@ -3,8 +3,8 @@ import '@testing-library/jest-dom';
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import Switch from './Switch';
+import Switch from '@/components/switch/Switch';
+import { renderUI } from '@/tests/utils';
 
 describe(`Component Switch`, () => {
   it(`render switch with label`, () => {

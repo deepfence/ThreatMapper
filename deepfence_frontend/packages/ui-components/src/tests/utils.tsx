@@ -1,7 +1,7 @@
 import { render, RenderOptions } from '@testing-library/react';
 import React, { FC, ReactElement } from 'react';
 
-import { ThemeProvider, useThemeMode } from '../theme/ThemeContext';
+import { ThemeProvider, useThemeMode } from '@/theme/ThemeContext';
 
 const AllTheProviders: FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toggleMode } = useThemeMode(true);

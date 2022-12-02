@@ -4,8 +4,8 @@ import { fireEvent } from '@testing-library/react';
 import { FaPlus } from 'react-icons/fa';
 import { describe, expect, it, vi } from 'vitest';
 
-import { renderUI } from '../../tests/utils';
-import IconButton from './IconButton';
+import IconButton from '@/components/button/IconButton';
+import { renderUI } from '@/tests/utils';
 
 describe(`Component IconButton`, () => {
   it(`render with color, icon, onClick`, () => {

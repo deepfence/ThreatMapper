@@ -2,7 +2,11 @@ import cx from 'classnames';
 import { ComponentProps, forwardRef, useId } from 'react';
 import { IconContext } from 'react-icons';
 
-import { classes as buttonClasses, ColorType, SizeType } from './Button';
+import {
+  classes as buttonClasses,
+  ColorType,
+  SizeType,
+} from '@/components/button/Button';
 
 interface Props extends Omit<ComponentProps<'button'>, 'className' | 'color'> {
   size?: SizeType;
