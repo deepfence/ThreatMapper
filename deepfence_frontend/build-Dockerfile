@@ -1,9 +1,0 @@
-FROM node:16.11-bullseye-slim
-
-WORKDIR /home/deepfence/
-
-RUN apt-get update \
-    && npm install turbo pnpm typescript -g
-ADD . /home/deepfence/
-RUN pnpm install \
-    && pnpm run build
