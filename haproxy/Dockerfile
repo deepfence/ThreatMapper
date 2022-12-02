@@ -28,11 +28,9 @@ COPY router-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN apk update --no-cache \
     && chmod +x /usr/local/bin/docker-entrypoint.sh \
-    && apk add --no-cache bash lua5.3 lua5.3-socket curl rsyslog logrotate \
+    && apk add --no-cache bash lua5.3 lua5.3-socket curl \
     && rm -rf /var/cache/apk/* \
     && mkdir -p /var/log/haproxy \
     && touch /var/log/haproxy/haproxy.log
 
-COPY rsyslog.conf /etc/rsyslog.conf
-COPY logrotate.conf /etc/logrotate.d/haproxy
 COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg

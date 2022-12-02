@@ -1,18 +1,5 @@
 #!/bin/bash
 
-readonly RSYSLOG_PID="/var/run/rsyslogd.pid"
-
-start_rsyslog() {
-  rm -f $RSYSLOG_PID
-  rsyslogd -n 2>&1
-}
-
-start_crond() {
-  chmod 644 /etc/logrotate.d/haproxy
-  (crontab -l; echo "*/10 * * * * /usr/sbin/logrotate -vf /etc/logrotate.conf" ) | crontab -
-  crond
-}
-
 cat /usr/local/etc/haproxy/deepfence.crt /usr/local/etc/haproxy/deepfence.key > /usr/local/etc/haproxy/deepfence.pem
 
 # Override default cert files by copying user provided certificates for nginx (if present)
@@ -39,7 +26,7 @@ if [[ "$1" = 'haproxy' ]]; then
 	#   -W  -- "master-worker mode" (similar to the old "haproxy-systemd-wrapper"; allows for reload via "SIGUSR2")
 	#   -db -- disables background mode
 	#   -q  -- disables logging
-	set -- haproxy -W -q -db "$@"
+	set -- haproxy -W -db "$@"
 fi
 
 until curl -s "http://deepfence-server:8080/deepfence/ping" > /dev/null; do
@@ -48,7 +35,4 @@ until curl -s "http://deepfence-server:8080/deepfence/ping" > /dev/null; do
 done
 
 echo "Starting router"
-
-start_rsyslog &
-start_crond &
 exec "$@"
