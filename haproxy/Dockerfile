@@ -17,7 +17,7 @@ ARG is_dev_build
 ENV ENABLE_AUTH=true \
     IS_DEV_BUILD=$is_dev_build \
     UI_SERVICE_NAME=deepfence-ui \
-    UI_SERVICE_PORT=80 \
+    UI_SERVICE_PORT=8081 \
     API_SERVICE_HOST=deepfence-server \
     API_SERVICE_PORT=8080 \
     CUSTOMER_UNIQUE_ID=""

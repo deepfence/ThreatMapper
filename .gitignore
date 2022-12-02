@@ -29,7 +29,5 @@ _testmain.go
 !/deepfence_frontend/.vscode/
 deepfence_frontend/console_version.txt
 deepfence_frontend/product_version.txt
-deepfence_frontend/node_modules
-deepfence_frontend/.pnpm-store
 
 deepfence_agent/tools/apache/scope/proto/
