@@ -1,16 +1,17 @@
 package router
 
 import (
-	"os"
-	"strings"
-
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"os"
+	"strings"
 )
 
 func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
@@ -30,6 +31,12 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 		AuthEnforcer:   authEnforcer,
 		OpenApiDocs:    openApiDocs,
 		SaasDeployment: IsSaasDeployment(),
+		Validator:      validator.New(),
+	}
+
+	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)
+	if err != nil {
+		return err
 	}
 
 	r.Route("/deepfence", func(r chi.Router) {

@@ -24,7 +24,7 @@ type CreateApiTokenParams struct {
 	CompanyID       int32
 	RoleID          int32
 	GroupID         int32
-	CreatedByUserID int32
+	CreatedByUserID int64
 }
 
 func (q *Queries) CreateApiToken(ctx context.Context, arg CreateApiTokenParams) (ApiToken, error) {

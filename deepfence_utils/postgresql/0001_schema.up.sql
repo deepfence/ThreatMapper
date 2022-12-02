@@ -96,7 +96,7 @@ CREATE TABLE api_token
     company_id         integer                                            NOT NULL,
     group_id           integer                                            NOT NULL,
     role_id            integer                                            NOT NULL,
-    created_by_user_id integer                                            NOT NULL,
+    created_by_user_id bigint                                             NOT NULL,
     created_at         timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at         timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT fk_company

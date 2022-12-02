@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/google/uuid"
 	"net/http"
 	"time"
 )
@@ -22,7 +21,7 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreatePasswordGrantAccessToken(u *model.User) (string, string, error) {
-	accessTokenID := uuid.New().String()
+	accessTokenID := model.GenerateUUID()
 	_, s, err := h.TokenAuth.Encode(map[string]interface{}{
 		"date":       time.Now().UTC(),
 		"expires_in": time.Hour * 24,
@@ -48,7 +47,7 @@ func (h *Handler) CreateRefreshToken(accessTokenID string, userID int64, grantTy
 		"date":       time.Now().UTC(),
 		"expires_in": time.Hour * 24 * 7,
 		"token_id":   accessTokenID,
-		"id":         uuid.New().String(),
+		"id":         model.GenerateUUID(),
 		"user_id":    userID,
 		"grant_type": grantType,
 	})

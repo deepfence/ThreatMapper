@@ -1,15 +1,11 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"net/http"
-	"regexp"
-	"unicode"
 )
 
 const (
@@ -17,32 +13,9 @@ const (
 )
 
 var (
-	MinCompanyLength    = 3
-	MaxCompanyLength    = 32
-	CompanyRegex        = regexp.MustCompile(fmt.Sprintf("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]{%d,%d}$", MinCompanyLength-1, MaxCompanyLength-1))
-	CompanyErrorMessage = "should only contain alphabets, numbers and valid characters"
-	MinNameLength       = 2
-	MaxNameLength       = 32
-	NameRegex           = regexp.MustCompile(fmt.Sprintf("^[A-Za-z][A-Za-z .'-]{%d,%d}$", MinNameLength-1, MaxNameLength-1))
-	NameErrorMessage    = "should only contain alphabets, numbers, space and hyphen"
-	MinPassLength       = 8
-	MaxPassLength       = 32
-	GrantTypePassword   = "password"
-	GrantTypeAPIToken   = "api_token"
+	GrantTypePassword = "password"
+	GrantTypeAPIToken = "api_token"
 )
-
-func ValidateText(text string, minLength, maxLength int, regex *regexp.Regexp, defaultErrorMessage string) (bool, string) {
-	if len(text) < minLength {
-		return false, fmt.Sprintf("should be at least %d characters", minLength)
-	}
-	if len(text) > maxLength {
-		return false, fmt.Sprintf("should not be more than %d characters", maxLength)
-	}
-	if regex.MatchString(text) {
-		return true, ""
-	}
-	return false, defaultErrorMessage
-}
 
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var user model.User
@@ -52,28 +25,9 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
 		return
 	}
-	errorFields := make(model.InvalidFields)
-	valid, errorMsg := ValidateText(user.FirstName, MinNameLength, MaxNameLength, NameRegex, NameErrorMessage)
-	if !valid {
-		errorFields["first_name"] = errorMsg
-	}
-	valid, errorMsg = ValidateText(user.LastName, MinNameLength, MaxNameLength, NameRegex, NameErrorMessage)
-	if !valid {
-		errorFields["last_name"] = errorMsg
-	}
-	valid, errorMsg = ValidateText(user.Company, MinCompanyLength, MaxCompanyLength, CompanyRegex, CompanyErrorMessage)
-	if !valid {
-		errorFields["company"] = errorMsg
-	}
-	valid = utils.ValidateEmail(user.Email)
-	if !valid {
-		errorFields["email"] = "invalid email"
-	}
-	valid, errorMsg = ValidatePassword(user.Password)
-	if !valid {
-		errorFields["password"] = errorMsg
-	}
-	if len(errorFields) > 0 {
+	err = h.Validator.Struct(user)
+	if err != nil {
+		errorFields := model.ParseValidatorError(err.Error())
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
 		return
 	}
@@ -114,7 +68,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		PasswordInvalidated: false,
 		Password:            model.GetEncodedPassword(user.Password),
 	}
-	createdUser, err := u.Create(ctx, pgClient)
+	createdUser, _, err := u.Create(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
@@ -164,44 +118,4 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	return
-}
-
-func ValidatePassword(password string) (bool, string) {
-	var (
-		isUpper       bool
-		isLower       bool
-		isSpecialChar bool
-		isDigit       bool
-	)
-	if len(password) < MinPassLength {
-		return false, fmt.Sprintf("Password should be at least %d characters", MinPassLength)
-	}
-	if len(password) > MaxPassLength {
-		return false, fmt.Sprintf("Password should be at most %d characters", MinPassLength)
-	}
-	for _, char := range password {
-		switch {
-		case unicode.IsUpper(char):
-			isUpper = true
-		case unicode.IsLower(char):
-			isLower = true
-		case unicode.IsNumber(char):
-			isDigit = true
-		case unicode.IsPunct(char) || unicode.IsSymbol(char):
-			isSpecialChar = true
-		}
-	}
-	if !isSpecialChar {
-		return false, "Password should contain at least 1 special character"
-	}
-	if !isDigit {
-		return false, "Password should contain at least 1 digit"
-	}
-	if !isUpper {
-		return false, "Password should contain at least 1 upper case character"
-	}
-	if !isLower {
-		return false, "Password should contain at least 1 lower case character"
-	}
-	return true, ""
 }

@@ -7,9 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/pbkdf2"
 	"strings"
+	"unicode"
 )
 
 const (
@@ -21,14 +23,24 @@ const (
 )
 
 var (
-	SaltKey = []byte(uuid.New().String())
+	SaltKey      = []byte(uuid.New().String())
+	ErrorMessage = map[string]string{
+		"first_name": "should only contain alphabets, numbers, space and hyphen",
+		"last_name":  "should only contain alphabets, numbers, space and hyphen",
+		"company":    "should only contain alphabets, numbers and valid characters",
+	}
 )
 
 type ApiToken struct {
-	ID            int32  `json:"id"`
-	Name          string `json:"name"`
-	RoleName      string `json:"role_name"`
-	CreatedByUser string `json:"created_by_user"`
+	ID              int32  `json:"id"`
+	Name            string `json:"name"`
+	RoleName        string `json:"role_name"`
+	Company         string `json:"company"`
+	CompanyID       int32  `json:"company_id"`
+	Role            string `json:"role"`
+	RoleID          int32  `json:"role_id"`
+	CreatedByUser   string `json:"created_by_user"`
+	CreatedByUserID int64  `json:"created_by_user_id"`
 }
 
 type Company struct {
@@ -63,13 +75,13 @@ func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlD
 
 type User struct {
 	ID                  int64            `json:"id"`
-	FirstName           string           `json:"first_name"`
-	LastName            string           `json:"last_name"`
-	Email               string           `json:"email"`
-	Company             string           `json:"company"`
+	FirstName           string           `json:"first_name" validate:"required,min=2,max=32"`
+	LastName            string           `json:"last_name" validate:"required,min=2,max=32"`
+	Email               string           `json:"email" validate:"required,email"`
+	Company             string           `json:"company" validate:"required,min=2,max=32"`
 	CompanyID           int32            `json:"company_id"`
 	IsActive            bool             `json:"is_active"`
-	Password            string           `json:"-"`
+	Password            string           `json:"-"  validate:"required,password,min=8,max=32"`
 	Groups              map[int32]string `json:"groups"`
 	Role                string           `json:"role"`
 	RoleID              int32            `json:"role_id"`
@@ -113,10 +125,10 @@ func (u *User) LoadFromDb(ctx context.Context, pgClient *postgresqlDb.Queries) e
 	return nil
 }
 
-func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {
+func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, *postgresqlDb.ApiToken, error) {
 	groupIDs, err := json.Marshal(MapKeys(u.Groups))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	user, err := pgClient.CreateUser(ctx, postgresqlDb.CreateUserParams{
 		FirstName:           u.FirstName,
@@ -130,9 +142,16 @@ func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 		PasswordInvalidated: false,
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return &user, nil
+	apiToken, err := pgClient.CreateApiToken(ctx, postgresqlDb.CreateApiTokenParams{
+		ApiToken:        uuid.New(),
+		Name:            u.FirstName + " " + u.LastName,
+		CompanyID:       u.CompanyID,
+		RoleID:          u.RoleID,
+		CreatedByUserID: user.ID,
+	})
+	return &user, &apiToken, nil
 }
 
 func (u *User) GetAccessToken() *ResponseAccessToken {
@@ -146,4 +165,59 @@ func GetEmailDomain(email string) (string, error) {
 		return "", errors.New("invalid domain")
 	}
 	return strings.ToLower(domain[1]), nil
+}
+
+// ValidatePassword implements validator.Func
+func ValidatePassword(fl validator.FieldLevel) bool {
+	var (
+		isUpper       bool
+		isLower       bool
+		isSpecialChar bool
+		isDigit       bool
+	)
+	for _, char := range fl.Field().String() {
+		switch {
+		case unicode.IsUpper(char):
+			isUpper = true
+		case unicode.IsLower(char):
+			isLower = true
+		case unicode.IsNumber(char):
+			isDigit = true
+		case unicode.IsPunct(char) || unicode.IsSymbol(char):
+			isSpecialChar = true
+		default:
+			return false
+		}
+	}
+	if !isUpper || !isLower || !isSpecialChar || !isDigit {
+		return false
+	}
+	return true
+}
+
+func ParseValidatorError(errMsg string) map[string]string {
+	fields := make(map[string]string)
+	validate := func(errMsg string) string {
+		s := strings.SplitN(errMsg, "'", 3)
+		if len(s) == 3 {
+			s = strings.Split(s[1], ".")
+			if len(s) == 2 {
+				return strings.ToLower(s[1])
+			}
+			return strings.ToLower(s[1])
+		}
+		return strings.ToLower(errMsg)
+	}
+	for _, msg := range strings.Split(errMsg, "\n") {
+		field := validate(msg)
+		m, ok := ErrorMessage[field]
+		if ok {
+			fields[validate(msg)] = m
+		} else {
+			fields[validate(msg)] = "invalid"
+		}
+	}
+	//CompanyRegex      = regexp.MustCompile(fmt.Sprintf("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]{%d,%d}$", MinCompanyLength-1, MaxCompanyLength-1))
+	//NameRegex         = regexp.MustCompile(fmt.Sprintf("^[A-Za-z][A-Za-z .'-]{%d,%d}$", MinNameLength-1, MaxNameLength-1))
+	return fields
 }
