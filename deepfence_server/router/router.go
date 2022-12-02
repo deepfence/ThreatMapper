@@ -48,19 +48,15 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 			}
 		})
 
-		openApiDocs.AddTopologyOperations()
-		r.Route("/topology", func(r chi.Router) {
-			r.Post("/report", dfHandler.IngestAgentReport)
-			r.Post("/graph", dfHandler.GetTopologyGraph)
-		})
-
-		openApiDocs.AddThreatGraphOperations()
-		r.Route("/threat", func(r chi.Router) {
-			r.Post("/graph", dfHandler.GetThreatGraph)
+		openApiDocs.AddGraphOperations()
+		r.Route("/graph", func(r chi.Router) {
+			r.Post("/topology", dfHandler.GetTopologyGraph)
+			r.Post("/threat", dfHandler.GetThreatGraph)
 		})
 
 		openApiDocs.AddIngestersOperations()
 		r.Route("/ingest", func(r chi.Router) {
+			r.Post("/report", dfHandler.IngestAgentReport)
 			r.Post("/cves", dfHandler.IngestCVEReportHandler)
 			r.Post("/secrets", dfHandler.IngestSecretReportHandler)
 			r.Post("/compliance", dfHandler.IngestComplianceReportHandler)

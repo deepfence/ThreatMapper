@@ -1,13 +1,12 @@
 package appclient
 
 import (
-	"bytes"
-	"errors"
+	"context"
 	"fmt"
 	"net/url"
-	"strings"
 	"sync"
 
+	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/weaveworks/scope/common/xfer"
@@ -165,15 +164,37 @@ func (c *multiClient) Publish(r report.Report) error {
 		return err
 	}
 
-	errs := []string{}
-	for _, c := range c.clients {
-		if err := c.Publish(bytes.NewReader(buf.Bytes()), r.Shortcut); err != nil {
-			errs = append(errs, err.Error())
-		}
+	payload := string(buf.Bytes())
+	cfg := openapi.NewConfiguration()
+	cfg.Servers = openapi.ServerConfigurations{
+		{
+			URL:         "http://localhost:8080",
+			Description: "deepfence_server",
+		},
 	}
-	if len(errs) > 0 {
-		return errors.New(strings.Join(errs, "; "))
+	cl := openapi.NewAPIClient(cfg)
+	req := cl.TopologyApi.IngestAgentReport(context.Background())
+
+	req.ApiDocsRawReport(openapi.ApiDocsRawReport{
+		Payload: &payload,
+	})
+	ctl, w, err := cl.TopologyApi.IngestAgentReportExecute(req)
+	if err != nil {
+		fmt.Printf("err = %v\n", err)
+		return err
 	}
+	fmt.Printf("ctl = %v\n", w)
+	fmt.Printf("ctl = %v\n", ctl)
+
+	//errs := []string{}
+	//for _, c := range c.clients {
+	//	if err := c.Publish(bytes.NewReader(buf.Bytes()), r.Shortcut); err != nil {
+	//		errs = append(errs, err.Error())
+	//	}
+	//}
+	//if len(errs) > 0 {
+	//	return errors.New(strings.Join(errs, "; "))
+	//}
 	return nil
 }
 

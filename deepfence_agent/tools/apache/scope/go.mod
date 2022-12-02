@@ -13,6 +13,8 @@ replace github.com/weaveworks/tcptracer-bpf => ../deepfence/tcptracer-bpf
 
 replace github.com/ugorji/go => ../deepfence/ugorji/go
 
+replace github.com/deepfence/ThreatMapper/deepfence_server_client => ../../../../deepfence_server_client
+
 require (
 	camlistore.org v0.0.0-20171230002226-a5a65f0d8b22
 	github.com/Jeffail/tunny v0.1.4
@@ -28,6 +30,7 @@ require (
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d
 	github.com/coocood/freecache v1.2.3
 	github.com/davecgh/go-spew v1.1.1
+	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000
 	github.com/dustin/go-humanize v1.0.0

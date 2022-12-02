@@ -87,15 +87,16 @@ Class | Method | HTTP request | Description
 *ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Get** /deepfence/scan/start/compliances | Start Compliance Scan
 *SecretScanApi* | [**IngestSecrets**](docs/SecretScanApi.md#ingestsecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
 *SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan) | **Get** /deepfence/scan/start/secrets | Start Secret Scan
-*ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Get** /deepfence/threat/graph | Get Threat Graph
-*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Get** /deepfence/topology-api/graph | Get Topology Graph
-*TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/topology-api/ingest | Ingest Topology Data
+*ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Get** /deepfence/graph/threat | Get Threat Graph
+*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Get** /deepfence/graph/topology | Get Topology Graph
+*TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/ingest/report | Ingest Topology Data
 *VulnerabilityApi* | [**IngestCVEs**](docs/VulnerabilityApi.md#ingestcves) | **Post** /deepfence/ingest/cves | Ingest CVEs
 *VulnerabilityApi* | [**StartCVEScan**](docs/VulnerabilityApi.md#startcvescan) | **Get** /deepfence/scan/start/cves | Start CVE Scan
 
 
 ## Documentation For Models
 
+ - [ApiDocsRawReport](docs/ApiDocsRawReport.md)
  - [ApiDocsUnauthorizedResponse](docs/ApiDocsUnauthorizedResponse.md)
  - [ControlsAgentControls](docs/ControlsAgentControls.md)
  - [IngestersCloudComplianceDoc](docs/IngestersCloudComplianceDoc.md)
@@ -105,10 +106,10 @@ Class | Method | HTTP request | Description
  - [IngestersSecret](docs/IngestersSecret.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
  - [ModelUser](docs/ModelUser.md)
- - [ReportDNSRecord](docs/ReportDNSRecord.md)
- - [ReportReport](docs/ReportReport.md)
+ - [ReportersConnectionSummary](docs/ReportersConnectionSummary.md)
  - [ReportersNodeInfo](docs/ReportersNodeInfo.md)
  - [ReportersProviderThreatGraph](docs/ReportersProviderThreatGraph.md)
+ - [ReportersRenderedGraph](docs/ReportersRenderedGraph.md)
  - [ReportersThreatNodeInfo](docs/ReportersThreatNodeInfo.md)
 
 

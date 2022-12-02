@@ -7,8 +7,15 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	"github.com/weaveworks/scope/report"
 )
+
+type RawReport struct {
+	Payload string `json:"payload"`
+}
+
+type ScanTrigger struct {
+	NodeId string `json:"node_id"`
+}
 
 var bearer_token = []map[string][]string{{securityName: {}}}
 
@@ -17,20 +24,18 @@ func (d *OpenApiDocs) AddUserAuthOperations() {
 		[]string{tagAuthentication}, nil, nil, new(model.User), new(model.ResponseAccessToken))
 }
 
-func (d *OpenApiDocs) AddTopologyOperations() {
-	d.AddOperation("getTopologyGraph", http.MethodGet, "/deepfence/topology-api/graph", "Get Topology Graph", "Retrieve the full topology graph associated with the account",
+func (d *OpenApiDocs) AddGraphOperations() {
+	d.AddOperation("getTopologyGraph", http.MethodGet, "/deepfence/graph/topology", "Get Topology Graph", "Retrieve the full topology graph associated with the account",
 		[]string{tagTopology}, nil, bearer_token, new(reporters.TopologyFilters), new(reporters.RenderedGraph))
 
-	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/topology-api/ingest", "Ingest Topology Data", "Ingest data reported by one Agent",
-		[]string{tagTopology}, nil, bearer_token, new(report.Report), new(controls.AgentControls))
-}
-
-func (d *OpenApiDocs) AddThreatGraphOperations() {
-	d.AddOperation("getThreatGraph", http.MethodGet, "/deepfence/threat/graph", "Get Threat Graph", "Retrieve the full threat graph associated with the account",
+	d.AddOperation("getThreatGraph", http.MethodGet, "/deepfence/graph/threat", "Get Threat Graph", "Retrieve the full threat graph associated with the account",
 		[]string{tagThreat}, nil, bearer_token, nil, new(reporters.ThreatGraph))
 }
 
 func (d *OpenApiDocs) AddIngestersOperations() {
+	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report", "Ingest Topology Data", "Ingest data reported by one Agent",
+		[]string{tagTopology}, nil, bearer_token, new(RawReport), new(controls.AgentControls))
+
 	d.AddOperation("ingestCVEs", http.MethodPost, "/deepfence/ingest/cves", "Ingest CVEs", "Ingest CVEs found while scanning the agent",
 		[]string{tagVulnerability}, nil, bearer_token, new([]ingesters.DfCveStruct), nil)
 
@@ -51,14 +56,14 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("startCVEScan", http.MethodGet, "/deepfence/scan/start/cves",
 		"Start CVE Scan", "Start CVE Scan on agent",
-		[]string{tagVulnerability}, nil, bearer_token, new(string), nil)
+		[]string{tagVulnerability}, nil, bearer_token, new(ScanTrigger), nil)
 
 	d.AddOperation("startSecretScan", http.MethodGet, "/deepfence/scan/start/secrets",
 		"Start Secret Scan", "Start Secret Scan on agent",
-		[]string{tagSecretScan}, nil, bearer_token, new(string), nil)
+		[]string{tagSecretScan}, nil, bearer_token, new(ScanTrigger), nil)
 
 	d.AddOperation("startComplianceScan", http.MethodGet, "/deepfence/scan/start/compliances",
 		"Start Compliance Scan", "Start Compliance Scan on agent",
-		[]string{tagCompliance}, nil, bearer_token, new(string), nil)
+		[]string{tagCompliance}, nil, bearer_token, new(ScanTrigger), nil)
 
 }

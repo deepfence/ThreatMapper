@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -89,18 +88,25 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	}
 	//w.Write()
 	actions, err := controls.GetAgentActions(ctx, rpt.ID)
+	if err != nil {
+		log.Error().Msgf("Cannot get actions: ", err)
+	}
 
 	res := ctl.AgentControls{
-		BeatRate: 30 * time.Second,
-		Commands: actions,
+		BeatRateSec: 30,
+		Commands:    actions,
 	}
 	b, err := json.Marshal(res)
 	if err != nil {
 		log.Error().Msgf("Cannot marshal controls: %v", err)
-	} else {
-		_, err := w.Write(b)
-		log.Error().Msgf("Cannot send controls: %v", err)
+		respondWith(ctx, w, http.StatusInternalServerError, err)
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", "application/json")
+	_, err = w.Write(b)
+
+	if err != nil {
+		log.Error().Msgf("Cannot send controls: %v", err)
+		w.WriteHeader(http.StatusGone)
+	}
 }

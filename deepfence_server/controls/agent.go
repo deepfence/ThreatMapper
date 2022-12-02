@@ -28,7 +28,7 @@ func GetAgentActions(ctx context.Context, probeId string) ([]controls.Action, er
 	}
 	defer tx.Close()
 
-	r, err := tx.Run("match (n:Node{node_id:$id}) WHERE n.actions", map[string]interface{}{"id": probeId})
+	r, err := tx.Run("match (n:Node{node_id:$id}) RETURN n.actions", map[string]interface{}{"id": probeId})
 
 	if err != nil {
 		log.Error().Msgf("neo4j req err: %v", err)

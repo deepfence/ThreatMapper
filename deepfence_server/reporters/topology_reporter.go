@@ -211,19 +211,19 @@ type ConnectionSummary struct {
 }
 
 type RenderedGraph struct {
-	Hosts       map[string]map[string][]string
-	Processes   map[string][]string
-	Pods        map[string][]string
-	Containers  map[string][]string
-	Providers   []string
-	Regions     map[string][]string
-	Connections []ConnectionSummary
+	Hosts       map[string]map[string][]string `json:"hosts"`
+	Processes   map[string][]string            `json:"processes"`
+	Pods        map[string][]string            `json:"pods"`
+	Containers  map[string][]string            `json:"containers"`
+	Providers   []string                       `json:"providers"`
+	Regions     map[string][]string            `json:"regions"`
+	Connections []ConnectionSummary            `json:"connections"`
 }
 
 type TopologyFilters struct {
-	CloudFilter  []string
-	RegionFilter []string
-	HostFilter   []string
+	CloudFilter  []string `json:"cloud_filter"`
+	RegionFilter []string `json:"region_filter"`
+	HostFilter   []string `json:"host_filter"`
 }
 
 func (nc *neo4jTopologyReporter) GetGraph(ctx context.Context, cloud_filter, region_filter, host_filter []string) (RenderedGraph, error) {

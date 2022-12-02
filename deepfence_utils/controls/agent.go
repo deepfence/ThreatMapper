@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
-	"time"
 )
 
 type ActionID int
@@ -50,8 +49,8 @@ func ApplyControl(req Action) error {
 }
 
 type AgentControls struct {
-	BeatRate time.Duration `json:"beatrate"`
-	Commands []Action      `json:"commands"`
+	BeatRateSec int32    `json:"beatrate"`
+	Commands    []Action `json:"commands"`
 }
 
 func (ac AgentControls) ToBytes() ([]byte, error) {

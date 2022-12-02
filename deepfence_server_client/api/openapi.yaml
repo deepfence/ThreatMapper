@@ -1,0 +1,961 @@
+openapi: 3.0.3
+info:
+  contact:
+    email: community@deepfence.io
+    name: Deepfence Support
+    url: https://deepfence.io
+  description: "Deepfence Runtime API provides programmatic control over Deepfence\
+    \ microservice securing your container, kubernetes and cloud deployments. The\
+    \ API abstracts away underlying infrastructure details like cloud provider, \n\
+    container distros, container orchestrator and type of deployment. This is one\
+    \ uniform API to manage and control security alerts, policies and response to\
+    \ alerts for microservices running anywhere i.e. managed pure greenfield container\
+    \ deployments or a mix of containers, VMs and serverless paradigms like AWS Fargate."
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  termsOfService: /tos
+  title: Deepfence ThreatMapper
+  version: 2.0.0
+externalDocs:
+  description: Deepfence Community
+  url: https://community.deepfence.io
+servers:
+- url: /
+tags:
+- name: Authentication
+- name: Common
+- name: Compliance
+- name: Topology
+- name: Secret Scan
+- name: Vulnerability
+paths:
+  /deepfence/graph/threat:
+    get:
+      description: Retrieve the full threat graph associated with the account
+      operationId: getThreatGraph
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportersThreatGraph'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Get Threat Graph
+      tags:
+      - Threat
+  /deepfence/graph/topology:
+    get:
+      description: Retrieve the full topology graph associated with the account
+      operationId: getTopologyGraph
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportersRenderedGraph'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Get Topology Graph
+      tags:
+      - Topology
+  /deepfence/ingest/cloud-compliance:
+    post:
+      description: Ingest Cloud compliances found while scanning cloud provider
+      operationId: ingestCloudCompliances
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersCloudComplianceDoc'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Ingest Cloud Compliances
+      tags:
+      - CloudCompliance
+  /deepfence/ingest/cloud-resources:
+    post:
+      description: Ingest Clouds Resources found while scanning cloud provider
+      operationId: ingestCloudResources
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersCloudResource'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Ingest Cloud resources
+      tags:
+      - CloudResources
+  /deepfence/ingest/compliance:
+    post:
+      description: Ingest compliance issues found while scanning the agent
+      operationId: ingestCompliances
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersComplianceDoc'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Ingest Compliances
+      tags:
+      - Compliance
+  /deepfence/ingest/cves:
+    post:
+      description: Ingest CVEs found while scanning the agent
+      operationId: ingestCVEs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersDfCveStruct'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Ingest CVEs
+      tags:
+      - Vulnerability
+  /deepfence/ingest/report:
+    post:
+      description: Ingest data reported by one Agent
+      operationId: ingestAgentReport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiDocsRawReport'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlsAgentControls'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Ingest Topology Data
+      tags:
+      - Topology
+  /deepfence/ingest/secrets:
+    post:
+      description: Ingest secrets found while scanning the agent
+      operationId: ingestSecrets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersSecret'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Ingest Secrets
+      tags:
+      - Secret Scan
+  /deepfence/scan/start/compliances:
+    get:
+      description: Start Compliance Scan on agent
+      operationId: startComplianceScan
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Start Compliance Scan
+      tags:
+      - Compliance
+  /deepfence/scan/start/cves:
+    get:
+      description: Start CVE Scan on agent
+      operationId: startCVEScan
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Start CVE Scan
+      tags:
+      - Vulnerability
+  /deepfence/scan/start/secrets:
+    get:
+      description: Start Secret Scan on agent
+      operationId: startSecretScan
+      responses:
+        "200":
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      security:
+      - bearer_token: []
+      summary: Start Secret Scan
+      tags:
+      - Secret Scan
+  /deepfence/user/register:
+    post:
+      description: First user registration. Further users needs to be invited.
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelUser'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponseAccessToken'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+          description: Unauthorized
+      summary: Register User
+      tags:
+      - Authentication
+components:
+  schemas:
+    ApiDocsRawReport:
+      example:
+        payload: payload
+      properties:
+        payload:
+          type: string
+      type: object
+    ApiDocsUnauthorizedResponse:
+      properties:
+        id:
+          type: string
+      type: object
+    ControlsAction:
+      type: object
+    ControlsAgentControls:
+      example:
+        beatrate: 0
+        commands:
+        - null
+        - null
+      properties:
+        beatrate:
+          type: integer
+        commands:
+          items:
+            $ref: '#/components/schemas/ControlsAction'
+          nullable: true
+          type: array
+      type: object
+    IngestersCloudComplianceDoc:
+      example:
+        severity: severity
+        reason: reason
+        control_id: control_id
+        resource: resource
+        masked: masked
+        count: 0
+        node_name: node_name
+        description: description
+        cloud_provider: cloud_provider
+        title: title
+        type: type
+        doc_id: doc_id
+        compliance_check_type: compliance_check_type
+        '@timestamp': '@timestamp'
+        account_id: account_id
+        service: service
+        scan_id: scan_id
+        region: region
+        group: group
+        node_id: node_id
+        status: status
+      properties:
+        '@timestamp':
+          type: string
+        account_id:
+          type: string
+        cloud_provider:
+          type: string
+        compliance_check_type:
+          type: string
+        control_id:
+          type: string
+        count:
+          type: integer
+        description:
+          type: string
+        doc_id:
+          type: string
+        group:
+          type: string
+        masked:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+        reason:
+          type: string
+        region:
+          type: string
+        resource:
+          type: string
+        scan_id:
+          type: string
+        service:
+          type: string
+        severity:
+          type: string
+        status:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+      type: object
+    IngestersCloudResource:
+      example:
+        allow_blob_public_access: allow_blob_public_access
+        scheme: scheme
+        ingress_settings: ""
+        vpc_id: vpc_id
+        network_mode: network_mode
+        event_notification_configuration: ""
+        ip_configuration: ""
+        vpc_options: ""
+        policy_std: policy_std
+        iam_policy: ""
+        id: id
+        arn: arn
+        resource_vpc_config: ""
+        restrict_public_buckets: true
+        db_cluster_identifier: db_cluster_identifier
+        policy: ""
+        public_ips: ""
+        ignore_public_acls: true
+        cidr_ipv4: cidr_ipv4
+        service_name: service_name
+        vpc_security_groups: ""
+        network_interfaces: ""
+        block_public_policy: true
+        security_groups: ""
+        block_public_acls: true
+        account_id: account_id
+        instance_id: instance_id
+        public_access: public_access
+        task_definition: ""
+        group_id: group_id
+        name: name
+        resource_id: resource_id
+        task_definition_arn: task_definition_arn
+        region: region
+        container_definitions: ""
+        bucket_policy_is_public: true
+      properties:
+        account_id:
+          type: string
+        allow_blob_public_access:
+          type: string
+        arn:
+          type: string
+        block_public_acls:
+          type: boolean
+        block_public_policy:
+          type: boolean
+        bucket_policy_is_public:
+          type: boolean
+        cidr_ipv4:
+          type: string
+        container_definitions: {}
+        db_cluster_identifier:
+          type: string
+        event_notification_configuration: {}
+        group_id:
+          type: string
+        iam_policy: {}
+        id:
+          type: string
+        ignore_public_acls:
+          type: boolean
+        ingress_settings: {}
+        instance_id:
+          type: string
+        ip_configuration: {}
+        name:
+          type: string
+        network_interfaces: {}
+        network_mode:
+          type: string
+        policy: {}
+        policy_std:
+          type: string
+        public_access:
+          type: string
+        public_ips: {}
+        region:
+          type: string
+        resource_id:
+          type: string
+        resource_vpc_config: {}
+        restrict_public_buckets:
+          type: boolean
+        scheme:
+          type: string
+        security_groups: {}
+        service_name:
+          type: string
+        task_definition: {}
+        task_definition_arn:
+          type: string
+        vpc_id:
+          type: string
+        vpc_options: {}
+        vpc_security_groups: {}
+      type: object
+    IngestersComplianceDoc:
+      example:
+        time_stamp: 0
+        resource: resource
+        compliance_node_type: compliance_node_type
+        kubernetes_cluster_id: kubernetes_cluster_id
+        kubernetes_cluster_name: kubernetes_cluster_name
+        masked: masked
+        node_name: node_name
+        description: description
+        test_category: test_category
+        type: type
+        doc_id: doc_id
+        remediation_ansible: remediation_ansible
+        compliance_check_type: compliance_check_type
+        test_rationale: test_rationale
+        test_severity: test_severity
+        '@timestamp': '@timestamp'
+        node_type: node_type
+        remediation_puppet: remediation_puppet
+        scan_id: scan_id
+        remediation_script: remediation_script
+        node_id: node_id
+        status: status
+        test_desc: test_desc
+        test_number: test_number
+      properties:
+        '@timestamp':
+          type: string
+        compliance_check_type:
+          type: string
+        compliance_node_type:
+          type: string
+        description:
+          type: string
+        doc_id:
+          type: string
+        kubernetes_cluster_id:
+          type: string
+        kubernetes_cluster_name:
+          type: string
+        masked:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+        node_type:
+          type: string
+        remediation_ansible:
+          type: string
+        remediation_puppet:
+          type: string
+        remediation_script:
+          type: string
+        resource:
+          type: string
+        scan_id:
+          type: string
+        status:
+          type: string
+        test_category:
+          type: string
+        test_desc:
+          type: string
+        test_number:
+          type: string
+        test_rationale:
+          type: string
+        test_severity:
+          type: string
+        time_stamp:
+          type: integer
+        type:
+          type: string
+      type: object
+    IngestersDfCveStruct:
+      example:
+        cve_container_layer: cve_container_layer
+        kubernetes_cluster_name: kubernetes_cluster_name
+        masked: masked
+        cve_container_image: cve_container_image
+        cve_caused_by_package: cve_caused_by_package
+        type: type
+        urls:
+        - urls
+        - urls
+        cve_severity: cve_severity
+        node_type: node_type
+        cve_caused_by_package_path: cve_caused_by_package_path
+        host: host
+        cve_container_image_id: cve_container_image_id
+        cve_description: cve_description
+        count: 0
+        cve_overall_score: 1.4658129805029452
+        doc_id: doc_id
+        cve_attack_vector: cve_attack_vector
+        cve_cvss_score: 6.027456183070403
+        '@timestamp': '@timestamp'
+        cve_id: cve_id
+        exploit_poc: exploit_poc
+        cve_type: cve_type
+        cve_container_name: cve_container_name
+        cve_fixed_in: cve_fixed_in
+        scan_id: scan_id
+        cve_link: cve_link
+        host_name: host_name
+        cve_id_cve_severity_cve_container_image: cve_id_cve_severity_cve_container_image
+      properties:
+        '@timestamp':
+          type: string
+        count:
+          type: integer
+        cve_attack_vector:
+          type: string
+        cve_caused_by_package:
+          type: string
+        cve_caused_by_package_path:
+          type: string
+        cve_container_image:
+          type: string
+        cve_container_image_id:
+          type: string
+        cve_container_layer:
+          type: string
+        cve_container_name:
+          type: string
+        cve_cvss_score:
+          type: number
+        cve_description:
+          type: string
+        cve_fixed_in:
+          type: string
+        cve_id:
+          type: string
+        cve_id_cve_severity_cve_container_image:
+          type: string
+        cve_link:
+          type: string
+        cve_overall_score:
+          type: number
+        cve_severity:
+          type: string
+        cve_type:
+          type: string
+        doc_id:
+          type: string
+        exploit_poc:
+          type: string
+        host:
+          type: string
+        host_name:
+          type: string
+        kubernetes_cluster_name:
+          type: string
+        masked:
+          type: string
+        node_type:
+          type: string
+        scan_id:
+          type: string
+        type:
+          type: string
+        urls:
+          items:
+            type: string
+          nullable: true
+          type: array
+      type: object
+    IngestersSecret:
+      example:
+        severity: severity
+        reason: reason
+        control_id: control_id
+        resource: resource
+        masked: masked
+        count: 0
+        node_name: node_name
+        description: description
+        cloud_provider: cloud_provider
+        title: title
+        type: type
+        doc_id: doc_id
+        compliance_check_type: compliance_check_type
+        '@timestamp': '@timestamp'
+        account_id: account_id
+        service: service
+        scan_id: scan_id
+        region: region
+        group: group
+        node_id: node_id
+        status: status
+      properties:
+        '@timestamp':
+          type: string
+        account_id:
+          type: string
+        cloud_provider:
+          type: string
+        compliance_check_type:
+          type: string
+        control_id:
+          type: string
+        count:
+          type: integer
+        description:
+          type: string
+        doc_id:
+          type: string
+        group:
+          type: string
+        masked:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+        reason:
+          type: string
+        region:
+          type: string
+        resource:
+          type: string
+        scan_id:
+          type: string
+        service:
+          type: string
+        severity:
+          type: string
+        status:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+      type: object
+    ModelResponseAccessToken:
+      example:
+        access_token: access_token
+        refresh_token: refresh_token
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+      type: object
+    ModelUser:
+      example:
+        is_active: true
+        role: role
+        company_id: 0
+        role_id: 1
+        groups:
+          key: groups
+        last_name: last_name
+        company: company
+        id: 6
+        password_invalidated: true
+        first_name: first_name
+        email: email
+      properties:
+        company:
+          type: string
+        company_id:
+          type: integer
+        email:
+          type: string
+        first_name:
+          type: string
+        groups:
+          additionalProperties:
+            type: string
+          nullable: true
+          type: object
+        id:
+          type: integer
+        is_active:
+          type: boolean
+        last_name:
+          type: string
+        password_invalidated:
+          type: boolean
+        role:
+          type: string
+        role_id:
+          type: integer
+      type: object
+    ReportersConnectionSummary:
+      example:
+        source: source
+        target: target
+      properties:
+        source:
+          type: string
+        target:
+          type: string
+      type: object
+    ReportersNodeInfo:
+      properties:
+        compliance_count:
+          type: integer
+        compliance_scan_id:
+          type: string
+        image_name:
+          type: string
+        name:
+          type: string
+        node_id:
+          type: string
+        secrets_count:
+          type: integer
+        secrets_scan_id:
+          type: string
+        vulnerability_count:
+          type: integer
+        vulnerability_scan_id:
+          type: string
+      type: object
+    ReportersProviderThreatGraph:
+      properties:
+        compliance_count:
+          type: integer
+        resources:
+          items:
+            $ref: '#/components/schemas/ReportersThreatNodeInfo'
+          nullable: true
+          type: array
+        secrets_count:
+          type: integer
+        vulnerability_count:
+          type: integer
+      type: object
+    ReportersRenderedGraph:
+      example:
+        processes:
+          key:
+          - processes
+          - processes
+        regions:
+          key:
+          - regions
+          - regions
+        hosts:
+          key:
+            key:
+            - hosts
+            - hosts
+        containers:
+          key:
+          - containers
+          - containers
+        pods:
+          key:
+          - pods
+          - pods
+        connections:
+        - source: source
+          target: target
+        - source: source
+          target: target
+        providers:
+        - providers
+        - providers
+      properties:
+        connections:
+          items:
+            $ref: '#/components/schemas/ReportersConnectionSummary'
+          nullable: true
+          type: array
+        containers:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          nullable: true
+          type: object
+        hosts:
+          additionalProperties:
+            additionalProperties:
+              items:
+                type: string
+              type: array
+            type: object
+          nullable: true
+          type: object
+        pods:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          nullable: true
+          type: object
+        processes:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          nullable: true
+          type: object
+        providers:
+          items:
+            type: string
+          nullable: true
+          type: array
+        regions:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          nullable: true
+          type: object
+      type: object
+    ReportersThreatGraph:
+      additionalProperties:
+        $ref: '#/components/schemas/ReportersProviderThreatGraph'
+      nullable: true
+      type: object
+    ReportersThreatNodeInfo:
+      properties:
+        attack_path:
+          items:
+            items:
+              type: string
+            type: array
+          nullable: true
+          type: array
+        compliance_count:
+          type: integer
+        count:
+          type: integer
+        id:
+          type: string
+        label:
+          type: string
+        node_type:
+          type: string
+        nodes:
+          additionalProperties:
+            $ref: '#/components/schemas/ReportersNodeInfo'
+          nullable: true
+          type: object
+        secrets_count:
+          type: integer
+        vulnerability_count:
+          type: integer
+      type: object
+  securitySchemes:
+    bearer_token:
+      bearerFormat: JWT
+      description: RW Access
+      scheme: bearer
+      type: http
