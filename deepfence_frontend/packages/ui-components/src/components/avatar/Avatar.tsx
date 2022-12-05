@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { forwardRef } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineUser } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
@@ -6,7 +7,6 @@ import { twMerge } from 'tailwind-merge';
 import { Typography } from '@/components/typography/Typography';
 
 type AvatarType = {
-  asChild?: boolean;
   alt?: string;
   src?: string;
   className?: string;
@@ -14,46 +14,37 @@ type AvatarType = {
   onClick?: () => void;
 };
 
-const Child = ({ children }: { children: AvatarType['children'] }) => {
-  return (
-    <>
-      {children ? (
-        children
-      ) : (
-        <IconContext.Provider
-          value={{
-            className: cx(`w-6 h-6`, {}),
-          }}
-        >
-          <HiOutlineUser />
-        </IconContext.Provider>
-      )}
-    </>
-  );
-};
+const DefaultIcon = () => (
+  <IconContext.Provider
+    value={{
+      className: cx(`w-6 h-6`, {}),
+    }}
+  >
+    <HiOutlineUser />
+  </IconContext.Provider>
+);
 
-export const Avatar = (props: AvatarType) => {
-  const {
-    asChild = false,
-    children = undefined,
-    src = '',
-    alt = '',
-    className = '',
-    onClick,
-  } = props;
-
-  return (
-    <button
-      onClick={onClick}
-      className={twMerge(
-        cx(
-          `inline-flex overflow-hidden relative justify-center items-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-600`,
-          `text-gray-700 dark:text-gray-100 ${Typography.size.lg}`,
-        ),
-        className,
-      )}
-    >
-      {!asChild ? <img src={src} alt={alt} className="p-2" /> : <Child>{children}</Child>}
-    </button>
-  );
-};
+export const Avatar = forwardRef<HTMLButtonElement, AvatarType>(
+  ({ children = <DefaultIcon />, src = '', alt = '', className = '', onClick }, ref) => {
+    return (
+      <button
+        ref={ref}
+        onClick={onClick}
+        className={twMerge(
+          cx(
+            `inline-flex overflow-hidden relative justify-center items-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-600`,
+            `text-gray-700 dark:text-gray-100 ${Typography.size.lg}`,
+            'outline-none focus-visible:ring-1 focus-visible:ring-gray-900 dark:focus-visible:ring-2 dark:focus-visible:ring-gray-400',
+          ),
+          className,
+        )}
+      >
+        {!src || src.trim().length === 0 ? (
+          <>{children}</>
+        ) : (
+          <img src={src} alt={alt} className="p-2" />
+        )}
+      </button>
+    );
+  },
+);
