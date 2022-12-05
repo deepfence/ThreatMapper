@@ -7,7 +7,6 @@ import { twMerge } from 'tailwind-merge';
 import { Typography } from '@/components/typography/Typography';
 
 type AvatarType = {
-  asChild?: boolean;
   alt?: string;
   src?: string;
   className?: string;
@@ -15,36 +14,18 @@ type AvatarType = {
   onClick?: () => void;
 };
 
-const Child = ({ children }: { children: AvatarType['children'] }) => {
-  return (
-    <>
-      {children ? (
-        children
-      ) : (
-        <IconContext.Provider
-          value={{
-            className: cx(`w-6 h-6`, {}),
-          }}
-        >
-          <HiOutlineUser />
-        </IconContext.Provider>
-      )}
-    </>
-  );
-};
+const DefaultIcon = () => (
+  <IconContext.Provider
+    value={{
+      className: cx(`w-6 h-6`, {}),
+    }}
+  >
+    <HiOutlineUser />
+  </IconContext.Provider>
+);
 
 export const Avatar = forwardRef<HTMLButtonElement, AvatarType>(
-  (
-    {
-      asChild = false,
-      children = undefined,
-      src = '',
-      alt = '',
-      className = '',
-      onClick,
-    },
-    ref,
-  ) => {
+  ({ children = <DefaultIcon />, src = '', alt = '', className = '', onClick }, ref) => {
     return (
       <button
         ref={ref}
@@ -58,10 +39,10 @@ export const Avatar = forwardRef<HTMLButtonElement, AvatarType>(
           className,
         )}
       >
-        {!asChild ? (
-          <img src={src} alt={alt} className="p-2" />
+        {!src || src.trim().length === 0 ? (
+          <>{children}</>
         ) : (
-          <Child>{children}</Child>
+          <img src={src} alt={alt} className="p-2" />
         )}
       </button>
     );

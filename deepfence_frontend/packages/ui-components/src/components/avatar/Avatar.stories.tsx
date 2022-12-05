@@ -11,14 +11,11 @@ const Template: ComponentStory<typeof Avatar> = (args) => <Avatar {...args} />;
 
 export const AvatarAsLetter = Template.bind({});
 AvatarAsLetter.args = {
-  asChild: true,
-  children: 'M',
+  children: 'MRRRR',
 };
 
 export const AvatarAsDefault = Template.bind({});
-AvatarAsDefault.args = {
-  asChild: true,
-};
+AvatarAsDefault.args = {};
 
 export const AvatarByImgSrc = Template.bind({});
 AvatarByImgSrc.args = {
