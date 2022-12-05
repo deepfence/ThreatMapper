@@ -47,12 +47,21 @@ func (oc OpenapiClient) Publish(r report.Report) error {
 		return err
 	}
 
+	hostname := ""
+	for _, host_node := range r.Host.Nodes {
+		hostname = host_node.ID
+	}
+
 	payload := string(buf.Bytes())
+	fmt.Printf("Publishing: %v with %v\n", hostname, len(payload))
+
 	req := oc.client.TopologyApi.IngestAgentReport(context.Background())
 
-	req.ApiDocsRawReport(openapi.ApiDocsRawReport{
+	req = req.ApiDocsRawReport(openapi.ApiDocsRawReport{
 		Payload: &payload,
 	})
+
+	fmt.Printf("Req payload = %v\n", req)
 	ctl, w, err := oc.client.TopologyApi.IngestAgentReportExecute(req)
 	if err != nil {
 		fmt.Printf("err = %v\n", err)

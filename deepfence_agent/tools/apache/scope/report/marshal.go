@@ -42,14 +42,14 @@ func (StdoutPublisher) Publish(rep Report) error {
 // WriteBinary writes a Report as a gzipped msgpack into a bytes.Buffer
 func (rep Report) WriteBinary() (*bytes.Buffer, error) {
 	w := &bytes.Buffer{}
-	gzwriter := gzipWriterPool.Get().(*gzip.Writer)
-	gzwriter.Reset(w)
-	defer gzipWriterPool.Put(gzwriter)
+	//gzwriter := gzipWriterPool.Get().(*gzip.Writer)
+	//gzwriter.Reset(w)
+	//defer gzipWriterPool.Put(gzwriter)
 	//if err := codec.NewEncoder(gzwriter, &codec.BincHandle{}).Encode(&rep); err != nil {
-	if err := codec.NewEncoder(gzwriter, &codec.MsgpackHandle{}).Encode(&rep); err != nil {
+	if err := codec.NewEncoder(w, &codec.JsonHandle{}).Encode(&rep); err != nil {
 		return nil, err
 	}
-	gzwriter.Close() // otherwise the content won't get flushed to the output stream
+	//gzwriter.Close() // otherwise the content won't get flushed to the output stream
 	return w, nil
 }
 
@@ -183,11 +183,11 @@ func fileType(path string) (msgpack int, gzipped bool, err error) {
 }
 
 func codecHandle(msgpack int) codec.Handle {
-	if (msgpack == 0) {
+	if msgpack == 0 {
 		return &codec.JsonHandle{}
-	} else if (msgpack == 1) {
+	} else if msgpack == 1 {
 		return &codec.MsgpackHandle{}
-	} else if (msgpack == 2) {
+	} else if msgpack == 2 {
 		return &codec.BincHandle{}
 	}
 	return nil

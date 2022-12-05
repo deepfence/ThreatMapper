@@ -6,7 +6,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/ugorji/go/codec"
 	"github.com/weaveworks/ps"
 )
 
@@ -95,50 +94,51 @@ const (
 // performance issue; skipping it saved almost 10% CPU.  Note this means
 // we are using undocumented, internal APIs, which could break in the future.
 // See https://github.com/weaveworks/scope/pull/1709 for more information.
-func mapRead(decoder *codec.Decoder, decodeValue func(isNil bool) interface{}) ps.Map {
-	z, r := codec.GenHelperDecoder(decoder)
-	if r.TryDecodeAsNil() {
-		return ps.NewMap()
-	}
-
-	length := r.ReadMapStart()
-	out := ps.NewMap()
-	for i := 0; length < 0 || i < length; i++ {
-		if length < 0 && r.CheckBreak() {
-			break
-		}
-
-		var key string
-		z.DecSendContainerState(containerMapKey)
-		if !r.TryDecodeAsNil() {
-			key = lookupCommonKey(r.DecodeStringAsBytes())
-		}
-
-		z.DecSendContainerState(containerMapValue)
-		value := decodeValue(r.TryDecodeAsNil())
-		out = out.UnsafeMutableSet(key, value)
-	}
-	z.DecSendContainerState(containerMapEnd)
-	return out
-}
-
-// Inverse of mapRead, done for performance. Same comments about
-// undocumented internal APIs apply.
-func mapWrite(m ps.Map, encoder *codec.Encoder, encodeValue func(*codec.Encoder, interface{})) {
-	z, r := codec.GenHelperEncoder(encoder)
-	if m == nil || m.IsNil() {
-		r.EncodeNil()
-		return
-	}
-	r.EncodeMapStart(m.Size())
-	m.ForEach(func(key string, val interface{}) {
-		z.EncSendContainerState(containerMapKey)
-		r.EncodeString(cUTF8, key)
-		z.EncSendContainerState(containerMapValue)
-		encodeValue(encoder, val)
-	})
-	z.EncSendContainerState(containerMapEnd)
-}
+//func mapRead(decoder *codec.Decoder, decodeValue func(isNil bool) interface{}) ps.Map {
+//	decoder.Decode()
+//	z, r := codec.GenHelper().Decoder(decoder)
+//	if r.TryDecodeAsNil() {
+//		return ps.NewMap()
+//	}
+//
+//	length := r.ReadMapStart()
+//	out := ps.NewMap()
+//	for i := 0; length < 0 || i < length; i++ {
+//		if length < 0 && r.CheckBreak() {
+//			break
+//		}
+//
+//		var key string
+//		z.DecSendContainerState(containerMapKey)
+//		if !r.TryDecodeAsNil() {
+//			key = lookupCommonKey(r.DecodeStringAsBytes())
+//		}
+//
+//		z.DecSendContainerState(containerMapValue)
+//		value := decodeValue(r.TryDecodeAsNil())
+//		out = out.UnsafeMutableSet(key, value)
+//	}
+//	z.DecSendContainerState(containerMapEnd)
+//	return out
+//}
+//
+//// Inverse of mapRead, done for performance. Same comments about
+//// undocumented internal APIs apply.
+//func mapWrite(m ps.Map, encoder *codec.Encoder, encodeValue func(*codec.Encoder, interface{})) {
+//	z, r := codec.GenHelperEncoder(encoder)
+//	if m == nil || m.IsNil() {
+//		r.EncodeNil()
+//		return
+//	}
+//	r.EncodeMapStart(m.Size())
+//	m.ForEach(func(key string, val interface{}) {
+//		z.EncSendContainerState(containerMapKey)
+//		r.EncodeString(cUTF8, key)
+//		z.EncSendContainerState(containerMapValue)
+//		encodeValue(encoder, val)
+//	})
+//	z.EncSendContainerState(containerMapEnd)
+//}
 
 // Now follow helpers for StringLatestMap
 

@@ -136,21 +136,23 @@ func (s Sets) DeepEqual(t Sets) bool {
 
 // CodecEncodeSelf implements codec.Selfer
 func (s *Sets) CodecEncodeSelf(encoder *codec.Encoder) {
-	mapWrite(s.psMap, encoder, func(encoder *codec.Encoder, val interface{}) {
-		encoder.Encode(val.(StringSet))
-	})
+	encoder.Encode(s)
+	//mapWrite(s.psMap, encoder, func(encoder *codec.Encoder, val interface{}) {
+	//	encoder.Encode(val.(StringSet))
+	//})
 }
 
 // CodecDecodeSelf implements codec.Selfer
 func (s *Sets) CodecDecodeSelf(decoder *codec.Decoder) {
-	out := mapRead(decoder, func(isNil bool) interface{} {
-		var value StringSet
-		if !isNil {
-			decoder.Decode(&value)
-		}
-		return value
-	})
-	*s = Sets{out}
+	decoder.Decode(s)
+	//out := mapRead(decoder, func(isNil bool) interface{} {
+	//	var value StringSet
+	//	if !isNil {
+	//		decoder.Decode(&value)
+	//	}
+	//	return value
+	//})
+	//*s = Sets{out}
 }
 
 // MarshalJSON shouldn't be used, use CodecEncodeSelf instead

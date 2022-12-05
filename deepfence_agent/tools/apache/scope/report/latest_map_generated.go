@@ -218,19 +218,7 @@ func (m StringLatestMap) EqualIgnoringTimestamps(n StringLatestMap) bool {
 // in the future.  See https://github.com/weaveworks/scope/pull/1709
 // for more information.
 func (m StringLatestMap) CodecEncodeSelf(encoder *codec.Encoder) {
-	z, r := codec.GenHelperEncoder(encoder)
-	if m == nil {
-		r.EncodeNil()
-		return
-	}
-	r.EncodeMapStart(m.Size())
-	for _, val := range m {
-		z.EncSendContainerState(containerMapKey)
-		r.EncodeString(cUTF8, val.key)
-		z.EncSendContainerState(containerMapValue)
-		val.CodecEncodeSelf(encoder)
-	}
-	z.EncSendContainerState(containerMapEnd)
+	encoder.Encode(m)
 }
 
 // CodecDecodeSelf implements codec.Selfer.
@@ -238,33 +226,7 @@ func (m StringLatestMap) CodecEncodeSelf(encoder *codec.Encoder) {
 // intermediate copy of the data structure to save time. Uses
 // undocumented, internal APIs as for CodecEncodeSelf.
 func (m *StringLatestMap) CodecDecodeSelf(decoder *codec.Decoder) {
-	*m = nil
-	z, r := codec.GenHelperDecoder(decoder)
-	if r.TryDecodeAsNil() {
-		return
-	}
-
-	length := r.ReadMapStart()
-	if length > 0 {
-		*m = make([]stringLatestEntry, 0, length)
-	}
-	for i := 0; length < 0 || i < length; i++ {
-		if length < 0 && r.CheckBreak() {
-			break
-		}
-		z.DecSendContainerState(containerMapKey)
-		var key string
-		if !r.TryDecodeAsNil() {
-			key = lookupCommonKey(r.DecodeStringAsBytes())
-		}
-		i := m.locate(key)
-		(*m)[i].key = key
-		z.DecSendContainerState(containerMapValue)
-		if !r.TryDecodeAsNil() {
-			(*m)[i].CodecDecodeSelf(decoder)
-		}
-	}
-	z.DecSendContainerState(containerMapEnd)
+	decoder.Decode(m)
 }
 
 // MarshalJSON shouldn't be used, use CodecEncodeSelf instead.

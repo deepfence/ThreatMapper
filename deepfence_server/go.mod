@@ -16,10 +16,9 @@ replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/d
 
 replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
-replace github.com/ugorji/go => ../deepfence_agent/tools/apache/deepfence/ugorji/go
-
 require (
 	github.com/casbin/casbin/v2 v2.58.0
+	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.0.7
@@ -32,7 +31,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.26
-	github.com/ugorji/go v1.1.4
+	github.com/ugorji/go/codec v1.2.7
 	github.com/weaveworks/scope v1.13.2
 	golang.org/x/crypto v0.3.0
 )
@@ -57,7 +56,6 @@ require (
 	github.com/coocood/freecache v1.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -122,6 +120,7 @@ require (
 	github.com/swaggest/jsonschema-go v0.3.42 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/typetypetype/conntrack v1.0.0 // indirect
+	github.com/ugorji/go/codec/codecgen v1.2.7 // indirect
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5 // indirect
 	github.com/vishvananda/netns v0.0.1 // indirect
 	github.com/weaveworks/common v0.0.0-20220927162600-d0a1a93a15be // indirect

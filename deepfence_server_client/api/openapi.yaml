@@ -334,11 +334,8 @@ components:
         id:
           type: integer
         request_payload:
-          items:
-            minimum: 0
-            type: byte
-          nullable: true
-          type: array
+          format: byte
+          type: string
       type: object
     ControlsActionID:
       type: integer

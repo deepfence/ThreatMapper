@@ -7,7 +7,6 @@ import (
 	_ "net/http/pprof"
 	"net/url"
 	"os"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -73,11 +72,11 @@ func router(collector app.Collector, controlRouter app.ControlRouter, pipeRouter
 	app.RegisterAdminRoutes(router, collector)
 	go app.CacheTopology(collector)
 
-	uiHandler := http.FileServer(GetFS(externalUI))
-	router.PathPrefix("/ui").Name("static").Handler(
-		middleware.PathRewrite(regexp.MustCompile("^/ui"), "").Wrap(
-			uiHandler))
-	router.PathPrefix("/").Name("static").Handler(uiHandler)
+	//uiHandler := http.FileServer(GetFS(externalUI))
+	//router.PathPrefix("/ui").Name("static").Handler(
+	//	middleware.PathRewrite(regexp.MustCompile("^/ui"), "").Wrap(
+	//		uiHandler))
+	//router.PathPrefix("/").Name("static").Handler(uiHandler)
 
 	middlewares := middleware.Merge(
 		middleware.Instrument{

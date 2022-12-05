@@ -17,7 +17,7 @@ import (
 
 // ControlsAction struct for ControlsAction
 type ControlsAction struct {
-	Id *int32 `json:"id,omitempty"`
+	Id             *int32 `json:"id,omitempty"`
 	RequestPayload []byte `json:"request_payload,omitempty"`
 }
 
@@ -51,7 +51,7 @@ func (o *ControlsAction) GetId() int32 {
 // and a boolean to check if the value has been set.
 func (o *ControlsAction) GetIdOk() (*int32, bool) {
 	if o == nil || isNil(o.Id) {
-    return nil, false
+		return nil, false
 	}
 	return o.Id, true
 }
@@ -70,35 +70,33 @@ func (o *ControlsAction) SetId(v int32) {
 	o.Id = &v
 }
 
-// GetRequestPayload returns the RequestPayload field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetRequestPayload returns the RequestPayload field value if set, zero value otherwise.
 func (o *ControlsAction) GetRequestPayload() []byte {
-	if o == nil {
-		var ret []byte
-		return ret
+	if o == nil || isNil(o.RequestPayload) {
+		return nil
 	}
 	return o.RequestPayload
 }
 
 // GetRequestPayloadOk returns a tuple with the RequestPayload field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ControlsAction) GetRequestPayloadOk() ([]byte, bool) {
 	if o == nil || isNil(o.RequestPayload) {
-    return nil, false
+		return nil, false
 	}
 	return o.RequestPayload, true
 }
 
 // HasRequestPayload returns a boolean if a field has been set.
 func (o *ControlsAction) HasRequestPayload() bool {
-	if o != nil && isNil(o.RequestPayload) {
+	if o != nil && !isNil(o.RequestPayload) {
 		return true
 	}
 
 	return false
 }
 
-// SetRequestPayload gets a reference to the given []byte and assigns it to the RequestPayload field.
+// SetRequestPayload gets a reference to the given string and assigns it to the RequestPayload field.
 func (o *ControlsAction) SetRequestPayload(v []byte) {
 	o.RequestPayload = v
 }
@@ -108,7 +106,7 @@ func (o ControlsAction) MarshalJSON() ([]byte, error) {
 	if !isNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if o.RequestPayload != nil {
+	if !isNil(o.RequestPayload) {
 		toSerialize["request_payload"] = o.RequestPayload
 	}
 	return json.Marshal(toSerialize)
@@ -149,5 +147,3 @@ func (v *NullableControlsAction) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

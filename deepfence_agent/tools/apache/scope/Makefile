@@ -76,17 +76,11 @@ $(SCOPE_EXPORT): docker/Dockerfile.scope $(CLOUD_AGENT_EXPORT) docker/entrypoint
 
 $(RUNSVINIT): vendor/github.com/peterbourgon/runsvinit/*.go
 
-$(SCOPE_EXE): $(shell find ./ -path ./vendor -prune -o -type f -name '*.go') prog/staticui/staticui.go prog/externalui/externalui.go $(CODECGEN_TARGETS)
-
-report/report.codecgen.go: $(call GET_CODECGEN_DEPS,report/)
-render/detailed/detailed.codecgen.go: $(call GET_CODECGEN_DEPS,render/detailed/)
-static: prog/staticui/staticui.go prog/externalui/externalui.go
-prog/staticui/staticui.go: client/build/index.html
-prog/externalui/externalui.go: client/build-external/index.html
+$(SCOPE_EXE): $(shell find ./ -path ./vendor -prune -o -type f -name '*.go')
 
 ifeq ($(BUILD_IN_CONTAINER),true)
 
-$(SCOPE_EXE) $(RUNSVINIT) lint tests shell prog/staticui/staticui.go prog/externalui/externalui.go: $(SCOPE_BACKEND_BUILD_UPTODATE)
+$(SCOPE_EXE) $(RUNSVINIT) lint tests shell: $(SCOPE_BACKEND_BUILD_UPTODATE)
 	@mkdir -p $(shell pwd)/.pkg
 	$(SUDO) docker run $(RM) $(RUN_FLAGS) \
 		-v $(shell pwd):/go/src/github.com/weaveworks/scope:delegated,z \
@@ -107,29 +101,11 @@ $(SCOPE_EXE):
 
 CODECGEN_EXE=$(CODECGEN_DIR)/bin/codecgen_$(shell go env GOHOSTOS)_$(shell go env GOHOSTARCH)
 
-%.codecgen.go: $(CODECGEN_EXE)
-	rm -f $@; $(GO_HOST) build $(GO_BUILD_FLAGS) ./$(@D) # workaround for https://github.com/ugorji/go/issues/145
-	cd $(@D) && $(WITH_GO_HOST_ENV) GO111MODULE=off $(shell pwd)/$(CODECGEN_EXE) -d $(CODECGEN_UID) -rt $(GO_BUILD_TAGS) -u -o $(@F) $(notdir $(call GET_CODECGEN_DEPS,$(@D)))
-
-$(CODECGEN_EXE): $(CODECGEN_DIR)/*.go
-	mkdir -p $(@D)
-	$(GO_HOST) build $(GO_BUILD_FLAGS) -o $@ ./$(CODECGEN_DIR)
-
 $(RUNSVINIT):
 	time $(GO) build $(GO_BUILD_FLAGS) -o $@ ./$(@D)
 
 shell:
 	/bin/bash
-
-tests: $(CODECGEN_TARGETS) prog/staticui/staticui.go prog/externalui/externalui.go
-	./tools/test -no-go-get -tags $(GO_BUILD_TAGS)
-
-lint: prog/staticui/staticui.go prog/externalui/externalui.go
-	./tools/lint
-
-prog/staticui/staticui.go:
-	mkdir -p prog/staticui
-	$(NO_CROSS_COMP); go run -mod vendor github.com/mjibson/esc -o $@ -pkg staticui -prefix client/build client/build
 
 prog/externalui/externalui.go:
 	mkdir -p prog/externalui

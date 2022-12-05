@@ -1,20 +1,18 @@
 package handler
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
+	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/ugorji/go/codec"
 	"github.com/weaveworks/scope/report"
 )
 
@@ -44,36 +42,50 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.Rep
 
 func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	var (
-		buf    = &bytes.Buffer{}
-		reader = io.TeeReader(r.Body, buf)
+	//buf    = &bytes.Buffer{}
+	//reader = io.TeeReader(r.Body, buf)
 	)
 
-	gzipped := strings.Contains(r.Header.Get("Content-Encoding"), "gzip")
-	if !gzipped {
-		reader = io.TeeReader(r.Body, gzip.NewWriter(buf))
-	}
+	//gzipped := strings.Contains(r.Header.Get("Content-Encoding"), "gzip")
+	//if !gzipped {
+	//	reader = io.TeeReader(r.Body, gzip.NewWriter(buf))
+	//}
 
 	ctx := directory.NewAccountContext()
 
-	contentType := r.Header.Get("Content-Type")
-	var isMsgpack int
-	switch {
-	case strings.HasPrefix(contentType, "application/msgpack"):
-		isMsgpack = 1
-	case strings.HasPrefix(contentType, "application/json"):
-		isMsgpack = 0
-	case strings.HasPrefix(contentType, "application/binc"):
-		isMsgpack = 2
-	default:
-		respondWith(ctx, w, http.StatusBadRequest, fmt.Errorf("Unsupported Content-Type: %v", contentType))
-		return
-	}
-
-	rpt, err := report.MakeFromBinary(ctx, reader, gzipped, isMsgpack)
+	//contentType := r.Header.Get("Content-Type")
+	//var isMsgpack int
+	//switch {
+	//case strings.HasPrefix(contentType, "application/msgpack"):
+	//	isMsgpack = 1
+	//case strings.HasPrefix(contentType, "application/json"):
+	//	isMsgpack = 0
+	//case strings.HasPrefix(contentType, "application/binc"):
+	//	isMsgpack = 2
+	//default:
+	//	respondWith(ctx, w, http.StatusBadRequest, fmt.Errorf("Unsupported Content-Type: %v", contentType))
+	//	return
+	//}
+	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
+
+	var rawReport openapi.ApiDocsRawReport
+	err = json.Unmarshal(data, &rawReport)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+	log.Info().Msgf("json unmarshal: %v", len(rawReport.GetPayload()))
+
+	rpt := report.MakeReport()
+	if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+	log.Info().Msgf("bin done")
 
 	ingester, err := getAgentReportIngester(ctx)
 	if err != nil {
@@ -81,7 +93,9 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := (*ingester).Ingest(ctx, *rpt); err != nil {
+	log.Info().Msgf("report id=%v", rpt)
+
+	if err := (*ingester).Ingest(ctx, rpt); err != nil {
 		log.Error().Msgf("Error Adding report: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
