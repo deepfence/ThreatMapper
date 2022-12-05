@@ -121,9 +121,9 @@ const (
 //	z.DecSendContainerState(containerMapEnd)
 //	return out
 //}
-//
-//// Inverse of mapRead, done for performance. Same comments about
-//// undocumented internal APIs apply.
+
+// Inverse of mapRead, done for performance. Same comments about
+// undocumented internal APIs apply.
 //func mapWrite(m ps.Map, encoder *codec.Encoder, encodeValue func(*codec.Encoder, interface{})) {
 //	z, r := codec.GenHelperEncoder(encoder)
 //	if m == nil || m.IsNil() {

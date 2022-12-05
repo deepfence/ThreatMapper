@@ -39,14 +39,14 @@ func (m MetricRow) Summary() MetricRow {
 }
 
 // MarshalJSON shouldn't be used, use CodecEncodeSelf instead
-func (MetricRow) MarshalJSON() ([]byte, error) {
-	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
-}
-
-// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
-func (*MetricRow) UnmarshalJSON(b []byte) error {
-	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
-}
+//func (MetricRow) MarshalJSON() ([]byte, error) {
+//	//panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
+//}
+//
+//// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
+//func (*MetricRow) UnmarshalJSON(b []byte) error {
+//	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
+//}
 
 // Needed to flatten the fields for backwards compatibility with probes
 // (time.Time is encoded in binary in MsgPack)

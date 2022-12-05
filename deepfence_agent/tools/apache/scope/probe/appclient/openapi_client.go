@@ -2,6 +2,7 @@ package appclient
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -42,7 +43,8 @@ func (OpenapiClient) PipeConnection(appID string, pipeID string, pipe xfer.Pipe)
 
 // Publish implements MultiAppClient
 func (oc OpenapiClient) Publish(r report.Report) error {
-	buf, err := r.WriteBinary()
+	buf, err := json.Marshal(r)
+	//buf, err := r.WriteBinary()
 	if err != nil {
 		return err
 	}
@@ -52,7 +54,7 @@ func (oc OpenapiClient) Publish(r report.Report) error {
 		hostname = host_node.ID
 	}
 
-	payload := string(buf.Bytes())
+	payload := string(buf)
 	fmt.Printf("Publishing: %v with %v\n", hostname, len(payload))
 
 	req := oc.client.TopologyApi.IngestAgentReport(context.Background())

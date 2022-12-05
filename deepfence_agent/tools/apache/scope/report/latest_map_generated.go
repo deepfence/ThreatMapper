@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"sort"
 	"time"
-
-	"github.com/ugorji/go/codec"
 )
 
 type stringLatestEntry struct {
@@ -217,24 +215,24 @@ func (m StringLatestMap) EqualIgnoringTimestamps(n StringLatestMap) bool {
 // means we are using undocumented, internal APIs, which could break
 // in the future.  See https://github.com/weaveworks/scope/pull/1709
 // for more information.
-func (m StringLatestMap) CodecEncodeSelf(encoder *codec.Encoder) {
-	encoder.Encode(m)
-}
+//func (m StringLatestMap) CodecEncodeSelf(encoder *codec.Encoder) {
+//	encoder.Encode(m)
+//}
 
 // CodecDecodeSelf implements codec.Selfer.
 // Decodes the input as for a built-in map, without creating an
 // intermediate copy of the data structure to save time. Uses
 // undocumented, internal APIs as for CodecEncodeSelf.
-func (m *StringLatestMap) CodecDecodeSelf(decoder *codec.Decoder) {
-	decoder.Decode(m)
-}
+//func (m *StringLatestMap) CodecDecodeSelf(decoder *codec.Decoder) {
+//	decoder.Decode(m)
+//}
 
 // MarshalJSON shouldn't be used, use CodecEncodeSelf instead.
-func (StringLatestMap) MarshalJSON() ([]byte, error) {
-	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
-}
-
-// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead.
-func (*StringLatestMap) UnmarshalJSON(b []byte) error {
-	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
-}
+//func (StringLatestMap) MarshalJSON() ([]byte, error) {
+//	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
+//}
+//
+//// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead.
+//func (*StringLatestMap) UnmarshalJSON(b []byte) error {
+//	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
+//}

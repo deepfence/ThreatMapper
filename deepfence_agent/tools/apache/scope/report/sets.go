@@ -3,7 +3,6 @@ package report
 import (
 	"reflect"
 
-	"github.com/ugorji/go/codec"
 	"github.com/weaveworks/ps"
 )
 
@@ -134,33 +133,30 @@ func (s Sets) DeepEqual(t Sets) bool {
 	return mapEqual(s.psMap, t.psMap, reflect.DeepEqual)
 }
 
-// CodecEncodeSelf implements codec.Selfer
-func (s *Sets) CodecEncodeSelf(encoder *codec.Encoder) {
-	encoder.Encode(s)
-	//mapWrite(s.psMap, encoder, func(encoder *codec.Encoder, val interface{}) {
-	//	encoder.Encode(val.(StringSet))
-	//})
-}
-
-// CodecDecodeSelf implements codec.Selfer
-func (s *Sets) CodecDecodeSelf(decoder *codec.Decoder) {
-	decoder.Decode(s)
-	//out := mapRead(decoder, func(isNil bool) interface{} {
-	//	var value StringSet
-	//	if !isNil {
-	//		decoder.Decode(&value)
-	//	}
-	//	return value
-	//})
-	//*s = Sets{out}
-}
+//func (s *Sets) CodecEncodeSelf(encoder *codec.Encoder) {
+//	mapWrite(s.psMap, encoder, func(encoder *codec.Encoder, val interface{}) {
+//		encoder.Encode(val.(StringSet))
+//	})
+//}
+//
+//func (s *Sets) CodecDecodeSelf(decoder *codec.Decoder) {
+//	decoder.Decode(s)
+//	out := mapRead(decoder, func(isNil bool) interface{} {
+//		var value StringSet
+//		if !isNil {
+//			decoder.Decode(&value)
+//		}
+//		return value
+//	})
+//	*s = Sets{out}
+//}
 
 // MarshalJSON shouldn't be used, use CodecEncodeSelf instead
-func (Sets) MarshalJSON() ([]byte, error) {
-	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
-}
-
-// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
-func (*Sets) UnmarshalJSON(b []byte) error {
-	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
-}
+//func (Sets) MarshalJSON() ([]byte, error) {
+//	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
+//}
+//
+//// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
+//func (*Sets) UnmarshalJSON(b []byte) error {
+//	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
+//}

@@ -27,7 +27,7 @@ const (
 	resolver_batch_size     = 1_000
 	resolver_timeout        = time.Second * 10
 	ingester_size           = 25_000
-	db_clean_up_timeout     = time.Minute * 2
+	db_clean_up_timeout     = time.Minute * 5
 	max_network_maps_size   = 1024 * 1024 * 1024 // 1 GB per maps
 	enqueer_timeout         = time.Second * 30
 	localhost_ip            = "127.0.0.1"
@@ -91,7 +91,7 @@ type neo4jIngester struct {
 	ingester         chan map[string]*report.Report
 	resolvers_access sync.RWMutex
 	resolvers        EndpointResolversCache
-	batcher          chan neo4jIngestionData
+	batcher          chan ReportIngestionData
 	resolvers_update chan EndpointResolvers
 	resolvers_input  chan *report.Report
 	preparers_input  chan *report.Report
@@ -111,6 +111,7 @@ func (nc *neo4jIngester) runEnqueueReport() {
 					log.Error().Msgf("multiple probe ids: %v", probe_id)
 				}
 			}
+			log.Error().Msgf("probe id: %v", probe_id)
 			report_buffer[probe_id] = rpt
 			i += 1
 		case <-timeout:
@@ -127,7 +128,7 @@ func (nc *neo4jIngester) runEnqueueReport() {
 	}
 }
 
-type neo4jIngestionData struct {
+type ReportIngestionData struct {
 	Process_batch   []map[string]string
 	Host_batch      []map[string]string
 	Container_batch []map[string]string
@@ -154,7 +155,7 @@ func (r *EndpointResolvers) merge(other *EndpointResolvers) {
 	}
 }
 
-func (nd *neo4jIngestionData) merge(other *neo4jIngestionData) {
+func (nd *ReportIngestionData) merge(other *ReportIngestionData) {
 	nd.Process_batch = append(nd.Process_batch, other.Process_batch...)
 	nd.Host_batch = append(nd.Host_batch, other.Host_batch...)
 	nd.Container_batch = append(nd.Container_batch, other.Container_batch...)
@@ -233,7 +234,7 @@ func concatMaps(input map[string][]string) []map[string]interface{} {
 	return res
 }
 
-func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache) neo4jIngestionData {
+func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache) ReportIngestionData {
 	hosts := make([]map[string]string, 0, len(rpt.Host.Nodes))
 	host_batch := make([]map[string]string, 0, len(rpt.Host.Nodes))
 	for _, n := range rpt.Host.Nodes {
@@ -376,7 +377,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		pod_edges_batch[host] = append(pod_edges_batch[host], node_info["node_id"])
 	}
 
-	return neo4jIngestionData{
+	return ReportIngestionData{
 		Endpoint_edges_batch: endpoint_edges_batch,
 
 		Process_batch:   process_batch,
@@ -440,7 +441,7 @@ func (nc *neo4jIngester) CleanUpDB() error {
 	return tx.Commit()
 }
 
-func (nc *neo4jIngester) PushToDB(batches neo4jIngestionData) error {
+func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	session, err := nc.driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return err
@@ -452,6 +453,8 @@ func (nc *neo4jIngester) PushToDB(batches neo4jIngestionData) error {
 		return err
 	}
 	defer tx.Close()
+
+	log.Error().Msgf("push: %v\n", batches)
 
 	start := time.Now()
 
@@ -528,8 +531,8 @@ func (nc *neo4jIngester) runIngester() {
 	}
 }
 
-func (nc *neo4jIngester) runDBBatcher(db_pusher chan neo4jIngestionData) {
-	batch := make([]neo4jIngestionData, db_batch_size)
+func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData) {
+	batch := make([]ReportIngestionData, db_batch_size)
 	size := 0
 	send := false
 	reset_timeout := false
@@ -567,7 +570,7 @@ func (nc *neo4jIngester) runDBBatcher(db_pusher chan neo4jIngestionData) {
 	}
 }
 
-func (nc *neo4jIngester) runDBPusher(db_pusher chan neo4jIngestionData) {
+func (nc *neo4jIngester) runDBPusher(db_pusher chan ReportIngestionData) {
 	clean_up := time.After(db_clean_up_timeout)
 	for {
 		select {
@@ -655,7 +658,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.Report], error) {
 		resolvers:        rdb,
 		enqueuer:         make(chan *report.Report, ingester_size),
 		ingester:         make(chan map[string]*report.Report, ingester_size),
-		batcher:          make(chan neo4jIngestionData, ingester_size),
+		batcher:          make(chan ReportIngestionData, ingester_size),
 		resolvers_update: make(chan EndpointResolvers, ingester_size),
 		resolvers_input:  make(chan *report.Report, ingester_size),
 		preparers_input:  make(chan *report.Report, ingester_size),
@@ -671,7 +674,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.Report], error) {
 		go nc.runPreparer()
 	}
 
-	db_pusher := make(chan neo4jIngestionData, db_input_size)
+	db_pusher := make(chan ReportIngestionData, db_input_size)
 	go nc.runDBBatcher(db_pusher)
 	go nc.runDBPusher(db_pusher)
 

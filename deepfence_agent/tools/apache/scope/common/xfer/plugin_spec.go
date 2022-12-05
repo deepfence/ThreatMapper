@@ -199,14 +199,14 @@ func (n *PluginSpecs) CodecDecodeSelf(decoder *codec.Decoder) {
 }
 
 // MarshalJSON shouldn't be used, use CodecEncodeSelf instead
-func (PluginSpecs) MarshalJSON() ([]byte, error) {
-	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
-}
-
-// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
-func (*PluginSpecs) UnmarshalJSON(b []byte) error {
-	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
-}
+//func (PluginSpecs) MarshalJSON() ([]byte, error) {
+//	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
+//}
+//
+//// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
+//func (*PluginSpecs) UnmarshalJSON(b []byte) error {
+//	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
+//}
 
 // PluginSpecsByID implements sort.Interface, so we can sort the specs by the
 // ID field.

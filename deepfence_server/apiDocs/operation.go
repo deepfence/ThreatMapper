@@ -9,10 +9,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 )
 
-type RawReport struct {
-	Payload string `json:"payload"`
-}
-
 type ScanTrigger struct {
 	NodeId string `json:"node_id"`
 }
@@ -34,7 +30,7 @@ func (d *OpenApiDocs) AddGraphOperations() {
 
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report", "Ingest Topology Data", "Ingest data reported by one Agent",
-		[]string{tagTopology}, nil, bearer_token, new(RawReport), new(controls.AgentControls))
+		[]string{tagTopology}, nil, bearer_token, new(ingesters.ReportIngestionData), new(controls.AgentControls))
 
 	d.AddOperation("ingestCVEs", http.MethodPost, "/deepfence/ingest/cves", "Ingest CVEs", "Ingest CVEs found while scanning the agent",
 		[]string{tagVulnerability}, nil, bearer_token, new([]ingesters.DfCveStruct), nil)

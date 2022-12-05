@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	cloudProvidersID       = "cloud-providers"
-	cloudRegionsID         = "cloud-regions"
-	kubernetesClustersID   = "kubernetes-clusters"
+	cloudProvidersID     = "cloud-providers"
+	cloudRegionsID       = "cloud-regions"
+	kubernetesClustersID = "kubernetes-clusters"
 )
 
 // Node is the data type that's yielded to the JavaScript layer when
@@ -35,15 +35,15 @@ type ControlInstance struct {
 	Control report.Control
 }
 
-// MarshalJSON shouldn't be used, use CodecEncodeSelf instead
-func (ControlInstance) MarshalJSON() ([]byte, error) {
-	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
-}
-
-// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
-func (*ControlInstance) UnmarshalJSON(b []byte) error {
-	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
-}
+//// MarshalJSON shouldn't be used, use CodecEncodeSelf instead
+//func (ControlInstance) MarshalJSON() ([]byte, error) {
+//	panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
+//}
+//
+//// UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead
+//func (*ControlInstance) UnmarshalJSON(b []byte) error {
+//	panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
+//}
 
 type wiredControlInstance struct {
 	ProbeID      string `json:"probeId"`

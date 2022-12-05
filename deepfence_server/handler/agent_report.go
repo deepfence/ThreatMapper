@@ -12,7 +12,6 @@ import (
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/ugorji/go/codec"
 	"github.com/weaveworks/scope/report"
 )
 
@@ -78,14 +77,14 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
-	log.Info().Msgf("json unmarshal: %v", len(rawReport.GetPayload()))
-
 	rpt := report.MakeReport()
-	if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
+	err = json.Unmarshal([]byte(rawReport.GetPayload()), &rpt)
+
+	//if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
+	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
-	log.Info().Msgf("bin done")
 
 	ingester, err := getAgentReportIngester(ctx)
 	if err != nil {
@@ -93,14 +92,12 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info().Msgf("report id=%v", rpt)
-
 	if err := (*ingester).Ingest(ctx, rpt); err != nil {
 		log.Error().Msgf("Error Adding report: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
-	//w.Write()
+
 	actions, err := controls.GetAgentActions(ctx, rpt.ID)
 	if err != nil {
 		log.Error().Msgf("Cannot get actions: ", err)

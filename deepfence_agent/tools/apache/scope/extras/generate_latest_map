@@ -299,15 +299,6 @@ function generate_latest_map() {
         z.DecSendContainerState(containerMapEnd)
     }
 
-    // MarshalJSON shouldn't be used, use CodecEncodeSelf instead.
-    func (${latest_map_type}) MarshalJSON() ([]byte, error) {
-        panic("MarshalJSON shouldn't be used, use CodecEncodeSelf instead")
-    }
-
-    // UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead.
-    func (*${latest_map_type}) UnmarshalJSON(b []byte) error {
-        panic("UnmarshalJSON shouldn't be used, use CodecDecodeSelf instead")
-    }
 EOF
 }
 
