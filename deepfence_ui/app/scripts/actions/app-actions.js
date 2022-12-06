@@ -120,6 +120,7 @@ import {
   startMalwareScan,
   malwareScanRegistryImages,
   getMalwareScanData,
+  getMalwareClassesScanData,
   getMalwareScanResults,
   getTopMalwareScanContainerAndHosts,
   getMalwareScanReportChart,
@@ -2158,6 +2159,15 @@ export function getMalwareScanDataAction(params) {
     ActionTypes.GET_MALWARE_SCAN_DATA_FAILURE,
   ];
   return genericThunkAction(actionTypes, getMalwareScanData, params);
+}
+
+export function getMalwareClassesScanDataAction(params) {
+  const actionTypes = [
+    ActionTypes.GET_MALWARE_CLASSES_SCAN_DATA_REQUEST,
+    ActionTypes.GET_MALWARE_CLASSES_SCAN_DATA_SUCCESS,
+    ActionTypes.GET_MALWARE_CLASSES_SCAN_DATA_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getMalwareClassesScanData, params);
 }
 
 export function getMalwareScanResultsAction(params) {

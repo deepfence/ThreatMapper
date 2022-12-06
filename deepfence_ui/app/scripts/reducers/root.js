@@ -1668,6 +1668,25 @@ export function rootReducer(state = initialState, action) {
         return state.setIn(['malwareScan', 'status', 'error'],
           'No data available');
       }
+      
+      case ActionTypes.GET_MALWARE_CLASSES_SCAN_DATA_REQUEST: {
+        return state.setIn(['malwareClassesScan', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.GET_MALWARE_CLASSES_SCAN_DATA_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareClassesScan', 'status', 'loading'], false);
+        return state.setIn(['malwareClassesScan', 'data'], data);
+      }
+  
+      case ActionTypes.GET_MALWARE_CLASSES_SCAN_DATA_FAILURE: {
+        state = state.setIn(['malwareClassesScan', 'status', 'loading'], false);
+        state = state.setIn(['malwareClassesScan', 'data'], null);
+        return state.setIn(['malwareClassesScan', 'status', 'error'],
+          'No data available');
+      }
   
       case ActionTypes.GET_SMALWARE_SCAN_RESULTS_REQUEST: {
         return state.setIn(['malwareScanResults', 'status', 'loading'], true);

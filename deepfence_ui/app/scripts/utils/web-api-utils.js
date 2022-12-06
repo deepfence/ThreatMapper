@@ -2925,6 +2925,44 @@ export function getMalwareScanData(params = {}) {
   });
 }
 
+export function getMalwareClassesScanData(params = {}) {
+  const {
+    dispatch,
+    filters,
+    start_index,
+    size,
+    lucene_query: luceneQuery = []
+  } = params;
+  const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
+
+  let url = `${backendElasticApiEndPoint()}/malware/class/node_report?lucene_query=${luceneQueryEscaped}`;
+  const body = {
+    filters,
+    start_index,
+    size,
+  };
+  return doRequest({
+    url,
+    method: 'POST',
+    data: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+      'cache-control': 'no-cache',
+    },
+    error: error => {
+      if (error.status === 401 || error.statusText === 'UNAUTHORIZED') {
+        // dispatch(receiveLogoutResponse());
+        refreshAuthToken();
+      } else if (error.status === 403) {
+        dispatch(receiveClearDashBoardResponse());
+      } else {
+        log(`Error in api modal details request: ${error}`);
+      }
+    },
+  });
+}
+
 export function getMalwareScanResults(params = {}) {
   const {
     dispatch,
