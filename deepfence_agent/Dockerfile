@@ -21,8 +21,8 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && apt-get update && apt-get install -y --no-install-recommends gettext ca-certificates supervisor logrotate util-linux dnsutils net-tools cgroup-tools libcgroup1 libcap2 libaudit1 conntrack runit auditd apparmor gzip lsof file curl zip at gnupg  unzip procps cron sudo bzip2 libssl1.1 libevent-2.1-7 libevent-openssl-2.1-7 libevent-pthreads-2.1-7 libnet1 gnupg2 libfile-mimeinfo-perl libjansson4 libmagic1 wget bash python3-pip\
     && echo 'deb https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list \
     && curl -L https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key | sudo apt-key add - \
-    && apt-get update \
-    && apt-get -y install skopeo podman \
+    && apt-get update --allow-insecure-repositories \
+    && apt-get -y --allow-unauthenticated install skopeo podman \
     && echo "Installing docker" \
     && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
