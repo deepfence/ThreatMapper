@@ -254,6 +254,9 @@ func (n *Node) ToDataMap() map[string]string {
 		res["node_type"] = ""
 	}
 	n.Latest.ForEach(func(k string, _ time.Time, v string) {
+		if k == "" {
+			k = "control_probe_id"
+		}
 		res[k] = v
 	})
 	return res

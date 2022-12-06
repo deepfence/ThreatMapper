@@ -3,13 +3,13 @@ package report
 import (
 	"reflect"
 
-	"github.com/weaveworks/ps"
+	"github.com/weaveworks/scope/ps"
 )
 
 // Sets is a string->set-of-strings map.
 // It is immutable.
 type Sets struct {
-	psMap ps.Map
+	PsMap *ps.Tree `json:"ps_map"`
 }
 
 // EmptySets is an empty Sets.  Starts with this.
@@ -22,18 +22,18 @@ func MakeSets() Sets {
 
 // Keys returns the keys for this set
 func (s Sets) Keys() []string {
-	if s.psMap == nil {
+	if s.PsMap == nil {
 		return nil
 	}
-	return s.psMap.Keys()
+	return s.PsMap.Keys()
 }
 
 // Add the given value to the Sets.
 func (s Sets) Add(key string, value StringSet) Sets {
-	if s.psMap == nil {
+	if s.PsMap == nil {
 		s = emptySets
 	}
-	if existingValue, ok := s.psMap.Lookup(key); ok {
+	if existingValue, ok := s.PsMap.Lookup(key); ok {
 		var unchanged bool
 		value, unchanged = existingValue.(StringSet).Merge(value)
 		if unchanged {
@@ -41,13 +41,13 @@ func (s Sets) Add(key string, value StringSet) Sets {
 		}
 	}
 	return Sets{
-		psMap: s.psMap.Set(key, value),
+		PsMap: s.PsMap.Set(key, value),
 	}
 }
 
 // AddString adds a single string under a key, creating a new StringSet if necessary.
 func (s Sets) AddString(key string, str string) Sets {
-	if s.psMap == nil {
+	if s.PsMap == nil {
 		s = emptySets
 	}
 	value, found := s.Lookup(key)
@@ -56,28 +56,28 @@ func (s Sets) AddString(key string, str string) Sets {
 	}
 	value = value.Add(str)
 	return Sets{
-		psMap: s.psMap.Set(key, value),
+		PsMap: s.PsMap.Set(key, value),
 	}
 }
 
 // Delete the given set from the Sets.
 func (s Sets) Delete(key string) Sets {
-	if s.psMap == nil {
+	if s.PsMap == nil {
 		return emptySets
 	}
-	psMap := s.psMap.Delete(key)
-	if psMap.IsNil() {
+	PsMap := s.PsMap.Delete(key)
+	if PsMap.IsNil() {
 		return emptySets
 	}
-	return Sets{psMap: psMap}
+	return Sets{PsMap: PsMap}
 }
 
 // Lookup returns the sets stored under key.
 func (s Sets) Lookup(key string) (StringSet, bool) {
-	if s.psMap == nil {
+	if s.PsMap == nil {
 		return MakeStringSet(), false
 	}
-	if value, ok := s.psMap.Lookup(key); ok {
+	if value, ok := s.PsMap.Lookup(key); ok {
 		return value.(StringSet), true
 	}
 	return MakeStringSet(), false
@@ -85,10 +85,10 @@ func (s Sets) Lookup(key string) (StringSet, bool) {
 
 // Size returns the number of elements
 func (s Sets) Size() int {
-	if s.psMap == nil {
+	if s.PsMap == nil {
 		return 0
 	}
-	return s.psMap.Size()
+	return s.PsMap.Size()
 }
 
 // Merge merges two sets maps into a fresh set, performing set-union merges as
@@ -97,8 +97,8 @@ func (s Sets) Merge(other Sets) Sets {
 	var (
 		sSize     = s.Size()
 		otherSize = other.Size()
-		result    = s.psMap
-		iter      = other.psMap
+		result    = s.PsMap
+		iter      = other.PsMap
 	)
 	switch {
 	case sSize == 0:
@@ -125,16 +125,16 @@ func (s Sets) Merge(other Sets) Sets {
 }
 
 func (s Sets) String() string {
-	return mapToString(s.psMap)
+	return mapToString(s.PsMap)
 }
 
 // DeepEqual tests equality with other Sets
 func (s Sets) DeepEqual(t Sets) bool {
-	return mapEqual(s.psMap, t.psMap, reflect.DeepEqual)
+	return mapEqual(s.PsMap, t.PsMap, reflect.DeepEqual)
 }
 
 //func (s *Sets) CodecEncodeSelf(encoder *codec.Encoder) {
-//	mapWrite(s.psMap, encoder, func(encoder *codec.Encoder, val interface{}) {
+//	mapWrite(s.PsMap, encoder, func(encoder *codec.Encoder, val interface{}) {
 //		encoder.Encode(val.(StringSet))
 //	})
 //}

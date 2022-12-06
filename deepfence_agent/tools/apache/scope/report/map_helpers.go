@@ -6,14 +6,14 @@ import (
 	"sort"
 	"time"
 
-	"github.com/weaveworks/ps"
+	"github.com/weaveworks/scope/ps"
 )
 
 // Helper functions for ps.Map, without considering what is inside
 
 // Return a new map containing all the elements of the two input maps
-// and where the same key is in both, pick 'b' where prefer(a,b) is true
-func mergeMaps(m, n ps.Map, prefer func(a, b interface{}) bool) ps.Map {
+// and where the same Key is in both, pick 'b' where prefer(a,b) is true
+func mergeMaps(m, n *ps.Tree, prefer func(a, b interface{}) bool) *ps.Tree {
 	switch {
 	case m == nil:
 		return n
@@ -23,20 +23,20 @@ func mergeMaps(m, n ps.Map, prefer func(a, b interface{}) bool) ps.Map {
 		m, n = n, m
 	}
 
-	n.ForEach(func(key string, val interface{}) {
-		if existingVal, found := m.Lookup(key); found {
+	n.ForEach(func(Key string, val interface{}) {
+		if existingVal, found := m.Lookup(Key); found {
 			if prefer(existingVal, val) {
-				m = m.Set(key, val)
+				m = m.Set(Key, val)
 			}
 		} else {
-			m = m.Set(key, val)
+			m = m.Set(Key, val)
 		}
 	})
 
 	return m
 }
 
-func mapEqual(m, n ps.Map, equalf func(a, b interface{}) bool) bool {
+func mapEqual(m, n *ps.Tree, equalf func(a, b interface{}) bool) bool {
 	var mSize, nSize int
 	if m != nil {
 		mSize = m.Size()
@@ -62,17 +62,17 @@ func mapEqual(m, n ps.Map, equalf func(a, b interface{}) bool) bool {
 }
 
 // very similar to ps.Map.String() but with keys sorted
-func mapToString(m ps.Map) string {
+func mapToString(m *ps.Tree) string {
 	buf := bytes.NewBufferString("{")
-	for _, key := range mapKeys(m) {
-		val, _ := m.Lookup(key)
-		fmt.Fprintf(buf, "%s: %s,\n", key, val)
+	for _, Key := range mapKeys(m) {
+		val, _ := m.Lookup(Key)
+		fmt.Fprintf(buf, "%s: %s,\n", Key, val)
 	}
 	fmt.Fprintf(buf, "}")
 	return buf.String()
 }
 
-func mapKeys(m ps.Map) []string {
+func mapKeys(m *ps.Tree) []string {
 	if m == nil {
 		return nil
 	}
@@ -108,15 +108,15 @@ const (
 //			break
 //		}
 //
-//		var key string
+//		var Key string
 //		z.DecSendContainerState(containerMapKey)
 //		if !r.TryDecodeAsNil() {
-//			key = lookupCommonKey(r.DecodeStringAsBytes())
+//			Key = lookupCommonKey(r.DecodeStringAsBytes())
 //		}
 //
 //		z.DecSendContainerState(containerMapValue)
 //		value := decodeValue(r.TryDecodeAsNil())
-//		out = out.UnsafeMutableSet(key, value)
+//		out = out.UnsafeMutableSet(Key, value)
 //	}
 //	z.DecSendContainerState(containerMapEnd)
 //	return out
@@ -131,9 +131,9 @@ const (
 //		return
 //	}
 //	r.EncodeMapStart(m.Size())
-//	m.ForEach(func(key string, val interface{}) {
+//	m.ForEach(func(Key string, val interface{}) {
 //		z.EncSendContainerState(containerMapKey)
-//		r.EncodeString(cUTF8, key)
+//		r.EncodeString(cUTF8, Key)
 //		z.EncSendContainerState(containerMapValue)
 //		encodeValue(encoder, val)
 //	})
@@ -142,16 +142,16 @@ const (
 
 // Now follow helpers for StringLatestMap
 
-// These let us sort a StringLatestMap strings by key
+// These let us sort a StringLatestMap strings by Key
 func (m StringLatestMap) Len() int           { return len(m) }
 func (m StringLatestMap) Swap(i, j int)      { m[i], m[j] = m[j], m[i] }
-func (m StringLatestMap) Less(i, j int) bool { return m[i].key < m[j].key }
+func (m StringLatestMap) Less(i, j int) bool { return m[i].Key < m[j].Key }
 
 // sort entries and shuffle down any duplicates. NOTE: may modify contents of m.
 func (m StringLatestMap) sortedAndDeduplicated() StringLatestMap {
 	sort.Sort(m)
 	for i := 1; i < len(m); {
-		if m[i-1].key == m[i].key {
+		if m[i-1].Key == m[i].Key {
 			if m[i-1].Timestamp.Before(m[i].Timestamp) {
 				m = append(m[:i-1], m[i:]...)
 			} else {
@@ -169,7 +169,7 @@ func (m StringLatestMap) addMapEntries(ts time.Time, n map[string]string) String
 	out := make(StringLatestMap, len(m), len(m)+len(n))
 	copy(out, m)
 	for k, v := range n {
-		out = append(out, stringLatestEntry{key: k, Value: v, Timestamp: ts})
+		out = append(out, stringLatestEntry{Key: k, Value: v, Timestamp: ts})
 	}
 	return out.sortedAndDeduplicated()
 }
@@ -180,7 +180,7 @@ func (m StringLatestMap) Propagate(from StringLatestMap, keys ...string) StringL
 	copy(out, m)
 	for _, k := range keys {
 		if v, ts, ok := from.LookupEntry(k); ok {
-			out = append(out, stringLatestEntry{key: k, Value: v, Timestamp: ts})
+			out = append(out, stringLatestEntry{Key: k, Value: v, Timestamp: ts})
 		}
 	}
 	return out.sortedAndDeduplicated()

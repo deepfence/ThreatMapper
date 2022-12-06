@@ -6,7 +6,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ugorji/go/codec"
-	"github.com/weaveworks/ps"
+	"github.com/weaveworks/scope/ps"
 
 	"github.com/weaveworks/scope/test/reflect"
 )
@@ -14,7 +14,7 @@ import (
 // NodeSet is a set of nodes keyed on ID. Clients must use
 // the Add method to add nodes
 type NodeSet struct {
-	psMap ps.Map
+	PsMap *ps.Tree `json:"ps_map"`
 }
 
 var emptyNodeSet = NodeSet{ps.NewMap()}
@@ -35,10 +35,10 @@ func (n NodeSet) Copy() NodeSet {
 
 // UnsafeAdd adds a node to the NodeSet. Only call this if n has one owner.
 func (n *NodeSet) UnsafeAdd(node Node) {
-	if n.psMap == nil {
-		n.psMap = ps.NewMap()
+	if n.PsMap == nil {
+		n.PsMap = ps.NewMap()
 	}
-	n.psMap = n.psMap.UnsafeMutableSet(node.ID, node)
+	n.PsMap = n.PsMap.UnsafeMutableSet(node.ID, node)
 }
 
 // Add adds the nodes to the NodeSet, and returns the NodeSet to enable chaining.
@@ -46,7 +46,7 @@ func (n NodeSet) Add(nodes ...Node) NodeSet {
 	if len(nodes) == 0 {
 		return n
 	}
-	result := n.psMap
+	result := n.PsMap
 	if result == nil {
 		result = ps.NewMap()
 	}
@@ -62,7 +62,7 @@ func (n NodeSet) Delete(ids ...string) NodeSet {
 	if n.Size() == 0 {
 		return n
 	}
-	result := n.psMap
+	result := n.PsMap
 	for _, id := range ids {
 		result = result.Delete(id)
 	}
@@ -74,14 +74,14 @@ func (n NodeSet) Delete(ids ...string) NodeSet {
 
 // UnsafeMerge combines the two NodeSets, altering n
 func (n *NodeSet) UnsafeMerge(other NodeSet) {
-	if other.psMap == nil || other.psMap.Size() == 0 {
+	if other.PsMap == nil || other.PsMap.Size() == 0 {
 		return
 	}
-	if n.psMap == nil {
-		n.psMap = ps.NewMap()
+	if n.PsMap == nil {
+		n.PsMap = ps.NewMap()
 	}
-	other.psMap.ForEach(func(key string, otherVal interface{}) {
-		n.psMap = n.psMap.UnsafeMutableSet(key, otherVal)
+	other.PsMap.ForEach(func(key string, otherVal interface{}) {
+		n.PsMap = n.PsMap.UnsafeMutableSet(key, otherVal)
 	})
 }
 
@@ -94,7 +94,7 @@ func (n NodeSet) Merge(other NodeSet) NodeSet {
 	if otherSize == 0 {
 		return n
 	}
-	result, iter := n.psMap, other.psMap
+	result, iter := n.PsMap, other.PsMap
 	if nSize < otherSize {
 		result, iter = iter, result
 	}
@@ -106,8 +106,8 @@ func (n NodeSet) Merge(other NodeSet) NodeSet {
 
 // Lookup the node 'key'
 func (n NodeSet) Lookup(key string) (Node, bool) {
-	if n.psMap != nil {
-		value, ok := n.psMap.Lookup(key)
+	if n.PsMap != nil {
+		value, ok := n.PsMap.Lookup(key)
 		if ok {
 			return value.(Node), true
 		}
@@ -117,16 +117,16 @@ func (n NodeSet) Lookup(key string) (Node, bool) {
 
 // Size is the number of nodes in the set
 func (n NodeSet) Size() int {
-	if n.psMap == nil {
+	if n.PsMap == nil {
 		return 0
 	}
-	return n.psMap.Size()
+	return n.PsMap.Size()
 }
 
 // ForEach executes f for each node in the set.
 func (n NodeSet) ForEach(f func(Node)) {
-	if n.psMap != nil {
-		n.psMap.ForEach(func(_ string, val interface{}) {
+	if n.PsMap != nil {
+		n.PsMap.ForEach(func(_ string, val interface{}) {
 			f(val.(Node))
 		})
 	}
@@ -134,8 +134,8 @@ func (n NodeSet) ForEach(f func(Node)) {
 
 func (n NodeSet) String() string {
 	buf := bytes.NewBufferString("{")
-	for _, key := range mapKeys(n.psMap) {
-		val, _ := n.psMap.Lookup(key)
+	for _, key := range mapKeys(n.PsMap) {
+		val, _ := n.PsMap.Lookup(key)
 		fmt.Fprintf(buf, "%s: %s, ", key, spew.Sdump(val))
 	}
 	fmt.Fprintf(buf, "}")
@@ -144,7 +144,7 @@ func (n NodeSet) String() string {
 
 // DeepEqual tests equality with other NodeSets
 func (n NodeSet) DeepEqual(o NodeSet) bool {
-	return mapEqual(n.psMap, o.psMap, reflect.DeepEqual)
+	return mapEqual(n.PsMap, o.PsMap, reflect.DeepEqual)
 }
 
 func (n NodeSet) toIntermediate() []Node {
@@ -161,7 +161,7 @@ func (n NodeSet) fromIntermediate(nodes []Node) NodeSet {
 
 // CodecEncodeSelf implements codec.Selfer
 func (n *NodeSet) CodecEncodeSelf(encoder *codec.Encoder) {
-	if n.psMap != nil {
+	if n.PsMap != nil {
 		encoder.Encode(n.toIntermediate())
 	} else {
 		encoder.Encode(nil)

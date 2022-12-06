@@ -948,8 +948,6 @@ github.com/weaveworks/go-checkpoint v0.0.0-20220223124739-fd9899e2b4f2 h1:EWUmjQ
 github.com/weaveworks/go-checkpoint v0.0.0-20220223124739-fd9899e2b4f2/go.mod h1:HfUHaw/CuYj2phXCM9etFQwvOQ3W0786feIEs9OMFHk=
 github.com/weaveworks/promrus v1.2.0 h1:jOLf6pe6/vss4qGHjXmGz4oDJQA+AOCqEL3FvvZGz7M=
 github.com/weaveworks/promrus v1.2.0/go.mod h1:SaE82+OJ91yqjrE1rsvBWVzNZKcHYFtMUyS1+Ogs/KA=
-github.com/weaveworks/ps v0.0.0-20160725183535-70d17b2d6f76 h1:lX3A5prmpe4MT9iaTiatB76fdLvajxFItYvdsZC3PRU=
-github.com/weaveworks/ps v0.0.0-20160725183535-70d17b2d6f76/go.mod h1:6YfgZlj+cWgxFlwYrm3aPt1rS1xDTD1SEqL0Ms3Zxks=
 github.com/weaveworks/weave v2.6.5+incompatible h1:XdqFrbtKGXbCuDNlvLItapqA2VYLZrb2CxtCeHUMlJA=
 github.com/weaveworks/weave v2.6.5+incompatible/go.mod h1:5ht5Uktjg++tIOqmWI2VvRzbNM7i+RhtqDQPumydP1U=
 github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c h1:4+NVyrLUuEmvE3r3Xst7gPuKhAP6X04ACpMmPvtK0M0=

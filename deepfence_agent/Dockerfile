@@ -92,6 +92,4 @@ RUN mkdir -p /home/deepfence/bin/yara-hunter \
     && tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin \
     && rm -f crictl-$VERSION-linux-amd64.tar.gz
 
-RUN apt update --allow-insecure-repositories && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
-
 ENTRYPOINT ["/usr/local/bin/start_services"]

@@ -888,8 +888,6 @@ github.com/vishvananda/netns v0.0.1/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPx
 github.com/weaveworks/common v0.0.0-20220927162600-d0a1a93a15be h1:/Zt20imhU9Fw9UfOI49YsX1DNqFP0JPZqvJH0oAyW8A=
 github.com/weaveworks/common v0.0.0-20220927162600-d0a1a93a15be/go.mod h1:3AQDNAObqldt8KtTn6sk6jvXwgi9J6nNgmTFmzQB9x4=
 github.com/weaveworks/promrus v1.2.0/go.mod h1:SaE82+OJ91yqjrE1rsvBWVzNZKcHYFtMUyS1+Ogs/KA=
-github.com/weaveworks/ps v0.0.0-20160725183535-70d17b2d6f76 h1:lX3A5prmpe4MT9iaTiatB76fdLvajxFItYvdsZC3PRU=
-github.com/weaveworks/ps v0.0.0-20160725183535-70d17b2d6f76/go.mod h1:6YfgZlj+cWgxFlwYrm3aPt1rS1xDTD1SEqL0Ms3Zxks=
 github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c h1:4+NVyrLUuEmvE3r3Xst7gPuKhAP6X04ACpMmPvtK0M0=
 github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c/go.mod h1:xcvfY9pOw6s4wyrhilFSbMthL6KzgrfCIETHHUOQ/fQ=
 github.com/willf/bitset v1.1.11-0.20200630133818-d5bec3311243/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=

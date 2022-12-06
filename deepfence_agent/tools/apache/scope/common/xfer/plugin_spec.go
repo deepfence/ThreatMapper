@@ -7,8 +7,8 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ugorji/go/codec"
-	"github.com/weaveworks/ps"
 
+	"github.com/weaveworks/scope/ps"
 	"github.com/weaveworks/scope/test/reflect"
 )
 
@@ -33,7 +33,7 @@ type PluginSpec struct {
 // PluginSpecs is a set of plugin specs keyed on ID. Clients must use
 // the Add method to add plugin specs
 type PluginSpecs struct {
-	psMap ps.Map
+	PsMap *ps.Tree `json:"ps_map"`
 }
 
 // EmptyPluginSpecs is the empty set of plugin specs.
@@ -47,7 +47,7 @@ func MakePluginSpecs(specs ...PluginSpec) PluginSpecs {
 // Add adds the specs to the PluginSpecs. Add is the only valid way to grow a
 // PluginSpecs. Add returns the PluginSpecs to enable chaining.
 func (n PluginSpecs) Add(specs ...PluginSpec) PluginSpecs {
-	result := n.psMap
+	result := n.PsMap
 	if result == nil {
 		result = ps.NewMap()
 	}
@@ -66,7 +66,7 @@ func (n PluginSpecs) Merge(other PluginSpecs) PluginSpecs {
 	if otherSize == 0 {
 		return n
 	}
-	result, iter := n.psMap, other.psMap
+	result, iter := n.PsMap, other.PsMap
 	if nSize < otherSize {
 		result, iter = iter, result
 	}
@@ -78,8 +78,8 @@ func (n PluginSpecs) Merge(other PluginSpecs) PluginSpecs {
 
 // Lookup the spec by 'key'
 func (n PluginSpecs) Lookup(key string) (PluginSpec, bool) {
-	if n.psMap != nil {
-		value, ok := n.psMap.Lookup(key)
+	if n.PsMap != nil {
+		value, ok := n.PsMap.Lookup(key)
 		if ok {
 			return value.(PluginSpec), true
 		}
@@ -89,27 +89,27 @@ func (n PluginSpecs) Lookup(key string) (PluginSpec, bool) {
 
 // Keys is a list of all the keys in this set.
 func (n PluginSpecs) Keys() []string {
-	if n.psMap == nil {
+	if n.PsMap == nil {
 		return nil
 	}
-	k := n.psMap.Keys()
+	k := n.PsMap.Keys()
 	sort.Strings(k)
 	return k
 }
 
 // Size is the number of specs in the set
 func (n PluginSpecs) Size() int {
-	if n.psMap == nil {
+	if n.PsMap == nil {
 		return 0
 	}
-	return n.psMap.Size()
+	return n.PsMap.Size()
 }
 
 // ForEach executes f for each spec in the set. Nodes are traversed in sorted
 // order.
 func (n PluginSpecs) ForEach(f func(PluginSpec)) {
 	for _, key := range n.Keys() {
-		if val, ok := n.psMap.Lookup(key); ok {
+		if val, ok := n.PsMap.Lookup(key); ok {
 			f(val.(PluginSpec))
 		}
 	}
@@ -122,21 +122,21 @@ func (n PluginSpecs) Copy() PluginSpecs {
 
 func (n PluginSpecs) String() string {
 	keys := []string{}
-	if n.psMap == nil {
+	if n.PsMap == nil {
 		n = EmptyPluginSpecs
 	}
-	psMap := n.psMap
-	if psMap == nil {
-		psMap = ps.NewMap()
+	PsMap := n.PsMap
+	if PsMap == nil {
+		PsMap = ps.NewMap()
 	}
-	for _, k := range psMap.Keys() {
+	for _, k := range PsMap.Keys() {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 
 	buf := bytes.NewBufferString("{")
 	for _, key := range keys {
-		val, _ := psMap.Lookup(key)
+		val, _ := PsMap.Lookup(key)
 		fmt.Fprintf(buf, "%s: %s, ", key, spew.Sdump(val))
 	}
 	fmt.Fprintf(buf, "}")
@@ -158,8 +158,8 @@ func (n PluginSpecs) DeepEqual(i interface{}) bool {
 	}
 
 	equal := true
-	n.psMap.ForEach(func(k string, val interface{}) {
-		if otherValue, ok := d.psMap.Lookup(k); !ok {
+	n.PsMap.ForEach(func(k string, val interface{}) {
+		if otherValue, ok := d.PsMap.Lookup(k); !ok {
 			equal = false
 		} else {
 			equal = equal && reflect.DeepEqual(val, otherValue)
@@ -182,7 +182,7 @@ func (n PluginSpecs) fromIntermediate(specs []PluginSpec) PluginSpecs {
 
 // CodecEncodeSelf implements codec.Selfer
 func (n *PluginSpecs) CodecEncodeSelf(encoder *codec.Encoder) {
-	if n.psMap != nil {
+	if n.PsMap != nil {
 		encoder.Encode(n.toIntermediate())
 	} else {
 		encoder.Encode(nil)

@@ -124,7 +124,6 @@ require (
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5 // indirect
 	github.com/vishvananda/netns v0.0.1 // indirect
 	github.com/weaveworks/common v0.0.0-20220927162600-d0a1a93a15be // indirect
-	github.com/weaveworks/ps v0.0.0-20160725183535-70d17b2d6f76 // indirect
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000 // indirect
 	github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c // indirect
 	go.opencensus.io v0.23.0 // indirect

@@ -70,7 +70,6 @@ require (
 	github.com/weaveworks/billing-client v0.5.0
 	github.com/weaveworks/common v0.0.0-20220927162600-d0a1a93a15be
 	github.com/weaveworks/go-checkpoint v0.0.0-20220223124739-fd9899e2b4f2
-	github.com/weaveworks/ps v0.0.0-20160725183535-70d17b2d6f76
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000
 	github.com/weaveworks/weave v2.6.5+incompatible
 	github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c

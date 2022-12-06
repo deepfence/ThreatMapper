@@ -11,7 +11,7 @@ import (
 )
 
 type stringLatestEntry struct {
-	key       string
+	Key       string    `json:"key"`
 	Timestamp time.Time `json:"timestamp"`
 	Value     string    `json:"value"`
 	dummySelfer
@@ -27,7 +27,7 @@ func (e *stringLatestEntry) Equal(e2 *stringLatestEntry) bool {
 	return e.Timestamp.Equal(e2.Timestamp) && e.Value == e2.Value
 }
 
-// StringLatestMap holds latest string instances, as a slice sorted by key.
+// StringLatestMap holds latest string instances, as a slice sorted by Key.
 type StringLatestMap []stringLatestEntry
 
 // MakeStringLatestMap makes an empty StringLatestMap.
@@ -41,7 +41,7 @@ func (m StringLatestMap) Size() int {
 }
 
 // Merge produces a StringLatestMap containing the keys from both inputs.
-// When both inputs contain the same key, the newer value is used.
+// When both inputs contain the same Key, the newer value is used.
 // Tries to return one of its inputs, if that already holds the correct result.
 func (m StringLatestMap) Merge(n StringLatestMap) StringLatestMap {
 	switch {
@@ -64,13 +64,13 @@ loop:
 		switch {
 		case j >= len(n):
 			return m
-		case m[i].key == n[j].key:
+		case m[i].Key == n[j].Key:
 			if m[i].Timestamp.Before(n[j].Timestamp) {
 				break loop
 			}
 			i++
 			j++
-		case m[i].key < n[j].key:
+		case m[i].Key < n[j].Key:
 			i++
 		default:
 			break loop
@@ -88,7 +88,7 @@ loop:
 		case j >= len(n):
 			out = append(out, m[i:]...)
 			return out
-		case m[i].key == n[j].key:
+		case m[i].Key == n[j].Key:
 			if m[i].Timestamp.Before(n[j].Timestamp) {
 				out = append(out, n[j])
 			} else {
@@ -96,7 +96,7 @@ loop:
 			}
 			i++
 			j++
-		case m[i].key < n[j].key:
+		case m[i].Key < n[j].Key:
 			out = append(out, m[i])
 			i++
 		default:
@@ -108,9 +108,9 @@ loop:
 	return out
 }
 
-// Lookup the value for the given key.
-func (m StringLatestMap) Lookup(key string) (string, bool) {
-	v, _, ok := m.LookupEntry(key)
+// Lookup the value for the given Key.
+func (m StringLatestMap) Lookup(Key string) (string, bool) {
+	v, _, ok := m.LookupEntry(Key)
 	if !ok {
 		var zero string
 		return zero, false
@@ -118,25 +118,25 @@ func (m StringLatestMap) Lookup(key string) (string, bool) {
 	return v, true
 }
 
-// LookupEntry returns the raw entry for the given key.
-func (m StringLatestMap) LookupEntry(key string) (string, time.Time, bool) {
+// LookupEntry returns the raw entry for the given Key.
+func (m StringLatestMap) LookupEntry(Key string) (string, time.Time, bool) {
 	i := sort.Search(len(m), func(i int) bool {
-		return m[i].key >= key
+		return m[i].Key >= Key
 	})
-	if i < len(m) && m[i].key == key {
+	if i < len(m) && m[i].Key == Key {
 		return m[i].Value, m[i].Timestamp, true
 	}
 	var zero string
 	return zero, time.Time{}, false
 }
 
-// locate the position where key should go, and make room for it if not there already
-func (m *StringLatestMap) locate(key string) int {
+// locate the position where Key should go, and make room for it if not there already
+func (m *StringLatestMap) locate(Key string) int {
 	i := sort.Search(len(*m), func(i int) bool {
-		return (*m)[i].key >= key
+		return (*m)[i].Key >= Key
 	})
-	// i is now the position where key should go, either at the end or in the middle
-	if i == len(*m) || (*m)[i].key != key {
+	// i is now the position where Key should go, either at the end or in the middle
+	if i == len(*m) || (*m)[i].Key != Key {
 		*m = append(*m, stringLatestEntry{})
 		copy((*m)[i+1:], (*m)[i:])
 		(*m)[i] = stringLatestEntry{}
@@ -144,17 +144,17 @@ func (m *StringLatestMap) locate(key string) int {
 	return i
 }
 
-// Set the value for the given key.
-func (m StringLatestMap) Set(key string, timestamp time.Time, value string) StringLatestMap {
+// Set the value for the given Key.
+func (m StringLatestMap) Set(Key string, timestamp time.Time, value string) StringLatestMap {
 	i := sort.Search(len(m), func(i int) bool {
-		return m[i].key >= key
+		return m[i].Key >= Key
 	})
-	// i is now the position where key should go, either at the end or in the middle
+	// i is now the position where Key should go, either at the end or in the middle
 	oldEntries := m
 	if i == len(m) {
 		m = make([]stringLatestEntry, len(oldEntries)+1)
 		copy(m, oldEntries)
-	} else if m[i].key == key {
+	} else if m[i].Key == Key {
 		m = make([]stringLatestEntry, len(oldEntries))
 		copy(m, oldEntries)
 	} else {
@@ -162,14 +162,14 @@ func (m StringLatestMap) Set(key string, timestamp time.Time, value string) Stri
 		copy(m, oldEntries[:i])
 		copy(m[i+1:], oldEntries[i:])
 	}
-	m[i] = stringLatestEntry{key: key, Timestamp: timestamp, Value: value}
+	m[i] = stringLatestEntry{Key: Key, Timestamp: timestamp, Value: value}
 	return m
 }
 
-// ForEach executes fn on each key value pair in the map.
+// ForEach executes fn on each Key value pair in the map.
 func (m StringLatestMap) ForEach(fn func(k string, timestamp time.Time, v string)) {
 	for _, value := range m {
-		fn(value.key, value.Timestamp, value.Value)
+		fn(value.Key, value.Timestamp, value.Value)
 	}
 }
 
@@ -177,7 +177,7 @@ func (m StringLatestMap) ForEach(fn func(k string, timestamp time.Time, v string
 func (m StringLatestMap) String() string {
 	buf := bytes.NewBufferString("{")
 	for _, val := range m {
-		fmt.Fprintf(buf, "%s: %s,\n", val.key, val.String())
+		fmt.Fprintf(buf, "%s: %s,\n", val.Key, val.String())
 	}
 	fmt.Fprintf(buf, "}")
 	return buf.String()
@@ -189,7 +189,7 @@ func (m StringLatestMap) DeepEqual(n StringLatestMap) bool {
 		return false
 	}
 	for i := range m {
-		if m[i].key != n[i].key || !m[i].Equal(&n[i]) {
+		if m[i].Key != n[i].Key || !m[i].Equal(&n[i]) {
 			return false
 		}
 	}
@@ -202,7 +202,7 @@ func (m StringLatestMap) EqualIgnoringTimestamps(n StringLatestMap) bool {
 		return false
 	}
 	for i := range m {
-		if m[i].key != n[i].key || m[i].Value != n[i].Value {
+		if m[i].Key != n[i].Key || m[i].Value != n[i].Value {
 			return false
 		}
 	}

@@ -49,11 +49,11 @@ func CensorRawReport(rawReport Report, cfg CensorConfig) Report {
 				latest := make(StringLatestMap, 0, cap(node.Latest))
 				for _, entry := range node.Latest {
 					// If environment variables are to be hidden, omit passing them to the final report.
-					if cfg.HideEnvironmentVariables && IsEnvironmentVarsEntry(entry.key) {
+					if cfg.HideEnvironmentVariables && IsEnvironmentVarsEntry(entry.Key) {
 						continue
 					}
 					// If command line arguments are to be hidden, strip them away.
-					if cfg.HideCommandLineArguments && IsCommandEntry(entry.key) {
+					if cfg.HideCommandLineArguments && IsCommandEntry(entry.Key) {
 						entry.Value = StripCommandArgs(entry.Value)
 					}
 					// Pass the latest entry to the final report.
