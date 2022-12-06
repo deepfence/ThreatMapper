@@ -1,12 +1,14 @@
 import './index.css';
 
-import { Login } from './pages/Login';
+import { RouterProvider } from 'react-router-dom';
+
+import { router } from './routes';
 import { ThemeProvider } from './theme/ThemeContext';
 
 function App() {
   return (
     <ThemeProvider value={{}}>
-      <Login />
+      <RouterProvider router={router} />
     </ThemeProvider>
   );
 }
