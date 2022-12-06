@@ -5,11 +5,13 @@ import (
 	"errors"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"net/http"
+	"reflect"
 )
 
 const (
@@ -86,21 +88,26 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Groups, err = c.GetDefaultUserGroup(ctx, pgClient)
 	if err != nil {
+		log.Error().Msg("c.GetDefaultUserGroup: " + err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	err = user.SetPassword(registerRequest.Password)
 	if err != nil {
+		log.Error().Msg("user.SetPassword: " + err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	_, _, err = user.Create(ctx, pgClient)
+	createdUser, _, err := user.Create(ctx, pgClient)
 	if err != nil {
+		log.Error().Msg("user.Create: " + err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
+	user.ID = createdUser.ID
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
 	if err != nil {
+		log.Error().Msg("GetAccessToken: " + err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
@@ -143,11 +150,12 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 	if err != nil {
 		return nil, http.StatusBadRequest, requestContext, nil, err
 	}
-	userID, ok := claims["user_id"].(int64)
-	if !ok {
+	number, err := utils.InterfaceToInt(claims["user_id"])
+	if err != nil {
+		log.Error().Msgf("InterfaceToInt: %v (%v) - %v", claims["user_id"], reflect.ValueOf(claims["user_id"]).Kind(), err)
 		return nil, http.StatusInternalServerError, requestContext, nil, errors.New("cannot parse jwt")
 	}
-	user := model.User{ID: userID}
+	user := model.User{ID: number}
 	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByID(ctx, pgClient)

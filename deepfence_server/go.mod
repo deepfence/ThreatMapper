@@ -29,7 +29,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.26
 	github.com/ugorji/go/codec v1.2.7
 	github.com/weaveworks/scope v1.13.2
@@ -115,6 +114,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/swaggest/jsonschema-go v0.3.42 // indirect

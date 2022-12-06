@@ -5,7 +5,9 @@ import (
 	"github.com/google/uuid"
 	"net/mail"
 	"net/url"
+	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -53,4 +55,18 @@ func RemoveURLPath(inUrl string) (string, error) {
 	u.RawQuery = ""
 	u.Fragment = ""
 	return u.String(), nil
+}
+
+func InterfaceToInt(a interface{}) (int64, error) {
+	aValue := reflect.ValueOf(a)
+	switch aValue.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return aValue.Int(), nil
+	case reflect.Float32, reflect.Float64:
+		return int64(aValue.Float()), nil
+	case reflect.String:
+		return strconv.ParseInt(aValue.String(), 10, 64)
+	default:
+		return 0, errors.New("type error")
+	}
 }

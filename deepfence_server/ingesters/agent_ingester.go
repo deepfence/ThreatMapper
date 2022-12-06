@@ -13,7 +13,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	redis2 "github.com/go-redis/redis/v8"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/report"
 )
 
@@ -577,14 +576,14 @@ func (nc *neo4jIngester) runDBPusher(db_pusher chan ReportIngestionData) {
 		case batches := <-db_pusher:
 			start := time.Now()
 			err := nc.PushToDB(batches)
-			logrus.Infof("DB push: %v", time.Since(start))
+			log.Info().Msgf("DB push: %v", time.Since(start))
 			if err != nil {
 				log.Error().Msgf("push to neo4j err: %v", err)
 			}
 		case <-clean_up:
 			start := time.Now()
 			err := nc.CleanUpDB()
-			logrus.Infof("DB clean: %v", time.Since(start))
+			log.Info().Msgf("DB clean: %v", time.Since(start))
 			if err != nil {
 				log.Error().Msgf("clean neo4j err: %v", err)
 			}

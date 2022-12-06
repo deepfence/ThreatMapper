@@ -95,7 +95,7 @@ func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlD
 	if err != nil {
 		return nil, err
 	}
-	return map[string]string{strconv.Itoa(int(groups[0].ID)): group.Name}, nil
+	return map[string]string{strconv.Itoa(int(group.ID)): group.Name}, nil
 }
 
 type LoginRequest struct {
