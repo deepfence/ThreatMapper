@@ -100,7 +100,7 @@ func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlD
 
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"-" validate:"required,password,min=8,max=32"`
+	Password string `json:"password" validate:"required,password,min=8,max=32"`
 }
 
 type ApiAuthRequest struct {
@@ -112,7 +112,7 @@ type UserRegisterRequest struct {
 	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32"`
 	Email               string `json:"email" validate:"required,email"`
 	Company             string `json:"company" validate:"required,company_name,min=2,max=32"`
-	Password            string `json:"-" validate:"required,password,min=8,max=32"`
+	Password            string `json:"password" validate:"required,password,min=8,max=32"`
 	IsTemporaryPassword bool   `json:"is_temporary_password"`
 	ConsoleURL          string `json:"console_url" validate:"required,url"`
 }
