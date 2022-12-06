@@ -11,9 +11,9 @@ export const Card = (props: CardType) => {
     <div
       className={twMerge(
         cx(
-          `inline-flex flex-col items-center justify-center rounded-lg
-        bg-white shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.01),_0px_2px+4px_-2px_rgba(0,_0,_0,_0.05)] 
-          dark:bg-gray-800 dark:shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.01),_0px_2px+4px_-2px_rgba(0,_0,_0,_0.05)] 
+          `inline-flex flex-col rounded-lg
+         bg-white shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.01),_0px_2px+4px_-2px_rgba(0,_0,_0,_0.05)] 
+         dark:bg-gray-800 dark:shadow-[0px_4px_6px_-1px_rgba(0,_0,_0,_0.01),_0px_2px+4px_-2px_rgba(0,_0,_0,_0.05)] 
          ${props.className}`,
         ),
         className,
