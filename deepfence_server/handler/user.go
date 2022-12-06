@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"context"
+	"errors"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"net/http"
@@ -10,11 +14,6 @@ import (
 
 const (
 	MaxPostRequestSize = 100000 // 100 KB
-)
-
-var (
-	GrantTypePassword = "password"
-	GrantTypeAPIToken = "api_token"
 )
 
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +36,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	emailDomain, _ := model.GetEmailDomain(user.Email)
+	emailDomain, _ := utils.GetEmailDomain(user.Email)
 	c := model.Company{Name: user.Company, EmailDomain: emailDomain}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
@@ -45,7 +44,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c.ID = company.ID
-	userGroups, err := c.GetDefaultUserGroup(ctx, pgClient)
+	user.Groups, err = c.GetDefaultUserGroup(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
@@ -55,58 +54,33 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	u := model.User{
-		FirstName:           user.FirstName,
-		LastName:            user.LastName,
-		Email:               user.Email,
-		Company:             user.Company,
-		CompanyID:           company.ID,
-		IsActive:            true,
-		Groups:              userGroups,
-		Role:                role.Name,
-		RoleID:              role.ID,
-		PasswordInvalidated: false,
-		Password:            model.GetEncodedPassword(user.Password),
-	}
-	createdUser, _, err := u.Create(ctx, pgClient)
+	user.CompanyID = company.ID
+	user.IsActive = true
+	user.Role = role.Name
+	user.RoleID = role.ID
+	user.PasswordInvalidated = false
+	err = user.SetPassword(user.Password)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	u.ID = createdUser.ID
-	accessTokenID, accessToken, err := h.CreatePasswordGrantAccessToken(&user)
+	_, _, err = user.Create(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	refreshToken, err := h.CreateRefreshToken(accessTokenID, u.ID, GrantTypePassword)
+	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: model.ResponseAccessToken{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}})
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: accessTokenResponse})
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
+	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
 	if err != nil {
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Message: err.Error()})
-		return
-	}
-	userID, ok := claims["user_id"].(int64)
-	if !ok {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: "cannot parse jwt"})
-		return
-	}
-	user := model.User{ID: userID}
-	ctx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(ctx)
-	err = user.LoadFromDb(ctx, pgClient)
-	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, statusCode, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: user})
@@ -118,4 +92,37 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	return
+}
+
+func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
+	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	if err != nil {
+		httpext.JSON(w, statusCode, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	apiTokens, err := pgClient.GetApiTokensByUser(ctx, user.ID)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: apiTokens})
+}
+
+func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, context.Context, *postgresql_db.Queries, error) {
+	_, claims, err := jwtauth.FromContext(requestContext)
+	if err != nil {
+		return nil, http.StatusBadRequest, requestContext, nil, err
+	}
+	userID, ok := claims["user_id"].(int64)
+	if !ok {
+		return nil, http.StatusInternalServerError, requestContext, nil, errors.New("cannot parse jwt")
+	}
+	user := model.User{ID: userID}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	err = user.LoadFromDbByID(ctx, pgClient)
+	if err != nil {
+		return nil, http.StatusInternalServerError, ctx, pgClient, err
+	}
+	return &user, http.StatusOK, ctx, pgClient, nil
 }

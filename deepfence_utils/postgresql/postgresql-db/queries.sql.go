@@ -8,6 +8,7 @@ package postgresql_db
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -201,6 +202,50 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	return err
 }
 
+const getActiveUsers = `-- name: GetActiveUsers :many
+SELECT id, first_name, last_name, email, role_id, group_ids, company_id, password_hash, is_active, password_invalidated, created_at, updated_at
+FROM users
+WHERE company_id = $1
+  AND is_active = 't'
+ORDER BY first_name
+`
+
+func (q *Queries) GetActiveUsers(ctx context.Context, companyID int32) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveUsers, companyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.RoleID,
+			&i.GroupIds,
+			&i.CompanyID,
+			&i.PasswordHash,
+			&i.IsActive,
+			&i.PasswordInvalidated,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getApiToken = `-- name: GetApiToken :one
 SELECT id, api_token, name, company_id, group_id, role_id, created_by_user_id, created_at, updated_at
 FROM api_token
@@ -225,6 +270,71 @@ func (q *Queries) GetApiToken(ctx context.Context, id int64) (ApiToken, error) {
 	return i, err
 }
 
+const getApiTokenByToken = `-- name: GetApiTokenByToken :one
+SELECT api_token.api_token,
+       api_token.name,
+       api_token.company_id,
+       api_token.role_id,
+       api_token.group_id,
+       api_token.created_by_user_id,
+       users.first_name           as first_name,
+       users.last_name            as last_name,
+       users.email                as email,
+       role.name                  as role_name,
+       company.name               as company_name,
+       users.is_active            as is_user_active,
+       users.password_invalidated as user_password_invalidated,
+       api_token.created_at,
+       api_token.updated_at
+FROM api_token
+         INNER JOIN users ON users.id = api_token.created_by_user_id
+         INNER JOIN role ON role.id = api_token.role_id
+         INNER JOIN company ON company.id = api_token.company_id
+WHERE api_token = $1
+LIMIT 1
+`
+
+type GetApiTokenByTokenRow struct {
+	ApiToken                uuid.UUID
+	Name                    string
+	CompanyID               int32
+	RoleID                  int32
+	GroupID                 int32
+	CreatedByUserID         int64
+	FirstName               string
+	LastName                string
+	Email                   string
+	RoleName                string
+	CompanyName             string
+	IsUserActive            bool
+	UserPasswordInvalidated bool
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
+}
+
+func (q *Queries) GetApiTokenByToken(ctx context.Context, apiToken uuid.UUID) (GetApiTokenByTokenRow, error) {
+	row := q.db.QueryRowContext(ctx, getApiTokenByToken, apiToken)
+	var i GetApiTokenByTokenRow
+	err := row.Scan(
+		&i.ApiToken,
+		&i.Name,
+		&i.CompanyID,
+		&i.RoleID,
+		&i.GroupID,
+		&i.CreatedByUserID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.RoleName,
+		&i.CompanyName,
+		&i.IsUserActive,
+		&i.UserPasswordInvalidated,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getApiTokens = `-- name: GetApiTokens :many
 SELECT id, api_token, name, company_id, group_id, role_id, created_by_user_id, created_at, updated_at
 FROM api_token
@@ -234,6 +344,45 @@ ORDER BY name
 
 func (q *Queries) GetApiTokens(ctx context.Context, companyID int32) ([]ApiToken, error) {
 	rows, err := q.db.QueryContext(ctx, getApiTokens, companyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ApiToken
+	for rows.Next() {
+		var i ApiToken
+		if err := rows.Scan(
+			&i.ID,
+			&i.ApiToken,
+			&i.Name,
+			&i.CompanyID,
+			&i.GroupID,
+			&i.RoleID,
+			&i.CreatedByUserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getApiTokensByUser = `-- name: GetApiTokensByUser :many
+SELECT id, api_token, name, company_id, group_id, role_id, created_by_user_id, created_at, updated_at
+FROM api_token
+WHERE created_by_user_id = $1
+`
+
+func (q *Queries) GetApiTokensByUser(ctx context.Context, createdByUserID int64) ([]ApiToken, error) {
+	rows, err := q.db.QueryContext(ctx, getApiTokensByUser, createdByUserID)
 	if err != nil {
 		return nil, err
 	}
@@ -340,6 +489,20 @@ func (q *Queries) GetCompanyByDomain(ctx context.Context, emailDomain string) (C
 	return i, err
 }
 
+const getPasswordHash = `-- name: GetPasswordHash :one
+SELECT password_hash
+FROM users
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetPasswordHash(ctx context.Context, id int64) (string, error) {
+	row := q.db.QueryRowContext(ctx, getPasswordHash, id)
+	var password_hash string
+	err := row.Scan(&password_hash)
+	return password_hash, err
+}
+
 const getRoleByID = `-- name: GetRoleByID :one
 SELECT id, name, created_at, updated_at
 FROM role
@@ -413,23 +576,118 @@ func (q *Queries) GetRoles(ctx context.Context) ([]Role, error) {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, first_name, last_name, email, role_id, group_ids, company_id, password_hash, is_active, password_invalidated, created_at, updated_at
+SELECT users.id,
+       users.first_name,
+       users.last_name,
+       users.email,
+       users.role_id,
+       role.name    as role_name,
+       users.group_ids,
+       users.company_id,
+       company.name as company_name,
+       users.password_hash,
+       users.is_active,
+       users.password_invalidated,
+       users.created_at,
+       users.updated_at
 FROM users
-WHERE id = $1
+         INNER JOIN role ON role.id = users.role_id
+         INNER JOIN company ON company.id = users.company_id
+WHERE users.id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
+type GetUserRow struct {
+	ID                  int64
+	FirstName           string
+	LastName            string
+	Email               string
+	RoleID              int32
+	RoleName            string
+	GroupIds            json.RawMessage
+	CompanyID           int32
+	CompanyName         string
+	PasswordHash        string
+	IsActive            bool
+	PasswordInvalidated bool
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+}
+
+func (q *Queries) GetUser(ctx context.Context, id int64) (GetUserRow, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
-	var i User
+	var i GetUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
 		&i.RoleID,
+		&i.RoleName,
 		&i.GroupIds,
 		&i.CompanyID,
+		&i.CompanyName,
+		&i.PasswordHash,
+		&i.IsActive,
+		&i.PasswordInvalidated,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT users.id,
+       users.first_name,
+       users.last_name,
+       users.email,
+       users.role_id,
+       role.name    as role_name,
+       users.group_ids,
+       users.company_id,
+       company.name as company_name,
+       users.password_hash,
+       users.is_active,
+       users.password_invalidated,
+       users.created_at,
+       users.updated_at
+FROM users
+         INNER JOIN role ON role.id = users.role_id
+         INNER JOIN company ON company.id = users.company_id
+WHERE users.email = $1
+LIMIT 1
+`
+
+type GetUserByEmailRow struct {
+	ID                  int64
+	FirstName           string
+	LastName            string
+	Email               string
+	RoleID              int32
+	RoleName            string
+	GroupIds            json.RawMessage
+	CompanyID           int32
+	CompanyName         string
+	PasswordHash        string
+	IsActive            bool
+	PasswordInvalidated bool
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i GetUserByEmailRow
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.RoleID,
+		&i.RoleName,
+		&i.GroupIds,
+		&i.CompanyID,
+		&i.CompanyName,
 		&i.PasswordHash,
 		&i.IsActive,
 		&i.PasswordInvalidated,
@@ -538,4 +796,20 @@ func (q *Queries) GetUsers(ctx context.Context, companyID int32) ([]User, error)
 		return nil, err
 	}
 	return items, nil
+}
+
+const updatePasswordHash = `-- name: UpdatePasswordHash :exec
+UPDATE users
+SET password_hash = $1
+WHERE id = $2
+`
+
+type UpdatePasswordHashParams struct {
+	PasswordHash string
+	ID           int64
+}
+
+func (q *Queries) UpdatePasswordHash(ctx context.Context, arg UpdatePasswordHashParams) error {
+	_, err := q.db.ExecContext(ctx, updatePasswordHash, arg.PasswordHash, arg.ID)
+	return err
 }

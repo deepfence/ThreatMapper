@@ -9,10 +9,11 @@ import (
 
 const (
 	tagAuthentication  = "Authentication"
+	tagUser            = "User"
 	tagCommon          = "Common"
 	tagCompliance      = "Compliance"
-	tagCloudCompliance = "CloudCompliance"
-	tagCloudResources  = "CloudResources"
+	tagCloudCompliance = "Cloud Compliance"
+	tagCloudResources  = "Cloud Resources"
 	tagTopology        = "Topology"
 	tagThreat          = "Threat"
 	tagSecretScan      = "Secret Scan"
@@ -21,13 +22,25 @@ const (
 	securityName = "bearer_token"
 )
 
-type UnauthorizedResponse struct {
-	ID string `json:"id"`
+var (
+	bearerToken = []map[string][]string{{securityName: {}}}
+)
+
+type FailureResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+type BadRequestResponse struct {
+	Success     bool               `json:"success"`
+	Message     string             `json:"message"`
+	ErrorFields *map[string]string `json:"error_fields"`
 }
 
 type OpenApiDocs struct {
-	reflector            *openapi3.Reflector
-	unauthorizedResponse *UnauthorizedResponse
+	reflector          *openapi3.Reflector
+	badRequestResponse *BadRequestResponse
+	failureResponse    *FailureResponse
 }
 
 func InitializeOpenAPIReflector() *OpenApiDocs {
@@ -79,7 +92,7 @@ func InitializeOpenAPIReflector() *OpenApiDocs {
 		},
 	)
 
-	return &OpenApiDocs{reflector: reflector, unauthorizedResponse: &UnauthorizedResponse{}}
+	return &OpenApiDocs{reflector: reflector, failureResponse: &FailureResponse{Success: false}, badRequestResponse: &BadRequestResponse{Success: false}}
 }
 
 func (d *OpenApiDocs) Json() ([]byte, error) {
@@ -90,7 +103,7 @@ func (d *OpenApiDocs) Yaml() ([]byte, error) {
 	return d.reflector.Spec.MarshalYAML()
 }
 
-func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string, tags []string, queryParams []openapi3.ParameterOrRef, security []map[string][]string, request interface{}, response interface{}) {
+func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string, successStatusCode int, tags []string, queryParams []openapi3.ParameterOrRef, security []map[string][]string, request interface{}, response interface{}) {
 	operation := openapi3.Operation{
 		Tags:        tags,
 		Summary:     &summary,
@@ -103,13 +116,25 @@ func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string
 	if err != nil {
 		log.Error().Msgf("Docs SetRequest %s %s: %s", method, path, err.Error())
 	}
-	err = d.reflector.SetJSONResponse(&operation, response, http.StatusOK)
+	err = d.reflector.SetJSONResponse(&operation, response, successStatusCode)
 	if err != nil {
 		log.Error().Msgf("Docs - ok response %s %s: %s", method, path, err.Error())
 	}
-	err = d.reflector.SetJSONResponse(&operation, d.unauthorizedResponse, http.StatusUnauthorized)
+	err = d.reflector.SetupResponse(openapi3.OperationContext{Operation: &operation, HTTPStatus: http.StatusUnauthorized})
 	if err != nil {
 		log.Error().Msgf("Docs - unauthorized %s %s: %s", method, path, err.Error())
+	}
+	err = d.reflector.SetupResponse(openapi3.OperationContext{Operation: &operation, HTTPStatus: http.StatusForbidden})
+	if err != nil {
+		log.Error().Msgf("Docs - forbidden %s %s: %s", method, path, err.Error())
+	}
+	err = d.reflector.SetJSONResponse(&operation, d.badRequestResponse, http.StatusBadRequest)
+	if err != nil {
+		log.Error().Msgf("Docs - bad request %s %s: %s", method, path, err.Error())
+	}
+	err = d.reflector.SetJSONResponse(&operation, d.failureResponse, http.StatusInternalServerError)
+	if err != nil {
+		log.Error().Msgf("Docs - internal server error %s %s: %s", method, path, err.Error())
 	}
 	err = d.reflector.Spec.AddOperation(method, path, operation)
 	if err != nil {

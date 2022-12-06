@@ -1,7 +1,5 @@
 package model
 
-import "github.com/google/uuid"
-
 const (
 	DefaultUserGroup = "default"
 )
@@ -16,8 +14,4 @@ type Response struct {
 type ResponseAccessToken struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
-}
-
-func GenerateUUID() string {
-	return uuid.New().String()
 }

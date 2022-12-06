@@ -2,45 +2,70 @@ package model
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
-	"github.com/go-playground/validator/v10"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/pbkdf2"
-	"strings"
-	"unicode"
+	"golang.org/x/crypto/bcrypt"
+	"regexp"
+	"strconv"
+	"time"
 )
 
 const (
-	KeyLength    = 16
-	IterCount    = 2048
-	AdminRole    = "admin"
-	UserRole     = "user"
-	ReadOnlyRole = "read-only-user"
+	AdminRole         = "admin"
+	UserRole          = "user"
+	ReadOnlyRole      = "read-only-user"
+	bcryptCost        = 11
+	GrantTypePassword = "password"
+	GrantTypeAPIToken = "api_token"
 )
 
 var (
-	SaltKey      = []byte(uuid.New().String())
 	ErrorMessage = map[string]string{
 		"first_name": "should only contain alphabets, numbers, space and hyphen",
 		"last_name":  "should only contain alphabets, numbers, space and hyphen",
 		"company":    "should only contain alphabets, numbers and valid characters",
+		"api_token":  "api_token must be UUID",
+		"email":      "invalid email address",
+		"password":   "should contain at least one upper case, lower case, digit and special character",
 	}
+	CompanyRegex  = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
+	UserNameRegex = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
 )
 
 type ApiToken struct {
-	ID              int32  `json:"id"`
-	Name            string `json:"name"`
-	RoleName        string `json:"role_name"`
-	Company         string `json:"company"`
-	CompanyID       int32  `json:"company_id"`
-	Role            string `json:"role"`
-	RoleID          int32  `json:"role_id"`
-	CreatedByUser   string `json:"created_by_user"`
-	CreatedByUserID int64  `json:"created_by_user_id"`
+	ApiToken        uuid.UUID `json:"api_token"`
+	ID              int64     `json:"id"`
+	Name            string    `json:"name"`
+	RoleName        string    `json:"role_name"`
+	Company         string    `json:"company"`
+	CompanyID       int32     `json:"company_id"`
+	Role            string    `json:"role"`
+	RoleID          int32     `json:"role_id"`
+	CreatedByUser   string    `json:"created_by_user"`
+	CreatedByUserID int64     `json:"created_by_user_id"`
+}
+
+func (a *ApiToken) GetUser(ctx context.Context, pgClient *postgresqlDb.Queries) (*User, error) {
+	token, err := pgClient.GetApiTokenByToken(ctx, a.ApiToken)
+	if err != nil {
+		return nil, err
+	}
+	u := User{
+		ID:                  token.CreatedByUserID,
+		FirstName:           token.FirstName,
+		LastName:            token.LastName,
+		Email:               token.Email,
+		Company:             token.CompanyName,
+		CompanyID:           token.CompanyID,
+		IsActive:            token.IsUserActive,
+		Role:                token.RoleName,
+		RoleID:              token.RoleID,
+		PasswordInvalidated: token.UserPasswordInvalidated,
+	}
+	return &u, nil
 }
 
 type Company struct {
@@ -57,71 +82,108 @@ func (c *Company) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*
 	return &company, nil
 }
 
-func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries) (map[int32]string, error) {
+func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries) (map[string]string, error) {
 	groups, err := pgClient.GetUserGroups(ctx, c.ID)
 	if err != nil {
 		return nil, err
 	}
 	if len(groups) > 0 {
-		return map[int32]string{groups[0].ID: groups[0].Name}, nil
+		return map[string]string{strconv.Itoa(int(groups[0].ID)): groups[0].Name}, nil
 	}
 	group, err := pgClient.CreateUserGroup(ctx, postgresqlDb.CreateUserGroupParams{
 		Name: DefaultUserGroup, CompanyID: c.ID, IsSystem: true})
 	if err != nil {
 		return nil, err
 	}
-	return map[int32]string{group.ID: group.Name}, nil
+	return map[string]string{strconv.Itoa(int(groups[0].ID)): group.Name}, nil
+}
+
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"-" validate:"required,password,min=8,max=32"`
+}
+
+type ApiAuthRequest struct {
+	ApiToken string `json:"api_token" validate:"required,uuid4"`
 }
 
 type User struct {
-	ID                  int64            `json:"id"`
-	FirstName           string           `json:"first_name" validate:"required,min=2,max=32"`
-	LastName            string           `json:"last_name" validate:"required,min=2,max=32"`
-	Email               string           `json:"email" validate:"required,email"`
-	Company             string           `json:"company" validate:"required,min=2,max=32"`
-	CompanyID           int32            `json:"company_id"`
-	IsActive            bool             `json:"is_active"`
-	Password            string           `json:"-"  validate:"required,password,min=8,max=32"`
-	Groups              map[int32]string `json:"groups"`
-	Role                string           `json:"role"`
-	RoleID              int32            `json:"role_id"`
-	PasswordInvalidated bool             `json:"password_invalidated"`
+	ID                  int64             `json:"id"`
+	FirstName           string            `json:"first_name" validate:"required,user_name,min=2,max=32"`
+	LastName            string            `json:"last_name" validate:"required,user_name,min=2,max=32"`
+	Email               string            `json:"email" validate:"required,email"`
+	Company             string            `json:"company" validate:"required,company_name,min=2,max=32"`
+	CompanyID           int32             `json:"company_id"`
+	IsActive            bool              `json:"is_active"`
+	Password            string            `json:"-" validate:"required,password,min=8,max=32"`
+	Groups              map[string]string `json:"groups"`
+	Role                string            `json:"role"`
+	RoleID              int32             `json:"role_id"`
+	PasswordInvalidated bool              `json:"password_invalidated"`
 }
 
-func MapKeys(input map[int32]string) []int32 {
-	keys := make([]int32, len(input))
-	i := 0
-	for k := range input {
-		keys[i] = k
-		i++
+func (u *User) SetPassword(inputPassword string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(inputPassword), bcryptCost)
+	if err != nil {
+		return err
 	}
-	return keys
+	u.Password = string(hashedPassword)
+	return nil
 }
 
-func GetEncodedPassword(inputPassword string) string {
-	password := pbkdf2.Key([]byte(inputPassword), SaltKey, IterCount, KeyLength, sha256.New)
-	return base64.StdEncoding.EncodeToString(password)
+func (u *User) CompareHashAndPassword(ctx context.Context, pgClient *postgresqlDb.Queries, inputPassword string) (bool, error) {
+	hashedPassword, err := pgClient.GetPasswordHash(ctx, u.ID)
+	if err != nil {
+		return false, err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(inputPassword))
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
-func (u *User) LoadFromDb(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	// Set ID field and load other fields from db
-	user, err := pgClient.GetUser(ctx, u.ID)
+	var err error
+	var user postgresqlDb.GetUserRow
+	user, err = pgClient.GetUser(ctx, u.ID)
 	if err != nil {
 		return err
 	}
-	company, err := pgClient.GetCompany(ctx, user.CompanyID)
-	if err != nil {
-		return err
-	}
+	u.ID = user.ID
 	u.FirstName = user.FirstName
 	u.LastName = user.LastName
 	u.Email = user.Email
-	u.Company = company.Name
-	u.CompanyID = company.ID
+	u.Company = user.CompanyName
+	u.CompanyID = user.CompanyID
 	u.IsActive = user.IsActive
-	//u.Groups = user.GroupIds
+	u.Role = user.RoleName
 	u.RoleID = user.RoleID
 	u.PasswordInvalidated = user.PasswordInvalidated
+	_ = json.Unmarshal(user.GroupIds, &u.Groups)
+	return nil
+}
+
+func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	// Set email field and load other fields from db
+	var err error
+	var user postgresqlDb.GetUserByEmailRow
+	user, err = pgClient.GetUserByEmail(ctx, u.Email)
+	if err != nil {
+		return err
+	}
+	u.ID = user.ID
+	u.FirstName = user.FirstName
+	u.LastName = user.LastName
+	u.Email = user.Email
+	u.Company = user.CompanyName
+	u.CompanyID = user.CompanyID
+	u.IsActive = user.IsActive
+	u.Role = user.RoleName
+	u.RoleID = user.RoleID
+	u.PasswordInvalidated = user.PasswordInvalidated
+	_ = json.Unmarshal(user.GroupIds, &u.Groups)
 	return nil
 }
 
@@ -154,70 +216,51 @@ func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 	return &user, &apiToken, nil
 }
 
-func (u *User) GetAccessToken() *ResponseAccessToken {
-
-	return nil
+func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*ResponseAccessToken, error) {
+	accessTokenID, accessToken, err := u.CreatePasswordGrantAccessToken(tokenAuth, grantType)
+	if err != nil {
+		return nil, err
+	}
+	refreshToken, err := u.CreateRefreshToken(tokenAuth, accessTokenID, grantType)
+	if err != nil {
+		return nil, err
+	}
+	return &ResponseAccessToken{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
-func GetEmailDomain(email string) (string, error) {
-	domain := strings.Split(email, "@")
-	if len(domain) != 2 {
-		return "", errors.New("invalid domain")
+func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
+	accessTokenID := utils.NewUUID()
+	_, s, err := tokenAuth.Encode(map[string]interface{}{
+		"date":       time.Now().UTC(),
+		"expires_in": time.Hour * 24,
+		"id":         accessTokenID,
+		"user_id":    u.ID,
+		"first_name": u.FirstName,
+		"last_name":  u.LastName,
+		"role":       u.Role,
+		"company_id": u.CompanyID,
+		"company":    u.Company,
+		"email":      u.Email,
+		"is_active":  u.IsActive,
+		"grant_type": grantType,
+	})
+	if err != nil {
+		return "", "", err
 	}
-	return strings.ToLower(domain[1]), nil
+	return accessTokenID, s, nil
 }
 
-// ValidatePassword implements validator.Func
-func ValidatePassword(fl validator.FieldLevel) bool {
-	var (
-		isUpper       bool
-		isLower       bool
-		isSpecialChar bool
-		isDigit       bool
-	)
-	for _, char := range fl.Field().String() {
-		switch {
-		case unicode.IsUpper(char):
-			isUpper = true
-		case unicode.IsLower(char):
-			isLower = true
-		case unicode.IsNumber(char):
-			isDigit = true
-		case unicode.IsPunct(char) || unicode.IsSymbol(char):
-			isSpecialChar = true
-		default:
-			return false
-		}
+func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID string, grantType string) (string, error) {
+	_, s, err := tokenAuth.Encode(map[string]interface{}{
+		"date":       time.Now().UTC(),
+		"expires_in": time.Hour * 24 * 7,
+		"token_id":   accessTokenID,
+		"id":         utils.NewUUID(),
+		"user_id":    u.ID,
+		"grant_type": grantType,
+	})
+	if err != nil {
+		return "", err
 	}
-	if !isUpper || !isLower || !isSpecialChar || !isDigit {
-		return false
-	}
-	return true
-}
-
-func ParseValidatorError(errMsg string) map[string]string {
-	fields := make(map[string]string)
-	validate := func(errMsg string) string {
-		s := strings.SplitN(errMsg, "'", 3)
-		if len(s) == 3 {
-			s = strings.Split(s[1], ".")
-			if len(s) == 2 {
-				return strings.ToLower(s[1])
-			}
-			return strings.ToLower(s[1])
-		}
-		return strings.ToLower(errMsg)
-	}
-	for _, msg := range strings.Split(errMsg, "\n") {
-		field := validate(msg)
-		m, ok := ErrorMessage[field]
-		if ok {
-			fields[validate(msg)] = m
-		} else {
-			fields[validate(msg)] = "invalid"
-		}
-	}
-	//CompanyRegex      = regexp.MustCompile(fmt.Sprintf("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]{%d,%d}$", MinCompanyLength-1, MaxCompanyLength-1))
-	//NameRegex         = regexp.MustCompile(fmt.Sprintf("^[A-Za-z][A-Za-z .'-]{%d,%d}$", MinNameLength-1, MaxNameLength-1))
-	return fields
+	return s, nil
 }

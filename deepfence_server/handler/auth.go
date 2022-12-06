@@ -2,57 +2,82 @@ package handler
 
 import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	httpext "github.com/go-playground/pkg/v5/net/http"
+	"github.com/google/uuid"
 	"net/http"
-	"time"
 )
 
 func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
-
-	return
+	var apiAuthRequest model.ApiAuthRequest
+	defer r.Body.Close()
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &apiAuthRequest)
+	if err != nil {
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return
+	}
+	err = h.Validator.Struct(apiAuthRequest)
+	if err != nil {
+		errorFields := model.ParseValidatorError(err.Error())
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
+		return
+	}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	parsedUUID, _ := uuid.Parse(apiAuthRequest.ApiToken)
+	apiToken := &model.ApiToken{ApiToken: parsedUUID}
+	user, err := apiToken.GetUser(ctx, pgClient)
+	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypeAPIToken)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: accessTokenResponse})
 }
 
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	_, _, _ = h.TokenAuth.Encode(map[string]interface{}{})
-	return
+	var loginRequest model.LoginRequest
+	defer r.Body.Close()
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &loginRequest)
+	if err != nil {
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return
+	}
+	err = h.Validator.Struct(loginRequest)
+	if err != nil {
+		errorFields := model.ParseValidatorError(err.Error())
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
+		return
+	}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	u := model.User{Email: loginRequest.Email}
+	err = u.LoadFromDbByEmail(ctx, pgClient)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)
+	if err != nil || !passwordValid {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	accessTokenResponse, err := u.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: accessTokenResponse})
 }
 
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	return
-}
-
-func (h *Handler) CreatePasswordGrantAccessToken(u *model.User) (string, string, error) {
-	accessTokenID := model.GenerateUUID()
-	_, s, err := h.TokenAuth.Encode(map[string]interface{}{
-		"date":       time.Now().UTC(),
-		"expires_in": time.Hour * 24,
-		"id":         accessTokenID,
-		"user_id":    u.ID,
-		"first_name": u.FirstName,
-		"last_name":  u.LastName,
-		"role":       u.Role,
-		"company_id": u.CompanyID,
-		"company":    u.Company,
-		"email":      u.Email,
-		"is_active":  u.IsActive,
-		"grant_type": GrantTypePassword,
-	})
-	if err != nil {
-		return "", "", err
-	}
-	return accessTokenID, s, nil
-}
-
-func (h *Handler) CreateRefreshToken(accessTokenID string, userID int64, grantType string) (string, error) {
-	_, s, err := h.TokenAuth.Encode(map[string]interface{}{
-		"date":       time.Now().UTC(),
-		"expires_in": time.Hour * 24 * 7,
-		"token_id":   accessTokenID,
-		"id":         model.GenerateUUID(),
-		"user_id":    userID,
-		"grant_type": grantType,
-	})
-	if err != nil {
-		return "", err
-	}
-	return s, nil
 }

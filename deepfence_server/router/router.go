@@ -38,6 +38,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 	if err != nil {
 		return err
 	}
+	err = dfHandler.Validator.RegisterValidation("company_name", model.ValidateCompanyName)
+	if err != nil {
+		return err
+	}
+	err = dfHandler.Validator.RegisterValidation("user_name", model.ValidateUserName)
+	if err != nil {
+		return err
+	}
 
 	r.Route("/deepfence", func(r chi.Router) {
 		r.Get("/ping", dfHandler.Ping)
@@ -85,11 +93,16 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 
 			r.Post("/user/logout", dfHandler.LogoutHandler)
 
+			openApiDocs.AddUserOperations()
 			// current user
 			r.Route("/user", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler("user", "read", dfHandler.GetUser))
 				r.Put("/", dfHandler.AuthHandler("user", "write", dfHandler.UpdateUser))
 				r.Delete("/", dfHandler.AuthHandler("user", "delete", dfHandler.DeleteUser))
+			})
+
+			r.Route("/api-token", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler("user", "read", dfHandler.GetApiTokens))
 			})
 
 			// manage other users
