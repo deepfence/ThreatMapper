@@ -40,13 +40,13 @@
     "ariakit": "2.0.0-next.41",
     "classnames": "^2.3.2",
     "lodash-es": "^4.17.21",
-    "react-icons": "^4.7.1",
     "tailwind-merge": "^1.6.0",
     "tailwindcss-radix": "^2.6.0"
   },
   "peerDependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.7.1"
   },
   "devDependencies": {
     "@babel/core": "^7.19.1",
@@ -85,6 +85,7 @@
     "postcss": "^8.4.16",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^4.7.1",
     "resize-observer-polyfill": "^1.5.1",
     "rollup-plugin-visualizer": "^5.8.3",
     "storybook-dark-mode": "^1.1.2",
