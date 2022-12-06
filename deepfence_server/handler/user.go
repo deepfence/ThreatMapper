@@ -36,16 +36,21 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	consoleURL := model.Setting{
+	consoleUrl, err := utils.RemoveURLPath(registerRequest.ConsoleURL)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	consoleUrlSetting := model.Setting{
 		Key: model.ConsoleURLSettingKey,
 		Value: &model.SettingValue{
 			Label:       "Deepfence Console URL",
-			Value:       utils.RemoveURLPath(registerRequest.ConsoleURL),
+			Value:       consoleUrl,
 			Description: "Deepfence Console URL used for sending emails with links to the console",
 		},
 		IsVisibleOnUi: true,
 	}
-	_, err = consoleURL.Create(ctx, pgClient)
+	_, err = consoleUrlSetting.Create(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
