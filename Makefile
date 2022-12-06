@@ -18,7 +18,7 @@ VERSION?="2.0.0"
 default: console_plugins agent console
 
 .PHONY: console_plugins agent console
-console: vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins
+console: ingester vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins
 
 console_plugins: secretscanner malwarescanner packagescanner
 
@@ -87,3 +87,7 @@ malwarescanner: bootstrap-agent-plugins
 .PHONY: packagescanner
 packagescanner:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
+
+.PHONY: ingester
+ingester:
+	docker build -f ./deepfence_ingester/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG) .

@@ -31,3 +31,5 @@ deepfence_frontend/console_version.txt
 deepfence_frontend/product_version.txt
 
 deepfence_agent/tools/apache/scope/proto/
+deepfence_ingester/vendor
+deepfence_ingester/deepfence_ingester

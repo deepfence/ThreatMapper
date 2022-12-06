@@ -1,4 +1,4 @@
-module github.com/GIT_USER_ID/GIT_REPO_ID
+module github.com/deepfence/ThreatMapper/deepfence_server_client
 
 go 1.13
 
