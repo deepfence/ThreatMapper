@@ -17,14 +17,14 @@ const (
 )
 
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	var user model.User
+	var registerRequest model.UserRegisterRequest
 	defer r.Body.Close()
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &user)
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &registerRequest)
 	if err != nil {
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
 		return
 	}
-	err = h.Validator.Struct(user)
+	err = h.Validator.Struct(registerRequest)
 	if err != nil {
 		errorFields := model.ParseValidatorError(err.Error())
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
@@ -36,30 +36,55 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	emailDomain, _ := utils.GetEmailDomain(user.Email)
-	c := model.Company{Name: user.Company, EmailDomain: emailDomain}
+	consoleURL := model.Setting{
+		Key: model.ConsoleURLSettingKey,
+		Value: &model.SettingValue{
+			Label:       "Deepfence Console URL",
+			Value:       utils.RemoveURLPath(registerRequest.ConsoleURL),
+			Description: "Deepfence Console URL used for sending emails with links to the console",
+		},
+		IsVisibleOnUi: true,
+	}
+	_, err = consoleURL.Create(ctx, pgClient)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	companies, err := pgClient.CountCompanies(ctx)
+	if err != nil || companies > 0 {
+		httpext.JSON(w, http.StatusForbidden, model.Response{Success: false, Message: "Cannot register. Please contact your administrator for an invite"})
+		return
+	}
+	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
+	c := model.Company{Name: registerRequest.Company, EmailDomain: emailDomain}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	c.ID = company.ID
-	user.Groups, err = c.GetDefaultUserGroup(ctx, pgClient)
-	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
-		return
-	}
 	role, err := pgClient.GetRoleByName(ctx, model.AdminRole)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	user.CompanyID = company.ID
-	user.IsActive = true
-	user.Role = role.Name
-	user.RoleID = role.ID
-	user.PasswordInvalidated = false
-	err = user.SetPassword(user.Password)
+	user := model.User{
+		FirstName:           registerRequest.FirstName,
+		LastName:            registerRequest.LastName,
+		Email:               registerRequest.Email,
+		Company:             registerRequest.Company,
+		CompanyID:           company.ID,
+		IsActive:            true,
+		Role:                role.Name,
+		RoleID:              role.ID,
+		PasswordInvalidated: registerRequest.IsTemporaryPassword,
+	}
+	user.Groups, err = c.GetDefaultUserGroup(ctx, pgClient)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	err = user.SetPassword(registerRequest.Password)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return

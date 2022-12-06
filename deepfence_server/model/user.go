@@ -107,6 +107,16 @@ type ApiAuthRequest struct {
 	ApiToken string `json:"api_token" validate:"required,uuid4"`
 }
 
+type UserRegisterRequest struct {
+	FirstName           string `json:"first_name" validate:"required,user_name,min=2,max=32"`
+	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32"`
+	Email               string `json:"email" validate:"required,email"`
+	Company             string `json:"company" validate:"required,company_name,min=2,max=32"`
+	Password            string `json:"-" validate:"required,password,min=8,max=32"`
+	IsTemporaryPassword bool   `json:"is_temporary_password"`
+	ConsoleURL          string `json:"console_url" validate:"required,url"`
+}
+
 type User struct {
 	ID                  int64             `json:"id"`
 	FirstName           string            `json:"first_name" validate:"required,user_name,min=2,max=32"`

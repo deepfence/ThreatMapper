@@ -13,6 +13,30 @@ import (
 	"github.com/google/uuid"
 )
 
+const countCompanies = `-- name: CountCompanies :one
+SELECT count(*)
+FROM company
+`
+
+func (q *Queries) CountCompanies(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countCompanies)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countUsers = `-- name: CountUsers :one
+SELECT count(*)
+FROM users
+`
+
+func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUsers)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createApiToken = `-- name: CreateApiToken :one
 INSERT INTO api_token (api_token, name, company_id, role_id, group_id, created_by_user_id)
 VALUES ($1, $2, $3, $4, $5, $6)
@@ -88,6 +112,32 @@ func (q *Queries) CreateRole(ctx context.Context, name string) (Role, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createSetting = `-- name: CreateSetting :one
+INSERT INTO setting (key, value, is_visible_on_ui)
+VALUES ($1, $2, $3)
+RETURNING id, key, value, is_visible_on_ui, created_at, updated_at
+`
+
+type CreateSettingParams struct {
+	Key           string
+	Value         json.RawMessage
+	IsVisibleOnUi bool
+}
+
+func (q *Queries) CreateSetting(ctx context.Context, arg CreateSettingParams) (Setting, error) {
+	row := q.db.QueryRowContext(ctx, createSetting, arg.Key, arg.Value, arg.IsVisibleOnUi)
+	var i Setting
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.Value,
+		&i.IsVisibleOnUi,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -575,6 +625,63 @@ func (q *Queries) GetRoles(ctx context.Context) ([]Role, error) {
 	return items, nil
 }
 
+const getSetting = `-- name: GetSetting :one
+SELECT id, key, value, is_visible_on_ui, created_at, updated_at
+FROM setting
+WHERE key = $1
+LIMIT 1
+`
+
+func (q *Queries) GetSetting(ctx context.Context, key string) (Setting, error) {
+	row := q.db.QueryRowContext(ctx, getSetting, key)
+	var i Setting
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.Value,
+		&i.IsVisibleOnUi,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getSettings = `-- name: GetSettings :many
+SELECT id, key, value, is_visible_on_ui, created_at, updated_at
+FROM setting
+ORDER BY key
+`
+
+func (q *Queries) GetSettings(ctx context.Context) ([]Setting, error) {
+	rows, err := q.db.QueryContext(ctx, getSettings)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Setting
+	for rows.Next() {
+		var i Setting
+		if err := rows.Scan(
+			&i.ID,
+			&i.Key,
+			&i.Value,
+			&i.IsVisibleOnUi,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUser = `-- name: GetUser :one
 SELECT users.id,
        users.first_name,
@@ -798,6 +905,43 @@ func (q *Queries) GetUsers(ctx context.Context, companyID int32) ([]User, error)
 	return items, nil
 }
 
+const getVisibleSettings = `-- name: GetVisibleSettings :many
+SELECT id, key, value, is_visible_on_ui, created_at, updated_at
+FROM setting
+WHERE is_visible_on_ui = true
+ORDER BY key
+`
+
+func (q *Queries) GetVisibleSettings(ctx context.Context) ([]Setting, error) {
+	rows, err := q.db.QueryContext(ctx, getVisibleSettings)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Setting
+	for rows.Next() {
+		var i Setting
+		if err := rows.Scan(
+			&i.ID,
+			&i.Key,
+			&i.Value,
+			&i.IsVisibleOnUi,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updatePasswordHash = `-- name: UpdatePasswordHash :exec
 UPDATE users
 SET password_hash = $1
@@ -811,5 +955,22 @@ type UpdatePasswordHashParams struct {
 
 func (q *Queries) UpdatePasswordHash(ctx context.Context, arg UpdatePasswordHashParams) error {
 	_, err := q.db.ExecContext(ctx, updatePasswordHash, arg.PasswordHash, arg.ID)
+	return err
+}
+
+const updateSetting = `-- name: UpdateSetting :exec
+UPDATE setting
+SET value = $1 AND is_visible_on_ui = $2
+WHERE key = $3
+`
+
+type UpdateSettingParams struct {
+	Value         json.RawMessage
+	IsVisibleOnUi bool
+	Key           string
+}
+
+func (q *Queries) UpdateSetting(ctx context.Context, arg UpdateSettingParams) error {
+	_, err := q.db.ExecContext(ctx, updateSetting, arg.Value, arg.IsVisibleOnUi, arg.Key)
 	return err
 }

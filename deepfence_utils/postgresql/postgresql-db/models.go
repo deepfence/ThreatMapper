@@ -38,6 +38,15 @@ type Role struct {
 	UpdatedAt time.Time
 }
 
+type Setting struct {
+	ID            int64
+	Key           string
+	Value         json.RawMessage
+	IsVisibleOnUi bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+}
+
 type User struct {
 	ID                  int64
 	FirstName           string

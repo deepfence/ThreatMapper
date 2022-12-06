@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/mail"
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -40,4 +41,16 @@ func GetEmailDomain(email string) (string, error) {
 		return "", errors.New("invalid domain")
 	}
 	return strings.ToLower(domain[1]), nil
+}
+
+func RemoveURLPath(inUrl string) (string, error) {
+	u, err := url.Parse(inUrl)
+	if err != nil {
+		return inUrl, err
+	}
+	u.Path = ""
+	u.User = nil
+	u.RawQuery = ""
+	u.Fragment = ""
+	return u.String(), nil
 }

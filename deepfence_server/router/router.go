@@ -47,6 +47,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 		return err
 	}
 
+	//root := "/usr/local/share/swagger-ui"
+	//fs := http.FileServer(http.Dir(root))
+
 	r.Route("/deepfence", func(r chi.Router) {
 		r.Get("/ping", dfHandler.Ping)
 		r.Get("/async_ping", dfHandler.AsyncPing)
@@ -60,6 +63,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 			if serveOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi-docs", serverPort)
 				r.Get("/openapi-docs", dfHandler.OpenApiDocsHandler)
+				//r.Get("/swagger-ui/", func(w http.ResponseWriter, r *http.Request) {
+				//	http.StripPrefix("/deepfence/swagger-ui", fs).ServeHTTP(w, r)
+				//})
 			}
 		})
 

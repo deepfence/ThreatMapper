@@ -3,6 +3,10 @@ INSERT INTO company (name, email_domain)
 VALUES ($1, $2)
 RETURNING *;
 
+-- name: CountCompanies :one
+SELECT count(*)
+FROM company;
+
 -- name: GetCompany :one
 SELECT *
 FROM company
@@ -69,6 +73,10 @@ INSERT INTO users (first_name, last_name, email, role_id, group_ids, company_id,
                    password_invalidated)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING *;
+
+-- name: CountUsers :one
+SELECT count(*)
+FROM users;
 
 -- name: GetUser :one
 SELECT users.id,
@@ -190,3 +198,30 @@ ORDER BY name;
 DELETE
 FROM api_token
 WHERE id = $1;
+
+-- name: CreateSetting :one
+INSERT INTO setting (key, value, is_visible_on_ui)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+-- name: GetSetting :one
+SELECT *
+FROM setting
+WHERE key = $1
+LIMIT 1;
+
+-- name: GetSettings :many
+SELECT *
+FROM setting
+ORDER BY key;
+
+-- name: GetVisibleSettings :many
+SELECT *
+FROM setting
+WHERE is_visible_on_ui = true
+ORDER BY key;
+
+-- name: UpdateSetting :exec
+UPDATE setting
+SET value = $1 AND is_visible_on_ui = $2
+WHERE key = $3;

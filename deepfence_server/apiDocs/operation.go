@@ -16,14 +16,14 @@ type ScanTrigger struct {
 func (d *OpenApiDocs) AddUserAuthOperations() {
 	d.AddOperation("registerUser", http.MethodPost, "/deepfence/user/register",
 		"Register User", "First user registration. Further users needs to be invited.",
-		http.StatusOK, []string{tagUser}, nil, nil, new(model.User), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagUser}, nil, nil, new(model.UserRegisterRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
 	d.AddOperation("authToken", http.MethodPost, "/deepfence/auth/token",
 		"API Auth Token", "Get auth token for API access",
 		http.StatusOK, []string{tagAuthentication}, nil, nil, new(model.ApiAuthRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
 	d.AddOperation("login", http.MethodPost, "/deepfence/user/login",
 		"Login API", "Login API",
 		http.StatusOK, []string{tagAuthentication}, nil, nil, new(model.LoginRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
-	d.AddOperation("login", http.MethodPost, "/deepfence/user/logout",
+	d.AddOperation("logout", http.MethodPost, "/deepfence/user/logout",
 		"Logout API", "Logout API",
 		http.StatusNoContent, []string{tagAuthentication}, nil, bearerToken, nil, nil)
 }

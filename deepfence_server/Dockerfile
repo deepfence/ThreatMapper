@@ -33,12 +33,18 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
 ADD deepfence_server/auth /auth
 ADD deepfence_utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
-RUN apk add --no-cache --update bash curl libpcap \
+RUN apk add --no-cache --update bash curl libpcap tar \
     && apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main \
     && chmod +x /entrypoint.sh \
     && curl -L "https://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.tar.gz" | tar xvz \
     && mv migrate /usr/local/bin/migrate \
-    && chmod +x /usr/local/bin/migrate
+    && chmod +x /usr/local/bin/migrate \
+    && cd /usr/local/share/ \
+    && wget https://github.com/swagger-api/swagger-ui/archive/refs/tags/v4.15.5.tar.gz -O /usr/local/share/swagger-ui.tar.gz \
+    && tar -xzf /usr/local/share/swagger-ui.tar.gz -C /usr/local/share/ \
+    && mv /usr/local/share/swagger-ui-4.15.5/dist /usr/local/share/swagger-ui \
+    && rm -rf /usr/local/share/swagger-ui.tar.gz /usr/local/share/swagger-ui-4.15.5
+
 COPY --from=build /go/deepfence_server/deepfence_server /usr/local/bin/deepfence_server
 
 EXPOSE 8080

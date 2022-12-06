@@ -120,4 +120,20 @@ CREATE TRIGGER api_token_updated_at
 EXECUTE PROCEDURE update_modified_column();
 
 
+CREATE TABLE setting
+(
+    id               BIGSERIAL PRIMARY KEY,
+    key              text                                               NOT NULL,
+    value            jsonb                                              NOT NULL,
+    is_visible_on_ui bool                     DEFAULT false             NOT NULL,
+    created_at       timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at       timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TRIGGER setting_updated_at
+    BEFORE UPDATE
+    ON setting
+    FOR EACH ROW
+EXECUTE PROCEDURE update_modified_column();
+
 COMMIT;
