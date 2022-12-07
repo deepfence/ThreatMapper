@@ -64,6 +64,8 @@ type APIClient struct {
 
 	TopologyApi *TopologyApiService
 
+	UserApi *UserApiService
+
 	VulnerabilityApi *VulnerabilityApiService
 }
 
@@ -90,6 +92,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.SecretScanApi = (*SecretScanApiService)(&c.common)
 	c.ThreatApi = (*ThreatApiService)(&c.common)
 	c.TopologyApi = (*TopologyApiService)(&c.common)
+	c.UserApi = (*UserApiService)(&c.common)
 	c.VulnerabilityApi = (*VulnerabilityApiService)(&c.common)
 
 	return c

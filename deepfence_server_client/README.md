@@ -80,7 +80,9 @@ All URIs are relative to *http://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AuthenticationApi* | [**RegisterUser**](docs/AuthenticationApi.md#registeruser) | **Post** /deepfence/user/register | Register User
+*AuthenticationApi* | [**AuthToken**](docs/AuthenticationApi.md#authtoken) | **Post** /deepfence/auth/token | API Auth Token
+*AuthenticationApi* | [**Login**](docs/AuthenticationApi.md#login) | **Post** /deepfence/user/login | Login API
+*AuthenticationApi* | [**Logout**](docs/AuthenticationApi.md#logout) | **Post** /deepfence/user/logout | Logout API
 *CloudComplianceApi* | [**IngestCloudCompliances**](docs/CloudComplianceApi.md#ingestcloudcompliances) | **Post** /deepfence/ingest/cloud-compliance | Ingest Cloud Compliances
 *CloudResourcesApi* | [**IngestCloudResources**](docs/CloudResourcesApi.md#ingestcloudresources) | **Post** /deepfence/ingest/cloud-resources | Ingest Cloud resources
 *ComplianceApi* | [**IngestCompliances**](docs/ComplianceApi.md#ingestcompliances) | **Post** /deepfence/ingest/compliance | Ingest Compliances
@@ -90,14 +92,19 @@ Class | Method | HTTP request | Description
 *ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Get** /deepfence/graph/threat | Get Threat Graph
 *TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Get** /deepfence/graph/topology | Get Topology Graph
 *TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/ingest/report | Ingest Topology Data
+*UserApi* | [**DeleteCurrentUser**](docs/UserApi.md#deletecurrentuser) | **Delete** /deepfence/user | Delete Current User
+*UserApi* | [**GetApiTokens**](docs/UserApi.md#getapitokens) | **Get** /deepfence/api-token | Get User&#39;s API Tokens
+*UserApi* | [**GetCurrentUser**](docs/UserApi.md#getcurrentuser) | **Get** /deepfence/user | Get Current User
+*UserApi* | [**RegisterUser**](docs/UserApi.md#registeruser) | **Post** /deepfence/user/register | Register User
+*UserApi* | [**UpdateCurrentUser**](docs/UserApi.md#updatecurrentuser) | **Put** /deepfence/user | Update Current User
 *VulnerabilityApi* | [**IngestCVEs**](docs/VulnerabilityApi.md#ingestcves) | **Post** /deepfence/ingest/cves | Ingest CVEs
 *VulnerabilityApi* | [**StartCVEScan**](docs/VulnerabilityApi.md#startcvescan) | **Get** /deepfence/scan/start/cves | Start CVE Scan
 
 
 ## Documentation For Models
 
- - [ApiDocsRawReport](docs/ApiDocsRawReport.md)
- - [ApiDocsUnauthorizedResponse](docs/ApiDocsUnauthorizedResponse.md)
+ - [ApiDocsBadRequestResponse](docs/ApiDocsBadRequestResponse.md)
+ - [ApiDocsFailureResponse](docs/ApiDocsFailureResponse.md)
  - [ControlsAction](docs/ControlsAction.md)
  - [ControlsAgentControls](docs/ControlsAgentControls.md)
  - [IngestersCloudComplianceDoc](docs/IngestersCloudComplianceDoc.md)
@@ -105,8 +112,12 @@ Class | Method | HTTP request | Description
  - [IngestersComplianceDoc](docs/IngestersComplianceDoc.md)
  - [IngestersDfCveStruct](docs/IngestersDfCveStruct.md)
  - [IngestersSecret](docs/IngestersSecret.md)
+ - [ModelApiAuthRequest](docs/ModelApiAuthRequest.md)
+ - [ModelLoginRequest](docs/ModelLoginRequest.md)
+ - [ModelResponse](docs/ModelResponse.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
  - [ModelUser](docs/ModelUser.md)
+ - [ModelUserRegisterRequest](docs/ModelUserRegisterRequest.md)
  - [ReportersConnectionSummary](docs/ReportersConnectionSummary.md)
  - [ReportersNodeInfo](docs/ReportersNodeInfo.md)
  - [ReportersProviderThreatGraph](docs/ReportersProviderThreatGraph.md)

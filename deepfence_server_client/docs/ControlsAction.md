@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | Pointer to **int32** |  | [optional] 
-**RequestPayload** | Pointer to **string** |  | [optional] 
+**RequestPayload** | Pointer to **[]int32** |  | [optional] 
 
 ## Methods
 
@@ -53,20 +53,20 @@ HasId returns a boolean if a field has been set.
 
 ### GetRequestPayload
 
-`func (o *ControlsAction) GetRequestPayload() string`
+`func (o *ControlsAction) GetRequestPayload() []int32`
 
 GetRequestPayload returns the RequestPayload field if non-nil, zero value otherwise.
 
 ### GetRequestPayloadOk
 
-`func (o *ControlsAction) GetRequestPayloadOk() (*string, bool)`
+`func (o *ControlsAction) GetRequestPayloadOk() (*[]int32, bool)`
 
 GetRequestPayloadOk returns a tuple with the RequestPayload field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetRequestPayload
 
-`func (o *ControlsAction) SetRequestPayload(v string)`
+`func (o *ControlsAction) SetRequestPayload(v []int32)`
 
 SetRequestPayload sets RequestPayload field to given value.
 
@@ -76,6 +76,16 @@ SetRequestPayload sets RequestPayload field to given value.
 
 HasRequestPayload returns a boolean if a field has been set.
 
+### SetRequestPayloadNil
+
+`func (o *ControlsAction) SetRequestPayloadNil(b bool)`
+
+ SetRequestPayloadNil sets the value for RequestPayload to be an explicit nil
+
+### UnsetRequestPayload
+`func (o *ControlsAction) UnsetRequestPayload()`
+
+UnsetRequestPayload ensures that no value is present for RequestPayload, not even an explicit nil
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

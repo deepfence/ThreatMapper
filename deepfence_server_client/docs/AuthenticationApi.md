@@ -4,15 +4,17 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**RegisterUser**](AuthenticationApi.md#RegisterUser) | **Post** /deepfence/user/register | Register User
+[**AuthToken**](AuthenticationApi.md#AuthToken) | **Post** /deepfence/auth/token | API Auth Token
+[**Login**](AuthenticationApi.md#Login) | **Post** /deepfence/user/login | Login API
+[**Logout**](AuthenticationApi.md#Logout) | **Post** /deepfence/user/logout | Logout API
 
 
 
-## RegisterUser
+## AuthToken
 
-> ModelResponseAccessToken RegisterUser(ctx).ModelUser(modelUser).Execute()
+> ModelResponse AuthToken(ctx).ModelApiAuthRequest(modelApiAuthRequest).Execute()
 
-Register User
+API Auth Token
 
 
 
@@ -29,17 +31,17 @@ import (
 )
 
 func main() {
-    modelUser := *openapiclient.NewModelUser() // ModelUser |  (optional)
+    modelApiAuthRequest := *openapiclient.NewModelApiAuthRequest() // ModelApiAuthRequest |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.AuthenticationApi.RegisterUser(context.Background()).ModelUser(modelUser).Execute()
+    resp, r, err := apiClient.AuthenticationApi.AuthToken(context.Background()).ModelApiAuthRequest(modelApiAuthRequest).Execute()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `AuthenticationApi.RegisterUser``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error when calling `AuthenticationApi.AuthToken``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `RegisterUser`: ModelResponseAccessToken
-    fmt.Fprintf(os.Stdout, "Response from `AuthenticationApi.RegisterUser`: %v\n", resp)
+    // response from `AuthToken`: ModelResponse
+    fmt.Fprintf(os.Stdout, "Response from `AuthenticationApi.AuthToken`: %v\n", resp)
 }
 ```
 
@@ -49,16 +51,16 @@ func main() {
 
 ### Other Parameters
 
-Other parameters are passed through a pointer to a apiRegisterUserRequest struct via the builder pattern
+Other parameters are passed through a pointer to a apiAuthTokenRequest struct via the builder pattern
 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **modelUser** | [**ModelUser**](ModelUser.md) |  | 
+ **modelApiAuthRequest** | [**ModelApiAuthRequest**](ModelApiAuthRequest.md) |  | 
 
 ### Return type
 
-[**ModelResponseAccessToken**](ModelResponseAccessToken.md)
+[**ModelResponse**](ModelResponse.md)
 
 ### Authorization
 
@@ -67,6 +69,131 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## Login
+
+> ModelResponse Login(ctx).ModelLoginRequest(modelLoginRequest).Execute()
+
+Login API
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    modelLoginRequest := *openapiclient.NewModelLoginRequest() // ModelLoginRequest |  (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.AuthenticationApi.Login(context.Background()).ModelLoginRequest(modelLoginRequest).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `AuthenticationApi.Login``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `Login`: ModelResponse
+    fmt.Fprintf(os.Stdout, "Response from `AuthenticationApi.Login`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiLoginRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **modelLoginRequest** | [**ModelLoginRequest**](ModelLoginRequest.md) |  | 
+
+### Return type
+
+[**ModelResponse**](ModelResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## Logout
+
+> Logout(ctx).Execute()
+
+Logout API
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.AuthenticationApi.Logout(context.Background()).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `AuthenticationApi.Logout``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiLogoutRequest struct via the builder pattern
+
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+[bearer_token](../README.md#bearer_token)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

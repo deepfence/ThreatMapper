@@ -30,6 +30,73 @@ tags:
 - name: Secret Scan
 - name: Vulnerability
 paths:
+  /deepfence/api-token:
+    get:
+      description: Get logged in user's API Tokens
+      operationId: getApiTokens
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get User's API Tokens
+      tags:
+      - User
+  /deepfence/auth/token:
+    post:
+      description: Get auth token for API access
+      operationId: authToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelApiAuthRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      summary: API Auth Token
+      tags:
+      - Authentication
   /deepfence/graph/threat:
     get:
       description: Retrieve the full threat graph associated with the account
@@ -41,12 +108,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReportersThreatGraph'
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Get Threat Graph
@@ -63,12 +140,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReportersRenderedGraph'
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Get Topology Graph
@@ -89,17 +176,27 @@ paths:
       responses:
         "200":
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Ingest Cloud Compliances
       tags:
-      - CloudCompliance
+      - Cloud Compliance
   /deepfence/ingest/cloud-resources:
     post:
       description: Ingest Clouds Resources found while scanning cloud provider
@@ -115,17 +212,27 @@ paths:
       responses:
         "200":
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Ingest Cloud resources
       tags:
-      - CloudResources
+      - Cloud Resources
   /deepfence/ingest/compliance:
     post:
       description: Ingest compliance issues found while scanning the agent
@@ -141,12 +248,22 @@ paths:
       responses:
         "200":
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Ingest Compliances
@@ -167,12 +284,22 @@ paths:
       responses:
         "200":
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Ingest CVEs
@@ -182,11 +309,6 @@ paths:
     post:
       description: Ingest data reported by one Agent
       operationId: ingestAgentReport
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApiDocsRawReport'
       responses:
         "200":
           content:
@@ -194,12 +316,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/ControlsAgentControls'
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Ingest Topology Data
@@ -220,12 +352,22 @@ paths:
       responses:
         "200":
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Ingest Secrets
@@ -238,12 +380,22 @@ paths:
       responses:
         "200":
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Start Compliance Scan
@@ -256,12 +408,22 @@ paths:
       responses:
         "200":
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Start CVE Scan
@@ -274,21 +436,89 @@ paths:
       responses:
         "200":
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
       security:
       - bearer_token: []
       summary: Start Secret Scan
       tags:
       - Secret Scan
-  /deepfence/user/register:
-    post:
-      description: First user registration. Further users needs to be invited.
-      operationId: registerUser
+  /deepfence/user:
+    delete:
+      description: Delete logged in user
+      operationId: deleteCurrentUser
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Delete Current User
+      tags:
+      - User
+    get:
+      description: Get logged in user information
+      operationId: getCurrentUser
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Current User
+      tags:
+      - User
+    put:
+      description: Update logged in user information
+      operationId: updateCurrentUser
       requestBody:
         content:
           application/json:
@@ -299,43 +529,163 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModelResponseAccessToken'
+                $ref: '#/components/schemas/ModelResponse'
           description: OK
-        "401":
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiDocsUnauthorizedResponse'
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
           description: Unauthorized
-      summary: Register User
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Update Current User
+      tags:
+      - User
+  /deepfence/user/login:
+    post:
+      description: Login API
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelLoginRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      summary: Login API
       tags:
       - Authentication
+  /deepfence/user/logout:
+    post:
+      description: Logout API
+      operationId: logout
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Logout API
+      tags:
+      - Authentication
+  /deepfence/user/register:
+    post:
+      description: First user registration. Further users needs to be invited.
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelUserRegisterRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      summary: Register User
+      tags:
+      - User
 components:
   schemas:
-    ApiDocsRawReport:
-      example:
-        payload: payload
+    ApiDocsBadRequestResponse:
       properties:
-        payload:
+        error_fields:
+          additionalProperties:
+            type: string
+          nullable: true
+          type: object
+        message:
           type: string
+        success:
+          type: boolean
       type: object
-    ApiDocsUnauthorizedResponse:
+    ApiDocsFailureResponse:
       properties:
-        id:
+        message:
           type: string
+        success:
+          type: boolean
       type: object
     ControlsAction:
       example:
         id: 6
         request_payload:
-        - ""
-        - ""
+        - 0
+        - 0
       properties:
         id:
           type: integer
         request_payload:
-          format: byte
-          type: string
+          items:
+            minimum: 0
+            type: integer
+          nullable: true
+          type: array
       type: object
     ControlsActionID:
       type: integer
@@ -345,12 +695,12 @@ components:
         commands:
         - id: 6
           request_payload:
-          - ""
-          - ""
+          - 0
+          - 0
         - id: 6
           request_payload:
-          - ""
-          - ""
+          - 0
+          - 0
       properties:
         beatrate:
           type: integer
@@ -762,6 +1112,45 @@ components:
         type:
           type: string
       type: object
+    ModelApiAuthRequest:
+      example:
+        api_token: api_token
+      properties:
+        api_token:
+          type: string
+      type: object
+    ModelLoginRequest:
+      example:
+        password: password
+        email: email
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      type: object
+    ModelResponse:
+      example:
+        data:
+          access_token: access_token
+          refresh_token: refresh_token
+        success: true
+        error_fields:
+          key: error_fields
+        message: message
+      properties:
+        data:
+          $ref: '#/components/schemas/ModelResponseAccessToken'
+        error_fields:
+          additionalProperties:
+            type: string
+          nullable: true
+          type: object
+        message:
+          type: string
+        success:
+          type: boolean
+      type: object
     ModelResponseAccessToken:
       example:
         access_token: access_token
@@ -812,6 +1201,33 @@ components:
           type: string
         role_id:
           type: integer
+      type: object
+    ModelUserRegisterRequest:
+      example:
+        password: password
+        console_url: console_url
+        last_name: last_name
+        company: company
+        first_name: first_name
+        is_temporary_password: true
+        email: email
+      properties:
+        company:
+          type: string
+        console_url:
+          type: string
+        email:
+          type: string
+        first_name:
+          type: string
+        is_temporary_password:
+          type: boolean
+        last_name:
+          type: string
+        password:
+          type: string
+      type: object
+    PostgresqlDbApiToken:
       type: object
     ReportersConnectionSummary:
       example:

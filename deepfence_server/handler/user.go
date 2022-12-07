@@ -10,7 +10,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/google/uuid"
 	"net/http"
 	"reflect"
 )
@@ -107,7 +106,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.ID = createdUser.ID
 	apiToken := model.ApiToken{
-		ApiToken:        uuid.UUID{},
+		ApiToken:        utils.NewUUID(),
 		Name:            user.Email,
 		CompanyID:       company.ID,
 		RoleID:          role.ID,

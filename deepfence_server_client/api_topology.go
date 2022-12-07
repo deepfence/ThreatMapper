@@ -107,8 +107,19 @@ func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphReques
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ApiDocsUnauthorizedResponse
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+            		newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+            		newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -135,12 +146,6 @@ func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphReques
 type ApiIngestAgentReportRequest struct {
 	ctx context.Context
 	ApiService *TopologyApiService
-	apiDocsRawReport *ApiDocsRawReport
-}
-
-func (r ApiIngestAgentReportRequest) ApiDocsRawReport(apiDocsRawReport ApiDocsRawReport) ApiIngestAgentReportRequest {
-	r.apiDocsRawReport = &apiDocsRawReport
-	return r
 }
 
 func (r ApiIngestAgentReportRequest) Execute() (*ControlsAgentControls, *http.Response, error) {
@@ -184,7 +189,7 @@ func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequ
 	localVarFormParams := url.Values{}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
+	localVarHTTPContentTypes := []string{}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -200,8 +205,6 @@ func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequ
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	// body params
-	localVarPostBody = r.apiDocsRawReport
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -224,8 +227,19 @@ func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequ
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
 		}
-		if localVarHTTPResponse.StatusCode == 401 {
-			var v ApiDocsUnauthorizedResponse
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+            		newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+            		newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
