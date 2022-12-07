@@ -5,3 +5,6 @@ dist
 dist-ssr
 *.local
 node_modules/*
+
+
+/apps/dashboard/src/api/generated
