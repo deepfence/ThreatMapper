@@ -110,7 +110,6 @@ func (nc *neo4jIngester) runEnqueueReport() {
 					log.Error().Msgf("multiple probe ids: %v", probe_id)
 				}
 			}
-			log.Error().Msgf("probe id: %v", probe_id)
 			report_buffer[probe_id] = rpt
 			i += 1
 		case <-timeout:
@@ -452,8 +451,6 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 		return err
 	}
 	defer tx.Close()
-
-	log.Error().Msgf("push: %v\n", batches)
 
 	start := time.Now()
 

@@ -31,7 +31,7 @@ func RegisterControl[T ctl.StartCVEScanRequest | ctl.StartSecretScanRequest | ct
 func ApplyControl(req openapi.ControlsAction) error {
 	controls_guard.RLock()
 	defer controls_guard.RUnlock()
-	return controls[ctl.ActionID(req.GetId())](req.GetRequestPayload())
+	return controls[ctl.ActionID(req.GetId())]([]byte(req.GetRequestPayload()))
 }
 
 func init() {

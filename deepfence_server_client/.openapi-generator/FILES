@@ -66,5 +66,4 @@ model_reporters_provider_threat_graph.go
 model_reporters_rendered_graph.go
 model_reporters_threat_node_info.go
 response.go
-test/api_user_test.go
 utils.go

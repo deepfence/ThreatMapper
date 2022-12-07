@@ -681,11 +681,8 @@ components:
         id:
           type: integer
         request_payload:
-          items:
-            minimum: 0
-            type: integer
           nullable: true
-          type: array
+          type: string
       type: object
     ControlsActionID:
       type: integer

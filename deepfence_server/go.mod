@@ -17,6 +17,7 @@ replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/d
 replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
 require (
+	github.com/bytedance/sonic v1.5.0
 	github.com/casbin/casbin/v2 v2.58.0
 	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
@@ -29,6 +30,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/rs/zerolog v1.28.0
 	github.com/swaggest/openapi-go v0.2.26
 	github.com/ugorji/go/codec v1.2.7
 	github.com/weaveworks/scope v1.13.2
@@ -50,6 +52,7 @@ require (
 	github.com/bluele/gcache v0.0.2 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20211019084208-fb5309c8db06 // indirect
 	github.com/containerd/cgroups v1.0.3 // indirect
 	github.com/containerd/containerd v1.6.6 // indirect
 	github.com/coocood/freecache v1.2.3 // indirect
@@ -90,6 +93,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k-sone/critbitgo v1.4.0 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
@@ -113,12 +117,12 @@ require (
 	github.com/opencontainers/runc v1.1.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/swaggest/jsonschema-go v0.3.42 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
+	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/typetypetype/conntrack v1.0.0 // indirect
 	github.com/ugorji/go/codec/codecgen v1.2.7 // indirect
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5 // indirect
@@ -127,6 +131,7 @@ require (
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000 // indirect
 	github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c // indirect
 	go.opencensus.io v0.23.0 // indirect
+	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/mod v0.6.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect

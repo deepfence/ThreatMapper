@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/rs/zerolog/log"
 )
 
 func (h *Handler) StartCVEScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,21 +26,33 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func start_scan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
+	err := r.ParseForm()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	node_id := r.Form.Get("node_id")
 	if node_id == "" {
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	ctx := directory.NewAccountContext()
-	controls.SetAgentActions(ctx, node_id, []ctl.Action{
+	err = controls.SetAgentActions(ctx, node_id, []ctl.Action{
 		{
 			ID:             action,
 			RequestPayload: nil,
 		},
 	})
 
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Ok")
+	fmt.Fprintf(w, "Started")
 }
 
 func (h *Handler) IngestCVEReportHandler(w http.ResponseWriter, r *http.Request) {

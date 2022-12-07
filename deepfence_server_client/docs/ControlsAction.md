@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | Pointer to **int32** |  | [optional] 
-**RequestPayload** | Pointer to **[]int32** |  | [optional] 
+**RequestPayload** | Pointer to **NullableString** |  | [optional] 
 
 ## Methods
 
@@ -53,20 +53,20 @@ HasId returns a boolean if a field has been set.
 
 ### GetRequestPayload
 
-`func (o *ControlsAction) GetRequestPayload() []int32`
+`func (o *ControlsAction) GetRequestPayload() string`
 
 GetRequestPayload returns the RequestPayload field if non-nil, zero value otherwise.
 
 ### GetRequestPayloadOk
 
-`func (o *ControlsAction) GetRequestPayloadOk() (*[]int32, bool)`
+`func (o *ControlsAction) GetRequestPayloadOk() (*string, bool)`
 
 GetRequestPayloadOk returns a tuple with the RequestPayload field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetRequestPayload
 
-`func (o *ControlsAction) SetRequestPayload(v []int32)`
+`func (o *ControlsAction) SetRequestPayload(v string)`
 
 SetRequestPayload sets RequestPayload field to given value.
 

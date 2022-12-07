@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -13,6 +14,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/weaveworks/scope/report"
+
+	"github.com/bytedance/sonic"
 )
 
 var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]
@@ -72,13 +75,14 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var rawReport openapi.ApiDocsRawReport
-	err = json.Unmarshal(data, &rawReport)
+
+	err = sonic.Unmarshal(data, &rawReport)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 	rpt := report.MakeReport()
-	err = json.Unmarshal([]byte(rawReport.GetPayload()), &rpt)
+	err = sonic.Unmarshal([]byte(rawReport.GetPayload()), &rpt)
 
 	//if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
 	if err != nil {
@@ -98,7 +102,15 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, err := controls.GetAgentActions(ctx, rpt.ID)
+	// TODO: send directly from agent
+	nodeId := ""
+	for _, v := range rpt.Host.Nodes {
+		nodeId = v.ID
+	}
+	nodeId = strings.Split(nodeId, ";")[0]
+	log.Warn().Msgf("NodeId: %v", nodeId)
+
+	actions, err := controls.GetAgentActions(ctx, nodeId)
 	if err != nil {
 		log.Error().Msgf("Cannot get actions: ", err)
 	}
