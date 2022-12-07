@@ -69,29 +69,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 			}
 		})
 
-		openApiDocs.AddGraphOperations()
-		r.Route("/graph", func(r chi.Router) {
-			r.Post("/topology", dfHandler.GetTopologyGraph)
-			r.Post("/threat", dfHandler.GetThreatGraph)
-		})
-
-		openApiDocs.AddIngestersOperations()
-		r.Route("/ingest", func(r chi.Router) {
-			r.Post("/report", dfHandler.IngestAgentReport)
-			r.Post("/cves", dfHandler.IngestCVEReportHandler)
-			r.Post("/secrets", dfHandler.IngestSecretReportHandler)
-			r.Post("/compliance", dfHandler.IngestComplianceReportHandler)
-			r.Post("/cloud-compliance", dfHandler.IngestCloudComplianceReportHandler)
-			r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
-		})
-
-		openApiDocs.AddScansOperations()
-		r.Route("/scan/start", func(r chi.Router) {
-			r.Get("/cves", dfHandler.StartCVEScanHandler)
-			r.Get("/secrets", dfHandler.StartSecretScanHandler)
-			r.Get("/compliances", dfHandler.StartComplianceScanHandler)
-		})
-
 		// authenticated apis
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(tokenAuth))
@@ -118,13 +95,36 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 				r.Delete("/", dfHandler.AuthHandler("all-users", "delete", dfHandler.DeleteUser))
 			})
 
+			openApiDocs.AddGraphOperations()
+			r.Route("/graph", func(r chi.Router) {
+				r.Post("/topology", dfHandler.GetTopologyGraph)
+				r.Post("/threat", dfHandler.GetThreatGraph)
+			})
+
+			openApiDocs.AddIngestersOperations()
+			r.Route("/ingest", func(r chi.Router) {
+				r.Post("/report", dfHandler.IngestAgentReport)
+				r.Post("/cves", dfHandler.IngestCVEReportHandler)
+				r.Post("/secrets", dfHandler.IngestSecretReportHandler)
+				r.Post("/compliance", dfHandler.IngestComplianceReportHandler)
+				r.Post("/cloud-compliance", dfHandler.IngestCloudComplianceReportHandler)
+				r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
+			})
+
+			openApiDocs.AddScansOperations()
+			r.Route("/scan/start", func(r chi.Router) {
+				r.Get("/cves", dfHandler.StartCVEScanHandler)
+				r.Get("/secrets", dfHandler.StartSecretScanHandler)
+				r.Get("/compliances", dfHandler.StartComplianceScanHandler)
+			})
+
 		})
 	})
 	return nil
 }
 
 func getTokenAuth() *jwtauth.JWTAuth {
-	return jwtauth.New("HS256", []byte(utils.NewUUID()), nil)
+	return jwtauth.New("HS256", []byte(utils.NewUUIDString()), nil)
 }
 
 func getAuthorizationHandler() (*casbin.Enforcer, error) {

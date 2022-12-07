@@ -33,8 +33,12 @@ func ToSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
-func NewUUID() string {
-	return uuid.New().String()
+func NewUUIDString() string {
+	return NewUUID().String()
+}
+
+func NewUUID() uuid.UUID {
+	return uuid.New()
 }
 
 func GetEmailDomain(email string) (string, error) {

@@ -39,12 +39,9 @@ type ApiToken struct {
 	ApiToken        uuid.UUID `json:"api_token"`
 	ID              int64     `json:"id"`
 	Name            string    `json:"name"`
-	RoleName        string    `json:"role_name"`
-	Company         string    `json:"company"`
 	CompanyID       int32     `json:"company_id"`
-	Role            string    `json:"role"`
 	RoleID          int32     `json:"role_id"`
-	CreatedByUser   string    `json:"created_by_user"`
+	GroupID         int32     `json:"group_id"`
 	CreatedByUserID int64     `json:"created_by_user_id"`
 }
 
@@ -68,6 +65,21 @@ func (a *ApiToken) GetUser(ctx context.Context, pgClient *postgresqlDb.Queries) 
 	return &u, nil
 }
 
+func (a *ApiToken) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.ApiToken, error) {
+	apiToken, err := pgClient.CreateApiToken(ctx, postgresqlDb.CreateApiTokenParams{
+		ApiToken:        a.ApiToken,
+		Name:            a.Name,
+		CompanyID:       a.CompanyID,
+		RoleID:          a.RoleID,
+		GroupID:         a.GroupID,
+		CreatedByUserID: a.CreatedByUserID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &apiToken, nil
+}
+
 type Company struct {
 	ID          int32  `json:"id"`
 	Name        string `json:"name"`
@@ -82,7 +94,16 @@ func (c *Company) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*
 	return &company, nil
 }
 
-func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries) (map[string]string, error) {
+func (c *Company) CreateDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.UserGroup, error) {
+	group, err := pgClient.CreateUserGroup(ctx, postgresqlDb.CreateUserGroupParams{
+		Name: DefaultUserGroup, CompanyID: c.ID, IsSystem: true})
+	if err != nil {
+		return nil, err
+	}
+	return &group, nil
+}
+
+func (c *Company) GetDefaultUserGroupMap(ctx context.Context, pgClient *postgresqlDb.Queries) (map[string]string, error) {
 	groups, err := pgClient.GetUserGroups(ctx, c.ID)
 	if err != nil {
 		return nil, err
@@ -90,12 +111,26 @@ func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlD
 	if len(groups) > 0 {
 		return map[string]string{strconv.Itoa(int(groups[0].ID)): groups[0].Name}, nil
 	}
-	group, err := pgClient.CreateUserGroup(ctx, postgresqlDb.CreateUserGroupParams{
-		Name: DefaultUserGroup, CompanyID: c.ID, IsSystem: true})
+	group, err := c.CreateDefaultUserGroup(ctx, pgClient)
 	if err != nil {
 		return nil, err
 	}
 	return map[string]string{strconv.Itoa(int(group.ID)): group.Name}, nil
+}
+
+func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.UserGroup, error) {
+	groups, err := pgClient.GetUserGroups(ctx, c.ID)
+	if err != nil {
+		return nil, err
+	}
+	if len(groups) > 0 {
+		return &groups[0], nil
+	}
+	group, err := c.CreateDefaultUserGroup(ctx, pgClient)
+	if err != nil {
+		return nil, err
+	}
+	return group, nil
 }
 
 type LoginRequest struct {
@@ -197,10 +232,10 @@ func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Que
 	return nil
 }
 
-func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, *postgresqlDb.ApiToken, error) {
+func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {
 	groupIDs, err := json.Marshal(MapKeys(u.Groups))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	user, err := pgClient.CreateUser(ctx, postgresqlDb.CreateUserParams{
 		FirstName:           u.FirstName,
@@ -214,16 +249,9 @@ func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 		PasswordInvalidated: false,
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	apiToken, err := pgClient.CreateApiToken(ctx, postgresqlDb.CreateApiTokenParams{
-		ApiToken:        uuid.New(),
-		Name:            u.FirstName + " " + u.LastName,
-		CompanyID:       u.CompanyID,
-		RoleID:          u.RoleID,
-		CreatedByUserID: user.ID,
-	})
-	return &user, &apiToken, nil
+	return &user, nil
 }
 
 func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*ResponseAccessToken, error) {
@@ -239,7 +267,7 @@ func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*Re
 }
 
 func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
-	accessTokenID := utils.NewUUID()
+	accessTokenID := utils.NewUUIDString()
 	_, s, err := tokenAuth.Encode(map[string]interface{}{
 		"date":       time.Now().UTC(),
 		"expires_in": time.Hour * 24,
@@ -265,7 +293,7 @@ func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID stri
 		"date":       time.Now().UTC(),
 		"expires_in": time.Hour * 24 * 7,
 		"token_id":   accessTokenID,
-		"id":         utils.NewUUID(),
+		"id":         utils.NewUUIDString(),
 		"user_id":    u.ID,
 		"grant_type": grantType,
 	})

@@ -1,12 +1,12 @@
 package apiDocs
 
 import (
-	"net/http"
-
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"net/http"
 )
 
 type ScanTrigger struct {
@@ -40,7 +40,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusNoContent, []string{tagUser}, nil, bearerToken, nil, nil)
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
-		http.StatusOK, []string{tagUser}, nil, bearerToken, nil, model.Response{Success: true, Data: []model.ApiToken{}})
+		http.StatusOK, []string{tagUser}, nil, bearerToken, nil, model.Response{Success: true, Data: []postgresql_db.ApiToken{}})
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {

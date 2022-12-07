@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"github.com/google/uuid"
 	"net/http"
 	"reflect"
 )
@@ -86,7 +87,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		RoleID:              role.ID,
 		PasswordInvalidated: registerRequest.IsTemporaryPassword,
 	}
-	user.Groups, err = c.GetDefaultUserGroup(ctx, pgClient)
+	user.Groups, err = c.GetDefaultUserGroupMap(ctx, pgClient)
 	if err != nil {
 		log.Error().Msg("c.GetDefaultUserGroup: " + err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
@@ -98,13 +99,33 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	createdUser, _, err := user.Create(ctx, pgClient)
+	createdUser, err := user.Create(ctx, pgClient)
 	if err != nil {
 		log.Error().Msg("user.Create: " + err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	user.ID = createdUser.ID
+	apiToken := model.ApiToken{
+		ApiToken:        uuid.UUID{},
+		Name:            user.Email,
+		CompanyID:       company.ID,
+		RoleID:          role.ID,
+		CreatedByUserID: user.ID,
+	}
+	defaultGroup, err := c.GetDefaultUserGroup(ctx, pgClient)
+	if err != nil {
+		log.Error().Msg("GetDefaultUserGroup: " + err.Error())
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	apiToken.GroupID = defaultGroup.ID
+	_, err = apiToken.Create(ctx, pgClient)
+	if err != nil {
+		log.Error().Msg("apiToken.Create: " + err.Error())
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
 	if err != nil {
 		log.Error().Msg("GetAccessToken: " + err.Error())

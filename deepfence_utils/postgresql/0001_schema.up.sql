@@ -64,9 +64,7 @@ CREATE TABLE users
     last_name            character varying(64)                              NOT NULL,
     email                character varying(64)                              NOT NULL,
     role_id              integer                                            NOT NULL,
-    group_ids            jsonb                    DEFAULT '[
-      "default"
-    ]'::jsonb                                                               NOT NULL,
+    group_ids            jsonb                                              NOT NULL,
     company_id           integer                                            NOT NULL,
     password_hash        character varying(255)                             NOT NULL,
     is_active            boolean                  DEFAULT true              NOT NULL,
