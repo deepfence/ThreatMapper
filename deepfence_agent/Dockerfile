@@ -35,7 +35,7 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
 # Installing FluentBit
 RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
     && echo "deb https://packages.fluentbit.io/debian/buster buster main " >> /etc/apt/sources.list && apt-get update \
-    && apt-get install -y td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/
+    && apt-get install -y --allow-unauthenticated td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/
 
 COPY tools/apache/fluentbit/* /etc/td-agent-bit/
 
@@ -69,7 +69,7 @@ COPY --from=malware_build /usr/local/yara/lib /usr/local/lib
 
 
 RUN mkdir -p /home/deepfence/bin/yara-hunter \
-    && apt-get update && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \
+    && apt-get update --allow-insecure-repositories && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \
     && rm -rf /usr/local/bin/compliance_check/*.go \
     && chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
