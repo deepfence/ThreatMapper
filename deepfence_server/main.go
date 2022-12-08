@@ -28,6 +28,7 @@ var (
 
 type Config struct {
 	HttpListenEndpoint string
+	JwtSecret          []byte
 }
 
 func main() {
@@ -37,10 +38,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
-	err = initializeDatabase()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
+
 	err = initializeKafka()
 	if err != nil {
 		log.Fatal().Msg(err.Error())
@@ -57,7 +55,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go startKafkaProducer(ctx, kafkaBrokers, ingestC)
 
-	err = router.SetupRoutes(r, config.HttpListenEndpoint, *serveOpenapiDocs, ingestC)
+	err = router.SetupRoutes(r, config.HttpListenEndpoint, config.JwtSecret, *serveOpenapiDocs, ingestC)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
@@ -87,7 +85,7 @@ func main() {
 	log.Info().Msg("deepfence-server stopped")
 }
 
-func initialize() (Config, error) {
+func initialize() (*Config, error) {
 	// logger
 	log.Initialize(*verbosity)
 
@@ -96,36 +94,45 @@ func initialize() (Config, error) {
 		httpListenEndpoint = "8080"
 	}
 
-	return Config{
+	jwtSecret, err := initializeDatabase()
+	if err != nil {
+		return nil, err
+	}
+	return &Config{
 		HttpListenEndpoint: ":" + httpListenEndpoint,
+		JwtSecret:          jwtSecret,
 	}, nil
 }
 
-func initializeDatabase() error {
+func initializeDatabase() ([]byte, error) {
 	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	roles, err := pgClient.GetRoles(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if len(roles) == 0 {
 		_, err = pgClient.CreateRole(ctx, model.AdminRole)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		_, err = pgClient.CreateRole(ctx, model.UserRole)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		_, err = pgClient.CreateRole(ctx, model.ReadOnlyRole)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	jwtSecret, err := model.GetJwtSecretSetting(ctx, pgClient)
+	if err != nil {
+		return nil, err
+	}
+	return jwtSecret, nil
 }
 
 func initializeKafka() error {

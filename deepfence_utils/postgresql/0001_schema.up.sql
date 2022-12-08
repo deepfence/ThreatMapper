@@ -97,6 +97,7 @@ CREATE TABLE api_token
     created_by_user_id bigint                                             NOT NULL,
     created_at         timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at         timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    UNIQUE (api_token),
     CONSTRAINT fk_company
         FOREIGN KEY (company_id)
             REFERENCES company (id),

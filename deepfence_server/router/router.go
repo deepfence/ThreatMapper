@@ -9,16 +9,15 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record) error {
+func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool, ingestC chan *kgo.Record) error {
 	// JWT
-	tokenAuth := getTokenAuth()
+	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
 
 	// authorization
 	authEnforcer, err := getAuthorizationHandler()
@@ -125,10 +124,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 		})
 	})
 	return nil
-}
-
-func getTokenAuth() *jwtauth.JWTAuth {
-	return jwtauth.New("HS256", []byte(utils.NewUUIDString()), nil)
 }
 
 func getAuthorizationHandler() (*casbin.Enforcer, error) {

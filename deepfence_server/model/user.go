@@ -268,9 +268,15 @@ func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*Re
 
 func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
 	accessTokenID := utils.NewUUIDString()
+	var expiry time.Duration
+	if grantType == GrantTypeAPIToken {
+		expiry = time.Hour * 24 * 365 // 1 year
+	} else {
+		expiry = time.Hour * 24 // 1 day
+	}
 	_, s, err := tokenAuth.Encode(map[string]interface{}{
 		"date":       time.Now().UTC(),
-		"expires_in": time.Hour * 24,
+		"expires_in": expiry,
 		"id":         accessTokenID,
 		"user_id":    u.ID,
 		"first_name": u.FirstName,
