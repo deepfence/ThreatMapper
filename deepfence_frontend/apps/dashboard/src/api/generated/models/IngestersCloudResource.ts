@@ -237,6 +237,15 @@ export interface IngestersCloudResource {
     vpc_security_groups?: any | null;
 }
 
+/**
+ * Check if a given object implements the IngestersCloudResource interface.
+ */
+export function instanceOfIngestersCloudResource(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function IngestersCloudResourceFromJSON(json: any): IngestersCloudResource {
     return IngestersCloudResourceFromJSONTyped(json, false);
 }

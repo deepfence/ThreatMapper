@@ -14,14 +14,16 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  ApiDocsBadRequestResponse,
+  ApiDocsFailureResponse,
+  ReportersProviderThreatGraph,
+} from '../models';
 import {
-    ApiDocsBadRequestResponse,
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
-    ApiDocsFailureResponse,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ReportersProviderThreatGraph,
     ReportersProviderThreatGraphFromJSON,
     ReportersProviderThreatGraphToJSON,
 } from '../models';
@@ -40,13 +42,13 @@ export interface ThreatApiInterface {
      * @throws {RequiredError}
      * @memberof ThreatApiInterface
      */
-    getThreatGraphRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<{ [key: string]: ReportersProviderThreatGraph; }>>;
+    getThreatGraphRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: ReportersProviderThreatGraph; }>>;
 
     /**
      * Retrieve the full threat graph associated with the account
      * Get Threat Graph
      */
-    getThreatGraph(initOverrides?: RequestInit): Promise<{ [key: string]: ReportersProviderThreatGraph; }>;
+    getThreatGraph(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: ReportersProviderThreatGraph; }>;
 
 }
 
@@ -59,7 +61,7 @@ export class ThreatApi extends runtime.BaseAPI implements ThreatApiInterface {
      * Retrieve the full threat graph associated with the account
      * Get Threat Graph
      */
-    async getThreatGraphRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<{ [key: string]: ReportersProviderThreatGraph; }>> {
+    async getThreatGraphRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: ReportersProviderThreatGraph; }>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -86,7 +88,7 @@ export class ThreatApi extends runtime.BaseAPI implements ThreatApiInterface {
      * Retrieve the full threat graph associated with the account
      * Get Threat Graph
      */
-    async getThreatGraph(initOverrides?: RequestInit): Promise<{ [key: string]: ReportersProviderThreatGraph; }> {
+    async getThreatGraph(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: ReportersProviderThreatGraph; }> {
         const response = await this.getThreatGraphRaw(initOverrides);
         return await response.value();
     }

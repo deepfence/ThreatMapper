@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ReportersThreatNodeInfo } from './ReportersThreatNodeInfo';
 import {
-    ReportersThreatNodeInfo,
     ReportersThreatNodeInfoFromJSON,
     ReportersThreatNodeInfoFromJSONTyped,
     ReportersThreatNodeInfoToJSON,
@@ -50,6 +50,15 @@ export interface ReportersProviderThreatGraph {
      * @memberof ReportersProviderThreatGraph
      */
     vulnerability_count?: number;
+}
+
+/**
+ * Check if a given object implements the ReportersProviderThreatGraph interface.
+ */
+export function instanceOfReportersProviderThreatGraph(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
 }
 
 export function ReportersProviderThreatGraphFromJSON(json: any): ReportersProviderThreatGraph {

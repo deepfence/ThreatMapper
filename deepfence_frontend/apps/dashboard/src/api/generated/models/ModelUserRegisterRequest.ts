@@ -63,6 +63,15 @@ export interface ModelUserRegisterRequest {
     password?: string;
 }
 
+/**
+ * Check if a given object implements the ModelUserRegisterRequest interface.
+ */
+export function instanceOfModelUserRegisterRequest(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ModelUserRegisterRequestFromJSON(json: any): ModelUserRegisterRequest {
     return ModelUserRegisterRequestFromJSONTyped(json, false);
 }

@@ -14,20 +14,22 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  ApiDocsBadRequestResponse,
+  ApiDocsFailureResponse,
+  ModelResponse,
+  ModelUser,
+  ModelUserRegisterRequest,
+} from '../models';
 import {
-    ApiDocsBadRequestResponse,
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
-    ApiDocsFailureResponse,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelResponse,
     ModelResponseFromJSON,
     ModelResponseToJSON,
-    ModelUser,
     ModelUserFromJSON,
     ModelUserToJSON,
-    ModelUserRegisterRequest,
     ModelUserRegisterRequestFromJSON,
     ModelUserRegisterRequestToJSON,
 } from '../models';
@@ -54,13 +56,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    deleteCurrentUserRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>>;
+    deleteCurrentUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Delete logged in user
      * Delete Current User
      */
-    deleteCurrentUser(initOverrides?: RequestInit): Promise<void>;
+    deleteCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Get logged in user\'s API Tokens
@@ -69,13 +71,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    getApiTokensRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>>;
+    getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
 
     /**
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    getApiTokens(initOverrides?: RequestInit): Promise<ModelResponse>;
+    getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
 
     /**
      * Get logged in user information
@@ -84,13 +86,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    getCurrentUserRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>>;
+    getCurrentUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
 
     /**
      * Get logged in user information
      * Get Current User
      */
-    getCurrentUser(initOverrides?: RequestInit): Promise<ModelResponse>;
+    getCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
 
     /**
      * First user registration. Further users needs to be invited.
@@ -100,13 +102,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>>;
+    registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
 
     /**
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    registerUser(requestParameters: RegisterUserRequest, initOverrides?: RequestInit): Promise<ModelResponse>;
+    registerUser(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
 
     /**
      * Update logged in user information
@@ -116,13 +118,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    updateCurrentUserRaw(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>>;
+    updateCurrentUserRaw(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
 
     /**
      * Update logged in user information
      * Update Current User
      */
-    updateCurrentUser(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit): Promise<ModelResponse>;
+    updateCurrentUser(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
 
 }
 
@@ -135,7 +137,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Delete logged in user
      * Delete Current User
      */
-    async deleteCurrentUserRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>> {
+    async deleteCurrentUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -162,7 +164,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Delete logged in user
      * Delete Current User
      */
-    async deleteCurrentUser(initOverrides?: RequestInit): Promise<void> {
+    async deleteCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteCurrentUserRaw(initOverrides);
     }
 
@@ -170,7 +172,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    async getApiTokensRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>> {
+    async getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -197,7 +199,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    async getApiTokens(initOverrides?: RequestInit): Promise<ModelResponse> {
+    async getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
         const response = await this.getApiTokensRaw(initOverrides);
         return await response.value();
     }
@@ -206,7 +208,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Get logged in user information
      * Get Current User
      */
-    async getCurrentUserRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>> {
+    async getCurrentUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -233,7 +235,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Get logged in user information
      * Get Current User
      */
-    async getCurrentUser(initOverrides?: RequestInit): Promise<ModelResponse> {
+    async getCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
         const response = await this.getCurrentUserRaw(initOverrides);
         return await response.value();
     }
@@ -242,7 +244,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    async registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>> {
+    async registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -264,7 +266,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    async registerUser(requestParameters: RegisterUserRequest = {}, initOverrides?: RequestInit): Promise<ModelResponse> {
+    async registerUser(requestParameters: RegisterUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
         const response = await this.registerUserRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -273,7 +275,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Update logged in user information
      * Update Current User
      */
-    async updateCurrentUserRaw(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>> {
+    async updateCurrentUserRaw(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -303,7 +305,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Update logged in user information
      * Update Current User
      */
-    async updateCurrentUser(requestParameters: UpdateCurrentUserRequest = {}, initOverrides?: RequestInit): Promise<ModelResponse> {
+    async updateCurrentUser(requestParameters: UpdateCurrentUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
         const response = await this.updateCurrentUserRaw(requestParameters, initOverrides);
         return await response.value();
     }

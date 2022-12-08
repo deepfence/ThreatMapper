@@ -14,14 +14,16 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  ApiDocsBadRequestResponse,
+  ApiDocsFailureResponse,
+  IngestersCloudResource,
+} from '../models';
 import {
-    ApiDocsBadRequestResponse,
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
-    ApiDocsFailureResponse,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    IngestersCloudResource,
     IngestersCloudResourceFromJSON,
     IngestersCloudResourceToJSON,
 } from '../models';
@@ -45,13 +47,13 @@ export interface CloudResourcesApiInterface {
      * @throws {RequiredError}
      * @memberof CloudResourcesApiInterface
      */
-    ingestCloudResourcesRaw(requestParameters: IngestCloudResourcesRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>>;
+    ingestCloudResourcesRaw(requestParameters: IngestCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Ingest Clouds Resources found while scanning cloud provider
      * Ingest Cloud resources
      */
-    ingestCloudResources(requestParameters: IngestCloudResourcesRequest, initOverrides?: RequestInit): Promise<void>;
+    ingestCloudResources(requestParameters: IngestCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -64,7 +66,7 @@ export class CloudResourcesApi extends runtime.BaseAPI implements CloudResources
      * Ingest Clouds Resources found while scanning cloud provider
      * Ingest Cloud resources
      */
-    async ingestCloudResourcesRaw(requestParameters: IngestCloudResourcesRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>> {
+    async ingestCloudResourcesRaw(requestParameters: IngestCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -84,7 +86,7 @@ export class CloudResourcesApi extends runtime.BaseAPI implements CloudResources
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersCloudResource.map(IngestersCloudResourceToJSON),
+            body: requestParameters.ingestersCloudResource?.map(IngestersCloudResourceToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -94,7 +96,7 @@ export class CloudResourcesApi extends runtime.BaseAPI implements CloudResources
      * Ingest Clouds Resources found while scanning cloud provider
      * Ingest Cloud resources
      */
-    async ingestCloudResources(requestParameters: IngestCloudResourcesRequest = {}, initOverrides?: RequestInit): Promise<void> {
+    async ingestCloudResources(requestParameters: IngestCloudResourcesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.ingestCloudResourcesRaw(requestParameters, initOverrides);
     }
 

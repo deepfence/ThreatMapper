@@ -189,6 +189,15 @@ export interface IngestersDfCveStruct {
     urls?: Array<string> | null;
 }
 
+/**
+ * Check if a given object implements the IngestersDfCveStruct interface.
+ */
+export function instanceOfIngestersDfCveStruct(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function IngestersDfCveStructFromJSON(json: any): IngestersDfCveStruct {
     return IngestersDfCveStructFromJSONTyped(json, false);
 }

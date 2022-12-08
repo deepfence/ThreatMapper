@@ -14,14 +14,16 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  ApiDocsBadRequestResponse,
+  ApiDocsFailureResponse,
+  IngestersComplianceDoc,
+} from '../models';
 import {
-    ApiDocsBadRequestResponse,
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
-    ApiDocsFailureResponse,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    IngestersComplianceDoc,
     IngestersComplianceDocFromJSON,
     IngestersComplianceDocToJSON,
 } from '../models';
@@ -45,13 +47,13 @@ export interface ComplianceApiInterface {
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
      */
-    ingestCompliancesRaw(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>>;
+    ingestCompliancesRaw(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Ingest compliance issues found while scanning the agent
      * Ingest Compliances
      */
-    ingestCompliances(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit): Promise<void>;
+    ingestCompliances(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Start Compliance Scan on agent
@@ -60,13 +62,13 @@ export interface ComplianceApiInterface {
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
      */
-    startComplianceScanRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>>;
+    startComplianceScanRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Start Compliance Scan on agent
      * Start Compliance Scan
      */
-    startComplianceScan(initOverrides?: RequestInit): Promise<void>;
+    startComplianceScan(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -79,7 +81,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Ingest compliance issues found while scanning the agent
      * Ingest Compliances
      */
-    async ingestCompliancesRaw(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>> {
+    async ingestCompliancesRaw(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -99,7 +101,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersComplianceDoc.map(IngestersComplianceDocToJSON),
+            body: requestParameters.ingestersComplianceDoc?.map(IngestersComplianceDocToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -109,7 +111,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Ingest compliance issues found while scanning the agent
      * Ingest Compliances
      */
-    async ingestCompliances(requestParameters: IngestCompliancesRequest = {}, initOverrides?: RequestInit): Promise<void> {
+    async ingestCompliances(requestParameters: IngestCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.ingestCompliancesRaw(requestParameters, initOverrides);
     }
 
@@ -117,7 +119,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Start Compliance Scan on agent
      * Start Compliance Scan
      */
-    async startComplianceScanRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>> {
+    async startComplianceScanRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -144,7 +146,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Start Compliance Scan on agent
      * Start Compliance Scan
      */
-    async startComplianceScan(initOverrides?: RequestInit): Promise<void> {
+    async startComplianceScan(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.startComplianceScanRaw(initOverrides);
     }
 

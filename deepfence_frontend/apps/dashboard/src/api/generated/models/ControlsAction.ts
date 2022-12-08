@@ -33,6 +33,15 @@ export interface ControlsAction {
     request_payload?: Array<number> | null;
 }
 
+/**
+ * Check if a given object implements the ControlsAction interface.
+ */
+export function instanceOfControlsAction(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ControlsActionFromJSON(json: any): ControlsAction {
     return ControlsActionFromJSONTyped(json, false);
 }

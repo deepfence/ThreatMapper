@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelResponseAccessToken } from './ModelResponseAccessToken';
 import {
-    ModelResponseAccessToken,
     ModelResponseAccessTokenFromJSON,
     ModelResponseAccessTokenFromJSONTyped,
     ModelResponseAccessTokenToJSON,
@@ -50,6 +50,15 @@ export interface ModelResponse {
      * @memberof ModelResponse
      */
     success?: boolean;
+}
+
+/**
+ * Check if a given object implements the ModelResponse interface.
+ */
+export function instanceOfModelResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
 }
 
 export function ModelResponseFromJSON(json: any): ModelResponse {

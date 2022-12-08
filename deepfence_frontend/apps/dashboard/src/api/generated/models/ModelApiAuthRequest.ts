@@ -27,6 +27,15 @@ export interface ModelApiAuthRequest {
     api_token?: string;
 }
 
+/**
+ * Check if a given object implements the ModelApiAuthRequest interface.
+ */
+export function instanceOfModelApiAuthRequest(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ModelApiAuthRequestFromJSON(json: any): ModelApiAuthRequest {
     return ModelApiAuthRequestFromJSONTyped(json, false);
 }

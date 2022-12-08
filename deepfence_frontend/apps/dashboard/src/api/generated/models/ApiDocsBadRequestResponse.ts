@@ -39,6 +39,15 @@ export interface ApiDocsBadRequestResponse {
     success?: boolean;
 }
 
+/**
+ * Check if a given object implements the ApiDocsBadRequestResponse interface.
+ */
+export function instanceOfApiDocsBadRequestResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ApiDocsBadRequestResponseFromJSON(json: any): ApiDocsBadRequestResponse {
     return ApiDocsBadRequestResponseFromJSONTyped(json, false);
 }

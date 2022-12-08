@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ReportersConnectionSummary } from './ReportersConnectionSummary';
 import {
-    ReportersConnectionSummary,
     ReportersConnectionSummaryFromJSON,
     ReportersConnectionSummaryFromJSONTyped,
     ReportersConnectionSummaryToJSON,
@@ -68,6 +68,15 @@ export interface ReportersRenderedGraph {
      * @memberof ReportersRenderedGraph
      */
     regions?: { [key: string]: Array<string>; } | null;
+}
+
+/**
+ * Check if a given object implements the ReportersRenderedGraph interface.
+ */
+export function instanceOfReportersRenderedGraph(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
 }
 
 export function ReportersRenderedGraphFromJSON(json: any): ReportersRenderedGraph {

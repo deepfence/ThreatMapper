@@ -33,6 +33,15 @@ export interface ModelLoginRequest {
     password?: string;
 }
 
+/**
+ * Check if a given object implements the ModelLoginRequest interface.
+ */
+export function instanceOfModelLoginRequest(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ModelLoginRequestFromJSON(json: any): ModelLoginRequest {
     return ModelLoginRequestFromJSONTyped(json, false);
 }

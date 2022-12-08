@@ -147,6 +147,15 @@ export interface IngestersSecret {
     type?: string;
 }
 
+/**
+ * Check if a given object implements the IngestersSecret interface.
+ */
+export function instanceOfIngestersSecret(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function IngestersSecretFromJSON(json: any): IngestersSecret {
     return IngestersSecretFromJSONTyped(json, false);
 }

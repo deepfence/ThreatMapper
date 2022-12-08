@@ -33,6 +33,15 @@ export interface ReportersConnectionSummary {
     target?: string;
 }
 
+/**
+ * Check if a given object implements the ReportersConnectionSummary interface.
+ */
+export function instanceOfReportersConnectionSummary(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ReportersConnectionSummaryFromJSON(json: any): ReportersConnectionSummary {
     return ReportersConnectionSummaryFromJSONTyped(json, false);
 }

@@ -14,20 +14,22 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  ApiDocsBadRequestResponse,
+  ApiDocsFailureResponse,
+  ModelApiAuthRequest,
+  ModelLoginRequest,
+  ModelResponse,
+} from '../models';
 import {
-    ApiDocsBadRequestResponse,
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
-    ApiDocsFailureResponse,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelApiAuthRequest,
     ModelApiAuthRequestFromJSON,
     ModelApiAuthRequestToJSON,
-    ModelLoginRequest,
     ModelLoginRequestFromJSON,
     ModelLoginRequestToJSON,
-    ModelResponse,
     ModelResponseFromJSON,
     ModelResponseToJSON,
 } from '../models';
@@ -55,13 +57,13 @@ export interface AuthenticationApiInterface {
      * @throws {RequiredError}
      * @memberof AuthenticationApiInterface
      */
-    authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>>;
+    authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
 
     /**
      * Get auth token for API access
      * API Auth Token
      */
-    authToken(requestParameters: AuthTokenRequest, initOverrides?: RequestInit): Promise<ModelResponse>;
+    authToken(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
 
     /**
      * Login API
@@ -71,13 +73,13 @@ export interface AuthenticationApiInterface {
      * @throws {RequiredError}
      * @memberof AuthenticationApiInterface
      */
-    loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>>;
+    loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
 
     /**
      * Login API
      * Login API
      */
-    login(requestParameters: LoginRequest, initOverrides?: RequestInit): Promise<ModelResponse>;
+    login(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
 
     /**
      * Logout API
@@ -86,13 +88,13 @@ export interface AuthenticationApiInterface {
      * @throws {RequiredError}
      * @memberof AuthenticationApiInterface
      */
-    logoutRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>>;
+    logoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Logout API
      * Logout API
      */
-    logout(initOverrides?: RequestInit): Promise<void>;
+    logout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -105,7 +107,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Get auth token for API access
      * API Auth Token
      */
-    async authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>> {
+    async authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -127,7 +129,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Get auth token for API access
      * API Auth Token
      */
-    async authToken(requestParameters: AuthTokenRequest = {}, initOverrides?: RequestInit): Promise<ModelResponse> {
+    async authToken(requestParameters: AuthTokenRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
         const response = await this.authTokenRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -136,7 +138,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Login API
      * Login API
      */
-    async loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<ModelResponse>> {
+    async loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -158,7 +160,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Login API
      * Login API
      */
-    async login(requestParameters: LoginRequest = {}, initOverrides?: RequestInit): Promise<ModelResponse> {
+    async login(requestParameters: LoginRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
         const response = await this.loginRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -167,7 +169,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Logout API
      * Logout API
      */
-    async logoutRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>> {
+    async logoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -194,7 +196,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Logout API
      * Logout API
      */
-    async logout(initOverrides?: RequestInit): Promise<void> {
+    async logout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.logoutRaw(initOverrides);
     }
 

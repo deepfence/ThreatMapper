@@ -87,6 +87,15 @@ export interface ModelUser {
     role_id?: number;
 }
 
+/**
+ * Check if a given object implements the ModelUser interface.
+ */
+export function instanceOfModelUser(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ModelUserFromJSON(json: any): ModelUser {
     return ModelUserFromJSONTyped(json, false);
 }

@@ -33,6 +33,15 @@ export interface ModelResponseAccessToken {
     refresh_token?: string;
 }
 
+/**
+ * Check if a given object implements the ModelResponseAccessToken interface.
+ */
+export function instanceOfModelResponseAccessToken(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ModelResponseAccessTokenFromJSON(json: any): ModelResponseAccessToken {
     return ModelResponseAccessTokenFromJSONTyped(json, false);
 }

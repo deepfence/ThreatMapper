@@ -75,6 +75,15 @@ export interface ReportersNodeInfo {
     vulnerability_scan_id?: string;
 }
 
+/**
+ * Check if a given object implements the ReportersNodeInfo interface.
+ */
+export function instanceOfReportersNodeInfo(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ReportersNodeInfoFromJSON(json: any): ReportersNodeInfo {
     return ReportersNodeInfoFromJSONTyped(json, false);
 }

@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ControlsAction } from './ControlsAction';
 import {
-    ControlsAction,
     ControlsActionFromJSON,
     ControlsActionFromJSONTyped,
     ControlsActionToJSON,
@@ -38,6 +38,15 @@ export interface ControlsAgentControls {
      * @memberof ControlsAgentControls
      */
     commands?: Array<ControlsAction> | null;
+}
+
+/**
+ * Check if a given object implements the ControlsAgentControls interface.
+ */
+export function instanceOfControlsAgentControls(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
 }
 
 export function ControlsAgentControlsFromJSON(json: any): ControlsAgentControls {

@@ -14,14 +14,16 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  ApiDocsBadRequestResponse,
+  ApiDocsFailureResponse,
+  IngestersSecret,
+} from '../models';
 import {
-    ApiDocsBadRequestResponse,
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
-    ApiDocsFailureResponse,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    IngestersSecret,
     IngestersSecretFromJSON,
     IngestersSecretToJSON,
 } from '../models';
@@ -45,13 +47,13 @@ export interface SecretScanApiInterface {
      * @throws {RequiredError}
      * @memberof SecretScanApiInterface
      */
-    ingestSecretsRaw(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>>;
+    ingestSecretsRaw(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Ingest secrets found while scanning the agent
      * Ingest Secrets
      */
-    ingestSecrets(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit): Promise<void>;
+    ingestSecrets(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Start Secret Scan on agent
@@ -60,13 +62,13 @@ export interface SecretScanApiInterface {
      * @throws {RequiredError}
      * @memberof SecretScanApiInterface
      */
-    startSecretScanRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>>;
+    startSecretScanRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Start Secret Scan on agent
      * Start Secret Scan
      */
-    startSecretScan(initOverrides?: RequestInit): Promise<void>;
+    startSecretScan(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -79,7 +81,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
      * Ingest secrets found while scanning the agent
      * Ingest Secrets
      */
-    async ingestSecretsRaw(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>> {
+    async ingestSecretsRaw(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -99,7 +101,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersSecret.map(IngestersSecretToJSON),
+            body: requestParameters.ingestersSecret?.map(IngestersSecretToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -109,7 +111,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
      * Ingest secrets found while scanning the agent
      * Ingest Secrets
      */
-    async ingestSecrets(requestParameters: IngestSecretsRequest = {}, initOverrides?: RequestInit): Promise<void> {
+    async ingestSecrets(requestParameters: IngestSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.ingestSecretsRaw(requestParameters, initOverrides);
     }
 
@@ -117,7 +119,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
      * Start Secret Scan on agent
      * Start Secret Scan
      */
-    async startSecretScanRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>> {
+    async startSecretScanRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -144,7 +146,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
      * Start Secret Scan on agent
      * Start Secret Scan
      */
-    async startSecretScan(initOverrides?: RequestInit): Promise<void> {
+    async startSecretScan(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.startSecretScanRaw(initOverrides);
     }
 

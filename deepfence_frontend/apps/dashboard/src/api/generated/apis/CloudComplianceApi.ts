@@ -14,14 +14,16 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  ApiDocsBadRequestResponse,
+  ApiDocsFailureResponse,
+  IngestersCloudComplianceDoc,
+} from '../models';
 import {
-    ApiDocsBadRequestResponse,
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
-    ApiDocsFailureResponse,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    IngestersCloudComplianceDoc,
     IngestersCloudComplianceDocFromJSON,
     IngestersCloudComplianceDocToJSON,
 } from '../models';
@@ -45,13 +47,13 @@ export interface CloudComplianceApiInterface {
      * @throws {RequiredError}
      * @memberof CloudComplianceApiInterface
      */
-    ingestCloudCompliancesRaw(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>>;
+    ingestCloudCompliancesRaw(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Ingest Cloud compliances found while scanning cloud provider
      * Ingest Cloud Compliances
      */
-    ingestCloudCompliances(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit): Promise<void>;
+    ingestCloudCompliances(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -64,7 +66,7 @@ export class CloudComplianceApi extends runtime.BaseAPI implements CloudComplian
      * Ingest Cloud compliances found while scanning cloud provider
      * Ingest Cloud Compliances
      */
-    async ingestCloudCompliancesRaw(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit): Promise<runtime.ApiResponse<void>> {
+    async ingestCloudCompliancesRaw(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -84,7 +86,7 @@ export class CloudComplianceApi extends runtime.BaseAPI implements CloudComplian
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersCloudComplianceDoc.map(IngestersCloudComplianceDocToJSON),
+            body: requestParameters.ingestersCloudComplianceDoc?.map(IngestersCloudComplianceDocToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -94,7 +96,7 @@ export class CloudComplianceApi extends runtime.BaseAPI implements CloudComplian
      * Ingest Cloud compliances found while scanning cloud provider
      * Ingest Cloud Compliances
      */
-    async ingestCloudCompliances(requestParameters: IngestCloudCompliancesRequest = {}, initOverrides?: RequestInit): Promise<void> {
+    async ingestCloudCompliances(requestParameters: IngestCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.ingestCloudCompliancesRaw(requestParameters, initOverrides);
     }
 

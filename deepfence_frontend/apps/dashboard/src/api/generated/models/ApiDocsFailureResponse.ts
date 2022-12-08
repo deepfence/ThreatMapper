@@ -33,6 +33,15 @@ export interface ApiDocsFailureResponse {
     success?: boolean;
 }
 
+/**
+ * Check if a given object implements the ApiDocsFailureResponse interface.
+ */
+export function instanceOfApiDocsFailureResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function ApiDocsFailureResponseFromJSON(json: any): ApiDocsFailureResponse {
     return ApiDocsFailureResponseFromJSONTyped(json, false);
 }

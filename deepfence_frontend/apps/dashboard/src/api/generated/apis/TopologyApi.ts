@@ -14,17 +14,19 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  ApiDocsBadRequestResponse,
+  ApiDocsFailureResponse,
+  ControlsAgentControls,
+  ReportersRenderedGraph,
+} from '../models';
 import {
-    ApiDocsBadRequestResponse,
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
-    ApiDocsFailureResponse,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ControlsAgentControls,
     ControlsAgentControlsFromJSON,
     ControlsAgentControlsToJSON,
-    ReportersRenderedGraph,
     ReportersRenderedGraphFromJSON,
     ReportersRenderedGraphToJSON,
 } from '../models';
@@ -43,13 +45,13 @@ export interface TopologyApiInterface {
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getTopologyGraphRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<ReportersRenderedGraph>>;
+    getTopologyGraphRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReportersRenderedGraph>>;
 
     /**
      * Retrieve the full topology graph associated with the account
      * Get Topology Graph
      */
-    getTopologyGraph(initOverrides?: RequestInit): Promise<ReportersRenderedGraph>;
+    getTopologyGraph(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReportersRenderedGraph>;
 
     /**
      * Ingest data reported by one Agent
@@ -58,13 +60,13 @@ export interface TopologyApiInterface {
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    ingestAgentReportRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<ControlsAgentControls>>;
+    ingestAgentReportRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsAgentControls>>;
 
     /**
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    ingestAgentReport(initOverrides?: RequestInit): Promise<ControlsAgentControls>;
+    ingestAgentReport(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls>;
 
 }
 
@@ -77,7 +79,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Retrieve the full topology graph associated with the account
      * Get Topology Graph
      */
-    async getTopologyGraphRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<ReportersRenderedGraph>> {
+    async getTopologyGraphRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReportersRenderedGraph>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -104,7 +106,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Retrieve the full topology graph associated with the account
      * Get Topology Graph
      */
-    async getTopologyGraph(initOverrides?: RequestInit): Promise<ReportersRenderedGraph> {
+    async getTopologyGraph(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReportersRenderedGraph> {
         const response = await this.getTopologyGraphRaw(initOverrides);
         return await response.value();
     }
@@ -113,7 +115,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    async ingestAgentReportRaw(initOverrides?: RequestInit): Promise<runtime.ApiResponse<ControlsAgentControls>> {
+    async ingestAgentReportRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsAgentControls>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -140,7 +142,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    async ingestAgentReport(initOverrides?: RequestInit): Promise<ControlsAgentControls> {
+    async ingestAgentReport(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls> {
         const response = await this.ingestAgentReportRaw(initOverrides);
         return await response.value();
     }

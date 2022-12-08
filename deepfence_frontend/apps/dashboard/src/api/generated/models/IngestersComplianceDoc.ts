@@ -165,6 +165,15 @@ export interface IngestersComplianceDoc {
     type?: string;
 }
 
+/**
+ * Check if a given object implements the IngestersComplianceDoc interface.
+ */
+export function instanceOfIngestersComplianceDoc(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
 export function IngestersComplianceDocFromJSON(json: any): IngestersComplianceDoc {
     return IngestersComplianceDocFromJSONTyped(json, false);
 }
