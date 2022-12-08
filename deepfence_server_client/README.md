@@ -105,6 +105,7 @@ Class | Method | HTTP request | Description
 
  - [ApiDocsBadRequestResponse](docs/ApiDocsBadRequestResponse.md)
  - [ApiDocsFailureResponse](docs/ApiDocsFailureResponse.md)
+ - [ApiDocsRawReport](docs/ApiDocsRawReport.md)
  - [ControlsAction](docs/ControlsAction.md)
  - [ControlsAgentControls](docs/ControlsAgentControls.md)
  - [IngestersCloudComplianceDoc](docs/IngestersCloudComplianceDoc.md)

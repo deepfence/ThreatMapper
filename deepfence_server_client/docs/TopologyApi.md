@@ -72,7 +72,7 @@ Other parameters are passed through a pointer to a apiGetTopologyGraphRequest st
 
 ## IngestAgentReport
 
-> ControlsAgentControls IngestAgentReport(ctx).Execute()
+> ControlsAgentControls IngestAgentReport(ctx).ApiDocsRawReport(apiDocsRawReport).Execute()
 
 Ingest Topology Data
 
@@ -91,10 +91,11 @@ import (
 )
 
 func main() {
+    apiDocsRawReport := *openapiclient.NewApiDocsRawReport() // ApiDocsRawReport |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TopologyApi.IngestAgentReport(context.Background()).Execute()
+    resp, r, err := apiClient.TopologyApi.IngestAgentReport(context.Background()).ApiDocsRawReport(apiDocsRawReport).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `TopologyApi.IngestAgentReport``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -106,12 +107,16 @@ func main() {
 
 ### Path Parameters
 
-This endpoint does not need any parameter.
+
 
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiIngestAgentReportRequest struct via the builder pattern
 
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **apiDocsRawReport** | [**ApiDocsRawReport**](ApiDocsRawReport.md) |  | 
 
 ### Return type
 
@@ -123,7 +128,7 @@ Other parameters are passed through a pointer to a apiIngestAgentReportRequest s
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

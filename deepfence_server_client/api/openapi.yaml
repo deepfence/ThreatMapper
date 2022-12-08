@@ -309,6 +309,11 @@ paths:
     post:
       description: Ingest data reported by one Agent
       operationId: ingestAgentReport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiDocsRawReport'
       responses:
         "200":
           content:
@@ -671,17 +676,21 @@ components:
         success:
           type: boolean
       type: object
+    ApiDocsRawReport:
+      example:
+        payload: payload
+      properties:
+        payload:
+          type: string
+      type: object
     ControlsAction:
       example:
         id: 6
-        request_payload:
-        - 0
-        - 0
+        request_payload: request_payload
       properties:
         id:
           type: integer
         request_payload:
-          nullable: true
           type: string
       type: object
     ControlsActionID:
@@ -691,13 +700,9 @@ components:
         beatrate: 0
         commands:
         - id: 6
-          request_payload:
-          - 0
-          - 0
+          request_payload: request_payload
         - id: 6
-          request_payload:
-          - 0
-          - 0
+          request_payload: request_payload
       properties:
         beatrate:
           type: integer

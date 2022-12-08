@@ -42,7 +42,7 @@ func start_scan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
 	err = controls.SetAgentActions(ctx, node_id, []ctl.Action{
 		{
 			ID:             action,
-			RequestPayload: nil,
+			RequestPayload: "",
 		},
 	})
 

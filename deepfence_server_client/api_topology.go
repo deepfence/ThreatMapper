@@ -146,6 +146,12 @@ func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphReques
 type ApiIngestAgentReportRequest struct {
 	ctx context.Context
 	ApiService *TopologyApiService
+	apiDocsRawReport *ApiDocsRawReport
+}
+
+func (r ApiIngestAgentReportRequest) ApiDocsRawReport(apiDocsRawReport ApiDocsRawReport) ApiIngestAgentReportRequest {
+	r.apiDocsRawReport = &apiDocsRawReport
+	return r
 }
 
 func (r ApiIngestAgentReportRequest) Execute() (*ControlsAgentControls, *http.Response, error) {
@@ -189,7 +195,7 @@ func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequ
 	localVarFormParams := url.Values{}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -205,6 +211,8 @@ func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequ
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.apiDocsRawReport
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

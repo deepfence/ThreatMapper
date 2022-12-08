@@ -15,6 +15,7 @@ client.go
 configuration.go
 docs/ApiDocsBadRequestResponse.md
 docs/ApiDocsFailureResponse.md
+docs/ApiDocsRawReport.md
 docs/AuthenticationApi.md
 docs/CloudComplianceApi.md
 docs/CloudResourcesApi.md
@@ -47,6 +48,7 @@ go.mod
 go.sum
 model_api_docs_bad_request_response.go
 model_api_docs_failure_response.go
+model_api_docs_raw_report.go
 model_controls_action.go
 model_controls_agent_controls.go
 model_ingesters_cloud_compliance_doc.go

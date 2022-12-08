@@ -18,7 +18,7 @@ type StartComplianceScanRequest struct{}
 
 type Action struct {
 	ID             ActionID `json:"id"`
-	RequestPayload []byte   `json:"request_payload"`
+	RequestPayload string   `json:"request_payload"`
 }
 
 type AgentControls struct {

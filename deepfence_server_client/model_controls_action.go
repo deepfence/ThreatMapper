@@ -18,7 +18,7 @@ import (
 // ControlsAction struct for ControlsAction
 type ControlsAction struct {
 	Id *int32 `json:"id,omitempty"`
-	RequestPayload NullableString `json:"request_payload,omitempty"`
+	RequestPayload *string `json:"request_payload,omitempty"`
 }
 
 // NewControlsAction instantiates a new ControlsAction object
@@ -70,46 +70,36 @@ func (o *ControlsAction) SetId(v int32) {
 	o.Id = &v
 }
 
-// GetRequestPayload returns the RequestPayload field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetRequestPayload returns the RequestPayload field value if set, zero value otherwise.
 func (o *ControlsAction) GetRequestPayload() string {
-	if o == nil || isNil(o.RequestPayload.Get()) {
+	if o == nil || isNil(o.RequestPayload) {
 		var ret string
 		return ret
 	}
-	return *o.RequestPayload.Get()
+	return *o.RequestPayload
 }
 
 // GetRequestPayloadOk returns a tuple with the RequestPayload field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ControlsAction) GetRequestPayloadOk() (*string, bool) {
-	if o == nil {
+	if o == nil || isNil(o.RequestPayload) {
     return nil, false
 	}
-	return o.RequestPayload.Get(), o.RequestPayload.IsSet()
+	return o.RequestPayload, true
 }
 
 // HasRequestPayload returns a boolean if a field has been set.
 func (o *ControlsAction) HasRequestPayload() bool {
-	if o != nil && o.RequestPayload.IsSet() {
+	if o != nil && !isNil(o.RequestPayload) {
 		return true
 	}
 
 	return false
 }
 
-// SetRequestPayload gets a reference to the given NullableString and assigns it to the RequestPayload field.
+// SetRequestPayload gets a reference to the given string and assigns it to the RequestPayload field.
 func (o *ControlsAction) SetRequestPayload(v string) {
-	o.RequestPayload.Set(&v)
-}
-// SetRequestPayloadNil sets the value for RequestPayload to be an explicit nil
-func (o *ControlsAction) SetRequestPayloadNil() {
-	o.RequestPayload.Set(nil)
-}
-
-// UnsetRequestPayload ensures that no value is present for RequestPayload, not even an explicit nil
-func (o *ControlsAction) UnsetRequestPayload() {
-	o.RequestPayload.Unset()
+	o.RequestPayload = &v
 }
 
 func (o ControlsAction) MarshalJSON() ([]byte, error) {
@@ -117,8 +107,8 @@ func (o ControlsAction) MarshalJSON() ([]byte, error) {
 	if !isNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if o.RequestPayload.IsSet() {
-		toSerialize["request_payload"] = o.RequestPayload.Get()
+	if !isNil(o.RequestPayload) {
+		toSerialize["request_payload"] = o.RequestPayload
 	}
 	return json.Marshal(toSerialize)
 }

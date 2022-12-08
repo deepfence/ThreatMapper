@@ -1,13 +1,18 @@
 package apiDocs
 
 import (
+	"net/http"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
-	"net/http"
 )
+
+type RawReport struct {
+	Payload string `json:"payload"`
+}
 
 type ScanTrigger struct {
 	NodeId string `json:"node_id"`
@@ -56,7 +61,7 @@ func (d *OpenApiDocs) AddGraphOperations() {
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, nil, bearerToken, new(ingesters.ReportIngestionData), new(controls.AgentControls))
+		http.StatusOK, []string{tagTopology}, nil, bearerToken, new(RawReport), new(controls.AgentControls))
 
 	d.AddOperation("ingestCVEs", http.MethodPost, "/deepfence/ingest/cves",
 		"Ingest CVEs", "Ingest CVEs found while scanning the agent",

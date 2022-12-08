@@ -50,7 +50,7 @@ func (o *ApiDocsRawReport) GetPayload() string {
 // and a boolean to check if the value has been set.
 func (o *ApiDocsRawReport) GetPayloadOk() (*string, bool) {
 	if o == nil || isNil(o.Payload) {
-		return nil, false
+    return nil, false
 	}
 	return o.Payload, true
 }
@@ -112,3 +112,5 @@ func (v *NullableApiDocsRawReport) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
+
+
