@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type CVEIngester struct{}
@@ -41,54 +42,37 @@ type DfCveStruct struct {
 	ExploitPOC                 string   `json:"exploit_poc"`
 }
 
-func NewCVEIngester() Ingester[[]DfCveStruct] {
+func NewCVEIngester() KafkaIngester[[]DfCveStruct] {
 	return &CVEIngester{}
 }
 
-func (tc *CVEIngester) Ingest(ctx context.Context, cs []DfCveStruct) error {
-	driver, err := directory.Neo4jClient(ctx)
-	session, err := driver.Session(neo4j.AccessModeWrite)
+func (tc *CVEIngester) Ingest(
+	ctx context.Context,
+	cs []DfCveStruct,
+	ingestC chan *kgo.Record,
+) error {
 
+	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
-	defer session.Close()
 
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Cve{node_id:row.cve_id}) SET n+= row", map[string]interface{}{"batch": CVEsToMaps(cs)}); err != nil {
-		return err
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
 	}
 
-	if _, err = tx.Run("MATCH (n:Cve) MERGE (m:CveScan{node_id: n.scan_id, host_name:n.host_name, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)", map[string]interface{}{}); err != nil {
-		return err
+	for _, c := range cs {
+		cb, err := json.Marshal(c)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		} else {
+			ingestC <- &kgo.Record{
+				Topic:   "cve",
+				Value:   cb,
+				Headers: rh,
+			}
+		}
 	}
 
-	if _, err = tx.Run("MATCH (n:CveScan) MERGE (m:Node{node_id: n.host_name}) MERGE (n) -[:SCANNED]-> (m)", map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-func CVEsToMaps(ms []DfCveStruct) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	for _, v := range ms {
-		res = append(res, v.ToMap())
-	}
-	return res
-}
-
-func (c *DfCveStruct) ToMap() map[string]interface{} {
-	out, err := json.Marshal(*c)
-	if err != nil {
-		return nil
-	}
-	bb := map[string]interface{}{}
-	err = json.Unmarshal(out, &bb)
-	return bb
+	return nil
 }

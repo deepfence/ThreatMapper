@@ -82,12 +82,6 @@ func main() {
 	}()
 	log.Info("Server Started for metrics")
 
-	consumerGroupID := os.Getenv("CUSTOMER_UNIQUE_ID")
-	if consumerGroupID == "" {
-		log.Warn("empty CUSTOMER_UNIQUE_ID, setting kafka-consumer-group-id to 'default'")
-		consumerGroupID = "default"
-	}
-
 	// list of kafka topics to fetch messages
 	topics := []string{
 		cve, cveScanLogs,
@@ -115,23 +109,23 @@ func main() {
 		topicChannels[t] = make(chan []byte, 1000)
 	}
 
-	go startKafkaConsumers(ctx, kafkaBrokers, topics, consumerGroupID)
+	go startKafkaConsumers(ctx, kafkaBrokers, topics, "default")
 
 	// bulk processors
-	cveProcessor = NewBulkProcessor(commitFuncCVEs)
+	cveProcessor = NewBulkProcessor("cve", commitFuncCVEs)
 	cveProcessor.Start(ctx)
 
-	complianceProcessor = NewBulkProcessor(commitFuncCompliance)
+	complianceProcessor = NewBulkProcessor("compliance", commitFuncCompliance)
 	complianceProcessor.Start(ctx)
 
-	cloudComplianceProcessor = NewBulkProcessor(commitFuncCloudCompliance)
+	cloudComplianceProcessor = NewBulkProcessor("cloud-compliance", commitFuncCloudCompliance)
 	cloudComplianceProcessor.Start(ctx)
 
-	secretsProcessor = NewBulkProcessor(commitFuncSecrets)
+	secretsProcessor = NewBulkProcessor("secrets", commitFuncSecrets)
 	secretsProcessor.Start(ctx)
 
 	// collect consumer lag for metrics
-	go getLagByTopic(ctx, kafkaBrokers, consumerGroupID)
+	go getLagByTopic(ctx, kafkaBrokers, "default")
 
 	// wait for exit
 	// flush all data from bulk processor

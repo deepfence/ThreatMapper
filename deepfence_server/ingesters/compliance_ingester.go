@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type ComplianceIngester struct{}
@@ -37,58 +38,37 @@ type ComplianceDoc struct {
 	ComplianceNodeType    string `json:"compliance_node_type"`
 }
 
-func NewComplianceIngester() Ingester[[]ComplianceDoc] {
+func NewComplianceIngester() KafkaIngester[[]ComplianceDoc] {
 	return &ComplianceIngester{}
 }
 
-func (tc *ComplianceIngester) Ingest(ctx context.Context, cs []ComplianceDoc) error {
-	driver, err := directory.Neo4jClient(ctx)
-	session, err := driver.Session(neo4j.AccessModeWrite)
+func (tc *ComplianceIngester) Ingest(
+	ctx context.Context,
+	cs []ComplianceDoc,
+	ingestC chan *kgo.Record,
+) error {
 
+	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
-	defer session.Close()
 
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Compliance{node_id:row.node_id, test_number:row.test_number}) SET n+= row", map[string]interface{}{"batch": CompliancesToMaps(cs)}); err != nil {
-		return err
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
 	}
 
-	if _, err = tx.Run("MATCH (n:Compliance) MERGE (m:ComplianceScan{node_id: n.scan_id, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)", map[string]interface{}{}); err != nil {
-		return err
+	for _, c := range cs {
+		cb, err := json.Marshal(c)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		} else {
+			ingestC <- &kgo.Record{
+				Topic:   "compliance",
+				Value:   cb,
+				Headers: rh,
+			}
+		}
 	}
 
-	if _, err = tx.Run("MATCH (n:Compliance) MERGE (m:ComplianceScan{node_id: n.scan_id}) MERGE (l:KCluster{node_id: n.kubernetes_cluster_id}) MERGE (m) -[:SCANNED]-> (l)", map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run("MATCH (n:Node) WHERE n.kubernetes_cluster_id IS NOT NULL AND n.kubernetes_cluster_id <> '' MERGE (m:KCluster{node_id:n.kubernetes_cluster_id}) MERGE (m) -[:KHOSTS]-> (n)", map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-func CompliancesToMaps(ms []ComplianceDoc) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	for _, v := range ms {
-		res = append(res, v.ToMap())
-	}
-	return res
-}
-
-func (c *ComplianceDoc) ToMap() map[string]interface{} {
-	out, err := json.Marshal(*c)
-	if err != nil {
-		return nil
-	}
-	bb := map[string]interface{}{}
-	err = json.Unmarshal(out, &bb)
-	return bb
+	return nil
 }

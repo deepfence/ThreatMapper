@@ -36,10 +36,9 @@ type DfCveStruct struct {
 	Cve_attack_vector          string   `json:"cve_attack_vector"`
 	URLs                       []string `json:"urls"`
 	ExploitPOC                 string   `json:"exploit_poc"`
-	TenantID                   string   `json:"tenant_id"`
 }
 
-func (s *BulkProcessor) processCVE(cve []byte) {
+func (s *BulkProcessor) processCVE(tenantID string, cve []byte) {
 	var cveStruct DfCveStruct
 	err := json.Unmarshal(cve, &cveStruct)
 	if err != nil {
@@ -49,7 +48,7 @@ func (s *BulkProcessor) processCVE(cve []byte) {
 
 	// log.Info(toJSON(cveStruct))
 
-	s.Add(NewBulkRequest(cveStruct.TenantID, cveStruct.ToMap()))
+	s.Add(NewBulkRequest(tenantID, cveStruct.ToMap()))
 
 }
 

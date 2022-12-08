@@ -69,23 +69,35 @@ func startKafkaConsumers(
 	}
 }
 
+func tenantID(rh []kgo.RecordHeader) string {
+	for _, h := range rh {
+		if h.Key == "tenant_id" {
+			return string(h.Value)
+		}
+	}
+	return ""
+}
+
 func processRecord(r *kgo.Record) {
+	// get tenant id from headers
+	tenant := tenantID(r.Headers)
+
 	switch r.Topic {
 	case cve:
 		cveProcessed.Inc()
-		cveProcessor.processCVE(r.Value)
+		cveProcessor.processCVE(tenant, r.Value)
 
 	case secretScan:
 		secretProcessed.Inc()
-		secretsProcessor.processSecrets(r.Value)
+		secretsProcessor.processSecrets(tenant, r.Value)
 
 	case complianceScan:
 		complianceProcessed.Inc()
-		complianceProcessor.processCompliance(r.Value)
+		complianceProcessor.processCompliance(tenant, r.Value)
 
 	case cloudComplianceScan:
 		cloudComplianceProcessed.Inc()
-		cloudComplianceProcessor.processCloudCompliance(r.Value)
+		cloudComplianceProcessor.processCloudCompliance(tenant, r.Value)
 
 	default:
 		log.Error("Not Implemented")

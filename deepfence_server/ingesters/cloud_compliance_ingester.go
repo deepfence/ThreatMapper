@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type CloudComplianceIngester struct{}
@@ -34,50 +35,38 @@ type CloudComplianceDoc struct {
 	Severity            string `json:"severity"`
 }
 
-func NewCloudComplianceIngester() Ingester[[]ComplianceDoc] {
+func NewCloudComplianceIngester() KafkaIngester[[]ComplianceDoc] {
 	return &ComplianceIngester{}
 }
 
-func (tc *CloudComplianceIngester) Ingest(ctx context.Context, cs []CloudComplianceDoc) error {
-	driver, err := directory.Neo4jClient(ctx)
-	session, err := driver.Session(neo4j.AccessModeWrite)
+func (tc *CloudComplianceIngester) Ingest(
+	ctx context.Context,
+	cs []CloudComplianceDoc,
+	ingestC chan *kgo.Record,
+) error {
 
+	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
-	defer session.Close()
 
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:CloudCompliance{resource:row.resource, reason: row.reason}) MERGE (m:CloudResource{node_id:row.resource}) MERGE (n) -[:SCANNED]-> (m) SET n+= row", map[string]interface{}{"batch": CloudCompliancesToMaps(cs)}); err != nil {
-		return err
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
 	}
 
-	if _, err = tx.Run("MATCH (n:CloudCompliance) MERGE (m:CloudComplianceScan{node_id: n.scan_id, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)", map[string]interface{}{}); err != nil {
-		return err
+	for _, c := range cs {
+		cb, err := json.Marshal(c)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		} else {
+			ingestC <- &kgo.Record{
+				Topic:   "cloud-compliance-scan",
+				Value:   cb,
+				Headers: rh,
+			}
+		}
 	}
 
-	return tx.Commit()
-}
+	return nil
 
-func CloudCompliancesToMaps(ms []CloudComplianceDoc) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	for _, v := range ms {
-		res = append(res, v.ToMap())
-	}
-	return res
-}
-
-func (c *CloudComplianceDoc) ToMap() map[string]interface{} {
-	out, err := json.Marshal(*c)
-	if err != nil {
-		return nil
-	}
-	bb := map[string]interface{}{}
-	err = json.Unmarshal(out, &bb)
-	return bb
 }

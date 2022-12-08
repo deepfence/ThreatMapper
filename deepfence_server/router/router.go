@@ -1,6 +1,9 @@
 package router
 
 import (
+	"os"
+	"strings"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -10,11 +13,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
-	"os"
-	"strings"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
+func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestChan chan *kgo.Record) error {
 	// JWT
 	tokenAuth := getTokenAuth()
 
@@ -32,6 +34,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 		OpenApiDocs:    openApiDocs,
 		SaasDeployment: IsSaasDeployment(),
 		Validator:      validator.New(),
+		IngestChan:     ingestChan,
 	}
 
 	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)

@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type BulkRequest struct {
@@ -19,6 +22,7 @@ func NewBulkRequest(namespace string, data map[string]interface{}) BulkRequest {
 }
 
 type BulkProcessor struct {
+	name          string
 	bulkActions   int
 	numWorkers    int
 	requestsC     chan BulkRequest
@@ -50,8 +54,9 @@ func (s *BulkProcessor) FlushInterval(interval time.Duration) *BulkProcessor {
 	return s
 }
 
-func NewBulkProcessor(fn commitFn) *BulkProcessor {
+func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
 	return &BulkProcessor{
+		name:          name,
 		commitFn:      fn,
 		numWorkers:    2,
 		bulkActions:   100,
@@ -62,7 +67,7 @@ func NewBulkProcessor(fn commitFn) *BulkProcessor {
 
 func (p *BulkProcessor) Start(ctx context.Context) error {
 
-	log.Info("start bulk processor")
+	log.Infof("start bulk processor %s", p.name)
 	// Must have at least one worker.
 	if p.numWorkers < 1 {
 		p.numWorkers = 1
@@ -72,7 +77,8 @@ func (p *BulkProcessor) Start(ctx context.Context) error {
 	p.workers = make([]*bulkWorker, p.numWorkers)
 	for i := 0; i < p.numWorkers; i++ {
 		p.workerWg.Add(1)
-		p.workers[i] = newBulkWorker(p, i)
+		p.workers[i] = newBulkWorker(p, i,
+			logrus.WithField("worker", fmt.Sprintf("%s.%d", p.name, i)))
 		go p.workers[i].work(ctx)
 	}
 
@@ -135,9 +141,10 @@ type bulkWorker struct {
 	buffer      map[string][]map[string]interface{}
 	flushC      chan struct{}
 	flushAckC   chan struct{}
+	log         *logrus.Entry
 }
 
-func newBulkWorker(p *BulkProcessor, i int) *bulkWorker {
+func newBulkWorker(p *BulkProcessor, i int, logger *logrus.Entry) *bulkWorker {
 	return &bulkWorker{
 		p:           p,
 		i:           i,
@@ -145,6 +152,7 @@ func newBulkWorker(p *BulkProcessor, i int) *bulkWorker {
 		buffer:      make(map[string][]map[string]interface{}),
 		flushC:      make(chan struct{}),
 		flushAckC:   make(chan struct{}),
+		log:         logger,
 	}
 }
 
@@ -155,7 +163,7 @@ func (w *bulkWorker) work(ctx context.Context) {
 		close(w.flushC)
 	}()
 
-	log.WithField("worker", w.i).Info("started")
+	w.log.Info("started")
 
 	var stop bool
 	for !stop {
@@ -165,9 +173,9 @@ func (w *bulkWorker) work(ctx context.Context) {
 				// Received a new request
 				w.buffer[req.NameSpace] = append(w.buffer[req.NameSpace], req.Data)
 				if w.commitRequired() {
-					log.WithField("worker", w.i).Info("buffer full commit all")
+					w.log.Info("buffer full commit all")
 					if err := w.commit(ctx); err != nil {
-						log.WithField("worker", w.i).Error(err)
+						w.log.Error(err)
 					}
 				}
 
@@ -175,9 +183,9 @@ func (w *bulkWorker) work(ctx context.Context) {
 				// Channel closed: Stop.
 				stop = true
 				if len(w.buffer) > 0 {
-					log.WithField("worker", w.i).Info("exit called commit all")
+					w.log.Info("exit called commit all")
 					if err := w.commit(ctx); err != nil {
-						log.WithField("worker", w.i).Error(err)
+						w.log.Error(err)
 					}
 				}
 			}
@@ -185,9 +193,9 @@ func (w *bulkWorker) work(ctx context.Context) {
 		case <-w.flushC:
 			// Commit outstanding requests
 			if len(w.buffer) > 0 {
-				log.WithField("worker", w.i).Info("flush called commit all")
+				w.log.Info("flush called commit all")
 				if err := w.commit(ctx); err != nil {
-					log.WithField("worker", w.i).Error(err)
+					w.log.Error(err)
 				}
 			}
 			w.flushAckC <- struct{}{}
@@ -204,9 +212,9 @@ func (w *bulkWorker) commitRequired() bool {
 
 func (w *bulkWorker) commit(ctx context.Context) error {
 	for k, v := range w.buffer {
-		log.WithField("worker", w.i).Infof("namespace=%s #data=%d", k, len(v))
+		w.log.Infof("namespace=%s #data=%d", k, len(v))
 		if err := w.p.commitFn(k, v); err != nil {
-			log.WithField("worker", w.i).Error(err)
+			w.log.Error(err)
 		}
 	}
 	// reset buffer after commit

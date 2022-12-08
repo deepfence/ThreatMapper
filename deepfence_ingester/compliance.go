@@ -32,10 +32,9 @@ type ComplianceDoc struct {
 	ComplianceCheckType   string `json:"compliance_check_type"`
 	ScanId                string `json:"scan_id"`
 	ComplianceNodeType    string `json:"compliance_node_type"`
-	TenantID              string `json:"tenant_id"`
 }
 
-func (s *BulkProcessor) processCompliance(compliance []byte) {
+func (s *BulkProcessor) processCompliance(tenantID string, compliance []byte) {
 	var complianceStruct ComplianceDoc
 	err := json.Unmarshal(compliance, &complianceStruct)
 	if err != nil {
@@ -45,7 +44,7 @@ func (s *BulkProcessor) processCompliance(compliance []byte) {
 
 	// log.Info(toJSON(complianceStruct))
 
-	s.Add(NewBulkRequest(complianceStruct.TenantID, complianceStruct.ToMap()))
+	s.Add(NewBulkRequest(tenantID, complianceStruct.ToMap()))
 
 }
 

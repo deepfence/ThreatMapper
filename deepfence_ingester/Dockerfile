@@ -1,12 +1,14 @@
 FROM golang:1.19-alpine3.16 AS build
 
+
+RUN apk add --no-cache git make
+
 ADD deepfence_server /go/deepfence_server/
 ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
 ADD deepfence_server_client /go/deepfence_server_client/
 ADD deepfence_ingester /go/deepfence_ingester/
 WORKDIR /go/deepfence_ingester/
-RUN apk add --no-cache git make
 RUN make
 
 FROM alpine:3.16

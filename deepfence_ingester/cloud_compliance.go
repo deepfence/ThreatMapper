@@ -29,10 +29,9 @@ type CloudComplianceDoc struct {
 	ControlID           string `json:"control_id"`
 	Description         string `json:"description"`
 	Severity            string `json:"severity"`
-	TenantID            string `json:"tenant_id"`
 }
 
-func (s *BulkProcessor) processCloudCompliance(compliance []byte) {
+func (s *BulkProcessor) processCloudCompliance(tenantID string, compliance []byte) {
 	var complianceStruct CloudComplianceDoc
 	err := json.Unmarshal(compliance, &complianceStruct)
 	if err != nil {
@@ -42,7 +41,7 @@ func (s *BulkProcessor) processCloudCompliance(compliance []byte) {
 
 	// log.Info(toJSON(complianceStruct))
 
-	s.Add(NewBulkRequest(complianceStruct.TenantID, complianceStruct.ToMap()))
+	s.Add(NewBulkRequest(tenantID, complianceStruct.ToMap()))
 
 }
 

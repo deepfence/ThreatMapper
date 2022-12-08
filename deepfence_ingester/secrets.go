@@ -30,7 +30,6 @@ type Secret struct {
 	ControlID           string `json:"control_id"`
 	Description         string `json:"description"`
 	Severity            string `json:"severity"`
-	TenantID            string `json:"tenant_id"`
 }
 
 type SecretStruct struct {
@@ -39,7 +38,7 @@ type SecretStruct struct {
 	Match    map[string]interface{} `json:"Match"`
 }
 
-func (s *BulkProcessor) processSecrets(secret []byte) {
+func (s *BulkProcessor) processSecrets(tenantID string, secret []byte) {
 	var data Secret
 	err := json.Unmarshal(secret, &data)
 	if err != nil {
@@ -49,7 +48,7 @@ func (s *BulkProcessor) processSecrets(secret []byte) {
 
 	// log.Info(toJSON(complianceStruct))
 
-	s.Add(NewBulkRequest(data.TenantID, data.ToMap()))
+	s.Add(NewBulkRequest(tenantID, data.ToMap()))
 
 }
 

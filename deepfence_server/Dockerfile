@@ -1,5 +1,8 @@
 FROM golang:1.19-alpine3.16 AS build
 
+
+RUN apk add --no-cache git build-base libpcap-dev libcap-dev
+
 ADD deepfence_server /go/deepfence_server/
 ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
@@ -7,7 +10,6 @@ ADD deepfence_server_client /go/deepfence_server_client/
 RUN mkdir -p /go/deepfence_agent/tools/apache
 ADD deepfence_agent/tools/apache /go/deepfence_agent/tools/apache
 WORKDIR /go/deepfence_server/
-RUN apk add --no-cache git build-base libpcap-dev libcap-dev
 RUN make
 
 FROM alpine:3.16
@@ -28,7 +30,8 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     NEO4J_USER=neo4j \
     NEO4J_PASSWORD=password \
     HTTP_LISTEN_ENDPOINT=8080 \
-    SAAS_DEPLOYMENT=false
+    SAAS_DEPLOYMENT=false \
+    KAFKA_BROKERS=deepfence-kafka-broker:9092
 
 ADD deepfence_server/auth /auth
 ADD deepfence_utils/postgresql /usr/local/postgresql-migrate

@@ -105,6 +105,7 @@ func getLagByTopic(ctx context.Context, kafkaBrokers string, groupID string) {
 		select {
 		case <-ctx.Done():
 			log.Info("stop collecting consumer log")
+			return
 		case <-ticker.C:
 			described, err := admin.DescribeGroups(ctx, groupID)
 			if err != nil {

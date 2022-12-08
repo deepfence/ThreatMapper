@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
+	"time"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/twmb/franz-go/pkg/kgo"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 
@@ -19,6 +23,7 @@ import (
 var (
 	verbosity        = flag.String("verbose", "info", "log level")
 	serveOpenapiDocs = flag.Bool("api-docs", true, "serve openapi documentation")
+	kafkaBrokers     string
 )
 
 type Config struct {
@@ -30,13 +35,15 @@ func main() {
 
 	config, err := initialize()
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		log.Fatal().Msg(err.Error())
 	}
 	err = initializeDatabase()
 	if err != nil {
-		log.Error().Msg(err.Error())
-		return
+		log.Fatal().Msg(err.Error())
+	}
+	err = initializeKafka()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
 	}
 
 	log.Info().Msg("starting deepfence-server")
@@ -45,7 +52,12 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	err = router.SetupRoutes(r, config.HttpListenEndpoint, *serveOpenapiDocs)
+	ingestChan := make(chan *kgo.Record, 10000)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go startKafkaProducer(ctx, kafkaBrokers, ingestChan)
+
+	err = router.SetupRoutes(r, config.HttpListenEndpoint, *serveOpenapiDocs, ingestChan)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
@@ -70,6 +82,7 @@ func main() {
 	}
 
 	<-idleConnectionsClosed
+	cancel()
 
 	log.Info().Msg("deepfence-server stopped")
 }
@@ -113,4 +126,87 @@ func initializeDatabase() error {
 		}
 	}
 	return nil
+}
+
+func initializeKafka() error {
+	kafkaBrokers = os.Getenv("KAFKA_BROKERS")
+	if kafkaBrokers == "" {
+		kafkaBrokers = "deepfence-kafka-broker:9092"
+	}
+
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
+		kgo.WithLogger(kgoLogger),
+	}
+
+	kc, err := kgo.NewClient(opts...)
+	if err != nil {
+		return err
+	}
+	defer kc.Close()
+
+	if err := kc.Ping(context.Background()); err != nil {
+		return err
+	}
+
+	log.Info().Msg("connection to kafka brokers successful")
+
+	return nil
+}
+
+var kgoLogger kgo.Logger = kgo.BasicLogger(
+	os.Stdout,
+	kgo.LogLevelInfo,
+	func() string { return "[" + getCurrentTime() + "]" + " " },
+)
+
+func getCurrentTime() string {
+	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
+}
+
+func startKafkaProducer(
+	ctx context.Context,
+	brokers string,
+	ingestChan chan *kgo.Record,
+) {
+
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(strings.Split(brokers, ",")...),
+		kgo.WithLogger(kgoLogger),
+	}
+
+	kClient, err := kgo.NewClient(opts...)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	defer kClient.Close()
+
+	if err := kClient.Ping(ctx); err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info().Msg("stop producing to kafka")
+			if err := kClient.Flush(context.Background()); err != nil {
+				log.Error().Msg(err.Error())
+			}
+			return
+
+		case record := <-ingestChan:
+			kClient.Produce(
+				ctx,
+				record,
+				func(r *kgo.Record, err error) {
+					if err != nil {
+						log.Error().Msgf(
+							"failed to produce record %s record: %v",
+							err, record,
+						)
+					}
+				},
+			)
+		}
+	}
 }
