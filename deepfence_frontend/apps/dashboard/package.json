@@ -12,7 +12,9 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "playwright": "playwright test",
-    "playwright:debug": "playwright test --debug"
+    "playwright:debug": "playwright test --debug",
+    "codegen": "pnpm run codegen:clean && openapi-generator-cli generate",
+    "codegen:clean": "rm -rf ./src/api/generated"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
@@ -25,6 +27,7 @@
     "ui-components": "workspace:*"
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.5.2",
     "@playwright/test": "^1.28.1",
     "@testing-library/react": "^13.4.0",
     "@types/react": "^18.0.24",
@@ -46,6 +49,7 @@
     "playwright": "1.28.1",
     "postcss": "^8.4.19",
     "resize-observer-polyfill": "^1.5.1",
+    "rollup-plugin-visualizer": "^5.8.3",
     "tailwind-preset": "workspace:*",
     "tailwindcss": "^3.2.4",
     "typescript": "^4.6.4",

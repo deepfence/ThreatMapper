@@ -26,3 +26,9 @@ dist-ssr
 /playwright-report/
 /e2e/reports/*
 /playwright/.cache/
+
+*.env
+!.env.sample
+
+# rollup bundle analysis file
+stats.html
