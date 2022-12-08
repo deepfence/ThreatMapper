@@ -58,19 +58,6 @@ func createMissingTopics(topics []string, partitions int32, replicas int16, rete
 	adminClient := kadm.NewClient(kClient)
 	defer adminClient.Close()
 
-	// bm, err := adminClient.BrokerMetadata(context.Background())
-	// if err != nil {
-	// 	log.Error(err)
-	// }
-
-	// partitions = int32(1)
-	// replication = func() int16 {
-	// 	if len(bm.Brokers.NodeIDs()) >= 3 {
-	// 		return 3
-	// 	}
-	// 	return 1
-	// }()
-
 	topicConfig := map[string]*string{
 		"retention.ms": kadm.StringPtr(retention_ms),
 	}

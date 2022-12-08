@@ -6,6 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -67,7 +68,7 @@ func (tc *CVEIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   "cve",
+				Topic:   utils.CVE_SCAN,
 				Value:   cb,
 				Headers: rh,
 			}

@@ -78,7 +78,7 @@ func (p *BulkProcessor) Start(ctx context.Context) error {
 	for i := 0; i < p.numWorkers; i++ {
 		p.workerWg.Add(1)
 		p.workers[i] = newBulkWorker(p, i,
-			logrus.WithField("worker", fmt.Sprintf("%s.%d", p.name, i)))
+			log.WithField("worker", fmt.Sprintf("%s.%d", p.name, i)))
 		go p.workers[i].work(ctx)
 	}
 

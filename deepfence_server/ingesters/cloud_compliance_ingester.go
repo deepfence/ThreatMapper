@@ -6,6 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -60,7 +61,7 @@ func (tc *CloudComplianceIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   "cloud-compliance-scan",
+				Topic:   utils.CLOUD_COMPLIANCE_SCAN,
 				Value:   cb,
 				Headers: rh,
 			}

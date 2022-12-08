@@ -52,12 +52,12 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	ingestChan := make(chan *kgo.Record, 10000)
+	ingestC := make(chan *kgo.Record, 10000)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	go startKafkaProducer(ctx, kafkaBrokers, ingestChan)
+	go startKafkaProducer(ctx, kafkaBrokers, ingestC)
 
-	err = router.SetupRoutes(r, config.HttpListenEndpoint, *serveOpenapiDocs, ingestChan)
+	err = router.SetupRoutes(r, config.HttpListenEndpoint, *serveOpenapiDocs, ingestC)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return

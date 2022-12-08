@@ -16,7 +16,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestChan chan *kgo.Record) error {
+func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC chan *kgo.Record) error {
 	// JWT
 	tokenAuth := getTokenAuth()
 
@@ -34,7 +34,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestCha
 		OpenApiDocs:    openApiDocs,
 		SaasDeployment: IsSaasDeployment(),
 		Validator:      validator.New(),
-		IngestChan:     ingestChan,
+		IngestChan:     ingestC,
 	}
 
 	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)
@@ -107,11 +107,12 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestCha
 			openApiDocs.AddIngestersOperations()
 			r.Route("/ingest", func(r chi.Router) {
 				r.Post("/report", dfHandler.IngestAgentReport)
+				r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
+				// below api's write to kafka
 				r.Post("/cves", dfHandler.IngestCVEReportHandler)
 				r.Post("/secrets", dfHandler.IngestSecretReportHandler)
 				r.Post("/compliance", dfHandler.IngestComplianceReportHandler)
 				r.Post("/cloud-compliance", dfHandler.IngestCloudComplianceReportHandler)
-				r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
 			})
 
 			openApiDocs.AddScansOperations()

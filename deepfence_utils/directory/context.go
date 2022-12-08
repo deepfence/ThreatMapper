@@ -17,6 +17,12 @@ func NewGlobalContext() context.Context {
 	return ctx
 }
 
+func NewContextWithNameSpace(ns NamespaceID) context.Context {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, NAMESPACE_KEY, ns)
+	return ctx
+}
+
 func ExtractNamespace(ctx context.Context) (NamespaceID, error) {
 	namespace := ctx.Value(NAMESPACE_KEY)
 	if namespace == nil {

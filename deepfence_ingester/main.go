@@ -11,6 +11,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	logrus "github.com/sirupsen/logrus"
@@ -24,14 +25,6 @@ var (
 	cloudComplianceProcessor *BulkProcessor
 	secretsProcessor         *BulkProcessor
 )
-
-// func funcName(fname string) string {
-// 	if strings.Contains(fname, ".") {
-// 		s := strings.Split(fname, ".")
-// 		return s[len(s)-1]
-// 	}
-// 	return fname
-// }
 
 func init() {
 
@@ -50,7 +43,6 @@ func init() {
 		FullTimestamp: true,
 		PadLevelText:  true,
 		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-			// return funcName(f.Func.Name()) + "()", " " + path.Base(f.File) + ":" + strconv.Itoa(f.Line)
 			return "", " " + path.Base(f.File) + ":" + strconv.Itoa(f.Line)
 		},
 	})
@@ -83,45 +75,31 @@ func main() {
 	log.Info("Server Started for metrics")
 
 	// list of kafka topics to fetch messages
-	topics := []string{
-		cve, cveScanLogs,
-		secretScan, secretScanLogs,
-		malwareScan, malwareScanLogs,
-		sbomArtifacts, sbomCVEScan,
-		cloudComplianceScan, cloudComplianceScanLogs,
-		complianceScan, complianceScanLogs,
-		cloudTrailAlerts,
-	}
-	log.Info("topics list: ", topics)
+	log.Info("topics list: ", utils.Topics)
 
 	//create if any topics is missing
 	partitions := GetEnvIntWithDefault("KAFKA_TOPIC_PARTITIONS", 1)
 	replicas := GetEnvIntWithDefault("KAFKA_TOPIC_REPLICAS", 1)
 	retention_ms := GetEnvStringWithDefault("KAFKA_TOPIC_RETENTION_MS", "86400000")
-	err := createMissingTopics(topics, int32(partitions), int16(replicas), retention_ms)
+	err := createMissingTopics(utils.Topics, int32(partitions), int16(replicas), retention_ms)
 	if err != nil {
 		log.Error(err)
 	}
 
-	// channels to pass message between report processor and consumer
-	topicChannels := make(map[string](chan []byte))
-	for _, t := range topics {
-		topicChannels[t] = make(chan []byte, 1000)
-	}
-
-	go startKafkaConsumers(ctx, kafkaBrokers, topics, "default")
+	// start kafka consumers for all given topics
+	go startKafkaConsumers(ctx, kafkaBrokers, utils.Topics, "default")
 
 	// bulk processors
-	cveProcessor = NewBulkProcessor("cve", commitFuncCVEs)
+	cveProcessor = NewBulkProcessor(utils.CVE_SCAN, commitFuncCVEs)
 	cveProcessor.Start(ctx)
 
-	complianceProcessor = NewBulkProcessor("compliance", commitFuncCompliance)
+	complianceProcessor = NewBulkProcessor(utils.COMPLIANCE_SCAN, commitFuncCompliance)
 	complianceProcessor.Start(ctx)
 
-	cloudComplianceProcessor = NewBulkProcessor("cloud-compliance", commitFuncCloudCompliance)
+	cloudComplianceProcessor = NewBulkProcessor(utils.CLOUD_COMPLIANCE_SCAN, commitFuncCloudCompliance)
 	cloudComplianceProcessor.Start(ctx)
 
-	secretsProcessor = NewBulkProcessor("secrets", commitFuncSecrets)
+	secretsProcessor = NewBulkProcessor(utils.SECRET_SCAN, commitFuncSecrets)
 	secretsProcessor.Start(ctx)
 
 	// collect consumer lag for metrics

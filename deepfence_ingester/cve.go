@@ -53,8 +53,7 @@ func (s *BulkProcessor) processCVE(tenantID string, cve []byte) {
 }
 
 func commitFuncCVEs(ns string, data []map[string]interface{}) error {
-	ctx := directory.NewAccountContext()
-
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
