@@ -1,6 +1,5 @@
 FROM golang:1.19-alpine3.16 AS build
 
-
 RUN apk add --no-cache git make
 
 ADD deepfence_server /go/deepfence_server/
@@ -14,6 +13,10 @@ RUN make
 FROM alpine:3.16
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
+
+RUN apk add --no-cache kafkacat
+
+COPY deepfence_ingester/entrypoint.sh /entrypoint.sh
 
 ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
     POSTGRES_USER_DB_PORT=5432 \
@@ -37,4 +40,5 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
 
 COPY --from=build /go/deepfence_ingester/deepfence_ingester /usr/local/bin/deepfence_ingester
 EXPOSE 8090
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/local/bin/deepfence_ingester"]
