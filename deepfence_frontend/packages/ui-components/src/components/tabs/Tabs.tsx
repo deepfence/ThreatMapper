@@ -47,11 +47,11 @@ const Tabs = (props: TabProps) => {
               data-testid={`tab-item-${_id}`}
               className={cx(
                 'group',
-                'focus:outline-none py-4 px-3',
+                'outline-none pb-4 px-3',
                 'radix-state-active:border-b radix-state-active:-mb-px radix-state-active:text-blue-600 radix-state-active:border-blue-600',
                 'dark:radix-state-active:border-blue-600',
-                'focus:radix-state-active:ring-1 focus:radix-state-active:ring-blue-200',
-                'dark:focus:radix-state-active:ring-blue-800',
+                'focus-visible:radix-state-active:ring-1 focus-visible:radix-state-active:ring-blue-200',
+                'dark:focus-visible:radix-state-active:ring-blue-800',
               )}
             >
               {icon && (
@@ -59,7 +59,7 @@ const Tabs = (props: TabProps) => {
                   {icon}
                 </IconContext.Provider>
               )}
-              <LabelPrimitive.Label htmlFor={_id} className={cx(`${classes.size[size]}`)}>
+              <LabelPrimitive.Label htmlFor={_id} className={cx(`${classes.size[size]} cursor-pointer leading-[125%]`)}>
                 {label}
               </LabelPrimitive.Label>
             </TabsPrimitive.Trigger>

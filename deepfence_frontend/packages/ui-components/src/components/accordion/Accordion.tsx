@@ -83,7 +83,7 @@ export const AccordionContent = React.forwardRef<
 >(({ children, className, ...props }, forwardedRef) => (
   <AccordionPrimitive.Content
     className={cx(
-      'bg-white dark:bg-gray-900 p-2 w-full text-gray-500 dark:text-gray-400 leading-[150%]',
+      'bg-white dark:bg-gray-900 w-full text-gray-500 dark:text-gray-400 leading-[150%]',
       'radix-state-open:border-t dark:radix-state-open:border-gray-700 dark:radix-state-open:border-opacity-50', // border top of its content
       'radix-state-open:animate-accordion-open',
       'radix-state-closed:animate-accordion-closed',

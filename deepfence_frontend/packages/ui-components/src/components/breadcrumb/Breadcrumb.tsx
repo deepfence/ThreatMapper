@@ -17,6 +17,7 @@ type BreadcrumbLinkType = {
 
 type BreadCrumbProps = {
   children: React.ReactNode | React.ReactNode[];
+  outline?: boolean;
   separator?: React.ReactNode;
 };
 
@@ -31,7 +32,7 @@ export const BreadcrumbLink = React.forwardRef<
       className={twMerge(
         cx(
           `inline-flex items-center leading-[21px] item-center`,
-          'focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-800',
+          'outline-none focus-visible:outline-none focus:ring-1 focus-visible:ring-blue-600 dark:focus-visible:ring-blue-800',
           `text-gray-700 dark:text-gray-400 ${Typography.size.sm}`,
           {
             [`text-gray-500 dark:text-gray-300`]: isLast,
@@ -64,7 +65,7 @@ export const BreadcrumbLink = React.forwardRef<
   );
 });
 
-export const Breadcrumb = ({ children, separator }: BreadCrumbProps) => {
+export const Breadcrumb = ({ children, separator, outline = false }: BreadCrumbProps) => {
   const childrenEl = React.Children.map<React.ReactNode, React.ReactNode>(
     children,
     function (child: React.ReactNode, index) {
@@ -88,5 +89,7 @@ export const Breadcrumb = ({ children, separator }: BreadCrumbProps) => {
       return elementChild;
     },
   );
-  return <div className="flex items-center">{childrenEl}</div>;
+  return <div className={cx('flex w-fit items-center py-2 px-5', {
+    'outline-none border border-gray-200 dark:border-gray-700 rounded-lg': outline
+  })}>{childrenEl}</div>;
 };
