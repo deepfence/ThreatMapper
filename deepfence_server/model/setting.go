@@ -46,30 +46,28 @@ func (s *Setting) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*
 
 func GetJwtSecretSetting(ctx context.Context, pgClient *postgresqlDb.Queries) ([]byte, error) {
 	setting, err := pgClient.GetSetting(ctx, JwtSecretSettingKey)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		s := Setting{
+			Key: JwtSecretSettingKey,
+			Value: &SettingValue{
+				Label:       "JWT Secret",
+				Value:       utils.NewUUIDString(),
+				Description: "Used for encrypting JWT",
+			},
+			IsVisibleOnUi: false,
+		}
+		_, err := s.Create(ctx, pgClient)
+		if err != nil {
+			return nil, err
+		}
+		return []byte(fmt.Sprintf("%v", s.Value.Value)), nil
+	} else if err != nil {
 		return nil, err
 	}
 	var sVal *SettingValue
 	err = json.Unmarshal(setting.Value, &sVal)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			s := Setting{
-				Key: JwtSecretSettingKey,
-				Value: &SettingValue{
-					Label:       "JWT Secret",
-					Value:       utils.NewUUIDString(),
-					Description: "Used for encrypting JWT",
-				},
-				IsVisibleOnUi: false,
-			}
-			_, err := s.Create(ctx, pgClient)
-			if err != nil {
-				return nil, err
-			}
-			return []byte(fmt.Sprintf("%v", s.Value.Value)), nil
-		} else {
-			return nil, err
-		}
+		return nil, err
 	}
 	return []byte(fmt.Sprintf("%v", sVal.Value)), nil
 }

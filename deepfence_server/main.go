@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"flag"
 	"net/http"
 	"os"
@@ -111,7 +113,7 @@ func initializeDatabase() ([]byte, error) {
 		return nil, err
 	}
 	roles, err := pgClient.GetRoles(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	if len(roles) == 0 {

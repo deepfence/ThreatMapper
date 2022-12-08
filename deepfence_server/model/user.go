@@ -2,7 +2,9 @@ package model
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
@@ -105,7 +107,7 @@ func (c *Company) CreateDefaultUserGroup(ctx context.Context, pgClient *postgres
 
 func (c *Company) GetDefaultUserGroupMap(ctx context.Context, pgClient *postgresqlDb.Queries) (map[string]string, error) {
 	groups, err := pgClient.GetUserGroups(ctx, c.ID)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	if len(groups) > 0 {
@@ -120,7 +122,7 @@ func (c *Company) GetDefaultUserGroupMap(ctx context.Context, pgClient *postgres
 
 func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.UserGroup, error) {
 	groups, err := pgClient.GetUserGroups(ctx, c.ID)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	if len(groups) > 0 {
