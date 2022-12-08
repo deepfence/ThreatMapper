@@ -91,3 +91,18 @@ packagescanner:
 .PHONY: ingester
 ingester:
 	docker build -f ./deepfence_ingester/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG) .
+
+.PHONY: openapi
+openapi:
+	docker run --rm \
+	-v $(PWD):/local openapitools/openapi-generator-cli generate \
+	-i /local/openapi.json \
+	-g go \
+	-o /local/deepfence_server_client \
+	-p isGoSubmodule=true \
+	-p packageName=deepfence_server_client \
+	--git-repo-id ThreatMapper \
+	--git-user-id deepfence && \
+	cd $(PWD)/deepfence_server_client && \
+	go mod tidy -v && \
+	cd - 

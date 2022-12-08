@@ -1,4 +1,4 @@
-# Go API client for openapi
+# Go API client for deepfence_server_client
 
 Deepfence Runtime API provides programmatic control over Deepfence microservice securing your container, kubernetes and cloud deployments. The API abstracts away underlying infrastructure details like cloud provider, 
 container distros, container orchestrator and type of deployment. This is one uniform API to manage and control security alerts, policies and response to alerts for microservices running anywhere i.e. managed pure greenfield container deployments or a mix of containers, VMs and serverless paradigms like AWS Fargate.
@@ -17,14 +17,13 @@ Install the following dependencies:
 
 ```shell
 go get github.com/stretchr/testify/assert
-go get golang.org/x/oauth2
 go get golang.org/x/net/context
 ```
 
 Put the package under your project folder and add the following in import:
 
 ```golang
-import openapi "github.com/GIT_USER_ID/GIT_REPO_ID"
+import deepfence_server_client "github.com/deepfence/ThreatMapper/deepfence_server_client"
 ```
 
 To use a proxy, set the environment variable `HTTP_PROXY`:
@@ -42,7 +41,7 @@ Default configuration comes with `Servers` field that contains server objects as
 For using other server than the one defined on index 0 set context value `sw.ContextServerIndex` of type `int`.
 
 ```golang
-ctx := context.WithValue(context.Background(), openapi.ContextServerIndex, 1)
+ctx := context.WithValue(context.Background(), deepfence_server_client.ContextServerIndex, 1)
 ```
 
 ### Templated Server URL
@@ -50,7 +49,7 @@ ctx := context.WithValue(context.Background(), openapi.ContextServerIndex, 1)
 Templated server URL is formatted using default variables from configuration or from context value `sw.ContextServerVariables` of type `map[string]string`.
 
 ```golang
-ctx := context.WithValue(context.Background(), openapi.ContextServerVariables, map[string]string{
+ctx := context.WithValue(context.Background(), deepfence_server_client.ContextServerVariables, map[string]string{
 	"basePath": "v2",
 })
 ```
@@ -64,10 +63,10 @@ An operation is uniquely identified by `"{classname}Service.{nickname}"` string.
 Similar rules for overriding default operation server index and variables applies by using `sw.ContextOperationServerIndices` and `sw.ContextOperationServerVariables` context maps.
 
 ```golang
-ctx := context.WithValue(context.Background(), openapi.ContextOperationServerIndices, map[string]int{
+ctx := context.WithValue(context.Background(), deepfence_server_client.ContextOperationServerIndices, map[string]int{
 	"{classname}Service.{nickname}": 2,
 })
-ctx = context.WithValue(context.Background(), openapi.ContextOperationServerVariables, map[string]map[string]string{
+ctx = context.WithValue(context.Background(), deepfence_server_client.ContextOperationServerVariables, map[string]map[string]string{
 	"{classname}Service.{nickname}": {
 		"port": "8443",
 	},

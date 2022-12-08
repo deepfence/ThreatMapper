@@ -1,7 +1,5 @@
-module github.com/GIT_USER_ID/GIT_REPO_ID
+module github.com/deepfence/ThreatMapper/deepfence_server_client
 
 go 1.13
 
-require (
-	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558
-)
+require github.com/stretchr/testify v1.8.1
