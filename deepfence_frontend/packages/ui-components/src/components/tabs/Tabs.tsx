@@ -59,7 +59,10 @@ const Tabs = (props: TabProps) => {
                   {icon}
                 </IconContext.Provider>
               )}
-              <LabelPrimitive.Label htmlFor={_id} className={cx(`${classes.size[size]} cursor-pointer leading-[125%]`)}>
+              <LabelPrimitive.Label
+                htmlFor={_id}
+                className={cx(`${classes.size[size]} cursor-pointer leading-[125%]`)}
+              >
                 {label}
               </LabelPrimitive.Label>
             </TabsPrimitive.Trigger>

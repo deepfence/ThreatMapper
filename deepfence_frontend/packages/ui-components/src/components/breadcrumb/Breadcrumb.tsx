@@ -89,7 +89,13 @@ export const Breadcrumb = ({ children, separator, outline = false }: BreadCrumbP
       return elementChild;
     },
   );
-  return <div className={cx('flex w-fit items-center py-2 px-5', {
-    'outline-none border border-gray-200 dark:border-gray-700 rounded-lg': outline
-  })}>{childrenEl}</div>;
+  return (
+    <div
+      className={cx('flex w-fit items-center py-2 px-5', {
+        'outline-none border border-gray-200 dark:border-gray-700 rounded-lg': outline,
+      })}
+    >
+      {childrenEl}
+    </div>
+  );
 };
