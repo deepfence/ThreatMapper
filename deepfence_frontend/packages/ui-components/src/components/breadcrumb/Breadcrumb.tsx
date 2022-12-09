@@ -34,9 +34,6 @@ export const BreadcrumbLink = React.forwardRef<
           `inline-flex items-center leading-[21px] item-center`,
           'outline-none focus-visible:outline-none focus:ring-1 focus-visible:ring-blue-600 dark:focus-visible:ring-blue-800',
           `text-gray-700 dark:text-gray-400 ${Typography.size.sm}`,
-          {
-            [`text-gray-500 dark:text-gray-300`]: isLast,
-          },
         ),
       )}
       ref={forwardedRef}
@@ -91,7 +88,7 @@ export const Breadcrumb = ({ children, separator, outline = false }: BreadCrumbP
   );
   return (
     <div
-      className={cx('flex w-fit items-center py-2 px-5', {
+      className={cx('flex w-fit items-center py-2 px-5 bg-gray-50 dark:bg-gray-800', {
         'outline-none border border-gray-200 dark:border-gray-700 rounded-lg': outline,
       })}
     >

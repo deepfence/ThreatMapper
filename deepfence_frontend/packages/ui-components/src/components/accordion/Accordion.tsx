@@ -55,10 +55,10 @@ export const AccordionTrigger = React.forwardRef<
   HTMLButtonElement,
   AccordionPrimitive.AccordionTriggerProps
 >(({ children, className, ...props }, forwardedRef) => (
-  <AccordionPrimitive.Header className={cx('p-5')}>
+  <AccordionPrimitive.Header>
     <AccordionPrimitive.Trigger
       className={cx(
-        'flex outline-none  place-items-center',
+        'flex outline-none p-5 place-items-center',
         'w-full group',
         `leading-4 ${Typography.size.base} ${Typography.weight.medium}`,
         className,
