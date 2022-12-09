@@ -8,38 +8,48 @@ import (
 	"github.com/fluent/fluent-bit-go/output"
 )
 import (
-	"bytes"
+	"context"
 	"crypto/tls"
-	"encoding/json"
-	"io/ioutil"
+	"errors"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
+	deepfenceAPI "github.com/deepfence/ThreatMapper/deepfence_server_client"
 	rhttp "github.com/hashicorp/go-retryablehttp"
 )
 
 var (
 	cfg      map[string]Config
-	client       = rhttp.NewClient()
+	hc           = rhttp.NewClient()
 	instance int = 0
 )
 
 type Config struct {
-	URL string
-	Key string
+	URL          string
+	Key          string
+	AccessToken  string
+	RefreshToken string
 }
 
-func getURL(schema, host, port, path, topic string) string {
+func getURLWithPath(schema, host, port, path string) string {
 	u := &url.URL{
 		Scheme: schema,
 		Host:   net.JoinHostPort(host, port),
-		Path:   path + "/topics/" + topic,
+		Path:   path,
+	}
+	return u.String()
+}
+
+func getURL(schema, host, port string) string {
+	u := &url.URL{
+		Scheme: schema,
+		Host:   net.JoinHostPort(host, port),
 	}
 	return u.String()
 }
@@ -69,20 +79,51 @@ func parseValue(value interface{}) interface{} {
 	}
 }
 
-// data needs to be in this format
-// {"records":[{"value":<record1>},{"value":record2}]}
-func toKafkaRestFormat(data []map[string]interface{}) *bytes.Buffer {
-	values := make([]string, len(data))
-	for i, u := range data {
-		encoded, err := json.Marshal(u)
-		if err != nil {
-			log.Printf("[deepfence] error marshal doc %s\ndoc:%s", err, u)
-			continue
-		}
-		values[i] = "{\"value\":" + string(encoded) + "}"
+// // data needs to be in this format
+// // {"records":[{"value":<record1>},{"value":record2}]}
+// func toKafkaRestFormat(data []map[string]interface{}) *bytes.Buffer {
+// 	values := make([]string, len(data))
+// 	for i, u := range data {
+// 		encoded, err := json.Marshal(u)
+// 		if err != nil {
+// 			log.Printf("[deepfence] error marshal doc %s\ndoc:%s", err, u)
+// 			continue
+// 		}
+// 		values[i] = "{\"value\":" + string(encoded) + "}"
+// 	}
+// 	result := strings.Join(values, ",")
+// 	return bytes.NewBuffer([]byte("{\"records\":[" + result + "]}"))
+// }
+
+func Authenticate(url string, apiToken string) (string, string, error) {
+	var (
+		accessToken  *string
+		refreshToken *string
+	)
+	cfg := deepfenceAPI.NewConfiguration()
+	cfg.Servers = deepfenceAPI.ServerConfigurations{
+		{URL: url, Description: "deepfence_server"},
 	}
-	result := strings.Join(values, ",")
-	return bytes.NewBuffer([]byte("{\"records\":[" + result + "]}"))
+
+	apiClient := deepfenceAPI.NewAPIClient(cfg)
+
+	req := apiClient.AuthenticationApi.AuthToken(context.Background()).
+		ModelApiAuthRequest(
+			deepfenceAPI.ModelApiAuthRequest{ApiToken: &apiToken},
+		)
+
+	resp, _, err := apiClient.AuthenticationApi.AuthTokenExecute(req)
+	if err != nil {
+		return "", "", err
+	}
+
+	accessToken = resp.GetData().AccessToken
+	refreshToken = resp.GetData().RefreshToken
+	if accessToken == nil || refreshToken == nil {
+		return "", "", errors.New("auth tokens are nil: failed to authenticate")
+	}
+
+	return *accessToken, *refreshToken, nil
 }
 
 //export FLBPluginRegister
@@ -96,24 +137,24 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 		cfg = make(map[string]Config)
 	}
 
-	host := output.FLBPluginConfigKey(plugin, "dfhost")
-	port := output.FLBPluginConfigKey(plugin, "dfport")
-	path := output.FLBPluginConfigKey(plugin, "dfpath")
-	topic := output.FLBPluginConfigKey(plugin, "dftopic")
-	schema := output.FLBPluginConfigKey(plugin, "dfschema")
-	key := output.FLBPluginConfigKey(plugin, "dfkey")
-	certPath := output.FLBPluginConfigKey(plugin, "dfcertpath")
-	certKey := output.FLBPluginConfigKey(plugin, "dfcertkey")
-	log.Printf("[deepfence] schema=%s host=%s port=%s path=%s topic=%s plugin=%s",
-		schema, host, port, path, topic, certPath)
+	id := output.FLBPluginConfigKey(plugin, "id")
+	host := output.FLBPluginConfigKey(plugin, "host")
+	port := output.FLBPluginConfigKey(plugin, "port")
+	path := output.FLBPluginConfigKey(plugin, "path")
+	schema := output.FLBPluginConfigKey(plugin, "schema")
+	apiToken := output.FLBPluginConfigKey(plugin, "api_token")
+	certPath := output.FLBPluginConfigKey(plugin, "cert_file")
+	certKey := output.FLBPluginConfigKey(plugin, "key_file")
+	log.Printf("[deepfence] schema=%s host=%s port=%s path=%s",
+		schema, host, port, path)
 
 	// setup http client
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
-	client.HTTPClient.Timeout = 10 * time.Second
-	client.RetryMax = 3
-	client.RetryWaitMin = 1 * time.Second
-	client.RetryWaitMax = 10 * time.Second
-	client.Logger = nil
+	hc.HTTPClient.Timeout = 10 * time.Second
+	hc.RetryMax = 3
+	hc.RetryWaitMin = 1 * time.Second
+	hc.RetryWaitMax = 10 * time.Second
+	hc.Logger = nil
 	if schema == "https" {
 		if len(certPath) > 0 && len(certKey) > 0 {
 			cer, err := tls.LoadX509KeyPair(certPath, certKey)
@@ -127,19 +168,31 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 			TLSClientConfig:   tlsConfig,
 			DisableKeepAlives: false,
 		}
-		client.HTTPClient = &http.Client{Transport: tr}
+		hc.HTTPClient = &http.Client{Transport: tr}
 	}
 
-	id := topic + "." + strconv.Itoa(instance)
-	cfg[id] = Config{
-		URL: getURL(schema, host, port, path, topic),
-		Key: key,
+	access, refresh, err := Authenticate(getURL(schema, host, port), apiToken)
+	if err != nil {
+		log.Printf("[deepfence] failed to authenticate %s", err)
 	}
-	log.Printf("[deepfence] deepfence key set %t for id %s", key != "", id)
+
+	if len(id) == 0 {
+		id = "deepfence." + strconv.Itoa(instance)
+		instance = instance + 1
+	}
+
+	cfg[id] = Config{
+		URL:          getURLWithPath(schema, host, port, path),
+		Key:          apiToken,
+		AccessToken:  access,
+		RefreshToken: refresh,
+	}
+
+	log.Printf("[deepfence] api token set %t for id %s", apiToken != "", id)
 	log.Printf("[deepfence] push to url %s", cfg[id].URL)
+
 	output.FLBPluginSetContext(plugin, id)
 
-	instance = instance + 1
 	return output.FLB_OK
 }
 
@@ -158,7 +211,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 		return output.FLB_ERROR
 	}
 
-	// fluentbit decoder
+	// fluent-bit decoder
 	dec := output.NewDecoder(data, int(length))
 
 	records := make([]map[string]interface{}, 0)
@@ -171,17 +224,16 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 		records = append(records, toMapStringInterface(record))
 	}
 
-	req, err := rhttp.NewRequest(http.MethodPost, idCfg.URL, toKafkaRestFormat(records))
+	req, err := rhttp.NewRequest(http.MethodPost, idCfg.URL, records)
 	if err != nil {
 		log.Printf("[deepfence] error creating request %s", err)
 		return output.FLB_ERROR
 	}
-	if idCfg.Key != "" {
-		req.Header.Add("deepfence-key", idCfg.Key)
-	}
-	req.Header.Add("Content-Type", "application/vnd.kafka.json.v2+json")
 
-	resp, err := client.Do(req)
+	req.Header.Add("Authorization", "Bearer "+idCfg.AccessToken)
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := hc.Do(req)
 	if err != nil {
 		if os.IsTimeout(err) {
 			// timeout error
@@ -203,7 +255,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 		return output.FLB_ERROR
 	}
 
-	_, err = ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("[deepfence] error reading response %s", err)
 		return output.FLB_ERROR
@@ -230,5 +282,4 @@ func FLBPluginExitCtx(ctx unsafe.Pointer) int {
 	return output.FLB_OK
 }
 
-func main() {
-}
+func main() {}
