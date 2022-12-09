@@ -31,6 +31,10 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 	parsedUUID, _ := uuid.Parse(apiAuthRequest.ApiToken)
 	apiToken := &model.ApiToken{ApiToken: parsedUUID}
 	user, err := apiToken.GetUser(ctx, pgClient)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypeAPIToken)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
