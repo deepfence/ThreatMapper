@@ -1,9 +1,9 @@
-p, admin, standard-user, delete
-p, admin, standard-user, write
-p, admin, standard-user, read
-p, standard-user, standard-user, write
-p, standard-user, standard-user, read
-p, read-only-user, standard-user, read
+p, admin, user, delete
+p, admin, user, write
+p, admin, user, read
+p, standard-user, user, write
+p, standard-user, user, read
+p, read-only-user, user, read
 
 p, admin, all-users, write
 p, admin, all-users, read
@@ -14,8 +14,16 @@ p, admin, scan, stop
 p, standard-user, scan, start
 p, standard-user, scan, stop
 
-p, admin, scan_report, delete
-p, admin, scan_report, mask
-p, admin, scan_report, unmask
-p, standard-user, scan_report, mask
-p, standard-user, scan_report, unmask
+p, admin, scan-report, delete
+p, admin, scan-report, mask
+p, admin, scan-report, unmask
+p, admin, scan-report, ingest
+p, standard-user, scan-report, mask
+p, standard-user, scan-report, unmask
+p, standard-user, scan-report, ingest
+
+p, admin, agent-report, ingest
+p, standard-user, agent-report, ingest
+
+p, admin, cloud-report, ingest
+p, standard-user, cloud-report, ingest

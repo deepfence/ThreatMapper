@@ -193,7 +193,7 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 func (h *Handler) getIntFieldFromJwtClaim(claims map[string]interface{}, key string) (int64, error) {
 	val, ok := claims[key]
 	if !ok {
-		return 0, errors.New("cannot parse jwt")
+		return 0, errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
 	}
 	number, err := utils.InterfaceToInt(val)
 	if err != nil {
@@ -206,7 +206,7 @@ func (h *Handler) getIntFieldFromJwtClaim(claims map[string]interface{}, key str
 func (h *Handler) getStringFieldFromJwtClaim(claims map[string]interface{}, key string) (string, error) {
 	val, ok := claims[key]
 	if !ok {
-		return "", errors.New("cannot parse jwt")
+		return "", errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
 	}
 	return fmt.Sprintf("%v", val), nil
 }
