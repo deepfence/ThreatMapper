@@ -17,6 +17,12 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
+until kcat -L -b ${KAFKA_BROKERS};
+do
+  echo >&2 "kafka is unavailable - sleeping"
+  sleep 5
+done
+
 sed -i "s/https:\/\/petstore.swagger.io\/v2\/swagger.json/\/deepfence\/openapi-docs/g" /usr/local/share/swagger-ui/swagger-initializer.js
 
 exec "$@"

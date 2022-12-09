@@ -36,7 +36,7 @@ ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
 ADD deepfence_server/auth /auth
 ADD deepfence_utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
-RUN apk add --no-cache --update bash curl libpcap tar \
+RUN apk add --no-cache --update bash curl libpcap tar kafkacat \
     && apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main \
     && chmod +x /entrypoint.sh \
     && curl -L "https://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.tar.gz" | tar xvz \
