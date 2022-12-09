@@ -15,7 +15,8 @@ CREATE TABLE company
     name         character varying(64)                              NOT NULL,
     email_domain character varying(64)                              NOT NULL,
     created_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    namespace    character varying(64)                              NOT NULL
 );
 
 CREATE TRIGGER company_updated_at

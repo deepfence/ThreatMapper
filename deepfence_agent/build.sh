@@ -15,7 +15,7 @@ building_image(){
     echo "Prepare plugins"
     (cd plugins && ./bootstrap.sh)
 
-    docker run --rm -it -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/gocode-build.sh
+    docker run --rm -it -v $(pwd)/../deepfence_server_client:/go/src/github.com/deepfence/deepfence_server_client -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/gocode-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then

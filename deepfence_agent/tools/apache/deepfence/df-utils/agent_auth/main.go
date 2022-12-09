@@ -1,15 +1,17 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io"
-	"math"
+	"log"
 	"net"
 	"net/http"
 	"os"
 	"time"
+
+	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
 )
 
 const (
@@ -31,52 +33,53 @@ func buildHttpClient() *http.Client {
 	return client
 }
 
-func authenticateAgentWithConsole(httpClient *http.Client, scopeApiUrl, authKey string) (bool, error) {
-	req, err := http.NewRequest("GET", scopeApiUrl, nil)
-	if err != nil {
-		return false, err
-	}
-	req.Header.Add("deepfence-key", authKey)
-	req.Header.Add("Content-Type", "application/json")
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
-		return true, nil
-	}
-	body, err := io.ReadAll(resp.Body)
-	if err == nil {
-		fmt.Printf("agent authentication: got status code %d with message %s\n", resp.StatusCode,
-			string(body)[:int(math.Min(160.0, float64(len(body))))])
-	}
-	return false, nil
-}
-
 func main() {
 	authKey := os.Getenv("DEEPFENCE_KEY")
 	mgmtConsoleUrl := os.Getenv("MGMT_CONSOLE_URL")
 	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
-	if consolePort != "" && consolePort != "443" {
-		mgmtConsoleUrl += ":" + consolePort
+
+	if mgmtConsoleUrl == "" {
+		log.Fatalln("No console URL provided")
 	}
-	scopeApiUrl := fmt.Sprintf("https://%s/topology-api", mgmtConsoleUrl)
-	var httpClient *http.Client
+	url := fmt.Sprintf("https://%s:%s", mgmtConsoleUrl, consolePort)
+	log.Printf("%v with %v", url, authKey)
+
+	cfg := openapi.NewConfiguration()
+	cfg.HTTPClient = buildHttpClient()
+	cfg.Servers = openapi.ServerConfigurations{
+		{
+			URL:         url,
+			Description: "deepfence_server",
+		},
+	}
+	cl := openapi.NewAPIClient(cfg)
+	req := cl.AuthenticationApi.AuthToken(context.Background()).ModelApiAuthRequest(openapi.ModelApiAuthRequest{
+		ApiToken: &authKey,
+	})
+
 	for {
-		if httpClient == nil {
-			httpClient = buildHttpClient()
-		}
-		authenticated, err := authenticateAgentWithConsole(httpClient, scopeApiUrl, authKey)
+		res, r, err := cl.AuthenticationApi.AuthTokenExecute(req)
+
 		if err != nil {
-			fmt.Println("Could not connect to Deepfence Management Console. Retrying...")
+			fmt.Printf("err: %v, r: %v...\n", err, r)
+			fmt.Println("Could not reach to Deepfence Management Console. Retrying...")
 			time.Sleep(10 * time.Second)
 			continue
 		}
-		if authenticated == true {
-			return
-		} else {
-			os.Exit(1)
+
+		if r.StatusCode != 200 {
+			fmt.Printf("r: %v...\n", r)
+			fmt.Println("Could not connect to Deepfence Management Console: Retrying...")
+			time.Sleep(10 * time.Second)
 		}
+
+		accessToken := res.GetData().AccessToken
+		if accessToken == nil {
+			log.Println("Failed to authenticate. Retrying...")
+			time.Sleep(10 * time.Second)
+			continue
+		}
+		fmt.Printf("%v", accessToken)
+		break
 	}
 }

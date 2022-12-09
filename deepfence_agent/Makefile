@@ -1,10 +1,10 @@
-# 
+#
 # DEEPFENCE.IO CONFIDENTIAL
 # _________________________
 #
 # [2014 - 2022] deepfence Inc
 # All Rights Reserved.
-# 
+#
 # NOTICE:  All information contained herein is, and remains
 # the property of deepfence.io and its suppliers,
 # if any.  The intellectual and technical concepts contained
@@ -31,7 +31,7 @@ gocode:
 	# go build -o tools/apache/licensegen/licensegen tools/apache/licensegen/licensegen.go
 
 	echo "Building agent authenticator..."
-	$(CD) tools/apache/deepfence/df-utils/agent_auth && env CGO_ENABLED=0 go build -o agentAuth $(GOFLAGS) .
+	$(CD) tools/apache/deepfence/df-utils/agent_auth && go mod tidy -v && go mod vendor && env CGO_ENABLED=0 go build -o agentAuth $(GOFLAGS) .
 
 	echo "Building go binary for cloud metadata instance id..."
 	$(CD) tools/apache/deepfence/df-utils/get_cloud_instance_id && env CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .

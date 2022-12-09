@@ -42,13 +42,15 @@ func GetAgentActions(ctx context.Context, nodeId string) ([]controls.Action, err
 	}
 
 	res := []controls.Action{}
-	for _, action := range actions.Values[0].([]interface{}) {
-		entry := controls.Action{}
-		err = json.Unmarshal([]byte(action.(string)), &entry)
-		if err != nil {
-			return res, err
+	if actions.Values[0] != nil {
+		for _, action := range actions.Values[0].([]interface{}) {
+			entry := controls.Action{}
+			err = json.Unmarshal([]byte(action.(string)), &entry)
+			if err != nil {
+				return res, err
+			}
+			res = append(res, entry)
 		}
-		res = append(res, entry)
 	}
 
 	_, err = tx.Run("match (n:Node{node_id:$id}) SET n.actions = []", map[string]interface{}{"id": nodeId})

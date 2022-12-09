@@ -2,7 +2,15 @@ package appclient
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"log"
+	"net"
+	"net/http"
 	"net/url"
+	"os"
+	"time"
 
 	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
 	"github.com/weaveworks/scope/common/xfer"
@@ -13,21 +21,75 @@ import (
 )
 
 type OpenapiClient struct {
-	client *openapi.APIClient
+	client      *openapi.APIClient
+}
+
+const (
+	maxIdleConnsPerHost = 1024
+)
+
+func buildHttpClient() *http.Client {
+	// Set up our own certificate pool
+	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
+	transport := &http.Transport{
+		MaxIdleConnsPerHost: maxIdleConnsPerHost,
+		DialContext: (&net.Dialer{
+			Timeout:   10 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		TLSHandshakeTimeout: 30 * time.Second,
+		TLSClientConfig:     tlsConfig}
+	client := &http.Client{Transport: transport}
+	return client
 }
 
 func NewOpenapiClient() *OpenapiClient {
 
+	url := os.Getenv("MGMT_CONSOLE_URL")
+	if url == "" {
+		log.Println("MGMT_CONSOLE_URL not set")
+		return nil
+	}
+	port := os.Getenv("MGMT_CONSOLE_PORT")
+	if port == "" {
+		log.Println("MGMT_CONSOLE_URL not set")
+		return nil
+	}
+
+	api_token := os.Getenv("DEEPFENCE_KEY")
+	if port == "" {
+		log.Println("MGMT_CONSOLE_URL not set")
+		return nil
+	}
+
 	cfg := openapi.NewConfiguration()
+	cfg.HTTPClient = buildHttpClient()
 	cfg.Servers = openapi.ServerConfigurations{
 		{
-			URL:         "http://localhost:8080",
+			URL:         fmt.Sprintf("https://%s:%s", url, port),
 			Description: "deepfence_server",
 		},
 	}
 	cl := openapi.NewAPIClient(cfg)
+	req := cl.AuthenticationApi.AuthToken(context.Background()).ModelApiAuthRequest(openapi.ModelApiAuthRequest{
+		ApiToken: &api_token,
+	})
+	res, _, err := cl.AuthenticationApi.AuthTokenExecute(req)
+	if err != nil {
+		log.Printf("Auth error: %v\n", err)
+		return nil
+	}
+
+	accessToken := res.GetData().AccessToken
+	if accessToken == nil {
+		log.Println("Auth token nil: failed to authenticate")
+		return nil
+	}
+
+	cl.GetConfig().AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %v", *accessToken))
+
 	return &OpenapiClient{
-		client: cl,
+		client:      cl,
 	}
 }
 

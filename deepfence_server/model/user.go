@@ -5,14 +5,15 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"regexp"
+	"strconv"
+	"time"
+
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
-	"strconv"
-	"time"
 )
 
 const (
@@ -38,13 +39,14 @@ var (
 )
 
 type ApiToken struct {
-	ApiToken        uuid.UUID `json:"api_token"`
-	ID              int64     `json:"id"`
-	Name            string    `json:"name"`
-	CompanyID       int32     `json:"company_id"`
-	RoleID          int32     `json:"role_id"`
-	GroupID         int32     `json:"group_id"`
-	CreatedByUserID int64     `json:"created_by_user_id"`
+	ApiToken         uuid.UUID `json:"api_token"`
+	ID               int64     `json:"id"`
+	Name             string    `json:"name"`
+	CompanyID        int32     `json:"company_id"`
+	RoleID           int32     `json:"role_id"`
+	GroupID          int32     `json:"group_id"`
+	CreatedByUserID  int64     `json:"created_by_user_id"`
+	CompanyNamespace string    `json:"company_namespace"`
 }
 
 func (a *ApiToken) GetUser(ctx context.Context, pgClient *postgresqlDb.Queries) (*User, error) {
@@ -63,6 +65,7 @@ func (a *ApiToken) GetUser(ctx context.Context, pgClient *postgresqlDb.Queries) 
 		Role:                token.RoleName,
 		RoleID:              token.RoleID,
 		PasswordInvalidated: token.UserPasswordInvalidated,
+		CompanyNamespace:    token.CompanyNamespace,
 	}
 	return &u, nil
 }
@@ -167,6 +170,7 @@ type User struct {
 	Role                string            `json:"role"`
 	RoleID              int32             `json:"role_id"`
 	PasswordInvalidated bool              `json:"password_invalidated"`
+	CompanyNamespace    string            `json:"company_namespace" validate:"required,company_namespace,min=2,max=32"`
 }
 
 func (u *User) SetPassword(inputPassword string) error {
@@ -230,6 +234,7 @@ func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Que
 	u.Role = user.RoleName
 	u.RoleID = user.RoleID
 	u.PasswordInvalidated = user.PasswordInvalidated
+	u.CompanyNamespace = user.CompanyNamespace
 	_ = json.Unmarshal(user.GroupIds, &u.Groups)
 	return nil
 }
@@ -289,6 +294,7 @@ func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantT
 		"email":      u.Email,
 		"is_active":  u.IsActive,
 		"grant_type": grantType,
+		"namespace":  u.CompanyNamespace,
 	})
 	if err != nil {
 		return "", "", err
