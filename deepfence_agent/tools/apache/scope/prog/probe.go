@@ -107,8 +107,8 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 }
 
 func setControls() {
-	err := controls.RegisterControl(ctl.StartCVEScan, func(req ctl.StartCVEScanRequest) error {
-		log.Info("Start CVE Scan")
+	err := controls.RegisterControl(ctl.StartVulnerabilityScan, func(req ctl.StartVulnerabilityScanRequest) error {
+		log.Info("Start Vulnerability Scan")
 		//TODO
 		return nil
 	})
@@ -125,6 +125,11 @@ func setControls() {
 	}
 	err = controls.RegisterControl(ctl.StartComplianceScan, func(req ctl.StartComplianceScanRequest) error {
 		log.Info("Start Compliance Scan")
+		//TODO
+		return nil
+	})
+	err = controls.RegisterControl(ctl.StartMalwareScan, func(req ctl.StartMalwareScanRequest) error {
+		log.Info("Start Malware Scan")
 		//TODO
 		return nil
 	})

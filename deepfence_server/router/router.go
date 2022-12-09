@@ -71,6 +71,12 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			}
 		})
 
+		r.Group(func(r chi.Router) {
+			r.Use(jwtauth.Verifier(tokenAuth))
+
+			r.Post("/auth/token/refresh", dfHandler.RefreshTokenHandler)
+		})
+
 		// authenticated apis
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(tokenAuth))
@@ -116,9 +122,16 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 			openApiDocs.AddScansOperations()
 			r.Route("/scan/start", func(r chi.Router) {
-				r.Get("/cves", dfHandler.StartCVEScanHandler)
-				r.Get("/secrets", dfHandler.StartSecretScanHandler)
-				r.Get("/compliances", dfHandler.StartComplianceScanHandler)
+				r.Get("/vulnerability", dfHandler.AuthHandler("scan", "start", dfHandler.StartVulnerabilityScanHandler))
+				r.Get("/secret", dfHandler.AuthHandler("scan", "start", dfHandler.StartSecretScanHandler))
+				r.Get("/compliance", dfHandler.AuthHandler("scan", "start", dfHandler.StartComplianceScanHandler))
+				r.Get("/malware", dfHandler.AuthHandler("scan", "start", dfHandler.StartMalwareScanHandler))
+			})
+			r.Route("/scan/stop", func(r chi.Router) {
+				r.Get("/vulnerability", dfHandler.AuthHandler("scan", "stop", dfHandler.StopVulnerabilityScanHandler))
+				r.Get("/secret", dfHandler.AuthHandler("scan", "stop", dfHandler.StopSecretScanHandler))
+				r.Get("/compliance", dfHandler.AuthHandler("scan", "stop", dfHandler.StopComplianceScanHandler))
+				r.Get("/malware", dfHandler.AuthHandler("scan", "stop", dfHandler.StopMalwareScanHandler))
 			})
 
 		})

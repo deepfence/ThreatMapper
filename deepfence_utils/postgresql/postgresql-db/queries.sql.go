@@ -77,18 +77,19 @@ func (q *Queries) CreateApiToken(ctx context.Context, arg CreateApiTokenParams) 
 }
 
 const createCompany = `-- name: CreateCompany :one
-INSERT INTO company (name, email_domain)
-VALUES ($1, $2)
+INSERT INTO company (name, email_domain, namespace)
+VALUES ($1, $2, $3)
 RETURNING id, name, email_domain, created_at, updated_at, namespace
 `
 
 type CreateCompanyParams struct {
 	Name        string
 	EmailDomain string
+	Namespace   string
 }
 
 func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (Company, error) {
-	row := q.db.QueryRowContext(ctx, createCompany, arg.Name, arg.EmailDomain)
+	row := q.db.QueryRowContext(ctx, createCompany, arg.Name, arg.EmailDomain, arg.Namespace)
 	var i Company
 	err := row.Scan(
 		&i.ID,

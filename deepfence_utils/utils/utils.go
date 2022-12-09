@@ -49,6 +49,34 @@ func GetEmailDomain(email string) (string, error) {
 	return strings.ToLower(domain[1]), nil
 }
 
+func GetCustomerNamespace(s string) (string, error) {
+	var result strings.Builder
+	if s == "" {
+		return "", errors.New("invalid input")
+	}
+	s = strings.ToLower(s)
+	for i := 0; i < len(s); i++ {
+		b := s[i]
+		if ('a' <= b && b <= 'z') || ('0' <= b && b <= '9') || b == '-' {
+			result.WriteByte(b)
+		} else {
+			result.WriteByte('-')
+		}
+	}
+	namespace := result.String()
+	if '0' <= namespace[0] && namespace[0] <= '9' || namespace[0] == '-' {
+		namespace = "c-" + namespace
+	}
+	lastCharPos := len(namespace) - 1
+	if '0' <= namespace[lastCharPos] && namespace[lastCharPos] <= '9' || namespace[lastCharPos] == '-' {
+		namespace = namespace + "-c"
+	}
+	if len(namespace) > 63 {
+		return "", errors.New("at most 63 characters allowed")
+	}
+	return namespace, nil
+}
+
 func RemoveURLPath(inUrl string) (string, error) {
 	u, err := url.Parse(inUrl)
 	if err != nil {

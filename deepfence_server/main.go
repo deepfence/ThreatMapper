@@ -116,18 +116,18 @@ func initializeDatabase() ([]byte, error) {
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
-	if len(roles) == 0 {
-		_, err = pgClient.CreateRole(ctx, model.AdminRole)
-		if err != nil {
-			return nil, err
+	rolesConfigured := map[string]bool{model.AdminRole: false, model.StandardUserRole: false, model.ReadOnlyRole: false}
+	for _, role := range roles {
+		if _, ok := rolesConfigured[role.Name]; ok {
+			rolesConfigured[role.Name] = true
 		}
-		_, err = pgClient.CreateRole(ctx, model.UserRole)
-		if err != nil {
-			return nil, err
-		}
-		_, err = pgClient.CreateRole(ctx, model.ReadOnlyRole)
-		if err != nil {
-			return nil, err
+	}
+	for roleName, configured := range rolesConfigured {
+		if !configured {
+			_, err = pgClient.CreateRole(ctx, roleName)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	jwtSecret, err := model.GetJwtSecretSetting(ctx, pgClient)

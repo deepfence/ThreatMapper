@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -16,6 +17,7 @@ import (
 
 const (
 	MaxPostRequestSize = 100000 // 100 KB
+	DefaultNamespace   = "default"
 )
 
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +65,11 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
-	c := model.Company{Name: registerRequest.Company, EmailDomain: emailDomain}
+	c := model.Company{
+		Name:        registerRequest.Company,
+		EmailDomain: emailDomain,
+		Namespace:   DefaultNamespace,
+	}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
@@ -170,12 +176,11 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 	if err != nil {
 		return nil, http.StatusBadRequest, requestContext, nil, err
 	}
-	number, err := utils.InterfaceToInt(claims["user_id"])
+	userId, err := h.getIntFieldFromJwtClaim(claims, "user_id")
 	if err != nil {
-		log.Error().Msgf("InterfaceToInt: %v (%v) - %v", claims["user_id"], reflect.ValueOf(claims["user_id"]).Kind(), err)
-		return nil, http.StatusInternalServerError, requestContext, nil, errors.New("cannot parse jwt")
+		return nil, http.StatusInternalServerError, requestContext, nil, err
 	}
-	user := model.User{ID: number}
+	user := model.User{ID: userId}
 	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByID(ctx, pgClient)
@@ -183,4 +188,25 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 		return nil, http.StatusInternalServerError, ctx, pgClient, err
 	}
 	return &user, http.StatusOK, ctx, pgClient, nil
+}
+
+func (h *Handler) getIntFieldFromJwtClaim(claims map[string]interface{}, key string) (int64, error) {
+	val, ok := claims[key]
+	if !ok {
+		return 0, errors.New("cannot parse jwt")
+	}
+	number, err := utils.InterfaceToInt(val)
+	if err != nil {
+		log.Error().Msgf("InterfaceToInt: %v (%v) - %v", val, reflect.ValueOf(val).Kind(), err)
+		return 0, errors.New("cannot parse jwt")
+	}
+	return number, nil
+}
+
+func (h *Handler) getStringFieldFromJwtClaim(claims map[string]interface{}, key string) (string, error) {
+	val, ok := claims[key]
+	if !ok {
+		return "", errors.New("cannot parse jwt")
+	}
+	return fmt.Sprintf("%v", val), nil
 }

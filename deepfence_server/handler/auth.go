@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"context"
+	"errors"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
 	"net/http"
@@ -41,6 +44,49 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: accessTokenResponse})
+}
+
+func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
+	user, grantType, err := h.parseRefreshToken(r.Context())
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+	}
+	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, grantType)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: accessTokenResponse})
+}
+
+func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User, string, error) {
+	_, claims, err := jwtauth.FromContext(requestContext)
+	if err != nil {
+		return nil, "", err
+	}
+	tokenType, err := h.getStringFieldFromJwtClaim(claims, "type")
+	if err != nil {
+		return nil, "", err
+	}
+	if tokenType != "refresh_token" {
+		return nil, "", errors.New("cannot parse refresh token")
+	}
+	userId, err := h.getIntFieldFromJwtClaim(claims, "user")
+	if err != nil {
+		return nil, "", err
+	}
+	user := model.User{ID: userId}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	err = user.LoadFromDbByID(ctx, pgClient)
+	if err != nil {
+		return nil, "", err
+	}
+	grantType, err := h.getStringFieldFromJwtClaim(claims, "grant_type")
+	if err != nil {
+		return nil, "", err
+	}
+	return &user, grantType, nil
 }
 
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {

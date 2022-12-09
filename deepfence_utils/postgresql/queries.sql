@@ -1,6 +1,6 @@
 -- name: CreateCompany :one
-INSERT INTO company (name, email_domain)
-VALUES ($1, $2)
+INSERT INTO company (name, email_domain, namespace)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: CountCompanies :one

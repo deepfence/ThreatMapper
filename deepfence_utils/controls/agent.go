@@ -7,14 +7,16 @@ import (
 type ActionID int
 
 const (
-	StartCVEScan ActionID = iota
+	StartVulnerabilityScan ActionID = iota
 	StartSecretScan
 	StartComplianceScan
+	StartMalwareScan
 )
 
-type StartCVEScanRequest struct{}
+type StartVulnerabilityScanRequest struct{}
 type StartSecretScanRequest struct{}
 type StartComplianceScanRequest struct{}
+type StartMalwareScanRequest struct{}
 
 type Action struct {
 	ID             ActionID `json:"id"`

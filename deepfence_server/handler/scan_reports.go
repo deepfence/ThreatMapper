@@ -14,32 +14,52 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func (h *Handler) StartCVEScanHandler(w http.ResponseWriter, r *http.Request) {
-	start_scan(w, r, ctl.StartCVEScan)
+func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
+	startScan(w, r, ctl.StartVulnerabilityScan)
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
-	start_scan(w, r, ctl.StartSecretScan)
+	startScan(w, r, ctl.StartSecretScan)
 }
 
 func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	start_scan(w, r, ctl.StartComplianceScan)
+	startScan(w, r, ctl.StartComplianceScan)
 }
 
-func start_scan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
+func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
+	startScan(w, r, ctl.StartMalwareScan)
+}
+
+func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
+	stopScan(w, r, ctl.StartVulnerabilityScan)
+}
+
+func (h *Handler) StopSecretScanHandler(w http.ResponseWriter, r *http.Request) {
+	stopScan(w, r, ctl.StartSecretScan)
+}
+
+func (h *Handler) StopComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
+	stopScan(w, r, ctl.StartComplianceScan)
+}
+
+func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
+	stopScan(w, r, ctl.StartMalwareScan)
+}
+
+func startScan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
 	err := r.ParseForm()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	node_id := r.Form.Get("node_id")
-	if node_id == "" {
+	nodeId := r.Form.Get("node_id")
+	if nodeId == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	ctx := directory.NewAccountContext()
-	err = controls.SetAgentActions(ctx, node_id, []ctl.Action{
+	err = controls.SetAgentActions(ctx, nodeId, []ctl.Action{
 		{
 			ID:             action,
 			RequestPayload: "",
@@ -140,4 +160,8 @@ func ingest_scan_report_kafka[T any](respWrite http.ResponseWriter, req *http.Re
 
 	respWrite.WriteHeader(http.StatusOK)
 	fmt.Fprintf(respWrite, "Ok")
+}
+
+func stopScan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
+	//	Stopping scan is on best-effort basis, not guaranteed
 }

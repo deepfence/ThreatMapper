@@ -18,7 +18,7 @@ import (
 
 const (
 	AdminRole         = "admin"
-	UserRole          = "user"
+	StandardUserRole  = "standard-user"
 	ReadOnlyRole      = "read-only-user"
 	bcryptCost        = 11
 	GrantTypePassword = "password"
@@ -89,10 +89,11 @@ type Company struct {
 	ID          int32  `json:"id"`
 	Name        string `json:"name"`
 	EmailDomain string `json:"email_domain"`
+	Namespace   string `json:"namespace"`
 }
 
 func (c *Company) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.Company, error) {
-	company, err := pgClient.CreateCompany(ctx, postgresqlDb.CreateCompanyParams{Name: c.Name, EmailDomain: c.EmailDomain})
+	company, err := pgClient.CreateCompany(ctx, postgresqlDb.CreateCompanyParams{Name: c.Name, EmailDomain: c.EmailDomain, Namespace: c.Namespace})
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +171,7 @@ type User struct {
 	Role                string            `json:"role"`
 	RoleID              int32             `json:"role_id"`
 	PasswordInvalidated bool              `json:"password_invalidated"`
-	CompanyNamespace    string            `json:"company_namespace" validate:"required,company_namespace,min=2,max=32"`
+	CompanyNamespace    string            `json:"-"`
 }
 
 func (u *User) SetPassword(inputPassword string) error {
@@ -275,15 +276,7 @@ func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*Re
 
 func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
 	accessTokenID := utils.NewUUIDString()
-	var expiry time.Duration
-	if grantType == GrantTypeAPIToken {
-		expiry = time.Hour * 24 * 365 // 1 year
-	} else {
-		expiry = time.Hour * 24 // 1 day
-	}
-	_, s, err := tokenAuth.Encode(map[string]interface{}{
-		"date":       time.Now().UTC(),
-		"expires_in": expiry,
+	claims := map[string]interface{}{
 		"id":         accessTokenID,
 		"user_id":    u.ID,
 		"first_name": u.FirstName,
@@ -295,7 +288,10 @@ func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantT
 		"is_active":  u.IsActive,
 		"grant_type": grantType,
 		"namespace":  u.CompanyNamespace,
-	})
+	}
+	jwtauth.SetIssuedNow(claims)
+	jwtauth.SetExpiryIn(claims, time.Hour*24) // 1 day
+	_, s, err := tokenAuth.Encode(claims)
 	if err != nil {
 		return "", "", err
 	}
@@ -303,14 +299,15 @@ func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantT
 }
 
 func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID string, grantType string) (string, error) {
-	_, s, err := tokenAuth.Encode(map[string]interface{}{
-		"date":       time.Now().UTC(),
-		"expires_in": time.Hour * 24 * 7,
+	claims := map[string]interface{}{
 		"token_id":   accessTokenID,
-		"id":         utils.NewUUIDString(),
-		"user_id":    u.ID,
+		"user":       u.ID,
+		"type":       "refresh_token",
 		"grant_type": grantType,
-	})
+	}
+	jwtauth.SetIssuedNow(claims)
+	jwtauth.SetExpiryIn(claims, time.Hour*24*7) // 7 days
+	_, s, err := tokenAuth.Encode(claims)
 	if err != nil {
 		return "", err
 	}

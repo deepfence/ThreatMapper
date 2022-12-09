@@ -18,6 +18,7 @@ const (
 	tagThreat          = "Threat"
 	tagSecretScan      = "Secret Scan"
 	tagVulnerability   = "Vulnerability"
+	tagMalwareScan     = "Malware Scan"
 
 	securityName = "bearer_token"
 )
