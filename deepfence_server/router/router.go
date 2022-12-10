@@ -35,14 +35,14 @@ const (
 	ResourceScan        = "scan"
 )
 
-func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool, ingestC chan *kgo.Record) error {
+func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool, ingestC chan *kgo.Record) (*handler.Handler, error) {
 	// JWT
 	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
 
 	// authorization
 	authEnforcer, err := getAuthorizationHandler()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	openApiDocs := apiDocs.InitializeOpenAPIReflector()
@@ -58,15 +58,15 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = dfHandler.Validator.RegisterValidation("company_name", model.ValidateCompanyName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = dfHandler.Validator.RegisterValidation("user_name", model.ValidateUserName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	//root := "/usr/local/share/swagger-ui"
@@ -156,7 +156,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 		})
 	})
-	return nil
+	return dfHandler, nil
 }
 
 func getAuthorizationHandler() (*casbin.Enforcer, error) {

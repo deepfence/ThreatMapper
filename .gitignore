@@ -36,3 +36,6 @@ deepfence_server/vendor
 
 deepfence_ingester/vendor
 deepfence_ingester/deepfence_ingester
+
+openapi.json
+openapi.yaml

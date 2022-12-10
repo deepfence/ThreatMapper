@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,9 +24,10 @@ import (
 )
 
 var (
-	verbosity        = flag.String("verbose", "info", "log level")
-	serveOpenapiDocs = flag.Bool("api-docs", true, "serve openapi documentation")
-	kafkaBrokers     string
+	verbosity             = flag.String("verbose", "info", "log level")
+	exportOpenapiDocsPath = flag.String("export-api-docs-path", "", "export openapi documentation to file path")
+	serveOpenapiDocs      = flag.Bool("api-docs", true, "serve openapi documentation")
+	kafkaBrokers          string
 )
 
 type Config struct {
@@ -41,12 +43,23 @@ func main() {
 		log.Fatal().Msg(err.Error())
 	}
 
-	err = initializeKafka()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
+	if *exportOpenapiDocsPath == "" {
+		config.JwtSecret, err = initializeDatabase()
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
 
-	log.Info().Msg("starting deepfence-server")
+		err = initializeKafka()
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+
+		log.Info().Msg("starting deepfence-server")
+	} else {
+		if *exportOpenapiDocsPath != filepath.Clean(*exportOpenapiDocsPath) {
+			log.Fatal().Msgf("File path %s is not valid", *exportOpenapiDocsPath)
+		}
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -57,9 +70,19 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go startKafkaProducer(ctx, kafkaBrokers, ingestC)
 
-	err = router.SetupRoutes(r, config.HttpListenEndpoint, config.JwtSecret, *serveOpenapiDocs, ingestC)
+	dfHandler, err := router.SetupRoutes(r, config.HttpListenEndpoint, config.JwtSecret, *serveOpenapiDocs, ingestC)
 	if err != nil {
 		log.Error().Msg(err.Error())
+		return
+	}
+
+	if *exportOpenapiDocsPath != "" {
+		openApiYaml, err := dfHandler.OpenApiDocs.Yaml()
+		if err != nil {
+			return
+		}
+		err = os.WriteFile(*exportOpenapiDocsPath, openApiYaml, 0666)
+		log.Info().Msgf("OpenAPI yaml saved at %s", *exportOpenapiDocsPath)
 		return
 	}
 
@@ -96,13 +119,8 @@ func initialize() (*Config, error) {
 		httpListenEndpoint = "8080"
 	}
 
-	jwtSecret, err := initializeDatabase()
-	if err != nil {
-		return nil, err
-	}
 	return &Config{
 		HttpListenEndpoint: ":" + httpListenEndpoint,
-		JwtSecret:          jwtSecret,
 	}, nil
 }
 

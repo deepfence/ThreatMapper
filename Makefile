@@ -94,15 +94,20 @@ ingester:
 
 .PHONY: openapi
 openapi:
+	docker run --rm -it \
+	--entrypoint=/usr/local/bin/deepfence_server \
+	-v $(PWD):/app $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) \
+	--export-api-docs-path /app/openapi.yaml
+
 	docker run --rm \
 	-v $(PWD):/local openapitools/openapi-generator-cli generate \
-	-i /local/openapi.json \
+	-i /local/openapi.yaml \
 	-g go \
 	-o /local/deepfence_server_client \
 	-p isGoSubmodule=true \
 	-p packageName=deepfence_server_client \
 	--git-repo-id ThreatMapper \
-	--git-user-id deepfence && \
-	cd $(PWD)/deepfence_server_client && \
-	go mod tidy -v && \
-	cd - 
+	--git-user-id deepfence
+
+	rm openapi.yaml
+	cd $(PWD)/deepfence_server_client && go mod tidy -v && cd -
