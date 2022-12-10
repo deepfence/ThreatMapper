@@ -71,14 +71,6 @@ launch_system_services() {
 
 launch_deepfenced() {
 
-    echo "Start agent authentication..."
-    /usr/local/bin/agentAuth
-    auth_result=$?
-    if [ $auth_result -ne 0 ]; then
-        echo "Error: Agent exited. If agent authentication is enabled, check if correct deepfence key is passed."
-        sleep 30
-        exit 1
-    fi
     if [ "$FEATURE" == "appsec" ]; then
         # In k8s, if agent pod restarts these files are not cleared
         rm -rf /var/log/fenced/* 2>/dev/null

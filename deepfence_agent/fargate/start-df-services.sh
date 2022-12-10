@@ -64,18 +64,6 @@ launch_discovery() {
   bash -x $DF_INSTALL_DIR/home/deepfence/run_discovery_loop.sh &
 }
 
-check_auth() {
-  $DF_INSTALL_DIR/usr/local/bin/agentAuth
-  auth_result=$?
-  if [ $auth_result -ne 0 ]; then
-    echo "Error: Agent exited. If agent authentication is enabled, check if correct deepfence key is passed."
-    sleep 30
-    exit 1
-  else
-    echo "Agent authentication successful."
-  fi
-}
-
 launch_package_scanner() {
   echo "Launching package-scanner grpc server"
   bash -x -c "rm -rf /tmp/package-scanner.sock && $DF_INSTALL_DIR/home/deepfence/package-scanner -socket-path /tmp/package-scanner.sock -mode grpc-server" &
@@ -99,7 +87,6 @@ mkdir -p $DF_INSTALL_DIR/var/log/fenced/
 chmod +x $DF_INSTALL_DIR/home/deepfence/*.sh
 
 echo "Start Deepfence services... Console is $MGMT_CONSOLE_URL"
-check_auth
 launch_package_scanner
 
 echo "Starting discovery logs..." >>$DF_INSTALL_DIR/var/log/fenced/discovery.logfile

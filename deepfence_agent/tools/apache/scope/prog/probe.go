@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
@@ -44,6 +45,8 @@ const (
 
 	kubernetesRoleHost    = "host"
 	kubernetesRoleCluster = "cluster"
+
+	authCheckPeriod = time.Second * 10
 )
 
 var (
@@ -241,7 +244,18 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			controls.DummyPipeClient
 		})
 	} else {
-		multiClients := appclient.NewOpenapiClient() //appclient.NewMultiAppClient(clientFactory, flags.noControls)
+		var multiClients *appclient.OpenapiClient
+		for {
+			multiClients, err = appclient.NewOpenapiClient()
+			if err == nil {
+				break
+			} else if errors.Is(err, appclient.AuthError) {
+				log.Warnln("Failed to authenticate. Retrying...")
+				time.Sleep(authCheckPeriod)
+			} else {
+				log.Fatalf("Fatal: %v", err)
+			}
+		}
 		defer multiClients.Stop()
 
 		//dnsLookupFn := net.LookupIP

@@ -26,7 +26,6 @@ COPY tools/apache/scope/docker/uploadFile.sh deepfence/home/deepfence/uploadFile
 
 ADD fargate/misc/scanners-1.3.0.tar.gz /deepfence/home/deepfence/
 
-COPY misc/deepfence/df-utils/agent_auth/agentAuth /deepfence/usr/local/bin/agentAuth
 COPY misc/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /deepfence/usr/local/bin/getCloudInstanceId
 COPY tools/apache/scope/docker/deepfenceutil /deepfence/usr/bin/deepfenceutil
 

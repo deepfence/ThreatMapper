@@ -4,8 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -21,11 +21,15 @@ import (
 )
 
 type OpenapiClient struct {
-	client      *openapi.APIClient
+	client *openapi.APIClient
 }
 
 const (
 	maxIdleConnsPerHost = 1024
+)
+
+var (
+	AuthError = errors.New("Authentication error")
 )
 
 func buildHttpClient() *http.Client {
@@ -43,23 +47,20 @@ func buildHttpClient() *http.Client {
 	return client
 }
 
-func NewOpenapiClient() *OpenapiClient {
+func NewOpenapiClient() (*OpenapiClient, error) {
 
 	url := os.Getenv("MGMT_CONSOLE_URL")
 	if url == "" {
-		log.Println("MGMT_CONSOLE_URL not set")
-		return nil
+		return nil, errors.New("MGMT_CONSOLE_URL not set")
 	}
 	port := os.Getenv("MGMT_CONSOLE_PORT")
 	if port == "" {
-		log.Println("MGMT_CONSOLE_URL not set")
-		return nil
+		return nil, errors.New("MGMT_CONSOLE_PORT not set")
 	}
 
 	api_token := os.Getenv("DEEPFENCE_KEY")
 	if port == "" {
-		log.Println("MGMT_CONSOLE_URL not set")
-		return nil
+		return nil, errors.New("DEEPFENCE_KEY not set")
 	}
 
 	cfg := openapi.NewConfiguration()
@@ -76,21 +77,19 @@ func NewOpenapiClient() *OpenapiClient {
 	})
 	res, _, err := cl.AuthenticationApi.AuthTokenExecute(req)
 	if err != nil {
-		log.Printf("Auth error: %v\n", err)
-		return nil
+		return nil, AuthError
 	}
 
 	accessToken := res.GetData().AccessToken
 	if accessToken == nil {
-		log.Println("Auth token nil: failed to authenticate")
-		return nil
+		return nil, AuthError
 	}
 
 	cl.GetConfig().AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %v", *accessToken))
 
 	return &OpenapiClient{
-		client:      cl,
-	}
+		client: cl,
+	}, nil
 }
 
 // PipeClose implements MultiAppClient

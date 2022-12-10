@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"reflect"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -11,8 +14,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"net/http"
-	"reflect"
 )
 
 const (
@@ -68,7 +69,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	c := model.Company{
 		Name:        registerRequest.Company,
 		EmailDomain: emailDomain,
-		Namespace:   DefaultNamespace,
+		Namespace:   DefaultNamespace, //TODO: SaaS namespace
 	}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
