@@ -9,6 +9,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type LogErrorWriter struct{}
+
+func (LogErrorWriter) Write(b []byte) (int, error) {
+	log.Error().Msg(string(b))
+	return len(b), nil
+}
+
 type AsynqLogger struct{}
 
 func (a AsynqLogger) Debug(args ...interface{}) {

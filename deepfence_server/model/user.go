@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
@@ -277,18 +279,19 @@ func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*Re
 func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
 	accessTokenID := utils.NewUUIDString()
 	claims := map[string]interface{}{
-		"id":         accessTokenID,
-		"user_id":    u.ID,
-		"first_name": u.FirstName,
-		"last_name":  u.LastName,
-		"role":       u.Role,
-		"company_id": u.CompanyID,
-		"company":    u.Company,
-		"email":      u.Email,
-		"is_active":  u.IsActive,
-		"grant_type": grantType,
-		"namespace":  u.CompanyNamespace,
+		"id":                    accessTokenID,
+		"user_id":               u.ID,
+		"first_name":            u.FirstName,
+		"last_name":             u.LastName,
+		"role":                  u.Role,
+		"company_id":            u.CompanyID,
+		"company":               u.Company,
+		"email":                 u.Email,
+		"is_active":             u.IsActive,
+		"grant_type":            grantType,
+		directory.NAMESPACE_KEY: u.CompanyNamespace,
 	}
+	log.Info().Msgf("CLAIMES = %v\n", claims)
 	jwtauth.SetIssuedNow(claims)
 	jwtauth.SetExpiryIn(claims, time.Hour*24) // 1 day
 	_, s, err := tokenAuth.Encode(claims)

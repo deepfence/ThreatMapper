@@ -53,7 +53,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	//	reader = io.TeeReader(r.Body, gzip.NewWriter(buf))
 	//}
 
-	ctx := directory.NewAccountContext()
+	ctx := r.Context()
 
 	//contentType := r.Header.Get("Content-Type")
 	//var isMsgpack int

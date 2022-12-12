@@ -17,6 +17,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 
+	lo "log"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/go-chi/chi/v5"
@@ -95,7 +97,7 @@ func main() {
 		return
 	}
 
-	httpServer := http.Server{Addr: config.HttpListenEndpoint, Handler: r}
+	httpServer := http.Server{Addr: config.HttpListenEndpoint, Handler: r, ErrorLog: lo.New(&log.LogErrorWriter{}, "Logger", 0)}
 
 	idleConnectionsClosed := make(chan struct{})
 	go func() {

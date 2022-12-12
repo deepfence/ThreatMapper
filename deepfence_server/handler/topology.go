@@ -47,7 +47,7 @@ func (h *Handler) GetTopologyGraph(w http.ResponseWriter, r *http.Request) {
 		Edges detailed.TopologyConnectionSummaries `json:"edges"`
 	}
 
-	ctx := directory.NewAccountContext()
+	ctx := r.Context()
 
 	if err := r.ParseForm(); err != nil {
 		respondWith(ctx, w, http.StatusInternalServerError, err)

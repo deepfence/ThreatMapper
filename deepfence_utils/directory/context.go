@@ -3,12 +3,17 @@ package directory
 import (
 	"context"
 	"errors"
+	"net/http"
 )
 
-func NewAccountContext() context.Context {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, NAMESPACE_KEY, NONSAAS_DIR_KEY)
-	return ctx
+// Injector makes sure the context is filled with the
+// information provided by the JWT.
+func Injector(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: inject namespace from context claims
+		ctx := context.WithValue(r.Context(), NAMESPACE_KEY, NONSAAS_DIR_KEY)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func NewGlobalContext() context.Context {

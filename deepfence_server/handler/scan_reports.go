@@ -9,7 +9,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -58,7 +57,7 @@ func startScan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
 		return
 	}
 
-	ctx := directory.NewAccountContext()
+	ctx := r.Context()
 	err = controls.SetAgentActions(ctx, nodeId, []ctl.Action{
 		{
 			ID:             action,
@@ -93,7 +92,8 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
-	ctx := directory.NewAccountContext()
+
+	ctx := req.Context()
 
 	var data T
 	err = json.Unmarshal(body, &data)
@@ -144,7 +144,8 @@ func ingest_scan_report_kafka[T any](respWrite http.ResponseWriter, req *http.Re
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
-	ctx := directory.NewAccountContext()
+
+	ctx := req.Context()
 
 	var data T
 	err = json.Unmarshal(body, &data)
