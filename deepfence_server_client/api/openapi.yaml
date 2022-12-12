@@ -302,42 +302,6 @@ paths:
       summary: Ingest Compliances
       tags:
       - Compliance
-  /deepfence/ingest/cves:
-    post:
-      description: Ingest CVEs found while scanning the agent
-      operationId: ingestCVEs
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/IngestersDfCveStruct'
-              nullable: true
-              type: array
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsFailureResponse'
-          description: Internal Server Error
-      security:
-      - bearer_token: []
-      summary: Ingest CVEs
-      tags:
-      - Vulnerability
   /deepfence/ingest/report:
     post:
       description: Ingest data reported by one Agent
@@ -411,6 +375,42 @@ paths:
       summary: Ingest Secrets
       tags:
       - Secret Scan
+  /deepfence/ingest/vulnerabilities:
+    post:
+      description: Ingest vulnerabilities found while scanning the agent host or containers
+      operationId: ingestVulnerabilities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersDfVulnerabilityStruct'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Ingest Vulnerabilities
+      tags:
+      - Vulnerability
   /deepfence/scan/start/compliance:
     get:
       description: Start Compliance Scan on agent or registry
@@ -497,7 +497,7 @@ paths:
       - Secret Scan
   /deepfence/scan/start/vulnerability:
     get:
-      description: Start CVE Scan on agent or registry
+      description: Start Vulnerability Scan on agent or registry
       operationId: startVulnerabilityScan
       responses:
         "202":
@@ -520,7 +520,7 @@ paths:
           description: Internal Server Error
       security:
       - bearer_token: []
-      summary: Start CVE Scan
+      summary: Start Vulnerability Scan
       tags:
       - Vulnerability
   /deepfence/scan/stop/compliance:
@@ -609,7 +609,7 @@ paths:
       - Secret Scan
   /deepfence/scan/stop/vulnerability:
     get:
-      description: Stop CVE Scan on agent or registry
+      description: Stop Vulnerability Scan on agent or registry
       operationId: stopVulnerabilityScan
       responses:
         "202":
@@ -632,7 +632,7 @@ paths:
           description: Internal Server Error
       security:
       - bearer_token: []
-      summary: Stop CVE Scan
+      summary: Stop Vulnerability Scan
       tags:
       - Vulnerability
   /deepfence/user:
@@ -1129,7 +1129,7 @@ components:
         type:
           type: string
       type: object
-    IngestersDfCveStruct:
+    IngestersDfVulnerabilityStruct:
       example:
         cve_container_layer: cve_container_layer
         kubernetes_cluster_name: kubernetes_cluster_name

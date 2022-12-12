@@ -101,9 +101,9 @@ Class | Method | HTTP request | Description
 *UserApi* | [**GetCurrentUser**](docs/UserApi.md#getcurrentuser) | **Get** /deepfence/user | Get Current User
 *UserApi* | [**RegisterUser**](docs/UserApi.md#registeruser) | **Post** /deepfence/user/register | Register User
 *UserApi* | [**UpdateCurrentUser**](docs/UserApi.md#updatecurrentuser) | **Put** /deepfence/user | Update Current User
-*VulnerabilityApi* | [**IngestCVEs**](docs/VulnerabilityApi.md#ingestcves) | **Post** /deepfence/ingest/cves | Ingest CVEs
-*VulnerabilityApi* | [**StartVulnerabilityScan**](docs/VulnerabilityApi.md#startvulnerabilityscan) | **Get** /deepfence/scan/start/vulnerability | Start CVE Scan
-*VulnerabilityApi* | [**StopVulnerabilityScan**](docs/VulnerabilityApi.md#stopvulnerabilityscan) | **Get** /deepfence/scan/stop/vulnerability | Stop CVE Scan
+*VulnerabilityApi* | [**IngestVulnerabilities**](docs/VulnerabilityApi.md#ingestvulnerabilities) | **Post** /deepfence/ingest/vulnerabilities | Ingest Vulnerabilities
+*VulnerabilityApi* | [**StartVulnerabilityScan**](docs/VulnerabilityApi.md#startvulnerabilityscan) | **Get** /deepfence/scan/start/vulnerability | Start Vulnerability Scan
+*VulnerabilityApi* | [**StopVulnerabilityScan**](docs/VulnerabilityApi.md#stopvulnerabilityscan) | **Get** /deepfence/scan/stop/vulnerability | Stop Vulnerability Scan
 
 
 ## Documentation For Models
@@ -116,7 +116,7 @@ Class | Method | HTTP request | Description
  - [IngestersCloudComplianceDoc](docs/IngestersCloudComplianceDoc.md)
  - [IngestersCloudResource](docs/IngestersCloudResource.md)
  - [IngestersComplianceDoc](docs/IngestersComplianceDoc.md)
- - [IngestersDfCveStruct](docs/IngestersDfCveStruct.md)
+ - [IngestersDfVulnerabilityStruct](docs/IngestersDfVulnerabilityStruct.md)
  - [IngestersSecret](docs/IngestersSecret.md)
  - [ModelApiAuthRequest](docs/ModelApiAuthRequest.md)
  - [ModelLoginRequest](docs/ModelLoginRequest.md)

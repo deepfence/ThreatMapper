@@ -26,7 +26,7 @@ docs/ControlsAgentControls.md
 docs/IngestersCloudComplianceDoc.md
 docs/IngestersCloudResource.md
 docs/IngestersComplianceDoc.md
-docs/IngestersDfCveStruct.md
+docs/IngestersDfVulnerabilityStruct.md
 docs/IngestersSecret.md
 docs/MalwareScanApi.md
 docs/ModelApiAuthRequest.md
@@ -56,7 +56,7 @@ model_controls_agent_controls.go
 model_ingesters_cloud_compliance_doc.go
 model_ingesters_cloud_resource.go
 model_ingesters_compliance_doc.go
-model_ingesters_df_cve_struct.go
+model_ingesters_df_vulnerability_struct.go
 model_ingesters_secret.go
 model_model_api_auth_request.go
 model_model_login_request.go
