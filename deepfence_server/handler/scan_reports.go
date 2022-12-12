@@ -111,8 +111,8 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 	fmt.Fprintf(respWrite, "Ok")
 }
 
-func (h *Handler) IngestCVEReportHandler(w http.ResponseWriter, r *http.Request) {
-	ingester := ingesters.NewCVEIngester()
+func (h *Handler) IngestVulnerabilityReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewVulnerabilityIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 

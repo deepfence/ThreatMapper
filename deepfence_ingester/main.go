@@ -90,7 +90,7 @@ func main() {
 	go startKafkaConsumers(ctx, kafkaBrokers, utils.Topics, "default")
 
 	// bulk processors
-	cveProcessor = NewBulkProcessor(utils.CVE_SCAN, commitFuncCVEs)
+	cveProcessor = NewBulkProcessor(utils.VULNERABILITY_SCAN, commitFuncCVEs)
 	cveProcessor.Start(ctx)
 
 	complianceProcessor = NewBulkProcessor(utils.COMPLIANCE_SCAN, commitFuncCompliance)

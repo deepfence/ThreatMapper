@@ -66,9 +66,9 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Topology Data", "Ingest data reported by one Agent",
 		http.StatusOK, []string{tagTopology}, nil, bearerToken, new(RawReport), new(controls.AgentControls))
 
-	d.AddOperation("ingestCVEs", http.MethodPost, "/deepfence/ingest/cves",
-		"Ingest CVEs", "Ingest CVEs found while scanning the agent",
-		http.StatusOK, []string{tagVulnerability}, nil, bearerToken, new([]ingesters.DfCveStruct), nil)
+	d.AddOperation("ingestVulnerabilities", http.MethodPost, "/deepfence/ingest/vulnerabilities",
+		"Ingest Vulnerabilities", "Ingest vulnerabilities found while scanning the agent host or containers",
+		http.StatusOK, []string{tagVulnerability}, nil, bearerToken, new([]ingesters.DfVulnerabilityStruct), nil)
 
 	d.AddOperation("ingestSecrets", http.MethodPost, "/deepfence/ingest/secrets",
 		"Ingest Secrets", "Ingest secrets found while scanning the agent",
@@ -91,7 +91,7 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 func (d *OpenApiDocs) AddScansOperations() {
 	// Start scan
 	d.AddOperation("startVulnerabilityScan", http.MethodGet, "/deepfence/scan/start/vulnerability",
-		"Start CVE Scan", "Start CVE Scan on agent or registry",
+		"Start Vulnerability Scan", "Start Vulnerability Scan on agent or registry",
 		http.StatusAccepted, []string{tagVulnerability}, nil, bearerToken, new(ScanTrigger), nil)
 	d.AddOperation("startSecretScan", http.MethodGet, "/deepfence/scan/start/secret",
 		"Start Secret Scan", "Start Secret Scan on agent or registry",
@@ -105,7 +105,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 
 	// Stop scan
 	d.AddOperation("stopVulnerabilityScan", http.MethodGet, "/deepfence/scan/stop/vulnerability",
-		"Stop CVE Scan", "Stop CVE Scan on agent or registry",
+		"Stop Vulnerability Scan", "Stop Vulnerability Scan on agent or registry",
 		http.StatusAccepted, []string{tagVulnerability}, nil, bearerToken, new(ScanTrigger), nil)
 	d.AddOperation("stopSecretScan", http.MethodGet, "/deepfence/scan/stop/secret",
 		"Stop Secret Scan", "Stop Secret Scan on agent or registry",

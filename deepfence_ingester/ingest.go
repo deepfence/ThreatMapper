@@ -68,8 +68,8 @@ func processRecord(r *kgo.Record) {
 	tenant := tenantID(r.Headers)
 
 	switch r.Topic {
-	case utils.CVE_SCAN:
-		cveProcessed.Inc()
+	case utils.VULNERABILITY_SCAN:
+		vulnerabilitiesProcessed.Inc()
 		cveProcessor.processCVE(tenant, r.Value)
 
 	case utils.SECRET_SCAN:

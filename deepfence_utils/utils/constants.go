@@ -2,8 +2,8 @@ package utils
 
 // kafka topics
 const (
-	CVE_SCAN                   = "cve-scan"
-	CVE_SCAN_LOGS              = "cve-scan-logs"
+	VULNERABILITY_SCAN         = "vulnerability-scan"
+	CVE_SCAN_LOGS              = "vulnerability-scan-logs"
 	SECRET_SCAN                = "secret-scan"
 	SECRET_SCAN_LOGS           = "secret-scan-logs"
 	MALWARE_SCAN               = "malware-scan"
@@ -18,7 +18,7 @@ const (
 )
 
 var Topics = []string{
-	CVE_SCAN, CVE_SCAN_LOGS,
+	VULNERABILITY_SCAN, CVE_SCAN_LOGS,
 	SECRET_SCAN, SECRET_SCAN_LOGS,
 	MALWARE_SCAN, MALWARE_SCAN_LOGS,
 	SBOM_ARTIFACTS, SBOM_CVE_SCAN,
