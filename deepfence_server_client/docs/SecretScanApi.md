@@ -5,7 +5,8 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**IngestSecrets**](SecretScanApi.md#IngestSecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
-[**StartSecretScan**](SecretScanApi.md#StartSecretScan) | **Get** /deepfence/scan/start/secrets | Start Secret Scan
+[**StartSecretScan**](SecretScanApi.md#StartSecretScan) | **Get** /deepfence/scan/start/secret | Start Secret Scan
+[**StopSecretScan**](SecretScanApi.md#StopSecretScan) | **Get** /deepfence/scan/stop/secret | Stop Secret Scan
 
 
 
@@ -112,6 +113,65 @@ This endpoint does not need any parameter.
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiStartSecretScanRequest struct via the builder pattern
+
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+[bearer_token](../README.md#bearer_token)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## StopSecretScan
+
+> StopSecretScan(ctx).Execute()
+
+Stop Secret Scan
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.SecretScanApi.StopSecretScan(context.Background()).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.StopSecretScan``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiStopSecretScanRequest struct via the builder pattern
 
 
 ### Return type

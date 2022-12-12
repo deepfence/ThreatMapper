@@ -4,7 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**AuthToken**](AuthenticationApi.md#AuthToken) | **Post** /deepfence/auth/token | API Auth Token
+[**AuthToken**](AuthenticationApi.md#AuthToken) | **Post** /deepfence/auth/token | Get Access Token for API Token
+[**AuthTokenRefresh**](AuthenticationApi.md#AuthTokenRefresh) | **Post** /deepfence/auth/token/refresh | Refresh access token
 [**Login**](AuthenticationApi.md#Login) | **Post** /deepfence/user/login | Login API
 [**Logout**](AuthenticationApi.md#Logout) | **Post** /deepfence/user/logout | Logout API
 
@@ -14,7 +15,7 @@ Method | HTTP request | Description
 
 > ModelResponse AuthToken(ctx).ModelApiAuthRequest(modelApiAuthRequest).Execute()
 
-API Auth Token
+Get Access Token for API Token
 
 
 
@@ -69,6 +70,67 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## AuthTokenRefresh
+
+> ModelResponse AuthTokenRefresh(ctx).Execute()
+
+Refresh access token
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.AuthenticationApi.AuthTokenRefresh(context.Background()).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `AuthenticationApi.AuthTokenRefresh``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `AuthTokenRefresh`: ModelResponse
+    fmt.Fprintf(os.Stdout, "Response from `AuthenticationApi.AuthTokenRefresh`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiAuthTokenRefreshRequest struct via the builder pattern
+
+
+### Return type
+
+[**ModelResponse**](ModelResponse.md)
+
+### Authorization
+
+[bearer_token](../README.md#bearer_token)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

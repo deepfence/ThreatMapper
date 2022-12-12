@@ -59,6 +59,8 @@ type APIClient struct {
 
 	ComplianceApi *ComplianceApiService
 
+	MalwareScanApi *MalwareScanApiService
+
 	SecretScanApi *SecretScanApiService
 
 	ThreatApi *ThreatApiService
@@ -90,6 +92,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.CloudComplianceApi = (*CloudComplianceApiService)(&c.common)
 	c.CloudResourcesApi = (*CloudResourcesApiService)(&c.common)
 	c.ComplianceApi = (*ComplianceApiService)(&c.common)
+	c.MalwareScanApi = (*MalwareScanApiService)(&c.common)
 	c.SecretScanApi = (*SecretScanApiService)(&c.common)
 	c.ThreatApi = (*ThreatApiService)(&c.common)
 	c.TopologyApi = (*TopologyApiService)(&c.common)

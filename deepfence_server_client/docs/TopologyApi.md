@@ -91,7 +91,7 @@ import (
 )
 
 func main() {
-    apiDocsRawReport := *openapiclient.NewApiDocsRawReport() // ApiDocsRawReport |  (optional)
+    apiDocsRawReport := *openapiclient.NewApiDocsRawReport("Payload_example") // ApiDocsRawReport |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)

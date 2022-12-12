@@ -11,11 +11,11 @@ import (
 )
 
 type RawReport struct {
-	Payload string `json:"payload"`
+	Payload string `json:"payload" required:"true"`
 }
 
 type ScanTrigger struct {
-	NodeId string `json:"node_id"`
+	NodeId string `json:"node_id" required:"true"`
 }
 
 func (d *OpenApiDocs) AddUserAuthOperations() {

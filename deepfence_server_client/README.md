@@ -79,15 +79,20 @@ All URIs are relative to *http://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AuthenticationApi* | [**AuthToken**](docs/AuthenticationApi.md#authtoken) | **Post** /deepfence/auth/token | API Auth Token
+*AuthenticationApi* | [**AuthToken**](docs/AuthenticationApi.md#authtoken) | **Post** /deepfence/auth/token | Get Access Token for API Token
+*AuthenticationApi* | [**AuthTokenRefresh**](docs/AuthenticationApi.md#authtokenrefresh) | **Post** /deepfence/auth/token/refresh | Refresh access token
 *AuthenticationApi* | [**Login**](docs/AuthenticationApi.md#login) | **Post** /deepfence/user/login | Login API
 *AuthenticationApi* | [**Logout**](docs/AuthenticationApi.md#logout) | **Post** /deepfence/user/logout | Logout API
 *CloudComplianceApi* | [**IngestCloudCompliances**](docs/CloudComplianceApi.md#ingestcloudcompliances) | **Post** /deepfence/ingest/cloud-compliance | Ingest Cloud Compliances
 *CloudResourcesApi* | [**IngestCloudResources**](docs/CloudResourcesApi.md#ingestcloudresources) | **Post** /deepfence/ingest/cloud-resources | Ingest Cloud resources
 *ComplianceApi* | [**IngestCompliances**](docs/ComplianceApi.md#ingestcompliances) | **Post** /deepfence/ingest/compliance | Ingest Compliances
-*ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Get** /deepfence/scan/start/compliances | Start Compliance Scan
+*ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Get** /deepfence/scan/start/compliance | Start Compliance Scan
+*ComplianceApi* | [**StopComplianceScan**](docs/ComplianceApi.md#stopcompliancescan) | **Get** /deepfence/scan/stop/compliance | Stop Compliance Scan
+*MalwareScanApi* | [**StartMalwareScan**](docs/MalwareScanApi.md#startmalwarescan) | **Get** /deepfence/scan/start/malware | Start Malware Scan
+*MalwareScanApi* | [**StopMalwareScan**](docs/MalwareScanApi.md#stopmalwarescan) | **Get** /deepfence/scan/stop/malware | Stop Malware Scan
 *SecretScanApi* | [**IngestSecrets**](docs/SecretScanApi.md#ingestsecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
-*SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan) | **Get** /deepfence/scan/start/secrets | Start Secret Scan
+*SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan) | **Get** /deepfence/scan/start/secret | Start Secret Scan
+*SecretScanApi* | [**StopSecretScan**](docs/SecretScanApi.md#stopsecretscan) | **Get** /deepfence/scan/stop/secret | Stop Secret Scan
 *ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Get** /deepfence/graph/threat | Get Threat Graph
 *TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Get** /deepfence/graph/topology | Get Topology Graph
 *TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/ingest/report | Ingest Topology Data
@@ -97,7 +102,8 @@ Class | Method | HTTP request | Description
 *UserApi* | [**RegisterUser**](docs/UserApi.md#registeruser) | **Post** /deepfence/user/register | Register User
 *UserApi* | [**UpdateCurrentUser**](docs/UserApi.md#updatecurrentuser) | **Put** /deepfence/user | Update Current User
 *VulnerabilityApi* | [**IngestCVEs**](docs/VulnerabilityApi.md#ingestcves) | **Post** /deepfence/ingest/cves | Ingest CVEs
-*VulnerabilityApi* | [**StartCVEScan**](docs/VulnerabilityApi.md#startcvescan) | **Get** /deepfence/scan/start/cves | Start CVE Scan
+*VulnerabilityApi* | [**StartVulnerabilityScan**](docs/VulnerabilityApi.md#startvulnerabilityscan) | **Get** /deepfence/scan/start/vulnerability | Start CVE Scan
+*VulnerabilityApi* | [**StopVulnerabilityScan**](docs/VulnerabilityApi.md#stopvulnerabilityscan) | **Get** /deepfence/scan/stop/vulnerability | Stop CVE Scan
 
 
 ## Documentation For Models

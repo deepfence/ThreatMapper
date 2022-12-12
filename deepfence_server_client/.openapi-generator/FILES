@@ -6,6 +6,7 @@ api_authentication.go
 api_cloud_compliance.go
 api_cloud_resources.go
 api_compliance.go
+api_malware_scan.go
 api_secret_scan.go
 api_threat.go
 api_topology.go
@@ -27,6 +28,7 @@ docs/IngestersCloudResource.md
 docs/IngestersComplianceDoc.md
 docs/IngestersDfCveStruct.md
 docs/IngestersSecret.md
+docs/MalwareScanApi.md
 docs/ModelApiAuthRequest.md
 docs/ModelLoginRequest.md
 docs/ModelResponse.md

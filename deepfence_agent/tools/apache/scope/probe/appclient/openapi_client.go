@@ -109,12 +109,10 @@ func (oc OpenapiClient) Publish(r report.Report) error {
 		return err
 	}
 
-	payload := string(buf)
-
 	req := oc.client.TopologyApi.IngestAgentReport(context.Background())
 
 	req = req.ApiDocsRawReport(openapi.ApiDocsRawReport{
-		Payload: &payload,
+		Payload: string(buf),
 	})
 
 	ctl, _, err := oc.client.TopologyApi.IngestAgentReportExecute(req)
