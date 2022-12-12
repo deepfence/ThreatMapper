@@ -93,7 +93,7 @@ ingester:
 	docker build -f ./deepfence_ingester/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG) .
 
 .PHONY: openapi
-openapi:
+openapi: server
 	docker run --rm -it \
 	--entrypoint=/usr/local/bin/deepfence_server \
 	-v $(PWD):/app $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) \

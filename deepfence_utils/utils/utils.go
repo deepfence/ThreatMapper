@@ -2,13 +2,16 @@ package utils
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"net/mail"
 	"net/url"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
 var (
@@ -101,4 +104,12 @@ func InterfaceToInt(a interface{}) (int64, error) {
 	default:
 		return 0, errors.New("type error")
 	}
+}
+
+func IsJWTExpired(token string) bool {
+	parsed, err := jwt.Parse([]byte(token), jwt.WithVerify(false))
+	if err != nil {
+		return true
+	}
+	return parsed.Expiration().Sub(time.Now().Add(1*time.Hour)) < 0
 }

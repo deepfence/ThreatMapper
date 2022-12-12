@@ -70,7 +70,12 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go startKafkaProducer(ctx, kafkaBrokers, ingestC)
 
-	dfHandler, err := router.SetupRoutes(r, config.HttpListenEndpoint, config.JwtSecret, *serveOpenapiDocs, ingestC)
+	dfHandler, err := router.SetupRoutes(r,
+		config.HttpListenEndpoint,
+		config.JwtSecret,
+		*serveOpenapiDocs,
+		ingestC,
+	)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
@@ -82,6 +87,10 @@ func main() {
 			return
 		}
 		err = os.WriteFile(*exportOpenapiDocsPath, openApiYaml, 0666)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return
+		}
 		log.Info().Msgf("OpenAPI yaml saved at %s", *exportOpenapiDocsPath)
 		return
 	}

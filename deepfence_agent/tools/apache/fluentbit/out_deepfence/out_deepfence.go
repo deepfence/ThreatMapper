@@ -5,11 +5,10 @@ import (
 	"crypto/x509"
 	"unsafe"
 
-	"github.com/fluent/fluent-bit-go/output"
-)
-import (
+	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"io"
 	"log"
@@ -20,7 +19,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/fluent/fluent-bit-go/output"
+
 	deepfenceAPI "github.com/deepfence/ThreatMapper/deepfence_server_client"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	rhttp "github.com/hashicorp/go-retryablehttp"
 )
 
@@ -31,6 +33,7 @@ var (
 )
 
 type Config struct {
+	ConsoleURL   string
 	URL          string
 	Key          string
 	AccessToken  string
@@ -86,7 +89,7 @@ func parseValue(value interface{}) interface{} {
 // 	for i, u := range data {
 // 		encoded, err := json.Marshal(u)
 // 		if err != nil {
-// 			log.Printf("[deepfence] error marshal doc %s\ndoc:%s", err, u)
+// 			log.Printf("error marshal doc %s\ndoc:%s", err, u)
 // 			continue
 // 		}
 // 		values[i] = "{\"value\":" + string(encoded) + "}"
@@ -101,6 +104,7 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 		refreshToken *string
 	)
 	cfg := deepfenceAPI.NewConfiguration()
+	cfg.HTTPClient = hc.HTTPClient
 	cfg.Servers = deepfenceAPI.ServerConfigurations{
 		{URL: url, Description: "deepfence_server"},
 	}
@@ -123,11 +127,61 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 		return "", "", errors.New("auth tokens are nil: failed to authenticate")
 	}
 
+	log.Print("authenticated with console successfully")
+
 	return *accessToken, *refreshToken, nil
+}
+
+func RefreshToken(url string, apiToken string) (string, string, error) {
+	var (
+		accessToken  *string
+		refreshToken *string
+	)
+	cfg := deepfenceAPI.NewConfiguration()
+	cfg.HTTPClient = hc.HTTPClient
+	cfg.Servers = deepfenceAPI.ServerConfigurations{
+		{URL: url, Description: "deepfence_server"},
+	}
+
+	cfg.AddDefaultHeader("Authorization", "Bearer "+apiToken)
+
+	apiClient := deepfenceAPI.NewAPIClient(cfg)
+
+	req := apiClient.AuthenticationApi.AuthTokenRefresh(context.Background())
+
+	resp, _, err := apiClient.AuthenticationApi.AuthTokenRefreshExecute(req)
+	if err != nil {
+		return "", "", err
+	}
+
+	accessToken = resp.GetData().AccessToken
+	refreshToken = resp.GetData().RefreshToken
+	if accessToken == nil || refreshToken == nil {
+		return "", "", errors.New("auth tokens are nil: failed to authenticate")
+	}
+
+	log.Print("refreshed tokens from console successfully")
+
+	return *accessToken, *refreshToken, nil
+}
+
+func validateTokens(cfg Config) (Config, bool, error) {
+	if !utils.IsJWTExpired(cfg.AccessToken) {
+		return cfg, false, nil
+	} else {
+		access, refresh, err := RefreshToken(cfg.ConsoleURL, cfg.RefreshToken)
+		if err != nil {
+			return cfg, false, err
+		}
+		cfg.AccessToken = access
+		cfg.RefreshToken = refresh
+		return cfg, true, nil
+	}
 }
 
 //export FLBPluginRegister
 func FLBPluginRegister(def unsafe.Pointer) int {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	return output.FLBPluginRegister(def, "deepfence", "deepfence output plugin")
 }
 
@@ -138,15 +192,15 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	}
 
 	id := output.FLBPluginConfigKey(plugin, "id")
-	host := output.FLBPluginConfigKey(plugin, "host")
-	port := output.FLBPluginConfigKey(plugin, "port")
+	host := output.FLBPluginConfigKey(plugin, "console_host")
+	port := output.FLBPluginConfigKey(plugin, "console_port")
 	path := output.FLBPluginConfigKey(plugin, "path")
 	schema := output.FLBPluginConfigKey(plugin, "schema")
-	apiToken := output.FLBPluginConfigKey(plugin, "api_token")
+	apiToken := output.FLBPluginConfigKey(plugin, "token")
 	certPath := output.FLBPluginConfigKey(plugin, "cert_file")
 	certKey := output.FLBPluginConfigKey(plugin, "key_file")
-	log.Printf("[deepfence] schema=%s host=%s port=%s path=%s",
-		schema, host, port, path)
+	log.Printf("id=%s schema=%s host=%s port=%s path=%s",
+		id, schema, host, port, path)
 
 	// setup http client
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
@@ -159,7 +213,7 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 		if len(certPath) > 0 && len(certKey) > 0 {
 			cer, err := tls.LoadX509KeyPair(certPath, certKey)
 			if err != nil {
-				log.Printf("[deepfence] error loading certs %s", err)
+				log.Printf("error loading certs %s", err)
 				return output.FLB_ERROR
 			}
 			tlsConfig.Certificates = []tls.Certificate{cer}
@@ -173,7 +227,7 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 
 	access, refresh, err := Authenticate(getURL(schema, host, port), apiToken)
 	if err != nil {
-		log.Printf("[deepfence] failed to authenticate %s", err)
+		log.Printf("failed to authenticate %s", err)
 	}
 
 	if len(id) == 0 {
@@ -182,14 +236,15 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	}
 
 	cfg[id] = Config{
+		ConsoleURL:   getURL(schema, host, port),
 		URL:          getURLWithPath(schema, host, port, path),
 		Key:          apiToken,
 		AccessToken:  access,
 		RefreshToken: refresh,
 	}
 
-	log.Printf("[deepfence] api token set %t for id %s", apiToken != "", id)
-	log.Printf("[deepfence] push to url %s", cfg[id].URL)
+	log.Printf("api token set %t for id %s", apiToken != "", id)
+	log.Printf("push to url %s", cfg[id].URL)
 
 	output.FLBPluginSetContext(plugin, id)
 
@@ -198,7 +253,7 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
-	log.Printf("[deepfence] flush called on unknown instance")
+	log.Printf("flush called on unknown instance")
 	return output.FLB_OK
 }
 
@@ -207,8 +262,18 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	id := output.FLBPluginGetContext(ctx).(string)
 	idCfg, ok := cfg[id]
 	if !ok {
-		log.Printf("[deepfence] push to unknown id topic %s", id)
+		log.Printf("push to unknown id topic %s", id)
 		return output.FLB_ERROR
+	}
+
+	newConfig, changed, err := validateTokens(idCfg)
+	if err != nil {
+		log.Print(err.Error())
+		return output.FLB_ERROR
+	}
+	if changed {
+		idCfg = newConfig
+		cfg[id] = newConfig
 	}
 
 	// fluent-bit decoder
@@ -224,9 +289,15 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 		records = append(records, toMapStringInterface(record))
 	}
 
-	req, err := rhttp.NewRequest(http.MethodPost, idCfg.URL, records)
+	rawRecords, err := json.Marshal(records)
 	if err != nil {
-		log.Printf("[deepfence] error creating request %s", err)
+		log.Printf("error marshaling records: %s", err)
+		return output.FLB_ERROR
+	}
+
+	req, err := rhttp.NewRequest(http.MethodPost, idCfg.URL, bytes.NewReader(rawRecords))
+	if err != nil {
+		log.Printf("error creating request %s", err)
 		return output.FLB_ERROR
 	}
 
@@ -237,10 +308,10 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	if err != nil {
 		if os.IsTimeout(err) {
 			// timeout error
-			log.Printf("[deepfence] retry request timeout error: %s", err)
+			log.Printf(" retry request timeout error: %s", err)
 			return output.FLB_RETRY
 		}
-		log.Printf("[deepfence] error making request %s", err)
+		log.Printf(" error making request %s", err)
 		return output.FLB_ERROR
 	}
 
@@ -248,16 +319,16 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 
 	if resp.StatusCode == http.StatusBadGateway || resp.StatusCode == http.StatusServiceUnavailable ||
 		resp.StatusCode == http.StatusGatewayTimeout || resp.StatusCode == http.StatusTooManyRequests {
-		log.Printf("[deepfence] retry response code %s", resp.Status)
+		log.Printf("retry response code %s", resp.Status)
 		return output.FLB_RETRY
 	} else if resp.StatusCode != http.StatusOK {
-		log.Printf("[deepfence] error response code %s", resp.Status)
+		log.Printf("error response code %s", resp.Status)
 		return output.FLB_ERROR
 	}
 
 	_, err = io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("[deepfence] error reading response %s", err)
+		log.Printf("error reading response %s", err)
 		return output.FLB_ERROR
 	}
 
@@ -266,7 +337,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 
 //export FLBPluginExit
 func FLBPluginExit() int {
-	log.Printf("[deepfence] exit called on unknown instance")
+	log.Printf("exit called on unknown instance")
 	return output.FLB_OK
 }
 
@@ -275,11 +346,17 @@ func FLBPluginExitCtx(ctx unsafe.Pointer) int {
 	id := output.FLBPluginGetContext(ctx).(string)
 	_, ok := cfg[id]
 	if !ok {
-		log.Printf("[deepfence] exit called on unknown id topic %s", id)
+		log.Printf("exit called on unknown id topic %s", id)
 		return output.FLB_ERROR
 	}
-	log.Printf("[deepfence] exit called on id topic %s", id)
+	log.Printf("exit called on id topic %s", id)
 	return output.FLB_OK
+}
+
+//export FLBPluginUnregister
+func FLBPluginUnregister(ctx unsafe.Pointer) {
+	log.Print("unregister called")
+	output.FLBPluginUnregister(ctx)
 }
 
 func main() {}
