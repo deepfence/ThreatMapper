@@ -2,23 +2,23 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"path"
 	"runtime"
 	"strconv"
-	"strings"
 	"syscall"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	logrus "github.com/sirupsen/logrus"
 )
 
 var (
-	kafkaBrokers             string
 	log                      *logrus.Logger
 	cveProcessor             *BulkProcessor
 	complianceProcessor      *BulkProcessor
@@ -26,16 +26,19 @@ var (
 	secretsProcessor         *BulkProcessor
 )
 
-func init() {
+type config struct {
+	KafkaBrokers          []string `default:"deepfence-kafka-broker:9092" required:"true" split_words:"true"`
+	KafkaTopicPartitions  int32    `default:"1" split_words:"true"`
+	KafkaTopicReplicas    int16    `default:"1" split_words:"true"`
+	KafkaTopicRetentionMs string   `default:"86400000" split_words:"true"`
+	MetricsPort           string   `default:"8181" split_words:"true"`
+	Debug                 bool     `default:"false"`
+}
 
+func init() {
 	// setup logger
 	log = logrus.New()
-	debug := os.Getenv("DEBUG")
-	if strings.ToLower(debug) == "true" {
-		log.SetLevel(logrus.DebugLevel)
-	} else {
-		log.SetLevel(logrus.InfoLevel)
-	}
+	log.SetLevel(logrus.InfoLevel)
 	log.SetOutput(os.Stdout)
 	log.SetReportCaller(true)
 	log.SetFormatter(&logrus.TextFormatter{
@@ -46,18 +49,27 @@ func init() {
 			return "", " " + path.Base(f.File) + ":" + strconv.Itoa(f.Line)
 		},
 	})
-
-	kafkaBrokers = os.Getenv("KAFKA_BROKERS")
-	if kafkaBrokers == "" {
-		kafkaBrokers = "deepfence-kafka-broker:9092"
-	}
-	err := checkKafkaConn()
-	if err != nil {
-		gracefulExit(err)
-	}
 }
 
 func main() {
+
+	var cfg config
+	var err error
+	err = envconfig.Process("DEEPFENCE", &cfg)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	log.Infof("config: %+v", cfg)
+
+	if cfg.Debug {
+		log.SetLevel(logrus.DebugLevel)
+	}
+
+	err = checkKafkaConn(cfg.KafkaBrokers)
+	if err != nil {
+		gracefulExit(err)
+	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		os.Interrupt, syscall.SIGTERM)
@@ -66,7 +78,10 @@ func main() {
 	// for prometheus metrics
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
-	srv := &http.Server{Addr: "0.0.0.0:8181", Handler: mux}
+	srv := &http.Server{
+		Addr:    fmt.Sprintf("0.0.0.0:%s", cfg.MetricsPort),
+		Handler: mux,
+	}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Errorf("Server listen failed: %s", err)
@@ -78,16 +93,16 @@ func main() {
 	log.Info("topics list: ", utils.Topics)
 
 	//create if any topics is missing
-	partitions := GetEnvIntWithDefault("KAFKA_TOPIC_PARTITIONS", 1)
-	replicas := GetEnvIntWithDefault("KAFKA_TOPIC_REPLICAS", 1)
-	retention_ms := GetEnvStringWithDefault("KAFKA_TOPIC_RETENTION_MS", "86400000")
-	err := createMissingTopics(utils.Topics, int32(partitions), int16(replicas), retention_ms)
+	err = createMissingTopics(
+		cfg.KafkaBrokers,
+		utils.Topics, cfg.KafkaTopicPartitions,
+		cfg.KafkaTopicReplicas, cfg.KafkaTopicRetentionMs)
 	if err != nil {
 		log.Error(err)
 	}
 
 	// start kafka consumers for all given topics
-	go startKafkaConsumers(ctx, kafkaBrokers, utils.Topics, "default")
+	go startKafkaConsumers(ctx, cfg.KafkaBrokers, utils.Topics, "default")
 
 	// bulk processors
 	cveProcessor = NewBulkProcessor(utils.VULNERABILITY_SCAN, commitFuncCVEs)
@@ -103,7 +118,7 @@ func main() {
 	secretsProcessor.Start(ctx)
 
 	// collect consumer lag for metrics
-	go getLagByTopic(ctx, kafkaBrokers, "default")
+	go getLagByTopic(ctx, cfg.KafkaBrokers, "default")
 
 	// wait for exit
 	// flush all data from bulk processor

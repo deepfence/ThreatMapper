@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -78,9 +77,9 @@ var (
 	})
 )
 
-func getLagByTopic(ctx context.Context, kafkaBrokers string, groupID string) {
+func getLagByTopic(ctx context.Context, kafkaBrokers []string, groupID string) {
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
+		kgo.SeedBrokers(kafkaBrokers...),
 		kgo.WithLogger(kgoLogger),
 	}
 	client, err := kgo.NewClient(opts...)

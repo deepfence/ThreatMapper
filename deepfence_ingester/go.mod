@@ -36,6 +36,7 @@ require (
 )
 
 require (
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/prometheus/client_golang v1.14.0

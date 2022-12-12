@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/twmb/franz-go/pkg/kadm"
@@ -22,9 +21,9 @@ var kgoLogger kgo.Logger = kgo.BasicLogger(
 	func() string { return "[" + getCurrentTime() + "]" + " " },
 )
 
-func checkKafkaConn() error {
+func checkKafkaConn(kafkaBrokers []string) error {
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
+		kgo.SeedBrokers(kafkaBrokers...),
 		kgo.WithLogger(kgoLogger),
 	}
 	kClient, err := kgo.NewClient(opts...)
@@ -35,15 +34,16 @@ func checkKafkaConn() error {
 	if err := kClient.Ping(context.Background()); err != nil {
 		return err
 	}
-	log.Info("connection successful to kafka brokers " + kafkaBrokers)
+	log.Infof("connection successful to kafka brokers %s", kafkaBrokers)
 	return nil
 }
 
-func createMissingTopics(topics []string, partitions int32, replicas int16, retention_ms string) error {
+func createMissingTopics(kafkaBrokers []string, topics []string,
+	partitions int32, replicas int16, retention_ms string) error {
 	log.Infof("create topics with partitions=%d and replicas=%d", partitions, replicas)
 
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
+		kgo.SeedBrokers(kafkaBrokers...),
 		kgo.WithLogger(kgoLogger),
 	}
 	kClient, err := kgo.NewClient(opts...)
