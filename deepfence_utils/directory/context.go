@@ -22,12 +22,12 @@ func Injector(next http.Handler) http.Handler {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
-		namespace, err := utils.GetStringValueFromInterfaceMap(claims, NAMESPACE_KEY)
+		namespace, err := utils.GetStringValueFromInterfaceMap(claims, NamespaceKey)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		ctx := context.WithValue(r.Context(), NAMESPACE_KEY, namespace)
+		ctx := context.WithValue(r.Context(), NamespaceKey, namespace)
 		// Token is authenticated, pass it through
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -35,24 +35,24 @@ func Injector(next http.Handler) http.Handler {
 
 func NewGlobalContext() context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, NAMESPACE_KEY, GLOBAL_DIR_KEY)
+	ctx = context.WithValue(ctx, NamespaceKey, GlobalDirKey)
 	return ctx
 }
 
 func NewContextWithNameSpace(ns NamespaceID) context.Context {
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, NAMESPACE_KEY, ns)
+	ctx = context.WithValue(ctx, NamespaceKey, ns)
 	return ctx
 }
 
 func ExtractNamespace(ctx context.Context) (NamespaceID, error) {
-	namespace := ctx.Value(NAMESPACE_KEY)
+	namespace := ctx.Value(NamespaceKey)
 	if namespace == nil {
-		return "", errors.New("Missing namespace")
+		return "", errors.New("missing namespace")
 	}
 	key, ok := namespace.(NamespaceID)
 	if !ok {
-		return "", errors.New("Wrong namespace type")
+		return "", errors.New("wrong namespace type")
 	}
 	return key, nil
 }

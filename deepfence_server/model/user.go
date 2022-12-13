@@ -281,17 +281,17 @@ func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*Re
 func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
 	accessTokenID := utils.NewUUIDString()
 	claims := map[string]interface{}{
-		"id":                    accessTokenID,
-		"user_id":               u.ID,
-		"first_name":            u.FirstName,
-		"last_name":             u.LastName,
-		"role":                  u.Role,
-		"company_id":            u.CompanyID,
-		"company":               u.Company,
-		"email":                 u.Email,
-		"is_active":             u.IsActive,
-		"grant_type":            grantType,
-		directory.NAMESPACE_KEY: u.CompanyNamespace,
+		"id":                   accessTokenID,
+		"user_id":              u.ID,
+		"first_name":           u.FirstName,
+		"last_name":            u.LastName,
+		"role":                 u.Role,
+		"company_id":           u.CompanyID,
+		"company":              u.Company,
+		"email":                u.Email,
+		"is_active":            u.IsActive,
+		"grant_type":           grantType,
+		directory.NamespaceKey: u.CompanyNamespace,
 	}
 	log.Debug().Msgf("CLAIMS = %v", claims)
 	jwtauth.SetIssuedNow(claims)
@@ -305,10 +305,11 @@ func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (
 
 func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID string, grantType string) (string, error) {
 	claims := map[string]interface{}{
-		"token_id":   accessTokenID,
-		"user":       u.ID,
-		"type":       "refresh_token",
-		"grant_type": grantType,
+		"token_id":             accessTokenID,
+		"user":                 u.ID,
+		"type":                 "refresh_token",
+		"grant_type":           grantType,
+		directory.NamespaceKey: u.CompanyNamespace,
 	}
 	jwtauth.SetIssuedNow(claims)
 	jwtauth.SetExpiryIn(claims, RefreshTokenExpiry)

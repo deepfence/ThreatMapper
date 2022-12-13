@@ -8,10 +8,9 @@ import (
 )
 
 const (
-	GLOBAL_DIR_KEY  = NamespaceID("global")
-	NONSAAS_DIR_KEY = NamespaceID("default")
-
-	NAMESPACE_KEY = "namespace"
+	GlobalDirKey  = NamespaceID("global")
+	NonSaaSDirKey = NamespaceID("default")
+	NamespaceKey  = "namespace"
 )
 
 type NamespaceID string
@@ -28,7 +27,7 @@ type Neo4jConfig struct {
 	Password string
 }
 
-type PosgresConfig struct {
+type PostgresqlConfig struct {
 	Host     string
 	Port     int
 	Username string
@@ -40,7 +39,7 @@ type PosgresConfig struct {
 type DBConfigs struct {
 	Redis    RedisConfig
 	Neo4j    *Neo4jConfig
-	Postgres *PosgresConfig
+	Postgres *PostgresqlConfig
 }
 
 var directory map[NamespaceID]DBConfigs
@@ -63,14 +62,14 @@ func init() {
 
 	if !saasMode {
 		neo4jCfg := init_neo4j()
-		directory[NONSAAS_DIR_KEY] = DBConfigs{
+		directory[NonSaaSDirKey] = DBConfigs{
 			Redis:    redisCfg,
 			Neo4j:    &neo4jCfg,
 			Postgres: nil,
 		}
 	}
 
-	directory[GLOBAL_DIR_KEY] = DBConfigs{
+	directory[GlobalDirKey] = DBConfigs{
 		Redis:    redisCfg,
 		Neo4j:    nil,
 		Postgres: &posgresCfg,
@@ -106,7 +105,7 @@ func init_redis() RedisConfig {
 	}
 }
 
-func init_posgres() PosgresConfig {
+func init_posgres() PostgresqlConfig {
 	var err error
 	postgresHost, has := os.LookupEnv("POSTGRES_USER_DB_HOST")
 	if !has {
@@ -128,7 +127,7 @@ func init_posgres() PosgresConfig {
 	postgresDatabase := os.Getenv("POSTGRES_USER_DB_NAME")
 	postgresSslMode := os.Getenv("POSTGRES_USER_DB_SSLMODE")
 
-	return PosgresConfig{
+	return PostgresqlConfig{
 		Host:     postgresHost,
 		Port:     postgresPort,
 		Username: postgresUsername,
