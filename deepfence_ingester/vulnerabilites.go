@@ -38,7 +38,7 @@ type DfCveStruct struct {
 	ExploitPOC                 string   `json:"exploit_poc"`
 }
 
-func (s *BulkProcessor) processCVE(tenantID string, cve []byte) {
+func (s *BulkProcessor) processVulnerability(tenantID string, cve []byte) {
 	var cveStruct DfCveStruct
 	err := json.Unmarshal(cve, &cveStruct)
 	if err != nil {
@@ -52,7 +52,7 @@ func (s *BulkProcessor) processCVE(tenantID string, cve []byte) {
 
 }
 
-func commitFuncCVEs(ns string, data []map[string]interface{}) error {
+func commitFuncVulnerabilities(ns string, data []map[string]interface{}) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {

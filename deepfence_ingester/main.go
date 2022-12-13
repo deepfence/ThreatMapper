@@ -20,7 +20,7 @@ import (
 
 var (
 	log                      *logrus.Logger
-	cveProcessor             *BulkProcessor
+	vulnerabilityProcessor   *BulkProcessor
 	complianceProcessor      *BulkProcessor
 	cloudComplianceProcessor *BulkProcessor
 	secretsProcessor         *BulkProcessor
@@ -105,8 +105,8 @@ func main() {
 	go startKafkaConsumers(ctx, cfg.KafkaBrokers, utils.Topics, "default")
 
 	// bulk processors
-	cveProcessor = NewBulkProcessor(utils.VULNERABILITY_SCAN, commitFuncCVEs)
-	cveProcessor.Start(ctx)
+	vulnerabilityProcessor = NewBulkProcessor(utils.VULNERABILITY_SCAN, commitFuncVulnerabilities)
+	vulnerabilityProcessor.Start(ctx)
 
 	complianceProcessor = NewBulkProcessor(utils.COMPLIANCE_SCAN, commitFuncCompliance)
 	complianceProcessor.Start(ctx)
@@ -125,7 +125,7 @@ func main() {
 	<-ctx.Done()
 
 	// stop processors
-	cveProcessor.Stop()
+	vulnerabilityProcessor.Stop()
 	complianceProcessor.Stop()
 	cloudComplianceProcessor.Stop()
 	secretsProcessor.Stop()

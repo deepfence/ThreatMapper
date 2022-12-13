@@ -69,7 +69,7 @@ func processRecord(r *kgo.Record) {
 	switch r.Topic {
 	case utils.VULNERABILITY_SCAN:
 		vulnerabilitiesProcessed.Inc()
-		cveProcessor.processCVE(tenant, r.Value)
+		vulnerabilityProcessor.processVulnerability(tenant, r.Value)
 
 	case utils.SECRET_SCAN:
 		secretProcessed.Inc()
