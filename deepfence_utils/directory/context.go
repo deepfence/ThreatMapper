@@ -27,7 +27,7 @@ func Injector(next http.Handler) http.Handler {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		ctx := context.WithValue(r.Context(), NamespaceKey, namespace)
+		ctx := context.WithValue(r.Context(), NamespaceKey, NamespaceID(namespace))
 		// Token is authenticated, pass it through
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

@@ -56,6 +56,7 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		}
+		return
 	}
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, grantType)
 	if err != nil {

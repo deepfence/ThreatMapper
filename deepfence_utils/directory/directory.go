@@ -46,9 +46,9 @@ var directory map[NamespaceID]DBConfigs
 
 func init() {
 
-	redisCfg := init_redis()
+	redisCfg := initRedis()
 
-	posgresCfg := init_posgres()
+	postgresqlCfg := init_posgres()
 
 	saasMode := false
 	saasModeOn, has := os.LookupEnv("SAAS_MODE")
@@ -72,11 +72,11 @@ func init() {
 	directory[GlobalDirKey] = DBConfigs{
 		Redis:    redisCfg,
 		Neo4j:    nil,
-		Postgres: &posgresCfg,
+		Postgres: &postgresqlCfg,
 	}
 }
 
-func init_redis() RedisConfig {
+func initRedis() RedisConfig {
 	redisHost, has := os.LookupEnv("REDIS_HOST")
 	if !has {
 		redisHost = "localhost"
