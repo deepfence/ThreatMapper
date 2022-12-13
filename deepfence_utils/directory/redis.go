@@ -14,11 +14,14 @@ func init() {
 }
 
 func newRedisClient(endpoints DBConfigs) (*redis.Client, error) {
-	return redis.NewClient(&redis.Options{
-		Addr:     endpoints.Redis.Endpoint,
-		Password: endpoints.Redis.Endpoint,
-		DB:       endpoints.Redis.Database,
-	}), nil
+	redisOptions := &redis.Options{
+		Addr: endpoints.Redis.Endpoint,
+		DB:   endpoints.Redis.Database,
+	}
+	if endpoints.Redis.Password != "" {
+		redisOptions.Password = endpoints.Redis.Password
+	}
+	return redis.NewClient(redisOptions), nil
 }
 
 func RedisClient(ctx context.Context) (*redis.Client, error) {
