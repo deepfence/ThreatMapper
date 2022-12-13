@@ -30,7 +30,7 @@ func newPostgresClient(endpoints DBConfigs) (*postgresqlDb.Queries, error) {
 }
 
 func PostgresClient(ctx context.Context) (*postgresqlDb.Queries, error) {
-	driver, err := get_client(ctx, postgresClientsPool, newPostgresClient)
+	driver, err := getClient(ctx, postgresClientsPool, newPostgresClient)
 	if err != nil {
 		return nil, err
 	}

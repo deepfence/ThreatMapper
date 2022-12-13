@@ -7,13 +7,13 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var redis_clients_pool map[NamespaceID]*redis.Client
+var redisClientsPool map[NamespaceID]*redis.Client
 
 func init() {
-	redis_clients_pool = map[NamespaceID]*redis.Client{}
+	redisClientsPool = map[NamespaceID]*redis.Client{}
 }
 
-func new_redis_client(endpoints DBConfigs) (*redis.Client, error) {
+func newRedisClient(endpoints DBConfigs) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
 		Addr:     endpoints.Redis.Endpoint,
 		Password: endpoints.Redis.Endpoint,
@@ -22,7 +22,7 @@ func new_redis_client(endpoints DBConfigs) (*redis.Client, error) {
 }
 
 func RedisClient(ctx context.Context) (*redis.Client, error) {
-	return get_client(ctx, redis_clients_pool, new_redis_client)
+	return getClient(ctx, redisClientsPool, newRedisClient)
 }
 
 func GetRedisConfig(ctx context.Context) (RedisConfig, error) {
@@ -32,7 +32,7 @@ func GetRedisConfig(ctx context.Context) (RedisConfig, error) {
 	}
 	endpoints, has := directory[namespace]
 	if !has {
-		return RedisConfig{}, errors.New("Missing direcotry entry")
+		return RedisConfig{}, errors.New("missing directory entry")
 	}
 	return endpoints.Redis, nil
 }

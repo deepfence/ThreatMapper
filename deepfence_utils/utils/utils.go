@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"net/mail"
 	"net/url"
 	"reflect"
@@ -111,5 +112,25 @@ func IsJWTExpired(token string) bool {
 	if err != nil {
 		return true
 	}
-	return parsed.Expiration().Sub(time.Now().Add(1*time.Hour)) < 0
+	return parsed.Expiration().Sub(time.Now().Add(5*time.Minute)) < 0
+}
+
+func GetInt64ValueFromInterfaceMap(claims map[string]interface{}, key string) (int64, error) {
+	val, ok := claims[key]
+	if !ok {
+		return 0, errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
+	}
+	number, err := InterfaceToInt(val)
+	if err != nil {
+		return 0, errors.New("cannot parse jwt")
+	}
+	return number, nil
+}
+
+func GetStringValueFromInterfaceMap(claims map[string]interface{}, key string) (string, error) {
+	val, ok := claims[key]
+	if !ok {
+		return "", errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
+	}
+	return fmt.Sprintf("%v", val), nil
 }

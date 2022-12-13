@@ -2,11 +2,6 @@ package handler
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"net/http"
-	"reflect"
-
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -14,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"net/http"
 )
 
 const (
@@ -177,7 +173,7 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 	if err != nil {
 		return nil, http.StatusBadRequest, requestContext, nil, err
 	}
-	userId, err := h.getIntFieldFromJwtClaim(claims, "user_id")
+	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user_id")
 	if err != nil {
 		return nil, http.StatusInternalServerError, requestContext, nil, err
 	}
@@ -189,25 +185,4 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 		return nil, http.StatusInternalServerError, ctx, pgClient, err
 	}
 	return &user, http.StatusOK, ctx, pgClient, nil
-}
-
-func (h *Handler) getIntFieldFromJwtClaim(claims map[string]interface{}, key string) (int64, error) {
-	val, ok := claims[key]
-	if !ok {
-		return 0, errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
-	}
-	number, err := utils.InterfaceToInt(val)
-	if err != nil {
-		log.Error().Msgf("InterfaceToInt: %v (%v) - %v", val, reflect.ValueOf(val).Kind(), err)
-		return 0, errors.New("cannot parse jwt")
-	}
-	return number, nil
-}
-
-func (h *Handler) getStringFieldFromJwtClaim(claims map[string]interface{}, key string) (string, error) {
-	val, ok := claims[key]
-	if !ok {
-		return "", errors.New(fmt.Sprintf("key %s not found in JWT claims", key))
-	}
-	return fmt.Sprintf("%v", val), nil
 }

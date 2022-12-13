@@ -28,7 +28,9 @@ const (
 )
 
 var (
-	ErrorMessage = map[string]string{
+	AccessTokenExpiry  = time.Minute * 30
+	RefreshTokenExpiry = time.Hour * 24
+	ErrorMessage       = map[string]string{
 		"first_name": "should only contain alphabets, numbers, space and hyphen",
 		"last_name":  "should only contain alphabets, numbers, space and hyphen",
 		"company":    "should only contain alphabets, numbers and valid characters",
@@ -265,7 +267,7 @@ func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 }
 
 func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*ResponseAccessToken, error) {
-	accessTokenID, accessToken, err := u.CreatePasswordGrantAccessToken(tokenAuth, grantType)
+	accessTokenID, accessToken, err := u.CreateAccessToken(tokenAuth, grantType)
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +278,7 @@ func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*Re
 	return &ResponseAccessToken{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
-func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
+func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
 	accessTokenID := utils.NewUUIDString()
 	claims := map[string]interface{}{
 		"id":                    accessTokenID,
@@ -291,14 +293,14 @@ func (u *User) CreatePasswordGrantAccessToken(tokenAuth *jwtauth.JWTAuth, grantT
 		"grant_type":            grantType,
 		directory.NAMESPACE_KEY: u.CompanyNamespace,
 	}
-	log.Info().Msgf("CLAIMES = %v\n", claims)
+	log.Debug().Msgf("CLAIMS = %v", claims)
 	jwtauth.SetIssuedNow(claims)
-	jwtauth.SetExpiryIn(claims, time.Hour*24) // 1 day
-	_, s, err := tokenAuth.Encode(claims)
+	jwtauth.SetExpiryIn(claims, AccessTokenExpiry)
+	_, accessToken, err := tokenAuth.Encode(claims)
 	if err != nil {
 		return "", "", err
 	}
-	return accessTokenID, s, nil
+	return accessTokenID, accessToken, nil
 }
 
 func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID string, grantType string) (string, error) {
@@ -309,10 +311,10 @@ func (u *User) CreateRefreshToken(tokenAuth *jwtauth.JWTAuth, accessTokenID stri
 		"grant_type": grantType,
 	}
 	jwtauth.SetIssuedNow(claims)
-	jwtauth.SetExpiryIn(claims, time.Hour*24*7) // 7 days
-	_, s, err := tokenAuth.Encode(claims)
+	jwtauth.SetExpiryIn(claims, RefreshTokenExpiry)
+	_, refreshToken, err := tokenAuth.Encode(claims)
 	if err != nil {
 		return "", err
 	}
-	return s, nil
+	return refreshToken, nil
 }

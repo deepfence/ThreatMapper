@@ -5,8 +5,10 @@ import (
 	"errors"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"net/http"
 )
@@ -49,7 +51,11 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	user, grantType, err := h.parseRefreshToken(r.Context())
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		if err.Error() == "access token is revoked" {
+			httpext.JSON(w, http.StatusForbidden, model.Response{Success: false, Message: err.Error()})
+		} else {
+			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		}
 	}
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, grantType)
 	if err != nil {
@@ -64,14 +70,25 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 	if err != nil {
 		return nil, "", err
 	}
-	tokenType, err := h.getStringFieldFromJwtClaim(claims, "type")
+	tokenType, err := utils.GetStringValueFromInterfaceMap(claims, "type")
 	if err != nil {
 		return nil, "", err
 	}
 	if tokenType != "refresh_token" {
 		return nil, "", errors.New("cannot parse refresh token")
 	}
-	userId, err := h.getIntFieldFromJwtClaim(claims, "user")
+	accessTokenID, err := utils.GetStringValueFromInterfaceMap(claims, "token_id")
+	if err != nil {
+		return nil, "", err
+	}
+	revoked, err := IsAccessTokenRevoked(requestContext, accessTokenID)
+	if err != nil {
+		return nil, "", err
+	}
+	if revoked == true {
+		return nil, "", errors.New("access token is revoked")
+	}
+	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user")
 	if err != nil {
 		return nil, "", err
 	}
@@ -82,7 +99,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 	if err != nil {
 		return nil, "", err
 	}
-	grantType, err := h.getStringFieldFromJwtClaim(claims, "grant_type")
+	grantType, err := utils.GetStringValueFromInterfaceMap(claims, "grant_type")
 	if err != nil {
 		return nil, "", err
 	}
@@ -129,5 +146,44 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	return
+	err := LogoutHandler(r.Context())
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func IsAccessTokenRevoked(ctx context.Context, accessTokenID string) (bool, error) {
+	redisClient, err := directory.RedisClient(ctx)
+	if err != nil {
+		return false, err
+	}
+	val, err := redisClient.Get(ctx, RevokedAccessTokenIdPrefix+accessTokenID).Bool()
+	if err == redis.Nil {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return val, nil
+}
+
+func RevokeAccessToken(ctx context.Context, accessTokenID string) error {
+	redisClient, err := directory.RedisClient(ctx)
+	if err != nil {
+		return err
+	}
+	return redisClient.Set(ctx, RevokedAccessTokenIdPrefix+accessTokenID, true, model.RefreshTokenExpiry).Err()
+}
+
+func LogoutHandler(requestContext context.Context) error {
+	_, claims, err := jwtauth.FromContext(requestContext)
+	if err != nil {
+		return err
+	}
+	accessTokenID, err := utils.GetStringValueFromInterfaceMap(claims, "id")
+	if err != nil {
+		return err
+	}
+	return RevokeAccessToken(requestContext, accessTokenID)
 }

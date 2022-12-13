@@ -42,7 +42,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
 
 	// authorization
-	authEnforcer, err := getAuthorizationHandler()
+	authEnforcer, err := newAuthorizationHandler()
 	if err != nil {
 		return nil, err
 	}
@@ -90,16 +90,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			}
 		})
 
-		r.Group(func(r chi.Router) {
-			r.Use(jwtauth.Verifier(tokenAuth))
-
-			r.Post("/auth/token/refresh", dfHandler.RefreshTokenHandler)
-		})
-
 		// authenticated apis
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(tokenAuth))
-			r.Use(jwtauth.Authenticator)
 			r.Use(directory.Injector)
 
 			r.Post("/user/logout", dfHandler.LogoutHandler)
@@ -115,6 +108,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/api-token", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetApiTokens))
 			})
+
+			// Generate new access token using refresh token
+			r.Post("/auth/token/refresh", dfHandler.RefreshTokenHandler)
 
 			// manage other users
 			r.Route("/users/{userId}", func(r chi.Router) {
@@ -159,7 +155,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 	return dfHandler, nil
 }
 
-func getAuthorizationHandler() (*casbin.Enforcer, error) {
+func newAuthorizationHandler() (*casbin.Enforcer, error) {
 	return casbin.NewEnforcer("auth/model.conf", "auth/policy.csv")
 }
 

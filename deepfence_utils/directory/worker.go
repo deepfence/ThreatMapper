@@ -34,7 +34,7 @@ func new_asynq_client(endpoints DBConfigs) (*async_clients, error) {
 
 func WorkerEnqueue(ctx context.Context, task *asynq.Task) error {
 
-	clients, err := get_client(ctx, worker_clients_pool, new_asynq_client)
+	clients, err := getClient(ctx, worker_clients_pool, new_asynq_client)
 	if err != nil {
 		return err
 	}

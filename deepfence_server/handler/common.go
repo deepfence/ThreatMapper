@@ -13,6 +13,10 @@ import (
 	"github.com/ugorji/go/codec"
 )
 
+const (
+	RevokedAccessTokenIdPrefix = "Revoked-AccessTokenID-"
+)
+
 func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }

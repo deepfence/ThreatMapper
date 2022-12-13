@@ -8,7 +8,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func get_client[T *redis.Client | *async_clients | *neo4j.Driver | *postgresqlDb.Queries](ctx context.Context, pool map[NamespaceID]T, new_client func(DBConfigs) (T, error)) (T, error) {
+func getClient[T *redis.Client | *async_clients | *neo4j.Driver | *postgresqlDb.Queries](ctx context.Context, pool map[NamespaceID]T, newClient func(DBConfigs) (T, error)) (T, error) {
 	key, err := ExtractNamespace(ctx)
 	if err != nil {
 		return nil, err
@@ -18,7 +18,7 @@ func get_client[T *redis.Client | *async_clients | *neo4j.Driver | *postgresqlDb
 		return val, nil
 	}
 
-	client, err := new_client(directory[key])
+	client, err := newClient(directory[key])
 	if err != nil {
 		return nil, err
 	}
