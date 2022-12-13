@@ -28,7 +28,7 @@ import (
 
 var (
 	cfg      map[string]Config
-	hc           = rhttp.NewClient()
+	hc       *http.Client
 	instance int = 0
 )
 
@@ -104,7 +104,7 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 		refreshToken *string
 	)
 	cfg := deepfenceAPI.NewConfiguration()
-	cfg.HTTPClient = hc.HTTPClient
+	cfg.HTTPClient = hc
 	cfg.Servers = deepfenceAPI.ServerConfigurations{
 		{URL: url, Description: "deepfence_server"},
 	}
@@ -138,7 +138,7 @@ func RefreshToken(url string, apiToken string) (string, string, error) {
 		refreshToken *string
 	)
 	cfg := deepfenceAPI.NewConfiguration()
-	cfg.HTTPClient = hc.HTTPClient
+	cfg.HTTPClient = hc
 	cfg.Servers = deepfenceAPI.ServerConfigurations{
 		{URL: url, Description: "deepfence_server"},
 	}
@@ -204,11 +204,12 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 
 	// setup http client
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
-	hc.HTTPClient.Timeout = 10 * time.Second
-	hc.RetryMax = 3
-	hc.RetryWaitMin = 1 * time.Second
-	hc.RetryWaitMax = 10 * time.Second
-	hc.Logger = nil
+	rhc := rhttp.NewClient()
+	rhc.HTTPClient.Timeout = 10 * time.Second
+	rhc.RetryMax = 3
+	rhc.RetryWaitMin = 1 * time.Second
+	rhc.RetryWaitMax = 10 * time.Second
+	rhc.Logger = log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)
 	if schema == "https" {
 		if len(certPath) > 0 && len(certKey) > 0 {
 			cer, err := tls.LoadX509KeyPair(certPath, certKey)
@@ -222,8 +223,10 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 			TLSClientConfig:   tlsConfig,
 			DisableKeepAlives: false,
 		}
-		hc.HTTPClient = &http.Client{Transport: tr}
+		rhc.HTTPClient = &http.Client{Transport: tr}
 	}
+
+	hc = rhc.StandardClient()
 
 	access, refresh, err := Authenticate(getURL(schema, host, port), apiToken)
 	if err != nil {
@@ -295,7 +298,7 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 		return output.FLB_ERROR
 	}
 
-	req, err := rhttp.NewRequest(http.MethodPost, idCfg.URL, bytes.NewReader(rawRecords))
+	req, err := http.NewRequest(http.MethodPost, idCfg.URL, bytes.NewReader(rawRecords))
 	if err != nil {
 		log.Printf("error creating request %s", err)
 		return output.FLB_ERROR
