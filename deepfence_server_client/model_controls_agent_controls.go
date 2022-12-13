@@ -20,16 +20,18 @@ var _ MappedNullable = &ControlsAgentControls{}
 
 // ControlsAgentControls struct for ControlsAgentControls
 type ControlsAgentControls struct {
-	Beatrate *int32 `json:"beatrate,omitempty"`
-	Commands []ControlsAction `json:"commands,omitempty"`
+	Beatrate int32 `json:"beatrate"`
+	Commands []ControlsAction `json:"commands"`
 }
 
 // NewControlsAgentControls instantiates a new ControlsAgentControls object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewControlsAgentControls() *ControlsAgentControls {
+func NewControlsAgentControls(beatrate int32, commands []ControlsAction) *ControlsAgentControls {
 	this := ControlsAgentControls{}
+	this.Beatrate = beatrate
+	this.Commands = commands
 	return &this
 }
 
@@ -41,48 +43,42 @@ func NewControlsAgentControlsWithDefaults() *ControlsAgentControls {
 	return &this
 }
 
-// GetBeatrate returns the Beatrate field value if set, zero value otherwise.
+// GetBeatrate returns the Beatrate field value
 func (o *ControlsAgentControls) GetBeatrate() int32 {
-	if o == nil || isNil(o.Beatrate) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.Beatrate
+
+	return o.Beatrate
 }
 
-// GetBeatrateOk returns a tuple with the Beatrate field value if set, nil otherwise
+// GetBeatrateOk returns a tuple with the Beatrate field value
 // and a boolean to check if the value has been set.
 func (o *ControlsAgentControls) GetBeatrateOk() (*int32, bool) {
-	if o == nil || isNil(o.Beatrate) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Beatrate, true
+	return &o.Beatrate, true
 }
 
-// HasBeatrate returns a boolean if a field has been set.
-func (o *ControlsAgentControls) HasBeatrate() bool {
-	if o != nil && !isNil(o.Beatrate) {
-		return true
-	}
-
-	return false
-}
-
-// SetBeatrate gets a reference to the given int32 and assigns it to the Beatrate field.
+// SetBeatrate sets field value
 func (o *ControlsAgentControls) SetBeatrate(v int32) {
-	o.Beatrate = &v
+	o.Beatrate = v
 }
 
-// GetCommands returns the Commands field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetCommands returns the Commands field value
+// If the value is explicit nil, the zero value for []ControlsAction will be returned
 func (o *ControlsAgentControls) GetCommands() []ControlsAction {
 	if o == nil {
 		var ret []ControlsAction
 		return ret
 	}
+
 	return o.Commands
 }
 
-// GetCommandsOk returns a tuple with the Commands field value if set, nil otherwise
+// GetCommandsOk returns a tuple with the Commands field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ControlsAgentControls) GetCommandsOk() ([]ControlsAction, bool) {
@@ -92,16 +88,7 @@ func (o *ControlsAgentControls) GetCommandsOk() ([]ControlsAction, bool) {
 	return o.Commands, true
 }
 
-// HasCommands returns a boolean if a field has been set.
-func (o *ControlsAgentControls) HasCommands() bool {
-	if o != nil && isNil(o.Commands) {
-		return true
-	}
-
-	return false
-}
-
-// SetCommands gets a reference to the given []ControlsAction and assigns it to the Commands field.
+// SetCommands sets field value
 func (o *ControlsAgentControls) SetCommands(v []ControlsAction) {
 	o.Commands = v
 }
@@ -116,9 +103,7 @@ func (o ControlsAgentControls) MarshalJSON() ([]byte, error) {
 
 func (o ControlsAgentControls) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !isNil(o.Beatrate) {
-		toSerialize["beatrate"] = o.Beatrate
-	}
+	toSerialize["beatrate"] = o.Beatrate
 	if o.Commands != nil {
 		toSerialize["commands"] = o.Commands
 	}

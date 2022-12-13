@@ -119,9 +119,7 @@ func setControls() {
 		log.Errorf("set controls: %v", err)
 	}
 	err = controls.RegisterControl(ctl.StartSecretScan, func(req ctl.StartSecretScanRequest) error {
-		log.Info("Start Secret Scan")
-		//TODO
-		return nil
+		return host.StartSecretsScan(req)
 	})
 	if err != nil {
 		log.Errorf("set controls: %v", err)

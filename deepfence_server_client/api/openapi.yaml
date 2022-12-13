@@ -867,6 +867,9 @@ components:
           type: integer
         request_payload:
           type: string
+      required:
+      - id
+      - request_payload
       type: object
     ControlsActionID:
       type: integer
@@ -886,6 +889,9 @@ components:
             $ref: '#/components/schemas/ControlsAction'
           nullable: true
           type: array
+      required:
+      - beatrate
+      - commands
       type: object
     IngestersCloudComplianceDoc:
       example:

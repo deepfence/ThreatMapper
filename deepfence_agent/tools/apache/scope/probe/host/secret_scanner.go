@@ -18,10 +18,11 @@ import (
 	"time"
 
 	"github.com/Jeffail/tunny"
-	"github.com/weaveworks/scope/common/xfer"
 	log "github.com/sirupsen/logrus"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
+
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 )
 
 const (
@@ -47,7 +48,6 @@ type secretScanParameters struct {
 	req         pb.FindRequest
 	controlArgs map[string]string
 	hostName    string
-	r           *Reporter
 }
 
 func init() {
@@ -71,41 +71,37 @@ func init() {
 	}
 }
 
-func (r *Reporter) startSecretsScan(req xfer.Request) xfer.Response {
-	nodeType := fmt.Sprintf("%s", req.ControlArgs["node_type"])
+func StartSecretsScan(req ctl.StartSecretScanRequest) error {
+	log.Infof("Start secret scan: %v\n", req)
 	var greq pb.FindRequest
-	if nodeType == nodeTypeContainer {
-		containerID := fmt.Sprintf("%s", req.ControlArgs["container_id"])
-		if containerID == "" {
-			return xfer.ResponseErrorf("container_id is required")
-		}
+	switch req.ResourceType {
+	case ctl.Container:
 		greq = pb.FindRequest{Input: &pb.FindRequest_Container{
-			Container: &pb.Container{Id: containerID},
+			Container: &pb.Container{Id: req.ResourceId},
 		}}
-	} else if nodeType == nodeTypeImage {
-		imageId := fmt.Sprintf("%s", req.ControlArgs["image_id"])
-		if imageId == "" {
-			return xfer.ResponseErrorf("image_id is required")
+	case ctl.Image:
+		splits := strings.Split(req.ResourceId, ";")
+		if len(splits) != 2 {
+			return errors.New("Image id format is incorrect")
 		}
-		imageName := fmt.Sprintf("%s", req.ControlArgs["image_name"])
 		greq = pb.FindRequest{Input: &pb.FindRequest_Image{
-			Image: &pb.DockerImage{Id: imageId, Name: imageName},
+			Image: &pb.DockerImage{Id: splits[0], Name: splits[1]},
 		}}
-	} else if nodeType == nodeTypeHost {
-		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: scanDir}}
+	case ctl.Host:
+		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: req.ResourceId}}
 	}
+
 	ssClient, err := newSecretScannerClient()
 	if err != nil {
-		return xfer.ResponseErrorf("error in getting ss client: %s", err.Error())
+		return err
 	}
 	go grpcScanWorkerPool.Process(secretScanParameters{
 		client:      ssClient,
 		req:         greq,
-		controlArgs: req.ControlArgs,
-		hostName:    r.hostName,
-		r:           r,
+		controlArgs: req.BinArgs,
+		hostName:    req.Hostname,
 	})
-	return xfer.Response{SecretsScanInfo: "Secrets scan started"}
+	return nil
 }
 
 func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) interface{} {
@@ -115,11 +111,11 @@ func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) 
 		return nil
 	}
 	getAndPublishSecretScanResults(scanParameters.client, scanParameters.req, scanParameters.controlArgs,
-		scanParameters.hostName, scanParameters.r)
+		scanParameters.hostName)
 	return nil
 }
 
-func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string, hostName string, r *Reporter) {
+func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string, hostName string) {
 	var secretScanLogDoc = make(map[string]interface{})
 	secretScanLogDoc["node_id"] = controlArgs["node_id"]
 	secretScanLogDoc["node_type"] = controlArgs["node_type"]
@@ -144,7 +140,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
-	log.Info("started conrext background",context.Background(), req)
+	log.Info("started context background", context.Background(), req)
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	if req.GetPath() != "" && err == nil && res != nil {
 		if scanDir == HostMountDir {

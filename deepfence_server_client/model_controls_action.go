@@ -20,16 +20,18 @@ var _ MappedNullable = &ControlsAction{}
 
 // ControlsAction struct for ControlsAction
 type ControlsAction struct {
-	Id *int32 `json:"id,omitempty"`
-	RequestPayload *string `json:"request_payload,omitempty"`
+	Id int32 `json:"id"`
+	RequestPayload string `json:"request_payload"`
 }
 
 // NewControlsAction instantiates a new ControlsAction object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewControlsAction() *ControlsAction {
+func NewControlsAction(id int32, requestPayload string) *ControlsAction {
 	this := ControlsAction{}
+	this.Id = id
+	this.RequestPayload = requestPayload
 	return &this
 }
 
@@ -41,68 +43,52 @@ func NewControlsActionWithDefaults() *ControlsAction {
 	return &this
 }
 
-// GetId returns the Id field value if set, zero value otherwise.
+// GetId returns the Id field value
 func (o *ControlsAction) GetId() int32 {
-	if o == nil || isNil(o.Id) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.Id
+
+	return o.Id
 }
 
-// GetIdOk returns a tuple with the Id field value if set, nil otherwise
+// GetIdOk returns a tuple with the Id field value
 // and a boolean to check if the value has been set.
 func (o *ControlsAction) GetIdOk() (*int32, bool) {
-	if o == nil || isNil(o.Id) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Id, true
+	return &o.Id, true
 }
 
-// HasId returns a boolean if a field has been set.
-func (o *ControlsAction) HasId() bool {
-	if o != nil && !isNil(o.Id) {
-		return true
-	}
-
-	return false
-}
-
-// SetId gets a reference to the given int32 and assigns it to the Id field.
+// SetId sets field value
 func (o *ControlsAction) SetId(v int32) {
-	o.Id = &v
+	o.Id = v
 }
 
-// GetRequestPayload returns the RequestPayload field value if set, zero value otherwise.
+// GetRequestPayload returns the RequestPayload field value
 func (o *ControlsAction) GetRequestPayload() string {
-	if o == nil || isNil(o.RequestPayload) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.RequestPayload
+
+	return o.RequestPayload
 }
 
-// GetRequestPayloadOk returns a tuple with the RequestPayload field value if set, nil otherwise
+// GetRequestPayloadOk returns a tuple with the RequestPayload field value
 // and a boolean to check if the value has been set.
 func (o *ControlsAction) GetRequestPayloadOk() (*string, bool) {
-	if o == nil || isNil(o.RequestPayload) {
+	if o == nil {
 		return nil, false
 	}
-	return o.RequestPayload, true
+	return &o.RequestPayload, true
 }
 
-// HasRequestPayload returns a boolean if a field has been set.
-func (o *ControlsAction) HasRequestPayload() bool {
-	if o != nil && !isNil(o.RequestPayload) {
-		return true
-	}
-
-	return false
-}
-
-// SetRequestPayload gets a reference to the given string and assigns it to the RequestPayload field.
+// SetRequestPayload sets field value
 func (o *ControlsAction) SetRequestPayload(v string) {
-	o.RequestPayload = &v
+	o.RequestPayload = v
 }
 
 func (o ControlsAction) MarshalJSON() ([]byte, error) {
@@ -115,12 +101,8 @@ func (o ControlsAction) MarshalJSON() ([]byte, error) {
 
 func (o ControlsAction) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !isNil(o.Id) {
-		toSerialize["id"] = o.Id
-	}
-	if !isNil(o.RequestPayload) {
-		toSerialize["request_payload"] = o.RequestPayload
-	}
+	toSerialize["id"] = o.Id
+	toSerialize["request_payload"] = o.RequestPayload
 	return toSerialize, nil
 }
 

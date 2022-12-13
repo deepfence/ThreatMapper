@@ -13,6 +13,7 @@ import (
 	"time"
 
 	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
+	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/report"
@@ -121,7 +122,11 @@ func (oc OpenapiClient) Publish(r report.Report) error {
 	}
 
 	for _, action := range ctl.Commands {
-		controls.ApplyControl(action)
+		err := controls.ApplyControl(action)
+		if err != nil {
+			logrus.Errorf("Control failed: %v\n", err)
+			//TODO: append failed status
+		}
 	}
 	return nil
 }

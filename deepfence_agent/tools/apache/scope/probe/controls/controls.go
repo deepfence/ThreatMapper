@@ -21,7 +21,10 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRe
 	}
 	controls[id] = func(req []byte) error {
 		var typedReq T
-		json.Unmarshal(req, typedReq)
+		err := json.Unmarshal(req, &typedReq)
+		if err != nil {
+			return err
+		}
 		return callback(typedReq)
 	}
 
