@@ -42,7 +42,7 @@ export const MediumDanger = Template.bind({});
 MediumDanger.args = {
   label: 'Badge sm',
   color: 'danger',
-  sizing: 'md',
+  size: 'lg',
 };
 
 export const WithCloseAction = () => {
@@ -79,7 +79,7 @@ export const WithCloseAction = () => {
             id={id}
             value={value}
             color={value as ColorType}
-            sizing="md"
+            size="lg"
             icon={<HiInformationCircle />}
             isRemove={true}
             onRemove={(badge) => {
@@ -118,7 +118,7 @@ export const CustomColor = () => {
             id={id}
             value={value}
             color={value as ColorType}
-            sizing="md"
+            size="lg"
             icon={<HiInformationCircle />}
             isRemove={true}
             className={'bg-lime-700 text-teal-300'}
