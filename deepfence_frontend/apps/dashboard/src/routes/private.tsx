@@ -1,6 +1,8 @@
+import { OnboardLayout } from '../features/onboard/layouts/OnboardLayout';
+
 export const privateRoutes = [
   {
-    path: '/',
-    element: 'Dashboard',
+    path: '/onboard',
+    element: <OnboardLayout />,
   },
 ];
