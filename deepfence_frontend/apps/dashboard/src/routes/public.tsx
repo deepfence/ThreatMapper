@@ -1,19 +1,9 @@
-import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
 import { AuthLayout } from '../features/auth/layouts/AuthLayout';
-
-const Login = lazy(() =>
-  import('../features/auth/pages/Login').then((module) => ({
-    default: module.Login,
-  })),
-);
-
-const ForgotPassword = lazy(() =>
-  import('../features/auth/pages/ForgotPassword').then((module) => ({
-    default: module.ForgotPassword,
-  })),
-);
+import { ForgotPassword } from '../features/auth/pages/ForgotPassword';
+import { Login, loginAction } from '../features/auth/pages/Login';
+import { registerAction, RegisterUser } from '../features/auth/pages/RegisterUser';
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -23,10 +13,16 @@ export const publicRoutes: RouteObject[] = [
       {
         path: 'login',
         element: <Login />,
+        action: loginAction,
       },
       {
         path: 'forgot-password',
         element: <ForgotPassword />,
+      },
+      {
+        path: 'register',
+        element: <RegisterUser />,
+        action: registerAction,
       },
     ],
   },
