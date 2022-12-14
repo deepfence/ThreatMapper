@@ -3,6 +3,8 @@ import * as SwitchPrimitive from '@radix-ui/react-switch';
 import cx from 'classnames';
 import { useId } from 'react';
 
+import { Typography } from '@/main';
+
 export type SwitchProps = SwitchPrimitive.SwitchProps & {
   label?: string;
 };
@@ -41,7 +43,8 @@ const Switch = (props: SwitchProps) => {
         <LabelPrimitive.Label
           htmlFor={_id}
           className={cx(
-            'pl-2 text-xs font-normal text-gray-500 dark:text-gray-400 cursor-default',
+            'pl-2 font-normal text-gray-600 dark:text-gray-300 cursor-default',
+            `${Typography.size.sm} ${Typography.weight.medium}`,
             {
               'cursor-not-allowed': disabled,
             },

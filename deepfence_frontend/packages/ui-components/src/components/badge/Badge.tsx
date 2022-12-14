@@ -7,7 +7,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { Typography } from '@/components/typography/Typography';
 
-export type SizeType = 'sm' | 'md';
+export type SizeType = 'sm' | 'lg';
 export type ColorType = 'default' | 'primary' | 'success' | 'danger';
 export type SelectedBadgeProps = {
   id: string | number | undefined;
@@ -16,7 +16,7 @@ export type SelectedBadgeProps = {
 export interface BadgeProps extends Omit<ComponentProps<'span'>, 'ref' | 'color'> {
   label?: string;
   value?: string;
-  sizing?: SizeType;
+  size?: SizeType;
   color?: ColorType;
   icon?: React.ReactNode;
   isRemove?: boolean;
@@ -32,11 +32,11 @@ const classes = {
   },
   size: {
     sm: `${Typography.size.sm} py-0.5 px-2.5`,
-    md: `${Typography.size.base} py-0.5 px-3`,
+    lg: `${Typography.size.base} py-0.5 px-3`,
   },
   icon: {
     sm: 'w-3.5 h-3.5',
-    md: 'w-4 h-4',
+    lg: 'w-4 h-4',
   },
 };
 
@@ -47,7 +47,7 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
       value,
       id,
       icon,
-      sizing = 'sm',
+      size = 'sm',
       color = 'default',
       className,
       onRemove,
@@ -65,7 +65,7 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
           className={twMerge(
             cx(
               `${Typography.weight.normal} inline-flex gap-1.5 justify-center items-center rounded-md text-gray-900 dark:text-white`,
-              `${classes.size[sizing]}`,
+              `${classes.size[size]}`,
               `${classes.color[color]}`,
             ),
             className,
@@ -76,7 +76,7 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
           {icon && (
             <IconContext.Provider
               value={{
-                className: cx(`${classes.icon[sizing]}`),
+                className: cx(`${classes.icon[size]}`),
               }}
             >
               {icon}
