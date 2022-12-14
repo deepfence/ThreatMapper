@@ -83,6 +83,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Post("/user/login", dfHandler.LoginHandler)
 			if serveOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi-docs", serverPort)
+				log.Info().Msgf("Swagger UI : http://0.0.0.0%s/deepfence/swagger-ui/", serverPort)
 				r.Get("/openapi-docs", dfHandler.OpenApiDocsHandler)
 				r.Handle("/swagger-ui/*",
 					http.StripPrefix("/deepfence/swagger-ui",
@@ -161,8 +162,5 @@ func newAuthorizationHandler() (*casbin.Enforcer, error) {
 }
 
 func IsSaasDeployment() bool {
-	if strings.ToLower(os.Getenv("DEEPFENCE_SAAS_DEPLOYMENT")) == "true" {
-		return true
-	}
-	return false
+	return strings.ToLower(os.Getenv("DEEPFENCE_SAAS_DEPLOYMENT")) == "true"
 }

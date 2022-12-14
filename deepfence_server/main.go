@@ -10,14 +10,13 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/twmb/franz-go/pkg/kgo"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 
-	lo "log"
+	stdlog "log"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -63,26 +62,24 @@ func main() {
 		}
 	}
 
-	r := chi.NewRouter()
-	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{
-		Logger: lo.New(
-			&log.LogInfoWriter{},
-			"Http",
-			0),
-		NoColor: true}),
+	mux := chi.NewRouter()
+	mux.Use(middleware.Recoverer)
+	mux.Use(
+		middleware.RequestLogger(
+			&middleware.DefaultLogFormatter{
+				Logger:  stdlog.New(&log.LogInfoWriter{}, "Http", 0),
+				NoColor: true},
+		),
 	)
-	r.Use(middleware.Recoverer)
 
 	ingestC := make(chan *kgo.Record, 10000)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go startKafkaProducer(ctx, kafkaBrokers, ingestC)
 
-	dfHandler, err := router.SetupRoutes(r,
-		config.HttpListenEndpoint,
-		config.JwtSecret,
-		*serveOpenapiDocs,
-		ingestC,
+	dfHandler, err := router.SetupRoutes(mux,
+		config.HttpListenEndpoint, config.JwtSecret,
+		*serveOpenapiDocs, ingestC,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -105,8 +102,8 @@ func main() {
 
 	httpServer := http.Server{
 		Addr:     config.HttpListenEndpoint,
-		Handler:  r,
-		ErrorLog: lo.New(&log.LogErrorWriter{}, "Http", 0),
+		Handler:  mux,
+		ErrorLog: stdlog.New(&log.LogErrorWriter{}, "Http", 0),
 	}
 
 	idleConnectionsClosed := make(chan struct{})
@@ -202,15 +199,10 @@ func initializeKafka() error {
 	return nil
 }
 
-var kgoLogger kgo.Logger = kgo.BasicLogger(
-	&log.LogInfoWriter{},
-	kgo.LogLevelInfo,
-	nil,
+// kafka client logger
+var (
+	kgoLogger kgo.Logger = kgo.BasicLogger(&log.LogInfoWriter{}, kgo.LogLevelInfo, nil)
 )
-
-func getCurrentTime() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
-}
 
 func startKafkaProducer(
 	ctx context.Context,
