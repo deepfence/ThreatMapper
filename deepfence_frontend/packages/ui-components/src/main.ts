@@ -7,6 +7,7 @@ export {
   AccordionTrigger,
 } from '@/components/accordion/Accordion';
 export { Avatar } from '@/components/avatar/Avatar';
+export { Badge } from '@/components/badge/Badge';
 export { Breadcrumb, BreadcrumbLink } from '@/components/breadcrumb/Breadcrumb';
 export { default as Button } from '@/components/button/Button';
 export { default as IconButton } from '@/components/button/IconButton';
