@@ -135,7 +135,7 @@ func initialize() (*Config, error) {
 	// logger
 	log.Initialize(*verbosity)
 
-	httpListenEndpoint := os.Getenv("HTTP_LISTEN_ENDPOINT")
+	httpListenEndpoint := os.Getenv("DEEPFENCE_HTTP_LISTEN_ENDPOINT")
 	if httpListenEndpoint == "" {
 		httpListenEndpoint = "8080"
 	}
@@ -177,7 +177,7 @@ func initializeDatabase() ([]byte, error) {
 }
 
 func initializeKafka() error {
-	kafkaBrokers = os.Getenv("KAFKA_BROKERS")
+	kafkaBrokers = os.Getenv("DEEPFENCE_KAFKA_BROKERS")
 	if kafkaBrokers == "" {
 		kafkaBrokers = "deepfence-kafka-broker:9092"
 	}

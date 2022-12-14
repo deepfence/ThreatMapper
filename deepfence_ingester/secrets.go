@@ -23,6 +23,7 @@ type Secret struct {
 	ComplianceCheckType string                 `json:"compliance_check_type"`
 	CloudProvider       string                 `json:"cloud_provider"`
 	NodeName            string                 `json:"node_name"`
+	HostName            string                 `json:"host_name"`
 	NodeID              string                 `json:"node_id"`
 	ScanID              string                 `json:"scan_id"`
 	Masked              string                 `json:"masked"`

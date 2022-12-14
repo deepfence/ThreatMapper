@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-until pg_isready -h "${POSTGRES_USER_DB_HOST}" -p "${POSTGRES_USER_DB_PORT}" -U "${POSTGRES_USER_DB_USER}" -d "${POSTGRES_USER_DB_NAME}"; do
+until pg_isready -h "${DEEPFENCE_POSTGRES_USER_DB_HOST}" -p "${DEEPFENCE_POSTGRES_USER_DB_PORT}" -U "${DEEPFENCE_POSTGRES_USER_DB_USER}" -d "${DEEPFENCE_POSTGRES_USER_DB_NAME}"; do
   echo >&2 "Postgres is unavailable - sleeping"
   sleep 5
 done
@@ -9,7 +9,7 @@ done
 # Database migration
 /usr/local/bin/migrate \
   -source file:///usr/local/postgresql-migrate \
-  -database "postgres://${POSTGRES_USER_DB_USER}:${POSTGRES_USER_DB_PASSWORD}@${POSTGRES_USER_DB_HOST}:${POSTGRES_USER_DB_PORT}/${POSTGRES_USER_DB_NAME}?sslmode=${POSTGRES_USER_DB_SSLMODE}" \
+  -database "postgres://${DEEPFENCE_POSTGRES_USER_DB_USER}:${DEEPFENCE_POSTGRES_USER_DB_PASSWORD}@${DEEPFENCE_POSTGRES_USER_DB_HOST}:${DEEPFENCE_POSTGRES_USER_DB_PORT}/${DEEPFENCE_POSTGRES_USER_DB_NAME}?sslmode=${DEEPFENCE_POSTGRES_USER_DB_SSLMODE}" \
   up
 
 if [ ! $? -eq 0 ]; then
@@ -17,7 +17,7 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-until kcat -L -b ${KAFKA_BROKERS};
+until kcat -L -b ${DEEPFENCE_KAFKA_BROKERS};
 do
   echo >&2 "kafka is unavailable - sleeping"
   sleep 5
