@@ -4,7 +4,7 @@ all:
 	go mod tidy -v && go build -buildmode=c-shared -o out_deepfence.so
 
 clean:
-	rm -rf *.so *.h *~
+	rm -rf ./*.so ./*.h
 
 docker:
 	docker build -t fluentbit:deepfence .
