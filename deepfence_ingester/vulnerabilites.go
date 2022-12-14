@@ -42,7 +42,7 @@ func (s *BulkProcessor) processVulnerability(tenantID string, cve []byte) {
 	var cveStruct DfCveStruct
 	err := json.Unmarshal(cve, &cveStruct)
 	if err != nil {
-		log.Errorf("error unmarshal cve: %s", err)
+		log.Errorf("error unmarshal cve data: %s", err)
 		return
 	}
 

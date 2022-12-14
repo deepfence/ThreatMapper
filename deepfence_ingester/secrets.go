@@ -42,11 +42,11 @@ func (s *BulkProcessor) processSecrets(tenantID string, secret []byte) {
 	var data Secret
 	err := json.Unmarshal(secret, &data)
 	if err != nil {
-		log.Errorf("error unmarshal cve: %s", err)
+		log.Errorf("error unmarshal secret data: %s", err)
 		return
 	}
 
-	// log.Info(toJSON(complianceStruct))
+	// log.Info(toJSON(data))
 
 	s.Add(NewBulkRequest(tenantID, data.ToMap()))
 

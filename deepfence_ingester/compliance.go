@@ -38,7 +38,7 @@ func (s *BulkProcessor) processCompliance(tenantID string, compliance []byte) {
 	var complianceStruct ComplianceDoc
 	err := json.Unmarshal(compliance, &complianceStruct)
 	if err != nil {
-		log.Errorf("error unmarshal cve: %s", err)
+		log.Errorf("error unmarshal compliance data: %s", err)
 		return
 	}
 
