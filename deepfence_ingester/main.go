@@ -6,24 +6,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
-	"runtime"
-	"strconv"
 	"syscall"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ingester/processors"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	logrus "github.com/sirupsen/logrus"
-)
-
-var (
-	log                      *logrus.Logger
-	vulnerabilityProcessor   *BulkProcessor
-	complianceProcessor      *BulkProcessor
-	cloudComplianceProcessor *BulkProcessor
-	secretsProcessor         *BulkProcessor
 )
 
 type config struct {
@@ -35,41 +25,29 @@ type config struct {
 	Debug                 bool     `default:"false"`
 }
 
-func init() {
-	// setup logger
-	log = logrus.New()
-	log.SetLevel(logrus.InfoLevel)
-	log.SetOutput(os.Stdout)
-	log.SetReportCaller(true)
-	log.SetFormatter(&logrus.TextFormatter{
-		ForceColors:   true,
-		FullTimestamp: true,
-		PadLevelText:  true,
-		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-			return "", " " + path.Base(f.File) + ":" + strconv.Itoa(f.Line)
-		},
-	})
-}
-
 func main() {
 
 	var cfg config
 	var err error
 	err = envconfig.Process("DEEPFENCE", &cfg)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal().Msg(err.Error())
 	}
 
-	log.Infof("config: %+v", cfg)
+	log.Info().Msgf("config: %+v", cfg)
 
 	if cfg.Debug {
-		log.SetLevel(logrus.DebugLevel)
+		log.Initialize("debug")
+	} else {
+		log.Initialize("info")
 	}
 
 	err = checkKafkaConn(cfg.KafkaBrokers)
 	if err != nil {
 		gracefulExit(err)
 	}
+
+	log.Info().Msgf("connection successful to kafka brokers %v", cfg.KafkaBrokers)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		os.Interrupt, syscall.SIGTERM)
@@ -84,13 +62,13 @@ func main() {
 	}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Errorf("Server listen failed: %s", err)
+			log.Error().Msgf("Server listen failed: %s", err)
 		}
 	}()
-	log.Info("Server Started for metrics")
+	log.Info().Msg("Server Started for metrics")
 
 	// list of kafka topics to fetch messages
-	log.Info("topics list: ", utils.Topics)
+	log.Info().Msgf("topics list: %v", utils.Topics)
 
 	//create if any topics is missing
 	err = createMissingTopics(
@@ -98,41 +76,35 @@ func main() {
 		utils.Topics, cfg.KafkaTopicPartitions,
 		cfg.KafkaTopicReplicas, cfg.KafkaTopicRetentionMs)
 	if err != nil {
-		log.Error(err)
+		log.Error().Msgf("%v", err)
 	}
 
-	// start kafka consumers for all given topics
-	go startKafkaConsumers(ctx, cfg.KafkaBrokers, utils.Topics, "default")
-
 	// bulk processors
-	vulnerabilityProcessor = NewBulkProcessor(utils.VULNERABILITY_SCAN, commitFuncVulnerabilities)
-	vulnerabilityProcessor.Start(ctx)
+	processors.StartKafkaProcessors(ctx)
 
-	complianceProcessor = NewBulkProcessor(utils.COMPLIANCE_SCAN, commitFuncCompliance)
-	complianceProcessor.Start(ctx)
-
-	cloudComplianceProcessor = NewBulkProcessor(utils.CLOUD_COMPLIANCE_SCAN, commitFuncCloudCompliance)
-	cloudComplianceProcessor.Start(ctx)
-
-	secretsProcessor = NewBulkProcessor(utils.SECRET_SCAN, commitFuncSecrets)
-	secretsProcessor.Start(ctx)
+	// start kafka consumers for all given topics
+	err = processors.StartKafkaConsumers(ctx, cfg.KafkaBrokers, utils.Topics, "default", kgoLogger)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
 
 	// collect consumer lag for metrics
-	go getLagByTopic(ctx, cfg.KafkaBrokers, "default")
+	err = processors.StartGetLagByTopic(ctx, cfg.KafkaBrokers, "default", kgoLogger)
+	if err != nil {
+		log.Error().Msgf("Metrics failed: %v, continuing", err)
+	}
 
 	// wait for exit
 	// flush all data from bulk processor
 	<-ctx.Done()
 
 	// stop processors
-	vulnerabilityProcessor.Stop()
-	complianceProcessor.Stop()
-	cloudComplianceProcessor.Stop()
-	secretsProcessor.Stop()
+	processors.StopKafkaProcessors()
 
 	// stop server
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Errorf("Server Shutdown Failed: %s", err)
+		log.Error().Msgf("Server Shutdown Failed: %s", err)
 	}
+
 	gracefulExit(nil)
 }

@@ -1,4 +1,4 @@
-package main
+package ingesters
 
 import (
 	"encoding/json"
@@ -31,21 +31,7 @@ type CloudComplianceDoc struct {
 	Severity            string `json:"severity"`
 }
 
-func (s *BulkProcessor) processCloudCompliance(tenantID string, compliance []byte) {
-	var complianceStruct CloudComplianceDoc
-	err := json.Unmarshal(compliance, &complianceStruct)
-	if err != nil {
-		log.Errorf("error unmarshal cloud compliance data: %s", err)
-		return
-	}
-
-	// log.Info(toJSON(complianceStruct))
-
-	s.Add(NewBulkRequest(tenantID, complianceStruct.ToMap()))
-
-}
-
-func commitFuncCloudCompliance(ns string, data []map[string]interface{}) error {
+func CommitFuncCloudCompliance(ns string, data []map[string]interface{}) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -85,8 +71,8 @@ func CloudCompliancesToMaps(ms []CloudComplianceDoc) []map[string]interface{} {
 	return res
 }
 
-func (c *CloudComplianceDoc) ToMap() map[string]interface{} {
-	out, err := json.Marshal(*c)
+func (c CloudComplianceDoc) ToMap() map[string]interface{} {
+	out, err := json.Marshal(c)
 	if err != nil {
 		return nil
 	}

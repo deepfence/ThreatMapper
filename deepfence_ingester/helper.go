@@ -9,16 +9,14 @@ import (
 
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-func getCurrentTime() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
-}
-
 var kgoLogger kgo.Logger = kgo.BasicLogger(
-	os.Stdout,
+	log.LogInfoWriter{},
 	kgo.LogLevelInfo,
-	func() string { return "[" + getCurrentTime() + "]" + " " },
+	nil,
 )
 
 func checkKafkaConn(kafkaBrokers []string) error {
@@ -34,13 +32,12 @@ func checkKafkaConn(kafkaBrokers []string) error {
 	if err := kClient.Ping(context.Background()); err != nil {
 		return err
 	}
-	log.Infof("connection successful to kafka brokers %s", kafkaBrokers)
 	return nil
 }
 
 func createMissingTopics(kafkaBrokers []string, topics []string,
 	partitions int32, replicas int16, retention_ms string) error {
-	log.Infof("create topics with partitions=%d and replicas=%d", partitions, replicas)
+	log.Info().Msgf("create topics with partitions=%d and replicas=%d", partitions, replicas)
 
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(kafkaBrokers...),
@@ -65,12 +62,11 @@ func createMissingTopics(kafkaBrokers []string, topics []string,
 	resp, err := adminClient.CreateTopics(context.Background(),
 		partitions, replicas, topicConfig, topics...)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 	for _, r := range resp.Sorted() {
 		if r.Err != nil {
-			log.Errorf("topic: %s error: %s", r.Topic, r.Err)
+			log.Error().Msgf("topic: %s error: %s", r.Topic, r.Err)
 		}
 	}
 	return nil
@@ -78,7 +74,7 @@ func createMissingTopics(kafkaBrokers []string, topics []string,
 
 func gracefulExit(err error) {
 	if err != nil {
-		log.Error(err)
+		log.Error().Msgf("%v", err)
 	}
 
 	time.Sleep(time.Second * 5)

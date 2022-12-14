@@ -3,6 +3,7 @@ package apiDocs
 import (
 	"net/http"
 
+	ingester "github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -64,19 +65,23 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 
 	d.AddOperation("ingestVulnerabilities", http.MethodPost, "/deepfence/ingest/vulnerabilities",
 		"Ingest Vulnerabilities", "Ingest vulnerabilities found while scanning the agent host or containers",
-		http.StatusOK, []string{tagVulnerability}, nil, bearerToken, new([]ingesters.DfVulnerabilityStruct), nil)
+		http.StatusOK, []string{tagVulnerability}, nil, bearerToken, new([]ingester.DfVulnerabilityStruct), nil)
 
 	d.AddOperation("ingestSecrets", http.MethodPost, "/deepfence/ingest/secrets",
 		"Ingest Secrets", "Ingest secrets found while scanning the agent",
-		http.StatusOK, []string{tagSecretScan}, nil, bearerToken, new([]ingesters.Secret), nil)
+		http.StatusOK, []string{tagSecretScan}, nil, bearerToken, new([]ingester.Secret), nil)
+
+	d.AddOperation("ingestSecretScanStatus", http.MethodPost, "/deepfence/ingest/secret-scan-logs",
+		"Ingest Secrets Scan Status", "Ingest secrets scan status from the agent",
+		http.StatusOK, []string{tagSecretScan}, nil, bearerToken, new([]ingester.SecretScanStatus), nil)
 
 	d.AddOperation("ingestCompliances", http.MethodPost, "/deepfence/ingest/compliance",
 		"Ingest Compliances", "Ingest compliance issues found while scanning the agent",
-		http.StatusOK, []string{tagCompliance}, nil, bearerToken, new([]ingesters.ComplianceDoc), nil)
+		http.StatusOK, []string{tagCompliance}, nil, bearerToken, new([]ingester.ComplianceDoc), nil)
 
 	d.AddOperation("ingestCloudCompliances", http.MethodPost, "/deepfence/ingest/cloud-compliance",
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
-		http.StatusOK, []string{tagCloudCompliance}, nil, bearerToken, new([]ingesters.CloudComplianceDoc), nil)
+		http.StatusOK, []string{tagCloudCompliance}, nil, bearerToken, new([]ingester.CloudComplianceDoc), nil)
 
 	d.AddOperation("ingestCloudResources", http.MethodPost, "/deepfence/ingest/cloud-resources",
 		"Ingest Cloud resources", "Ingest Clouds Resources found while scanning cloud provider",

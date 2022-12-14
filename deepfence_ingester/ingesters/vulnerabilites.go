@@ -1,4 +1,4 @@
-package main
+package ingesters
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type DfCveStruct struct {
+type DfVulnerabilityStruct struct {
 	Count                      int      `json:"count"`
 	Timestamp                  string   `json:"@timestamp"`
 	CveTuple                   string   `json:"cve_id_cve_severity_cve_container_image"`
@@ -38,21 +38,7 @@ type DfCveStruct struct {
 	ExploitPOC                 string   `json:"exploit_poc"`
 }
 
-func (s *BulkProcessor) processVulnerability(tenantID string, cve []byte) {
-	var cveStruct DfCveStruct
-	err := json.Unmarshal(cve, &cveStruct)
-	if err != nil {
-		log.Errorf("error unmarshal cve data: %s", err)
-		return
-	}
-
-	// log.Info(toJSON(cveStruct))
-
-	s.Add(NewBulkRequest(tenantID, cveStruct.ToMap()))
-
-}
-
-func commitFuncVulnerabilities(ns string, data []map[string]interface{}) error {
+func CommitFuncVulnerabilities(ns string, data []map[string]interface{}) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -73,26 +59,23 @@ func commitFuncVulnerabilities(ns string, data []map[string]interface{}) error {
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Cve{node_id:row.cve_id}) SET n+= row",
 		map[string]interface{}{"batch": data}); err != nil {
-		log.Error(err)
+		return err
 	}
 
 	if _, err = tx.Run("MATCH (n:Cve) MERGE (m:CveScan{node_id: n.scan_id, host_name:n.host_name, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)",
 		map[string]interface{}{}); err != nil {
-		log.Error(err)
+		return err
 	}
 
 	if _, err = tx.Run("MATCH (n:CveScan) MERGE (m:Node{node_id: n.host_name}) MERGE (n) -[:SCANNED]-> (m)",
 		map[string]interface{}{}); err != nil {
-		log.Error(err)
+		return err
 	}
 
-	if err := tx.Commit(); err != nil {
-		log.Error(err)
-	}
-	return nil
+	return tx.Commit()
 }
 
-func CVEsToMaps(ms []DfCveStruct) []map[string]interface{} {
+func CVEsToMaps(ms []DfVulnerabilityStruct) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		res = append(res, v.ToMap())
@@ -100,8 +83,8 @@ func CVEsToMaps(ms []DfCveStruct) []map[string]interface{} {
 	return res
 }
 
-func (c *DfCveStruct) ToMap() map[string]interface{} {
-	out, err := json.Marshal(*c)
+func (c DfVulnerabilityStruct) ToMap() map[string]interface{} {
+	out, err := json.Marshal(c)
 	if err != nil {
 		return nil
 	}

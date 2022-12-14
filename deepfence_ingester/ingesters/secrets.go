@@ -1,12 +1,27 @@
-package main
+package ingesters
 
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
+
+type SecretScanStatus struct {
+	Timestamp             time.Time `json:"@timestamp"`
+	ContainerName         string    `json:"container_name"`
+	HostName              string    `json:"host_name"`
+	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
+	Masked                string    `json:"masked"`
+	NodeID                string    `json:"node_id"`
+	NodeName              string    `json:"node_name"`
+	NodeType              string    `json:"node_type"`
+	ScanID                string    `json:"scan_id"`
+	ScanStatus            string    `json:"scan_status"`
+}
 
 type Secret struct {
 	DocId               string                 `json:"doc_id"`
@@ -35,21 +50,7 @@ type Secret struct {
 	Match               map[string]interface{} `json:"Match"`
 }
 
-func (s *BulkProcessor) processSecrets(tenantID string, secret []byte) {
-	var data Secret
-	err := json.Unmarshal(secret, &data)
-	if err != nil {
-		log.Errorf("error unmarshal secret data: %s", err)
-		return
-	}
-
-	// log.Info(toJSON(data))
-
-	s.Add(NewBulkRequest(tenantID, data.ToMap()))
-
-}
-
-func commitFuncSecrets(ns string, data []map[string]interface{}) error {
+func CommitFuncSecrets(ns string, data []map[string]interface{}) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -108,9 +109,10 @@ func commitFuncSecrets(ns string, data []map[string]interface{}) error {
 	return tx.Commit()
 }
 
-func (c *Secret) ToMap() map[string]interface{} {
-	out, err := json.Marshal(*c)
+func (c Secret) ToMap() map[string]interface{} {
+	out, err := json.Marshal(c)
 	if err != nil {
+		log.Error().Msgf("ToMap err: %v", err)
 		return nil
 	}
 	bb := map[string]interface{}{}

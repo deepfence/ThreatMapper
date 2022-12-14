@@ -1,4 +1,4 @@
-package main
+package processors
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 type BulkRequest struct {
@@ -61,13 +61,13 @@ func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
 		numWorkers:    1,
 		bulkActions:   100,
 		flushInterval: 10 * time.Second,
-		requestsC:     make(chan BulkRequest, 10),
+		requestsC:     make(chan BulkRequest, 100),
 	}
 }
 
 func (p *BulkProcessor) Start(ctx context.Context) error {
 
-	log.Infof("start bulk processor %s", p.name)
+	log.Info().Msgf("start bulk processor %s", p.name)
 	// Must have at least one worker.
 	if p.numWorkers < 1 {
 		p.numWorkers = 1
@@ -77,8 +77,7 @@ func (p *BulkProcessor) Start(ctx context.Context) error {
 	p.workers = make([]*bulkWorker, p.numWorkers)
 	for i := 0; i < p.numWorkers; i++ {
 		p.workerWg.Add(1)
-		p.workers[i] = newBulkWorker(p, i,
-			log.WithField("worker", fmt.Sprintf("%s.%d", p.name, i)))
+		p.workers[i] = newBulkWorker(p, i)
 		go p.workers[i].work(ctx)
 	}
 
@@ -141,10 +140,10 @@ type bulkWorker struct {
 	buffer      map[string][]map[string]interface{}
 	flushC      chan struct{}
 	flushAckC   chan struct{}
-	log         *logrus.Entry
+	worker_id   string
 }
 
-func newBulkWorker(p *BulkProcessor, i int, logger *logrus.Entry) *bulkWorker {
+func newBulkWorker(p *BulkProcessor, i int) *bulkWorker {
 	return &bulkWorker{
 		p:           p,
 		i:           i,
@@ -152,7 +151,7 @@ func newBulkWorker(p *BulkProcessor, i int, logger *logrus.Entry) *bulkWorker {
 		buffer:      make(map[string][]map[string]interface{}),
 		flushC:      make(chan struct{}),
 		flushAckC:   make(chan struct{}),
-		log:         logger,
+		worker_id:   fmt.Sprintf("%s.%d", p.name, i),
 	}
 }
 
@@ -163,7 +162,7 @@ func (w *bulkWorker) work(ctx context.Context) {
 		close(w.flushC)
 	}()
 
-	w.log.Info("started")
+	log.Info().Str("worker", w.worker_id).Msg("started")
 
 	var stop bool
 	for !stop {
@@ -173,9 +172,9 @@ func (w *bulkWorker) work(ctx context.Context) {
 				// Received a new request
 				w.buffer[req.NameSpace] = append(w.buffer[req.NameSpace], req.Data)
 				if w.commitRequired() {
-					w.log.Info("buffer full commit all")
-					if err := w.commit(ctx); err != nil {
-						w.log.Error(err)
+					log.Info().Str("worker", w.worker_id).Msg("buffer full commit all")
+					if errs := w.commit(ctx); len(errs) != 0 {
+						log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
 					}
 				}
 
@@ -183,9 +182,9 @@ func (w *bulkWorker) work(ctx context.Context) {
 				// Channel closed: Stop.
 				stop = true
 				if len(w.buffer) > 0 {
-					w.log.Info("exit called commit all")
-					if err := w.commit(ctx); err != nil {
-						w.log.Error(err)
+					log.Info().Str("worker", w.worker_id).Msg("exit called commit all")
+					if errs := w.commit(ctx); len(errs) != 0 {
+						log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
 					}
 				}
 			}
@@ -193,9 +192,9 @@ func (w *bulkWorker) work(ctx context.Context) {
 		case <-w.flushC:
 			// Commit outstanding requests
 			if len(w.buffer) > 0 {
-				w.log.Info("flush called commit all")
-				if err := w.commit(ctx); err != nil {
-					w.log.Error(err)
+				log.Info().Str("worker", w.worker_id).Msg("flush called commit all")
+				if errs := w.commit(ctx); len(errs) != 0 {
+					log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
 				}
 			}
 			w.flushAckC <- struct{}{}
@@ -210,14 +209,15 @@ func (w *bulkWorker) commitRequired() bool {
 	return false
 }
 
-func (w *bulkWorker) commit(ctx context.Context) error {
+func (w *bulkWorker) commit(ctx context.Context) []error {
+	errs := []error{}
 	for k, v := range w.buffer {
-		w.log.Infof("namespace=%s #data=%d", k, len(v))
+		log.Info().Str("worker", w.worker_id).Msgf("namespace=%s #data=%d", k, len(v))
 		if err := w.p.commitFn(k, v); err != nil {
-			w.log.Error(err)
+			errs = append(errs, err)
 		}
 	}
 	// reset buffer after commit
 	w.buffer = make(map[string][]map[string]interface{})
-	return nil
+	return errs
 }

@@ -8,7 +8,6 @@ require (
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/lib/pq v1.10.7
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
-	github.com/sirupsen/logrus v1.9.0
 )
 
 require (

@@ -145,6 +145,10 @@ func (h *Handler) IngestSecretReportHandler(w http.ResponseWriter, r *http.Reque
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestSecretScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	//TODO
+}
+
 func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewComplianceIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
@@ -155,8 +159,11 @@ func (h *Handler) IngestCloudComplianceReportHandler(w http.ResponseWriter, r *h
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
-func ingest_scan_report_kafka[T any](respWrite http.ResponseWriter, req *http.Request,
-	ingester ingesters.KafkaIngester[T], ingestChan chan *kgo.Record) {
+func ingest_scan_report_kafka[T any](
+	respWrite http.ResponseWriter,
+	req *http.Request,
+	ingester ingesters.KafkaIngester[T],
+	ingestChan chan *kgo.Record) {
 
 	defer req.Body.Close()
 	if req.Method != "POST" {
