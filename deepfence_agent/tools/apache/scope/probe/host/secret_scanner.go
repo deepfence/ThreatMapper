@@ -45,7 +45,7 @@ var (
 
 type secretScanParameters struct {
 	client      pb.SecretScannerClient
-	req         pb.FindRequest
+	req         *pb.FindRequest
 	controlArgs map[string]string
 	hostName    string
 }
@@ -97,7 +97,7 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 	}
 	go grpcScanWorkerPool.Process(secretScanParameters{
 		client:      ssClient,
-		req:         greq,
+		req:         &greq,
 		controlArgs: req.BinArgs,
 		hostName:    req.Hostname,
 	})
@@ -115,7 +115,7 @@ func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) 
 	return nil
 }
 
-func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRequest, controlArgs map[string]string, hostName string) {
+func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindRequest, controlArgs map[string]string, hostName string) {
 	var secretScanLogDoc = make(map[string]interface{})
 	secretScanLogDoc["node_id"] = controlArgs["node_id"]
 	secretScanLogDoc["node_type"] = controlArgs["node_type"]
@@ -140,8 +140,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
-	log.Info("started context background", context.Background(), req)
-	res, err := client.FindSecretInfo(context.Background(), &req)
+	log.Infof("started context background: %v\n", req.Input)
+	res, err := client.FindSecretInfo(context.Background(), req)
 	if req.GetPath() != "" && err == nil && res != nil {
 		if scanDir == HostMountDir {
 			for _, secret := range res.Secrets {

@@ -64,7 +64,13 @@ func main() {
 	}
 
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{
+		Logger: lo.New(
+			&log.LogInfoWriter{},
+			"Http",
+			0),
+		NoColor: true}),
+	)
 	r.Use(middleware.Recoverer)
 
 	ingestC := make(chan *kgo.Record, 10000)
@@ -97,7 +103,11 @@ func main() {
 		return
 	}
 
-	httpServer := http.Server{Addr: config.HttpListenEndpoint, Handler: r, ErrorLog: lo.New(&log.LogErrorWriter{}, "Logger", 0)}
+	httpServer := http.Server{
+		Addr:     config.HttpListenEndpoint,
+		Handler:  r,
+		ErrorLog: lo.New(&log.LogErrorWriter{}, "Http", 0),
+	}
 
 	idleConnectionsClosed := make(chan struct{})
 	go func() {
@@ -193,9 +203,9 @@ func initializeKafka() error {
 }
 
 var kgoLogger kgo.Logger = kgo.BasicLogger(
-	os.Stdout,
+	&log.LogInfoWriter{},
 	kgo.LogLevelInfo,
-	func() string { return "[" + getCurrentTime() + "]" + " " },
+	nil,
 )
 
 func getCurrentTime() string {

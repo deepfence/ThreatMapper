@@ -12,7 +12,30 @@ import (
 type LogErrorWriter struct{}
 
 func (LogErrorWriter) Write(b []byte) (int, error) {
-	log.Error().Msg(string(b))
+	if len(b) <= 0 {
+		return 0, nil
+	}
+	// Ignore trailing \n
+	last := len(b) - 1
+	if b[last] == '\n' {
+		last -= 1
+	}
+	log.Error().Msgf("%s", string(b[:last+1]))
+	return len(b), nil
+}
+
+type LogInfoWriter struct{}
+
+func (LogInfoWriter) Write(b []byte) (int, error) {
+	if len(b) <= 0 {
+		return 0, nil
+	}
+	// Ignore trailing \n
+	last := len(b) - 1
+	if b[last] == '\n' {
+		last -= 1
+	}
+	log.Info().Msgf("%s", string(b[:last+1]))
 	return len(b), nil
 }
 

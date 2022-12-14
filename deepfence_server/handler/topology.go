@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -71,7 +70,7 @@ func (h *Handler) GetTopologyGraph(w http.ResponseWriter, r *http.Request) {
 		filters.HostFilter = append(filters.HostFilter, hs...)
 	}
 
-	fmt.Printf("%v\n", filters)
+	log.Info().Msgf("filters: %v", filters)
 
 	reporter, err := getTopologyReporter(ctx)
 
@@ -123,7 +122,7 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 		if target == "internet;<cloud_region>" {
 			target = "out-the-internet"
 		}
-		fmt.Printf("%v -> %v\n", source, target)
+		log.Info().Msgf("%v -> %v\n", source, target)
 		edges[source+target] = detailed.ConnectionSummary{Source: source, Target: target}
 	}
 

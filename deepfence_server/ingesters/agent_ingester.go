@@ -113,7 +113,7 @@ func (nc *neo4jIngester) runEnqueueReport() {
 			report_buffer[probe_id] = rpt
 			i += 1
 		case <-timeout:
-			fmt.Printf("Sending %v unique reports over %v received\n", len(report_buffer), i)
+			log.Info().Msgf("Sending %v unique reports over %v received", len(report_buffer), i)
 			select {
 			case nc.ingester <- report_buffer:
 				report_buffer = map[string]*report.Report{}
