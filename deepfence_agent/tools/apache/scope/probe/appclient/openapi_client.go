@@ -2,17 +2,12 @@ package appclient
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
-	"fmt"
-	"net"
-	"net/http"
 	"net/url"
 	"os"
-	"time"
 
 	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
+	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/probe/controls"
@@ -25,28 +20,9 @@ type OpenapiClient struct {
 	client *openapi.APIClient
 }
 
-const (
-	maxIdleConnsPerHost = 1024
-)
-
 var (
-	AuthError = errors.New("Authentication error")
+	ConnError = errors.New("Connection error")
 )
-
-func buildHttpClient() *http.Client {
-	// Set up our own certificate pool
-	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
-	transport := &http.Transport{
-		MaxIdleConnsPerHost: maxIdleConnsPerHost,
-		DialContext: (&net.Dialer{
-			Timeout:   10 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		TLSHandshakeTimeout: 30 * time.Second,
-		TLSClientConfig:     tlsConfig}
-	client := &http.Client{Transport: transport}
-	return client
-}
 
 func NewOpenapiClient() (*OpenapiClient, error) {
 
@@ -64,33 +40,15 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 		return nil, errors.New("DEEPFENCE_KEY not set")
 	}
 
-	cfg := openapi.NewConfiguration()
-	cfg.HTTPClient = buildHttpClient()
-	cfg.Servers = openapi.ServerConfigurations{
-		{
-			URL:         fmt.Sprintf("https://%s:%s", url, port),
-			Description: "deepfence_server",
-		},
-	}
-	cl := openapi.NewAPIClient(cfg)
-	req := cl.AuthenticationApi.AuthToken(context.Background()).ModelApiAuthRequest(openapi.ModelApiAuthRequest{
-		ApiToken: &api_token,
-	})
-	res, _, err := cl.AuthenticationApi.AuthTokenExecute(req)
+	https_client := oahttp.NewHttpsConsoleClient(url, port)
+	err := https_client.APITokenAuthenticate(api_token)
 	if err != nil {
-		return nil, AuthError
+		return nil, ConnError
 	}
-
-	accessToken := res.GetData().AccessToken
-	if accessToken == nil {
-		return nil, AuthError
-	}
-
-	cl.GetConfig().AddDefaultHeader("Authorization", fmt.Sprintf("Bearer %v", *accessToken))
 
 	return &OpenapiClient{
-		client: cl,
-	}, nil
+		client: https_client.Client(),
+	}, err
 }
 
 // PipeClose implements MultiAppClient

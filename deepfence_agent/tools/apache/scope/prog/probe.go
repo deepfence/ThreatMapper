@@ -247,7 +247,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			multiClients, err = appclient.NewOpenapiClient()
 			if err == nil {
 				break
-			} else if errors.Is(err, appclient.AuthError) {
+			} else if errors.Is(err, appclient.ConnError) {
 				log.Warnln("Failed to authenticate. Retrying...")
 				time.Sleep(authCheckPeriod)
 			} else {
