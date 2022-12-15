@@ -79,7 +79,7 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	return tx.Commit()
 }
 
-func CommitFuncSecretScanStatuses(ns string, data []SecretScanStatus) error {
+func CommitFuncSecretScanStatus(ns string, data []SecretScanStatus) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -103,6 +103,7 @@ func CommitFuncSecretScanStatuses(ns string, data []SecretScanStatus) error {
 	}
 	defer tx.Close()
 
+	// TODO: check scan ids, take latest scan id if it repeats
 	last_status := data[len(data)-1]
 
 	if _, err = tx.Run("MERGE (n:SecretScan{node_id: $scan_id}) SET n.status = $status",

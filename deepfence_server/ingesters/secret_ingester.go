@@ -73,7 +73,7 @@ func (tc *SecretScanStatusIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.SECRET_SCAN_LOGS,
+				Topic:   utils.SECRET_SCAN_STATUS,
 				Value:   cb,
 				Headers: rh,
 			}

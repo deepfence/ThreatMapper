@@ -13,13 +13,13 @@ import (
 
 type CloudComplianceIngester struct{}
 
-func NewCloudComplianceIngester() KafkaIngester[[]ingesters.CloudComplianceDoc] {
+func NewCloudComplianceIngester() KafkaIngester[[]ingesters.CloudCompliance] {
 	return &CloudComplianceIngester{}
 }
 
 func (tc *CloudComplianceIngester) Ingest(
 	ctx context.Context,
-	cs []ingesters.CloudComplianceDoc,
+	cs []ingesters.CloudCompliance,
 	ingestC chan *kgo.Record,
 ) error {
 

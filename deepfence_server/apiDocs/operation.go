@@ -65,7 +65,7 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 
 	d.AddOperation("ingestVulnerabilities", http.MethodPost, "/deepfence/ingest/vulnerabilities",
 		"Ingest Vulnerabilities", "Ingest vulnerabilities found while scanning the agent host or containers",
-		http.StatusOK, []string{tagVulnerability}, nil, bearerToken, new([]ingester.DfVulnerabilityStruct), nil)
+		http.StatusOK, []string{tagVulnerability}, nil, bearerToken, new([]ingester.Vulnerability), nil)
 
 	d.AddOperation("ingestSecrets", http.MethodPost, "/deepfence/ingest/secrets",
 		"Ingest Secrets", "Ingest secrets found while scanning the agent",
@@ -77,11 +77,11 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 
 	d.AddOperation("ingestCompliances", http.MethodPost, "/deepfence/ingest/compliance",
 		"Ingest Compliances", "Ingest compliance issues found while scanning the agent",
-		http.StatusOK, []string{tagCompliance}, nil, bearerToken, new([]ingester.ComplianceDoc), nil)
+		http.StatusOK, []string{tagCompliance}, nil, bearerToken, new([]ingester.Compliance), nil)
 
 	d.AddOperation("ingestCloudCompliances", http.MethodPost, "/deepfence/ingest/cloud-compliance",
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
-		http.StatusOK, []string{tagCloudCompliance}, nil, bearerToken, new([]ingester.CloudComplianceDoc), nil)
+		http.StatusOK, []string{tagCloudCompliance}, nil, bearerToken, new([]ingester.CloudCompliance), nil)
 
 	d.AddOperation("ingestCloudResources", http.MethodPost, "/deepfence/ingest/cloud-resources",
 		"Ingest Cloud resources", "Ingest Clouds Resources found while scanning cloud provider",

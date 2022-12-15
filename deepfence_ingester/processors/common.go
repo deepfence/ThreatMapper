@@ -42,11 +42,38 @@ func desWrapper[T any](commit func(ns string, des []T) error) func(ns string, b 
 func StartKafkaProcessors(ctx context.Context) {
 	processors = map[string]*BulkProcessor{}
 
-	processors[utils.VULNERABILITY_SCAN] = NewBulkProcessor(utils.VULNERABILITY_SCAN, desWrapper(ingesters.CommitFuncVulnerabilities))
-	processors[utils.COMPLIANCE_SCAN] = NewBulkProcessor(utils.COMPLIANCE_SCAN, desWrapper(ingesters.CommitFuncCompliance))
-	processors[utils.CLOUD_COMPLIANCE_SCAN] = NewBulkProcessor(utils.CLOUD_COMPLIANCE_SCAN, desWrapper(ingesters.CommitFuncCloudCompliance))
-	processors[utils.SECRET_SCAN] = NewBulkProcessor(utils.SECRET_SCAN, desWrapper(ingesters.CommitFuncSecrets))
-	processors[utils.SECRET_SCAN_LOGS] = NewBulkProcessor(utils.SECRET_SCAN_LOGS, desWrapper(ingesters.CommitFuncSecretScanStatuses))
+	processors[utils.VULNERABILITY_SCAN] = NewBulkProcessor(
+		utils.VULNERABILITY_SCAN,
+		desWrapper(ingesters.CommitFuncVulnerabilities),
+	)
+	processors[utils.COMPLIANCE_SCAN] = NewBulkProcessor(
+		utils.COMPLIANCE_SCAN,
+		desWrapper(ingesters.CommitFuncCompliance),
+	)
+	processors[utils.CLOUD_COMPLIANCE_SCAN] = NewBulkProcessor(
+		utils.CLOUD_COMPLIANCE_SCAN,
+		desWrapper(ingesters.CommitFuncCloudCompliance),
+	)
+	processors[utils.SECRET_SCAN] = NewBulkProcessor(
+		utils.SECRET_SCAN,
+		desWrapper(ingesters.CommitFuncSecrets),
+	)
+	processors[utils.SECRET_SCAN_STATUS] = NewBulkProcessor(
+		utils.SECRET_SCAN_STATUS,
+		desWrapper(ingesters.CommitFuncSecretScanStatus),
+	)
+	processors[utils.VULNERABILITY_SCAN_STATUS] = NewBulkProcessor(
+		utils.VULNERABILITY_SCAN_STATUS,
+		desWrapper(ingesters.CommitFuncVulnerabilitiesScanStatus),
+	)
+	processors[utils.COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
+		utils.COMPLIANCE_SCAN_STATUS,
+		desWrapper(ingesters.CommitFuncComplianceScanStatus),
+	)
+	processors[utils.CLOUD_COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
+		utils.CLOUD_COMPLIANCE_SCAN_STATUS,
+		desWrapper(ingesters.CommitFuncCloudComplianceScanStatus),
+	)
 
 	for i := range processors {
 		processors[i].Start(ctx)

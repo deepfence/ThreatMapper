@@ -1,12 +1,29 @@
 package ingesters
 
 import (
+	"encoding/json"
+	"time"
+
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type ComplianceDoc struct {
+type ComplianceScanStatus struct {
+	Timestamp             time.Time `json:"@timestamp"`
+	ContainerName         string    `json:"container_name"`
+	HostName              string    `json:"host_name"`
+	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
+	Masked                string    `json:"masked"`
+	NodeID                string    `json:"node_id"`
+	NodeName              string    `json:"node_name"`
+	NodeType              string    `json:"node_type"`
+	ScanID                string    `json:"scan_id"`
+	ScanStatus            string    `json:"scan_status"`
+}
+
+type Compliance struct {
 	DocId                 string `json:"doc_id"`
 	Type                  string `json:"type"`
 	TimeStamp             int64  `json:"time_stamp"`
@@ -33,7 +50,7 @@ type ComplianceDoc struct {
 	ComplianceNodeType    string `json:"compliance_node_type"`
 }
 
-func CommitFuncCompliance(ns string, data []ComplianceDoc) error {
+func CommitFuncCompliance(ns string, data []Compliance) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -75,10 +92,45 @@ func CommitFuncCompliance(ns string, data []ComplianceDoc) error {
 	return tx.Commit()
 }
 
-func CompliancesToMaps(ms []ComplianceDoc) []map[string]interface{} {
+func CommitFuncComplianceScanStatus(ns string, data []ComplianceScanStatus) error {
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	// TODO: add query to commit for scan status
+	log.Error().Msg("Not implemented")
+
+	return tx.Commit()
+}
+
+func CompliancesToMaps(ms []Compliance) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		res = append(res, utils.ToMap(v))
 	}
 	return res
+}
+
+func (c Compliance) ToMap() map[string]interface{} {
+	out, err := json.Marshal(c)
+	if err != nil {
+		return nil
+	}
+	bb := map[string]interface{}{}
+	_ = json.Unmarshal(out, &bb)
+	return bb
 }
