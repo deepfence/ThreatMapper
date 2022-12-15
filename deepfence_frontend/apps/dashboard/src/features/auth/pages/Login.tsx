@@ -1,26 +1,21 @@
 import cx from 'classnames';
-import { Link, redirect, useFetcher } from 'react-router-dom';
+import { Link, useFetcher } from 'react-router-dom';
 import { Button, Card, TextInput, Typography } from 'ui-components';
 
+import { ModelResponse } from '../../../api/generated';
 import LogoDarkBlue from '../../../assets/logo-deepfence-dark-blue.svg';
-import storage from '../../../utils/storage';
-
-export const loginAction = async ({
-  request,
-}: {
-  request: Request;
-  params: Record<string, unknown>;
-}) => {
-  storage.setAuth({ isLogin: true });
-  return redirect('/onboard', 302);
-};
 
 export const Login = () => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ModelResponse>();
   const { data, state } = fetcher;
 
+  const isFieldError = (field: string) => {
+    if (data?.error_fields?.[field]) return true;
+    return false;
+  };
+
   return (
-    <div className={cx('h-screen flex items-center justify-center')}>
+    <div className={cx('h-full flex items-center justify-center')}>
       <fetcher.Form method="post">
         <Card className="w-[384px] p-8">
           <div className="text-center">
@@ -41,20 +36,36 @@ export const Login = () => {
             Log In to Deepfence
           </h1>
           <TextInput
-            className="mb-2.5"
             label="Email"
             type={'text'}
             placeholder="name@example.com"
             sizing="sm"
             name="email"
           />
+          {isFieldError('email') && (
+            <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
+              {data?.error_fields?.email}
+            </p>
+          )}
           <TextInput
+            className="mt-2.5"
             label="Password"
             type={'password'}
             placeholder="Password"
             sizing="sm"
             name="password"
           />
+          {isFieldError('password') && (
+            <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
+              {data?.error_fields?.password}
+            </p>
+          )}
+          {data?.message && (
+            <div className={`text-center mt-1.5 text-red-500 ${Typography.size.sm}`}>
+              {data.message}
+            </div>
+          )}
+
           <div className="flex flex-row w-full my-6">
             <Link
               to="/auth/forgot-password"
@@ -87,13 +98,6 @@ export const Login = () => {
           >
             Single Sign-On (SSO)
           </Link>
-          <div>
-            {data?.error
-              ? data.error.message
-              : state === 'submitting'
-              ? 'Loading...'
-              : null}
-          </div>
         </Card>
       </fetcher.Form>
     </div>

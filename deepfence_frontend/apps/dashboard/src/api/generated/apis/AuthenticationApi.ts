@@ -50,8 +50,8 @@ export interface LoginRequest {
  */
 export interface AuthenticationApiInterface {
     /**
-     * Get auth token for API access
-     * @summary API Auth Token
+     * Get access token for programmatic API access, by providing API Token
+     * @summary Get Access Token for API Token
      * @param {ModelApiAuthRequest} [modelApiAuthRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -60,10 +60,25 @@ export interface AuthenticationApiInterface {
     authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
 
     /**
-     * Get auth token for API access
-     * API Auth Token
+     * Get access token for programmatic API access, by providing API Token
+     * Get Access Token for API Token
      */
     authToken(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
+
+    /**
+     * Reissue access token using refresh token
+     * @summary Refresh access token
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthenticationApiInterface
+     */
+    authTokenRefreshRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
+
+    /**
+     * Reissue access token using refresh token
+     * Refresh access token
+     */
+    authTokenRefresh(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
 
     /**
      * Login API
@@ -104,8 +119,8 @@ export interface AuthenticationApiInterface {
 export class AuthenticationApi extends runtime.BaseAPI implements AuthenticationApiInterface {
 
     /**
-     * Get auth token for API access
-     * API Auth Token
+     * Get access token for programmatic API access, by providing API Token
+     * Get Access Token for API Token
      */
     async authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
         const queryParameters: any = {};
@@ -126,11 +141,47 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
     }
 
     /**
-     * Get auth token for API access
-     * API Auth Token
+     * Get access token for programmatic API access, by providing API Token
+     * Get Access Token for API Token
      */
     async authToken(requestParameters: AuthTokenRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
         const response = await this.authTokenRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Reissue access token using refresh token
+     * Refresh access token
+     */
+    async authTokenRefreshRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/auth/token/refresh`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Reissue access token using refresh token
+     * Refresh access token
+     */
+    async authTokenRefresh(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
+        const response = await this.authTokenRefreshRaw(initOverrides);
         return await response.value();
     }
 
