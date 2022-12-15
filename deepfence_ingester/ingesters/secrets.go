@@ -103,15 +103,20 @@ func CommitFuncSecretScanStatus(ns string, data []SecretScanStatus) error {
 	}
 	defer tx.Close()
 
-	// TODO: check scan ids, take latest scan id if it repeats
-	last_status := data[len(data)-1]
-
-	if _, err = tx.Run("MERGE (n:SecretScan{node_id: $scan_id}) SET n.status = $status",
-		map[string]interface{}{"status": last_status.ScanStatus, "scan_id": last_status.ScanID}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MERGE (n:SecretScan{node_id: row.scan_id}) SET n.status = row.scan_status",
+		map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 		return err
 	}
 
 	return tx.Commit()
+}
+
+func statusesToMaps(data []SecretScanStatus) []map[string]interface{} {
+	statuses := []map[string]interface{}{}
+	for _, i := range data {
+		statuses = append(statuses, utils.ToMap(i))
+	}
+	return statuses
 }
 
 func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
@@ -129,7 +134,7 @@ func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 			secret[k] = v
 		}
 		secret["rule_id"] = fmt.Sprintf("%v:%v", i.Rule.ID, i.HostName)
-		secrets = append(secrets, map[string]map[string]interface{} {
+		secrets = append(secrets, map[string]map[string]interface{}{
 			"Rule":   utils.ToMap(i.Rule),
 			"Secret": secret,
 		})
