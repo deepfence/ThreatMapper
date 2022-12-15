@@ -1,12 +1,11 @@
 package ingesters
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -24,30 +23,33 @@ type SecretScanStatus struct {
 }
 
 type Secret struct {
-	DocId               string                 `json:"doc_id"`
-	Timestamp           string                 `json:"@timestamp"`
-	Count               int                    `json:"count,omitempty"`
-	Reason              string                 `json:"reason"`
-	Resource            string                 `json:"resource"`
-	Status              string                 `json:"status"`
-	Region              string                 `json:"region"`
-	AccountID           string                 `json:"account_id"`
-	Group               string                 `json:"group"`
-	Service             string                 `json:"service"`
-	Title               string                 `json:"title"`
-	ComplianceCheckType string                 `json:"compliance_check_type"`
-	CloudProvider       string                 `json:"cloud_provider"`
-	NodeName            string                 `json:"node_name"`
-	HostName            string                 `json:"host_name"`
-	NodeID              string                 `json:"node_id"`
-	ScanID              string                 `json:"scan_id"`
-	Masked              string                 `json:"masked"`
-	Type                string                 `json:"type"`
-	ControlID           string                 `json:"control_id"`
-	Description         string                 `json:"description"`
-	Rule                map[string]interface{} `json:"Rule"`
-	Severity            map[string]interface{} `json:"Severity"`
-	Match               map[string]interface{} `json:"Match"`
+	Timestamp    time.Time `json:"@timestamp"`
+	ImageLayerID string    `json:"ImageLayerId"`
+	Match        struct {
+		StartingIndex         int    `json:"starting_index"`
+		RelativeStartingIndex int    `json:"relative_starting_index"`
+		RelativeEndingIndex   int    `json:"relative_ending_index"`
+		FullFilename          string `json:"full_filename"`
+		MatchedContent        string `json:"matched_content"`
+	} `json:"Match"`
+	Rule struct {
+		ID               int    `json:"id"`
+		Name             string `json:"name"`
+		Part             string `json:"part"`
+		SignatureToMatch string `json:"signature_to_match"`
+	} `json:"Rule"`
+	Severity struct {
+		Level string  `json:"level"`
+		Score float64 `json:"score"`
+	} `json:"Severity"`
+	ContainerName         string `json:"container_name"`
+	HostName              string `json:"host_name"`
+	KubernetesClusterName string `json:"kubernetes_cluster_name"`
+	Masked                string `json:"masked"`
+	NodeID                string `json:"node_id"`
+	NodeName              string `json:"node_name"`
+	NodeType              string `json:"node_type"`
+	ScanID                string `json:"scan_id"`
 }
 
 func CommitFuncSecrets(ns string, data []Secret) error {
@@ -69,7 +71,7 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Secret{node_id:row.rule_id}) MERGE (m:SecretScan{node_id: row.scan_id, host_name: row.host_name, time_stamp: timestamp()}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l) SET n+= row",
+	if _, err = tx.Run("UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret MERGE (r:Rule{node_id:rule.id}) SET r+=rule WITH secret as row, r MERGE (n:Secret{node_id:row.rule_id}) MERGE (n)-[:IS]->(r) MERGE (m:SecretScan{node_id: row.scan_id, host_name: row.host_name, time_stamp: timestamp()}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l) SET n+= row",
 		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
 	}
@@ -111,44 +113,25 @@ func CommitFuncSecretScanStatuses(ns string, data []SecretScanStatus) error {
 	return tx.Commit()
 }
 
-func secretsToMaps(data []Secret) []map[string]interface{} {
-	secrets := []map[string]interface{}{}
+func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
+	secrets := []map[string]map[string]interface{}{}
 	for _, i := range data {
-		tmp := i.ToMap()
-		secret := map[string]interface{}{}
-		match := i.Match
-		severity := i.Severity
-		rule := i.Rule
+		secret := utils.ToMap(i)
+		delete(secret, "Severity")
+		delete(secret, "Rule")
+		delete(secret, "Match")
 
-		for k, v := range tmp {
-			if k == "Match" || k == "Severity" || k == "Rule" {
-				continue
-			}
+		for k, v := range utils.ToMap(i.Severity) {
 			secret[k] = v
 		}
-
-		for k, v := range rule {
+		for k, v := range utils.ToMap(i.Match) {
 			secret[k] = v
 		}
-		for k, v := range severity {
-			secret[k] = v
-		}
-		for k, v := range match {
-			secret[k] = v
-		}
-		secret["rule_id"] = fmt.Sprintf("%v:%v", rule["id"], tmp["host_name"])
-		secrets = append(secrets, secret)
+		secret["rule_id"] = fmt.Sprintf("%v:%v", i.Rule.ID, i.HostName)
+		secrets = append(secrets, map[string]map[string]interface{} {
+			"Rule":   utils.ToMap(i.Rule),
+			"Secret": secret,
+		})
 	}
 	return secrets
-}
-
-func (c Secret) ToMap() map[string]interface{} {
-	out, err := json.Marshal(c)
-	if err != nil {
-		log.Error().Msgf("ToMap err: %v", err)
-		return nil
-	}
-	bb := map[string]interface{}{}
-	_ = json.Unmarshal(out, &bb)
-	return bb
 }

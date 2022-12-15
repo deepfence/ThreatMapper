@@ -1,9 +1,8 @@
 package ingesters
 
 import (
-	"encoding/json"
-
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -78,17 +77,7 @@ func CommitFuncVulnerabilities(ns string, data []DfVulnerabilityStruct) error {
 func CVEsToMaps(ms []DfVulnerabilityStruct) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
-		res = append(res, v.ToMap())
+		res = append(res, utils.ToMap(v))
 	}
 	return res
-}
-
-func (c DfVulnerabilityStruct) ToMap() map[string]interface{} {
-	out, err := json.Marshal(c)
-	if err != nil {
-		return nil
-	}
-	bb := map[string]interface{}{}
-	_ = json.Unmarshal(out, &bb)
-	return bb
 }
