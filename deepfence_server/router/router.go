@@ -82,9 +82,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Post("/auth/token", dfHandler.ApiAuthHandler)
 			r.Post("/user/login", dfHandler.LoginHandler)
 			if serveOpenapiDocs {
-				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi-docs", serverPort)
+				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi.json", serverPort)
 				log.Info().Msgf("Swagger UI : http://0.0.0.0%s/deepfence/swagger-ui/", serverPort)
-				r.Get("/openapi-docs", dfHandler.OpenApiDocsHandler)
+				r.Get("/openapi.json", dfHandler.OpenApiDocsHandler)
 				r.Handle("/swagger-ui/*",
 					http.StripPrefix("/deepfence/swagger-ui",
 						http.FileServer(http.Dir("/usr/local/share/swagger-ui/"))))
