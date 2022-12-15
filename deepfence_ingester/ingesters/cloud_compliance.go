@@ -31,7 +31,7 @@ type CloudComplianceDoc struct {
 	Severity            string `json:"severity"`
 }
 
-func CommitFuncCloudCompliance(ns string, data []map[string]interface{}) error {
+func CommitFuncCloudCompliance(ns string, data []CloudComplianceDoc) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -51,7 +51,7 @@ func CommitFuncCloudCompliance(ns string, data []map[string]interface{}) error {
 	defer tx.Close()
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (n:CloudCompliance{resource:row.resource, reason: row.reason}) MERGE (m:CloudResource{node_id:row.resource}) MERGE (n) -[:SCANNED]-> (m) SET n+= row",
-		map[string]interface{}{"batch": data}); err != nil {
+		map[string]interface{}{"batch": CloudCompliancesToMaps(data)}); err != nil {
 		return err
 	}
 

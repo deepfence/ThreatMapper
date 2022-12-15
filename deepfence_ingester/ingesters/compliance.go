@@ -34,7 +34,7 @@ type ComplianceDoc struct {
 	ComplianceNodeType    string `json:"compliance_node_type"`
 }
 
-func CommitFuncCompliance(ns string, data []map[string]interface{}) error {
+func CommitFuncCompliance(ns string, data []ComplianceDoc) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -54,7 +54,7 @@ func CommitFuncCompliance(ns string, data []map[string]interface{}) error {
 	defer tx.Close()
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Compliance{node_id:row.node_id, test_number:row.test_number}) SET n+= row",
-		map[string]interface{}{"batch": data}); err != nil {
+		map[string]interface{}{"batch": CompliancesToMaps(data)}); err != nil {
 		return err
 	}
 

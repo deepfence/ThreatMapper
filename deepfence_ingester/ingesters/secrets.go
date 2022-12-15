@@ -96,13 +96,42 @@ func CommitFuncSecrets(ns string, data []map[string]interface{}) error {
 		secrets = append(secrets, secret)
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Secret{node_id:row.rule_id}) MERGE (m:SecretScan{node_id: row.scan_id, host_name: row.host_name, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n) SET n+= row",
+	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Secret{node_id:row.rule_id}) MERGE (m:SecretScan{node_id: row.scan_id, host_name: row.host_name, time_stamp: timestamp()}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l) SET n+= row",
 		map[string]interface{}{"batch": secrets}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:SecretScan) MERGE (m:Node{node_id: n.host_name}) MERGE (n) -[:SCANNED]-> (m)",
-		map[string]interface{}{}); err != nil {
+	return tx.Commit()
+}
+
+func CommitFuncSecretScanStatuses(ns string, data []SecretScanStatus) error {
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+	driver, err := directory.Neo4jClient(ctx)
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	last_status := data[len(data)-1]
+
+	if _, err = tx.Run("MERGE (n:SecretScan{scan_id: $scan_id}) SET n.status = $status",
+		map[string]interface{}{"status": last_status.ScanStatus, "scan_id": last_status.ScanID}); err != nil {
 		return err
 	}
 
@@ -110,6 +139,17 @@ func CommitFuncSecrets(ns string, data []map[string]interface{}) error {
 }
 
 func (c Secret) ToMap() map[string]interface{} {
+	out, err := json.Marshal(c)
+	if err != nil {
+		log.Error().Msgf("ToMap err: %v", err)
+		return nil
+	}
+	bb := map[string]interface{}{}
+	_ = json.Unmarshal(out, &bb)
+	return bb
+}
+
+func (c SecretScanStatus) ToMap() map[string]interface{} {
 	out, err := json.Marshal(c)
 	if err != nil {
 		log.Error().Msgf("ToMap err: %v", err)

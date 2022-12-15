@@ -11,10 +11,10 @@ import (
 
 type BulkRequest struct {
 	NameSpace string
-	Data      map[string]interface{}
+	Data      []byte
 }
 
-func NewBulkRequest(namespace string, data map[string]interface{}) BulkRequest {
+func NewBulkRequest(namespace string, data []byte) BulkRequest {
 	return BulkRequest{
 		NameSpace: namespace,
 		Data:      data,
@@ -33,7 +33,7 @@ type BulkProcessor struct {
 	commitFn      commitFn
 }
 
-type commitFn func(ns string, data []map[string]interface{}) error
+type commitFn func(ns string, data [][]byte) error
 
 func (s *BulkProcessor) Add(b BulkRequest) {
 	s.requestsC <- b
@@ -137,7 +137,7 @@ type bulkWorker struct {
 	p           *BulkProcessor
 	i           int
 	bulkActions int
-	buffer      map[string][]map[string]interface{}
+	buffer      map[string][][]byte
 	flushC      chan struct{}
 	flushAckC   chan struct{}
 	worker_id   string
@@ -148,7 +148,7 @@ func newBulkWorker(p *BulkProcessor, i int) *bulkWorker {
 		p:           p,
 		i:           i,
 		bulkActions: p.bulkActions,
-		buffer:      make(map[string][]map[string]interface{}),
+		buffer:      make(map[string][][]byte),
 		flushC:      make(chan struct{}),
 		flushAckC:   make(chan struct{}),
 		worker_id:   fmt.Sprintf("%s.%d", p.name, i),
@@ -218,6 +218,6 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 		}
 	}
 	// reset buffer after commit
-	w.buffer = make(map[string][]map[string]interface{})
+	w.buffer = make(map[string][][]byte)
 	return errs
 }

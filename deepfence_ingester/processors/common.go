@@ -11,46 +11,52 @@ import (
 )
 
 var (
-	vulnerabilityProcessor   *BulkProcessor
-	complianceProcessor      *BulkProcessor
-	cloudComplianceProcessor *BulkProcessor
-	secretsProcessor         *BulkProcessor
+	processors map[string]*BulkProcessor
 )
 
 type Mappable interface {
 	ToMap() map[string]interface{}
 }
 
-func Process[T Mappable](s *BulkProcessor, tenantID string, b []byte) error {
-	var struc T
-	err := json.Unmarshal(b, &struc)
-	if err != nil {
-		return err
-	}
-
-	s.Add(NewBulkRequest(tenantID, struc.ToMap()))
+func Process(s *BulkProcessor, tenantID string, b []byte) error {
+	s.Add(NewBulkRequest(tenantID, b))
 	return nil
 }
 
+func desWrapper[T any](commit func(ns string, des []T) error) func(ns string, b [][]byte) error {
+	return func(ns string, b [][]byte) error {
+		ss := []T{}
+		for i := range b {
+			var s T
+			err := json.Unmarshal(b[i], &s)
+			if err != nil {
+				return err
+			}
+			ss = append(ss, s)
+		}
+
+		return commit(ns, ss)
+	}
+}
+
 func StartKafkaProcessors(ctx context.Context) {
-	vulnerabilityProcessor = NewBulkProcessor(utils.VULNERABILITY_SCAN, ingesters.CommitFuncVulnerabilities)
-	vulnerabilityProcessor.Start(ctx)
+	processors = map[string]*BulkProcessor{}
 
-	complianceProcessor = NewBulkProcessor(utils.COMPLIANCE_SCAN, ingesters.CommitFuncCompliance)
-	complianceProcessor.Start(ctx)
+	processors[utils.VULNERABILITY_SCAN] = NewBulkProcessor(utils.VULNERABILITY_SCAN, desWrapper(ingesters.CommitFuncVulnerabilities))
+	processors[utils.COMPLIANCE_SCAN] = NewBulkProcessor(utils.COMPLIANCE_SCAN, desWrapper(ingesters.CommitFuncCompliance))
+	processors[utils.CLOUD_COMPLIANCE_SCAN] = NewBulkProcessor(utils.CLOUD_COMPLIANCE_SCAN, desWrapper(ingesters.CommitFuncCloudCompliance))
+	processors[utils.SECRET_SCAN] = NewBulkProcessor(utils.SECRET_SCAN, desWrapper(ingesters.CommitFuncSecrets))
+	processors[utils.SECRET_SCAN_LOGS] = NewBulkProcessor(utils.SECRET_SCAN_LOGS, desWrapper(ingesters.CommitFuncSecretScanStatuses))
 
-	cloudComplianceProcessor := NewBulkProcessor(utils.CLOUD_COMPLIANCE_SCAN, ingesters.CommitFuncCloudCompliance)
-	cloudComplianceProcessor.Start(ctx)
-
-	secretsProcessor = NewBulkProcessor(utils.SECRET_SCAN, ingesters.CommitFuncSecrets)
-	secretsProcessor.Start(ctx)
+	for i := range processors {
+		processors[i].Start(ctx)
+	}
 }
 
 func StopKafkaProcessors() {
-	vulnerabilityProcessor.Stop()
-	complianceProcessor.Stop()
-	cloudComplianceProcessor.Stop()
-	secretsProcessor.Stop()
+	for i := range processors {
+		processors[i].Stop()
+	}
 }
 
 func tenantID(rh []kgo.RecordHeader) string {
@@ -63,30 +69,16 @@ func tenantID(rh []kgo.RecordHeader) string {
 }
 
 func processRecord(r *kgo.Record) {
+	processor, exists := processors[r.Topic]
+	if !exists {
+		log.Error().Msgf("Not Implemented for topic %s", r.Topic)
+		return
+	}
+
 	// get tenant id from headers
 	tenant := tenantID(r.Headers)
 
-	var err error
-	switch r.Topic {
-	case utils.VULNERABILITY_SCAN:
-		vulnerabilitiesProcessed.Inc()
-		err = Process[ingesters.DfVulnerabilityStruct](vulnerabilityProcessor, tenant, r.Value)
-
-	case utils.SECRET_SCAN:
-		secretProcessed.Inc()
-		err = Process[ingesters.Secret](secretsProcessor, tenant, r.Value)
-
-	case utils.COMPLIANCE_SCAN:
-		complianceProcessed.Inc()
-		err = Process[ingesters.ComplianceDoc](complianceProcessor, tenant, r.Value)
-
-	case utils.CLOUD_COMPLIANCE_SCAN:
-		cloudComplianceProcessed.Inc()
-		err = Process[ingesters.CloudComplianceDoc](cloudComplianceProcessor, tenant, r.Value)
-
-	default:
-		log.Error().Msgf("Not Implemented for topic %s", r.Topic)
-	}
+	err := Process(processor, tenant, r.Value)
 	if err != nil {
 		log.Error().Msgf("Process err: %s", err)
 	}

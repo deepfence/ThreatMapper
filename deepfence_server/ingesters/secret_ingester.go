@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -37,6 +38,42 @@ func (tc *SecretIngester) Ingest(
 		} else {
 			ingestC <- &kgo.Record{
 				Topic:   utils.SECRET_SCAN,
+				Value:   cb,
+				Headers: rh,
+			}
+		}
+	}
+
+	return nil
+}
+
+type SecretScanStatusIngester struct{}
+
+func NewSecretScanStatusIngester() KafkaIngester[[]ingesters.SecretScanStatus] {
+	return &SecretScanStatusIngester{}
+}
+
+func (tc *SecretScanStatusIngester) Ingest(
+	ctx context.Context,
+	statuses []ingesters.SecretScanStatus,
+	ingestC chan *kgo.Record,
+) error {
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
+
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
+	}
+
+	for _, c := range statuses {
+		cb, err := json.Marshal(c)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		} else {
+			ingestC <- &kgo.Record{
+				Topic:   utils.SECRET_SCAN_LOGS,
 				Value:   cb,
 				Headers: rh,
 			}

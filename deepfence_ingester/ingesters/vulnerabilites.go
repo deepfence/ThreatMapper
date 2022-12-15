@@ -38,7 +38,7 @@ type DfVulnerabilityStruct struct {
 	ExploitPOC                 string   `json:"exploit_poc"`
 }
 
-func CommitFuncVulnerabilities(ns string, data []map[string]interface{}) error {
+func CommitFuncVulnerabilities(ns string, data []DfVulnerabilityStruct) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -58,7 +58,7 @@ func CommitFuncVulnerabilities(ns string, data []map[string]interface{}) error {
 	defer tx.Close()
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Cve{node_id:row.cve_id}) SET n+= row",
-		map[string]interface{}{"batch": data}); err != nil {
+		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
 		return err
 	}
 

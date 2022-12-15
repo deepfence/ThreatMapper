@@ -146,7 +146,8 @@ func (h *Handler) IngestSecretReportHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *Handler) IngestSecretScanStatusHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO
+	ingester := ingesters.NewSecretScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
 func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
