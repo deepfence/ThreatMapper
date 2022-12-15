@@ -3,6 +3,8 @@ package log
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -15,12 +17,7 @@ func (LogErrorWriter) Write(b []byte) (int, error) {
 	if len(b) <= 0 {
 		return 0, nil
 	}
-	// Ignore trailing \n
-	last := len(b) - 1
-	if b[last] == '\n' {
-		last -= 1
-	}
-	log.Error().Msgf("%s", string(b[:last+1]))
+	log.Error().CallerSkipFrame(3).Msg(strings.TrimSpace(string(b)))
 	return len(b), nil
 }
 
@@ -30,12 +27,7 @@ func (LogInfoWriter) Write(b []byte) (int, error) {
 	if len(b) <= 0 {
 		return 0, nil
 	}
-	// Ignore trailing \n
-	last := len(b) - 1
-	if b[last] == '\n' {
-		last -= 1
-	}
-	log.Info().Msgf("%s", string(b[:last+1]))
+	log.Info().CallerSkipFrame(3).Msg(strings.TrimSpace(string(b)))
 	return len(b), nil
 }
 
@@ -62,7 +54,15 @@ func (a AsynqLogger) Fatal(args ...interface{}) {
 }
 
 func init() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC1123Z})
+	log.Logger = log.Output(
+		zerolog.ConsoleWriter{
+			Out:        os.Stdout,
+			TimeFormat: time.RFC1123Z,
+			FormatCaller: func(i interface{}) string {
+				return filepath.Base(fmt.Sprintf("%s", i))
+			},
+		},
+	).With().Caller().Logger()
 }
 
 func Initialize(log_level string) {

@@ -67,7 +67,7 @@ func main() {
 	mux.Use(
 		middleware.RequestLogger(
 			&middleware.DefaultLogFormatter{
-				Logger:  stdlog.New(&log.LogInfoWriter{}, "Http", 0),
+				Logger:  stdlog.New(&log.LogInfoWriter{}, "", 0),
 				NoColor: true},
 		),
 	)
@@ -103,7 +103,7 @@ func main() {
 	httpServer := http.Server{
 		Addr:     config.HttpListenEndpoint,
 		Handler:  mux,
-		ErrorLog: stdlog.New(&log.LogErrorWriter{}, "Http", 0),
+		ErrorLog: stdlog.New(&log.LogErrorWriter{}, "", 0),
 	}
 
 	idleConnectionsClosed := make(chan struct{})
