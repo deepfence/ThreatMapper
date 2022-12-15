@@ -118,4 +118,17 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Stop Malware Scan", "Stop Malware Scan on agent or registry",
 		http.StatusAccepted, []string{tagMalwareScan}, nil, bearerToken, new(model.ScanTrigger), nil)
 
+	// Status scan
+	d.AddOperation("statusVulnerabilityScan", http.MethodGet, "/deepfence/scan/status/vulnerability",
+		"Get Vulnerability Scan Status", "Get Vulnerability Scan Status on agent or registry",
+		http.StatusAccepted, []string{tagVulnerability}, nil, bearerToken, new(model.ScanStatusReq), new(model.ScanStatus))
+	d.AddOperation("statusSecretScan", http.MethodGet, "/deepfence/scan/status/secret",
+		"Get Secret Scan Status", "Get Secret Scan Status on agent or registry",
+		http.StatusAccepted, []string{tagSecretScan}, nil, bearerToken, new(model.ScanStatusReq), new(model.ScanStatus))
+	d.AddOperation("statusComplianceScan", http.MethodGet, "/deepfence/scan/status/compliance",
+		"Get Compliance Scan Status", "Get Compliance Scan Status on agent or registry",
+		http.StatusAccepted, []string{tagCompliance}, nil, bearerToken, new(model.ScanStatusReq), new(model.ScanStatus))
+	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
+		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
+		http.StatusAccepted, []string{tagMalwareScan}, nil, bearerToken, new(model.ScanStatusReq), new(model.ScanStatus))
 }

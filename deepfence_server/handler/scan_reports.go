@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -209,4 +210,37 @@ func extractScanTrigger(w http.ResponseWriter, r *http.Request) (model.ScanTrigg
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
 	}
 	return req, err
+}
+
+func (h *Handler) StatusVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
+	//	Get status of scan
+}
+
+func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ScanStatusReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return
+	}
+	status, err := reporters.GetSecretScanStatus(r.Context(), req.ScanId)
+
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: status})
+}
+
+func (h *Handler) StatusComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
+	//	Get status of scan
+}
+
+func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
+	//	Get status of scan
 }

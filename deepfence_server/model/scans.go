@@ -9,3 +9,11 @@ type ScanTrigger struct {
 	BinArgs      map[string]string     `json:"bin_args" required:"true"`
 	Hostname     string                `json:"hostname" required:"true"`
 }
+
+type ScanStatusReq struct {
+	ScanId string `json:"scan_id" required:"true"`
+}
+
+type ScanStatus struct {
+	Status string `json:"status" required:"true"`
+}
