@@ -50,7 +50,7 @@ type Secret struct {
 	Match               map[string]interface{} `json:"Match"`
 }
 
-func CommitFuncSecrets(ns string, data []map[string]interface{}) error {
+func CommitFuncSecrets(ns string, data []Secret) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -69,35 +69,8 @@ func CommitFuncSecrets(ns string, data []map[string]interface{}) error {
 	}
 	defer tx.Close()
 
-	secrets := []map[string]interface{}{}
-	for _, i := range data {
-		secret := map[string]interface{}{}
-		match := i["Match"].(map[string]interface{})
-		severity := i["Severity"].(map[string]interface{})
-		rule := i["Rule"].(map[string]interface{})
-
-		for k, v := range i {
-			if k == "Match" || k == "Severity" || k == "Rule" {
-				continue
-			}
-			secret[k] = v
-		}
-
-		for k, v := range rule {
-			secret[k] = v
-		}
-		for k, v := range severity {
-			secret[k] = v
-		}
-		for k, v := range match {
-			secret[k] = v
-		}
-		secret["rule_id"] = fmt.Sprintf("%v:%v", rule["id"], i["host_name"])
-		secrets = append(secrets, secret)
-	}
-
 	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Secret{node_id:row.rule_id}) MERGE (m:SecretScan{node_id: row.scan_id, host_name: row.host_name, time_stamp: timestamp()}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l) SET n+= row",
-		map[string]interface{}{"batch": secrets}); err != nil {
+		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
 	}
 
@@ -130,7 +103,7 @@ func CommitFuncSecretScanStatuses(ns string, data []SecretScanStatus) error {
 
 	last_status := data[len(data)-1]
 
-	if _, err = tx.Run("MERGE (n:SecretScan{scan_id: $scan_id}) SET n.status = $status",
+	if _, err = tx.Run("MERGE (n:SecretScan{node_id: $scan_id}) SET n.status = $status",
 		map[string]interface{}{"status": last_status.ScanStatus, "scan_id": last_status.ScanID}); err != nil {
 		return err
 	}
@@ -138,18 +111,38 @@ func CommitFuncSecretScanStatuses(ns string, data []SecretScanStatus) error {
 	return tx.Commit()
 }
 
-func (c Secret) ToMap() map[string]interface{} {
-	out, err := json.Marshal(c)
-	if err != nil {
-		log.Error().Msgf("ToMap err: %v", err)
-		return nil
+func secretsToMaps(data []Secret) []map[string]interface{} {
+	secrets := []map[string]interface{}{}
+	for _, i := range data {
+		tmp := i.ToMap()
+		secret := map[string]interface{}{}
+		match := i.Match
+		severity := i.Severity
+		rule := i.Rule
+
+		for k, v := range tmp {
+			if k == "Match" || k == "Severity" || k == "Rule" {
+				continue
+			}
+			secret[k] = v
+		}
+
+		for k, v := range rule {
+			secret[k] = v
+		}
+		for k, v := range severity {
+			secret[k] = v
+		}
+		for k, v := range match {
+			secret[k] = v
+		}
+		secret["rule_id"] = fmt.Sprintf("%v:%v", rule["id"], tmp["host_name"])
+		secrets = append(secrets, secret)
 	}
-	bb := map[string]interface{}{}
-	_ = json.Unmarshal(out, &bb)
-	return bb
+	return secrets
 }
 
-func (c SecretScanStatus) ToMap() map[string]interface{} {
+func (c Secret) ToMap() map[string]interface{} {
 	out, err := json.Marshal(c)
 	if err != nil {
 		log.Error().Msgf("ToMap err: %v", err)
