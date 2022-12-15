@@ -16,50 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ControlsAction
+ * @interface ApiDocsRawReport
  */
-export interface ControlsAction {
-    /**
-     * 
-     * @type {number}
-     * @memberof ControlsAction
-     */
-    id: number;
+export interface ApiDocsRawReport {
     /**
      * 
      * @type {string}
-     * @memberof ControlsAction
+     * @memberof ApiDocsRawReport
      */
-    request_payload: string;
+    payload: string;
 }
 
 /**
- * Check if a given object implements the ControlsAction interface.
+ * Check if a given object implements the ApiDocsRawReport interface.
  */
-export function instanceOfControlsAction(value: object): boolean {
+export function instanceOfApiDocsRawReport(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "request_payload" in value;
+    isInstance = isInstance && "payload" in value;
 
     return isInstance;
 }
 
-export function ControlsActionFromJSON(json: any): ControlsAction {
-    return ControlsActionFromJSONTyped(json, false);
+export function ApiDocsRawReportFromJSON(json: any): ApiDocsRawReport {
+    return ApiDocsRawReportFromJSONTyped(json, false);
 }
 
-export function ControlsActionFromJSONTyped(json: any, ignoreDiscriminator: boolean): ControlsAction {
+export function ApiDocsRawReportFromJSONTyped(json: any, ignoreDiscriminator: boolean): ApiDocsRawReport {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'id': json['id'],
-        'request_payload': json['request_payload'],
+        'payload': json['payload'],
     };
 }
 
-export function ControlsActionToJSON(value?: ControlsAction | null): any {
+export function ApiDocsRawReportToJSON(value?: ApiDocsRawReport | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +60,7 @@ export function ControlsActionToJSON(value?: ControlsAction | null): any {
     }
     return {
         
-        'id': value.id,
-        'request_payload': value.request_payload,
+        'payload': value.payload,
     };
 }
 

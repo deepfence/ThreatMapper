@@ -68,8 +68,8 @@
     "/deepfence/auth/token": {
       "post": {
         "tags": ["Authentication"],
-        "summary": "API Auth Token",
-        "description": "Get auth token for API access",
+        "summary": "Get Access Token for API Token",
+        "description": "Get access token for programmatic API access, by providing API Token",
         "operationId": "authToken",
         "requestBody": {
           "content": {
@@ -106,6 +106,43 @@
             }
           }
         }
+      }
+    },
+    "/deepfence/auth/token/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Refresh access token",
+        "description": "Reissue access token using refresh token",
+        "operationId": "authTokenRefresh",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
       }
     },
     "/deepfence/graph/threat": {
@@ -305,53 +342,19 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/ingest/cves": {
-      "post": {
-        "tags": ["Vulnerability"],
-        "summary": "Ingest CVEs",
-        "description": "Ingest CVEs found while scanning the agent",
-        "operationId": "ingestCVEs",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": { "$ref": "#/components/schemas/IngestersDfCveStruct" },
-                "nullable": true
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "OK" },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
     "/deepfence/ingest/report": {
       "post": {
         "tags": ["Topology"],
         "summary": "Ingest Topology Data",
         "description": "Ingest data reported by one Agent",
         "operationId": "ingestAgentReport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ApiDocsRawReport" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -424,14 +427,64 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/scan/start/compliances": {
-      "get": {
+    "/deepfence/ingest/vulnerabilities": {
+      "post": {
+        "tags": ["Vulnerability"],
+        "summary": "Ingest Vulnerabilities",
+        "description": "Ingest vulnerabilities found while scanning the agent host or containers",
+        "operationId": "ingestVulnerabilities",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IngestersDfVulnerabilityStruct"
+                },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/start/compliance": {
+      "post": {
         "tags": ["Compliance"],
         "summary": "Start Compliance Scan",
-        "description": "Start Compliance Scan on agent",
+        "description": "Start Compliance Scan on agent or registry",
         "operationId": "startComplianceScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanTrigger" }
+            }
+          }
+        },
         "responses": {
-          "200": { "description": "OK" },
+          "202": { "description": "Accepted" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -454,14 +507,21 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/scan/start/cves": {
-      "get": {
-        "tags": ["Vulnerability"],
-        "summary": "Start CVE Scan",
-        "description": "Start CVE Scan on agent",
-        "operationId": "startCVEScan",
+    "/deepfence/scan/start/malware": {
+      "post": {
+        "tags": ["Malware Scan"],
+        "summary": "Start Malware Scan",
+        "description": "Start Malware Scan on agent or registry",
+        "operationId": "startMalwareScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanTrigger" }
+            }
+          }
+        },
         "responses": {
-          "200": { "description": "OK" },
+          "202": { "description": "Accepted" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -484,14 +544,178 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/scan/start/secrets": {
-      "get": {
+    "/deepfence/scan/start/secret": {
+      "post": {
         "tags": ["Secret Scan"],
         "summary": "Start Secret Scan",
-        "description": "Start Secret Scan on agent",
+        "description": "Start Secret Scan on agent or registry",
         "operationId": "startSecretScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanTrigger" }
+            }
+          }
+        },
         "responses": {
-          "200": { "description": "OK" },
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/start/vulnerability": {
+      "post": {
+        "tags": ["Vulnerability"],
+        "summary": "Start Vulnerability Scan",
+        "description": "Start Vulnerability Scan on agent or registry",
+        "operationId": "startVulnerabilityScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanTrigger" }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/stop/compliance": {
+      "get": {
+        "tags": ["Compliance"],
+        "summary": "Stop Compliance Scan",
+        "description": "Stop Compliance Scan on agent or registry",
+        "operationId": "stopComplianceScan",
+        "responses": {
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/stop/malware": {
+      "get": {
+        "tags": ["Malware Scan"],
+        "summary": "Stop Malware Scan",
+        "description": "Stop Malware Scan on agent or registry",
+        "operationId": "stopMalwareScan",
+        "responses": {
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/stop/secret": {
+      "get": {
+        "tags": ["Secret Scan"],
+        "summary": "Stop Secret Scan",
+        "description": "Stop Secret Scan on agent or registry",
+        "operationId": "stopSecretScan",
+        "responses": {
+          "202": { "description": "Accepted" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/stop/vulnerability": {
+      "get": {
+        "tags": ["Vulnerability"],
+        "summary": "Stop Vulnerability Scan",
+        "description": "Stop Vulnerability Scan on agent or registry",
+        "operationId": "stopVulnerabilityScan",
+        "responses": {
+          "202": { "description": "Accepted" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -757,19 +981,22 @@
           "success": { "type": "boolean" }
         }
       },
+      "ApiDocsRawReport": {
+        "required": ["payload"],
+        "type": "object",
+        "properties": { "payload": { "type": "string" } }
+      },
       "ControlsAction": {
+        "required": ["id", "request_payload"],
         "type": "object",
         "properties": {
           "id": { "$ref": "#/components/schemas/ControlsActionID" },
-          "request_payload": {
-            "type": "array",
-            "items": { "minimum": 0, "type": "integer" },
-            "nullable": true
-          }
+          "request_payload": { "type": "string" }
         }
       },
       "ControlsActionID": { "type": "integer" },
       "ControlsAgentControls": {
+        "required": ["beatrate", "commands"],
         "type": "object",
         "properties": {
           "beatrate": { "type": "integer" },
@@ -780,6 +1007,7 @@
           }
         }
       },
+      "ControlsScanResource": { "type": "integer" },
       "IngestersCloudComplianceDoc": {
         "type": "object",
         "properties": {
@@ -876,7 +1104,7 @@
           "type": { "type": "string" }
         }
       },
-      "IngestersDfCveStruct": {
+      "IngestersDfVulnerabilityStruct": {
         "type": "object",
         "properties": {
           "@timestamp": { "type": "string" },
@@ -961,6 +1189,21 @@
         "properties": {
           "access_token": { "type": "string" },
           "refresh_token": { "type": "string" }
+        }
+      },
+      "ModelScanTrigger": {
+        "required": ["node_id", "resource_id", "resource_type", "bin_args", "hostname"],
+        "type": "object",
+        "properties": {
+          "bin_args": {
+            "type": "object",
+            "additionalProperties": { "type": "string" },
+            "nullable": true
+          },
+          "hostname": { "type": "string" },
+          "node_id": { "type": "string" },
+          "resource_id": { "type": "string" },
+          "resource_type": { "$ref": "#/components/schemas/ControlsScanResource" }
         }
       },
       "ModelUser": {
