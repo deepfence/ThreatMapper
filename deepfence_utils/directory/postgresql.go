@@ -18,7 +18,7 @@ func init() {
 
 func newPostgresClient(endpoints DBConfigs) (*postgresqlDb.Queries, error) {
 	if endpoints.Postgres == nil {
-		return nil, errors.New("No defined Neo4j config")
+		return nil, errors.New("No defined postgres config")
 	}
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		endpoints.Postgres.Host, endpoints.Postgres.Port, endpoints.Postgres.Username, endpoints.Postgres.Password, endpoints.Postgres.Database, endpoints.Postgres.SslMode)
