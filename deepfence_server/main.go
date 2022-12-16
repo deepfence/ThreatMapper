@@ -28,6 +28,7 @@ var (
 	verbosity             = flag.String("verbose", "info", "log level")
 	exportOpenapiDocsPath = flag.String("export-api-docs-path", "", "export openapi documentation to file path")
 	serveOpenapiDocs      = flag.Bool("api-docs", true, "serve openapi documentation")
+	enableHttpLogs        = flag.Bool("http-logs", false, "enable request logs")
 	kafkaBrokers          string
 )
 
@@ -64,13 +65,15 @@ func main() {
 
 	mux := chi.NewRouter()
 	mux.Use(middleware.Recoverer)
-	mux.Use(
-		middleware.RequestLogger(
-			&middleware.DefaultLogFormatter{
-				Logger:  stdlog.New(&log.LogInfoWriter{}, "", 0),
-				NoColor: true},
-		),
-	)
+	if *enableHttpLogs {
+		mux.Use(
+			middleware.RequestLogger(
+				&middleware.DefaultLogFormatter{
+					Logger:  stdlog.New(&log.LogInfoWriter{}, "", 0),
+					NoColor: true},
+			),
+		)
+	}
 
 	ingestC := make(chan *kgo.Record, 10000)
 
