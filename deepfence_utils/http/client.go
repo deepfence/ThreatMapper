@@ -29,9 +29,11 @@ var (
 )
 
 type OpenapiHttpClient struct {
-	client       *openapi.APIClient
-	refresher    *openapi.APIClient
-	token_access sync.RWMutex
+	client        *openapi.APIClient
+	refresher     *openapi.APIClient
+	token_access  sync.RWMutex
+	access_token  string
+	refresh_token string
 }
 
 func (client *OpenapiHttpClient) Client() *openapi.APIClient {
@@ -110,8 +112,6 @@ func NewHttpsConsoleClient(url, port string) *OpenapiHttpClient {
 }
 
 func (cl *OpenapiHttpClient) APITokenAuthenticate(api_token string) error {
-	cl.token_access.Lock()
-	defer cl.token_access.Unlock()
 	req := cl.client.AuthenticationApi.AuthToken(context.Background()).ModelApiAuthRequest(openapi.ModelApiAuthRequest{
 		ApiToken: &api_token,
 	})
@@ -124,8 +124,6 @@ func (cl *OpenapiHttpClient) APITokenAuthenticate(api_token string) error {
 }
 
 func (cl *OpenapiHttpClient) refreshToken() error {
-	cl.token_access.Lock()
-	defer cl.token_access.Unlock()
 
 	req := cl.refresher.AuthenticationApi.AuthTokenRefresh(context.Background())
 
@@ -138,6 +136,8 @@ func (cl *OpenapiHttpClient) refreshToken() error {
 }
 
 func (cl *OpenapiHttpClient) updateHeaders(tokens openapi.ModelResponseAccessToken) error {
+	cl.token_access.Lock()
+	defer cl.token_access.Unlock()
 	accessToken := tokens.AccessToken
 	refreshToken := tokens.RefreshToken
 	if accessToken == nil || refreshToken == nil {
@@ -146,6 +146,24 @@ func (cl *OpenapiHttpClient) updateHeaders(tokens openapi.ModelResponseAccessTok
 
 	cl.client.GetConfig().AddDefaultHeader(auth_field, fmt.Sprintf(bearer_format, *accessToken))
 	cl.refresher.GetConfig().AddDefaultHeader(auth_field, fmt.Sprintf(bearer_format, *refreshToken))
+	cl.access_token = *accessToken
+	cl.refresh_token = *refreshToken
 
 	return nil
+}
+
+func (cl *OpenapiHttpClient) DumpTokens() (access string, refresh string) {
+	cl.token_access.RLock()
+	defer cl.token_access.RUnlock()
+	return cl.access_token, cl.refresh_token
+}
+
+func (cl *OpenapiHttpClient) SetTokens(access string, refresh string) {
+	cl.token_access.Lock()
+	defer cl.token_access.Unlock()
+	cl.access_token = access
+	cl.refresh_token = refresh
+
+	cl.client.GetConfig().AddDefaultHeader(auth_field, fmt.Sprintf(bearer_format, access))
+	cl.refresher.GetConfig().AddDefaultHeader(auth_field, fmt.Sprintf(bearer_format, refresh))
 }
