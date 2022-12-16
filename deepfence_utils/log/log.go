@@ -59,7 +59,10 @@ func init() {
 			Out:        os.Stdout,
 			TimeFormat: time.RFC1123Z,
 			FormatCaller: func(i interface{}) string {
-				return filepath.Base(fmt.Sprintf("%s", i))
+				return filepath.Join(
+					filepath.Base(filepath.Dir(fmt.Sprintf("%s", i))),
+					filepath.Base(fmt.Sprintf("%s", i)),
+				)
 			},
 		},
 	).With().Caller().Logger()

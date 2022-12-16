@@ -114,7 +114,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 
 	actions, err := controls.GetAgentActions(ctx, nodeId)
 	if err != nil {
-		log.Error().Msgf("Cannot get actions: ", err)
+		log.Error().Msgf("Cannot get actions: %s", err)
 	}
 
 	res := ctl.AgentControls{

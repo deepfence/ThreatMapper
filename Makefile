@@ -10,6 +10,7 @@ VULNERABILITY_MAPPER_DIR=$(PWD)/vulnerability_mapper
 SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
 MALWARE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/YaraHunter/
 PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
+DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 IMAGE_REPOSITORY?=deepfenceio
 DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
@@ -111,3 +112,7 @@ openapi: server
 
 	rm openapi.yaml
 	cd $(PWD)/deepfence_server_client && go mod tidy -v && cd -
+
+.PHONY: cli
+cli: 
+	cd $(DEEPFENCE_CTL) && make && cd -

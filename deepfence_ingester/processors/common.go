@@ -151,21 +151,27 @@ func StartKafkaConsumers(
 	}
 
 	go func() {
-	loop:
-		for {
-			select {
-			case <-ctx.Done():
-				log.Info().Msg("stop consuming from kafka")
-				break loop
-			default:
-				records := kc.PollRecords(ctx, 1000)
-				records.EachRecord(processRecord)
-				records.EachError(func(s string, i int32, err error) {
-					log.Error().Msgf("topic=%s partition=%d error: %s", s, i, err)
-				})
-			}
-		}
-		kc.Close()
+		defer kc.Close()
+		pollRecords(ctx, kc)
 	}()
+
 	return nil
+}
+
+func pollRecords(ctx context.Context, kc *kgo.Client) {
+	for {
+		select {
+		case <-ctx.Done():
+			log.Info().Msg("stop consuming from kafka")
+			return
+		default:
+			records := kc.PollRecords(ctx, 1000)
+			records.EachRecord(processRecord)
+			records.EachError(
+				func(s string, i int32, err error) {
+					log.Error().Msgf("topic=%s partition=%d error: %s", s, i, err)
+				},
+			)
+		}
+	}
 }
