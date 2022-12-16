@@ -39,3 +39,6 @@ deepfence_ingester/deepfence_ingester
 
 openapi.json
 openapi.yaml
+
+deepfence_ctl/deepfencectl
+deepfence_ctl/vendor
