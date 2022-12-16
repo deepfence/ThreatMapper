@@ -203,7 +203,7 @@ paths:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/IngestersCloudComplianceDoc'
+                $ref: '#/components/schemas/IngestersCloudCompliance'
               nullable: true
               type: array
       responses:
@@ -275,7 +275,7 @@ paths:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/IngestersComplianceDoc'
+                $ref: '#/components/schemas/IngestersCompliance'
               nullable: true
               type: array
       responses:
@@ -339,6 +339,42 @@ paths:
       summary: Ingest Topology Data
       tags:
       - Topology
+  /deepfence/ingest/secret-scan-logs:
+    post:
+      description: Ingest secrets scan status from the agent
+      operationId: ingestSecretScanStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersSecretScanStatus'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Ingest Secrets Scan Status
+      tags:
+      - Secret Scan
   /deepfence/ingest/secrets:
     post:
       description: Ingest secrets found while scanning the agent
@@ -384,7 +420,7 @@ paths:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/IngestersDfVulnerabilityStruct'
+                $ref: '#/components/schemas/IngestersVulnerability'
               nullable: true
               type: array
       responses:
@@ -412,9 +448,14 @@ paths:
       tags:
       - Vulnerability
   /deepfence/scan/start/compliance:
-    get:
+    post:
       description: Start Compliance Scan on agent or registry
       operationId: startComplianceScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTrigger'
       responses:
         "202":
           description: Accepted
@@ -440,9 +481,14 @@ paths:
       tags:
       - Compliance
   /deepfence/scan/start/malware:
-    get:
+    post:
       description: Start Malware Scan on agent or registry
       operationId: startMalwareScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTrigger'
       responses:
         "202":
           description: Accepted
@@ -468,9 +514,14 @@ paths:
       tags:
       - Malware Scan
   /deepfence/scan/start/secret:
-    get:
+    post:
       description: Start Secret Scan on agent or registry
       operationId: startSecretScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTrigger'
       responses:
         "202":
           description: Accepted
@@ -496,9 +547,14 @@ paths:
       tags:
       - Secret Scan
   /deepfence/scan/start/vulnerability:
-    get:
+    post:
       description: Start Vulnerability Scan on agent or registry
       operationId: startVulnerabilityScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTrigger'
       responses:
         "202":
           description: Accepted
@@ -521,6 +577,134 @@ paths:
       security:
       - bearer_token: []
       summary: Start Vulnerability Scan
+      tags:
+      - Vulnerability
+  /deepfence/scan/status/compliance:
+    get:
+      description: Get Compliance Scan Status on agent or registry
+      operationId: statusComplianceScan
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanStatus'
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Compliance Scan Status
+      tags:
+      - Compliance
+  /deepfence/scan/status/malware:
+    get:
+      description: Get Malware Scan status on agent or registry
+      operationId: statusMalwareScan
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanStatus'
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Malware Scan Status
+      tags:
+      - Malware Scan
+  /deepfence/scan/status/secret:
+    get:
+      description: Get Secret Scan Status on agent or registry
+      operationId: statusSecretScan
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanStatus'
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Secret Scan Status
+      tags:
+      - Secret Scan
+  /deepfence/scan/status/vulnerability:
+    get:
+      description: Get Vulnerability Scan Status on agent or registry
+      operationId: statusVulnerabilityScan
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanStatus'
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Vulnerability Scan Status
       tags:
       - Vulnerability
   /deepfence/scan/stop/compliance:
@@ -893,7 +1077,9 @@ components:
       - beatrate
       - commands
       type: object
-    IngestersCloudComplianceDoc:
+    ControlsScanResource:
+      type: integer
+    IngestersCloudCompliance:
       example:
         severity: severity
         reason: reason
@@ -1059,7 +1245,7 @@ components:
         vpc_options: {}
         vpc_security_groups: {}
       type: object
-    IngestersComplianceDoc:
+    IngestersCompliance:
       example:
         time_stamp: 0
         resource: resource
@@ -1135,7 +1321,97 @@ components:
         type:
           type: string
       type: object
-    IngestersDfVulnerabilityStruct:
+    IngestersSecret:
+      example:
+        ImageLayerId: ImageLayerId
+        kubernetes_cluster_name: kubernetes_cluster_name
+        masked: masked
+        node_name: node_name
+        Severity:
+          score: 5.637376656633329
+          level: level
+        Match:
+          full_filename: full_filename
+          matched_content: matched_content
+          relative_ending_index: 0
+          starting_index: 1
+          relative_starting_index: 6
+        '@timestamp': 2000-01-23T04:56:07.000+00:00
+        node_type: node_type
+        container_name: container_name
+        Rule:
+          part: part
+          name: name
+          signature_to_match: signature_to_match
+          id: 5
+        scan_id: scan_id
+        host_name: host_name
+        node_id: node_id
+      properties:
+        '@timestamp':
+          format: date-time
+          type: string
+        ImageLayerId:
+          type: string
+        Match:
+          $ref: '#/components/schemas/IngestersSecret_Match'
+        Rule:
+          $ref: '#/components/schemas/IngestersSecret_Rule'
+        Severity:
+          $ref: '#/components/schemas/IngestersSecret_Severity'
+        container_name:
+          type: string
+        host_name:
+          type: string
+        kubernetes_cluster_name:
+          type: string
+        masked:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+        node_type:
+          type: string
+        scan_id:
+          type: string
+      type: object
+    IngestersSecretScanStatus:
+      example:
+        '@timestamp': 2000-01-23T04:56:07.000+00:00
+        node_type: node_type
+        container_name: container_name
+        scan_status: scan_status
+        kubernetes_cluster_name: kubernetes_cluster_name
+        masked: masked
+        node_name: node_name
+        scan_id: scan_id
+        host_name: host_name
+        node_id: node_id
+      properties:
+        '@timestamp':
+          format: date-time
+          type: string
+        container_name:
+          type: string
+        host_name:
+          type: string
+        kubernetes_cluster_name:
+          type: string
+        masked:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+        node_type:
+          type: string
+        scan_id:
+          type: string
+        scan_status:
+          type: string
+      type: object
+    IngestersVulnerability:
       example:
         cve_container_layer: cve_container_layer
         kubernetes_cluster_name: kubernetes_cluster_name
@@ -1228,73 +1504,6 @@ components:
           nullable: true
           type: array
       type: object
-    IngestersSecret:
-      example:
-        severity: severity
-        reason: reason
-        control_id: control_id
-        resource: resource
-        masked: masked
-        count: 0
-        node_name: node_name
-        description: description
-        cloud_provider: cloud_provider
-        title: title
-        type: type
-        doc_id: doc_id
-        compliance_check_type: compliance_check_type
-        '@timestamp': '@timestamp'
-        account_id: account_id
-        service: service
-        scan_id: scan_id
-        region: region
-        group: group
-        node_id: node_id
-        status: status
-      properties:
-        '@timestamp':
-          type: string
-        account_id:
-          type: string
-        cloud_provider:
-          type: string
-        compliance_check_type:
-          type: string
-        control_id:
-          type: string
-        count:
-          type: integer
-        description:
-          type: string
-        doc_id:
-          type: string
-        group:
-          type: string
-        masked:
-          type: string
-        node_id:
-          type: string
-        node_name:
-          type: string
-        reason:
-          type: string
-        region:
-          type: string
-        resource:
-          type: string
-        scan_id:
-          type: string
-        service:
-          type: string
-        severity:
-          type: string
-        status:
-          type: string
-        title:
-          type: string
-        type:
-          type: string
-      type: object
     ModelApiAuthRequest:
       example:
         api_token: api_token
@@ -1343,6 +1552,44 @@ components:
           type: string
         refresh_token:
           type: string
+      type: object
+    ModelScanStatus:
+      example:
+        status: status
+      properties:
+        status:
+          type: string
+      required:
+      - status
+      type: object
+    ModelScanTrigger:
+      example:
+        hostname: hostname
+        resource_type: 0
+        resource_id: resource_id
+        bin_args:
+          key: bin_args
+        node_id: node_id
+      properties:
+        bin_args:
+          additionalProperties:
+            type: string
+          nullable: true
+          type: object
+        hostname:
+          type: string
+        node_id:
+          type: string
+        resource_id:
+          type: string
+        resource_type:
+          type: integer
+      required:
+      - bin_args
+      - hostname
+      - node_id
+      - resource_id
+      - resource_type
       type: object
     ModelUser:
       example:
@@ -1570,6 +1817,51 @@ components:
           type: integer
         vulnerability_count:
           type: integer
+      type: object
+    IngestersSecret_Match:
+      example:
+        full_filename: full_filename
+        matched_content: matched_content
+        relative_ending_index: 0
+        starting_index: 1
+        relative_starting_index: 6
+      properties:
+        full_filename:
+          type: string
+        matched_content:
+          type: string
+        relative_ending_index:
+          type: integer
+        relative_starting_index:
+          type: integer
+        starting_index:
+          type: integer
+      type: object
+    IngestersSecret_Rule:
+      example:
+        part: part
+        name: name
+        signature_to_match: signature_to_match
+        id: 5
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        part:
+          type: string
+        signature_to_match:
+          type: string
+      type: object
+    IngestersSecret_Severity:
+      example:
+        score: 5.637376656633329
+        level: level
+      properties:
+        level:
+          type: string
+        score:
+          type: number
       type: object
   securitySchemes:
     bearer_token:

@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 ## IngestCloudCompliances
 
-> IngestCloudCompliances(ctx).IngestersCloudComplianceDoc(ingestersCloudComplianceDoc).Execute()
+> IngestCloudCompliances(ctx).IngestersCloudCompliance(ingestersCloudCompliance).Execute()
 
 Ingest Cloud Compliances
 
@@ -29,11 +29,11 @@ import (
 )
 
 func main() {
-    ingestersCloudComplianceDoc := []openapiclient.IngestersCloudComplianceDoc{*openapiclient.NewIngestersCloudComplianceDoc()} // []IngestersCloudComplianceDoc |  (optional)
+    ingestersCloudCompliance := []openapiclient.IngestersCloudCompliance{*openapiclient.NewIngestersCloudCompliance()} // []IngestersCloudCompliance |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.CloudComplianceApi.IngestCloudCompliances(context.Background()).IngestersCloudComplianceDoc(ingestersCloudComplianceDoc).Execute()
+    resp, r, err := apiClient.CloudComplianceApi.IngestCloudCompliances(context.Background()).IngestersCloudCompliance(ingestersCloudCompliance).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `CloudComplianceApi.IngestCloudCompliances``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -52,7 +52,7 @@ Other parameters are passed through a pointer to a apiIngestCloudCompliancesRequ
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ingestersCloudComplianceDoc** | [**[]IngestersCloudComplianceDoc**](IngestersCloudComplianceDoc.md) |  | 
+ **ingestersCloudCompliance** | [**[]IngestersCloudCompliance**](IngestersCloudCompliance.md) |  | 
 
 ### Return type
 

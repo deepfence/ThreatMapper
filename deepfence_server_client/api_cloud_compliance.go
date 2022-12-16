@@ -26,11 +26,11 @@ type CloudComplianceApiService service
 type ApiIngestCloudCompliancesRequest struct {
 	ctx context.Context
 	ApiService *CloudComplianceApiService
-	ingestersCloudComplianceDoc *[]IngestersCloudComplianceDoc
+	ingestersCloudCompliance *[]IngestersCloudCompliance
 }
 
-func (r ApiIngestCloudCompliancesRequest) IngestersCloudComplianceDoc(ingestersCloudComplianceDoc []IngestersCloudComplianceDoc) ApiIngestCloudCompliancesRequest {
-	r.ingestersCloudComplianceDoc = &ingestersCloudComplianceDoc
+func (r ApiIngestCloudCompliancesRequest) IngestersCloudCompliance(ingestersCloudCompliance []IngestersCloudCompliance) ApiIngestCloudCompliancesRequest {
+	r.ingestersCloudCompliance = &ingestersCloudCompliance
 	return r
 }
 
@@ -90,7 +90,7 @@ func (a *CloudComplianceApiService) IngestCloudCompliancesExecute(r ApiIngestClo
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
 	// body params
-	localVarPostBody = r.ingestersCloudComplianceDoc
+	localVarPostBody = r.ingestersCloudCompliance
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
