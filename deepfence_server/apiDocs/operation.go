@@ -93,16 +93,16 @@ func (d *OpenApiDocs) AddScansOperations() {
 	// Start scan
 	d.AddOperation("startVulnerabilityScan", http.MethodPost, "/deepfence/scan/start/vulnerability",
 		"Start Vulnerability Scan", "Start Vulnerability Scan on agent or registry",
-		http.StatusAccepted, []string{tagVulnerability}, nil, bearerToken, new(model.ScanTrigger), nil)
+		http.StatusAccepted, []string{tagVulnerability}, nil, bearerToken, new(model.ScanTrigger), new(model.ScanTriggerResp))
 	d.AddOperation("startSecretScan", http.MethodPost, "/deepfence/scan/start/secret",
 		"Start Secret Scan", "Start Secret Scan on agent or registry",
-		http.StatusAccepted, []string{tagSecretScan}, nil, bearerToken, new(model.ScanTrigger), nil)
+		http.StatusAccepted, []string{tagSecretScan}, nil, bearerToken, new(model.ScanTrigger), new(model.ScanTriggerResp))
 	d.AddOperation("startComplianceScan", http.MethodPost, "/deepfence/scan/start/compliance",
 		"Start Compliance Scan", "Start Compliance Scan on agent or registry",
-		http.StatusAccepted, []string{tagCompliance}, nil, bearerToken, new(model.ScanTrigger), nil)
+		http.StatusAccepted, []string{tagCompliance}, nil, bearerToken, new(model.ScanTrigger), new(model.ScanTriggerResp))
 	d.AddOperation("startMalwareScan", http.MethodPost, "/deepfence/scan/start/malware",
 		"Start Malware Scan", "Start Malware Scan on agent or registry",
-		http.StatusAccepted, []string{tagMalwareScan}, nil, bearerToken, new(model.ScanTrigger), nil)
+		http.StatusAccepted, []string{tagMalwareScan}, nil, bearerToken, new(model.ScanTrigger), new(model.ScanTriggerResp))
 
 	// Stop scan
 	d.AddOperation("stopVulnerabilityScan", http.MethodGet, "/deepfence/scan/stop/vulnerability",

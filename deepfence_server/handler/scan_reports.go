@@ -22,7 +22,10 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 	if err != nil {
 		return
 	}
-	startScan(w, r, req.NodeId, ctl.StartVulnerabilityScan, "")
+	scanId := fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
+	req.BinArgs["scan_id"] = scanId
+
+	startScan(w, r, scanId, req.NodeId, ctl.StartVulnerabilityScan, "")
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,8 +34,8 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return
 	}
-
-	req.BinArgs["scan_id"] = fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
+	scanId := fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
+	req.BinArgs["scan_id"] = scanId
 
 	internal_req := ctl.StartSecretScanRequest{
 		ResourceId:   req.ResourceId,
@@ -48,7 +51,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	startScan(w, r, req.NodeId, ctl.StartSecretScan, string(b))
+	startScan(w, r, scanId, req.NodeId, ctl.StartSecretScan, string(b))
 }
 
 func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +59,10 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return
 	}
-	startScan(w, r, req.NodeId, ctl.StartComplianceScan, "")
+	scanId := fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
+	req.BinArgs["scan_id"] = scanId
+
+	startScan(w, r, scanId, req.NodeId, ctl.StartComplianceScan, "")
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +70,10 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		return
 	}
-	startScan(w, r, req.NodeId, ctl.StartMalwareScan, "")
+	scanId := fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
+	req.BinArgs["scan_id"] = scanId
+
+	startScan(w, r, scanId, req.NodeId, ctl.StartMalwareScan, "")
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +92,10 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 	stopScan(w, r, ctl.StartMalwareScan)
 }
 
-func startScan(w http.ResponseWriter, r *http.Request, nodeId string, action ctl.ActionID, payload string) {
+func startScan(
+	w http.ResponseWriter, r *http.Request,
+	scanId string, nodeId string,
+	action ctl.ActionID, payload string) {
 
 	ctx := r.Context()
 	err := controls.SetAgentActions(ctx, nodeId, []ctl.Action{
@@ -99,8 +111,10 @@ func startScan(w http.ResponseWriter, r *http.Request, nodeId string, action ctl
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Started "+payload)
+	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanId: scanId})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) IngestCloudResourcesReportHandler(w http.ResponseWriter, r *http.Request) {

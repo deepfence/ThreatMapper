@@ -458,6 +458,10 @@ paths:
               $ref: '#/components/schemas/ModelScanTrigger'
       responses:
         "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanTriggerResp'
           description: Accepted
         "400":
           content:
@@ -491,6 +495,10 @@ paths:
               $ref: '#/components/schemas/ModelScanTrigger'
       responses:
         "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanTriggerResp'
           description: Accepted
         "400":
           content:
@@ -524,6 +532,10 @@ paths:
               $ref: '#/components/schemas/ModelScanTrigger'
       responses:
         "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanTriggerResp'
           description: Accepted
         "400":
           content:
@@ -557,6 +569,10 @@ paths:
               $ref: '#/components/schemas/ModelScanTrigger'
       responses:
         "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanTriggerResp'
           description: Accepted
         "400":
           content:
@@ -1590,6 +1606,15 @@ components:
       - node_id
       - resource_id
       - resource_type
+      type: object
+    ModelScanTriggerResp:
+      example:
+        scan_id: scan_id
+      properties:
+        scan_id:
+          type: string
+      required:
+      - scan_id
       type: object
     ModelUser:
       example:

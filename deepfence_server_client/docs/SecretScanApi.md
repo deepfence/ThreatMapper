@@ -142,7 +142,7 @@ Name | Type | Description  | Notes
 
 ## StartSecretScan
 
-> StartSecretScan(ctx).ModelScanTrigger(modelScanTrigger).Execute()
+> ModelScanTriggerResp StartSecretScan(ctx).ModelScanTrigger(modelScanTrigger).Execute()
 
 Start Secret Scan
 
@@ -170,6 +170,8 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.StartSecretScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
+    // response from `StartSecretScan`: ModelScanTriggerResp
+    fmt.Fprintf(os.Stdout, "Response from `SecretScanApi.StartSecretScan`: %v\n", resp)
 }
 ```
 
@@ -188,7 +190,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
- (empty response body)
+[**ModelScanTriggerResp**](ModelScanTriggerResp.md)
 
 ### Authorization
 

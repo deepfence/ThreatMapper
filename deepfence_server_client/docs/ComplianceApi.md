@@ -77,7 +77,7 @@ Name | Type | Description  | Notes
 
 ## StartComplianceScan
 
-> StartComplianceScan(ctx).ModelScanTrigger(modelScanTrigger).Execute()
+> ModelScanTriggerResp StartComplianceScan(ctx).ModelScanTrigger(modelScanTrigger).Execute()
 
 Start Compliance Scan
 
@@ -105,6 +105,8 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.StartComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
+    // response from `StartComplianceScan`: ModelScanTriggerResp
+    fmt.Fprintf(os.Stdout, "Response from `ComplianceApi.StartComplianceScan`: %v\n", resp)
 }
 ```
 
@@ -123,7 +125,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
- (empty response body)
+[**ModelScanTriggerResp**](ModelScanTriggerResp.md)
 
 ### Authorization
 

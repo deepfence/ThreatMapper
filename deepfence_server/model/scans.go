@@ -10,6 +10,10 @@ type ScanTrigger struct {
 	Hostname     string                `json:"hostname" required:"true"`
 }
 
+type ScanTriggerResp struct {
+	ScanId string `json:"scan_id" required:"true"`
+}
+
 type ScanStatusReq struct {
 	ScanId string `json:"scan_id" required:"true"`
 }

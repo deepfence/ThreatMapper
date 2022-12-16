@@ -151,7 +151,7 @@ func (r ApiStartComplianceScanRequest) ModelScanTrigger(modelScanTrigger ModelSc
 	return r
 }
 
-func (r ApiStartComplianceScanRequest) Execute() (*http.Response, error) {
+func (r ApiStartComplianceScanRequest) Execute() (*ModelScanTriggerResp, *http.Response, error) {
 	return r.ApiService.StartComplianceScanExecute(r)
 }
 
@@ -171,16 +171,18 @@ func (a *ComplianceApiService) StartComplianceScan(ctx context.Context) ApiStart
 }
 
 // Execute executes the request
-func (a *ComplianceApiService) StartComplianceScanExecute(r ApiStartComplianceScanRequest) (*http.Response, error) {
+//  @return ModelScanTriggerResp
+func (a *ComplianceApiService) StartComplianceScanExecute(r ApiStartComplianceScanRequest) (*ModelScanTriggerResp, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
+		localVarReturnValue  *ModelScanTriggerResp
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ComplianceApiService.StartComplianceScan")
 	if err != nil {
-		return nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
 	localVarPath := localBasePath + "/deepfence/scan/start/compliance"
@@ -210,19 +212,19 @@ func (a *ComplianceApiService) StartComplianceScanExecute(r ApiStartComplianceSc
 	localVarPostBody = r.modelScanTrigger
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
-		return nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 	if err != nil || localVarHTTPResponse == nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
@@ -235,26 +237,35 @@ func (a *ComplianceApiService) StartComplianceScanExecute(r ApiStartComplianceSc
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
+				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
 					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
 					newErr.model = v
-			return localVarHTTPResponse, newErr
+			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
 			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
+				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
 					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
 					newErr.model = v
 		}
-		return localVarHTTPResponse, newErr
+		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
-	return localVarHTTPResponse, nil
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
 type ApiStatusComplianceScanRequest struct {
