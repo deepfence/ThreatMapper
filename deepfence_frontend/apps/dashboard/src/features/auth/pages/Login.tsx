@@ -15,7 +15,7 @@ export const Login = () => {
   };
 
   return (
-    <div className={cx('h-full flex items-center justify-center')}>
+    <div className={cx('h-full grid place-items-center')}>
       <fetcher.Form method="post">
         <Card className="w-[384px] p-8">
           <div className="text-center">
