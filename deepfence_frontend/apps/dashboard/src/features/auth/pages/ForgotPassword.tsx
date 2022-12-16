@@ -19,7 +19,7 @@ export const ForgotPassword = () => {
   const fetcher = useFetcher();
   const { data, state } = fetcher;
   return (
-    <div className="h-screen flex items-center justify-center">
+    <div className="h-full grid place-items-center">
       <fetcher.Form method="post">
         <Card className="w-[384px] p-8">
           <div className="text-center">
