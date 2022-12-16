@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
@@ -217,6 +216,7 @@ func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Querie
 	u.Role = user.RoleName
 	u.RoleID = user.RoleID
 	u.PasswordInvalidated = user.PasswordInvalidated
+	u.CompanyNamespace = user.CompanyNamespace
 	_ = json.Unmarshal(user.GroupIds, &u.Groups)
 	return nil
 }
@@ -293,7 +293,6 @@ func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (
 		"grant_type":           grantType,
 		directory.NamespaceKey: u.CompanyNamespace,
 	}
-	log.Debug().Msgf("CLAIMS = %v", claims)
 	jwtauth.SetIssuedNow(claims)
 	jwtauth.SetExpiryIn(claims, AccessTokenExpiry)
 	_, accessToken, err := tokenAuth.Encode(claims)

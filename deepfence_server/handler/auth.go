@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 	"errors"
+	"net/http"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -10,7 +12,6 @@ import (
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"net/http"
 )
 
 func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
