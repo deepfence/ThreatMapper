@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -30,6 +31,8 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return
 	}
+
+	req.BinArgs["scan_id"] = fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
 
 	internal_req := ctl.StartSecretScanRequest{
 		ResourceId:   req.ResourceId,
@@ -97,7 +100,7 @@ func startScan(w http.ResponseWriter, r *http.Request, nodeId string, action ctl
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Started")
+	fmt.Fprintf(w, "Started "+payload)
 }
 
 func (h *Handler) IngestCloudResourcesReportHandler(w http.ResponseWriter, r *http.Request) {
