@@ -160,7 +160,7 @@ class SecretScanTableV2 extends React.Component {
     const {
       page = 0,
       pageSize = 20,
-      globalSearchQuery,
+      globalSearchQuery = this.props.globalSearchQuery || [],
       alertPanelHistoryBound = this.props.alertPanelHistoryBound || {},
     } = params;
 
