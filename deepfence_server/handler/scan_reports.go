@@ -33,18 +33,6 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 	startScan(w, r, scanId, req.NodeId, ctl.StartVulnerabilityScan, "")
 }
 
-func resourceTypeToStr(t ctl.ScanResource) string {
-	switch t {
-	case ctl.Container:
-		return "container"
-	case ctl.Image:
-		return "image"
-	case ctl.Host:
-		return "host"
-	}
-	return ""
-}
-
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
 
 	req, err := extractScanTrigger(w, r)
@@ -57,7 +45,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	binArgs := map[string]string{
 		"scan_id":   scanId,
 		"hostname":  req.NodeId,
-		"node_type": resourceTypeToStr(req.ResourceType),
+		"node_type": ctl.ResourceTypeToString(req.ResourceType),
 		"node_id":   req.NodeId,
 	}
 

@@ -81,17 +81,21 @@ func InitializeOpenAPIReflector() *OpenApiDocs {
 		},
 	}
 
-	reflector.SpecEns().ComponentsEns().SecuritySchemesEns().WithMapOfSecuritySchemeOrRefValuesItem(
-		securityName,
-		openapi3.SecuritySchemeOrRef{
-			SecurityScheme: &openapi3.SecurityScheme{
-				HTTPSecurityScheme: (&openapi3.HTTPSecurityScheme{}).
-					WithScheme("bearer").
-					WithBearerFormat("JWT").
-					WithDescription("RW Access"),
+	reflector.
+		SpecEns().
+		ComponentsEns().
+		SecuritySchemesEns().
+		WithMapOfSecuritySchemeOrRefValuesItem(
+			securityName,
+			openapi3.SecuritySchemeOrRef{
+				SecurityScheme: &openapi3.SecurityScheme{
+					HTTPSecurityScheme: (&openapi3.HTTPSecurityScheme{}).
+						WithScheme("bearer").
+						WithBearerFormat("JWT").
+						WithDescription("RW Access"),
+				},
 			},
-		},
-	)
+		)
 
 	return &OpenApiDocs{reflector: reflector, failureResponse: &FailureResponse{Success: false}, badRequestResponse: &BadRequestResponse{Success: false}}
 }
@@ -104,7 +108,9 @@ func (d *OpenApiDocs) Yaml() ([]byte, error) {
 	return d.reflector.Spec.MarshalYAML()
 }
 
-func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string, successStatusCode int, tags []string, queryParams []openapi3.ParameterOrRef, security []map[string][]string, request interface{}, response interface{}) {
+func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string,
+	successStatusCode int, tags []string, queryParams []openapi3.ParameterOrRef,
+	security []map[string][]string, request interface{}, response interface{}) {
 	operation := openapi3.Operation{
 		Tags:        tags,
 		Summary:     &summary,

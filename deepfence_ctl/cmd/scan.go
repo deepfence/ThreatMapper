@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server_client"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
 )
 
@@ -52,7 +53,7 @@ var scanCmd = &cobra.Command{
 			deepfence_server_client.ModelScanTrigger{
 				NodeId:       scan_node_id,
 				ResourceId:   "/home",
-				ResourceType: 2,
+				ResourceType: int32(ctl.StringToResourceType("host")),
 			})
 		res, _, err := https_client.Client().SecretScanApi.StartSecretScanExecute(req)
 		if err != nil {

@@ -21,6 +21,30 @@ const (
 	Host
 )
 
+func ResourceTypeToString(t ScanResource) string {
+	switch t {
+	case Container:
+		return "container"
+	case Image:
+		return "image"
+	case Host:
+		return "host"
+	}
+	return ""
+}
+
+func StringToResourceType(s string) ScanResource {
+	switch s {
+	case "container":
+		return Container
+	case "image":
+		return Image
+	case "host":
+		return Host
+	}
+	return -1
+}
+
 type StartVulnerabilityScanRequest struct{}
 type StartSecretScanRequest struct {
 	ResourceId   string            `json:"resource_id" required:"true"`
