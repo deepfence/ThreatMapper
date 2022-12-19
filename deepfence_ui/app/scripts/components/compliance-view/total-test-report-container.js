@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { formValueSelector } from 'redux-form/immutable';
 import { getComplianceChartDataAction } from '../../actions';
 import ComplianceTotalTestReport from './total-test-report';
 import Loader from '../loader';
@@ -26,7 +27,7 @@ class ComplianceTotalTestReportContainer extends React.PureComponent {
   getComplianceChartData(pollParams = {}) {
     const { alertPanelHistoryBound, initiatedByPollable } = pollParams;
     const cloudType = window.location.hash.split('/').reverse()[3];
-    const { dispatch, nodeId, checkType } = this.props;
+    const { dispatch, nodeId, checkType, hideMasked } = this.props;
     const params = {
       nodeId,
       checkType,
@@ -38,6 +39,7 @@ class ComplianceTotalTestReportContainer extends React.PureComponent {
       ...(alertPanelHistoryBound.value
         ? { time_unit: alertPanelHistoryBound.value.time_unit }
         : {}),
+      hideMasked,
     };
 
     return dispatch(getComplianceChartDataAction(params));
@@ -65,11 +67,14 @@ class ComplianceTotalTestReportContainer extends React.PureComponent {
   }
 }
 
+const maskFormSelector = formValueSelector('compliance-mask-filter-form');
+
 const mapStateToProps = state => ({
   reportView: state.getIn(['compliance', 'test_status_report_view']),
   isLoading: state.get('compliance_chart_data_loader'),
   globalSearchQuery: state.get('globalSearchQuery'),
   chartData: state.get('compliance_chart_data'),
+  hideMasked: maskFormSelector(state, 'hideMasked'),
 });
 
 export default connect(mapStateToProps)(pollable()(ComplianceTotalTestReportContainer));

@@ -1,6 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import { connect } from 'react-redux';
+import { formValueSelector } from 'redux-form/immutable';
 import SemiDonutChart from '../common/charts/semi-donut-chart/index';
 import {
   setSearchQuery,
@@ -34,7 +35,7 @@ class ComplianceTestStatusReport extends React.PureComponent {
       globalSearchQuery,
       initiatedByPollable,
     } = pollParams;
-    const { nodeId, scanId, checkType, cloudType, resource } = this.props;
+    const { nodeId, scanId, checkType, cloudType, resource, hideMasked } = this.props;
     const params = {
       nodeId,
       scanId,
@@ -45,6 +46,7 @@ class ComplianceTestStatusReport extends React.PureComponent {
       number: 0,
       time_unit: 'all',
       initiatedByPollable,
+      hideMasked,
     };
     this.props.dispatch(getResultDonutDataAction(params));
   }
@@ -103,11 +105,13 @@ class ComplianceTestStatusReport extends React.PureComponent {
     );
   }
 }
+const maskFormSelector = formValueSelector('compliance-mask-filter-form');
 
 function mapStateToProps(state) {
   return {
     isLoading: state.get('compliance_result_donut_loader'),
     donutData: state.get('compliance_result_donut'),
+    hideMasked: maskFormSelector(state, 'hideMasked') ?? true,
   };
 }
 
