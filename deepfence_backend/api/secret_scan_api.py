@@ -35,6 +35,7 @@ secret_api = Blueprint("secret_api", __name__)
 def secret_scanned_nodes():
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
+    hide_masked = request.args.get("hideMasked", "true")
 
     if number:
         try:
@@ -125,7 +126,8 @@ def secret_scanned_nodes():
         aggs,
         number,
         TIME_UNIT_MAPPING.get(time_unit),
-        lucene_query_string
+        lucene_query_string,
+        False if hide_masked == "false" else True
     )
     response = []
     active_containers = defaultdict(int)
@@ -159,7 +161,8 @@ def secret_scanned_nodes():
     scan_aggs_response = ESConn.aggregation_helper(
         SECRET_SCAN_LOGS_INDEX,
         {},
-        scan_aggs
+        scan_aggs,
+        add_masked_filter=False if hide_masked == "false" else True
     )
     status_map = {}
     for node in scan_aggs_response["aggregations"]["node_id"]["buckets"]:
@@ -706,6 +709,7 @@ def secret_severity_chart():
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
     lucene_query_string = request.args.get("lucene_query")
+    hide_masked = request.args.get("hideMasked", "true")
     if lucene_query_string:
         lucene_query_string = urllib.parse.unquote(lucene_query_string)
 
@@ -746,7 +750,7 @@ def secret_severity_chart():
     for key, value in filters.items():
         params.add_filter('term', "{0}.keyword".format(key), value)
 
-    secret_aggs = ESConn.group_by(params, aggs_name, sub_aggs_name=sub_aggs_name)
+    secret_aggs = ESConn.group_by(params, aggs_name, sub_aggs_name=sub_aggs_name, add_masked_filter=False if hide_masked == "false" else True)
 
     data = {"name": "Secrets", "children": []}
     inner_children = []
