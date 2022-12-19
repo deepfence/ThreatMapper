@@ -114,8 +114,9 @@ class SecretScanTableV2 extends React.Component {
   }
 
   componentDidMount() {
-    const { registerPolling } = this.props;
+    const { registerPolling, startPolling } = this.props;
     registerPolling(this.getSecrets);
+    startPolling();
   }
 
   /**
@@ -139,14 +140,14 @@ class SecretScanTableV2 extends React.Component {
       options.hideMasked = newProps.hideMasked;
     }
     if (Object.keys(options).length > 0) {
-      this.getSecrets(options);
+      this.props.updatePollParams(options);
     }
     // Filters and from bound changed will reset page to 1
     if (!isEqual(oldProps.resetPageIndexData, this.props.resetPageIndexData)) {
       /* eslint-disable */
       this.setState({
         page: 0
-      })
+      });
     }
 
   }
@@ -156,14 +157,12 @@ class SecretScanTableV2 extends React.Component {
       this.props;
 
     const hideMasked = params.hideMasked || this.props.hideMasked;
-
     const {
       page = 0,
       pageSize = 20,
-      globalSearchQuery,
+      globalSearchQuery = this.props.globalSearchQuery || [],
       alertPanelHistoryBound = this.props.alertPanelHistoryBound || {},
     } = params;
-
     const tableFilters = params.filters || filterValues;
     const nonEmptyFilters = Object.keys(tableFilters)
       .filter(key => tableFilters[key].length)
@@ -376,7 +375,7 @@ function mapStateToProps(state) {
     secretScanResults: state.getIn(['secretScanResults', 'data']),
     total: state.getIn(['secretScanResults', 'total']),
     filterValues: nodeFilterValueSelector(state),
-    hideMasked: maskFormSelector(state, 'hideMasked'),
+    hideMasked: maskFormSelector(state, 'hideMasked') ?? true,
     maskDocs: state.getIn([
       'form',
       'dialogConfirmation',
