@@ -161,7 +161,7 @@ import (
 )
 
 func main() {
-    modelScanTrigger := *openapiclient.NewModelScanTrigger(map[string]string{"key": "Inner_example"}, "Hostname_example", "NodeId_example", "ResourceId_example", int32(123)) // ModelScanTrigger |  (optional)
+    modelScanTrigger := *openapiclient.NewModelScanTrigger("NodeId_example", "ResourceId_example", int32(123)) // ModelScanTrigger |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)

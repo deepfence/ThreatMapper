@@ -17,15 +17,31 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
+func scanId(req model.ScanTrigger) string {
+	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
+}
+
 func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := extractScanTrigger(w, r)
 	if err != nil {
 		return
 	}
-	scanId := fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
-	req.BinArgs["scan_id"] = scanId
+
+	scanId := scanId(req)
 
 	startScan(w, r, scanId, req.NodeId, ctl.StartVulnerabilityScan, "")
+}
+
+func resourceTypeToStr(t ctl.ScanResource) string {
+	switch t {
+	case ctl.Container:
+		return "container"
+	case ctl.Image:
+		return "image"
+	case ctl.Host:
+		return "host"
+	}
+	return ""
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,14 +50,20 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return
 	}
-	scanId := fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
-	req.BinArgs["scan_id"] = scanId
+
+	scanId := scanId(req)
+
+	binArgs := map[string]string{
+		"scan_id":   scanId,
+		"hostname":  req.NodeId,
+		"node_type": resourceTypeToStr(req.ResourceType),
+		"node_id":   req.NodeId,
+	}
 
 	internal_req := ctl.StartSecretScanRequest{
 		ResourceId:   req.ResourceId,
 		ResourceType: req.ResourceType,
-		BinArgs:      req.BinArgs,
-		Hostname:     req.Hostname,
+		BinArgs:      binArgs,
 	}
 
 	b, err := json.Marshal(internal_req)
@@ -59,8 +81,8 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return
 	}
-	scanId := fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
-	req.BinArgs["scan_id"] = scanId
+
+	scanId := scanId(req)
 
 	startScan(w, r, scanId, req.NodeId, ctl.StartComplianceScan, "")
 }
@@ -70,8 +92,8 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		return
 	}
-	scanId := fmt.Sprintf("%s-%d", req.Hostname, time.Now().Unix())
-	req.BinArgs["scan_id"] = scanId
+
+	scanId := scanId(req)
 
 	startScan(w, r, scanId, req.NodeId, ctl.StartMalwareScan, "")
 }

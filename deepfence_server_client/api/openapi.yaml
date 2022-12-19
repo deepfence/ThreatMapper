@@ -1580,20 +1580,10 @@ components:
       type: object
     ModelScanTrigger:
       example:
-        hostname: hostname
         resource_type: 0
         resource_id: resource_id
-        bin_args:
-          key: bin_args
         node_id: node_id
       properties:
-        bin_args:
-          additionalProperties:
-            type: string
-          nullable: true
-          type: object
-        hostname:
-          type: string
         node_id:
           type: string
         resource_id:
@@ -1601,8 +1591,6 @@ components:
         resource_type:
           type: integer
       required:
-      - bin_args
-      - hostname
       - node_id
       - resource_id
       - resource_type

@@ -19,7 +19,7 @@ func GetSecretScanStatus(ctx context.Context, scan_id string) (model.ScanStatus,
 		return model.ScanStatus{}, err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
 		return model.ScanStatus{}, err
 	}

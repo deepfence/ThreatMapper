@@ -20,8 +20,6 @@ var _ MappedNullable = &ModelScanTrigger{}
 
 // ModelScanTrigger struct for ModelScanTrigger
 type ModelScanTrigger struct {
-	BinArgs map[string]string `json:"bin_args"`
-	Hostname string `json:"hostname"`
 	NodeId string `json:"node_id"`
 	ResourceId string `json:"resource_id"`
 	ResourceType int32 `json:"resource_type"`
@@ -31,10 +29,8 @@ type ModelScanTrigger struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelScanTrigger(binArgs map[string]string, hostname string, nodeId string, resourceId string, resourceType int32) *ModelScanTrigger {
+func NewModelScanTrigger(nodeId string, resourceId string, resourceType int32) *ModelScanTrigger {
 	this := ModelScanTrigger{}
-	this.BinArgs = binArgs
-	this.Hostname = hostname
 	this.NodeId = nodeId
 	this.ResourceId = resourceId
 	this.ResourceType = resourceType
@@ -47,56 +43,6 @@ func NewModelScanTrigger(binArgs map[string]string, hostname string, nodeId stri
 func NewModelScanTriggerWithDefaults() *ModelScanTrigger {
 	this := ModelScanTrigger{}
 	return &this
-}
-
-// GetBinArgs returns the BinArgs field value
-// If the value is explicit nil, the zero value for map[string]string will be returned
-func (o *ModelScanTrigger) GetBinArgs() map[string]string {
-	if o == nil {
-		var ret map[string]string
-		return ret
-	}
-
-	return o.BinArgs
-}
-
-// GetBinArgsOk returns a tuple with the BinArgs field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *ModelScanTrigger) GetBinArgsOk() (*map[string]string, bool) {
-	if o == nil || isNil(o.BinArgs) {
-		return nil, false
-	}
-	return &o.BinArgs, true
-}
-
-// SetBinArgs sets field value
-func (o *ModelScanTrigger) SetBinArgs(v map[string]string) {
-	o.BinArgs = v
-}
-
-// GetHostname returns the Hostname field value
-func (o *ModelScanTrigger) GetHostname() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.Hostname
-}
-
-// GetHostnameOk returns a tuple with the Hostname field value
-// and a boolean to check if the value has been set.
-func (o *ModelScanTrigger) GetHostnameOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Hostname, true
-}
-
-// SetHostname sets field value
-func (o *ModelScanTrigger) SetHostname(v string) {
-	o.Hostname = v
 }
 
 // GetNodeId returns the NodeId field value
@@ -181,10 +127,6 @@ func (o ModelScanTrigger) MarshalJSON() ([]byte, error) {
 
 func (o ModelScanTrigger) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if o.BinArgs != nil {
-		toSerialize["bin_args"] = o.BinArgs
-	}
-	toSerialize["hostname"] = o.Hostname
 	toSerialize["node_id"] = o.NodeId
 	toSerialize["resource_id"] = o.ResourceId
 	toSerialize["resource_type"] = o.ResourceType
