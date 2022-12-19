@@ -71,7 +71,7 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret MERGE (r:Rule{node_id:rule.id}) SET r+=rule WITH secret as row, r MERGE (n:Secret{node_id:row.rule_id}) MERGE (n)-[:IS]->(r) MERGE (m:SecretScan{node_id: row.scan_id}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l) SET n+= row",
+	if _, err = tx.Run("UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret MERGE (r:Rule{node_id:rule.id}) SET r+=rule WITH secret as row, r MERGE (n:Secret{node_id:row.node_id}) SET n+= row WITH n, r, row MERGE (n)-[:IS]->(r) MERGE (m:SecretScan{node_id: row.scan_id}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l)",
 		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 		for k, v := range utils.ToMap(i.Match) {
 			secret[k] = v
 		}
-		secret["rule_id"] = fmt.Sprintf("%v:%v", i.Rule.ID, i.HostName)
+		secret["node_id"] = fmt.Sprintf("%v:%v:%v", i.Rule.ID, i.HostName, i.Match.FullFilename)
 		secrets = append(secrets, map[string]map[string]interface{}{
 			"Rule":   utils.ToMap(i.Rule),
 			"Secret": secret,

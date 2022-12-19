@@ -64,6 +64,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		ResourceId:   req.ResourceId,
 		ResourceType: req.ResourceType,
 		BinArgs:      binArgs,
+		Hostname:     req.NodeId,
 	}
 
 	b, err := json.Marshal(internal_req)
