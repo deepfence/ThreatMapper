@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"io"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -49,22 +48,17 @@ var scanCmd = &cobra.Command{
 			log.Fatalf("Client not authenticated: %v\n", err)
 		}
 		req := https_client.Client().SecretScanApi.StartSecretScan(context.Background())
-		req = req.ModelScanTrigger(deepfence_server_client.ModelScanTrigger{
-			BinArgs:      map[string]string{"node_id": scan_node_id, "node_type": "host", "scan_id": "toto"},
-			Hostname:     "",
-			NodeId:       scan_node_id,
-			ResourceId:   "/home",
-			ResourceType: 2,
-		})
-		res, err := https_client.Client().SecretScanApi.StartSecretScanExecute(req)
+		req = req.ModelScanTrigger(
+			deepfence_server_client.ModelScanTrigger{
+				NodeId:       scan_node_id,
+				ResourceId:   "/home",
+				ResourceType: 2,
+			})
+		res, _, err := https_client.Client().SecretScanApi.StartSecretScanExecute(req)
 		if err != nil {
 			log.Fatalf("Fail to execute: %v", err)
 		}
-		b, err := io.ReadAll(res.Body)
-		if err != nil {
-			log.Fatalf("Fail to execute: %v", err)
-		}
-		log.Printf("Success: %v", string(b))
+		log.Printf("Scan Id: %s", res.ScanId)
 	},
 }
 

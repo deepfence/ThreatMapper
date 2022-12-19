@@ -7,12 +7,12 @@ replace github.com/deepfence/ThreatMapper/deepfence_server_client => ../deepfenc
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils
 
 require (
+	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/spf13/cobra v1.6.1
 )
 
 require (
-	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
