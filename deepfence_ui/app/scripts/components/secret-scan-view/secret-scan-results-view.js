@@ -35,6 +35,8 @@ const SecretScanResultsView = props => {
   const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] =
     useState(false);
 
+  const [rowActionType, setRowActionType] = useState('');
+
   const hosts = useSelector(state => state.get('hosts'));
   const isToasterVisible = useSelector(state => state.get('isToasterVisible'));
   const isSideNavCollapsed = useSelector(state =>
@@ -118,6 +120,10 @@ const SecretScanResultsView = props => {
     'with-filters': isFiltersViewVisible,
   });
 
+  const onRowActionCallback = (type) => {
+    setRowActionType(type)
+  }
+
   return (
     <div>
       <SideNavigation
@@ -140,16 +146,19 @@ const SecretScanResultsView = props => {
           <SecretScanImageStatsContainer
             imageName={unEscapedImageName}
             scanId={unEscapedScanId}
+            actionType={rowActionType}
           />
           <SecretScanChartView
             imageName={unEscapedImageName}
             scanId={unEscapedScanId}
+            actionType={rowActionType}
           />
         </div>
         <div className="vulnerability-view-table-wrapper">
           <SecretScanTableV2
             imageName={unEscapedImageName}
             scanId={unEscapedScanId}
+            onRowActionCallback={onRowActionCallback}
           />
         </div>
       </div>

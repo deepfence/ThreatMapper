@@ -2416,8 +2416,9 @@ export function getSecretScanReportChart(params) {
 }
 
 export function getSecretScanChartData(params, dispatch) {
+  const { hideMasked } = params;
   let url = `${backendElasticApiEndPoint()}/secret/secret_severity_chart?number=${params.number
-    }&time_unit=${params.time_unit}`;
+    }&time_unit=${params.time_unit}&hideMasked=${hideMasked}`;
   if (params.lucene_query.length !== 0) {
     const luceneQuery = getLuceneQuery(params.lucene_query);
     url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;

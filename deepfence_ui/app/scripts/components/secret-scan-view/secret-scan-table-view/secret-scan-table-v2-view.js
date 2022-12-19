@@ -82,6 +82,9 @@ class SecretScanTableV2 extends React.Component {
     const { deleteDocsByIdAction: action } = this.props;
     // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({deletedValues: [...this.state.deletedValues, ...params.ids]});
+
+    // call parent callback function to update graph and count chart
+    this.props.onRowActionCallback('delete-action');
     return action(params);
   }
 
@@ -95,6 +98,9 @@ class SecretScanTableV2 extends React.Component {
     const { secretScanUnmaskDocsAction: action } = this.props;
     // Mask and unmask will reset page to 1
     this.handlePageChange(0)
+
+    // call parent callback function to update graph and count chart
+    this.props.onRowActionCallback('unmask-action');
     return action({ docs: idValue });
   }
 
@@ -108,6 +114,9 @@ class SecretScanTableV2 extends React.Component {
     const { secretScanMaskDocsAction: action } = this.props;
     // Mask and unmask will reset page to 1
     this.handlePageChange(0)
+
+    // call parent callback function to update graph and count chart
+    this.props.onRowActionCallback('mask-action');
     return action({
       docs: idValue,
     });
