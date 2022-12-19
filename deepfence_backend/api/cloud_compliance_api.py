@@ -180,6 +180,7 @@ def compliance_test_status_report(compliance_check_type):
 
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
+    hide_masked = request.args.get("hideMasked", "true")
 
     if number:
         try:
@@ -236,7 +237,8 @@ def compliance_test_status_report(compliance_check_type):
         aggs,
         number,
         TIME_UNIT_MAPPING.get(time_unit),
-        lucene_query_string
+        lucene_query_string,
+        False if hide_masked == "false" else True
     )
     response = defaultdict(int)
     if "aggregations" in aggs_response:
@@ -263,6 +265,7 @@ def compliance_test_category_report(compliance_check_type):
 
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
+    hide_masked = request.args.get("hideMasked", "true")
 
     if number:
         try:
@@ -330,7 +333,8 @@ def compliance_test_category_report(compliance_check_type):
         aggs,
         number,
         TIME_UNIT_MAPPING.get(time_unit),
-        lucene_query_string
+        lucene_query_string,
+        False if hide_masked == "false" else True
     )
     response = []
     unique_status_list = set()

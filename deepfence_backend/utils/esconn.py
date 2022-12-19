@@ -1540,18 +1540,18 @@ class ESConn:
     # required with the use of add_agg_field_generic API/
     # The parameters still exists to support backward compatibility
     @staticmethod
-    def group_by(groupbyparam, aggs_name, sub_aggs_name=None):
+    def group_by(groupbyparam, aggs_name, sub_aggs_name=None, add_masked_filter=True):
         size = 10
         index_name = groupbyparam.indexname
 
         should_objects = []
-
-        # TODO: move masked filter to the caller. Not all doc types have field named 'masked'
-        and_terms = [{
-            "term": {
-                "masked.keyword": "false"
-            }
-        }]
+        and_terms = []
+        if add_masked_filter:
+            and_terms = [{
+                "term": {
+                    "masked.keyword": "false"
+                }
+            }]
         range_query = groupbyparam.prepare_range_query('@timestamp')
         if range_query.get("range", {}).get("@timestamp"):
             and_terms.append(range_query)
