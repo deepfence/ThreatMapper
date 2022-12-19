@@ -71,7 +71,7 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret MERGE (r:Rule{node_id:rule.id}) SET r+=rule WITH secret as row, r MERGE (n:Secret{node_id:row.rule_id}) MERGE (n)-[:IS]->(r) MERGE (m:SecretScan{node_id: row.scan_id, host_name: row.host_name, time_stamp: timestamp()}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l) SET n+= row",
+	if _, err = tx.Run("UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret MERGE (r:Rule{node_id:rule.id}) SET r+=rule WITH secret as row, r MERGE (n:Secret{node_id:row.rule_id}) MERGE (n)-[:IS]->(r) MERGE (m:SecretScan{node_id: row.scan_id}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l) SET n+= row",
 		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
 	}
