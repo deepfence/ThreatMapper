@@ -2313,11 +2313,12 @@ export function getSecretScanData(params = {}) {
     filters,
     start_index,
     size,
-    lucene_query: luceneQuery = []
+    lucene_query: luceneQuery = [],
+    hideMasked,
   } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
 
-  let url = `${backendElasticApiEndPoint()}/secret/node_report?lucene_query=${luceneQueryEscaped}`;
+  let url = `${backendElasticApiEndPoint()}/secret/node_report?lucene_query=${luceneQueryEscaped}&hideMasked=${hideMasked}`;
   const body = {
     filters,
     start_index,

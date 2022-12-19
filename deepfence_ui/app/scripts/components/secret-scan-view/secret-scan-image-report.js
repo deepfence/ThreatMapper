@@ -19,6 +19,7 @@ const SecretScanImageReport = props => {
     registerPolling,
     updatePollParams,
     filterValues = {},
+    hideMasked
   } = props;
   const dispatch = useDispatch();
   const [redirect, setRedirect] = useState(false);
@@ -133,6 +134,7 @@ const SecretScanImageReport = props => {
       filters: nonEmptyFilters,
       start_index: page ? page * pageSize : page,
       size: pageSize,
+      hideMasked: props.hideMasked,
     };
     return dispatch(getSecretScanDataAction(params));
   };
@@ -151,8 +153,8 @@ const SecretScanImageReport = props => {
   };
 
   useUpdateEffect(() => {
-    updatePollParams({ pageSize: rowCountValue });
-  }, [rowCountValue]);
+    updatePollParams({ pageSize: rowCountValue, hideMasked });
+  }, [rowCountValue, hideMasked]);
 
   const renderSubComponent = ({ row }) => (
     <SecretScanImageReportDetails
