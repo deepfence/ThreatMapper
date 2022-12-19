@@ -13,6 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -71,6 +72,12 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		return
+	}
+
+	err = ingesters.UpdateScanStatus(r.Context(), "SecretScan", scanId, utils.SCAN_STATUS_STARTING)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err})
 		return
 	}
 
