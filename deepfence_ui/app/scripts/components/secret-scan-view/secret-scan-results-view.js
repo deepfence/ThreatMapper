@@ -35,7 +35,7 @@ const SecretScanResultsView = props => {
   const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] =
     useState(false);
 
-  const [rowActionType, setRowActionType] = useState('');
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   const hosts = useSelector(state => state.get('hosts'));
   const isToasterVisible = useSelector(state => state.get('isToasterVisible'));
@@ -120,8 +120,8 @@ const SecretScanResultsView = props => {
     'with-filters': isFiltersViewVisible,
   });
 
-  const onRowActionCallback = (type) => {
-    setRowActionType(type)
+  const onRowActionCallback = () => {
+    setRefreshCounter((prev) => prev + 1);
   }
 
   return (
@@ -146,12 +146,12 @@ const SecretScanResultsView = props => {
           <SecretScanImageStatsContainer
             imageName={unEscapedImageName}
             scanId={unEscapedScanId}
-            actionType={rowActionType}
+            refreshCounter={refreshCounter}
           />
           <SecretScanChartView
             imageName={unEscapedImageName}
             scanId={unEscapedScanId}
-            actionType={rowActionType}
+            refreshCounter={refreshCounter}
           />
         </div>
         <div className="vulnerability-view-table-wrapper">

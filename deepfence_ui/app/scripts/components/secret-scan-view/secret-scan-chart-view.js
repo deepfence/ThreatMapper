@@ -70,8 +70,7 @@ class SecretScanChartView extends React.Component {
           );
         }
       );
-    }
-    if (this.props.actionType !==''  && newProps.actionType !== this.props.actionType) {
+    } else if (newProps.refreshCounter !==0 && newProps.refreshCounter !== this.props.refreshCounter) {
       const activeDuration = newProps.days.value;
       this.getSecretSeverityChartData(
         activeDuration.number,
@@ -165,7 +164,7 @@ function mapStateToProps(state) {
     days: state.get('alertPanelHistoryBound'),
     refreshInterval: state.get('refreshInterval'),
     secretSeverityChartData: state.getIn(['secretScanChart', 'data']),
-    hideMasked: maskFormSelector(state, 'hideMasked'),
+    hideMasked: maskFormSelector(state, 'hideMasked') ?? true,
   };
 }
 

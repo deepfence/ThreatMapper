@@ -84,8 +84,11 @@ class SecretScanTableV2 extends React.Component {
     this.setState({deletedValues: [...this.state.deletedValues, ...params.ids]});
 
     // call parent callback function to update graph and count chart
-    this.props.onRowActionCallback('delete-action');
-    return action(params);
+    const promise = action(params);
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    });
+    return promise;
   }
 
   unmaskDocs(selectedDocIndex = {}) {
@@ -100,8 +103,11 @@ class SecretScanTableV2 extends React.Component {
     this.handlePageChange(0)
 
     // call parent callback function to update graph and count chart
-    this.props.onRowActionCallback('unmask-action');
-    return action({ docs: idValue });
+    const promise = action({ docs: idValue });
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    })
+    return promise;
   }
 
   maskDocs(selectedDocIndex = {}) {
@@ -116,10 +122,13 @@ class SecretScanTableV2 extends React.Component {
     this.handlePageChange(0)
 
     // call parent callback function to update graph and count chart
-    this.props.onRowActionCallback('mask-action');
-    return action({
+    const promise = action({
       docs: idValue,
     });
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    });
+    return promise;
   }
 
   componentDidMount() {
