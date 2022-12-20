@@ -962,9 +962,23 @@ def cloud_compliance_node_scans():
     es_resp = ESConn.search_by_and_clause(
         es_index, filters, start_index, sort_order, number=number,
         time_unit=TIME_UNIT_MAPPING.get(time_unit), size=page_size, lucene_query_string=lucene_query_string)
+    hits = es_resp.get("hits", [])
+    added_scan_id = {}
+    for scan in hits:
+        source = scan.get("_source", {})
+        scan_id = source.get("scan_id")
+        if added_scan_id.get(scan_id, False):
+            continue
+        else:
+            added_scan_id[scan_id] = True
+        result = source.get("result", {})
+        es_index = COMPLIANCE_INDEX if es_index == COMPLIANCE_LOGS_INDEX else CLOUD_COMPLIANCE_INDEX
+        aggs_response = ESConn.aggregation_helper(es_index, {"scan_id": scan_id},
+                                                  {"status": {"terms": {"field": "status.keyword", "size": 25}}})
+        for bucket in aggs_response["aggregations"]["status"]["buckets"]:
+            result[bucket.get("key", "")] = bucket.get("doc_count", 0)
     if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
         added_scan_id = {}
-        hits = es_resp.get("hits", [])
         es_resp["hits"] = []
         for scan in hits:
             source = scan.get("_source", {})
@@ -973,29 +987,7 @@ def cloud_compliance_node_scans():
                 continue
             else:
                 added_scan_id[scan_id] = True
-            result = {}
-            aggs = {
-                "status": {
-                    "terms": {
-                        "field": "status.keyword",
-                        "size": 25
-                    }
-                }
-            }
-            es_index = COMPLIANCE_INDEX
-            if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
-                es_index = COMPLIANCE_INDEX
-            aggs_response = ESConn.aggregation_helper(
-                es_index,
-                {"scan_id": scan_id},
-                aggs,
-                number,
-                TIME_UNIT_MAPPING.get(time_unit),
-                lucene_query_string
-            )
-            for bucket in aggs_response["aggregations"]["status"]["buckets"]:
-                result[bucket.get("key", "")] = bucket.get("doc_count", 0)
-            source["result"] = result
+            result = source.get("result", {})
             if request.args.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
                 total = result.get("alarm", 0) + result.get("error", 0) + result.get("ok", 1) + result.get("info", 1)
                 checks_passed = result.get("ok", 0)
@@ -1077,16 +1069,15 @@ def get_compliance_report():
     if es_resp.get("hits", []):
         scan_doc = es_resp["hits"][0]
         if scan_doc.get("_source", {}):
-            if es_index == COMPLIANCE_LOGS_INDEX:
-                aggs_response = ESConn.aggregation_helper(
-                    COMPLIANCE_INDEX,
-                    {"scan_id": scan_doc["_source"].get("scan_id")},
-                    {"status": {"terms": {"field": "status.keyword", "size": 25}}}
-                )
-                result = {}
-                for bucket in aggs_response["aggregations"]["status"]["buckets"]:
-                    result[bucket.get("key", "")] = bucket.get("doc_count", 0)
-                scan_doc["_source"]["result"] = result
+            aggs_response = ESConn.aggregation_helper(
+                COMPLIANCE_INDEX if es_index == COMPLIANCE_LOGS_INDEX else CLOUD_COMPLIANCE_INDEX,
+                {"scan_id": scan_doc["_source"].get("scan_id")},
+                {"status": {"terms": {"field": "status.keyword", "size": 25}}}
+            )
+            result = {}
+            for bucket in aggs_response["aggregations"]["status"]["buckets"]:
+                result[bucket.get("key", "")] = bucket.get("doc_count", 0)
+            scan_doc["_source"]["result"] = result
             unify["compliance_scan_status"].append({
                 "aggs": [],
                 "compliance_check_type": compliance_check_type,
