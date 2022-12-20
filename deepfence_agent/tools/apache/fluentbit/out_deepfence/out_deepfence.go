@@ -169,9 +169,17 @@ func validateTokens(cfg Config) (Config, bool, error) {
 	if !utils.IsJWTExpired(cfg.AccessToken) {
 		return cfg, false, nil
 	} else {
-		access, refresh, err := RefreshToken(cfg.ConsoleURL, cfg.RefreshToken)
+		var (
+			access  string
+			refresh string
+			err     error
+		)
+		access, refresh, err = RefreshToken(cfg.ConsoleURL, cfg.RefreshToken)
 		if err != nil {
-			return cfg, false, err
+			access, refresh, err = Authenticate(cfg.ConsoleURL, cfg.Key)
+			if err != nil {
+				return cfg, false, err
+			}
 		}
 		cfg.AccessToken = access
 		cfg.RefreshToken = refresh
@@ -323,7 +331,8 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	if resp.StatusCode == http.StatusBadGateway ||
 		resp.StatusCode == http.StatusServiceUnavailable ||
 		resp.StatusCode == http.StatusGatewayTimeout ||
-		resp.StatusCode == http.StatusTooManyRequests {
+		resp.StatusCode == http.StatusTooManyRequests ||
+		resp.StatusCode == http.StatusUnauthorized {
 		log.Printf("retry response code %s", resp.Status)
 		return output.FLB_RETRY
 	} else if resp.StatusCode != http.StatusOK {
