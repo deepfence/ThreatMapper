@@ -89,7 +89,7 @@ def validate_port(port):
 def validate_domain(domain):
     if not domain:
         return False
-    regex = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$"
+    regex = "^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,18}$"
     if ":" in domain:
         domain_split = str(domain).split(":")
         domain = domain_split[0]
