@@ -968,11 +968,34 @@ def cloud_compliance_node_scans():
         es_resp["hits"] = []
         for scan in hits:
             source = scan.get("_source", {})
-            if added_scan_id.get(source.get("scan_id", ""), False):
+            scan_id = source.get("scan_id")
+            if added_scan_id.get(scan_id, False):
                 continue
             else:
-                added_scan_id[source.get("scan_id", "")] =  True
-            result = source.get("result", {})
+                added_scan_id[scan_id] = True
+            result = {}
+            aggs = {
+                "status": {
+                    "terms": {
+                        "field": "status.keyword",
+                        "size": 25
+                    }
+                }
+            }
+            es_index = COMPLIANCE_INDEX
+            if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
+                es_index = COMPLIANCE_INDEX
+            aggs_response = ESConn.aggregation_helper(
+                es_index,
+                {"scan_id": scan_id},
+                aggs,
+                number,
+                TIME_UNIT_MAPPING.get(time_unit),
+                lucene_query_string
+            )
+            for bucket in aggs_response["aggregations"]["status"]["buckets"]:
+                result[bucket.get("key", "")] = bucket.get("doc_count", 0)
+            source["result"] = result
             if request.args.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
                 total = result.get("alarm", 0) + result.get("error", 0) + result.get("ok", 1) + result.get("info", 1)
                 checks_passed = result.get("ok", 0)
