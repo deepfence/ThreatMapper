@@ -143,7 +143,7 @@ Name | Type | Description  | Notes
 
 ## StatusComplianceScan
 
-> ModelScanStatus StatusComplianceScan(ctx).Execute()
+> ModelScanStatusResp StatusComplianceScan(ctx).Execute()
 
 Get Compliance Scan Status
 
@@ -170,7 +170,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.StatusComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `StatusComplianceScan`: ModelScanStatus
+    // response from `StatusComplianceScan`: ModelScanStatusResp
     fmt.Fprintf(os.Stdout, "Response from `ComplianceApi.StatusComplianceScan`: %v\n", resp)
 }
 ```
@@ -186,7 +186,7 @@ Other parameters are passed through a pointer to a apiStatusComplianceScanReques
 
 ### Return type
 
-[**ModelScanStatus**](ModelScanStatus.md)
+[**ModelScanStatusResp**](ModelScanStatusResp.md)
 
 ### Authorization
 

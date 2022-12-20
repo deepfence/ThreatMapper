@@ -390,7 +390,7 @@ type ApiStatusSecretScanRequest struct {
 	ApiService *SecretScanApiService
 }
 
-func (r ApiStatusSecretScanRequest) Execute() (*ModelScanStatus, *http.Response, error) {
+func (r ApiStatusSecretScanRequest) Execute() (*ModelScanStatusResp, *http.Response, error) {
 	return r.ApiService.StatusSecretScanExecute(r)
 }
 
@@ -410,13 +410,13 @@ func (a *SecretScanApiService) StatusSecretScan(ctx context.Context) ApiStatusSe
 }
 
 // Execute executes the request
-//  @return ModelScanStatus
-func (a *SecretScanApiService) StatusSecretScanExecute(r ApiStatusSecretScanRequest) (*ModelScanStatus, *http.Response, error) {
+//  @return ModelScanStatusResp
+func (a *SecretScanApiService) StatusSecretScanExecute(r ApiStatusSecretScanRequest) (*ModelScanStatusResp, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *ModelScanStatus
+		localVarReturnValue  *ModelScanStatusResp
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SecretScanApiService.StatusSecretScan")

@@ -37,7 +37,7 @@ docs/ModelApiAuthRequest.md
 docs/ModelLoginRequest.md
 docs/ModelResponse.md
 docs/ModelResponseAccessToken.md
-docs/ModelScanStatus.md
+docs/ModelScanStatusResp.md
 docs/ModelScanTrigger.md
 docs/ModelScanTriggerResp.md
 docs/ModelUser.md
@@ -73,7 +73,7 @@ model_model_api_auth_request.go
 model_model_login_request.go
 model_model_response.go
 model_model_response_access_token.go
-model_model_scan_status.go
+model_model_scan_status_resp.go
 model_model_scan_trigger.go
 model_model_scan_trigger_resp.go
 model_model_user.go

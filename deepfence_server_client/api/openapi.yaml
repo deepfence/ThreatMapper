@@ -604,7 +604,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModelScanStatus'
+                $ref: '#/components/schemas/ModelScanStatusResp'
           description: Accepted
         "400":
           content:
@@ -636,7 +636,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModelScanStatus'
+                $ref: '#/components/schemas/ModelScanStatusResp'
           description: Accepted
         "400":
           content:
@@ -668,7 +668,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModelScanStatus'
+                $ref: '#/components/schemas/ModelScanStatusResp'
           description: Accepted
         "400":
           content:
@@ -700,7 +700,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModelScanStatus'
+                $ref: '#/components/schemas/ModelScanStatusResp'
           description: Accepted
         "400":
           content:
@@ -1570,6 +1570,8 @@ components:
           type: string
       type: object
     ModelScanStatus:
+      type: string
+    ModelScanStatusResp:
       example:
         status: status
       properties:

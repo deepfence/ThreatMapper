@@ -208,7 +208,7 @@ Name | Type | Description  | Notes
 
 ## StatusSecretScan
 
-> ModelScanStatus StatusSecretScan(ctx).Execute()
+> ModelScanStatusResp StatusSecretScan(ctx).Execute()
 
 Get Secret Scan Status
 
@@ -235,7 +235,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.StatusSecretScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `StatusSecretScan`: ModelScanStatus
+    // response from `StatusSecretScan`: ModelScanStatusResp
     fmt.Fprintf(os.Stdout, "Response from `SecretScanApi.StatusSecretScan`: %v\n", resp)
 }
 ```
@@ -251,7 +251,7 @@ Other parameters are passed through a pointer to a apiStatusSecretScanRequest st
 
 ### Return type
 
-[**ModelScanStatus**](ModelScanStatus.md)
+[**ModelScanStatusResp**](ModelScanStatusResp.md)
 
 ### Authorization
 

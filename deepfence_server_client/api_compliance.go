@@ -273,7 +273,7 @@ type ApiStatusComplianceScanRequest struct {
 	ApiService *ComplianceApiService
 }
 
-func (r ApiStatusComplianceScanRequest) Execute() (*ModelScanStatus, *http.Response, error) {
+func (r ApiStatusComplianceScanRequest) Execute() (*ModelScanStatusResp, *http.Response, error) {
 	return r.ApiService.StatusComplianceScanExecute(r)
 }
 
@@ -293,13 +293,13 @@ func (a *ComplianceApiService) StatusComplianceScan(ctx context.Context) ApiStat
 }
 
 // Execute executes the request
-//  @return ModelScanStatus
-func (a *ComplianceApiService) StatusComplianceScanExecute(r ApiStatusComplianceScanRequest) (*ModelScanStatus, *http.Response, error) {
+//  @return ModelScanStatusResp
+func (a *ComplianceApiService) StatusComplianceScanExecute(r ApiStatusComplianceScanRequest) (*ModelScanStatusResp, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *ModelScanStatus
+		localVarReturnValue  *ModelScanStatusResp
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ComplianceApiService.StatusComplianceScan")
