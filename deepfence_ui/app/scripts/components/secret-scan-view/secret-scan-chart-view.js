@@ -146,6 +146,7 @@ class SecretScanChartView extends React.Component {
     );
   }
 }
+
 function mapStateToProps(state) {
   return {
     isSideNavCollapsed: state.get('isSideNavCollapsed'),
