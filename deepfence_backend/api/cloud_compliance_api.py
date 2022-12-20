@@ -1077,6 +1077,16 @@ def get_compliance_report():
     if es_resp.get("hits", []):
         scan_doc = es_resp["hits"][0]
         if scan_doc.get("_source", {}):
+            if es_index == COMPLIANCE_LOGS_INDEX:
+                aggs_response = ESConn.aggregation_helper(
+                    COMPLIANCE_INDEX,
+                    {"scan_id": scan_doc["_source"].get("scan_id")},
+                    {"status": {"terms": {"field": "status.keyword", "size": 25}}}
+                )
+                result = {}
+                for bucket in aggs_response["aggregations"]["status"]["buckets"]:
+                    result[bucket.get("key", "")] = bucket.get("doc_count", 0)
+                scan_doc["_source"]["result"] = result
             unify["compliance_scan_status"].append({
                 "aggs": [],
                 "compliance_check_type": compliance_check_type,
