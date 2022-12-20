@@ -25,6 +25,13 @@ class ComplianceTestStatusReport extends React.PureComponent {
     startPolling();
   }
 
+  componentDidUpdate(prevProps) {
+    const { updatePollParams } = this.props;
+    if (this.props.refreshCounter !== 0 && prevProps.refreshCounter !== this.props.refreshCounter) {
+      updatePollParams({})
+    }
+  }
+
   componentWillUnmount() {
     const { stopPolling } = this.props;
     stopPolling();

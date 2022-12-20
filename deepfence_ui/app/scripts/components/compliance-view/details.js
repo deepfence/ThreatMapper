@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 import moment from 'moment';
 import { Redirect } from 'react-router-dom';
+import { formValueSelector } from 'redux-form/immutable';
 import ComplianceTestsView from './tests-container';
 import ComplianceTestCategoryReportContainer from './test-category-report-container';
 import ComplianceTestStatusReportContainer from './test-status-report-container';
@@ -25,8 +26,15 @@ class ComplianceDetailsView extends React.PureComponent {
     this.state = {
       activeMenu: this.sideNavMenuCollection[0],
       redirectBack: false,
+      refreshCounter: 0,
     };
     this.handleBackButton = this.handleBackButton.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.hideMasked !== this.props.hideMasked) {
+      this.onRowActionCallback();
+    }
   }
 
   handleBackButton(checkType) {
@@ -34,6 +42,14 @@ class ComplianceDetailsView extends React.PureComponent {
       redirectBack: true,
       link: `/compliance/summary/${checkType}?b`,
     });
+  }
+
+  onRowActionCallback = () => {
+    this.setState(state => {
+      return {
+        refreshCounter: state.refreshCounter + 1
+      }
+    })
   }
 
   render() {
@@ -180,6 +196,7 @@ class ComplianceDetailsView extends React.PureComponent {
                 timeOfScan={timeOfScan}
                 cloudType={cloudTypeCheck}
                 resource={urlSearchParams.get('resource')}
+                refreshCounter={this.state.refreshCounter}
               />
             </div>
             <div className="test-category-report test-category-report-compliance">
@@ -189,6 +206,7 @@ class ComplianceDetailsView extends React.PureComponent {
                 checkType={checkType}
                 cloudType={cloudTypeCheck}
                 resource={urlSearchParams.get('resource')}
+                refreshCounter={this.state.refreshCounter}
               />
             </div>
           </div>
@@ -207,6 +225,7 @@ class ComplianceDetailsView extends React.PureComponent {
               checkType={checkType}
               cloudType={cloudTypeCheck}
               resource={urlSearchParams.get('resource')}
+              onRowActionCallback={this.onRowActionCallback}
             />
           </div>
           <div className={contentClassName} />
@@ -216,11 +235,14 @@ class ComplianceDetailsView extends React.PureComponent {
   }
 }
 
+const maskFormSelector = formValueSelector('compliance-mask-filter-form');
+
 function mapStateToProps(state) {
   return {
     isSideNavCollapsed: state.get('isSideNavCollapsed'),
     cloudType: state.get('compliance_node_type'),
     isFiltersViewVisible: state.get('isFiltersViewVisible'),
+    hideMasked: maskFormSelector(state, 'hideMasked') ?? true,
   };
 }
 

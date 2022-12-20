@@ -2627,8 +2627,7 @@ export function getComplianceScanList(params = {}) {
 
 // centre chart data scan results.
 export function getComplianceChartData(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, nodeId, cloudType, number, time_unit, hideMasked } = params;
-  console.log('getComplianceChartData', hideMasked)
+  const { lucene_query: luceneQuery = [], checkType, nodeId, cloudType, number, time_unit } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
   const url = `${backendElasticApiEndPoint()}/cloud-compliance-scan/summary?number=${number}&time_unit=${time_unit}&lucene_query=${luceneQueryEscaped}&node_id=${nodeId}&compliance_check_type=${checkType}&node_type=${cloudType}`;
   return fetch(url, {

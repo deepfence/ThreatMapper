@@ -24,6 +24,13 @@ class ComplianceTestCategoryReport extends React.PureComponent {
     startPolling();
   }
 
+  componentDidUpdate(prevProps) {
+    const { updatePollParams } = this.props;
+    if (this.props.refreshCounter !== 0 && prevProps.refreshCounter !== this.props.refreshCounter) {
+      updatePollParams({})
+    }
+  }
+
   getReport(pollParams) {
     const { nodeId, scanId, checkType, cloudType, resource, hideMasked } = this.props;
     const {
