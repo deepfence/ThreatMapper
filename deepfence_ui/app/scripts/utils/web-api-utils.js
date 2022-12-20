@@ -1054,7 +1054,7 @@ export function notifyAlerts(dispatch, params) {
 /* START :: CVE VULNERABILITY */
 export function getCveSeverityChartData(dispatch, params) {
   let url = `${backendElasticApiEndPoint()}/vulnerabilities/cve_severity_chart?number=${params.number
-    }&time_unit=${params.time_unit}`;
+    }&time_unit=${params.time_unit}&hideMasked=${params.hideMasked}`;
   if (params.lucene_query.length !== 0) {
     const luceneQuery = getLuceneQuery(params.lucene_query);
     url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
@@ -1321,10 +1321,11 @@ export function getCVEImageReport(params = {}) {
     node_filters,
     start_index,
     size,
+    hideMasked
   } = params;
   let url = `${backendElasticApiEndPoint()}/vulnerabilities/image_report?lucene_query=${getLuceneQuery(
     lucene_query
-  )}`;
+  )}&hideMasked=${hideMasked}`;
   if (params.number && params.time_unit) {
     url = `${url}&number=${params.number}&time_unit=${params.time_unit}`;
   }
