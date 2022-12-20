@@ -2893,11 +2893,12 @@ export function getMalwareScanData(params = {}) {
     filters,
     start_index,
     size,
-    lucene_query: luceneQuery = []
+    lucene_query: luceneQuery = [],
+    hideMasked = true,
   } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
 
-  let url = `${backendElasticApiEndPoint()}/malware/node_report?lucene_query=${luceneQueryEscaped}`;
+  let url = `${backendElasticApiEndPoint()}/malware/node_report?lucene_query=${luceneQueryEscaped}&hideMasked=${hideMasked}`;
   const body = {
     filters,
     start_index,
@@ -3013,8 +3014,9 @@ export function getMalwareClassesChartReport(params) {
 }
 
 export function getMalwareScanChartData(params, dispatch) {
+  const { hideMasked = true } = params;
   let url = `${backendElasticApiEndPoint()}/malware/malware_severity_chart?number=${params.number
-    }&time_unit=${params.time_unit}`;
+    }&time_unit=${params.time_unit}&hideMasked=${hideMasked}`;
   if (params.lucene_query.length !== 0) {
     const luceneQuery = getLuceneQuery(params.lucene_query);
     url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
