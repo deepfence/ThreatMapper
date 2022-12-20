@@ -10,7 +10,7 @@ from flask import current_app
 from utils.response import set_response
 from utils.decorators import non_read_only_user, admin_user_only
 from utils.custom_exception import InternalError, InvalidUsage, DFError, Forbidden
-from utils.helper import websocketio_channel_name_format, get_random_string, mkdir_recursive, rmdir_recursive
+from utils.helper import websocketio_channel_name_format, get_random_string, mkdir_recursive, rmdir_recursive, get_node_names
 import json
 from utils import resource
 from resource_models.node import Node
@@ -1319,12 +1319,44 @@ def list_scheduled_tasks():
     scheduled_tasks = Scheduler.query.order_by(Scheduler.created_at.asc()).all()
     if not scheduled_tasks:
         scheduled_tasks = []
-    response = {"scheduled_tasks": [{
-        "id": task.id, "created_at": str(task.created_at), "action": task.action, "description": task.description,
-        "cron": task.cron_expr, "status": task.status, "last_ran_at": str(task.last_ran_at),
-        "node_names": task.node_names, "is_enabled": task.is_enabled, "node_type": task.nodes.get("node_type", "")
-    } for task in scheduled_tasks]}
-    return set_response(data=response)
+    
+    tasks = []
+    topology_data = get_node_names()[0]
+    for task in scheduled_tasks:
+        response = {
+            "id": task.id, 
+            "created_at": str(task.created_at), 
+            "action": task.action, 
+            "description": task.description,
+            "cron": task.cron_expr, 
+            "status": task.status, 
+            "last_ran_at": str(task.last_ran_at),
+            
+            "is_enabled": task.is_enabled, 
+            "node_type": task.nodes.get("node_type", "")
+        }
+        node_names = []
+        if task.nodes.get("node_type", "") == "host":
+            for node_id in task.nodes.get("node_id_list",[]):
+                if topology_data.get(node_id, ""):
+                    node_names.append(topology_data[node_id].get("host_name",""))
+        elif task.nodes.get("node_type", "") == "linux":
+            node_name = task.nodes.get("node_id","").replace(";<host>", "")
+            node_names.append(node_name)
+        elif task.nodes.get("node_type", "") == "kubernetes":
+            node_id = task.nodes.get("node_id","")
+            node_name = CloudComplianceNode.query.filter_by(node_id=node_id).first().node_name
+            node_names.append(node_name)
+        elif task.nodes.get("node_type", "") == "registry_image":
+            regitry_id = task.nodes.get("registry_images", {}).get("registry_id",0)
+            registry = RegistryCredential.query.filter_by(id=regitry_id).first()
+            registry_name = f"{registry.name}_{registry.registry_type}"
+            node_names.append(registry_name)
+        response["node_names"] = node_names
+        tasks.append(response)
+        
+    final_response = {"scheduled_tasks" : tasks}
+    return set_response(data=final_response)
 
 
 @resource_api.route("/scheduled_tasks/update", methods=["POST"], endpoint="api_v1_5_scheduled_tasks_update")

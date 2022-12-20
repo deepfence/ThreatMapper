@@ -1258,3 +1258,21 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
         else:
             vulnerability['_source']['rank'] = rank
     return uniq_top_vulnerabilities[:size]
+
+
+
+def get_node_names():
+    topology_data = redis.mget([
+        websocketio_channel_name_format(NODE_TYPE_HOST + "?format=deepfence")[1],
+        websocketio_channel_name_format(NODE_TYPE_CONTAINER_IMAGE + "?format=deepfence")[1],
+        websocketio_channel_name_format(NODE_TYPE_CONTAINER + "?format=deepfence")[1]
+    ])
+    topology_data = [
+        json.loads(topology_data[0]) if topology_data[0] else {},
+        json.loads(topology_data[1]) if topology_data[1] else {},
+        json.loads(topology_data[2]) if topology_data[2] else {}
+    ]
+    
+    return topology_data
+    
+    
