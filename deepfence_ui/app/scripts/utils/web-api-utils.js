@@ -2641,7 +2641,7 @@ export function getComplianceChartData(params = {}) {
 }
 
 export function getComplianceBarChart(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit} = params;
+  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit, hideMasked} = params;
   const requestBody = {
     scan_id: scanId,
   };
@@ -2649,7 +2649,7 @@ export function getComplianceBarChart(params = {}) {
     requestBody.filters = { resource };
   }
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_category_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_category_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}&hideMasked=${hideMasked}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
@@ -2664,7 +2664,7 @@ export function getComplianceBarChart(params = {}) {
 
 // Donut chart Scan Results
 export function getResultDonutData(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit} = params;
+  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit, hideMasked} = params;
   const filters = {};
   if (resource) {
     filters.resource = resource;
@@ -2674,7 +2674,7 @@ export function getResultDonutData(params = {}) {
     filters
   };
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_status_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_status_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}&hideMasked=${hideMasked}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
