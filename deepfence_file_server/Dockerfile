@@ -3,9 +3,7 @@ MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV MINIO_ROOT_USER=deepfence \
-    MINIO_ROOT_PASSWORD=deepfence \
-    MINIO_USERNAME=minio \
-    MINIO_GROUPNAME=minio
+    MINIO_ROOT_PASSWORD=deepfence
 
 WORKDIR /usr/local/bin
 COPY entrypoint.sh /entrypoint.sh
@@ -14,4 +12,4 @@ RUN wget https://dl.min.io/server/minio/release/linux-amd64/minio \
     && mkdir -p /data
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["minio", "server", "/data", "--address", ":9000", "--console-address", ":9090", "--anonymous", "--json", "--quiet"]
+CMD ["minio", "server", "/data", "--address", "0.0.0.0:9000", "--console-address", "0.0.0.0:9090", "--anonymous", "--json"]

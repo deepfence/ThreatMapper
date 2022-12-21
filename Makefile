@@ -20,7 +20,7 @@ VERSION?="2.0.0"
 default: console_plugins agent console
 
 .PHONY: console_plugins agent console
-console: ingester vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins
+console: ingester vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins file-server
 
 console_plugins: secretscanner malwarescanner packagescanner
 
