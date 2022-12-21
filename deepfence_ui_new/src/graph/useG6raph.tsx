@@ -172,10 +172,11 @@ export const useG6raph = <D,>(
     if (!graphContainer) {
       return;
     }
+    const plugins = options.plugins ?? [];
     const width = graphContainer.offsetWidth;
     const height = graphContainer.offsetHeight;
     const graph = new G6.Graph({
-      plugins: [toolbar],
+      plugins: [...plugins, toolbar],
       ...DEFAULT_OPTIONS,
       ...options,
       container: graphContainer,

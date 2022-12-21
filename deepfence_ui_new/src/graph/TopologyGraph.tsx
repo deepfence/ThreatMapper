@@ -1,4 +1,6 @@
-import { ICombo } from '@antv/g6-core';
+import { Menu } from '@antv/g6';
+import { ICombo, IG6GraphEvent } from '@antv/g6-core';
+import { includes } from 'lodash-es';
 import { useEffect, useRef, useState } from 'react';
 
 import v1 from '../topology/data/v1.json';
@@ -27,9 +29,87 @@ import { ICustomNode, IEvent, IItem } from './types';
 import { useG6raph } from './useG6raph';
 import { debounce, nodeToFront } from './utils';
 
+const skipContextMenuIds = ['out-theinternet', 'in-theinternet'];
+const menu = new Menu({
+  offsetX: 6,
+  offsetY: 10,
+  itemTypes: ['node'],
+  getContent(evt?: IG6GraphEvent) {
+    // console.log(evt?.item?._cfg);
+    const model = evt?.item?._cfg?.model ?? {
+      label: 'unknown',
+      node_type: 'unknown',
+      img: '',
+    };
+    const { label, node_type, img } = model;
+    const connectBtnId = 'connect_id';
+    const goTotBtnId = 'goto_id';
+    const outDiv = document.createElement('div');
+    outDiv.style.width = '300px';
+    outDiv.innerHTML = `<div class="flex flex-col gap-2 px-2">
+      <div class="mb-4">
+        <div class="text-lg border-b border-[#a1a1a1] mb-1 flex gap-x-4 items-center py-2">
+        <img src="${img}" alt="_img" width="40" height="40"/>
+        ${label}
+        </div>
+        <span>Node Type: ${node_type}</span>
+      </div>
+      <div class="flex justify-between">
+        <button
+          id=${goTotBtnId}
+          type="button"
+          class="text-gray-900 
+          bg-white border border-gray-300 
+          focus:outline-none 
+          hover:bg-gray-100 focus:ring-4 
+          focus:ring-gray-200 rounded 
+          text-xs px-3 py-1 
+          dark:bg-gray-800 
+          dark:text-white 
+          dark:border-gray-600 
+          dark:hover:bg-gray-700 
+          dark:hover:border-gray-600 
+          dark:focus:ring-gray-700"
+        >
+          Go To Details
+        </button>
+        <button
+          id=${connectBtnId}
+          type="button"
+          class="text-gray-900 bg-white 
+          border border-gray-300 
+          focus:outline-none hover:bg-gray-100 
+          focus:ring-4 focus:ring-gray-200 
+          rounded text-xs px-3 py-1 
+          dark:bg-gray-800 dark:text-white 
+          dark:border-gray-600 dark:hover:bg-gray-700 
+          dark:hover:border-gray-600 
+          dark:focus:ring-gray-700"
+        >
+          Connect now
+        </button>
+      </div>
+    </div>`;
+    return outDiv;
+  },
+  handleMenuClick(target, item) {
+    if (target.id === 'connect_id') {
+      alert(`connect now is clicked with node: ${item?._cfg?.id}`);
+    }
+  },
+  shouldBegin(evt?: IG6GraphEvent) {
+    if (evt && evt.item && evt.item._cfg) {
+      if (includes(skipContextMenuIds, evt.item._cfg.id)) {
+        return false;
+      }
+    }
+    return true;
+  },
+});
+
 export const TopologyGraph = () => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
-  const { graph } = useG6raph(container, {});
+  const { graph } = useG6raph(container, {}, { plugins: [menu] });
   const [width, height] = useLayoutSize(container);
 
   // focus current click node at center
