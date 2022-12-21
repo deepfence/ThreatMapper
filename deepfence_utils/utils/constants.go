@@ -23,6 +23,15 @@ const (
 	SCAN_STATUS_INPROGRESS = "IN_PROGRESS"
 )
 
+type Neo4jScanType string
+
+const (
+	NEO4J_SECRET_SCAN       Neo4jScanType = "SecretScan"
+	NEO4J_VULNERABILTY_SCAN Neo4jScanType = "VulnerabilityScan"
+	NEO4J_MALWARE_SCAN      Neo4jScanType = "MalwareScan"
+	NEO4J_COMPLIANCE_SCAN   Neo4jScanType = "ComplianceScan"
+)
+
 var Topics = []string{
 	VULNERABILITY_SCAN, VULNERABILITY_SCAN_STATUS,
 	SECRET_SCAN, SECRET_SCAN_STATUS,

@@ -21,7 +21,7 @@ func (ve *AlreadyRunningScanError) Error() string {
 	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.scan_type, ve.node_id, ve.scan_id)
 }
 
-func AddNewScan(ctx context.Context, scan_type string, scan_id string, node_id string, action controls.Action) error {
+func AddNewScan(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string, node_id string, action controls.Action) error {
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -55,7 +55,7 @@ func AddNewScan(ctx context.Context, scan_type string, scan_id string, node_id s
 		return &AlreadyRunningScanError{
 			scan_id:   rec.Values[0].(string),
 			node_id:   node_id,
-			scan_type: scan_type,
+			scan_type: string(scan_type),
 		}
 	}
 

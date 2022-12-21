@@ -11,6 +11,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	redis2 "github.com/go-redis/redis/v8"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/weaveworks/scope/report"
@@ -624,12 +625,14 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 	tx.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
-	tx.Run("CREATE CONSTRAINT ON (n:SecretScan) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Cve) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
-	tx.Run("CREATE CONSTRAINT ON (n:CveScan) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_SECRET_SCAN), map[string]interface{}{})
+	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_VULNERABILTY_SCAN), map[string]interface{}{})
+	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_COMPLIANCE_SCAN), map[string]interface{}{})
+	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_MALWARE_SCAN), map[string]interface{}{})
 
 	err = tx.Commit()
 	if err != nil {

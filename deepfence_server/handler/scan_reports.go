@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -34,7 +34,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		RequestPayload: "",
 	}
 
-	startScan(w, r, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_VULNERABILTY_SCAN, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -73,13 +73,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = ingesters.AddNewScan(r.Context(), "SecretScan", scanId, req.NodeId, action)
-	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err})
-		return
-	}
-
-	startScan(w, r, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_SECRET_SCAN, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +89,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		RequestPayload: "",
 	}
 
-	startScan(w, r, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_COMPLIANCE_SCAN, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +105,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		RequestPayload: "",
 	}
 
-	startScan(w, r, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_MALWARE_SCAN, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -132,13 +126,15 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 
 func startScan(
 	w http.ResponseWriter, r *http.Request,
+	scanType utils.Neo4jScanType,
 	scanId string, nodeId string,
 	action ctl.Action) {
 
-	ctx := r.Context()
-	err := controls.SetAgentActions(ctx, nodeId, []ctl.Action{
-		action,
-	})
+	err := ingesters.AddNewScan(r.Context(), scanType, scanId, nodeId, action)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err})
+		return
+	}
 
 	if err != nil {
 		log.Error().Msgf("%v", err)
