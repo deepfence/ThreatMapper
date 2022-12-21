@@ -17,7 +17,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func scanId(req model.ScanTrigger) string {
+func scanId(req model.ScanTriggerReq) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
 }
 
@@ -49,13 +49,13 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	binArgs := map[string]string{
 		"scan_id":   scanId,
 		"hostname":  req.NodeId,
-		"node_type": ctl.ResourceTypeToString(req.ResourceType),
+		"node_type": req.ResourceType,
 		"node_id":   req.NodeId,
 	}
 
 	internal_req := ctl.StartSecretScanRequest{
 		ResourceId:   req.ResourceId,
-		ResourceType: req.ResourceType,
+		ResourceType: ctl.StringToResourceType(req.ResourceType),
 		BinArgs:      binArgs,
 		Hostname:     req.NodeId,
 	}
@@ -248,9 +248,9 @@ func stopScan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
 	//	Stopping scan is on best-effort basis, not guaranteed
 }
 
-func extractScanTrigger(w http.ResponseWriter, r *http.Request) (model.ScanTrigger, error) {
+func extractScanTrigger(w http.ResponseWriter, r *http.Request) (model.ScanTriggerReq, error) {
 	defer r.Body.Close()
-	var req model.ScanTrigger
+	var req model.ScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
 	if err != nil {

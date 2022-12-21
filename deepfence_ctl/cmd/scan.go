@@ -49,11 +49,11 @@ var scanCmd = &cobra.Command{
 			log.Fatalf("Client not authenticated: %v\n", err)
 		}
 		req := https_client.Client().SecretScanApi.StartSecretScan(context.Background())
-		req = req.ModelScanTrigger(
-			deepfence_server_client.ModelScanTrigger{
+		req = req.ModelScanTriggerReq(
+			deepfence_server_client.ModelScanTriggerReq{
 				NodeId:       scan_node_id,
 				ResourceId:   "/home",
-				ResourceType: int32(ctl.StringToResourceType("host")),
+				ResourceType: ctl.ResourceTypeToString(ctl.Host),
 			})
 		res, _, err := https_client.Client().SecretScanApi.StartSecretScanExecute(req)
 		if err != nil {

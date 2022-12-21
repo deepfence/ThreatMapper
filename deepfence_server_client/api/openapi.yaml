@@ -525,7 +525,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelScanTrigger'
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
         "202":
           content:
@@ -562,7 +562,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelScanTrigger'
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
         "202":
           content:
@@ -599,7 +599,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelScanTrigger'
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
         "202":
           content:
@@ -636,7 +636,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelScanTrigger'
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
         "202":
           content:
@@ -1154,8 +1154,6 @@ components:
       - beatrate
       - commands
       type: object
-    ControlsScanResource:
-      type: integer
     IngestersCloudCompliance:
       example:
         severity: severity
@@ -1659,9 +1657,9 @@ components:
       required:
       - status
       type: object
-    ModelScanTrigger:
+    ModelScanTriggerReq:
       example:
-        resource_type: 0
+        resource_type: image
         resource_id: resource_id
         node_id: node_id
       properties:
@@ -1670,7 +1668,11 @@ components:
         resource_id:
           type: string
         resource_type:
-          type: integer
+          enum:
+          - image
+          - host
+          - container
+          type: string
       required:
       - node_id
       - resource_id

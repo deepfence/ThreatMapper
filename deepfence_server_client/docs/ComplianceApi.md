@@ -77,7 +77,7 @@ Name | Type | Description  | Notes
 
 ## StartComplianceScan
 
-> ModelScanTriggerResp StartComplianceScan(ctx).ModelScanTrigger(modelScanTrigger).Execute()
+> ModelScanTriggerResp StartComplianceScan(ctx).ModelScanTriggerReq(modelScanTriggerReq).Execute()
 
 Start Compliance Scan
 
@@ -96,11 +96,11 @@ import (
 )
 
 func main() {
-    modelScanTrigger := *openapiclient.NewModelScanTrigger("NodeId_example", "ResourceId_example", int32(123)) // ModelScanTrigger |  (optional)
+    modelScanTriggerReq := *openapiclient.NewModelScanTriggerReq("NodeId_example", "ResourceId_example", "ResourceType_example") // ModelScanTriggerReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.ComplianceApi.StartComplianceScan(context.Background()).ModelScanTrigger(modelScanTrigger).Execute()
+    resp, r, err := apiClient.ComplianceApi.StartComplianceScan(context.Background()).ModelScanTriggerReq(modelScanTriggerReq).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.StartComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -121,7 +121,7 @@ Other parameters are passed through a pointer to a apiStartComplianceScanRequest
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **modelScanTrigger** | [**ModelScanTrigger**](ModelScanTrigger.md) |  | 
+ **modelScanTriggerReq** | [**ModelScanTriggerReq**](ModelScanTriggerReq.md) |  | 
 
 ### Return type
 

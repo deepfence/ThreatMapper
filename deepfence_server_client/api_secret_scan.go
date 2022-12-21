@@ -260,11 +260,11 @@ func (a *SecretScanApiService) IngestSecretsExecute(r ApiIngestSecretsRequest) (
 type ApiStartSecretScanRequest struct {
 	ctx context.Context
 	ApiService *SecretScanApiService
-	modelScanTrigger *ModelScanTrigger
+	modelScanTriggerReq *ModelScanTriggerReq
 }
 
-func (r ApiStartSecretScanRequest) ModelScanTrigger(modelScanTrigger ModelScanTrigger) ApiStartSecretScanRequest {
-	r.modelScanTrigger = &modelScanTrigger
+func (r ApiStartSecretScanRequest) ModelScanTriggerReq(modelScanTriggerReq ModelScanTriggerReq) ApiStartSecretScanRequest {
+	r.modelScanTriggerReq = &modelScanTriggerReq
 	return r
 }
 
@@ -326,7 +326,7 @@ func (a *SecretScanApiService) StartSecretScanExecute(r ApiStartSecretScanReques
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
 	// body params
-	localVarPostBody = r.modelScanTrigger
+	localVarPostBody = r.modelScanTriggerReq
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

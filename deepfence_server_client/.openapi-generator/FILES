@@ -41,7 +41,7 @@ docs/ModelRawReport.md
 docs/ModelResponse.md
 docs/ModelResponseAccessToken.md
 docs/ModelScanStatusResp.md
-docs/ModelScanTrigger.md
+docs/ModelScanTriggerReq.md
 docs/ModelScanTriggerResp.md
 docs/ModelUser.md
 docs/ModelUserRegisterRequest.md
@@ -78,7 +78,7 @@ model_model_raw_report.go
 model_model_response.go
 model_model_response_access_token.go
 model_model_scan_status_resp.go
-model_model_scan_trigger.go
+model_model_scan_trigger_req.go
 model_model_scan_trigger_resp.go
 model_model_user.go
 model_model_user_register_request.go

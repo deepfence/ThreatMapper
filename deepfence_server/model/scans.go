@@ -1,14 +1,13 @@
 package model
 
 import (
-	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
-type ScanTrigger struct {
-	NodeId       string                `json:"node_id" required:"true"`
-	ResourceId   string                `json:"resource_id" required:"true"`
-	ResourceType controls.ScanResource `json:"resource_type" required:"true"`
+type ScanTriggerReq struct {
+	NodeId       string `json:"node_id" required:"true"`
+	ResourceId   string `json:"resource_id" required:"true"`
+	ResourceType string `json:"resource_type" required:"true" enum:"image,host,container"`
 }
 
 type ScanStatus string

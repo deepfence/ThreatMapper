@@ -135,7 +135,7 @@ Class | Method | HTTP request | Description
  - [ModelResponse](docs/ModelResponse.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
  - [ModelScanStatusResp](docs/ModelScanStatusResp.md)
- - [ModelScanTrigger](docs/ModelScanTrigger.md)
+ - [ModelScanTriggerReq](docs/ModelScanTriggerReq.md)
  - [ModelScanTriggerResp](docs/ModelScanTriggerResp.md)
  - [ModelUser](docs/ModelUser.md)
  - [ModelUserRegisterRequest](docs/ModelUserRegisterRequest.md)
