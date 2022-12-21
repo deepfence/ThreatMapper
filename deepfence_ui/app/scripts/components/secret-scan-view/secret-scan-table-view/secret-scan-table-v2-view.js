@@ -26,6 +26,7 @@ class SecretScanTableV2 extends React.Component {
     this.deleteDocs = this.deleteDocs.bind(this);
     this.unmaskDocs = this.unmaskDocs.bind(this);
     this.maskDocs = this.maskDocs.bind(this);
+    this.updatePage = this.updatePage.bind(this);
     this.state = {
       isSecretsModalOpen: false,
       secretsData: null,
@@ -59,10 +60,11 @@ class SecretScanTableV2 extends React.Component {
   handlePageChange(pageNumber) {
     this.setState({
       page: pageNumber
+    }, () => {
+      this.tableChangeHandler({
+        page: pageNumber
+      })
     })
-    this.tableChangeHandler({
-      page: pageNumber,
-    });
   }
 
   deleteDocs(selectedDocIndex = {}) {
@@ -170,6 +172,34 @@ class SecretScanTableV2 extends React.Component {
 
   }
 
+  async updatePage() {
+    /**
+     * 1. Reduce page by 1 only if all records are deleted from last page
+     * 2. Do not reduce page by 1 when I am on 1st page
+     */
+
+    if (this.state.deletedValues.length <= 0) {
+      return;
+    }
+
+    const currentPage = this.state.page + 1;
+    const pageSize = 20;
+    const totalRecords = this.props.total;
+    const recordsOnLastPage = (totalRecords % pageSize) || pageSize;
+    const isLastPage = Math.ceil(totalRecords / pageSize) === currentPage;
+    // last page may have exact records of pageSize or less
+    const isSelectedAllRecords = this.state.deletedValues.length === recordsOnLastPage;
+    if (currentPage !== 1 && isLastPage && isSelectedAllRecords) {
+      this.handlePageChange(this.state.page - 1);
+    } else {
+      this.props.updatePollParams({});
+    }
+    this.setState({
+      deletedValues: [],
+    });
+  
+  }
+
   getSecrets(params) {
     const { getSecretScanResultsAction: action, filterValues = {} } =
       this.props;
@@ -202,13 +232,7 @@ class SecretScanTableV2 extends React.Component {
       scan_id: this.props.scanId,
     };
 
-    let start_index = page ? page * pageSize : page
-
-    if(this.state.deletedValues.length > 0) {
-      if(this.props.total - this.state.deletedValues.length < start_index + pageSize) {
-        start_index -= this.state.deletedValues.length;
-      }
-    }
+    const start_index = page ? page * pageSize : page;
 
     const apiParams = {
       lucene_query: globalSearchQuery,
@@ -353,7 +377,7 @@ class SecretScanTableV2 extends React.Component {
                   icon: <i className="fa fa-trash-o red cursor" />,
                   onClick: this.deleteDocs,
                   postClickSuccessTODO: this.removeDocs,
-                  postClickSuccess: updatePollParams,
+                  postClickSuccess: this.updatePage,
                   showConfirmationDialog: true,
                   postClickSuccessDelayInMs: 2000,
                   confirmationDialogParams: {
