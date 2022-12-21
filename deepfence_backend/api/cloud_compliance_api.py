@@ -971,32 +971,20 @@ def cloud_compliance_node_scans():
             continue
         else:
             added_scan_id[scan_id] = True
-        result = source.get("result", {})
-        es_index = COMPLIANCE_INDEX if es_index == COMPLIANCE_LOGS_INDEX else CLOUD_COMPLIANCE_INDEX
+        result = {}
+        if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
+            es_index = COMPLIANCE_INDEX
+        else:
+            es_index = CLOUD_COMPLIANCE_INDEX
         aggs_response = ESConn.aggregation_helper(es_index, {"scan_id": scan_id},
                                                   {"status": {"terms": {"field": "status.keyword", "size": 25}}})
+        total = 0
         for bucket in aggs_response["aggregations"]["status"]["buckets"]:
             result[bucket.get("key", "")] = bucket.get("doc_count", 0)
-    if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
-        added_scan_id = {}
-        es_resp["hits"] = []
-        for scan in hits:
-            source = scan.get("_source", {})
-            scan_id = source.get("scan_id")
-            if added_scan_id.get(scan_id, False):
-                continue
-            else:
-                added_scan_id[scan_id] = True
-            result = source.get("result", {})
-            if request.args.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
-                total = result.get("alarm", 0) + result.get("error", 0) + result.get("ok", 1) + result.get("info", 1)
-                checks_passed = result.get("ok", 0)
-            else:
-                total = result.get("pass", 0) + result.get("warn", 0) + result.get("note", 1)
-                checks_passed = result.get("pass", 0)
-            total = 1 if total == 0 else total
-            source["result"]["compliance_percentage"] = (checks_passed * 100) / total
-            es_resp.get("hits").append(scan)
+            total += bucket.get("doc_count", 0)
+        passed = result.get('ok', 0) + result.get('pass ', 0)
+        result['compliance_percentage'] = (passed * 100) / total
+        source['result'] = result
     es_resp["node_type"] = request.args.get("node_type", "")
     return set_response(data=es_resp)
 
