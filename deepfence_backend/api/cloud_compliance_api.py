@@ -982,7 +982,7 @@ def cloud_compliance_node_scans():
         for bucket in aggs_response["aggregations"]["status"]["buckets"]:
             result[bucket.get("key", "")] = bucket.get("doc_count", 0)
             total += bucket.get("doc_count", 0)
-        passed = result.get('ok', 0) + result.get('pass ', 0)
+        passed = result.get('ok', 0) + result.get('pass', 0)
         result['compliance_percentage'] = (passed * 100) / total
         source['result'] = result
     es_resp["node_type"] = request.args.get("node_type", "")
