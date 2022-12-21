@@ -1352,6 +1352,10 @@ def list_scheduled_tasks():
             registry = RegistryCredential.query.filter_by(id=regitry_id).first()
             registry_name = f"{registry.name}_{registry.registry_type}"
             node_names.append(registry_name)
+        elif task.nodes.get("node_type", "") in ["aws", "azure", "gcp"] :
+            node_id = task.nodes.get("node_id","")
+            cloud_account_name = node_id.replace(";<cloud_account>", "")
+            node_names.append(cloud_account_name)
         response["node_names"] = node_names
         tasks.append(response)
         
