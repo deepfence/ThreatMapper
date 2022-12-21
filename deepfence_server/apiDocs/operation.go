@@ -11,10 +11,6 @@ import (
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
-type RawReport struct {
-	Payload string `json:"payload" required:"true"`
-}
-
 func (d *OpenApiDocs) AddUserAuthOperations() {
 	d.AddOperation("registerUser", http.MethodPost, "/deepfence/user/register",
 		"Register User", "First user registration. Further users needs to be invited.",
@@ -58,10 +54,20 @@ func (d *OpenApiDocs) AddGraphOperations() {
 		http.StatusOK, []string{tagThreat}, nil, bearerToken, nil, new(reporters.ThreatGraph))
 }
 
+func (d *OpenApiDocs) AddControlsOperations() {
+	d.AddOperation("getAgentControls", http.MethodPost, "/deepfence/controls/agent",
+		"Fetch Agent Actions", "Fetch actions for a given agent",
+		http.StatusOK, []string{tagControls}, nil, bearerToken, new(model.AgentId), new(controls.AgentControls))
+
+	d.AddOperation("getAgentInitControls", http.MethodPost, "/deepfence/controls/agent-init",
+		"Fetch Agent Init Actions", "Fetch initial actions for a given agent after it started",
+		http.StatusOK, []string{tagControls}, nil, bearerToken, new(model.AgentId), new(controls.AgentControls))
+}
+
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, nil, bearerToken, new(RawReport), new(controls.AgentControls))
+		http.StatusOK, []string{tagTopology}, nil, bearerToken, new(model.RawReport), nil)
 
 	d.AddOperation("ingestVulnerabilities", http.MethodPost, "/deepfence/ingest/vulnerabilities",
 		"Ingest Vulnerabilities", "Ingest vulnerabilities found while scanning the agent host or containers",

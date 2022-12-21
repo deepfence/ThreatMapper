@@ -89,6 +89,8 @@ Class | Method | HTTP request | Description
 *ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Post** /deepfence/scan/start/compliance | Start Compliance Scan
 *ComplianceApi* | [**StatusComplianceScan**](docs/ComplianceApi.md#statuscompliancescan) | **Get** /deepfence/scan/status/compliance | Get Compliance Scan Status
 *ComplianceApi* | [**StopComplianceScan**](docs/ComplianceApi.md#stopcompliancescan) | **Get** /deepfence/scan/stop/compliance | Stop Compliance Scan
+*ControlsApi* | [**GetAgentControls**](docs/ControlsApi.md#getagentcontrols) | **Post** /deepfence/controls/agent | Fetch Agent Actions
+*ControlsApi* | [**GetAgentInitControls**](docs/ControlsApi.md#getagentinitcontrols) | **Post** /deepfence/controls/agent-init | Fetch Agent Init Actions
 *MalwareScanApi* | [**StartMalwareScan**](docs/MalwareScanApi.md#startmalwarescan) | **Post** /deepfence/scan/start/malware | Start Malware Scan
 *MalwareScanApi* | [**StatusMalwareScan**](docs/MalwareScanApi.md#statusmalwarescan) | **Get** /deepfence/scan/status/malware | Get Malware Scan Status
 *MalwareScanApi* | [**StopMalwareScan**](docs/MalwareScanApi.md#stopmalwarescan) | **Get** /deepfence/scan/stop/malware | Stop Malware Scan
@@ -115,7 +117,6 @@ Class | Method | HTTP request | Description
 
  - [ApiDocsBadRequestResponse](docs/ApiDocsBadRequestResponse.md)
  - [ApiDocsFailureResponse](docs/ApiDocsFailureResponse.md)
- - [ApiDocsRawReport](docs/ApiDocsRawReport.md)
  - [ControlsAction](docs/ControlsAction.md)
  - [ControlsAgentControls](docs/ControlsAgentControls.md)
  - [IngestersCloudCompliance](docs/IngestersCloudCompliance.md)
@@ -127,8 +128,10 @@ Class | Method | HTTP request | Description
  - [IngestersSecretScanStatus](docs/IngestersSecretScanStatus.md)
  - [IngestersSecretSeverity](docs/IngestersSecretSeverity.md)
  - [IngestersVulnerability](docs/IngestersVulnerability.md)
+ - [ModelAgentId](docs/ModelAgentId.md)
  - [ModelApiAuthRequest](docs/ModelApiAuthRequest.md)
  - [ModelLoginRequest](docs/ModelLoginRequest.md)
+ - [ModelRawReport](docs/ModelRawReport.md)
  - [ModelResponse](docs/ModelResponse.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
  - [ModelScanStatusResp](docs/ModelScanStatusResp.md)

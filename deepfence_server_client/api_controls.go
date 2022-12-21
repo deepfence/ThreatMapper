@@ -20,56 +20,62 @@ import (
 )
 
 
-// TopologyApiService TopologyApi service
-type TopologyApiService service
+// ControlsApiService ControlsApi service
+type ControlsApiService service
 
-type ApiGetTopologyGraphRequest struct {
+type ApiGetAgentControlsRequest struct {
 	ctx context.Context
-	ApiService *TopologyApiService
+	ApiService *ControlsApiService
+	modelAgentId *ModelAgentId
 }
 
-func (r ApiGetTopologyGraphRequest) Execute() (*ReportersRenderedGraph, *http.Response, error) {
-	return r.ApiService.GetTopologyGraphExecute(r)
+func (r ApiGetAgentControlsRequest) ModelAgentId(modelAgentId ModelAgentId) ApiGetAgentControlsRequest {
+	r.modelAgentId = &modelAgentId
+	return r
+}
+
+func (r ApiGetAgentControlsRequest) Execute() (*ControlsAgentControls, *http.Response, error) {
+	return r.ApiService.GetAgentControlsExecute(r)
 }
 
 /*
-GetTopologyGraph Get Topology Graph
+GetAgentControls Fetch Agent Actions
 
-Retrieve the full topology graph associated with the account
+Fetch actions for a given agent
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiGetTopologyGraphRequest
+ @return ApiGetAgentControlsRequest
 */
-func (a *TopologyApiService) GetTopologyGraph(ctx context.Context) ApiGetTopologyGraphRequest {
-	return ApiGetTopologyGraphRequest{
+func (a *ControlsApiService) GetAgentControls(ctx context.Context) ApiGetAgentControlsRequest {
+	return ApiGetAgentControlsRequest{
 		ApiService: a,
 		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-//  @return ReportersRenderedGraph
-func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphRequest) (*ReportersRenderedGraph, *http.Response, error) {
+//  @return ControlsAgentControls
+func (a *ControlsApiService) GetAgentControlsExecute(r ApiGetAgentControlsRequest) (*ControlsAgentControls, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *ReportersRenderedGraph
+		localVarReturnValue  *ControlsAgentControls
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TopologyApiService.GetTopologyGraph")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ControlsApiService.GetAgentControls")
 	if err != nil {
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/deepfence/graph/topology"
+	localVarPath := localBasePath + "/deepfence/controls/agent"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -85,6 +91,8 @@ func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphReques
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.modelAgentId
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -143,50 +151,52 @@ func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphReques
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-type ApiIngestAgentReportRequest struct {
+type ApiGetAgentInitControlsRequest struct {
 	ctx context.Context
-	ApiService *TopologyApiService
-	modelRawReport *ModelRawReport
+	ApiService *ControlsApiService
+	modelAgentId *ModelAgentId
 }
 
-func (r ApiIngestAgentReportRequest) ModelRawReport(modelRawReport ModelRawReport) ApiIngestAgentReportRequest {
-	r.modelRawReport = &modelRawReport
+func (r ApiGetAgentInitControlsRequest) ModelAgentId(modelAgentId ModelAgentId) ApiGetAgentInitControlsRequest {
+	r.modelAgentId = &modelAgentId
 	return r
 }
 
-func (r ApiIngestAgentReportRequest) Execute() (*http.Response, error) {
-	return r.ApiService.IngestAgentReportExecute(r)
+func (r ApiGetAgentInitControlsRequest) Execute() (*ControlsAgentControls, *http.Response, error) {
+	return r.ApiService.GetAgentInitControlsExecute(r)
 }
 
 /*
-IngestAgentReport Ingest Topology Data
+GetAgentInitControls Fetch Agent Init Actions
 
-Ingest data reported by one Agent
+Fetch initial actions for a given agent after it started
 
  @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- @return ApiIngestAgentReportRequest
+ @return ApiGetAgentInitControlsRequest
 */
-func (a *TopologyApiService) IngestAgentReport(ctx context.Context) ApiIngestAgentReportRequest {
-	return ApiIngestAgentReportRequest{
+func (a *ControlsApiService) GetAgentInitControls(ctx context.Context) ApiGetAgentInitControlsRequest {
+	return ApiGetAgentInitControlsRequest{
 		ApiService: a,
 		ctx: ctx,
 	}
 }
 
 // Execute executes the request
-func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequest) (*http.Response, error) {
+//  @return ControlsAgentControls
+func (a *ControlsApiService) GetAgentInitControlsExecute(r ApiGetAgentInitControlsRequest) (*ControlsAgentControls, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
+		localVarReturnValue  *ControlsAgentControls
 	)
 
-	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TopologyApiService.IngestAgentReport")
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ControlsApiService.GetAgentInitControls")
 	if err != nil {
-		return nil, &GenericOpenAPIError{error: err.Error()}
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/deepfence/ingest/report"
+	localVarPath := localBasePath + "/deepfence/controls/agent-init"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -210,22 +220,22 @@ func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequ
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
 	// body params
-	localVarPostBody = r.modelRawReport
+	localVarPostBody = r.modelAgentId
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
-		return nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	localVarHTTPResponse, err := a.client.callAPI(req)
 	if err != nil || localVarHTTPResponse == nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
-		return localVarHTTPResponse, err
+		return localVarReturnValue, localVarHTTPResponse, err
 	}
 
 	if localVarHTTPResponse.StatusCode >= 300 {
@@ -238,24 +248,33 @@ func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequ
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
+				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
 					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
 					newErr.model = v
-			return localVarHTTPResponse, newErr
+			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode == 500 {
 			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
-				return localVarHTTPResponse, newErr
+				return localVarReturnValue, localVarHTTPResponse, newErr
 			}
 					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
 					newErr.model = v
 		}
-		return localVarHTTPResponse, newErr
+		return localVarReturnValue, localVarHTTPResponse, newErr
 	}
 
-	return localVarHTTPResponse, nil
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
 }

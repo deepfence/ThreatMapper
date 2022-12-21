@@ -6,6 +6,7 @@ api_authentication.go
 api_cloud_compliance.go
 api_cloud_resources.go
 api_compliance.go
+api_controls.go
 api_malware_scan.go
 api_secret_scan.go
 api_threat.go
@@ -16,13 +17,13 @@ client.go
 configuration.go
 docs/ApiDocsBadRequestResponse.md
 docs/ApiDocsFailureResponse.md
-docs/ApiDocsRawReport.md
 docs/AuthenticationApi.md
 docs/CloudComplianceApi.md
 docs/CloudResourcesApi.md
 docs/ComplianceApi.md
 docs/ControlsAction.md
 docs/ControlsAgentControls.md
+docs/ControlsApi.md
 docs/IngestersCloudCompliance.md
 docs/IngestersCloudResource.md
 docs/IngestersCompliance.md
@@ -33,8 +34,10 @@ docs/IngestersSecretScanStatus.md
 docs/IngestersSecretSeverity.md
 docs/IngestersVulnerability.md
 docs/MalwareScanApi.md
+docs/ModelAgentId.md
 docs/ModelApiAuthRequest.md
 docs/ModelLoginRequest.md
+docs/ModelRawReport.md
 docs/ModelResponse.md
 docs/ModelResponseAccessToken.md
 docs/ModelScanStatusResp.md
@@ -57,7 +60,6 @@ go.mod
 go.sum
 model_api_docs_bad_request_response.go
 model_api_docs_failure_response.go
-model_api_docs_raw_report.go
 model_controls_action.go
 model_controls_agent_controls.go
 model_ingesters_cloud_compliance.go
@@ -69,8 +71,10 @@ model_ingesters_secret_rule.go
 model_ingesters_secret_scan_status.go
 model_ingesters_secret_severity.go
 model_ingesters_vulnerability.go
+model_model_agent_id.go
 model_model_api_auth_request.go
 model_model_login_request.go
+model_model_raw_report.go
 model_model_response.go
 model_model_response_access_token.go
 model_model_scan_status_resp.go

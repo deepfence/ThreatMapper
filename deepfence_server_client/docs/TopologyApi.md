@@ -72,7 +72,7 @@ Other parameters are passed through a pointer to a apiGetTopologyGraphRequest st
 
 ## IngestAgentReport
 
-> ControlsAgentControls IngestAgentReport(ctx).ApiDocsRawReport(apiDocsRawReport).Execute()
+> IngestAgentReport(ctx).ModelRawReport(modelRawReport).Execute()
 
 Ingest Topology Data
 
@@ -91,17 +91,15 @@ import (
 )
 
 func main() {
-    apiDocsRawReport := *openapiclient.NewApiDocsRawReport("Payload_example") // ApiDocsRawReport |  (optional)
+    modelRawReport := *openapiclient.NewModelRawReport("Payload_example") // ModelRawReport |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TopologyApi.IngestAgentReport(context.Background()).ApiDocsRawReport(apiDocsRawReport).Execute()
+    resp, r, err := apiClient.TopologyApi.IngestAgentReport(context.Background()).ModelRawReport(modelRawReport).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `TopologyApi.IngestAgentReport``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `IngestAgentReport`: ControlsAgentControls
-    fmt.Fprintf(os.Stdout, "Response from `TopologyApi.IngestAgentReport`: %v\n", resp)
 }
 ```
 
@@ -116,11 +114,11 @@ Other parameters are passed through a pointer to a apiIngestAgentReportRequest s
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiDocsRawReport** | [**ApiDocsRawReport**](ApiDocsRawReport.md) |  | 
+ **modelRawReport** | [**ModelRawReport**](ModelRawReport.md) |  | 
 
 ### Return type
 
-[**ControlsAgentControls**](ControlsAgentControls.md)
+ (empty response body)
 
 ### Authorization
 

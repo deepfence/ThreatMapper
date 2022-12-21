@@ -13,7 +13,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -30,7 +29,12 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	scanId := scanId(req)
 
-	startScan(w, r, scanId, req.NodeId, ctl.StartVulnerabilityScan, "")
+	action := ctl.Action{
+		ID:             ctl.StartVulnerabilityScan,
+		RequestPayload: "",
+	}
+
+	startScan(w, r, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,19 +61,25 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	b, err := json.Marshal(internal_req)
+	bstr := string(b)
+
+	action := ctl.Action{
+		ID:             ctl.StartSecretScan,
+		RequestPayload: bstr,
+	}
 
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
 		return
 	}
 
-	err = ingesters.UpdateScanStatus(r.Context(), "SecretScan", scanId, utils.SCAN_STATUS_STARTING)
+	err = ingesters.AddNewScan(r.Context(), "SecretScan", scanId, req.NodeId, action)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err})
 		return
 	}
 
-	startScan(w, r, scanId, req.NodeId, ctl.StartSecretScan, string(b))
+	startScan(w, r, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +90,12 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	scanId := scanId(req)
 
-	startScan(w, r, scanId, req.NodeId, ctl.StartComplianceScan, "")
+	action := ctl.Action{
+		ID:             ctl.StartComplianceScan,
+		RequestPayload: "",
+	}
+
+	startScan(w, r, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +106,12 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 
 	scanId := scanId(req)
 
-	startScan(w, r, scanId, req.NodeId, ctl.StartMalwareScan, "")
+	action := ctl.Action{
+		ID:             ctl.StartMalwareScan,
+		RequestPayload: "",
+	}
+
+	startScan(w, r, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -113,14 +133,11 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 func startScan(
 	w http.ResponseWriter, r *http.Request,
 	scanId string, nodeId string,
-	action ctl.ActionID, payload string) {
+	action ctl.Action) {
 
 	ctx := r.Context()
 	err := controls.SetAgentActions(ctx, nodeId, []ctl.Action{
-		{
-			ID:             action,
-			RequestPayload: payload,
-		},
+		action,
 	})
 
 	if err != nil {

@@ -130,6 +130,80 @@ paths:
       summary: Refresh access token
       tags:
       - Authentication
+  /deepfence/controls/agent:
+    post:
+      description: Fetch actions for a given agent
+      operationId: getAgentControls
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelAgentId'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlsAgentControls'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Fetch Agent Actions
+      tags:
+      - Controls
+  /deepfence/controls/agent-init:
+    post:
+      description: Fetch initial actions for a given agent after it started
+      operationId: getAgentInitControls
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelAgentId'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlsAgentControls'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Fetch Agent Init Actions
+      tags:
+      - Controls
   /deepfence/graph/threat:
     get:
       description: Retrieve the full threat graph associated with the account
@@ -310,13 +384,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApiDocsRawReport'
+              $ref: '#/components/schemas/ModelRawReport'
       responses:
         "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ControlsAgentControls'
           description: OK
         "400":
           content:
@@ -1049,15 +1119,6 @@ components:
         success:
           type: boolean
       type: object
-    ApiDocsRawReport:
-      example:
-        payload: payload
-      properties:
-        payload:
-          type: string
-      required:
-      - payload
-      type: object
     ControlsAction:
       example:
         id: 6
@@ -1520,6 +1581,15 @@ components:
           nullable: true
           type: array
       type: object
+    ModelAgentId:
+      example:
+        node_id: node_id
+      properties:
+        node_id:
+          type: string
+      required:
+      - node_id
+      type: object
     ModelApiAuthRequest:
       example:
         api_token: api_token
@@ -1536,6 +1606,15 @@ components:
           type: string
         password:
           type: string
+      type: object
+    ModelRawReport:
+      example:
+        payload: payload
+      properties:
+        payload:
+          type: string
+      required:
+      - payload
       type: object
     ModelResponse:
       example:

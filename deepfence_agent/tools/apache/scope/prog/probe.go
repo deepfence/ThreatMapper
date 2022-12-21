@@ -254,6 +254,14 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 				log.Fatalf("Fatal: %v", err)
 			}
 		}
+		for {
+			err = multiClients.StartControlsWatching()
+			if err == nil {
+				break
+			}
+			log.Errorf("Failed to get init controls %v. Retrying...\n", err)
+			time.Sleep(authCheckPeriod)
+		}
 		defer multiClients.Stop()
 
 		//dnsLookupFn := net.LookupIP
