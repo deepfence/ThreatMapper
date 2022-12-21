@@ -3,6 +3,7 @@ PWD=$(shell pwd)
 DEEPFENCE_CONSOLE_DIR=$(PWD)/deepfence_console
 DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
 DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
+DEEPFENCE_FILE_SERVER_DIR=$(PWD)/deepfence_file_server
 DEEPFENCE_FRONTEND_DIR=$(PWD)/deepfence_frontend
 DEEPFENCE_DIAG_DIR=$(PWD)/deepfence_diagnosis
 DEEPFENCE_FETCHER_DIR=$(DEEPFENCE_CONSOLE_DIR)/fetcher
@@ -60,6 +61,10 @@ kafka-broker:
 .PHONY: router
 router:
 	docker build --build-arg is_dev_build=$(IS_DEV_BUILD) -t $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG) $(DEEPFENCE_ROUTER_DIR)
+
+.PHONY: file-server
+file-server:
+	docker build -t $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG) $(DEEPFENCE_FILE_SERVER_DIR)
 
 .PHONY: server
 server:

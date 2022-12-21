@@ -20,6 +20,8 @@ ENV ENABLE_AUTH=true \
     UI_SERVICE_PORT=8081 \
     API_SERVICE_HOST=deepfence-server \
     API_SERVICE_PORT=8080 \
+    FILE_SERVER_HOST=deepfence-file-server \
+    FILE_SERVER_PORT=9000 \
     CUSTOMER_UNIQUE_ID=""
 
 COPY --from=minica-builder /go/minica.pem /usr/local/etc/haproxy/deepfence.crt

@@ -124,6 +124,24 @@ services:
       options:
         max-size: "1g"
 
+  deepfence-file-server:
+    container_name: deepfence-file-server
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_file_server_ce:${DF_IMG_TAG:-1.4.1}
+    ulimits:
+      core: 0
+    networks:
+    - deepfence_net
+    restart: always
+#    ports:
+#    - "127.0.0.1:9000:9000"
+#    - "127.0.0.1:9090:9090"
+    volumes:
+    - deepfence_file_server:/data:rw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+
   deepfence-server:
     container_name: deepfence-server
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_server_ce:${DF_IMG_TAG:-1.4.1}
@@ -284,6 +302,8 @@ volumes:
   deepfence_neo4j_plugins:
     driver: local
   deepfence_kafka_broker:
+    driver: local
+  deepfence_file_server:
     driver: local
 
 networks:
