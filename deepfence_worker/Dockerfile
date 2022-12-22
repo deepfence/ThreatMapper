@@ -4,7 +4,8 @@ ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
 WORKDIR /go/deepfence_worker/
 RUN apk add --no-cache git make
-RUN make
+# "make vendor" is run before separately to avoid docker cache invalidation
+RUN make deepfence_worker
 
 FROM alpine:3.16
 MAINTAINER Deepfence Inc

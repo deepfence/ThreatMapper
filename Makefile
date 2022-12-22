@@ -68,10 +68,12 @@ file-server:
 
 .PHONY: server
 server:
+	(cd ./deepfence_server && make vendor)
 	docker build -f ./deepfence_server/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) .
 
 .PHONY: worker
 worker:
+	(cd ./deepfence_worker && make vendor)
 	docker build -f ./deepfence_worker/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) .
 
 .PHONY: ui
@@ -96,6 +98,7 @@ packagescanner:
 
 .PHONY: ingester
 ingester:
+	(cd ./deepfence_ingester && make vendor)
 	docker build -f ./deepfence_ingester/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG) .
 
 .PHONY: openapi
@@ -119,5 +122,5 @@ openapi: server
 	cd $(PWD)/deepfence_server_client && go mod tidy -v && cd -
 
 .PHONY: cli
-cli: 
-	cd $(DEEPFENCE_CTL) && make && cd -
+cli:
+	(cd $(DEEPFENCE_CTL) && make)

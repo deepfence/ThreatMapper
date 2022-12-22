@@ -8,7 +8,8 @@ ADD deepfence_utils /go/deepfence_utils/
 ADD deepfence_server_client /go/deepfence_server_client/
 ADD deepfence_ingester /go/deepfence_ingester/
 WORKDIR /go/deepfence_ingester/
-RUN make
+# "make vendor" is run before separately to avoid docker cache invalidation
+RUN make deepfence_ingester
 
 FROM alpine:3.16
 LABEL maintainer="Deepfence Inc"
