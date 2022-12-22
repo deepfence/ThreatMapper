@@ -191,13 +191,6 @@ deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXX
       ) : null}
       <ComplianceStats />
       <ComplianceTable cloudType="aws" />
-      <Route
-        exact
-        path={`${props.match.path}/:id`}
-        render={() => {
-          return <ComplianceSummary />;
-        }}
-      />
     </div>
   );
 });
