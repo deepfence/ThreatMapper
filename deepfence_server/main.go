@@ -10,7 +10,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks"
@@ -136,30 +135,21 @@ func main() {
 }
 
 func initializeCronJobs() {
-	go func() {
-		for {
-			<-time.After(time.Second * 10)
-			//TODO local namespace
-			ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-			ns, err := directory.ExtractNamespace(ctx)
-			if err != nil {
-				log.Error().Msgf("could not get namespace: %v", err)
-				continue
-			}
-			task, err := tasks.NewCleanUpGraphDBTask(ns)
-			if err != nil {
-				log.Error().Msgf("could not create task: %v", err)
-				continue
-			}
-			err = directory.PeriodicWorkerEnqueue(ctx, task, "@every 120s")
-			if err != nil {
-				log.Error().Msgf("could not enqueue task: %v", err)
-				continue
-			}
-			log.Info().Msgf("DB clean cron started")
-			break
-		}
-	}()
+	//TODO local namespace
+	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+	ns, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		log.Fatal().Msgf("could not get namespace: %v", err)
+	}
+	task, err := tasks.NewCleanUpGraphDBTask(ns)
+	if err != nil {
+		log.Fatal().Msgf("could not create task: %v", err)
+	}
+	err = directory.PeriodicWorkerEnqueue(ctx, task, "@every 120s")
+	if err != nil {
+		log.Fatal().Msgf("could not enqueue task: %v", err)
+	}
+	log.Info().Msgf("DB clean cron started")
 }
 
 func initialize() (*Config, error) {
