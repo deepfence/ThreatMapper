@@ -1,0 +1,7 @@
+**/.git
+**/.pnpm-store
+**/.vscode
+**/.cache
+**/node_modules
+scope.tar
+cloud-agent.tar
