@@ -1,10 +1,10 @@
 FROM golang:1.19-alpine3.16 AS build
 
+RUN apk add --no-cache git make
+RUN go install github.com/hibiken/asynq/tools/asynq@latest
 ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
 WORKDIR /go/deepfence_worker/
-RUN apk add --no-cache git make
-RUN go install github.com/hibiken/asynq/tools/asynq
 # "make vendor" is run before separately to avoid docker cache invalidation
 RUN make deepfence_worker
 
