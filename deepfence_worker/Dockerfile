@@ -25,6 +25,12 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_NEO4J_BOLT_PORT=7687 \
     DEEPFENCE_NEO4J_USER=neo4j \
     DEEPFENCE_NEO4J_PASSWORD=password \
+    DEEPFENCE_MINIO_HOST=deepfence-file-server \
+    DEEPFENCE_MINIO_PORT=9000 \
+    DEEPFENCE_MINIO_USER=deepfence \
+    DEEPFENCE_MINIO_PASSWORD=deepfence \
+    DEEPFENCE_MINIO_BUCKET=deepfence \
+    DEEPFENCE_MINIO_SECURE=false \
     DEEPFENCE_SAAS_DEPLOYMENT=false
 
 COPY --from=build /go/deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker

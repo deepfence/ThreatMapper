@@ -29,12 +29,12 @@ var (
 )
 
 type FailureResponse struct {
-	Success bool   `json:"success"`
+	Success bool   `json:"success" example:"false"`
 	Message string `json:"message"`
 }
 
 type BadRequestResponse struct {
-	Success     bool               `json:"success"`
+	Success     bool               `json:"success" example:"false"`
 	Message     string             `json:"message"`
 	ErrorFields *map[string]string `json:"error_fields"`
 }
@@ -109,15 +109,13 @@ func (d *OpenApiDocs) Yaml() ([]byte, error) {
 	return d.reflector.Spec.MarshalYAML()
 }
 
-func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string,
-	successStatusCode int, tags []string, queryParams []openapi3.ParameterOrRef,
+func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string, successStatusCode int, tags []string,
 	security []map[string][]string, request interface{}, response interface{}) {
 	operation := openapi3.Operation{
 		Tags:        tags,
 		Summary:     &summary,
 		Description: &description,
 		ID:          &id,
-		Parameters:  queryParams,
 		Security:    security,
 	}
 	err := d.reflector.SetRequest(&operation, request, method)
@@ -143,6 +141,10 @@ func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string
 	err = d.reflector.SetJSONResponse(&operation, d.failureResponse, http.StatusInternalServerError)
 	if err != nil {
 		log.Error().Msgf("Docs - internal server error %s %s: %s", method, path, err.Error())
+	}
+	err = d.reflector.SetJSONResponse(&operation, d.failureResponse, http.StatusNotFound)
+	if err != nil {
+		log.Error().Msgf("Docs - not found %s %s: %s", method, path, err.Error())
 	}
 	err = d.reflector.Spec.AddOperation(method, path, operation)
 	if err != nil {

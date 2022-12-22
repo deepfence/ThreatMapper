@@ -23,7 +23,7 @@ type ScanTriggerResp struct {
 }
 
 type ScanStatusReq struct {
-	ScanId string `json:"scan_id" required:"true"`
+	ScanId string `query:"scan_id" required:"true"`
 }
 
 type ScanStatusResp struct {

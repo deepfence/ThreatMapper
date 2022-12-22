@@ -3,11 +3,13 @@ MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV MINIO_ROOT_USER=deepfence \
-    MINIO_ROOT_PASSWORD=deepfence
+    MINIO_ROOT_PASSWORD=deepfence \
+    BUCKET_NAME=deepfence
 
 WORKDIR /usr/local/bin
 COPY entrypoint.sh /entrypoint.sh
-RUN wget https://dl.min.io/server/minio/release/linux-amd64/minio \
+RUN apk update --no-cache && apk upgrade --no-cache \
+    && wget https://dl.min.io/server/minio/release/linux-amd64/minio \
     && chmod +x /usr/local/bin/minio /entrypoint.sh \
     && mkdir -p /data
 

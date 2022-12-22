@@ -7,4 +7,7 @@ if [ "${1}" != "minio" ]; then
     fi
 fi
 
+# Create the bucket
+mkdir -p "/data/$BUCKET_NAME"
+
 exec "$@"

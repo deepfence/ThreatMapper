@@ -280,18 +280,17 @@ func (h *Handler) StatusVulnerabilityScanHandler(w http.ResponseWriter, r *http.
 func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.ScanStatusReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
+	err := httpext.DecodeQueryParams(r, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
 		return
 	}
-	status, err := reporters.GetSecretScanStatus(r.Context(), req.ScanId)
 
+	status, err := reporters.GetSecretScanStatus(r.Context(), req.ScanId)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
 		return
 	}
 

@@ -36,10 +36,19 @@ type PostgresqlConfig struct {
 	SslMode  string
 }
 
+type MinioConfig struct {
+	Endpoint   string
+	Username   string
+	Password   string
+	BucketName string
+	Secure     bool
+}
+
 type DBConfigs struct {
 	Redis    RedisConfig
 	Neo4j    *Neo4jConfig
 	Postgres *PostgresqlConfig
+	Minio    *MinioConfig
 }
 
 var directory map[NamespaceID]DBConfigs
@@ -47,7 +56,7 @@ var directory map[NamespaceID]DBConfigs
 func init() {
 
 	redisCfg := initRedis()
-
+	minioCfg := initMinio()
 	postgresqlCfg := init_posgres()
 
 	saasMode := false
@@ -66,6 +75,7 @@ func init() {
 			Redis:    redisCfg,
 			Neo4j:    &neo4jCfg,
 			Postgres: nil,
+			Minio:    nil,
 		}
 	}
 
@@ -73,6 +83,7 @@ func init() {
 		Redis:    redisCfg,
 		Neo4j:    nil,
 		Postgres: &postgresqlCfg,
+		Minio:    &minioCfg,
 	}
 }
 
@@ -102,6 +113,39 @@ func initRedis() RedisConfig {
 		Endpoint: redisEndpoint,
 		Password: redisPassword,
 		Database: redisDbNumber,
+	}
+}
+
+func initMinio() MinioConfig {
+	minioHost, has := os.LookupEnv("DEEPFENCE_MINIO_HOST")
+	if !has {
+		minioHost = "deepfence-file-server"
+		log.Warn().Msgf("DEEPFENCE_MINIO_HOST defaults to: %v", minioHost)
+	}
+	minioPort, has := os.LookupEnv("DEEPFENCE_MINIO_PORT")
+	if !has {
+		minioPort = "9000"
+		log.Warn().Msgf("DEEPFENCE_MINIO_PORT defaults to: %v", minioPort)
+	}
+	minioEndpoint := minioHost + ":" + minioPort
+	minioUser := os.Getenv("DEEPFENCE_MINIO_USER")
+	minioPassword := os.Getenv("DEEPFENCE_MINIO_PASSWORD")
+	minioBucket := os.Getenv("DEEPFENCE_MINIO_BUCKET")
+	minioSecure := os.Getenv("DEEPFENCE_MINIO_SECURE")
+	if minioSecure == "" {
+		minioSecure = "false"
+	}
+	isSecure, err := strconv.ParseBool(minioSecure)
+	if err != nil {
+		isSecure = false
+		log.Warn().Msgf("DEEPFENCE_MINIO_SECURE defaults to: %v (%v)", isSecure, err.Error())
+	}
+	return MinioConfig{
+		Endpoint:   minioEndpoint,
+		Username:   minioUser,
+		Password:   minioPassword,
+		BucketName: minioBucket,
+		Secure:     isSecure,
 	}
 }
 
