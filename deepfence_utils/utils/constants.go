@@ -26,10 +26,10 @@ const (
 type Neo4jScanType string
 
 const (
-	NEO4J_SECRET_SCAN       Neo4jScanType = "SecretScan"
-	NEO4J_VULNERABILTY_SCAN Neo4jScanType = "VulnerabilityScan"
-	NEO4J_MALWARE_SCAN      Neo4jScanType = "MalwareScan"
-	NEO4J_COMPLIANCE_SCAN   Neo4jScanType = "ComplianceScan"
+	NEO4J_SECRET_SCAN        Neo4jScanType = "SecretScan"
+	NEO4J_VULNERABILITY_SCAN Neo4jScanType = "VulnerabilityScan"
+	NEO4J_MALWARE_SCAN       Neo4jScanType = "MalwareScan"
+	NEO4J_COMPLIANCE_SCAN    Neo4jScanType = "ComplianceScan"
 )
 
 var Topics = []string{

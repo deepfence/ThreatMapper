@@ -34,7 +34,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		RequestPayload: "",
 	}
 
-	startScan(w, r, utils.NEO4J_VULNERABILTY_SCAN, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_VULNERABILITY_SCAN, scanId, req.NodeId, action)
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
