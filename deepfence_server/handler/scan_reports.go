@@ -132,7 +132,7 @@ func startScan(
 
 	err := ingesters.AddNewScan(r.Context(), scanType, scanId, nodeId, action)
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err})
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err.Error()})
 		return
 	}
 
@@ -256,7 +256,15 @@ func extractScanTrigger(w http.ResponseWriter, r *http.Request) (model.ScanTrigg
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return req, err
 	}
+
+	if ctl.StringToResourceType(req.ResourceType) == -1 {
+		err = fmt.Errorf("Unknown ResourceType: %s", req.ResourceType)
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Data: err.Error()})
+	}
+
 	return req, err
 }
 
