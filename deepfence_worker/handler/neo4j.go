@@ -3,21 +3,10 @@ package handler
 import (
 	"context"
 
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks"
 	"github.com/hibiken/asynq"
 )
 
-func IngestAgentReport(ctx context.Context, t *asynq.Task) error {
-	return nil
-}
-
-func IngestCloudScannerReport(ctx context.Context, t *asynq.Task) error {
-	return nil
-}
-
-func IngestAgentScannerReport(ctx context.Context, t *asynq.Task) error {
-	return nil
-}
-
-func IngestAgentAlerts(ctx context.Context, t *asynq.Task) error {
-	return nil
+func CleanUpGraphDB(ctx context.Context, t *asynq.Task) error {
+	return tasks.HandleCleanUpGraphDBTask(ctx, t)
 }

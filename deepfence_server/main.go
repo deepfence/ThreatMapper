@@ -10,8 +10,10 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks"
 	"github.com/twmb/franz-go/pkg/kgo"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -80,6 +82,8 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go startKafkaProducer(ctx, kafkaBrokers, ingestC)
 
+	initializeCronJobs()
+
 	dfHandler, err := router.SetupRoutes(mux,
 		config.HttpListenEndpoint, config.JwtSecret,
 		*serveOpenapiDocs, ingestC,
@@ -129,6 +133,33 @@ func main() {
 	cancel()
 
 	log.Info().Msg("deepfence-server stopped")
+}
+
+func initializeCronJobs() {
+	go func() {
+		for {
+			<-time.After(time.Second * 10)
+			//TODO local namespace
+			ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+			ns, err := directory.ExtractNamespace(ctx)
+			if err != nil {
+				log.Error().Msgf("could not get namespace: %v", err)
+				continue
+			}
+			task, err := tasks.NewCleanUpGraphDBTask(ns)
+			if err != nil {
+				log.Error().Msgf("could not create task: %v", err)
+				continue
+			}
+			err = directory.PeriodicWorkerEnqueue(ctx, task, "@every 120s")
+			if err != nil {
+				log.Error().Msgf("could not enqueue task: %v", err)
+				continue
+			}
+			log.Info().Msgf("DB clean cron started")
+			break
+		}
+	}()
 }
 
 func initialize() (*Config, error) {

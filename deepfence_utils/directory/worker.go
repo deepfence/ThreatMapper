@@ -16,6 +16,7 @@ var ErrExhaustedResources = errors.New("Exhausted worker resources")
 type async_clients struct {
 	client    *asynq.Client
 	inspector *asynq.Inspector
+	scheduler *asynq.Scheduler
 }
 
 var worker_clients_pool map[NamespaceID]*async_clients
@@ -26,10 +27,17 @@ func init() {
 
 func new_asynq_client(endpoints DBConfigs) (*async_clients, error) {
 	redisCfg := asynq.RedisClientOpt{Addr: endpoints.Redis.Endpoint}
-	return &async_clients{
+	clients := &async_clients{
 		client:    asynq.NewClient(redisCfg),
 		inspector: asynq.NewInspector(redisCfg),
-	}, nil
+		scheduler: asynq.NewScheduler(redisCfg, nil),
+	}
+	go func() {
+		if err := clients.scheduler.Run(); err != nil {
+			panic(err)
+		}
+	}()
+	return clients, nil
 }
 
 func WorkerEnqueue(ctx context.Context, task *asynq.Task) error {
@@ -60,5 +68,19 @@ func WorkerEnqueue(ctx context.Context, task *asynq.Task) error {
 	}
 
 	client.Enqueue(task)
+	return nil
+}
+
+func PeriodicWorkerEnqueue(ctx context.Context, task *asynq.Task, cronEntry string) error {
+
+	clients, err := getClient(ctx, worker_clients_pool, new_asynq_client)
+	if err != nil {
+		return err
+	}
+
+	scheduler := clients.scheduler
+
+	scheduler.Register(cronEntry, task)
+
 	return nil
 }
