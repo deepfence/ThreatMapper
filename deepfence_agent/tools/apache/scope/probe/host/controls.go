@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	dfUtils "github.com/deepfence/df-utils"
-	log "github.com/sirupsen/logrus"
-	"github.com/weaveworks/scope/common/xfer"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	dfUtils "github.com/deepfence/df-utils"
+	log "github.com/sirupsen/logrus"
+	"github.com/weaveworks/scope/common/xfer"
 )
 
 // Control IDs used by the host integration.
@@ -21,11 +22,11 @@ const (
 	AddUserDefinedTags    = "host_add_user_defined_tags"
 	DeleteUserDefinedTags = "host_delete_user_defined_tags"
 	//StartSecretsScan      = "secret_scan_start"
-	secretScanSocket      = "/tmp/secretScanner.sock"
-	StartMalwareScan      = "malware_scan_start"
-	malwareScanSocket      = "/tmp/yaraHunter.sock"
-	unixProtocol          = "unix"
-	tcpProtocol           = "tcp"
+	secretScanSocket  = "/tmp/secretScanner.sock"
+	StartMalwareScan  = "malware_scan_start"
+	malwareScanSocket = "/tmp/yaraHunter.sock"
+	unixProtocol      = "unix"
+	tcpProtocol       = "tcp"
 )
 
 var (
@@ -40,7 +41,7 @@ func init() {
 func (r *Reporter) registerControls() {
 	r.handlerRegistry.Register(StartComplianceScan, r.startComplianceScan)
 	r.handlerRegistry.Register(GetLogsFromAgent, r.getLogsFromAgent)
-	r.handlerRegistry.Register(GenerateSBOM, r.handleGenerateSBOM)
+	// r.handlerRegistry.Register(GenerateSBOM, r.handleGenerateSBOM)
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
 	r.handlerRegistry.Register(DeleteUserDefinedTags, r.deleteUserDefinedTags)
 	//r.handlerRegistry.Register(StartSecretsScan, r.startSecretsScan)

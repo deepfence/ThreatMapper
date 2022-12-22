@@ -45,7 +45,13 @@ func StringToResourceType(s string) ScanResource {
 	return -1
 }
 
-type StartVulnerabilityScanRequest struct{}
+type StartVulnerabilityScanRequest struct {
+	ResourceId   string            `json:"resource_id" required:"true"`
+	ResourceType ScanResource      `json:"resource_type" required:"true"`
+	BinArgs      map[string]string `json:"bin_args" required:"true"`
+	Hostname     string            `json:"hostname" required:"true"`
+}
+
 type StartSecretScanRequest struct {
 	ResourceId   string            `json:"resource_id" required:"true"`
 	ResourceType ScanResource      `json:"resource_type" required:"true"`

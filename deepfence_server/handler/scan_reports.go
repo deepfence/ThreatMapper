@@ -189,6 +189,11 @@ func (h *Handler) IngestVulnerabilityReportHandler(w http.ResponseWriter, r *htt
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestVulnerabilityScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewVulnerabilityStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func (h *Handler) IngestSecretReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewSecretIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)

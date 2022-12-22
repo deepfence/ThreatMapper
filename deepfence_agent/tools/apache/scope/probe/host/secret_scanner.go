@@ -56,7 +56,8 @@ func init() {
 	if err != nil {
 		scanConcurrency = defaultScanConcurrency
 	}
-	grpcScanWorkerPool = tunny.NewFunc(scanConcurrency, getAndPublishSecretScanResultsWrapper)
+	grpcScanWorkerPool = tunny.NewFunc(scanConcurrency,
+		getAndPublishSecretScanResultsWrapper)
 	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL")
 	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
 	if consolePort != "" && consolePort != "443" {
@@ -110,8 +111,8 @@ func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) 
 		fmt.Println("Error reading input from grpc API")
 		return nil
 	}
-	getAndPublishSecretScanResults(scanParameters.client, scanParameters.req, scanParameters.controlArgs,
-		scanParameters.hostName)
+	getAndPublishSecretScanResults(scanParameters.client, scanParameters.req,
+		scanParameters.controlArgs, scanParameters.hostName)
 	return nil
 }
 
@@ -251,7 +252,8 @@ func writeScanDataToFile(secretScanMsg string, index string) error {
 }
 
 func newSecretScannerClient() (pb.SecretScannerClient, error) {
-	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"), grpc.WithInsecure())
+	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"),
+		grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
 		return nil, err

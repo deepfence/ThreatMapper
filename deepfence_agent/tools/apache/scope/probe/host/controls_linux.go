@@ -7,7 +7,6 @@ import (
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/weaveworks/scope/common/xfer"
 
 	"github.com/willdonnelly/passwd"
 )
@@ -89,46 +88,46 @@ func isProbeContainerized() bool {
 	return selfMountNamespaceID != statT.Ino
 }
 
-func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
-	var imageName = "host"
-	var imageId = ""
-	var scanId = ""
-	var kubernetesClusterName = ""
-	var containerName = ""
-	var containerId = ""
+// func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
+// 	var imageName = "host"
+// 	var imageId = ""
+// 	var scanId = ""
+// 	var kubernetesClusterName = ""
+// 	var containerName = ""
+// 	var containerId = ""
 
-	if imageNameArg, ok := req.ControlArgs["image_name"]; ok {
-		imageName = imageNameArg
-	}
-	if containerNameArg, ok := req.ControlArgs["container_name"]; ok {
-		containerName = containerNameArg
-	}
-	if kubernetesClusterNameArg, ok := req.ControlArgs["kubernetes_cluster_name"]; ok {
-		kubernetesClusterName = kubernetesClusterNameArg
-	}
-	if imageIdArg, ok := req.ControlArgs["image_id"]; ok {
-		imageId = imageIdArg
-	}
-	if containerIdArg, ok := req.ControlArgs["container_id"]; ok {
-		containerId = containerIdArg
-	}
-	if imageName != "host" && imageId == "" {
-		return xfer.ResponseErrorf("image_id is required for container/image vulnerability scan")
-	}
-	scanType := "all"
-	if scanTypeArg, ok := req.ControlArgs["scan_type"]; ok {
-		scanType = scanTypeArg
-	}
-	if scanIdArg, ok := req.ControlArgs["scan_id"]; ok {
-		scanId = scanIdArg
-	}
-	log.Infof("uploading %s tar to console...", imageName)
-	// call package scanner plugin
-	go func() {
-		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId,containerId, kubernetesClusterName, containerName, scanType)
-		if err != nil {
-			log.Error(err.Error())
-		}
-	}()
-	return xfer.Response{CVEInfo: "Image upload started"}
-}
+// 	if imageNameArg, ok := req.ControlArgs["image_name"]; ok {
+// 		imageName = imageNameArg
+// 	}
+// 	if containerNameArg, ok := req.ControlArgs["container_name"]; ok {
+// 		containerName = containerNameArg
+// 	}
+// 	if kubernetesClusterNameArg, ok := req.ControlArgs["kubernetes_cluster_name"]; ok {
+// 		kubernetesClusterName = kubernetesClusterNameArg
+// 	}
+// 	if imageIdArg, ok := req.ControlArgs["image_id"]; ok {
+// 		imageId = imageIdArg
+// 	}
+// 	if containerIdArg, ok := req.ControlArgs["container_id"]; ok {
+// 		containerId = containerIdArg
+// 	}
+// 	if imageName != "host" && imageId == "" {
+// 		return xfer.ResponseErrorf("image_id is required for container/image vulnerability scan")
+// 	}
+// 	scanType := "all"
+// 	if scanTypeArg, ok := req.ControlArgs["scan_type"]; ok {
+// 		scanType = scanTypeArg
+// 	}
+// 	if scanIdArg, ok := req.ControlArgs["scan_id"]; ok {
+// 		scanId = scanIdArg
+// 	}
+// 	log.Infof("uploading %s tar to console...", imageName)
+// 	// call package scanner plugin
+// 	go func() {
+// 		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, kubernetesClusterName, containerName, scanType)
+// 		if err != nil {
+// 			log.Error(err.Error())
+// 		}
+// 	}()
+// 	return xfer.Response{CVEInfo: "Image upload started"}
+// }
