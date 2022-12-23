@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	db_clean_up_timeout = time.Minute * 5
+	db_clean_up_timeout = time.Minute * 2
 )
 
 func CleanUpDB(ctx context.Context) error {
@@ -29,19 +29,19 @@ func CleanUpDB(ctx context.Context) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("match (n:Node) WHERE n.updated_at < TIMESTAMP()-$time_ms match (n) -[:HOSTS]->(m) detach delete n detach delete m", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run("MATCH (n:Node) WHERE n.updated_at < TIMESTAMP()-$time_ms SET n.unactive=true", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("match (n:Container) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run("MATCH (n:Container) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("match (n:Pod) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run("MATCH (n:Pod) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("match (n:Process) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run("MATCH (n:Process) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
 		return err
 	}
 
