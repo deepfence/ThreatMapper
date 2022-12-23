@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -39,35 +41,27 @@ func getTopologyReporter(ctx context.Context) (reporters.TopologyReporter, error
 	return new_entry, nil
 }
 
-func (h *Handler) GetTopologyGraph(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
 
 	type GraphResult struct {
 		Nodes detailed.NodeSummaries               `json:"nodes"`
 		Edges detailed.TopologyConnectionSummaries `json:"edges"`
 	}
 
-	ctx := r.Context()
+	ctx := req.Context()
 
-	if err := r.ParseForm(); err != nil {
-		respondWith(ctx, w, http.StatusInternalServerError, err)
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
 
-	filters := reporters.TopologyFilters{}
+	var filters reporters.TopologyFilters
+	json.Unmarshal(body, &filters)
 
-	if p := r.PostForm.Get("providers"); p != "" {
-		ps := strings.Split(p, ",")
-		filters.CloudFilter = append(filters.CloudFilter, ps...)
-	}
-
-	if r := r.PostForm.Get("regions"); r != "" {
-		rs := strings.Split(r, ",")
-		filters.RegionFilter = append(filters.RegionFilter, rs...)
-	}
-
-	if h := r.PostForm.Get("hosts"); h != "" {
-		hs := strings.Split(h, ",")
-		filters.HostFilter = append(filters.HostFilter, hs...)
+	if err != nil {
+		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
+		return
 	}
 
 	log.Info().Msgf("filters: %v", filters)
