@@ -7,7 +7,7 @@ Method | HTTP request | Description
 [**IngestCompliances**](ComplianceApi.md#IngestCompliances) | **Post** /deepfence/ingest/compliance | Ingest Compliances
 [**StartComplianceScan**](ComplianceApi.md#StartComplianceScan) | **Post** /deepfence/scan/start/compliance | Start Compliance Scan
 [**StatusComplianceScan**](ComplianceApi.md#StatusComplianceScan) | **Get** /deepfence/scan/status/compliance | Get Compliance Scan Status
-[**StopComplianceScan**](ComplianceApi.md#StopComplianceScan) | **Get** /deepfence/scan/stop/compliance | Stop Compliance Scan
+[**StopComplianceScan**](ComplianceApi.md#StopComplianceScan) | **Post** /deepfence/scan/stop/compliance | Stop Compliance Scan
 
 
 
@@ -143,7 +143,7 @@ Name | Type | Description  | Notes
 
 ## StatusComplianceScan
 
-> ModelScanStatusResp StatusComplianceScan(ctx).Execute()
+> ModelScanStatusResp StatusComplianceScan(ctx).ScanId(scanId).Execute()
 
 Get Compliance Scan Status
 
@@ -162,10 +162,11 @@ import (
 )
 
 func main() {
+    scanId := "scanId_example" // string | 
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.ComplianceApi.StatusComplianceScan(context.Background()).Execute()
+    resp, r, err := apiClient.ComplianceApi.StatusComplianceScan(context.Background()).ScanId(scanId).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.StatusComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -177,12 +178,16 @@ func main() {
 
 ### Path Parameters
 
-This endpoint does not need any parameter.
+
 
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiStatusComplianceScanRequest struct via the builder pattern
 
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **scanId** | **string** |  | 
 
 ### Return type
 
@@ -204,7 +209,7 @@ Other parameters are passed through a pointer to a apiStatusComplianceScanReques
 
 ## StopComplianceScan
 
-> StopComplianceScan(ctx).Execute()
+> StopComplianceScan(ctx).ModelScanTriggerReq(modelScanTriggerReq).Execute()
 
 Stop Compliance Scan
 
@@ -223,10 +228,11 @@ import (
 )
 
 func main() {
+    modelScanTriggerReq := *openapiclient.NewModelScanTriggerReq("NodeId_example", "ResourceId_example", "ResourceType_example") // ModelScanTriggerReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.ComplianceApi.StopComplianceScan(context.Background()).Execute()
+    resp, r, err := apiClient.ComplianceApi.StopComplianceScan(context.Background()).ModelScanTriggerReq(modelScanTriggerReq).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.StopComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -236,12 +242,16 @@ func main() {
 
 ### Path Parameters
 
-This endpoint does not need any parameter.
+
 
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiStopComplianceScanRequest struct via the builder pattern
 
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **modelScanTriggerReq** | [**ModelScanTriggerReq**](ModelScanTriggerReq.md) |  | 
 
 ### Return type
 
@@ -253,7 +263,7 @@ Other parameters are passed through a pointer to a apiStopComplianceScanRequest 
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

@@ -51,6 +51,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -89,6 +95,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -119,6 +131,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -156,6 +174,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -193,6 +217,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -205,7 +235,7 @@ paths:
       tags:
       - Controls
   /deepfence/graph/threat:
-    get:
+    post:
       description: Retrieve the full threat graph associated with the account
       operationId: getThreatGraph
       responses:
@@ -225,6 +255,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -237,9 +273,14 @@ paths:
       tags:
       - Threat
   /deepfence/graph/topology:
-    get:
+    post:
       description: Retrieve the full topology graph associated with the account
       operationId: getTopologyGraph
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersTopologyFilters'
       responses:
         "200":
           content:
@@ -257,6 +298,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -293,6 +340,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -329,6 +382,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -365,6 +424,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -398,6 +463,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -434,6 +505,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -470,6 +547,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -506,6 +589,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -543,6 +632,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -580,6 +675,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -617,6 +718,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -654,6 +761,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -669,13 +782,21 @@ paths:
     get:
       description: Get Compliance Scan Status on agent or registry
       operationId: statusComplianceScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
       responses:
-        "202":
+        "200":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModelScanStatusResp'
-          description: Accepted
+          description: OK
         "400":
           content:
             application/json:
@@ -686,6 +807,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -701,13 +828,21 @@ paths:
     get:
       description: Get Malware Scan status on agent or registry
       operationId: statusMalwareScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
       responses:
-        "202":
+        "200":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModelScanStatusResp'
-          description: Accepted
+          description: OK
         "400":
           content:
             application/json:
@@ -718,6 +853,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -733,13 +874,21 @@ paths:
     get:
       description: Get Secret Scan Status on agent or registry
       operationId: statusSecretScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
       responses:
-        "202":
+        "200":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModelScanStatusResp'
-          description: Accepted
+          description: OK
         "400":
           content:
             application/json:
@@ -750,6 +899,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -765,13 +920,21 @@ paths:
     get:
       description: Get Vulnerability Scan Status on agent or registry
       operationId: statusVulnerabilityScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
       responses:
-        "202":
+        "200":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModelScanStatusResp'
-          description: Accepted
+          description: OK
         "400":
           content:
             application/json:
@@ -782,6 +945,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -794,9 +963,14 @@ paths:
       tags:
       - Vulnerability
   /deepfence/scan/stop/compliance:
-    get:
+    post:
       description: Stop Compliance Scan on agent or registry
       operationId: stopComplianceScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
         "202":
           description: Accepted
@@ -810,6 +984,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -822,9 +1002,14 @@ paths:
       tags:
       - Compliance
   /deepfence/scan/stop/malware:
-    get:
+    post:
       description: Stop Malware Scan on agent or registry
       operationId: stopMalwareScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
         "202":
           description: Accepted
@@ -838,6 +1023,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -850,9 +1041,14 @@ paths:
       tags:
       - Malware Scan
   /deepfence/scan/stop/secret:
-    get:
+    post:
       description: Stop Secret Scan on agent or registry
       operationId: stopSecretScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
         "202":
           description: Accepted
@@ -866,6 +1062,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -878,9 +1080,14 @@ paths:
       tags:
       - Secret Scan
   /deepfence/scan/stop/vulnerability:
-    get:
+    post:
       description: Stop Vulnerability Scan on agent or registry
       operationId: stopVulnerabilityScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
         "202":
           description: Accepted
@@ -894,6 +1101,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -922,6 +1135,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -953,6 +1172,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -989,6 +1214,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -1026,6 +1257,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -1052,6 +1289,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -1089,6 +1332,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -1110,6 +1359,7 @@ components:
         message:
           type: string
         success:
+          example: false
           type: boolean
       type: object
     ApiDocsFailureResponse:
@@ -1117,6 +1367,7 @@ components:
         message:
           type: string
         success:
+          example: false
           type: boolean
       type: object
     ControlsAction:
@@ -1913,6 +2164,34 @@ components:
           type: integer
         vulnerability_count:
           type: integer
+      type: object
+    ReportersTopologyFilters:
+      example:
+        host_filter:
+        - host_filter
+        - host_filter
+        cloud_filter:
+        - cloud_filter
+        - cloud_filter
+        region_filter:
+        - region_filter
+        - region_filter
+      properties:
+        cloud_filter:
+          items:
+            type: string
+          nullable: true
+          type: array
+        host_filter:
+          items:
+            type: string
+          nullable: true
+          type: array
+        region_filter:
+          items:
+            type: string
+          nullable: true
+          type: array
       type: object
     IngestersSecret_Match:
       example:

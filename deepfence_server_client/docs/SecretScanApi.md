@@ -8,7 +8,7 @@ Method | HTTP request | Description
 [**IngestSecrets**](SecretScanApi.md#IngestSecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
 [**StartSecretScan**](SecretScanApi.md#StartSecretScan) | **Post** /deepfence/scan/start/secret | Start Secret Scan
 [**StatusSecretScan**](SecretScanApi.md#StatusSecretScan) | **Get** /deepfence/scan/status/secret | Get Secret Scan Status
-[**StopSecretScan**](SecretScanApi.md#StopSecretScan) | **Get** /deepfence/scan/stop/secret | Stop Secret Scan
+[**StopSecretScan**](SecretScanApi.md#StopSecretScan) | **Post** /deepfence/scan/stop/secret | Stop Secret Scan
 
 
 
@@ -208,7 +208,7 @@ Name | Type | Description  | Notes
 
 ## StatusSecretScan
 
-> ModelScanStatusResp StatusSecretScan(ctx).Execute()
+> ModelScanStatusResp StatusSecretScan(ctx).ScanId(scanId).Execute()
 
 Get Secret Scan Status
 
@@ -227,10 +227,11 @@ import (
 )
 
 func main() {
+    scanId := "scanId_example" // string | 
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.SecretScanApi.StatusSecretScan(context.Background()).Execute()
+    resp, r, err := apiClient.SecretScanApi.StatusSecretScan(context.Background()).ScanId(scanId).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.StatusSecretScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -242,12 +243,16 @@ func main() {
 
 ### Path Parameters
 
-This endpoint does not need any parameter.
+
 
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiStatusSecretScanRequest struct via the builder pattern
 
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **scanId** | **string** |  | 
 
 ### Return type
 
@@ -269,7 +274,7 @@ Other parameters are passed through a pointer to a apiStatusSecretScanRequest st
 
 ## StopSecretScan
 
-> StopSecretScan(ctx).Execute()
+> StopSecretScan(ctx).ModelScanTriggerReq(modelScanTriggerReq).Execute()
 
 Stop Secret Scan
 
@@ -288,10 +293,11 @@ import (
 )
 
 func main() {
+    modelScanTriggerReq := *openapiclient.NewModelScanTriggerReq("NodeId_example", "ResourceId_example", "ResourceType_example") // ModelScanTriggerReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.SecretScanApi.StopSecretScan(context.Background()).Execute()
+    resp, r, err := apiClient.SecretScanApi.StopSecretScan(context.Background()).ModelScanTriggerReq(modelScanTriggerReq).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.StopSecretScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -301,12 +307,16 @@ func main() {
 
 ### Path Parameters
 
-This endpoint does not need any parameter.
+
 
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiStopSecretScanRequest struct via the builder pattern
 
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **modelScanTriggerReq** | [**ModelScanTriggerReq**](ModelScanTriggerReq.md) |  | 
 
 ### Return type
 
@@ -318,7 +328,7 @@ Other parameters are passed through a pointer to a apiStopSecretScanRequest stru
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

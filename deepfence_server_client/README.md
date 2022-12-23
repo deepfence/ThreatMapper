@@ -88,19 +88,19 @@ Class | Method | HTTP request | Description
 *ComplianceApi* | [**IngestCompliances**](docs/ComplianceApi.md#ingestcompliances) | **Post** /deepfence/ingest/compliance | Ingest Compliances
 *ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Post** /deepfence/scan/start/compliance | Start Compliance Scan
 *ComplianceApi* | [**StatusComplianceScan**](docs/ComplianceApi.md#statuscompliancescan) | **Get** /deepfence/scan/status/compliance | Get Compliance Scan Status
-*ComplianceApi* | [**StopComplianceScan**](docs/ComplianceApi.md#stopcompliancescan) | **Get** /deepfence/scan/stop/compliance | Stop Compliance Scan
+*ComplianceApi* | [**StopComplianceScan**](docs/ComplianceApi.md#stopcompliancescan) | **Post** /deepfence/scan/stop/compliance | Stop Compliance Scan
 *ControlsApi* | [**GetAgentControls**](docs/ControlsApi.md#getagentcontrols) | **Post** /deepfence/controls/agent | Fetch Agent Actions
 *ControlsApi* | [**GetAgentInitControls**](docs/ControlsApi.md#getagentinitcontrols) | **Post** /deepfence/controls/agent-init | Fetch Agent Init Actions
 *MalwareScanApi* | [**StartMalwareScan**](docs/MalwareScanApi.md#startmalwarescan) | **Post** /deepfence/scan/start/malware | Start Malware Scan
 *MalwareScanApi* | [**StatusMalwareScan**](docs/MalwareScanApi.md#statusmalwarescan) | **Get** /deepfence/scan/status/malware | Get Malware Scan Status
-*MalwareScanApi* | [**StopMalwareScan**](docs/MalwareScanApi.md#stopmalwarescan) | **Get** /deepfence/scan/stop/malware | Stop Malware Scan
+*MalwareScanApi* | [**StopMalwareScan**](docs/MalwareScanApi.md#stopmalwarescan) | **Post** /deepfence/scan/stop/malware | Stop Malware Scan
 *SecretScanApi* | [**IngestSecretScanStatus**](docs/SecretScanApi.md#ingestsecretscanstatus) | **Post** /deepfence/ingest/secret-scan-logs | Ingest Secrets Scan Status
 *SecretScanApi* | [**IngestSecrets**](docs/SecretScanApi.md#ingestsecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
 *SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan) | **Post** /deepfence/scan/start/secret | Start Secret Scan
 *SecretScanApi* | [**StatusSecretScan**](docs/SecretScanApi.md#statussecretscan) | **Get** /deepfence/scan/status/secret | Get Secret Scan Status
-*SecretScanApi* | [**StopSecretScan**](docs/SecretScanApi.md#stopsecretscan) | **Get** /deepfence/scan/stop/secret | Stop Secret Scan
-*ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Get** /deepfence/graph/threat | Get Threat Graph
-*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Get** /deepfence/graph/topology | Get Topology Graph
+*SecretScanApi* | [**StopSecretScan**](docs/SecretScanApi.md#stopsecretscan) | **Post** /deepfence/scan/stop/secret | Stop Secret Scan
+*ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Post** /deepfence/graph/threat | Get Threat Graph
+*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Post** /deepfence/graph/topology | Get Topology Graph
 *TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/ingest/report | Ingest Topology Data
 *UserApi* | [**DeleteCurrentUser**](docs/UserApi.md#deletecurrentuser) | **Delete** /deepfence/user | Delete Current User
 *UserApi* | [**GetApiTokens**](docs/UserApi.md#getapitokens) | **Get** /deepfence/api-token | Get User&#39;s API Tokens
@@ -110,7 +110,7 @@ Class | Method | HTTP request | Description
 *VulnerabilityApi* | [**IngestVulnerabilities**](docs/VulnerabilityApi.md#ingestvulnerabilities) | **Post** /deepfence/ingest/vulnerabilities | Ingest Vulnerabilities
 *VulnerabilityApi* | [**StartVulnerabilityScan**](docs/VulnerabilityApi.md#startvulnerabilityscan) | **Post** /deepfence/scan/start/vulnerability | Start Vulnerability Scan
 *VulnerabilityApi* | [**StatusVulnerabilityScan**](docs/VulnerabilityApi.md#statusvulnerabilityscan) | **Get** /deepfence/scan/status/vulnerability | Get Vulnerability Scan Status
-*VulnerabilityApi* | [**StopVulnerabilityScan**](docs/VulnerabilityApi.md#stopvulnerabilityscan) | **Get** /deepfence/scan/stop/vulnerability | Stop Vulnerability Scan
+*VulnerabilityApi* | [**StopVulnerabilityScan**](docs/VulnerabilityApi.md#stopvulnerabilityscan) | **Post** /deepfence/scan/stop/vulnerability | Stop Vulnerability Scan
 
 
 ## Documentation For Models
@@ -144,6 +144,7 @@ Class | Method | HTTP request | Description
  - [ReportersProviderThreatGraph](docs/ReportersProviderThreatGraph.md)
  - [ReportersRenderedGraph](docs/ReportersRenderedGraph.md)
  - [ReportersThreatNodeInfo](docs/ReportersThreatNodeInfo.md)
+ - [ReportersTopologyFilters](docs/ReportersTopologyFilters.md)
 
 
 ## Documentation For Authorization

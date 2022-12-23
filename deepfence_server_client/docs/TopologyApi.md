@@ -4,14 +4,14 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**GetTopologyGraph**](TopologyApi.md#GetTopologyGraph) | **Get** /deepfence/graph/topology | Get Topology Graph
+[**GetTopologyGraph**](TopologyApi.md#GetTopologyGraph) | **Post** /deepfence/graph/topology | Get Topology Graph
 [**IngestAgentReport**](TopologyApi.md#IngestAgentReport) | **Post** /deepfence/ingest/report | Ingest Topology Data
 
 
 
 ## GetTopologyGraph
 
-> ReportersRenderedGraph GetTopologyGraph(ctx).Execute()
+> ReportersRenderedGraph GetTopologyGraph(ctx).ReportersTopologyFilters(reportersTopologyFilters).Execute()
 
 Get Topology Graph
 
@@ -30,10 +30,11 @@ import (
 )
 
 func main() {
+    reportersTopologyFilters := *openapiclient.NewReportersTopologyFilters() // ReportersTopologyFilters |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TopologyApi.GetTopologyGraph(context.Background()).Execute()
+    resp, r, err := apiClient.TopologyApi.GetTopologyGraph(context.Background()).ReportersTopologyFilters(reportersTopologyFilters).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `TopologyApi.GetTopologyGraph``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -45,12 +46,16 @@ func main() {
 
 ### Path Parameters
 
-This endpoint does not need any parameter.
+
 
 ### Other Parameters
 
 Other parameters are passed through a pointer to a apiGetTopologyGraphRequest struct via the builder pattern
 
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **reportersTopologyFilters** | [**ReportersTopologyFilters**](ReportersTopologyFilters.md) |  | 
 
 ### Return type
 
@@ -62,7 +67,7 @@ Other parameters are passed through a pointer to a apiGetTopologyGraphRequest st
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

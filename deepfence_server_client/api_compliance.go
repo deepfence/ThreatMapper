@@ -124,6 +124,17 @@ func (a *ComplianceApiService) IngestCompliancesExecute(r ApiIngestCompliancesRe
 					newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
 		if localVarHTTPResponse.StatusCode == 500 {
 			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
@@ -243,6 +254,17 @@ func (a *ComplianceApiService) StartComplianceScanExecute(r ApiStartComplianceSc
 					newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
 		if localVarHTTPResponse.StatusCode == 500 {
 			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
@@ -271,6 +293,12 @@ func (a *ComplianceApiService) StartComplianceScanExecute(r ApiStartComplianceSc
 type ApiStatusComplianceScanRequest struct {
 	ctx context.Context
 	ApiService *ComplianceApiService
+	scanId *string
+}
+
+func (r ApiStatusComplianceScanRequest) ScanId(scanId string) ApiStatusComplianceScanRequest {
+	r.scanId = &scanId
+	return r
 }
 
 func (r ApiStatusComplianceScanRequest) Execute() (*ModelScanStatusResp, *http.Response, error) {
@@ -312,7 +340,11 @@ func (a *ComplianceApiService) StatusComplianceScanExecute(r ApiStatusCompliance
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
+	if r.scanId == nil {
+		return localVarReturnValue, nil, reportError("scanId is required and must be specified")
+	}
 
+	parameterAddToQuery(localVarQueryParams, "scan_id", r.scanId, "")
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -363,6 +395,17 @@ func (a *ComplianceApiService) StatusComplianceScanExecute(r ApiStatusCompliance
 					newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
 		if localVarHTTPResponse.StatusCode == 500 {
 			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
@@ -391,6 +434,12 @@ func (a *ComplianceApiService) StatusComplianceScanExecute(r ApiStatusCompliance
 type ApiStopComplianceScanRequest struct {
 	ctx context.Context
 	ApiService *ComplianceApiService
+	modelScanTriggerReq *ModelScanTriggerReq
+}
+
+func (r ApiStopComplianceScanRequest) ModelScanTriggerReq(modelScanTriggerReq ModelScanTriggerReq) ApiStopComplianceScanRequest {
+	r.modelScanTriggerReq = &modelScanTriggerReq
+	return r
 }
 
 func (r ApiStopComplianceScanRequest) Execute() (*http.Response, error) {
@@ -415,7 +464,7 @@ func (a *ComplianceApiService) StopComplianceScan(ctx context.Context) ApiStopCo
 // Execute executes the request
 func (a *ComplianceApiService) StopComplianceScanExecute(r ApiStopComplianceScanRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
 	)
@@ -432,7 +481,7 @@ func (a *ComplianceApiService) StopComplianceScanExecute(r ApiStopComplianceScan
 	localVarFormParams := url.Values{}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -448,6 +497,8 @@ func (a *ComplianceApiService) StopComplianceScanExecute(r ApiStopComplianceScan
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.modelScanTriggerReq
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -472,6 +523,17 @@ func (a *ComplianceApiService) StopComplianceScanExecute(r ApiStopComplianceScan
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
 			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

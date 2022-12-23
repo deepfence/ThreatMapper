@@ -26,6 +26,12 @@ type TopologyApiService service
 type ApiGetTopologyGraphRequest struct {
 	ctx context.Context
 	ApiService *TopologyApiService
+	reportersTopologyFilters *ReportersTopologyFilters
+}
+
+func (r ApiGetTopologyGraphRequest) ReportersTopologyFilters(reportersTopologyFilters ReportersTopologyFilters) ApiGetTopologyGraphRequest {
+	r.reportersTopologyFilters = &reportersTopologyFilters
+	return r
 }
 
 func (r ApiGetTopologyGraphRequest) Execute() (*ReportersRenderedGraph, *http.Response, error) {
@@ -51,7 +57,7 @@ func (a *TopologyApiService) GetTopologyGraph(ctx context.Context) ApiGetTopolog
 //  @return ReportersRenderedGraph
 func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphRequest) (*ReportersRenderedGraph, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
 		localVarReturnValue  *ReportersRenderedGraph
@@ -69,7 +75,7 @@ func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphReques
 	localVarFormParams := url.Values{}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -85,6 +91,8 @@ func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphReques
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.reportersTopologyFilters
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -109,6 +117,17 @@ func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphReques
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
 			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -235,6 +254,17 @@ func (a *TopologyApiService) IngestAgentReportExecute(r ApiIngestAgentReportRequ
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
 			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**GetThreatGraph**](ThreatApi.md#GetThreatGraph) | **Get** /deepfence/graph/threat | Get Threat Graph
+[**GetThreatGraph**](ThreatApi.md#GetThreatGraph) | **Post** /deepfence/graph/threat | Get Threat Graph
 
 
 

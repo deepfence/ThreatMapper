@@ -51,7 +51,7 @@ func (a *ThreatApiService) GetThreatGraph(ctx context.Context) ApiGetThreatGraph
 //  @return map[string]ReportersProviderThreatGraph
 func (a *ThreatApiService) GetThreatGraphExecute(r ApiGetThreatGraphRequest) (*map[string]ReportersProviderThreatGraph, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
 		localVarReturnValue  *map[string]ReportersProviderThreatGraph
@@ -109,6 +109,17 @@ func (a *ThreatApiService) GetThreatGraphExecute(r ApiGetThreatGraphRequest) (*m
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
 			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

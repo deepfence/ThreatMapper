@@ -50,6 +50,7 @@ docs/ReportersNodeInfo.md
 docs/ReportersProviderThreatGraph.md
 docs/ReportersRenderedGraph.md
 docs/ReportersThreatNodeInfo.md
+docs/ReportersTopologyFilters.md
 docs/SecretScanApi.md
 docs/ThreatApi.md
 docs/TopologyApi.md
@@ -87,5 +88,6 @@ model_reporters_node_info.go
 model_reporters_provider_threat_graph.go
 model_reporters_rendered_graph.go
 model_reporters_threat_node_info.go
+model_reporters_topology_filters.go
 response.go
 utils.go

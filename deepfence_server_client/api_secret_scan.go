@@ -124,6 +124,17 @@ func (a *SecretScanApiService) IngestSecretScanStatusExecute(r ApiIngestSecretSc
 					newErr.model = v
 			return localVarHTTPResponse, newErr
 		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
 		if localVarHTTPResponse.StatusCode == 500 {
 			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
@@ -232,6 +243,17 @@ func (a *SecretScanApiService) IngestSecretsExecute(r ApiIngestSecretsRequest) (
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
 			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -360,6 +382,17 @@ func (a *SecretScanApiService) StartSecretScanExecute(r ApiStartSecretScanReques
 					newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
 		if localVarHTTPResponse.StatusCode == 500 {
 			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
@@ -388,6 +421,12 @@ func (a *SecretScanApiService) StartSecretScanExecute(r ApiStartSecretScanReques
 type ApiStatusSecretScanRequest struct {
 	ctx context.Context
 	ApiService *SecretScanApiService
+	scanId *string
+}
+
+func (r ApiStatusSecretScanRequest) ScanId(scanId string) ApiStatusSecretScanRequest {
+	r.scanId = &scanId
+	return r
 }
 
 func (r ApiStatusSecretScanRequest) Execute() (*ModelScanStatusResp, *http.Response, error) {
@@ -429,7 +468,11 @@ func (a *SecretScanApiService) StatusSecretScanExecute(r ApiStatusSecretScanRequ
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
+	if r.scanId == nil {
+		return localVarReturnValue, nil, reportError("scanId is required and must be specified")
+	}
 
+	parameterAddToQuery(localVarQueryParams, "scan_id", r.scanId, "")
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -480,6 +523,17 @@ func (a *SecretScanApiService) StatusSecretScanExecute(r ApiStatusSecretScanRequ
 					newErr.model = v
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
 		if localVarHTTPResponse.StatusCode == 500 {
 			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
@@ -508,6 +562,12 @@ func (a *SecretScanApiService) StatusSecretScanExecute(r ApiStatusSecretScanRequ
 type ApiStopSecretScanRequest struct {
 	ctx context.Context
 	ApiService *SecretScanApiService
+	modelScanTriggerReq *ModelScanTriggerReq
+}
+
+func (r ApiStopSecretScanRequest) ModelScanTriggerReq(modelScanTriggerReq ModelScanTriggerReq) ApiStopSecretScanRequest {
+	r.modelScanTriggerReq = &modelScanTriggerReq
+	return r
 }
 
 func (r ApiStopSecretScanRequest) Execute() (*http.Response, error) {
@@ -532,7 +592,7 @@ func (a *SecretScanApiService) StopSecretScan(ctx context.Context) ApiStopSecret
 // Execute executes the request
 func (a *SecretScanApiService) StopSecretScanExecute(r ApiStopSecretScanRequest) (*http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
 	)
@@ -549,7 +609,7 @@ func (a *SecretScanApiService) StopSecretScanExecute(r ApiStopSecretScanRequest)
 	localVarFormParams := url.Values{}
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -565,6 +625,8 @@ func (a *SecretScanApiService) StopSecretScanExecute(r ApiStopSecretScanRequest)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.modelScanTriggerReq
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -589,6 +651,17 @@ func (a *SecretScanApiService) StopSecretScanExecute(r ApiStopSecretScanRequest)
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
 			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
