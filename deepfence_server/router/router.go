@@ -20,12 +20,13 @@ import (
 const (
 	// API RBAC permissions
 
-	PermissionRead   = "read"
-	PermissionWrite  = "write"
-	PermissionDelete = "delete"
-	PermissionIngest = "ingest"
-	PermissionStart  = "start"
-	PermissionStop   = "stop"
+	PermissionRead     = "read"
+	PermissionWrite    = "write"
+	PermissionDelete   = "delete"
+	PermissionIngest   = "ingest"
+	PermissionStart    = "start"
+	PermissionStop     = "stop"
+	PermissionGenerate = "generate"
 
 	//	API RBAC Resources
 
@@ -35,6 +36,7 @@ const (
 	ResourceCloudReport = "cloud-report"
 	ResourceScanReport  = "scan-report"
 	ResourceScan        = "scan"
+	ResourceDiagnosis   = "diagnosis"
 )
 
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool, ingestC chan *kgo.Record) (*handler.Handler, error) {
@@ -166,6 +168,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Get("/malware", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StatusMalwareScanHandler))
 			})
 
+			openApiDocs.AddDiagnosisOperations()
+			r.Route("/diagnosis", func(r chi.Router) {
+				r.Get("/notification", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.DiagnosticNotification))
+				r.Post("/console-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateConsoleDiagnosticLogs))
+				r.Get("/console-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.ConsoleDiagnosticLogs))
+				r.Post("/agent-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateAgentDiagnosticLogs))
+				r.Get("/agent-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetAgentDiagnosticLogs))
+			})
 		})
 	})
 	return dfHandler, nil

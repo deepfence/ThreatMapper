@@ -27,3 +27,8 @@ p, standard-user, agent-report, ingest
 
 p, admin, cloud-report, ingest
 p, standard-user, cloud-report, ingest
+
+p, admin, diagnosis, generate
+p, standard-user, diagnosis, generate
+p, admin, diagnosis, read
+p, standard-user, diagnosis, read

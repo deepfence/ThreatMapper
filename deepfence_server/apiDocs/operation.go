@@ -1,6 +1,7 @@
 package apiDocs
 
 import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"net/http"
 
 	ingester "github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
@@ -137,4 +138,22 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
+}
+
+func (d *OpenApiDocs) AddDiagnosisOperations() {
+	d.AddOperation("diagnosticNotification", http.MethodGet, "/deepfence/diagnosis/notification",
+		"Get Diagnostic Notification", "Get Diagnostic Notification",
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, model.Response{Success: true, Data: []diagnosis.DiagnosticNotification{}})
+	d.AddOperation("generateConsoleDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/console-logs",
+		"Generate Console Diagnostic Logs", "Generate Console Diagnostic Logs",
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, nil, nil)
+	d.AddNonJsonOperation("consoleDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/console-logs",
+		"Console Diagnostic Logs", "Get Console Diagnostic Logs",
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, "application/tgz")
+	d.AddOperation("generateAgentDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/agent-logs",
+		"Generate Agent Diagnostic Logs", "Generate Agent Diagnostic Logs",
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, nil, nil)
+	d.AddNonJsonOperation("agentDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/agent-logs",
+		"Agent Diagnostic Logs", "Get Agent Diagnostic Logs",
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, "application/tgz")
 }
