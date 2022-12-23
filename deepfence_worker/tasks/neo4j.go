@@ -2,8 +2,6 @@ package tasks
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -12,32 +10,33 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-const (
-	CleanUpGraphDBTaskID = "CleanUpGraphDB"
-)
-
-type CleanUpGraphDBContext struct {
-	Namespace directory.NamespaceID `json:"namespace"`
-}
-
-func NewCleanUpGraphDBTask(ns directory.NamespaceID) (*asynq.Task, error) {
-	payload, err := json.Marshal(CleanUpGraphDBContext{Namespace: ns})
-	if err != nil {
-		return nil, err
-	}
-	return asynq.NewTask(CleanUpGraphDBTaskID, payload, asynq.Unique(time.Minute*30)), nil
-}
-
 func HandleCleanUpGraphDBTask(_ context.Context, t *asynq.Task) error {
-	var p CleanUpGraphDBContext
-	if err := json.Unmarshal(t.Payload(), &p); err != nil {
-		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
-	}
-	start := time.Now()
-	err := cronjobs.CleanUpDB(directory.NewContextWithNameSpace(p.Namespace))
-	log.Info().Msgf("DB clean: %v", time.Since(start))
+	ctx, err := directory.PayloadToContext(t.Payload())
 	if err != nil {
-		log.Error().Msgf("clean neo4j err: %v", err)
+		return err
 	}
+
+	start := time.Now()
+	err = cronjobs.CleanUpDB(ctx)
+	log.Info().Msgf("DB clean: %v", time.Since(start))
+
+	if err != nil {
+		log.Error().Msgf("Clean neo4j err: %v", err)
+	}
+	return err
+}
+
+func HandlScanRetryTask(_ context.Context, t *asynq.Task) error {
+	ctx, err := directory.PayloadToContext(t.Payload())
+	if err != nil {
+		return err
+	}
+
+	err = cronjobs.RetryScansDB(ctx)
+
+	if err != nil {
+		log.Error().Msgf("Retry scan in Neo4j err: %v", err)
+	}
+
 	return err
 }

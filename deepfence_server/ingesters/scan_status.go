@@ -64,7 +64,7 @@ func AddNewScan(ctx context.Context, scan_type utils.Neo4jScanType, scan_id stri
 		return err
 	}
 
-	if _, err = tx.Run(fmt.Sprintf("MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, trigger_action: $action}) MERGE (m:Node{node_id:$node_id}) MERGE (n)-[:SCANNED]->(m)", scan_type),
+	if _, err = tx.Run(fmt.Sprintf("MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()}) MERGE (m:Node{node_id:$node_id}) MERGE (n)-[:SCANNED]->(m)", scan_type),
 		map[string]interface{}{"scan_id": scan_id, "status": utils.SCAN_STATUS_STARTING, "node_id": node_id, "action": string(b)}); err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, sta
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run(fmt.Sprintf("MERGE (n:%s{node_id: $scan_id}) SET n.status = $status", scan_type),
+	if _, err = tx.Run(fmt.Sprintf("MERGE (n:%s{node_id: $scan_id}) SET n.status = $status, updated_at = TIMESTAMP()", scan_type),
 		map[string]interface{}{"scan_id": scan_id, "status": status}); err != nil {
 		return err
 	}

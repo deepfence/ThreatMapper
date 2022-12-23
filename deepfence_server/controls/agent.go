@@ -40,7 +40,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string) ([]controls.Action
 	}
 	defer tx.Close()
 
-	r, err := tx.Run(`MATCH (s) -[:SCANNED]-> (n:Node{node_id:$id}) WHERE NOT (s.status = '`+utils.SCAN_STATUS_SUCCESS+`') AND s.retries < 3 SET s.retries = s.retries + 1 WITH s RETURN s.trigger_action`, map[string]interface{}{"id": nodeId})
+	r, err := tx.Run(`MATCH (s) -[:SCANNED]-> (n:Node{node_id:$id}) WHERE s.status = '`+utils.SCAN_STATUS_INPROGRESS+`' AND s.retries < 3 SET s.retries = s.retries + 1 WITH s RETURN s.trigger_action`, map[string]interface{}{"id": nodeId})
 
 	if err != nil {
 		return res, err

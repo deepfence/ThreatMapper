@@ -103,7 +103,7 @@ func CommitFuncSecretScanStatus(ns string, data []SecretScanStatus) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:SecretScan{node_id: row.scan_id}) SET n.status = row.scan_status",
+	if _, err = tx.Run("UNWIND $batch as row MERGE (n:SecretScan{node_id: row.scan_id}) SET n.status = row.scan_status, n.updated_at = TIMESTAMP()",
 		map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 		return err
 	}

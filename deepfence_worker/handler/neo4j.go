@@ -10,3 +10,7 @@ import (
 func CleanUpGraphDB(ctx context.Context, t *asynq.Task) error {
 	return tasks.HandleCleanUpGraphDBTask(ctx, t)
 }
+
+func RetryScansGraphDB(ctx context.Context, t *asynq.Task) error {
+	return tasks.HandlScanRetryTask(ctx, t)
+}

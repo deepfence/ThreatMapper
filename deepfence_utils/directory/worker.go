@@ -2,7 +2,10 @@ package directory
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/hibiken/asynq"
 )
@@ -10,6 +13,33 @@ import (
 const (
 	max_size = 500 * 1024 * 1024 // 500 MB
 )
+
+type TaskID string
+
+const (
+	CleanUpGraphDBTaskID   TaskID = "CleanUpGraphDB"
+	ScanRetryGraphDBTaskID TaskID = "ScanRetryGraphDB"
+)
+
+type GraphDBContext struct {
+	Namespace NamespaceID `json:"namespace"`
+}
+
+func PayloadToContext(b []byte) (context.Context, error) {
+	var p GraphDBContext
+	if err := json.Unmarshal(b, &p); err != nil {
+		return nil, fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
+	}
+	return NewContextWithNameSpace(p.Namespace), nil
+}
+
+func newUniquePeriodicGraphDBTask(id TaskID, ns NamespaceID) (*asynq.Task, error) {
+	payload, err := json.Marshal(GraphDBContext{Namespace: ns})
+	if err != nil {
+		return nil, err
+	}
+	return asynq.NewTask(string(id), payload, asynq.Unique(time.Minute*30)), nil
+}
 
 var ErrExhaustedResources = errors.New("Exhausted worker resources")
 
@@ -71,7 +101,12 @@ func WorkerEnqueue(ctx context.Context, task *asynq.Task) error {
 	return nil
 }
 
-func PeriodicWorkerEnqueue(ctx context.Context, task *asynq.Task, cronEntry string) error {
+func PeriodicWorkerEnqueue(ctx context.Context, taskid TaskID, cronEntry string) error {
+
+	ns, err := ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
 
 	clients, err := getClient(ctx, worker_clients_pool, new_asynq_client)
 	if err != nil {
@@ -79,6 +114,11 @@ func PeriodicWorkerEnqueue(ctx context.Context, task *asynq.Task, cronEntry stri
 	}
 
 	scheduler := clients.scheduler
+
+	task, err := newUniquePeriodicGraphDBTask(taskid, ns)
+	if err != nil {
+		return err
+	}
 
 	scheduler.Register(cronEntry, task)
 
