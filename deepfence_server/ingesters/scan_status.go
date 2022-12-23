@@ -41,7 +41,7 @@ func AddNewScan(ctx context.Context, scan_type utils.Neo4jScanType, scan_id stri
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(fmt.Sprintf("OPTIONAL MATCH (n:%s)-[:SCANNED]->(:Node{node_id:$node_id}) WHERE NOT n.status = 'COMPLETE' return n.node_id", scan_type), map[string]interface{}{"node_id": node_id})
+	res, err := tx.Run(fmt.Sprintf("OPTIONAL MATCH (n:%s)-[:SCANNED]->(:Node{node_id:$node_id}) WHERE NOT n.status = $complete AND NOT n.status = $failed return n.node_id", scan_type), map[string]interface{}{"node_id": node_id, "complete": utils.SCAN_STATUS_SUCCESS, "failed": utils.SCAN_STATUS_FAILED})
 	if err != nil {
 		return err
 	}
