@@ -29,9 +29,29 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	scanId := scanId(req)
 
+	binArgs := map[string]string{
+		"scan_id":   scanId,
+		"hostname":  req.NodeId,
+		"node_type": req.ResourceType,
+		"node_id":   req.ResourceId,
+	}
+
+	internal_req := ctl.StartSecretScanRequest{
+		ResourceId:   req.ResourceId,
+		ResourceType: ctl.StringToResourceType(req.ResourceType),
+		BinArgs:      binArgs,
+		Hostname:     req.NodeId,
+	}
+
+	b, err := json.Marshal(internal_req)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		return
+	}
+
 	action := ctl.Action{
 		ID:             ctl.StartVulnerabilityScan,
-		RequestPayload: "",
+		RequestPayload: string(b),
 	}
 
 	startScan(w, r, utils.NEO4J_VULNERABILITY_SCAN, scanId, req.NodeId, action)

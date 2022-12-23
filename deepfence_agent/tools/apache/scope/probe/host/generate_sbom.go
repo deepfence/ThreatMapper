@@ -39,6 +39,7 @@ type vulnScanParameters struct {
 
 func init() {
 	os.MkdirAll(filepath.Dir(vulnerabilityScanFile), 0755)
+	os.MkdirAll(filepath.Dir(vulnerabilityScanStatusFile), 0755)
 	var err error
 	scanConcurrency, err = strconv.Atoi(os.Getenv("VULNERABILITY_SCAN_CONCURRENCY"))
 	if err != nil {
@@ -148,7 +149,7 @@ func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 	if err != nil {
 		return err
 	}
-	go grpcScanWorkerPool.Process(vulnScanParameters{
+	go grpcVulnScanWorkerPool.Process(vulnScanParameters{
 		client:      packageScannerClient,
 		req:         sbomRequest,
 		controlArgs: req.BinArgs,
@@ -189,7 +190,7 @@ func getAndPublishVulnerabilityScanResults(client pb.PackageScannerClient, req *
 		return
 	}
 
-	err = writeVulnScanDataToFile(string(byteJson), vulnerabilityScanStatusFile)
+	err = writeToFile(string(byteJson), vulnerabilityScanStatusFile)
 	if err != nil {
 		log.Errorf("error in sending data to mark in progress: %s" + err.Error())
 	}
@@ -205,7 +206,7 @@ func getAndPublishVulnerabilityScanResults(client pb.PackageScannerClient, req *
 			log.Errorf("error marshalling json: %s", err)
 			return
 		}
-		writeVulnScanDataToFile(string(byteJson), vulnerabilityScanStatusFile)
+		writeToFile(string(byteJson), vulnerabilityScanStatusFile)
 		return
 	}
 
@@ -220,7 +221,7 @@ func getAndPublishVulnerabilityScanResults(client pb.PackageScannerClient, req *
 			log.Errorf("error marshalling json: %s", err)
 			return
 		}
-		writeVulnScanDataToFile(string(byteJson), vulnerabilityScanStatusFile)
+		writeToFile(string(byteJson), vulnerabilityScanStatusFile)
 		return
 	}
 	defer os.Remove(res.GetSbomPath())
@@ -260,10 +261,10 @@ func getAndPublishVulnerabilityScanResults(client pb.PackageScannerClient, req *
 			log.Errorf("error marshalling json: %s", err)
 			return
 		}
-		writeVulnScanDataToFile(string(byteJson), vulnerabilityScanStatusFile)
+		writeToFile(string(byteJson), vulnerabilityScanStatusFile)
 		return
 	}
-	err = writeVulnScanDataToFile(string(byteJson), vulnerabilityScanFile)
+	err = writeToFile(string(byteJson), vulnerabilityScanFile)
 	if err != nil {
 		scanLog["scan_status"] = "ERROR"
 		scanLog["scan_message"] = err.Error()
@@ -274,7 +275,7 @@ func getAndPublishVulnerabilityScanResults(client pb.PackageScannerClient, req *
 			log.Errorf("error marshalling json: %s", err)
 			return
 		}
-		writeVulnScanDataToFile(string(byteJson), vulnerabilityScanStatusFile)
+		writeToFile(string(byteJson), vulnerabilityScanStatusFile)
 		return
 	}
 
@@ -286,14 +287,14 @@ func getAndPublishVulnerabilityScanResults(client pb.PackageScannerClient, req *
 		log.Errorf("error marshalling json: %s", err)
 		return
 	}
-	err = writeVulnScanDataToFile(string(byteJson), vulnerabilityScanStatusFile)
+	err = writeToFile(string(byteJson), vulnerabilityScanStatusFile)
 	if err != nil {
 		log.Errorf("error in sending data %s", err.Error())
 	}
 
 }
 
-func writeVulnScanDataToFile(msg string, filename string) error {
+func writeToFile(msg string, filename string) error {
 	out, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err

@@ -24,9 +24,6 @@ console: ingester vulnerability-mapper redis postgres kafka-broker router server
 
 console_plugins: secretscanner malwarescanner packagescanner
 
-agent: agent
-
-
 #.PHONY: init-container
 #init-container:
 #	docker build -f $(DEEPFENCE_CONSOLE_DIR)/init-container/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_init_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)/init-container

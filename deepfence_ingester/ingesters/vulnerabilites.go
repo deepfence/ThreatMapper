@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -110,10 +109,20 @@ func CommitFuncVulnerabilitiesScanStatus(ns string, data []VulnerabilityScanStat
 	}
 	defer tx.Close()
 
-	// TODO: add query to commit for scan status
-	log.Error().Msg("Not implemented")
+	if _, err = tx.Run("UNWIND $batch as row MERGE (n:VulnerabilityScan{node_id: row.scan_id}) SET n.status = row.scan_status, n.updated_at = TIMESTAMP()",
+		map[string]interface{}{"batch": cveStatusToMaps(data)}); err != nil {
+		return err
+	}
 
 	return tx.Commit()
+}
+
+func cveStatusToMaps(data []VulnerabilityScanStatus) []map[string]interface{} {
+	statuses := []map[string]interface{}{}
+	for _, i := range data {
+		statuses = append(statuses, utils.ToMap(i))
+	}
+	return statuses
 }
 
 func CVEsToMaps(ms []Vulnerability) []map[string]interface{} {
