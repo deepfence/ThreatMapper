@@ -1,19 +1,25 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"github.com/gorilla/schema"
+	"github.com/minio/minio-go/v7"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -202,6 +208,57 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 
 	respWrite.WriteHeader(http.StatusOK)
 	fmt.Fprintf(respWrite, "Ok")
+}
+
+type SbomQueryParameters struct {
+	ImageName             string `schema:"image_name"`
+	ImageId               string `schema:"image_id"`
+	ScanId                string `schema:"scan_id"`
+	KubernetesClusterName string `schema:"kubernetes_cluster_name"`
+	HostName              string `schema:"host_name"`
+	NodeId                string `schema:"node_id"`
+	NodeType              string `schema:"node_type"`
+	ScanType              string `schema:"scan_type"`
+	ContainerName         string `schema:"container_name"`
+}
+
+var decoder = schema.NewDecoder()
+var scanIdReplacer = strings.NewReplacer("/", "_", ":", "_", ".", "_")
+
+func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
+	namespace, err := directory.ExtractNamespace(r.Context())
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.Response{Success: false, Message: err.Error()})
+	}
+	var params SbomQueryParameters
+	err = decoder.Decode(&params, r.URL.Query())
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.Response{Success: false, Message: err.Error()})
+	}
+	sbom, err := io.ReadAll(r.Body)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.Response{Success: false, Message: err.Error()})
+	}
+	mc, err := directory.MinioClient(r.Context())
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.Response{Success: false, Message: err.Error()})
+	}
+	file := "sbom/" + scanIdReplacer.Replace(params.ScanId) + ".json"
+	info, err := mc.PutObject(r.Context(), string(namespace), file,
+		bytes.NewReader(sbom), int64(len(sbom)),
+		minio.PutObjectOptions{ContentType: "application/json"})
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.Response{Success: false, Message: err.Error()})
+	}
+
+	log.Info().Msgf("scan_id: %s, info: %s", params.ScanId, info.Location)
+	httpext.JSON(w, http.StatusOK,
+		model.Response{Success: true, Message: info.Location})
 }
 
 func (h *Handler) IngestVulnerabilityReportHandler(w http.ResponseWriter, r *http.Request) {

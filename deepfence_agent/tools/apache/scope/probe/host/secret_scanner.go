@@ -83,7 +83,7 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 	case ctl.Image:
 		splits := strings.Split(req.ResourceId, ";")
 		if len(splits) != 2 {
-			return errors.New("Image id format is incorrect")
+			return errors.New("image id format is incorrect")
 		}
 		greq = pb.FindRequest{Input: &pb.FindRequest_Image{
 			Image: &pb.DockerImage{Id: splits[0], Name: splits[1]},
