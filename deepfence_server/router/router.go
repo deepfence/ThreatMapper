@@ -167,6 +167,18 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Get("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StatusComplianceScanHandler))
 				r.Get("/malware", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StatusMalwareScanHandler))
 			})
+			r.Route("/scan/list", func(r chi.Router) {
+				r.Get("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.ListVulnerabilityScansHandler))
+				r.Get("/secret", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.ListSecretScansHandler))
+				r.Get("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.ListComplianceScansHandler))
+				r.Get("/malware", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.ListMalwareScansHandler))
+			})
+			r.Route("/scan/results", func(r chi.Router) {
+				r.Get("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.ListVulnerabilityScanResultsHandler))
+				r.Get("/secret", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.ListSecretScanResultsHandler))
+				r.Get("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.ListComplianceScanResultsHandler))
+				r.Get("/malware", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.ListMalwareScanResultsHandler))
+			})
 
 			openApiDocs.AddDiagnosisOperations()
 			r.Route("/diagnosis", func(r chi.Router) {

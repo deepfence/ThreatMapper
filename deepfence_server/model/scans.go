@@ -12,6 +12,12 @@ type ScanTriggerReq struct {
 
 type ScanStatus string
 
+type ScanInfo struct {
+	ScanId    string `json:"scan_id" required:"true"`
+	Status    string `json:"status" required:"true"`
+	UpdatedAt int64  `json:"updated_at" required:"true"`
+}
+
 const (
 	SCAN_STATUS_SUCCESS    = utils.SCAN_STATUS_SUCCESS
 	SCAN_STATUS_STARTING   = utils.SCAN_STATUS_STARTING
@@ -28,4 +34,22 @@ type ScanStatusReq struct {
 
 type ScanStatusResp struct {
 	Status ScanStatus `json:"status" required:"true"`
+}
+
+type ScanListReq struct {
+	NodeId string      `query:"node_id" required:"true" json:"node_id"`
+	Window FetchWindow `json:"window" query:"window" required:"true"`
+}
+
+type ScanListResp struct {
+	ScansInfo []ScanInfo `json:"scans_info" required:"true"`
+}
+
+type ScanResultsReq struct {
+	ScanId string      `query:"scan_id" required:"true" json:"scan_id"`
+	Window FetchWindow `json:"window" query:"window" required:"true"`
+}
+
+type ScanResultsResp struct {
+	Results []map[string]interface{} `json:"results" required:"true"`
 }

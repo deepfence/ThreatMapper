@@ -234,6 +234,186 @@ paths:
       summary: Fetch Agent Init Actions
       tags:
       - Controls
+  /deepfence/diagnosis/agent-logs:
+    get:
+      description: Get Agent Diagnostic Logs
+      operationId: agentDiagnosticLogs
+      responses:
+        "200":
+          content:
+            application/tgz:
+              schema:
+                type: string
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Agent Diagnostic Logs
+      tags:
+      - Diagnosis
+    post:
+      description: Generate Agent Diagnostic Logs
+      operationId: generateAgentDiagnosticLogs
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Generate Agent Diagnostic Logs
+      tags:
+      - Diagnosis
+  /deepfence/diagnosis/console-logs:
+    get:
+      description: Get Console Diagnostic Logs
+      operationId: consoleDiagnosticLogs
+      responses:
+        "200":
+          content:
+            application/tgz:
+              schema:
+                type: string
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Console Diagnostic Logs
+      tags:
+      - Diagnosis
+    post:
+      description: Generate Console Diagnostic Logs
+      operationId: generateConsoleDiagnosticLogs
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Generate Console Diagnostic Logs
+      tags:
+      - Diagnosis
+  /deepfence/diagnosis/notification:
+    get:
+      description: Get Diagnostic Notification
+      operationId: diagnosticNotification
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Diagnostic Notification
+      tags:
+      - Diagnosis
   /deepfence/graph/threat:
     post:
       description: Retrieve the full threat graph associated with the account
@@ -604,6 +784,358 @@ paths:
       security:
       - bearer_token: []
       summary: Ingest Vulnerabilities
+      tags:
+      - Vulnerability
+  /deepfence/scan/list/compliance:
+    get:
+      description: Get Compliance Scans list on agent or registry
+      operationId: listComplianceScan
+      parameters:
+      - explode: true
+        in: query
+        name: node_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanListResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Compliance Scans List
+      tags:
+      - Compliance
+  /deepfence/scan/list/malware:
+    get:
+      description: Get Malware Scans list on agent or registry
+      operationId: listMalwareScan
+      parameters:
+      - explode: true
+        in: query
+        name: node_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanListResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Malware Scans List
+      tags:
+      - Malware Scan
+  /deepfence/scan/list/secret:
+    get:
+      description: Get Secret Scans list on agent or registry
+      operationId: listSecretScan
+      parameters:
+      - explode: true
+        in: query
+        name: node_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanListResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Secret Scans List
+      tags:
+      - Secret Scan
+  /deepfence/scan/list/vulnerability:
+    get:
+      description: Get Vulnerability Scan list on agent or registry
+      operationId: listVulnerabilityScans
+      parameters:
+      - explode: true
+        in: query
+        name: node_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanListResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Vulnerability Scans List
+      tags:
+      - Vulnerability
+  /deepfence/scan/results/compliance:
+    get:
+      description: Get Compliance Scans results on agent or registry
+      operationId: resultsComplianceScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Compliance Scans Results
+      tags:
+      - Compliance
+  /deepfence/scan/results/malware:
+    get:
+      description: Get Malware Scans results on agent or registry
+      operationId: resultsMalwareScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Malware Scans Results
+      tags:
+      - Malware Scan
+  /deepfence/scan/results/secret:
+    get:
+      description: Get Secret Scans results on agent or registry
+      operationId: resultsSecretScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Secret Scans Results
+      tags:
+      - Secret Scan
+  /deepfence/scan/results/vulnerability:
+    get:
+      description: Get Vulnerability Scan results on agent or registry
+      operationId: resultsVulnerabilityScans
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Vulnerability Scans Results
       tags:
       - Vulnerability
   /deepfence/scan/start/compliance:
@@ -1405,6 +1937,17 @@ components:
       - beatrate
       - commands
       type: object
+    DiagnosisDiagnosticNotification:
+      properties:
+        content:
+          type: string
+        expiry_in_secs: {}
+        follow_url: {}
+        source_application_id:
+          type: string
+        updated_at:
+          type: string
+      type: object
     IngestersCloudCompliance:
       example:
         severity: severity
@@ -1896,6 +2439,41 @@ components:
           type: string
         refresh_token:
           type: string
+      type: object
+    ModelScanInfo:
+      example:
+        updated_at: 0
+        scan_id: scan_id
+        status: status
+      properties:
+        scan_id:
+          type: string
+        status:
+          type: string
+        updated_at:
+          type: integer
+      required:
+      - scan_id
+      - status
+      - updated_at
+      type: object
+    ModelScanListResp:
+      example:
+        scans_info:
+        - updated_at: 0
+          scan_id: scan_id
+          status: status
+        - updated_at: 0
+          scan_id: scan_id
+          status: status
+      properties:
+        scans_info:
+          items:
+            $ref: '#/components/schemas/ModelScanInfo'
+          nullable: true
+          type: array
+      required:
+      - scans_info
       type: object
     ModelScanStatus:
       type: string

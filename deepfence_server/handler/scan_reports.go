@@ -351,10 +351,22 @@ func extractScanTrigger(w http.ResponseWriter, r *http.Request) (model.ScanTrigg
 }
 
 func (h *Handler) StatusVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
-	//	Get status of scan
+	statusScanHandler(w, r, utils.NEO4J_VULNERABILITY_SCAN)
 }
 
 func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request) {
+	statusScanHandler(w, r, utils.NEO4J_SECRET_SCAN)
+}
+
+func (h *Handler) StatusComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
+	statusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+}
+
+func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
+	statusScanHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+}
+
+func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanStatusReq
 	err := httpext.DecodeQueryParams(r, &req)
@@ -364,7 +376,7 @@ func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	status, err := reporters.GetSecretScanStatus(r.Context(), req.ScanId)
+	status, err := reporters.GetScanStatus(r.Context(), scan_type, req.ScanId)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
@@ -374,10 +386,74 @@ func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request
 	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: status})
 }
 
-func (h *Handler) StatusComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	//	Get status of scan
+func (h *Handler) ListVulnerabilityScansHandler(w http.ResponseWriter, r *http.Request) {
+	listScansHandler(w, r, utils.NEO4J_VULNERABILITY_SCAN)
 }
 
-func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
-	//	Get status of scan
+func (h *Handler) ListSecretScansHandler(w http.ResponseWriter, r *http.Request) {
+	listScansHandler(w, r, utils.NEO4J_SECRET_SCAN)
+}
+
+func (h *Handler) ListComplianceScansHandler(w http.ResponseWriter, r *http.Request) {
+	listScansHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+}
+
+func (h *Handler) ListMalwareScansHandler(w http.ResponseWriter, r *http.Request) {
+	listScansHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+}
+
+func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+	defer r.Body.Close()
+	var req model.ScanListReq
+	err := httpext.DecodeQueryParams(r, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return
+	}
+
+	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeId, req.Window)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: infos})
+}
+
+func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	listScanResultsHandler(w, r, utils.NEO4J_VULNERABILITY_SCAN)
+}
+
+func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	listScanResultsHandler(w, r, utils.NEO4J_SECRET_SCAN)
+}
+
+func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	listScanResultsHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+}
+
+func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	listScanResultsHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+}
+
+func listScanResultsHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+	defer r.Body.Close()
+	var req model.ScanResultsReq
+	err := httpext.DecodeQueryParams(r, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return
+	}
+
+	results, err := reporters.GetScanResults(r.Context(), scan_type, req.ScanId, req.Window)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: results})
 }

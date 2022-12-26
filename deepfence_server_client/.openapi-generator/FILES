@@ -7,6 +7,7 @@ api_cloud_compliance.go
 api_cloud_resources.go
 api_compliance.go
 api_controls.go
+api_diagnosis.go
 api_malware_scan.go
 api_secret_scan.go
 api_threat.go
@@ -24,6 +25,8 @@ docs/ComplianceApi.md
 docs/ControlsAction.md
 docs/ControlsAgentControls.md
 docs/ControlsApi.md
+docs/DiagnosisApi.md
+docs/DiagnosisDiagnosticNotification.md
 docs/IngestersCloudCompliance.md
 docs/IngestersCloudResource.md
 docs/IngestersCompliance.md
@@ -40,6 +43,8 @@ docs/ModelLoginRequest.md
 docs/ModelRawReport.md
 docs/ModelResponse.md
 docs/ModelResponseAccessToken.md
+docs/ModelScanInfo.md
+docs/ModelScanListResp.md
 docs/ModelScanStatusResp.md
 docs/ModelScanTriggerReq.md
 docs/ModelScanTriggerResp.md
@@ -63,6 +68,7 @@ model_api_docs_bad_request_response.go
 model_api_docs_failure_response.go
 model_controls_action.go
 model_controls_agent_controls.go
+model_diagnosis_diagnostic_notification.go
 model_ingesters_cloud_compliance.go
 model_ingesters_cloud_resource.go
 model_ingesters_compliance.go
@@ -78,6 +84,8 @@ model_model_login_request.go
 model_model_raw_report.go
 model_model_response.go
 model_model_response_access_token.go
+model_model_scan_info.go
+model_model_scan_list_resp.go
 model_model_scan_status_resp.go
 model_model_scan_trigger_req.go
 model_model_scan_trigger_resp.go
@@ -90,4 +98,5 @@ model_reporters_rendered_graph.go
 model_reporters_threat_node_info.go
 model_reporters_topology_filters.go
 response.go
+test/api_diagnosis_test.go
 utils.go
