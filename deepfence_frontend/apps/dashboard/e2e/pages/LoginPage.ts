@@ -11,14 +11,31 @@ export class LoginPage {
   }
 
   async enterEmail(email: string) {
-    await this.page.fill("input[name='username']", email);
+    await this.page.fill("input[name='email']", email);
   }
 
   async enterPassword(password: string) {
     await this.page.fill("input[name='password']", password);
   }
 
+  async clickForgetPassword() {
+    const btn = await this.page.locator('a').filter({ hasText: 'Forgot password?' });
+    if (btn) {
+      await btn.click();
+    }
+  }
+
+  async clickRegisterUser() {
+    const btn = await this.page.locator('a').filter({ hasText: 'Register' });
+    if (btn) {
+      await btn.click();
+    }
+  }
+
   async submit() {
-    await this.page.locator('button:has-text("Login")').click();
+    const btn = this.page.getByRole('button', { name: 'Log In' });
+    if (btn) {
+      await btn.click();
+    }
   }
 }
