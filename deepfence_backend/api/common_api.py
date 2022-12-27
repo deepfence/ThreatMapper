@@ -1109,7 +1109,7 @@ def delete_resources():
             message = "Successfully deleted scan id"
         else:
             if severity:
-                filters["Severity.level"] = severity
+                filters["FileSeverity"] = severity
             ESConn.bulk_delete(MALWARE_SCAN_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
             ESConn.bulk_delete(MALWARE_SCAN_LOGS_INDEX, filters, number, TIME_UNIT_MAPPING[time_unit])
     # compliance
