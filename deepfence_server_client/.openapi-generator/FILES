@@ -39,12 +39,14 @@ docs/IngestersVulnerability.md
 docs/MalwareScanApi.md
 docs/ModelAgentId.md
 docs/ModelApiAuthRequest.md
+docs/ModelFetchWindow.md
 docs/ModelLoginRequest.md
 docs/ModelRawReport.md
 docs/ModelResponse.md
 docs/ModelResponseAccessToken.md
 docs/ModelScanInfo.md
 docs/ModelScanListResp.md
+docs/ModelScanResultsResp.md
 docs/ModelScanStatusResp.md
 docs/ModelScanTriggerReq.md
 docs/ModelScanTriggerResp.md
@@ -80,12 +82,14 @@ model_ingesters_secret_severity.go
 model_ingesters_vulnerability.go
 model_model_agent_id.go
 model_model_api_auth_request.go
+model_model_fetch_window.go
 model_model_login_request.go
 model_model_raw_report.go
 model_model_response.go
 model_model_response_access_token.go
 model_model_scan_info.go
 model_model_scan_list_resp.go
+model_model_scan_results_resp.go
 model_model_scan_status_resp.go
 model_model_scan_trigger_req.go
 model_model_scan_trigger_resp.go
@@ -98,5 +102,4 @@ model_reporters_rendered_graph.go
 model_reporters_threat_node_info.go
 model_reporters_topology_filters.go
 response.go
-test/api_diagnosis_test.go
 utils.go

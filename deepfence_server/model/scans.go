@@ -29,7 +29,7 @@ type ScanTriggerResp struct {
 }
 
 type ScanStatusReq struct {
-	ScanId string `query:"scan_id" required:"true"`
+	ScanId string `query:"scan_id" form:"scan_id" required:"true"`
 }
 
 type ScanStatusResp struct {
@@ -37,8 +37,8 @@ type ScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	NodeId string      `query:"node_id" required:"true" json:"node_id"`
-	Window FetchWindow `json:"window" query:"window" required:"true"`
+	NodeId string      `query:"node_id" form:"node_id" required:"true"`
+	Window FetchWindow `query:"window"  form:"window" required:"true"`
 }
 
 type ScanListResp struct {
@@ -46,8 +46,8 @@ type ScanListResp struct {
 }
 
 type ScanResultsReq struct {
-	ScanId string      `query:"scan_id" required:"true" json:"scan_id"`
-	Window FetchWindow `json:"window" query:"window" required:"true"`
+	ScanId string      `query:"scan_id" form:"scan_id" required:"true"`
+	Window FetchWindow `query:"window" form:"window" required:"true"`
 }
 
 type ScanResultsResp struct {

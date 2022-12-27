@@ -17,6 +17,6 @@ type ResponseAccessToken struct {
 }
 
 type FetchWindow struct {
-	Offset int `query:"offset" json:"offset" required:"true"`
-	Size   int `query:"size" json:"size" required:"true"`
+	Offset int `json:"offset" required:"true"`
+	Size   int `json:"size" required:"true"`
 }

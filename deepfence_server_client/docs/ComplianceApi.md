@@ -79,7 +79,7 @@ Name | Type | Description  | Notes
 
 ## ListComplianceScan
 
-> ModelScanListResp ListComplianceScan(ctx).NodeId(nodeId).Execute()
+> ModelScanListResp ListComplianceScan(ctx).NodeId(nodeId).Window(window).Execute()
 
 Get Compliance Scans List
 
@@ -99,10 +99,11 @@ import (
 
 func main() {
     nodeId := "nodeId_example" // string | 
+    window := map[string][]openapiclient.ModelFetchWindow{ ... } // ModelFetchWindow | 
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.ComplianceApi.ListComplianceScan(context.Background()).NodeId(nodeId).Execute()
+    resp, r, err := apiClient.ComplianceApi.ListComplianceScan(context.Background()).NodeId(nodeId).Window(window).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.ListComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -124,6 +125,7 @@ Other parameters are passed through a pointer to a apiListComplianceScanRequest 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **nodeId** | **string** |  | 
+ **window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
 
 ### Return type
 
@@ -145,7 +147,7 @@ Name | Type | Description  | Notes
 
 ## ResultsComplianceScan
 
-> ResultsComplianceScan(ctx).ScanId(scanId).Execute()
+> ModelScanResultsResp ResultsComplianceScan(ctx).ScanId(scanId).Window(window).Execute()
 
 Get Compliance Scans Results
 
@@ -165,14 +167,17 @@ import (
 
 func main() {
     scanId := "scanId_example" // string | 
+    window := map[string][]openapiclient.ModelFetchWindow{ ... } // ModelFetchWindow | 
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.ComplianceApi.ResultsComplianceScan(context.Background()).ScanId(scanId).Execute()
+    resp, r, err := apiClient.ComplianceApi.ResultsComplianceScan(context.Background()).ScanId(scanId).Window(window).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.ResultsComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
+    // response from `ResultsComplianceScan`: ModelScanResultsResp
+    fmt.Fprintf(os.Stdout, "Response from `ComplianceApi.ResultsComplianceScan`: %v\n", resp)
 }
 ```
 
@@ -188,10 +193,11 @@ Other parameters are passed through a pointer to a apiResultsComplianceScanReque
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **scanId** | **string** |  | 
+ **window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
 
 ### Return type
 
- (empty response body)
+[**ModelScanResultsResp**](ModelScanResultsResp.md)
 
 ### Authorization
 

@@ -3,12 +3,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 
 	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 const (
@@ -31,13 +31,13 @@ var authCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		api_token, _ := cmd.Flags().GetString("api-token")
 		if api_token == "" {
-			log.Fatal("Please provide an api-token")
+			log.Fatal().Msg("Please provide an api-token")
 		}
 
 		https_client := oahttp.NewHttpsConsoleClient(console_ip, "443")
 		err := https_client.APITokenAuthenticate(api_token)
 		if err != nil {
-			log.Fatalf("Failed to authenticate %v\n", err)
+			log.Fatal().Msgf("Failed to authenticate %v\n", err)
 		}
 
 		access, refresh := https_client.DumpTokens()
@@ -48,15 +48,15 @@ var authCmd = &cobra.Command{
 
 		b, err := json.Marshal(tokens)
 		if err != nil {
-			log.Fatalf("Failed to authenticate %v\n", err)
+			log.Fatal().Msgf("Failed to authenticate %v\n", err)
 		}
 
 		err = os.WriteFile(fmt.Sprintf("%s/%s", os.TempDir(), tokens_filename), b, 0600)
 		if err != nil {
-			log.Fatalf("Failed to authenticate %v\n", err)
+			log.Fatal().Msgf("Failed to authenticate %v\n", err)
 		}
 
-		log.Printf("Successful login")
+		log.Info().Msgf("Successful login")
 	},
 }
 

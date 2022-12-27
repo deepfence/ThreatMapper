@@ -378,12 +378,12 @@ func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.N
 
 	status, err := reporters.GetScanStatus(r.Context(), scan_type, req.ScanId)
 	if err != nil {
-		log.Error().Msgf("%v", err)
+		log.Error().Msgf("%v, req=%v", err, req)
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: status})
+	httpext.JSON(w, http.StatusOK, status)
 }
 
 func (h *Handler) ListVulnerabilityScansHandler(w http.ResponseWriter, r *http.Request) {
@@ -414,12 +414,12 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 
 	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeId, req.Window)
 	if err != nil {
-		log.Error().Msgf("%v", err)
+		log.Error().Msgf("%v, req=%v", err, req)
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: infos})
+	httpext.JSON(w, http.StatusOK, infos)
 }
 
 func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -450,10 +450,10 @@ func listScanResultsHandler(w http.ResponseWriter, r *http.Request, scan_type ut
 
 	results, err := reporters.GetScanResults(r.Context(), scan_type, req.ScanId, req.Window)
 	if err != nil {
-		log.Error().Msgf("%v", err)
+		log.Error().Msgf("%v, req=%v", err, req)
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: results})
+	httpext.JSON(w, http.StatusOK, results)
 }

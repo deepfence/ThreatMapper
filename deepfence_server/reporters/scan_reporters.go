@@ -2,6 +2,7 @@ package reporters
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -27,7 +28,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_id s
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) RETURN m.status`,
+	res, err := tx.Run(fmt.Sprintf("MATCH (m:%s{node_id: $scan_id}) RETURN m.status", scan_type),
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return model.ScanStatusResp{}, err

@@ -798,6 +798,13 @@ paths:
         schema:
           type: string
         style: form
+      - content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelFetchWindow'
+        in: query
+        name: window
+        required: true
       responses:
         "200":
           content:
@@ -844,6 +851,13 @@ paths:
         schema:
           type: string
         style: form
+      - content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelFetchWindow'
+        in: query
+        name: window
+        required: true
       responses:
         "200":
           content:
@@ -890,6 +904,13 @@ paths:
         schema:
           type: string
         style: form
+      - content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelFetchWindow'
+        in: query
+        name: window
+        required: true
       responses:
         "200":
           content:
@@ -936,6 +957,13 @@ paths:
         schema:
           type: string
         style: form
+      - content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelFetchWindow'
+        in: query
+        name: window
+        required: true
       responses:
         "200":
           content:
@@ -982,8 +1010,19 @@ paths:
         schema:
           type: string
         style: form
+      - content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelFetchWindow'
+        in: query
+        name: window
+        required: true
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanResultsResp'
           description: OK
         "400":
           content:
@@ -1024,8 +1063,19 @@ paths:
         schema:
           type: string
         style: form
+      - content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelFetchWindow'
+        in: query
+        name: window
+        required: true
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanResultsResp'
           description: OK
         "400":
           content:
@@ -1066,8 +1116,19 @@ paths:
         schema:
           type: string
         style: form
+      - content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelFetchWindow'
+        in: query
+        name: window
+        required: true
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanResultsResp'
           description: OK
         "400":
           content:
@@ -1108,8 +1169,19 @@ paths:
         schema:
           type: string
         style: form
+      - content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelFetchWindow'
+        in: query
+        name: window
+        required: true
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanResultsResp'
           description: OK
         "400":
           content:
@@ -2389,6 +2461,16 @@ components:
         api_token:
           type: string
       type: object
+    ModelFetchWindow:
+      properties:
+        offset:
+          type: integer
+        size:
+          type: integer
+      required:
+      - offset
+      - size
+      type: object
     ModelLoginRequest:
       example:
         password: password
@@ -2474,6 +2556,21 @@ components:
           type: array
       required:
       - scans_info
+      type: object
+    ModelScanResultsResp:
+      example:
+        results:
+        - key: ""
+        - key: ""
+      properties:
+        results:
+          items:
+            additionalProperties: {}
+            type: object
+          nullable: true
+          type: array
+      required:
+      - results
       type: object
     ModelScanStatus:
       type: string

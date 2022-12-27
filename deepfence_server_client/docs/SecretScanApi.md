@@ -144,7 +144,7 @@ Name | Type | Description  | Notes
 
 ## ListSecretScan
 
-> ModelScanListResp ListSecretScan(ctx).NodeId(nodeId).Execute()
+> ModelScanListResp ListSecretScan(ctx).NodeId(nodeId).Window(window).Execute()
 
 Get Secret Scans List
 
@@ -164,10 +164,11 @@ import (
 
 func main() {
     nodeId := "nodeId_example" // string | 
+    window := map[string][]openapiclient.ModelFetchWindow{ ... } // ModelFetchWindow | 
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.SecretScanApi.ListSecretScan(context.Background()).NodeId(nodeId).Execute()
+    resp, r, err := apiClient.SecretScanApi.ListSecretScan(context.Background()).NodeId(nodeId).Window(window).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.ListSecretScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -189,6 +190,7 @@ Other parameters are passed through a pointer to a apiListSecretScanRequest stru
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **nodeId** | **string** |  | 
+ **window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
 
 ### Return type
 
@@ -210,7 +212,7 @@ Name | Type | Description  | Notes
 
 ## ResultsSecretScan
 
-> ResultsSecretScan(ctx).ScanId(scanId).Execute()
+> ModelScanResultsResp ResultsSecretScan(ctx).ScanId(scanId).Window(window).Execute()
 
 Get Secret Scans Results
 
@@ -230,14 +232,17 @@ import (
 
 func main() {
     scanId := "scanId_example" // string | 
+    window := map[string][]openapiclient.ModelFetchWindow{ ... } // ModelFetchWindow | 
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.SecretScanApi.ResultsSecretScan(context.Background()).ScanId(scanId).Execute()
+    resp, r, err := apiClient.SecretScanApi.ResultsSecretScan(context.Background()).ScanId(scanId).Window(window).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.ResultsSecretScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
+    // response from `ResultsSecretScan`: ModelScanResultsResp
+    fmt.Fprintf(os.Stdout, "Response from `SecretScanApi.ResultsSecretScan`: %v\n", resp)
 }
 ```
 
@@ -253,10 +258,11 @@ Other parameters are passed through a pointer to a apiResultsSecretScanRequest s
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **scanId** | **string** |  | 
+ **window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
 
 ### Return type
 
- (empty response body)
+[**ModelScanResultsResp**](ModelScanResultsResp.md)
 
 ### Authorization
 
