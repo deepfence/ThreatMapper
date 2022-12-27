@@ -45,7 +45,9 @@ docs/ModelRawReport.md
 docs/ModelResponse.md
 docs/ModelResponseAccessToken.md
 docs/ModelScanInfo.md
+docs/ModelScanListReq.md
 docs/ModelScanListResp.md
+docs/ModelScanResultsReq.md
 docs/ModelScanResultsResp.md
 docs/ModelScanStatusResp.md
 docs/ModelScanTriggerReq.md
@@ -88,7 +90,9 @@ model_model_raw_report.go
 model_model_response.go
 model_model_response_access_token.go
 model_model_scan_info.go
+model_model_scan_list_req.go
 model_model_scan_list_resp.go
+model_model_scan_results_req.go
 model_model_scan_results_resp.go
 model_model_scan_status_resp.go
 model_model_scan_trigger_req.go

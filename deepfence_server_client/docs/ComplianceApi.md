@@ -5,8 +5,8 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**IngestCompliances**](ComplianceApi.md#IngestCompliances) | **Post** /deepfence/ingest/compliance | Ingest Compliances
-[**ListComplianceScan**](ComplianceApi.md#ListComplianceScan) | **Get** /deepfence/scan/list/compliance | Get Compliance Scans List
-[**ResultsComplianceScan**](ComplianceApi.md#ResultsComplianceScan) | **Get** /deepfence/scan/results/compliance | Get Compliance Scans Results
+[**ListComplianceScan**](ComplianceApi.md#ListComplianceScan) | **Post** /deepfence/scan/list/compliance | Get Compliance Scans List
+[**ResultsComplianceScan**](ComplianceApi.md#ResultsComplianceScan) | **Post** /deepfence/scan/results/compliance | Get Compliance Scans Results
 [**StartComplianceScan**](ComplianceApi.md#StartComplianceScan) | **Post** /deepfence/scan/start/compliance | Start Compliance Scan
 [**StatusComplianceScan**](ComplianceApi.md#StatusComplianceScan) | **Get** /deepfence/scan/status/compliance | Get Compliance Scan Status
 [**StopComplianceScan**](ComplianceApi.md#StopComplianceScan) | **Post** /deepfence/scan/stop/compliance | Stop Compliance Scan
@@ -79,7 +79,7 @@ Name | Type | Description  | Notes
 
 ## ListComplianceScan
 
-> ModelScanListResp ListComplianceScan(ctx).NodeId(nodeId).Window(window).Execute()
+> ModelScanListResp ListComplianceScan(ctx).ModelScanListReq(modelScanListReq).Execute()
 
 Get Compliance Scans List
 
@@ -98,12 +98,11 @@ import (
 )
 
 func main() {
-    nodeId := "nodeId_example" // string | 
-    window := map[string][]openapiclient.ModelFetchWindow{ ... } // ModelFetchWindow | 
+    modelScanListReq := *openapiclient.NewModelScanListReq("NodeId_example", *openapiclient.NewModelFetchWindow(int32(123), int32(123))) // ModelScanListReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.ComplianceApi.ListComplianceScan(context.Background()).NodeId(nodeId).Window(window).Execute()
+    resp, r, err := apiClient.ComplianceApi.ListComplianceScan(context.Background()).ModelScanListReq(modelScanListReq).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.ListComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -124,8 +123,7 @@ Other parameters are passed through a pointer to a apiListComplianceScanRequest 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **nodeId** | **string** |  | 
- **window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
+ **modelScanListReq** | [**ModelScanListReq**](ModelScanListReq.md) |  | 
 
 ### Return type
 
@@ -137,7 +135,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
@@ -147,7 +145,7 @@ Name | Type | Description  | Notes
 
 ## ResultsComplianceScan
 
-> ModelScanResultsResp ResultsComplianceScan(ctx).ScanId(scanId).Window(window).Execute()
+> ModelScanResultsResp ResultsComplianceScan(ctx).ModelScanResultsReq(modelScanResultsReq).Execute()
 
 Get Compliance Scans Results
 
@@ -166,12 +164,11 @@ import (
 )
 
 func main() {
-    scanId := "scanId_example" // string | 
-    window := map[string][]openapiclient.ModelFetchWindow{ ... } // ModelFetchWindow | 
+    modelScanResultsReq := *openapiclient.NewModelScanResultsReq("ScanId_example", *openapiclient.NewModelFetchWindow(int32(123), int32(123))) // ModelScanResultsReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.ComplianceApi.ResultsComplianceScan(context.Background()).ScanId(scanId).Window(window).Execute()
+    resp, r, err := apiClient.ComplianceApi.ResultsComplianceScan(context.Background()).ModelScanResultsReq(modelScanResultsReq).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `ComplianceApi.ResultsComplianceScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -192,8 +189,7 @@ Other parameters are passed through a pointer to a apiResultsComplianceScanReque
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **scanId** | **string** |  | 
- **window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
+ **modelScanResultsReq** | [**ModelScanResultsReq**](ModelScanResultsReq.md) |  | 
 
 ### Return type
 
@@ -205,7 +201,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

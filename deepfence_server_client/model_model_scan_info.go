@@ -22,14 +22,14 @@ var _ MappedNullable = &ModelScanInfo{}
 type ModelScanInfo struct {
 	ScanId string `json:"scan_id"`
 	Status string `json:"status"`
-	UpdatedAt int32 `json:"updated_at"`
+	UpdatedAt int64 `json:"updated_at"`
 }
 
 // NewModelScanInfo instantiates a new ModelScanInfo object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelScanInfo(scanId string, status string, updatedAt int32) *ModelScanInfo {
+func NewModelScanInfo(scanId string, status string, updatedAt int64) *ModelScanInfo {
 	this := ModelScanInfo{}
 	this.ScanId = scanId
 	this.Status = status
@@ -94,9 +94,9 @@ func (o *ModelScanInfo) SetStatus(v string) {
 }
 
 // GetUpdatedAt returns the UpdatedAt field value
-func (o *ModelScanInfo) GetUpdatedAt() int32 {
+func (o *ModelScanInfo) GetUpdatedAt() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -105,7 +105,7 @@ func (o *ModelScanInfo) GetUpdatedAt() int32 {
 
 // GetUpdatedAtOk returns a tuple with the UpdatedAt field value
 // and a boolean to check if the value has been set.
-func (o *ModelScanInfo) GetUpdatedAtOk() (*int32, bool) {
+func (o *ModelScanInfo) GetUpdatedAtOk() (*int64, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -113,7 +113,7 @@ func (o *ModelScanInfo) GetUpdatedAtOk() (*int32, bool) {
 }
 
 // SetUpdatedAt sets field value
-func (o *ModelScanInfo) SetUpdatedAt(v int32) {
+func (o *ModelScanInfo) SetUpdatedAt(v int64) {
 	o.UpdatedAt = v
 }
 

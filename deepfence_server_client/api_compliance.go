@@ -154,17 +154,11 @@ func (a *ComplianceApiService) IngestCompliancesExecute(r ApiIngestCompliancesRe
 type ApiListComplianceScanRequest struct {
 	ctx context.Context
 	ApiService *ComplianceApiService
-	nodeId *string
-	window *ModelFetchWindow
+	modelScanListReq *ModelScanListReq
 }
 
-func (r ApiListComplianceScanRequest) NodeId(nodeId string) ApiListComplianceScanRequest {
-	r.nodeId = &nodeId
-	return r
-}
-
-func (r ApiListComplianceScanRequest) Window(window ModelFetchWindow) ApiListComplianceScanRequest {
-	r.window = &window
+func (r ApiListComplianceScanRequest) ModelScanListReq(modelScanListReq ModelScanListReq) ApiListComplianceScanRequest {
+	r.modelScanListReq = &modelScanListReq
 	return r
 }
 
@@ -191,7 +185,7 @@ func (a *ComplianceApiService) ListComplianceScan(ctx context.Context) ApiListCo
 //  @return ModelScanListResp
 func (a *ComplianceApiService) ListComplianceScanExecute(r ApiListComplianceScanRequest) (*ModelScanListResp, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
 		localVarReturnValue  *ModelScanListResp
@@ -207,17 +201,9 @@ func (a *ComplianceApiService) ListComplianceScanExecute(r ApiListComplianceScan
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.nodeId == nil {
-		return localVarReturnValue, nil, reportError("nodeId is required and must be specified")
-	}
-	if r.window == nil {
-		return localVarReturnValue, nil, reportError("window is required and must be specified")
-	}
 
-	parameterAddToQuery(localVarQueryParams, "node_id", r.nodeId, "")
-	parameterAddToQuery(localVarQueryParams, "window", r.window, "")
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -233,6 +219,8 @@ func (a *ComplianceApiService) ListComplianceScanExecute(r ApiListComplianceScan
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.modelScanListReq
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -305,17 +293,11 @@ func (a *ComplianceApiService) ListComplianceScanExecute(r ApiListComplianceScan
 type ApiResultsComplianceScanRequest struct {
 	ctx context.Context
 	ApiService *ComplianceApiService
-	scanId *string
-	window *ModelFetchWindow
+	modelScanResultsReq *ModelScanResultsReq
 }
 
-func (r ApiResultsComplianceScanRequest) ScanId(scanId string) ApiResultsComplianceScanRequest {
-	r.scanId = &scanId
-	return r
-}
-
-func (r ApiResultsComplianceScanRequest) Window(window ModelFetchWindow) ApiResultsComplianceScanRequest {
-	r.window = &window
+func (r ApiResultsComplianceScanRequest) ModelScanResultsReq(modelScanResultsReq ModelScanResultsReq) ApiResultsComplianceScanRequest {
+	r.modelScanResultsReq = &modelScanResultsReq
 	return r
 }
 
@@ -342,7 +324,7 @@ func (a *ComplianceApiService) ResultsComplianceScan(ctx context.Context) ApiRes
 //  @return ModelScanResultsResp
 func (a *ComplianceApiService) ResultsComplianceScanExecute(r ApiResultsComplianceScanRequest) (*ModelScanResultsResp, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
 		localVarReturnValue  *ModelScanResultsResp
@@ -358,17 +340,9 @@ func (a *ComplianceApiService) ResultsComplianceScanExecute(r ApiResultsComplian
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.scanId == nil {
-		return localVarReturnValue, nil, reportError("scanId is required and must be specified")
-	}
-	if r.window == nil {
-		return localVarReturnValue, nil, reportError("window is required and must be specified")
-	}
 
-	parameterAddToQuery(localVarQueryParams, "scan_id", r.scanId, "")
-	parameterAddToQuery(localVarQueryParams, "window", r.window, "")
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -384,6 +358,8 @@ func (a *ComplianceApiService) ResultsComplianceScanExecute(r ApiResultsComplian
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.modelScanResultsReq
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

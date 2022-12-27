@@ -6,13 +6,13 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ScanId** | **string** |  | 
 **Status** | **string** |  | 
-**UpdatedAt** | **int32** |  | 
+**UpdatedAt** | **int64** |  | 
 
 ## Methods
 
 ### NewModelScanInfo
 
-`func NewModelScanInfo(scanId string, status string, updatedAt int32, ) *ModelScanInfo`
+`func NewModelScanInfo(scanId string, status string, updatedAt int64, ) *ModelScanInfo`
 
 NewModelScanInfo instantiates a new ModelScanInfo object
 This constructor will assign default values to properties that have it defined,
@@ -69,20 +69,20 @@ SetStatus sets Status field to given value.
 
 ### GetUpdatedAt
 
-`func (o *ModelScanInfo) GetUpdatedAt() int32`
+`func (o *ModelScanInfo) GetUpdatedAt() int64`
 
 GetUpdatedAt returns the UpdatedAt field if non-nil, zero value otherwise.
 
 ### GetUpdatedAtOk
 
-`func (o *ModelScanInfo) GetUpdatedAtOk() (*int32, bool)`
+`func (o *ModelScanInfo) GetUpdatedAtOk() (*int64, bool)`
 
 GetUpdatedAtOk returns a tuple with the UpdatedAt field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetUpdatedAt
 
-`func (o *ModelScanInfo) SetUpdatedAt(v int32)`
+`func (o *ModelScanInfo) SetUpdatedAt(v int64)`
 
 SetUpdatedAt sets UpdatedAt field to given value.
 

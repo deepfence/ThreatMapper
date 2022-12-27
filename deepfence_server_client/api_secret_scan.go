@@ -282,17 +282,11 @@ func (a *SecretScanApiService) IngestSecretsExecute(r ApiIngestSecretsRequest) (
 type ApiListSecretScanRequest struct {
 	ctx context.Context
 	ApiService *SecretScanApiService
-	nodeId *string
-	window *ModelFetchWindow
+	modelScanListReq *ModelScanListReq
 }
 
-func (r ApiListSecretScanRequest) NodeId(nodeId string) ApiListSecretScanRequest {
-	r.nodeId = &nodeId
-	return r
-}
-
-func (r ApiListSecretScanRequest) Window(window ModelFetchWindow) ApiListSecretScanRequest {
-	r.window = &window
+func (r ApiListSecretScanRequest) ModelScanListReq(modelScanListReq ModelScanListReq) ApiListSecretScanRequest {
+	r.modelScanListReq = &modelScanListReq
 	return r
 }
 
@@ -319,7 +313,7 @@ func (a *SecretScanApiService) ListSecretScan(ctx context.Context) ApiListSecret
 //  @return ModelScanListResp
 func (a *SecretScanApiService) ListSecretScanExecute(r ApiListSecretScanRequest) (*ModelScanListResp, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
 		localVarReturnValue  *ModelScanListResp
@@ -335,17 +329,9 @@ func (a *SecretScanApiService) ListSecretScanExecute(r ApiListSecretScanRequest)
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.nodeId == nil {
-		return localVarReturnValue, nil, reportError("nodeId is required and must be specified")
-	}
-	if r.window == nil {
-		return localVarReturnValue, nil, reportError("window is required and must be specified")
-	}
 
-	parameterAddToQuery(localVarQueryParams, "node_id", r.nodeId, "")
-	parameterAddToQuery(localVarQueryParams, "window", r.window, "")
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -361,6 +347,8 @@ func (a *SecretScanApiService) ListSecretScanExecute(r ApiListSecretScanRequest)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.modelScanListReq
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -433,17 +421,11 @@ func (a *SecretScanApiService) ListSecretScanExecute(r ApiListSecretScanRequest)
 type ApiResultsSecretScanRequest struct {
 	ctx context.Context
 	ApiService *SecretScanApiService
-	scanId *string
-	window *ModelFetchWindow
+	modelScanResultsReq *ModelScanResultsReq
 }
 
-func (r ApiResultsSecretScanRequest) ScanId(scanId string) ApiResultsSecretScanRequest {
-	r.scanId = &scanId
-	return r
-}
-
-func (r ApiResultsSecretScanRequest) Window(window ModelFetchWindow) ApiResultsSecretScanRequest {
-	r.window = &window
+func (r ApiResultsSecretScanRequest) ModelScanResultsReq(modelScanResultsReq ModelScanResultsReq) ApiResultsSecretScanRequest {
+	r.modelScanResultsReq = &modelScanResultsReq
 	return r
 }
 
@@ -470,7 +452,7 @@ func (a *SecretScanApiService) ResultsSecretScan(ctx context.Context) ApiResults
 //  @return ModelScanResultsResp
 func (a *SecretScanApiService) ResultsSecretScanExecute(r ApiResultsSecretScanRequest) (*ModelScanResultsResp, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodGet
+		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
 		localVarReturnValue  *ModelScanResultsResp
@@ -486,17 +468,9 @@ func (a *SecretScanApiService) ResultsSecretScanExecute(r ApiResultsSecretScanRe
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.scanId == nil {
-		return localVarReturnValue, nil, reportError("scanId is required and must be specified")
-	}
-	if r.window == nil {
-		return localVarReturnValue, nil, reportError("window is required and must be specified")
-	}
 
-	parameterAddToQuery(localVarQueryParams, "scan_id", r.scanId, "")
-	parameterAddToQuery(localVarQueryParams, "window", r.window, "")
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{}
+	localVarHTTPContentTypes := []string{"application/json"}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -512,6 +486,8 @@ func (a *SecretScanApiService) ResultsSecretScanExecute(r ApiResultsSecretScanRe
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
+	// body params
+	localVarPostBody = r.modelScanResultsReq
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

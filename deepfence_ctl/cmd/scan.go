@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
 	"github.com/deepfence/ThreatMapper/deepfence_server_client"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
@@ -74,7 +75,7 @@ var scanStartSubCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v", err)
 		}
-		log.Info().Msgf("Scan Id: %s", res.ScanId)
+		output.Out(res)
 	},
 }
 
@@ -109,7 +110,7 @@ var scanStatusSubCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v", err)
 		}
-		log.Info().Msgf("Scan Id: %s, Status: %s", scan_id, res.GetStatus())
+		output.Out(res)
 	},
 }
 
@@ -135,10 +136,12 @@ var scanListSubCmd = &cobra.Command{
 		switch scan_type {
 		case "secret":
 			req := https_client.Client().SecretScanApi.ListSecretScan(context.Background())
-			req = req.NodeId(node_id)
-			req = req.Window(deepfence_server_client.ModelFetchWindow{
-				Offset: 0,
-				Size:   20,
+			req = req.ModelScanListReq(deepfence_server_client.ModelScanListReq{
+				NodeId: node_id,
+				Window: deepfence_server_client.ModelFetchWindow{
+					Offset: 0,
+					Size:   20,
+				},
 			})
 			res, _, err = https_client.Client().SecretScanApi.ListSecretScanExecute(req)
 		default:
@@ -148,7 +151,7 @@ var scanListSubCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v", err)
 		}
-		log.Info().Msgf("%v", node_id, res.ScansInfo)
+		output.Out(res)
 	},
 }
 
@@ -174,10 +177,12 @@ var scanResultsSubCmd = &cobra.Command{
 		switch scan_type {
 		case "secret":
 			req := https_client.Client().SecretScanApi.ResultsSecretScan(context.Background())
-			req = req.ScanId(scan_id)
-			req = req.Window(deepfence_server_client.ModelFetchWindow{
-				Offset: 0,
-				Size:   20,
+			req = req.ModelScanResultsReq(deepfence_server_client.ModelScanResultsReq{
+				ScanId: scan_id,
+				Window: deepfence_server_client.ModelFetchWindow{
+					Offset: 0,
+					Size:   20,
+				},
 			})
 			res, _, err = https_client.Client().SecretScanApi.ResultsSecretScanExecute(req)
 		default:
@@ -187,7 +192,7 @@ var scanResultsSubCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v", err)
 		}
-		log.Info().Msgf("%v", res)
+		output.Out(res)
 	},
 }
 

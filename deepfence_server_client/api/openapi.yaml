@@ -787,24 +787,14 @@ paths:
       tags:
       - Vulnerability
   /deepfence/scan/list/compliance:
-    get:
+    post:
       description: Get Compliance Scans list on agent or registry
       operationId: listComplianceScan
-      parameters:
-      - explode: true
-        in: query
-        name: node_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - content:
+      requestBody:
+        content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelFetchWindow'
-        in: query
-        name: window
-        required: true
+              $ref: '#/components/schemas/ModelScanListReq'
       responses:
         "200":
           content:
@@ -840,24 +830,14 @@ paths:
       tags:
       - Compliance
   /deepfence/scan/list/malware:
-    get:
+    post:
       description: Get Malware Scans list on agent or registry
       operationId: listMalwareScan
-      parameters:
-      - explode: true
-        in: query
-        name: node_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - content:
+      requestBody:
+        content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelFetchWindow'
-        in: query
-        name: window
-        required: true
+              $ref: '#/components/schemas/ModelScanListReq'
       responses:
         "200":
           content:
@@ -893,24 +873,14 @@ paths:
       tags:
       - Malware Scan
   /deepfence/scan/list/secret:
-    get:
+    post:
       description: Get Secret Scans list on agent or registry
       operationId: listSecretScan
-      parameters:
-      - explode: true
-        in: query
-        name: node_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - content:
+      requestBody:
+        content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelFetchWindow'
-        in: query
-        name: window
-        required: true
+              $ref: '#/components/schemas/ModelScanListReq'
       responses:
         "200":
           content:
@@ -946,24 +916,14 @@ paths:
       tags:
       - Secret Scan
   /deepfence/scan/list/vulnerability:
-    get:
+    post:
       description: Get Vulnerability Scan list on agent or registry
       operationId: listVulnerabilityScans
-      parameters:
-      - explode: true
-        in: query
-        name: node_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - content:
+      requestBody:
+        content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelFetchWindow'
-        in: query
-        name: window
-        required: true
+              $ref: '#/components/schemas/ModelScanListReq'
       responses:
         "200":
           content:
@@ -999,24 +959,14 @@ paths:
       tags:
       - Vulnerability
   /deepfence/scan/results/compliance:
-    get:
+    post:
       description: Get Compliance Scans results on agent or registry
       operationId: resultsComplianceScan
-      parameters:
-      - explode: true
-        in: query
-        name: scan_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - content:
+      requestBody:
+        content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelFetchWindow'
-        in: query
-        name: window
-        required: true
+              $ref: '#/components/schemas/ModelScanResultsReq'
       responses:
         "200":
           content:
@@ -1052,24 +1002,14 @@ paths:
       tags:
       - Compliance
   /deepfence/scan/results/malware:
-    get:
+    post:
       description: Get Malware Scans results on agent or registry
       operationId: resultsMalwareScan
-      parameters:
-      - explode: true
-        in: query
-        name: scan_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - content:
+      requestBody:
+        content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelFetchWindow'
-        in: query
-        name: window
-        required: true
+              $ref: '#/components/schemas/ModelScanResultsReq'
       responses:
         "200":
           content:
@@ -1105,24 +1045,14 @@ paths:
       tags:
       - Malware Scan
   /deepfence/scan/results/secret:
-    get:
+    post:
       description: Get Secret Scans results on agent or registry
       operationId: resultsSecretScan
-      parameters:
-      - explode: true
-        in: query
-        name: scan_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - content:
+      requestBody:
+        content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelFetchWindow'
-        in: query
-        name: window
-        required: true
+              $ref: '#/components/schemas/ModelScanResultsReq'
       responses:
         "200":
           content:
@@ -1158,24 +1088,14 @@ paths:
       tags:
       - Secret Scan
   /deepfence/scan/results/vulnerability:
-    get:
+    post:
       description: Get Vulnerability Scan results on agent or registry
       operationId: resultsVulnerabilityScans
-      parameters:
-      - explode: true
-        in: query
-        name: scan_id
-        required: true
-        schema:
-          type: string
-        style: form
-      - content:
+      requestBody:
+        content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelFetchWindow'
-        in: query
-        name: window
-        required: true
+              $ref: '#/components/schemas/ModelScanResultsReq'
       responses:
         "200":
           content:
@@ -2462,6 +2382,9 @@ components:
           type: string
       type: object
     ModelFetchWindow:
+      example:
+        offset: 0
+        size: 6
       properties:
         offset:
           type: integer
@@ -2533,11 +2456,27 @@ components:
         status:
           type: string
         updated_at:
+          format: int64
           type: integer
       required:
       - scan_id
       - status
       - updated_at
+      type: object
+    ModelScanListReq:
+      example:
+        window:
+          offset: 0
+          size: 6
+        node_id: node_id
+      properties:
+        node_id:
+          type: string
+        window:
+          $ref: '#/components/schemas/ModelFetchWindow'
+      required:
+      - node_id
+      - window
       type: object
     ModelScanListResp:
       example:
@@ -2556,6 +2495,21 @@ components:
           type: array
       required:
       - scans_info
+      type: object
+    ModelScanResultsReq:
+      example:
+        scan_id: scan_id
+        window:
+          offset: 0
+          size: 6
+      properties:
+        scan_id:
+          type: string
+        window:
+          $ref: '#/components/schemas/ModelFetchWindow'
+      required:
+      - scan_id
+      - window
       type: object
     ModelScanResultsResp:
       example:

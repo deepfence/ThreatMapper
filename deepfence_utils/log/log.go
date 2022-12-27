@@ -56,7 +56,7 @@ func (a AsynqLogger) Fatal(args ...interface{}) {
 func init() {
 	log.Logger = log.Output(
 		zerolog.ConsoleWriter{
-			Out:        os.Stdout,
+			Out:        os.Stderr,
 			TimeFormat: time.RFC1123Z,
 			FormatCaller: func(i interface{}) string {
 				return filepath.Join(

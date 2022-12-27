@@ -6,8 +6,8 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**IngestSecretScanStatus**](SecretScanApi.md#IngestSecretScanStatus) | **Post** /deepfence/ingest/secret-scan-logs | Ingest Secrets Scan Status
 [**IngestSecrets**](SecretScanApi.md#IngestSecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
-[**ListSecretScan**](SecretScanApi.md#ListSecretScan) | **Get** /deepfence/scan/list/secret | Get Secret Scans List
-[**ResultsSecretScan**](SecretScanApi.md#ResultsSecretScan) | **Get** /deepfence/scan/results/secret | Get Secret Scans Results
+[**ListSecretScan**](SecretScanApi.md#ListSecretScan) | **Post** /deepfence/scan/list/secret | Get Secret Scans List
+[**ResultsSecretScan**](SecretScanApi.md#ResultsSecretScan) | **Post** /deepfence/scan/results/secret | Get Secret Scans Results
 [**StartSecretScan**](SecretScanApi.md#StartSecretScan) | **Post** /deepfence/scan/start/secret | Start Secret Scan
 [**StatusSecretScan**](SecretScanApi.md#StatusSecretScan) | **Get** /deepfence/scan/status/secret | Get Secret Scan Status
 [**StopSecretScan**](SecretScanApi.md#StopSecretScan) | **Post** /deepfence/scan/stop/secret | Stop Secret Scan
@@ -144,7 +144,7 @@ Name | Type | Description  | Notes
 
 ## ListSecretScan
 
-> ModelScanListResp ListSecretScan(ctx).NodeId(nodeId).Window(window).Execute()
+> ModelScanListResp ListSecretScan(ctx).ModelScanListReq(modelScanListReq).Execute()
 
 Get Secret Scans List
 
@@ -163,12 +163,11 @@ import (
 )
 
 func main() {
-    nodeId := "nodeId_example" // string | 
-    window := map[string][]openapiclient.ModelFetchWindow{ ... } // ModelFetchWindow | 
+    modelScanListReq := *openapiclient.NewModelScanListReq("NodeId_example", *openapiclient.NewModelFetchWindow(int32(123), int32(123))) // ModelScanListReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.SecretScanApi.ListSecretScan(context.Background()).NodeId(nodeId).Window(window).Execute()
+    resp, r, err := apiClient.SecretScanApi.ListSecretScan(context.Background()).ModelScanListReq(modelScanListReq).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.ListSecretScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -189,8 +188,7 @@ Other parameters are passed through a pointer to a apiListSecretScanRequest stru
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **nodeId** | **string** |  | 
- **window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
+ **modelScanListReq** | [**ModelScanListReq**](ModelScanListReq.md) |  | 
 
 ### Return type
 
@@ -202,7 +200,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
@@ -212,7 +210,7 @@ Name | Type | Description  | Notes
 
 ## ResultsSecretScan
 
-> ModelScanResultsResp ResultsSecretScan(ctx).ScanId(scanId).Window(window).Execute()
+> ModelScanResultsResp ResultsSecretScan(ctx).ModelScanResultsReq(modelScanResultsReq).Execute()
 
 Get Secret Scans Results
 
@@ -231,12 +229,11 @@ import (
 )
 
 func main() {
-    scanId := "scanId_example" // string | 
-    window := map[string][]openapiclient.ModelFetchWindow{ ... } // ModelFetchWindow | 
+    modelScanResultsReq := *openapiclient.NewModelScanResultsReq("ScanId_example", *openapiclient.NewModelFetchWindow(int32(123), int32(123))) // ModelScanResultsReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.SecretScanApi.ResultsSecretScan(context.Background()).ScanId(scanId).Window(window).Execute()
+    resp, r, err := apiClient.SecretScanApi.ResultsSecretScan(context.Background()).ModelScanResultsReq(modelScanResultsReq).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `SecretScanApi.ResultsSecretScan``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -257,8 +254,7 @@ Other parameters are passed through a pointer to a apiResultsSecretScanRequest s
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **scanId** | **string** |  | 
- **window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
+ **modelScanResultsReq** | [**ModelScanResultsReq**](ModelScanResultsReq.md) |  | 
 
 ### Return type
 
@@ -270,7 +266,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

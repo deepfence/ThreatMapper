@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
 	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
@@ -56,7 +57,7 @@ var authCmd = &cobra.Command{
 			log.Fatal().Msgf("Failed to authenticate %v\n", err)
 		}
 
-		log.Info().Msgf("Successful login")
+		output.Out(map[string]string{"login": "successful"})
 	},
 }
 

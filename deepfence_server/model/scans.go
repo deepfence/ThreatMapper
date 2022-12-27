@@ -15,7 +15,7 @@ type ScanStatus string
 type ScanInfo struct {
 	ScanId    string `json:"scan_id" required:"true"`
 	Status    string `json:"status" required:"true"`
-	UpdatedAt int64  `json:"updated_at" required:"true"`
+	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
 }
 
 const (
@@ -37,8 +37,8 @@ type ScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	NodeId string      `query:"node_id" form:"node_id" required:"true"`
-	Window FetchWindow `query:"window"  form:"window" required:"true"`
+	NodeId string      `json:"node_id" required:"true"`
+	Window FetchWindow `json:"window"  required:"true"`
 }
 
 type ScanListResp struct {
@@ -46,8 +46,8 @@ type ScanListResp struct {
 }
 
 type ScanResultsReq struct {
-	ScanId string      `query:"scan_id" form:"scan_id" required:"true"`
-	Window FetchWindow `query:"window" form:"window" required:"true"`
+	ScanId string      `json:"scan_id" required:"true"`
+	Window FetchWindow `json:"window"  required:"true"`
 }
 
 type ScanResultsResp struct {

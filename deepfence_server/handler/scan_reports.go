@@ -405,7 +405,7 @@ func (h *Handler) ListMalwareScansHandler(w http.ResponseWriter, r *http.Request
 func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanListReq
-	err := httpext.DecodeQueryParams(r, &req)
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
@@ -441,7 +441,7 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 func listScanResultsHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanResultsReq
-	err := httpext.DecodeQueryParams(r, &req)
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
