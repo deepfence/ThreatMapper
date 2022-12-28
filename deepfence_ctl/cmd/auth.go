@@ -7,23 +7,11 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
 	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
-
-const (
-	tokens_filename = "tokens"
-)
-
-var (
-	api_token string
-)
-
-type AuthTokens struct {
-	AccessToken  string
-	RefreshToken string
-}
 
 var authCmd = &cobra.Command{
 	Use:   "auth",
@@ -42,7 +30,7 @@ var authCmd = &cobra.Command{
 		}
 
 		access, refresh := https_client.DumpTokens()
-		tokens := AuthTokens{
+		tokens := http.AuthTokens{
 			AccessToken:  access,
 			RefreshToken: refresh,
 		}
@@ -52,29 +40,13 @@ var authCmd = &cobra.Command{
 			log.Fatal().Msgf("Failed to authenticate %v\n", err)
 		}
 
-		err = os.WriteFile(fmt.Sprintf("%s/%s", os.TempDir(), tokens_filename), b, 0600)
+		err = os.WriteFile(fmt.Sprintf("%s/%s", os.TempDir(), http.TokensFilename), b, 0600)
 		if err != nil {
 			log.Fatal().Msgf("Failed to authenticate %v\n", err)
 		}
 
 		output.Out(map[string]string{"login": "successful"})
 	},
-}
-
-func inject_tokens(cl *oahttp.OpenapiHttpClient) error {
-	b, err := os.ReadFile(fmt.Sprintf("%s/%s", os.TempDir(), tokens_filename))
-	if err != nil {
-		return err
-	}
-
-	var tokens AuthTokens
-	err = json.Unmarshal(b, &tokens)
-	if err != nil {
-		return err
-	}
-
-	cl.SetTokens(tokens.AccessToken, tokens.RefreshToken)
-	return nil
 }
 
 func init() {

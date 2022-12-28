@@ -5,14 +5,12 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
 	"github.com/deepfence/ThreatMapper/deepfence_server_client"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
-
-var https_client *oahttp.OpenapiHttpClient
 
 var scanCmd = &cobra.Command{
 	Use:   "scan",
@@ -20,21 +18,11 @@ var scanCmd = &cobra.Command{
 	Long:  `This subcommand controls scan with remote server`,
 }
 
-func init_https_client() {
-	https_client = oahttp.NewHttpsConsoleClient(console_ip, "443")
-	err := inject_tokens(https_client)
-	if err != nil {
-		log.Fatal().Msgf("Client not authenticated: %v\n", err)
-	}
-}
-
 var scanStartSubCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start scan",
 	Long:  `This subcommand triggers a scan remote server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		init_https_client()
-
 		scan_type, _ := cmd.Flags().GetString("type")
 		if scan_type == "" {
 			log.Fatal().Msg("Please provide an type")
@@ -60,14 +48,14 @@ var scanStartSubCmd = &cobra.Command{
 		var res *deepfence_server_client.ModelScanTriggerResp
 		switch scan_type {
 		case "secret":
-			req := https_client.Client().SecretScanApi.StartSecretScan(context.Background())
+			req := http.Client().SecretScanApi.StartSecretScan(context.Background())
 			req = req.ModelScanTriggerReq(
 				deepfence_server_client.ModelScanTriggerReq{
 					NodeId:       scan_node_id,
 					ResourceId:   resource_id,
 					ResourceType: resource_type,
 				})
-			res, _, err = https_client.Client().SecretScanApi.StartSecretScanExecute(req)
+			res, _, err = http.Client().SecretScanApi.StartSecretScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -84,8 +72,6 @@ var scanStatusSubCmd = &cobra.Command{
 	Short: "Get scan status",
 	Long:  `This subcommand retrieve a scan status`,
 	Run: func(cmd *cobra.Command, args []string) {
-		init_https_client()
-
 		scan_type, _ := cmd.Flags().GetString("type")
 		if scan_type == "" {
 			log.Fatal().Msg("Please provide an type")
@@ -100,9 +86,9 @@ var scanStatusSubCmd = &cobra.Command{
 		var res *deepfence_server_client.ModelScanStatusResp
 		switch scan_type {
 		case "secret":
-			req := https_client.Client().SecretScanApi.StatusSecretScan(context.Background())
+			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
 			req = req.ScanId(scan_id)
-			res, _, err = https_client.Client().SecretScanApi.StatusSecretScanExecute(req)
+			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -119,8 +105,6 @@ var scanListSubCmd = &cobra.Command{
 	Short: "Get scan list",
 	Long:  `This subcommand retrieve list for a host`,
 	Run: func(cmd *cobra.Command, args []string) {
-		init_https_client()
-
 		scan_type, _ := cmd.Flags().GetString("type")
 		if scan_type == "" {
 			log.Fatal().Msg("Please provide an type")
@@ -135,7 +119,7 @@ var scanListSubCmd = &cobra.Command{
 		var res *deepfence_server_client.ModelScanListResp
 		switch scan_type {
 		case "secret":
-			req := https_client.Client().SecretScanApi.ListSecretScan(context.Background())
+			req := http.Client().SecretScanApi.ListSecretScan(context.Background())
 			req = req.ModelScanListReq(deepfence_server_client.ModelScanListReq{
 				NodeId: node_id,
 				Window: deepfence_server_client.ModelFetchWindow{
@@ -143,7 +127,7 @@ var scanListSubCmd = &cobra.Command{
 					Size:   20,
 				},
 			})
-			res, _, err = https_client.Client().SecretScanApi.ListSecretScanExecute(req)
+			res, _, err = http.Client().SecretScanApi.ListSecretScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -160,8 +144,6 @@ var scanResultsSubCmd = &cobra.Command{
 	Short: "Get scan results",
 	Long:  `This subcommand retrieve results from a scan`,
 	Run: func(cmd *cobra.Command, args []string) {
-		init_https_client()
-
 		scan_type, _ := cmd.Flags().GetString("type")
 		if scan_type == "" {
 			log.Fatal().Msg("Please provide an type")
@@ -176,7 +158,7 @@ var scanResultsSubCmd = &cobra.Command{
 		var res *deepfence_server_client.ModelScanResultsResp
 		switch scan_type {
 		case "secret":
-			req := https_client.Client().SecretScanApi.ResultsSecretScan(context.Background())
+			req := http.Client().SecretScanApi.ResultsSecretScan(context.Background())
 			req = req.ModelScanResultsReq(deepfence_server_client.ModelScanResultsReq{
 				ScanId: scan_id,
 				Window: deepfence_server_client.ModelFetchWindow{
@@ -184,7 +166,7 @@ var scanResultsSubCmd = &cobra.Command{
 					Size:   20,
 				},
 			})
-			res, _, err = https_client.Client().SecretScanApi.ResultsSecretScanExecute(req)
+			res, _, err = http.Client().SecretScanApi.ResultsSecretScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}

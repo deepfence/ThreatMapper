@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/spf13/cobra"
 )
 
@@ -31,4 +32,5 @@ func init() {
 	if console_ip == "" {
 		log.Fatal("DEEPFENCE_URL not specified. Please provie Console IP.")
 	}
+	http.InjectConsoleIp(console_ip)
 }
