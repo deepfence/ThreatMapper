@@ -1,6 +1,8 @@
 module github.com/deepfence/ThreatMapper/deepfence_ingester
 
-go 1.18
+go 1.19
+
+replace github.com/deepfence/ThreatMapper/deepfence_server_client => ../deepfence_server_client
 
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils/
 

@@ -116,7 +116,7 @@ openapi: server
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/deepfence_server_client && go mod tidy -v && cd -
+	cd $(PWD)/deepfence_server_client && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli:
