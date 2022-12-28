@@ -1,6 +1,6 @@
 import { Menu } from '@antv/g6';
 import { ICombo, IG6GraphEvent } from '@antv/g6-core';
-import { includes } from 'lodash-es';
+import { includes, isEmpty } from 'lodash-es';
 import { useEffect, useRef, useState } from 'react';
 
 import v1 from '../topology/data/v1.json';
@@ -27,6 +27,7 @@ import {
 } from './topology/utils';
 import { ICustomNode, IEvent, IItem } from './types';
 import { useG6raph } from './useG6raph';
+import { useTopologyClient } from './useTopologyClient';
 import { debounce, nodeToFront } from './utils';
 
 const skipContextMenuIds = ['out-theinternet', 'in-theinternet'];
@@ -114,8 +115,21 @@ const createMenu = (onItemClick: MenuProps) => {
 export const TopologyGraph = () => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
-  const onMenuItemClick = (item: string) => {
-    alert(`connect now is clicked with node: ${item}`);
+  const { onCollapse, onExpand, data, send } = useTopologyClient();
+  // console.log('state is', data);
+  // setInterval
+
+  const onMenuItemClick = async (item: string) => {
+    // alert(`connect now is clicked with node: ${item}`);
+    // const res = await onExpand(item);
+    send({
+      type: 'SET_SELECTED_NODE',
+      item,
+    });
+    // setInterval(async () => {
+    //   const res = await onExpand(item);
+    //   console.log('onExpand in interval', res);
+    // }, 2000);
   };
 
   const { graph } = useG6raph(container, {}, { plugins: [createMenu(onMenuItemClick)] });
@@ -160,9 +174,9 @@ export const TopologyGraph = () => {
     if (!graph) {
       return;
     }
-
-    update(v1);
-
+    if (!isEmpty(data.diff)) {
+      update(data.diff);
+    }
     function callExpandApi(item: IItem) {
       if (graph === null || item === null) {
         return;

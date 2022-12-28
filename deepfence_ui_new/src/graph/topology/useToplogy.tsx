@@ -48,6 +48,9 @@ export const useToplogy = (
     const edges_delta = topologyEdgesToDelta(data.edges);
     const nodes_delta = topologyNodesToDelta(graph, data.nodes);
 
+    console.log('edges_delta', edges_delta);
+    console.log('nodes_delta', nodes_delta);
+
     if (edges_delta !== null && edges_delta.remove) {
       updateEdges?.({
         add: [],

@@ -31,6 +31,7 @@
     "@radix-ui/react-tabs": "^1.0.0",
     "@radix-ui/react-tooltip": "^1.0.0",
     "@tanstack/react-table": "^8.5.13",
+    "@xstate/react": "^3.0.1",
     "ariakit": "2.0.0-next.41",
     "classnames": "^2.3.2",
     "lodash-es": "^4.17.21",
@@ -38,7 +39,8 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "tailwind-merge": "^1.6.0",
-    "tailwindcss-radix": "^2.6.0"
+    "tailwindcss-radix": "^2.6.0",
+    "xstate": "^4.35.1"
   },
   "devDependencies": {
     "@babel/core": "^7.19.1",
