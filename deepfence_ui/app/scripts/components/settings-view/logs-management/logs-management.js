@@ -32,6 +32,7 @@ const complianceStatusCollection = [
 ];
 
 const COMPLIANCE = 'compliance';
+const MALWARE = 'malware-scan';
 const resourceCollection = [
   {
     name: 'Vulnerabilities',
@@ -47,7 +48,7 @@ const resourceCollection = [
   },
   {
     name: 'Malwares',
-    value: 'malware-scan',
+    value: MALWARE,
   },
 ];
 
@@ -148,6 +149,8 @@ const VulnerabilityManagementView = props => {
     let optionList = [];
     if (docType === COMPLIANCE) {
       optionList = complianceStatusCollection.map(el => el);
+    } else if (docType === MALWARE) {
+      optionList = severityCollection.filter(el => el.value !== 'critical').map(el => el);
     } else {
       optionList = severityCollection.map(el => el);
     }
