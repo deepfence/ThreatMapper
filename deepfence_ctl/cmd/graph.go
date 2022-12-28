@@ -33,7 +33,7 @@ var graphTopologySubCmd = &cobra.Command{
 		provider_entries := strings.Split(provider_filter, ",")
 
 		req := http.Client().TopologyApi.GetTopologyGraph(context.Background())
-		req.ReportersTopologyFilters(deepfence_server_client.ReportersTopologyFilters{
+		req = req.ReportersTopologyFilters(deepfence_server_client.ReportersTopologyFilters{
 			CloudFilter:  provider_entries,
 			HostFilter:   host_entries,
 			RegionFilter: region_entries,

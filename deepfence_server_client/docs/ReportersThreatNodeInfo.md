@@ -4,21 +4,21 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**AttackPath** | Pointer to **[][]string** |  | [optional] 
-**ComplianceCount** | Pointer to **int32** |  | [optional] 
-**Count** | Pointer to **int32** |  | [optional] 
-**Id** | Pointer to **string** |  | [optional] 
-**Label** | Pointer to **string** |  | [optional] 
-**NodeType** | Pointer to **string** |  | [optional] 
-**Nodes** | Pointer to [**map[string]ReportersNodeInfo**](ReportersNodeInfo.md) |  | [optional] 
-**SecretsCount** | Pointer to **int32** |  | [optional] 
-**VulnerabilityCount** | Pointer to **int32** |  | [optional] 
+**AttackPath** | **[][]string** |  | 
+**ComplianceCount** | **int32** |  | 
+**Count** | **int32** |  | 
+**Id** | **string** |  | 
+**Label** | **string** |  | 
+**NodeType** | **string** |  | 
+**Nodes** | [**map[string]ReportersNodeInfo**](ReportersNodeInfo.md) |  | 
+**SecretsCount** | **int32** |  | 
+**VulnerabilityCount** | **int32** |  | 
 
 ## Methods
 
 ### NewReportersThreatNodeInfo
 
-`func NewReportersThreatNodeInfo() *ReportersThreatNodeInfo`
+`func NewReportersThreatNodeInfo(attackPath [][]string, complianceCount int32, count int32, id string, label string, nodeType string, nodes map[string]ReportersNodeInfo, secretsCount int32, vulnerabilityCount int32, ) *ReportersThreatNodeInfo`
 
 NewReportersThreatNodeInfo instantiates a new ReportersThreatNodeInfo object
 This constructor will assign default values to properties that have it defined,
@@ -52,11 +52,6 @@ and a boolean to check if the value has been set.
 
 SetAttackPath sets AttackPath field to given value.
 
-### HasAttackPath
-
-`func (o *ReportersThreatNodeInfo) HasAttackPath() bool`
-
-HasAttackPath returns a boolean if a field has been set.
 
 ### SetAttackPathNil
 
@@ -87,11 +82,6 @@ and a boolean to check if the value has been set.
 
 SetComplianceCount sets ComplianceCount field to given value.
 
-### HasComplianceCount
-
-`func (o *ReportersThreatNodeInfo) HasComplianceCount() bool`
-
-HasComplianceCount returns a boolean if a field has been set.
 
 ### GetCount
 
@@ -112,11 +102,6 @@ and a boolean to check if the value has been set.
 
 SetCount sets Count field to given value.
 
-### HasCount
-
-`func (o *ReportersThreatNodeInfo) HasCount() bool`
-
-HasCount returns a boolean if a field has been set.
 
 ### GetId
 
@@ -137,11 +122,6 @@ and a boolean to check if the value has been set.
 
 SetId sets Id field to given value.
 
-### HasId
-
-`func (o *ReportersThreatNodeInfo) HasId() bool`
-
-HasId returns a boolean if a field has been set.
 
 ### GetLabel
 
@@ -162,11 +142,6 @@ and a boolean to check if the value has been set.
 
 SetLabel sets Label field to given value.
 
-### HasLabel
-
-`func (o *ReportersThreatNodeInfo) HasLabel() bool`
-
-HasLabel returns a boolean if a field has been set.
 
 ### GetNodeType
 
@@ -187,11 +162,6 @@ and a boolean to check if the value has been set.
 
 SetNodeType sets NodeType field to given value.
 
-### HasNodeType
-
-`func (o *ReportersThreatNodeInfo) HasNodeType() bool`
-
-HasNodeType returns a boolean if a field has been set.
 
 ### GetNodes
 
@@ -212,11 +182,6 @@ and a boolean to check if the value has been set.
 
 SetNodes sets Nodes field to given value.
 
-### HasNodes
-
-`func (o *ReportersThreatNodeInfo) HasNodes() bool`
-
-HasNodes returns a boolean if a field has been set.
 
 ### SetNodesNil
 
@@ -247,11 +212,6 @@ and a boolean to check if the value has been set.
 
 SetSecretsCount sets SecretsCount field to given value.
 
-### HasSecretsCount
-
-`func (o *ReportersThreatNodeInfo) HasSecretsCount() bool`
-
-HasSecretsCount returns a boolean if a field has been set.
 
 ### GetVulnerabilityCount
 
@@ -272,11 +232,6 @@ and a boolean to check if the value has been set.
 
 SetVulnerabilityCount sets VulnerabilityCount field to given value.
 
-### HasVulnerabilityCount
-
-`func (o *ReportersThreatNodeInfo) HasVulnerabilityCount() bool`
-
-HasVulnerabilityCount returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -4,15 +4,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**CloudFilter** | Pointer to **[]string** |  | [optional] 
-**HostFilter** | Pointer to **[]string** |  | [optional] 
-**RegionFilter** | Pointer to **[]string** |  | [optional] 
+**CloudFilter** | **[]string** |  | 
+**HostFilter** | **[]string** |  | 
+**RegionFilter** | **[]string** |  | 
 
 ## Methods
 
 ### NewReportersTopologyFilters
 
-`func NewReportersTopologyFilters() *ReportersTopologyFilters`
+`func NewReportersTopologyFilters(cloudFilter []string, hostFilter []string, regionFilter []string, ) *ReportersTopologyFilters`
 
 NewReportersTopologyFilters instantiates a new ReportersTopologyFilters object
 This constructor will assign default values to properties that have it defined,
@@ -46,11 +46,6 @@ and a boolean to check if the value has been set.
 
 SetCloudFilter sets CloudFilter field to given value.
 
-### HasCloudFilter
-
-`func (o *ReportersTopologyFilters) HasCloudFilter() bool`
-
-HasCloudFilter returns a boolean if a field has been set.
 
 ### SetCloudFilterNil
 
@@ -81,11 +76,6 @@ and a boolean to check if the value has been set.
 
 SetHostFilter sets HostFilter field to given value.
 
-### HasHostFilter
-
-`func (o *ReportersTopologyFilters) HasHostFilter() bool`
-
-HasHostFilter returns a boolean if a field has been set.
 
 ### SetHostFilterNil
 
@@ -116,11 +106,6 @@ and a boolean to check if the value has been set.
 
 SetRegionFilter sets RegionFilter field to given value.
 
-### HasRegionFilter
-
-`func (o *ReportersTopologyFilters) HasRegionFilter() bool`
-
-HasRegionFilter returns a boolean if a field has been set.
 
 ### SetRegionFilterNil
 

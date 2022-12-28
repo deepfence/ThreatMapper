@@ -2380,6 +2380,8 @@ components:
       properties:
         api_token:
           type: string
+      required:
+      - api_token
       type: object
     ModelFetchWindow:
       example:
@@ -2403,6 +2405,9 @@ components:
           type: string
         password:
           type: string
+      required:
+      - email
+      - password
       type: object
     ModelRawReport:
       example:
@@ -2444,6 +2449,9 @@ components:
           type: string
         refresh_token:
           type: string
+      required:
+      - access_token
+      - refresh_token
       type: object
     ModelScanInfo:
       example:
@@ -2632,6 +2640,14 @@ components:
           type: string
         password:
           type: string
+      required:
+      - company
+      - console_url
+      - email
+      - first_name
+      - is_temporary_password
+      - last_name
+      - password
       type: object
     PostgresqlDbApiToken:
       type: object
@@ -2644,6 +2660,9 @@ components:
           type: string
         target:
           type: string
+      required:
+      - source
+      - target
       type: object
     ReportersNodeInfo:
       properties:
@@ -2665,6 +2684,16 @@ components:
           type: integer
         vulnerability_scan_id:
           type: string
+      required:
+      - compliance_count
+      - compliance_scan_id
+      - image_name
+      - name
+      - node_id
+      - secrets_count
+      - secrets_scan_id
+      - vulnerability_count
+      - vulnerability_scan_id
       type: object
     ReportersProviderThreatGraph:
       properties:
@@ -2679,6 +2708,11 @@ components:
           type: integer
         vulnerability_count:
           type: integer
+      required:
+      - compliance_count
+      - resources
+      - secrets_count
+      - vulnerability_count
       type: object
     ReportersRenderedGraph:
       example:
@@ -2759,6 +2793,14 @@ components:
             type: array
           nullable: true
           type: object
+      required:
+      - connections
+      - containers
+      - hosts
+      - pods
+      - processes
+      - providers
+      - regions
       type: object
     ReportersThreatGraph:
       additionalProperties:
@@ -2793,6 +2835,16 @@ components:
           type: integer
         vulnerability_count:
           type: integer
+      required:
+      - attack_path
+      - compliance_count
+      - count
+      - id
+      - label
+      - node_type
+      - nodes
+      - secrets_count
+      - vulnerability_count
       type: object
     ReportersTopologyFilters:
       example:
@@ -2821,6 +2873,10 @@ components:
             type: string
           nullable: true
           type: array
+      required:
+      - cloud_filter
+      - host_filter
+      - region_filter
       type: object
     IngestersSecret_Match:
       example:

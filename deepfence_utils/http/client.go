@@ -113,7 +113,7 @@ func NewHttpsConsoleClient(url, port string) *OpenapiHttpClient {
 
 func (cl *OpenapiHttpClient) APITokenAuthenticate(api_token string) error {
 	req := cl.client.AuthenticationApi.AuthToken(context.Background()).ModelApiAuthRequest(openapi.ModelApiAuthRequest{
-		ApiToken: &api_token,
+		ApiToken: api_token,
 	})
 	resp, _, err := cl.client.AuthenticationApi.AuthTokenExecute(req)
 	if err != nil {
@@ -140,14 +140,14 @@ func (cl *OpenapiHttpClient) updateHeaders(tokens openapi.ModelResponseAccessTok
 	defer cl.token_access.Unlock()
 	accessToken := tokens.AccessToken
 	refreshToken := tokens.RefreshToken
-	if accessToken == nil || refreshToken == nil {
+	if accessToken == "" || refreshToken == "" {
 		return AuthError
 	}
 
-	cl.client.GetConfig().AddDefaultHeader(auth_field, fmt.Sprintf(bearer_format, *accessToken))
-	cl.refresher.GetConfig().AddDefaultHeader(auth_field, fmt.Sprintf(bearer_format, *refreshToken))
-	cl.access_token = *accessToken
-	cl.refresh_token = *refreshToken
+	cl.client.GetConfig().AddDefaultHeader(auth_field, fmt.Sprintf(bearer_format, accessToken))
+	cl.refresher.GetConfig().AddDefaultHeader(auth_field, fmt.Sprintf(bearer_format, refreshToken))
+	cl.access_token = accessToken
+	cl.refresh_token = refreshToken
 
 	return nil
 }

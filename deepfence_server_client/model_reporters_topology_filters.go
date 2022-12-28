@@ -20,17 +20,20 @@ var _ MappedNullable = &ReportersTopologyFilters{}
 
 // ReportersTopologyFilters struct for ReportersTopologyFilters
 type ReportersTopologyFilters struct {
-	CloudFilter []string `json:"cloud_filter,omitempty"`
-	HostFilter []string `json:"host_filter,omitempty"`
-	RegionFilter []string `json:"region_filter,omitempty"`
+	CloudFilter []string `json:"cloud_filter"`
+	HostFilter []string `json:"host_filter"`
+	RegionFilter []string `json:"region_filter"`
 }
 
 // NewReportersTopologyFilters instantiates a new ReportersTopologyFilters object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportersTopologyFilters() *ReportersTopologyFilters {
+func NewReportersTopologyFilters(cloudFilter []string, hostFilter []string, regionFilter []string) *ReportersTopologyFilters {
 	this := ReportersTopologyFilters{}
+	this.CloudFilter = cloudFilter
+	this.HostFilter = hostFilter
+	this.RegionFilter = regionFilter
 	return &this
 }
 
@@ -42,16 +45,18 @@ func NewReportersTopologyFiltersWithDefaults() *ReportersTopologyFilters {
 	return &this
 }
 
-// GetCloudFilter returns the CloudFilter field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetCloudFilter returns the CloudFilter field value
+// If the value is explicit nil, the zero value for []string will be returned
 func (o *ReportersTopologyFilters) GetCloudFilter() []string {
 	if o == nil {
 		var ret []string
 		return ret
 	}
+
 	return o.CloudFilter
 }
 
-// GetCloudFilterOk returns a tuple with the CloudFilter field value if set, nil otherwise
+// GetCloudFilterOk returns a tuple with the CloudFilter field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersTopologyFilters) GetCloudFilterOk() ([]string, bool) {
@@ -61,30 +66,23 @@ func (o *ReportersTopologyFilters) GetCloudFilterOk() ([]string, bool) {
 	return o.CloudFilter, true
 }
 
-// HasCloudFilter returns a boolean if a field has been set.
-func (o *ReportersTopologyFilters) HasCloudFilter() bool {
-	if o != nil && isNil(o.CloudFilter) {
-		return true
-	}
-
-	return false
-}
-
-// SetCloudFilter gets a reference to the given []string and assigns it to the CloudFilter field.
+// SetCloudFilter sets field value
 func (o *ReportersTopologyFilters) SetCloudFilter(v []string) {
 	o.CloudFilter = v
 }
 
-// GetHostFilter returns the HostFilter field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetHostFilter returns the HostFilter field value
+// If the value is explicit nil, the zero value for []string will be returned
 func (o *ReportersTopologyFilters) GetHostFilter() []string {
 	if o == nil {
 		var ret []string
 		return ret
 	}
+
 	return o.HostFilter
 }
 
-// GetHostFilterOk returns a tuple with the HostFilter field value if set, nil otherwise
+// GetHostFilterOk returns a tuple with the HostFilter field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersTopologyFilters) GetHostFilterOk() ([]string, bool) {
@@ -94,30 +92,23 @@ func (o *ReportersTopologyFilters) GetHostFilterOk() ([]string, bool) {
 	return o.HostFilter, true
 }
 
-// HasHostFilter returns a boolean if a field has been set.
-func (o *ReportersTopologyFilters) HasHostFilter() bool {
-	if o != nil && isNil(o.HostFilter) {
-		return true
-	}
-
-	return false
-}
-
-// SetHostFilter gets a reference to the given []string and assigns it to the HostFilter field.
+// SetHostFilter sets field value
 func (o *ReportersTopologyFilters) SetHostFilter(v []string) {
 	o.HostFilter = v
 }
 
-// GetRegionFilter returns the RegionFilter field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetRegionFilter returns the RegionFilter field value
+// If the value is explicit nil, the zero value for []string will be returned
 func (o *ReportersTopologyFilters) GetRegionFilter() []string {
 	if o == nil {
 		var ret []string
 		return ret
 	}
+
 	return o.RegionFilter
 }
 
-// GetRegionFilterOk returns a tuple with the RegionFilter field value if set, nil otherwise
+// GetRegionFilterOk returns a tuple with the RegionFilter field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersTopologyFilters) GetRegionFilterOk() ([]string, bool) {
@@ -127,16 +118,7 @@ func (o *ReportersTopologyFilters) GetRegionFilterOk() ([]string, bool) {
 	return o.RegionFilter, true
 }
 
-// HasRegionFilter returns a boolean if a field has been set.
-func (o *ReportersTopologyFilters) HasRegionFilter() bool {
-	if o != nil && isNil(o.RegionFilter) {
-		return true
-	}
-
-	return false
-}
-
-// SetRegionFilter gets a reference to the given []string and assigns it to the RegionFilter field.
+// SetRegionFilter sets field value
 func (o *ReportersTopologyFilters) SetRegionFilter(v []string) {
 	o.RegionFilter = v
 }

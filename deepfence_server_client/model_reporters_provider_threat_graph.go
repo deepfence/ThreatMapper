@@ -20,18 +20,22 @@ var _ MappedNullable = &ReportersProviderThreatGraph{}
 
 // ReportersProviderThreatGraph struct for ReportersProviderThreatGraph
 type ReportersProviderThreatGraph struct {
-	ComplianceCount *int32 `json:"compliance_count,omitempty"`
-	Resources []ReportersThreatNodeInfo `json:"resources,omitempty"`
-	SecretsCount *int32 `json:"secrets_count,omitempty"`
-	VulnerabilityCount *int32 `json:"vulnerability_count,omitempty"`
+	ComplianceCount int32 `json:"compliance_count"`
+	Resources []ReportersThreatNodeInfo `json:"resources"`
+	SecretsCount int32 `json:"secrets_count"`
+	VulnerabilityCount int32 `json:"vulnerability_count"`
 }
 
 // NewReportersProviderThreatGraph instantiates a new ReportersProviderThreatGraph object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportersProviderThreatGraph() *ReportersProviderThreatGraph {
+func NewReportersProviderThreatGraph(complianceCount int32, resources []ReportersThreatNodeInfo, secretsCount int32, vulnerabilityCount int32) *ReportersProviderThreatGraph {
 	this := ReportersProviderThreatGraph{}
+	this.ComplianceCount = complianceCount
+	this.Resources = resources
+	this.SecretsCount = secretsCount
+	this.VulnerabilityCount = vulnerabilityCount
 	return &this
 }
 
@@ -43,48 +47,42 @@ func NewReportersProviderThreatGraphWithDefaults() *ReportersProviderThreatGraph
 	return &this
 }
 
-// GetComplianceCount returns the ComplianceCount field value if set, zero value otherwise.
+// GetComplianceCount returns the ComplianceCount field value
 func (o *ReportersProviderThreatGraph) GetComplianceCount() int32 {
-	if o == nil || isNil(o.ComplianceCount) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.ComplianceCount
+
+	return o.ComplianceCount
 }
 
-// GetComplianceCountOk returns a tuple with the ComplianceCount field value if set, nil otherwise
+// GetComplianceCountOk returns a tuple with the ComplianceCount field value
 // and a boolean to check if the value has been set.
 func (o *ReportersProviderThreatGraph) GetComplianceCountOk() (*int32, bool) {
-	if o == nil || isNil(o.ComplianceCount) {
+	if o == nil {
 		return nil, false
 	}
-	return o.ComplianceCount, true
+	return &o.ComplianceCount, true
 }
 
-// HasComplianceCount returns a boolean if a field has been set.
-func (o *ReportersProviderThreatGraph) HasComplianceCount() bool {
-	if o != nil && !isNil(o.ComplianceCount) {
-		return true
-	}
-
-	return false
-}
-
-// SetComplianceCount gets a reference to the given int32 and assigns it to the ComplianceCount field.
+// SetComplianceCount sets field value
 func (o *ReportersProviderThreatGraph) SetComplianceCount(v int32) {
-	o.ComplianceCount = &v
+	o.ComplianceCount = v
 }
 
-// GetResources returns the Resources field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetResources returns the Resources field value
+// If the value is explicit nil, the zero value for []ReportersThreatNodeInfo will be returned
 func (o *ReportersProviderThreatGraph) GetResources() []ReportersThreatNodeInfo {
 	if o == nil {
 		var ret []ReportersThreatNodeInfo
 		return ret
 	}
+
 	return o.Resources
 }
 
-// GetResourcesOk returns a tuple with the Resources field value if set, nil otherwise
+// GetResourcesOk returns a tuple with the Resources field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersProviderThreatGraph) GetResourcesOk() ([]ReportersThreatNodeInfo, bool) {
@@ -94,82 +92,57 @@ func (o *ReportersProviderThreatGraph) GetResourcesOk() ([]ReportersThreatNodeIn
 	return o.Resources, true
 }
 
-// HasResources returns a boolean if a field has been set.
-func (o *ReportersProviderThreatGraph) HasResources() bool {
-	if o != nil && isNil(o.Resources) {
-		return true
-	}
-
-	return false
-}
-
-// SetResources gets a reference to the given []ReportersThreatNodeInfo and assigns it to the Resources field.
+// SetResources sets field value
 func (o *ReportersProviderThreatGraph) SetResources(v []ReportersThreatNodeInfo) {
 	o.Resources = v
 }
 
-// GetSecretsCount returns the SecretsCount field value if set, zero value otherwise.
+// GetSecretsCount returns the SecretsCount field value
 func (o *ReportersProviderThreatGraph) GetSecretsCount() int32 {
-	if o == nil || isNil(o.SecretsCount) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.SecretsCount
+
+	return o.SecretsCount
 }
 
-// GetSecretsCountOk returns a tuple with the SecretsCount field value if set, nil otherwise
+// GetSecretsCountOk returns a tuple with the SecretsCount field value
 // and a boolean to check if the value has been set.
 func (o *ReportersProviderThreatGraph) GetSecretsCountOk() (*int32, bool) {
-	if o == nil || isNil(o.SecretsCount) {
+	if o == nil {
 		return nil, false
 	}
-	return o.SecretsCount, true
+	return &o.SecretsCount, true
 }
 
-// HasSecretsCount returns a boolean if a field has been set.
-func (o *ReportersProviderThreatGraph) HasSecretsCount() bool {
-	if o != nil && !isNil(o.SecretsCount) {
-		return true
-	}
-
-	return false
-}
-
-// SetSecretsCount gets a reference to the given int32 and assigns it to the SecretsCount field.
+// SetSecretsCount sets field value
 func (o *ReportersProviderThreatGraph) SetSecretsCount(v int32) {
-	o.SecretsCount = &v
+	o.SecretsCount = v
 }
 
-// GetVulnerabilityCount returns the VulnerabilityCount field value if set, zero value otherwise.
+// GetVulnerabilityCount returns the VulnerabilityCount field value
 func (o *ReportersProviderThreatGraph) GetVulnerabilityCount() int32 {
-	if o == nil || isNil(o.VulnerabilityCount) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.VulnerabilityCount
+
+	return o.VulnerabilityCount
 }
 
-// GetVulnerabilityCountOk returns a tuple with the VulnerabilityCount field value if set, nil otherwise
+// GetVulnerabilityCountOk returns a tuple with the VulnerabilityCount field value
 // and a boolean to check if the value has been set.
 func (o *ReportersProviderThreatGraph) GetVulnerabilityCountOk() (*int32, bool) {
-	if o == nil || isNil(o.VulnerabilityCount) {
+	if o == nil {
 		return nil, false
 	}
-	return o.VulnerabilityCount, true
+	return &o.VulnerabilityCount, true
 }
 
-// HasVulnerabilityCount returns a boolean if a field has been set.
-func (o *ReportersProviderThreatGraph) HasVulnerabilityCount() bool {
-	if o != nil && !isNil(o.VulnerabilityCount) {
-		return true
-	}
-
-	return false
-}
-
-// SetVulnerabilityCount gets a reference to the given int32 and assigns it to the VulnerabilityCount field.
+// SetVulnerabilityCount sets field value
 func (o *ReportersProviderThreatGraph) SetVulnerabilityCount(v int32) {
-	o.VulnerabilityCount = &v
+	o.VulnerabilityCount = v
 }
 
 func (o ReportersProviderThreatGraph) MarshalJSON() ([]byte, error) {
@@ -182,18 +155,12 @@ func (o ReportersProviderThreatGraph) MarshalJSON() ([]byte, error) {
 
 func (o ReportersProviderThreatGraph) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !isNil(o.ComplianceCount) {
-		toSerialize["compliance_count"] = o.ComplianceCount
-	}
+	toSerialize["compliance_count"] = o.ComplianceCount
 	if o.Resources != nil {
 		toSerialize["resources"] = o.Resources
 	}
-	if !isNil(o.SecretsCount) {
-		toSerialize["secrets_count"] = o.SecretsCount
-	}
-	if !isNil(o.VulnerabilityCount) {
-		toSerialize["vulnerability_count"] = o.VulnerabilityCount
-	}
+	toSerialize["secrets_count"] = o.SecretsCount
+	toSerialize["vulnerability_count"] = o.VulnerabilityCount
 	return toSerialize, nil
 }
 

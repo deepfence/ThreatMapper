@@ -42,14 +42,14 @@ var (
 )
 
 type ApiToken struct {
-	ApiToken         uuid.UUID `json:"api_token"`
-	ID               int64     `json:"id"`
-	Name             string    `json:"name"`
-	CompanyID        int32     `json:"company_id"`
-	RoleID           int32     `json:"role_id"`
-	GroupID          int32     `json:"group_id"`
-	CreatedByUserID  int64     `json:"created_by_user_id"`
-	CompanyNamespace string    `json:"company_namespace"`
+	ApiToken         uuid.UUID `json:"api_token" required:"true"`
+	ID               int64     `json:"id" required:"true"`
+	Name             string    `json:"name" required:"true"`
+	CompanyID        int32     `json:"company_id" required:"true"`
+	RoleID           int32     `json:"role_id" required:"true"`
+	GroupID          int32     `json:"group_id" required:"true"`
+	CreatedByUserID  int64     `json:"created_by_user_id" required:"true"`
+	CompanyNamespace string    `json:"company_namespace" required:"true"`
 }
 
 func (a *ApiToken) GetUser(ctx context.Context, pgClient *postgresqlDb.Queries) (*User, error) {
@@ -89,10 +89,10 @@ func (a *ApiToken) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (
 }
 
 type Company struct {
-	ID          int32  `json:"id"`
-	Name        string `json:"name"`
-	EmailDomain string `json:"email_domain"`
-	Namespace   string `json:"namespace"`
+	ID          int32  `json:"id" required:"true"`
+	Name        string `json:"name" required:"true"`
+	EmailDomain string `json:"email_domain" required:"true"`
+	Namespace   string `json:"namespace" required:"true"`
 }
 
 func (c *Company) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.Company, error) {
@@ -143,22 +143,22 @@ func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlD
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,password,min=8,max=32"`
+	Email    string `json:"email" validate:"required,email" required:"true"`
+	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
 }
 
 type ApiAuthRequest struct {
-	ApiToken string `json:"api_token" validate:"required,uuid4"`
+	ApiToken string `json:"api_token" validate:"required,uuid4" required:"true"`
 }
 
 type UserRegisterRequest struct {
-	FirstName           string `json:"first_name" validate:"required,user_name,min=2,max=32"`
-	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32"`
-	Email               string `json:"email" validate:"required,email"`
-	Company             string `json:"company" validate:"required,company_name,min=2,max=32"`
-	Password            string `json:"password" validate:"required,password,min=8,max=32"`
-	IsTemporaryPassword bool   `json:"is_temporary_password"`
-	ConsoleURL          string `json:"console_url" validate:"required,url"`
+	FirstName           string `json:"first_name" validate:"required,user_name,min=2,max=32" required:"true"`
+	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32" required:"true"`
+	Email               string `json:"email" validate:"required,email" required:"true"`
+	Company             string `json:"company" validate:"required,company_name,min=2,max=32" required:"true"`
+	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
+	IsTemporaryPassword bool   `json:"is_temporary_password" required:"true"`
+	ConsoleURL          string `json:"console_url" validate:"required,url" required:"true"`
 }
 
 type User struct {

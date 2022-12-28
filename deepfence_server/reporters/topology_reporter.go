@@ -206,24 +206,24 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts []str
 }
 
 type ConnectionSummary struct {
-	Source string `json:"source"`
-	Target string `json:"target"`
+	Source string `json:"source" required:"true"`
+	Target string `json:"target" required:"true"`
 }
 
 type RenderedGraph struct {
-	Hosts       map[string]map[string][]string `json:"hosts"`
-	Processes   map[string][]string            `json:"processes"`
-	Pods        map[string][]string            `json:"pods"`
-	Containers  map[string][]string            `json:"containers"`
-	Providers   []string                       `json:"providers"`
-	Regions     map[string][]string            `json:"regions"`
-	Connections []ConnectionSummary            `json:"connections"`
+	Hosts       map[string]map[string][]string `json:"hosts" required:"true"`
+	Processes   map[string][]string            `json:"processes" required:"true"`
+	Pods        map[string][]string            `json:"pods" required:"true"`
+	Containers  map[string][]string            `json:"containers" required:"true"`
+	Providers   []string                       `json:"providers" required:"true"`
+	Regions     map[string][]string            `json:"regions" required:"true"`
+	Connections []ConnectionSummary            `json:"connections" required:"true"`
 }
 
 type TopologyFilters struct {
-	CloudFilter  []string `json:"cloud_filter"`
-	RegionFilter []string `json:"region_filter"`
-	HostFilter   []string `json:"host_filter"`
+	CloudFilter  []string `json:"cloud_filter" required:"true"`
+	RegionFilter []string `json:"region_filter" required:"true"`
+	HostFilter   []string `json:"host_filter" required:"true"`
 }
 
 func (nc *neo4jTopologyReporter) GetGraph(ctx context.Context, cloud_filter, region_filter, host_filter []string) (RenderedGraph, error) {

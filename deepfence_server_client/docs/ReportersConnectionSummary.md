@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Source** | Pointer to **string** |  | [optional] 
-**Target** | Pointer to **string** |  | [optional] 
+**Source** | **string** |  | 
+**Target** | **string** |  | 
 
 ## Methods
 
 ### NewReportersConnectionSummary
 
-`func NewReportersConnectionSummary() *ReportersConnectionSummary`
+`func NewReportersConnectionSummary(source string, target string, ) *ReportersConnectionSummary`
 
 NewReportersConnectionSummary instantiates a new ReportersConnectionSummary object
 This constructor will assign default values to properties that have it defined,
@@ -45,11 +45,6 @@ and a boolean to check if the value has been set.
 
 SetSource sets Source field to given value.
 
-### HasSource
-
-`func (o *ReportersConnectionSummary) HasSource() bool`
-
-HasSource returns a boolean if a field has been set.
 
 ### GetTarget
 
@@ -70,11 +65,6 @@ and a boolean to check if the value has been set.
 
 SetTarget sets Target field to given value.
 
-### HasTarget
-
-`func (o *ReportersConnectionSummary) HasTarget() bool`
-
-HasTarget returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

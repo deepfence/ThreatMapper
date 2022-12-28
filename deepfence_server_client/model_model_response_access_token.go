@@ -20,16 +20,18 @@ var _ MappedNullable = &ModelResponseAccessToken{}
 
 // ModelResponseAccessToken struct for ModelResponseAccessToken
 type ModelResponseAccessToken struct {
-	AccessToken *string `json:"access_token,omitempty"`
-	RefreshToken *string `json:"refresh_token,omitempty"`
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 // NewModelResponseAccessToken instantiates a new ModelResponseAccessToken object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelResponseAccessToken() *ModelResponseAccessToken {
+func NewModelResponseAccessToken(accessToken string, refreshToken string) *ModelResponseAccessToken {
 	this := ModelResponseAccessToken{}
+	this.AccessToken = accessToken
+	this.RefreshToken = refreshToken
 	return &this
 }
 
@@ -41,68 +43,52 @@ func NewModelResponseAccessTokenWithDefaults() *ModelResponseAccessToken {
 	return &this
 }
 
-// GetAccessToken returns the AccessToken field value if set, zero value otherwise.
+// GetAccessToken returns the AccessToken field value
 func (o *ModelResponseAccessToken) GetAccessToken() string {
-	if o == nil || isNil(o.AccessToken) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.AccessToken
+
+	return o.AccessToken
 }
 
-// GetAccessTokenOk returns a tuple with the AccessToken field value if set, nil otherwise
+// GetAccessTokenOk returns a tuple with the AccessToken field value
 // and a boolean to check if the value has been set.
 func (o *ModelResponseAccessToken) GetAccessTokenOk() (*string, bool) {
-	if o == nil || isNil(o.AccessToken) {
+	if o == nil {
 		return nil, false
 	}
-	return o.AccessToken, true
+	return &o.AccessToken, true
 }
 
-// HasAccessToken returns a boolean if a field has been set.
-func (o *ModelResponseAccessToken) HasAccessToken() bool {
-	if o != nil && !isNil(o.AccessToken) {
-		return true
-	}
-
-	return false
-}
-
-// SetAccessToken gets a reference to the given string and assigns it to the AccessToken field.
+// SetAccessToken sets field value
 func (o *ModelResponseAccessToken) SetAccessToken(v string) {
-	o.AccessToken = &v
+	o.AccessToken = v
 }
 
-// GetRefreshToken returns the RefreshToken field value if set, zero value otherwise.
+// GetRefreshToken returns the RefreshToken field value
 func (o *ModelResponseAccessToken) GetRefreshToken() string {
-	if o == nil || isNil(o.RefreshToken) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.RefreshToken
+
+	return o.RefreshToken
 }
 
-// GetRefreshTokenOk returns a tuple with the RefreshToken field value if set, nil otherwise
+// GetRefreshTokenOk returns a tuple with the RefreshToken field value
 // and a boolean to check if the value has been set.
 func (o *ModelResponseAccessToken) GetRefreshTokenOk() (*string, bool) {
-	if o == nil || isNil(o.RefreshToken) {
+	if o == nil {
 		return nil, false
 	}
-	return o.RefreshToken, true
+	return &o.RefreshToken, true
 }
 
-// HasRefreshToken returns a boolean if a field has been set.
-func (o *ModelResponseAccessToken) HasRefreshToken() bool {
-	if o != nil && !isNil(o.RefreshToken) {
-		return true
-	}
-
-	return false
-}
-
-// SetRefreshToken gets a reference to the given string and assigns it to the RefreshToken field.
+// SetRefreshToken sets field value
 func (o *ModelResponseAccessToken) SetRefreshToken(v string) {
-	o.RefreshToken = &v
+	o.RefreshToken = v
 }
 
 func (o ModelResponseAccessToken) MarshalJSON() ([]byte, error) {
@@ -115,12 +101,8 @@ func (o ModelResponseAccessToken) MarshalJSON() ([]byte, error) {
 
 func (o ModelResponseAccessToken) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !isNil(o.AccessToken) {
-		toSerialize["access_token"] = o.AccessToken
-	}
-	if !isNil(o.RefreshToken) {
-		toSerialize["refresh_token"] = o.RefreshToken
-	}
+	toSerialize["access_token"] = o.AccessToken
+	toSerialize["refresh_token"] = o.RefreshToken
 	return toSerialize, nil
 }
 

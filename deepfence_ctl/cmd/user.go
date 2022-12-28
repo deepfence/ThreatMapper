@@ -56,13 +56,13 @@ var userRegisterSubCmd = &cobra.Command{
 		https_client := oahttp.NewHttpsConsoleClient(console_ip, "443")
 		req := https_client.Client().UserApi.RegisterUser(context.Background())
 		req = req.ModelUserRegisterRequest(deepfence_server_client.ModelUserRegisterRequest{
-			Company:             &company,
-			ConsoleUrl:          &consoleUrl,
-			Email:               &email,
-			FirstName:           &first_name,
-			IsTemporaryPassword: &empty,
-			LastName:            &last_name,
-			Password:            &password,
+			Company:             company,
+			ConsoleUrl:          consoleUrl,
+			Email:               email,
+			FirstName:           first_name,
+			IsTemporaryPassword: empty,
+			LastName:            last_name,
+			Password:            password,
 		})
 
 		res, hr, err := https_client.Client().UserApi.RegisterUserExecute(req)
@@ -71,8 +71,8 @@ var userRegisterSubCmd = &cobra.Command{
 		}
 
 		tokens := http.AuthTokens{
-			AccessToken:  *res.GetData().AccessToken,
-			RefreshToken: *res.GetData().RefreshToken,
+			AccessToken:  res.GetData().AccessToken,
+			RefreshToken: res.GetData().RefreshToken,
 		}
 
 		b, err := json.Marshal(tokens)
