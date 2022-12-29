@@ -1,5 +1,6 @@
 import { Menu } from '@antv/g6';
 import { ICombo, IG6GraphEvent } from '@antv/g6-core';
+import { useMachine } from '@xstate/react';
 import { includes, isEmpty } from 'lodash-es';
 import { useEffect, useRef, useState } from 'react';
 
@@ -27,7 +28,7 @@ import {
 } from './topology/utils';
 import { ICustomNode, IEvent, IItem } from './types';
 import { useG6raph } from './useG6raph';
-import { useTopologyClient } from './useTopologyClient';
+import { topologyClientMachine, useTopologyClient } from './useTopologyClient';
 import { debounce, nodeToFront } from './utils';
 
 const skipContextMenuIds = ['out-theinternet', 'in-theinternet'];
@@ -115,16 +116,18 @@ const createMenu = (onItemClick: MenuProps) => {
 export const TopologyGraph = () => {
   const [container, setContainer] = useState<HTMLElement | null>(null);
 
-  const { onCollapse, onExpand, data, send } = useTopologyClient();
-  // console.log('state is', data);
+  const [state, send] = useMachine(topologyClientMachine);
+  console.log('state', state.value);
   // setInterval
+
+  const data = state.context;
 
   const onMenuItemClick = async (item: string) => {
     // alert(`connect now is clicked with node: ${item}`);
     // const res = await onExpand(item);
     send({
-      type: 'SET_SELECTED_NODE',
-      item,
+      type: 'update interval',
+      refreshInterval: 5000,
     });
     // setInterval(async () => {
     //   const res = await onExpand(item);
@@ -175,6 +178,16 @@ export const TopologyGraph = () => {
       return;
     }
     if (!isEmpty(data.diff)) {
+      console.log('useeffect data.diff', data.diff);
+      update(data.diff);
+    }
+  }, [data.diff]);
+
+  useEffect(() => {
+    if (!graph) {
+      return;
+    }
+    if (!isEmpty(data.diff)) {
       update(data.diff);
     }
     function callExpandApi(item: IItem) {
@@ -211,43 +224,38 @@ export const TopologyGraph = () => {
     graph.on('node:click', (e: IEvent) => {
       const { item: node } = e;
       countRef.current = countRef.current + 1;
+      const model = node?.get('model');
+      console.log(model);
 
       if (itemIsExpanded(node!)) {
         collapseNode(
           graph,
           node! as ICustomNode,
           (_item: IItem) => {
-            const node = _item.get('model');
-
-            const item = graph.findById(node.id);
-
-            const parents = getParents(graph, item).map<ICustomNode>((id) =>
-              graph.findById(id).get<ICustomNode>('model'),
-            );
-            const mapParents = modelParentsToTopologyParents(parents);
-
-            // call api
-            update(topologyDataAzureCollapse);
+            //TODO
           },
           false,
         );
         graph.emit('df-track-item', { item: node });
         pullNodeAtCenter();
+        send({
+          type: 'expand collapse' as any,
+          filters: {
+            nodeType: model?.node_type,
+            actionType: 'collapse',
+            id: model?.id,
+          },
+        });
       } else {
         expandNode(node!);
-        // callExpandApi
-
-        let data = {};
-        if (countRef.current === 0) {
-          data = v1;
-        } else if (countRef.current === 2) {
-          data = v2;
-        } else if (countRef.current === 3) {
-          data = v3;
-        } else if (countRef.current === 4) {
-          data = v4;
-        }
-        update(data);
+        send({
+          type: 'expand collapse' as any,
+          filters: {
+            nodeType: model?.node_type,
+            actionType: 'expand',
+            id: model?.id,
+          },
+        });
       }
     });
     // graph listeners

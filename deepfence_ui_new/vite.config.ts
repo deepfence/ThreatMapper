@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        '^/deepfence/v1.5/.*': {
+        '^/deepfence/.*': {
           target: viteEnv.VITE_API_BASE_URL,
           changeOrigin: true,
           secure: false,
