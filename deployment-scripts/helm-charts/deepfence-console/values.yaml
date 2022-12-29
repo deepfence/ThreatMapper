@@ -59,11 +59,6 @@ volume:
   esStorage: 30Gi
   postgresStorage: 30Gi
 
-# If config update needed for postgres instance
-# postgresql:
-#   extendedConf: |-
-#     huge_pages = off
-
 clusterDomain: "cluster.local"
 
 db:
@@ -620,30 +615,13 @@ elasticsearch:
   service:
     type: ClusterIP
 
-postgresqlPgpool:
-  image:
-    name: docker.io/deepfenceio/pgpool:4.2.5-debian-10-r37
-    pullPolicy: IfNotPresent
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 40Mi
-    limits:
-      cpu: 4000m
-      memory: 8Gi
-
-  nodeSelector: {}
-  
-  tolerations: []
-  
-  service:
-    type: ClusterIP
-
 postgresql:
+  replicaCount: 1
   image:
-    name: docker.io/deepfenceio/postgresql-repmgr:12.8.0-debian-10-r71
-    pullPolicy: IfNotPresent
+    repository: deepfenceio/deepfence_postgres_ce
+    pullPolicy: Always
+  imagePullSecrets:
+  - name: docker-deepfence-secret
 
   resources:
     requests:

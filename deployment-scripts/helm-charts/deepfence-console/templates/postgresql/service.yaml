@@ -1,0 +1,24 @@
+{{- if not .Values.saas_deployment }}
+{{- if eq "deepfence-postgres" .Values.db.postgresUserDb.host }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-postgres
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-postgres
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.postgresql.service.type }}
+  clusterIP: None
+  selector:
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
+    name: deepfence-postgres
+  ports:
+  - name: deepfence-postgres-port
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+{{- end }}
+{{- end }}
