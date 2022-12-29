@@ -576,7 +576,6 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
 
 	tx.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
@@ -594,8 +593,14 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 
 	err = tx.Commit()
 	if err != nil {
+		log.Warn().Msgf("Neo4j constraints err: %v", err)
+	}
+	tx.Close()
+	tx, err = session.BeginTransaction()
+	if err != nil {
 		return err
 	}
+	defer tx.Close()
 
 	tx.Run("MERGE (n:Node{node_id:'in-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 	tx.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
