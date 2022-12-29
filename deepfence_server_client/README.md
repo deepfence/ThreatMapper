@@ -93,11 +93,10 @@ Class | Method | HTTP request | Description
 *ComplianceApi* | [**StopComplianceScan**](docs/ComplianceApi.md#stopcompliancescan) | **Post** /deepfence/scan/stop/compliance | Stop Compliance Scan
 *ControlsApi* | [**GetAgentControls**](docs/ControlsApi.md#getagentcontrols) | **Post** /deepfence/controls/agent | Fetch Agent Actions
 *ControlsApi* | [**GetAgentInitControls**](docs/ControlsApi.md#getagentinitcontrols) | **Post** /deepfence/controls/agent-init | Fetch Agent Init Actions
-*DiagnosisApi* | [**AgentDiagnosticLogs**](docs/DiagnosisApi.md#agentdiagnosticlogs) | **Get** /deepfence/diagnosis/agent-logs | Agent Diagnostic Logs
-*DiagnosisApi* | [**ConsoleDiagnosticLogs**](docs/DiagnosisApi.md#consolediagnosticlogs) | **Get** /deepfence/diagnosis/console-logs | Console Diagnostic Logs
 *DiagnosisApi* | [**DiagnosticNotification**](docs/DiagnosisApi.md#diagnosticnotification) | **Get** /deepfence/diagnosis/notification | Get Diagnostic Notification
 *DiagnosisApi* | [**GenerateAgentDiagnosticLogs**](docs/DiagnosisApi.md#generateagentdiagnosticlogs) | **Post** /deepfence/diagnosis/agent-logs | Generate Agent Diagnostic Logs
 *DiagnosisApi* | [**GenerateConsoleDiagnosticLogs**](docs/DiagnosisApi.md#generateconsolediagnosticlogs) | **Post** /deepfence/diagnosis/console-logs | Generate Console Diagnostic Logs
+*DiagnosisApi* | [**GetDiagnosticLogs**](docs/DiagnosisApi.md#getdiagnosticlogs) | **Get** /deepfence/diagnosis/diagnostic-logs | Get Diagnostic Logs
 *MalwareScanApi* | [**ListMalwareScan**](docs/MalwareScanApi.md#listmalwarescan) | **Post** /deepfence/scan/list/malware | Get Malware Scans List
 *MalwareScanApi* | [**ResultsMalwareScan**](docs/MalwareScanApi.md#resultsmalwarescan) | **Post** /deepfence/scan/results/malware | Get Malware Scans Results
 *MalwareScanApi* | [**StartMalwareScan**](docs/MalwareScanApi.md#startmalwarescan) | **Post** /deepfence/scan/start/malware | Start Malware Scan
@@ -130,8 +129,12 @@ Class | Method | HTTP request | Description
 
  - [ApiDocsBadRequestResponse](docs/ApiDocsBadRequestResponse.md)
  - [ApiDocsFailureResponse](docs/ApiDocsFailureResponse.md)
+ - [ApiDocsGraphResult](docs/ApiDocsGraphResult.md)
  - [ControlsAction](docs/ControlsAction.md)
  - [ControlsAgentControls](docs/ControlsAgentControls.md)
+ - [DetailedConnectionSummary](docs/DetailedConnectionSummary.md)
+ - [DetailedNodeSummary](docs/DetailedNodeSummary.md)
+ - [DetailedParent](docs/DetailedParent.md)
  - [DiagnosisDiagnosticNotification](docs/DiagnosisDiagnosticNotification.md)
  - [IngestersCloudCompliance](docs/IngestersCloudCompliance.md)
  - [IngestersCloudResource](docs/IngestersCloudResource.md)
@@ -159,10 +162,12 @@ Class | Method | HTTP request | Description
  - [ModelScanTriggerResp](docs/ModelScanTriggerResp.md)
  - [ModelUser](docs/ModelUser.md)
  - [ModelUserRegisterRequest](docs/ModelUserRegisterRequest.md)
- - [ReportersConnectionSummary](docs/ReportersConnectionSummary.md)
+ - [ReportColumn](docs/ReportColumn.md)
+ - [ReportMetadataRow](docs/ReportMetadataRow.md)
+ - [ReportRow](docs/ReportRow.md)
+ - [ReportTable](docs/ReportTable.md)
  - [ReportersNodeInfo](docs/ReportersNodeInfo.md)
  - [ReportersProviderThreatGraph](docs/ReportersProviderThreatGraph.md)
- - [ReportersRenderedGraph](docs/ReportersRenderedGraph.md)
  - [ReportersThreatNodeInfo](docs/ReportersThreatNodeInfo.md)
  - [ReportersTopologyFilters](docs/ReportersTopologyFilters.md)
 

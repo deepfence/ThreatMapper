@@ -235,43 +235,6 @@ paths:
       tags:
       - Controls
   /deepfence/diagnosis/agent-logs:
-    get:
-      description: Get Agent Diagnostic Logs
-      operationId: agentDiagnosticLogs
-      responses:
-        "200":
-          content:
-            application/tgz:
-              schema:
-                type: string
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsFailureResponse'
-          description: Not Found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsFailureResponse'
-          description: Internal Server Error
-      security:
-      - bearer_token: []
-      summary: Agent Diagnostic Logs
-      tags:
-      - Diagnosis
     post:
       description: Generate Agent Diagnostic Logs
       operationId: generateAgentDiagnosticLogs
@@ -306,43 +269,6 @@ paths:
       tags:
       - Diagnosis
   /deepfence/diagnosis/console-logs:
-    get:
-      description: Get Console Diagnostic Logs
-      operationId: consoleDiagnosticLogs
-      responses:
-        "200":
-          content:
-            application/tgz:
-              schema:
-                type: string
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsFailureResponse'
-          description: Not Found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsFailureResponse'
-          description: Internal Server Error
-      security:
-      - bearer_token: []
-      summary: Console Diagnostic Logs
-      tags:
-      - Diagnosis
     post:
       description: Generate Console Diagnostic Logs
       operationId: generateConsoleDiagnosticLogs
@@ -374,6 +300,40 @@ paths:
       security:
       - bearer_token: []
       summary: Generate Console Diagnostic Logs
+      tags:
+      - Diagnosis
+  /deepfence/diagnosis/diagnostic-logs:
+    get:
+      description: Get diagnostic logs download url links
+      operationId: getDiagnosticLogs
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Diagnostic Logs
       tags:
       - Diagnosis
   /deepfence/diagnosis/notification:
@@ -466,7 +426,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReportersRenderedGraph'
+                $ref: '#/components/schemas/ApiDocsGraphResult'
           description: OK
         "400":
           content:
@@ -1894,6 +1854,101 @@ components:
           example: false
           type: boolean
       type: object
+    ApiDocsGraphResult:
+      example:
+        nodes:
+          key:
+            image: image
+            metadata:
+            - truncate: 6
+              dataType: dataType
+              id: id
+              label: label
+              priority: 0.8008281904610115
+              value: value
+            - truncate: 6
+              dataType: dataType
+              id: id
+              label: label
+              priority: 0.8008281904610115
+              value: value
+            stack: true
+            shape: shape
+            adjacency:
+            - adjacency
+            - adjacency
+            label: label
+            type: type
+            labelMinor: labelMinor
+            immediate_parent_id: immediate_parent_id
+            tables:
+            - truncationCount: 1
+              columns:
+              - dataType: dataType
+                id: id
+                label: label
+              - dataType: dataType
+                id: id
+                label: label
+              id: id
+              label: label
+              rows:
+              - entries:
+                  key: entries
+                id: id
+              - entries:
+                  key: entries
+                id: id
+              type: type
+            - truncationCount: 1
+              columns:
+              - dataType: dataType
+                id: id
+                label: label
+              - dataType: dataType
+                id: id
+                label: label
+              id: id
+              label: label
+              rows:
+              - entries:
+                  key: entries
+                id: id
+              - entries:
+                  key: entries
+                id: id
+              type: type
+            rank: rank
+            id: id
+            metrics:
+            - null
+            - null
+            tag: tag
+            pseudo: true
+            parents:
+            - topologyId: topologyId
+              id: id
+              label: label
+            - topologyId: topologyId
+              id: id
+              label: label
+        edges:
+          key:
+            source: source
+            target: target
+      properties:
+        edges:
+          additionalProperties:
+            $ref: '#/components/schemas/DetailedConnectionSummary'
+          type: object
+        nodes:
+          additionalProperties:
+            $ref: '#/components/schemas/DetailedNodeSummary'
+          type: object
+      required:
+      - edges
+      - nodes
+      type: object
     ControlsAction:
       example:
         id: 6
@@ -1928,6 +1983,157 @@ components:
       required:
       - beatrate
       - commands
+      type: object
+    DetailedConnectionSummary:
+      example:
+        source: source
+        target: target
+      properties:
+        source:
+          type: string
+        target:
+          type: string
+      type: object
+    DetailedNodeSummaries:
+      additionalProperties:
+        $ref: '#/components/schemas/DetailedNodeSummary'
+      type: object
+    DetailedNodeSummary:
+      example:
+        image: image
+        metadata:
+        - truncate: 6
+          dataType: dataType
+          id: id
+          label: label
+          priority: 0.8008281904610115
+          value: value
+        - truncate: 6
+          dataType: dataType
+          id: id
+          label: label
+          priority: 0.8008281904610115
+          value: value
+        stack: true
+        shape: shape
+        adjacency:
+        - adjacency
+        - adjacency
+        label: label
+        type: type
+        labelMinor: labelMinor
+        immediate_parent_id: immediate_parent_id
+        tables:
+        - truncationCount: 1
+          columns:
+          - dataType: dataType
+            id: id
+            label: label
+          - dataType: dataType
+            id: id
+            label: label
+          id: id
+          label: label
+          rows:
+          - entries:
+              key: entries
+            id: id
+          - entries:
+              key: entries
+            id: id
+          type: type
+        - truncationCount: 1
+          columns:
+          - dataType: dataType
+            id: id
+            label: label
+          - dataType: dataType
+            id: id
+            label: label
+          id: id
+          label: label
+          rows:
+          - entries:
+              key: entries
+            id: id
+          - entries:
+              key: entries
+            id: id
+          type: type
+        rank: rank
+        id: id
+        metrics:
+        - null
+        - null
+        tag: tag
+        pseudo: true
+        parents:
+        - topologyId: topologyId
+          id: id
+          label: label
+        - topologyId: topologyId
+          id: id
+          label: label
+      properties:
+        adjacency:
+          items:
+            type: string
+          type: array
+        id:
+          type: string
+        image:
+          type: string
+        immediate_parent_id:
+          type: string
+        label:
+          type: string
+        labelMinor:
+          type: string
+        metadata:
+          items:
+            $ref: '#/components/schemas/ReportMetadataRow'
+          type: array
+        metrics:
+          items:
+            $ref: '#/components/schemas/ReportMetricRow'
+          type: array
+        parents:
+          items:
+            $ref: '#/components/schemas/DetailedParent'
+          type: array
+        pseudo:
+          type: boolean
+        rank:
+          type: string
+        shape:
+          type: string
+        stack:
+          type: boolean
+        tables:
+          items:
+            $ref: '#/components/schemas/ReportTable'
+          type: array
+        tag:
+          type: string
+        type:
+          type: string
+      type: object
+    DetailedParent:
+      example:
+        topologyId: topologyId
+        id: id
+        label: label
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        topologyId:
+          type: string
+      type: object
+    DetailedTopologyConnectionSummaries:
+      additionalProperties:
+        $ref: '#/components/schemas/DetailedConnectionSummary'
       type: object
     DiagnosisDiagnosticNotification:
       properties:
@@ -2651,18 +2857,100 @@ components:
       type: object
     PostgresqlDbApiToken:
       type: object
-    ReportersConnectionSummary:
+    ReportColumn:
       example:
-        source: source
-        target: target
+        dataType: dataType
+        id: id
+        label: label
       properties:
-        source:
+        dataType:
           type: string
-        target:
+        id:
           type: string
-      required:
-      - source
-      - target
+        label:
+          type: string
+      type: object
+    ReportIDList:
+      items:
+        type: string
+      type: array
+    ReportMetadataRow:
+      example:
+        truncate: 6
+        dataType: dataType
+        id: id
+        label: label
+        priority: 0.8008281904610115
+        value: value
+      properties:
+        dataType:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        priority:
+          type: number
+        truncate:
+          type: integer
+        value:
+          type: string
+      type: object
+    ReportMetricRow:
+      type: object
+    ReportRow:
+      example:
+        entries:
+          key: entries
+        id: id
+      properties:
+        entries:
+          additionalProperties:
+            type: string
+          nullable: true
+          type: object
+        id:
+          type: string
+      type: object
+    ReportTable:
+      example:
+        truncationCount: 1
+        columns:
+        - dataType: dataType
+          id: id
+          label: label
+        - dataType: dataType
+          id: id
+          label: label
+        id: id
+        label: label
+        rows:
+        - entries:
+            key: entries
+          id: id
+        - entries:
+            key: entries
+          id: id
+        type: type
+      properties:
+        columns:
+          items:
+            $ref: '#/components/schemas/ReportColumn'
+          nullable: true
+          type: array
+        id:
+          type: string
+        label:
+          type: string
+        rows:
+          items:
+            $ref: '#/components/schemas/ReportRow'
+          nullable: true
+          type: array
+        truncationCount:
+          type: integer
+        type:
+          type: string
       type: object
     ReportersNodeInfo:
       properties:
@@ -2713,94 +3001,6 @@ components:
       - resources
       - secrets_count
       - vulnerability_count
-      type: object
-    ReportersRenderedGraph:
-      example:
-        processes:
-          key:
-          - processes
-          - processes
-        regions:
-          key:
-          - regions
-          - regions
-        hosts:
-          key:
-            key:
-            - hosts
-            - hosts
-        containers:
-          key:
-          - containers
-          - containers
-        pods:
-          key:
-          - pods
-          - pods
-        connections:
-        - source: source
-          target: target
-        - source: source
-          target: target
-        providers:
-        - providers
-        - providers
-      properties:
-        connections:
-          items:
-            $ref: '#/components/schemas/ReportersConnectionSummary'
-          nullable: true
-          type: array
-        containers:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          nullable: true
-          type: object
-        hosts:
-          additionalProperties:
-            additionalProperties:
-              items:
-                type: string
-              type: array
-            type: object
-          nullable: true
-          type: object
-        pods:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          nullable: true
-          type: object
-        processes:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          nullable: true
-          type: object
-        providers:
-          items:
-            type: string
-          nullable: true
-          type: array
-        regions:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          nullable: true
-          type: object
-      required:
-      - connections
-      - containers
-      - hosts
-      - pods
-      - processes
-      - providers
-      - regions
       type: object
     ReportersThreatGraph:
       additionalProperties:

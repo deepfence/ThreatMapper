@@ -34,7 +34,7 @@ func (r ApiGetTopologyGraphRequest) ReportersTopologyFilters(reportersTopologyFi
 	return r
 }
 
-func (r ApiGetTopologyGraphRequest) Execute() (*ReportersRenderedGraph, *http.Response, error) {
+func (r ApiGetTopologyGraphRequest) Execute() (*ApiDocsGraphResult, *http.Response, error) {
 	return r.ApiService.GetTopologyGraphExecute(r)
 }
 
@@ -54,13 +54,13 @@ func (a *TopologyApiService) GetTopologyGraph(ctx context.Context) ApiGetTopolog
 }
 
 // Execute executes the request
-//  @return ReportersRenderedGraph
-func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphRequest) (*ReportersRenderedGraph, *http.Response, error) {
+//  @return ApiDocsGraphResult
+func (a *TopologyApiService) GetTopologyGraphExecute(r ApiGetTopologyGraphRequest) (*ApiDocsGraphResult, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPost
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *ReportersRenderedGraph
+		localVarReturnValue  *ApiDocsGraphResult
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "TopologyApiService.GetTopologyGraph")

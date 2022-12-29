@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
+	"github.com/weaveworks/scope/render/detailed"
 
 	ingester "github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -47,9 +48,13 @@ func (d *OpenApiDocs) AddUserOperations() {
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
+	type GraphResult struct {
+		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
+		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
+	}
 	d.AddOperation("getTopologyGraph", http.MethodPost, "/deepfence/graph/topology",
 		"Get Topology Graph", "Retrieve the full topology graph associated with the account",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.TopologyFilters), new(reporters.RenderedGraph))
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.TopologyFilters), new(GraphResult))
 
 	d.AddOperation("getThreatGraph", http.MethodPost, "/deepfence/graph/threat",
 		"Get Threat Graph", "Retrieve the full threat graph associated with the account",

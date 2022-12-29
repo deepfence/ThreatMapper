@@ -44,8 +44,8 @@ func getTopologyReporter(ctx context.Context) (reporters.TopologyReporter, error
 func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
 
 	type GraphResult struct {
-		Nodes detailed.NodeSummaries               `json:"nodes"`
-		Edges detailed.TopologyConnectionSummaries `json:"edges"`
+		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
+		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
 	}
 
 	ctx := req.Context()

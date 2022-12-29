@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 ## GetTopologyGraph
 
-> ReportersRenderedGraph GetTopologyGraph(ctx).ReportersTopologyFilters(reportersTopologyFilters).Execute()
+> ApiDocsGraphResult GetTopologyGraph(ctx).ReportersTopologyFilters(reportersTopologyFilters).Execute()
 
 Get Topology Graph
 
@@ -39,7 +39,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `TopologyApi.GetTopologyGraph``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `GetTopologyGraph`: ReportersRenderedGraph
+    // response from `GetTopologyGraph`: ApiDocsGraphResult
     fmt.Fprintf(os.Stdout, "Response from `TopologyApi.GetTopologyGraph`: %v\n", resp)
 }
 ```
@@ -59,7 +59,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ReportersRenderedGraph**](ReportersRenderedGraph.md)
+[**ApiDocsGraphResult**](ApiDocsGraphResult.md)
 
 ### Authorization
 
