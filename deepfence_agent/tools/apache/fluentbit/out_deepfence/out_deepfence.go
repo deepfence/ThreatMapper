@@ -100,8 +100,8 @@ func parseValue(value interface{}) interface{} {
 
 func Authenticate(url string, apiToken string) (string, string, error) {
 	var (
-		accessToken  *string
-		refreshToken *string
+		accessToken  string
+		refreshToken string
 	)
 	cfg := deepfenceAPI.NewConfiguration()
 	cfg.HTTPClient = hc
@@ -113,7 +113,7 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 
 	req := apiClient.AuthenticationApi.AuthToken(context.Background()).
 		ModelApiAuthRequest(
-			deepfenceAPI.ModelApiAuthRequest{ApiToken: &apiToken},
+			deepfenceAPI.ModelApiAuthRequest{ApiToken: apiToken},
 		)
 
 	resp, _, err := apiClient.AuthenticationApi.AuthTokenExecute(req)
@@ -123,19 +123,19 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 
 	accessToken = resp.GetData().AccessToken
 	refreshToken = resp.GetData().RefreshToken
-	if accessToken == nil || refreshToken == nil {
+	if accessToken == "" || refreshToken == "" {
 		return "", "", errors.New("auth tokens are nil: failed to authenticate")
 	}
 
 	log.Print("authenticated with console successfully")
 
-	return *accessToken, *refreshToken, nil
+	return accessToken, refreshToken, nil
 }
 
 func RefreshToken(url string, apiToken string) (string, string, error) {
 	var (
-		accessToken  *string
-		refreshToken *string
+		accessToken  string
+		refreshToken string
 	)
 	cfg := deepfenceAPI.NewConfiguration()
 	cfg.HTTPClient = hc
@@ -156,13 +156,13 @@ func RefreshToken(url string, apiToken string) (string, string, error) {
 
 	accessToken = resp.GetData().AccessToken
 	refreshToken = resp.GetData().RefreshToken
-	if accessToken == nil || refreshToken == nil {
+	if accessToken == "" || refreshToken == "" {
 		return "", "", errors.New("auth tokens are nil: failed to authenticate")
 	}
 
 	log.Print("refreshed tokens from console successfully")
 
-	return *accessToken, *refreshToken, nil
+	return accessToken, refreshToken, nil
 }
 
 func validateTokens(cfg Config) (Config, bool, error) {
