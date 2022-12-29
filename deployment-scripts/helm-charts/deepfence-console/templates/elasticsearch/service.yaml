@@ -1,0 +1,27 @@
+{{- if not .Values.saas_deployment }}
+{{- if and (eq "deepfence-es" .Values.db.elasticsearch.host) (eq "9200" .Values.db.elasticsearch.port) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-es
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.elasticsearch.service.type }}
+  clusterIP: None
+  selector:
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
+    name: deepfence-es
+  ports:
+  - name: deepfence-es-port-1
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+  - name: deepfence-es-port-2
+    port: 9300
+    protocol: TCP
+    targetPort: 9300
+{{- end }}
+{{- end }}
