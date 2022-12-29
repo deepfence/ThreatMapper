@@ -7,6 +7,7 @@ import {
   updateScheduledTasksAction,
 } from '../../../actions/app-actions';
 
+const PAGE_SIZE = 20;
 class ScheduledJobs extends React.Component {
   constructor(props) {
     super(props);
@@ -41,6 +42,8 @@ class ScheduledJobs extends React.Component {
           <DfTableV2
             data={tasks}
             enableSorting
+            showPagination
+            defaultPageSize={PAGE_SIZE}
             columns={[
               {
                 Header: 'Timestamp',
