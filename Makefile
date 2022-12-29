@@ -91,6 +91,7 @@ malwarescanner: bootstrap-agent-plugins
 
 .PHONY: packagescanner
 packagescanner:
+	(cd $(PACKAGE_SCANNER_DIR) && make tools)
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
 
 .PHONY: ingester
