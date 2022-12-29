@@ -3,6 +3,7 @@ package xfer
 import (
 	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -10,6 +11,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/ugorji/go/codec"
 
+	"context"
+
+	"crypto/tls"
+	"crypto/x509"
+	"net"
+
+	"github.com/hashicorp/go-cleanhttp"
 	"github.com/weaveworks/common/mtime"
 )
 
@@ -63,19 +71,51 @@ func Upgrade(w http.ResponseWriter, r *http.Request, responseHeader http.Header)
 // WSDialer can dial a new websocket
 type WSDialer interface {
 	Dial(urlStr string, requestHeader http.Header) (*websocket.Conn, *http.Response, error)
+	DialContext(ctx context.Context, urlStr string, requestHeader http.Header) (*websocket.Conn, *http.Response, error)
 }
 
 // DialWS creates a new client connection. Use requestHeader to specify the
 // origin (Origin), subprotocols (Sec-WebSocket-Protocol) and cookies (Cookie).
 // Use the response.Header to get the selected subprotocol
 // (Sec-WebSocket-Protocol) and cookies (Set-Cookie).
-func DialWS(d WSDialer, urlStr string, requestHeader http.Header) (Websocket, *http.Response, error) {
-	wsConn, resp, err := d.Dial(urlStr, requestHeader)
+// func DialWS(d WSDialer, urlStr string, requestHeader http.Header) (Websocket, *http.Response, error) {
+// 	wsConn, resp, err := d.Dial(urlStr, requestHeader)
+// 	if err != nil {
+// 		return nil, resp, err
+// 	}
+// 	return Ping(wsConn), resp, nil
+// }
+
+
+func getHTTPTransport(hostname string) *http.Transport {
+	transport := cleanhttp.DefaultTransport()
+	transport.DialContext = (&net.Dialer{
+		Timeout:   5 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}).DialContext
+
+	transport.TLSClientConfig = &tls.Config{
+		RootCAs: x509.NewCertPool(),
+		ServerName: hostname,
+		InsecureSkipVerify: true,
+	}
+
+	return transport
+}
+
+func DialWS(_ WSDialer, urlStr string, requestHeader http.Header) (Websocket, *http.Response, error) {
+	ctx := context.Background()
+	var hostname string = os.Getenv("MGMT_CONSOLE_URL")
+	httpTransport := getHTTPTransport(hostname)
+	dialer := websocket.Dialer{TLSClientConfig:  httpTransport.TLSClientConfig,HandshakeTimeout: 12 * time.Second,}
+	wsConn, resp, err := dialer.DialContext(ctx, urlStr, requestHeader)
 	if err != nil {
 		return nil, resp, err
 	}
 	return Ping(wsConn), resp, nil
 }
+
+
 
 // Ping adds a periodic ping to a websocket connection.
 func Ping(c *websocket.Conn) Websocket {

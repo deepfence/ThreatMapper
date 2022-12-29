@@ -16,6 +16,10 @@ spec:
       labels:
         {{- include "deepfence-agent.selectorLabels" . | nindent 8 }}
     spec:
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+
       hostPID: true
       hostNetwork: true
       serviceAccountName: {{ .Values.serviceAccount.name }}

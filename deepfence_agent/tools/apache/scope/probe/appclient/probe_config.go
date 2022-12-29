@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/certifi/gocertifi"
+	// "github.com/certifi/gocertifi"
 	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/weaveworks/scope/common/xfer"
@@ -21,13 +21,13 @@ const (
 
 var certPool *x509.CertPool
 
-func init() {
-	var err error
-	certPool, err = gocertifi.CACerts()
-	if err != nil {
-		panic(err)
-	}
-}
+// func init() {
+// 	var err error
+// 	certPool, err = gocertifi.CACerts()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }
 
 // ProbeConfig contains all the info needed for a probe to do HTTP requests
 type ProbeConfig struct {
@@ -63,13 +63,28 @@ func (pc ProbeConfig) getHTTPTransport(hostname string) *http.Transport {
 		Timeout:   dialTimeout,
 		KeepAlive: 30 * time.Second,
 	}).DialContext
-	if pc.Insecure {
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	} else {
-		transport.TLSClientConfig = &tls.Config{
-			RootCAs:    certPool,
-			ServerName: hostname,
-		}
+	
+	transport.TLSClientConfig = &tls.Config{
+		RootCAs:    certPool,
+		ServerName: hostname,
+		InsecureSkipVerify: pc.Insecure,
 	}
+	
 	return transport
 }
+
+// func (pc ProbeConfig) getHTTPTransport(hostname string) *http.Transport {
+// 	transport := cleanhttp.DefaultTransport()
+// 	transport.DialContext = (&net.Dialer{
+// 		Timeout:   5 * time.Second,
+// 		KeepAlive: 30 * time.Second,
+// 	}).DialContext
+
+// 	transport.TLSClientConfig = &tls.Config{
+// 		RootCAs: x509.NewCertPool(),
+// 		ServerName: hostname,
+// 		InsecureSkipVerify: pc.Insecure,
+// 	}
+
+// 	return transport
+// }

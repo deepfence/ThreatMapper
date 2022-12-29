@@ -26,6 +26,7 @@ class SecretScanTableV2 extends React.Component {
     this.deleteDocs = this.deleteDocs.bind(this);
     this.unmaskDocs = this.unmaskDocs.bind(this);
     this.maskDocs = this.maskDocs.bind(this);
+    this.updatePage = this.updatePage.bind(this);
     this.state = {
       isSecretsModalOpen: false,
       secretsData: null,
@@ -59,10 +60,11 @@ class SecretScanTableV2 extends React.Component {
   handlePageChange(pageNumber) {
     this.setState({
       page: pageNumber
+    }, () => {
+      this.tableChangeHandler({
+        page: pageNumber
+      })
     })
-    this.tableChangeHandler({
-      page: pageNumber,
-    });
   }
 
   deleteDocs(selectedDocIndex = {}) {
@@ -82,7 +84,13 @@ class SecretScanTableV2 extends React.Component {
     const { deleteDocsByIdAction: action } = this.props;
     // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({deletedValues: [...this.state.deletedValues, ...params.ids]});
-    return action(params);
+
+    // call parent callback function to update graph and count chart
+    const promise = action(params);
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    });
+    return promise;
   }
 
   unmaskDocs(selectedDocIndex = {}) {
@@ -95,7 +103,13 @@ class SecretScanTableV2 extends React.Component {
     const { secretScanUnmaskDocsAction: action } = this.props;
     // Mask and unmask will reset page to 1
     this.handlePageChange(0)
-    return action({ docs: idValue });
+
+    // call parent callback function to update graph and count chart
+    const promise = action({ docs: idValue });
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    })
+    return promise;
   }
 
   maskDocs(selectedDocIndex = {}) {
@@ -108,14 +122,21 @@ class SecretScanTableV2 extends React.Component {
     const { secretScanMaskDocsAction: action } = this.props;
     // Mask and unmask will reset page to 1
     this.handlePageChange(0)
-    return action({
+
+    // call parent callback function to update graph and count chart
+    const promise = action({
       docs: idValue,
     });
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    });
+    return promise;
   }
 
   componentDidMount() {
-    const { registerPolling } = this.props;
+    const { registerPolling, startPolling } = this.props;
     registerPolling(this.getSecrets);
+    startPolling();
   }
 
   /**
@@ -139,16 +160,44 @@ class SecretScanTableV2 extends React.Component {
       options.hideMasked = newProps.hideMasked;
     }
     if (Object.keys(options).length > 0) {
-      this.getSecrets(options);
+      this.props.updatePollParams(options);
     }
     // Filters and from bound changed will reset page to 1
     if (!isEqual(oldProps.resetPageIndexData, this.props.resetPageIndexData)) {
       /* eslint-disable */
       this.setState({
         page: 0
-      })
+      });
     }
 
+  }
+
+  async updatePage() {
+    /**
+     * 1. Reduce page by 1 only if all records are deleted from last page
+     * 2. Do not reduce page by 1 when I am on 1st page
+     */
+
+    if (this.state.deletedValues.length <= 0) {
+      return;
+    }
+
+    const currentPage = this.state.page + 1;
+    const pageSize = 20;
+    const totalRecords = this.props.total;
+    const recordsOnLastPage = (totalRecords % pageSize) || pageSize;
+    const isLastPage = Math.ceil(totalRecords / pageSize) === currentPage;
+    // last page may have exact records of pageSize or less
+    const isSelectedAllRecords = this.state.deletedValues.length === recordsOnLastPage;
+    if (currentPage !== 1 && isLastPage && isSelectedAllRecords) {
+      this.handlePageChange(this.state.page - 1);
+    } else {
+      this.props.updatePollParams({});
+    }
+    this.setState({
+      deletedValues: [],
+    });
+  
   }
 
   getSecrets(params) {
@@ -156,14 +205,12 @@ class SecretScanTableV2 extends React.Component {
       this.props;
 
     const hideMasked = params.hideMasked || this.props.hideMasked;
-
     const {
       page = 0,
       pageSize = 20,
-      globalSearchQuery,
+      globalSearchQuery = this.props.globalSearchQuery || [],
       alertPanelHistoryBound = this.props.alertPanelHistoryBound || {},
     } = params;
-
     const tableFilters = params.filters || filterValues;
     const nonEmptyFilters = Object.keys(tableFilters)
       .filter(key => tableFilters[key].length)
@@ -185,13 +232,7 @@ class SecretScanTableV2 extends React.Component {
       scan_id: this.props.scanId,
     };
 
-    let start_index = page ? page * pageSize : page
-
-    if(this.state.deletedValues.length > 0) {
-      if(this.props.total - this.state.deletedValues.length < start_index + pageSize) {
-        start_index -= this.state.deletedValues.length;
-      }
-    }
+    const start_index = page ? page * pageSize : page;
 
     const apiParams = {
       lucene_query: globalSearchQuery,
@@ -336,7 +377,7 @@ class SecretScanTableV2 extends React.Component {
                   icon: <i className="fa fa-trash-o red cursor" />,
                   onClick: this.deleteDocs,
                   postClickSuccessTODO: this.removeDocs,
-                  postClickSuccess: updatePollParams,
+                  postClickSuccess: this.updatePage,
                   showConfirmationDialog: true,
                   postClickSuccessDelayInMs: 2000,
                   confirmationDialogParams: {
@@ -376,7 +417,7 @@ function mapStateToProps(state) {
     secretScanResults: state.getIn(['secretScanResults', 'data']),
     total: state.getIn(['secretScanResults', 'total']),
     filterValues: nodeFilterValueSelector(state),
-    hideMasked: maskFormSelector(state, 'hideMasked'),
+    hideMasked: maskFormSelector(state, 'hideMasked') ?? true,
     maskDocs: state.getIn([
       'form',
       'dialogConfirmation',

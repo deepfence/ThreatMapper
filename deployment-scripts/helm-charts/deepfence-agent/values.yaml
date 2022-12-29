@@ -25,6 +25,8 @@ image:
 managementConsoleUrl: &managementConsoleUrl ""
 managementConsolePort: &managementConsolePort "443"
 
+priorityClassName: ""
+
 # Auth: Get deepfence api key from UI -> Settings -> User Management
 deepfenceKey: &deepfenceKey ""
 # If kubernetes secret is already defined externally, change following value to false

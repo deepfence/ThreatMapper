@@ -31,6 +31,7 @@ class ComplianceTests extends React.PureComponent {
       testData: null,
       isTestModalOpen: false,
       page: 0,
+      deletedValues: [],
     };
     this.multiSelectOptions = [
       {
@@ -110,12 +111,44 @@ class ComplianceTests extends React.PureComponent {
     const selectedDocIndexValues = Object.keys(selectedDocIndex);
     const { cloudType } = this.props;
     const { dispatch } = this.props;
-    return dispatch(
-      complianceMaskDocsAction({ cloudType, selectedDocIndexValues })
-    );
+    
+    const promise = dispatch(complianceMaskDocsAction({ cloudType, selectedDocIndexValues }));
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    });
+    return promise;
+  }
+  
+  updatePage() {
+    /**
+     * 1. Reduce page by 1 only if all records are deleted from last page
+     * 2. Do not reduce page by 1 when I am on 1st page
+     */
+    if (this.state.deletedValues.length <= 0) {
+      return;
+    }
+    const { test = { total: [] }} = this.props;
+
+    const currentPage = this.state.page + 1;
+    const pageSize = 20;
+    const totalRecords = test.total;
+    const recordsOnLastPage = (totalRecords % pageSize) || pageSize;
+    const isLastPage = Math.ceil(totalRecords / pageSize) === currentPage;
+    // last page may have exact records of pageSize or less
+    const isSelectedAllRecords = this.state.deletedValues.length === recordsOnLastPage;
+    if (currentPage !== 1 && isLastPage && isSelectedAllRecords) {
+      this.handlePageChange(this.state.page - 1);
+    } else {
+      this.props.updatePollParams({});
+    }
+    this.setState({
+      deletedValues: [],
+    });
+  
   }
 
   removeDocs(selectedDocIndex = {}) {
+    this.updatePage();
     const forRemoval = Object.keys(selectedDocIndex).reduce(
       (acc, key) => {
         acc = {
@@ -159,9 +192,11 @@ class ComplianceTests extends React.PureComponent {
   unmaskDocs(selectedDocIndex = {}) {
     const { dispatch, cloudType } = this.props;
     const selectedDocIndexValues = Object.keys(selectedDocIndex);
-    return dispatch(
-      complianceUnmaskDocsAction({ cloudType, selectedDocIndexValues })
-    );
+    const promise = dispatch(complianceUnmaskDocsAction({ cloudType, selectedDocIndexValues }));
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    });
+    return promise;
   }
 
   deleteDocs(selectedDocIndex = {}) {
@@ -180,9 +215,15 @@ class ComplianceTests extends React.PureComponent {
       },
       { ids: [] }
     );
+    // eslint-disable-next-line react/no-access-state-in-setstate
+    this.setState({deletedValues: [...this.state.deletedValues, ...params.ids]});
     /* eslint-enable */
     const { dispatch } = this.props;
-    return dispatch(deleteDocsByIdAction(params));
+    const promise = dispatch(deleteDocsByIdAction(params));
+    promise.then(() => {
+      this.props.onRowActionCallback();
+    });
+    return promise;
   }
 
   tableChangeHandler(params = {}) {
@@ -193,12 +234,13 @@ class ComplianceTests extends React.PureComponent {
   }
 
   handlePageChange(pageNumber) {
-    this.tableChangeHandler({
-      page: pageNumber,
-    });
     this.setState({
-      page: pageNumber,
-    });
+      page: pageNumber
+    }, () => {
+      this.tableChangeHandler({
+        page: pageNumber
+      })
+    })
   }
 
   getComplianceTest(params = {}) {
