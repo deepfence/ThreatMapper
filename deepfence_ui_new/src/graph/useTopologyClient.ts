@@ -22,20 +22,20 @@ const createDiffData = (
 ) => {
   const nodesDiff: {
     add: any;
-    delete: any;
+    remove: any;
     update: any;
   } = {
     add: [],
-    delete: [],
+    remove: [],
     update: [],
   };
   const edgesDiff: {
     add: any;
-    delete: any;
+    remove: any;
     update: any;
   } = {
     add: [],
-    delete: [],
+    remove: [],
     update: [],
   };
   const nodes = new Map<string, any>();
@@ -54,7 +54,7 @@ const createDiffData = (
     if (nodes.has(id)) {
       nodesDiff.update.push(prevNode);
     } else {
-      nodesDiff.delete.push(prevNode);
+      nodesDiff.remove.push(prevNode);
     }
   });
   nodes.forEach((node, id) => {
@@ -75,7 +75,7 @@ const createDiffData = (
     if (edges.has(id)) {
       edgesDiff.update.push(prevEdge);
     } else {
-      edgesDiff.delete.push(prevEdge);
+      edgesDiff.remove.push(prevEdge);
     }
   });
   edges.forEach((edge, id) => {

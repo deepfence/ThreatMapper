@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { UpdateManagerType, useGraphUpdateManager } from '../graphManager/updateManager';
 import { LayoutType, useLayoutManager } from '../graphManager/useLayoutManager';
 import { IGraph } from '../types';
-import { topologyEdgesToDelta, topologyNodesToDelta } from './transform';
+import { createModelEdges, createModelNodes } from './transform';
 import { IAPIData } from './utils';
 
 export const useToplogy = (
@@ -45,12 +45,13 @@ export const useToplogy = (
     if (!graph) {
       return;
     }
-    const edges_delta = topologyEdgesToDelta(data.edges);
-    const nodes_delta = topologyNodesToDelta(graph, data.nodes);
 
+    const edges_delta = createModelEdges(data.edges);
+    const nodes_delta = createModelNodes(graph, data.nodes);
     console.log('edges_delta', edges_delta);
     console.log('nodes_delta', nodes_delta);
 
+    // remove edges if nodes to be removed are present
     if (edges_delta !== null && edges_delta.remove) {
       updateEdges?.({
         add: [],
@@ -60,6 +61,7 @@ export const useToplogy = (
       });
     }
 
+    // update nodes
     if (nodes_delta !== null) {
       let reset = data.reset;
       for (const parent_id of Object.keys(nodes_delta)) {
@@ -77,6 +79,7 @@ export const useToplogy = (
         reset = false;
       }
     }
+    // add edges between nodes
     if (edges_delta !== null) {
       updateEdges?.({ add: edges_delta.add, remove: [], update: [] });
     }

@@ -412,7 +412,7 @@ export const updateGraphRootNodes = (graph: IGraph, delta: StringIndexType<any>)
   }
 };
 
-// updateGraphEdges will be called to update edges after api data is received
+// updateGraphEdges api is where the graph starts updating edges
 export const updateGraphEdges = (graph: IGraph, delta: IAPIData['edges']) => {
   const removeEdge = (item: IItem) => {
     const model = item.get('model');
@@ -429,20 +429,20 @@ export const updateGraphEdges = (graph: IGraph, delta: IAPIData['edges']) => {
 
   if (delta.add) {
     for (const edge of delta.add) {
-      const source = graph.findById(edge.source)?.get('model');
-      if (source === undefined) {
+      const sourceNode = graph.findById(edge.source)?.get('model');
+      if (sourceNode === undefined) {
         console.error('edge source does not exist', edge);
         continue;
       }
-      const target = graph.findById(edge.target)?.get('model');
-      if (target === undefined) {
+      const targetNode = graph.findById(edge.target)?.get('model');
+      if (targetNode === undefined) {
         console.error('edge target does not exist', edge);
         continue;
       }
 
       graph.addItem('edge', {
         ...edge,
-        style: source.cloudInfo?.edgeStyle,
+        style: sourceNode.cloudInfo?.edgeStyle,
         connection: true,
       });
     }

@@ -187,9 +187,6 @@ export const TopologyGraph = () => {
     if (!graph) {
       return;
     }
-    if (!isEmpty(data.diff)) {
-      update(data.diff);
-    }
     function callExpandApi(item: IItem) {
       if (graph === null || item === null) {
         return;
@@ -248,6 +245,7 @@ export const TopologyGraph = () => {
         });
       } else {
         expandNode(node!);
+        // TODO There are more codes here in version 1 (see above callExpandApi), those seems for bringing side metadata api based on nodes type.
         send({
           type: 'expand collapse' as any,
           filters: {

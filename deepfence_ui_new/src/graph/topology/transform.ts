@@ -6,7 +6,7 @@ import { IAPIData, nodeSize, serverToUINodeMap } from './utils';
 export type SourceTargetType = { source: string; target: string };
 
 // -----start node formation/updation-----
-export const topologyNodeToModel = (topo_node: ApiNodeItemType) => {
+export const nodeToModel = (topo_node: ApiNodeItemType) => {
   if (topo_node.id === undefined) {
     console.error("node doesn't have an id", topo_node);
     return;
@@ -57,7 +57,7 @@ export const topologyNodeToModel = (topo_node: ApiNodeItemType) => {
   return model;
 };
 
-export const topologyNodesToDelta = (graph: IGraph, data: IAPIData['nodes']) => {
+export const createModelNodes = (graph: IGraph, data: IAPIData['nodes']) => {
   const len = (k: Exclude<keyof IAPIData['nodes'], 'reset'>) =>
     !data[k] ? 0 : data[k].length;
   if (len('add') === 0 && len('update') === 0 && len('remove') === 0) {
@@ -73,36 +73,36 @@ export const topologyNodesToDelta = (graph: IGraph, data: IAPIData['nodes']) => 
   };
 
   if (data.add) {
-    for (const topo_node of data.add) {
-      const node = topologyNodeToModel(topo_node);
-      if (node) {
-        let parent_id = topo_node.immediate_parent_id;
+    for (const node of data.add) {
+      const modelNode = nodeToModel(node);
+      if (modelNode) {
+        let parent_id = node.immediate_parent_id;
         if (parent_id === '') {
           parent_id = 'root';
         }
 
         // add pseudo nodes only at the root
-        if (!node.pseudo || parent_id == 'root') {
-          node_delta(parent_id).add.push(node);
+        if (!modelNode.pseudo || parent_id == 'root') {
+          node_delta(parent_id).add.push(modelNode);
         }
       }
     }
   }
-
+  // remove api sends array of strings of node id
   if (data.remove) {
-    for (const topo_node_id of data.remove) {
-      const node = graph.findById(topo_node_id);
+    for (const node_id of data.remove) {
+      const node = graph.findById(node_id);
       if (node === undefined) {
         console.warn(
           "trying to remove a node that doesn't exist. Was it collapsed?",
-          topo_node_id,
+          node_id,
         );
         continue;
       }
 
       const model = node.get('model');
       const parent_id = model.parent_id || 'root';
-      node_delta(parent_id).remove.push(topo_node_id);
+      node_delta(parent_id).remove.push(node_id);
     }
   }
 
@@ -119,7 +119,7 @@ const topologyEdgeToModel = (edge: ApiNodeItemType) => {
   return { ...edge, id: `${edge.source}-${edge.target}` };
 };
 
-export const topologyEdgesToDelta = (edges: IAPIData['edges']) => {
+export const createModelEdges = (edges: IAPIData['edges']) => {
   const len = (k: Exclude<keyof IAPIData['edges'], 'reset'>) =>
     !edges[k] ? 0 : edges[k].length;
 
