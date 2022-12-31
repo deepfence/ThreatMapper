@@ -17,6 +17,7 @@ const (
 	tagTopology        = "Topology"
 	tagThreat          = "Threat"
 	tagSecretScan      = "Secret Scan"
+	tagMalwareScan     = "Malware Scan"
 	tagVulnerability   = "Vulnerability"
 
 	securityName = "bearer_token"
@@ -76,7 +77,7 @@ func InitializeOpenAPIReflector() *OpenApiDocs {
 				URL:         "https://community.deepfence.io",
 			},
 			Security: nil,
-			Tags:     []openapi3.Tag{{Name: tagAuthentication}, {Name: tagCommon}, {Name: tagCompliance}, {Name: tagTopology}, {Name: tagSecretScan}, {Name: tagVulnerability}},
+			Tags:     []openapi3.Tag{{Name: tagAuthentication}, {Name: tagCommon}, {Name: tagCompliance}, {Name: tagTopology}, {Name: tagSecretScan}, {Name: tagMalwareScan}, {Name: tagVulnerability}},
 		},
 	}
 

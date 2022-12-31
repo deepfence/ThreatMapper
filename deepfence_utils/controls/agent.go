@@ -9,11 +9,13 @@ type ActionID int
 const (
 	StartCVEScan ActionID = iota
 	StartSecretScan
+	StartMalwareScan
 	StartComplianceScan
 )
 
 type StartCVEScanRequest struct{}
 type StartSecretScanRequest struct{}
+type StartMalwareScanRequest struct{}
 type StartComplianceScanRequest struct{}
 
 type Action struct {

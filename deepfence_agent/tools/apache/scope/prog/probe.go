@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/armon/go-metrics"
 	metrics_prom "github.com/armon/go-metrics/prometheus"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	dfUtils "github.com/deepfence/df-utils"
@@ -20,7 +19,6 @@ import (
 	"github.com/weaveworks/common/sanitize"
 	"github.com/weaveworks/common/signals"
 	"github.com/weaveworks/common/tracing"
-	"github.com/weaveworks/go-checkpoint"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/common/weave"
 	"github.com/weaveworks/scope/probe"
@@ -117,6 +115,14 @@ func setControls() {
 	}
 	err = controls.RegisterControl(ctl.StartSecretScan, func(req ctl.StartSecretScanRequest) error {
 		log.Info("Start Secret Scan")
+		//TODO
+		return nil
+	})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+	err = controls.RegisterControl(ctl.StartMalwareScan, func(req ctl.StartMalwareScanRequest) error {
+		log.Info("Start Malware Scan")
 		//TODO
 		return nil
 	})

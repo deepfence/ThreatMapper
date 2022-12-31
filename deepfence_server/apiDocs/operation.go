@@ -66,6 +66,10 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Secrets", "Ingest secrets found while scanning the agent",
 		http.StatusOK, []string{tagSecretScan}, nil, bearerToken, new([]ingesters.Secret), nil)
 
+	d.AddOperation("ingestMalware", http.MethodPost, "/deepfence/ingest/malware",
+		"Ingest Malware", "Ingest malware found while scanning the agent",
+		http.StatusOK, []string{tagMalwareScan}, nil, bearerToken, new([]ingesters.Malware), nil)
+
 	d.AddOperation("ingestCompliances", http.MethodPost, "/deepfence/ingest/compliance",
 		"Ingest Compliances", "Ingest compliance issues found while scanning the agent",
 		http.StatusOK, []string{tagCompliance}, nil, bearerToken, new([]ingesters.ComplianceDoc), nil)
@@ -88,6 +92,10 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("startSecretScan", http.MethodGet, "/deepfence/scan/start/secrets",
 		"Start Secret Scan", "Start Secret Scan on agent",
 		http.StatusOK, []string{tagSecretScan}, nil, bearerToken, new(ScanTrigger), nil)
+
+	d.AddOperation("startMalwareScan", http.MethodGet, "/deepfence/scan/start/malware",
+		"Start Malware Scan", "Start Malware Scan on agent",
+		http.StatusOK, []string{tagMalwareScan}, nil, bearerToken, new(ScanTrigger), nil)
 
 	d.AddOperation("startComplianceScan", http.MethodGet, "/deepfence/scan/start/compliances",
 		"Start Compliance Scan", "Start Compliance Scan on agent",

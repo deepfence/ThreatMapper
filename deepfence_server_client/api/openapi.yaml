@@ -28,6 +28,7 @@ tags:
 - name: Compliance
 - name: Topology
 - name: Secret Scan
+- name: Malware Scan
 - name: Vulnerability
 paths:
   /deepfence/api-token:
@@ -373,6 +374,42 @@ paths:
       summary: Ingest Secrets
       tags:
       - Secret Scan
+  /deepfence/ingest/malware:
+    post:
+      description: Ingest malware found while scanning the agent
+      operationId: ingestMalware
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersMalware'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+        - bearer_token: []
+      summary: Ingest Malware
+      tags:
+        - Malware Scan
   /deepfence/scan/start/compliances:
     get:
       description: Start Compliance Scan on agent
@@ -457,6 +494,34 @@ paths:
       summary: Start Secret Scan
       tags:
       - Secret Scan
+  /deepfence/scan/start/malware:
+    get:
+      description: Start Malware Scan on agent
+      operationId: startMalwareScan
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+        - bearer_token: []
+      summary: Start Malware Scan
+      tags:
+        - Malware Scan
   /deepfence/user:
     delete:
       description: Delete logged in user

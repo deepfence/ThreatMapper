@@ -23,6 +23,7 @@ var (
 	complianceProcessor      *BulkProcessor
 	cloudComplianceProcessor *BulkProcessor
 	secretsProcessor         *BulkProcessor
+	malwareProcessor         *BulkProcessor
 )
 
 // func funcName(fname string) string {
@@ -129,6 +130,9 @@ func main() {
 
 	secretsProcessor = NewBulkProcessor(commitFuncSecrets)
 	secretsProcessor.Start(ctx)
+
+	malwareProcessor = NewBulkProcessor(commitFuncMalware)
+	malwareProcessor.Start(ctx)
 
 	// collect consumer lag for metrics
 	go getLagByTopic(ctx, kafkaBrokers, consumerGroupID)
