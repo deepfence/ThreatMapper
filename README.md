@@ -78,20 +78,22 @@ ctx = context.WithValue(context.Background(), openapi.ContextOperationServerVari
 
 All URIs are relative to *http://localhost*
 
-Class | Method | HTTP request | Description
------------- | ------------- | ------------- | -------------
-*AuthenticationApi* | [**RegisterUser**](docs/AuthenticationApi.md#registeruser) | **Post** /deepfence/user/register | Register User
+Class | Method                                                                          | HTTP request                                | Description
+------------ |---------------------------------------------------------------------------------|---------------------------------------------| -------------
+*AuthenticationApi* | [**RegisterUser**](docs/AuthenticationApi.md#registeruser)                      | **Post** /deepfence/user/register           | Register User
 *CloudComplianceApi* | [**IngestCloudCompliances**](docs/CloudComplianceApi.md#ingestcloudcompliances) | **Post** /deepfence/ingest/cloud-compliance | Ingest Cloud Compliances
-*CloudResourcesApi* | [**IngestCloudResources**](docs/CloudResourcesApi.md#ingestcloudresources) | **Post** /deepfence/ingest/cloud-resources | Ingest Cloud resources
-*ComplianceApi* | [**IngestCompliances**](docs/ComplianceApi.md#ingestcompliances) | **Post** /deepfence/ingest/compliance | Ingest Compliances
-*ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Get** /deepfence/scan/start/compliances | Start Compliance Scan
-*SecretScanApi* | [**IngestSecrets**](docs/SecretScanApi.md#ingestsecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
-*SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan) | **Get** /deepfence/scan/start/secrets | Start Secret Scan
-*ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Get** /deepfence/threat/graph | Get Threat Graph
-*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Get** /deepfence/topology-api/graph | Get Topology Graph
-*TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/topology-api/ingest | Ingest Topology Data
-*VulnerabilityApi* | [**IngestCVEs**](docs/VulnerabilityApi.md#ingestcves) | **Post** /deepfence/ingest/cves | Ingest CVEs
-*VulnerabilityApi* | [**StartCVEScan**](docs/VulnerabilityApi.md#startcvescan) | **Get** /deepfence/scan/start/cves | Start CVE Scan
+*CloudResourcesApi* | [**IngestCloudResources**](docs/CloudResourcesApi.md#ingestcloudresources)      | **Post** /deepfence/ingest/cloud-resources  | Ingest Cloud resources
+*ComplianceApi* | [**IngestCompliances**](docs/ComplianceApi.md#ingestcompliances)                | **Post** /deepfence/ingest/compliance       | Ingest Compliances
+*ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan)            | **Get** /deepfence/scan/start/compliances   | Start Compliance Scan
+*SecretScanApi* | [**IngestSecrets**](docs/SecretScanApi.md#ingestsecrets)                        | **Post** /deepfence/ingest/secrets          | Ingest Secrets
+*SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan)                    | **Get** /deepfence/scan/start/secrets       | Start Secret Scan
+*MalwareScanApi* | [**IngestMalware**](docs/MalwareScanApi.md#ingestmalware)                       | **Post** /deepfence/ingest/malware          | Ingest Malware
+*MalwareScanApi* | [**StartMalwareScan**](docs/MalwareScanApi.md#startmalwarescan)                 | **Get** /deepfence/scan/start/malware       | Start Malware Scan
+*ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph)                          | **Get** /deepfence/threat/graph             | Get Threat Graph
+*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph)                    | **Get** /deepfence/topology-api/graph       | Get Topology Graph
+*TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport)                  | **Post** /deepfence/topology-api/ingest     | Ingest Topology Data
+*VulnerabilityApi* | [**IngestCVEs**](docs/VulnerabilityApi.md#ingestcves)                           | **Post** /deepfence/ingest/cves             | Ingest CVEs
+*VulnerabilityApi* | [**StartCVEScan**](docs/VulnerabilityApi.md#startcvescan)                       | **Get** /deepfence/scan/start/cves          | Start CVE Scan
 
 
 ## Documentation For Models
@@ -103,6 +105,7 @@ Class | Method | HTTP request | Description
  - [IngestersComplianceDoc](docs/IngestersComplianceDoc.md)
  - [IngestersDfCveStruct](docs/IngestersDfCveStruct.md)
  - [IngestersSecret](docs/IngestersSecret.md)
+ - [IngestersMalware](docs/IngestersMalware.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
  - [ModelUser](docs/ModelUser.md)
  - [ReportDNSRecord](docs/ReportDNSRecord.md)
