@@ -20,6 +20,10 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	start_scan(w, r, ctl.StartSecretScan)
 }
 
+func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
+	start_scan(w, r, ctl.StartMalwareScan)
+}
+
 func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
 	start_scan(w, r, ctl.StartComplianceScan)
 }
@@ -49,6 +53,11 @@ func (h *Handler) IngestCVEReportHandler(w http.ResponseWriter, r *http.Request)
 
 func (h *Handler) IngestSecretReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewSecretIngester()
+	ingest_scan_report(w, r, ingester)
+}
+
+func (h *Handler) IngestMalwareReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareIngester()
 	ingest_scan_report(w, r, ingester)
 }
 

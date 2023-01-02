@@ -1,13 +1,11 @@
 package router
 
 import (
-	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
 	"os"
@@ -106,6 +104,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 				r.Post("/report", dfHandler.IngestAgentReport)
 				r.Post("/cves", dfHandler.IngestCVEReportHandler)
 				r.Post("/secrets", dfHandler.IngestSecretReportHandler)
+				r.Post("/malware", dfHandler.IngestMalwareReportHandler)
 				r.Post("/compliance", dfHandler.IngestComplianceReportHandler)
 				r.Post("/cloud-compliance", dfHandler.IngestCloudComplianceReportHandler)
 				r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
@@ -115,6 +114,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 			r.Route("/scan/start", func(r chi.Router) {
 				r.Get("/cves", dfHandler.StartCVEScanHandler)
 				r.Get("/secrets", dfHandler.StartSecretScanHandler)
+				r.Get("/malware", dfHandler.StartMalwareScanHandler)
 				r.Get("/compliances", dfHandler.StartComplianceScanHandler)
 			})
 
