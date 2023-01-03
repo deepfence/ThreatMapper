@@ -87,7 +87,6 @@ type WSDialer interface {
 // }
 
 func getHTTPTransport(hostname string) *http.Transport {
-
 	transport := cleanhttp.DefaultTransport()
 	transport.DialContext = (&net.Dialer{
 		Timeout:   5 * time.Second,
