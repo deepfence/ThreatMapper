@@ -59,7 +59,12 @@ type StartSecretScanRequest struct {
 	Hostname     string            `json:"hostname" required:"true"`
 }
 type StartComplianceScanRequest struct{}
-type StartMalwareScanRequest struct{}
+type StartMalwareScanRequest struct {
+	ResourceId   string            `json:"resource_id" required:"true"`
+	ResourceType ScanResource      `json:"resource_type" required:"true"`
+	BinArgs      map[string]string `json:"bin_args" required:"true"`
+	Hostname     string            `json:"hostname" required:"true"`
+}
 
 type Action struct {
 	ID             ActionID `json:"id" required:"true"`
