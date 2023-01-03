@@ -1,8 +1,11 @@
 package kubernetes
 
 import (
+	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
+	"sync"
+	"time"
 
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -217,6 +220,18 @@ var (
 	//}
 )
 
+type k8sTopologyCache struct {
+	serviceTopology     report.Topology
+	daemonSetTopology   report.Topology
+	statefulSetTopology report.Topology
+	cronJobTopology     report.Topology
+	deploymentTopology  report.Topology
+	jobTopology         report.Topology
+	podTopology         report.Topology
+	namespaceTopology   report.Topology
+	sync.RWMutex
+}
+
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
 	client             Client
@@ -224,6 +239,7 @@ type Reporter struct {
 	probeID            string
 	probe              *probe.Probe
 	hostID             string
+	k8sTopologyCache   k8sTopologyCache
 	handlerRegistry    *controls.HandlerRegistry
 	nodeName           string
 	k8sClusterTopology report.Topology
@@ -247,6 +263,7 @@ func NewReporter(client Client, pipes controls.PipeClient, probeID string, hostI
 	k8sClusterTopology, _ := reporter.kubernetesClusterTopology()
 	reporter.k8sClusterTopology = k8sClusterTopology
 	client.WatchPods(reporter.podEvent)
+	go reporter.updateReportCache()
 	return reporter
 }
 
@@ -346,40 +363,55 @@ func (r *Tagger) Tag(rpt report.Report) (report.Report, error) {
 	return rpt, nil
 }
 
-// Report generates a Report containing Container and ContainerImage topologies
-func (r *Reporter) Report() (report.Report, error) {
-	result := report.MakeReport()
+func (r *Reporter) updateReportCache() {
+	err := r.fetchTopology()
+	if err != nil {
+		logrus.Error(err.Error())
+	}
+	ticker := time.NewTicker(5 * time.Minute)
+	for {
+		select {
+		case <-ticker.C:
+			err = r.fetchTopology()
+			if err != nil {
+				logrus.Error(err.Error())
+			}
+		}
+	}
+}
+
+func (r *Reporter) fetchTopology() error {
 	serviceTopology, services, err := r.serviceTopology()
 	if err != nil {
-		return result, err
+		return err
 	}
 	daemonSetTopology, daemonSets, err := r.daemonSetTopology()
 	if err != nil {
-		return result, err
+		return err
 	}
 	statefulSetTopology, statefulSets, err := r.statefulSetTopology()
 	if err != nil {
-		return result, err
+		return err
 	}
 	cronJobTopology, cronJobs, err := r.cronJobTopology()
 	if err != nil {
-		return result, err
+		return err
 	}
 	deploymentTopology, deployments, err := r.deploymentTopology()
 	if err != nil {
-		return result, err
+		return err
 	}
 	jobTopology, jobs, err := r.jobTopology()
 	if err != nil {
-		return result, err
+		return err
 	}
 	podTopology, err := r.podTopology(services, deployments, daemonSets, statefulSets, cronJobs, jobs)
 	if err != nil {
-		return result, err
+		return err
 	}
 	namespaceTopology, err := r.namespaceTopology()
 	if err != nil {
-		return result, err
+		return err
 	}
 	//persistentVolumeTopology, _, err := r.persistentVolumeTopology()
 	//if err != nil {
@@ -401,6 +433,34 @@ func (r *Reporter) Report() (report.Report, error) {
 	//if err != nil {
 	//	return result, err
 	//}
+	r.k8sTopologyCache.Lock()
+	defer r.k8sTopologyCache.Unlock()
+
+	r.k8sTopologyCache.serviceTopology = serviceTopology
+	r.k8sTopologyCache.daemonSetTopology = daemonSetTopology
+	r.k8sTopologyCache.statefulSetTopology = statefulSetTopology
+	r.k8sTopologyCache.cronJobTopology = cronJobTopology
+	r.k8sTopologyCache.deploymentTopology = deploymentTopology
+	r.k8sTopologyCache.jobTopology = jobTopology
+	r.k8sTopologyCache.podTopology = podTopology
+	r.k8sTopologyCache.namespaceTopology = namespaceTopology
+	return nil
+}
+
+// Report generates a Report containing Container and ContainerImage topologies
+func (r *Reporter) Report() (report.Report, error) {
+	r.k8sTopologyCache.RLock()
+	serviceTopology := r.k8sTopologyCache.serviceTopology
+	daemonSetTopology := r.k8sTopologyCache.daemonSetTopology
+	statefulSetTopology := r.k8sTopologyCache.statefulSetTopology
+	cronJobTopology := r.k8sTopologyCache.cronJobTopology
+	deploymentTopology := r.k8sTopologyCache.deploymentTopology
+	jobTopology := r.k8sTopologyCache.jobTopology
+	podTopology := r.k8sTopologyCache.podTopology
+	namespaceTopology := r.k8sTopologyCache.namespaceTopology
+	r.k8sTopologyCache.RUnlock()
+
+	result := report.MakeReport()
 	result.KubernetesCluster = result.KubernetesCluster.Merge(r.k8sClusterTopology)
 	result.Pod = result.Pod.Merge(podTopology)
 	result.Service = result.Service.Merge(serviceTopology)
