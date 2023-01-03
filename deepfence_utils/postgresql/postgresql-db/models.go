@@ -29,6 +29,7 @@ type Company struct {
 	EmailDomain string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	Namespace   string
 }
 
 type Role struct {

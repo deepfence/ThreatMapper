@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Beatrate** | Pointer to **int32** |  | [optional] 
-**Commands** | Pointer to [**[]ControlsAction**](ControlsAction.md) |  | [optional] 
+**Beatrate** | **int32** |  | 
+**Commands** | [**[]ControlsAction**](ControlsAction.md) |  | 
 
 ## Methods
 
 ### NewControlsAgentControls
 
-`func NewControlsAgentControls() *ControlsAgentControls`
+`func NewControlsAgentControls(beatrate int32, commands []ControlsAction, ) *ControlsAgentControls`
 
 NewControlsAgentControls instantiates a new ControlsAgentControls object
 This constructor will assign default values to properties that have it defined,
@@ -45,11 +45,6 @@ and a boolean to check if the value has been set.
 
 SetBeatrate sets Beatrate field to given value.
 
-### HasBeatrate
-
-`func (o *ControlsAgentControls) HasBeatrate() bool`
-
-HasBeatrate returns a boolean if a field has been set.
 
 ### GetCommands
 
@@ -70,11 +65,6 @@ and a boolean to check if the value has been set.
 
 SetCommands sets Commands field to given value.
 
-### HasCommands
-
-`func (o *ControlsAgentControls) HasCommands() bool`
-
-HasCommands returns a boolean if a field has been set.
 
 ### SetCommandsNil
 

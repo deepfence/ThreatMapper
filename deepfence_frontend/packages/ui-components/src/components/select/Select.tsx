@@ -34,6 +34,7 @@ export interface SelectProps<T extends Value = Value> {
   color?: ColorType;
   helperText?: string;
   placeholder?: string;
+  className?: string;
 }
 
 type IconProps = {
@@ -131,6 +132,7 @@ export function Select<T extends Value>({
   color = COLOR_DEFAULT,
   placeholder,
   startIcon,
+  className = '',
 }: SelectProps<T>) {
   const select = useSelectState<T>({
     defaultValue: defaultValue ?? ((Array.isArray(value) ? [] : '') as T),
@@ -167,19 +169,22 @@ export function Select<T extends Value>({
           <AriaKitSelect
             state={select}
             name={name}
-            className={cx(
-              'w-full border box-border rounded-lg bg-gray-50 dark:bg-gray-700',
-              'block text-left relative',
-              'focus:outline-none select-none overscroll-contain',
-              `${classes.color[color]}`,
-              `${classes.size[sizing]}`,
-              `${Typography.weight.normal}`,
-              `${Typography.leading.none}`,
-              {
-                'pl-[38px]': startIcon,
-                'h-[42px]': sizing === 'sm',
-                'h-[52px]': sizing === 'md',
-              },
+            className={twMerge(
+              cx(
+                'w-full border box-border rounded-lg bg-gray-50 dark:bg-gray-700',
+                'block text-left relative',
+                'focus:outline-none select-none overscroll-contain',
+                `${classes.color[color]}`,
+                `${classes.size[sizing]}`,
+                `${Typography.weight.normal}`,
+                `${Typography.leading.none}`,
+                {
+                  'pl-[38px]': startIcon,
+                  'h-[42px]': sizing === 'sm',
+                  'h-[52px]': sizing === 'md',
+                },
+                className,
+              ),
             )}
             data-testid={`ariakit-select-${name}`}
           >

@@ -65,9 +65,9 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         <LabelPrimitive.Label
           htmlFor={_id}
           className={cx(
-            Typography.size.xs,
-            Typography.weight.normal,
-            'ml-2 text-gray-500 dark:text-gray-400 cursor-default',
+            Typography.size.sm,
+            Typography.weight.medium,
+            'ml-2 text-gray-600 dark:text-gray-300 cursor-default',
           )}
         >
           {label}

@@ -3,12 +3,12 @@ FROM postgres:14.2-alpine3.15
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
-ENV POSTGRES_USER_DB_HOST=deepfence-postgres \
-    POSTGRES_USER_DB_PORT=5432 \
-    POSTGRES_USER_DB_USER=deepfence \
-    POSTGRES_USER_DB_PASSWORD=deepfence \
-    POSTGRES_USER_DB_NAME=users \
-    POSTGRES_USER_DB_SSLMODE=disable \
+ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
+    DEEPFENCE_POSTGRES_USER_DB_PORT=5432 \
+    DEEPFENCE_POSTGRES_USER_DB_USER=deepfence \
+    DEEPFENCE_POSTGRES_USER_DB_PASSWORD=deepfence \
+    DEEPFENCE_POSTGRES_USER_DB_NAME=users \
+    DEEPFENCE_POSTGRES_USER_DB_SSLMODE=disable \
     DF_PROG_NAME="postgres1" \
     PGDATA="/data/postgres1/data"
 #ENV PGDATA /var/lib/postgresql/data

@@ -9,7 +9,7 @@ export default {
   component: Breadcrumb,
 } as ComponentMeta<typeof Breadcrumb>;
 
-export const Link = forwardRef<
+const Link = forwardRef<
   HTMLAnchorElement,
   {
     children: React.ReactNode;
@@ -24,7 +24,7 @@ export const Link = forwardRef<
 });
 
 const Template: ComponentStory<typeof Breadcrumb> = ({ separator }) => (
-  <Breadcrumb separator={separator}>
+  <Breadcrumb separator={separator} outline>
     <BreadcrumbLink asChild icon={<HiHome />}>
       <Link>Link One</Link>
     </BreadcrumbLink>

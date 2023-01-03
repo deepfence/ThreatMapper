@@ -4,21 +4,21 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ComplianceCount** | Pointer to **int32** |  | [optional] 
-**ComplianceScanId** | Pointer to **string** |  | [optional] 
-**ImageName** | Pointer to **string** |  | [optional] 
-**Name** | Pointer to **string** |  | [optional] 
-**NodeId** | Pointer to **string** |  | [optional] 
-**SecretsCount** | Pointer to **int32** |  | [optional] 
-**SecretsScanId** | Pointer to **string** |  | [optional] 
-**VulnerabilityCount** | Pointer to **int32** |  | [optional] 
-**VulnerabilityScanId** | Pointer to **string** |  | [optional] 
+**ComplianceCount** | **int32** |  | 
+**ComplianceScanId** | **string** |  | 
+**ImageName** | **string** |  | 
+**Name** | **string** |  | 
+**NodeId** | **string** |  | 
+**SecretsCount** | **int32** |  | 
+**SecretsScanId** | **string** |  | 
+**VulnerabilityCount** | **int32** |  | 
+**VulnerabilityScanId** | **string** |  | 
 
 ## Methods
 
 ### NewReportersNodeInfo
 
-`func NewReportersNodeInfo() *ReportersNodeInfo`
+`func NewReportersNodeInfo(complianceCount int32, complianceScanId string, imageName string, name string, nodeId string, secretsCount int32, secretsScanId string, vulnerabilityCount int32, vulnerabilityScanId string, ) *ReportersNodeInfo`
 
 NewReportersNodeInfo instantiates a new ReportersNodeInfo object
 This constructor will assign default values to properties that have it defined,
@@ -52,11 +52,6 @@ and a boolean to check if the value has been set.
 
 SetComplianceCount sets ComplianceCount field to given value.
 
-### HasComplianceCount
-
-`func (o *ReportersNodeInfo) HasComplianceCount() bool`
-
-HasComplianceCount returns a boolean if a field has been set.
 
 ### GetComplianceScanId
 
@@ -77,11 +72,6 @@ and a boolean to check if the value has been set.
 
 SetComplianceScanId sets ComplianceScanId field to given value.
 
-### HasComplianceScanId
-
-`func (o *ReportersNodeInfo) HasComplianceScanId() bool`
-
-HasComplianceScanId returns a boolean if a field has been set.
 
 ### GetImageName
 
@@ -102,11 +92,6 @@ and a boolean to check if the value has been set.
 
 SetImageName sets ImageName field to given value.
 
-### HasImageName
-
-`func (o *ReportersNodeInfo) HasImageName() bool`
-
-HasImageName returns a boolean if a field has been set.
 
 ### GetName
 
@@ -127,11 +112,6 @@ and a boolean to check if the value has been set.
 
 SetName sets Name field to given value.
 
-### HasName
-
-`func (o *ReportersNodeInfo) HasName() bool`
-
-HasName returns a boolean if a field has been set.
 
 ### GetNodeId
 
@@ -152,11 +132,6 @@ and a boolean to check if the value has been set.
 
 SetNodeId sets NodeId field to given value.
 
-### HasNodeId
-
-`func (o *ReportersNodeInfo) HasNodeId() bool`
-
-HasNodeId returns a boolean if a field has been set.
 
 ### GetSecretsCount
 
@@ -177,11 +152,6 @@ and a boolean to check if the value has been set.
 
 SetSecretsCount sets SecretsCount field to given value.
 
-### HasSecretsCount
-
-`func (o *ReportersNodeInfo) HasSecretsCount() bool`
-
-HasSecretsCount returns a boolean if a field has been set.
 
 ### GetSecretsScanId
 
@@ -202,11 +172,6 @@ and a boolean to check if the value has been set.
 
 SetSecretsScanId sets SecretsScanId field to given value.
 
-### HasSecretsScanId
-
-`func (o *ReportersNodeInfo) HasSecretsScanId() bool`
-
-HasSecretsScanId returns a boolean if a field has been set.
 
 ### GetVulnerabilityCount
 
@@ -227,11 +192,6 @@ and a boolean to check if the value has been set.
 
 SetVulnerabilityCount sets VulnerabilityCount field to given value.
 
-### HasVulnerabilityCount
-
-`func (o *ReportersNodeInfo) HasVulnerabilityCount() bool`
-
-HasVulnerabilityCount returns a boolean if a field has been set.
 
 ### GetVulnerabilityScanId
 
@@ -252,11 +212,6 @@ and a boolean to check if the value has been set.
 
 SetVulnerabilityScanId sets VulnerabilityScanId field to given value.
 
-### HasVulnerabilityScanId
-
-`func (o *ReportersNodeInfo) HasVulnerabilityScanId() bool`
-
-HasVulnerabilityScanId returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

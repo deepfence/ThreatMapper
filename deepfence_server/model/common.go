@@ -12,6 +12,11 @@ type Response struct {
 }
 
 type ResponseAccessToken struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"access_token" required:"true"`
+	RefreshToken string `json:"refresh_token" required:"true"`
+}
+
+type FetchWindow struct {
+	Offset int `json:"offset" required:"true"`
+	Size   int `json:"size" required:"true"`
 }

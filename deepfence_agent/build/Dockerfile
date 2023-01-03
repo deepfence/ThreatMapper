@@ -15,18 +15,6 @@ RUN apt-get update  \
     && make install \
     && cd /usr/local/ \
     && tar -czf yara.tar.gz yara
-#RUN wget https://apt.llvm.org/llvm.sh
-#RUN chmod +x llvm.sh
-#RUN ./llvm.sh 12
-#RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-#ENV PATH="/root/.cargo/bin:${PATH}"
-#RUN rustup install stable
-#RUN rustup install nightly
-#RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
-#RUN rustup default nightly
-#RUN chmod +x llvm.sh
-#RUN ./llvm.sh 12
-#RUN cargo install bpf-linker
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0
 RUN mkdir /home/deepfence

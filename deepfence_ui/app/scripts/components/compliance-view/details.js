@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 import moment from 'moment';
 import { Redirect } from 'react-router-dom';
+import { formValueSelector } from 'redux-form/immutable';
 import ComplianceTestsView from './tests-container';
 import ComplianceTestCategoryReportContainer from './test-category-report-container';
 import ComplianceTestStatusReportContainer from './test-status-report-container';
@@ -25,8 +26,15 @@ class ComplianceDetailsView extends React.PureComponent {
     this.state = {
       activeMenu: this.sideNavMenuCollection[0],
       redirectBack: false,
+      refreshCounter: 0,
     };
     this.handleBackButton = this.handleBackButton.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.hideMasked !== this.props.hideMasked) {
+      this.onRowActionCallback();
+    }
   }
 
   handleBackButton(checkType) {
@@ -36,13 +44,21 @@ class ComplianceDetailsView extends React.PureComponent {
     });
   }
 
+  onRowActionCallback = () => {
+    this.setState(state => {
+      return {
+        refreshCounter: state.refreshCounter + 1,
+      };
+    });
+  };
+
   render() {
     const { redirectBack, link } = this.state;
     if (redirectBack) {
       return <Redirect to={link} />;
     }
 
-    const { match: { params: { scanId, nodeId, checkType } = {} } = {} } =
+    const { match: { params: { scanId, nodeId, checkType, scanType } = {} } = {} } =
       this.props;
 
     // parsing node id from scan_id
@@ -71,9 +87,8 @@ class ComplianceDetailsView extends React.PureComponent {
       this.props.location?.search ?? ''
     );
 
-    const {location, cloudType} = this.props;
-    const urlCloudType = window.location.hash.split('/').reverse()[0];
-    const cloudTypeCheck = cloudType || urlCloudType
+    const { location } = this.props;
+    const cloudTypeCheck = scanType;
 
     return (
       <div className="compliance-details">
@@ -92,11 +107,11 @@ class ComplianceDetailsView extends React.PureComponent {
                 width: 'fit-content',
                 cursor: 'pointer',
               }}
-              onClick={() =>
+              onClick={() => {
                 this.props.history.push(
                   `/compliance/${cloudTypeCheck}/${scanIdFormatted}/standard/${this.props.match.params.checkType}`
-                )
-              }
+                );
+              }}
             >
               <i className="fa fa-arrow-left" aria-hidden="true" />{' '}
               <span
@@ -111,7 +126,9 @@ class ComplianceDetailsView extends React.PureComponent {
               </span>
             </div>
           )}
-          {cloudTypeCheck !== 'kubernetes' && !urlSearchParams.get('resource') && location.state === undefined ? (
+          {cloudTypeCheck !== 'kubernetes' &&
+          !urlSearchParams.get('resource') &&
+          location.state === undefined ? (
             <div
               className="go-back-btn"
               style={{
@@ -119,11 +136,11 @@ class ComplianceDetailsView extends React.PureComponent {
                 width: 'fit-content',
                 cursor: 'pointer',
               }}
-              onClick={() =>
+              onClick={() => {
                 this.props.history.push(
                   `/compliance/${cloudTypeCheck}/${nodeId}/standard/${this.props.match.params.checkType}`
-                )
-              }
+                );
+              }}
             >
               <i className="fa fa-arrow-left" aria-hidden="true" />{' '}
               <span
@@ -138,33 +155,37 @@ class ComplianceDetailsView extends React.PureComponent {
               </span>
             </div>
           ) : null}
-          {urlSearchParams.get('resource')?.length && urlSearchParams.get('serviceId')?.length && (
-            <div
-              className="go-back-btn"
-              style={{
-                marginBottom: '8px',
-                width: 'fit-content',
-                cursor: 'pointer',
-              }}
-              onClick={() =>
-                this.props.history.push(
-                  `/compliance/cloud-inventory/${cloudTypeCheck}/${nodeId}/${urlSearchParams.get('serviceId')}`
-                )
-              }
-            >
-              <i className="fa fa-arrow-left" aria-hidden="true" />{' '}
-              <span
+          {cloudTypeCheck !== 'kubernetes' &&
+            urlSearchParams.get('resource')?.length &&
+            urlSearchParams.get('serviceId')?.length && (
+              <div
+                className="go-back-btn"
                 style={{
-                  paddingLeft: '5px',
-                  color: '#0276C9',
-                  fontSize: '15px',
+                  marginBottom: '8px',
+                  width: 'fit-content',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  this.props.history.push(
+                    `/compliance/cloud-inventory/${cloudTypeCheck}/${nodeId}/${urlSearchParams.get(
+                      'serviceId'
+                    )}`
+                  );
                 }}
               >
-                {' '}
-                Go Back
-              </span>
-            </div>
-          )}
+                <i className="fa fa-arrow-left" aria-hidden="true" />{' '}
+                <span
+                  style={{
+                    paddingLeft: '5px',
+                    color: '#0276C9',
+                    fontSize: '15px',
+                  }}
+                >
+                  {' '}
+                  Go Back
+                </span>
+              </div>
+            )}
           <div
             className={`report ${
               this.props.isFiltersViewVisible
@@ -180,6 +201,7 @@ class ComplianceDetailsView extends React.PureComponent {
                 timeOfScan={timeOfScan}
                 cloudType={cloudTypeCheck}
                 resource={urlSearchParams.get('resource')}
+                refreshCounter={this.state.refreshCounter}
               />
             </div>
             <div className="test-category-report test-category-report-compliance">
@@ -189,6 +211,7 @@ class ComplianceDetailsView extends React.PureComponent {
                 checkType={checkType}
                 cloudType={cloudTypeCheck}
                 resource={urlSearchParams.get('resource')}
+                refreshCounter={this.state.refreshCounter}
               />
             </div>
           </div>
@@ -207,6 +230,7 @@ class ComplianceDetailsView extends React.PureComponent {
               checkType={checkType}
               cloudType={cloudTypeCheck}
               resource={urlSearchParams.get('resource')}
+              onRowActionCallback={this.onRowActionCallback}
             />
           </div>
           <div className={contentClassName} />
@@ -216,11 +240,14 @@ class ComplianceDetailsView extends React.PureComponent {
   }
 }
 
+const maskFormSelector = formValueSelector('compliance-mask-filter-form');
+
 function mapStateToProps(state) {
   return {
     isSideNavCollapsed: state.get('isSideNavCollapsed'),
     cloudType: state.get('compliance_node_type'),
     isFiltersViewVisible: state.get('isFiltersViewVisible'),
+    hideMasked: maskFormSelector(state, 'hideMasked') ?? true,
   };
 }
 

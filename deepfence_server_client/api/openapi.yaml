@@ -28,7 +28,6 @@ tags:
 - name: Compliance
 - name: Topology
 - name: Secret Scan
-- name: Malware Scan
 - name: Vulnerability
 paths:
   /deepfence/api-token:
@@ -52,6 +51,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -65,7 +70,8 @@ paths:
       - User
   /deepfence/auth/token:
     post:
-      description: Get auth token for API access
+      description: "Get access token for programmatic API access, by providing API\
+        \ Token"
       operationId: authToken
       requestBody:
         content:
@@ -89,17 +95,287 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiDocsFailureResponse'
           description: Internal Server Error
-      summary: API Auth Token
+      summary: Get Access Token for API Token
       tags:
       - Authentication
-  /deepfence/graph/threat:
+  /deepfence/auth/token/refresh:
+    post:
+      description: Reissue access token using refresh token
+      operationId: authTokenRefresh
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /deepfence/controls/agent:
+    post:
+      description: Fetch actions for a given agent
+      operationId: getAgentControls
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelAgentId'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlsAgentControls'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Fetch Agent Actions
+      tags:
+      - Controls
+  /deepfence/controls/agent-init:
+    post:
+      description: Fetch initial actions for a given agent after it started
+      operationId: getAgentInitControls
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelAgentId'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlsAgentControls'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Fetch Agent Init Actions
+      tags:
+      - Controls
+  /deepfence/diagnosis/agent-logs:
+    post:
+      description: Generate Agent Diagnostic Logs
+      operationId: generateAgentDiagnosticLogs
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Generate Agent Diagnostic Logs
+      tags:
+      - Diagnosis
+  /deepfence/diagnosis/console-logs:
+    post:
+      description: Generate Console Diagnostic Logs
+      operationId: generateConsoleDiagnosticLogs
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Generate Console Diagnostic Logs
+      tags:
+      - Diagnosis
+  /deepfence/diagnosis/diagnostic-logs:
     get:
+      description: Get diagnostic logs download url links
+      operationId: getDiagnosticLogs
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Diagnostic Logs
+      tags:
+      - Diagnosis
+  /deepfence/diagnosis/notification:
+    get:
+      description: Get Diagnostic Notification
+      operationId: diagnosticNotification
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Diagnostic Notification
+      tags:
+      - Diagnosis
+  /deepfence/graph/threat:
+    post:
       description: Retrieve the full threat graph associated with the account
       operationId: getThreatGraph
       responses:
@@ -119,6 +395,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -131,15 +413,20 @@ paths:
       tags:
       - Threat
   /deepfence/graph/topology:
-    get:
+    post:
       description: Retrieve the full topology graph associated with the account
       operationId: getTopologyGraph
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersTopologyFilters'
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReportersRenderedGraph'
+                $ref: '#/components/schemas/ApiDocsGraphResult'
           description: OK
         "400":
           content:
@@ -151,6 +438,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -171,7 +464,7 @@ paths:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/IngestersCloudComplianceDoc'
+                $ref: '#/components/schemas/IngestersCloudCompliance'
               nullable: true
               type: array
       responses:
@@ -187,6 +480,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -223,6 +522,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -243,7 +548,7 @@ paths:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/IngestersComplianceDoc'
+                $ref: '#/components/schemas/IngestersCompliance'
               nullable: true
               type: array
       responses:
@@ -259,6 +564,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -270,16 +581,55 @@ paths:
       summary: Ingest Compliances
       tags:
       - Compliance
-  /deepfence/ingest/cves:
+  /deepfence/ingest/report:
     post:
-      description: Ingest CVEs found while scanning the agent
-      operationId: ingestCVEs
+      description: Ingest data reported by one Agent
+      operationId: ingestAgentReport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelRawReport'
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Ingest Topology Data
+      tags:
+      - Topology
+  /deepfence/ingest/secret-scan-logs:
+    post:
+      description: Ingest secrets scan status from the agent
+      operationId: ingestSecretScanStatus
       requestBody:
         content:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/IngestersDfCveStruct'
+                $ref: '#/components/schemas/IngestersSecretScanStatus'
               nullable: true
               type: array
       responses:
@@ -295,6 +645,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -303,41 +659,9 @@ paths:
           description: Internal Server Error
       security:
       - bearer_token: []
-      summary: Ingest CVEs
+      summary: Ingest Secrets Scan Status
       tags:
-      - Vulnerability
-  /deepfence/ingest/report:
-    post:
-      description: Ingest data reported by one Agent
-      operationId: ingestAgentReport
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ControlsAgentControls'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDocsFailureResponse'
-          description: Internal Server Error
-      security:
-      - bearer_token: []
-      summary: Ingest Topology Data
-      tags:
-      - Topology
+      - Secret Scan
   /deepfence/ingest/secrets:
     post:
       description: Ingest secrets found while scanning the agent
@@ -363,6 +687,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -374,16 +704,16 @@ paths:
       summary: Ingest Secrets
       tags:
       - Secret Scan
-  /deepfence/ingest/malware:
+  /deepfence/ingest/vulnerabilities:
     post:
-      description: Ingest malware found while scanning the agent
-      operationId: ingestMalware
+      description: Ingest vulnerabilities found while scanning the agent host or containers
+      operationId: ingestVulnerabilities
       requestBody:
         content:
           application/json:
             schema:
               items:
-                $ref: '#/components/schemas/IngestersMalware'
+                $ref: '#/components/schemas/IngestersVulnerability'
               nullable: true
               type: array
       responses:
@@ -399,6 +729,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -406,16 +742,25 @@ paths:
                 $ref: '#/components/schemas/ApiDocsFailureResponse'
           description: Internal Server Error
       security:
-        - bearer_token: []
-      summary: Ingest Malware
+      - bearer_token: []
+      summary: Ingest Vulnerabilities
       tags:
-        - Malware Scan
-  /deepfence/scan/start/compliances:
-    get:
-      description: Start Compliance Scan on agent
-      operationId: startComplianceScan
+      - Vulnerability
+  /deepfence/scan/list/compliance:
+    post:
+      description: Get Compliance Scans list on agent or registry
+      operationId: listComplianceScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanListReq'
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanListResp'
           description: OK
         "400":
           content:
@@ -427,6 +772,356 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Compliance Scans List
+      tags:
+      - Compliance
+  /deepfence/scan/list/malware:
+    post:
+      description: Get Malware Scans list on agent or registry
+      operationId: listMalwareScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanListReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanListResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Malware Scans List
+      tags:
+      - Malware Scan
+  /deepfence/scan/list/secret:
+    post:
+      description: Get Secret Scans list on agent or registry
+      operationId: listSecretScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanListReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanListResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Secret Scans List
+      tags:
+      - Secret Scan
+  /deepfence/scan/list/vulnerability:
+    post:
+      description: Get Vulnerability Scan list on agent or registry
+      operationId: listVulnerabilityScans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanListReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanListResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Vulnerability Scans List
+      tags:
+      - Vulnerability
+  /deepfence/scan/results/compliance:
+    post:
+      description: Get Compliance Scans results on agent or registry
+      operationId: resultsComplianceScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanResultsReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanResultsResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Compliance Scans Results
+      tags:
+      - Compliance
+  /deepfence/scan/results/malware:
+    post:
+      description: Get Malware Scans results on agent or registry
+      operationId: resultsMalwareScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanResultsReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanResultsResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Malware Scans Results
+      tags:
+      - Malware Scan
+  /deepfence/scan/results/secret:
+    post:
+      description: Get Secret Scans results on agent or registry
+      operationId: resultsSecretScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanResultsReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanResultsResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Secret Scans Results
+      tags:
+      - Secret Scan
+  /deepfence/scan/results/vulnerability:
+    post:
+      description: Get Vulnerability Scan results on agent or registry
+      operationId: resultsVulnerabilityScans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanResultsReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanResultsResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Vulnerability Scans Results
+      tags:
+      - Vulnerability
+  /deepfence/scan/start/compliance:
+    post:
+      description: Start Compliance Scan on agent or registry
+      operationId: startComplianceScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanTriggerResp'
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -438,13 +1133,22 @@ paths:
       summary: Start Compliance Scan
       tags:
       - Compliance
-  /deepfence/scan/start/cves:
-    get:
-      description: Start CVE Scan on agent
-      operationId: startCVEScan
+  /deepfence/scan/start/malware:
+    post:
+      description: Start Malware Scan on agent or registry
+      operationId: startMalwareScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
-        "200":
-          description: OK
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanTriggerResp'
+          description: Accepted
         "400":
           content:
             application/json:
@@ -455,6 +1159,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -463,16 +1173,25 @@ paths:
           description: Internal Server Error
       security:
       - bearer_token: []
-      summary: Start CVE Scan
+      summary: Start Malware Scan
       tags:
-      - Vulnerability
-  /deepfence/scan/start/secrets:
-    get:
-      description: Start Secret Scan on agent
+      - Malware Scan
+  /deepfence/scan/start/secret:
+    post:
+      description: Start Secret Scan on agent or registry
       operationId: startSecretScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
       responses:
-        "200":
-          description: OK
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanTriggerResp'
+          description: Accepted
         "400":
           content:
             application/json:
@@ -483,6 +1202,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -494,12 +1219,67 @@ paths:
       summary: Start Secret Scan
       tags:
       - Secret Scan
-  /deepfence/scan/start/malware:
+  /deepfence/scan/start/vulnerability:
+    post:
+      description: Start Vulnerability Scan on agent or registry
+      operationId: startVulnerabilityScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanTriggerResp'
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Start Vulnerability Scan
+      tags:
+      - Vulnerability
+  /deepfence/scan/status/compliance:
     get:
-      description: Start Malware Scan on agent
-      operationId: startMalwareScan
+      description: Get Compliance Scan Status on agent or registry
+      operationId: statusComplianceScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanStatusResp'
           description: OK
         "400":
           content:
@@ -511,6 +1291,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -518,10 +1304,304 @@ paths:
                 $ref: '#/components/schemas/ApiDocsFailureResponse'
           description: Internal Server Error
       security:
-        - bearer_token: []
-      summary: Start Malware Scan
+      - bearer_token: []
+      summary: Get Compliance Scan Status
       tags:
-        - Malware Scan
+      - Compliance
+  /deepfence/scan/status/malware:
+    get:
+      description: Get Malware Scan status on agent or registry
+      operationId: statusMalwareScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanStatusResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Malware Scan Status
+      tags:
+      - Malware Scan
+  /deepfence/scan/status/secret:
+    get:
+      description: Get Secret Scan Status on agent or registry
+      operationId: statusSecretScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanStatusResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Secret Scan Status
+      tags:
+      - Secret Scan
+  /deepfence/scan/status/vulnerability:
+    get:
+      description: Get Vulnerability Scan Status on agent or registry
+      operationId: statusVulnerabilityScan
+      parameters:
+      - explode: true
+        in: query
+        name: scan_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelScanStatusResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Vulnerability Scan Status
+      tags:
+      - Vulnerability
+  /deepfence/scan/stop/compliance:
+    post:
+      description: Stop Compliance Scan on agent or registry
+      operationId: stopComplianceScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Stop Compliance Scan
+      tags:
+      - Compliance
+  /deepfence/scan/stop/malware:
+    post:
+      description: Stop Malware Scan on agent or registry
+      operationId: stopMalwareScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Stop Malware Scan
+      tags:
+      - Malware Scan
+  /deepfence/scan/stop/secret:
+    post:
+      description: Stop Secret Scan on agent or registry
+      operationId: stopSecretScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Stop Secret Scan
+      tags:
+      - Secret Scan
+  /deepfence/scan/stop/vulnerability:
+    post:
+      description: Stop Vulnerability Scan on agent or registry
+      operationId: stopVulnerabilityScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelScanTriggerReq'
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Stop Vulnerability Scan
+      tags:
+      - Vulnerability
   /deepfence/user:
     delete:
       description: Delete logged in user
@@ -539,6 +1619,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -570,6 +1656,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -606,6 +1698,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -643,6 +1741,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -669,6 +1773,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -706,6 +1816,12 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
         "500":
           content:
             application/json:
@@ -727,6 +1843,7 @@ components:
         message:
           type: string
         success:
+          example: false
           type: boolean
       type: object
     ApiDocsFailureResponse:
@@ -734,23 +1851,116 @@ components:
         message:
           type: string
         success:
+          example: false
           type: boolean
+      type: object
+    ApiDocsGraphResult:
+      example:
+        nodes:
+          key:
+            image: image
+            metadata:
+            - truncate: 6
+              dataType: dataType
+              id: id
+              label: label
+              priority: 0.8008281904610115
+              value: value
+            - truncate: 6
+              dataType: dataType
+              id: id
+              label: label
+              priority: 0.8008281904610115
+              value: value
+            stack: true
+            shape: shape
+            adjacency:
+            - adjacency
+            - adjacency
+            label: label
+            type: type
+            labelMinor: labelMinor
+            immediate_parent_id: immediate_parent_id
+            tables:
+            - truncationCount: 1
+              columns:
+              - dataType: dataType
+                id: id
+                label: label
+              - dataType: dataType
+                id: id
+                label: label
+              id: id
+              label: label
+              rows:
+              - entries:
+                  key: entries
+                id: id
+              - entries:
+                  key: entries
+                id: id
+              type: type
+            - truncationCount: 1
+              columns:
+              - dataType: dataType
+                id: id
+                label: label
+              - dataType: dataType
+                id: id
+                label: label
+              id: id
+              label: label
+              rows:
+              - entries:
+                  key: entries
+                id: id
+              - entries:
+                  key: entries
+                id: id
+              type: type
+            rank: rank
+            id: id
+            metrics:
+            - null
+            - null
+            tag: tag
+            pseudo: true
+            parents:
+            - topologyId: topologyId
+              id: id
+              label: label
+            - topologyId: topologyId
+              id: id
+              label: label
+        edges:
+          key:
+            source: source
+            target: target
+      properties:
+        edges:
+          additionalProperties:
+            $ref: '#/components/schemas/DetailedConnectionSummary'
+          type: object
+        nodes:
+          additionalProperties:
+            $ref: '#/components/schemas/DetailedNodeSummary'
+          type: object
+      required:
+      - edges
+      - nodes
       type: object
     ControlsAction:
       example:
         id: 6
-        request_payload:
-        - 0
-        - 0
+        request_payload: request_payload
       properties:
         id:
           type: integer
         request_payload:
-          items:
-            minimum: 0
-            type: integer
-          nullable: true
-          type: array
+          type: string
+      required:
+      - id
+      - request_payload
       type: object
     ControlsActionID:
       type: integer
@@ -759,13 +1969,9 @@ components:
         beatrate: 0
         commands:
         - id: 6
-          request_payload:
-          - 0
-          - 0
+          request_payload: request_payload
         - id: 6
-          request_payload:
-          - 0
-          - 0
+          request_payload: request_payload
       properties:
         beatrate:
           type: integer
@@ -774,8 +1980,173 @@ components:
             $ref: '#/components/schemas/ControlsAction'
           nullable: true
           type: array
+      required:
+      - beatrate
+      - commands
       type: object
-    IngestersCloudComplianceDoc:
+    DetailedConnectionSummary:
+      example:
+        source: source
+        target: target
+      properties:
+        source:
+          type: string
+        target:
+          type: string
+      type: object
+    DetailedNodeSummaries:
+      additionalProperties:
+        $ref: '#/components/schemas/DetailedNodeSummary'
+      type: object
+    DetailedNodeSummary:
+      example:
+        image: image
+        metadata:
+        - truncate: 6
+          dataType: dataType
+          id: id
+          label: label
+          priority: 0.8008281904610115
+          value: value
+        - truncate: 6
+          dataType: dataType
+          id: id
+          label: label
+          priority: 0.8008281904610115
+          value: value
+        stack: true
+        shape: shape
+        adjacency:
+        - adjacency
+        - adjacency
+        label: label
+        type: type
+        labelMinor: labelMinor
+        immediate_parent_id: immediate_parent_id
+        tables:
+        - truncationCount: 1
+          columns:
+          - dataType: dataType
+            id: id
+            label: label
+          - dataType: dataType
+            id: id
+            label: label
+          id: id
+          label: label
+          rows:
+          - entries:
+              key: entries
+            id: id
+          - entries:
+              key: entries
+            id: id
+          type: type
+        - truncationCount: 1
+          columns:
+          - dataType: dataType
+            id: id
+            label: label
+          - dataType: dataType
+            id: id
+            label: label
+          id: id
+          label: label
+          rows:
+          - entries:
+              key: entries
+            id: id
+          - entries:
+              key: entries
+            id: id
+          type: type
+        rank: rank
+        id: id
+        metrics:
+        - null
+        - null
+        tag: tag
+        pseudo: true
+        parents:
+        - topologyId: topologyId
+          id: id
+          label: label
+        - topologyId: topologyId
+          id: id
+          label: label
+      properties:
+        adjacency:
+          items:
+            type: string
+          type: array
+        id:
+          type: string
+        image:
+          type: string
+        immediate_parent_id:
+          type: string
+        label:
+          type: string
+        labelMinor:
+          type: string
+        metadata:
+          items:
+            $ref: '#/components/schemas/ReportMetadataRow'
+          type: array
+        metrics:
+          items:
+            $ref: '#/components/schemas/ReportMetricRow'
+          type: array
+        parents:
+          items:
+            $ref: '#/components/schemas/DetailedParent'
+          type: array
+        pseudo:
+          type: boolean
+        rank:
+          type: string
+        shape:
+          type: string
+        stack:
+          type: boolean
+        tables:
+          items:
+            $ref: '#/components/schemas/ReportTable'
+          type: array
+        tag:
+          type: string
+        type:
+          type: string
+      type: object
+    DetailedParent:
+      example:
+        topologyId: topologyId
+        id: id
+        label: label
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        topologyId:
+          type: string
+      type: object
+    DetailedTopologyConnectionSummaries:
+      additionalProperties:
+        $ref: '#/components/schemas/DetailedConnectionSummary'
+      type: object
+    DiagnosisDiagnosticNotification:
+      properties:
+        content:
+          type: string
+        expiry_in_secs: {}
+        follow_url: {}
+        source_application_id:
+          type: string
+        updated_at:
+          type: string
+      type: object
+    IngestersCloudCompliance:
       example:
         severity: severity
         reason: reason
@@ -941,7 +2312,7 @@ components:
         vpc_options: {}
         vpc_security_groups: {}
       type: object
-    IngestersComplianceDoc:
+    IngestersCompliance:
       example:
         time_stamp: 0
         resource: resource
@@ -1017,7 +2388,97 @@ components:
         type:
           type: string
       type: object
-    IngestersDfCveStruct:
+    IngestersSecret:
+      example:
+        ImageLayerId: ImageLayerId
+        kubernetes_cluster_name: kubernetes_cluster_name
+        masked: masked
+        node_name: node_name
+        Severity:
+          score: 5.637376656633329
+          level: level
+        Match:
+          full_filename: full_filename
+          matched_content: matched_content
+          relative_ending_index: 0
+          starting_index: 1
+          relative_starting_index: 6
+        '@timestamp': 2000-01-23T04:56:07.000+00:00
+        node_type: node_type
+        container_name: container_name
+        Rule:
+          part: part
+          name: name
+          signature_to_match: signature_to_match
+          id: 5
+        scan_id: scan_id
+        host_name: host_name
+        node_id: node_id
+      properties:
+        '@timestamp':
+          format: date-time
+          type: string
+        ImageLayerId:
+          type: string
+        Match:
+          $ref: '#/components/schemas/IngestersSecret_Match'
+        Rule:
+          $ref: '#/components/schemas/IngestersSecret_Rule'
+        Severity:
+          $ref: '#/components/schemas/IngestersSecret_Severity'
+        container_name:
+          type: string
+        host_name:
+          type: string
+        kubernetes_cluster_name:
+          type: string
+        masked:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+        node_type:
+          type: string
+        scan_id:
+          type: string
+      type: object
+    IngestersSecretScanStatus:
+      example:
+        '@timestamp': 2000-01-23T04:56:07.000+00:00
+        node_type: node_type
+        container_name: container_name
+        scan_status: scan_status
+        kubernetes_cluster_name: kubernetes_cluster_name
+        masked: masked
+        node_name: node_name
+        scan_id: scan_id
+        host_name: host_name
+        node_id: node_id
+      properties:
+        '@timestamp':
+          format: date-time
+          type: string
+        container_name:
+          type: string
+        host_name:
+          type: string
+        kubernetes_cluster_name:
+          type: string
+        masked:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+        node_type:
+          type: string
+        scan_id:
+          type: string
+        scan_status:
+          type: string
+      type: object
+    IngestersVulnerability:
       example:
         cve_container_layer: cve_container_layer
         kubernetes_cluster_name: kubernetes_cluster_name
@@ -1110,72 +2571,14 @@ components:
           nullable: true
           type: array
       type: object
-    IngestersSecret:
+    ModelAgentId:
       example:
-        severity: severity
-        reason: reason
-        control_id: control_id
-        resource: resource
-        masked: masked
-        count: 0
-        node_name: node_name
-        description: description
-        cloud_provider: cloud_provider
-        title: title
-        type: type
-        doc_id: doc_id
-        compliance_check_type: compliance_check_type
-        '@timestamp': '@timestamp'
-        account_id: account_id
-        service: service
-        scan_id: scan_id
-        region: region
-        group: group
         node_id: node_id
-        status: status
       properties:
-        '@timestamp':
-          type: string
-        account_id:
-          type: string
-        cloud_provider:
-          type: string
-        compliance_check_type:
-          type: string
-        control_id:
-          type: string
-        count:
-          type: integer
-        description:
-          type: string
-        doc_id:
-          type: string
-        group:
-          type: string
-        masked:
-          type: string
         node_id:
           type: string
-        node_name:
-          type: string
-        reason:
-          type: string
-        region:
-          type: string
-        resource:
-          type: string
-        scan_id:
-          type: string
-        service:
-          type: string
-        severity:
-          type: string
-        status:
-          type: string
-        title:
-          type: string
-        type:
-          type: string
+      required:
+      - node_id
       type: object
     ModelApiAuthRequest:
       example:
@@ -1183,6 +2586,21 @@ components:
       properties:
         api_token:
           type: string
+      required:
+      - api_token
+      type: object
+    ModelFetchWindow:
+      example:
+        offset: 0
+        size: 6
+      properties:
+        offset:
+          type: integer
+        size:
+          type: integer
+      required:
+      - offset
+      - size
       type: object
     ModelLoginRequest:
       example:
@@ -1193,6 +2611,18 @@ components:
           type: string
         password:
           type: string
+      required:
+      - email
+      - password
+      type: object
+    ModelRawReport:
+      example:
+        payload: payload
+      properties:
+        payload:
+          type: string
+      required:
+      - payload
       type: object
     ModelResponse:
       example:
@@ -1225,6 +2655,131 @@ components:
           type: string
         refresh_token:
           type: string
+      required:
+      - access_token
+      - refresh_token
+      type: object
+    ModelScanInfo:
+      example:
+        updated_at: 0
+        scan_id: scan_id
+        status: status
+      properties:
+        scan_id:
+          type: string
+        status:
+          type: string
+        updated_at:
+          format: int64
+          type: integer
+      required:
+      - scan_id
+      - status
+      - updated_at
+      type: object
+    ModelScanListReq:
+      example:
+        window:
+          offset: 0
+          size: 6
+        node_id: node_id
+      properties:
+        node_id:
+          type: string
+        window:
+          $ref: '#/components/schemas/ModelFetchWindow'
+      required:
+      - node_id
+      - window
+      type: object
+    ModelScanListResp:
+      example:
+        scans_info:
+        - updated_at: 0
+          scan_id: scan_id
+          status: status
+        - updated_at: 0
+          scan_id: scan_id
+          status: status
+      properties:
+        scans_info:
+          items:
+            $ref: '#/components/schemas/ModelScanInfo'
+          nullable: true
+          type: array
+      required:
+      - scans_info
+      type: object
+    ModelScanResultsReq:
+      example:
+        scan_id: scan_id
+        window:
+          offset: 0
+          size: 6
+      properties:
+        scan_id:
+          type: string
+        window:
+          $ref: '#/components/schemas/ModelFetchWindow'
+      required:
+      - scan_id
+      - window
+      type: object
+    ModelScanResultsResp:
+      example:
+        results:
+        - key: ""
+        - key: ""
+      properties:
+        results:
+          items:
+            additionalProperties: {}
+            type: object
+          nullable: true
+          type: array
+      required:
+      - results
+      type: object
+    ModelScanStatus:
+      type: string
+    ModelScanStatusResp:
+      example:
+        status: status
+      properties:
+        status:
+          type: string
+      required:
+      - status
+      type: object
+    ModelScanTriggerReq:
+      example:
+        resource_type: image
+        resource_id: resource_id
+        node_id: node_id
+      properties:
+        node_id:
+          type: string
+        resource_id:
+          type: string
+        resource_type:
+          enum:
+          - image
+          - host
+          - container
+          type: string
+      required:
+      - node_id
+      - resource_id
+      - resource_type
+      type: object
+    ModelScanTriggerResp:
+      example:
+        scan_id: scan_id
+      properties:
+        scan_id:
+          type: string
+      required:
+      - scan_id
       type: object
     ModelUser:
       example:
@@ -1291,17 +2846,110 @@ components:
           type: string
         password:
           type: string
+      required:
+      - company
+      - console_url
+      - email
+      - first_name
+      - is_temporary_password
+      - last_name
+      - password
       type: object
     PostgresqlDbApiToken:
       type: object
-    ReportersConnectionSummary:
+    ReportColumn:
       example:
-        source: source
-        target: target
+        dataType: dataType
+        id: id
+        label: label
       properties:
-        source:
+        dataType:
           type: string
-        target:
+        id:
+          type: string
+        label:
+          type: string
+      type: object
+    ReportIDList:
+      items:
+        type: string
+      type: array
+    ReportMetadataRow:
+      example:
+        truncate: 6
+        dataType: dataType
+        id: id
+        label: label
+        priority: 0.8008281904610115
+        value: value
+      properties:
+        dataType:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        priority:
+          type: number
+        truncate:
+          type: integer
+        value:
+          type: string
+      type: object
+    ReportMetricRow:
+      type: object
+    ReportRow:
+      example:
+        entries:
+          key: entries
+        id: id
+      properties:
+        entries:
+          additionalProperties:
+            type: string
+          nullable: true
+          type: object
+        id:
+          type: string
+      type: object
+    ReportTable:
+      example:
+        truncationCount: 1
+        columns:
+        - dataType: dataType
+          id: id
+          label: label
+        - dataType: dataType
+          id: id
+          label: label
+        id: id
+        label: label
+        rows:
+        - entries:
+            key: entries
+          id: id
+        - entries:
+            key: entries
+          id: id
+        type: type
+      properties:
+        columns:
+          items:
+            $ref: '#/components/schemas/ReportColumn'
+          nullable: true
+          type: array
+        id:
+          type: string
+        label:
+          type: string
+        rows:
+          items:
+            $ref: '#/components/schemas/ReportRow'
+          nullable: true
+          type: array
+        truncationCount:
+          type: integer
+        type:
           type: string
       type: object
     ReportersNodeInfo:
@@ -1324,6 +2972,16 @@ components:
           type: integer
         vulnerability_scan_id:
           type: string
+      required:
+      - compliance_count
+      - compliance_scan_id
+      - image_name
+      - name
+      - node_id
+      - secrets_count
+      - secrets_scan_id
+      - vulnerability_count
+      - vulnerability_scan_id
       type: object
     ReportersProviderThreatGraph:
       properties:
@@ -1338,86 +2996,11 @@ components:
           type: integer
         vulnerability_count:
           type: integer
-      type: object
-    ReportersRenderedGraph:
-      example:
-        processes:
-          key:
-          - processes
-          - processes
-        regions:
-          key:
-          - regions
-          - regions
-        hosts:
-          key:
-            key:
-            - hosts
-            - hosts
-        containers:
-          key:
-          - containers
-          - containers
-        pods:
-          key:
-          - pods
-          - pods
-        connections:
-        - source: source
-          target: target
-        - source: source
-          target: target
-        providers:
-        - providers
-        - providers
-      properties:
-        connections:
-          items:
-            $ref: '#/components/schemas/ReportersConnectionSummary'
-          nullable: true
-          type: array
-        containers:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          nullable: true
-          type: object
-        hosts:
-          additionalProperties:
-            additionalProperties:
-              items:
-                type: string
-              type: array
-            type: object
-          nullable: true
-          type: object
-        pods:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          nullable: true
-          type: object
-        processes:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          nullable: true
-          type: object
-        providers:
-          items:
-            type: string
-          nullable: true
-          type: array
-        regions:
-          additionalProperties:
-            items:
-              type: string
-            type: array
-          nullable: true
-          type: object
+      required:
+      - compliance_count
+      - resources
+      - secrets_count
+      - vulnerability_count
       type: object
     ReportersThreatGraph:
       additionalProperties:
@@ -1452,6 +3035,93 @@ components:
           type: integer
         vulnerability_count:
           type: integer
+      required:
+      - attack_path
+      - compliance_count
+      - count
+      - id
+      - label
+      - node_type
+      - nodes
+      - secrets_count
+      - vulnerability_count
+      type: object
+    ReportersTopologyFilters:
+      example:
+        host_filter:
+        - host_filter
+        - host_filter
+        cloud_filter:
+        - cloud_filter
+        - cloud_filter
+        region_filter:
+        - region_filter
+        - region_filter
+      properties:
+        cloud_filter:
+          items:
+            type: string
+          nullable: true
+          type: array
+        host_filter:
+          items:
+            type: string
+          nullable: true
+          type: array
+        region_filter:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+      - cloud_filter
+      - host_filter
+      - region_filter
+      type: object
+    IngestersSecret_Match:
+      example:
+        full_filename: full_filename
+        matched_content: matched_content
+        relative_ending_index: 0
+        starting_index: 1
+        relative_starting_index: 6
+      properties:
+        full_filename:
+          type: string
+        matched_content:
+          type: string
+        relative_ending_index:
+          type: integer
+        relative_starting_index:
+          type: integer
+        starting_index:
+          type: integer
+      type: object
+    IngestersSecret_Rule:
+      example:
+        part: part
+        name: name
+        signature_to_match: signature_to_match
+        id: 5
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        part:
+          type: string
+        signature_to_match:
+          type: string
+      type: object
+    IngestersSecret_Severity:
+      example:
+        score: 5.637376656633329
+        level: level
+      properties:
+        level:
+          type: string
+        score:
+          type: number
       type: object
   securitySchemes:
     bearer_token:

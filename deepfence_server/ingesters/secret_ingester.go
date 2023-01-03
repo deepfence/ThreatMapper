@@ -2,97 +2,83 @@ package ingesters
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type SecretIngester struct{}
 
-type Secret struct {
-	DocId               string `json:"doc_id"`
-	Timestamp           string `json:"@timestamp"`
-	Count               int    `json:"count,omitempty"`
-	Reason              string `json:"reason"`
-	Resource            string `json:"resource"`
-	Status              string `json:"status"`
-	Region              string `json:"region"`
-	AccountID           string `json:"account_id"`
-	Group               string `json:"group"`
-	Service             string `json:"service"`
-	Title               string `json:"title"`
-	ComplianceCheckType string `json:"compliance_check_type"`
-	CloudProvider       string `json:"cloud_provider"`
-	NodeName            string `json:"node_name"`
-	NodeID              string `json:"node_id"`
-	ScanID              string `json:"scan_id"`
-	Masked              string `json:"masked"`
-	Type                string `json:"type"`
-	ControlID           string `json:"control_id"`
-	Description         string `json:"description"`
-	Severity            string `json:"severity"`
-}
-
-type SecretStruct struct {
-	Rule     map[string]interface{} `json:"Rule"`
-	Severity map[string]interface{} `json:"Severity"`
-	Match    map[string]interface{} `json:"Match"`
-}
-
-func NewSecretIngester() Ingester[[]map[string]interface{}] {
+func NewSecretIngester() KafkaIngester[[]map[string]interface{}] {
 	return &SecretIngester{}
 }
 
-func (tc *SecretIngester) Ingest(ctx context.Context, cs []map[string]interface{}) error {
-	driver, err := directory.Neo4jClient(ctx)
-	session, err := driver.Session(neo4j.AccessModeWrite)
-
+func (tc *SecretIngester) Ingest(
+	ctx context.Context,
+	cs []map[string]interface{},
+	ingestC chan *kgo.Record,
+) error {
+	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
-	defer session.Close()
 
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
 	}
-	defer tx.Close()
 
-	secrets := []map[string]interface{}{}
-	for _, i := range cs {
-		secret := map[string]interface{}{}
-		match := i["Match"].(map[string]interface{})
-		severity := i["Severity"].(map[string]interface{})
-		rule := i["Rule"].(map[string]interface{})
-
-		for k, v := range i {
-			if k == "Match" || k == "Severity" || k == "Rule" {
-				continue
+	for _, c := range cs {
+		cb, err := json.Marshal(c)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		} else {
+			ingestC <- &kgo.Record{
+				Topic:   utils.SECRET_SCAN,
+				Value:   cb,
+				Headers: rh,
 			}
-			secret[k] = v
 		}
-
-		for k, v := range rule {
-			secret[k] = v
-		}
-		for k, v := range severity {
-			secret[k] = v
-		}
-		for k, v := range match {
-			secret[k] = v
-		}
-		secret["rule_id"] = fmt.Sprintf("%v:%v", rule["id"], i["host_name"])
-		secrets = append(secrets, secret)
 	}
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Secret{node_id:row.rule_id}) MERGE (m:SecretScan{node_id: row.scan_id, host_name: row.host_name, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n) SET n+= row", map[string]interface{}{"batch": secrets}); err != nil {
+	return nil
+}
+
+type SecretScanStatusIngester struct{}
+
+func NewSecretScanStatusIngester() KafkaIngester[[]ingesters.SecretScanStatus] {
+	return &SecretScanStatusIngester{}
+}
+
+func (tc *SecretScanStatusIngester) Ingest(
+	ctx context.Context,
+	statuses []ingesters.SecretScanStatus,
+	ingestC chan *kgo.Record,
+) error {
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:SecretScan) MERGE (m:Node{node_id: n.host_name}) MERGE (n) -[:SCANNED]-> (m)", map[string]interface{}{}); err != nil {
-		return err
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
 	}
 
-	return tx.Commit()
+	for _, c := range statuses {
+		cb, err := json.Marshal(c)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		} else {
+			ingestC <- &kgo.Record{
+				Topic:   utils.SECRET_SCAN_STATUS,
+				Value:   cb,
+				Headers: rh,
+			}
+		}
+	}
+
+	return nil
 }

@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**AccessToken** | Pointer to **string** |  | [optional] 
-**RefreshToken** | Pointer to **string** |  | [optional] 
+**AccessToken** | **string** |  | 
+**RefreshToken** | **string** |  | 
 
 ## Methods
 
 ### NewModelResponseAccessToken
 
-`func NewModelResponseAccessToken() *ModelResponseAccessToken`
+`func NewModelResponseAccessToken(accessToken string, refreshToken string, ) *ModelResponseAccessToken`
 
 NewModelResponseAccessToken instantiates a new ModelResponseAccessToken object
 This constructor will assign default values to properties that have it defined,
@@ -45,11 +45,6 @@ and a boolean to check if the value has been set.
 
 SetAccessToken sets AccessToken field to given value.
 
-### HasAccessToken
-
-`func (o *ModelResponseAccessToken) HasAccessToken() bool`
-
-HasAccessToken returns a boolean if a field has been set.
 
 ### GetRefreshToken
 
@@ -70,11 +65,6 @@ and a boolean to check if the value has been set.
 
 SetRefreshToken sets RefreshToken field to given value.
 
-### HasRefreshToken
-
-`func (o *ModelResponseAccessToken) HasRefreshToken() bool`
-
-HasRefreshToken returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -1,6 +1,6 @@
 -- name: CreateCompany :one
-INSERT INTO company (name, email_domain)
-VALUES ($1, $2)
+INSERT INTO company (name, email_domain, namespace)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: CountCompanies :one
@@ -92,7 +92,8 @@ SELECT users.id,
        users.is_active,
        users.password_invalidated,
        users.created_at,
-       users.updated_at
+       users.updated_at,
+       company.namespace as company_namespace
 FROM users
          INNER JOIN role ON role.id = users.role_id
          INNER JOIN company ON company.id = users.company_id
@@ -113,7 +114,8 @@ SELECT users.id,
        users.is_active,
        users.password_invalidated,
        users.created_at,
-       users.updated_at
+       users.updated_at,
+       company.namespace as company_namespace
 FROM users
          INNER JOIN role ON role.id = users.role_id
          INNER JOIN company ON company.id = users.company_id
@@ -172,6 +174,7 @@ SELECT api_token.api_token,
        users.email                as email,
        role.name                  as role_name,
        company.name               as company_name,
+       company.namespace          as company_namespace,
        users.is_active            as is_user_active,
        users.password_invalidated as user_password_invalidated,
        api_token.created_at,

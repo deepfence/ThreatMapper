@@ -42,7 +42,6 @@ COPY tools/apache/fluentbit/* /etc/td-agent-bit/
 
 # Copy fluentbit plugin
 COPY tools/apache/fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
-COPY tools/apache/deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
 COPY tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
@@ -71,9 +70,9 @@ COPY --from=malware_build /usr/local/yara/lib /usr/local/lib
 
 RUN mkdir -p /home/deepfence/bin/yara-hunter \
     && apt-get update --allow-insecure-repositories \
-    && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \
+    && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip libhyperscan5 \
     && rm -rf /usr/local/bin/compliance_check/*.go \
-    && chmod 700 /usr/local/bin/agentAuth /usr/local/bin/getCloudInstanceId \
+    && chmod 700 /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
     && chmod +x /home/deepfence/*.sh \
     && chmod 600 /etc/td-agent-bit/* \

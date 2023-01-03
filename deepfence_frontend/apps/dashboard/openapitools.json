@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "6.2.1",
+    "generators": {
+      "deepfence-server": {
+        "generatorName": "typescript-fetch",
+        "output": "./src/api/generated",
+        "inputSpec": "./api-spec.json",
+        "additionalProperties": {
+          "ensureUniqueParams": true,
+          "supportsES6": true,
+          "useSingleRequestParameter": true,
+          "withInterfaces": true,
+          "typescriptThreePlus": true,
+          "modelPropertyNaming": "original"
+        }
+      }
+    }
+  }
+}

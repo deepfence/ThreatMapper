@@ -39,7 +39,7 @@ export const AccordionItem = (props: AccordionItemProps) => {
       value={value}
       className={twMerge(
         cx(
-          'w-full overflow-hidden text-gray-900 dark:text-white dark:bg-gray-800 border-b last:border-b-0', // border bottom on each header trigger except last
+          'w-full overflow-hidden text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 border-b last:border-b-0', // border bottom on each header trigger except last
           'border-gray-200 dark:border-gray-700 dark:border-opacity-50',
           className,
         ),
@@ -55,10 +55,10 @@ export const AccordionTrigger = React.forwardRef<
   HTMLButtonElement,
   AccordionPrimitive.AccordionTriggerProps
 >(({ children, className, ...props }, forwardedRef) => (
-  <AccordionPrimitive.Header className={cx('p-5')}>
+  <AccordionPrimitive.Header>
     <AccordionPrimitive.Trigger
       className={cx(
-        'flex outline-none  place-items-center',
+        'flex outline-none p-5 place-items-center',
         'w-full group',
         `leading-4 ${Typography.size.base} ${Typography.weight.medium}`,
         className,
@@ -83,7 +83,7 @@ export const AccordionContent = React.forwardRef<
 >(({ children, className, ...props }, forwardedRef) => (
   <AccordionPrimitive.Content
     className={cx(
-      'bg-white dark:bg-gray-900 p-2 w-full text-gray-500 dark:text-gray-400 leading-[150%]',
+      'bg-white dark:bg-gray-900 w-full text-gray-500 dark:text-gray-400 leading-6',
       'radix-state-open:border-t dark:radix-state-open:border-gray-700 dark:radix-state-open:border-opacity-50', // border top of its content
       'radix-state-open:animate-accordion-open',
       'radix-state-closed:animate-accordion-closed',

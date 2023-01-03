@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -11,11 +12,11 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"net/http"
-	"reflect"
 )
 
 const (
 	MaxPostRequestSize = 100000 // 100 KB
+	DefaultNamespace   = "default"
 )
 
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +64,11 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
-	c := model.Company{Name: registerRequest.Company, EmailDomain: emailDomain}
+	c := model.Company{
+		Name:        registerRequest.Company,
+		EmailDomain: emailDomain,
+		Namespace:   DefaultNamespace, //TODO: SaaS namespace
+	}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
@@ -170,16 +175,17 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 	if err != nil {
 		return nil, http.StatusBadRequest, requestContext, nil, err
 	}
-	number, err := utils.InterfaceToInt(claims["user_id"])
+	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user_id")
 	if err != nil {
-		log.Error().Msgf("InterfaceToInt: %v (%v) - %v", claims["user_id"], reflect.ValueOf(claims["user_id"]).Kind(), err)
-		return nil, http.StatusInternalServerError, requestContext, nil, errors.New("cannot parse jwt")
+		return nil, http.StatusInternalServerError, requestContext, nil, err
 	}
-	user := model.User{ID: number}
+	user := model.User{ID: userId}
 	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByID(ctx, pgClient)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, http.StatusNotFound, ctx, pgClient, errors.New("user not found")
+	} else if err != nil {
 		return nil, http.StatusInternalServerError, ctx, pgClient, err
 	}
 	return &user, http.StatusOK, ctx, pgClient, nil

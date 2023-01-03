@@ -3,11 +3,33 @@ package log
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
+
+type LogErrorWriter struct{}
+
+func (LogErrorWriter) Write(b []byte) (int, error) {
+	if len(b) <= 0 {
+		return 0, nil
+	}
+	log.Error().CallerSkipFrame(3).Msg(strings.TrimSpace(string(b)))
+	return len(b), nil
+}
+
+type LogInfoWriter struct{}
+
+func (LogInfoWriter) Write(b []byte) (int, error) {
+	if len(b) <= 0 {
+		return 0, nil
+	}
+	log.Info().CallerSkipFrame(3).Msg(strings.TrimSpace(string(b)))
+	return len(b), nil
+}
 
 type AsynqLogger struct{}
 
@@ -32,7 +54,18 @@ func (a AsynqLogger) Fatal(args ...interface{}) {
 }
 
 func init() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC1123Z})
+	log.Logger = log.Output(
+		zerolog.ConsoleWriter{
+			Out:        os.Stderr,
+			TimeFormat: time.RFC1123Z,
+			FormatCaller: func(i interface{}) string {
+				return filepath.Join(
+					filepath.Base(filepath.Dir(fmt.Sprintf("%s", i))),
+					filepath.Base(fmt.Sprintf("%s", i)),
+				)
+			},
+		},
+	).With().Caller().Logger()
 }
 
 func Initialize(log_level string) {

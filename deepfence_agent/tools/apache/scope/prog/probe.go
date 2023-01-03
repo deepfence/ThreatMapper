@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/armon/go-metrics"
 	metrics_prom "github.com/armon/go-metrics/prometheus"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	dfUtils "github.com/deepfence/df-utils"
@@ -19,6 +21,7 @@ import (
 	"github.com/weaveworks/common/sanitize"
 	"github.com/weaveworks/common/signals"
 	"github.com/weaveworks/common/tracing"
+	"github.com/weaveworks/go-checkpoint"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/common/weave"
 	"github.com/weaveworks/scope/probe"
@@ -42,6 +45,8 @@ const (
 
 	kubernetesRoleHost    = "host"
 	kubernetesRoleCluster = "cluster"
+
+	authCheckPeriod = time.Second * 10
 )
 
 var (
@@ -105,35 +110,30 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 }
 
 func setControls() {
-	err := controls.RegisterControl(ctl.StartCVEScan, func(req ctl.StartCVEScanRequest) error {
-		log.Info("Start CVE Scan")
-		//TODO
-		return nil
-	})
+	err := controls.RegisterControl(ctl.StartVulnerabilityScan,
+		func(req ctl.StartVulnerabilityScanRequest) error {
+			return host.StartVulnerabilityScan(req)
+		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
 	}
-	err = controls.RegisterControl(ctl.StartSecretScan, func(req ctl.StartSecretScanRequest) error {
-		log.Info("Start Secret Scan")
-		//TODO
-		return nil
-	})
+	err = controls.RegisterControl(ctl.StartSecretScan,
+		func(req ctl.StartSecretScanRequest) error {
+			return host.StartSecretsScan(req)
+		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
 	}
-	err = controls.RegisterControl(ctl.StartMalwareScan, func(req ctl.StartMalwareScanRequest) error {
-		log.Info("Start Malware Scan")
-		//TODO
-		return nil
-	})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-	err = controls.RegisterControl(ctl.StartComplianceScan, func(req ctl.StartComplianceScanRequest) error {
-		log.Info("Start Compliance Scan")
-		//TODO
-		return nil
-	})
+	err = controls.RegisterControl(ctl.StartComplianceScan,
+		func(req ctl.StartComplianceScanRequest) error {
+			log.Info("Start Compliance Scan")
+			//TODO
+			return nil
+		})
+	err = controls.RegisterControl(ctl.StartMalwareScan,
+		func(req ctl.StartMalwareScanRequest) error {
+			return host.StartMalwareScan(req)
+		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
 	}
@@ -242,7 +242,26 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			controls.DummyPipeClient
 		})
 	} else {
-		multiClients := appclient.NewOpenapiClient() //appclient.NewMultiAppClient(clientFactory, flags.noControls)
+		var multiClients *appclient.OpenapiClient
+		for {
+			multiClients, err = appclient.NewOpenapiClient()
+			if err == nil {
+				break
+			} else if errors.Is(err, appclient.ConnError) {
+				log.Warnln("Failed to authenticate. Retrying...")
+				time.Sleep(authCheckPeriod)
+			} else {
+				log.Fatalf("Fatal: %v", err)
+			}
+		}
+		for {
+			err = multiClients.StartControlsWatching()
+			if err == nil {
+				break
+			}
+			log.Errorf("Failed to get init controls %v. Retrying...\n", err)
+			time.Sleep(authCheckPeriod)
+		}
 		defer multiClients.Stop()
 
 		//dnsLookupFn := net.LookupIP

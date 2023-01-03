@@ -214,7 +214,7 @@ import (
 )
 
 func main() {
-    modelUserRegisterRequest := *openapiclient.NewModelUserRegisterRequest() // ModelUserRegisterRequest |  (optional)
+    modelUserRegisterRequest := *openapiclient.NewModelUserRegisterRequest("Company_example", "ConsoleUrl_example", "Email_example", "FirstName_example", false, "LastName_example", "Password_example") // ModelUserRegisterRequest |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)

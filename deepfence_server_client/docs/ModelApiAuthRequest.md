@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ApiToken** | Pointer to **string** |  | [optional] 
+**ApiToken** | **string** |  | 
 
 ## Methods
 
 ### NewModelApiAuthRequest
 
-`func NewModelApiAuthRequest() *ModelApiAuthRequest`
+`func NewModelApiAuthRequest(apiToken string, ) *ModelApiAuthRequest`
 
 NewModelApiAuthRequest instantiates a new ModelApiAuthRequest object
 This constructor will assign default values to properties that have it defined,
@@ -44,11 +44,6 @@ and a boolean to check if the value has been set.
 
 SetApiToken sets ApiToken field to given value.
 
-### HasApiToken
-
-`func (o *ModelApiAuthRequest) HasApiToken() bool`
-
-HasApiToken returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

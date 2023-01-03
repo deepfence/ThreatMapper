@@ -3,6 +3,7 @@ PWD=$(shell pwd)
 DEEPFENCE_CONSOLE_DIR=$(PWD)/deepfence_console
 DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
 DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
+DEEPFENCE_FILE_SERVER_DIR=$(PWD)/deepfence_file_server
 DEEPFENCE_FRONTEND_DIR=$(PWD)/deepfence_frontend
 DEEPFENCE_DIAG_DIR=$(PWD)/deepfence_diagnosis
 DEEPFENCE_FETCHER_DIR=$(DEEPFENCE_CONSOLE_DIR)/fetcher
@@ -10,6 +11,7 @@ VULNERABILITY_MAPPER_DIR=$(PWD)/vulnerability_mapper
 SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
 MALWARE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/YaraHunter/
 PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
+DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 IMAGE_REPOSITORY?=deepfenceio
 DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
@@ -18,12 +20,9 @@ VERSION?="2.0.0"
 default: console_plugins agent console
 
 .PHONY: console_plugins agent console
-console: ingester vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins
+console: ingester vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins file-server
 
 console_plugins: secretscanner malwarescanner packagescanner
-
-agent: agent
-
 
 #.PHONY: init-container
 #init-container:
@@ -60,12 +59,18 @@ kafka-broker:
 router:
 	docker build --build-arg is_dev_build=$(IS_DEV_BUILD) -t $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG) $(DEEPFENCE_ROUTER_DIR)
 
+.PHONY: file-server
+file-server:
+	docker build -t $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG) $(DEEPFENCE_FILE_SERVER_DIR)
+
 .PHONY: server
 server:
+	(cd ./deepfence_server && make vendor)
 	docker build -f ./deepfence_server/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) .
 
 .PHONY: worker
 worker:
+	(cd ./deepfence_worker && make vendor)
 	docker build -f ./deepfence_worker/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) .
 
 .PHONY: ui
@@ -86,8 +91,34 @@ malwarescanner: bootstrap-agent-plugins
 
 .PHONY: packagescanner
 packagescanner:
+	(cd $(PACKAGE_SCANNER_DIR) && make tools)
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
 
 .PHONY: ingester
 ingester:
+	(cd ./deepfence_ingester && make vendor)
 	docker build -f ./deepfence_ingester/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG) .
+
+.PHONY: openapi
+openapi: server
+	docker run --rm -it \
+	--entrypoint=/usr/local/bin/deepfence_server \
+	-v $(PWD):/app $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) \
+	--export-api-docs-path /app/openapi.yaml
+
+	docker run --rm \
+	-v $(PWD):/local openapitools/openapi-generator-cli generate \
+	-i /local/openapi.yaml \
+	-g go \
+	-o /local/deepfence_server_client \
+	-p isGoSubmodule=true \
+	-p packageName=deepfence_server_client \
+	--git-repo-id ThreatMapper \
+	--git-user-id deepfence
+
+	rm openapi.yaml
+	cd $(PWD)/deepfence_server_client && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
+
+.PHONY: cli
+cli:
+	(cd $(DEEPFENCE_CTL) && make)

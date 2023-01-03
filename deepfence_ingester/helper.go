@@ -5,26 +5,23 @@ import (
 	"encoding/json"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
-)
 
-func getCurrentTime() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
-}
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+)
 
 var kgoLogger kgo.Logger = kgo.BasicLogger(
-	os.Stdout,
+	log.LogInfoWriter{},
 	kgo.LogLevelInfo,
-	func() string { return "[" + getCurrentTime() + "]" + " " },
+	nil,
 )
 
-func checkKafkaConn() error {
+func checkKafkaConn(kafkaBrokers []string) error {
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
+		kgo.SeedBrokers(kafkaBrokers...),
 		kgo.WithLogger(kgoLogger),
 	}
 	kClient, err := kgo.NewClient(opts...)
@@ -35,15 +32,15 @@ func checkKafkaConn() error {
 	if err := kClient.Ping(context.Background()); err != nil {
 		return err
 	}
-	log.Info("connection successful to kafka brokers " + kafkaBrokers)
 	return nil
 }
 
-func createMissingTopics(topics []string, partitions int32, replicas int16, retention_ms string) error {
-	log.Infof("create topics with partitions=%d and replicas=%d", partitions, replicas)
+func createMissingTopics(kafkaBrokers []string, topics []string,
+	partitions int32, replicas int16, retention_ms string) error {
+	log.Info().Msgf("create topics with partitions=%d and replicas=%d", partitions, replicas)
 
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
+		kgo.SeedBrokers(kafkaBrokers...),
 		kgo.WithLogger(kgoLogger),
 	}
 	kClient, err := kgo.NewClient(opts...)
@@ -58,19 +55,6 @@ func createMissingTopics(topics []string, partitions int32, replicas int16, rete
 	adminClient := kadm.NewClient(kClient)
 	defer adminClient.Close()
 
-	// bm, err := adminClient.BrokerMetadata(context.Background())
-	// if err != nil {
-	// 	log.Error(err)
-	// }
-
-	// partitions = int32(1)
-	// replication = func() int16 {
-	// 	if len(bm.Brokers.NodeIDs()) >= 3 {
-	// 		return 3
-	// 	}
-	// 	return 1
-	// }()
-
 	topicConfig := map[string]*string{
 		"retention.ms": kadm.StringPtr(retention_ms),
 	}
@@ -78,12 +62,11 @@ func createMissingTopics(topics []string, partitions int32, replicas int16, rete
 	resp, err := adminClient.CreateTopics(context.Background(),
 		partitions, replicas, topicConfig, topics...)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
 	for _, r := range resp.Sorted() {
 		if r.Err != nil {
-			log.Errorf("topic: %s error: %s", r.Topic, r.Err)
+			log.Error().Msgf("topic: %s error: %s", r.Topic, r.Err)
 		}
 	}
 	return nil
@@ -91,7 +74,7 @@ func createMissingTopics(topics []string, partitions int32, replicas int16, rete
 
 func gracefulExit(err error) {
 	if err != nil {
-		log.Error(err)
+		log.Error().Msgf("%v", err)
 	}
 
 	time.Sleep(time.Second * 5)

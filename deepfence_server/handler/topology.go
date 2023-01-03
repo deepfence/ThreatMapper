@@ -2,7 +2,8 @@ package handler
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -40,38 +41,30 @@ func getTopologyReporter(ctx context.Context) (reporters.TopologyReporter, error
 	return new_entry, nil
 }
 
-func (h *Handler) GetTopologyGraph(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
 
 	type GraphResult struct {
-		Nodes detailed.NodeSummaries               `json:"nodes"`
-		Edges detailed.TopologyConnectionSummaries `json:"edges"`
+		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
+		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
 	}
 
-	ctx := directory.NewAccountContext()
+	ctx := req.Context()
 
-	if err := r.ParseForm(); err != nil {
-		respondWith(ctx, w, http.StatusInternalServerError, err)
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
 
-	filters := reporters.TopologyFilters{}
+	var filters reporters.TopologyFilters
+	json.Unmarshal(body, &filters)
 
-	if p := r.PostForm.Get("providers"); p != "" {
-		ps := strings.Split(p, ",")
-		filters.CloudFilter = append(filters.CloudFilter, ps...)
+	if err != nil {
+		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
+		return
 	}
 
-	if r := r.PostForm.Get("regions"); r != "" {
-		rs := strings.Split(r, ",")
-		filters.RegionFilter = append(filters.RegionFilter, rs...)
-	}
-
-	if h := r.PostForm.Get("hosts"); h != "" {
-		hs := strings.Split(h, ",")
-		filters.HostFilter = append(filters.HostFilter, hs...)
-	}
-
-	fmt.Printf("%v\n", filters)
+	log.Info().Msgf("filters: %v", filters)
 
 	reporter, err := getTopologyReporter(ctx)
 
@@ -123,7 +116,7 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 		if target == "internet;<cloud_region>" {
 			target = "out-the-internet"
 		}
-		fmt.Printf("%v -> %v\n", source, target)
+		log.Info().Msgf("%v -> %v\n", source, target)
 		edges[source+target] = detailed.ConnectionSummary{Source: source, Target: target}
 	}
 

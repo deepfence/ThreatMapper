@@ -4,19 +4,19 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Company** | Pointer to **string** |  | [optional] 
-**ConsoleUrl** | Pointer to **string** |  | [optional] 
-**Email** | Pointer to **string** |  | [optional] 
-**FirstName** | Pointer to **string** |  | [optional] 
-**IsTemporaryPassword** | Pointer to **bool** |  | [optional] 
-**LastName** | Pointer to **string** |  | [optional] 
-**Password** | Pointer to **string** |  | [optional] 
+**Company** | **string** |  | 
+**ConsoleUrl** | **string** |  | 
+**Email** | **string** |  | 
+**FirstName** | **string** |  | 
+**IsTemporaryPassword** | **bool** |  | 
+**LastName** | **string** |  | 
+**Password** | **string** |  | 
 
 ## Methods
 
 ### NewModelUserRegisterRequest
 
-`func NewModelUserRegisterRequest() *ModelUserRegisterRequest`
+`func NewModelUserRegisterRequest(company string, consoleUrl string, email string, firstName string, isTemporaryPassword bool, lastName string, password string, ) *ModelUserRegisterRequest`
 
 NewModelUserRegisterRequest instantiates a new ModelUserRegisterRequest object
 This constructor will assign default values to properties that have it defined,
@@ -50,11 +50,6 @@ and a boolean to check if the value has been set.
 
 SetCompany sets Company field to given value.
 
-### HasCompany
-
-`func (o *ModelUserRegisterRequest) HasCompany() bool`
-
-HasCompany returns a boolean if a field has been set.
 
 ### GetConsoleUrl
 
@@ -75,11 +70,6 @@ and a boolean to check if the value has been set.
 
 SetConsoleUrl sets ConsoleUrl field to given value.
 
-### HasConsoleUrl
-
-`func (o *ModelUserRegisterRequest) HasConsoleUrl() bool`
-
-HasConsoleUrl returns a boolean if a field has been set.
 
 ### GetEmail
 
@@ -100,11 +90,6 @@ and a boolean to check if the value has been set.
 
 SetEmail sets Email field to given value.
 
-### HasEmail
-
-`func (o *ModelUserRegisterRequest) HasEmail() bool`
-
-HasEmail returns a boolean if a field has been set.
 
 ### GetFirstName
 
@@ -125,11 +110,6 @@ and a boolean to check if the value has been set.
 
 SetFirstName sets FirstName field to given value.
 
-### HasFirstName
-
-`func (o *ModelUserRegisterRequest) HasFirstName() bool`
-
-HasFirstName returns a boolean if a field has been set.
 
 ### GetIsTemporaryPassword
 
@@ -150,11 +130,6 @@ and a boolean to check if the value has been set.
 
 SetIsTemporaryPassword sets IsTemporaryPassword field to given value.
 
-### HasIsTemporaryPassword
-
-`func (o *ModelUserRegisterRequest) HasIsTemporaryPassword() bool`
-
-HasIsTemporaryPassword returns a boolean if a field has been set.
 
 ### GetLastName
 
@@ -175,11 +150,6 @@ and a boolean to check if the value has been set.
 
 SetLastName sets LastName field to given value.
 
-### HasLastName
-
-`func (o *ModelUserRegisterRequest) HasLastName() bool`
-
-HasLastName returns a boolean if a field has been set.
 
 ### GetPassword
 
@@ -200,11 +170,6 @@ and a boolean to check if the value has been set.
 
 SetPassword sets Password field to given value.
 
-### HasPassword
-
-`func (o *ModelUserRegisterRequest) HasPassword() bool`
-
-HasPassword returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

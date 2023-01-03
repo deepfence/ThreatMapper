@@ -11,6 +11,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	redis2 "github.com/go-redis/redis/v8"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/weaveworks/scope/report"
@@ -26,7 +27,6 @@ const (
 	resolver_batch_size     = 1_000
 	resolver_timeout        = time.Second * 10
 	ingester_size           = 25_000
-	db_clean_up_timeout     = time.Minute * 5
 	max_network_maps_size   = 1024 * 1024 * 1024 // 1 GB per maps
 	enqueer_timeout         = time.Second * 30
 	localhost_ip            = "127.0.0.1"
@@ -110,11 +110,10 @@ func (nc *neo4jIngester) runEnqueueReport() {
 					log.Error().Msgf("multiple probe ids: %v", probe_id)
 				}
 			}
-			log.Error().Msgf("probe id: %v", probe_id)
 			report_buffer[probe_id] = rpt
 			i += 1
 		case <-timeout:
-			fmt.Printf("Sending %v unique reports over %v received\n", len(report_buffer), i)
+			log.Info().Msgf("Sending %v unique reports over %v received", len(report_buffer), i)
 			select {
 			case nc.ingester <- report_buffer:
 				report_buffer = map[string]*report.Report{}
@@ -408,38 +407,6 @@ func (nc *neo4jIngester) Ingest(ctx context.Context, rpt report.Report) error {
 	return nil
 }
 
-func (nc *neo4jIngester) CleanUpDB() error {
-	session, err := nc.driver.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run("match (n:Node) WHERE n.updated_at < TIMESTAMP()-$time_ms match (n) -[:HOSTS]->(m) detach delete n detach delete m", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run("match (n:Container) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run("match (n:Pod) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run("match (n:Process) WHERE n.updated_at < TIMESTAMP()-$time_ms detach delete n", map[string]interface{}{"time_ms": db_clean_up_timeout.Milliseconds()}); err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
 func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	session, err := nc.driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
@@ -452,8 +419,6 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 		return err
 	}
 	defer tx.Close()
-
-	log.Error().Msgf("push: %v\n", batches)
 
 	start := time.Now()
 
@@ -570,7 +535,6 @@ func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData) {
 }
 
 func (nc *neo4jIngester) runDBPusher(db_pusher chan ReportIngestionData) {
-	clean_up := time.After(db_clean_up_timeout)
 	for {
 		select {
 		case batches := <-db_pusher:
@@ -580,14 +544,6 @@ func (nc *neo4jIngester) runDBPusher(db_pusher chan ReportIngestionData) {
 			if err != nil {
 				log.Error().Msgf("push to neo4j err: %v", err)
 			}
-		case <-clean_up:
-			start := time.Now()
-			err := nc.CleanUpDB()
-			log.Info().Msgf("DB clean: %v", time.Since(start))
-			if err != nil {
-				log.Error().Msgf("clean neo4j err: %v", err)
-			}
-			clean_up = time.After(time.Minute * 1)
 		}
 	}
 }
@@ -620,19 +576,32 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
 
 	tx.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
-	tx.Run("CREATE CONSTRAINT ON (n:SecretScan) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Cve) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
-	tx.Run("CREATE CONSTRAINT ON (n:CveScan) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_SECRET_SCAN), map[string]interface{}{})
+	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_VULNERABILITY_SCAN), map[string]interface{}{})
+	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_COMPLIANCE_SCAN), map[string]interface{}{})
+	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_MALWARE_SCAN), map[string]interface{}{})
+
+	err = tx.Commit()
+	if err != nil {
+		log.Warn().Msgf("Neo4j constraints err: %v", err)
+	}
+	tx.Close()
+	tx, err = session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
 	tx.Run("MERGE (n:Node{node_id:'in-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 	tx.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 

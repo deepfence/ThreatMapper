@@ -2,33 +2,57 @@ package appclient
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
+	"errors"
 	"net/url"
+	"os"
+	"time"
 
 	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
+	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
+	"github.com/sirupsen/logrus"
+	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/report"
+
+	"github.com/bytedance/sonic"
 )
 
 type OpenapiClient struct {
-	client *openapi.APIClient
+	client               *openapi.APIClient
+	stopControlListening chan struct{}
 }
 
-func NewOpenapiClient() *OpenapiClient {
+var (
+	ConnError = errors.New("Connection error")
+)
 
-	cfg := openapi.NewConfiguration()
-	cfg.Servers = openapi.ServerConfigurations{
-		{
-			URL:         "http://localhost:8080",
-			Description: "deepfence_server",
-		},
+func NewOpenapiClient() (*OpenapiClient, error) {
+
+	url := os.Getenv("MGMT_CONSOLE_URL")
+	if url == "" {
+		return nil, errors.New("MGMT_CONSOLE_URL not set")
 	}
-	cl := openapi.NewAPIClient(cfg)
+	port := os.Getenv("MGMT_CONSOLE_PORT")
+	if port == "" {
+		return nil, errors.New("MGMT_CONSOLE_PORT not set")
+	}
+
+	api_token := os.Getenv("DEEPFENCE_KEY")
+	if port == "" {
+		return nil, errors.New("DEEPFENCE_KEY not set")
+	}
+
+	https_client := oahttp.NewHttpsConsoleClient(url, port)
+	err := https_client.APITokenAuthenticate(api_token)
+	if err != nil {
+		return nil, ConnError
+	}
+
 	return &OpenapiClient{
-		client: cl,
-	}
+		client:               https_client.Client(),
+		stopControlListening: make(chan struct{}),
+	}, err
 }
 
 // PipeClose implements MultiAppClient
@@ -43,39 +67,22 @@ func (OpenapiClient) PipeConnection(appID string, pipeID string, pipe xfer.Pipe)
 
 // Publish implements MultiAppClient
 func (oc OpenapiClient) Publish(r report.Report) error {
-	buf, err := json.Marshal(r)
-	//buf, err := r.WriteBinary()
+	buf, err := sonic.Marshal(r)
 	if err != nil {
 		return err
 	}
-
-	hostname := ""
-	for _, host_node := range r.Host.Nodes {
-		hostname = host_node.ID
-	}
-
-	payload := string(buf)
-	fmt.Printf("Publishing: %v with %v\n", hostname, len(payload))
 
 	req := oc.client.TopologyApi.IngestAgentReport(context.Background())
 
-	req = req.ApiDocsRawReport(openapi.ApiDocsRawReport{
-		Payload: &payload,
+	req = req.ModelRawReport(openapi.ModelRawReport{
+		Payload: string(buf),
 	})
 
-	fmt.Printf("Req payload = %v\n", req)
-	ctl, w, err := oc.client.TopologyApi.IngestAgentReportExecute(req)
+	_, err = oc.client.TopologyApi.IngestAgentReportExecute(req)
 	if err != nil {
-		fmt.Printf("err = %v\n", err)
 		return err
 	}
 
-	fmt.Printf("ctl = %v\n", w)
-	fmt.Printf("ctl = %v\n", ctl)
-
-	for _, action := range ctl.Commands {
-		controls.ApplyControl(action)
-	}
 	return nil
 }
 
@@ -84,7 +91,54 @@ func (OpenapiClient) Set(hostname string, urls []url.URL) {
 	panic("unimplemented")
 }
 
-// Stop implements MultiAppClient
+// Stop implements Mu(ve *ValueError) Error() string {
 func (OpenapiClient) Stop() {
 	panic("unimplemented")
+}
+
+func (ct *OpenapiClient) StartControlsWatching() error {
+
+	req := ct.client.ControlsApi.GetAgentInitControls(context.Background())
+	req = req.ModelAgentId(*openapi.NewModelAgentId(hostname.Get()))
+	ctl, _, err := ct.client.ControlsApi.GetAgentInitControlsExecute(req)
+
+	if err != nil {
+		return err
+	}
+
+	for _, action := range ctl.Commands {
+		logrus.Infof("Init execute :%v", action.Id)
+		err := controls.ApplyControl(action)
+		if err != nil {
+			logrus.Errorf("Control %v failed: %v\n", action, err)
+		}
+	}
+
+	go func() {
+		req := ct.client.ControlsApi.GetAgentControls(context.Background())
+		req = req.ModelAgentId(*openapi.NewModelAgentId(hostname.Get()))
+		for {
+			select {
+			case <-time.After(time.Second * 10):
+			case <-ct.stopControlListening:
+				break
+			}
+			ctl, _, err := ct.client.ControlsApi.GetAgentControlsExecute(req)
+			if err != nil {
+				logrus.Errorf("Getting controls failed: %v\n", err)
+				continue
+			}
+
+			for _, action := range ctl.Commands {
+				logrus.Infof("Execute :%v", action.Id)
+				err := controls.ApplyControl(action)
+				if err != nil {
+					logrus.Errorf("Control %v failed: %v\n", action, err)
+				}
+			}
+
+		}
+	}()
+
+	return nil
 }

@@ -8,11 +8,14 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/weaveworks/scope/report"
+
+	"github.com/bytedance/sonic"
 )
 
 var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]
@@ -50,7 +53,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	//	reader = io.TeeReader(r.Body, gzip.NewWriter(buf))
 	//}
 
-	ctx := directory.NewAccountContext()
+	ctx := r.Context()
 
 	//contentType := r.Header.Get("Content-Type")
 	//var isMsgpack int
@@ -72,13 +75,14 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var rawReport openapi.ApiDocsRawReport
-	err = json.Unmarshal(data, &rawReport)
+
+	err = sonic.Unmarshal(data, &rawReport)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 	rpt := report.MakeReport()
-	err = json.Unmarshal([]byte(rawReport.GetPayload()), &rpt)
+	err = sonic.Unmarshal([]byte(rawReport.GetPayload()), &rpt)
 
 	//if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
 	if err != nil {
@@ -97,10 +101,29 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+}
 
-	actions, err := controls.GetAgentActions(ctx, rpt.ID)
+func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Error().Msgf("Cannot get actions: ", err)
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	var agentId model.AgentId
+
+	err = json.Unmarshal(data, &agentId)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	actions, err := controls.GetAgentActions(ctx, agentId.NodeId)
+	if err != nil {
+		log.Warn().Msgf("Cannot get actions for %s: %v, skipping", agentId.NodeId, err)
 	}
 
 	res := ctl.AgentControls{
@@ -111,6 +134,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msgf("Cannot marshal controls: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
+		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
@@ -119,5 +143,49 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msgf("Cannot send controls: %v", err)
 		w.WriteHeader(http.StatusGone)
+		return
+	}
+}
+
+func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	var agentId model.AgentId
+
+	err = json.Unmarshal(data, &agentId)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	actions, err := controls.GetPendingAgentScans(ctx, agentId.NodeId)
+	if err != nil {
+		log.Warn().Msgf("Cannot get actions: %s, skipping", err)
+	}
+
+	res := ctl.AgentControls{
+		BeatRateSec: 30,
+		Commands:    actions,
+	}
+	b, err := json.Marshal(res)
+	if err != nil {
+		log.Error().Msgf("Cannot marshal controls: %v", err)
+		respondWith(ctx, w, http.StatusInternalServerError, err)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	_, err = w.Write(b)
+
+	if err != nil {
+		log.Error().Msgf("Cannot send controls: %v", err)
+		w.WriteHeader(http.StatusGone)
+		return
 	}
 }

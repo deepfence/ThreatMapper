@@ -1,10 +1,9 @@
 package apiDocs
 
 import (
-	"net/http"
-
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/swaggest/openapi-go/openapi3"
+	"net/http"
 )
 
 const (
@@ -19,6 +18,9 @@ const (
 	tagSecretScan      = "Secret Scan"
 	tagMalwareScan     = "Malware Scan"
 	tagVulnerability   = "Vulnerability"
+	tagMalwareScan     = "Malware Scan"
+	tagControls        = "Controls"
+	tagDiagnosis       = "Diagnosis"
 
 	securityName = "bearer_token"
 )
@@ -28,12 +30,12 @@ var (
 )
 
 type FailureResponse struct {
-	Success bool   `json:"success"`
+	Success bool   `json:"success" example:"false"`
 	Message string `json:"message"`
 }
 
 type BadRequestResponse struct {
-	Success     bool               `json:"success"`
+	Success     bool               `json:"success" example:"false"`
 	Message     string             `json:"message"`
 	ErrorFields *map[string]string `json:"error_fields"`
 }
@@ -81,17 +83,21 @@ func InitializeOpenAPIReflector() *OpenApiDocs {
 		},
 	}
 
-	reflector.SpecEns().ComponentsEns().SecuritySchemesEns().WithMapOfSecuritySchemeOrRefValuesItem(
-		securityName,
-		openapi3.SecuritySchemeOrRef{
-			SecurityScheme: &openapi3.SecurityScheme{
-				HTTPSecurityScheme: (&openapi3.HTTPSecurityScheme{}).
-					WithScheme("bearer").
-					WithBearerFormat("JWT").
-					WithDescription("RW Access"),
+	reflector.
+		SpecEns().
+		ComponentsEns().
+		SecuritySchemesEns().
+		WithMapOfSecuritySchemeOrRefValuesItem(
+			securityName,
+			openapi3.SecuritySchemeOrRef{
+				SecurityScheme: &openapi3.SecurityScheme{
+					HTTPSecurityScheme: (&openapi3.HTTPSecurityScheme{}).
+						WithScheme("bearer").
+						WithBearerFormat("JWT").
+						WithDescription("RW Access"),
+				},
 			},
-		},
-	)
+		)
 
 	return &OpenApiDocs{reflector: reflector, failureResponse: &FailureResponse{Success: false}, badRequestResponse: &BadRequestResponse{Success: false}}
 }
@@ -104,13 +110,13 @@ func (d *OpenApiDocs) Yaml() ([]byte, error) {
 	return d.reflector.Spec.MarshalYAML()
 }
 
-func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string, successStatusCode int, tags []string, queryParams []openapi3.ParameterOrRef, security []map[string][]string, request interface{}, response interface{}) {
+func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string, successStatusCode int, tags []string,
+	security []map[string][]string, request interface{}, response interface{}) {
 	operation := openapi3.Operation{
 		Tags:        tags,
 		Summary:     &summary,
 		Description: &description,
 		ID:          &id,
-		Parameters:  queryParams,
 		Security:    security,
 	}
 	err := d.reflector.SetRequest(&operation, request, method)
@@ -121,22 +127,54 @@ func (d *OpenApiDocs) AddOperation(id, method, path, summary, description string
 	if err != nil {
 		log.Error().Msgf("Docs - ok response %s %s: %s", method, path, err.Error())
 	}
-	err = d.reflector.SetupResponse(openapi3.OperationContext{Operation: &operation, HTTPStatus: http.StatusUnauthorized})
+	d.addResponses(&operation, method, path)
+	err = d.reflector.Spec.AddOperation(method, path, operation)
+	if err != nil {
+		log.Error().Msgf("Docs AddOperation %s %s: %s", method, path, err.Error())
+	}
+}
+
+func (d *OpenApiDocs) addResponses(operation *openapi3.Operation, method, path string) {
+	err := d.reflector.SetupResponse(openapi3.OperationContext{Operation: operation, HTTPStatus: http.StatusUnauthorized})
 	if err != nil {
 		log.Error().Msgf("Docs - unauthorized %s %s: %s", method, path, err.Error())
 	}
-	err = d.reflector.SetupResponse(openapi3.OperationContext{Operation: &operation, HTTPStatus: http.StatusForbidden})
+	err = d.reflector.SetupResponse(openapi3.OperationContext{Operation: operation, HTTPStatus: http.StatusForbidden})
 	if err != nil {
 		log.Error().Msgf("Docs - forbidden %s %s: %s", method, path, err.Error())
 	}
-	err = d.reflector.SetJSONResponse(&operation, d.badRequestResponse, http.StatusBadRequest)
+	err = d.reflector.SetJSONResponse(operation, d.badRequestResponse, http.StatusBadRequest)
 	if err != nil {
 		log.Error().Msgf("Docs - bad request %s %s: %s", method, path, err.Error())
 	}
-	err = d.reflector.SetJSONResponse(&operation, d.failureResponse, http.StatusInternalServerError)
+	err = d.reflector.SetJSONResponse(operation, d.failureResponse, http.StatusInternalServerError)
 	if err != nil {
 		log.Error().Msgf("Docs - internal server error %s %s: %s", method, path, err.Error())
 	}
+	err = d.reflector.SetJSONResponse(operation, d.failureResponse, http.StatusNotFound)
+	if err != nil {
+		log.Error().Msgf("Docs - not found %s %s: %s", method, path, err.Error())
+	}
+}
+
+func (d *OpenApiDocs) AddNonJsonOperation(id, method, path, summary, description string, successStatusCode int, tags []string,
+	security []map[string][]string, request interface{}, respContentType string) {
+	operation := openapi3.Operation{
+		Tags:        tags,
+		Summary:     &summary,
+		Description: &description,
+		ID:          &id,
+		Security:    security,
+	}
+	err := d.reflector.SetRequest(&operation, request, method)
+	if err != nil {
+		log.Error().Msgf("Docs SetRequest %s %s: %s", method, path, err.Error())
+	}
+	err = d.reflector.SetupResponse(openapi3.OperationContext{Operation: &operation, HTTPStatus: successStatusCode, RespContentType: respContentType})
+	if err != nil {
+		log.Error().Msgf("Docs - ok response %s %s: %s", method, path, err.Error())
+	}
+	d.addResponses(&operation, method, path)
 	err = d.reflector.Spec.AddOperation(method, path, operation)
 	if err != nil {
 		log.Error().Msgf("Docs AddOperation %s %s: %s", method, path, err.Error())

@@ -77,18 +77,19 @@ func (q *Queries) CreateApiToken(ctx context.Context, arg CreateApiTokenParams) 
 }
 
 const createCompany = `-- name: CreateCompany :one
-INSERT INTO company (name, email_domain)
-VALUES ($1, $2)
-RETURNING id, name, email_domain, created_at, updated_at
+INSERT INTO company (name, email_domain, namespace)
+VALUES ($1, $2, $3)
+RETURNING id, name, email_domain, created_at, updated_at, namespace
 `
 
 type CreateCompanyParams struct {
 	Name        string
 	EmailDomain string
+	Namespace   string
 }
 
 func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (Company, error) {
-	row := q.db.QueryRowContext(ctx, createCompany, arg.Name, arg.EmailDomain)
+	row := q.db.QueryRowContext(ctx, createCompany, arg.Name, arg.EmailDomain, arg.Namespace)
 	var i Company
 	err := row.Scan(
 		&i.ID,
@@ -96,6 +97,7 @@ func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (C
 		&i.EmailDomain,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Namespace,
 	)
 	return i, err
 }
@@ -332,6 +334,7 @@ SELECT api_token.api_token,
        users.email                as email,
        role.name                  as role_name,
        company.name               as company_name,
+       company.namespace          as company_namespace,
        users.is_active            as is_user_active,
        users.password_invalidated as user_password_invalidated,
        api_token.created_at,
@@ -356,6 +359,7 @@ type GetApiTokenByTokenRow struct {
 	Email                   string
 	RoleName                string
 	CompanyName             string
+	CompanyNamespace        string
 	IsUserActive            bool
 	UserPasswordInvalidated bool
 	CreatedAt               time.Time
@@ -377,6 +381,7 @@ func (q *Queries) GetApiTokenByToken(ctx context.Context, apiToken uuid.UUID) (G
 		&i.Email,
 		&i.RoleName,
 		&i.CompanyName,
+		&i.CompanyNamespace,
 		&i.IsUserActive,
 		&i.UserPasswordInvalidated,
 		&i.CreatedAt,
@@ -465,7 +470,7 @@ func (q *Queries) GetApiTokensByUser(ctx context.Context, createdByUserID int64)
 }
 
 const getCompanies = `-- name: GetCompanies :many
-SELECT id, name, email_domain, created_at, updated_at
+SELECT id, name, email_domain, created_at, updated_at, namespace
 FROM company
 ORDER BY name
 `
@@ -485,6 +490,7 @@ func (q *Queries) GetCompanies(ctx context.Context) ([]Company, error) {
 			&i.EmailDomain,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Namespace,
 		); err != nil {
 			return nil, err
 		}
@@ -500,7 +506,7 @@ func (q *Queries) GetCompanies(ctx context.Context) ([]Company, error) {
 }
 
 const getCompany = `-- name: GetCompany :one
-SELECT id, name, email_domain, created_at, updated_at
+SELECT id, name, email_domain, created_at, updated_at, namespace
 FROM company
 WHERE id = $1
 LIMIT 1
@@ -515,12 +521,13 @@ func (q *Queries) GetCompany(ctx context.Context, id int32) (Company, error) {
 		&i.EmailDomain,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Namespace,
 	)
 	return i, err
 }
 
 const getCompanyByDomain = `-- name: GetCompanyByDomain :one
-SELECT id, name, email_domain, created_at, updated_at
+SELECT id, name, email_domain, created_at, updated_at, namespace
 FROM company
 WHERE email_domain = $1
 LIMIT 1
@@ -535,6 +542,7 @@ func (q *Queries) GetCompanyByDomain(ctx context.Context, emailDomain string) (C
 		&i.EmailDomain,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Namespace,
 	)
 	return i, err
 }
@@ -696,7 +704,8 @@ SELECT users.id,
        users.is_active,
        users.password_invalidated,
        users.created_at,
-       users.updated_at
+       users.updated_at,
+       company.namespace as company_namespace
 FROM users
          INNER JOIN role ON role.id = users.role_id
          INNER JOIN company ON company.id = users.company_id
@@ -719,6 +728,7 @@ type GetUserRow struct {
 	PasswordInvalidated bool
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
+	CompanyNamespace    string
 }
 
 func (q *Queries) GetUser(ctx context.Context, id int64) (GetUserRow, error) {
@@ -739,6 +749,7 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (GetUserRow, error) {
 		&i.PasswordInvalidated,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CompanyNamespace,
 	)
 	return i, err
 }
@@ -757,7 +768,8 @@ SELECT users.id,
        users.is_active,
        users.password_invalidated,
        users.created_at,
-       users.updated_at
+       users.updated_at,
+       company.namespace as company_namespace
 FROM users
          INNER JOIN role ON role.id = users.role_id
          INNER JOIN company ON company.id = users.company_id
@@ -780,6 +792,7 @@ type GetUserByEmailRow struct {
 	PasswordInvalidated bool
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
+	CompanyNamespace    string
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
@@ -800,6 +813,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 		&i.PasswordInvalidated,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CompanyNamespace,
 	)
 	return i, err
 }

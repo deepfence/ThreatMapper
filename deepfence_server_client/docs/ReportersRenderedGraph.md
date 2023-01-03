@@ -4,19 +4,19 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Connections** | Pointer to [**[]ReportersConnectionSummary**](ReportersConnectionSummary.md) |  | [optional] 
-**Containers** | Pointer to **map[string][]string** |  | [optional] 
-**Hosts** | Pointer to [**map[string]map[string][]string**](map.md) |  | [optional] 
-**Pods** | Pointer to **map[string][]string** |  | [optional] 
-**Processes** | Pointer to **map[string][]string** |  | [optional] 
-**Providers** | Pointer to **[]string** |  | [optional] 
-**Regions** | Pointer to **map[string][]string** |  | [optional] 
+**Connections** | [**[]ReportersConnectionSummary**](ReportersConnectionSummary.md) |  | 
+**Containers** | **map[string][]string** |  | 
+**Hosts** | [**map[string]map[string][]string**](map.md) |  | 
+**Pods** | **map[string][]string** |  | 
+**Processes** | **map[string][]string** |  | 
+**Providers** | **[]string** |  | 
+**Regions** | **map[string][]string** |  | 
 
 ## Methods
 
 ### NewReportersRenderedGraph
 
-`func NewReportersRenderedGraph() *ReportersRenderedGraph`
+`func NewReportersRenderedGraph(connections []ReportersConnectionSummary, containers map[string][]string, hosts map[string]map[string][]string, pods map[string][]string, processes map[string][]string, providers []string, regions map[string][]string, ) *ReportersRenderedGraph`
 
 NewReportersRenderedGraph instantiates a new ReportersRenderedGraph object
 This constructor will assign default values to properties that have it defined,
@@ -50,11 +50,6 @@ and a boolean to check if the value has been set.
 
 SetConnections sets Connections field to given value.
 
-### HasConnections
-
-`func (o *ReportersRenderedGraph) HasConnections() bool`
-
-HasConnections returns a boolean if a field has been set.
 
 ### SetConnectionsNil
 
@@ -85,11 +80,6 @@ and a boolean to check if the value has been set.
 
 SetContainers sets Containers field to given value.
 
-### HasContainers
-
-`func (o *ReportersRenderedGraph) HasContainers() bool`
-
-HasContainers returns a boolean if a field has been set.
 
 ### SetContainersNil
 
@@ -120,11 +110,6 @@ and a boolean to check if the value has been set.
 
 SetHosts sets Hosts field to given value.
 
-### HasHosts
-
-`func (o *ReportersRenderedGraph) HasHosts() bool`
-
-HasHosts returns a boolean if a field has been set.
 
 ### SetHostsNil
 
@@ -155,11 +140,6 @@ and a boolean to check if the value has been set.
 
 SetPods sets Pods field to given value.
 
-### HasPods
-
-`func (o *ReportersRenderedGraph) HasPods() bool`
-
-HasPods returns a boolean if a field has been set.
 
 ### SetPodsNil
 
@@ -190,11 +170,6 @@ and a boolean to check if the value has been set.
 
 SetProcesses sets Processes field to given value.
 
-### HasProcesses
-
-`func (o *ReportersRenderedGraph) HasProcesses() bool`
-
-HasProcesses returns a boolean if a field has been set.
 
 ### SetProcessesNil
 
@@ -225,11 +200,6 @@ and a boolean to check if the value has been set.
 
 SetProviders sets Providers field to given value.
 
-### HasProviders
-
-`func (o *ReportersRenderedGraph) HasProviders() bool`
-
-HasProviders returns a boolean if a field has been set.
 
 ### SetProvidersNil
 
@@ -260,11 +230,6 @@ and a boolean to check if the value has been set.
 
 SetRegions sets Regions field to given value.
 
-### HasRegions
-
-`func (o *ReportersRenderedGraph) HasRegions() bool`
-
-HasRegions returns a boolean if a field has been set.
 
 ### SetRegionsNil
 

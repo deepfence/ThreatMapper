@@ -1,25 +1,52 @@
 package router
 
 import (
+	"net/http"
+	"os"
+	"strings"
+
+	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
-	"os"
-	"strings"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
+const (
+	// API RBAC permissions
+
+	PermissionRead     = "read"
+	PermissionWrite    = "write"
+	PermissionDelete   = "delete"
+	PermissionIngest   = "ingest"
+	PermissionStart    = "start"
+	PermissionStop     = "stop"
+	PermissionGenerate = "generate"
+
+	//	API RBAC Resources
+
+	ResourceUser        = "user"
+	ResourceAllUsers    = "all-users"
+	ResourceAgentReport = "agent-report"
+	ResourceCloudReport = "cloud-report"
+	ResourceScanReport  = "scan-report"
+	ResourceScan        = "scan"
+	ResourceDiagnosis   = "diagnosis"
+)
+
+func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool, ingestC chan *kgo.Record) (*handler.Handler, error) {
 	// JWT
-	tokenAuth := getTokenAuth()
+	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
 
 	// authorization
-	authEnforcer, err := getAuthorizationHandler()
+	authEnforcer, err := newAuthorizationHandler()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	openApiDocs := apiDocs.InitializeOpenAPIReflector()
@@ -30,23 +57,21 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 		OpenApiDocs:    openApiDocs,
 		SaasDeployment: IsSaasDeployment(),
 		Validator:      validator.New(),
+		IngestChan:     ingestC,
 	}
 
 	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = dfHandler.Validator.RegisterValidation("company_name", model.ValidateCompanyName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = dfHandler.Validator.RegisterValidation("user_name", model.ValidateUserName)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	//root := "/usr/local/share/swagger-ui"
-	//fs := http.FileServer(http.Dir(root))
 
 	r.Route("/deepfence", func(r chi.Router) {
 		r.Get("/ping", dfHandler.Ping)
@@ -59,38 +84,42 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 			r.Post("/auth/token", dfHandler.ApiAuthHandler)
 			r.Post("/user/login", dfHandler.LoginHandler)
 			if serveOpenapiDocs {
-				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi-docs", serverPort)
-				r.Get("/openapi-docs", dfHandler.OpenApiDocsHandler)
-				//r.Get("/swagger-ui/", func(w http.ResponseWriter, r *http.Request) {
-				//	http.StripPrefix("/deepfence/swagger-ui", fs).ServeHTTP(w, r)
-				//})
+				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi.json", serverPort)
+				log.Info().Msgf("Swagger UI : http://0.0.0.0%s/deepfence/swagger-ui/", serverPort)
+				r.Get("/openapi.json", dfHandler.OpenApiDocsHandler)
+				r.Handle("/swagger-ui/*",
+					http.StripPrefix("/deepfence/swagger-ui",
+						http.FileServer(http.Dir("/usr/local/share/swagger-ui/"))))
 			}
 		})
 
 		// authenticated apis
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(tokenAuth))
-			r.Use(jwtauth.Authenticator)
+			r.Use(directory.Injector)
 
 			r.Post("/user/logout", dfHandler.LogoutHandler)
 
 			openApiDocs.AddUserOperations()
 			// current user
 			r.Route("/user", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler("user", "read", dfHandler.GetUser))
-				r.Put("/", dfHandler.AuthHandler("user", "write", dfHandler.UpdateUser))
-				r.Delete("/", dfHandler.AuthHandler("user", "delete", dfHandler.DeleteUser))
+				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetUser))
+				r.Put("/", dfHandler.AuthHandler(ResourceUser, PermissionWrite, dfHandler.UpdateUser))
+				r.Delete("/", dfHandler.AuthHandler(ResourceUser, PermissionDelete, dfHandler.DeleteUser))
 			})
 
 			r.Route("/api-token", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler("user", "read", dfHandler.GetApiTokens))
+				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetApiTokens))
 			})
+
+			// Generate new access token using refresh token
+			r.Post("/auth/token/refresh", dfHandler.RefreshTokenHandler)
 
 			// manage other users
 			r.Route("/users/{userId}", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler("all-users", "read", dfHandler.GetUser))
-				r.Put("/", dfHandler.AuthHandler("all-users", "write", dfHandler.UpdateUser))
-				r.Delete("/", dfHandler.AuthHandler("all-users", "delete", dfHandler.DeleteUser))
+				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUser))
+				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUser))
+				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUser))
 			})
 
 			openApiDocs.AddGraphOperations()
@@ -99,15 +128,24 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 				r.Post("/threat", dfHandler.GetThreatGraph)
 			})
 
+			openApiDocs.AddControlsOperations()
+			r.Route("/controls", func(r chi.Router) {
+				r.Post("/agent", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentControls))
+				r.Post("/agent-init", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentInitControls))
+			})
+
 			openApiDocs.AddIngestersOperations()
 			r.Route("/ingest", func(r chi.Router) {
-				r.Post("/report", dfHandler.IngestAgentReport)
-				r.Post("/cves", dfHandler.IngestCVEReportHandler)
-				r.Post("/secrets", dfHandler.IngestSecretReportHandler)
-				r.Post("/malware", dfHandler.IngestMalwareReportHandler)
-				r.Post("/compliance", dfHandler.IngestComplianceReportHandler)
-				r.Post("/cloud-compliance", dfHandler.IngestCloudComplianceReportHandler)
-				r.Post("/cloud-resources", dfHandler.IngestCloudResourcesReportHandler)
+				r.Post("/report", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.IngestAgentReport))
+				r.Post("/cloud-resources", dfHandler.AuthHandler(ResourceCloudReport, PermissionIngest, dfHandler.IngestCloudResourcesReportHandler))
+				// below api's write to kafka
+				r.Post("/sbom", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestSbomHandler))
+				r.Post("/vulnerabilities", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestVulnerabilityReportHandler))
+				r.Post("/vulnerabilities-scan-logs", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestVulnerabilityScanStatusHandler))
+				r.Post("/secrets", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestSecretReportHandler))
+				r.Post("/secret-scan-logs", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestSecretScanStatusHandler))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestComplianceReportHandler))
+				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestCloudComplianceReportHandler))
 			})
 
 			openApiDocs.AddScansOperations()
@@ -116,24 +154,52 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool) error {
 				r.Get("/secrets", dfHandler.StartSecretScanHandler)
 				r.Get("/malware", dfHandler.StartMalwareScanHandler)
 				r.Get("/compliances", dfHandler.StartComplianceScanHandler)
+				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartVulnerabilityScanHandler))
+				r.Post("/secret", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartSecretScanHandler))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartComplianceScanHandler))
+				r.Post("/malware", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartMalwareScanHandler))
+			})
+			r.Route("/scan/stop", func(r chi.Router) {
+				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StopVulnerabilityScanHandler))
+				r.Post("/secret", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StopSecretScanHandler))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StopComplianceScanHandler))
+				r.Post("/malware", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StopMalwareScanHandler))
+			})
+			r.Route("/scan/status", func(r chi.Router) {
+				r.Get("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusVulnerabilityScanHandler))
+				r.Get("/secret", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusSecretScanHandler))
+				r.Get("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusComplianceScanHandler))
+				r.Get("/malware", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusMalwareScanHandler))
+			})
+			r.Route("/scan/list", func(r chi.Router) {
+				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScansHandler))
+				r.Post("/secret", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScansHandler))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListComplianceScansHandler))
+				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScansHandler))
+			})
+			r.Route("/scan/results", func(r chi.Router) {
+				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScanResultsHandler))
+				r.Post("/secret", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScanResultsHandler))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListComplianceScanResultsHandler))
+				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultsHandler))
 			})
 
+			openApiDocs.AddDiagnosisOperations()
+			r.Route("/diagnosis", func(r chi.Router) {
+				r.Get("/notification", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.DiagnosticNotification))
+				r.Post("/console-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateConsoleDiagnosticLogs))
+				r.Post("/agent-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateAgentDiagnosticLogs))
+				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
+			})
 		})
 	})
-	return nil
+	return dfHandler, nil
 }
 
-func getTokenAuth() *jwtauth.JWTAuth {
-	return jwtauth.New("HS256", []byte(utils.NewUUIDString()), nil)
-}
-
-func getAuthorizationHandler() (*casbin.Enforcer, error) {
+func newAuthorizationHandler() (*casbin.Enforcer, error) {
 	return casbin.NewEnforcer("auth/model.conf", "auth/policy.csv")
 }
 
 func IsSaasDeployment() bool {
-	if strings.ToLower(os.Getenv("SAAS_DEPLOYMENT")) == "true" {
-		return true
-	}
-	return false
+	return strings.ToLower(os.Getenv("DEEPFENCE_SAAS_DEPLOYMENT")) == "true"
 }
