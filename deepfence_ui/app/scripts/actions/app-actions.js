@@ -116,7 +116,7 @@ import {
   getAttackGraphData,
   getAttackGraphNodeInfo,
   refreshCloudComplianceResources,
-  getAccountId
+  getConsoleAWSAccountId
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1372,13 +1372,13 @@ export function listRegistryImagesAction(params) {
   return genericThunkAction(actionTypes, listRegistryImages, params);
 }
 
-export function getAccountIdAction() {
+export function getConsoleAWSAccountIdAction() {
   const actionTypes = [
     ActionTypes.GET_ACCOUNT_ID_REQUEST,
     ActionTypes.GET_ACCOUNT_ID_SUCCESS,
     ActionTypes.GET_ACCOUNT_ID_FAILURE,
   ];
-  return genericThunkAction(actionTypes, getAccountId, {});
+  return genericThunkAction(actionTypes, getConsoleAWSAccountId, {});
 }
 
 export function scanRegistryImagesAction(params) {

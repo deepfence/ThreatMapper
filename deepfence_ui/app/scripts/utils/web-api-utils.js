@@ -1833,7 +1833,7 @@ export function listRegistryImages(params = {}) {
   }).then(errorHandler);
 }
 
-export function getAccountId(params = {}) {
+export function getConsoleAWSAccountId(params = {}) {
   const url = `${backendElasticApiEndPoint()}/metadata/aws/account`;
   return fetch(url, {
     credentials: 'same-origin',
