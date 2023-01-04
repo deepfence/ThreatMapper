@@ -115,7 +115,8 @@ import {
   getServicesForCloudAccount,
   getAttackGraphData,
   getAttackGraphNodeInfo,
-  refreshCloudComplianceResources
+  refreshCloudComplianceResources,
+  getAccountId
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1369,6 +1370,15 @@ export function listRegistryImagesAction(params) {
     ActionTypes.LIST_REGISTRY_IMAGES_FAILURE,
   ];
   return genericThunkAction(actionTypes, listRegistryImages, params);
+}
+
+export function getAccountIdAction() {
+  const actionTypes = [
+    ActionTypes.GET_ACCOUNT_ID_REQUEST,
+    ActionTypes.GET_ACCOUNT_ID_SUCCESS,
+    ActionTypes.GET_ACCOUNT_ID_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, getAccountId, {});
 }
 
 export function scanRegistryImagesAction(params) {

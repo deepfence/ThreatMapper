@@ -1833,6 +1833,18 @@ export function listRegistryImages(params = {}) {
   }).then(errorHandler);
 }
 
+export function getAccountId(params = {}) {
+  const url = `${backendElasticApiEndPoint()}/metadata/aws/account`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  }).then(errorHandler);
+}
+
 export function scanRegistryImages(params = {}) {
   const url = `${backendElasticApiEndPoint()}/node_action`;
   return fetch(url, {
