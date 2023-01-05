@@ -130,7 +130,7 @@ def compliance_pdf_report_cloud(filters, lucene_query_string, number, time_unit,
         return "<div>No compliance reports found for the applied filters, Try with different filters</div>"
 
     def datetime_format(string):
-        date_time = datetime.strptime(string, '%Y-%m-%dT%H:%M:%S.%f')
+        date_time = datetime.strptime(string, '%Y-%m-%dT%H:%M:%S.%fZ')
         return "{date} {time}".format(date=date_time.strftime("%d %b, %Y"), time=date_time.strftime("%H:%M:%S"))
 
     df['_source.@timestamp'] = df['_source.@timestamp'].apply(datetime_format)
