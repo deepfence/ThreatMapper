@@ -12,7 +12,7 @@ set_es_user_creds() {
 cd /app/code
 
 set_es_user_creds
-until curl "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"; do
+until curl --fail "${ELASTICSEARCH_SCHEME}://${basicAuth}${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"; do
   echo >&2 "Elastic search is unavailable - sleeping"
   sleep 5
 done
