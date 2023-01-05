@@ -229,7 +229,7 @@ func (v *VulnerabilityDbUpdater) updateVulnerabilityDbListing() error {
 	vulnerabilityDbPath := v.vulnerabilityDbPath
 	oldFilePath := v.currentFilePath
 	v.RUnlock()
-	content, err := ioutil.ReadFile(grypeVulnerabilityDbPath + "/metadata.json")
+	content, err := os.ReadFile(grypeVulnerabilityDbPath + "/metadata.json")
 	if err != nil {
 		return err
 	}
@@ -451,7 +451,7 @@ func handleDeleteDumpsMethod(respWrite http.ResponseWriter, req *http.Request) {
 	}
 
 	folderPath := "/data/core_dumps"
-	dirs, err := ioutil.ReadDir(folderPath)
+	dirs, err := os.ReadDir(folderPath)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -459,7 +459,7 @@ func handleDeleteDumpsMethod(respWrite http.ResponseWriter, req *http.Request) {
 
 	for _, f := range dirs {
 		if f.IsDir() {
-			files, err := ioutil.ReadDir(folderPath + "/" + f.Name())
+			files, err := os.ReadDir(folderPath + "/" + f.Name())
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -704,7 +704,7 @@ func callRegistryCredentialApi(credentialId string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}

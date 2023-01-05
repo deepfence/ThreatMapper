@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine3.15 AS build
+FROM golang:1.19-alpine3.17 AS build
 RUN apk add --no-cache build-base git
 
 ADD .   /go/fetcher/
@@ -6,7 +6,7 @@ WORKDIR /go/fetcher/
 
 RUN go build fetcher-server.go
 
-FROM alpine:3.15.0
+FROM alpine:3.17
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
