@@ -1,10 +1,10 @@
 module github.com/deepfence/fetcher_api_server
 
-go 1.18
+go 1.19
 
 require (
-	github.com/gomodule/redigo v1.8.8
-	github.com/lib/pq v1.10.4
+	github.com/gomodule/redigo v1.8.9
+	github.com/lib/pq v1.10.7
 	github.com/olivere/elastic/v7 v7.0.32
 )
 
