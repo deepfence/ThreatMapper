@@ -17,7 +17,7 @@ from models.user import User, Role, Company, Invite, PasswordReset
 from models.user_activity_log import UserActivityLog
 from collections import defaultdict
 from models.integration import Integration
-from models.notification import VulnerabilityNotification, UserActivityNotification, ComplianceReportNotification, \
+from models.notification import VulnerabilityNotification, MalwareNotification, UserActivityNotification, ComplianceReportNotification, \
     CloudtrailAlertNotification
 from utils.common import password_policy_check, unique_execution_id, \
     mask_url, mask_api_key
@@ -32,7 +32,7 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
-    INVITE_EXPIRY, NOTIFICATION_TYPE_COMPLIANCE, CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, \
+    INVITE_EXPIRY, NOTIFICATION_TYPE_COMPLIANCE, CVE_ES_TYPE, MALWARE_SCAN_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, \
     FILTER_TYPE_CLOUDTRAIL_TRAIL, INTEGRATION_TYPE_AWS_SECURITY_HUB, FILTER_TYPE_AWS_ACCOUNT_ID
 from utils import constants
 from config.redisconfig import redis
@@ -1386,6 +1386,9 @@ class IntegrationView(MethodView):
             for notif in VulnerabilityNotification.query.filter(
                     VulnerabilityNotification.user_id.in_(active_user_ids)).all():
                 response[notif.integration.integration_type].append(notif.pretty_print())
+            for notif in MalwareNotification.query.filter(
+                    MalwareNotification.user_id.in_(active_user_ids)).all():
+                response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in UserActivityNotification.query.filter(
                     UserActivityNotification.user_id.in_(active_user_ids)).all():
                 response[notif.integration.integration_type].append(notif.pretty_print())
@@ -1397,6 +1400,8 @@ class IntegrationView(MethodView):
                 response[notif.integration.integration_type].append(notif.pretty_print())
         else:
             for notif in user.vulnerability_notifications:
+                response[notif.integration.integration_type].append(notif.pretty_print())
+            for notif in user.malware_notifications:
                 response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in user.user_activity_notification:
                 response[notif.integration.integration_type].append(notif.pretty_print())
@@ -1523,6 +1528,8 @@ class IntegrationView(MethodView):
         notification = None
         if notification_type == NOTIFICATION_TYPE_VULNERABILITY:
             notification = VulnerabilityNotification.query.filter_by(id=id).one_or_none()
+        elif notification_type == NOTIFICATION_TYPE_MALWARE:
+            notification = MalwareNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             notification = UserActivityNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_COMPLIANCE:
@@ -2083,6 +2090,8 @@ class IntegrationView(MethodView):
 
         if notification_type == NOTIFICATION_TYPE_VULNERABILITY:
             create_notification(VulnerabilityNotification)
+        if notification_type == NOTIFICATION_TYPE_MALWARE:
+            create_notification(MalwareNotification)
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             create_notification(UserActivityNotification)
         elif notification_type == NOTIFICATION_TYPE_COMPLIANCE:
@@ -2175,7 +2184,7 @@ def notify_to_integrations():
     Send a manual notification to all the configured integrations
     by the logged in user.
 
-    This api can be used for cve
+    This api can be used for cve and malware
 
     Example:
     [{"_id":"e67944ab335c5848e80c36bac094e63d","_type":"cve","_index":"logstash-2018.10.08"}]
@@ -2230,7 +2239,7 @@ def notify_to_integrations():
 
     missing_alerts = []
     notified_alerts = []
-    allowed_indices = [CVE_ES_TYPE]
+    allowed_indices = [CVE_ES_TYPE,MALWARE_SCAN_ES_TYPE]
 
     index_wise_content_list = defaultdict(list)
     for doc in docs:
@@ -2251,6 +2260,8 @@ def notify_to_integrations():
         user_notifications = None
         if index_name == CVE_ES_TYPE:
             user_notifications = user.vulnerability_notifications
+        if index_name == MALWARE_SCAN_ES_TYPE:
+            user_notifications = user.malware_notifications
         if user_notifications:
             user_notifications = {str(notification.integration_id): notification for notification in
                                   user_notifications}.values()

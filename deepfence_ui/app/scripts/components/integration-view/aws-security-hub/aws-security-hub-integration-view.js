@@ -26,6 +26,10 @@ const resourceCollection = [
   {
     name: 'Compliance Results',
     value: 'compliance',
+  },
+  {
+    name: 'Malware Scan',
+    value: 'malware-scan',
   }
 ];
 
@@ -216,9 +220,9 @@ class AWSSecurityHubIntegrationView extends React.Component {
     this.props.dispatch(submitIntegrationRequest(params));
   }
 
-  
 
-  
+
+
 
   seCloudtrailOptions(name, value) {
     this.setState({
