@@ -4,7 +4,7 @@ title: JIRA
 
 # ThreatMapper and JIRA
 
-ThreatMapper raises JIRA tickets. The supported version of JIRA is 7.13.
+ThreatMapper can be configured to raise JIRA tickets for vulnerabilities and secrets. The minimum supported version of JIRA is 7.13.
 
 ## To Configure JIRA Integration
 For authentication either password of a user account or an api token can be used.
