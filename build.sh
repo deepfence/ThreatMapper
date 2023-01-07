@@ -87,7 +87,7 @@ fi
 
 echo "Building UI image"
 git log --format="%h" -n 1 > $DEEPFENCE_UI_DIR/console_version.txt
-echo "1.4.1" > $DEEPFENCE_UI_DIR/product_version.txt
+echo "1.4.2" > $DEEPFENCE_UI_DIR/product_version.txt
 docker build -f $DEEPFENCE_UI_DIR/Dockerfile -t ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_ui_ce:${DF_IMG_TAG:-latest} $DEEPFENCE_UI_DIR
 
 if [ ! $? -eq 0 ]; then

@@ -3,7 +3,7 @@ services:
 
   deepfence-init-container:
     container_name: df-init-container
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-1.4.2}
     privileged: true
     ulimits:
       core: 0
@@ -17,7 +17,7 @@ services:
 
   deepfence-postgres:
     container_name: deepfence-postgres
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     restart: on-failure
@@ -32,7 +32,7 @@ services:
 
   deepfence-redis:
     container_name: deepfence-redis
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-1.4.2}
     environment:
       INITIALIZE_REDIS: "Y"
     ulimits:
@@ -49,7 +49,7 @@ services:
 
   deepfence-fetcher:
     container_name: deepfence-fetcher
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_fetcher_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     depends_on:
@@ -66,7 +66,7 @@ services:
 
   deepfence-topology:
     container_name: deepfence-topology
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_discovery_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_discovery_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     networks:
@@ -82,7 +82,7 @@ services:
 
   deepfence-console-agent:
     container_name: deepfence-console-agent
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     deploy:
@@ -108,7 +108,7 @@ services:
 
   deepfence-es:
     container_name: deepfence-es-master
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.2}
     restart: on-failure
     networks:
       - deepfence_net
@@ -145,7 +145,7 @@ services:
 
   #  deepfence-es-slave1:
   #    container_name: deepfence-es-slave1
-  #    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.1}
+  #    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.2}
   #    restart: on-failure
   #    networks:
   #      - deepfence_net
@@ -179,7 +179,7 @@ services:
   #
   #  deepfence-es-slave2:
   #    container_name: deepfence-es-slave2
-  #    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.1}
+  #    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_elastic_ce:${DF_IMG_TAG:-1.4.2}
   #    restart: on-failure
   #    networks:
   #      - deepfence_net
@@ -213,7 +213,7 @@ services:
 
   deepfence-router:
     container_name: deepfence-router
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     networks:
@@ -231,7 +231,7 @@ services:
 
   deepfence-internal-router:
     container_name: deepfence-internal-router
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     networks:
@@ -250,7 +250,7 @@ services:
 
   deepfence-api:
     container_name: deepfence-api
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     tmpfs:
@@ -275,7 +275,7 @@ services:
 
   deepfence-celery:
     container_name: deepfence-celery
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     entrypoint: /app/code/dockerify/celery/entrypoint.sh
@@ -294,7 +294,7 @@ services:
 
   deepfence-backend:
     container_name: deepfence-backend
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_api_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     entrypoint: /app/code/dockerify/backend/entrypoint.sh
@@ -312,7 +312,7 @@ services:
 
   deepfence-ui:
     container_name: deepfence-ui
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_ui_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_ui_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     networks:
@@ -327,7 +327,7 @@ services:
 
   deepfence-diagnosis:
     container_name: deepfence-diagnosis
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_diagnosis_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_diagnosis_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     networks:
@@ -342,7 +342,7 @@ services:
 
   deepfence-vulnerability-mapper:
     container_name: deepfence-vulnerability-mapper
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_vulnerability_mapper_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     restart: always
@@ -355,7 +355,7 @@ services:
 
   deepfence-secret-scanner:
     container_name: deepfence-secret-scanner
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_secret_scanner_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_secret_scanner_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     restart: always
@@ -370,7 +370,7 @@ services:
         
   deepfence-package-scanner:
     container_name: deepfence-package-scanner
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_package_scanner_ce:${DF_IMG_TAG:-1.4.2}
     ulimits:
       core: 0
     restart: always

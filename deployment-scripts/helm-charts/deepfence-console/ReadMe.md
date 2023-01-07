@@ -66,7 +66,7 @@ registry:
 - Set image tag
 ```yaml
 image:
-  tag: 1.4.1
+  tag: 1.4.2
 ```
 - (Optional) Set custom ssl certificate.
 
