@@ -138,7 +138,7 @@ class MalwareNotification(Notification):
         "CategoryName": "Category Name", "Severity": "Severity","container_image": "Container image", "@timestamp": "@timestamp",
         "container_name": "Container Name", "node_name": "Node Name", "kubernetes_cluster_name": "Kubernetes Cluster Name",
         "image_id": "Image ID", "node_type": "Node Type", "registry_id": "Registry ID", "container_name": "Container Name",
-        "host_name": "Host Name", "kubernetes_cluster_name": "Kubernetes Cluster Name", "masked": "masked", "Meta" : "Meta"
+        "host_name": "Host Name", "kubernetes_cluster_name": "Kubernetes Cluster Name", "masked": "masked", "Meta" : "Meta",
         "CompleteFilename" : "Complete File Name", "MetaRules": "Meta Rules", "Summary": "Summary", "Class": "Class",
         "SeverityScore": "Severity Score", "Severity": "Severity", "FileSeverity": "File Severity", "FileSevScore" : "File Severity Score"
         }
