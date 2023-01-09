@@ -169,6 +169,35 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 		}
 	}
 
+	for cp, crs := range graph.Kubernetes {
+		for _, cr := range crs {
+			nodes[cr] = detailed.NodeSummary{
+				ImmediateParentID: cp + ";<cloud_provider>",
+				BasicNodeSummary: detailed.BasicNodeSummary{
+					ID:    cr + ";<cloud_region>",
+					Rank:  cr,
+					Label: cr,
+					Shape: report.Circle,
+				},
+				Metadata: []report.MetadataRow{
+					{
+						ID:       "name",
+						Label:    "Name",
+						Value:    cr,
+						Priority: 1,
+					},
+					{
+						ID:       "label",
+						Label:    "Label",
+						Value:    cr,
+						Priority: 2,
+					},
+				},
+				Type: "kubernetes",
+			}
+		}
+	}
+
 	for cp, crs := range graph.Regions {
 		for _, cr := range crs {
 			nodes[cr] = detailed.NodeSummary{

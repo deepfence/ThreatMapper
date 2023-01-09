@@ -6,13 +6,15 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **CloudFilter** | **[]string** |  | 
 **HostFilter** | **[]string** |  | 
+**KubernetesFilter** | **[]string** |  | 
+**PodFilter** | **[]string** |  | 
 **RegionFilter** | **[]string** |  | 
 
 ## Methods
 
 ### NewReportersTopologyFilters
 
-`func NewReportersTopologyFilters(cloudFilter []string, hostFilter []string, regionFilter []string, ) *ReportersTopologyFilters`
+`func NewReportersTopologyFilters(cloudFilter []string, hostFilter []string, kubernetesFilter []string, podFilter []string, regionFilter []string, ) *ReportersTopologyFilters`
 
 NewReportersTopologyFilters instantiates a new ReportersTopologyFilters object
 This constructor will assign default values to properties that have it defined,
@@ -87,6 +89,66 @@ SetHostFilter sets HostFilter field to given value.
 `func (o *ReportersTopologyFilters) UnsetHostFilter()`
 
 UnsetHostFilter ensures that no value is present for HostFilter, not even an explicit nil
+### GetKubernetesFilter
+
+`func (o *ReportersTopologyFilters) GetKubernetesFilter() []string`
+
+GetKubernetesFilter returns the KubernetesFilter field if non-nil, zero value otherwise.
+
+### GetKubernetesFilterOk
+
+`func (o *ReportersTopologyFilters) GetKubernetesFilterOk() (*[]string, bool)`
+
+GetKubernetesFilterOk returns a tuple with the KubernetesFilter field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetKubernetesFilter
+
+`func (o *ReportersTopologyFilters) SetKubernetesFilter(v []string)`
+
+SetKubernetesFilter sets KubernetesFilter field to given value.
+
+
+### SetKubernetesFilterNil
+
+`func (o *ReportersTopologyFilters) SetKubernetesFilterNil(b bool)`
+
+ SetKubernetesFilterNil sets the value for KubernetesFilter to be an explicit nil
+
+### UnsetKubernetesFilter
+`func (o *ReportersTopologyFilters) UnsetKubernetesFilter()`
+
+UnsetKubernetesFilter ensures that no value is present for KubernetesFilter, not even an explicit nil
+### GetPodFilter
+
+`func (o *ReportersTopologyFilters) GetPodFilter() []string`
+
+GetPodFilter returns the PodFilter field if non-nil, zero value otherwise.
+
+### GetPodFilterOk
+
+`func (o *ReportersTopologyFilters) GetPodFilterOk() (*[]string, bool)`
+
+GetPodFilterOk returns a tuple with the PodFilter field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetPodFilter
+
+`func (o *ReportersTopologyFilters) SetPodFilter(v []string)`
+
+SetPodFilter sets PodFilter field to given value.
+
+
+### SetPodFilterNil
+
+`func (o *ReportersTopologyFilters) SetPodFilterNil(b bool)`
+
+ SetPodFilterNil sets the value for PodFilter to be an explicit nil
+
+### UnsetPodFilter
+`func (o *ReportersTopologyFilters) UnsetPodFilter()`
+
+UnsetPodFilter ensures that no value is present for PodFilter, not even an explicit nil
 ### GetRegionFilter
 
 `func (o *ReportersTopologyFilters) GetRegionFilter() []string`

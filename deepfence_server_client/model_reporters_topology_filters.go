@@ -22,6 +22,8 @@ var _ MappedNullable = &ReportersTopologyFilters{}
 type ReportersTopologyFilters struct {
 	CloudFilter []string `json:"cloud_filter"`
 	HostFilter []string `json:"host_filter"`
+	KubernetesFilter []string `json:"kubernetes_filter"`
+	PodFilter []string `json:"pod_filter"`
 	RegionFilter []string `json:"region_filter"`
 }
 
@@ -29,10 +31,12 @@ type ReportersTopologyFilters struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportersTopologyFilters(cloudFilter []string, hostFilter []string, regionFilter []string) *ReportersTopologyFilters {
+func NewReportersTopologyFilters(cloudFilter []string, hostFilter []string, kubernetesFilter []string, podFilter []string, regionFilter []string) *ReportersTopologyFilters {
 	this := ReportersTopologyFilters{}
 	this.CloudFilter = cloudFilter
 	this.HostFilter = hostFilter
+	this.KubernetesFilter = kubernetesFilter
+	this.PodFilter = podFilter
 	this.RegionFilter = regionFilter
 	return &this
 }
@@ -97,6 +101,58 @@ func (o *ReportersTopologyFilters) SetHostFilter(v []string) {
 	o.HostFilter = v
 }
 
+// GetKubernetesFilter returns the KubernetesFilter field value
+// If the value is explicit nil, the zero value for []string will be returned
+func (o *ReportersTopologyFilters) GetKubernetesFilter() []string {
+	if o == nil {
+		var ret []string
+		return ret
+	}
+
+	return o.KubernetesFilter
+}
+
+// GetKubernetesFilterOk returns a tuple with the KubernetesFilter field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *ReportersTopologyFilters) GetKubernetesFilterOk() ([]string, bool) {
+	if o == nil || isNil(o.KubernetesFilter) {
+		return nil, false
+	}
+	return o.KubernetesFilter, true
+}
+
+// SetKubernetesFilter sets field value
+func (o *ReportersTopologyFilters) SetKubernetesFilter(v []string) {
+	o.KubernetesFilter = v
+}
+
+// GetPodFilter returns the PodFilter field value
+// If the value is explicit nil, the zero value for []string will be returned
+func (o *ReportersTopologyFilters) GetPodFilter() []string {
+	if o == nil {
+		var ret []string
+		return ret
+	}
+
+	return o.PodFilter
+}
+
+// GetPodFilterOk returns a tuple with the PodFilter field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *ReportersTopologyFilters) GetPodFilterOk() ([]string, bool) {
+	if o == nil || isNil(o.PodFilter) {
+		return nil, false
+	}
+	return o.PodFilter, true
+}
+
+// SetPodFilter sets field value
+func (o *ReportersTopologyFilters) SetPodFilter(v []string) {
+	o.PodFilter = v
+}
+
 // GetRegionFilter returns the RegionFilter field value
 // If the value is explicit nil, the zero value for []string will be returned
 func (o *ReportersTopologyFilters) GetRegionFilter() []string {
@@ -138,6 +194,12 @@ func (o ReportersTopologyFilters) ToMap() (map[string]interface{}, error) {
 	}
 	if o.HostFilter != nil {
 		toSerialize["host_filter"] = o.HostFilter
+	}
+	if o.KubernetesFilter != nil {
+		toSerialize["kubernetes_filter"] = o.KubernetesFilter
+	}
+	if o.PodFilter != nil {
+		toSerialize["pod_filter"] = o.PodFilter
 	}
 	if o.RegionFilter != nil {
 		toSerialize["region_filter"] = o.RegionFilter

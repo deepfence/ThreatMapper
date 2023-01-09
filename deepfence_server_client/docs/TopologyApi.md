@@ -30,7 +30,7 @@ import (
 )
 
 func main() {
-    reportersTopologyFilters := *openapiclient.NewReportersTopologyFilters([]string{"CloudFilter_example"}, []string{"HostFilter_example"}, []string{"RegionFilter_example"}) // ReportersTopologyFilters |  (optional)
+    reportersTopologyFilters := *openapiclient.NewReportersTopologyFilters([]string{"CloudFilter_example"}, []string{"HostFilter_example"}, []string{"KubernetesFilter_example"}, []string{"PodFilter_example"}, []string{"RegionFilter_example"}) // ReportersTopologyFilters |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)

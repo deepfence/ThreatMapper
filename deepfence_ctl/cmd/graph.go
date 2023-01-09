@@ -32,11 +32,19 @@ var graphTopologySubCmd = &cobra.Command{
 		provider_filter, _ := cmd.Flags().GetString("provider-filter")
 		provider_entries := strings.Split(provider_filter, ",")
 
+		k8s_filter, _ := cmd.Flags().GetString("kubernetes-filter")
+		k8s_entries := strings.Split(k8s_filter, ",")
+
+		pod_filter, _ := cmd.Flags().GetString("pod-filter")
+		pod_entries := strings.Split(pod_filter, ",")
+
 		req := http.Client().TopologyApi.GetTopologyGraph(context.Background())
 		req = req.ReportersTopologyFilters(deepfence_server_client.ReportersTopologyFilters{
-			CloudFilter:  provider_entries,
-			HostFilter:   host_entries,
-			RegionFilter: region_entries,
+			CloudFilter:      provider_entries,
+			HostFilter:       host_entries,
+			RegionFilter:     region_entries,
+			KubernetesFilter: k8s_entries,
+			PodFilter:        pod_entries,
 		})
 		res, rh, err := http.Client().TopologyApi.GetTopologyGraphExecute(req)
 
@@ -66,9 +74,11 @@ func init() {
 	rootCmd.AddCommand(graphCmd)
 	graphCmd.AddCommand(graphTopologySubCmd)
 
-	graphTopologySubCmd.PersistentFlags().String("host-filter", "", "CSV host fileter")
-	graphTopologySubCmd.PersistentFlags().String("region-filter", "", "CSV host fileter")
-	graphTopologySubCmd.PersistentFlags().String("provider-filter", "", "CSV host fileter")
+	graphTopologySubCmd.PersistentFlags().String("host-filter", "", "CSV host filter")
+	graphTopologySubCmd.PersistentFlags().String("region-filter", "", "CSV region filter")
+	graphTopologySubCmd.PersistentFlags().String("provider-filter", "", "CSV provider filter")
+	graphTopologySubCmd.PersistentFlags().String("kubernetes-filter", "", "CSV k8s filter")
+	graphTopologySubCmd.PersistentFlags().String("pod-filter", "", "CSV pod filter")
 
 	graphCmd.AddCommand(graphThreatSubCmd)
 }

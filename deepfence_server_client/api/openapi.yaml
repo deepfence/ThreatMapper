@@ -3054,6 +3054,12 @@ components:
         cloud_filter:
         - cloud_filter
         - cloud_filter
+        kubernetes_filter:
+        - kubernetes_filter
+        - kubernetes_filter
+        pod_filter:
+        - pod_filter
+        - pod_filter
         region_filter:
         - region_filter
         - region_filter
@@ -3068,6 +3074,16 @@ components:
             type: string
           nullable: true
           type: array
+        kubernetes_filter:
+          items:
+            type: string
+          nullable: true
+          type: array
+        pod_filter:
+          items:
+            type: string
+          nullable: true
+          type: array
         region_filter:
           items:
             type: string
@@ -3076,6 +3092,8 @@ components:
       required:
       - cloud_filter
       - host_filter
+      - kubernetes_filter
+      - pod_filter
       - region_filter
       type: object
     IngestersSecret_Match:
