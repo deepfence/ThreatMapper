@@ -2,7 +2,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from config.app import db
-from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPE_MALWARE, NOTIFICATION_TYPE_USER_ACTIVITY, \
+from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPE_MALWARE, NOTIFICATION_TYPE_SECRET, NOTIFICATION_TYPE_USER_ACTIVITY, \
     NOTIFICATION_TYPE_COMPLIANCE, MALWARE_SCAN_ES_TYPE,CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT
 
 
@@ -120,6 +120,62 @@ class VulnerabilityNotification(Notification):
 
     def __repr__(self):
         return "<VulnerabilityNotification {}>".format(self.id)
+
+
+class SecretNotification(Notification):
+    id = db.Column(db.Integer, primary_key=True)
+
+    integration_id = db.Column(db.Integer, db.ForeignKey('integration.id'), nullable=False)
+    integration = db.relationship('Integration', backref=db.backref('secret_notifications', lazy=True))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('secret_notifications', lazy=True))
+    error_msg = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (UniqueConstraint('alert_level', 'integration_id', name='secret_notification_constraint'),)
+    secret_doc_fields_map = {
+        "LayerID": "Layer ID", "RuleName": "Rule Name", "PartToMatch": "Part to Match", "Match": "Match","scan_id": "Scan ID",
+        "Regex": "Regex", "Severity": "Severity","container_image": "Container image", "@timestamp": "@timestamp",
+        "container_name": "Container Name", "node_name": "Node Name", "kubernetes_cluster_name": "Kubernetes Cluster Name",
+        "image_id": "Image ID", "node_type": "Node Type", "registry_id": "Registry ID", "MatchFromByte": "match from byte",
+        "MatchToByte": "match to byte", "MatchedContents":"Matched Contents","host_name": "Host Name",
+        "kubernetes_cluster_name": "Kubernetes Cluster Name", "masked": "masked", "CompleteFilename" : "Complete File Name", "MetaRules": "Meta Rules", "Summary": "Summary", "Class": "Class",
+        "SeverityScore": "Severity Score", "Severity": "Severity" , "PrintBufferStartIndex": "Print Buffer Start Index" }
+
+    def pretty_print(self):
+        conf = self.integration.pretty_print()
+        filters = self.filters
+        if not filters:
+            filters = {}
+        conf.update({
+            "id": self.id,
+            "alert_level": self.alert_level,
+            "duration_in_mins": self.duration_in_mins,
+            "user_id": self.user_id,
+            "error_msg": self.error_msg,
+            "created_at": str(self.created_at),
+            "updated_at": str(self.updated_at),
+            "notification_type": NOTIFICATION_TYPE_SECRET,
+            "filters": filters,
+        })
+        return conf
+
+    @classmethod
+    def format_content(cls, contents):
+        if len(contents) > 1:
+            return {"contents": contents, "dump_indent": 4, "prefix": "Secret", "iteration_prefix": "Secret #{}",
+                    "doc_fields_map": cls.secret_doc_fields_map}
+        else:
+            return {"contents": contents, "dump_indent": 4, "prefix": "Secret", "iteration_prefix": "",
+                    "doc_fields_map": cls.secret_doc_fields_map}
+
+    def send(self, contents, **kwargs):
+        self.integration.send(self.format_content(contents), summary="Deepfence - Secret Subscription",
+                              notification_id=kwargs["notification_id"], resource_type=SECRET_SCAN_ES_TYPE)
+
+    def __repr__(self):
+        return "<SecretNotification {}>".format(self.id)
+
 
 class MalwareNotification(Notification):
     id = db.Column(db.Integer, primary_key=True)

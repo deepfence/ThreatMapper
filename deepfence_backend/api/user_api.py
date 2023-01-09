@@ -17,7 +17,7 @@ from models.user import User, Role, Company, Invite, PasswordReset
 from models.user_activity_log import UserActivityLog
 from collections import defaultdict
 from models.integration import Integration
-from models.notification import VulnerabilityNotification, MalwareNotification, UserActivityNotification, ComplianceReportNotification, \
+from models.notification import VulnerabilityNotification, MalwareNotification, SecretNotification, UserActivityNotification, ComplianceReportNotification, \
     CloudtrailAlertNotification
 from utils.common import password_policy_check, unique_execution_id, \
     mask_url, mask_api_key
@@ -1389,6 +1389,9 @@ class IntegrationView(MethodView):
             for notif in MalwareNotification.query.filter(
                     MalwareNotification.user_id.in_(active_user_ids)).all():
                 response[notif.integration.integration_type].append(notif.pretty_print())
+            for notif in SecretNotification.query.filter(
+                    SecretNotification.user_id.in_(active_user_ids)).all():
+                response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in UserActivityNotification.query.filter(
                     UserActivityNotification.user_id.in_(active_user_ids)).all():
                 response[notif.integration.integration_type].append(notif.pretty_print())
@@ -1530,6 +1533,8 @@ class IntegrationView(MethodView):
             notification = VulnerabilityNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_MALWARE:
             notification = MalwareNotification.query.filter_by(id=id).one_or_none()
+        elif notification_type == NOTIFICATION_TYPE_SECRET:
+                    notification = SecretNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             notification = UserActivityNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_COMPLIANCE:
@@ -2092,6 +2097,8 @@ class IntegrationView(MethodView):
             create_notification(VulnerabilityNotification)
         if notification_type == NOTIFICATION_TYPE_MALWARE:
             create_notification(MalwareNotification)
+        if notification_type == NOTIFICATION_TYPE_SECRET:
+            create_notification(SecretNotification)
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             create_notification(UserActivityNotification)
         elif notification_type == NOTIFICATION_TYPE_COMPLIANCE:
