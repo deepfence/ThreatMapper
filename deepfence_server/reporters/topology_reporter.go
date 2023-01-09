@@ -14,7 +14,9 @@ type neo4jTopologyReporter struct {
 
 func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
 
-	r, err := tx.Run("MATCH (n:Node) -[r:CONNECTS]-> (m:Node) return n.cloud_provider, n.cloud_region, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid", nil)
+	r, err := tx.Run(`
+	MATCH (n:Node) -[r:CONNECTS]-> (m:Node) 
+	RETURN n.cloud_provider, case when coalesce(n.kubernetes_cluster_name, "") = "" THEN n.cloud_region ELSE n.kubernetes_cluster_name END, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid`, nil)
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -76,7 +78,7 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]stri
 
 func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[string][]string, error) {
 	res := map[string][]string{}
-	r, err := tx.Run("MATCH (n:Node) WHERE n.cloud_provider IN $providers RETURN n.cloud_provider, n.cloud_region", map[string]interface{}{"providers": cloud_provider})
+	r, err := tx.Run("MATCH (n:Node) WHERE n.kubernetes_cluster_name IS NULL AND n.cloud_provider IN $providers RETURN n.cloud_provider, n.cloud_region", map[string]interface{}{"providers": cloud_provider})
 
 	if err != nil {
 		return res, err
@@ -300,7 +302,7 @@ func (nc *neo4jTopologyReporter) GetGraph(ctx context.Context, cloud_filter, reg
 	if err != nil {
 		return res, err
 	}
-	res.Kubernetes, err = nc.getCloudKubernetes(tx, kubernetes_filter)
+	res.Kubernetes, err = nc.getCloudKubernetes(tx, cloud_filter)
 	if err != nil {
 		return res, err
 	}
