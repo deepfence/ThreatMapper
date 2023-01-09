@@ -149,6 +149,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     number = duration.get("duration", {}).get('number')
     time_unit = duration.get("duration", {}).get('time_unit')
     no_node_filters_set = False
+    
     if not filters:
         filters = {"type": node_type}
     elif not filters.get("type", None):
@@ -254,8 +255,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 aggs_response = ESConn.aggregation_helper(
                     CVE_INDEX, {**{"type": CVE_ES_TYPE}, **filters }, aggs, number, time_unit, None
                 )
-
-
+                
                 if "aggregations" in aggs_response:
                     for image_aggr in aggs_response["aggregations"]["cve_container_image"]["buckets"]:
                         latest_scan_id = ""
@@ -473,6 +473,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                     global_hits.extend(hits)
             else:
                 and_terms_per_batch = copy.deepcopy(and_terms)
+                and_terms_per_batch.append({'term': {'node_type.keyword': node_type}})
 
                 query_body = {
                     "query": {"bool": {"must": and_terms_per_batch}}, "sort": [{"@timestamp": {"order": "desc"}}],
