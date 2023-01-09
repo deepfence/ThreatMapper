@@ -454,12 +454,14 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     filters_cve_scan = {"action": "COMPLETED"}
     filters["type"] = CVE_ES_TYPE
     node_filters_for_cve_scan_index = {}
+    
 
     if node_filters:
         node_filters_for_cve_index, node_filters_for_cve_scan_index = filter_node_for_vulnerabilities(node_filters)
         if node_filters_for_cve_index:
             filters = {**filters, **node_filters_for_cve_index}
             filters_cve_scan = {**filters_cve_scan, **node_filters_for_cve_scan_index}
+            
     and_terms = []
     for key, value in filters.items():
         if key == "image_name_with_tag":
@@ -468,6 +470,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             value = [value]
         if value:
             and_terms.append({"terms": {key + ".keyword": value}})
+            
 
     for key, value in resource.items():
         if type(value) is not list:
@@ -484,6 +487,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             number, time_unit, rounding_time_unit)}}})
 
     query_body = {"query": {"bool": {"must": and_terms}}, "sort": [{"@timestamp": {"order": "desc"}}]}
+    
 
 
     filters_applied = {**filters_applied, **resource}
@@ -558,7 +562,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
 
     cve_table_html = ""
     active_node_images_count = get_active_node_images_count(node_filters)
-    node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE] if i in df.node_type.unique()]
+    node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER] if i in df.node_type.unique()]
     for node_type in node_types:
         for severity_type in severity_types:
             count = int(
