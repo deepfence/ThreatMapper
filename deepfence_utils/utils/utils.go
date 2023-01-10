@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/mail"
@@ -146,4 +147,65 @@ func ToMap[T any](c T) map[string]interface{} {
 	}
 
 	return bb
+}
+
+// Convert map[string]interface{} into structs
+// e.g:
+//
+//	type Titi struct {
+//		Tata string `json:"tata"`
+//	}
+//
+//	type Toto struct {
+//		Foo string `json:"foo"`
+//		Bar int    `json:"bar"`
+//		Ta  Titi   `json:"ta"`
+//		Tas []Titi `json:"tas"`
+//	}
+//
+// m := map[string]interface{}{"foo": "toto", "bar": 42, "ta": map[string]interface{}{"tata": "ok"},
+//
+//	"tas": []map[string]interface{}{{"tata": "ok2"}, {"tata": "ok1"}}}
+//
+// var t Toto
+// FromMap(m, &t)
+func FromMap(bb map[string]interface{}, c interface{}) {
+	v := reflect.Indirect(reflect.ValueOf(c))
+	t := v.Type()
+
+	for i := 0; i < t.NumField(); i++ {
+		data, has := bb[t.Field(i).Tag.Get("json")]
+		if !has {
+			continue
+		}
+		if t.Field(i).Tag.Get("nested_json") == "true" {
+			tmp := map[string]interface{}{}
+			json.Unmarshal([]byte(data.(string)), &tmp)
+			data = tmp
+		}
+		if t.Field(i).Type.Kind() == reflect.Slice {
+			slice, ok := data.([]map[string]interface{})
+			if !ok {
+				continue
+			}
+			tmp := reflect.MakeSlice(t.Field(i).Type, 0, len(slice))
+			for j := range slice {
+				tmp2 := reflect.New(t.Field(i).Type.Elem())
+				FromMap(slice[j], tmp2.Interface())
+				tmp = reflect.Append(tmp, reflect.Indirect(tmp2))
+			}
+			v.Field(i).Set(tmp)
+		} else if t.Field(i).Type.Kind() == reflect.Struct {
+			struc, ok := data.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			tmp := reflect.New(t.Field(i).Type)
+			FromMap(struc, tmp.Interface())
+			v.Field(i).Set(reflect.Indirect(tmp))
+		} else {
+			vv := reflect.ValueOf(data).Convert(t.Field(i).Type)
+			v.Field(i).Set(vv)
+		}
+	}
 }

@@ -78,7 +78,11 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]stri
 
 func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[string][]string, error) {
 	res := map[string][]string{}
-	r, err := tx.Run("MATCH (n:Node) WHERE n.kubernetes_cluster_name IS NULL AND n.cloud_provider IN $providers RETURN n.cloud_provider, n.cloud_region", map[string]interface{}{"providers": cloud_provider})
+	r, err := tx.Run(`
+		MATCH (n:Node) 
+		WHERE n.kubernetes_cluster_name = "" 
+		AND n.cloud_provider IN $providers 
+		RETURN n.cloud_provider, n.cloud_region`, map[string]interface{}{"providers": cloud_provider})
 
 	if err != nil {
 		return res, err
