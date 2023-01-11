@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -12,37 +13,13 @@ import (
 
 type CloudComplianceIngester struct{}
 
-type CloudComplianceDoc struct {
-	DocId               string `json:"doc_id"`
-	Timestamp           string `json:"@timestamp"`
-	Count               int    `json:"count,omitempty"`
-	Reason              string `json:"reason"`
-	Resource            string `json:"resource"`
-	Status              string `json:"status"`
-	Region              string `json:"region"`
-	AccountID           string `json:"account_id"`
-	Group               string `json:"group"`
-	Service             string `json:"service"`
-	Title               string `json:"title"`
-	ComplianceCheckType string `json:"compliance_check_type"`
-	CloudProvider       string `json:"cloud_provider"`
-	NodeName            string `json:"node_name"`
-	NodeID              string `json:"node_id"`
-	ScanID              string `json:"scan_id"`
-	Masked              string `json:"masked"`
-	Type                string `json:"type"`
-	ControlID           string `json:"control_id"`
-	Description         string `json:"description"`
-	Severity            string `json:"severity"`
-}
-
-func NewCloudComplianceIngester() KafkaIngester[[]ComplianceDoc] {
-	return &ComplianceIngester{}
+func NewCloudComplianceIngester() KafkaIngester[[]ingesters.CloudCompliance] {
+	return &CloudComplianceIngester{}
 }
 
 func (tc *CloudComplianceIngester) Ingest(
 	ctx context.Context,
-	cs []CloudComplianceDoc,
+	cs []ingesters.CloudCompliance,
 	ingestC chan *kgo.Record,
 ) error {
 

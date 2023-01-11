@@ -23,6 +23,6 @@ do
   sleep 5
 done
 
-sed -i "s/https:\/\/petstore.swagger.io\/v2\/swagger.json/\/deepfence\/openapi-docs/g" /usr/local/share/swagger-ui/swagger-initializer.js
+sed -i "s/https:\/\/petstore.swagger.io\/v2\/swagger.json/\/deepfence\/openapi.json/g" /usr/local/share/swagger-ui/swagger-initializer.js
 
 exec "$@"

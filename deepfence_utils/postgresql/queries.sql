@@ -92,7 +92,8 @@ SELECT users.id,
        users.is_active,
        users.password_invalidated,
        users.created_at,
-       users.updated_at
+       users.updated_at,
+       company.namespace as company_namespace
 FROM users
          INNER JOIN role ON role.id = users.role_id
          INNER JOIN company ON company.id = users.company_id

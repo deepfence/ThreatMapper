@@ -32,7 +32,7 @@ import (
 )
 
 func main() {
-    modelApiAuthRequest := *openapiclient.NewModelApiAuthRequest() // ModelApiAuthRequest |  (optional)
+    modelApiAuthRequest := *openapiclient.NewModelApiAuthRequest("ApiToken_example") // ModelApiAuthRequest |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
@@ -159,7 +159,7 @@ import (
 )
 
 func main() {
-    modelLoginRequest := *openapiclient.NewModelLoginRequest() // ModelLoginRequest |  (optional)
+    modelLoginRequest := *openapiclient.NewModelLoginRequest("Email_example", "Password_example") // ModelLoginRequest |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)

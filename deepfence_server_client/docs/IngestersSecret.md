@@ -4,27 +4,19 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Timestamp** | Pointer to **string** |  | [optional] 
-**AccountId** | Pointer to **string** |  | [optional] 
-**CloudProvider** | Pointer to **string** |  | [optional] 
-**ComplianceCheckType** | Pointer to **string** |  | [optional] 
-**ControlId** | Pointer to **string** |  | [optional] 
-**Count** | Pointer to **int32** |  | [optional] 
-**Description** | Pointer to **string** |  | [optional] 
-**DocId** | Pointer to **string** |  | [optional] 
-**Group** | Pointer to **string** |  | [optional] 
+**Timestamp** | Pointer to **time.Time** |  | [optional] 
+**ImageLayerId** | Pointer to **string** |  | [optional] 
+**Match** | Pointer to [**IngestersSecretMatch**](IngestersSecretMatch.md) |  | [optional] 
+**Rule** | Pointer to [**IngestersSecretRule**](IngestersSecretRule.md) |  | [optional] 
+**Severity** | Pointer to [**IngestersSecretSeverity**](IngestersSecretSeverity.md) |  | [optional] 
+**ContainerName** | Pointer to **string** |  | [optional] 
+**HostName** | Pointer to **string** |  | [optional] 
+**KubernetesClusterName** | Pointer to **string** |  | [optional] 
 **Masked** | Pointer to **string** |  | [optional] 
 **NodeId** | Pointer to **string** |  | [optional] 
 **NodeName** | Pointer to **string** |  | [optional] 
-**Reason** | Pointer to **string** |  | [optional] 
-**Region** | Pointer to **string** |  | [optional] 
-**Resource** | Pointer to **string** |  | [optional] 
+**NodeType** | Pointer to **string** |  | [optional] 
 **ScanId** | Pointer to **string** |  | [optional] 
-**Service** | Pointer to **string** |  | [optional] 
-**Severity** | Pointer to **string** |  | [optional] 
-**Status** | Pointer to **string** |  | [optional] 
-**Title** | Pointer to **string** |  | [optional] 
-**Type** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
@@ -47,20 +39,20 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetTimestamp
 
-`func (o *IngestersSecret) GetTimestamp() string`
+`func (o *IngestersSecret) GetTimestamp() time.Time`
 
 GetTimestamp returns the Timestamp field if non-nil, zero value otherwise.
 
 ### GetTimestampOk
 
-`func (o *IngestersSecret) GetTimestampOk() (*string, bool)`
+`func (o *IngestersSecret) GetTimestampOk() (*time.Time, bool)`
 
 GetTimestampOk returns a tuple with the Timestamp field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetTimestamp
 
-`func (o *IngestersSecret) SetTimestamp(v string)`
+`func (o *IngestersSecret) SetTimestamp(v time.Time)`
 
 SetTimestamp sets Timestamp field to given value.
 
@@ -70,205 +62,180 @@ SetTimestamp sets Timestamp field to given value.
 
 HasTimestamp returns a boolean if a field has been set.
 
-### GetAccountId
+### GetImageLayerId
 
-`func (o *IngestersSecret) GetAccountId() string`
+`func (o *IngestersSecret) GetImageLayerId() string`
 
-GetAccountId returns the AccountId field if non-nil, zero value otherwise.
+GetImageLayerId returns the ImageLayerId field if non-nil, zero value otherwise.
 
-### GetAccountIdOk
+### GetImageLayerIdOk
 
-`func (o *IngestersSecret) GetAccountIdOk() (*string, bool)`
+`func (o *IngestersSecret) GetImageLayerIdOk() (*string, bool)`
 
-GetAccountIdOk returns a tuple with the AccountId field if it's non-nil, zero value otherwise
+GetImageLayerIdOk returns a tuple with the ImageLayerId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetAccountId
+### SetImageLayerId
 
-`func (o *IngestersSecret) SetAccountId(v string)`
+`func (o *IngestersSecret) SetImageLayerId(v string)`
 
-SetAccountId sets AccountId field to given value.
+SetImageLayerId sets ImageLayerId field to given value.
 
-### HasAccountId
+### HasImageLayerId
 
-`func (o *IngestersSecret) HasAccountId() bool`
+`func (o *IngestersSecret) HasImageLayerId() bool`
 
-HasAccountId returns a boolean if a field has been set.
+HasImageLayerId returns a boolean if a field has been set.
 
-### GetCloudProvider
+### GetMatch
 
-`func (o *IngestersSecret) GetCloudProvider() string`
+`func (o *IngestersSecret) GetMatch() IngestersSecretMatch`
 
-GetCloudProvider returns the CloudProvider field if non-nil, zero value otherwise.
+GetMatch returns the Match field if non-nil, zero value otherwise.
 
-### GetCloudProviderOk
+### GetMatchOk
 
-`func (o *IngestersSecret) GetCloudProviderOk() (*string, bool)`
+`func (o *IngestersSecret) GetMatchOk() (*IngestersSecretMatch, bool)`
 
-GetCloudProviderOk returns a tuple with the CloudProvider field if it's non-nil, zero value otherwise
+GetMatchOk returns a tuple with the Match field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetCloudProvider
+### SetMatch
 
-`func (o *IngestersSecret) SetCloudProvider(v string)`
+`func (o *IngestersSecret) SetMatch(v IngestersSecretMatch)`
 
-SetCloudProvider sets CloudProvider field to given value.
+SetMatch sets Match field to given value.
 
-### HasCloudProvider
+### HasMatch
 
-`func (o *IngestersSecret) HasCloudProvider() bool`
+`func (o *IngestersSecret) HasMatch() bool`
 
-HasCloudProvider returns a boolean if a field has been set.
+HasMatch returns a boolean if a field has been set.
 
-### GetComplianceCheckType
+### GetRule
 
-`func (o *IngestersSecret) GetComplianceCheckType() string`
+`func (o *IngestersSecret) GetRule() IngestersSecretRule`
 
-GetComplianceCheckType returns the ComplianceCheckType field if non-nil, zero value otherwise.
+GetRule returns the Rule field if non-nil, zero value otherwise.
 
-### GetComplianceCheckTypeOk
+### GetRuleOk
 
-`func (o *IngestersSecret) GetComplianceCheckTypeOk() (*string, bool)`
+`func (o *IngestersSecret) GetRuleOk() (*IngestersSecretRule, bool)`
 
-GetComplianceCheckTypeOk returns a tuple with the ComplianceCheckType field if it's non-nil, zero value otherwise
+GetRuleOk returns a tuple with the Rule field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetComplianceCheckType
+### SetRule
 
-`func (o *IngestersSecret) SetComplianceCheckType(v string)`
+`func (o *IngestersSecret) SetRule(v IngestersSecretRule)`
 
-SetComplianceCheckType sets ComplianceCheckType field to given value.
+SetRule sets Rule field to given value.
 
-### HasComplianceCheckType
+### HasRule
 
-`func (o *IngestersSecret) HasComplianceCheckType() bool`
+`func (o *IngestersSecret) HasRule() bool`
 
-HasComplianceCheckType returns a boolean if a field has been set.
+HasRule returns a boolean if a field has been set.
 
-### GetControlId
+### GetSeverity
 
-`func (o *IngestersSecret) GetControlId() string`
+`func (o *IngestersSecret) GetSeverity() IngestersSecretSeverity`
 
-GetControlId returns the ControlId field if non-nil, zero value otherwise.
+GetSeverity returns the Severity field if non-nil, zero value otherwise.
 
-### GetControlIdOk
+### GetSeverityOk
 
-`func (o *IngestersSecret) GetControlIdOk() (*string, bool)`
+`func (o *IngestersSecret) GetSeverityOk() (*IngestersSecretSeverity, bool)`
 
-GetControlIdOk returns a tuple with the ControlId field if it's non-nil, zero value otherwise
+GetSeverityOk returns a tuple with the Severity field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetControlId
+### SetSeverity
 
-`func (o *IngestersSecret) SetControlId(v string)`
+`func (o *IngestersSecret) SetSeverity(v IngestersSecretSeverity)`
 
-SetControlId sets ControlId field to given value.
+SetSeverity sets Severity field to given value.
 
-### HasControlId
+### HasSeverity
 
-`func (o *IngestersSecret) HasControlId() bool`
+`func (o *IngestersSecret) HasSeverity() bool`
 
-HasControlId returns a boolean if a field has been set.
+HasSeverity returns a boolean if a field has been set.
 
-### GetCount
+### GetContainerName
 
-`func (o *IngestersSecret) GetCount() int32`
+`func (o *IngestersSecret) GetContainerName() string`
 
-GetCount returns the Count field if non-nil, zero value otherwise.
+GetContainerName returns the ContainerName field if non-nil, zero value otherwise.
 
-### GetCountOk
+### GetContainerNameOk
 
-`func (o *IngestersSecret) GetCountOk() (*int32, bool)`
+`func (o *IngestersSecret) GetContainerNameOk() (*string, bool)`
 
-GetCountOk returns a tuple with the Count field if it's non-nil, zero value otherwise
+GetContainerNameOk returns a tuple with the ContainerName field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetCount
+### SetContainerName
 
-`func (o *IngestersSecret) SetCount(v int32)`
+`func (o *IngestersSecret) SetContainerName(v string)`
 
-SetCount sets Count field to given value.
+SetContainerName sets ContainerName field to given value.
 
-### HasCount
+### HasContainerName
 
-`func (o *IngestersSecret) HasCount() bool`
+`func (o *IngestersSecret) HasContainerName() bool`
 
-HasCount returns a boolean if a field has been set.
+HasContainerName returns a boolean if a field has been set.
 
-### GetDescription
+### GetHostName
 
-`func (o *IngestersSecret) GetDescription() string`
+`func (o *IngestersSecret) GetHostName() string`
 
-GetDescription returns the Description field if non-nil, zero value otherwise.
+GetHostName returns the HostName field if non-nil, zero value otherwise.
 
-### GetDescriptionOk
+### GetHostNameOk
 
-`func (o *IngestersSecret) GetDescriptionOk() (*string, bool)`
+`func (o *IngestersSecret) GetHostNameOk() (*string, bool)`
 
-GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
+GetHostNameOk returns a tuple with the HostName field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetDescription
+### SetHostName
 
-`func (o *IngestersSecret) SetDescription(v string)`
+`func (o *IngestersSecret) SetHostName(v string)`
 
-SetDescription sets Description field to given value.
+SetHostName sets HostName field to given value.
 
-### HasDescription
+### HasHostName
 
-`func (o *IngestersSecret) HasDescription() bool`
+`func (o *IngestersSecret) HasHostName() bool`
 
-HasDescription returns a boolean if a field has been set.
+HasHostName returns a boolean if a field has been set.
 
-### GetDocId
+### GetKubernetesClusterName
 
-`func (o *IngestersSecret) GetDocId() string`
+`func (o *IngestersSecret) GetKubernetesClusterName() string`
 
-GetDocId returns the DocId field if non-nil, zero value otherwise.
+GetKubernetesClusterName returns the KubernetesClusterName field if non-nil, zero value otherwise.
 
-### GetDocIdOk
+### GetKubernetesClusterNameOk
 
-`func (o *IngestersSecret) GetDocIdOk() (*string, bool)`
+`func (o *IngestersSecret) GetKubernetesClusterNameOk() (*string, bool)`
 
-GetDocIdOk returns a tuple with the DocId field if it's non-nil, zero value otherwise
+GetKubernetesClusterNameOk returns a tuple with the KubernetesClusterName field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetDocId
+### SetKubernetesClusterName
 
-`func (o *IngestersSecret) SetDocId(v string)`
+`func (o *IngestersSecret) SetKubernetesClusterName(v string)`
 
-SetDocId sets DocId field to given value.
+SetKubernetesClusterName sets KubernetesClusterName field to given value.
 
-### HasDocId
+### HasKubernetesClusterName
 
-`func (o *IngestersSecret) HasDocId() bool`
+`func (o *IngestersSecret) HasKubernetesClusterName() bool`
 
-HasDocId returns a boolean if a field has been set.
-
-### GetGroup
-
-`func (o *IngestersSecret) GetGroup() string`
-
-GetGroup returns the Group field if non-nil, zero value otherwise.
-
-### GetGroupOk
-
-`func (o *IngestersSecret) GetGroupOk() (*string, bool)`
-
-GetGroupOk returns a tuple with the Group field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetGroup
-
-`func (o *IngestersSecret) SetGroup(v string)`
-
-SetGroup sets Group field to given value.
-
-### HasGroup
-
-`func (o *IngestersSecret) HasGroup() bool`
-
-HasGroup returns a boolean if a field has been set.
+HasKubernetesClusterName returns a boolean if a field has been set.
 
 ### GetMasked
 
@@ -345,80 +312,30 @@ SetNodeName sets NodeName field to given value.
 
 HasNodeName returns a boolean if a field has been set.
 
-### GetReason
+### GetNodeType
 
-`func (o *IngestersSecret) GetReason() string`
+`func (o *IngestersSecret) GetNodeType() string`
 
-GetReason returns the Reason field if non-nil, zero value otherwise.
+GetNodeType returns the NodeType field if non-nil, zero value otherwise.
 
-### GetReasonOk
+### GetNodeTypeOk
 
-`func (o *IngestersSecret) GetReasonOk() (*string, bool)`
+`func (o *IngestersSecret) GetNodeTypeOk() (*string, bool)`
 
-GetReasonOk returns a tuple with the Reason field if it's non-nil, zero value otherwise
+GetNodeTypeOk returns a tuple with the NodeType field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetReason
+### SetNodeType
 
-`func (o *IngestersSecret) SetReason(v string)`
+`func (o *IngestersSecret) SetNodeType(v string)`
 
-SetReason sets Reason field to given value.
+SetNodeType sets NodeType field to given value.
 
-### HasReason
+### HasNodeType
 
-`func (o *IngestersSecret) HasReason() bool`
+`func (o *IngestersSecret) HasNodeType() bool`
 
-HasReason returns a boolean if a field has been set.
-
-### GetRegion
-
-`func (o *IngestersSecret) GetRegion() string`
-
-GetRegion returns the Region field if non-nil, zero value otherwise.
-
-### GetRegionOk
-
-`func (o *IngestersSecret) GetRegionOk() (*string, bool)`
-
-GetRegionOk returns a tuple with the Region field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetRegion
-
-`func (o *IngestersSecret) SetRegion(v string)`
-
-SetRegion sets Region field to given value.
-
-### HasRegion
-
-`func (o *IngestersSecret) HasRegion() bool`
-
-HasRegion returns a boolean if a field has been set.
-
-### GetResource
-
-`func (o *IngestersSecret) GetResource() string`
-
-GetResource returns the Resource field if non-nil, zero value otherwise.
-
-### GetResourceOk
-
-`func (o *IngestersSecret) GetResourceOk() (*string, bool)`
-
-GetResourceOk returns a tuple with the Resource field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetResource
-
-`func (o *IngestersSecret) SetResource(v string)`
-
-SetResource sets Resource field to given value.
-
-### HasResource
-
-`func (o *IngestersSecret) HasResource() bool`
-
-HasResource returns a boolean if a field has been set.
+HasNodeType returns a boolean if a field has been set.
 
 ### GetScanId
 
@@ -444,131 +361,6 @@ SetScanId sets ScanId field to given value.
 `func (o *IngestersSecret) HasScanId() bool`
 
 HasScanId returns a boolean if a field has been set.
-
-### GetService
-
-`func (o *IngestersSecret) GetService() string`
-
-GetService returns the Service field if non-nil, zero value otherwise.
-
-### GetServiceOk
-
-`func (o *IngestersSecret) GetServiceOk() (*string, bool)`
-
-GetServiceOk returns a tuple with the Service field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetService
-
-`func (o *IngestersSecret) SetService(v string)`
-
-SetService sets Service field to given value.
-
-### HasService
-
-`func (o *IngestersSecret) HasService() bool`
-
-HasService returns a boolean if a field has been set.
-
-### GetSeverity
-
-`func (o *IngestersSecret) GetSeverity() string`
-
-GetSeverity returns the Severity field if non-nil, zero value otherwise.
-
-### GetSeverityOk
-
-`func (o *IngestersSecret) GetSeverityOk() (*string, bool)`
-
-GetSeverityOk returns a tuple with the Severity field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetSeverity
-
-`func (o *IngestersSecret) SetSeverity(v string)`
-
-SetSeverity sets Severity field to given value.
-
-### HasSeverity
-
-`func (o *IngestersSecret) HasSeverity() bool`
-
-HasSeverity returns a boolean if a field has been set.
-
-### GetStatus
-
-`func (o *IngestersSecret) GetStatus() string`
-
-GetStatus returns the Status field if non-nil, zero value otherwise.
-
-### GetStatusOk
-
-`func (o *IngestersSecret) GetStatusOk() (*string, bool)`
-
-GetStatusOk returns a tuple with the Status field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetStatus
-
-`func (o *IngestersSecret) SetStatus(v string)`
-
-SetStatus sets Status field to given value.
-
-### HasStatus
-
-`func (o *IngestersSecret) HasStatus() bool`
-
-HasStatus returns a boolean if a field has been set.
-
-### GetTitle
-
-`func (o *IngestersSecret) GetTitle() string`
-
-GetTitle returns the Title field if non-nil, zero value otherwise.
-
-### GetTitleOk
-
-`func (o *IngestersSecret) GetTitleOk() (*string, bool)`
-
-GetTitleOk returns a tuple with the Title field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetTitle
-
-`func (o *IngestersSecret) SetTitle(v string)`
-
-SetTitle sets Title field to given value.
-
-### HasTitle
-
-`func (o *IngestersSecret) HasTitle() bool`
-
-HasTitle returns a boolean if a field has been set.
-
-### GetType
-
-`func (o *IngestersSecret) GetType() string`
-
-GetType returns the Type field if non-nil, zero value otherwise.
-
-### GetTypeOk
-
-`func (o *IngestersSecret) GetTypeOk() (*string, bool)`
-
-GetTypeOk returns a tuple with the Type field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetType
-
-`func (o *IngestersSecret) SetType(v string)`
-
-SetType sets Type field to given value.
-
-### HasType
-
-`func (o *IngestersSecret) HasType() bool`
-
-HasType returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

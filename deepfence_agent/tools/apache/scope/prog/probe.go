@@ -110,30 +110,32 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 }
 
 func setControls() {
-	err := controls.RegisterControl(ctl.StartVulnerabilityScan, func(req ctl.StartVulnerabilityScanRequest) error {
-		log.Info("Start Vulnerability Scan")
-		//TODO
-		return nil
-	})
+	err := controls.RegisterControl(ctl.StartVulnerabilityScan,
+		func(req ctl.StartVulnerabilityScanRequest) error {
+			return host.StartVulnerabilityScan(req)
+		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
 	}
-	err = controls.RegisterControl(ctl.StartSecretScan, func(req ctl.StartSecretScanRequest) error {
-		return host.StartSecretsScan(req)
-	})
+	err = controls.RegisterControl(ctl.StartSecretScan,
+		func(req ctl.StartSecretScanRequest) error {
+			return host.StartSecretsScan(req)
+		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
 	}
-	err = controls.RegisterControl(ctl.StartComplianceScan, func(req ctl.StartComplianceScanRequest) error {
-		log.Info("Start Compliance Scan")
-		//TODO
-		return nil
-	})
-	err = controls.RegisterControl(ctl.StartMalwareScan, func(req ctl.StartMalwareScanRequest) error {
-		log.Info("Start Malware Scan")
-		//TODO
-		return nil
-	})
+	err = controls.RegisterControl(ctl.StartComplianceScan,
+		func(req ctl.StartComplianceScanRequest) error {
+			log.Info("Start Compliance Scan")
+			//TODO
+			return nil
+		})
+	err = controls.RegisterControl(ctl.StartMalwareScan,
+		func(req ctl.StartMalwareScanRequest) error {
+			log.Info("Start Malware Scan")
+			//TODO
+			return nil
+		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
 	}
@@ -247,12 +249,20 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			multiClients, err = appclient.NewOpenapiClient()
 			if err == nil {
 				break
-			} else if errors.Is(err, appclient.AuthError) {
+			} else if errors.Is(err, appclient.ConnError) {
 				log.Warnln("Failed to authenticate. Retrying...")
 				time.Sleep(authCheckPeriod)
 			} else {
 				log.Fatalf("Fatal: %v", err)
 			}
+		}
+		for {
+			err = multiClients.StartControlsWatching()
+			if err == nil {
+				break
+			}
+			log.Errorf("Failed to get init controls %v. Retrying...\n", err)
+			time.Sleep(authCheckPeriod)
 		}
 		defer multiClients.Stop()
 

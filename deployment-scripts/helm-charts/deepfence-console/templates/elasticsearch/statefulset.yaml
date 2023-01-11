@@ -1,0 +1,108 @@
+{{- if not .Values.saas_deployment }}
+{{- if and (eq "deepfence-es" .Values.db.elasticsearch.host) (eq "9200" .Values.db.elasticsearch.port) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: deepfence-es
+  labels:
+    app: deepfence-console
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    name: deepfence-es
+  namespace: {{ .Release.Namespace }}
+spec:
+  serviceName: deepfence-es
+  replicas: {{ .Values.elasticsearch.replicaCount }}
+  selector:
+    matchLabels:
+      name: deepfence-es
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        name: deepfence-es
+        app: deepfence-console
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - deepfence-es
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+      initContainers:
+        - name: init-sysctl
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          command: ["sysctl", "-w", "vm.max_map_count=262144"]
+      containers:
+        - name: deepfence-es
+          image: "{{ .Values.registry.imagePrefix }}{{ .Values.elasticsearch.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.elasticsearch.image.pullPolicy }}
+          env:
+            - name: DF_PROG_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: node.name
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: cluster.initial_master_nodes
+              value: deepfence-es-0
+            - name: discovery.seed_hosts
+              value: "deepfence-es"
+            - name: ES_MEM
+              value: "{{ .Values.elasticsearch.heapSize }}"
+          ports:
+            - containerPort: 9200
+              name: es
+            - containerPort: 9300
+              name: transport
+          livenessProbe:
+            tcpSocket:
+              port: transport
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.elasticsearch.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /data
+              name: deepfence-data
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - IPC_LOCK
+                - SYS_RESOURCE
+      {{- with .Values.elasticsearch.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.elasticsearch.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecretName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: false
+  volumeClaimTemplates:
+    - metadata:
+        name: deepfence-data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ .Values.volume.esStorage }}"
+        storageClassName: {{ .Values.volume.storageClass }}
+{{- end }}
+{{- end }}

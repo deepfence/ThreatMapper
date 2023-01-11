@@ -86,15 +86,31 @@ Class | Method | HTTP request | Description
 *CloudComplianceApi* | [**IngestCloudCompliances**](docs/CloudComplianceApi.md#ingestcloudcompliances) | **Post** /deepfence/ingest/cloud-compliance | Ingest Cloud Compliances
 *CloudResourcesApi* | [**IngestCloudResources**](docs/CloudResourcesApi.md#ingestcloudresources) | **Post** /deepfence/ingest/cloud-resources | Ingest Cloud resources
 *ComplianceApi* | [**IngestCompliances**](docs/ComplianceApi.md#ingestcompliances) | **Post** /deepfence/ingest/compliance | Ingest Compliances
-*ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Get** /deepfence/scan/start/compliance | Start Compliance Scan
-*ComplianceApi* | [**StopComplianceScan**](docs/ComplianceApi.md#stopcompliancescan) | **Get** /deepfence/scan/stop/compliance | Stop Compliance Scan
-*MalwareScanApi* | [**StartMalwareScan**](docs/MalwareScanApi.md#startmalwarescan) | **Get** /deepfence/scan/start/malware | Start Malware Scan
-*MalwareScanApi* | [**StopMalwareScan**](docs/MalwareScanApi.md#stopmalwarescan) | **Get** /deepfence/scan/stop/malware | Stop Malware Scan
+*ComplianceApi* | [**ListComplianceScan**](docs/ComplianceApi.md#listcompliancescan) | **Post** /deepfence/scan/list/compliance | Get Compliance Scans List
+*ComplianceApi* | [**ResultsComplianceScan**](docs/ComplianceApi.md#resultscompliancescan) | **Post** /deepfence/scan/results/compliance | Get Compliance Scans Results
+*ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Post** /deepfence/scan/start/compliance | Start Compliance Scan
+*ComplianceApi* | [**StatusComplianceScan**](docs/ComplianceApi.md#statuscompliancescan) | **Get** /deepfence/scan/status/compliance | Get Compliance Scan Status
+*ComplianceApi* | [**StopComplianceScan**](docs/ComplianceApi.md#stopcompliancescan) | **Post** /deepfence/scan/stop/compliance | Stop Compliance Scan
+*ControlsApi* | [**GetAgentControls**](docs/ControlsApi.md#getagentcontrols) | **Post** /deepfence/controls/agent | Fetch Agent Actions
+*ControlsApi* | [**GetAgentInitControls**](docs/ControlsApi.md#getagentinitcontrols) | **Post** /deepfence/controls/agent-init | Fetch Agent Init Actions
+*DiagnosisApi* | [**DiagnosticNotification**](docs/DiagnosisApi.md#diagnosticnotification) | **Get** /deepfence/diagnosis/notification | Get Diagnostic Notification
+*DiagnosisApi* | [**GenerateAgentDiagnosticLogs**](docs/DiagnosisApi.md#generateagentdiagnosticlogs) | **Post** /deepfence/diagnosis/agent-logs | Generate Agent Diagnostic Logs
+*DiagnosisApi* | [**GenerateConsoleDiagnosticLogs**](docs/DiagnosisApi.md#generateconsolediagnosticlogs) | **Post** /deepfence/diagnosis/console-logs | Generate Console Diagnostic Logs
+*DiagnosisApi* | [**GetDiagnosticLogs**](docs/DiagnosisApi.md#getdiagnosticlogs) | **Get** /deepfence/diagnosis/diagnostic-logs | Get Diagnostic Logs
+*MalwareScanApi* | [**ListMalwareScan**](docs/MalwareScanApi.md#listmalwarescan) | **Post** /deepfence/scan/list/malware | Get Malware Scans List
+*MalwareScanApi* | [**ResultsMalwareScan**](docs/MalwareScanApi.md#resultsmalwarescan) | **Post** /deepfence/scan/results/malware | Get Malware Scans Results
+*MalwareScanApi* | [**StartMalwareScan**](docs/MalwareScanApi.md#startmalwarescan) | **Post** /deepfence/scan/start/malware | Start Malware Scan
+*MalwareScanApi* | [**StatusMalwareScan**](docs/MalwareScanApi.md#statusmalwarescan) | **Get** /deepfence/scan/status/malware | Get Malware Scan Status
+*MalwareScanApi* | [**StopMalwareScan**](docs/MalwareScanApi.md#stopmalwarescan) | **Post** /deepfence/scan/stop/malware | Stop Malware Scan
+*SecretScanApi* | [**IngestSecretScanStatus**](docs/SecretScanApi.md#ingestsecretscanstatus) | **Post** /deepfence/ingest/secret-scan-logs | Ingest Secrets Scan Status
 *SecretScanApi* | [**IngestSecrets**](docs/SecretScanApi.md#ingestsecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
-*SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan) | **Get** /deepfence/scan/start/secret | Start Secret Scan
-*SecretScanApi* | [**StopSecretScan**](docs/SecretScanApi.md#stopsecretscan) | **Get** /deepfence/scan/stop/secret | Stop Secret Scan
-*ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Get** /deepfence/graph/threat | Get Threat Graph
-*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Get** /deepfence/graph/topology | Get Topology Graph
+*SecretScanApi* | [**ListSecretScan**](docs/SecretScanApi.md#listsecretscan) | **Post** /deepfence/scan/list/secret | Get Secret Scans List
+*SecretScanApi* | [**ResultsSecretScan**](docs/SecretScanApi.md#resultssecretscan) | **Post** /deepfence/scan/results/secret | Get Secret Scans Results
+*SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan) | **Post** /deepfence/scan/start/secret | Start Secret Scan
+*SecretScanApi* | [**StatusSecretScan**](docs/SecretScanApi.md#statussecretscan) | **Get** /deepfence/scan/status/secret | Get Secret Scan Status
+*SecretScanApi* | [**StopSecretScan**](docs/SecretScanApi.md#stopsecretscan) | **Post** /deepfence/scan/stop/secret | Stop Secret Scan
+*ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Post** /deepfence/graph/threat | Get Threat Graph
+*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Post** /deepfence/graph/topology | Get Topology Graph
 *TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/ingest/report | Ingest Topology Data
 *UserApi* | [**DeleteCurrentUser**](docs/UserApi.md#deletecurrentuser) | **Delete** /deepfence/user | Delete Current User
 *UserApi* | [**GetApiTokens**](docs/UserApi.md#getapitokens) | **Get** /deepfence/api-token | Get User&#39;s API Tokens
@@ -102,33 +118,58 @@ Class | Method | HTTP request | Description
 *UserApi* | [**RegisterUser**](docs/UserApi.md#registeruser) | **Post** /deepfence/user/register | Register User
 *UserApi* | [**UpdateCurrentUser**](docs/UserApi.md#updatecurrentuser) | **Put** /deepfence/user | Update Current User
 *VulnerabilityApi* | [**IngestVulnerabilities**](docs/VulnerabilityApi.md#ingestvulnerabilities) | **Post** /deepfence/ingest/vulnerabilities | Ingest Vulnerabilities
-*VulnerabilityApi* | [**StartVulnerabilityScan**](docs/VulnerabilityApi.md#startvulnerabilityscan) | **Get** /deepfence/scan/start/vulnerability | Start Vulnerability Scan
-*VulnerabilityApi* | [**StopVulnerabilityScan**](docs/VulnerabilityApi.md#stopvulnerabilityscan) | **Get** /deepfence/scan/stop/vulnerability | Stop Vulnerability Scan
+*VulnerabilityApi* | [**ListVulnerabilityScans**](docs/VulnerabilityApi.md#listvulnerabilityscans) | **Post** /deepfence/scan/list/vulnerability | Get Vulnerability Scans List
+*VulnerabilityApi* | [**ResultsVulnerabilityScans**](docs/VulnerabilityApi.md#resultsvulnerabilityscans) | **Post** /deepfence/scan/results/vulnerability | Get Vulnerability Scans Results
+*VulnerabilityApi* | [**StartVulnerabilityScan**](docs/VulnerabilityApi.md#startvulnerabilityscan) | **Post** /deepfence/scan/start/vulnerability | Start Vulnerability Scan
+*VulnerabilityApi* | [**StatusVulnerabilityScan**](docs/VulnerabilityApi.md#statusvulnerabilityscan) | **Get** /deepfence/scan/status/vulnerability | Get Vulnerability Scan Status
+*VulnerabilityApi* | [**StopVulnerabilityScan**](docs/VulnerabilityApi.md#stopvulnerabilityscan) | **Post** /deepfence/scan/stop/vulnerability | Stop Vulnerability Scan
 
 
 ## Documentation For Models
 
  - [ApiDocsBadRequestResponse](docs/ApiDocsBadRequestResponse.md)
  - [ApiDocsFailureResponse](docs/ApiDocsFailureResponse.md)
- - [ApiDocsRawReport](docs/ApiDocsRawReport.md)
+ - [ApiDocsGraphResult](docs/ApiDocsGraphResult.md)
  - [ControlsAction](docs/ControlsAction.md)
  - [ControlsAgentControls](docs/ControlsAgentControls.md)
- - [IngestersCloudComplianceDoc](docs/IngestersCloudComplianceDoc.md)
+ - [DetailedConnectionSummary](docs/DetailedConnectionSummary.md)
+ - [DetailedNodeSummary](docs/DetailedNodeSummary.md)
+ - [DetailedParent](docs/DetailedParent.md)
+ - [DiagnosisDiagnosticNotification](docs/DiagnosisDiagnosticNotification.md)
+ - [IngestersCloudCompliance](docs/IngestersCloudCompliance.md)
  - [IngestersCloudResource](docs/IngestersCloudResource.md)
- - [IngestersComplianceDoc](docs/IngestersComplianceDoc.md)
- - [IngestersDfVulnerabilityStruct](docs/IngestersDfVulnerabilityStruct.md)
+ - [IngestersCompliance](docs/IngestersCompliance.md)
  - [IngestersSecret](docs/IngestersSecret.md)
+ - [IngestersSecretMatch](docs/IngestersSecretMatch.md)
+ - [IngestersSecretRule](docs/IngestersSecretRule.md)
+ - [IngestersSecretScanStatus](docs/IngestersSecretScanStatus.md)
+ - [IngestersSecretSeverity](docs/IngestersSecretSeverity.md)
+ - [IngestersVulnerability](docs/IngestersVulnerability.md)
+ - [ModelAgentId](docs/ModelAgentId.md)
  - [ModelApiAuthRequest](docs/ModelApiAuthRequest.md)
+ - [ModelFetchWindow](docs/ModelFetchWindow.md)
  - [ModelLoginRequest](docs/ModelLoginRequest.md)
+ - [ModelRawReport](docs/ModelRawReport.md)
  - [ModelResponse](docs/ModelResponse.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
+ - [ModelScanInfo](docs/ModelScanInfo.md)
+ - [ModelScanListReq](docs/ModelScanListReq.md)
+ - [ModelScanListResp](docs/ModelScanListResp.md)
+ - [ModelScanResultsReq](docs/ModelScanResultsReq.md)
+ - [ModelScanResultsResp](docs/ModelScanResultsResp.md)
+ - [ModelScanStatusResp](docs/ModelScanStatusResp.md)
+ - [ModelScanTriggerReq](docs/ModelScanTriggerReq.md)
+ - [ModelScanTriggerResp](docs/ModelScanTriggerResp.md)
  - [ModelUser](docs/ModelUser.md)
  - [ModelUserRegisterRequest](docs/ModelUserRegisterRequest.md)
- - [ReportersConnectionSummary](docs/ReportersConnectionSummary.md)
+ - [ReportColumn](docs/ReportColumn.md)
+ - [ReportMetadataRow](docs/ReportMetadataRow.md)
+ - [ReportRow](docs/ReportRow.md)
+ - [ReportTable](docs/ReportTable.md)
  - [ReportersNodeInfo](docs/ReportersNodeInfo.md)
  - [ReportersProviderThreatGraph](docs/ReportersProviderThreatGraph.md)
- - [ReportersRenderedGraph](docs/ReportersRenderedGraph.md)
  - [ReportersThreatNodeInfo](docs/ReportersThreatNodeInfo.md)
+ - [ReportersTopologyFilters](docs/ReportersTopologyFilters.md)
 
 
 ## Documentation For Authorization

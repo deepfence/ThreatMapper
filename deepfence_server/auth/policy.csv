@@ -11,19 +11,30 @@ p, standard-user, all-users, read
 
 p, admin, scan, start
 p, admin, scan, stop
+p, admin, scan, read
 p, standard-user, scan, start
 p, standard-user, scan, stop
+p, standard-user, scan, read
+p, read-only-user, scan, read
 
 p, admin, scan-report, delete
 p, admin, scan-report, mask
 p, admin, scan-report, unmask
 p, admin, scan-report, ingest
+p, admin, scan-report, read
 p, standard-user, scan-report, mask
 p, standard-user, scan-report, unmask
 p, standard-user, scan-report, ingest
+p, standard-user, scan-report, read
+p, read-only-user, scan-report, read
 
 p, admin, agent-report, ingest
 p, standard-user, agent-report, ingest
 
 p, admin, cloud-report, ingest
 p, standard-user, cloud-report, ingest
+
+p, admin, diagnosis, generate
+p, standard-user, diagnosis, generate
+p, admin, diagnosis, read
+p, standard-user, diagnosis, read

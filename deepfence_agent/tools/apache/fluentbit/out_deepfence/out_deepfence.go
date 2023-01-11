@@ -100,8 +100,8 @@ func parseValue(value interface{}) interface{} {
 
 func Authenticate(url string, apiToken string) (string, string, error) {
 	var (
-		accessToken  *string
-		refreshToken *string
+		accessToken  string
+		refreshToken string
 	)
 	cfg := deepfenceAPI.NewConfiguration()
 	cfg.HTTPClient = hc
@@ -113,7 +113,7 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 
 	req := apiClient.AuthenticationApi.AuthToken(context.Background()).
 		ModelApiAuthRequest(
-			deepfenceAPI.ModelApiAuthRequest{ApiToken: &apiToken},
+			deepfenceAPI.ModelApiAuthRequest{ApiToken: apiToken},
 		)
 
 	resp, _, err := apiClient.AuthenticationApi.AuthTokenExecute(req)
@@ -123,19 +123,19 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 
 	accessToken = resp.GetData().AccessToken
 	refreshToken = resp.GetData().RefreshToken
-	if accessToken == nil || refreshToken == nil {
+	if accessToken == "" || refreshToken == "" {
 		return "", "", errors.New("auth tokens are nil: failed to authenticate")
 	}
 
 	log.Print("authenticated with console successfully")
 
-	return *accessToken, *refreshToken, nil
+	return accessToken, refreshToken, nil
 }
 
 func RefreshToken(url string, apiToken string) (string, string, error) {
 	var (
-		accessToken  *string
-		refreshToken *string
+		accessToken  string
+		refreshToken string
 	)
 	cfg := deepfenceAPI.NewConfiguration()
 	cfg.HTTPClient = hc
@@ -156,22 +156,30 @@ func RefreshToken(url string, apiToken string) (string, string, error) {
 
 	accessToken = resp.GetData().AccessToken
 	refreshToken = resp.GetData().RefreshToken
-	if accessToken == nil || refreshToken == nil {
+	if accessToken == "" || refreshToken == "" {
 		return "", "", errors.New("auth tokens are nil: failed to authenticate")
 	}
 
 	log.Print("refreshed tokens from console successfully")
 
-	return *accessToken, *refreshToken, nil
+	return accessToken, refreshToken, nil
 }
 
 func validateTokens(cfg Config) (Config, bool, error) {
 	if !utils.IsJWTExpired(cfg.AccessToken) {
 		return cfg, false, nil
 	} else {
-		access, refresh, err := RefreshToken(cfg.ConsoleURL, cfg.RefreshToken)
+		var (
+			access  string
+			refresh string
+			err     error
+		)
+		access, refresh, err = RefreshToken(cfg.ConsoleURL, cfg.RefreshToken)
 		if err != nil {
-			return cfg, false, err
+			access, refresh, err = Authenticate(cfg.ConsoleURL, cfg.Key)
+			if err != nil {
+				return cfg, false, err
+			}
 		}
 		cfg.AccessToken = access
 		cfg.RefreshToken = refresh
@@ -323,7 +331,8 @@ func FLBPluginFlushCtx(ctx, data unsafe.Pointer, length C.int, tag *C.char) int 
 	if resp.StatusCode == http.StatusBadGateway ||
 		resp.StatusCode == http.StatusServiceUnavailable ||
 		resp.StatusCode == http.StatusGatewayTimeout ||
-		resp.StatusCode == http.StatusTooManyRequests {
+		resp.StatusCode == http.StatusTooManyRequests ||
+		resp.StatusCode == http.StatusUnauthorized {
 		log.Printf("retry response code %s", resp.Status)
 		return output.FLB_RETRY
 	} else if resp.StatusCode != http.StatusOK {

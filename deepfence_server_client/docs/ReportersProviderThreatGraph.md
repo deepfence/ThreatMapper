@@ -4,16 +4,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ComplianceCount** | Pointer to **int32** |  | [optional] 
-**Resources** | Pointer to [**[]ReportersThreatNodeInfo**](ReportersThreatNodeInfo.md) |  | [optional] 
-**SecretsCount** | Pointer to **int32** |  | [optional] 
-**VulnerabilityCount** | Pointer to **int32** |  | [optional] 
+**ComplianceCount** | **int32** |  | 
+**Resources** | [**[]ReportersThreatNodeInfo**](ReportersThreatNodeInfo.md) |  | 
+**SecretsCount** | **int32** |  | 
+**VulnerabilityCount** | **int32** |  | 
 
 ## Methods
 
 ### NewReportersProviderThreatGraph
 
-`func NewReportersProviderThreatGraph() *ReportersProviderThreatGraph`
+`func NewReportersProviderThreatGraph(complianceCount int32, resources []ReportersThreatNodeInfo, secretsCount int32, vulnerabilityCount int32, ) *ReportersProviderThreatGraph`
 
 NewReportersProviderThreatGraph instantiates a new ReportersProviderThreatGraph object
 This constructor will assign default values to properties that have it defined,
@@ -47,11 +47,6 @@ and a boolean to check if the value has been set.
 
 SetComplianceCount sets ComplianceCount field to given value.
 
-### HasComplianceCount
-
-`func (o *ReportersProviderThreatGraph) HasComplianceCount() bool`
-
-HasComplianceCount returns a boolean if a field has been set.
 
 ### GetResources
 
@@ -72,11 +67,6 @@ and a boolean to check if the value has been set.
 
 SetResources sets Resources field to given value.
 
-### HasResources
-
-`func (o *ReportersProviderThreatGraph) HasResources() bool`
-
-HasResources returns a boolean if a field has been set.
 
 ### SetResourcesNil
 
@@ -107,11 +97,6 @@ and a boolean to check if the value has been set.
 
 SetSecretsCount sets SecretsCount field to given value.
 
-### HasSecretsCount
-
-`func (o *ReportersProviderThreatGraph) HasSecretsCount() bool`
-
-HasSecretsCount returns a boolean if a field has been set.
 
 ### GetVulnerabilityCount
 
@@ -132,11 +117,6 @@ and a boolean to check if the value has been set.
 
 SetVulnerabilityCount sets VulnerabilityCount field to given value.
 
-### HasVulnerabilityCount
-
-`func (o *ReportersProviderThreatGraph) HasVulnerabilityCount() bool`
-
-HasVulnerabilityCount returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

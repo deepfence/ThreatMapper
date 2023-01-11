@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import classnames from 'classnames';
 import { Route, Link, withRouter, Redirect } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import AWS_LOGO from '../../../images/AWS_logo_dark.png';
 import AZURE_LOGO from '../../../images/azure.png';
@@ -17,6 +17,7 @@ import { K8sTerraFormScript } from './k8s-scripts';
 
 import { AuthenticatedLayout } from '../layouts/AuthenticatedLayout';
 import NotificationToaster from '../common/notification-toaster/notification-toaster';
+import { breadcrumbChange } from '../../actions';
 
 const menu = [
   {
@@ -58,6 +59,16 @@ export const ComplianceViewHome = withRouter(match => {
       isToasterVisible: state.get('isToasterVisible'),
     };
   })
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(
+      breadcrumbChange([
+        { name: 'Posture'}
+      ])
+    )
+  }, []);
 
   return (
     <AuthenticatedLayout>

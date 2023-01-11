@@ -10,14 +10,13 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/twmb/franz-go/pkg/kgo"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 
-	lo "log"
+	stdlog "log"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -29,6 +28,7 @@ var (
 	verbosity             = flag.String("verbose", "info", "log level")
 	exportOpenapiDocsPath = flag.String("export-api-docs-path", "", "export openapi documentation to file path")
 	serveOpenapiDocs      = flag.Bool("api-docs", true, "serve openapi documentation")
+	enableHttpLogs        = flag.Bool("http-logs", false, "enable request logs")
 	kafkaBrokers          string
 )
 
@@ -63,26 +63,28 @@ func main() {
 		}
 	}
 
-	r := chi.NewRouter()
-	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{
-		Logger: lo.New(
-			&log.LogInfoWriter{},
-			"Http",
-			0),
-		NoColor: true}),
-	)
-	r.Use(middleware.Recoverer)
+	mux := chi.NewRouter()
+	mux.Use(middleware.Recoverer)
+	if *enableHttpLogs {
+		mux.Use(
+			middleware.RequestLogger(
+				&middleware.DefaultLogFormatter{
+					Logger:  stdlog.New(&log.LogInfoWriter{}, "", 0),
+					NoColor: true},
+			),
+		)
+	}
 
 	ingestC := make(chan *kgo.Record, 10000)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go startKafkaProducer(ctx, kafkaBrokers, ingestC)
 
-	dfHandler, err := router.SetupRoutes(r,
-		config.HttpListenEndpoint,
-		config.JwtSecret,
-		*serveOpenapiDocs,
-		ingestC,
+	initializeCronJobs()
+
+	dfHandler, err := router.SetupRoutes(mux,
+		config.HttpListenEndpoint, config.JwtSecret,
+		*serveOpenapiDocs, ingestC,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -105,8 +107,8 @@ func main() {
 
 	httpServer := http.Server{
 		Addr:     config.HttpListenEndpoint,
-		Handler:  r,
-		ErrorLog: lo.New(&log.LogErrorWriter{}, "Http", 0),
+		Handler:  mux,
+		ErrorLog: stdlog.New(&log.LogErrorWriter{}, "", 0),
 	}
 
 	idleConnectionsClosed := make(chan struct{})
@@ -129,6 +131,19 @@ func main() {
 	cancel()
 
 	log.Info().Msg("deepfence-server stopped")
+}
+
+func initializeCronJobs() {
+	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+	err := directory.PeriodicWorkerEnqueue(ctx, directory.CleanUpGraphDBTaskID, "@every 120s")
+	if err != nil {
+		log.Fatal().Msgf("Could not enqueue graph clean up task: %v", err)
+	}
+
+	err = directory.PeriodicWorkerEnqueue(ctx, directory.ScanRetryGraphDBTaskID, "@every 120s")
+	if err != nil {
+		log.Fatal().Msgf("Could not enqueue scans retry task: %v", err)
+	}
 }
 
 func initialize() (*Config, error) {
@@ -202,15 +217,10 @@ func initializeKafka() error {
 	return nil
 }
 
-var kgoLogger kgo.Logger = kgo.BasicLogger(
-	&log.LogInfoWriter{},
-	kgo.LogLevelInfo,
-	nil,
+// kafka client logger
+var (
+	kgoLogger kgo.Logger = kgo.BasicLogger(&log.LogInfoWriter{}, kgo.LogLevelInfo, nil)
 )
-
-func getCurrentTime() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
-}
 
 func startKafkaProducer(
 	ctx context.Context,

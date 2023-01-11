@@ -20,15 +20,16 @@ var _ MappedNullable = &ModelApiAuthRequest{}
 
 // ModelApiAuthRequest struct for ModelApiAuthRequest
 type ModelApiAuthRequest struct {
-	ApiToken *string `json:"api_token,omitempty"`
+	ApiToken string `json:"api_token"`
 }
 
 // NewModelApiAuthRequest instantiates a new ModelApiAuthRequest object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelApiAuthRequest() *ModelApiAuthRequest {
+func NewModelApiAuthRequest(apiToken string) *ModelApiAuthRequest {
 	this := ModelApiAuthRequest{}
+	this.ApiToken = apiToken
 	return &this
 }
 
@@ -40,36 +41,28 @@ func NewModelApiAuthRequestWithDefaults() *ModelApiAuthRequest {
 	return &this
 }
 
-// GetApiToken returns the ApiToken field value if set, zero value otherwise.
+// GetApiToken returns the ApiToken field value
 func (o *ModelApiAuthRequest) GetApiToken() string {
-	if o == nil || isNil(o.ApiToken) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.ApiToken
+
+	return o.ApiToken
 }
 
-// GetApiTokenOk returns a tuple with the ApiToken field value if set, nil otherwise
+// GetApiTokenOk returns a tuple with the ApiToken field value
 // and a boolean to check if the value has been set.
 func (o *ModelApiAuthRequest) GetApiTokenOk() (*string, bool) {
-	if o == nil || isNil(o.ApiToken) {
+	if o == nil {
 		return nil, false
 	}
-	return o.ApiToken, true
+	return &o.ApiToken, true
 }
 
-// HasApiToken returns a boolean if a field has been set.
-func (o *ModelApiAuthRequest) HasApiToken() bool {
-	if o != nil && !isNil(o.ApiToken) {
-		return true
-	}
-
-	return false
-}
-
-// SetApiToken gets a reference to the given string and assigns it to the ApiToken field.
+// SetApiToken sets field value
 func (o *ModelApiAuthRequest) SetApiToken(v string) {
-	o.ApiToken = &v
+	o.ApiToken = v
 }
 
 func (o ModelApiAuthRequest) MarshalJSON() ([]byte, error) {
@@ -82,9 +75,7 @@ func (o ModelApiAuthRequest) MarshalJSON() ([]byte, error) {
 
 func (o ModelApiAuthRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !isNil(o.ApiToken) {
-		toSerialize["api_token"] = o.ApiToken
-	}
+	toSerialize["api_token"] = o.ApiToken
 	return toSerialize, nil
 }
 

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -39,35 +41,27 @@ func getTopologyReporter(ctx context.Context) (reporters.TopologyReporter, error
 	return new_entry, nil
 }
 
-func (h *Handler) GetTopologyGraph(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
 
 	type GraphResult struct {
-		Nodes detailed.NodeSummaries               `json:"nodes"`
-		Edges detailed.TopologyConnectionSummaries `json:"edges"`
+		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
+		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
 	}
 
-	ctx := r.Context()
+	ctx := req.Context()
 
-	if err := r.ParseForm(); err != nil {
-		respondWith(ctx, w, http.StatusInternalServerError, err)
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
 
-	filters := reporters.TopologyFilters{}
+	var filters reporters.TopologyFilters
+	json.Unmarshal(body, &filters)
 
-	if p := r.PostForm.Get("providers"); p != "" {
-		ps := strings.Split(p, ",")
-		filters.CloudFilter = append(filters.CloudFilter, ps...)
-	}
-
-	if r := r.PostForm.Get("regions"); r != "" {
-		rs := strings.Split(r, ",")
-		filters.RegionFilter = append(filters.RegionFilter, rs...)
-	}
-
-	if h := r.PostForm.Get("hosts"); h != "" {
-		hs := strings.Split(h, ",")
-		filters.HostFilter = append(filters.HostFilter, hs...)
+	if err != nil {
+		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
+		return
 	}
 
 	log.Info().Msgf("filters: %v", filters)
@@ -86,12 +80,12 @@ func (h *Handler) GetTopologyGraph(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newTopo, newConnections := graphToSummaries(graph, filters.RegionFilter, filters.HostFilter)
+	newTopo, newConnections := graphToSummaries(graph, filters.CloudFilter, filters.RegionFilter, filters.KubernetesFilter, filters.HostFilter)
 
 	respondWith(ctx, w, http.StatusOK, GraphResult{Nodes: newTopo, Edges: newConnections})
 }
 
-func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
+func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_filter, kubernetes_filter, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
 	nodes := detailed.NodeSummaries{}
 	edges := detailed.TopologyConnectionSummaries{}
 
@@ -101,25 +95,29 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 		source := ""
 		if contains(host_filter, left_splits[2]) {
 			source = left_splits[2] + ";" + left_splits[3]
-		} else if contains(region_filter, left_splits[1]) {
-			source = left_splits[2] + ";<host>"
+		} else if contains(region_filter, left_splits[1]) || contains(kubernetes_filter, left_splits[1]) {
+			source = left_splits[2]
+		} else if contains(provider_filter, left_splits[0]) {
+			source = left_splits[1]
 		} else {
-			source = left_splits[1] + ";<cloud_region>"
+			source = left_splits[0]
 		}
 
 		target := ""
 		if contains(host_filter, right_splits[2]) {
 			target = right_splits[2] + ";" + right_splits[3]
-		} else if contains(region_filter, right_splits[1]) {
-			target = right_splits[2] + ";<host>"
+		} else if contains(region_filter, right_splits[1]) || contains(kubernetes_filter, right_splits[1]) {
+			target = right_splits[2]
+		} else if contains(provider_filter, right_splits[0]) {
+			target = right_splits[1]
 		} else {
-			target = right_splits[1] + ";<cloud_region>"
+			target = right_splits[0]
 		}
 
-		if source == "internet;<cloud_region>" {
+		if source == "internet" {
 			source = "in-the-internet"
 		}
-		if target == "internet;<cloud_region>" {
+		if target == "internet" {
 			target = "out-the-internet"
 		}
 		log.Info().Msgf("%v -> %v\n", source, target)
@@ -129,33 +127,26 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 	nodes["in-the-internet"] = detailed.NodeSummary{
 		ImmediateParentID: "",
 		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:     "in-the-internet",
-			Rank:   "in-theinternet",
-			Label:  "The Internet",
-			Shape:  "cloud",
-			Pseudo: true,
+			ID:    "in-the-internet",
+			Label: "The Internet",
 		},
+		Type: "pseudo",
 	}
 
 	nodes["out-the-internet"] = detailed.NodeSummary{
 		ImmediateParentID: "",
 		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:     "out-the-internet",
-			Rank:   "out-theinternet",
-			Label:  "The Internet",
-			Shape:  "cloud",
-			Pseudo: true,
+			ID:    "out-the-internet",
+			Label: "The Internet",
 		},
+		Type: "pseudo",
 	}
 
 	for _, cp := range graph.Providers {
 		nodes[cp] = detailed.NodeSummary{
 			ImmediateParentID: "",
 			BasicNodeSummary: detailed.BasicNodeSummary{
-				ID:    cp + ";<cloud_provider>",
-				Rank:  cp,
-				Label: cp,
-				Shape: cp,
+				ID: cp,
 			},
 			Metadata: []report.MetadataRow{
 				{
@@ -171,19 +162,16 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 					Priority: 2,
 				},
 			},
-			Type: "cloud_provider",
+			Type: report.CloudProvider,
 		}
 	}
 
-	for cp, crs := range graph.Regions {
+	for cp, crs := range graph.Kubernetes {
 		for _, cr := range crs {
 			nodes[cr] = detailed.NodeSummary{
-				ImmediateParentID: cp + ";<cloud_provider>",
+				ImmediateParentID: cp,
 				BasicNodeSummary: detailed.BasicNodeSummary{
-					ID:    cr + ";<cloud_region>",
-					Rank:  cr,
-					Label: cr,
-					Shape: report.Circle,
+					ID: cr,
 				},
 				Metadata: []report.MetadataRow{
 					{
@@ -199,7 +187,33 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 						Priority: 2,
 					},
 				},
-				Type: "cloud_region",
+				Type: report.KubernetesCluster,
+			}
+		}
+	}
+
+	for cp, crs := range graph.Regions {
+		for _, cr := range crs {
+			nodes[cr] = detailed.NodeSummary{
+				ImmediateParentID: cp,
+				BasicNodeSummary: detailed.BasicNodeSummary{
+					ID: cr,
+				},
+				Metadata: []report.MetadataRow{
+					{
+						ID:       "name",
+						Label:    "Name",
+						Value:    cr,
+						Priority: 1,
+					},
+					{
+						ID:       "label",
+						Label:    "Label",
+						Value:    cr,
+						Priority: 2,
+					},
+				},
+				Type: report.CloudRegion,
 			}
 		}
 	}
@@ -208,12 +222,10 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 		for cr, hosts := range n {
 			for _, host := range hosts {
 				nodes[host] = detailed.NodeSummary{
-					ImmediateParentID: cr + ";<cloud_region>",
+					ImmediateParentID: cr,
 					BasicNodeSummary: detailed.BasicNodeSummary{
-						ID:    host + ";<host>",
-						Rank:  host,
+						ID:    host,
 						Label: host,
-						Shape: report.Host,
 					},
 					Metrics: []report.MetricRow{
 						{ID: hst.CPUUsage, Metric: &report.Metric{}, Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
@@ -253,7 +265,7 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 						{ID: hst.IsUiVm, Label: "UI vm", Value: "yes", Priority: 29},
 						{ID: hst.AgentRunning, Label: "Sensor", Value: "yes", Priority: 33},
 					},
-					Type: "host",
+					Type: report.Host,
 				}
 			}
 		}
@@ -262,11 +274,10 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 	for h, n := range graph.Processes {
 		for _, id := range n {
 			nodes[id] = detailed.NodeSummary{
-				ImmediateParentID: h + ";<host>",
+				ImmediateParentID: h,
 				BasicNodeSummary: detailed.BasicNodeSummary{
 					ID:    id,
 					Label: id,
-					Shape: report.Process,
 				},
 				Metadata: []report.MetadataRow{
 					{
@@ -282,7 +293,7 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 						Priority: 2,
 					},
 				},
-				Type: "process",
+				Type: report.Process,
 			}
 		}
 	}
@@ -290,11 +301,10 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 	for h, n := range graph.Pods {
 		for _, id := range n {
 			nodes[id] = detailed.NodeSummary{
-				ImmediateParentID: h + ";<host>",
+				ImmediateParentID: h,
 				BasicNodeSummary: detailed.BasicNodeSummary{
 					ID:    id,
 					Label: id,
-					Shape: report.Pod,
 				},
 				Metadata: []report.MetadataRow{
 					{
@@ -310,7 +320,7 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 						Priority: 2,
 					},
 				},
-				Type: "pod",
+				Type: report.Pod,
 			}
 		}
 	}
@@ -318,13 +328,12 @@ func graphToSummaries(graph reporters.RenderedGraph, region_filter []string, hos
 	for h, n := range graph.Containers {
 		for _, id := range n {
 			nodes[id] = detailed.NodeSummary{
-				ImmediateParentID: h + ";<host>",
+				ImmediateParentID: h,
 				BasicNodeSummary: detailed.BasicNodeSummary{
 					ID:    id,
 					Label: id,
-					Shape: report.Container,
 				},
-				Type: "container",
+				Type: report.Container,
 			}
 		}
 	}

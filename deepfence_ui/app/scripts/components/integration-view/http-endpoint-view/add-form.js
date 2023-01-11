@@ -71,7 +71,9 @@ class HTTPEndpointForm extends React.PureComponent {
     );
   }
 }
-
-const HTTPEndpointAdd = withIntegrationForm(HTTPEndpointForm);
+// TODO
+// HTTPEndpoint is not supported for user activities, it is disabled for now
+// when backend is enabled please remove thie code
+const HTTPEndpointAdd = withIntegrationForm(HTTPEndpointForm, ['user_activity']);
 
 export default HTTPEndpointAdd;

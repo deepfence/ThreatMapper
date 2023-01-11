@@ -20,21 +20,28 @@ var _ MappedNullable = &ReportersRenderedGraph{}
 
 // ReportersRenderedGraph struct for ReportersRenderedGraph
 type ReportersRenderedGraph struct {
-	Connections []ReportersConnectionSummary `json:"connections,omitempty"`
-	Containers map[string][]string `json:"containers,omitempty"`
-	Hosts map[string]map[string][]string `json:"hosts,omitempty"`
-	Pods map[string][]string `json:"pods,omitempty"`
-	Processes map[string][]string `json:"processes,omitempty"`
-	Providers []string `json:"providers,omitempty"`
-	Regions map[string][]string `json:"regions,omitempty"`
+	Connections []ReportersConnectionSummary `json:"connections"`
+	Containers map[string][]string `json:"containers"`
+	Hosts map[string]map[string][]string `json:"hosts"`
+	Pods map[string][]string `json:"pods"`
+	Processes map[string][]string `json:"processes"`
+	Providers []string `json:"providers"`
+	Regions map[string][]string `json:"regions"`
 }
 
 // NewReportersRenderedGraph instantiates a new ReportersRenderedGraph object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportersRenderedGraph() *ReportersRenderedGraph {
+func NewReportersRenderedGraph(connections []ReportersConnectionSummary, containers map[string][]string, hosts map[string]map[string][]string, pods map[string][]string, processes map[string][]string, providers []string, regions map[string][]string) *ReportersRenderedGraph {
 	this := ReportersRenderedGraph{}
+	this.Connections = connections
+	this.Containers = containers
+	this.Hosts = hosts
+	this.Pods = pods
+	this.Processes = processes
+	this.Providers = providers
+	this.Regions = regions
 	return &this
 }
 
@@ -46,16 +53,18 @@ func NewReportersRenderedGraphWithDefaults() *ReportersRenderedGraph {
 	return &this
 }
 
-// GetConnections returns the Connections field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetConnections returns the Connections field value
+// If the value is explicit nil, the zero value for []ReportersConnectionSummary will be returned
 func (o *ReportersRenderedGraph) GetConnections() []ReportersConnectionSummary {
 	if o == nil {
 		var ret []ReportersConnectionSummary
 		return ret
 	}
+
 	return o.Connections
 }
 
-// GetConnectionsOk returns a tuple with the Connections field value if set, nil otherwise
+// GetConnectionsOk returns a tuple with the Connections field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersRenderedGraph) GetConnectionsOk() ([]ReportersConnectionSummary, bool) {
@@ -65,30 +74,23 @@ func (o *ReportersRenderedGraph) GetConnectionsOk() ([]ReportersConnectionSummar
 	return o.Connections, true
 }
 
-// HasConnections returns a boolean if a field has been set.
-func (o *ReportersRenderedGraph) HasConnections() bool {
-	if o != nil && isNil(o.Connections) {
-		return true
-	}
-
-	return false
-}
-
-// SetConnections gets a reference to the given []ReportersConnectionSummary and assigns it to the Connections field.
+// SetConnections sets field value
 func (o *ReportersRenderedGraph) SetConnections(v []ReportersConnectionSummary) {
 	o.Connections = v
 }
 
-// GetContainers returns the Containers field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetContainers returns the Containers field value
+// If the value is explicit nil, the zero value for map[string][]string will be returned
 func (o *ReportersRenderedGraph) GetContainers() map[string][]string {
 	if o == nil {
 		var ret map[string][]string
 		return ret
 	}
+
 	return o.Containers
 }
 
-// GetContainersOk returns a tuple with the Containers field value if set, nil otherwise
+// GetContainersOk returns a tuple with the Containers field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersRenderedGraph) GetContainersOk() (*map[string][]string, bool) {
@@ -98,30 +100,23 @@ func (o *ReportersRenderedGraph) GetContainersOk() (*map[string][]string, bool) 
 	return &o.Containers, true
 }
 
-// HasContainers returns a boolean if a field has been set.
-func (o *ReportersRenderedGraph) HasContainers() bool {
-	if o != nil && isNil(o.Containers) {
-		return true
-	}
-
-	return false
-}
-
-// SetContainers gets a reference to the given map[string][]string and assigns it to the Containers field.
+// SetContainers sets field value
 func (o *ReportersRenderedGraph) SetContainers(v map[string][]string) {
 	o.Containers = v
 }
 
-// GetHosts returns the Hosts field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetHosts returns the Hosts field value
+// If the value is explicit nil, the zero value for map[string]map[string][]string will be returned
 func (o *ReportersRenderedGraph) GetHosts() map[string]map[string][]string {
 	if o == nil {
 		var ret map[string]map[string][]string
 		return ret
 	}
+
 	return o.Hosts
 }
 
-// GetHostsOk returns a tuple with the Hosts field value if set, nil otherwise
+// GetHostsOk returns a tuple with the Hosts field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersRenderedGraph) GetHostsOk() (*map[string]map[string][]string, bool) {
@@ -131,30 +126,23 @@ func (o *ReportersRenderedGraph) GetHostsOk() (*map[string]map[string][]string, 
 	return &o.Hosts, true
 }
 
-// HasHosts returns a boolean if a field has been set.
-func (o *ReportersRenderedGraph) HasHosts() bool {
-	if o != nil && isNil(o.Hosts) {
-		return true
-	}
-
-	return false
-}
-
-// SetHosts gets a reference to the given map[string]map[string][]string and assigns it to the Hosts field.
+// SetHosts sets field value
 func (o *ReportersRenderedGraph) SetHosts(v map[string]map[string][]string) {
 	o.Hosts = v
 }
 
-// GetPods returns the Pods field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetPods returns the Pods field value
+// If the value is explicit nil, the zero value for map[string][]string will be returned
 func (o *ReportersRenderedGraph) GetPods() map[string][]string {
 	if o == nil {
 		var ret map[string][]string
 		return ret
 	}
+
 	return o.Pods
 }
 
-// GetPodsOk returns a tuple with the Pods field value if set, nil otherwise
+// GetPodsOk returns a tuple with the Pods field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersRenderedGraph) GetPodsOk() (*map[string][]string, bool) {
@@ -164,30 +152,23 @@ func (o *ReportersRenderedGraph) GetPodsOk() (*map[string][]string, bool) {
 	return &o.Pods, true
 }
 
-// HasPods returns a boolean if a field has been set.
-func (o *ReportersRenderedGraph) HasPods() bool {
-	if o != nil && isNil(o.Pods) {
-		return true
-	}
-
-	return false
-}
-
-// SetPods gets a reference to the given map[string][]string and assigns it to the Pods field.
+// SetPods sets field value
 func (o *ReportersRenderedGraph) SetPods(v map[string][]string) {
 	o.Pods = v
 }
 
-// GetProcesses returns the Processes field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetProcesses returns the Processes field value
+// If the value is explicit nil, the zero value for map[string][]string will be returned
 func (o *ReportersRenderedGraph) GetProcesses() map[string][]string {
 	if o == nil {
 		var ret map[string][]string
 		return ret
 	}
+
 	return o.Processes
 }
 
-// GetProcessesOk returns a tuple with the Processes field value if set, nil otherwise
+// GetProcessesOk returns a tuple with the Processes field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersRenderedGraph) GetProcessesOk() (*map[string][]string, bool) {
@@ -197,30 +178,23 @@ func (o *ReportersRenderedGraph) GetProcessesOk() (*map[string][]string, bool) {
 	return &o.Processes, true
 }
 
-// HasProcesses returns a boolean if a field has been set.
-func (o *ReportersRenderedGraph) HasProcesses() bool {
-	if o != nil && isNil(o.Processes) {
-		return true
-	}
-
-	return false
-}
-
-// SetProcesses gets a reference to the given map[string][]string and assigns it to the Processes field.
+// SetProcesses sets field value
 func (o *ReportersRenderedGraph) SetProcesses(v map[string][]string) {
 	o.Processes = v
 }
 
-// GetProviders returns the Providers field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetProviders returns the Providers field value
+// If the value is explicit nil, the zero value for []string will be returned
 func (o *ReportersRenderedGraph) GetProviders() []string {
 	if o == nil {
 		var ret []string
 		return ret
 	}
+
 	return o.Providers
 }
 
-// GetProvidersOk returns a tuple with the Providers field value if set, nil otherwise
+// GetProvidersOk returns a tuple with the Providers field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersRenderedGraph) GetProvidersOk() ([]string, bool) {
@@ -230,30 +204,23 @@ func (o *ReportersRenderedGraph) GetProvidersOk() ([]string, bool) {
 	return o.Providers, true
 }
 
-// HasProviders returns a boolean if a field has been set.
-func (o *ReportersRenderedGraph) HasProviders() bool {
-	if o != nil && isNil(o.Providers) {
-		return true
-	}
-
-	return false
-}
-
-// SetProviders gets a reference to the given []string and assigns it to the Providers field.
+// SetProviders sets field value
 func (o *ReportersRenderedGraph) SetProviders(v []string) {
 	o.Providers = v
 }
 
-// GetRegions returns the Regions field value if set, zero value otherwise (both if not set or set to explicit null).
+// GetRegions returns the Regions field value
+// If the value is explicit nil, the zero value for map[string][]string will be returned
 func (o *ReportersRenderedGraph) GetRegions() map[string][]string {
 	if o == nil {
 		var ret map[string][]string
 		return ret
 	}
+
 	return o.Regions
 }
 
-// GetRegionsOk returns a tuple with the Regions field value if set, nil otherwise
+// GetRegionsOk returns a tuple with the Regions field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *ReportersRenderedGraph) GetRegionsOk() (*map[string][]string, bool) {
@@ -263,16 +230,7 @@ func (o *ReportersRenderedGraph) GetRegionsOk() (*map[string][]string, bool) {
 	return &o.Regions, true
 }
 
-// HasRegions returns a boolean if a field has been set.
-func (o *ReportersRenderedGraph) HasRegions() bool {
-	if o != nil && isNil(o.Regions) {
-		return true
-	}
-
-	return false
-}
-
-// SetRegions gets a reference to the given map[string][]string and assigns it to the Regions field.
+// SetRegions sets field value
 func (o *ReportersRenderedGraph) SetRegions(v map[string][]string) {
 	o.Regions = v
 }

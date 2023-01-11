@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -181,7 +183,9 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByID(ctx, pgClient)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, http.StatusNotFound, ctx, pgClient, errors.New("user not found")
+	} else if err != nil {
 		return nil, http.StatusInternalServerError, ctx, pgClient, err
 	}
 	return &user, http.StatusOK, ctx, pgClient, nil

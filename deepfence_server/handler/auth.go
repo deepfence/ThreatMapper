@@ -2,7 +2,10 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"net/http"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -10,7 +13,6 @@ import (
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"net/http"
 )
 
 func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +53,9 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	user, grantType, err := h.parseRefreshToken(r.Context())
 	if err != nil {
-		if err.Error() == "access token is revoked" {
+		if errors.Is(err, sql.ErrNoRows) {
+			httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: "user not found"})
+		} else if err.Error() == "access token is revoked" {
 			httpext.JSON(w, http.StatusForbidden, model.Response{Success: false, Message: err.Error()})
 		} else {
 			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
@@ -129,7 +133,10 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	u := model.User{Email: loginRequest.Email}
 	err = u.LoadFromDbByEmail(ctx, pgClient)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: "user not found"})
+		return
+	} else if err != nil {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}

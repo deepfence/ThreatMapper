@@ -1054,7 +1054,7 @@ export function notifyAlerts(dispatch, params) {
 /* START :: CVE VULNERABILITY */
 export function getCveSeverityChartData(dispatch, params) {
   let url = `${backendElasticApiEndPoint()}/vulnerabilities/cve_severity_chart?number=${params.number
-    }&time_unit=${params.time_unit}`;
+    }&time_unit=${params.time_unit}&hideMasked=${params.hideMasked}`;
   if (params.lucene_query.length !== 0) {
     const luceneQuery = getLuceneQuery(params.lucene_query);
     url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
@@ -1321,10 +1321,11 @@ export function getCVEImageReport(params = {}) {
     node_filters,
     start_index,
     size,
+    hideMasked
   } = params;
   let url = `${backendElasticApiEndPoint()}/vulnerabilities/image_report?lucene_query=${getLuceneQuery(
     lucene_query
-  )}`;
+  )}&hideMasked=${hideMasked}`;
   if (params.number && params.time_unit) {
     url = `${url}&number=${params.number}&time_unit=${params.time_unit}`;
   }
@@ -2312,11 +2313,12 @@ export function getSecretScanData(params = {}) {
     filters,
     start_index,
     size,
-    lucene_query: luceneQuery = []
+    lucene_query: luceneQuery = [],
+    hideMasked,
   } = params;
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
 
-  let url = `${backendElasticApiEndPoint()}/secret/node_report?lucene_query=${luceneQueryEscaped}`;
+  let url = `${backendElasticApiEndPoint()}/secret/node_report?lucene_query=${luceneQueryEscaped}&hideMasked=${hideMasked}`;
   const body = {
     filters,
     start_index,
@@ -2415,8 +2417,9 @@ export function getSecretScanReportChart(params) {
 }
 
 export function getSecretScanChartData(params, dispatch) {
+  const { hideMasked } = params;
   let url = `${backendElasticApiEndPoint()}/secret/secret_severity_chart?number=${params.number
-    }&time_unit=${params.time_unit}`;
+    }&time_unit=${params.time_unit}&hideMasked=${hideMasked}`;
   if (params.lucene_query.length !== 0) {
     const luceneQuery = getLuceneQuery(params.lucene_query);
     url = `${url}&lucene_query=${encodeURIComponent(luceneQuery)}`;
@@ -2639,7 +2642,7 @@ export function getComplianceChartData(params = {}) {
 }
 
 export function getComplianceBarChart(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit} = params;
+  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit, hideMasked} = params;
   const requestBody = {
     scan_id: scanId,
   };
@@ -2647,7 +2650,7 @@ export function getComplianceBarChart(params = {}) {
     requestBody.filters = { resource };
   }
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_category_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_category_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}&hideMasked=${hideMasked}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
@@ -2662,7 +2665,7 @@ export function getComplianceBarChart(params = {}) {
 
 // Donut chart Scan Results
 export function getResultDonutData(params = {}) {
-  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit} = params;
+  const { lucene_query: luceneQuery = [], checkType, resource, nodeId, scanId, cloudType, number, time_unit, hideMasked} = params;
   const filters = {};
   if (resource) {
     filters.resource = resource;
@@ -2672,7 +2675,7 @@ export function getResultDonutData(params = {}) {
     filters
   };
   const luceneQueryEscaped = encodeURIComponent(getLuceneQuery(luceneQuery));
-  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_status_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}`;
+  const url = `${backendElasticApiEndPoint()}/compliance/${checkType}/test_status_report?&lucene_query=${luceneQueryEscaped}&number=${number}&time_unit=${time_unit}&node_type=${cloudType}&hideMasked=${hideMasked}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',

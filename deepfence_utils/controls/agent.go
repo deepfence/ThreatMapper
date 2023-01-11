@@ -21,7 +21,37 @@ const (
 	Host
 )
 
-type StartVulnerabilityScanRequest struct{}
+func ResourceTypeToString(t ScanResource) string {
+	switch t {
+	case Container:
+		return "container"
+	case Image:
+		return "image"
+	case Host:
+		return "host"
+	}
+	return ""
+}
+
+func StringToResourceType(s string) ScanResource {
+	switch s {
+	case "container":
+		return Container
+	case "image":
+		return Image
+	case "host":
+		return Host
+	}
+	return -1
+}
+
+type StartVulnerabilityScanRequest struct {
+	ResourceId   string            `json:"resource_id" required:"true"`
+	ResourceType ScanResource      `json:"resource_type" required:"true"`
+	BinArgs      map[string]string `json:"bin_args" required:"true"`
+	Hostname     string            `json:"hostname" required:"true"`
+}
+
 type StartSecretScanRequest struct {
 	ResourceId   string            `json:"resource_id" required:"true"`
 	ResourceType ScanResource      `json:"resource_type" required:"true"`

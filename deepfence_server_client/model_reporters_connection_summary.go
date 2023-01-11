@@ -20,16 +20,18 @@ var _ MappedNullable = &ReportersConnectionSummary{}
 
 // ReportersConnectionSummary struct for ReportersConnectionSummary
 type ReportersConnectionSummary struct {
-	Source *string `json:"source,omitempty"`
-	Target *string `json:"target,omitempty"`
+	Source string `json:"source"`
+	Target string `json:"target"`
 }
 
 // NewReportersConnectionSummary instantiates a new ReportersConnectionSummary object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportersConnectionSummary() *ReportersConnectionSummary {
+func NewReportersConnectionSummary(source string, target string) *ReportersConnectionSummary {
 	this := ReportersConnectionSummary{}
+	this.Source = source
+	this.Target = target
 	return &this
 }
 
@@ -41,68 +43,52 @@ func NewReportersConnectionSummaryWithDefaults() *ReportersConnectionSummary {
 	return &this
 }
 
-// GetSource returns the Source field value if set, zero value otherwise.
+// GetSource returns the Source field value
 func (o *ReportersConnectionSummary) GetSource() string {
-	if o == nil || isNil(o.Source) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.Source
+
+	return o.Source
 }
 
-// GetSourceOk returns a tuple with the Source field value if set, nil otherwise
+// GetSourceOk returns a tuple with the Source field value
 // and a boolean to check if the value has been set.
 func (o *ReportersConnectionSummary) GetSourceOk() (*string, bool) {
-	if o == nil || isNil(o.Source) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Source, true
+	return &o.Source, true
 }
 
-// HasSource returns a boolean if a field has been set.
-func (o *ReportersConnectionSummary) HasSource() bool {
-	if o != nil && !isNil(o.Source) {
-		return true
-	}
-
-	return false
-}
-
-// SetSource gets a reference to the given string and assigns it to the Source field.
+// SetSource sets field value
 func (o *ReportersConnectionSummary) SetSource(v string) {
-	o.Source = &v
+	o.Source = v
 }
 
-// GetTarget returns the Target field value if set, zero value otherwise.
+// GetTarget returns the Target field value
 func (o *ReportersConnectionSummary) GetTarget() string {
-	if o == nil || isNil(o.Target) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.Target
+
+	return o.Target
 }
 
-// GetTargetOk returns a tuple with the Target field value if set, nil otherwise
+// GetTargetOk returns a tuple with the Target field value
 // and a boolean to check if the value has been set.
 func (o *ReportersConnectionSummary) GetTargetOk() (*string, bool) {
-	if o == nil || isNil(o.Target) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Target, true
+	return &o.Target, true
 }
 
-// HasTarget returns a boolean if a field has been set.
-func (o *ReportersConnectionSummary) HasTarget() bool {
-	if o != nil && !isNil(o.Target) {
-		return true
-	}
-
-	return false
-}
-
-// SetTarget gets a reference to the given string and assigns it to the Target field.
+// SetTarget sets field value
 func (o *ReportersConnectionSummary) SetTarget(v string) {
-	o.Target = &v
+	o.Target = v
 }
 
 func (o ReportersConnectionSummary) MarshalJSON() ([]byte, error) {
@@ -115,12 +101,8 @@ func (o ReportersConnectionSummary) MarshalJSON() ([]byte, error) {
 
 func (o ReportersConnectionSummary) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !isNil(o.Source) {
-		toSerialize["source"] = o.Source
-	}
-	if !isNil(o.Target) {
-		toSerialize["target"] = o.Target
-	}
+	toSerialize["source"] = o.Source
+	toSerialize["target"] = o.Target
 	return toSerialize, nil
 }
 

@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
+import { formValueSelector } from 'redux-form/immutable';
 import SunburstChart from '../common/charts/sunburst-chart/index';
 
 import {
@@ -69,6 +70,13 @@ class SecretScanChartView extends React.Component {
           );
         }
       );
+    } else if (newProps.refreshCounter !==0 && newProps.refreshCounter !== this.props.refreshCounter) {
+      const activeDuration = newProps.days.value;
+      this.getSecretSeverityChartData(
+        activeDuration.number,
+        activeDuration.time_unit,
+        newProps.searchQuery
+      );
     }
   }
 
@@ -87,6 +95,7 @@ class SecretScanChartView extends React.Component {
           time_unit || this.state.time_unit || this.props.days.value.time_unit,
         lucene_query: lucene_query || this.props.searchQuery,
         scan_id: this.props.scanId,
+        hideMasked: this.props.hideMasked,
       };
       this.props.dispatch(getSecretScanChartDataAction(params));
     }
@@ -146,6 +155,7 @@ class SecretScanChartView extends React.Component {
     );
   }
 }
+const maskFormSelector = formValueSelector('secrets-mask-form');
 
 function mapStateToProps(state) {
   return {
@@ -154,6 +164,7 @@ function mapStateToProps(state) {
     days: state.get('alertPanelHistoryBound'),
     refreshInterval: state.get('refreshInterval'),
     secretSeverityChartData: state.getIn(['secretScanChart', 'data']),
+    hideMasked: maskFormSelector(state, 'hideMasked') ?? true,
   };
 }
 

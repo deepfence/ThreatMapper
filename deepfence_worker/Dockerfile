@@ -1,10 +1,12 @@
 FROM golang:1.19-alpine3.16 AS build
 
+RUN apk add --no-cache git make
+RUN go install github.com/hibiken/asynq/tools/asynq@latest
 ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
 WORKDIR /go/deepfence_worker/
-RUN apk add --no-cache git make
-RUN make
+# "make vendor" is run before separately to avoid docker cache invalidation
+RUN make deepfence_worker
 
 FROM alpine:3.16
 MAINTAINER Deepfence Inc
@@ -23,9 +25,16 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_NEO4J_BOLT_PORT=7687 \
     DEEPFENCE_NEO4J_USER=neo4j \
     DEEPFENCE_NEO4J_PASSWORD=password \
+    DEEPFENCE_MINIO_HOST=deepfence-file-server \
+    DEEPFENCE_MINIO_PORT=9000 \
+    DEEPFENCE_MINIO_USER=deepfence \
+    DEEPFENCE_MINIO_PASSWORD=deepfence \
+    DEEPFENCE_MINIO_BUCKET=deepfence \
+    DEEPFENCE_MINIO_SECURE=false \
     DEEPFENCE_SAAS_DEPLOYMENT=false
 
 COPY --from=build /go/deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
+COPY --from=build /go/bin/asynq /usr/local/bin/asynq
 COPY deepfence_worker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

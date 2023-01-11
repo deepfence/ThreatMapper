@@ -366,35 +366,35 @@ func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 type ThreatGraph map[string]ProviderThreatGraph
 
 type ProviderThreatGraph struct {
-	Resources           []ThreatNodeInfo `json:"resources"`
-	Compliance_count    int64            `json:"compliance_count"`
-	Secrets_count       int64            `json:"secrets_count"`
-	Vulnerability_count int64            `json:"vulnerability_count"`
+	Resources           []ThreatNodeInfo `json:"resources" required:"true"`
+	Compliance_count    int64            `json:"compliance_count" required:"true"`
+	Secrets_count       int64            `json:"secrets_count" required:"true"`
+	Vulnerability_count int64            `json:"vulnerability_count" required:"true"`
 }
 
 type ThreatNodeInfo struct {
-	Label string              `json:"label"`
-	Id    string              `json:"id"`
-	Nodes map[string]NodeInfo `json:"nodes"`
+	Label string              `json:"label" required:"true"`
+	Id    string              `json:"id" required:"true"`
+	Nodes map[string]NodeInfo `json:"nodes" required:"true"`
 
-	Vulnerability_count int64 `json:"vulnerability_count"`
-	Secrets_count       int64 `json:"secrets_count"`
-	Compliance_count    int64 `json:"compliance_count"`
-	Count               int64 `json:"count"`
+	Vulnerability_count int64 `json:"vulnerability_count" required:"true"`
+	Secrets_count       int64 `json:"secrets_count" required:"true"`
+	Compliance_count    int64 `json:"compliance_count" required:"true"`
+	Count               int64 `json:"count" required:"true"`
 
-	Node_type string `json:"node_type"`
+	Node_type string `json:"node_type" required:"true"`
 
-	Attack_path [][]string `json:"attack_path"`
+	Attack_path [][]string `json:"attack_path" required:"true"`
 }
 
 type NodeInfo struct {
-	Node_id               string `json:"node_id"`
-	Image_name            string `json:"image_name"`
-	Name                  string `json:"name"`
-	Vulnerability_count   int64  `json:"vulnerability_count"`
-	Vulnerability_scan_id string `json:"vulnerability_scan_id"`
-	Secrets_count         int64  `json:"secrets_count"`
-	Secrets_scan_id       string `json:"secrets_scan_id"`
-	Compliance_count      int64  `json:"compliance_count"`
-	Compliance_scan_id    string `json:"compliance_scan_id"`
+	Node_id               string `json:"node_id" required:"true"`
+	Image_name            string `json:"image_name" required:"true"`
+	Name                  string `json:"name" required:"true"`
+	Vulnerability_count   int64  `json:"vulnerability_count" required:"true"`
+	Vulnerability_scan_id string `json:"vulnerability_scan_id" required:"true"`
+	Secrets_count         int64  `json:"secrets_count" required:"true"`
+	Secrets_scan_id       string `json:"secrets_scan_id" required:"true"`
+	Compliance_count      int64  `json:"compliance_count" required:"true"`
+	Compliance_scan_id    string `json:"compliance_scan_id" required:"true"`
 }

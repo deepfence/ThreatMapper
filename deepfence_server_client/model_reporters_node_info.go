@@ -20,23 +20,32 @@ var _ MappedNullable = &ReportersNodeInfo{}
 
 // ReportersNodeInfo struct for ReportersNodeInfo
 type ReportersNodeInfo struct {
-	ComplianceCount *int32 `json:"compliance_count,omitempty"`
-	ComplianceScanId *string `json:"compliance_scan_id,omitempty"`
-	ImageName *string `json:"image_name,omitempty"`
-	Name *string `json:"name,omitempty"`
-	NodeId *string `json:"node_id,omitempty"`
-	SecretsCount *int32 `json:"secrets_count,omitempty"`
-	SecretsScanId *string `json:"secrets_scan_id,omitempty"`
-	VulnerabilityCount *int32 `json:"vulnerability_count,omitempty"`
-	VulnerabilityScanId *string `json:"vulnerability_scan_id,omitempty"`
+	ComplianceCount int32 `json:"compliance_count"`
+	ComplianceScanId string `json:"compliance_scan_id"`
+	ImageName string `json:"image_name"`
+	Name string `json:"name"`
+	NodeId string `json:"node_id"`
+	SecretsCount int32 `json:"secrets_count"`
+	SecretsScanId string `json:"secrets_scan_id"`
+	VulnerabilityCount int32 `json:"vulnerability_count"`
+	VulnerabilityScanId string `json:"vulnerability_scan_id"`
 }
 
 // NewReportersNodeInfo instantiates a new ReportersNodeInfo object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportersNodeInfo() *ReportersNodeInfo {
+func NewReportersNodeInfo(complianceCount int32, complianceScanId string, imageName string, name string, nodeId string, secretsCount int32, secretsScanId string, vulnerabilityCount int32, vulnerabilityScanId string) *ReportersNodeInfo {
 	this := ReportersNodeInfo{}
+	this.ComplianceCount = complianceCount
+	this.ComplianceScanId = complianceScanId
+	this.ImageName = imageName
+	this.Name = name
+	this.NodeId = nodeId
+	this.SecretsCount = secretsCount
+	this.SecretsScanId = secretsScanId
+	this.VulnerabilityCount = vulnerabilityCount
+	this.VulnerabilityScanId = vulnerabilityScanId
 	return &this
 }
 
@@ -48,292 +57,220 @@ func NewReportersNodeInfoWithDefaults() *ReportersNodeInfo {
 	return &this
 }
 
-// GetComplianceCount returns the ComplianceCount field value if set, zero value otherwise.
+// GetComplianceCount returns the ComplianceCount field value
 func (o *ReportersNodeInfo) GetComplianceCount() int32 {
-	if o == nil || isNil(o.ComplianceCount) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.ComplianceCount
+
+	return o.ComplianceCount
 }
 
-// GetComplianceCountOk returns a tuple with the ComplianceCount field value if set, nil otherwise
+// GetComplianceCountOk returns a tuple with the ComplianceCount field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetComplianceCountOk() (*int32, bool) {
-	if o == nil || isNil(o.ComplianceCount) {
+	if o == nil {
 		return nil, false
 	}
-	return o.ComplianceCount, true
+	return &o.ComplianceCount, true
 }
 
-// HasComplianceCount returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasComplianceCount() bool {
-	if o != nil && !isNil(o.ComplianceCount) {
-		return true
-	}
-
-	return false
-}
-
-// SetComplianceCount gets a reference to the given int32 and assigns it to the ComplianceCount field.
+// SetComplianceCount sets field value
 func (o *ReportersNodeInfo) SetComplianceCount(v int32) {
-	o.ComplianceCount = &v
+	o.ComplianceCount = v
 }
 
-// GetComplianceScanId returns the ComplianceScanId field value if set, zero value otherwise.
+// GetComplianceScanId returns the ComplianceScanId field value
 func (o *ReportersNodeInfo) GetComplianceScanId() string {
-	if o == nil || isNil(o.ComplianceScanId) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.ComplianceScanId
+
+	return o.ComplianceScanId
 }
 
-// GetComplianceScanIdOk returns a tuple with the ComplianceScanId field value if set, nil otherwise
+// GetComplianceScanIdOk returns a tuple with the ComplianceScanId field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetComplianceScanIdOk() (*string, bool) {
-	if o == nil || isNil(o.ComplianceScanId) {
+	if o == nil {
 		return nil, false
 	}
-	return o.ComplianceScanId, true
+	return &o.ComplianceScanId, true
 }
 
-// HasComplianceScanId returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasComplianceScanId() bool {
-	if o != nil && !isNil(o.ComplianceScanId) {
-		return true
-	}
-
-	return false
-}
-
-// SetComplianceScanId gets a reference to the given string and assigns it to the ComplianceScanId field.
+// SetComplianceScanId sets field value
 func (o *ReportersNodeInfo) SetComplianceScanId(v string) {
-	o.ComplianceScanId = &v
+	o.ComplianceScanId = v
 }
 
-// GetImageName returns the ImageName field value if set, zero value otherwise.
+// GetImageName returns the ImageName field value
 func (o *ReportersNodeInfo) GetImageName() string {
-	if o == nil || isNil(o.ImageName) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.ImageName
+
+	return o.ImageName
 }
 
-// GetImageNameOk returns a tuple with the ImageName field value if set, nil otherwise
+// GetImageNameOk returns a tuple with the ImageName field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetImageNameOk() (*string, bool) {
-	if o == nil || isNil(o.ImageName) {
+	if o == nil {
 		return nil, false
 	}
-	return o.ImageName, true
+	return &o.ImageName, true
 }
 
-// HasImageName returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasImageName() bool {
-	if o != nil && !isNil(o.ImageName) {
-		return true
-	}
-
-	return false
-}
-
-// SetImageName gets a reference to the given string and assigns it to the ImageName field.
+// SetImageName sets field value
 func (o *ReportersNodeInfo) SetImageName(v string) {
-	o.ImageName = &v
+	o.ImageName = v
 }
 
-// GetName returns the Name field value if set, zero value otherwise.
+// GetName returns the Name field value
 func (o *ReportersNodeInfo) GetName() string {
-	if o == nil || isNil(o.Name) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.Name
+
+	return o.Name
 }
 
-// GetNameOk returns a tuple with the Name field value if set, nil otherwise
+// GetNameOk returns a tuple with the Name field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetNameOk() (*string, bool) {
-	if o == nil || isNil(o.Name) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Name, true
+	return &o.Name, true
 }
 
-// HasName returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasName() bool {
-	if o != nil && !isNil(o.Name) {
-		return true
-	}
-
-	return false
-}
-
-// SetName gets a reference to the given string and assigns it to the Name field.
+// SetName sets field value
 func (o *ReportersNodeInfo) SetName(v string) {
-	o.Name = &v
+	o.Name = v
 }
 
-// GetNodeId returns the NodeId field value if set, zero value otherwise.
+// GetNodeId returns the NodeId field value
 func (o *ReportersNodeInfo) GetNodeId() string {
-	if o == nil || isNil(o.NodeId) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.NodeId
+
+	return o.NodeId
 }
 
-// GetNodeIdOk returns a tuple with the NodeId field value if set, nil otherwise
+// GetNodeIdOk returns a tuple with the NodeId field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetNodeIdOk() (*string, bool) {
-	if o == nil || isNil(o.NodeId) {
+	if o == nil {
 		return nil, false
 	}
-	return o.NodeId, true
+	return &o.NodeId, true
 }
 
-// HasNodeId returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasNodeId() bool {
-	if o != nil && !isNil(o.NodeId) {
-		return true
-	}
-
-	return false
-}
-
-// SetNodeId gets a reference to the given string and assigns it to the NodeId field.
+// SetNodeId sets field value
 func (o *ReportersNodeInfo) SetNodeId(v string) {
-	o.NodeId = &v
+	o.NodeId = v
 }
 
-// GetSecretsCount returns the SecretsCount field value if set, zero value otherwise.
+// GetSecretsCount returns the SecretsCount field value
 func (o *ReportersNodeInfo) GetSecretsCount() int32 {
-	if o == nil || isNil(o.SecretsCount) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.SecretsCount
+
+	return o.SecretsCount
 }
 
-// GetSecretsCountOk returns a tuple with the SecretsCount field value if set, nil otherwise
+// GetSecretsCountOk returns a tuple with the SecretsCount field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetSecretsCountOk() (*int32, bool) {
-	if o == nil || isNil(o.SecretsCount) {
+	if o == nil {
 		return nil, false
 	}
-	return o.SecretsCount, true
+	return &o.SecretsCount, true
 }
 
-// HasSecretsCount returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasSecretsCount() bool {
-	if o != nil && !isNil(o.SecretsCount) {
-		return true
-	}
-
-	return false
-}
-
-// SetSecretsCount gets a reference to the given int32 and assigns it to the SecretsCount field.
+// SetSecretsCount sets field value
 func (o *ReportersNodeInfo) SetSecretsCount(v int32) {
-	o.SecretsCount = &v
+	o.SecretsCount = v
 }
 
-// GetSecretsScanId returns the SecretsScanId field value if set, zero value otherwise.
+// GetSecretsScanId returns the SecretsScanId field value
 func (o *ReportersNodeInfo) GetSecretsScanId() string {
-	if o == nil || isNil(o.SecretsScanId) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.SecretsScanId
+
+	return o.SecretsScanId
 }
 
-// GetSecretsScanIdOk returns a tuple with the SecretsScanId field value if set, nil otherwise
+// GetSecretsScanIdOk returns a tuple with the SecretsScanId field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetSecretsScanIdOk() (*string, bool) {
-	if o == nil || isNil(o.SecretsScanId) {
+	if o == nil {
 		return nil, false
 	}
-	return o.SecretsScanId, true
+	return &o.SecretsScanId, true
 }
 
-// HasSecretsScanId returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasSecretsScanId() bool {
-	if o != nil && !isNil(o.SecretsScanId) {
-		return true
-	}
-
-	return false
-}
-
-// SetSecretsScanId gets a reference to the given string and assigns it to the SecretsScanId field.
+// SetSecretsScanId sets field value
 func (o *ReportersNodeInfo) SetSecretsScanId(v string) {
-	o.SecretsScanId = &v
+	o.SecretsScanId = v
 }
 
-// GetVulnerabilityCount returns the VulnerabilityCount field value if set, zero value otherwise.
+// GetVulnerabilityCount returns the VulnerabilityCount field value
 func (o *ReportersNodeInfo) GetVulnerabilityCount() int32 {
-	if o == nil || isNil(o.VulnerabilityCount) {
+	if o == nil {
 		var ret int32
 		return ret
 	}
-	return *o.VulnerabilityCount
+
+	return o.VulnerabilityCount
 }
 
-// GetVulnerabilityCountOk returns a tuple with the VulnerabilityCount field value if set, nil otherwise
+// GetVulnerabilityCountOk returns a tuple with the VulnerabilityCount field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetVulnerabilityCountOk() (*int32, bool) {
-	if o == nil || isNil(o.VulnerabilityCount) {
+	if o == nil {
 		return nil, false
 	}
-	return o.VulnerabilityCount, true
+	return &o.VulnerabilityCount, true
 }
 
-// HasVulnerabilityCount returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasVulnerabilityCount() bool {
-	if o != nil && !isNil(o.VulnerabilityCount) {
-		return true
-	}
-
-	return false
-}
-
-// SetVulnerabilityCount gets a reference to the given int32 and assigns it to the VulnerabilityCount field.
+// SetVulnerabilityCount sets field value
 func (o *ReportersNodeInfo) SetVulnerabilityCount(v int32) {
-	o.VulnerabilityCount = &v
+	o.VulnerabilityCount = v
 }
 
-// GetVulnerabilityScanId returns the VulnerabilityScanId field value if set, zero value otherwise.
+// GetVulnerabilityScanId returns the VulnerabilityScanId field value
 func (o *ReportersNodeInfo) GetVulnerabilityScanId() string {
-	if o == nil || isNil(o.VulnerabilityScanId) {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.VulnerabilityScanId
+
+	return o.VulnerabilityScanId
 }
 
-// GetVulnerabilityScanIdOk returns a tuple with the VulnerabilityScanId field value if set, nil otherwise
+// GetVulnerabilityScanIdOk returns a tuple with the VulnerabilityScanId field value
 // and a boolean to check if the value has been set.
 func (o *ReportersNodeInfo) GetVulnerabilityScanIdOk() (*string, bool) {
-	if o == nil || isNil(o.VulnerabilityScanId) {
+	if o == nil {
 		return nil, false
 	}
-	return o.VulnerabilityScanId, true
+	return &o.VulnerabilityScanId, true
 }
 
-// HasVulnerabilityScanId returns a boolean if a field has been set.
-func (o *ReportersNodeInfo) HasVulnerabilityScanId() bool {
-	if o != nil && !isNil(o.VulnerabilityScanId) {
-		return true
-	}
-
-	return false
-}
-
-// SetVulnerabilityScanId gets a reference to the given string and assigns it to the VulnerabilityScanId field.
+// SetVulnerabilityScanId sets field value
 func (o *ReportersNodeInfo) SetVulnerabilityScanId(v string) {
-	o.VulnerabilityScanId = &v
+	o.VulnerabilityScanId = v
 }
 
 func (o ReportersNodeInfo) MarshalJSON() ([]byte, error) {
@@ -346,33 +283,15 @@ func (o ReportersNodeInfo) MarshalJSON() ([]byte, error) {
 
 func (o ReportersNodeInfo) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !isNil(o.ComplianceCount) {
-		toSerialize["compliance_count"] = o.ComplianceCount
-	}
-	if !isNil(o.ComplianceScanId) {
-		toSerialize["compliance_scan_id"] = o.ComplianceScanId
-	}
-	if !isNil(o.ImageName) {
-		toSerialize["image_name"] = o.ImageName
-	}
-	if !isNil(o.Name) {
-		toSerialize["name"] = o.Name
-	}
-	if !isNil(o.NodeId) {
-		toSerialize["node_id"] = o.NodeId
-	}
-	if !isNil(o.SecretsCount) {
-		toSerialize["secrets_count"] = o.SecretsCount
-	}
-	if !isNil(o.SecretsScanId) {
-		toSerialize["secrets_scan_id"] = o.SecretsScanId
-	}
-	if !isNil(o.VulnerabilityCount) {
-		toSerialize["vulnerability_count"] = o.VulnerabilityCount
-	}
-	if !isNil(o.VulnerabilityScanId) {
-		toSerialize["vulnerability_scan_id"] = o.VulnerabilityScanId
-	}
+	toSerialize["compliance_count"] = o.ComplianceCount
+	toSerialize["compliance_scan_id"] = o.ComplianceScanId
+	toSerialize["image_name"] = o.ImageName
+	toSerialize["name"] = o.Name
+	toSerialize["node_id"] = o.NodeId
+	toSerialize["secrets_count"] = o.SecretsCount
+	toSerialize["secrets_scan_id"] = o.SecretsScanId
+	toSerialize["vulnerability_count"] = o.VulnerabilityCount
+	toSerialize["vulnerability_scan_id"] = o.VulnerabilityScanId
 	return toSerialize, nil
 }
 

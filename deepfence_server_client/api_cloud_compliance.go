@@ -26,11 +26,11 @@ type CloudComplianceApiService service
 type ApiIngestCloudCompliancesRequest struct {
 	ctx context.Context
 	ApiService *CloudComplianceApiService
-	ingestersCloudComplianceDoc *[]IngestersCloudComplianceDoc
+	ingestersCloudCompliance *[]IngestersCloudCompliance
 }
 
-func (r ApiIngestCloudCompliancesRequest) IngestersCloudComplianceDoc(ingestersCloudComplianceDoc []IngestersCloudComplianceDoc) ApiIngestCloudCompliancesRequest {
-	r.ingestersCloudComplianceDoc = &ingestersCloudComplianceDoc
+func (r ApiIngestCloudCompliancesRequest) IngestersCloudCompliance(ingestersCloudCompliance []IngestersCloudCompliance) ApiIngestCloudCompliancesRequest {
+	r.ingestersCloudCompliance = &ingestersCloudCompliance
 	return r
 }
 
@@ -90,7 +90,7 @@ func (a *CloudComplianceApiService) IngestCloudCompliancesExecute(r ApiIngestClo
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
 	// body params
-	localVarPostBody = r.ingestersCloudComplianceDoc
+	localVarPostBody = r.ingestersCloudCompliance
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -115,6 +115,17 @@ func (a *CloudComplianceApiService) IngestCloudCompliancesExecute(r ApiIngestClo
 		}
 		if localVarHTTPResponse.StatusCode == 400 {
 			var v ApiDocsBadRequestResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 404 {
+			var v ApiDocsFailureResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

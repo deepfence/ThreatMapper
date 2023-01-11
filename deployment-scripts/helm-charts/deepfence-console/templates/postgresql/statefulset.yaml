@@ -1,0 +1,118 @@
+{{- if not .Values.saas_deployment }}
+{{- if eq "deepfence-postgres" .Values.db.postgresUserDb.host }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: deepfence-postgres
+  labels:
+    app: deepfence-console
+    name: deepfence-postgres
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  serviceName: deepfence-postgres
+  replicas: {{ .Values.postgresql.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      name: deepfence-postgres
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: deepfence-console
+        name: deepfence-postgres
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - deepfence-postgres
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: false
+      containers:
+        - name: deepfence-postgresql
+          image: "{{ .Values.registry.imagePrefix }}{{ .Values.postgresql.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+          env:
+            - name: POSTGRES_USER_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: pg_user
+            - name: POSTGRES_USER_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: pg_password
+            - name: POSTGRES_USER_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: pg_users_db_name
+            - name: POSTGRES_USER_DB_SSLMODE
+              valueFrom:
+                secretKeyRef:
+                  name: "pg-secret-{{ include "deepfence-console.fullname" . }}"
+                  key: pg_ssl_mode
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - bash
+                - -ec
+                - 'PGPASSWORD="$POSTGRES_USER_DB_PASSWORD" psql -w -U "$POSTGRES_USER_DB_USER" -d "$POSTGRES_USER_DB_NAME" -h 127.0.0.1 -c "SELECT 1"'
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - bash
+                - -ec
+                - 'PGPASSWORD="$POSTGRES_USER_DB_PASSWORD" psql -w -U "$POSTGRES_USER_DB_USER" -d "$POSTGRES_USER_DB_NAME" -h 127.0.0.1 -c "SELECT 1"'
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          resources:
+            {{- toYaml .Values.postgresql.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      {{- with .Values.postgresql.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgresql.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ .Values.volume.postgresStorage }}"
+        storageClassName: {{ .Values.volume.storageClass }}
+{{- end }}
+{{- end }}
