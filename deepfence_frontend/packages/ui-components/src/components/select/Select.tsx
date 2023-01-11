@@ -15,7 +15,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { Typography } from '@/components/typography/Typography';
 
-export type SizeType = 'sm' | 'md';
+export type SizeType = 'xs' | 'sm' | 'md';
 export type ColorType = 'default' | 'error' | 'success';
 
 type Value = string | string[];
@@ -35,6 +35,7 @@ export interface SelectProps<T extends Value = Value> {
   helperText?: string;
   placeholder?: string;
   className?: string;
+  prefixComponent?: React.ReactNode;
 }
 
 type IconProps = {
@@ -111,6 +112,7 @@ export const classes = {
     ),
   },
   size: {
+    xs: `${Typography.size.sm} p-2`,
     sm: `${Typography.size.sm} p-3`,
     md: `${Typography.size.base} py-3.5 px-4`,
   },
@@ -133,6 +135,7 @@ export function Select<T extends Value>({
   placeholder,
   startIcon,
   className = '',
+  prefixComponent = null,
 }: SelectProps<T>) {
   const select = useSelectState<T>({
     defaultValue: defaultValue ?? ((Array.isArray(value) ? [] : '') as T),
@@ -157,43 +160,56 @@ export function Select<T extends Value>({
 
   return (
     <SelectStateContext.Provider value={select}>
-      <div className="flex flex-col gap-2">
+      <div className={`flex flex-col gap-1`}>
         <AriakitSelectLabel
           state={select}
-          className={cx(`${Typography.weight.medium} text-gray-900 dark:text-white`)}
+          className={cx(`${Typography.weight.medium} text-gray-900 dark:text-white`, {
+            [Typography.size.sm]: sizing === 'xs',
+          })}
           data-testid={`ariakit-label-${name}`}
         >
           {label}
         </AriakitSelectLabel>
-        <div className="relative">
-          <AriaKitSelect
-            state={select}
-            name={name}
-            className={twMerge(
-              cx(
-                'w-full border box-border rounded-lg bg-gray-50 dark:bg-gray-700',
-                'block text-left relative',
-                'focus:outline-none select-none overscroll-contain',
-                `${classes.color[color]}`,
-                `${classes.size[sizing]}`,
-                `${Typography.weight.normal}`,
-                `${Typography.leading.none}`,
-                {
-                  'pl-[38px]': startIcon,
-                  'h-[42px]': sizing === 'sm',
-                  'h-[52px]': sizing === 'md',
-                },
-                className,
-              ),
+        <div
+          className={cx(`${classes.color[color]}`, {
+            ['flex border box-border rounded-lg overflow-hidden']:
+              prefixComponent !== null,
+          })}
+        >
+          {prefixComponent !== null ? (
+            <div className={`flex items-center px-3 border-r ${classes.color[color]}`}>
+              {prefixComponent}
+            </div>
+          ) : null}
+          <div className="relative w-full">
+            <AriaKitSelect
+              state={select}
+              name={name}
+              className={twMerge(
+                cx(
+                  'w-full bg-gray-50 dark:bg-gray-700',
+                  'block text-left relative',
+                  'focus:outline-none select-none overscroll-contain',
+                  `${classes.color[color]}`,
+                  `${classes.size[sizing]}`,
+                  `${Typography.weight.normal}`,
+                  `${Typography.leading.none}`,
+                  {
+                    'pl-[38px]': startIcon,
+                    ['border box-border rounded-lg']: prefixComponent === null,
+                  },
+                  className,
+                ),
+              )}
+              data-testid={`ariakit-select-${name}`}
+            >
+              {placeholderValue}
+              <SelectArrow sizing={sizing} color={color} />
+            </AriaKitSelect>
+            {startIcon && (
+              <LeftIcon icon={startIcon} sizing={sizing} color={color} name={name} />
             )}
-            data-testid={`ariakit-select-${name}`}
-          >
-            {placeholderValue}
-            <SelectArrow sizing={sizing} color={color} />
-          </AriaKitSelect>
-          {startIcon && (
-            <LeftIcon icon={startIcon} sizing={sizing} color={color} name={name} />
-          )}
+          </div>
         </div>
         <AriakitSelectPopover
           portal
