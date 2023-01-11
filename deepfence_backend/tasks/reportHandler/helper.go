@@ -158,6 +158,20 @@ func syncPoliciesAndNotificationsSettings() {
 	if err != nil {
 		log.Error(err)
 	}
+	var malwareNotificationCount int
+	row = pgDB.QueryRow(
+		"SELECT COUNT(*) FROM malware_notification where duration_in_mins=-1")
+	err = row.Scan(&malwareNotificationCount)
+	if err != nil {
+		log.Error(err)
+	}
+	var secretNotificationCount int
+	row = pgDB.QueryRow(
+		"SELECT COUNT(*) FROM secret_notification where duration_in_mins=-1")
+	err = row.Scan(&secretNotificationCount)
+	if err != nil {
+		log.Error(err)
+	}
 	var complianceNotificationCount int
 	row = pgDB.QueryRow("SELECT COUNT(*) FROM compliance_report_notification where duration_in_mins=-1")
 	err = row.Scan(&complianceNotificationCount)

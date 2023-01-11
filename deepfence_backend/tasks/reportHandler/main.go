@@ -101,7 +101,7 @@ func init() {
 		gracefulExit(err)
 	}
 	time.Sleep(10 * time.Second)
-	tablesToCheck := []string{"vulnerability_notification", maskedCVEDBTable}
+	tablesToCheck := []string{"vulnerability_notification", "secret_notification", "malware_notification", maskedCVEDBTable}
 	for _, tableName := range tablesToCheck {
 		var tableExists bool
 		row := pgDB.QueryRow("SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1)", tableName)

@@ -32,7 +32,7 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK,NOTIFICATION_TYPE_SECRET, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
     NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY,NOTIFICATION_TYPE_MALWARE, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
-    INVITE_EXPIRY, NOTIFICATION_TYPE_COMPLIANCE, CVE_ES_TYPE, MALWARE_SCAN_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, \
+    INVITE_EXPIRY, NOTIFICATION_TYPE_COMPLIANCE, CVE_ES_TYPE, MALWARE_SCAN_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT,SECRET_SCAN_ES_TYPE \
     FILTER_TYPE_CLOUDTRAIL_TRAIL, INTEGRATION_TYPE_AWS_SECURITY_HUB, FILTER_TYPE_AWS_ACCOUNT_ID
 from utils import constants
 from config.redisconfig import redis
@@ -1420,6 +1420,8 @@ class IntegrationView(MethodView):
                 response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in user.malware_notifications:
                 response[notif.integration.integration_type].append(notif.pretty_print())
+            for notif in user.secret_notifications:
+                response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in user.user_activity_notification:
                 response[notif.integration.integration_type].append(notif.pretty_print())
             for notif in user.compliance_report_notifications:
@@ -2260,7 +2262,7 @@ def notify_to_integrations():
 
     missing_alerts = []
     notified_alerts = []
-    allowed_indices = [CVE_ES_TYPE,MALWARE_SCAN_ES_TYPE]
+    allowed_indices = [CVE_ES_TYPE,MALWARE_SCAN_ES_TYPE,SECRET_SCAN_ES_TYPE]
 
     index_wise_content_list = defaultdict(list)
     for doc in docs:
@@ -2283,6 +2285,8 @@ def notify_to_integrations():
             user_notifications = user.vulnerability_notifications
         if index_name == MALWARE_SCAN_ES_TYPE:
             user_notifications = user.malware_notifications
+        if index_name == SECRET_SCAN_ES_TYPE:
+            user_notifications = user.secret_notifications
         if user_notifications:
             user_notifications = {str(notification.integration_id): notification for notification in
                                   user_notifications}.values()

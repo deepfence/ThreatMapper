@@ -92,16 +92,18 @@ def notification_task(self, **kwargs):
                     MalwareNotification.duration_in_mins == -1).all()
                 for notification in malware_notifications:
                     for malware_doc in data:
-                        if not malware_doc.get("region") and malware_doc.get("cloud_provider"):
-                            malware_doc["region"] = "global"
-                    try:
-                        integration = integrations.get(notification.integration_id)
-                        integration.send(notification.format_content(data),
-                                         summary="Deepfence - Malware Results Subscription",
-                                         notification_id=notification.id,
-                                         resource_type=MALWARE_SCAN_ES_TYPE)
-                    except Exception as ex:
-                        flask_app.logger.error("Error sending notification: {0}".format(ex))
+                        filtered_malware_list = []
+                        if filter_malware_notification(notification.filters, malware_doc, topology_data):
+                            filtered_malware_list.append(malware_doc)
+                        if not filtered_malware_list:
+                            continue
+                        try:
+                            integration = integrations.get(notification.integration_id)
+                            integration.send(notification.format_content(filtered_malware_list),
+                                             summary="Deepfence - Malware Subscription",
+                                             notification_id=notification.id, resource_type=MALWARE_SCAN_ES_TYPE)
+                        except Exception as ex:
+                            flask_app.logger.error("Error sending notification: {0}".format(ex))
 
             elif notification_type == NOTIFICATION_TYPE_SECRET:
                 secret_notifications = SecretNotification.query.filter(
@@ -109,15 +111,16 @@ def notification_task(self, **kwargs):
                     SecretNotification.duration_in_mins == -1).all()
                 for notification in secret_notifications:
                     for secret_doc in data:
-                        if not secret_doc.get("region") and secret_doc.get("cloud_provider"):
-                            secret_doc["region"] = "global"
-                    try:
-                        integration = integrations.get(notification.integration_id)
-                        integration.send(notification.format_content(data),
-                                         summary="Deepfence - Secret Results Subscription",
-                                         notification_id=notification.id,
-                                         resource_type=SECRET_SCAN_ES_TYPE)
-                    except Exception as ex:
-                        flask_app.logger.error("Error sending notification: {0}".format(ex))
-    except Exception as exc:
+                        filtered_secret_list = []
+                        if filter_secret_notification(notification.filters, secret_doc, topology_data):
+                            filtered_secret_list.append(secret_doc)
+                        if not filtered_secret_list:
+                            continue
+                        try:
+                            integration = integrations.get(notification.integration_id)
+                            integration.send(notification.format_content(filtered_secret_list),
+                                             summary="Deepfence - Secret Subscription",
+                                             notification_id=notification.id, resource_type=SECRET_SCAN_ES_TYPE)
+                        except Exception as ex:
+                            flask_app.logger.error("Error sending notification: {0}".format(ex))    except Exception as exc:
         print(exc)
