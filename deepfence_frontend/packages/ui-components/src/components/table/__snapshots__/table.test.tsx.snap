@@ -1,35 +1,35 @@
 // Vitest Snapshot v1
 
-exports[`Component Table > should render a basic table > cells with border 0 1`] = `"<td style=\\"width: 150px;\\" class=\\"p-4 text-sm text-gray-900 dark:text-white font-normal border-b border-gray-200 dark:border-gray-700\\">0</td>"`;
+exports[`Component Table > should render a basic table > cells with border 0 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-sm text-gray-900 dark:text-white font-normal border-b border-gray-200 dark:border-gray-700 p-4\\">0</td>"`;
 
-exports[`Component Table > should render a basic table > cells with border 1 1`] = `"<td style=\\"width: 150px;\\" class=\\"p-4 text-sm text-gray-900 dark:text-white font-normal border-b border-gray-200 dark:border-gray-700\\">Fruit 0</td>"`;
+exports[`Component Table > should render a basic table > cells with border 1 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-sm text-gray-900 dark:text-white font-normal border-b border-gray-200 dark:border-gray-700 p-4\\">Fruit 0</td>"`;
 
-exports[`Component Table > should render a basic table > cells with border 2 1`] = `"<td style=\\"width: 150px;\\" class=\\"p-4 text-sm text-gray-900 dark:text-white font-normal border-b border-gray-200 dark:border-gray-700\\">Description for 0</td>"`;
+exports[`Component Table > should render a basic table > cells with border 2 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-sm text-gray-900 dark:text-white font-normal border-b border-gray-200 dark:border-gray-700 p-4\\">Description for 0</td>"`;
 
-exports[`Component Table > should render a basic table > cells without border 3 1`] = `"<td style=\\"width: 150px;\\" class=\\"p-4 text-sm text-gray-900 dark:text-white font-normal\\">1</td>"`;
+exports[`Component Table > should render a basic table > cells without border 3 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-sm text-gray-900 dark:text-white font-normal p-4\\">1</td>"`;
 
-exports[`Component Table > should render a basic table > cells without border 4 1`] = `"<td style=\\"width: 150px;\\" class=\\"p-4 text-sm text-gray-900 dark:text-white font-normal\\">Fruit 1</td>"`;
+exports[`Component Table > should render a basic table > cells without border 4 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-sm text-gray-900 dark:text-white font-normal p-4\\">Fruit 1</td>"`;
 
-exports[`Component Table > should render a basic table > cells without border 5 1`] = `"<td style=\\"width: 150px;\\" class=\\"p-4 text-sm text-gray-900 dark:text-white font-normal\\">Description for 1</td>"`;
+exports[`Component Table > should render a basic table > cells without border 5 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-sm text-gray-900 dark:text-white font-normal p-4\\">Description for 1</td>"`;
 
 exports[`Component Table > should render a basic table > row with hover state on normal table 1`] = `
 <tr
   class="hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors"
 >
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     1
   </td>
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     Fruit 1
   </td>
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     Description for 1
@@ -39,7 +39,7 @@ exports[`Component Table > should render a basic table > row with hover state on
 
 exports[`Component Table > should render a striped table > cells should not have border 1`] = `
 <td
-  class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+  class="text-sm text-gray-900 dark:text-white font-normal p-4"
   style="width: 150px;"
 >
   Fruit 0
@@ -51,19 +51,19 @@ exports[`Component Table > should render a striped table > even rows should have
   class="bg-gray-50 dark:bg-gray-700 hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors"
 >
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     1
   </td>
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     Fruit 1
   </td>
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     Description for 1
@@ -76,19 +76,19 @@ exports[`Component Table > should render a striped table > odd rows should have 
   class="hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors"
 >
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     0
   </td>
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     Fruit 0
   </td>
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     Description for 0
@@ -101,19 +101,19 @@ exports[`Component Table > should render a striped table > row with hover state 
   class="bg-gray-50 dark:bg-gray-700 hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors"
 >
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     1
   </td>
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     Fruit 1
   </td>
   <td
-    class="p-4 text-sm text-gray-900 dark:text-white font-normal"
+    class="text-sm text-gray-900 dark:text-white font-normal p-4"
     style="width: 150px;"
   >
     Description for 1

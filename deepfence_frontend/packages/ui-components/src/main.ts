@@ -26,7 +26,12 @@ export { default as Radio } from '@/components/radio/Radio';
 export { Select, SelectItem } from '@/components/select/Select';
 export { default as Separator } from '@/components/separator/Separator';
 export { default as Switch } from '@/components/switch/Switch';
-export { Table } from '@/components/table/Table';
+export {
+  createColumnHelper,
+  getRowExpanderColumn,
+  getRowSelectionColumn,
+  Table,
+} from '@/components/table/Table';
 export { default as Tabs } from '@/components/tabs/Tabs';
 export { Tooltip } from '@/components/tooltip/Tooltip';
 export { Typography } from '@/components/typography/Typography';

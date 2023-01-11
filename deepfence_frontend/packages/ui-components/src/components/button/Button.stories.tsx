@@ -18,6 +18,12 @@ Default.args = {
   children: 'Button text md',
 };
 
+export const NormalButton = Template.bind({});
+NormalButton.args = {
+  children: 'Button text md',
+  color: 'normal',
+};
+
 export const DefaultDisabled = Template.bind({});
 DefaultDisabled.args = {
   children: 'Default Disabled md size button',
@@ -34,6 +40,14 @@ export const DefaultTextLg = Template.bind({});
 DefaultTextLg.args = {
   children: 'Button text',
   size: 'lg',
+};
+
+export const NormalOutline = Template.bind({});
+NormalOutline.args = {
+  children: 'Button text',
+  color: 'normal',
+  size: 'xs',
+  outline: true,
 };
 
 export const Primary = Template.bind({});

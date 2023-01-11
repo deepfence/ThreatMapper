@@ -32,6 +32,7 @@ import { Checkbox } from '@/components/checkbox/Checkbox';
 import Pagination from '@/components/pagination/Pagination';
 import { Typography } from '@/components/typography/Typography';
 
+type SizeOf = 'sm' | 'md';
 export interface TableProps<TData extends RowData> {
   data: TData[];
   columns: ColumnDef<TData, any>[]; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -53,6 +54,7 @@ export interface TableProps<TData extends RowData> {
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   rowSelectionState?: RowSelectionState;
   getRowId?: TableOptions<TData>['getRowId'];
+  size?: SizeOf;
 }
 
 interface TableContextValues<TData extends RowData> {
@@ -89,6 +91,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     onRowSelectionChange,
     rowSelectionState,
     getRowId,
+    size = 'md',
   } = props;
   const TableContext = createTableContext<TData>();
 
@@ -185,8 +188,8 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
           cellPadding="0"
           cellSpacing="0"
         >
-          <TableHead headerGroups={headerGroups} />
-          <TableBody rowModel={rowModel} />
+          <TableHead headerGroups={headerGroups} size={size} />
+          <TableBody rowModel={rowModel} size={size} />
         </table>
       </div>
       {enablePagination ? (
@@ -205,13 +208,19 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
   );
 }
 
-function TableHead<TData>({ headerGroups }: { headerGroups: HeaderGroup<TData>[] }) {
+function TableHead<TData>({
+  headerGroups,
+  size,
+}: {
+  headerGroups: HeaderGroup<TData>[];
+  size: SizeOf;
+}) {
   return (
     <thead className="bg-gray-50 dark:bg-gray-700">
       {headerGroups.map((headerGroup) => (
         <tr key={headerGroup.id} data-testid="table-header-row">
           {headerGroup.headers.map((header) => (
-            <Th header={header} key={header.id} />
+            <Th header={header} key={header.id} size={size} />
           ))}
         </tr>
       ))}
@@ -219,7 +228,13 @@ function TableHead<TData>({ headerGroups }: { headerGroups: HeaderGroup<TData>[]
   );
 }
 
-function Th<TData>({ header }: { header: Header<TData, unknown> }) {
+function Th<TData>({
+  header,
+  size = 'md',
+}: {
+  header: Header<TData, unknown>;
+  size: SizeOf;
+}) {
   return (
     <th
       key={header.id}
@@ -235,7 +250,12 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
       style={{ width: header.getSize() }}
       onClick={header.column.getToggleSortingHandler()}
     >
-      <div className="w-full h-full flex p-4">
+      <div
+        className={cx(`w-full h-full flex`, {
+          ['p-3']: size === 'sm',
+          ['p-4']: size === 'md',
+        })}
+      >
         {header.isPlaceholder
           ? null
           : flexRender(header.column.columnDef.header, header.getContext())}
@@ -275,7 +295,13 @@ function Th<TData>({ header }: { header: Header<TData, unknown> }) {
   );
 }
 
-function TableBody<TData>({ rowModel }: { rowModel: RowModel<TData> }) {
+function TableBody<TData>({
+  rowModel,
+  size,
+}: {
+  rowModel: RowModel<TData>;
+  size: SizeOf;
+}) {
   const { striped, renderSubComponent } = useTableContext<TData>();
   return (
     <tbody>
@@ -297,6 +323,7 @@ function TableBody<TData>({ rowModel }: { rowModel: RowModel<TData> }) {
                 cell={cell}
                 key={cell.id}
                 totalRows={rowModel.rows.length}
+                size={size}
               />
             ))}
           </tr>
@@ -320,10 +347,12 @@ function Td<TData>({
   cell,
   totalRows,
   rowIdx,
+  size,
 }: {
   cell: Cell<TData, unknown>;
   totalRows: number;
   rowIdx: number;
+  size?: SizeOf;
 }) {
   const { striped } = useTableContext<TData>();
 
@@ -331,14 +360,12 @@ function Td<TData>({
     <td
       key={cell.id}
       style={{ width: cell.column.getSize() }}
-      className={cx(
-        `p-4 text-sm text-gray-900 dark:text-white`,
-        Typography.weight.normal,
-        {
-          'border-b border-gray-200 dark:border-gray-700':
-            !striped && rowIdx !== totalRows - 1,
-        },
-      )}
+      className={cx(`text-sm text-gray-900 dark:text-white`, Typography.weight.normal, {
+        'border-b border-gray-200 dark:border-gray-700':
+          !striped && rowIdx !== totalRows - 1,
+        ['p-2']: size === 'sm',
+        ['p-4']: size === 'md',
+      })}
     >
       {flexRender(cell.column.columnDef.cell, cell.getContext())}
     </td>

@@ -35,7 +35,7 @@ const Tabs = (props: TabProps) => {
     <TabsPrimitive.Root defaultValue={defaultValue} {...rest} data-testid={'tabs-testid'}>
       <TabsPrimitive.List
         className={cx(
-          'inline-flex gap-x-8 border-b bg-white border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 dark:bg-gray-900',
+          'inline-flex gap-x-8 border-b bg-transparent border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 dark:bg-gray-900',
         )}
       >
         {tabs.map(({ label, value, id, icon }) => {
@@ -47,7 +47,7 @@ const Tabs = (props: TabProps) => {
               data-testid={`tab-item-${_id}`}
               className={cx(
                 'group',
-                'outline-none pb-4 px-3',
+                'outline-none pb-2 px-3',
                 'radix-state-active:border-b radix-state-active:-mb-px radix-state-active:text-blue-600 radix-state-active:border-blue-600',
                 'dark:radix-state-active:border-blue-600',
                 'focus-visible:radix-state-active:ring-1 focus-visible:radix-state-active:ring-blue-200',
