@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import { Typography } from '@/components/typography/Typography';
 
 export type ButtonShape = 'default';
-export type ColorType = 'default' | 'primary' | 'danger' | 'success';
+export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 interface ButtonProps extends Omit<ComponentProps<'button'>, 'color'> {
@@ -35,6 +35,8 @@ export const classes = {
     danger: 'bg-red-500 text-white hover:bg-red-800 focus:ring-2 focus:ring-red-300',
     success:
       'bg-green-500 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-300',
+    normal:
+      'bg-white hover:bg-gray-100 text-gray-700 hover:text-gray-900 focus:text-gray-900 focus:ring-2 focus:ring-gray-200',
   },
   outline: {
     default:
@@ -45,6 +47,8 @@ export const classes = {
       'text-red-600 ring-1 ring-red-600 hover:bg-red-700 hover:text-white focus:ring-2 focus:ring-red-300',
     success:
       'text-green-500 ring-1 ring-green-500  hover:bg-green-500 hover:text-white focus:ring-2 focus:ring-green-300',
+    normal:
+      'bg-white ring-1 ring-gray-200  hover:bg-gray-100 text-gray-700 hover:text-gray-900 focus:text-gray-900 focus:ring-2 focus:ring-gray-200',
   },
   startIcon: {
     xs: 'mr-[10.4px]',
@@ -107,6 +111,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
               [classes.color.success]: color === 'success' && !outline,
               [classes.outline.success]: color === 'success' && outline,
+
+              [classes.color.normal]: color === 'normal' && !outline,
+              [classes.outline.normal]: color === 'normal' && outline,
 
               [classes.disabled]: disabled,
               'dark:text-white dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-2 dark:focus:ring-gray-400':

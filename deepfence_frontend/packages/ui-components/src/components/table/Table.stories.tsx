@@ -70,6 +70,11 @@ const Template: ComponentStory<typeof Table<Fruit>> = (args) => {
 export const Default = Template.bind({});
 Default.args = {};
 
+export const SmallTable = Template.bind({});
+SmallTable.args = {
+  size: 'sm',
+};
+
 export const StripedTable = Template.bind({});
 StripedTable.args = {
   striped: true,
