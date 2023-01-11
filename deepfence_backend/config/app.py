@@ -74,7 +74,7 @@ def register_extensions(app):
     # Don't remove these imports.
     # These are required for flask-migrate to make migrations.
     from models.integration import Integration
-    from models.notification import VulnerabilityNotification, UserActivityNotification
+    from models.notification import VulnerabilityNotification, UserActivityNotification, MalwareNotification, SecretNotification
     from models.system_events import SystemEvents
     from models.node_tags import NodeTags
     from models.compliance_rules import ComplianceRules

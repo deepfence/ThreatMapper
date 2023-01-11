@@ -47,7 +47,7 @@ const resourceCollection = [
     value: COMPLIANCE,
   },
   {
-    name: 'Malwares',
+    name: 'Malware',
     value: MALWARE,
   },
 ];

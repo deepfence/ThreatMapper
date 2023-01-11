@@ -6,11 +6,11 @@ import calendar
 import time
 from jira import JIRA, JIRAError
 from config.app import app, celery_app
-from models.notification import UserActivityNotification, VulnerabilityNotification
+from models.notification import UserActivityNotification, VulnerabilityNotification, MalwareNotification, SecretNotification
 from models.user_activity_log import UserActivityLog
 from models.user import User
 from utils.common import get_epochtime
-from utils.constants import FILTER_TYPE_IMAGE_NAME_WITH_TAG, CVE_ES_TYPE, USER_DEFINED_TAGS, \
+from utils.constants import FILTER_TYPE_IMAGE_NAME_WITH_TAG, CVE_ES_TYPE, USER_DEFINED_TAGS, MALWARE_SCAN_ES_TYPE \
     NODE_TYPE_POD, FILTER_TYPE_HOST_NAME, FILTER_TYPE_IMAGE_NAME, FILTER_TYPE_KUBE_CLUSTER_NAME, \
     FILTER_TYPE_KUBE_NAMESPACE, FILTER_TYPE_TAGS, NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
     CLOUDTRAIL_ALERT_ES_TYPE, COMPLIANCE_ES_TYPE, COMPLIANCE_LINUX_HOST, COMPLIANCE_TYPE_ASFF_MAPPING, \
@@ -134,6 +134,116 @@ def filter_vulnerability_notification(filters, cve, topology_data):
     else:
         return True
 
+def filter_malware_notification(filters, malware, topology_data):
+    if is_notification_filters_set(filters):
+        if filters.get(FILTER_TYPE_HOST_NAME, []):
+            if malware["container_image"] == malware["host_name"]:
+                if malware["host_name"] in filters[FILTER_TYPE_HOST_NAME]:
+                    return True
+        if filters.get(FILTER_TYPE_IMAGE_NAME, []):
+            if malware["container_image"] != malware["host_name"]:
+                if malware["container_image"] in filters[FILTER_TYPE_IMAGE_NAME]:
+                    return True
+        if filters.get(FILTER_TYPE_IMAGE_NAME_WITH_TAG, []):
+            if malware["container_image"] != malware["host_name"]:
+                if malware["container_image"] in filters[FILTER_TYPE_IMAGE_NAME_WITH_TAG]:
+                    return True
+        if filters.get(FILTER_TYPE_KUBE_CLUSTER_NAME, []):
+            if malware["container_image"] != malware["host_name"]:
+                k8s_cluster_names, k8s_namespaces = get_k8s_cluster_name_namespace_for_image(malware["container_image"],
+                                                                                             topology_data)
+                if any(item in filters[FILTER_TYPE_KUBE_CLUSTER_NAME] for item in k8s_cluster_names):
+                    return True
+            else:
+                for node_id, pod_details in topology_data[3].items():
+                    if malware["host_name"] == pod_details.get("host_name", ""):
+                        if pod_details["kubernetes_cluster_name"] in filters[FILTER_TYPE_KUBE_CLUSTER_NAME]:
+                            return True
+        if filters.get(FILTER_TYPE_KUBE_NAMESPACE, []):
+            if malware["container_image"] != malware["host_name"]:
+                k8s_cluster_names, k8s_namespaces = get_k8s_cluster_name_namespace_for_image(malware["container_image"],
+                                                                                             topology_data)
+                if any(item in filters[FILTER_TYPE_KUBE_NAMESPACE] for item in k8s_namespaces):
+                    return True
+        if filters.get(FILTER_TYPE_TAGS, []):
+            if malware["container_image"] == malware["host_name"]:
+                for node_id, host_details in topology_data[0].items():
+                    if malware["host_name"] == host_details.get("host_name", ""):
+                        if any(item in filters[FILTER_TYPE_TAGS] for item in host_details.get(USER_DEFINED_TAGS, [])):
+                            return True
+            if malware["container_image"] != malware["host_name"]:
+                if malware.get("container_name", "") and malware["container_name"] != malware["host_name"]:
+                    for node_id, container_details in topology_data[1].items():
+                        if malware["container_name"] == container_details.get("name", ""):
+                            if any(item in filters[FILTER_TYPE_TAGS] for item in
+                                   container_details.get(USER_DEFINED_TAGS, [])):
+                                return True
+                else:
+                    for node_id, image_details in topology_data[2].items():
+                        if malware["container_image"] == image_details.get("name", ""):
+                            if any(item in filters[FILTER_TYPE_TAGS] for item in
+                                   image_details.get(USER_DEFINED_TAGS, [])):
+                                return True
+        return False
+    else:
+        return True
+
+
+def filter_secret_notification(filters, secret, topology_data):
+    if is_notification_filters_set(filters):
+        if filters.get(FILTER_TYPE_HOST_NAME, []):
+            if secret["container_image"] == secret["host_name"]:
+                if secret["host_name"] in filters[FILTER_TYPE_HOST_NAME]:
+                    return True
+        if filters.get(FILTER_TYPE_IMAGE_NAME, []):
+            if secret["container_image"] != secret["host_name"]:
+                if secret["container_image"] in filters[FILTER_TYPE_IMAGE_NAME]:
+                    return True
+        if filters.get(FILTER_TYPE_IMAGE_NAME_WITH_TAG, []):
+            if secret["container_image"] != secret["host_name"]:
+                if secret["container_image"] in filters[FILTER_TYPE_IMAGE_NAME_WITH_TAG]:
+                    return True
+        if filters.get(FILTER_TYPE_KUBE_CLUSTER_NAME, []):
+            if secret["container_image"] != secret["host_name"]:
+                k8s_cluster_names, k8s_namespaces = get_k8s_cluster_name_namespace_for_image(secret["container_image"],
+                                                                                             topology_data)
+                if any(item in filters[FILTER_TYPE_KUBE_CLUSTER_NAME] for item in k8s_cluster_names):
+                    return True
+            else:
+                for node_id, pod_details in topology_data[3].items():
+                    if secret["host_name"] == pod_details.get("host_name", ""):
+                        if pod_details["kubernetes_cluster_name"] in filters[FILTER_TYPE_KUBE_CLUSTER_NAME]:
+                            return True
+        if filters.get(FILTER_TYPE_KUBE_NAMESPACE, []):
+            if secret["container_image"] != secret["host_name"]:
+                k8s_cluster_names, k8s_namespaces = get_k8s_cluster_name_namespace_for_image(secret["container_image"],
+                                                                                             topology_data)
+                if any(item in filters[FILTER_TYPE_KUBE_NAMESPACE] for item in k8s_namespaces):
+                    return True
+        if filters.get(FILTER_TYPE_TAGS, []):
+            if secret["container_image"] == secret["host_name"]:
+                for node_id, host_details in topology_data[0].items():
+                    if secret["host_name"] == host_details.get("host_name", ""):
+                        if any(item in filters[FILTER_TYPE_TAGS] for item in host_details.get(USER_DEFINED_TAGS, [])):
+                            return True
+            if secret["container_image"] != secret["host_name"]:
+                if secret.get("container_name", "") and secret["container_name"] != secret["host_name"]:
+                    for node_id, container_details in topology_data[1].items():
+                        if secret["container_name"] == container_details.get("name", ""):
+                            if any(item in filters[FILTER_TYPE_TAGS] for item in
+                                   container_details.get(USER_DEFINED_TAGS, [])):
+                                return True
+                else:
+                    for node_id, image_details in topology_data[2].items():
+                        if secret["container_image"] == image_details.get("name", ""):
+                            if any(item in filters[FILTER_TYPE_TAGS] for item in
+                                   image_details.get(USER_DEFINED_TAGS, [])):
+                                return True
+        return False
+    else:
+        return True
+
+
 def filter_compliance_notification(filters, compliance, topology_data):
     if is_notification_filters_set(filters):
         if filters.get(FILTER_TYPE_HOST_NAME, []):
@@ -248,6 +358,10 @@ def save_integrations_status(notification_id, resource_type, msg):
     notification_obj = None
     if resource_type == CVE_ES_TYPE:
         notification_obj = VulnerabilityNotification
+    if resource_type == MALWARE_SCAN_ES_TYPE:
+            notification_obj = MalwareNotification
+    if resource_type == SECRET_SCAN_ES_TYPE:
+        notification_obj = SecretNotification
     elif resource_type == CLOUDTRAIL_ALERT_ES_TYPE:
         notification_obj = CloudtrailAlertNotification
     else:

@@ -29,8 +29,8 @@ from utils.constants import INTEGRATION_TYPE_GOOGLE_CHRONICLE, USER_ROLES, SECRE
     INTEGRATION_TYPES, DURATION_IN_MINS, \
     INTEGRATION_TYPE_EMAIL, INTEGRATION_TYPE_ES, INTEGRATION_TYPE_SUMO_LOGIC, \
     INTEGRATION_TYPE_HTTP, INTEGRATION_TYPE_JIRA, INTEGRATION_TYPE_PAGERDUTY, INTEGRATION_TYPE_S3, \
-    INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
-    NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPES, \
+    INTEGRATION_TYPE_SLACK, INTEGRATION_TYPE_SPLUNK,NOTIFICATION_TYPE_SECRET, INTEGRATION_TYPE_MICROSOFT_TEAMS, \
+    NOTIFICATION_TYPE_USER_ACTIVITY, NOTIFICATION_TYPE_VULNERABILITY,NOTIFICATION_TYPE_MALWARE, NOTIFICATION_TYPES, \
     TOPOLOGY_USER_HOST_COUNT_MAP_REDIS_KEY, INTEGRATION_FILTER_TYPES, DEEPFENCE_KEY, DEEPFENCE_COMMUNITY_EMAIL, \
     INVITE_EXPIRY, NOTIFICATION_TYPE_COMPLIANCE, CVE_ES_TYPE, MALWARE_SCAN_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, \
     FILTER_TYPE_CLOUDTRAIL_TRAIL, INTEGRATION_TYPE_AWS_SECURITY_HUB, FILTER_TYPE_AWS_ACCOUNT_ID
@@ -595,6 +595,20 @@ def user_delete(user_id):
                 if db_row.integration.id not in integration_ids:
                     integration_ids.append(db_row.integration.id)
                 db_row.delete()
+    for db_obj in [MalwareNotification]:
+        db_rows = db_obj.query.filter_by(user_id=user_id).all()
+        if db_rows:
+            for db_row in db_rows:
+                if db_row.integration.id not in integration_ids:
+                    integration_ids.append(db_row.integration.id)
+                db_row.delete()
+    for db_obj in [SecretNotification]:
+        db_rows = db_obj.query.filter_by(user_id=user_id).all()
+        if db_rows:
+           for db_row in db_rows:
+                    if db_row.integration.id not in integration_ids:
+                        integration_ids.append(db_row.integration.id)
+                    db_row.delete()
     for integration_id in integration_ids:
         integration = Integration.query.get(integration_id)
         if integration:
@@ -1534,7 +1548,7 @@ class IntegrationView(MethodView):
         elif notification_type == NOTIFICATION_TYPE_MALWARE:
             notification = MalwareNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_SECRET:
-                    notification = SecretNotification.query.filter_by(id=id).one_or_none()
+            notification = SecretNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             notification = UserActivityNotification.query.filter_by(id=id).one_or_none()
         elif notification_type == NOTIFICATION_TYPE_COMPLIANCE:

@@ -34,6 +34,10 @@ const config = [
   {
     label: 'Malware Scan',
     value: 'malware-scan',
+  },
+  {
+    name: 'Secret Scan',
+    value: 'secret-scan',
   }
 ];
 
