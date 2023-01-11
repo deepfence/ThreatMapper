@@ -9,7 +9,7 @@ export const RegisterUser = () => {
 
   const { data, state } = fetcher;
 
-  const isFieldError = (field: string) => {
+  const hasFieldError = (field: string) => {
     if (data?.error_fields?.[field]) return true;
     return false;
   };
@@ -42,7 +42,7 @@ export const RegisterUser = () => {
             sizing="sm"
             name="first_name"
           />
-          {isFieldError('first_name') && (
+          {hasFieldError('first_name') && (
             <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
               {data?.error_fields?.first_name}
             </p>
@@ -55,7 +55,7 @@ export const RegisterUser = () => {
             name="last_name"
             className="mt-2.5"
           />
-          {isFieldError('last_name') && (
+          {hasFieldError('last_name') && (
             <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
               {data?.error_fields?.last_name}
             </p>
@@ -68,7 +68,7 @@ export const RegisterUser = () => {
             name="email"
             className="mt-2.5"
           />
-          {isFieldError('email') && (
+          {hasFieldError('email') && (
             <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
               {data?.error_fields?.email}
             </p>
@@ -81,7 +81,7 @@ export const RegisterUser = () => {
             name="password"
             className="mt-2.5"
           />
-          {isFieldError('password') && (
+          {hasFieldError('password') && (
             <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
               {data?.error_fields?.password}
             </p>
@@ -94,7 +94,7 @@ export const RegisterUser = () => {
             name="confirmPassword"
             className="mt-2.5"
           />
-          {isFieldError('confirmPassword') && (
+          {hasFieldError('confirmPassword') && (
             <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
               {data?.error_fields?.confirmPassword}
             </p>

@@ -10,6 +10,7 @@ export const registeruserAction = async ({
   params: Record<string, unknown>;
 }) => {
   const formData = await request.formData();
+  // add console_url which is the origin of request
   formData.append('console_url', window.location.origin);
   const body = Object.fromEntries(formData);
   const password = formData.get('password');
