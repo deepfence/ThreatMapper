@@ -150,11 +150,13 @@ class Node(object):
                         "scan_id": scan_id, "mask_cve_ids": mask_cve_ids}
         celery_task_id = "cve_scan:" + scan_id
         if priority:
-            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),task_id=celery_task_id, kwargs={"scan_details": scan_details},
-                                             queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
+            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
+                                 task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                 queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
         else:
-            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(), task_id=celery_task_id,
-                             kwargs={"scan_details": scan_details}, queue=constants.VULNERABILITY_SCAN_QUEUE)
+            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
+                                 task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                 queue=constants.VULNERABILITY_SCAN_QUEUE)
         return True
 
     def cve_scan_stop(self):

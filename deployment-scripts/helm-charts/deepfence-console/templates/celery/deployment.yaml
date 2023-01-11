@@ -79,7 +79,7 @@ spec:
             - name: deepfence_namespace
               value: {{ .Release.Namespace }}
             - name: VULNERABILITY_SCAN_CONCURRENCY
-              value: "15"
+              value: "25"
             - name: POSTGRES_USER_DB_HOST
               valueFrom:
                 secretKeyRef:
