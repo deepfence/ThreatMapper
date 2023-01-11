@@ -7,9 +7,9 @@ import LogoDarkBlue from '../../../assets/logo-deepfence-dark-blue.svg';
 
 export const Login = () => {
   const fetcher = useFetcher<ModelResponse>();
-  const { data, state } = fetcher;
+  const { data } = fetcher;
 
-  const isFieldError = (field: string) => {
+  const hasFieldError = (field: string) => {
     if (data?.error_fields?.[field]) return true;
     return false;
   };
@@ -42,7 +42,7 @@ export const Login = () => {
             sizing="sm"
             name="email"
           />
-          {isFieldError('email') && (
+          {hasFieldError('email') && (
             <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
               {data?.error_fields?.email}
             </p>
@@ -55,7 +55,7 @@ export const Login = () => {
             sizing="sm"
             name="password"
           />
-          {isFieldError('password') && (
+          {hasFieldError('password') && (
             <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
               {data?.error_fields?.password}
             </p>
