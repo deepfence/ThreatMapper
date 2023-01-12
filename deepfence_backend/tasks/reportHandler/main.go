@@ -29,6 +29,8 @@ type NotificationSettings struct {
 	vulnerabilityNotificationsSet bool
 	complianceNotificationsSet    bool
 	cloudTrailNotificationsSet    bool
+	secretNotificationsSet        bool
+	malwareNotificationsSet       bool
 	sync.RWMutex
 }
 
@@ -120,6 +122,8 @@ func init() {
 		vulnerabilityNotificationsSet: false,
 		complianceNotificationsSet:    false,
 		cloudTrailNotificationsSet:    false,
+		secretNotificationsSet:        false,
+		malwareNotificationsSet:       false,
 	}
 
 	esScheme := os.Getenv("ELASTICSEARCH_SCHEME")
@@ -200,6 +204,20 @@ func createCeleryTasks(resourceType string, messages []interface{}) {
 		if cloudTrailNotificationsSet {
 			createNotificationCeleryTask(resourceType, messages)
 		}
+	} else if resourceType == resourceTypeMalware {
+		notificationSettings.RLock()
+		malwareNotificationsSet := notificationSettings.malwareNotificationsSet
+		notificationSettings.RUnlock()
+		if malwareNotificationsSet {
+			createNotificationCeleryTask(resourceType, messages)
+		}
+	} else if resourceType == resourceTypeSecret {
+		notificationSettings.RLock()
+		secretNotificationsSet := notificationSettings.secretNotificationsSet
+		notificationSettings.RUnlock()
+		if secretNotificationsSet {
+			createNotificationCeleryTask(resourceType, messages)
+		}
 	}
 }
 
@@ -272,6 +290,8 @@ func main() {
 	go batchMessages(ctx, resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
 	go batchMessages(ctx, resourceTypeCompliance, &complianceTaskQueue, 100)
 	go batchMessages(ctx, resourceTypeCloudTrailAlert, &cloudTrailTaskQueue, 100)
+	go batchMessages(ctx, resourceTypeMalware, &complianceTaskQueue, 100)
+	go batchMessages(ctx, resourceTypeSecret, &cloudTrailTaskQueue, 100)
 
 	// load cve's from db
 	maskedCVELock.Lock()

@@ -18,6 +18,8 @@ const (
 	resourceTypeVulnerability   = "vulnerability"
 	resourceTypeCompliance      = "compliance"
 	resourceTypeCloudTrailAlert = "cloudtrail-alert"
+	resourceTypeSecret          = "secret-scan"
+	resourceTypeMalware         = "malware-scan"
 	celeryNotificationTask      = "tasks.notification_worker.notification_task"
 )
 
