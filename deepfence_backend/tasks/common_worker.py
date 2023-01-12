@@ -1315,8 +1315,8 @@ def malware_pdf_report(filters, lucene_query_string, number, time_unit, resource
         if node_type == NODE_TYPE_HOST:
             for host_name in df[df['node_type'] == node_type]['host_name'].unique():
                 df2 = df[(df['host_name'] == host_name) & (df['node_type'] == node_type)][
-                    ['CompleteFilename', 'RuleName', 'FileSeverity', 'FileSevScore']].sort_values('FileSevScore',
-                                                                                                  ascending=False)
+                    ['CompleteFilename', 'Class', 'Summary', 'RuleName', 'FileSeverity', 'FileSevScore']
+                ].sort_values('FileSevScore', ascending=False)
                 df2.insert(0, 'ID', range(1, 1 + len(df2)))
                 secret_data = df2.to_dict('records')
                 start_index = 0
@@ -1324,7 +1324,7 @@ def malware_pdf_report(filters, lucene_query_string, number, time_unit, resource
                 content_length = 0
                 end_index = 0
                 while arr_index < len(secret_data):
-                    content_length += len(secret_data[arr_index]['CompleteFilename'])
+                    content_length += len(secret_data[arr_index]['Summary'])
                     if content_length > 1900 or end_index - start_index > 21:
                         end_index = arr_index
                         node_wise_malware_html += template_env.get_template(
@@ -1347,8 +1347,8 @@ def malware_pdf_report(filters, lucene_query_string, number, time_unit, resource
                 name = "node_name"
             for node_name in df[df['node_type'] == node_type][name].unique():
                 df2 = df[(df[name] == node_name) & (df['node_type'] == node_type)][
-                    ['CompleteFilename', 'RuleName', 'FileSeverity', 'FileSevScore']].sort_values('FileSevScore',
-                                                                                                  ascending=False)
+                    ['CompleteFilename', 'Class', 'Summary', 'RuleName', 'FileSeverity', 'FileSevScore']
+                ].sort_values('FileSevScore', ascending=False)
                 df2.insert(0, 'ID', range(1, 1 + len(df2)))
                 secret_data = df2.to_dict('records')
                 start_index = 0
@@ -1356,7 +1356,7 @@ def malware_pdf_report(filters, lucene_query_string, number, time_unit, resource
                 content_length = 0
                 end_index = 0
                 while arr_index < len(secret_data):
-                    content_length += len(secret_data[arr_index]['CompleteFilename'])
+                    content_length += len(secret_data[arr_index]['Summary'])
                     if content_length > 1900 or end_index - start_index > 21:
                         end_index = arr_index
                         node_wise_malware_html += template_env.get_template(

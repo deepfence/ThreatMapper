@@ -24,12 +24,10 @@ header_fields = {
                            'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type'],
     "secret-scan-header": ['Filename', 'Content', 'Name', 'Rule', 'Severity', 'Node Name', 'Container Name',
                            'Kubernetes Cluster Name', 'NodeType'],
-    "malware-scan-source": ['Match.full_filename', 'Match.matched_strings', 'rule_name', 'severity',
-                           'meta', 'meta_rules', 'file_severity_score', 'file_severity', 'summary', 'node_name',
-                           'container_name', 'kubernetes_cluster_name', 'node_type'],
-    "malware-scan-header": ['Filename', 'Content', 'Rule Name', 'Severity', 'Meta', 'Meta Rules', 
-                            'File Severity Score', 'File Severity' , 'Summary', 'Node Name', 'Container Name',
-                            'Kubernetes Cluster Name', 'NodeType']
+    "malware-scan-source": ['RuleName', 'SeverityScore', 'Meta', 'MetaRules', 'FileSevScore', 'FileSeverity', 'Summary',
+                            'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type'],
+    "malware-scan-header": ['Rule Name', 'Severity', 'Meta', 'Meta Rules', 'File Severity Score', 'File Severity',
+                            'Summary', 'Node Name', 'Container Name', 'Kubernetes Cluster Name', 'NodeType']
 }
 
 sheet_name = {
@@ -181,7 +179,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             continue
         if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-header"]
-        if resource_type == MALWARE_SCAN_ES_TYPE:
+        elif resource_type == MALWARE_SCAN_ES_TYPE:
             headers = header_fields["malware-scan-header"]
         else:
             headers = header_fields[resource_type]
@@ -481,15 +479,17 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 hits = fetch_documents(modify_es_index(resource_type), query_body)
                 global_hits.extend(hits)
 
-        if node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
-            if resource_type == SECRET_SCAN_ES_TYPE:
+        if node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE,
+                                                                        MALWARE_SCAN_ES_TYPE]:
+            if resource_type in [SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE]:
                 container_image = "node_name"
             else:
                 container_image = "cve_container_image"
             get_all_docs(image_name_with_tag_list, cve_scan_id_list, and_terms, container_image, global_hits,
                          resource_type)
-        elif node_type == NODE_TYPE_CONTAINER and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
-            if resource_type == SECRET_SCAN_ES_TYPE:
+        elif node_type == NODE_TYPE_CONTAINER and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE,
+                                                                    MALWARE_SCAN_ES_TYPE]:
+            if resource_type in [SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE]:
                 container_name = "container_name"
             else:
                 container_name = "cve_container_name"
@@ -507,7 +507,8 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             and_terms.append({"term": {"cloud_provider.keyword": node_type}})
             # here resource_type has to be CLOUD_COMPLIANCE_ES_TYPE for cloud
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, CLOUD_COMPLIANCE_ES_TYPE)
-        elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
+        elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE,
+                                                              MALWARE_SCAN_ES_TYPE]:
             get_all_docs(pod_names, cve_scan_id_list, and_terms, "pod_name", global_hits, resource_type)
 
         global_hits = global_hits[:max_size]
