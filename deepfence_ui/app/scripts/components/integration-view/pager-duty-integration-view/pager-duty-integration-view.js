@@ -47,10 +47,6 @@ const resourceCollection = [
   {
     name: 'Secret Scan',
     value: 'secret-scan',
-  },
-  {
-    name: 'Secret Scan',
-    value: 'secret-scan',
   }
 ];
 const allNodeType = 'host,container_image,pod,aws';

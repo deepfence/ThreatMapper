@@ -2111,9 +2111,9 @@ class IntegrationView(MethodView):
 
         if notification_type == NOTIFICATION_TYPE_VULNERABILITY:
             create_notification(VulnerabilityNotification)
-        if notification_type == NOTIFICATION_TYPE_MALWARE:
+        elif notification_type == NOTIFICATION_TYPE_MALWARE:
             create_notification(MalwareNotification)
-        if notification_type == NOTIFICATION_TYPE_SECRET:
+        elif notification_type == NOTIFICATION_TYPE_SECRET:
             create_notification(SecretNotification)
         elif notification_type == NOTIFICATION_TYPE_USER_ACTIVITY:
             create_notification(UserActivityNotification)
