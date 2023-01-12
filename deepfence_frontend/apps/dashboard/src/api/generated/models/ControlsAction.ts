@@ -24,13 +24,13 @@ export interface ControlsAction {
      * @type {number}
      * @memberof ControlsAction
      */
-    id?: number;
+    id: number;
     /**
      * 
-     * @type {Array<number>}
+     * @type {string}
      * @memberof ControlsAction
      */
-    request_payload?: Array<number> | null;
+    request_payload: string;
 }
 
 /**
@@ -38,6 +38,8 @@ export interface ControlsAction {
  */
 export function instanceOfControlsAction(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "request_payload" in value;
 
     return isInstance;
 }
@@ -52,8 +54,8 @@ export function ControlsActionFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'request_payload': !exists(json, 'request_payload') ? undefined : json['request_payload'],
+        'id': json['id'],
+        'request_payload': json['request_payload'],
     };
 }
 

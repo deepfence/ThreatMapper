@@ -31,13 +31,13 @@ export interface ControlsAgentControls {
      * @type {number}
      * @memberof ControlsAgentControls
      */
-    beatrate?: number;
+    beatrate: number;
     /**
      * 
      * @type {Array<ControlsAction>}
      * @memberof ControlsAgentControls
      */
-    commands?: Array<ControlsAction> | null;
+    commands: Array<ControlsAction> | null;
 }
 
 /**
@@ -45,6 +45,8 @@ export interface ControlsAgentControls {
  */
 export function instanceOfControlsAgentControls(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "beatrate" in value;
+    isInstance = isInstance && "commands" in value;
 
     return isInstance;
 }
@@ -59,8 +61,8 @@ export function ControlsAgentControlsFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'beatrate': !exists(json, 'beatrate') ? undefined : json['beatrate'],
-        'commands': !exists(json, 'commands') ? undefined : (json['commands'] === null ? null : (json['commands'] as Array<any>).map(ControlsActionFromJSON)),
+        'beatrate': json['beatrate'],
+        'commands': (json['commands'] === null ? null : (json['commands'] as Array<any>).map(ControlsActionFromJSON)),
     };
 }
 
@@ -74,7 +76,7 @@ export function ControlsAgentControlsToJSON(value?: ControlsAgentControls | null
     return {
         
         'beatrate': value.beatrate,
-        'commands': value.commands === undefined ? undefined : (value.commands === null ? null : (value.commands as Array<any>).map(ControlsActionToJSON)),
+        'commands': (value.commands === null ? null : (value.commands as Array<any>).map(ControlsActionToJSON)),
     };
 }
 

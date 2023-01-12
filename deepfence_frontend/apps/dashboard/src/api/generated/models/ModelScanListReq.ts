@@ -13,51 +13,60 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelFetchWindow } from './ModelFetchWindow';
+import {
+    ModelFetchWindowFromJSON,
+    ModelFetchWindowFromJSONTyped,
+    ModelFetchWindowToJSON,
+} from './ModelFetchWindow';
+
 /**
  * 
  * @export
- * @interface ReportersConnectionSummary
+ * @interface ModelScanListReq
  */
-export interface ReportersConnectionSummary {
+export interface ModelScanListReq {
     /**
      * 
      * @type {string}
-     * @memberof ReportersConnectionSummary
+     * @memberof ModelScanListReq
      */
-    source?: string;
+    node_id: string;
     /**
      * 
-     * @type {string}
-     * @memberof ReportersConnectionSummary
+     * @type {ModelFetchWindow}
+     * @memberof ModelScanListReq
      */
-    target?: string;
+    window: ModelFetchWindow;
 }
 
 /**
- * Check if a given object implements the ReportersConnectionSummary interface.
+ * Check if a given object implements the ModelScanListReq interface.
  */
-export function instanceOfReportersConnectionSummary(value: object): boolean {
+export function instanceOfModelScanListReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "window" in value;
 
     return isInstance;
 }
 
-export function ReportersConnectionSummaryFromJSON(json: any): ReportersConnectionSummary {
-    return ReportersConnectionSummaryFromJSONTyped(json, false);
+export function ModelScanListReqFromJSON(json: any): ModelScanListReq {
+    return ModelScanListReqFromJSONTyped(json, false);
 }
 
-export function ReportersConnectionSummaryFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersConnectionSummary {
+export function ModelScanListReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanListReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'source': !exists(json, 'source') ? undefined : json['source'],
-        'target': !exists(json, 'target') ? undefined : json['target'],
+        'node_id': json['node_id'],
+        'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
-export function ReportersConnectionSummaryToJSON(value?: ReportersConnectionSummary | null): any {
+export function ModelScanListReqToJSON(value?: ModelScanListReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -66,8 +75,8 @@ export function ReportersConnectionSummaryToJSON(value?: ReportersConnectionSumm
     }
     return {
         
-        'source': value.source,
-        'target': value.target,
+        'node_id': value.node_id,
+        'window': ModelFetchWindowToJSON(value.window),
     };
 }
 

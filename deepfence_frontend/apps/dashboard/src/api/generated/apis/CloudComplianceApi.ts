@@ -17,19 +17,19 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  IngestersCloudComplianceDoc,
+  IngestersCloudCompliance,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    IngestersCloudComplianceDocFromJSON,
-    IngestersCloudComplianceDocToJSON,
+    IngestersCloudComplianceFromJSON,
+    IngestersCloudComplianceToJSON,
 } from '../models';
 
 export interface IngestCloudCompliancesRequest {
-    ingestersCloudComplianceDoc?: Array<IngestersCloudComplianceDoc> | null;
+    ingestersCloudCompliance?: Array<IngestersCloudCompliance> | null;
 }
 
 /**
@@ -42,7 +42,7 @@ export interface CloudComplianceApiInterface {
     /**
      * Ingest Cloud compliances found while scanning cloud provider
      * @summary Ingest Cloud Compliances
-     * @param {Array<IngestersCloudComplianceDoc>} [ingestersCloudComplianceDoc] 
+     * @param {Array<IngestersCloudCompliance>} [ingestersCloudCompliance] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CloudComplianceApiInterface
@@ -86,7 +86,7 @@ export class CloudComplianceApi extends runtime.BaseAPI implements CloudComplian
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersCloudComplianceDoc?.map(IngestersCloudComplianceDocToJSON),
+            body: requestParameters.ingestersCloudCompliance?.map(IngestersCloudComplianceToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

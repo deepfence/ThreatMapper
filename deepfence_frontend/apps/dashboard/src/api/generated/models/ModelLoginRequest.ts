@@ -24,13 +24,13 @@ export interface ModelLoginRequest {
      * @type {string}
      * @memberof ModelLoginRequest
      */
-    email?: string;
+    email: string;
     /**
      * 
      * @type {string}
      * @memberof ModelLoginRequest
      */
-    password?: string;
+    password: string;
 }
 
 /**
@@ -38,6 +38,8 @@ export interface ModelLoginRequest {
  */
 export function instanceOfModelLoginRequest(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "email" in value;
+    isInstance = isInstance && "password" in value;
 
     return isInstance;
 }
@@ -52,8 +54,8 @@ export function ModelLoginRequestFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'email': !exists(json, 'email') ? undefined : json['email'],
-        'password': !exists(json, 'password') ? undefined : json['password'],
+        'email': json['email'],
+        'password': json['password'],
     };
 }
 

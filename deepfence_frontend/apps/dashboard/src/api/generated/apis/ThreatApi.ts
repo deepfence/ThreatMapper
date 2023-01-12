@@ -76,7 +76,7 @@ export class ThreatApi extends runtime.BaseAPI implements ThreatApiInterface {
         }
         const response = await this.request({
             path: `/deepfence/graph/threat`,
-            method: 'GET',
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);

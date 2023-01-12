@@ -24,55 +24,55 @@ export interface ReportersNodeInfo {
      * @type {number}
      * @memberof ReportersNodeInfo
      */
-    compliance_count?: number;
+    compliance_count: number;
     /**
      * 
      * @type {string}
      * @memberof ReportersNodeInfo
      */
-    compliance_scan_id?: string;
+    compliance_scan_id: string;
     /**
      * 
      * @type {string}
      * @memberof ReportersNodeInfo
      */
-    image_name?: string;
+    image_name: string;
     /**
      * 
      * @type {string}
      * @memberof ReportersNodeInfo
      */
-    name?: string;
+    name: string;
     /**
      * 
      * @type {string}
      * @memberof ReportersNodeInfo
      */
-    node_id?: string;
+    node_id: string;
     /**
      * 
      * @type {number}
      * @memberof ReportersNodeInfo
      */
-    secrets_count?: number;
+    secrets_count: number;
     /**
      * 
      * @type {string}
      * @memberof ReportersNodeInfo
      */
-    secrets_scan_id?: string;
+    secrets_scan_id: string;
     /**
      * 
      * @type {number}
      * @memberof ReportersNodeInfo
      */
-    vulnerability_count?: number;
+    vulnerability_count: number;
     /**
      * 
      * @type {string}
      * @memberof ReportersNodeInfo
      */
-    vulnerability_scan_id?: string;
+    vulnerability_scan_id: string;
 }
 
 /**
@@ -80,6 +80,15 @@ export interface ReportersNodeInfo {
  */
 export function instanceOfReportersNodeInfo(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "compliance_count" in value;
+    isInstance = isInstance && "compliance_scan_id" in value;
+    isInstance = isInstance && "image_name" in value;
+    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "secrets_scan_id" in value;
+    isInstance = isInstance && "vulnerability_count" in value;
+    isInstance = isInstance && "vulnerability_scan_id" in value;
 
     return isInstance;
 }
@@ -94,15 +103,15 @@ export function ReportersNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'compliance_count': !exists(json, 'compliance_count') ? undefined : json['compliance_count'],
-        'compliance_scan_id': !exists(json, 'compliance_scan_id') ? undefined : json['compliance_scan_id'],
-        'image_name': !exists(json, 'image_name') ? undefined : json['image_name'],
-        'name': !exists(json, 'name') ? undefined : json['name'],
-        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
-        'secrets_count': !exists(json, 'secrets_count') ? undefined : json['secrets_count'],
-        'secrets_scan_id': !exists(json, 'secrets_scan_id') ? undefined : json['secrets_scan_id'],
-        'vulnerability_count': !exists(json, 'vulnerability_count') ? undefined : json['vulnerability_count'],
-        'vulnerability_scan_id': !exists(json, 'vulnerability_scan_id') ? undefined : json['vulnerability_scan_id'],
+        'compliance_count': json['compliance_count'],
+        'compliance_scan_id': json['compliance_scan_id'],
+        'image_name': json['image_name'],
+        'name': json['name'],
+        'node_id': json['node_id'],
+        'secrets_count': json['secrets_count'],
+        'secrets_scan_id': json['secrets_scan_id'],
+        'vulnerability_count': json['vulnerability_count'],
+        'vulnerability_scan_id': json['vulnerability_scan_id'],
     };
 }
 

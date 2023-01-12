@@ -16,151 +16,151 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface IngestersCloudComplianceDoc
+ * @interface IngestersCloudCompliance
  */
-export interface IngestersCloudComplianceDoc {
+export interface IngestersCloudCompliance {
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     timestamp?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     account_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     cloud_provider?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     compliance_check_type?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     control_id?: string;
     /**
      * 
      * @type {number}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     count?: number;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     description?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     doc_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     group?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     masked?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     node_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     node_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     reason?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     region?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     resource?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     scan_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     service?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     severity?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     status?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     title?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersCloudComplianceDoc
+     * @memberof IngestersCloudCompliance
      */
     type?: string;
 }
 
 /**
- * Check if a given object implements the IngestersCloudComplianceDoc interface.
+ * Check if a given object implements the IngestersCloudCompliance interface.
  */
-export function instanceOfIngestersCloudComplianceDoc(value: object): boolean {
+export function instanceOfIngestersCloudCompliance(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function IngestersCloudComplianceDocFromJSON(json: any): IngestersCloudComplianceDoc {
-    return IngestersCloudComplianceDocFromJSONTyped(json, false);
+export function IngestersCloudComplianceFromJSON(json: any): IngestersCloudCompliance {
+    return IngestersCloudComplianceFromJSONTyped(json, false);
 }
 
-export function IngestersCloudComplianceDocFromJSONTyped(json: any, ignoreDiscriminator: boolean): IngestersCloudComplianceDoc {
+export function IngestersCloudComplianceFromJSONTyped(json: any, ignoreDiscriminator: boolean): IngestersCloudCompliance {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -190,7 +190,7 @@ export function IngestersCloudComplianceDocFromJSONTyped(json: any, ignoreDiscri
     };
 }
 
-export function IngestersCloudComplianceDocToJSON(value?: IngestersCloudComplianceDoc | null): any {
+export function IngestersCloudComplianceToJSON(value?: IngestersCloudCompliance | null): any {
     if (value === undefined) {
         return undefined;
     }

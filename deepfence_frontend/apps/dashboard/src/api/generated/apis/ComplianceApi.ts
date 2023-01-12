@@ -17,19 +17,60 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  IngestersComplianceDoc,
+  IngestersCompliance,
+  ModelScanListReq,
+  ModelScanListResp,
+  ModelScanResultsReq,
+  ModelScanResultsResp,
+  ModelScanStatusResp,
+  ModelScanTriggerReq,
+  ModelScanTriggerResp,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    IngestersComplianceDocFromJSON,
-    IngestersComplianceDocToJSON,
+    IngestersComplianceFromJSON,
+    IngestersComplianceToJSON,
+    ModelScanListReqFromJSON,
+    ModelScanListReqToJSON,
+    ModelScanListRespFromJSON,
+    ModelScanListRespToJSON,
+    ModelScanResultsReqFromJSON,
+    ModelScanResultsReqToJSON,
+    ModelScanResultsRespFromJSON,
+    ModelScanResultsRespToJSON,
+    ModelScanStatusRespFromJSON,
+    ModelScanStatusRespToJSON,
+    ModelScanTriggerReqFromJSON,
+    ModelScanTriggerReqToJSON,
+    ModelScanTriggerRespFromJSON,
+    ModelScanTriggerRespToJSON,
 } from '../models';
 
 export interface IngestCompliancesRequest {
-    ingestersComplianceDoc?: Array<IngestersComplianceDoc> | null;
+    ingestersCompliance?: Array<IngestersCompliance> | null;
+}
+
+export interface ListComplianceScanRequest {
+    modelScanListReq?: ModelScanListReq;
+}
+
+export interface ResultsComplianceScanRequest {
+    modelScanResultsReq?: ModelScanResultsReq;
+}
+
+export interface StartComplianceScanRequest {
+    modelScanTriggerReq?: ModelScanTriggerReq;
+}
+
+export interface StatusComplianceScanRequest {
+    scanId: string;
+}
+
+export interface StopComplianceScanRequest {
+    modelScanTriggerReq?: ModelScanTriggerReq;
 }
 
 /**
@@ -42,7 +83,7 @@ export interface ComplianceApiInterface {
     /**
      * Ingest compliance issues found while scanning the agent
      * @summary Ingest Compliances
-     * @param {Array<IngestersComplianceDoc>} [ingestersComplianceDoc] 
+     * @param {Array<IngestersCompliance>} [ingestersCompliance] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
@@ -56,19 +97,84 @@ export interface ComplianceApiInterface {
     ingestCompliances(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
-     * Start Compliance Scan on agent
-     * @summary Start Compliance Scan
+     * Get Compliance Scans list on agent or registry
+     * @summary Get Compliance Scans List
+     * @param {ModelScanListReq} [modelScanListReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
      */
-    startComplianceScanRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    listComplianceScanRaw(requestParameters: ListComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanListResp>>;
 
     /**
-     * Start Compliance Scan on agent
+     * Get Compliance Scans list on agent or registry
+     * Get Compliance Scans List
+     */
+    listComplianceScan(requestParameters: ListComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanListResp>;
+
+    /**
+     * Get Compliance Scans results on agent or registry
+     * @summary Get Compliance Scans Results
+     * @param {ModelScanResultsReq} [modelScanResultsReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ComplianceApiInterface
+     */
+    resultsComplianceScanRaw(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanResultsResp>>;
+
+    /**
+     * Get Compliance Scans results on agent or registry
+     * Get Compliance Scans Results
+     */
+    resultsComplianceScan(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanResultsResp>;
+
+    /**
+     * Start Compliance Scan on agent or registry
+     * @summary Start Compliance Scan
+     * @param {ModelScanTriggerReq} [modelScanTriggerReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ComplianceApiInterface
+     */
+    startComplianceScanRaw(requestParameters: StartComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanTriggerResp>>;
+
+    /**
+     * Start Compliance Scan on agent or registry
      * Start Compliance Scan
      */
-    startComplianceScan(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    startComplianceScan(requestParameters: StartComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanTriggerResp>;
+
+    /**
+     * Get Compliance Scan Status on agent or registry
+     * @summary Get Compliance Scan Status
+     * @param {string} scanId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ComplianceApiInterface
+     */
+    statusComplianceScanRaw(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanStatusResp>>;
+
+    /**
+     * Get Compliance Scan Status on agent or registry
+     * Get Compliance Scan Status
+     */
+    statusComplianceScan(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanStatusResp>;
+
+    /**
+     * Stop Compliance Scan on agent or registry
+     * @summary Stop Compliance Scan
+     * @param {ModelScanTriggerReq} [modelScanTriggerReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ComplianceApiInterface
+     */
+    stopComplianceScanRaw(requestParameters: StopComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Stop Compliance Scan on agent or registry
+     * Stop Compliance Scan
+     */
+    stopComplianceScan(requestParameters: StopComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -101,7 +207,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersComplianceDoc?.map(IngestersComplianceDocToJSON),
+            body: requestParameters.ingestersCompliance?.map(IngestersComplianceToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -116,11 +222,136 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
     }
 
     /**
-     * Start Compliance Scan on agent
+     * Get Compliance Scans list on agent or registry
+     * Get Compliance Scans List
+     */
+    async listComplianceScanRaw(requestParameters: ListComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanListResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/list/compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanListReqToJSON(requestParameters.modelScanListReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanListRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Compliance Scans list on agent or registry
+     * Get Compliance Scans List
+     */
+    async listComplianceScan(requestParameters: ListComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanListResp> {
+        const response = await this.listComplianceScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Compliance Scans results on agent or registry
+     * Get Compliance Scans Results
+     */
+    async resultsComplianceScanRaw(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanResultsResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/results/compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanResultsReqToJSON(requestParameters.modelScanResultsReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanResultsRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Compliance Scans results on agent or registry
+     * Get Compliance Scans Results
+     */
+    async resultsComplianceScan(requestParameters: ResultsComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanResultsResp> {
+        const response = await this.resultsComplianceScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Start Compliance Scan on agent or registry
      * Start Compliance Scan
      */
-    async startComplianceScanRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async startComplianceScanRaw(requestParameters: StartComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanTriggerResp>> {
         const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/start/compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanTriggerReqToJSON(requestParameters.modelScanTriggerReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanTriggerRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Start Compliance Scan on agent or registry
+     * Start Compliance Scan
+     */
+    async startComplianceScan(requestParameters: StartComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanTriggerResp> {
+        const response = await this.startComplianceScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Compliance Scan Status on agent or registry
+     * Get Compliance Scan Status
+     */
+    async statusComplianceScanRaw(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanStatusResp>> {
+        if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
+            throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling statusComplianceScan.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.scanId !== undefined) {
+            queryParameters['scan_id'] = requestParameters.scanId;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -133,21 +364,60 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             }
         }
         const response = await this.request({
-            path: `/deepfence/scan/start/compliances`,
+            path: `/deepfence/scan/status/compliance`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanStatusRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Compliance Scan Status on agent or registry
+     * Get Compliance Scan Status
+     */
+    async statusComplianceScan(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanStatusResp> {
+        const response = await this.statusComplianceScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Stop Compliance Scan on agent or registry
+     * Stop Compliance Scan
+     */
+    async stopComplianceScanRaw(requestParameters: StopComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/stop/compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanTriggerReqToJSON(requestParameters.modelScanTriggerReq),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * Start Compliance Scan on agent
-     * Start Compliance Scan
+     * Stop Compliance Scan on agent or registry
+     * Stop Compliance Scan
      */
-    async startComplianceScan(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.startComplianceScanRaw(initOverrides);
+    async stopComplianceScan(requestParameters: StopComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.stopComplianceScanRaw(requestParameters, initOverrides);
     }
 
 }

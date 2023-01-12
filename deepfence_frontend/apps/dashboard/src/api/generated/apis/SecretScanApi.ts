@@ -18,6 +18,14 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   IngestersSecret,
+  IngestersSecretScanStatus,
+  ModelScanListReq,
+  ModelScanListResp,
+  ModelScanResultsReq,
+  ModelScanResultsResp,
+  ModelScanStatusResp,
+  ModelScanTriggerReq,
+  ModelScanTriggerResp,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -26,10 +34,50 @@ import {
     ApiDocsFailureResponseToJSON,
     IngestersSecretFromJSON,
     IngestersSecretToJSON,
+    IngestersSecretScanStatusFromJSON,
+    IngestersSecretScanStatusToJSON,
+    ModelScanListReqFromJSON,
+    ModelScanListReqToJSON,
+    ModelScanListRespFromJSON,
+    ModelScanListRespToJSON,
+    ModelScanResultsReqFromJSON,
+    ModelScanResultsReqToJSON,
+    ModelScanResultsRespFromJSON,
+    ModelScanResultsRespToJSON,
+    ModelScanStatusRespFromJSON,
+    ModelScanStatusRespToJSON,
+    ModelScanTriggerReqFromJSON,
+    ModelScanTriggerReqToJSON,
+    ModelScanTriggerRespFromJSON,
+    ModelScanTriggerRespToJSON,
 } from '../models';
+
+export interface IngestSecretScanStatusRequest {
+    ingestersSecretScanStatus?: Array<IngestersSecretScanStatus> | null;
+}
 
 export interface IngestSecretsRequest {
     ingestersSecret?: Array<IngestersSecret> | null;
+}
+
+export interface ListSecretScanRequest {
+    modelScanListReq?: ModelScanListReq;
+}
+
+export interface ResultsSecretScanRequest {
+    modelScanResultsReq?: ModelScanResultsReq;
+}
+
+export interface StartSecretScanRequest {
+    modelScanTriggerReq?: ModelScanTriggerReq;
+}
+
+export interface StatusSecretScanRequest {
+    scanId: string;
+}
+
+export interface StopSecretScanRequest {
+    modelScanTriggerReq?: ModelScanTriggerReq;
 }
 
 /**
@@ -39,6 +87,22 @@ export interface IngestSecretsRequest {
  * @interface SecretScanApiInterface
  */
 export interface SecretScanApiInterface {
+    /**
+     * Ingest secrets scan status from the agent
+     * @summary Ingest Secrets Scan Status
+     * @param {Array<IngestersSecretScanStatus>} [ingestersSecretScanStatus] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SecretScanApiInterface
+     */
+    ingestSecretScanStatusRaw(requestParameters: IngestSecretScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Ingest secrets scan status from the agent
+     * Ingest Secrets Scan Status
+     */
+    ingestSecretScanStatus(requestParameters: IngestSecretScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
     /**
      * Ingest secrets found while scanning the agent
      * @summary Ingest Secrets
@@ -56,19 +120,84 @@ export interface SecretScanApiInterface {
     ingestSecrets(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
-     * Start Secret Scan on agent
-     * @summary Start Secret Scan
+     * Get Secret Scans list on agent or registry
+     * @summary Get Secret Scans List
+     * @param {ModelScanListReq} [modelScanListReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SecretScanApiInterface
      */
-    startSecretScanRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    listSecretScanRaw(requestParameters: ListSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanListResp>>;
 
     /**
-     * Start Secret Scan on agent
+     * Get Secret Scans list on agent or registry
+     * Get Secret Scans List
+     */
+    listSecretScan(requestParameters: ListSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanListResp>;
+
+    /**
+     * Get Secret Scans results on agent or registry
+     * @summary Get Secret Scans Results
+     * @param {ModelScanResultsReq} [modelScanResultsReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SecretScanApiInterface
+     */
+    resultsSecretScanRaw(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanResultsResp>>;
+
+    /**
+     * Get Secret Scans results on agent or registry
+     * Get Secret Scans Results
+     */
+    resultsSecretScan(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanResultsResp>;
+
+    /**
+     * Start Secret Scan on agent or registry
+     * @summary Start Secret Scan
+     * @param {ModelScanTriggerReq} [modelScanTriggerReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SecretScanApiInterface
+     */
+    startSecretScanRaw(requestParameters: StartSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanTriggerResp>>;
+
+    /**
+     * Start Secret Scan on agent or registry
      * Start Secret Scan
      */
-    startSecretScan(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    startSecretScan(requestParameters: StartSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanTriggerResp>;
+
+    /**
+     * Get Secret Scan Status on agent or registry
+     * @summary Get Secret Scan Status
+     * @param {string} scanId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SecretScanApiInterface
+     */
+    statusSecretScanRaw(requestParameters: StatusSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanStatusResp>>;
+
+    /**
+     * Get Secret Scan Status on agent or registry
+     * Get Secret Scan Status
+     */
+    statusSecretScan(requestParameters: StatusSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanStatusResp>;
+
+    /**
+     * Stop Secret Scan on agent or registry
+     * @summary Stop Secret Scan
+     * @param {ModelScanTriggerReq} [modelScanTriggerReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SecretScanApiInterface
+     */
+    stopSecretScanRaw(requestParameters: StopSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Stop Secret Scan on agent or registry
+     * Stop Secret Scan
+     */
+    stopSecretScan(requestParameters: StopSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -76,6 +205,44 @@ export interface SecretScanApiInterface {
  * 
  */
 export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInterface {
+
+    /**
+     * Ingest secrets scan status from the agent
+     * Ingest Secrets Scan Status
+     */
+    async ingestSecretScanStatusRaw(requestParameters: IngestSecretScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/ingest/secret-scan-logs`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters.ingestersSecretScanStatus?.map(IngestersSecretScanStatusToJSON),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Ingest secrets scan status from the agent
+     * Ingest Secrets Scan Status
+     */
+    async ingestSecretScanStatus(requestParameters: IngestSecretScanStatusRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.ingestSecretScanStatusRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Ingest secrets found while scanning the agent
@@ -116,11 +283,136 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
     }
 
     /**
-     * Start Secret Scan on agent
+     * Get Secret Scans list on agent or registry
+     * Get Secret Scans List
+     */
+    async listSecretScanRaw(requestParameters: ListSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanListResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/list/secret`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanListReqToJSON(requestParameters.modelScanListReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanListRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Secret Scans list on agent or registry
+     * Get Secret Scans List
+     */
+    async listSecretScan(requestParameters: ListSecretScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanListResp> {
+        const response = await this.listSecretScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Secret Scans results on agent or registry
+     * Get Secret Scans Results
+     */
+    async resultsSecretScanRaw(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanResultsResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/results/secret`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanResultsReqToJSON(requestParameters.modelScanResultsReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanResultsRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Secret Scans results on agent or registry
+     * Get Secret Scans Results
+     */
+    async resultsSecretScan(requestParameters: ResultsSecretScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanResultsResp> {
+        const response = await this.resultsSecretScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Start Secret Scan on agent or registry
      * Start Secret Scan
      */
-    async startSecretScanRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async startSecretScanRaw(requestParameters: StartSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanTriggerResp>> {
         const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/start/secret`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanTriggerReqToJSON(requestParameters.modelScanTriggerReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanTriggerRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Start Secret Scan on agent or registry
+     * Start Secret Scan
+     */
+    async startSecretScan(requestParameters: StartSecretScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanTriggerResp> {
+        const response = await this.startSecretScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Secret Scan Status on agent or registry
+     * Get Secret Scan Status
+     */
+    async statusSecretScanRaw(requestParameters: StatusSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanStatusResp>> {
+        if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
+            throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling statusSecretScan.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.scanId !== undefined) {
+            queryParameters['scan_id'] = requestParameters.scanId;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -133,21 +425,60 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
             }
         }
         const response = await this.request({
-            path: `/deepfence/scan/start/secrets`,
+            path: `/deepfence/scan/status/secret`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanStatusRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Secret Scan Status on agent or registry
+     * Get Secret Scan Status
+     */
+    async statusSecretScan(requestParameters: StatusSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanStatusResp> {
+        const response = await this.statusSecretScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Stop Secret Scan on agent or registry
+     * Stop Secret Scan
+     */
+    async stopSecretScanRaw(requestParameters: StopSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/stop/secret`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanTriggerReqToJSON(requestParameters.modelScanTriggerReq),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * Start Secret Scan on agent
-     * Start Secret Scan
+     * Stop Secret Scan on agent or registry
+     * Stop Secret Scan
      */
-    async startSecretScan(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.startSecretScanRaw(initOverrides);
+    async stopSecretScan(requestParameters: StopSecretScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.stopSecretScanRaw(requestParameters, initOverrides);
     }
 
 }

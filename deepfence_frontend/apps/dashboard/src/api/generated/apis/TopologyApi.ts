@@ -17,19 +17,54 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ControlsAgentControls,
-  ReportersRenderedGraph,
+  ApiDocsGraphResult,
+  ModelContainer,
+  ModelHost,
+  ModelProcess,
+  ModelRawReport,
+  ReportersLookupFilter,
+  ReportersTopologyFilters,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ControlsAgentControlsFromJSON,
-    ControlsAgentControlsToJSON,
-    ReportersRenderedGraphFromJSON,
-    ReportersRenderedGraphToJSON,
+    ApiDocsGraphResultFromJSON,
+    ApiDocsGraphResultToJSON,
+    ModelContainerFromJSON,
+    ModelContainerToJSON,
+    ModelHostFromJSON,
+    ModelHostToJSON,
+    ModelProcessFromJSON,
+    ModelProcessToJSON,
+    ModelRawReportFromJSON,
+    ModelRawReportToJSON,
+    ReportersLookupFilterFromJSON,
+    ReportersLookupFilterToJSON,
+    ReportersTopologyFiltersFromJSON,
+    ReportersTopologyFiltersToJSON,
 } from '../models';
+
+export interface GetContainersRequest {
+    reportersLookupFilter?: ReportersLookupFilter;
+}
+
+export interface GetHostsRequest {
+    reportersLookupFilter?: ReportersLookupFilter;
+}
+
+export interface GetProcessesRequest {
+    reportersLookupFilter?: ReportersLookupFilter;
+}
+
+export interface GetTopologyGraphRequest {
+    reportersTopologyFilters?: ReportersTopologyFilters;
+}
+
+export interface IngestAgentReportRequest {
+    modelRawReport?: ModelRawReport;
+}
 
 /**
  * TopologyApi - interface
@@ -39,34 +74,84 @@ import {
  */
 export interface TopologyApiInterface {
     /**
-     * Retrieve the full topology graph associated with the account
-     * @summary Get Topology Graph
+     * Retrieve all the data associated with containers
+     * @summary Retrieve Containers data
+     * @param {ReportersLookupFilter} [reportersLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getTopologyGraphRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReportersRenderedGraph>>;
+    getContainersRaw(requestParameters: GetContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainer>>>;
+
+    /**
+     * Retrieve all the data associated with containers
+     * Retrieve Containers data
+     */
+    getContainers(requestParameters: GetContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainer>>;
+
+    /**
+     * Retrieve all the data associated with hosts
+     * @summary Retrieve Hosts data
+     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TopologyApiInterface
+     */
+    getHostsRaw(requestParameters: GetHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelHost>>>;
+
+    /**
+     * Retrieve all the data associated with hosts
+     * Retrieve Hosts data
+     */
+    getHosts(requestParameters: GetHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>>;
+
+    /**
+     * Retrieve all the data associated with processes
+     * @summary Retrieve Processes data
+     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TopologyApiInterface
+     */
+    getProcessesRaw(requestParameters: GetProcessesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelProcess>>>;
+
+    /**
+     * Retrieve all the data associated with processes
+     * Retrieve Processes data
+     */
+    getProcesses(requestParameters: GetProcessesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelProcess>>;
+
+    /**
+     * Retrieve the full topology graph associated with the account
+     * @summary Get Topology Graph
+     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TopologyApiInterface
+     */
+    getTopologyGraphRaw(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
 
     /**
      * Retrieve the full topology graph associated with the account
      * Get Topology Graph
      */
-    getTopologyGraph(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReportersRenderedGraph>;
+    getTopologyGraph(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
 
     /**
      * Ingest data reported by one Agent
      * @summary Ingest Topology Data
+     * @param {ModelRawReport} [modelRawReport] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    ingestAgentReportRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsAgentControls>>;
+    ingestAgentReportRaw(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    ingestAgentReport(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls>;
+    ingestAgentReport(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -76,13 +161,132 @@ export interface TopologyApiInterface {
 export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface {
 
     /**
-     * Retrieve the full topology graph associated with the account
-     * Get Topology Graph
+     * Retrieve all the data associated with containers
+     * Retrieve Containers data
      */
-    async getTopologyGraphRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReportersRenderedGraph>> {
+    async getContainersRaw(requestParameters: GetContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainer>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/containers`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with containers
+     * Retrieve Containers data
+     */
+    async getContainers(requestParameters: GetContainersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainer>> {
+        const response = await this.getContainersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with hosts
+     * Retrieve Hosts data
+     */
+    async getHostsRaw(requestParameters: GetHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelHost>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/hosts`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelHostFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with hosts
+     * Retrieve Hosts data
+     */
+    async getHosts(requestParameters: GetHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>> {
+        const response = await this.getHostsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with processes
+     * Retrieve Processes data
+     */
+    async getProcessesRaw(requestParameters: GetProcessesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelProcess>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/processes`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelProcessFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with processes
+     * Retrieve Processes data
+     */
+    async getProcesses(requestParameters: GetProcessesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelProcess>> {
+        const response = await this.getProcessesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve the full topology graph associated with the account
+     * Get Topology Graph
+     */
+    async getTopologyGraphRaw(requestParameters: GetTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -94,20 +298,21 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
         }
         const response = await this.request({
             path: `/deepfence/graph/topology`,
-            method: 'GET',
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ReportersRenderedGraphFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
     }
 
     /**
      * Retrieve the full topology graph associated with the account
      * Get Topology Graph
      */
-    async getTopologyGraph(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReportersRenderedGraph> {
-        const response = await this.getTopologyGraphRaw(initOverrides);
+    async getTopologyGraph(requestParameters: GetTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+        const response = await this.getTopologyGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -115,10 +320,12 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    async ingestAgentReportRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsAgentControls>> {
+    async ingestAgentReportRaw(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -133,18 +340,18 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ModelRawReportToJSON(requestParameters.modelRawReport),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ControlsAgentControlsFromJSON(jsonValue));
+        return new runtime.VoidApiResponse(response);
     }
 
     /**
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    async ingestAgentReport(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls> {
-        const response = await this.ingestAgentReportRaw(initOverrides);
-        return await response.value();
+    async ingestAgentReport(requestParameters: IngestAgentReportRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.ingestAgentReportRaw(requestParameters, initOverrides);
     }
 
 }
