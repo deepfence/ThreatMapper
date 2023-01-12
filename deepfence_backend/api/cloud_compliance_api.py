@@ -963,14 +963,9 @@ def cloud_compliance_node_scans():
         es_index, filters, start_index, sort_order, number=number,
         time_unit=TIME_UNIT_MAPPING.get(time_unit), size=page_size, lucene_query_string=lucene_query_string)
     hits = es_resp.get("hits", [])
-    added_scan_id = {}
     for scan in hits:
         source = scan.get("_source", {})
         scan_id = source.get("scan_id")
-        if added_scan_id.get(scan_id, False):
-            continue
-        else:
-            added_scan_id[scan_id] = True
         result = {}
         if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
             es_index = COMPLIANCE_INDEX
@@ -1198,7 +1193,7 @@ def start_cloud_compliance_scan(node_id):
                 node.compliance_start_scan(compliance_check_type, None)
         if post_data.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
             scan_id = node_id + "_" + datetime.now().strftime(
-                "%Y-%m-%dT%H:%M:%S") + ".000"
+                "%Y-%m-%dT%H:%M:%S.%f")
             time_time = time.time()
             es_doc = {
                 "total_checks": 0,
@@ -1218,11 +1213,16 @@ def start_cloud_compliance_scan(node_id):
                 "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] + "Z"
             }
             ESConn.create_doc(COMPLIANCE_LOGS_INDEX, es_doc)
-            scan_list = [{
+            scan_list = []
+            current_pending_scans = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id)
+
+            if current_pending_scans:
+                scan_list.extend(json.loads(current_pending_scans))
+            scan_list.append({
                 "scan_id": scan_id,
                 "scan_type": "nsa-cisa",
                 "account_id": node_id
-            }]
+            })
             redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id, json.dumps(scan_list))
 
         return set_response(data={"message": "Scans queued successfully"}, status=200)
@@ -1587,20 +1587,10 @@ def register_kubernetes():
     if not current_pending_scans_str:
         return set_response(data={"scans": {}}, status=200)
     current_pending_scans = json.loads(current_pending_scans_str)
-    pending_scans_available = False
     scan_list = {}
     for scan in current_pending_scans:
-        filters = {
-            "node_id": kubernetes_id,
-            "scan_id": scan["scan_id"],
-            "scan_status": ["IN_PROGRESS", "ERROR", "COMPLETED"]
-        }
-        compliance_log = ESConn.search_by_and_clause(COMPLIANCE_LOGS_INDEX, filters, size=1)
-        if not compliance_log.get("hits", []):
-            pending_scans_available = True
-            scan_list[scan["scan_id"]] = scan
-    if not pending_scans_available:
-        redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id, "")
+        scan_list[scan["scan_id"]] = scan
+    redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id, "")
     return set_response(data={"scans": scan_list}, status=200)
 
 
