@@ -17,13 +17,13 @@ const canRoute = (pathname: string) => {
   if (pathname.includes('view-scan-results')) {
     path.viewResult = '/onboard/view-scan-results';
     path.scanResult = '/onboard/scan-infrastructure';
-    path.addConnector = '/onboard/connectors';
+    path.addConnector = '/onboard/add-connectors';
   } else if (pathname.includes('scan-infrastructure')) {
     path.scanResult = '/onboard/scan-infrastructure';
-    path.addConnector = '/onboard/connectors';
+    path.addConnector = '/onboard/add-connectors';
     path.viewResult = '#';
   } else if (pathname.includes('connectors')) {
-    path.addConnector = '/onboard/connectors';
+    path.addConnector = '/onboard/add-connectors';
     path.scanResult = '#';
     path.viewResult = '#';
   }

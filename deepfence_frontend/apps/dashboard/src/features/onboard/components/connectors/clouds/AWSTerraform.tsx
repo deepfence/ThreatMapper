@@ -123,13 +123,17 @@ $ terraform apply`;
                 />
               </div>
             </Card>
-            <div className="flex mt-6">
+            <div className="flex flex-col mt-6">
+              <p className={`${Typography.size.xs}`}>
+                Note: After successfully run the commands above, your connector will
+                appear on MyConnector page, then you can perform scanning.
+              </p>
               <Button
                 size="xs"
                 color="primary"
                 className="ml-auto"
                 onClick={() => {
-                  navigate('/onboard/scan-infrastructure/cloud/aws');
+                  navigate('/onboard/my-connectors');
                 }}
               >
                 Go to connectors

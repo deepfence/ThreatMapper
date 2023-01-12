@@ -14,16 +14,26 @@ export const privateRoutes: RouteObject[] = [
     loader: rootOnboardLoader,
     children: [
       {
-        path: 'connectors',
+        path: 'add-connectors',
         element: <Outlet />,
         children: [
           {
             index: true,
-            element: <Connector />,
+            element: <Connector page="add-connectors" />,
           },
           {
             path: 'cloud/aws',
             element: <AWSConnector />,
+          },
+        ],
+      },
+      {
+        path: 'my-connectors',
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <Connector page="my-connectors" />,
           },
         ],
       },
