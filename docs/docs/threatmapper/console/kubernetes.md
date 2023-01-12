@@ -50,7 +50,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases) (recommended), specify the release tag as follows:
 
     ```bash
-    helm install deepfence-console deepfence/deepfence-console --set image.tag=1.4.1
+    helm install deepfence-console deepfence/deepfence-console --set image.tag=1.4.2
     ```
     :::
 
@@ -84,7 +84,7 @@ You can perform a rolling upgrade of the Management Console to a new, tagged rel
 
    ```bash
    helm repo update deepfence
-   helm upgrade deepfence-console deepfence/deepfence-console --set image.tag=1.4.1
+   helm upgrade deepfence-console deepfence/deepfence-console --set image.tag=1.4.2
    helm upgrade deepfence-router deepfence/deepfence-router
    ```
 
