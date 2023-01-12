@@ -127,15 +127,17 @@ const sidebars = {
 
     {
       type: 'category',
-      label: 'Notifications',
+      label: 'Integrations',
       link: {
         type: 'doc',
-        id: 'threatmapper/notifications/index'
+        id: 'threatmapper/integrations/index'
       },
       items: [
-        'threatmapper/notifications/pagerduty',
-        'threatmapper/notifications/slack',
-        'threatmapper/notifications/sumo-logic',
+        'threatmapper/integrations/pagerduty',
+        'threatmapper/integrations/slack',
+        'threatmapper/integrations/microsoft-teams',
+        'threatmapper/integrations/sumo-logic',
+        'threatmapper/integrations/jira',
       ],
     },
 

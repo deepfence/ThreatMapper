@@ -79,14 +79,14 @@ RUN mkdir -p /home/deepfence/bin/yara-hunter \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_services \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.8.1/vessel_v0.8.1_linux_amd64.tar.gz \
-    && tar -xzf vessel_v0.8.1_linux_amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.9.0/vessel_v0.9.0_linux_amd64.tar.gz \
+    && tar -xzf vessel_v0.9.0_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel_v0.8.1_linux_amd64.tar.gz \
-    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v0.23.0/nerdctl-0.23.0-linux-amd64.tar.gz \
-    && tar Cxzvvf /usr/local/bin nerdctl-0.23.0-linux-amd64.tar.gz \
-    && rm nerdctl-0.23.0-linux-amd64.tar.gz \
-    && VERSION="v1.24.1" \
+    && rm -rf vessel_v0.9.0_linux_amd64.tar.gz \
+    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v1.1.0/nerdctl-1.1.0-linux-amd64.tar.gz \
+    && tar Cxzvvf /usr/local/bin nerdctl-1.1.0-linux-amd64.tar.gz \
+    && rm nerdctl-1.1.0-linux-amd64.tar.gz \
+    && VERSION="v1.26.0" \
     && curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz \
     && tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin \
     && rm -f crictl-$VERSION-linux-amd64.tar.gz

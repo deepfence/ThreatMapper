@@ -418,6 +418,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			CollectStats:           true,
 			HostID:                 hostID,
 			HandlerRegistry:        handlerRegistry,
+			DockerEndpoint:         os.Getenv("DOCKER_SOCKET_PATH"),
 			NoCommandLineArguments: flags.noCommandLineArguments,
 			NoEnvironmentVariables: flags.noEnvironmentVariables,
 		}

@@ -16,9 +16,9 @@ class ProdConfig:
         os.environ.get("POSTGRES_USER_DB_NAME")
     )
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_recycle': 300,
+        'pool_recycle': 3600,
         'pool_timeout': 60,
-        'pool_size': 50,
+        'pool_size': 200,
         'max_overflow': 5,
     }
     TEMPLATES_AUTO_RELOAD = False

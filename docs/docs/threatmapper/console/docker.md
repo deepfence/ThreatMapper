@@ -35,7 +35,7 @@ The following instructions explain how to get started with a docker-based instal
 
     ```bash
     wget https://github.com/deepfence/ThreatMapper/raw/release-1.4/deployment-scripts/docker-compose.yml
-    env DF_IMG_TAG=1.4.1 docker-compose -f docker-compose.yml up -d
+    env DF_IMG_TAG=1.4.2 docker-compose -f docker-compose.yml up -d
     ```
     :::
 
@@ -51,7 +51,7 @@ docker-compose -f docker-compose.yml down
 # refresh the docker-compose file
 rm docker-compose.yml
 wget https://github.com/deepfence/ThreatMapper/raw/release-1.4/deployment-scripts/docker-compose.yml
-env DF_IMG_TAG=1.4.1 docker-compose -f docker-compose.yml up -d
+env DF_IMG_TAG=1.4.2 docker-compose -f docker-compose.yml up -d
 ```
 
 ### Remove the ThreatMapper Management Console
