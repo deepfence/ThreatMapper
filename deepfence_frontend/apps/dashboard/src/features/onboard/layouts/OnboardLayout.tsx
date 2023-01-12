@@ -3,9 +3,8 @@ import { Outlet, redirect } from 'react-router-dom';
 import { OnboardAppHeader } from '../components/OnBoardAppHeader';
 
 export const rootOnboardLoader = async ({ request }: any) => {
-  const index = request.url.lastIndexOf('/');
+  const index = request.url.lastIndexOf('/onboard');
   const subpath = request.url.substring(index);
-
   if (subpath === '/onboard' || subpath === '/onboard/') {
     return redirect('/onboard/connectors', 302);
   }

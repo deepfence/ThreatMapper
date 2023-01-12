@@ -4,6 +4,7 @@ import {
   OnboardLayout,
   rootOnboardLoader,
 } from '../features/onboard/layouts/OnboardLayout';
+import { AWSConnector } from '../features/onboard/pages/AWSConnector';
 import { Connector } from '../features/onboard/pages/Connector';
 
 export const privateRoutes: RouteObject[] = [
@@ -17,8 +18,12 @@ export const privateRoutes: RouteObject[] = [
         element: <Outlet />,
         children: [
           {
-            path: '',
+            index: true,
             element: <Connector />,
+          },
+          {
+            path: 'cloud/aws',
+            element: <AWSConnector />,
           },
         ],
       },
