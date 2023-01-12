@@ -61,6 +61,20 @@ func (d *OpenApiDocs) AddGraphOperations() {
 		http.StatusOK, []string{tagThreat}, bearerToken, nil, new(reporters.ThreatGraph))
 }
 
+func (d *OpenApiDocs) AddSearchOperations() {
+	d.AddOperation("getHosts", http.MethodPost, "/deepfence/search/hosts",
+		"Get Topology Graph", "Retrieve the full topology graph associated with the account",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.SearchFilter), new([]model.Host))
+
+	d.AddOperation("getContainers", http.MethodPost, "/deepfence/search/containers",
+		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.SearchFilter), new([]model.Container))
+
+	d.AddOperation("getProcesses", http.MethodPost, "/deepfence/search/processes",
+		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.SearchFilter), new([]model.Process))
+}
+
 func (d *OpenApiDocs) AddControlsOperations() {
 	d.AddOperation("getAgentControls", http.MethodPost, "/deepfence/controls/agent",
 		"Fetch Agent Actions", "Fetch actions for a given agent",

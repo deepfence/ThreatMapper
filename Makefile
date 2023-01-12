@@ -122,3 +122,23 @@ openapi: server
 .PHONY: cli
 cli:
 	(cd $(DEEPFENCE_CTL) && make)
+
+.PHONY: publish
+publish:
+	docker push $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_vulnerability_mapper_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_postgres_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_kafka_broker_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_discovery_ce:$(DF_IMG_TAG)

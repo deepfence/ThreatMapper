@@ -128,6 +128,13 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/threat", dfHandler.GetThreatGraph)
 			})
 
+			openApiDocs.AddSearchOperations()
+			r.Route("/search", func(r chi.Router) {
+				r.Post("/hosts", dfHandler.GetHosts)
+				r.Post("/containers", dfHandler.GetContainers)
+				r.Post("/processes", dfHandler.GetProcesses)
+			})
+
 			openApiDocs.AddControlsOperations()
 			r.Route("/controls", func(r chi.Router) {
 				r.Post("/agent", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentControls))
