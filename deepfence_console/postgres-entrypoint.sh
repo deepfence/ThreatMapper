@@ -7,7 +7,7 @@ export POSTGRES_USER=$POSTGRES_USER_DB_USER
 export POSTGRES_PASSWORD=$POSTGRES_USER_DB_PASSWORD
 export PGPASSWORD=$POSTGRES_USER_DB_PASSWORD
 
-/bin/bash /usr/local/bin/create-pg-dirs.sh && /bin/bash /usr/local/bin/new-docker-entrypoint.sh postgres
+/bin/bash /usr/local/bin/create-pg-dirs.sh && /bin/bash /usr/local/bin/new-docker-entrypoint.sh postgres -c shared_buffers=256MB -c max_connections=1000
 
 #sleep 30
 #gosu postgres pg_ctl stop
