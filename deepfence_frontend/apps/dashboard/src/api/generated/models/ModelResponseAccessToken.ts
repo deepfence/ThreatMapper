@@ -24,13 +24,13 @@ export interface ModelResponseAccessToken {
      * @type {string}
      * @memberof ModelResponseAccessToken
      */
-    access_token?: string;
+    access_token: string;
     /**
      * 
      * @type {string}
      * @memberof ModelResponseAccessToken
      */
-    refresh_token?: string;
+    refresh_token: string;
 }
 
 /**
@@ -38,6 +38,8 @@ export interface ModelResponseAccessToken {
  */
 export function instanceOfModelResponseAccessToken(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "access_token" in value;
+    isInstance = isInstance && "refresh_token" in value;
 
     return isInstance;
 }
@@ -52,8 +54,8 @@ export function ModelResponseAccessTokenFromJSONTyped(json: any, ignoreDiscrimin
     }
     return {
         
-        'access_token': !exists(json, 'access_token') ? undefined : json['access_token'],
-        'refresh_token': !exists(json, 'refresh_token') ? undefined : json['refresh_token'],
+        'access_token': json['access_token'],
+        'refresh_token': json['refresh_token'],
     };
 }
 

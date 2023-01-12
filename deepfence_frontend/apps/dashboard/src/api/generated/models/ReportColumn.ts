@@ -16,48 +16,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ReportersConnectionSummary
+ * @interface ReportColumn
  */
-export interface ReportersConnectionSummary {
+export interface ReportColumn {
     /**
      * 
      * @type {string}
-     * @memberof ReportersConnectionSummary
+     * @memberof ReportColumn
      */
-    source?: string;
+    dataType?: string;
     /**
      * 
      * @type {string}
-     * @memberof ReportersConnectionSummary
+     * @memberof ReportColumn
      */
-    target?: string;
+    id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReportColumn
+     */
+    label?: string;
 }
 
 /**
- * Check if a given object implements the ReportersConnectionSummary interface.
+ * Check if a given object implements the ReportColumn interface.
  */
-export function instanceOfReportersConnectionSummary(value: object): boolean {
+export function instanceOfReportColumn(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ReportersConnectionSummaryFromJSON(json: any): ReportersConnectionSummary {
-    return ReportersConnectionSummaryFromJSONTyped(json, false);
+export function ReportColumnFromJSON(json: any): ReportColumn {
+    return ReportColumnFromJSONTyped(json, false);
 }
 
-export function ReportersConnectionSummaryFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersConnectionSummary {
+export function ReportColumnFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportColumn {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'source': !exists(json, 'source') ? undefined : json['source'],
-        'target': !exists(json, 'target') ? undefined : json['target'],
+        'dataType': !exists(json, 'dataType') ? undefined : json['dataType'],
+        'id': !exists(json, 'id') ? undefined : json['id'],
+        'label': !exists(json, 'label') ? undefined : json['label'],
     };
 }
 
-export function ReportersConnectionSummaryToJSON(value?: ReportersConnectionSummary | null): any {
+export function ReportColumnToJSON(value?: ReportColumn | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -66,8 +73,9 @@ export function ReportersConnectionSummaryToJSON(value?: ReportersConnectionSumm
     }
     return {
         
-        'source': value.source,
-        'target': value.target,
+        'dataType': value.dataType,
+        'id': value.id,
+        'label': value.label,
     };
 }
 

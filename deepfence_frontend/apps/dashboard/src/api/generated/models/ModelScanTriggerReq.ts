@@ -16,48 +16,46 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanTrigger
+ * @interface ModelScanTriggerReq
  */
-export interface ModelScanTrigger {
-    /**
-     * 
-     * @type {{ [key: string]: string; }}
-     * @memberof ModelScanTrigger
-     */
-    bin_args: { [key: string]: string; } | null;
+export interface ModelScanTriggerReq {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTrigger
-     */
-    hostname: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanTrigger
+     * @memberof ModelScanTriggerReq
      */
     node_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTrigger
+     * @memberof ModelScanTriggerReq
      */
     resource_id: string;
     /**
      * 
-     * @type {number}
-     * @memberof ModelScanTrigger
+     * @type {string}
+     * @memberof ModelScanTriggerReq
      */
-    resource_type: number;
+    resource_type: ModelScanTriggerReqResourceTypeEnum;
 }
 
+
 /**
- * Check if a given object implements the ModelScanTrigger interface.
+ * @export
  */
-export function instanceOfModelScanTrigger(value: object): boolean {
+export const ModelScanTriggerReqResourceTypeEnum = {
+    Image: 'image',
+    Host: 'host',
+    Container: 'container'
+} as const;
+export type ModelScanTriggerReqResourceTypeEnum = typeof ModelScanTriggerReqResourceTypeEnum[keyof typeof ModelScanTriggerReqResourceTypeEnum];
+
+
+/**
+ * Check if a given object implements the ModelScanTriggerReq interface.
+ */
+export function instanceOfModelScanTriggerReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "bin_args" in value;
-    isInstance = isInstance && "hostname" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "resource_id" in value;
     isInstance = isInstance && "resource_type" in value;
@@ -65,25 +63,23 @@ export function instanceOfModelScanTrigger(value: object): boolean {
     return isInstance;
 }
 
-export function ModelScanTriggerFromJSON(json: any): ModelScanTrigger {
-    return ModelScanTriggerFromJSONTyped(json, false);
+export function ModelScanTriggerReqFromJSON(json: any): ModelScanTriggerReq {
+    return ModelScanTriggerReqFromJSONTyped(json, false);
 }
 
-export function ModelScanTriggerFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTrigger {
+export function ModelScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTriggerReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'bin_args': json['bin_args'],
-        'hostname': json['hostname'],
         'node_id': json['node_id'],
         'resource_id': json['resource_id'],
         'resource_type': json['resource_type'],
     };
 }
 
-export function ModelScanTriggerToJSON(value?: ModelScanTrigger | null): any {
+export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -92,8 +88,6 @@ export function ModelScanTriggerToJSON(value?: ModelScanTrigger | null): any {
     }
     return {
         
-        'bin_args': value.bin_args,
-        'hostname': value.hostname,
         'node_id': value.node_id,
         'resource_id': value.resource_id,
         'resource_type': value.resource_type,

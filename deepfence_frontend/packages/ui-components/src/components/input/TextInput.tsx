@@ -130,7 +130,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         {label && (
           <LabelPrimitive.Root
             htmlFor={_id}
-            className={cx(`${Typography.weight.medium} text-gray-900 dark:text-white`)}
+            className={cx(
+              `${Typography.weight.medium} ${Typography.size.sm} text-gray-900 dark:text-white`,
+            )}
           >
             {required && <span>*</span>}
             {label}

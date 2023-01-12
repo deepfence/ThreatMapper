@@ -13,6 +13,25 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { IngestersSecretMatch } from './IngestersSecretMatch';
+import {
+    IngestersSecretMatchFromJSON,
+    IngestersSecretMatchFromJSONTyped,
+    IngestersSecretMatchToJSON,
+} from './IngestersSecretMatch';
+import type { IngestersSecretRule } from './IngestersSecretRule';
+import {
+    IngestersSecretRuleFromJSON,
+    IngestersSecretRuleFromJSONTyped,
+    IngestersSecretRuleToJSON,
+} from './IngestersSecretRule';
+import type { IngestersSecretSeverity } from './IngestersSecretSeverity';
+import {
+    IngestersSecretSeverityFromJSON,
+    IngestersSecretSeverityFromJSONTyped,
+    IngestersSecretSeverityToJSON,
+} from './IngestersSecretSeverity';
+
 /**
  * 
  * @export
@@ -21,58 +40,52 @@ import { exists, mapValues } from '../runtime';
 export interface IngestersSecret {
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof IngestersSecret
      */
-    timestamp?: string;
+    timestamp?: Date;
     /**
      * 
      * @type {string}
      * @memberof IngestersSecret
      */
-    account_id?: string;
+    ImageLayerId?: string;
+    /**
+     * 
+     * @type {IngestersSecretMatch}
+     * @memberof IngestersSecret
+     */
+    Match?: IngestersSecretMatch;
+    /**
+     * 
+     * @type {IngestersSecretRule}
+     * @memberof IngestersSecret
+     */
+    Rule?: IngestersSecretRule;
+    /**
+     * 
+     * @type {IngestersSecretSeverity}
+     * @memberof IngestersSecret
+     */
+    Severity?: IngestersSecretSeverity;
     /**
      * 
      * @type {string}
      * @memberof IngestersSecret
      */
-    cloud_provider?: string;
+    container_name?: string;
     /**
      * 
      * @type {string}
      * @memberof IngestersSecret
      */
-    compliance_check_type?: string;
+    host_name?: string;
     /**
      * 
      * @type {string}
      * @memberof IngestersSecret
      */
-    control_id?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof IngestersSecret
-     */
-    count?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    description?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    doc_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    group?: string;
+    kubernetes_cluster_name?: string;
     /**
      * 
      * @type {string}
@@ -96,55 +109,13 @@ export interface IngestersSecret {
      * @type {string}
      * @memberof IngestersSecret
      */
-    reason?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    region?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    resource?: string;
+    node_type?: string;
     /**
      * 
      * @type {string}
      * @memberof IngestersSecret
      */
     scan_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    service?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    severity?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    status?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    title?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    type?: string;
 }
 
 /**
@@ -166,27 +137,19 @@ export function IngestersSecretFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'timestamp': !exists(json, '@timestamp') ? undefined : json['@timestamp'],
-        'account_id': !exists(json, 'account_id') ? undefined : json['account_id'],
-        'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
-        'compliance_check_type': !exists(json, 'compliance_check_type') ? undefined : json['compliance_check_type'],
-        'control_id': !exists(json, 'control_id') ? undefined : json['control_id'],
-        'count': !exists(json, 'count') ? undefined : json['count'],
-        'description': !exists(json, 'description') ? undefined : json['description'],
-        'doc_id': !exists(json, 'doc_id') ? undefined : json['doc_id'],
-        'group': !exists(json, 'group') ? undefined : json['group'],
+        'timestamp': !exists(json, '@timestamp') ? undefined : (new Date(json['@timestamp'])),
+        'ImageLayerId': !exists(json, 'ImageLayerId') ? undefined : json['ImageLayerId'],
+        'Match': !exists(json, 'Match') ? undefined : IngestersSecretMatchFromJSON(json['Match']),
+        'Rule': !exists(json, 'Rule') ? undefined : IngestersSecretRuleFromJSON(json['Rule']),
+        'Severity': !exists(json, 'Severity') ? undefined : IngestersSecretSeverityFromJSON(json['Severity']),
+        'container_name': !exists(json, 'container_name') ? undefined : json['container_name'],
+        'host_name': !exists(json, 'host_name') ? undefined : json['host_name'],
+        'kubernetes_cluster_name': !exists(json, 'kubernetes_cluster_name') ? undefined : json['kubernetes_cluster_name'],
         'masked': !exists(json, 'masked') ? undefined : json['masked'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
-        'reason': !exists(json, 'reason') ? undefined : json['reason'],
-        'region': !exists(json, 'region') ? undefined : json['region'],
-        'resource': !exists(json, 'resource') ? undefined : json['resource'],
+        'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
-        'service': !exists(json, 'service') ? undefined : json['service'],
-        'severity': !exists(json, 'severity') ? undefined : json['severity'],
-        'status': !exists(json, 'status') ? undefined : json['status'],
-        'title': !exists(json, 'title') ? undefined : json['title'],
-        'type': !exists(json, 'type') ? undefined : json['type'],
     };
 }
 
@@ -199,27 +162,19 @@ export function IngestersSecretToJSON(value?: IngestersSecret | null): any {
     }
     return {
         
-        '@timestamp': value.timestamp,
-        'account_id': value.account_id,
-        'cloud_provider': value.cloud_provider,
-        'compliance_check_type': value.compliance_check_type,
-        'control_id': value.control_id,
-        'count': value.count,
-        'description': value.description,
-        'doc_id': value.doc_id,
-        'group': value.group,
+        '@timestamp': value.timestamp === undefined ? undefined : (value.timestamp.toISOString()),
+        'ImageLayerId': value.ImageLayerId,
+        'Match': IngestersSecretMatchToJSON(value.Match),
+        'Rule': IngestersSecretRuleToJSON(value.Rule),
+        'Severity': IngestersSecretSeverityToJSON(value.Severity),
+        'container_name': value.container_name,
+        'host_name': value.host_name,
+        'kubernetes_cluster_name': value.kubernetes_cluster_name,
         'masked': value.masked,
         'node_id': value.node_id,
         'node_name': value.node_name,
-        'reason': value.reason,
-        'region': value.region,
-        'resource': value.resource,
+        'node_type': value.node_type,
         'scan_id': value.scan_id,
-        'service': value.service,
-        'severity': value.severity,
-        'status': value.status,
-        'title': value.title,
-        'type': value.type,
     };
 }
 

@@ -16,169 +16,169 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface IngestersComplianceDoc
+ * @interface IngestersCompliance
  */
-export interface IngestersComplianceDoc {
+export interface IngestersCompliance {
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     timestamp?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     compliance_check_type?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     compliance_node_type?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     description?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     doc_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     kubernetes_cluster_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     kubernetes_cluster_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     masked?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     node_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     node_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     node_type?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     remediation_ansible?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     remediation_puppet?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     remediation_script?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     resource?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     scan_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     status?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     test_category?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     test_desc?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     test_number?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     test_rationale?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     test_severity?: string;
     /**
      * 
      * @type {number}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     time_stamp?: number;
     /**
      * 
      * @type {string}
-     * @memberof IngestersComplianceDoc
+     * @memberof IngestersCompliance
      */
     type?: string;
 }
 
 /**
- * Check if a given object implements the IngestersComplianceDoc interface.
+ * Check if a given object implements the IngestersCompliance interface.
  */
-export function instanceOfIngestersComplianceDoc(value: object): boolean {
+export function instanceOfIngestersCompliance(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function IngestersComplianceDocFromJSON(json: any): IngestersComplianceDoc {
-    return IngestersComplianceDocFromJSONTyped(json, false);
+export function IngestersComplianceFromJSON(json: any): IngestersCompliance {
+    return IngestersComplianceFromJSONTyped(json, false);
 }
 
-export function IngestersComplianceDocFromJSONTyped(json: any, ignoreDiscriminator: boolean): IngestersComplianceDoc {
+export function IngestersComplianceFromJSONTyped(json: any, ignoreDiscriminator: boolean): IngestersCompliance {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -211,7 +211,7 @@ export function IngestersComplianceDocFromJSONTyped(json: any, ignoreDiscriminat
     };
 }
 
-export function IngestersComplianceDocToJSON(value?: IngestersComplianceDoc | null): any {
+export function IngestersComplianceToJSON(value?: IngestersCompliance | null): any {
     if (value === undefined) {
         return undefined;
     }

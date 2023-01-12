@@ -31,25 +31,25 @@ export interface ReportersProviderThreatGraph {
      * @type {number}
      * @memberof ReportersProviderThreatGraph
      */
-    compliance_count?: number;
+    compliance_count: number;
     /**
      * 
      * @type {Array<ReportersThreatNodeInfo>}
      * @memberof ReportersProviderThreatGraph
      */
-    resources?: Array<ReportersThreatNodeInfo> | null;
+    resources: Array<ReportersThreatNodeInfo> | null;
     /**
      * 
      * @type {number}
      * @memberof ReportersProviderThreatGraph
      */
-    secrets_count?: number;
+    secrets_count: number;
     /**
      * 
      * @type {number}
      * @memberof ReportersProviderThreatGraph
      */
-    vulnerability_count?: number;
+    vulnerability_count: number;
 }
 
 /**
@@ -57,6 +57,10 @@ export interface ReportersProviderThreatGraph {
  */
 export function instanceOfReportersProviderThreatGraph(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "compliance_count" in value;
+    isInstance = isInstance && "resources" in value;
+    isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "vulnerability_count" in value;
 
     return isInstance;
 }
@@ -71,10 +75,10 @@ export function ReportersProviderThreatGraphFromJSONTyped(json: any, ignoreDiscr
     }
     return {
         
-        'compliance_count': !exists(json, 'compliance_count') ? undefined : json['compliance_count'],
-        'resources': !exists(json, 'resources') ? undefined : (json['resources'] === null ? null : (json['resources'] as Array<any>).map(ReportersThreatNodeInfoFromJSON)),
-        'secrets_count': !exists(json, 'secrets_count') ? undefined : json['secrets_count'],
-        'vulnerability_count': !exists(json, 'vulnerability_count') ? undefined : json['vulnerability_count'],
+        'compliance_count': json['compliance_count'],
+        'resources': (json['resources'] === null ? null : (json['resources'] as Array<any>).map(ReportersThreatNodeInfoFromJSON)),
+        'secrets_count': json['secrets_count'],
+        'vulnerability_count': json['vulnerability_count'],
     };
 }
 
@@ -88,7 +92,7 @@ export function ReportersProviderThreatGraphToJSON(value?: ReportersProviderThre
     return {
         
         'compliance_count': value.compliance_count,
-        'resources': value.resources === undefined ? undefined : (value.resources === null ? null : (value.resources as Array<any>).map(ReportersThreatNodeInfoToJSON)),
+        'resources': (value.resources === null ? null : (value.resources as Array<any>).map(ReportersThreatNodeInfoToJSON)),
         'secrets_count': value.secrets_count,
         'vulnerability_count': value.vulnerability_count,
     };

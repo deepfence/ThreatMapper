@@ -1,29 +1,59 @@
-import { redirect } from 'react-router-dom';
+import { ActionFunction, redirect } from 'react-router-dom';
 
-import { authenticationApi } from '../../../api/api';
-import { ModelResponse, ResponseError } from '../../../api/generated';
+import { getAuthenticationApiClient } from '../../../api/api';
+import { ModelResponse } from '../../../api/generated';
+import { ApiError, makeRequest } from '../../../utils/api';
 import storage from '../../../utils/storage';
 
-export const loginAction = async ({
+export type LoginActionReturnType = {
+  error?: string;
+  fieldErrors?: {
+    email?: string;
+    password?: string;
+  };
+};
+
+export const loginAction: ActionFunction = async ({
   request,
-}: {
-  request: Request;
-  params: Record<string, unknown>;
-}) => {
+}): Promise<LoginActionReturnType> => {
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
-  try {
-    await authenticationApi.login({
-      modelLoginRequest: body,
-    });
-  } catch (e) {
-    const error = e as ResponseError;
-    const response: ModelResponse = await error.response.json();
-    return {
-      error_fields: response.error_fields,
-      message: response.message,
-    };
+
+  const r = await makeRequest({
+    apiFunction: getAuthenticationApiClient().login,
+    apiArgs: [
+      {
+        modelLoginRequest: {
+          email: body.email as string,
+          password: body.password as string,
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<LoginActionReturnType>({});
+      if (r.status === 404 || r.status === 401) {
+        return error.set({
+          error: 'Invalid credentials',
+        });
+      } else if (r.status === 400) {
+        const modelResponse: ModelResponse = await r.json();
+        return error.set({
+          fieldErrors: {
+            email: modelResponse.error_fields?.email,
+            password: modelResponse.error_fields?.password,
+          },
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    return r.value();
   }
-  storage.setAuth({ isLogin: true });
-  return redirect('/onboard', 302);
+
+  storage.setAuth({
+    accessToken: r.data!.access_token,
+    refreshToken: r.data!.refresh_token,
+  });
+  throw redirect('/onboard', 302);
 };

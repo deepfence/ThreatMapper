@@ -24,7 +24,7 @@ export interface ModelApiAuthRequest {
      * @type {string}
      * @memberof ModelApiAuthRequest
      */
-    api_token?: string;
+    api_token: string;
 }
 
 /**
@@ -32,6 +32,7 @@ export interface ModelApiAuthRequest {
  */
 export function instanceOfModelApiAuthRequest(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "api_token" in value;
 
     return isInstance;
 }
@@ -46,7 +47,7 @@ export function ModelApiAuthRequestFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'api_token': !exists(json, 'api_token') ? undefined : json['api_token'],
+        'api_token': json['api_token'],
     };
 }
 

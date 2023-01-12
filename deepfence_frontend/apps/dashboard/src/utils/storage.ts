@@ -1,15 +1,27 @@
 const storagePrefix = 'deefence_';
 
 export type AuthUserType = {
-  isLogin: boolean;
+  accessToken: string;
+  refreshToken: string;
 };
 
 const storage = {
-  getAuth: () => {
-    return JSON.parse(window.localStorage.getItem(`${storagePrefix}auth`) as string);
+  getAuth: (): AuthUserType | null => {
+    const storageObj = JSON.parse(
+      window.localStorage.getItem(`${storagePrefix}auth`) ?? '{}',
+    );
+    if (
+      'accessToken' in storageObj &&
+      typeof storageObj.accessToken === 'string' &&
+      'refreshToken' in storageObj &&
+      typeof storageObj.refreshToken === 'string'
+    ) {
+      return storageObj as AuthUserType;
+    }
+    return null;
   },
-  setAuth: (token: AuthUserType) => {
-    window.localStorage.setItem(`${storagePrefix}auth`, JSON.stringify(token));
+  setAuth: (tokens: AuthUserType) => {
+    window.localStorage.setItem(`${storagePrefix}auth`, JSON.stringify(tokens));
   },
   clearAuth: () => {
     window.localStorage.removeItem(`${storagePrefix}auth`);

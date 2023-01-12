@@ -13,45 +13,60 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelFetchWindow } from './ModelFetchWindow';
+import {
+    ModelFetchWindowFromJSON,
+    ModelFetchWindowFromJSONTyped,
+    ModelFetchWindowToJSON,
+} from './ModelFetchWindow';
+
 /**
  * 
  * @export
- * @interface ApiDocsRawReport
+ * @interface ModelScanListReq
  */
-export interface ApiDocsRawReport {
+export interface ModelScanListReq {
     /**
      * 
      * @type {string}
-     * @memberof ApiDocsRawReport
+     * @memberof ModelScanListReq
      */
-    payload: string;
+    node_id: string;
+    /**
+     * 
+     * @type {ModelFetchWindow}
+     * @memberof ModelScanListReq
+     */
+    window: ModelFetchWindow;
 }
 
 /**
- * Check if a given object implements the ApiDocsRawReport interface.
+ * Check if a given object implements the ModelScanListReq interface.
  */
-export function instanceOfApiDocsRawReport(value: object): boolean {
+export function instanceOfModelScanListReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "payload" in value;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "window" in value;
 
     return isInstance;
 }
 
-export function ApiDocsRawReportFromJSON(json: any): ApiDocsRawReport {
-    return ApiDocsRawReportFromJSONTyped(json, false);
+export function ModelScanListReqFromJSON(json: any): ModelScanListReq {
+    return ModelScanListReqFromJSONTyped(json, false);
 }
 
-export function ApiDocsRawReportFromJSONTyped(json: any, ignoreDiscriminator: boolean): ApiDocsRawReport {
+export function ModelScanListReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanListReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'payload': json['payload'],
+        'node_id': json['node_id'],
+        'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
-export function ApiDocsRawReportToJSON(value?: ApiDocsRawReport | null): any {
+export function ModelScanListReqToJSON(value?: ModelScanListReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,7 +75,8 @@ export function ApiDocsRawReportToJSON(value?: ApiDocsRawReport | null): any {
     }
     return {
         
-        'payload': value.payload,
+        'node_id': value.node_id,
+        'window': ModelFetchWindowToJSON(value.window),
     };
 }
 

@@ -24,43 +24,43 @@ export interface ModelUserRegisterRequest {
      * @type {string}
      * @memberof ModelUserRegisterRequest
      */
-    company?: string;
+    company: string;
     /**
      * 
      * @type {string}
      * @memberof ModelUserRegisterRequest
      */
-    console_url?: string;
+    console_url: string;
     /**
      * 
      * @type {string}
      * @memberof ModelUserRegisterRequest
      */
-    email?: string;
+    email: string;
     /**
      * 
      * @type {string}
      * @memberof ModelUserRegisterRequest
      */
-    first_name?: string;
+    first_name: string;
     /**
      * 
      * @type {boolean}
      * @memberof ModelUserRegisterRequest
      */
-    is_temporary_password?: boolean;
+    is_temporary_password: boolean;
     /**
      * 
      * @type {string}
      * @memberof ModelUserRegisterRequest
      */
-    last_name?: string;
+    last_name: string;
     /**
      * 
      * @type {string}
      * @memberof ModelUserRegisterRequest
      */
-    password?: string;
+    password: string;
 }
 
 /**
@@ -68,6 +68,13 @@ export interface ModelUserRegisterRequest {
  */
 export function instanceOfModelUserRegisterRequest(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "company" in value;
+    isInstance = isInstance && "console_url" in value;
+    isInstance = isInstance && "email" in value;
+    isInstance = isInstance && "first_name" in value;
+    isInstance = isInstance && "is_temporary_password" in value;
+    isInstance = isInstance && "last_name" in value;
+    isInstance = isInstance && "password" in value;
 
     return isInstance;
 }
@@ -82,13 +89,13 @@ export function ModelUserRegisterRequestFromJSONTyped(json: any, ignoreDiscrimin
     }
     return {
         
-        'company': !exists(json, 'company') ? undefined : json['company'],
-        'console_url': !exists(json, 'console_url') ? undefined : json['console_url'],
-        'email': !exists(json, 'email') ? undefined : json['email'],
-        'first_name': !exists(json, 'first_name') ? undefined : json['first_name'],
-        'is_temporary_password': !exists(json, 'is_temporary_password') ? undefined : json['is_temporary_password'],
-        'last_name': !exists(json, 'last_name') ? undefined : json['last_name'],
-        'password': !exists(json, 'password') ? undefined : json['password'],
+        'company': json['company'],
+        'console_url': json['console_url'],
+        'email': json['email'],
+        'first_name': json['first_name'],
+        'is_temporary_password': json['is_temporary_password'],
+        'last_name': json['last_name'],
+        'password': json['password'],
     };
 }
 

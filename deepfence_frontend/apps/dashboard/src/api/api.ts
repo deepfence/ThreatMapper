@@ -7,5 +7,16 @@ const configuration = new Configuration({
   basePath: `${window.location.protocol}//${window.location.host}`,
 });
 
-export const authenticationApi = new AuthenticationApi(configuration);
-export const userApi = new UserApi(configuration);
+export function getAuthenticationApiClient() {
+  const authenticationApi = new AuthenticationApi(configuration);
+  return {
+    login: authenticationApi.login.bind(authenticationApi),
+  };
+}
+
+export function getUserApiClient() {
+  const userApi = new UserApi(configuration);
+  return {
+    registerUser: userApi.registerUser.bind(userApi),
+  };
+}

@@ -31,55 +31,55 @@ export interface ReportersThreatNodeInfo {
      * @type {Array<Array<string>>}
      * @memberof ReportersThreatNodeInfo
      */
-    attack_path?: Array<Array<string>> | null;
+    attack_path: Array<Array<string>> | null;
     /**
      * 
      * @type {number}
      * @memberof ReportersThreatNodeInfo
      */
-    compliance_count?: number;
+    compliance_count: number;
     /**
      * 
      * @type {number}
      * @memberof ReportersThreatNodeInfo
      */
-    count?: number;
+    count: number;
     /**
      * 
      * @type {string}
      * @memberof ReportersThreatNodeInfo
      */
-    id?: string;
+    id: string;
     /**
      * 
      * @type {string}
      * @memberof ReportersThreatNodeInfo
      */
-    label?: string;
+    label: string;
     /**
      * 
      * @type {string}
      * @memberof ReportersThreatNodeInfo
      */
-    node_type?: string;
+    node_type: string;
     /**
      * 
      * @type {{ [key: string]: ReportersNodeInfo; }}
      * @memberof ReportersThreatNodeInfo
      */
-    nodes?: { [key: string]: ReportersNodeInfo; } | null;
+    nodes: { [key: string]: ReportersNodeInfo; } | null;
     /**
      * 
      * @type {number}
      * @memberof ReportersThreatNodeInfo
      */
-    secrets_count?: number;
+    secrets_count: number;
     /**
      * 
      * @type {number}
      * @memberof ReportersThreatNodeInfo
      */
-    vulnerability_count?: number;
+    vulnerability_count: number;
 }
 
 /**
@@ -87,6 +87,15 @@ export interface ReportersThreatNodeInfo {
  */
 export function instanceOfReportersThreatNodeInfo(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "attack_path" in value;
+    isInstance = isInstance && "compliance_count" in value;
+    isInstance = isInstance && "count" in value;
+    isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "label" in value;
+    isInstance = isInstance && "node_type" in value;
+    isInstance = isInstance && "nodes" in value;
+    isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "vulnerability_count" in value;
 
     return isInstance;
 }
@@ -101,15 +110,15 @@ export function ReportersThreatNodeInfoFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
-        'attack_path': !exists(json, 'attack_path') ? undefined : json['attack_path'],
-        'compliance_count': !exists(json, 'compliance_count') ? undefined : json['compliance_count'],
-        'count': !exists(json, 'count') ? undefined : json['count'],
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'label': !exists(json, 'label') ? undefined : json['label'],
-        'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
-        'nodes': !exists(json, 'nodes') ? undefined : (json['nodes'] === null ? null : mapValues(json['nodes'], ReportersNodeInfoFromJSON)),
-        'secrets_count': !exists(json, 'secrets_count') ? undefined : json['secrets_count'],
-        'vulnerability_count': !exists(json, 'vulnerability_count') ? undefined : json['vulnerability_count'],
+        'attack_path': json['attack_path'],
+        'compliance_count': json['compliance_count'],
+        'count': json['count'],
+        'id': json['id'],
+        'label': json['label'],
+        'node_type': json['node_type'],
+        'nodes': (json['nodes'] === null ? null : mapValues(json['nodes'], ReportersNodeInfoFromJSON)),
+        'secrets_count': json['secrets_count'],
+        'vulnerability_count': json['vulnerability_count'],
     };
 }
 
@@ -128,7 +137,7 @@ export function ReportersThreatNodeInfoToJSON(value?: ReportersThreatNodeInfo | 
         'id': value.id,
         'label': value.label,
         'node_type': value.node_type,
-        'nodes': value.nodes === undefined ? undefined : (value.nodes === null ? null : mapValues(value.nodes, ReportersNodeInfoToJSON)),
+        'nodes': (value.nodes === null ? null : mapValues(value.nodes, ReportersNodeInfoToJSON)),
         'secrets_count': value.secrets_count,
         'vulnerability_count': value.vulnerability_count,
     };
