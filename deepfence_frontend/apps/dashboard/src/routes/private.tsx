@@ -5,7 +5,9 @@ import {
   rootOnboardLoader,
 } from '../features/onboard/layouts/OnboardLayout';
 import { AWSConnector } from '../features/onboard/pages/AWSConnector';
+import { AzureConnector } from '../features/onboard/pages/AzureConnector';
 import { Connector } from '../features/onboard/pages/Connector';
+import { GCPConnector } from '../features/onboard/pages/GCPConnector';
 
 export const privateRoutes: RouteObject[] = [
   {
@@ -24,6 +26,14 @@ export const privateRoutes: RouteObject[] = [
           {
             path: 'cloud/aws',
             element: <AWSConnector />,
+          },
+          {
+            path: 'cloud/gcp',
+            element: <GCPConnector />,
+          },
+          {
+            path: 'cloud/azure',
+            element: <AzureConnector />,
           },
         ],
       },

@@ -22,10 +22,6 @@ module "cloud-scanner_example_single-account-ecs" {
 }
 `;
 
-  const command = `$ terraform init
-$ terraform plan
-$ terraform apply`;
-
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
