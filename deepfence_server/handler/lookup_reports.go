@@ -10,7 +10,7 @@ import (
 
 func (h *Handler) GetHosts(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
 	hosts, err := reporters.GetHostsReport(r.Context(), req)
@@ -27,7 +27,7 @@ func (h *Handler) GetHosts(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetContainers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
 	hosts, err := reporters.GetContainersReport(r.Context(), req)
@@ -44,7 +44,7 @@ func (h *Handler) GetContainers(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetProcesses(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
 	hosts, err := reporters.GetProcessesReport(r.Context(), req)

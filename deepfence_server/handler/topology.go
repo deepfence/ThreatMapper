@@ -56,7 +56,13 @@ func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var filters reporters.TopologyFilters
+	filters := reporters.TopologyFilters{
+		CloudFilter:      []string{},
+		RegionFilter:     []string{},
+		KubernetesFilter: []string{},
+		HostFilter:       []string{},
+		PodFilter:        []string{},
+	}
 	json.Unmarshal(body, &filters)
 
 	if err != nil {
@@ -74,6 +80,56 @@ func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
 	}
 
 	graph, err := reporter.Graph(ctx, filters)
+	if err != nil {
+		log.Error().Msgf("Error Adding report: %v", err)
+		respondWith(ctx, w, http.StatusInternalServerError, err)
+		return
+	}
+
+	newTopo, newConnections := graphToSummaries(graph, filters.CloudFilter, filters.RegionFilter, filters.KubernetesFilter, filters.HostFilter)
+
+	respondWith(ctx, w, http.StatusOK, GraphResult{Nodes: newTopo, Edges: newConnections})
+}
+
+func (h *Handler) GetTopologyHostsGraph(w http.ResponseWriter, req *http.Request) {
+
+	type GraphResult struct {
+		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
+		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
+	}
+
+	ctx := req.Context()
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+
+	filters := reporters.TopologyFilters{
+		CloudFilter:      []string{},
+		RegionFilter:     []string{},
+		KubernetesFilter: []string{},
+		HostFilter:       []string{},
+		PodFilter:        []string{},
+	}
+	json.Unmarshal(body, &filters)
+
+	if err != nil {
+		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
+		return
+	}
+
+	log.Info().Msgf("filters: %v", filters)
+
+	reporter, err := getTopologyReporter(ctx)
+
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	graph, err := reporter.HostGraph(ctx, filters)
 	if err != nil {
 		log.Error().Msgf("Error Adding report: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
@@ -218,55 +274,53 @@ func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_fil
 		}
 	}
 
-	for _, n := range graph.Hosts {
-		for cr, hosts := range n {
-			for _, host := range hosts {
-				nodes[host] = detailed.NodeSummary{
-					ImmediateParentID: cr,
-					BasicNodeSummary: detailed.BasicNodeSummary{
-						ID:    host,
-						Label: host,
+	for cr, n := range graph.Hosts {
+		for _, host := range n {
+			nodes[host] = detailed.NodeSummary{
+				ImmediateParentID: cr,
+				BasicNodeSummary: detailed.BasicNodeSummary{
+					ID:    host,
+					Label: host,
+				},
+				Metrics: []report.MetricRow{
+					{ID: hst.CPUUsage, Metric: &report.Metric{}, Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
+					{ID: hst.MemoryUsage, Metric: &report.Metric{}, Label: "Memory", Value: 0.0, Format: report.FilesizeFormat, Priority: 2},
+					{ID: hst.Load1, Metric: &report.Metric{}, Label: "Load (1m)", Value: 0.0, Format: report.DefaultFormat, Group: "load", Priority: 11},
+				},
+				Metadata: []report.MetadataRow{
+					{
+						ID:       "name",
+						Label:    "Name",
+						Value:    host,
+						Priority: 1,
 					},
-					Metrics: []report.MetricRow{
-						{ID: hst.CPUUsage, Metric: &report.Metric{}, Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
-						{ID: hst.MemoryUsage, Metric: &report.Metric{}, Label: "Memory", Value: 0.0, Format: report.FilesizeFormat, Priority: 2},
-						{ID: hst.Load1, Metric: &report.Metric{}, Label: "Load (1m)", Value: 0.0, Format: report.DefaultFormat, Group: "load", Priority: 11},
+					{
+						ID:       "label",
+						Label:    "Label",
+						Value:    host,
+						Priority: 2,
 					},
-					Metadata: []report.MetadataRow{
-						{
-							ID:       "name",
-							Label:    "Name",
-							Value:    host,
-							Priority: 1,
-						},
-						{
-							ID:       "label",
-							Label:    "Label",
-							Value:    host,
-							Priority: 2,
-						},
-						{ID: report.KernelVersion, Label: "Kernel version", Value: report.FromLatest, Priority: 1},
-						{ID: report.Uptime, Label: "Uptime", Value: report.FromLatest, Priority: 2},
-						{ID: report.HostName, Label: "Hostname", Value: host, Priority: 11},
-						{ID: report.OS, Label: "OS", Value: report.FromLatest, Priority: 12},
-						{ID: hst.LocalNetworks, Label: "Local networks", Value: report.FromSets, Priority: 13},
-						{ID: hst.InterfaceNames, Label: "Interface Names", Value: report.FromLatest, Priority: 15},
-						//PublicIpAddr:   {ID: PublicIpAddr, Label: "Public IP Address", Value: report.FromLatest, Priority: 16},
-						{ID: hst.ProbeId, Label: "Probe ID", Value: report.FromLatest, Priority: 17},
-						//ScopeVersion:  {ID: ScopeVersion, Label: "Scope version", Value: report.FromLatest, Priority: 14},
-						{ID: hst.InterfaceIPs, Label: "All Interface IP's", Value: report.FromLatest, Priority: 21},
-						{ID: report.CloudProvider, Label: "Cloud Provider", Value: report.FromLatest, Priority: 22},
-						{ID: report.CloudRegion, Label: "Cloud Region", Value: report.FromLatest, Priority: 23},
-						{ID: hst.CloudMetadata, Label: "Cloud Metadata", Value: report.FromLatest, Priority: 24},
-						{ID: report.KubernetesClusterId, Label: "Kubernetes Cluster Id", Value: report.FromLatest, Priority: 25},
-						{ID: report.KubernetesClusterName, Label: "Kubernetes Cluster Name", Value: report.FromLatest, Priority: 26},
-						{ID: hst.UserDfndTags, Label: "User Defined Tags", Value: report.FromLatest, Priority: 27},
-						{ID: hst.AgentVersion, Label: "Sensor Version", Value: report.FromLatest, Priority: 28},
-						{ID: hst.IsUiVm, Label: "UI vm", Value: "yes", Priority: 29},
-						{ID: hst.AgentRunning, Label: "Sensor", Value: "yes", Priority: 33},
-					},
-					Type: report.Host,
-				}
+					{ID: report.KernelVersion, Label: "Kernel version", Value: report.FromLatest, Priority: 1},
+					{ID: report.Uptime, Label: "Uptime", Value: report.FromLatest, Priority: 2},
+					{ID: report.HostName, Label: "Hostname", Value: host, Priority: 11},
+					{ID: report.OS, Label: "OS", Value: report.FromLatest, Priority: 12},
+					{ID: hst.LocalNetworks, Label: "Local networks", Value: report.FromSets, Priority: 13},
+					{ID: hst.InterfaceNames, Label: "Interface Names", Value: report.FromLatest, Priority: 15},
+					//PublicIpAddr:   {ID: PublicIpAddr, Label: "Public IP Address", Value: report.FromLatest, Priority: 16},
+					{ID: hst.ProbeId, Label: "Probe ID", Value: report.FromLatest, Priority: 17},
+					//ScopeVersion:  {ID: ScopeVersion, Label: "Scope version", Value: report.FromLatest, Priority: 14},
+					{ID: hst.InterfaceIPs, Label: "All Interface IP's", Value: report.FromLatest, Priority: 21},
+					{ID: report.CloudProvider, Label: "Cloud Provider", Value: report.FromLatest, Priority: 22},
+					{ID: report.CloudRegion, Label: "Cloud Region", Value: report.FromLatest, Priority: 23},
+					{ID: hst.CloudMetadata, Label: "Cloud Metadata", Value: report.FromLatest, Priority: 24},
+					{ID: report.KubernetesClusterId, Label: "Kubernetes Cluster Id", Value: report.FromLatest, Priority: 25},
+					{ID: report.KubernetesClusterName, Label: "Kubernetes Cluster Name", Value: report.FromLatest, Priority: 26},
+					{ID: hst.UserDfndTags, Label: "User Defined Tags", Value: report.FromLatest, Priority: 27},
+					{ID: hst.AgentVersion, Label: "Sensor Version", Value: report.FromLatest, Priority: 28},
+					{ID: hst.IsUiVm, Label: "UI vm", Value: "yes", Priority: 29},
+					{ID: hst.AgentRunning, Label: "Sensor", Value: "yes", Priority: 33},
+				},
+				Type: report.Host,
 			}
 		}
 	}

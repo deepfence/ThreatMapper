@@ -126,10 +126,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/graph", func(r chi.Router) {
 				r.Post("/topology", dfHandler.GetTopologyGraph)
 				r.Post("/threat", dfHandler.GetThreatGraph)
+				r.Post("/topology-hosts", dfHandler.GetTopologyHostsGraph)
+				//r.Post("/topology-kubernetes", dfHandler.GetTopologyGraph)
+				//r.Post("/topology-containers", dfHandler.GetTopologyGraph)
+				//r.Post("/topology-pods", dfHandler.GetTopologyGraph)
 			})
 
-			openApiDocs.AddSearchOperations()
-			r.Route("/search", func(r chi.Router) {
+			openApiDocs.AddLookupOperations()
+			r.Route("/lookup", func(r chi.Router) {
 				r.Post("/hosts", dfHandler.GetHosts)
 				r.Post("/containers", dfHandler.GetContainers)
 				r.Post("/processes", dfHandler.GetProcesses)

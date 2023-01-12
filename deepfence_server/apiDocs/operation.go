@@ -61,18 +61,18 @@ func (d *OpenApiDocs) AddGraphOperations() {
 		http.StatusOK, []string{tagThreat}, bearerToken, nil, new(reporters.ThreatGraph))
 }
 
-func (d *OpenApiDocs) AddSearchOperations() {
-	d.AddOperation("getHosts", http.MethodPost, "/deepfence/search/hosts",
-		"Get Topology Graph", "Retrieve the full topology graph associated with the account",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.SearchFilter), new([]model.Host))
+func (d *OpenApiDocs) AddLookupOperations() {
+	d.AddOperation("getHosts", http.MethodPost, "/deepfence/lookup/hosts",
+		"Retrieve Hosts data", "Retrieve all the data associated with hosts",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.LookupFilter), new([]model.Host))
 
-	d.AddOperation("getContainers", http.MethodPost, "/deepfence/search/containers",
-		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.SearchFilter), new([]model.Container))
+	d.AddOperation("getContainers", http.MethodPost, "/deepfence/lookup/containers",
+		"Retrieve Containers data", "Retrieve all the data associated with containers",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.LookupFilter), new([]model.Container))
 
-	d.AddOperation("getProcesses", http.MethodPost, "/deepfence/search/processes",
-		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.SearchFilter), new([]model.Process))
+	d.AddOperation("getProcesses", http.MethodPost, "/deepfence/lookup/processes",
+		"Retrieve Processes data", "Retrieve all the data associated with processes",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.LookupFilter), new([]model.Process))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {

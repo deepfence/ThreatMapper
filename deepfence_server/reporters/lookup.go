@@ -13,12 +13,12 @@ import (
 
 // If no nodeIds are provided, will return all
 // If no field are provided, will return all fields
-type SearchFilter struct {
+type LookupFilter struct {
 	InFieldFilter map[string]struct{} `json:"in_field_filter" required:"true"` // Fields to return
 	NodeIds       map[string]struct{} `json:"node_ids" required:"true"`        // Node to return
 }
 
-func GetHostsReport(ctx context.Context, filter SearchFilter) ([]model.Host, error) {
+func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, error) {
 	hosts, err := getGenericDirectNodeReport[model.Host](ctx, filter)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func GetHostsReport(ctx context.Context, filter SearchFilter) ([]model.Host, err
 	return hosts, nil
 }
 
-func GetContainersReport(ctx context.Context, filter SearchFilter) ([]model.Container, error) {
+func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Container, error) {
 	containers, err := getGenericDirectNodeReport[model.Container](ctx, filter)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func GetContainersReport(ctx context.Context, filter SearchFilter) ([]model.Cont
 	return containers, nil
 }
 
-func GetProcessesReport(ctx context.Context, filter SearchFilter) ([]model.Process, error) {
+func GetProcessesReport(ctx context.Context, filter LookupFilter) ([]model.Process, error) {
 	processes, err := getGenericDirectNodeReport[model.Process](ctx, filter)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func GetProcessesReport(ctx context.Context, filter SearchFilter) ([]model.Proce
 	return processes, nil
 }
 
-func getGenericDirectNodeReport[T any](ctx context.Context, filter SearchFilter) ([]T, error) {
+func getGenericDirectNodeReport[T any](ctx context.Context, filter LookupFilter) ([]T, error) {
 	res := []T{}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -122,8 +122,8 @@ func getGenericDirectNodeReport[T any](ctx context.Context, filter SearchFilter)
 	return res, nil
 }
 
-func getHostContainers(ctx context.Context, host model.Host) ([]model.Container, error) {
-	res := []model.Container{}
+func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) ([]T, error) {
+	res := []T{}
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -142,9 +142,7 @@ func getHostContainers(ctx context.Context, host model.Host) ([]model.Container,
 	}
 	defer tx.Close()
 
-	r, err := tx.Run(`
-		MATCH (n:Node) -[:HOSTS]-> (m:Container) WHERE n.node_id IN $ids RETURN m
-		`, map[string]interface{}{"ids": []string{host.ID}})
+	r, err := tx.Run(query, map[string]interface{}{"ids": ids})
 
 	if err != nil {
 		return res, err
@@ -167,116 +165,28 @@ func getHostContainers(ctx context.Context, host model.Host) ([]model.Container,
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
-		var node model.Container
+		var node T
 		utils.FromMap(da.Props, &node)
 		res = append(res, node)
 	}
 
 	return res, nil
+}
+
+func getHostContainers(ctx context.Context, host model.Host) ([]model.Container, error) {
+	return getIndirectFromIDs[model.Container](ctx,
+		`MATCH (n:Node) -[:HOSTS]-> (m:Container) WHERE n.node_id IN $ids RETURN m`,
+		[]string{host.ID})
 }
 
 func getHostProcesses(ctx context.Context, host model.Host) ([]model.Process, error) {
-	res := []model.Process{}
-
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return res, err
-	}
-
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return res, err
-	}
-	defer tx.Close()
-
-	r, err := tx.Run(`
-		MATCH (n:Node) -[:HOSTS]-> (m:Process) WHERE n.node_id IN $ids RETURN m
-		`, map[string]interface{}{"ids": []string{host.ID}})
-
-	if err != nil {
-		return res, err
-	}
-
-	recs, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, rec := range recs {
-		data, has := rec.Get("m")
-		if !has {
-			log.Warn().Msgf("Missing neo4j entry")
-			continue
-		}
-		da, ok := data.(dbtype.Node)
-		if !ok {
-			log.Warn().Msgf("Missing neo4j entry")
-			continue
-		}
-		var node model.Process
-		utils.FromMap(da.Props, &node)
-		res = append(res, node)
-	}
-
-	return res, nil
+	return getIndirectFromIDs[model.Process](ctx,
+		`MATCH (n:Node) -[:HOSTS]-> (m:Process) WHERE n.node_id IN $ids RETURN m`,
+		[]string{host.ID})
 }
 
 func getContainerProcesses(ctx context.Context, container model.Container) ([]model.Process, error) {
-	res := []model.Process{}
-
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return res, err
-	}
-
-	session, err := driver.Session(neo4j.AccessModeRead)
-	if err != nil {
-		return res, err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return res, err
-	}
-	defer tx.Close()
-
-	r, err := tx.Run(`
-		MATCH (n:Node) -[:HOSTS]-> (m:Process) WHERE n.node_id IN $ids RETURN m
-		`, map[string]interface{}{"ids": []string{container.ID}})
-
-	if err != nil {
-		return res, err
-	}
-
-	recs, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, rec := range recs {
-		data, has := rec.Get("m")
-		if !has {
-			log.Warn().Msgf("Missing neo4j entry")
-			continue
-		}
-		da, ok := data.(dbtype.Node)
-		if !ok {
-			log.Warn().Msgf("Missing neo4j entry")
-			continue
-		}
-		var node model.Process
-		utils.FromMap(da.Props, &node)
-		res = append(res, node)
-	}
-
-	return res, nil
+	return getIndirectFromIDs[model.Process](ctx,
+		`MATCH (n:Node) -[:HOSTS]-> (m:Process) WHERE n.node_id IN $ids RETURN m`,
+		[]string{container.ID})
 }
