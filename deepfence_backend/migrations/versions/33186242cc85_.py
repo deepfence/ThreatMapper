@@ -216,38 +216,6 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('alert_level', 'integration_id', name='vulnerability_notification_constraint')
     )
-    op.create_table('malware_notification',
-    sa.Column('filters', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
-    sa.Column('alert_level', sa.String(length=100), nullable=False),
-    sa.Column('duration_in_mins', sa.Integer(), nullable=False),
-    sa.Column('last_sent_time', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('integration_id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('error_msg', sa.Text(), nullable=True),
-    sa.ForeignKeyConstraint(['integration_id'], ['integration.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('alert_level', 'integration_id', name='malware_notification_constraint')
-    )
-    op.create_table('secret_notification',
-    sa.Column('filters', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
-    sa.Column('alert_level', sa.String(length=100), nullable=False),
-    sa.Column('duration_in_mins', sa.Integer(), nullable=False),
-    sa.Column('last_sent_time', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('integration_id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('error_msg', sa.Text(), nullable=True),
-    sa.ForeignKeyConstraint(['integration_id'], ['integration.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('alert_level', 'integration_id', name='secret_notification_constraint')
-    )
 
     # ### end Alembic commands ###
 
