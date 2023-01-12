@@ -31,8 +31,9 @@ done
 sleep 30
 
 # Enable below to generate alembic scripts
- flask db stamp head
- flask db migrate
+# flask db stamp head
+# flask db migrate
+
 
 # Apply migrations
 flask db upgrade
