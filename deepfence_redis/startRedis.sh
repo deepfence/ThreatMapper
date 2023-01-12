@@ -23,10 +23,6 @@ done
 
 #echo "client-output-buffer-limit pubsub 512mb 256mb 60" >> /usr/local/bin/redis.conf
 
-if [[ "$INITIALIZE_REDIS" == "Y" ]]; then
-    /usr/local/bin/initializeRedis.sh &
-fi
-
 /usr/local/bin/redis-server /usr/local/bin/redis.conf --dir "/data/$DF_PROG_NAME/data"
 
 # first arg is `-f` or `--some-option`

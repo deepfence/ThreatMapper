@@ -3,8 +3,7 @@ package directory
 import (
 	"context"
 	"errors"
-
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 )
 
 var redisClientsPool map[NamespaceID]*redis.Client

@@ -12,7 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	redis2 "github.com/go-redis/redis/v8"
+	redis2 "github.com/go-redis/redis/v9"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/weaveworks/scope/report"
 )
