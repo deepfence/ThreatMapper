@@ -4,7 +4,8 @@ MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV DF_PROG_NAME="redis1" \
-    REDIS_DB_NUMBER=0
+    REDIS_DB_NUMBER=0 \
+    INITIALIZE_REDIS="Y"
 
 COPY redis.conf /usr/local/bin/
 COPY startRedis.sh /usr/local/bin/
