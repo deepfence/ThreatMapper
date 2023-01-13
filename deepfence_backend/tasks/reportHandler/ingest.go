@@ -152,6 +152,42 @@ func addToES(data []byte, index string, bulkp *elastic.BulkProcessor) error {
 	return nil
 }
 
+func notifySecretQueue(data []byte) error {
+	var dataMap map[string]interface{}
+	err := json.Unmarshal(data, &dataMap)
+	if err != nil {
+		return err
+	}
+	dataMap["masked"] = "false"
+	dataMap["@timestamp"] = getCurrentTime()
+	event, err := json.Marshal(dataMap)
+	if err != nil {
+		log.Errorf("error marshal updated secret: %s", err)
+		return err
+	} else {
+		secretTaskQueue <- event
+	}
+	return nil
+}
+
+func notifyMalwareQueue(data []byte) error {
+	var dataMap map[string]interface{}
+	err := json.Unmarshal(data, &dataMap)
+	if err != nil {
+		return err
+	}
+	dataMap["masked"] = "false"
+	dataMap["@timestamp"] = getCurrentTime()
+	event, err := json.Marshal(dataMap)
+	if err != nil {
+		log.Errorf("error marshal updated secret: %s", err)
+		return err
+	} else {
+		malwareTaskQueue <- event
+	}
+	return nil
+}
+
 func processReports(
 	ctx context.Context,
 	topicChannels map[string](chan []byte),
@@ -177,6 +213,11 @@ func processReports(
 			secretProcessed.Inc()
 			if err := addToES(secret, secretScanIndexName, bulkp); err != nil {
 				log.Errorf("failed to process secret scan error: %s", err.Error())
+			} else {
+				log.Info("reaching secret queue")
+				if err := notifySecretQueue(secret); err != nil {
+					log.Errorf("error pushing to queue: %s", err.Error())
+				}
 			}
 
 		case secretLog := <-topicChannels[secretScanLogsIndexName]:
@@ -184,11 +225,16 @@ func processReports(
 			if err := addToES(secretLog, secretScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process secret scan log error: %s", err.Error())
 			}
-		
+
 		case malware := <-topicChannels[malwareScanIndexName]:
 			malwareProcessed.Inc()
 			if err := addToES(malware, malwareScanIndexName, bulkp); err != nil {
 				log.Errorf("failed to process malware scan error: %s", err.Error())
+			} else {
+				log.Info("reaching malware queue")
+				if err := notifyMalwareQueue(malware); err != nil {
+					log.Errorf("error pushing to queue: %s", err.Error())
+				}
 			}
 
 		case malwareLog := <-topicChannels[malwareScanLogsIndexName]:
@@ -196,7 +242,6 @@ func processReports(
 			if err := addToES(malwareLog, malwareScanLogsIndexName, bulkp); err != nil {
 				log.Errorf("failed to process malware scan log error: %s", err.Error())
 			}
-
 
 		case sbomArtifact := <-topicChannels[sbomArtifactsIndexName]:
 			sbomArtifactsProcessed.Inc()

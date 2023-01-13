@@ -42,6 +42,8 @@ var (
 	vulnerabilityTaskQueue chan []byte
 	complianceTaskQueue    chan []byte
 	cloudTrailTaskQueue    chan []byte
+	malwareTaskQueue       chan []byte
+	secretTaskQueue        chan []byte
 	celeryCli              *gocelery.CeleryClient
 	notificationSettings   NotificationSettings
 	esClient               *elastic.Client
@@ -118,6 +120,8 @@ func init() {
 	vulnerabilityTaskQueue = make(chan []byte, 10000)
 	complianceTaskQueue = make(chan []byte, 10000)
 	cloudTrailTaskQueue = make(chan []byte, 10000)
+	secretTaskQueue = make(chan []byte, 10000)
+	malwareTaskQueue = make(chan []byte, 10000)
 	notificationSettings = NotificationSettings{
 		vulnerabilityNotificationsSet: false,
 		complianceNotificationsSet:    false,
@@ -205,6 +209,7 @@ func createCeleryTasks(resourceType string, messages []interface{}) {
 			createNotificationCeleryTask(resourceType, messages)
 		}
 	} else if resourceType == resourceTypeMalware {
+		log.Infof("resourceTyper %s", resourceType)
 		notificationSettings.RLock()
 		malwareNotificationsSet := notificationSettings.malwareNotificationsSet
 		notificationSettings.RUnlock()
@@ -212,6 +217,7 @@ func createCeleryTasks(resourceType string, messages []interface{}) {
 			createNotificationCeleryTask(resourceType, messages)
 		}
 	} else if resourceType == resourceTypeSecret {
+		log.Infof("resourceTyper %s", resourceType)
 		notificationSettings.RLock()
 		secretNotificationsSet := notificationSettings.secretNotificationsSet
 		notificationSettings.RUnlock()
@@ -253,6 +259,7 @@ func batchMessages(ctx context.Context, resourceType string,
 			}
 		}
 		if len(messages) > 0 {
+			log.Info("messages length is", messages)
 			go func() {
 				createCeleryTasks(resourceType, messages)
 			}()
@@ -290,8 +297,8 @@ func main() {
 	go batchMessages(ctx, resourceTypeVulnerability, &vulnerabilityTaskQueue, 100)
 	go batchMessages(ctx, resourceTypeCompliance, &complianceTaskQueue, 100)
 	go batchMessages(ctx, resourceTypeCloudTrailAlert, &cloudTrailTaskQueue, 100)
-	go batchMessages(ctx, resourceTypeMalware, &complianceTaskQueue, 100)
-	go batchMessages(ctx, resourceTypeSecret, &cloudTrailTaskQueue, 100)
+	go batchMessages(ctx, resourceTypeMalware, &malwareTaskQueue, 100)
+	go batchMessages(ctx, resourceTypeSecret, &secretTaskQueue, 100)
 
 	// load cve's from db
 	maskedCVELock.Lock()
@@ -344,12 +351,12 @@ func main() {
 	go startKafkaConsumers(ctx, kafkaBrokers, topics, consumerGroupID, topicChannels)
 
 	esDocSize := GetEnvIntWithDefault("ES_BULK_DOC_SIZE", 1000)
-	esBulkWorkers := GetEnvIntWithDefault("ES_BULK_NUM_WORKERS", 4)
+	esBulkWorkers := GetEnvIntWithDefault("ES_BULK_NUM_WORKERS", 6)
 	log.Infof("set es bulk workers=%d and bulk docs size=%d", esBulkWorkers, esDocSize)
 	bulkp := startESBulkProcessor(esClient, 5*time.Second, esBulkWorkers, esDocSize)
 	defer bulkp.Close()
 
-	numProcessReport := GetEnvIntWithDefault("PROCESS_REPORT_PARALLEL", 10)
+	numProcessReport := GetEnvIntWithDefault("PROCESS_REPORT_PARALLEL", 15)
 	log.Infof("num of parallel processReports %d", numProcessReport)
 	// start multiple processReports goroutines if required
 	for i := numProcessReport; i > 0; i-- {
