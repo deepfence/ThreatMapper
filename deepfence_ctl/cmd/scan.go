@@ -56,6 +56,15 @@ var scanStartSubCmd = &cobra.Command{
 					ResourceType: resource_type,
 				})
 			res, _, err = http.Client().SecretScanApi.StartSecretScanExecute(req)
+		case "vulnerability":
+			req := http.Client().VulnerabilityApi.StartVulnerabilityScan(context.Background())
+			req = req.ModelScanTriggerReq(
+				deepfence_server_client.ModelScanTriggerReq{
+					NodeId:       scan_node_id,
+					ResourceId:   resource_id,
+					ResourceType: resource_type,
+				})
+			res, _, err = http.Client().VulnerabilityApi.StartVulnerabilityScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}

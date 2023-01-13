@@ -5,13 +5,18 @@ import (
 	"database/sql"
 	"errors"
 	"flag"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -78,13 +83,30 @@ func main() {
 	ingestC := make(chan *kgo.Record, 10000)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	go startKafkaProducer(ctx, kafkaBrokers, ingestC)
+	go utils.StartKafkaProducer(ctx, strings.Split(kafkaBrokers, ","), ingestC)
 
 	initializeCronJobs()
 
+	wml := watermill.NewStdLogger(false, false)
+
+	rand.Seed(time.Now().Unix())
+
+	// task publisher
+	publisher, err := kafka.NewPublisher(
+		kafka.PublisherConfig{
+			Brokers:   strings.Split(kafkaBrokers, ","),
+			Marshaler: kafka.DefaultMarshaler{},
+		},
+		wml,
+	)
+	if err != nil {
+		panic(err)
+	}
+	defer publisher.Close()
+
 	dfHandler, err := router.SetupRoutes(mux,
 		config.HttpListenEndpoint, config.JwtSecret,
-		*serveOpenapiDocs, ingestC,
+		*serveOpenapiDocs, ingestC, publisher,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -199,7 +221,7 @@ func initializeKafka() error {
 
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(strings.Split(kafkaBrokers, ",")...),
-		kgo.WithLogger(kgoLogger),
+		kgo.WithLogger(utils.KgoLogger),
 	}
 
 	kc, err := kgo.NewClient(opts...)
@@ -215,56 +237,4 @@ func initializeKafka() error {
 	log.Info().Msg("connection to kafka brokers successful")
 
 	return nil
-}
-
-// kafka client logger
-var (
-	kgoLogger kgo.Logger = kgo.BasicLogger(&log.LogInfoWriter{}, kgo.LogLevelInfo, nil)
-)
-
-func startKafkaProducer(
-	ctx context.Context,
-	brokers string,
-	ingestChan chan *kgo.Record,
-) {
-
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(strings.Split(brokers, ",")...),
-		kgo.WithLogger(kgoLogger),
-	}
-
-	kClient, err := kgo.NewClient(opts...)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-	defer kClient.Close()
-
-	if err := kClient.Ping(ctx); err != nil {
-		log.Error().Msg(err.Error())
-	}
-
-	for {
-		select {
-		case <-ctx.Done():
-			log.Info().Msg("stop producing to kafka")
-			if err := kClient.Flush(context.Background()); err != nil {
-				log.Error().Msg(err.Error())
-			}
-			return
-
-		case record := <-ingestChan:
-			kClient.Produce(
-				ctx,
-				record,
-				func(r *kgo.Record, err error) {
-					if err != nil {
-						log.Error().Msgf(
-							"failed to produce record %s record: %v",
-							err, record,
-						)
-					}
-				},
-			)
-		}
-	}
 }

@@ -10,14 +10,14 @@ require (
 	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/fluent/fluent-bit-go v0.0.0-20221129124408-1c1d505c91a5
-	github.com/hashicorp/go-retryablehttp v0.7.1
+	github.com/hashicorp/go-retryablehttp v0.7.2
 )
 
 require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.4 // indirect

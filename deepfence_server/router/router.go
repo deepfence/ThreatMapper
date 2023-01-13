@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -39,7 +40,8 @@ const (
 	ResourceDiagnosis   = "diagnosis"
 )
 
-func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool, ingestC chan *kgo.Record) (*handler.Handler, error) {
+func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
+	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher) (*handler.Handler, error) {
 	// JWT
 	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
 
@@ -58,6 +60,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 		SaasDeployment: IsSaasDeployment(),
 		Validator:      validator.New(),
 		IngestChan:     ingestC,
+		TasksPublisher: taskPublisher,
 	}
 
 	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)

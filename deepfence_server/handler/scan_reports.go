@@ -7,9 +7,11 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -51,6 +53,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	b, err := json.Marshal(internal_req)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
 		return
 	}
@@ -158,6 +161,7 @@ func startScan(
 
 	err := ingesters.AddNewScan(r.Context(), scanType, scanId, nodeId, action)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err.Error()})
 		return
 	}
@@ -210,53 +214,81 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 	fmt.Fprintf(respWrite, "Ok")
 }
 
-type SbomQueryParameters struct {
-	ImageName             string `schema:"image_name"`
-	ImageId               string `schema:"image_id"`
-	ScanId                string `schema:"scan_id"`
-	KubernetesClusterName string `schema:"kubernetes_cluster_name"`
-	HostName              string `schema:"host_name"`
-	NodeId                string `schema:"node_id"`
-	NodeType              string `schema:"node_type"`
-	ScanType              string `schema:"scan_type"`
-	ContainerName         string `schema:"container_name"`
-}
-
 var decoder = schema.NewDecoder()
-var scanIdReplacer = strings.NewReplacer("/", "_", ":", "_", ".", "_")
 
 func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	namespace, err := directory.ExtractNamespace(r.Context())
 	if err != nil {
+		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError,
 			model.Response{Success: false, Message: err.Error()})
+		return
 	}
-	var params SbomQueryParameters
+	var params utils.SbomQueryParameters
 	err = decoder.Decode(&params, r.URL.Query())
+	// err = httpext.DecodeQueryParams(r, &params)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError,
 			model.Response{Success: false, Message: err.Error()})
+		return
 	}
+	log.Info().Msgf("sbom query parameters: %v", params)
 	sbom, err := io.ReadAll(r.Body)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError,
 			model.Response{Success: false, Message: err.Error()})
+		return
 	}
-	mc, err := directory.MinioClient(r.Context())
+	mc, err := directory.MinioClient(directory.NewGlobalContext())
 	if err != nil {
+		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError,
 			model.Response{Success: false, Message: err.Error()})
+		return
 	}
-	file := "sbom/" + scanIdReplacer.Replace(params.ScanId) + ".json"
+
+	err = mc.MakeBucket(r.Context(), string(namespace),
+		minio.MakeBucketOptions{ObjectLocking: false})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	file := string(namespace) + "/sbom/" + utils.ScanIdReplacer.Replace(params.ScanId) + ".json"
 	info, err := mc.PutObject(r.Context(), string(namespace), file,
 		bytes.NewReader(sbom), int64(len(sbom)),
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
+		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError,
 			model.Response{Success: false, Message: err.Error()})
+		return
 	}
 
-	log.Info().Msgf("scan_id: %s, info: %s", params.ScanId, info.Location)
+	params.SBOMFilePath = file
+	params.Bucket = string(namespace)
+
+	payload, err := json.Marshal(params)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.Response{Success: false, Message: err.Error()})
+		return
+	}
+
+	msg := message.NewMessage(watermill.NewUUID(), payload)
+	msg.SetContext(directory.NewContextWithNameSpace(namespace))
+	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
+
+	err = h.TasksPublisher.Publish("tasks_parse_sbom", msg)
+	if err != nil {
+		log.Error().Msgf("cannot publish message:", err)
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.Response{Success: false, Message: err.Error()})
+		return
+	}
+
+	log.Info().Msgf("scan_id: %s, minio file info: %+v", params.ScanId, info)
 	httpext.JSON(w, http.StatusOK,
 		model.Response{Success: true, Message: info.Location})
 }

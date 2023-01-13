@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/go-chi/jwtauth/v5"
@@ -15,4 +16,5 @@ type Handler struct {
 	SaasDeployment bool
 	Validator      *validator.Validate
 	IngestChan     chan *kgo.Record
+	TasksPublisher *kafka.Publisher
 }

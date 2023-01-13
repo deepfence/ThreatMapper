@@ -121,7 +121,7 @@ openapi: server
 
 .PHONY: cli
 cli:
-	(cd $(DEEPFENCE_CTL) && make)
+	(cd $(DEEPFENCE_CTL) && make clean && make all)
 
 .PHONY: publish
 publish:

@@ -16,6 +16,8 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
+var ScanIdReplacer = strings.NewReplacer("/", "_", ":", "_", ".", "_")
+
 var (
 	matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
 	matchAllCap   = regexp.MustCompile("([a-z0-9])([A-Z])")

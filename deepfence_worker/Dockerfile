@@ -6,9 +6,9 @@ ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
 WORKDIR /go/deepfence_worker/
 # "make vendor" is run before separately to avoid docker cache invalidation
-RUN make deepfence_worker
+RUN CGO_ENABLED=0 make deepfence_worker
 
-FROM alpine:3.16
+FROM debian:11-slim
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
@@ -33,9 +33,13 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_MINIO_SECURE=false \
     DEEPFENCE_SAAS_DEPLOYMENT=false
 
+RUN apt update && apt install curl -y && \
+    curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
 COPY --from=build /go/deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
 COPY --from=build /go/bin/asynq /usr/local/bin/asynq
 COPY deepfence_worker/entrypoint.sh /entrypoint.sh
+COPY deepfence_worker/grype.yaml /usr/local/bin/grype.yaml
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 8081
