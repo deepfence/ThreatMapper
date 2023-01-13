@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineArrowCircleRight } from 'react-icons/hi';
 import { Card, Tabs, Typography } from 'ui-components';
@@ -47,7 +47,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
         <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
         <IconContext.Provider
           value={{
-            className: 'ml-auto text-blue-500',
+            className: 'ml-auto text-blue-700 dark:text-blue-500',
             size: '18px',
           }}
         >
@@ -262,11 +262,11 @@ const Registries = () => {
 const tabs = [
   {
     label: 'Add Connectors',
-    value: 'add',
+    value: 'add-connectors',
   },
   {
     label: 'My Connectors',
-    value: 'connected',
+    value: 'my-connectors',
   },
 ];
 
@@ -286,9 +286,19 @@ export const AddConnector = () => {
   );
 };
 
-export const Connector = () => {
-  const [tab, setTab] = useState('add');
+export const Connector = ({ page }: { page: string }) => {
+  const [tab, setTab] = useState(page);
+  const { navigate } = usePageNavigation();
 
+  const onTabChange = (tab: string) => {
+    navigate(`/onboard/${tab}`);
+  };
+
+  useEffect(() => {
+    if (page) {
+      setTab(page);
+    }
+  }, [page]);
   return (
     <>
       <ConnectorHeader
@@ -299,12 +309,12 @@ export const Connector = () => {
         value={tab}
         defaultValue={tab}
         tabs={tabs}
-        onValueChange={(tab) => setTab(tab)}
+        onValueChange={onTabChange}
         size="md"
       >
         <div className="h-full dark:text-white mt-8">
-          {tab === 'add' && <AddConnector />}
-          {tab === 'connected' && (
+          {tab === 'add-connectors' && <AddConnector />}
+          {tab === 'my-connectors' && (
             <>
               <NoConnectors />
             </>

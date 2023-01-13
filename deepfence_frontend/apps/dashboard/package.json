@@ -24,6 +24,8 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.7.1",
     "react-router-dom": "^6.6.2",
+    "react-use": "^17.4.0",
+    "tailwind-merge": "^1.6.0",
     "ui-components": "workspace:*"
   },
   "devDependencies": {

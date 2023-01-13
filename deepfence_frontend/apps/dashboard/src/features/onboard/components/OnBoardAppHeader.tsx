@@ -1,12 +1,14 @@
+import cx from 'classnames';
 import { IconContext } from 'react-icons';
 import { HiLogout, HiMoon, HiOutlineBell } from 'react-icons/hi';
+import { Link } from 'react-router-dom';
 import {
   Avatar,
-  Button,
   Dropdown,
   DropdownItem,
   DropdownSeparator,
   Separator,
+  Typography,
 } from 'ui-components';
 
 import LogoDeepfenceDarkBlue from '../../../assets/logo-deepfence-dark-blue.svg';
@@ -26,7 +28,7 @@ export const OnboardAppHeader = () => {
   return (
     <div className="bg-white dark:bg-gray-800 h-[64px] fixed top-0 w-full">
       <div className="h-full flex items-center mx-16">
-        <div className="mr-auto flex">
+        <div className="mr-auto flex items-center">
           <img
             src={LogoDeepfenceDarkBlue}
             alt="Deefence Logo"
@@ -34,9 +36,15 @@ export const OnboardAppHeader = () => {
             height="29"
             className="m-auto"
           />
-          <Button color="primary" outline size="xs" className="ml-5 rounded-[22px]">
-            Go to Dashboard
-          </Button>
+          <Link
+            to="/dashboard"
+            className={cx(
+              `${Typography.size.sm} `,
+              'underline underline-offset-2 ml-6 bg-transparent text-blue-600 dark:text-blue-500',
+            )}
+          >
+            Go To Dashboard
+          </Link>
         </div>
         <div className="flex items-center gap-4">
           <IconContext.Provider
