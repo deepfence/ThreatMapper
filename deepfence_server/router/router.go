@@ -78,7 +78,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 	r.Route("/deepfence", func(r chi.Router) {
 		r.Get("/ping", dfHandler.Ping)
-		r.Get("/async_ping", dfHandler.AsyncPing)
 
 		// public apis
 		r.Group(func(r chi.Router) {
