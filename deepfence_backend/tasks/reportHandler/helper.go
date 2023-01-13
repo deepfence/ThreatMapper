@@ -205,6 +205,18 @@ func syncPoliciesAndNotificationsSettings() {
 	} else {
 		notificationSettings.cloudTrailNotificationsSet = false
 	}
+	if malwareNotificationCount > 0 {
+		log.Info("malware notifications are enabled")
+		notificationSettings.malwareNotificationsSet = true
+	} else {
+		notificationSettings.malwareNotificationsSet = false
+	}
+	if secretNotificationCount > 0 {
+		log.Info("secret notifications are enabled")
+		notificationSettings.secretNotificationsSet = true
+	} else {
+		notificationSettings.secretNotificationsSet = false
+	}
 	notificationSettings.Unlock()
 }
 
