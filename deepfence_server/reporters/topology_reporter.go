@@ -322,7 +322,100 @@ type TopologyFilters struct {
 	PodFilter        []string `json:"pod_filter" required:"true"`
 }
 
-func (nc *neo4jTopologyReporter) GetHostGraph(ctx context.Context, host_filter, pod_filter []string) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context) (RenderedGraph, error) {
+	res := RenderedGraph{}
+
+	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	res.Containers, err = nc.getContainers(tx, nil, nil)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, pod_filter []string) (RenderedGraph, error) {
+	res := RenderedGraph{}
+
+	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	res.Connections, err = nc.GetConnections(tx)
+	if err != nil {
+		return res, err
+	}
+	res.Pods, err = nc.getPods(tx, nil)
+	if err != nil {
+		return res, err
+	}
+	res.Containers, err = nc.getContainers(tx, []string{}, pod_filter)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, kubernetes_filter, host_filter, pod_filter []string) (RenderedGraph, error) {
+	res := RenderedGraph{}
+
+	session, err := nc.driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	res.Connections, err = nc.GetConnections(tx)
+	if err != nil {
+		return res, err
+	}
+	res.Kubernetes, err = nc.getCloudKubernetes(tx, nil)
+	if err != nil {
+		return res, err
+	}
+	res.Hosts, err = nc.getHosts(tx, []string{}, []string{}, kubernetes_filter)
+	if err != nil {
+		return res, err
+	}
+	res.Pods, err = nc.getPods(tx, host_filter)
+	if err != nil {
+		return res, err
+	}
+	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, host_filter, pod_filter []string) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
@@ -361,7 +454,7 @@ func (nc *neo4jTopologyReporter) GetHostGraph(ctx context.Context, host_filter, 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) GetGraph(ctx context.Context, cloud_filter, region_filter, kubernetes_filter, host_filter, pod_filter []string) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, cloud_filter, region_filter, kubernetes_filter, host_filter, pod_filter []string) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
@@ -413,11 +506,23 @@ func (nc *neo4jTopologyReporter) GetGraph(ctx context.Context, cloud_filter, reg
 }
 
 func (nc *neo4jTopologyReporter) Graph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.GetGraph(ctx, filters.CloudFilter, filters.RegionFilter, filters.KubernetesFilter, filters.HostFilter, filters.PodFilter)
+	return nc.getGraph(ctx, filters.CloudFilter, filters.RegionFilter, filters.KubernetesFilter, filters.HostFilter, filters.PodFilter)
 }
 
 func (nc *neo4jTopologyReporter) HostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.GetHostGraph(ctx, filters.HostFilter, filters.PodFilter)
+	return nc.getHostGraph(ctx, filters.HostFilter, filters.PodFilter)
+}
+
+func (nc *neo4jTopologyReporter) PodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+	return nc.getPodGraph(ctx, filters.PodFilter)
+}
+
+func (nc *neo4jTopologyReporter) ContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+	return nc.getContainerGraph(ctx)
+}
+
+func (nc *neo4jTopologyReporter) KubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
+	return nc.getKubernetesGraph(ctx, filters.KubernetesFilter, filters.HostFilter, filters.PodFilter)
 }
 
 func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {

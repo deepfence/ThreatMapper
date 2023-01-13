@@ -110,7 +110,14 @@ Class | Method | HTTP request | Description
 *SecretScanApi* | [**StatusSecretScan**](docs/SecretScanApi.md#statussecretscan) | **Get** /deepfence/scan/status/secret | Get Secret Scan Status
 *SecretScanApi* | [**StopSecretScan**](docs/SecretScanApi.md#stopsecretscan) | **Post** /deepfence/scan/stop/secret | Stop Secret Scan
 *ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Post** /deepfence/graph/threat | Get Threat Graph
-*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Post** /deepfence/graph/topology | Get Topology Graph
+*TopologyApi* | [**GetContainers**](docs/TopologyApi.md#getcontainers) | **Post** /deepfence/lookup/containers | Retrieve Containers data
+*TopologyApi* | [**GetContainersTopologyGraph**](docs/TopologyApi.md#getcontainerstopologygraph) | **Post** /deepfence/graph/topology/containers | Get Containers Topology Graph
+*TopologyApi* | [**GetHosts**](docs/TopologyApi.md#gethosts) | **Post** /deepfence/lookup/hosts | Retrieve Hosts data
+*TopologyApi* | [**GetHostsTopologyGraph**](docs/TopologyApi.md#gethoststopologygraph) | **Post** /deepfence/graph/topology/hosts | Get Hosts Topology Graph
+*TopologyApi* | [**GetKubernetesTopologyGraph**](docs/TopologyApi.md#getkubernetestopologygraph) | **Post** /deepfence/graph/topology/kubernetes | Get Kubernetes Topology Graph
+*TopologyApi* | [**GetPodsTopologyGraph**](docs/TopologyApi.md#getpodstopologygraph) | **Post** /deepfence/graph/topology/pods | Get Pods Topology Graph
+*TopologyApi* | [**GetProcesses**](docs/TopologyApi.md#getprocesses) | **Post** /deepfence/lookup/processes | Retrieve Processes data
+*TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Post** /deepfence/graph/topology/ | Get Topology Graph
 *TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/ingest/report | Ingest Topology Data
 *UserApi* | [**DeleteCurrentUser**](docs/UserApi.md#deletecurrentuser) | **Delete** /deepfence/user | Delete Current User
 *UserApi* | [**GetApiTokens**](docs/UserApi.md#getapitokens) | **Get** /deepfence/api-token | Get User&#39;s API Tokens
@@ -147,8 +154,14 @@ Class | Method | HTTP request | Description
  - [IngestersVulnerability](docs/IngestersVulnerability.md)
  - [ModelAgentId](docs/ModelAgentId.md)
  - [ModelApiAuthRequest](docs/ModelApiAuthRequest.md)
+ - [ModelComputeMetrics](docs/ModelComputeMetrics.md)
+ - [ModelContainer](docs/ModelContainer.md)
  - [ModelFetchWindow](docs/ModelFetchWindow.md)
+ - [ModelHost](docs/ModelHost.md)
+ - [ModelImage](docs/ModelImage.md)
  - [ModelLoginRequest](docs/ModelLoginRequest.md)
+ - [ModelPod](docs/ModelPod.md)
+ - [ModelProcess](docs/ModelProcess.md)
  - [ModelRawReport](docs/ModelRawReport.md)
  - [ModelResponse](docs/ModelResponse.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
@@ -166,6 +179,7 @@ Class | Method | HTTP request | Description
  - [ReportMetadataRow](docs/ReportMetadataRow.md)
  - [ReportRow](docs/ReportRow.md)
  - [ReportTable](docs/ReportTable.md)
+ - [ReportersLookupFilter](docs/ReportersLookupFilter.md)
  - [ReportersNodeInfo](docs/ReportersNodeInfo.md)
  - [ReportersProviderThreatGraph](docs/ReportersProviderThreatGraph.md)
  - [ReportersThreatNodeInfo](docs/ReportersThreatNodeInfo.md)

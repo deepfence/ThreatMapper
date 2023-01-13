@@ -43,8 +43,14 @@ docs/IngestersVulnerability.md
 docs/MalwareScanApi.md
 docs/ModelAgentId.md
 docs/ModelApiAuthRequest.md
+docs/ModelComputeMetrics.md
+docs/ModelContainer.md
 docs/ModelFetchWindow.md
+docs/ModelHost.md
+docs/ModelImage.md
 docs/ModelLoginRequest.md
+docs/ModelPod.md
+docs/ModelProcess.md
 docs/ModelRawReport.md
 docs/ModelResponse.md
 docs/ModelResponseAccessToken.md
@@ -62,6 +68,7 @@ docs/ReportColumn.md
 docs/ReportMetadataRow.md
 docs/ReportRow.md
 docs/ReportTable.md
+docs/ReportersLookupFilter.md
 docs/ReportersNodeInfo.md
 docs/ReportersProviderThreatGraph.md
 docs/ReportersThreatNodeInfo.md
@@ -94,8 +101,14 @@ model_ingesters_secret_severity.go
 model_ingesters_vulnerability.go
 model_model_agent_id.go
 model_model_api_auth_request.go
+model_model_compute_metrics.go
+model_model_container.go
 model_model_fetch_window.go
+model_model_host.go
+model_model_image.go
 model_model_login_request.go
+model_model_pod.go
+model_model_process.go
 model_model_raw_report.go
 model_model_response.go
 model_model_response_access_token.go
@@ -113,6 +126,7 @@ model_report_column.go
 model_report_metadata_row.go
 model_report_row.go
 model_report_table.go
+model_reporters_lookup_filter.go
 model_reporters_node_info.go
 model_reporters_provider_threat_graph.go
 model_reporters_threat_node_info.go

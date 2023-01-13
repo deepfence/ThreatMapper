@@ -42,56 +42,36 @@ func getTopologyReporter(ctx context.Context) (reporters.TopologyReporter, error
 }
 
 func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
-
-	type GraphResult struct {
-		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
-		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
-	}
-
-	ctx := req.Context()
-
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		http.Error(w, "Error reading request body", http.StatusBadRequest)
-		return
-	}
-
-	filters := reporters.TopologyFilters{
-		CloudFilter:      []string{},
-		RegionFilter:     []string{},
-		KubernetesFilter: []string{},
-		HostFilter:       []string{},
-		PodFilter:        []string{},
-	}
-	json.Unmarshal(body, &filters)
-
-	if err != nil {
-		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
-		return
-	}
-
-	log.Info().Msgf("filters: %v", filters)
-
-	reporter, err := getTopologyReporter(ctx)
-
-	if err != nil {
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-
-	graph, err := reporter.Graph(ctx, filters)
-	if err != nil {
-		log.Error().Msgf("Error Adding report: %v", err)
-		respondWith(ctx, w, http.StatusInternalServerError, err)
-		return
-	}
-
-	newTopo, newConnections := graphToSummaries(graph, filters.CloudFilter, filters.RegionFilter, filters.KubernetesFilter, filters.HostFilter)
-
-	respondWith(ctx, w, http.StatusOK, GraphResult{Nodes: newTopo, Edges: newConnections})
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+		return reporter.Graph(ctx, filters)
+	})
 }
 
 func (h *Handler) GetTopologyHostsGraph(w http.ResponseWriter, req *http.Request) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+		return reporter.HostGraph(ctx, filters)
+	})
+}
+
+func (h *Handler) GetTopologyKubernetesGraph(w http.ResponseWriter, req *http.Request) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+		return reporter.KubernetesGraph(ctx, filters)
+	})
+}
+
+func (h *Handler) GetTopologyContainersGraph(w http.ResponseWriter, req *http.Request) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+		return reporter.ContainerGraph(ctx, filters)
+	})
+}
+
+func (h *Handler) GetTopologyPodsGraph(w http.ResponseWriter, req *http.Request) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+		return reporter.PodGraph(ctx, filters)
+	})
+}
+
+func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, getGraph func(context.Context, reporters.TopologyFilters, reporters.TopologyReporter) (reporters.RenderedGraph, error)) {
 
 	type GraphResult struct {
 		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
@@ -129,7 +109,7 @@ func (h *Handler) GetTopologyHostsGraph(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	graph, err := reporter.HostGraph(ctx, filters)
+	graph, err := getGraph(ctx, filters, reporter)
 	if err != nil {
 		log.Error().Msgf("Error Adding report: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)

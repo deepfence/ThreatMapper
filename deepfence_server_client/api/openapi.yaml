@@ -412,7 +412,7 @@ paths:
       summary: Get Threat Graph
       tags:
       - Threat
-  /deepfence/graph/topology:
+  /deepfence/graph/topology/:
     post:
       description: Retrieve the full topology graph associated with the account
       operationId: getTopologyGraph
@@ -453,6 +453,182 @@ paths:
       security:
       - bearer_token: []
       summary: Get Topology Graph
+      tags:
+      - Topology
+  /deepfence/graph/topology/containers:
+    post:
+      description: Retrieve the full topology graph associated with the account from
+        Containers
+      operationId: getContainersTopologyGraph
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersTopologyFilters'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsGraphResult'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Containers Topology Graph
+      tags:
+      - Topology
+  /deepfence/graph/topology/hosts:
+    post:
+      description: Retrieve the full topology graph associated with the account from
+        Hosts
+      operationId: getHostsTopologyGraph
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersTopologyFilters'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsGraphResult'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Hosts Topology Graph
+      tags:
+      - Topology
+  /deepfence/graph/topology/kubernetes:
+    post:
+      description: Retrieve the full topology graph associated with the account from
+        Kubernetes
+      operationId: getKubernetesTopologyGraph
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersTopologyFilters'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsGraphResult'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Kubernetes Topology Graph
+      tags:
+      - Topology
+  /deepfence/graph/topology/pods:
+    post:
+      description: Retrieve the full topology graph associated with the account from
+        Pods
+      operationId: getPodsTopologyGraph
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersTopologyFilters'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsGraphResult'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Get Pods Topology Graph
       tags:
       - Topology
   /deepfence/ingest/cloud-compliance:
@@ -746,6 +922,141 @@ paths:
       summary: Ingest Vulnerabilities
       tags:
       - Vulnerability
+  /deepfence/lookup/containers:
+    post:
+      description: Retrieve all the data associated with containers
+      operationId: getContainers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersLookupFilter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ModelContainer'
+                type: array
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Retrieve Containers data
+      tags:
+      - Topology
+  /deepfence/lookup/hosts:
+    post:
+      description: Retrieve all the data associated with hosts
+      operationId: getHosts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersLookupFilter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ModelHost'
+                type: array
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Retrieve Hosts data
+      tags:
+      - Topology
+  /deepfence/lookup/processes:
+    post:
+      description: Retrieve all the data associated with processes
+      operationId: getProcesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersLookupFilter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ModelProcess'
+                type: array
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Retrieve Processes data
+      tags:
+      - Topology
   /deepfence/scan/list/compliance:
     post:
       description: Get Compliance Scans list on agent or registry
@@ -2589,6 +2900,97 @@ components:
       required:
       - api_token
       type: object
+    ModelComputeMetrics:
+      example:
+        memory_mb: 6.027456183070403
+        cpu_percent: 0.8008281904610115
+      properties:
+        cpu_percent:
+          type: number
+        memory_mb:
+          type: number
+      required:
+      - cpu_percent
+      - memory_mb
+      type: object
+    ModelContainer:
+      example:
+        docker_labels:
+          key: ""
+        image:
+          metadata:
+            key: ""
+          size_mb: size_mb
+          name: name
+          id: id
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          tag: tag
+          virtual_mb: virtual_mb
+        metadata:
+          key: ""
+        processes:
+        - metadata:
+            key: ""
+          name: name
+          thread_number: 1
+          pid: pid
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          command: command
+          node_id: node_id
+          ppid: ppid
+        - metadata:
+            key: ""
+          name: name
+          thread_number: 1
+          pid: pid
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          command: command
+          node_id: node_id
+          ppid: ppid
+        name: name
+        metrics:
+          memory_mb: 6.027456183070403
+          cpu_percent: 0.8008281904610115
+        host_name: host_name
+        node_id: node_id
+      properties:
+        docker_labels:
+          additionalProperties: {}
+          type: object
+        host_name:
+          type: string
+        image:
+          $ref: '#/components/schemas/ModelImage'
+        metadata:
+          additionalProperties: {}
+          type: object
+        metrics:
+          $ref: '#/components/schemas/ModelComputeMetrics'
+        name:
+          type: string
+        node_id:
+          type: string
+        processes:
+          items:
+            $ref: '#/components/schemas/ModelProcess'
+          nullable: true
+          type: array
+      required:
+      - docker_labels
+      - host_name
+      - image
+      - metadata
+      - metrics
+      - name
+      - node_id
+      - processes
+      type: object
     ModelFetchWindow:
       example:
         offset: 0
@@ -2602,6 +3004,439 @@ components:
       - offset
       - size
       type: object
+    ModelHost:
+      example:
+        processes:
+        - metadata:
+            key: ""
+          name: name
+          thread_number: 1
+          pid: pid
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          command: command
+          node_id: node_id
+          ppid: ppid
+        - metadata:
+            key: ""
+          name: name
+          thread_number: 1
+          pid: pid
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          command: command
+          node_id: node_id
+          ppid: ppid
+        cloud_metadata:
+          key: ""
+        containers:
+        - docker_labels:
+            key: ""
+          image:
+            metadata:
+              key: ""
+            size_mb: size_mb
+            name: name
+            id: id
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            tag: tag
+            virtual_mb: virtual_mb
+          metadata:
+            key: ""
+          processes:
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          name: name
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          host_name: host_name
+          node_id: node_id
+        - docker_labels:
+            key: ""
+          image:
+            metadata:
+              key: ""
+            size_mb: size_mb
+            name: name
+            id: id
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            tag: tag
+            virtual_mb: virtual_mb
+          metadata:
+            key: ""
+          processes:
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          name: name
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          host_name: host_name
+          node_id: node_id
+        pods:
+        - image: image
+          metadata:
+            key: ""
+          processes:
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          name: name
+          containers:
+          - docker_labels:
+              key: ""
+            image:
+              metadata:
+                key: ""
+              size_mb: size_mb
+              name: name
+              id: id
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              tag: tag
+              virtual_mb: virtual_mb
+            metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              name: name
+              thread_number: 1
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              command: command
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              name: name
+              thread_number: 1
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              command: command
+              node_id: node_id
+              ppid: ppid
+            name: name
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            host_name: host_name
+            node_id: node_id
+          - docker_labels:
+              key: ""
+            image:
+              metadata:
+                key: ""
+              size_mb: size_mb
+              name: name
+              id: id
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              tag: tag
+              virtual_mb: virtual_mb
+            metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              name: name
+              thread_number: 1
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              command: command
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              name: name
+              thread_number: 1
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              command: command
+              node_id: node_id
+              ppid: ppid
+            name: name
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            host_name: host_name
+            node_id: node_id
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          node_id: node_id
+        - image: image
+          metadata:
+            key: ""
+          processes:
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          name: name
+          containers:
+          - docker_labels:
+              key: ""
+            image:
+              metadata:
+                key: ""
+              size_mb: size_mb
+              name: name
+              id: id
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              tag: tag
+              virtual_mb: virtual_mb
+            metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              name: name
+              thread_number: 1
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              command: command
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              name: name
+              thread_number: 1
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              command: command
+              node_id: node_id
+              ppid: ppid
+            name: name
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            host_name: host_name
+            node_id: node_id
+          - docker_labels:
+              key: ""
+            image:
+              metadata:
+                key: ""
+              size_mb: size_mb
+              name: name
+              id: id
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              tag: tag
+              virtual_mb: virtual_mb
+            metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              name: name
+              thread_number: 1
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              command: command
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              name: name
+              thread_number: 1
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              command: command
+              node_id: node_id
+              ppid: ppid
+            name: name
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            host_name: host_name
+            node_id: node_id
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          node_id: node_id
+        metrics:
+          memory_mb: 6.027456183070403
+          cpu_percent: 0.8008281904610115
+        host_name: host_name
+        node_id: node_id
+      properties:
+        cloud_metadata:
+          additionalProperties: {}
+          type: object
+        containers:
+          items:
+            $ref: '#/components/schemas/ModelContainer'
+          nullable: true
+          type: array
+        host_name:
+          type: string
+        metrics:
+          $ref: '#/components/schemas/ModelComputeMetrics'
+        node_id:
+          type: string
+        pods:
+          items:
+            $ref: '#/components/schemas/ModelPod'
+          nullable: true
+          type: array
+        processes:
+          items:
+            $ref: '#/components/schemas/ModelProcess'
+          nullable: true
+          type: array
+      required:
+      - cloud_metadata
+      - containers
+      - host_name
+      - metrics
+      - node_id
+      - pods
+      - processes
+      type: object
+    ModelImage:
+      example:
+        metadata:
+          key: ""
+        size_mb: size_mb
+        name: name
+        id: id
+        metrics:
+          memory_mb: 6.027456183070403
+          cpu_percent: 0.8008281904610115
+        tag: tag
+        virtual_mb: virtual_mb
+      properties:
+        id:
+          type: string
+        metadata:
+          additionalProperties: {}
+          type: object
+        metrics:
+          $ref: '#/components/schemas/ModelComputeMetrics'
+        name:
+          type: string
+        size_mb:
+          type: string
+        tag:
+          type: string
+        virtual_mb:
+          type: string
+      required:
+      - id
+      - metadata
+      - metrics
+      - name
+      - size_mb
+      - tag
+      - virtual_mb
+      type: object
     ModelLoginRequest:
       example:
         password: password
@@ -2614,6 +3449,203 @@ components:
       required:
       - email
       - password
+      type: object
+    ModelMetadata:
+      additionalProperties: {}
+      type: object
+    ModelPod:
+      example:
+        image: image
+        metadata:
+          key: ""
+        processes:
+        - metadata:
+            key: ""
+          name: name
+          thread_number: 1
+          pid: pid
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          command: command
+          node_id: node_id
+          ppid: ppid
+        - metadata:
+            key: ""
+          name: name
+          thread_number: 1
+          pid: pid
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          command: command
+          node_id: node_id
+          ppid: ppid
+        name: name
+        containers:
+        - docker_labels:
+            key: ""
+          image:
+            metadata:
+              key: ""
+            size_mb: size_mb
+            name: name
+            id: id
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            tag: tag
+            virtual_mb: virtual_mb
+          metadata:
+            key: ""
+          processes:
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          name: name
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          host_name: host_name
+          node_id: node_id
+        - docker_labels:
+            key: ""
+          image:
+            metadata:
+              key: ""
+            size_mb: size_mb
+            name: name
+            id: id
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            tag: tag
+            virtual_mb: virtual_mb
+          metadata:
+            key: ""
+          processes:
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          - metadata:
+              key: ""
+            name: name
+            thread_number: 1
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            command: command
+            node_id: node_id
+            ppid: ppid
+          name: name
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          host_name: host_name
+          node_id: node_id
+        metrics:
+          memory_mb: 6.027456183070403
+          cpu_percent: 0.8008281904610115
+        node_id: node_id
+      properties:
+        containers:
+          items:
+            $ref: '#/components/schemas/ModelContainer'
+          nullable: true
+          type: array
+        image:
+          type: string
+        metadata:
+          additionalProperties: {}
+          type: object
+        metrics:
+          $ref: '#/components/schemas/ModelComputeMetrics'
+        name:
+          type: string
+        node_id:
+          type: string
+        processes:
+          items:
+            $ref: '#/components/schemas/ModelProcess'
+          nullable: true
+          type: array
+      required:
+      - containers
+      - image
+      - metadata
+      - metrics
+      - name
+      - node_id
+      - processes
+      type: object
+    ModelProcess:
+      example:
+        metadata:
+          key: ""
+        name: name
+        thread_number: 1
+        pid: pid
+        metrics:
+          memory_mb: 6.027456183070403
+          cpu_percent: 0.8008281904610115
+        command: command
+        node_id: node_id
+        ppid: ppid
+      properties:
+        command:
+          type: string
+        metadata:
+          additionalProperties: {}
+          type: object
+        metrics:
+          $ref: '#/components/schemas/ModelComputeMetrics'
+        name:
+          type: string
+        node_id:
+          type: string
+        pid:
+          type: string
+        ppid:
+          type: string
+        thread_number:
+          type: integer
+      required:
+      - command
+      - metadata
+      - metrics
+      - name
+      - node_id
+      - pid
+      - ppid
+      - thread_number
       type: object
     ModelRawReport:
       example:
@@ -2951,6 +3983,27 @@ components:
           type: integer
         type:
           type: string
+      type: object
+    ReportersLookupFilter:
+      example:
+        in_field_filter:
+          key: "{}"
+        node_ids:
+          key: "{}"
+      properties:
+        in_field_filter:
+          additionalProperties:
+            type: object
+          nullable: true
+          type: object
+        node_ids:
+          additionalProperties:
+            type: object
+          nullable: true
+          type: object
+      required:
+      - in_field_filter
+      - node_ids
       type: object
     ReportersNodeInfo:
       properties:

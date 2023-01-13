@@ -52,8 +52,24 @@ func (d *OpenApiDocs) AddGraphOperations() {
 		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
 		Edges detailed.TopologyConnectionSummaries `json:"edges" required:"true"`
 	}
-	d.AddOperation("getTopologyGraph", http.MethodPost, "/deepfence/graph/topology",
+	d.AddOperation("getTopologyGraph", http.MethodPost, "/deepfence/graph/topology/",
 		"Get Topology Graph", "Retrieve the full topology graph associated with the account",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.TopologyFilters), new(GraphResult))
+
+	d.AddOperation("getHostsTopologyGraph", http.MethodPost, "/deepfence/graph/topology/hosts",
+		"Get Hosts Topology Graph", "Retrieve the full topology graph associated with the account from Hosts",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.TopologyFilters), new(GraphResult))
+
+	d.AddOperation("getKubernetesTopologyGraph", http.MethodPost, "/deepfence/graph/topology/kubernetes",
+		"Get Kubernetes Topology Graph", "Retrieve the full topology graph associated with the account from Kubernetes",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.TopologyFilters), new(GraphResult))
+
+	d.AddOperation("getContainersTopologyGraph", http.MethodPost, "/deepfence/graph/topology/containers",
+		"Get Containers Topology Graph", "Retrieve the full topology graph associated with the account from Containers",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.TopologyFilters), new(GraphResult))
+
+	d.AddOperation("getPodsTopologyGraph", http.MethodPost, "/deepfence/graph/topology/pods",
+		"Get Pods Topology Graph", "Retrieve the full topology graph associated with the account from Pods",
 		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.TopologyFilters), new(GraphResult))
 
 	d.AddOperation("getThreatGraph", http.MethodPost, "/deepfence/graph/threat",

@@ -6,6 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	stdhttp "net/http"
+
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
 	"github.com/deepfence/ThreatMapper/deepfence_server_client"
@@ -38,15 +40,43 @@ var graphTopologySubCmd = &cobra.Command{
 		pod_filter, _ := cmd.Flags().GetString("pod-filter")
 		pod_entries := strings.Split(pod_filter, ",")
 
-		req := http.Client().TopologyApi.GetTopologyGraph(context.Background())
-		req = req.ReportersTopologyFilters(deepfence_server_client.ReportersTopologyFilters{
+		filters := deepfence_server_client.ReportersTopologyFilters{
 			CloudFilter:      provider_entries,
 			HostFilter:       host_entries,
 			RegionFilter:     region_entries,
 			KubernetesFilter: k8s_entries,
 			PodFilter:        pod_entries,
-		})
-		res, rh, err := http.Client().TopologyApi.GetTopologyGraphExecute(req)
+		}
+
+		root, _ := cmd.Flags().GetString("root")
+
+		var res *deepfence_server_client.ApiDocsGraphResult
+		var rh *stdhttp.Response
+		var err error
+		switch root {
+		case "":
+			req := http.Client().TopologyApi.GetTopologyGraph(context.Background())
+			req = req.ReportersTopologyFilters(filters)
+			res, rh, err = http.Client().TopologyApi.GetTopologyGraphExecute(req)
+		case "hosts":
+			req := http.Client().TopologyApi.GetHostsTopologyGraph(context.Background())
+			req = req.ReportersTopologyFilters(filters)
+			res, rh, err = http.Client().TopologyApi.GetHostsTopologyGraphExecute(req)
+		case "containers":
+			req := http.Client().TopologyApi.GetContainersTopologyGraph(context.Background())
+			req = req.ReportersTopologyFilters(filters)
+			res, rh, err = http.Client().TopologyApi.GetContainersTopologyGraphExecute(req)
+		case "pods":
+			req := http.Client().TopologyApi.GetPodsTopologyGraph(context.Background())
+			req = req.ReportersTopologyFilters(filters)
+			res, rh, err = http.Client().TopologyApi.GetPodsTopologyGraphExecute(req)
+		case "kubernetes":
+			req := http.Client().TopologyApi.GetKubernetesTopologyGraph(context.Background())
+			req = req.ReportersTopologyFilters(filters)
+			res, rh, err = http.Client().TopologyApi.GetKubernetesTopologyGraphExecute(req)
+		default:
+			log.Fatal().Msgf("Unsupported root:%s", root)
+		}
 
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -79,6 +109,8 @@ func init() {
 	graphTopologySubCmd.PersistentFlags().String("provider-filter", "", "CSV provider filter")
 	graphTopologySubCmd.PersistentFlags().String("kubernetes-filter", "", "CSV k8s filter")
 	graphTopologySubCmd.PersistentFlags().String("pod-filter", "", "CSV pod filter")
+
+	graphTopologySubCmd.PersistentFlags().String("root", "", "Root can be: ''/hosts/containers/pods/kubernetes")
 
 	graphCmd.AddCommand(graphThreatSubCmd)
 }
