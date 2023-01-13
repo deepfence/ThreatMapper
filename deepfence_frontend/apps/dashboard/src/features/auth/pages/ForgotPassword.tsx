@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import { Link, useFetcher } from 'react-router-dom';
-import { Button, Card, TextInput, Typography } from 'ui-components';
+import { Button, TextInput, Typography } from 'ui-components';
 
 import LogoDarkBlue from '../../../assets/logo-deepfence-dark-blue.svg';
 
@@ -58,7 +58,7 @@ export const ForgotPassword = () => {
           to="/auth/login"
           className={cx(
             `${Typography.size.xs} `,
-            'bg-transparent text-center text-blue-600 dark:text-blue-400',
+            'bg-transparent text-center text-blue-600 dark:text-blue-500',
           )}
         >
           Back to Login

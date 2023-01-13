@@ -12,31 +12,30 @@ export const Step = ({ indicator, title, children }: StepProps) => {
   return (
     <div
       className={cx(
-        'relative p-1',
-        `after:content-[' '] after:absolute after:left-[1.55rem] after:top-[3rem] after:bottom-0 after:w-0 after:h-auto after:border-l after:border-gray-300 dark:after:border-gray-700`,
+        'relative p-1 flex flex-col text-gray-500 dark:text-gray-400',
+        `after:content-[' '] after:absolute after:left-5 after:top-10 after:bottom-0 after:w-0 after:h-auto after:border-l after:border-gray-200 dark:after:border-gray-700`,
         'last:after:hidden',
       )}
     >
       <div className={cx('inline relative')}>
-        <span
+        <div
           className={cx(
-            'relative inline-block w-[2.5rem] h-[2.5rem] border rounded-full text-base leading-[2.5rem] text-center',
-            'border-gray-200 dark:border-gray-700 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-400',
+            'absolute flex items-center justify-center w-8 h-8 border rounded-full text-base leading-8',
+            'border-gray-100 dark:border-gray-700 bg-gray-100 dark:bg-gray-700',
           )}
         >
           {indicator}
-        </span>
+        </div>
       </div>
       <h6
         className={cx(
-          'inline pl-[1.5rem] relative my-[0.5rem] mx-0 text-gray-700',
+          'ml-12 relative mx-0 font-medium leading-tight',
           `${Typography.weight.semibold}`,
-          'dark:text-gray-200',
         )}
       >
         {title}
       </h6>
-      <div className={cx('ml-[4rem] dark:text-gray-400')}>{children}</div>
+      <div className={cx(`ml-12 mb-6 text-sm`)}>{children}</div>
     </div>
   );
 };

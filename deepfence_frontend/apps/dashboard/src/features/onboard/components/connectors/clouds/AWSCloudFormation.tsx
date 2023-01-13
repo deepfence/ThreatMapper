@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HiArrowNarrowRight } from 'react-icons/hi';
+import { HiArrowNarrowRight, HiViewGridAdd } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 import { Select, SelectItem, Step, Stepper, Typography } from 'ui-components';
 
@@ -36,17 +36,17 @@ export const AWSCloudFormation = () => {
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
-        <Step indicator="1" title="Cloud Formation.">
+        <Step indicator={<HiViewGridAdd />} title="Cloud Formation.">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect to your AWS Cloud Account via Cloud Formation. Find out more
             information by{' '}
-            <Link to="/" className="text-blue-500">
+            <Link to="/" className="text-blue-600 dark:text-blue-500">
               reading our documentation
             </Link>
             .
           </div>
         </Step>
-        <Step indicator="2" title="Region Selection">
+        <Step indicator="1" title="Region Selection">
           <div className="w-1/2">
             <Select
               value={region}
@@ -63,13 +63,13 @@ export const AWSCloudFormation = () => {
             </Select>
           </div>
         </Step>
-        <Step indicator="3" title="Deploy">
+        <Step indicator="2" title="Deploy">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             <p>
               Deploy all modules for Deepfence Compliance Scanner for a single account.
               For information on AWS Organizations and account types, see AWS docs.
             </p>
-            <p className={`${Typography.size.sm} text-blue-500 mt-2`}>
+            <p className={`${Typography.size.sm} text-blue-600 dark:text-blue-500 mt-2`}>
               <a
                 href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner`}
                 target="_blank"
@@ -80,7 +80,7 @@ export const AWSCloudFormation = () => {
                 <HiArrowNarrowRight className="pl-1" />
               </a>
             </p>
-            <p className={`mt-2 ${Typography.size.sm} text-blue-500`}>
+            <p className={`mt-2 ${Typography.size.sm} text-blue-600 dark:text-blue-500`}>
               <a
                 href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacksets/create`}
                 target="_blank"

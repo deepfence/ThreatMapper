@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { HiViewGridAdd } from 'react-icons/hi';
 import { useCopyToClipboard } from 'react-use';
 import { Button, Card, Step, Stepper, Typography } from 'ui-components';
 
@@ -30,21 +31,21 @@ export const GCPConnectorForm = () => {
 
   return (
     <Stepper>
-      <Step indicator="1" title="Teraform Cloud Formation.">
+      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation.">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
           <a
             href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-500 mt-2"
+            className="text-blue-600 dark:text-blue-500 mt-2"
           >
             reading our documentation
           </a>
           .
         </div>
       </Step>
-      <Step indicator="2" title="Region Selection">
+      <Step indicator="1" title="Region Selection">
         <div>
           <p className={`mb-2.5 ${Typography.size.sm} dark:text-gray-200`}>
             Copy the following code and paste it into a .tf file on your local machine:
@@ -66,7 +67,7 @@ export const GCPConnectorForm = () => {
           </Card>
         </div>
       </Step>
-      <Step indicator="3" title="Deploy">
+      <Step indicator="2" title="Deploy">
         <div className={`${Typography.size.sm} dark:text-gray-400`}>
           <p className="mb-2.5">
             Copy the following commands and paste them into your shell.
@@ -80,7 +81,7 @@ export const GCPConnectorForm = () => {
                   `${Typography.weight.normal} ${Typography.size.xs} `,
                 )}
               >
-                $ terraform init
+                terraform init
               </pre>
               <CopyToClipboardIcon
                 onClick={() => {
@@ -97,7 +98,7 @@ export const GCPConnectorForm = () => {
                   `${Typography.weight.normal} ${Typography.size.xs} `,
                 )}
               >
-                $ terraform plan
+                terraform plan
               </pre>
               <CopyToClipboardIcon
                 onClick={() => {
@@ -114,7 +115,7 @@ export const GCPConnectorForm = () => {
                   `${Typography.weight.normal} ${Typography.size.xs} `,
                 )}
               >
-                $ terraform apply
+                terraform apply
               </pre>
               <CopyToClipboardIcon
                 onClick={() => {

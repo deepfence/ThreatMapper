@@ -1,4 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { IconContext } from 'react-icons';
+import { HiBookOpen } from 'react-icons/hi';
 
 import { Step, Stepper } from '@/components/stepper/Stepper';
 
@@ -7,12 +9,23 @@ export default {
   component: Stepper,
 } as ComponentMeta<typeof Stepper>;
 
+const Icon = () => (
+  <IconContext.Provider
+    value={{
+      className: '',
+      size: '24px',
+    }}
+  >
+    <HiBookOpen />
+  </IconContext.Provider>
+);
+
 const Template: ComponentStory<typeof Stepper> = (args) => (
   <Stepper>
-    <Step indicator="1" title="Ordered">
+    <Step indicator={<Icon />} title="Ordered">
       <div>A Laptop</div>
     </Step>
-    <Step indicator="2" title="Shipped">
+    <Step indicator="1" title="Shipped">
       <div className="dark:text-gray-400 text-sm">
         Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem
         Ipsum has been the industrys standard dummy text ever since the 1500s, when an
@@ -24,7 +37,7 @@ const Template: ComponentStory<typeof Stepper> = (args) => (
         Ipsum.
       </div>
     </Step>
-    <Step indicator="3" title="Delivered">
+    <Step indicator="2" title="Delivered">
       <div className="dark:text-gray-400 text-lg">Successfully delivered</div>
     </Step>
   </Stepper>

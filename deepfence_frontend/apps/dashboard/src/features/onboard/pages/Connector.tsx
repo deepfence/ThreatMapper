@@ -45,7 +45,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
         {label}
         <IconContext.Provider
           value={{
-            className: 'ml-auto text-blue-500',
+            className: 'ml-auto text-blue-700 dark:text-blue-500',
             size: '18px',
           }}
         >
