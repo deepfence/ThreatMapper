@@ -46,7 +46,11 @@ func main() {
 
 	switch *workerMode {
 	case "worker":
-		startWorker(wml, cfg)
+		err := startWorker(wml, cfg)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return
+		}
 	case "scheduler":
 		// task publisher
 		tasksPublisher, err := kafka.NewPublisher(
@@ -57,7 +61,8 @@ func main() {
 			wml,
 		)
 		if err != nil {
-			panic(err)
+			log.Error().Msg(err.Error())
+			return
 		}
 		defer tasksPublisher.Close()
 		scheduler, err := cronscheduler.NewScheduler(tasksPublisher)
@@ -71,7 +76,7 @@ func main() {
 	}
 }
 
-func startWorker(wml watermill.LoggerAdapter, cfg config) {
+func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	// this for sending messages to kafka
 	ingestC := make(chan *kgo.Record, 10000)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -80,7 +85,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) {
 	// task router
 	mux, err := message.NewRouter(message.RouterConfig{}, wml)
 	if err != nil {
-		panic(err)
+		cancel()
+		return err
 	}
 
 	mux.AddPlugin(plugin.SignalsHandler)
@@ -97,35 +103,52 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) {
 		middleware.CorrelationID,
 	)
 
+	subs, err := subscribe("parse_sbom", cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
 	mux.AddNoPublisherHandler(
 		"parse_sbom",
 		"tasks_parse_sbom",
-		subscribe("parse_sbom", cfg.KafkaBrokers, wml),
+		subs,
 		tasks.NewSBOMParser(ingestC).ParseSBOM,
 	)
 
+	subs, err = subscribe(utils.CleanUpGraphDBTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
 	mux.AddNoPublisherHandler(
 		utils.CleanUpGraphDBTask,
 		utils.CleanUpGraphDBTask,
-		subscribe(utils.CleanUpGraphDBTask, cfg.KafkaBrokers, wml),
+		subs,
 		cronjobs.CleanUpDB,
 	)
 
+	subs, err = subscribe(utils.RetryFailedScansTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
 	mux.AddNoPublisherHandler(
 		utils.RetryFailedScansTask,
 		utils.RetryFailedScansTask,
-		subscribe(utils.RetryFailedScansTask, cfg.KafkaBrokers, wml),
+		subs,
 		cronjobs.RetryScansDB,
 	)
 
 	log.Info().Msg("Starting the consumer")
 	if err = mux.Run(context.Background()); err != nil {
-		panic(err)
+		cancel()
+		return err
 	}
 	cancel()
+	return nil
 }
 
-func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAdapter) message.Subscriber {
+func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAdapter) (message.Subscriber, error) {
 	sub, err := kafka.NewSubscriber(
 		kafka.SubscriberConfig{
 			Brokers:       brokers,
@@ -135,8 +158,8 @@ func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAd
 		logger,
 	)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return sub
+	return sub, nil
 }

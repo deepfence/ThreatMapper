@@ -190,7 +190,7 @@ services:
     ulimits:
       core: 0
     restart: on-failure
-    command: scheduler
+    command: /usr/local/bin/deepfence_worker scheduler
     networks:
     - deepfence_net
     depends_on:
