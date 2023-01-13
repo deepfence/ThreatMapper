@@ -97,6 +97,9 @@ Class | Method | HTTP request | Description
 *DiagnosisApi* | [**GenerateAgentDiagnosticLogs**](docs/DiagnosisApi.md#generateagentdiagnosticlogs) | **Post** /deepfence/diagnosis/agent-logs | Generate Agent Diagnostic Logs
 *DiagnosisApi* | [**GenerateConsoleDiagnosticLogs**](docs/DiagnosisApi.md#generateconsolediagnosticlogs) | **Post** /deepfence/diagnosis/console-logs | Generate Console Diagnostic Logs
 *DiagnosisApi* | [**GetDiagnosticLogs**](docs/DiagnosisApi.md#getdiagnosticlogs) | **Get** /deepfence/diagnosis/diagnostic-logs | Get Diagnostic Logs
+*LookupApi* | [**GetContainers**](docs/LookupApi.md#getcontainers) | **Post** /deepfence/lookup/containers | Retrieve Containers data
+*LookupApi* | [**GetHosts**](docs/LookupApi.md#gethosts) | **Post** /deepfence/lookup/hosts | Retrieve Hosts data
+*LookupApi* | [**GetProcesses**](docs/LookupApi.md#getprocesses) | **Post** /deepfence/lookup/processes | Retrieve Processes data
 *MalwareScanApi* | [**ListMalwareScan**](docs/MalwareScanApi.md#listmalwarescan) | **Post** /deepfence/scan/list/malware | Get Malware Scans List
 *MalwareScanApi* | [**ResultsMalwareScan**](docs/MalwareScanApi.md#resultsmalwarescan) | **Post** /deepfence/scan/results/malware | Get Malware Scans Results
 *MalwareScanApi* | [**StartMalwareScan**](docs/MalwareScanApi.md#startmalwarescan) | **Post** /deepfence/scan/start/malware | Start Malware Scan
@@ -110,13 +113,10 @@ Class | Method | HTTP request | Description
 *SecretScanApi* | [**StatusSecretScan**](docs/SecretScanApi.md#statussecretscan) | **Get** /deepfence/scan/status/secret | Get Secret Scan Status
 *SecretScanApi* | [**StopSecretScan**](docs/SecretScanApi.md#stopsecretscan) | **Post** /deepfence/scan/stop/secret | Stop Secret Scan
 *ThreatApi* | [**GetThreatGraph**](docs/ThreatApi.md#getthreatgraph) | **Post** /deepfence/graph/threat | Get Threat Graph
-*TopologyApi* | [**GetContainers**](docs/TopologyApi.md#getcontainers) | **Post** /deepfence/lookup/containers | Retrieve Containers data
 *TopologyApi* | [**GetContainersTopologyGraph**](docs/TopologyApi.md#getcontainerstopologygraph) | **Post** /deepfence/graph/topology/containers | Get Containers Topology Graph
-*TopologyApi* | [**GetHosts**](docs/TopologyApi.md#gethosts) | **Post** /deepfence/lookup/hosts | Retrieve Hosts data
 *TopologyApi* | [**GetHostsTopologyGraph**](docs/TopologyApi.md#gethoststopologygraph) | **Post** /deepfence/graph/topology/hosts | Get Hosts Topology Graph
 *TopologyApi* | [**GetKubernetesTopologyGraph**](docs/TopologyApi.md#getkubernetestopologygraph) | **Post** /deepfence/graph/topology/kubernetes | Get Kubernetes Topology Graph
 *TopologyApi* | [**GetPodsTopologyGraph**](docs/TopologyApi.md#getpodstopologygraph) | **Post** /deepfence/graph/topology/pods | Get Pods Topology Graph
-*TopologyApi* | [**GetProcesses**](docs/TopologyApi.md#getprocesses) | **Post** /deepfence/lookup/processes | Retrieve Processes data
 *TopologyApi* | [**GetTopologyGraph**](docs/TopologyApi.md#gettopologygraph) | **Post** /deepfence/graph/topology/ | Get Topology Graph
 *TopologyApi* | [**IngestAgentReport**](docs/TopologyApi.md#ingestagentreport) | **Post** /deepfence/ingest/report | Ingest Topology Data
 *UserApi* | [**DeleteCurrentUser**](docs/UserApi.md#deletecurrentuser) | **Delete** /deepfence/user | Delete Current User

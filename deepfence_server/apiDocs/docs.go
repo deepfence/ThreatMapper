@@ -1,9 +1,10 @@
 package apiDocs
 
 import (
+	"net/http"
+
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/swaggest/openapi-go/openapi3"
-	"net/http"
 )
 
 const (
@@ -14,6 +15,7 @@ const (
 	tagCloudCompliance = "Cloud Compliance"
 	tagCloudResources  = "Cloud Resources"
 	tagTopology        = "Topology"
+	tagLookup          = "Lookup"
 	tagThreat          = "Threat"
 	tagSecretScan      = "Secret Scan"
 	tagVulnerability   = "Vulnerability"

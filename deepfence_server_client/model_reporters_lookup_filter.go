@@ -20,15 +20,15 @@ var _ MappedNullable = &ReportersLookupFilter{}
 
 // ReportersLookupFilter struct for ReportersLookupFilter
 type ReportersLookupFilter struct {
-	InFieldFilter map[string]map[string]interface{} `json:"in_field_filter"`
-	NodeIds map[string]map[string]interface{} `json:"node_ids"`
+	InFieldFilter []string `json:"in_field_filter"`
+	NodeIds []string `json:"node_ids"`
 }
 
 // NewReportersLookupFilter instantiates a new ReportersLookupFilter object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportersLookupFilter(inFieldFilter map[string]map[string]interface{}, nodeIds map[string]map[string]interface{}) *ReportersLookupFilter {
+func NewReportersLookupFilter(inFieldFilter []string, nodeIds []string) *ReportersLookupFilter {
 	this := ReportersLookupFilter{}
 	this.InFieldFilter = inFieldFilter
 	this.NodeIds = nodeIds
@@ -44,10 +44,10 @@ func NewReportersLookupFilterWithDefaults() *ReportersLookupFilter {
 }
 
 // GetInFieldFilter returns the InFieldFilter field value
-// If the value is explicit nil, the zero value for map[string]map[string]interface{} will be returned
-func (o *ReportersLookupFilter) GetInFieldFilter() map[string]map[string]interface{} {
+// If the value is explicit nil, the zero value for []string will be returned
+func (o *ReportersLookupFilter) GetInFieldFilter() []string {
 	if o == nil {
-		var ret map[string]map[string]interface{}
+		var ret []string
 		return ret
 	}
 
@@ -57,23 +57,23 @@ func (o *ReportersLookupFilter) GetInFieldFilter() map[string]map[string]interfa
 // GetInFieldFilterOk returns a tuple with the InFieldFilter field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *ReportersLookupFilter) GetInFieldFilterOk() (map[string]map[string]interface{}, bool) {
+func (o *ReportersLookupFilter) GetInFieldFilterOk() ([]string, bool) {
 	if o == nil || isNil(o.InFieldFilter) {
-		return map[string]map[string]interface{}{}, false
+		return nil, false
 	}
 	return o.InFieldFilter, true
 }
 
 // SetInFieldFilter sets field value
-func (o *ReportersLookupFilter) SetInFieldFilter(v map[string]map[string]interface{}) {
+func (o *ReportersLookupFilter) SetInFieldFilter(v []string) {
 	o.InFieldFilter = v
 }
 
 // GetNodeIds returns the NodeIds field value
-// If the value is explicit nil, the zero value for map[string]map[string]interface{} will be returned
-func (o *ReportersLookupFilter) GetNodeIds() map[string]map[string]interface{} {
+// If the value is explicit nil, the zero value for []string will be returned
+func (o *ReportersLookupFilter) GetNodeIds() []string {
 	if o == nil {
-		var ret map[string]map[string]interface{}
+		var ret []string
 		return ret
 	}
 
@@ -83,15 +83,15 @@ func (o *ReportersLookupFilter) GetNodeIds() map[string]map[string]interface{} {
 // GetNodeIdsOk returns a tuple with the NodeIds field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *ReportersLookupFilter) GetNodeIdsOk() (map[string]map[string]interface{}, bool) {
+func (o *ReportersLookupFilter) GetNodeIdsOk() ([]string, bool) {
 	if o == nil || isNil(o.NodeIds) {
-		return map[string]map[string]interface{}{}, false
+		return nil, false
 	}
 	return o.NodeIds, true
 }
 
 // SetNodeIds sets field value
-func (o *ReportersLookupFilter) SetNodeIds(v map[string]map[string]interface{}) {
+func (o *ReportersLookupFilter) SetNodeIds(v []string) {
 	o.NodeIds = v
 }
 

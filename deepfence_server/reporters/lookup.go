@@ -14,8 +14,8 @@ import (
 // If no nodeIds are provided, will return all
 // If no field are provided, will return all fields
 type LookupFilter struct {
-	InFieldFilter map[string]struct{} `json:"in_field_filter" required:"true"` // Fields to return
-	NodeIds       map[string]struct{} `json:"node_ids" required:"true"`        // Node to return
+	InFieldFilter []string `json:"in_field_filter" required:"true"` // Fields to return
+	NodeIds       []string `json:"node_ids" required:"true"`        // Node to return
 }
 
 func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, error) {

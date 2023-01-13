@@ -4,82 +4,13 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**GetContainers**](TopologyApi.md#GetContainers) | **Post** /deepfence/lookup/containers | Retrieve Containers data
 [**GetContainersTopologyGraph**](TopologyApi.md#GetContainersTopologyGraph) | **Post** /deepfence/graph/topology/containers | Get Containers Topology Graph
-[**GetHosts**](TopologyApi.md#GetHosts) | **Post** /deepfence/lookup/hosts | Retrieve Hosts data
 [**GetHostsTopologyGraph**](TopologyApi.md#GetHostsTopologyGraph) | **Post** /deepfence/graph/topology/hosts | Get Hosts Topology Graph
 [**GetKubernetesTopologyGraph**](TopologyApi.md#GetKubernetesTopologyGraph) | **Post** /deepfence/graph/topology/kubernetes | Get Kubernetes Topology Graph
 [**GetPodsTopologyGraph**](TopologyApi.md#GetPodsTopologyGraph) | **Post** /deepfence/graph/topology/pods | Get Pods Topology Graph
-[**GetProcesses**](TopologyApi.md#GetProcesses) | **Post** /deepfence/lookup/processes | Retrieve Processes data
 [**GetTopologyGraph**](TopologyApi.md#GetTopologyGraph) | **Post** /deepfence/graph/topology/ | Get Topology Graph
 [**IngestAgentReport**](TopologyApi.md#IngestAgentReport) | **Post** /deepfence/ingest/report | Ingest Topology Data
 
-
-
-## GetContainers
-
-> []ModelContainer GetContainers(ctx).ReportersLookupFilter(reportersLookupFilter).Execute()
-
-Retrieve Containers data
-
-
-
-### Example
-
-```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "os"
-    openapiclient "./openapi"
-)
-
-func main() {
-    reportersLookupFilter := *openapiclient.NewReportersLookupFilter(map[string]map[string]interface{}{"key": map[string]interface{}(123)}, map[string]map[string]interface{}{"key": map[string]interface{}(123)}) // ReportersLookupFilter |  (optional)
-
-    configuration := openapiclient.NewConfiguration()
-    apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TopologyApi.GetContainers(context.Background()).ReportersLookupFilter(reportersLookupFilter).Execute()
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `TopologyApi.GetContainers``: %v\n", err)
-        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-    }
-    // response from `GetContainers`: []ModelContainer
-    fmt.Fprintf(os.Stdout, "Response from `TopologyApi.GetContainers`: %v\n", resp)
-}
-```
-
-### Path Parameters
-
-
-
-### Other Parameters
-
-Other parameters are passed through a pointer to a apiGetContainersRequest struct via the builder pattern
-
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **reportersLookupFilter** | [**ReportersLookupFilter**](ReportersLookupFilter.md) |  | 
-
-### Return type
-
-[**[]ModelContainer**](ModelContainer.md)
-
-### Authorization
-
-[bearer_token](../README.md#bearer_token)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
-[[Back to Model list]](../README.md#documentation-for-models)
-[[Back to README]](../README.md)
 
 
 ## GetContainersTopologyGraph
@@ -133,72 +64,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ApiDocsGraphResult**](ApiDocsGraphResult.md)
-
-### Authorization
-
-[bearer_token](../README.md#bearer_token)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
-[[Back to Model list]](../README.md#documentation-for-models)
-[[Back to README]](../README.md)
-
-
-## GetHosts
-
-> []ModelHost GetHosts(ctx).ReportersLookupFilter(reportersLookupFilter).Execute()
-
-Retrieve Hosts data
-
-
-
-### Example
-
-```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "os"
-    openapiclient "./openapi"
-)
-
-func main() {
-    reportersLookupFilter := *openapiclient.NewReportersLookupFilter(map[string]map[string]interface{}{"key": map[string]interface{}(123)}, map[string]map[string]interface{}{"key": map[string]interface{}(123)}) // ReportersLookupFilter |  (optional)
-
-    configuration := openapiclient.NewConfiguration()
-    apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TopologyApi.GetHosts(context.Background()).ReportersLookupFilter(reportersLookupFilter).Execute()
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `TopologyApi.GetHosts``: %v\n", err)
-        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-    }
-    // response from `GetHosts`: []ModelHost
-    fmt.Fprintf(os.Stdout, "Response from `TopologyApi.GetHosts`: %v\n", resp)
-}
-```
-
-### Path Parameters
-
-
-
-### Other Parameters
-
-Other parameters are passed through a pointer to a apiGetHostsRequest struct via the builder pattern
-
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **reportersLookupFilter** | [**ReportersLookupFilter**](ReportersLookupFilter.md) |  | 
-
-### Return type
-
-[**[]ModelHost**](ModelHost.md)
 
 ### Authorization
 
@@ -397,72 +262,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ApiDocsGraphResult**](ApiDocsGraphResult.md)
-
-### Authorization
-
-[bearer_token](../README.md#bearer_token)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
-[[Back to Model list]](../README.md#documentation-for-models)
-[[Back to README]](../README.md)
-
-
-## GetProcesses
-
-> []ModelProcess GetProcesses(ctx).ReportersLookupFilter(reportersLookupFilter).Execute()
-
-Retrieve Processes data
-
-
-
-### Example
-
-```go
-package main
-
-import (
-    "context"
-    "fmt"
-    "os"
-    openapiclient "./openapi"
-)
-
-func main() {
-    reportersLookupFilter := *openapiclient.NewReportersLookupFilter(map[string]map[string]interface{}{"key": map[string]interface{}(123)}, map[string]map[string]interface{}{"key": map[string]interface{}(123)}) // ReportersLookupFilter |  (optional)
-
-    configuration := openapiclient.NewConfiguration()
-    apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TopologyApi.GetProcesses(context.Background()).ReportersLookupFilter(reportersLookupFilter).Execute()
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `TopologyApi.GetProcesses``: %v\n", err)
-        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-    }
-    // response from `GetProcesses`: []ModelProcess
-    fmt.Fprintf(os.Stdout, "Response from `TopologyApi.GetProcesses`: %v\n", resp)
-}
-```
-
-### Path Parameters
-
-
-
-### Other Parameters
-
-Other parameters are passed through a pointer to a apiGetProcessesRequest struct via the builder pattern
-
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **reportersLookupFilter** | [**ReportersLookupFilter**](ReportersLookupFilter.md) |  | 
-
-### Return type
-
-[**[]ModelProcess**](ModelProcess.md)
 
 ### Authorization
 

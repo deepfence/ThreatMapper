@@ -966,7 +966,7 @@ paths:
       - bearer_token: []
       summary: Retrieve Containers data
       tags:
-      - Topology
+      - Lookup
   /deepfence/lookup/hosts:
     post:
       description: Retrieve all the data associated with hosts
@@ -1011,7 +1011,7 @@ paths:
       - bearer_token: []
       summary: Retrieve Hosts data
       tags:
-      - Topology
+      - Lookup
   /deepfence/lookup/processes:
     post:
       description: Retrieve all the data associated with processes
@@ -1056,7 +1056,7 @@ paths:
       - bearer_token: []
       summary: Retrieve Processes data
       tags:
-      - Topology
+      - Lookup
   /deepfence/scan/list/compliance:
     post:
       description: Get Compliance Scans list on agent or registry
@@ -3987,20 +3987,22 @@ components:
     ReportersLookupFilter:
       example:
         in_field_filter:
-          key: "{}"
+        - in_field_filter
+        - in_field_filter
         node_ids:
-          key: "{}"
+        - node_ids
+        - node_ids
       properties:
         in_field_filter:
-          additionalProperties:
-            type: object
+          items:
+            type: string
           nullable: true
-          type: object
+          type: array
         node_ids:
-          additionalProperties:
-            type: object
+          items:
+            type: string
           nullable: true
-          type: object
+          type: array
       required:
       - in_field_filter
       - node_ids

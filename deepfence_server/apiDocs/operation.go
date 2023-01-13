@@ -80,15 +80,15 @@ func (d *OpenApiDocs) AddGraphOperations() {
 func (d *OpenApiDocs) AddLookupOperations() {
 	d.AddOperation("getHosts", http.MethodPost, "/deepfence/lookup/hosts",
 		"Retrieve Hosts data", "Retrieve all the data associated with hosts",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.LookupFilter), new([]model.Host))
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.Host))
 
 	d.AddOperation("getContainers", http.MethodPost, "/deepfence/lookup/containers",
 		"Retrieve Containers data", "Retrieve all the data associated with containers",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.LookupFilter), new([]model.Container))
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.Container))
 
 	d.AddOperation("getProcesses", http.MethodPost, "/deepfence/lookup/processes",
 		"Retrieve Processes data", "Retrieve all the data associated with processes",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(reporters.LookupFilter), new([]model.Process))
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.Process))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {

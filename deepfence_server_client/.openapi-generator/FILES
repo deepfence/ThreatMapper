@@ -8,6 +8,7 @@ api_cloud_resources.go
 api_compliance.go
 api_controls.go
 api_diagnosis.go
+api_lookup.go
 api_malware_scan.go
 api_secret_scan.go
 api_threat.go
@@ -40,6 +41,7 @@ docs/IngestersSecretRule.md
 docs/IngestersSecretScanStatus.md
 docs/IngestersSecretSeverity.md
 docs/IngestersVulnerability.md
+docs/LookupApi.md
 docs/MalwareScanApi.md
 docs/ModelAgentId.md
 docs/ModelApiAuthRequest.md
@@ -132,4 +134,5 @@ model_reporters_provider_threat_graph.go
 model_reporters_threat_node_info.go
 model_reporters_topology_filters.go
 response.go
+test/api_lookup_test.go
 utils.go
