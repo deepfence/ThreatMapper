@@ -95,15 +95,15 @@ def notification_task(self, **kwargs):
                         filtered_malware_list = []
                         if filter_malware_notification(notification.filters, malware_doc, topology_data):
                             filtered_malware_list.append(malware_doc)
-                        if not filtered_malware_list:
-                            continue
-                        try:
-                            integration = integrations.get(notification.integration_id)
-                            integration.send(notification.format_content(filtered_malware_list),
-                                             summary="Deepfence - Malware Subscription",
-                                             notification_id=notification.id, resource_type=MALWARE_SCAN_ES_TYPE)
-                        except Exception as ex:
-                            flask_app.logger.error("Error sending notification: {0}".format(ex))
+                    if not filtered_malware_list:
+                        continue
+                    try:
+                        integration = integrations.get(notification.integration_id)
+                        integration.send(notification.format_content(filtered_malware_list),
+                                         summary="Deepfence - Malware Subscription",
+                                         notification_id=notification.id, resource_type=MALWARE_SCAN_ES_TYPE)
+                    except Exception as ex:
+                        flask_app.logger.error("Error sending notification: {0}".format(ex))
 
             elif notification_type == NOTIFICATION_TYPE_SECRET:
                 secret_notifications = SecretNotification.query.filter(
@@ -114,13 +114,13 @@ def notification_task(self, **kwargs):
                         filtered_secret_list = []
                         if filter_secret_notification(notification.filters, secret_doc, topology_data):
                             filtered_secret_list.append(secret_doc)
-                        if not filtered_secret_list:
-                            continue
-                        try:
-                            integration = integrations.get(notification.integration_id)
-                            integration.send(notification.format_content(filtered_secret_list),
-                                             summary="Deepfence - Secret Subscription",
-                                             notification_id=notification.id, resource_type=SECRET_SCAN_ES_TYPE)
-                        except Exception as ex:
-                            flask_app.logger.error("Error sending notification: {0}".format(ex))    except Exception as exc:
-        print(exc)
+                    if not filtered_secret_list:
+                        continue
+                    flask_app.logger.info("filtered_secret_list reached this point")
+                    try:
+                        integration = integrations.get(notification.integration_id)
+                        integration.send(notification.format_content(filtered_secret_list),
+                                        summary="Deepfence - Secret Subscription",
+                                        notification_id=notification.id, resource_type=SECRET_SCAN_ES_TYPE)
+                    except Exception as ex:
+                        flask_app.logger.error("Error sending notification: {0}".format(ex))
