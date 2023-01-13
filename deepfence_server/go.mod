@@ -41,6 +41,7 @@ require (
 	github.com/ugorji/go/codec v1.2.8
 	github.com/weaveworks/scope v1.13.2
 	golang.org/x/crypto v0.5.0
+	gotest.tools v2.2.0+incompatible
 )
 
 require (

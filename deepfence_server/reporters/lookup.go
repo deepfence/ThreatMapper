@@ -2,6 +2,8 @@ package reporters
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -12,7 +14,8 @@ import (
 )
 
 // If no nodeIds are provided, will return all
-// If no field are provided, will return all fields
+// If no field are provided, will return all fields.
+// (Fields can only be top level since neo4j does not support nested fields)
 type LookupFilter struct {
 	InFieldFilter []string `json:"in_field_filter" required:"true"` // Fields to return
 	NodeIds       []string `json:"node_ids" required:"true"`        // Node to return
@@ -37,6 +40,16 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 		hosts[i].Containers = containers
 	}
 	return hosts, nil
+}
+
+func fieldFilterCypher(node_name string, fields []string) string {
+	if len(fields) != 0 {
+		for i := range fields {
+			fields[i] = fmt.Sprintf("%s.%s", node_name, fields[i])
+		}
+		return strings.Join(fields, ",")
+	}
+	return node_name
 }
 
 func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Container, error) {
@@ -85,11 +98,11 @@ func getGenericDirectNodeReport[T any](ctx context.Context, filter LookupFilter)
 	var r neo4j.Result
 	if len(filter.NodeIds) == 0 {
 		r, err = tx.Run(`
-		MATCH (n:Node) RETURN n
+		MATCH (n:Node) RETURN `+fieldFilterCypher("n", filter.InFieldFilter)+`
 		`, nil)
 	} else {
 		r, err = tx.Run(`
-		MATCH (n:Node) WHERE n.node_id IN $ids RETURN n
+		MATCH (n:Node) WHERE n.node_id IN $ids RETURN `+fieldFilterCypher("n", filter.InFieldFilter)+`
 		`, map[string]interface{}{"ids": filter.NodeIds})
 	}
 
@@ -104,18 +117,27 @@ func getGenericDirectNodeReport[T any](ctx context.Context, filter LookupFilter)
 	}
 
 	for _, rec := range recs {
-		data, has := rec.Get("n")
-		if !has {
-			log.Warn().Msgf("Missing neo4j entry")
-			continue
-		}
-		da, ok := data.(dbtype.Node)
-		if !ok {
-			log.Warn().Msgf("Missing neo4j entry")
-			continue
+		var node_map map[string]interface{}
+		if len(filter.InFieldFilter) == 0 {
+			data, has := rec.Get("n")
+			if !has {
+				log.Warn().Msgf("Missing neo4j entry")
+				continue
+			}
+			da, ok := data.(dbtype.Node)
+			if !ok {
+				log.Warn().Msgf("Missing neo4j entry")
+				continue
+			}
+			node_map = da.Props
+		} else {
+			node_map = map[string]interface{}{}
+			for i := range filter.InFieldFilter {
+				node_map[filter.InFieldFilter[i]] = rec.Values[i]
+			}
 		}
 		var node T
-		utils.FromMap(da.Props, &node)
+		utils.FromMap(node_map, &node)
 		res = append(res, node)
 	}
 
