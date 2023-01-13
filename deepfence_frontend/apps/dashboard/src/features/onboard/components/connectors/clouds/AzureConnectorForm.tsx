@@ -54,11 +54,7 @@ export const AzureConnectorForm = () => {
             >
               {code}
             </pre>
-            <CopyToClipboardIcon
-              onClick={() => {
-                copyToClipboard(code);
-              }}
-            />
+            <CopyToClipboardIcon text={code} />
           </Card>
         </div>
       </Step>
@@ -78,12 +74,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform init
               </pre>
-              <CopyToClipboardIcon
-                onClick={() => {
-                  copyToClipboard('$ terraform init');
-                }}
-                className="top-4"
-              />
+              <CopyToClipboardIcon text={'terraform init'} className="top-4" />
             </div>
             <div className="relative">
               <pre
@@ -95,12 +86,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform plan
               </pre>
-              <CopyToClipboardIcon
-                onClick={() => {
-                  copyToClipboard('$ terraform plan');
-                }}
-                className="top-0"
-              />
+              <CopyToClipboardIcon text={'terraform plan'} className="top-0" />
             </div>
             <div className="relative">
               <pre
@@ -112,12 +98,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform apply
               </pre>
-              <CopyToClipboardIcon
-                onClick={() => {
-                  copyToClipboard('$ terraform apply');
-                }}
-                className="top-0"
-              />
+              <CopyToClipboardIcon text={'terraform apply'} className="top-0" />
             </div>
           </Card>
           <div className="flex flex-col mt-6">

@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiCheck, HiOutlineDuplicate } from 'react-icons/hi';
+import { useCopyToClipboard } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
 type CopyToClipboardIconProps = {
-  onClick: () => void;
+  text: string;
   className?: string;
 };
-export const CopyToClipboardIcon = ({ onClick, className }: CopyToClipboardIconProps) => {
+export const CopyToClipboardIcon = ({ text, className }: CopyToClipboardIconProps) => {
+  const [_, copyToClipboard] = useCopyToClipboard();
   const [copied, setCopied] = useState(false);
 
-  const onCopy = (_: any) => {
+  const onCopy = (_: React.MouseEvent<HTMLButtonElement>) => {
     setCopied(true);
     setTimeout(() => setCopied(false), 5000);
-    onClick();
+    copyToClipboard(text);
   };
 
   return (

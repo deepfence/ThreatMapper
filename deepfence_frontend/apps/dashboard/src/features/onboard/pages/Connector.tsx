@@ -284,7 +284,7 @@ export const Connector = ({ page }: { page: string }) => {
   const onTabChange = (tab: string) => {
     navigate(`/onboard/${tab}`);
   };
-  console.log(page);
+
   useEffect(() => {
     if (page) {
       setTab(page);

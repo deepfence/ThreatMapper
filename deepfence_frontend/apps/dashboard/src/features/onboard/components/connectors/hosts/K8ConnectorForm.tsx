@@ -15,7 +15,7 @@ import {
 
 import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
 import { usePageNavigation } from '../../../../../utils/usePageNavigation';
-import { isEmptyString } from '../../../../../utils/validator';
+import { containsWhiteSpace } from '../../../../../utils/validator';
 
 const containerRuntimeDropdown = [
   {
@@ -78,11 +78,11 @@ const InformationForm = memo(
     const [error, setError] = useState('');
 
     useEffect(() => {
-      if (isEmptyString(clusterName)) {
+      if (containsWhiteSpace(clusterName)) {
         setError('Spaces are not allowed in cluster name.');
-      } else if (isEmptyString(namespace)) {
+      } else if (containsWhiteSpace(namespace)) {
         setError('Spaces are not allowed in namespace.');
-      } else if (isEmptyString(socketPath)) {
+      } else if (containsWhiteSpace(socketPath)) {
         setError('Spaces are not allowed in socket path.');
       } else {
         setError('');
@@ -106,10 +106,10 @@ const InformationForm = memo(
     };
 
     useMemo(() => {
-      const _clusterName = isEmptyString(clusterName) ? defaultCluster : clusterName;
-      const _namespace = isEmptyString(namespace) ? defaultNamespace : namespace;
+      const _clusterName = containsWhiteSpace(clusterName) ? defaultCluster : clusterName;
+      const _namespace = containsWhiteSpace(namespace) ? defaultNamespace : namespace;
 
-      const _socketPath = isEmptyString(socketPath)
+      const _socketPath = containsWhiteSpace(socketPath)
         ? socketMap[containerRuntime].path
         : socketPath;
 
@@ -261,11 +261,9 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                   https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
                 </pre>
                 <CopyToClipboardIcon
-                  onClick={() => {
-                    copyToClipboard(
-                      'helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper',
-                    );
-                  }}
+                  text={
+                    'helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper'
+                  }
                   className="top-4"
                 />
               </div>
@@ -279,12 +277,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                 >
                   helm repo update
                 </pre>
-                <CopyToClipboardIcon
-                  onClick={() => {
-                    copyToClipboard('helm repo update');
-                  }}
-                  className="top-0"
-                />
+                <CopyToClipboardIcon text={'helm repo update'} className="top-0" />
               </div>
               <div className="relative">
                 <pre
@@ -296,12 +289,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                 >
                   {instruction}
                 </pre>
-                <CopyToClipboardIcon
-                  onClick={() => {
-                    copyToClipboard(instruction);
-                  }}
-                  className="top-0"
-                />
+                <CopyToClipboardIcon text={instruction} className="top-0" />
               </div>
             </Card>
             <div className="flex flex-col mt-6">
