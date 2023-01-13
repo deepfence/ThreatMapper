@@ -124,3 +124,5 @@ def notification_task(self, **kwargs):
                                         notification_id=notification.id, resource_type=SECRET_SCAN_ES_TYPE)
                     except Exception as ex:
                         flask_app.logger.error("Error sending notification: {0}".format(ex))
+    except Exception as exc:
+        print(exc)
