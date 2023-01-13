@@ -36,13 +36,15 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
     <div className="px-6">
       <button
         className={cx(
-          'text-sm text-left flex items-center w-full',
+          'text-sm text-left flex items-center w-full gap-5',
           'border-b dark:border-gray-700 border-gray-200 h-[72px] dark:text-gray-300 dark:bg-transparent',
         )}
         onClick={handleSelection}
       >
-        <img src={icon} alt="Cloud Connector" height="32" className="mr-6" />
-        {label}
+        <div className="w-10">
+          <img src={icon} alt="Cloud Connector" />
+        </div>
+        <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
         <IconContext.Provider
           value={{
             className: 'ml-auto text-blue-500',
@@ -76,8 +78,8 @@ const Cloud = () => {
     },
   ];
   return (
-    <Card className={cx(`w-full sm:w-1/3 dark:border-0`)}>
-      <div className="py-4 items-center flex pl-6">
+    <>
+      <div className="py-4 items-center flex px-6">
         <img
           src={LogoCloudConnector}
           alt="Cloud Connector"
@@ -91,14 +93,14 @@ const Cloud = () => {
           Cloud
         </span>
       </div>
-      <div>
+      <div className="mb-4">
         <p
-          className={`pl-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400`}
+          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
         >
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
-        <div className="flex flex-col mt-10">
+        <div className="flex flex-col">
           {connectors.map((connector) => {
             return (
               <div
@@ -114,7 +116,7 @@ const Cloud = () => {
           })}
         </div>
       </div>
-    </Card>
+    </>
   );
 };
 const Host = () => {
@@ -137,8 +139,8 @@ const Host = () => {
   ];
 
   return (
-    <Card className="w-full sm:w-1/3 dark:border-0">
-      <div className="py-4 items-center flex pl-6">
+    <>
+      <div className="py-4 items-center flex px-6">
         <img
           src={LogoHostConnector}
           alt="Cloud Connector"
@@ -152,14 +154,14 @@ const Host = () => {
           Host
         </span>
       </div>
-      <div>
+      <div className="mb-4">
         <p
-          className={`pl-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400`}
+          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
         >
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
-        <div className="flex flex-col mt-10">
+        <div className="flex flex-col">
           {connectors.map((connector) => {
             return (
               <div
@@ -175,9 +177,10 @@ const Host = () => {
           })}
         </div>
       </div>
-    </Card>
+    </>
   );
 };
+
 const Registries = () => {
   const { mode } = useTheme();
   const connectors = [
@@ -213,8 +216,8 @@ const Registries = () => {
     },
   ];
   return (
-    <Card className="w-full sm:w-1/3 dark:border-0">
-      <div className="py-4 items-center flex pl-6">
+    <>
+      <div className="py-4 items-center flex px-6">
         <img
           src={LogoRegistryConnector}
           alt="Cloud Connector"
@@ -228,15 +231,15 @@ const Registries = () => {
           Registry
         </span>
       </div>
-      <div>
+      <div className="mb-4">
         <p
-          className={`pl-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400`}
+          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
         >
           Connect a registry to scan images for vulnerabilities.
           <br></br>
           &nbsp;
         </p>
-        <div className="flex flex-col mt-10">
+        <div className="flex flex-col">
           {connectors.map((connector) => {
             return (
               <div
@@ -252,7 +255,7 @@ const Registries = () => {
           })}
         </div>
       </div>
-    </Card>
+    </>
   );
 };
 
@@ -269,10 +272,16 @@ const tabs = [
 
 export const AddConnector = () => {
   return (
-    <div className="flex flex-col sm:flex-row gap-x-2">
-      <Cloud />
-      <Host />
-      <Registries />
+    <div className="grid grid-cols-1 gap-4 gap-y-6 lg:grid-cols-3 sm:grid-cols-2">
+      <Card className="dark:border-0">
+        <Cloud />
+      </Card>
+      <Card className="dark:border-0">
+        <Host />
+      </Card>
+      <Card className="dark:border-0">
+        <Registries />
+      </Card>
     </div>
   );
 };
