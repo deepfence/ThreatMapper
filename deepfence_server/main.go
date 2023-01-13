@@ -85,8 +85,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go utils.StartKafkaProducer(ctx, strings.Split(kafkaBrokers, ","), ingestC)
 
-	initializeCronJobs()
-
 	wml := watermill.NewStdLogger(false, false)
 
 	rand.Seed(time.Now().Unix())
@@ -153,19 +151,6 @@ func main() {
 	cancel()
 
 	log.Info().Msg("deepfence-server stopped")
-}
-
-func initializeCronJobs() {
-	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-	err := directory.PeriodicWorkerEnqueue(ctx, directory.CleanUpGraphDBTaskID, "@every 120s")
-	if err != nil {
-		log.Fatal().Msgf("Could not enqueue graph clean up task: %v", err)
-	}
-
-	err = directory.PeriodicWorkerEnqueue(ctx, directory.ScanRetryGraphDBTaskID, "@every 120s")
-	if err != nil {
-		log.Fatal().Msgf("Could not enqueue scans retry task: %v", err)
-	}
 }
 
 func initialize() (*Config, error) {

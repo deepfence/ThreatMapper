@@ -21,15 +21,15 @@ var (
 	grypeBin    = "grype"
 )
 
-type sbomParser struct {
+type SbomParser struct {
 	ingestC chan *kgo.Record
 }
 
-func NewSBOMParser(ingest chan *kgo.Record) sbomParser {
-	return sbomParser{ingestC: ingest}
+func NewSBOMParser(ingest chan *kgo.Record) SbomParser {
+	return SbomParser{ingestC: ingest}
 }
 
-func (s sbomParser) ParseSBOM(msg *message.Message) error {
+func (s SbomParser) ParseSBOM(msg *message.Message) error {
 	// extract tenant id
 	tenantID, err := directory.ExtractNamespace(msg.Context())
 	if err != nil {

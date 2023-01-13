@@ -18,6 +18,11 @@ const (
 )
 
 const (
+	CleanUpGraphDBTask   = "clean_up_graph_db"
+	RetryFailedScansTask = "retry_failed_scans"
+)
+
+const (
 	SCAN_STATUS_SUCCESS    = "COMPLETE"
 	SCAN_STATUS_STARTING   = "STARTING"
 	SCAN_STATUS_INPROGRESS = "IN_PROGRESS"

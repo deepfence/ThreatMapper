@@ -31,28 +31,6 @@ func (LogInfoWriter) Write(b []byte) (int, error) {
 	return len(b), nil
 }
 
-type AsynqLogger struct{}
-
-func (a AsynqLogger) Debug(args ...interface{}) {
-	log.Debug().Msg(fmt.Sprint(args...))
-}
-
-func (a AsynqLogger) Info(args ...interface{}) {
-	log.Info().Msg(fmt.Sprint(args...))
-}
-
-func (a AsynqLogger) Warn(args ...interface{}) {
-	log.Warn().Msg(fmt.Sprint(args...))
-}
-
-func (a AsynqLogger) Error(args ...interface{}) {
-	log.Error().Msg(fmt.Sprint(args...))
-}
-
-func (a AsynqLogger) Fatal(args ...interface{}) {
-	log.Fatal().Msg(fmt.Sprint(args...))
-}
-
 func init() {
 	log.Logger = log.Output(
 		zerolog.ConsoleWriter{

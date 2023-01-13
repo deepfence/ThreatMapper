@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"time"
-
+	"flag"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -11,9 +10,12 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"time"
 )
 
 type config struct {
@@ -21,8 +23,9 @@ type config struct {
 	Debug        bool     `default:"false"`
 }
 
-func main() {
+var workerMode = flag.String("mode", "worker", "worker or scheduler")
 
+func main() {
 	var cfg config
 	var err error
 	var wml watermill.LoggerAdapter
@@ -41,6 +44,34 @@ func main() {
 		wml = watermill.NewStdLogger(false, false)
 	}
 
+	switch *workerMode {
+	case "worker":
+		startWorker(wml, cfg)
+	case "scheduler":
+		// task publisher
+		tasksPublisher, err := kafka.NewPublisher(
+			kafka.PublisherConfig{
+				Brokers:   cfg.KafkaBrokers,
+				Marshaler: kafka.DefaultMarshaler{},
+			},
+			wml,
+		)
+		if err != nil {
+			panic(err)
+		}
+		defer tasksPublisher.Close()
+		scheduler, err := cronscheduler.NewScheduler(tasksPublisher)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return
+		}
+		scheduler.Run()
+	default:
+		log.Fatal().Msgf("unknown mode %s", *workerMode)
+	}
+}
+
+func startWorker(wml watermill.LoggerAdapter, cfg config) {
 	// this for sending messages to kafka
 	ingestC := make(chan *kgo.Record, 10000)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -71,6 +102,20 @@ func main() {
 		"tasks_parse_sbom",
 		subscribe("parse_sbom", cfg.KafkaBrokers, wml),
 		tasks.NewSBOMParser(ingestC).ParseSBOM,
+	)
+
+	mux.AddNoPublisherHandler(
+		utils.CleanUpGraphDBTask,
+		utils.CleanUpGraphDBTask,
+		subscribe(utils.CleanUpGraphDBTask, cfg.KafkaBrokers, wml),
+		cronjobs.CleanUpDB,
+	)
+
+	mux.AddNoPublisherHandler(
+		utils.RetryFailedScansTask,
+		utils.RetryFailedScansTask,
+		subscribe(utils.RetryFailedScansTask, cfg.KafkaBrokers, wml),
+		cronjobs.RetryScansDB,
 	)
 
 	log.Info().Msg("Starting the consumer")

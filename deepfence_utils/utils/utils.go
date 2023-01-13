@@ -211,3 +211,11 @@ func FromMap(bb map[string]interface{}, c interface{}) {
 		}
 	}
 }
+
+func GetTimestamp() int64 {
+	return time.Now().UTC().UnixNano() / 1000000
+}
+
+func GetDatetimeNow() string {
+	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
+}
