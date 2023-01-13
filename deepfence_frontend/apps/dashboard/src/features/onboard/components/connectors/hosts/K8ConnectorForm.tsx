@@ -1,7 +1,6 @@
 import cx from 'classnames';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { useCopyToClipboard } from 'react-use';
 import {
   Button,
   Card,
@@ -213,8 +212,6 @@ ${containerRuntimeDropdown[0].value} \\
 ${socketMap.containerd.command}="${defaultSocketPath}" \\
 --namespace ${defaultNamespace} \\
 --create-namespace`);
-
-  const [_, copyToClipboard] = useCopyToClipboard();
 
   return (
     <div className="w-full">

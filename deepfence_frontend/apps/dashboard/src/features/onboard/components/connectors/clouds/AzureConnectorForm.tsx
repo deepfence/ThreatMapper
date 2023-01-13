@@ -1,6 +1,5 @@
 import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { useCopyToClipboard } from 'react-use';
 import { Button, Card, Step, Stepper, Typography } from 'ui-components';
 
 import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
@@ -8,7 +7,6 @@ import { usePageNavigation } from '../../../../../utils/usePageNavigation';
 
 export const AzureConnectorForm = () => {
   const { navigate } = usePageNavigation();
-  const [_, copyToClipboard] = useCopyToClipboard();
 
   const code = `provider "azurerm" {
     features {}

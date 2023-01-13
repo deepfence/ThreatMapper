@@ -1,14 +1,12 @@
 import cx from 'classnames';
 import { memo } from 'react';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { useCopyToClipboard } from 'react-use';
 import { Button, Card, Step, Stepper, Typography } from 'ui-components';
 
 import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
 import { usePageNavigation } from '../../../../../utils/usePageNavigation';
 
 export const AWSTerraform = memo(() => {
-  const [_, copyToClipboard] = useCopyToClipboard();
   const { navigate } = usePageNavigation();
   const code = `provider "aws" {
   region = "<AWS-REGION>; eg. us-east-1"

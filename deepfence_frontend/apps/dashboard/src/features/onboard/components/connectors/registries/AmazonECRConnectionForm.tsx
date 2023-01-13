@@ -12,11 +12,7 @@ import {
   Typography,
 } from 'ui-components';
 
-import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
-
 export const AmazonECRConnectorForm = () => {
-  const [clipboardCopied, copyToClipboard] = useCopyToClipboard();
-
   return (
     <Stepper>
       <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation.">
