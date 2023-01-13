@@ -1,8 +1,27 @@
-import { OnboardLayout } from '../features/onboard/layouts/OnboardLayout';
+import { Outlet, RouteObject } from 'react-router-dom';
 
-export const privateRoutes = [
+import {
+  OnboardLayout,
+  rootOnboardLoader,
+} from '../features/onboard/layouts/OnboardLayout';
+import { Connector } from '../features/onboard/pages/Connector';
+
+export const privateRoutes: RouteObject[] = [
   {
     path: '/onboard',
     element: <OnboardLayout />,
+    loader: rootOnboardLoader,
+    children: [
+      {
+        path: 'connectors',
+        element: <Outlet />,
+        children: [
+          {
+            path: '',
+            element: <Connector />,
+          },
+        ],
+      },
+    ],
   },
 ];

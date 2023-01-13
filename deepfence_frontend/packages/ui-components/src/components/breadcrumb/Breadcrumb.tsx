@@ -19,6 +19,7 @@ type BreadCrumbProps = {
   children: React.ReactNode | React.ReactNode[];
   outline?: boolean;
   separator?: React.ReactNode;
+  transparent?: boolean;
 };
 
 export const BreadcrumbLink = React.forwardRef<
@@ -62,7 +63,12 @@ export const BreadcrumbLink = React.forwardRef<
   );
 });
 
-export const Breadcrumb = ({ children, separator, outline = false }: BreadCrumbProps) => {
+export const Breadcrumb = ({
+  children,
+  separator,
+  outline = false,
+  transparent,
+}: BreadCrumbProps) => {
   const childrenEl = React.Children.map<React.ReactNode, React.ReactNode>(
     children,
     function (child: React.ReactNode, index) {
@@ -86,10 +92,13 @@ export const Breadcrumb = ({ children, separator, outline = false }: BreadCrumbP
       return elementChild;
     },
   );
+
   return (
     <div
-      className={cx('flex w-fit items-center py-2 px-5 bg-gray-50 dark:bg-gray-800', {
-        'outline-none border border-gray-200 dark:border-gray-700 rounded-lg': outline,
+      className={cx('flex w-fit items-center py-2 px-5 rounded-lg', {
+        'outline-none border border-gray-200 dark:border-gray-700': outline,
+        'bg-transparent': transparent,
+        'bg-gray-50 dark:bg-gray-800': !transparent,
       })}
     >
       {childrenEl}
