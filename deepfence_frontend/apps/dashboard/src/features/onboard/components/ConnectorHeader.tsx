@@ -17,13 +17,13 @@ const canRoute = (pathname: string) => {
   if (pathname.includes('view-scan-results')) {
     path.viewResult = '/onboard/view-scan-results';
     path.scanResult = '/onboard/scan-infrastructure';
-    path.addConnector = '/onboard/connectors';
+    path.addConnector = '/onboard/add-connectors';
   } else if (pathname.includes('scan-infrastructure')) {
     path.scanResult = '/onboard/scan-infrastructure';
-    path.addConnector = '/onboard/connectors';
+    path.addConnector = '/onboard/add-connectors';
     path.viewResult = '#';
   } else if (pathname.includes('connectors')) {
-    path.addConnector = '/onboard/connectors';
+    path.addConnector = '/onboard/add-connectors';
     path.scanResult = '#';
     path.viewResult = '#';
   }
@@ -53,7 +53,7 @@ export const ConnectorHeader = ({ title, description }: ConnectorHeaderProps) =>
             <Link
               to={canRoute(location.pathname).addConnector}
               className={cx({
-                ['text-blue-600']: isAddConnectorRoutePath(),
+                ['text-blue-600 dark:text-blue-500']: isAddConnectorRoutePath(),
               })}
             >
               Add a connector
@@ -63,7 +63,7 @@ export const ConnectorHeader = ({ title, description }: ConnectorHeaderProps) =>
             <Link
               to={canRoute(location.pathname).scanResult}
               className={cx({
-                ['text-blue-600']: isScanRoutePath(),
+                ['text-blue-600 dark:text-blue-500']: isScanRoutePath(),
               })}
             >
               Scan Infrastructure
@@ -73,7 +73,7 @@ export const ConnectorHeader = ({ title, description }: ConnectorHeaderProps) =>
             <Link
               to={canRoute(location.pathname).viewResult}
               className={cx({
-                ['text-blue-600']: isViewResultsRoutePath(),
+                ['text-blue-600 dark:text-blue-500']: isViewResultsRoutePath(),
               })}
             >
               View Scan Results

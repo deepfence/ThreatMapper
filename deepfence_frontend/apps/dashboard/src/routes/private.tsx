@@ -4,7 +4,12 @@ import {
   OnboardLayout,
   rootOnboardLoader,
 } from '../features/onboard/layouts/OnboardLayout';
+import { AmazonECRConnector } from '../features/onboard/pages/AmazonECRConnector';
+import { AWSConnector } from '../features/onboard/pages/AWSConnector';
+import { AzureConnector } from '../features/onboard/pages/AzureConnector';
 import { Connector } from '../features/onboard/pages/Connector';
+import { GCPConnector } from '../features/onboard/pages/GCPConnector';
+import { K8sConnector } from '../features/onboard/pages/K8sConnector';
 
 export const privateRoutes: RouteObject[] = [
   {
@@ -13,12 +18,42 @@ export const privateRoutes: RouteObject[] = [
     loader: rootOnboardLoader,
     children: [
       {
-        path: 'connectors',
+        path: 'add-connectors',
         element: <Outlet />,
         children: [
           {
-            path: '',
-            element: <Connector />,
+            index: true,
+            element: <Connector page="add-connectors" />,
+          },
+          {
+            path: 'cloud/aws',
+            element: <AWSConnector />,
+          },
+          {
+            path: 'cloud/gcp',
+            element: <GCPConnector />,
+          },
+          {
+            path: 'cloud/azure',
+            element: <AzureConnector />,
+          },
+          {
+            path: 'host/k8s',
+            element: <K8sConnector />,
+          },
+          {
+            path: 'registry/amazon-ecr',
+            element: <AmazonECRConnector />,
+          },
+        ],
+      },
+      {
+        path: 'my-connectors',
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <Connector page="my-connectors" />,
           },
         ],
       },

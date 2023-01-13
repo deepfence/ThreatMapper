@@ -119,13 +119,13 @@ export const RegisterUser = () => {
       )}
       <div className={`py-4 flex flex-col text-center ${Typography.size.xs} leading-6`}>
         By Signing up you agree to our
-        <Link to="/" className="text-blue-600 dark:text-blue-400">
+        <Link to="/" className="text-blue-600 dark:text-blue-500">
           License Agreement
         </Link>
       </div>
       <div className={`flex flex-row justify-center ${Typography.size.xs} leading-6`}>
         Already have an account?
-        <Link to="/auth/login" className="text-blue-600 dark:text-blue-400">
+        <Link to="/auth/login" className="text-blue-600 dark:text-blue-500">
           &nbsp;Login
         </Link>
       </div>
