@@ -288,7 +288,7 @@ func (c *client) clientAndType(resource string) (rest.Interface, interface{}, er
 	case "statefulsets":
 		return c.client.AppsV1().RESTClient(), &apiappsv1.StatefulSet{}, nil
 	case "cronjobs":
-		return c.client.BatchV1beta1().RESTClient(), &apibatchv1.CronJob{}, nil
+		return c.client.BatchV1().RESTClient(), &apibatchv1.CronJob{}, nil
 	}
 	return nil, nil, fmt.Errorf("Invalid resource: %v", resource)
 }
