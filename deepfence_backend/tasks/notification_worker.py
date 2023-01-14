@@ -121,7 +121,7 @@ def notification_task(self, **kwargs):
                         integration = integrations.get(notification.integration_id)
                         integration.send(notification.format_content(filtered_secret_list),
                                         summary="Deepfence - Secret Subscription",
-                                        notification_id=notification.id, resource_type=SECRET_SCAN_ES_TYPE)
+                                        notification_id=notification.id, resource_type="secret-scan")
                     except Exception as ex:
                         flask_app.logger.error("Error sending notification: {0}".format(ex))
     except Exception as exc:
