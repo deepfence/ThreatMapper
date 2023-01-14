@@ -190,14 +190,12 @@ services:
     ulimits:
       core: 0
     restart: on-failure
-    command: /usr/local/bin/deepfence_worker scheduler
+    command: ["-mode", "scheduler"]
     networks:
     - deepfence_net
     depends_on:
     - deepfence-redis
     - deepfence-postgres
-    volumes:
-    - /etc/docker/certs.d:/etc/docker/certs.d:ro
     logging:
       driver: "json-file"
       options:

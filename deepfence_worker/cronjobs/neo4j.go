@@ -15,7 +15,8 @@ const (
 )
 
 func CleanUpDB(msg *message.Message) error {
-	ctx := msg.Context()
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -53,7 +54,8 @@ func CleanUpDB(msg *message.Message) error {
 }
 
 func RetryScansDB(msg *message.Message) error {
-	ctx := msg.Context()
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

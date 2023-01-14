@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine3.16 AS build
+FROM golang:1.19-alpine3.17 AS build
 
 RUN apk add --no-cache git make
 ADD deepfence_worker /go/deepfence_worker/
@@ -7,7 +7,7 @@ WORKDIR /go/deepfence_worker/
 # "make vendor" is run before separately to avoid docker cache invalidation
 RUN CGO_ENABLED=0 make deepfence_worker
 
-FROM debian:11-slim
+FROM alpine:3.17
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
@@ -32,14 +32,14 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_MINIO_SECURE=false \
     DEEPFENCE_SAAS_DEPLOYMENT=false
 
-RUN apt update && apt install curl -y && \
-    curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin v0.55.0
+RUN apk add --no-cache --update bash curl \
+    && apk upgrade \
+    && curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin v0.55.0
 
 COPY --from=build /go/deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
 COPY deepfence_worker/entrypoint.sh /entrypoint.sh
 COPY deepfence_worker/grype.yaml /usr/local/bin/grype.yaml
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 8081
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/local/bin/deepfence_worker"]

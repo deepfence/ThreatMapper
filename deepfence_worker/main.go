@@ -26,6 +26,8 @@ type config struct {
 var workerMode = flag.String("mode", "worker", "worker or scheduler")
 
 func main() {
+	flag.Parse()
+
 	var cfg config
 	var err error
 	var wml watermill.LoggerAdapter
@@ -46,13 +48,14 @@ func main() {
 
 	switch *workerMode {
 	case "worker":
+		log.Info().Msg("Starting worker")
 		err := startWorker(wml, cfg)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return
 		}
 	case "scheduler":
-		// task publisher
+		log.Info().Msg("Starting scheduler")
 		tasksPublisher, err := kafka.NewPublisher(
 			kafka.PublisherConfig{
 				Brokers:   cfg.KafkaBrokers,

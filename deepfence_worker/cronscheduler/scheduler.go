@@ -9,6 +9,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/robfig/cron/v3"
+	stdLogger "log"
+	"os"
 	"time"
 )
 
@@ -18,8 +20,9 @@ type Scheduler struct {
 }
 
 func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
+	logger := stdLogger.New(os.Stdout, "cron: ", stdLogger.LstdFlags)
 	scheduler := &Scheduler{
-		cron:           cron.New(cron.WithSeconds(), cron.WithLocation(time.UTC), cron.WithLogger(cron.DefaultLogger)),
+		cron:           cron.New(cron.WithSeconds(), cron.WithLocation(time.UTC), cron.WithLogger(cron.VerbosePrintfLogger(logger))),
 		tasksPublisher: tasksPublisher,
 	}
 	err := scheduler.addJobs()
@@ -31,6 +34,7 @@ func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
 
 func (s *Scheduler) addJobs() error {
 	var err error
+	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
 	_, err = s.cron.AddFunc("@every 120s", s.CleanUpGraphDBTask)
 	if err != nil {
 		return err
@@ -47,23 +51,24 @@ func (s *Scheduler) Run() {
 }
 
 func (s *Scheduler) CleanUpGraphDBTask() {
-	err := s.publishNewCronJob(utils.CleanUpGraphDBTask, []byte(utils.GetDatetimeNow()))
+	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+	err := s.publishNewCronJob(metadata, utils.CleanUpGraphDBTask, []byte(utils.GetDatetimeNow()))
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
 }
 
 func (s *Scheduler) RetryFailedScansTask() {
-	err := s.publishNewCronJob(utils.RetryFailedScansTask, []byte(utils.GetDatetimeNow()))
+	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+	err := s.publishNewCronJob(metadata, utils.RetryFailedScansTask, []byte(utils.GetDatetimeNow()))
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
 }
 
-func (s *Scheduler) publishNewCronJob(topic string, data []byte) error {
+func (s *Scheduler) publishNewCronJob(metadata map[string]string, topic string, data []byte) error {
 	msg := message.NewMessage(watermill.NewUUID(), data)
-	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-	msg.SetContext(ctx)
+	msg.Metadata = metadata
 	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
 
 	err := s.tasksPublisher.Publish(topic, msg)
