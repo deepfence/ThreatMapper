@@ -30,7 +30,8 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_MINIO_PASSWORD=deepfence \
     DEEPFENCE_MINIO_BUCKET=deepfence \
     DEEPFENCE_MINIO_SECURE=false \
-    DEEPFENCE_SAAS_DEPLOYMENT=false
+    DEEPFENCE_SAAS_DEPLOYMENT=false \
+    DEEPFENCE_MODE=worker
 
 RUN apk add --no-cache --update bash curl \
     && apk upgrade \

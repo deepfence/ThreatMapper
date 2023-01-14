@@ -190,7 +190,8 @@ services:
     ulimits:
       core: 0
     restart: on-failure
-    command: ["-mode", "scheduler"]
+    environment:
+    - DEEPFENCE_MODE=scheduler
     networks:
     - deepfence_net
     depends_on:

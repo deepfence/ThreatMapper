@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -21,13 +20,10 @@ import (
 type config struct {
 	KafkaBrokers []string `default:"deepfence-kafka-broker:9092" required:"true" split_words:"true"`
 	Debug        bool     `default:"false"`
+	Mode         string   `default:"worker" required:"true"`
 }
 
-var workerMode = flag.String("mode", "worker", "worker or scheduler")
-
 func main() {
-	flag.Parse()
-
 	var cfg config
 	var err error
 	var wml watermill.LoggerAdapter
@@ -46,7 +42,7 @@ func main() {
 		wml = watermill.NewStdLogger(false, false)
 	}
 
-	switch *workerMode {
+	switch cfg.Mode {
 	case "worker":
 		log.Info().Msg("Starting worker")
 		err := startWorker(wml, cfg)
@@ -75,7 +71,7 @@ func main() {
 		}
 		scheduler.Run()
 	default:
-		log.Fatal().Msgf("unknown mode %s", *workerMode)
+		log.Fatal().Msgf("unknown mode %s", cfg.Mode)
 	}
 }
 
@@ -97,6 +93,7 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	retryMiddleware := middleware.Retry{
 		MaxRetries:      3,
 		InitialInterval: time.Second * 10,
+		Logger:          wml,
 	}
 
 	mux.AddMiddleware(
