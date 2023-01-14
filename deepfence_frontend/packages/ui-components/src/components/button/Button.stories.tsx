@@ -20,7 +20,7 @@ Default.args = {
 
 export const NormalButton = Template.bind({});
 NormalButton.args = {
-  children: 'Button text md',
+  children: 'Normal text md',
   color: 'normal',
 };
 
@@ -142,4 +142,10 @@ DangerWithOutlineIcon.args = {
   outline: true,
   size: 'xs',
   startIcon: <FaAmazon />,
+};
+export const NormalOutlineButton = Template.bind({});
+NormalOutlineButton.args = {
+  children: 'Outline Normal text md',
+  color: 'normal',
+  outline: true,
 };

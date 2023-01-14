@@ -49,7 +49,7 @@ const Tabs = (props: TabProps) => {
                 'group',
                 'outline-none pb-2 px-3',
                 'radix-state-active:border-b radix-state-active:-mb-px radix-state-active:text-blue-600 radix-state-active:border-blue-600',
-                'dark:radix-state-active:border-blue-600',
+                'dark:radix-state-active:border-blue-500',
                 'focus-visible:radix-state-active:ring-1 focus-visible:radix-state-active:ring-blue-200',
                 'dark:focus-visible:radix-state-active:ring-blue-800',
               )}

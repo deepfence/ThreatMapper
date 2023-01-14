@@ -24,7 +24,7 @@ const Link = forwardRef<
 });
 
 const Template: ComponentStory<typeof Breadcrumb> = ({ separator }) => (
-  <Breadcrumb separator={separator} outline={false} transparent>
+  <Breadcrumb separator={separator} outline={false}>
     <BreadcrumbLink asChild icon={<HiHome />}>
       <Link>Link One</Link>
     </BreadcrumbLink>

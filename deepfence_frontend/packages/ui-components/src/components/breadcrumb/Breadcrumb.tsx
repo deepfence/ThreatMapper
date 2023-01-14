@@ -33,7 +33,7 @@ export const BreadcrumbLink = React.forwardRef<
       className={twMerge(
         cx(
           `inline-flex items-center leading-[21px] item-center`,
-          'outline-none focus-visible:outline-none focus:ring-1 focus-visible:ring-blue-600 dark:focus-visible:ring-blue-800',
+          'outline-none focus-visible:outline-none focus:ring-1 focus-visible:ring-gray-400',
           `text-gray-700 dark:text-gray-400 ${Typography.size.sm}`,
         ),
       )}
