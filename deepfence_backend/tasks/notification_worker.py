@@ -91,8 +91,8 @@ def notification_task(self, **kwargs):
                     MalwareNotification.user_id.in_(active_user_ids),
                     MalwareNotification.duration_in_mins == -1).all()
                 for notification in malware_notifications:
+                    filtered_malware_list = []
                     for malware_doc in data:
-                        filtered_malware_list = []
                         if filter_malware_notification(notification.filters, malware_doc, topology_data):
                             filtered_malware_list.append(malware_doc)
                     if not filtered_malware_list:
@@ -101,7 +101,7 @@ def notification_task(self, **kwargs):
                         integration = integrations.get(notification.integration_id)
                         integration.send(notification.format_content(filtered_malware_list),
                                          summary="Deepfence - Malware Subscription",
-                                         notification_id=notification.id, resource_type=MALWARE_SCAN_ES_TYPE)
+                                         notification_id=notification.id, resource_type="malware-scan")
                     except Exception as ex:
                         flask_app.logger.error("Error sending notification: {0}".format(ex))
 
@@ -110,13 +110,13 @@ def notification_task(self, **kwargs):
                     SecretNotification.user_id.in_(active_user_ids),
                     SecretNotification.duration_in_mins == -1).all()
                 for notification in secret_notifications:
+                    filtered_secret_list = []
                     for secret_doc in data:
-                        filtered_secret_list = []
                         if filter_secret_notification(notification.filters, secret_doc, topology_data):
                             filtered_secret_list.append(secret_doc)
                     if not filtered_secret_list:
                         continue
-                    flask_app.logger.info("filtered_secret_list reached this point")
+                    flask_app.logger.info("filtered_secret_list reached this point",filtered_secret_list)
                     try:
                         integration = integrations.get(notification.integration_id)
                         integration.send(notification.format_content(filtered_secret_list),
