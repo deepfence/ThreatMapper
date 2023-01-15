@@ -32,6 +32,14 @@ const resourceCollection = [
     name: 'CloudTrail Alerts',
     value: 'cloudtrail_alert',
   },
+  {
+    name: 'Malware Scan',
+    value: 'malware-scan',
+  },
+  {
+    name: 'Secret Scan',
+    value: 'secret-scan',
+  }
 ];
 
 const allNodeType = 'host,container_image,pod,aws';

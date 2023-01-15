@@ -18,6 +18,8 @@ const (
 	resourceTypeVulnerability   = "vulnerability"
 	resourceTypeCompliance      = "compliance"
 	resourceTypeCloudTrailAlert = "cloudtrail-alert"
+	resourceTypeSecret          = "secret-scan"
+	resourceTypeMalware         = "malware-scan"
 	celeryNotificationTask      = "tasks.notification_worker.notification_task"
 )
 
@@ -158,6 +160,20 @@ func syncPoliciesAndNotificationsSettings() {
 	if err != nil {
 		log.Error(err)
 	}
+	var malwareNotificationCount int
+	row = pgDB.QueryRow(
+		"SELECT COUNT(*) FROM malware_notification where duration_in_mins=-1")
+	err = row.Scan(&malwareNotificationCount)
+	if err != nil {
+		log.Error(err)
+	}
+	var secretNotificationCount int
+	row = pgDB.QueryRow(
+		"SELECT COUNT(*) FROM secret_notification where duration_in_mins=-1")
+	err = row.Scan(&secretNotificationCount)
+	if err != nil {
+		log.Error(err)
+	}
 	var complianceNotificationCount int
 	row = pgDB.QueryRow("SELECT COUNT(*) FROM compliance_report_notification where duration_in_mins=-1")
 	err = row.Scan(&complianceNotificationCount)
@@ -188,6 +204,18 @@ func syncPoliciesAndNotificationsSettings() {
 		notificationSettings.cloudTrailNotificationsSet = true
 	} else {
 		notificationSettings.cloudTrailNotificationsSet = false
+	}
+	if malwareNotificationCount > 0 {
+		log.Info("malware notifications are enabled")
+		notificationSettings.malwareNotificationsSet = true
+	} else {
+		notificationSettings.malwareNotificationsSet = false
+	}
+	if secretNotificationCount > 0 {
+		log.Info("secret notifications are enabled")
+		notificationSettings.secretNotificationsSet = true
+	} else {
+		notificationSettings.secretNotificationsSet = false
 	}
 	notificationSettings.Unlock()
 }

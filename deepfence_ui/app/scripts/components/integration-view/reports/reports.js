@@ -31,6 +31,14 @@ const config = [
     label: 'Compliance',
     value: 'compliance',
   },
+  {
+    label: 'Malware Scan',
+    value: 'malware-scan',
+  },
+  {
+    name: 'Secret Scan',
+    value: 'secret-scan',
+  }
 ];
 
 const cveSeverityOptions = [
@@ -38,6 +46,21 @@ const cveSeverityOptions = [
     label: 'Critical',
     value: 'critical',
   },
+  {
+    label: 'High',
+    value: 'high',
+  },
+  {
+    label: 'Medium',
+    value: 'medium',
+  },
+  {
+    label: 'Low',
+    value: 'low',
+  },
+];
+
+const malwareSeverityOptions = [
   {
     label: 'High',
     value: 'high',
@@ -359,6 +382,26 @@ const Reports = props => {
     );
   };
 
+  const renderMalwareSeverityDropdown = () => {
+    return (
+      <div
+        className="nodes-filter-item"
+        style={{ marginLeft: '0px', width: '400px' }}
+      >
+        <Field
+          name="malware_severity"
+          rootClassName="form-field dir-column"
+          component={DFSearchableSelectField}
+          options={malwareSeverityOptions}
+          buttonLabel="Malware Severity"
+          clearable={false}
+          placeholder="Select malware severity"
+          isMulti
+        />
+      </div>
+    );
+  };
+
   const renderComplianceSeverityDropdown = errors => {
     return (
       <div
@@ -546,6 +589,12 @@ const Reports = props => {
           filter: {},
         });
       }
+      if (resourceTypeText && resourceTypeText.includes('malware-scan')) {
+        resourceData.push({
+          type: 'malware-scan',
+          filter: {},
+        });
+      }
       if (
         resourceTypeText &&
         resourceTypeText.includes('compliance') &&
@@ -720,6 +769,11 @@ const Reports = props => {
             )}
           </div>
           <div>
+            {checkIfResourceSelected('malware-scan') && (
+              <div>{renderMalwareSeverityDropdown()}</div>
+            )}
+          </div>
+          <div>
             {checkIfResourceSelected('compliance') && (
               <>
                 <div>{renderComplianceSeverityDropdown(errors)}</div>
@@ -748,6 +802,23 @@ const Reports = props => {
             )}
 
             { checkIfResourceSelected('secret-scan') && (
+              <div
+                className="nodes-filter-item"
+                style={{ marginLeft: '0px', width: '400px' }}
+              >
+                <Field
+                  name="node_type"
+                  rootClassName="form-field dir-column"
+                  component={DFSearchableSelectField}
+                  options={nodeTypeOptionsSecret}
+                  buttonLabel="Node type"
+                  clearable={false}
+                  placeholder="Select node type"
+                />
+              </div>
+            )}
+
+            { checkIfResourceSelected('malware-scan') && (
               <div
                 className="nodes-filter-item"
                 style={{ marginLeft: '0px', width: '400px' }}

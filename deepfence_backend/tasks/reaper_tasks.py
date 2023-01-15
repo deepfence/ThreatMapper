@@ -5,7 +5,7 @@ from config.app import celery_app, app
 from models.user import User
 from models.integration import Integration
 from models.user_activity_log import UserActivityLog
-from models.notification import RunningNotification, VulnerabilityNotification
+from models.notification import RunningNotification, VulnerabilityNotification, MalwareNotification, SecretNotification
 from models.cloud_resource_node import CloudResourceNode
 from datetime import datetime, timedelta
 from utils.esconn import ESConn
@@ -314,6 +314,53 @@ def pdf_report_fix(*args):
         if time_elapsed >= 10 and ele["_source"]["status"].lower() != 'completed':
             ESConn.delete_docs([doc_id], REPORT_INDEX)
 
+@celery_app.task(bind=True, default_retry_delay=1)
+def check_integration_failures(*args):
+    with app.app_context():
+        error = False
+        notification_content = "Integrations are okay"
+        resource_notifications = [MalwareNotification]
+        for resource_notification in resource_notifications:
+            integrations = resource_notification.query.all()
+            for info in integrations:
+                if info.error_msg:
+                    error = True
+                    notification_content = "Integrations are failing"
+                    break
+            if error:
+                break
+        running_notification_id = "integration_if_any_failure_notification"
+        r_notification = RunningNotification.query.filter_by(
+            source_application_id=running_notification_id).one_or_none()
+        if not r_notification:
+            r_notification = RunningNotification(source_application_id=running_notification_id)
+        r_notification.content = notification_content
+        r_notification.updated_at = datetime.now()
+        r_notification.save()
+
+@celery_app.task(bind=True, default_retry_delay=1)
+def check_integration_failures(*args):
+    with app.app_context():
+        error = False
+        notification_content = "Integrations are okay"
+        resource_notifications = [SecretNotification]
+        for resource_notification in resource_notifications:
+            integrations = resource_notification.query.all()
+            for info in integrations:
+                if info.error_msg:
+                    error = True
+                    notification_content = "Integrations are failing"
+                    break
+            if error:
+                break
+        running_notification_id = "integration_if_any_failure_notification"
+        r_notification = RunningNotification.query.filter_by(
+            source_application_id=running_notification_id).one_or_none()
+        if not r_notification:
+            r_notification = RunningNotification(source_application_id=running_notification_id)
+        r_notification.content = notification_content
+        r_notification.updated_at = datetime.now()
+        r_notification.save()
 
 @celery_app.task(bind=True, default_retry_delay=1)
 def check_integration_failures(*args):
