@@ -125,7 +125,7 @@ import {
   getMalwareScanReportChart,
   getMalwareScanChartData,
   getMalwareClassesChartReport,
-  getMalwareClassesChartData, 
+  getMalwareClassesChartData,
   malwareScanMaskDocs,
   malwareScanUnmaskDocs,
 } from '../utils/web-api-utils';

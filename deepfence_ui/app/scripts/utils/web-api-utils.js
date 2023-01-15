@@ -1755,6 +1755,32 @@ export function startSecretScan(params = {}) {
   }).then(errorHandler);
 }
 
+// export function stopSecretScan(params = {}) {
+//   const { nodeId, nodeType } = params;
+//   const url = `${backendElasticApiEndPoint()}/node/0/secret_scan_stop?scope_id=${nodeId}&node_type=${nodeType}`;
+//   return fetch(url, {
+//     credentials: 'same-origin',
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: getAuthHeader(),
+//     },
+//   }).then(errorHandler);
+// }
+//
+// export function stopMalwareScan(params = {}) {
+//   const { nodeId, nodeType } = params;
+//   const url = `${backendElasticApiEndPoint()}/node/0/malware_scan_stop?scope_id=${nodeId}&node_type=${nodeType}`;
+//   return fetch(url, {
+//     credentials: 'same-origin',
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: getAuthHeader(),
+//     },
+//   }).then(errorHandler);
+// }
+
 export function getTopAttackPathsForNode(params = {}) {
   const { hostName, nodeType, scopeId, containerImage } = params;
   const url = `${backendElasticApiEndPoint()}/node/0/attack_path?node_type=${nodeType ?? ''}&host_name=${hostName ?? ''}&scope_id=${scopeId ?? ''}&container_image=${containerImage ?? ''}`;

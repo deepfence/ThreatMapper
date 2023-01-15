@@ -767,6 +767,180 @@ def cve_status(node_id):
         raise InternalError(str(ex))
 
 
+
+@resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_SECRET_SCAN_STOP, methods=["POST"],
+                    endpoint="api_v1_5_stop_secret")
+@jwt_required()
+@non_read_only_user
+def stop_secret(node_id):
+    """
+    Node Control API - Stop Secret
+    ---
+    tags:
+      - Secret Management
+    security:
+      - Bearer: []
+    operationId: stopSecret
+    description: Stop Secret on a node (Applicable node type - `host`, `container`, `container_image`)
+    parameters:
+      - in: path
+        name: node_id
+        description: Node ID (refer enumerate api)
+        type: string
+    responses:
+      200:
+        description: Request success
+        properties:
+          data:
+            type: string
+            description: Response message
+          error:
+            type: string
+            description: Error message, if any. Otherwise `null`
+          success:
+            type: boolean
+            description: Success status
+            enum: [true, false]
+      400:
+        description: Bad request
+      401:
+        description: Unauthorized
+    """
+    try:
+        node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+        if not node:
+            raise InvalidUsage("Node not found")
+        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or node.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+            # action/event/resources/success
+            node_json = node.pretty_print()
+            resources = [{
+                node_json["node_type"]: node_json,
+            }]
+            from tasks.user_activity import create_user_activity
+            jwt_identity = get_jwt_identity()
+            create_user_activity.delay(jwt_identity["id"], constants.ACTION_STOP, constants.EVENT_VULNERABILITY_SCAN,
+                                       resources=resources, success=True)
+            return set_response(data=node.secret_scan_stop())
+        else:
+            raise InvalidUsage(
+                "Control '{0}' not applicable for node type '{1}'".format(constants.NODE_ACTION_SECRET_SCAN_STOP,
+                                                                          node.type))
+    except DFError as err:
+        current_app.logger.error("NodeView: action={}; error={}".format(constants.NODE_ACTION_SECRET_SCAN_STOP, err))
+        raise InvalidUsage(err.message)
+    except Exception as ex:
+        raise InternalError(str(ex))
+
+@resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_SECRET_SCAN_STATUS, methods=["GET"],
+                    endpoint="api_v1_5_secret_status")
+@jwt_required()
+def secret_status(node_id):
+    """
+    Node Control API - Secret Status
+    ---
+    tags:
+      - Secret Management
+    security:
+      - Bearer: []
+    operationId: secretStatus
+    description: Secret Status for a node (Applicable node type - `host`, `container`, `container_image`)
+    parameters:
+    - in: path
+      name: node_id
+      description: Node ID (refer enumerate api)
+      type: string
+    responses:
+      200:
+        description: Request success
+        properties:
+          data:
+            type: string
+            description: Response message
+          error:
+            type: string
+            description: Error message, if any. Otherwise `null`
+          success:
+            type: boolean
+            description: Success status
+            enum: [true, false]
+      400:
+        description: Bad request
+      401:
+        description: Unauthorized
+    """
+    try:
+        node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+        if not node:
+            raise InvalidUsage("Node not found")
+        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or \
+                node.type == constants.NODE_TYPE_CONTAINER_IMAGE or node.type == constants.NODE_TYPE_POD:
+            return set_response(data=node.get_secret_status())
+        else:
+            raise InvalidUsage(
+                "Control '{0}' not applicable for node type '{1}'".format(constants.NODE_ACTION_SECRET_SCAN_STATUS,
+                                                                          node.type))
+    except DFError as err:
+        current_app.logger.error("NodeView: action={}; error={}".format(constants.NODE_ACTION_SECRET_SCAN_STATUS, err))
+        raise InvalidUsage(err.message)
+    except Exception as ex:
+        raise InternalError(str(ex))
+
+
+@resource_api.route("/node/<path:node_id>/" + constants.NODE_ACTION_MALWARE_SCAN_STATUS, methods=["GET"],
+                    endpoint="api_v1_5_malware_status")
+@jwt_required()
+def malware_status(node_id):
+    """
+    Node Control API - mALWARE Status
+    ---
+    tags:
+      - Malware Management
+    security:
+      - Bearer: []
+    operationId: malwareStatus
+    description: Malware Status for a node (Applicable node type - `host`, `container`, `container_image`)
+    parameters:
+    - in: path
+      name: node_id
+      description: Node ID (refer enumerate api)
+      type: string
+    responses:
+      200:
+        description: Request success
+        properties:
+          data:
+            type: string
+            description: Response message
+          error:
+            type: string
+            description: Error message, if any. Otherwise `null`
+          success:
+            type: boolean
+            description: Success status
+            enum: [true, false]
+      400:
+        description: Bad request
+      401:
+        description: Unauthorized
+    """
+    try:
+        node = Node.get_node(node_id, request.args.get("scope_id", None), request.args.get("node_type", None))
+        if not node:
+            raise InvalidUsage("Node not found")
+        if node.type == constants.NODE_TYPE_HOST or node.type == constants.NODE_TYPE_CONTAINER or \
+                node.type == constants.NODE_TYPE_CONTAINER_IMAGE or node.type == constants.NODE_TYPE_POD:
+            return set_response(data=node.get_malware_status())
+        else:
+            raise InvalidUsage(
+                "Control '{0}' not applicable for node type '{1}'".format(constants.NODE_ACTION_MALWARE_SCAN_STATUS,
+                                                                          node.type))
+    except DFError as err:
+        current_app.logger.error("NodeView: action={}; error={}".format(constants.NODE_ACTION_MALWARE_SCAN_STATUS, err))
+        raise InvalidUsage(err.message)
+    except Exception as ex:
+        raise InternalError(str(ex))
+
+
 @resource_api.route("/node/<path:node_id>/" + constants.NODE_ATTACK_PATH, methods=["GET"],
                     endpoint="api_v1_5_attack_path")
 @jwt_required()

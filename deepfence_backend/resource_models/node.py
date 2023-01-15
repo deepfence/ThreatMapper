@@ -192,6 +192,77 @@ class Node(object):
             ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
         return True
 
+        def secret_scan_stop(self):
+            if self.is_ui_vm or self.pseudo:
+                return False
+            if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
+                                 constants.NODE_TYPE_CONTAINER_IMAGE]:
+                raise DFError('action not supported for this node type')
+            secret_scan_doc = self.get_latest_secret_scan_doc()
+            if secret_scan_doc:
+                status = secret_scan_doc.get("action", "")
+                scan_id = secret_scan_doc.get("scan_id", "")
+                if (status in constants.SECRET_SCAN_NOT_RUNNING_STATUS) or (not scan_id):
+                    raise DFError("Secret scan currently not running on this node")
+                elif status != constants.SECRET_SCAN_STATUS_QUEUED:
+                    raise DFError("Secret scan can be stopped only when it's in queued state")
+                celery_task_id = "secret_scan:" + scan_id
+                celery_app.control.revoke(celery_task_id, terminate=False)
+                node_type = constants.NODE_TYPE_HOST
+                if self.type != constants.NODE_TYPE_HOST:
+                    node_type = constants.NODE_TYPE_CONTAINER_IMAGE
+                body = {
+                    "masked": "false",
+                    "type": constants.SECRET_SCAN_LOGS_ES_TYPE,
+                    "scan_id": scan_id,
+                    "secret_scan_message": "Scan stopped by user",
+                    "time_stamp": int(time.time() * 1000.0),
+                    "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    "host": self.host_name,
+                    "action": constants.SECRET_SCAN_STATUS_STOPPED,
+                    "host_name": self.host_name,
+                    "node_id": secret_scan_doc.get("node_id", ""),
+                    "node_type": node_type
+                }
+                ESConn.create_doc(constants.SECRET_SCAN_LOGS_INDEX, body)
+            return True
+
+        def malware_scan_stop(self):
+            if self.is_ui_vm or self.pseudo:
+                return False
+            if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
+                                 constants.NODE_TYPE_CONTAINER_IMAGE]:
+                raise DFError('action not supported for this node type')
+            malware_scan_doc = self.get_latest_malware_scan_doc()
+            if malware_scan_doc:
+                status = malware_scan_doc.get("action", "")
+                scan_id = malware_scan_doc.get("scan_id", "")
+                if (status in constants.MALWARE_SCAN_NOT_RUNNING_STATUS) or (not scan_id):
+                    raise DFError("Malware scan currently not running on this node")
+                elif status != constants.MALWARE_SCAN_STATUS_QUEUED:
+                    raise DFError("Malware scan can be stopped only when it's in queued state")
+                celery_task_id = "malware_scan:" + scan_id
+                celery_app.control.revoke(celery_task_id, terminate=False)
+                node_type = constants.NODE_TYPE_HOST
+                if self.type != constants.NODE_TYPE_HOST:
+                    node_type = constants.NODE_TYPE_CONTAINER_IMAGE
+                body = {
+                    "masked": "false",
+                    "type": constants.MALWARE_SCAN_LOGS_ES_TYPE,
+                    "scan_id": scan_id,
+                    "malware_scan_message": "Scan stopped by user",
+                    "time_stamp": int(time.time() * 1000.0),
+                    "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    "host": self.host_name,
+                    "action": constants.MALWARE_SCAN_STATUS_STOPPED,
+                    "host_name": self.host_name,
+                    "node_id": malware_scan_doc.get("node_id", ""),
+                    "node_type": node_type
+                }
+                ESConn.create_doc(constants.MALWARE_SCAN_LOGS_INDEX, body)
+            return True
+
+
     def __compliance_helper(self, url, payload):
         try:
             status, resp, status_code = call_scope_control_api(url, data=json.dumps(payload))
@@ -404,6 +475,49 @@ class Node(object):
             latest_cve_scan_doc.update({'_id': cve_scan_doc.get('_id', "")})
         return latest_cve_scan_doc
 
+    def get_latest_secret_scan_doc(self):
+        if self.is_ui_vm or self.pseudo:
+            return {}
+        if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
+                             constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_POD]:
+            raise DFError('action not supported for this node type')
+        if self.type == constants.NODE_TYPE_POD:
+            image_name_tag = ""
+            topology_containers_data = redis.get(
+                websocketio_channel_name_format(constants.NODE_TYPE_CONTAINER + "?format=deepfence")[1])
+            if not topology_containers_data:
+                topology_containers_data = "{}"
+            topology_containers_data = json.loads(topology_containers_data)
+            for container_node_id, container_details in topology_containers_data.items():
+                if container_details.get("pseudo", False):
+                    continue
+                if not container_details.get("kubernetes_cluster_id"):
+                    continue
+                container_found = False
+                for parent in container_details.get("parents", []):
+                    if parent["type"] == constants.NODE_TYPE_POD and parent["id"] == self.node_id:
+                        image_name_tag = container_details.get("image_name_with_tag", "")
+                        container_found = True
+                        break
+                if container_found:
+                    break
+            if not image_name_tag:
+                raise DFError('no container found in the pod')
+            node_id = image_name_tag
+        elif self.type == constants.NODE_TYPE_HOST:
+            node_id = self.host_name
+        else:
+            node_id = self.image_name_tag
+        es_response = ESConn.search_by_and_clause(constants.SECRET_SCAN_LOGS_INDEX, {"node_id": node_id}, 0, size=1)
+        latest_secret_scan_doc = {}
+        secret_scan_list = es_response.get("hits", [])
+        if secret_scan_list:
+            secret_scan_doc = secret_scan_list[0]
+            latest_secret_scan_doc = secret_scan_doc.get('_source', {})
+            latest_secret_scan_doc.update({'_id': secret_scan_doc.get('_id', "")})
+        return latest_secret_scan_doc
+
+
     def get_cve_status(self):
         if self.is_ui_vm or self.pseudo:
             return {}
@@ -415,6 +529,36 @@ class Node(object):
                        "node_id"]
         if cve_scan_doc:
             stripped_doc = {k: v for k, v in cve_scan_doc.items() if k in filter_keys}
+        else:
+            stripped_doc = {k: "NOT_SCANNED" if k == "action" else "" for k in filter_keys}
+        return stripped_doc
+
+    def get_secret_status(self):
+        if self.is_ui_vm or self.pseudo:
+            return {}
+        if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
+                             constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_POD]:
+            raise DFError('action not supported for this node type')
+        cve_scan_doc = self.get_latest_secret_scan_doc()
+        filter_keys = ["scan_type", "secret_scan_message", "node_type", "@timestamp", "action", "scan_id", "host_name",
+                       "node_id"]
+        if cve_scan_doc:
+            stripped_doc = {k: v for k, v in secret_scan_doc.items() if k in filter_keys}
+        else:
+            stripped_doc = {k: "NOT_SCANNED" if k == "action" else "" for k in filter_keys}
+        return stripped_doc
+
+    def get_malware_status(self):
+        if self.is_ui_vm or self.pseudo:
+            return {}
+        if self.type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
+                             constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_POD]:
+            raise DFError('action not supported for this node type')
+        cve_scan_doc = self.get_latest_malware_scan_doc()
+        filter_keys = ["scan_type", "malware_scan_message", "node_type", "@timestamp", "action", "scan_id", "host_name",
+                       "node_id"]
+        if malware_scan_doc:
+            stripped_doc = {k: v for k, v in malware_scan_doc.items() if k in filter_keys}
         else:
             stripped_doc = {k: "NOT_SCANNED" if k == "action" else "" for k in filter_keys}
         return stripped_doc
