@@ -14,7 +14,7 @@ describe(`Component IconButton`, () => {
       <IconButton id="id" color="primary" icon={<FaPlus />} onClick={onClick} />,
     );
     const buttonId = getByTestId('icon-button-id');
-    expect(buttonId).toHaveClass('bg-blue-600');
+    expect(buttonId).toHaveClass('bg-blue-700');
 
     // action
     fireEvent.click(buttonId);
