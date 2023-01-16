@@ -16,6 +16,7 @@ class CloudResourceNode(db.Model):
     region = db.Column(db.String(200), nullable=True)
     service_name = db.Column(db.String(200), nullable=True)
     is_active = db.Column(db.Boolean, nullable=True)
+    last_scanned_time = db.Column(db.DateTime(timezone=True), nullable=True)
 
     __table_args__ = (UniqueConstraint('node_id', 'node_type', 'region','service_name','account_id', name='node_id_constraint'),)
 
