@@ -224,7 +224,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	var params model.SbomQueryParameters
+	var params utils.SbomQueryParameters
 	err = decoder.Decode(&params, r.URL.Query())
 	// err = httpext.DecodeQueryParams(r, &params)
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"path"
 
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -48,7 +47,7 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	log.Debug().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
 
-	var params model.SbomQueryParameters
+	var params utils.SbomQueryParameters
 
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
@@ -118,7 +117,7 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	// scan status
 	status := struct {
-		model.SbomQueryParameters
+		utils.SbomQueryParameters
 		ScanStatus string `json:"scan_status,omitempty"`
 	}{
 		ScanStatus:          utils.SCAN_STATUS_SUCCESS,
