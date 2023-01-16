@@ -34,6 +34,7 @@ export const Login = () => {
         placeholder="name@example.com"
         sizing="sm"
         name="email"
+        color={data?.fieldErrors?.email ? 'error' : 'default'}
       />
       {data?.fieldErrors?.email && (
         <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
@@ -47,6 +48,7 @@ export const Login = () => {
         placeholder="••••••••"
         sizing="sm"
         name="password"
+        color={data?.fieldErrors?.password ? 'error' : 'default'}
       />
       {data?.fieldErrors?.password && (
         <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>

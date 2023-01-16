@@ -35,6 +35,7 @@ export const RegisterUser = () => {
         placeholder="First Name"
         sizing="sm"
         name="firstName"
+        color={data?.fieldErrors?.firstName ? 'error' : 'default'}
       />
       {data?.fieldErrors?.firstName && (
         <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
@@ -48,6 +49,7 @@ export const RegisterUser = () => {
         sizing="sm"
         name="lastName"
         className="mt-4"
+        color={data?.fieldErrors?.lastName ? 'error' : 'default'}
       />
       {data?.fieldErrors?.lastName && (
         <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
@@ -61,6 +63,7 @@ export const RegisterUser = () => {
         sizing="sm"
         name="email"
         className="mt-4"
+        color={data?.fieldErrors?.email ? 'error' : 'default'}
       />
       {data?.fieldErrors?.email && (
         <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
@@ -74,6 +77,7 @@ export const RegisterUser = () => {
         sizing="sm"
         name="password"
         className="mt-4"
+        color={data?.fieldErrors?.password ? 'error' : 'default'}
       />
       {data?.fieldErrors?.password && (
         <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
@@ -87,6 +91,7 @@ export const RegisterUser = () => {
         sizing="sm"
         name="confirmPassword"
         className="mt-4"
+        color={data?.fieldErrors?.confirmPassword ? 'error' : 'default'}
       />
       {data?.fieldErrors?.confirmPassword && (
         <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
@@ -100,6 +105,7 @@ export const RegisterUser = () => {
         sizing="sm"
         name="company"
         className="mt-4"
+        color={data?.fieldErrors?.company ? 'error' : 'default'}
       />
       {data?.fieldErrors?.company && (
         <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>

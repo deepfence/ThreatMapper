@@ -31,13 +31,14 @@ export const WithStartIcon = Template.bind({});
 WithStartIcon.args = {
   placeholder: 'test@deepfence.io',
   startIcon: <AiOutlineMail />,
+  disabled: false,
 };
 
 export const LargeInput = Template.bind({});
 LargeInput.args = {
   placeholder: 'test@deepfence.io',
   startIcon: <AiOutlineMail />,
-  sizing: 'md',
+  sizing: 'lg',
 };
 
 export const WithLabel = Template.bind({});
