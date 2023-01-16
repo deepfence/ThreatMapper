@@ -3,10 +3,13 @@ package reporters
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/samber/mo"
 )
 
 type neo4jTopologyReporter struct {
@@ -110,11 +113,12 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string) (map[string][]string, error) {
+func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
 	res := map[string][]string{}
 	r, err := tx.Run(`
 		MATCH (n:Node) 
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
+		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN n.cloud_provider, n.kubernetes_cluster_name`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
 
@@ -148,7 +152,7 @@ func filterNil(params map[string]interface{}) map[string]interface{} {
 	return params
 }
 
-func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string) (map[string][]string, error) {
+func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
 	res := map[string][]string{}
 
 	r, err := tx.Run(`
@@ -160,6 +164,7 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 		ELSE
 		    CASE WHEN $regions IS NULL THEN [1] ELSE n.cloud_region IN $regions END
 		END
+		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_name ELSE n.cloud_region END, n.node_id`,
 		filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions, "kubernetes": cloud_kubernetes}))
 	if err != nil {
@@ -215,12 +220,13 @@ func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []stri
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
+func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
 	res := map[string][]string{}
 
 	r, err := tx.Run(`
 		MATCH (n:Container) 
 		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE n.host_name IN $hosts END
+		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN n.host_name, n.`+"`docker_label_io.kubernetes.pod.name`",
 		filterNil(map[string]interface{}{"hosts": hosts}))
 	if err != nil {
@@ -244,16 +250,18 @@ func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string) (
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods []string) (map[string][]string, error) {
+func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
 	res := map[string][]string{}
 
 	r, err := tx.Run(`
 		MATCH (n:Node) 
 		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE n.host_name IN $hosts END
+		OR CASE WHEN $pods IS NULL THEN [1] ELSE n.`+"`docker_label_io.kubernetes.pod.name`"+`IN $pods END
 		WITH n 
 		MATCH (n)-[:HOSTS]->(m:Container)
-		RETURN n.node_id, m.node_id`,
-		filterNil(map[string]interface{}{"hosts": hosts}))
+		`+parseFieldFilters2CypherWhereConditions("m", fieldfilters, true)+`
+		RETURN coalesce(n.`+"`docker_label_io.kubernetes.pod.name`"+`, n.node_id), m.node_id`,
+		filterNil(map[string]interface{}{"hosts": hosts, "pods": pods}))
 	if err != nil {
 		return res, err
 	}
@@ -264,35 +272,12 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods
 	}
 
 	for _, record := range records {
-		host_id := record.Values[0].(string)
+		parent_id := record.Values[0].(string)
 		container_id := record.Values[1].(string)
-		if _, present := res[host_id]; !present {
-			res[host_id] = []string{}
+		if _, present := res[parent_id]; !present {
+			res[parent_id] = []string{}
 		}
-		res[host_id] = append(res[host_id], container_id)
-	}
-
-	r, err = tx.Run(`
-		MATCH (n:Container) 
-		WHERE CASE WHEN $pods IS NULL THEN [1] ELSE n.`+"`docker_label_io.kubernetes.pod.name`"+`IN $pods END
-		RETURN n.`+"`docker_label_io.kubernetes.pod.name`"+`, n.node_id`,
-		filterNil(map[string]interface{}{"pods": pods}))
-	if err != nil {
-		return res, err
-	}
-	records, err = r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		host_id := record.Values[0].(string)
-		container_id := record.Values[1].(string)
-		if _, present := res[host_id]; !present {
-			res[host_id] = []string{}
-		}
-		res[host_id] = append(res[host_id], container_id)
+		res[parent_id] = append(res[parent_id], container_id)
 	}
 
 	return res, nil
@@ -314,15 +299,64 @@ type RenderedGraph struct {
 	Connections []ConnectionSummary `json:"connections" required:"true"`
 }
 
+type FilterOperations string
+
+const (
+	CONTAINS FilterOperations = "contains"
+)
+
+type ContainsFilter struct {
+	FieldsValues map[string][]interface{} `json:"filter_in" required:"true"`
+}
+
+type FieldsFilters struct {
+	ContainsFilter ContainsFilter `json:"contains_filter" required:"true"`
+}
+
+func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter) []string {
+	conditions := []string{}
+	for k, vs := range filter.FieldsValues {
+		var values []string
+		for i := range vs {
+			values = append(values, fmt.Sprintf("'%v'", vs[i]))
+		}
+
+		conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+	}
+	return conditions
+}
+
+func parseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {
+
+	f, has := filters.Get()
+	if !has {
+		return ""
+	}
+
+	conditions := containsFilter2CypherConditions(cypherNodeName, f.ContainsFilter)
+
+	if len(conditions) == 0 {
+		return ""
+	}
+
+	first_clause := "AND"
+	if starts_where_clause {
+		first_clause = "WHERE"
+	}
+
+	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))
+}
+
 type TopologyFilters struct {
-	CloudFilter      []string `json:"cloud_filter" required:"true"`
-	RegionFilter     []string `json:"region_filter" required:"true"`
-	KubernetesFilter []string `json:"kubernetes_filter" required:"true"`
-	HostFilter       []string `json:"host_filter" required:"true"`
-	PodFilter        []string `json:"pod_filter" required:"true"`
+	CloudFilter      []string      `json:"cloud_filter" required:"true"`
+	RegionFilter     []string      `json:"region_filter" required:"true"`
+	KubernetesFilter []string      `json:"kubernetes_filter" required:"true"`
+	HostFilter       []string      `json:"host_filter" required:"true"`
+	PodFilter        []string      `json:"pod_filter" required:"true"`
+	FieldFilter      FieldsFilters `json:"field_filters" required:"true"`
 }
 
-func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
@@ -337,7 +371,7 @@ func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context) (Rendere
 	}
 	defer tx.Close()
 
-	res.Containers, err = nc.getContainers(tx, nil, nil)
+	res.Containers, err = nc.getContainers(tx, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
@@ -345,8 +379,10 @@ func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context) (Rendere
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, pod_filter []string) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
+
+	pod_filter := filters.PodFilter
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
 	if err != nil {
@@ -364,11 +400,11 @@ func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, pod_filter []s
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, nil)
+	res.Pods, err = nc.getPods(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, []string{}, pod_filter)
+	res.Containers, err = nc.getContainers(tx, []string{}, pod_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -376,8 +412,12 @@ func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, pod_filter []s
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, kubernetes_filter, host_filter, pod_filter []string) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
+
+	kubernetes_filter := filters.KubernetesFilter
+	host_filter := filters.HostFilter
+	pod_filter := filters.PodFilter
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
 	if err != nil {
@@ -395,19 +435,19 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, kuberne
 	if err != nil {
 		return res, err
 	}
-	res.Kubernetes, err = nc.getCloudKubernetes(tx, nil)
+	res.Kubernetes, err = nc.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, []string{}, []string{}, kubernetes_filter)
+	res.Hosts, err = nc.getHosts(tx, []string{}, []string{}, kubernetes_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter)
+	res.Pods, err = nc.getPods(tx, host_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter)
+	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -415,8 +455,11 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, kuberne
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, host_filter, pod_filter []string) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
+
+	host_filter := filters.HostFilter
+	pod_filter := filters.PodFilter
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
 	if err != nil {
@@ -434,7 +477,7 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, host_filter, 
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, nil, nil, nil)
+	res.Hosts, err = nc.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
@@ -442,11 +485,11 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, host_filter, 
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter)
+	res.Pods, err = nc.getPods(tx, host_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter)
+	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -454,8 +497,14 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, host_filter, 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, cloud_filter, region_filter, kubernetes_filter, host_filter, pod_filter []string) (RenderedGraph, error) {
+func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
+
+	cloud_filter := filters.CloudFilter
+	region_filter := filters.RegionFilter
+	kubernetes_filter := filters.KubernetesFilter
+	host_filter := filters.HostFilter
+	pod_filter := filters.PodFilter
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
 	if err != nil {
@@ -481,11 +530,11 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, cloud_filter, reg
 	if err != nil {
 		return res, err
 	}
-	res.Kubernetes, err = nc.getCloudKubernetes(tx, cloud_filter)
+	res.Kubernetes, err = nc.getCloudKubernetes(tx, cloud_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, cloud_filter, region_filter, kubernetes_filter)
+	res.Hosts, err = nc.getHosts(tx, cloud_filter, region_filter, kubernetes_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -493,11 +542,11 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, cloud_filter, reg
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter)
+	res.Pods, err = nc.getPods(tx, host_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter)
+	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -506,23 +555,23 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, cloud_filter, reg
 }
 
 func (nc *neo4jTopologyReporter) Graph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getGraph(ctx, filters.CloudFilter, filters.RegionFilter, filters.KubernetesFilter, filters.HostFilter, filters.PodFilter)
+	return nc.getGraph(ctx, filters)
 }
 
 func (nc *neo4jTopologyReporter) HostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getHostGraph(ctx, filters.HostFilter, filters.PodFilter)
+	return nc.getHostGraph(ctx, filters)
 }
 
 func (nc *neo4jTopologyReporter) PodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getPodGraph(ctx, filters.PodFilter)
+	return nc.getPodGraph(ctx, filters)
 }
 
 func (nc *neo4jTopologyReporter) ContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getContainerGraph(ctx)
+	return nc.getContainerGraph(ctx, filters)
 }
 
 func (nc *neo4jTopologyReporter) KubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
-	return nc.getKubernetesGraph(ctx, filters.KubernetesFilter, filters.HostFilter, filters.PodFilter)
+	return nc.getKubernetesGraph(ctx, filters)
 }
 
 func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {

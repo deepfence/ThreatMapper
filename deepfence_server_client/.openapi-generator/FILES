@@ -70,6 +70,8 @@ docs/ReportColumn.md
 docs/ReportMetadataRow.md
 docs/ReportRow.md
 docs/ReportTable.md
+docs/ReportersContainsFilter.md
+docs/ReportersFieldsFilters.md
 docs/ReportersLookupFilter.md
 docs/ReportersNodeInfo.md
 docs/ReportersProviderThreatGraph.md
@@ -128,11 +130,12 @@ model_report_column.go
 model_report_metadata_row.go
 model_report_row.go
 model_report_table.go
+model_reporters_contains_filter.go
+model_reporters_fields_filters.go
 model_reporters_lookup_filter.go
 model_reporters_node_info.go
 model_reporters_provider_threat_graph.go
 model_reporters_threat_node_info.go
 model_reporters_topology_filters.go
 response.go
-test/api_lookup_test.go
 utils.go

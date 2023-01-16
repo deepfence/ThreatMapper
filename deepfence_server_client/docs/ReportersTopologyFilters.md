@@ -5,6 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **CloudFilter** | **[]string** |  | 
+**FieldFilters** | [**ReportersFieldsFilters**](ReportersFieldsFilters.md) |  | 
 **HostFilter** | **[]string** |  | 
 **KubernetesFilter** | **[]string** |  | 
 **PodFilter** | **[]string** |  | 
@@ -14,7 +15,7 @@ Name | Type | Description | Notes
 
 ### NewReportersTopologyFilters
 
-`func NewReportersTopologyFilters(cloudFilter []string, hostFilter []string, kubernetesFilter []string, podFilter []string, regionFilter []string, ) *ReportersTopologyFilters`
+`func NewReportersTopologyFilters(cloudFilter []string, fieldFilters ReportersFieldsFilters, hostFilter []string, kubernetesFilter []string, podFilter []string, regionFilter []string, ) *ReportersTopologyFilters`
 
 NewReportersTopologyFilters instantiates a new ReportersTopologyFilters object
 This constructor will assign default values to properties that have it defined,
@@ -59,6 +60,26 @@ SetCloudFilter sets CloudFilter field to given value.
 `func (o *ReportersTopologyFilters) UnsetCloudFilter()`
 
 UnsetCloudFilter ensures that no value is present for CloudFilter, not even an explicit nil
+### GetFieldFilters
+
+`func (o *ReportersTopologyFilters) GetFieldFilters() ReportersFieldsFilters`
+
+GetFieldFilters returns the FieldFilters field if non-nil, zero value otherwise.
+
+### GetFieldFiltersOk
+
+`func (o *ReportersTopologyFilters) GetFieldFiltersOk() (*ReportersFieldsFilters, bool)`
+
+GetFieldFiltersOk returns a tuple with the FieldFilters field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetFieldFilters
+
+`func (o *ReportersTopologyFilters) SetFieldFilters(v ReportersFieldsFilters)`
+
+SetFieldFilters sets FieldFilters field to given value.
+
+
 ### GetHostFilter
 
 `func (o *ReportersTopologyFilters) GetHostFilter() []string`

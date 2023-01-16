@@ -179,6 +179,8 @@ Class | Method | HTTP request | Description
  - [ReportMetadataRow](docs/ReportMetadataRow.md)
  - [ReportRow](docs/ReportRow.md)
  - [ReportTable](docs/ReportTable.md)
+ - [ReportersContainsFilter](docs/ReportersContainsFilter.md)
+ - [ReportersFieldsFilters](docs/ReportersFieldsFilters.md)
  - [ReportersLookupFilter](docs/ReportersLookupFilter.md)
  - [ReportersNodeInfo](docs/ReportersNodeInfo.md)
  - [ReportersProviderThreatGraph](docs/ReportersProviderThreatGraph.md)

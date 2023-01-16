@@ -21,6 +21,7 @@ var _ MappedNullable = &ReportersTopologyFilters{}
 // ReportersTopologyFilters struct for ReportersTopologyFilters
 type ReportersTopologyFilters struct {
 	CloudFilter []string `json:"cloud_filter"`
+	FieldFilters ReportersFieldsFilters `json:"field_filters"`
 	HostFilter []string `json:"host_filter"`
 	KubernetesFilter []string `json:"kubernetes_filter"`
 	PodFilter []string `json:"pod_filter"`
@@ -31,9 +32,10 @@ type ReportersTopologyFilters struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportersTopologyFilters(cloudFilter []string, hostFilter []string, kubernetesFilter []string, podFilter []string, regionFilter []string) *ReportersTopologyFilters {
+func NewReportersTopologyFilters(cloudFilter []string, fieldFilters ReportersFieldsFilters, hostFilter []string, kubernetesFilter []string, podFilter []string, regionFilter []string) *ReportersTopologyFilters {
 	this := ReportersTopologyFilters{}
 	this.CloudFilter = cloudFilter
+	this.FieldFilters = fieldFilters
 	this.HostFilter = hostFilter
 	this.KubernetesFilter = kubernetesFilter
 	this.PodFilter = podFilter
@@ -73,6 +75,30 @@ func (o *ReportersTopologyFilters) GetCloudFilterOk() ([]string, bool) {
 // SetCloudFilter sets field value
 func (o *ReportersTopologyFilters) SetCloudFilter(v []string) {
 	o.CloudFilter = v
+}
+
+// GetFieldFilters returns the FieldFilters field value
+func (o *ReportersTopologyFilters) GetFieldFilters() ReportersFieldsFilters {
+	if o == nil {
+		var ret ReportersFieldsFilters
+		return ret
+	}
+
+	return o.FieldFilters
+}
+
+// GetFieldFiltersOk returns a tuple with the FieldFilters field value
+// and a boolean to check if the value has been set.
+func (o *ReportersTopologyFilters) GetFieldFiltersOk() (*ReportersFieldsFilters, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.FieldFilters, true
+}
+
+// SetFieldFilters sets field value
+func (o *ReportersTopologyFilters) SetFieldFilters(v ReportersFieldsFilters) {
+	o.FieldFilters = v
 }
 
 // GetHostFilter returns the HostFilter field value
@@ -192,6 +218,7 @@ func (o ReportersTopologyFilters) ToMap() (map[string]interface{}, error) {
 	if o.CloudFilter != nil {
 		toSerialize["cloud_filter"] = o.CloudFilter
 	}
+	toSerialize["field_filters"] = o.FieldFilters
 	if o.HostFilter != nil {
 		toSerialize["host_filter"] = o.HostFilter
 	}

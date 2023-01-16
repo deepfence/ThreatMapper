@@ -35,6 +35,7 @@ require (
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/rs/zerolog v1.28.0
+	github.com/samber/mo v1.7.0
 	github.com/swaggest/openapi-go v0.2.26
 	github.com/twmb/franz-go v1.11.0
 	github.com/ugorji/go/codec v1.2.8

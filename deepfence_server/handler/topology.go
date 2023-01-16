@@ -93,7 +93,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 		HostFilter:       []string{},
 		PodFilter:        []string{},
 	}
-	json.Unmarshal(body, &filters)
+	err = json.Unmarshal(body, &filters)
 
 	if err != nil {
 		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
