@@ -20,7 +20,7 @@ VERSION?="2.0.0"
 default: console_plugins agent console
 
 .PHONY: console_plugins agent console
-console: ingester vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins file-server
+console: vulnerability-mapper redis postgres kafka-broker router server worker ui console_plugins file-server
 
 console_plugins: secretscanner malwarescanner packagescanner
 
@@ -94,11 +94,6 @@ packagescanner:
 	(cd $(PACKAGE_SCANNER_DIR) && make tools)
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
 
-.PHONY: ingester
-ingester:
-	(cd ./deepfence_ingester && make vendor)
-	docker build -f ./deepfence_ingester/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG) .
-
 .PHONY: openapi
 openapi: server
 	docker run --rm -it \
@@ -125,7 +120,6 @@ cli:
 
 .PHONY: publish
 publish:
-	docker push $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_vulnerability_mapper_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG)
@@ -139,6 +133,5 @@ publish:
 	docker push $(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
-	docker push $(IMAGE_REPOSITORY)/deepfence_ingester_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_discovery_ce:$(DF_IMG_TAG)

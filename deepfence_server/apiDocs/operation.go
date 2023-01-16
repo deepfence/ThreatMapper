@@ -6,12 +6,12 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/weaveworks/scope/render/detailed"
 
-	ingester "github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 )
 
 func (d *OpenApiDocs) AddUserAuthOperations() {
