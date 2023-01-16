@@ -30,9 +30,9 @@ const classes = {
 };
 
 const Tabs = (props: TabProps) => {
-  const { tabs, value, defaultValue, size = 'sm', children, ...rest } = props;
+  const { tabs, value, size = 'sm', children, ...rest } = props;
   return (
-    <TabsPrimitive.Root defaultValue={defaultValue} {...rest} data-testid={'tabs-testid'}>
+    <TabsPrimitive.Root {...rest} data-testid={'tabs-testid'} value={value}>
       <TabsPrimitive.List
         className={cx(
           'inline-flex gap-x-8 border-b bg-transparent border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 dark:bg-gray-900',

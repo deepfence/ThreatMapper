@@ -1,11 +1,14 @@
 import { Outlet, RouteObject } from 'react-router-dom';
 
+import { ScanInfraLayout } from '../features/onboard/layouts/InfraScanLayout';
 import {
   OnboardLayout,
   rootOnboardLoader,
 } from '../features/onboard/layouts/OnboardLayout';
 import { AmazonECRConnector } from '../features/onboard/pages/AmazonECRConnector';
+import { AWSChooseScan } from '../features/onboard/pages/AWSChooseScan';
 import { AWSConnector } from '../features/onboard/pages/AWSConnector';
+import { AWSInfraScanConfigure } from '../features/onboard/pages/AWSInfraScanConfigure';
 import { AzureConnector } from '../features/onboard/pages/AzureConnector';
 import { Connector } from '../features/onboard/pages/Connector';
 import { GCPConnector } from '../features/onboard/pages/GCPConnector';
@@ -54,6 +57,20 @@ export const privateRoutes: RouteObject[] = [
           {
             index: true,
             element: <Connector page="my-connectors" />,
+          },
+        ],
+      },
+      {
+        path: 'scan-infrastructure',
+        element: <ScanInfraLayout />,
+        children: [
+          {
+            path: 'cloud/aws',
+            element: <AWSChooseScan />,
+          },
+          {
+            path: 'cloud/aws/configure',
+            element: <AWSInfraScanConfigure />,
           },
         ],
       },
