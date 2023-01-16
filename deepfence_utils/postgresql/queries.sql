@@ -84,10 +84,10 @@ SELECT users.id,
        users.last_name,
        users.email,
        users.role_id,
-       role.name    as role_name,
+       role.name         as role_name,
        users.group_ids,
        users.company_id,
-       company.name as company_name,
+       company.name      as company_name,
        users.password_hash,
        users.is_active,
        users.password_invalidated,
@@ -106,10 +106,10 @@ SELECT users.id,
        users.last_name,
        users.email,
        users.role_id,
-       role.name    as role_name,
+       role.name         as role_name,
        users.group_ids,
        users.company_id,
-       company.name as company_name,
+       company.name      as company_name,
        users.password_hash,
        users.is_active,
        users.password_invalidated,
@@ -122,10 +122,17 @@ FROM users
 WHERE users.email = $1
 LIMIT 1;
 
--- name: UpdatePasswordHash :exec
+-- name: UpdateUser :one
 UPDATE users
-SET password_hash = $1
-WHERE id = $2;
+SET first_name           = $1,
+    last_name            = $2,
+    role_id              = $3,
+    group_ids            = $4,
+    password_hash        = $5,
+    is_active            = $6,
+    password_invalidated = $7
+WHERE id = $8
+RETURNING *;
 
 -- name: GetPasswordHash :one
 SELECT password_hash
@@ -228,3 +235,44 @@ ORDER BY key;
 UPDATE setting
 SET value = $1 AND is_visible_on_ui = $2
 WHERE key = $3;
+
+-- name: CreatePasswordReset :one
+INSERT INTO password_reset (code, expiry, user_id)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+-- name: GetPasswordResetByCode :one
+SELECT password_reset.id,
+       password_reset.code,
+       password_reset.expiry,
+       password_reset.user_id,
+       password_reset.created_at,
+       password_reset.updated_at
+FROM password_reset
+         INNER JOIN users u on password_reset.user_id = u.id
+WHERE password_reset.code = $1
+LIMIT 1;
+
+-- name: GetPasswordResetById :one
+SELECT password_reset.id,
+       password_reset.code,
+       password_reset.expiry,
+       password_reset.user_id,
+       password_reset.created_at,
+       password_reset.updated_at
+FROM password_reset
+         INNER JOIN users u on password_reset.user_id = u.id
+WHERE password_reset.id = $1
+LIMIT 1;
+
+-- name: DeletePasswordResetByUserEmail :exec
+DELETE
+FROM password_reset pr
+    USING users u
+WHERE pr.user_id = u.id
+  AND u.email = $1;
+
+-- name: DeletePasswordResetByExpiry :exec
+DELETE
+FROM password_reset
+WHERE expiry >= $1;

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/integrations/email"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -156,6 +157,94 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
+	var resetPasswordRequest model.PasswordResetRequest
+	defer r.Body.Close()
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &resetPasswordRequest)
+	if err != nil {
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return
+	}
+	err = h.Validator.Struct(resetPasswordRequest)
+	if err != nil {
+		errorFields := model.ParseValidatorError(err.Error())
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
+		return
+	}
+	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(resetPasswordRequest.Email)
+	if err != nil {
+		httpext.JSON(w, statusCode, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	err = pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+	if err != nil {
+		httpext.JSON(w, statusCode, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	_, err = pgClient.CreatePasswordReset(ctx, postgresql_db.CreatePasswordResetParams{
+		Code: utils.NewUUID(), Expiry: utils.GetCurrentDatetime(), UserID: user.ID,
+	})
+	if err != nil {
+		httpext.JSON(w, statusCode, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	err = email.SendEmail()
+	if err != nil {
+		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true})
+}
+
+func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Request) {
+	var passwordResetVerifyRequest model.PasswordResetVerifyRequest
+	defer r.Body.Close()
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &passwordResetVerifyRequest)
+	if err != nil {
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return
+	}
+	err = h.Validator.Struct(passwordResetVerifyRequest)
+	if err != nil {
+		errorFields := model.ParseValidatorError(err.Error())
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
+		return
+	}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	code, err := utils.UUIDFromString(passwordResetVerifyRequest.Code)
+	passwordReset, err := pgClient.GetPasswordResetByCode(ctx, code)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: "code not found"})
+		return
+	} else if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	user := model.User{ID: passwordReset.UserID}
+	err = user.LoadFromDbByID(ctx, pgClient)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	err = user.SetPassword(passwordResetVerifyRequest.Password)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	_, err = user.Update(ctx, pgClient)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true})
+}
+
 func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
 	if err != nil {
@@ -179,14 +268,9 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 	if err != nil {
 		return nil, http.StatusInternalServerError, requestContext, nil, err
 	}
-	user := model.User{ID: userId}
-	ctx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(ctx)
-	err = user.LoadFromDbByID(ctx, pgClient)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, ctx, pgClient, errors.New("user not found")
-	} else if err != nil {
-		return nil, http.StatusInternalServerError, ctx, pgClient, err
+	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	if err != nil {
+		return nil, statusCode, ctx, pgClient, err
 	}
-	return &user, http.StatusOK, ctx, pgClient, nil
+	return user, http.StatusOK, ctx, pgClient, nil
 }

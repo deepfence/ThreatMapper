@@ -2,8 +2,9 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries: "queries.sql"
-    schema: "0001_schema.up.sql"
+    schema: "./"
     gen:
       go:
+#        sql_package: "pgx/v4"
         package: "postgresql_db"
         out: "postgresql-db"

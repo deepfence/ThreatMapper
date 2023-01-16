@@ -45,6 +45,13 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
 		http.StatusOK, []string{tagUser}, bearerToken, nil, model.Response{Success: true, Data: []postgresqldb.ApiToken{}})
+
+	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
+		"Reset Password Request", "Request for resetting the password",
+		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetRequest), model.Response{Success: true})
+	d.AddOperation("verifyResetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/verify",
+		"Verify and Reset Password", "Verify code and reset the password",
+		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetVerifyRequest), model.Response{Success: true})
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {

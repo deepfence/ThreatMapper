@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"regexp"
 	"strconv"
 	"time"
@@ -161,6 +162,15 @@ type UserRegisterRequest struct {
 	ConsoleURL          string `json:"console_url" validate:"required,url" required:"true"`
 }
 
+type PasswordResetRequest struct {
+	Email string `json:"email" validate:"required,email" required:"true"`
+}
+
+type PasswordResetVerifyRequest struct {
+	Code     string `json:"code" validate:"required,uuid4" required:"true"`
+	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
+}
+
 type User struct {
 	ID                  int64             `json:"id"`
 	FirstName           string            `json:"first_name" validate:"required,user_name,min=2,max=32"`
@@ -198,6 +208,19 @@ func (u *User) CompareHashAndPassword(ctx context.Context, pgClient *postgresqlD
 	return true, nil
 }
 
+func GetUserByID(userID int64) (*User, int, context.Context, *postgresqlDb.Queries, error) {
+	user := User{ID: userID}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	err = user.LoadFromDbByID(ctx, pgClient)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, http.StatusNotFound, ctx, pgClient, errors.New("user not found")
+	} else if err != nil {
+		return nil, http.StatusInternalServerError, ctx, pgClient, err
+	}
+	return &user, http.StatusOK, ctx, pgClient, nil
+}
+
 func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	// Set ID field and load other fields from db
 	var err error
@@ -219,6 +242,19 @@ func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Querie
 	u.CompanyNamespace = user.CompanyNamespace
 	_ = json.Unmarshal(user.GroupIds, &u.Groups)
 	return nil
+}
+
+func GetUserByEmail(email string) (*User, int, context.Context, *postgresqlDb.Queries, error) {
+	user := User{Email: email}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	err = user.LoadFromDbByEmail(ctx, pgClient)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, http.StatusNotFound, ctx, pgClient, errors.New("user not found")
+	} else if err != nil {
+		return nil, http.StatusInternalServerError, ctx, pgClient, err
+	}
+	return &user, http.StatusOK, ctx, pgClient, nil
 }
 
 func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Queries) error {
@@ -259,6 +295,27 @@ func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 		PasswordHash:        u.Password,
 		IsActive:            false,
 		PasswordInvalidated: false,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (u *User) Update(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {
+	groupIDs, err := json.Marshal(MapKeys(u.Groups))
+	if err != nil {
+		return nil, err
+	}
+	user, err := pgClient.UpdateUser(ctx, postgresqlDb.UpdateUserParams{
+		FirstName:           u.FirstName,
+		LastName:            u.LastName,
+		RoleID:              u.RoleID,
+		GroupIds:            groupIDs,
+		PasswordHash:        u.Password,
+		IsActive:            u.IsActive,
+		PasswordInvalidated: u.PasswordInvalidated,
+		ID:                  u.ID,
 	})
 	if err != nil {
 		return nil, err

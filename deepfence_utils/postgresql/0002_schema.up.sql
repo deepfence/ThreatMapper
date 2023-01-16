@@ -47,4 +47,24 @@ CREATE TRIGGER integration_updated_at
     FOR EACH ROW
 EXECUTE PROCEDURE update_modified_column();
 
+CREATE TABLE public.password_reset
+(
+    id         SERIAL PRIMARY KEY,
+    user_id    bigint                                             NOT NULL,
+    code       UUID                                               NOT NULL,
+    expiry     timestamp with time zone                           NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    UNIQUE (code),
+    CONSTRAINT fk_created_by_user_id
+        FOREIGN KEY (user_id)
+            REFERENCES users (id)
+);
+
+CREATE TRIGGER password_reset_updated_at
+    BEFORE UPDATE
+    ON password_reset
+    FOR EACH ROW
+EXECUTE PROCEDURE update_modified_column();
+
 COMMIT;

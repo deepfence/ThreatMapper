@@ -44,6 +44,10 @@ func NewUUIDString() string {
 	return NewUUID().String()
 }
 
+func UUIDFromString(uuidStr string) (uuid.UUID, error) {
+	return uuid.Parse(uuidStr)
+}
+
 func NewUUID() uuid.UUID {
 	return uuid.New()
 }
@@ -214,6 +218,10 @@ func FromMap(bb map[string]interface{}, c interface{}) {
 
 func GetTimestamp() int64 {
 	return time.Now().UTC().UnixNano() / 1000000
+}
+
+func GetCurrentDatetime() time.Time {
+	return time.Now().UTC()
 }
 
 func GetDatetimeNow() string {

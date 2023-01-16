@@ -5,6 +5,7 @@
 package postgresql_db
 
 import (
+	"database/sql"
 	"encoding/json"
 	"time"
 
@@ -30,6 +31,40 @@ type Company struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	Namespace   string
+}
+
+type ContainerRegistry struct {
+	ID              int32
+	Name            string
+	RegistryType    string
+	EncryptedSecret json.RawMessage
+	NonSecret       json.RawMessage
+	Extras          json.RawMessage
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+type Integration struct {
+	ID              int32
+	Resource        string
+	Filters         json.RawMessage
+	IntegrationType string
+	IntervalMinutes int32
+	LastSentTime    sql.NullTime
+	Config          json.RawMessage
+	ErrorMsg        sql.NullString
+	CreatedByUserID int64
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+type PasswordReset struct {
+	ID        int32
+	UserID    int64
+	Code      uuid.UUID
+	Expiry    time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Role struct {
