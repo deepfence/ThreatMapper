@@ -14,7 +14,7 @@ from utils.constants import FILTER_TYPE_IMAGE_NAME_WITH_TAG, CVE_ES_TYPE, USER_D
     NODE_TYPE_POD, FILTER_TYPE_HOST_NAME, FILTER_TYPE_IMAGE_NAME, FILTER_TYPE_KUBE_CLUSTER_NAME, \
     FILTER_TYPE_KUBE_NAMESPACE, FILTER_TYPE_TAGS, NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
     CLOUDTRAIL_ALERT_ES_TYPE, COMPLIANCE_ES_TYPE, COMPLIANCE_LINUX_HOST, COMPLIANCE_TYPE_ASFF_MAPPING, \
-    COMPLIANCE_STATUS_ASFF_MAPPING
+    COMPLIANCE_STATUS_ASFF_MAPPING, FILTER_TYPE_SEVERITY
 import datetime
 from utils.scope import fetch_topology_data
 
@@ -41,7 +41,7 @@ def scheduler(time=None):
 def is_notification_filters_set(filters):
     if filters and (filters.get(FILTER_TYPE_HOST_NAME, []) or filters.get(FILTER_TYPE_IMAGE_NAME, []) or
                     filters.get(FILTER_TYPE_KUBE_CLUSTER_NAME, []) or filters.get(FILTER_TYPE_KUBE_NAMESPACE, []) or
-                    filters.get(FILTER_TYPE_TAGS, [])):
+                    filters.get(FILTER_TYPE_TAGS, []) or filters.get(FILTER_TYPE_SEVERITY, [])):
         return True
     return False
 
@@ -94,6 +94,9 @@ def filter_vulnerability_notification(filters, cve, topology_data):
             if cve["cve_container_image"] != cve["host_name"]:
                 if cve["cve_container_image"] in filters[FILTER_TYPE_IMAGE_NAME_WITH_TAG]:
                     return True
+        if filters.get(FILTER_TYPE_SEVERITY, []):
+            if cve.get("cve_severity", "") in filters.get(FILTER_TYPE_SEVERITY, []):
+                return True
         if filters.get(FILTER_TYPE_KUBE_CLUSTER_NAME, []):
             if cve["cve_container_image"] != cve["host_name"]:
                 k8s_cluster_names, k8s_namespaces = get_k8s_cluster_name_namespace_for_image(cve["cve_container_image"],
@@ -134,6 +137,7 @@ def filter_vulnerability_notification(filters, cve, topology_data):
     else:
         return True
 
+
 def filter_malware_notification(filters, malware, topology_data):
     if is_notification_filters_set(filters):
         if filters.get(FILTER_TYPE_HOST_NAME, []):
@@ -148,6 +152,9 @@ def filter_malware_notification(filters, malware, topology_data):
             if malware["container_image"] != malware["host_name"]:
                 if malware["container_image"] in filters[FILTER_TYPE_IMAGE_NAME_WITH_TAG]:
                     return True
+        if filters.get(FILTER_TYPE_SEVERITY, []):
+            if malware.get("FileSeverity", "") in filters.get(FILTER_TYPE_SEVERITY, []):
+                return True
         if filters.get(FILTER_TYPE_KUBE_CLUSTER_NAME, []):
             if malware["container_image"] != malware["host_name"]:
                 k8s_cluster_names, k8s_namespaces = get_k8s_cluster_name_namespace_for_image(malware["container_image"],
@@ -203,6 +210,9 @@ def filter_secret_notification(filters, secret, topology_data):
             if secret["container_image"] != secret["host_name"]:
                 if secret["container_image"] in filters[FILTER_TYPE_IMAGE_NAME_WITH_TAG]:
                     return True
+        if filters.get(FILTER_TYPE_SEVERITY, []):
+            if secret.get("Severity", {}).get("level", "") in filters.get(FILTER_TYPE_SEVERITY, []):
+                return True
         if filters.get(FILTER_TYPE_KUBE_CLUSTER_NAME, []):
             if secret["container_image"] != secret["host_name"]:
                 k8s_cluster_names, k8s_namespaces = get_k8s_cluster_name_namespace_for_image(secret["container_image"],

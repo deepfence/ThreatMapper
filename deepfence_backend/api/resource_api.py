@@ -1505,8 +1505,7 @@ def enumerate_node_filters():
             "label": "Severity",
             "name": "severity",
             "options": ["critical", "high", "medium", "low"],
-            "type": "string",
-            "required": True
+            "type": "string"
         }
         response["filters"].append(item)
     if resource_filters and response.get('filters'):
