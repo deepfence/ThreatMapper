@@ -3,7 +3,6 @@ import { FC } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 export type ColorType = 'default' | 'error' | 'success';
-export type SizeType = 'sm' | 'md' | 'lg';
 
 type Props = {
   text: string;
