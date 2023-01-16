@@ -9,10 +9,19 @@ import { Typography } from '@/components/typography/Typography';
 
 export type CheckboxProps = CheckboxPrimitive.CheckboxProps & {
   label?: string;
+  rounded?: boolean;
 };
 
 export const Checkbox: React.FC<CheckboxProps> = (props) => {
-  const { className, id, label, checked, onCheckedChange, ...rest } = props;
+  const {
+    className,
+    id,
+    label,
+    checked,
+    rounded = false,
+    onCheckedChange,
+    ...rest
+  } = props;
 
   const [internalChecked, setInternalChecked] =
     React.useState<CheckboxPrimitive.CheckedState>(checked ?? false);
@@ -31,12 +40,14 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       <CheckboxPrimitive.Root
         id={_id}
         className={cx(
-          'flex h-4 w-4 shrink-0 items-center justify-center rounded',
+          'flex h-4 w-4 shrink-0 items-center justify-center',
           'focus:outline-none focus:ring-blue-200 focus:ring-2 dark:focus:ring-blue-800',
           'radix-state-unchecked:bg-gray-50 radix-state-unchecked:dark:bg-gray-700 radix-state-unchecked:border border-gray-300 dark:border-gray-600',
           'radix-state-checked:bg-blue-600',
           {
             'bg-blue-600': internalChecked === 'indeterminate',
+            'rounded-full': rounded,
+            rounded: !rounded,
           },
           'transition-colors',
           className,

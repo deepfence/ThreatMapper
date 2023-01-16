@@ -28,7 +28,7 @@ export const Dropdown: React.FC<DropdownProps> = (props) => {
           align={align}
           className={cx(
             'radix-side-top:animate-slide-up radix-side-bottom:animate-slide-down',
-            'shadow-md bg-white dark:bg-gray-700 py-1 min-w-[195px]',
+            'shadow-md bg-white dark:bg-gray-700 min-w-[195px]',
             'rounded-md',
           )}
         >
@@ -46,7 +46,7 @@ export const DropdownItem: React.ForwardRefExoticComponent<
   const { children, className, ...rest } = props;
   const classes = twMerge(
     cx(
-      'flex px-4 py-2 items-center gap-3 text-gray-500 dark:text-gray-300 cursor-pointer',
+      'flex px-4 py-2.5 items-center gap-3 text-gray-500 dark:text-gray-300 cursor-pointer',
       'focus:outline-none dark:focus:bg-gray-600 focus:bg-gray-100',
       Typography.size.sm,
       Typography.weight.medium,
@@ -64,6 +64,6 @@ export const DropdownSeparator: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
-  const classes = twMerge(cx('h-[1px] bg-gray-200 dark:bg-gray-600'), className);
+  const classes = twMerge(cx('h-px bg-gray-200 dark:bg-gray-600'), className);
   return <DropdownPrimitive.Separator className={classes} {...rest} ref={forwardedRef} />;
 });

@@ -23,7 +23,7 @@ describe(`Component Badge`, () => {
     const badgeId = getByTestId('badge-test-label-id');
     const badgeIconId = getByTestId('badge-icon');
     expect(getByText('Test badge')).toBeInTheDocument();
-    expect(badgeId).toHaveClass('text-blue-900');
+    expect(badgeId).toHaveClass('text-blue-800');
     expect(badgeIconId).toBeInTheDocument();
 
     // action

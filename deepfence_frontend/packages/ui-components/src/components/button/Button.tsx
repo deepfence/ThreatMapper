@@ -30,25 +30,25 @@ export const classes = {
   },
   color: {
     default:
-      'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-gray-900 focus:text-gray-900 focus:ring-2 focus:ring-gray-100',
-    primary: 'bg-blue-600 text-white hover:bg-blue-800 focus:ring-2 focus:ring-blue-500',
-    danger: 'bg-red-500 text-white hover:bg-red-800 focus:ring-2 focus:ring-red-300',
+      'bg-gray-200 text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:ring-2 focus:ring-gray-100',
+    primary: 'bg-blue-700 text-white hover:bg-blue-800 focus:ring-2 focus:ring-blue-200',
+    danger: 'bg-red-700 text-white hover:bg-red-800 focus:ring-2 focus:ring-red-200',
     success:
-      'bg-green-500 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-300',
+      'bg-green-700 text-white hover:bg-green-800 focus:ring-2 focus:ring-green-200',
     normal:
-      'bg-white hover:bg-gray-100 text-gray-700 hover:text-gray-900 focus:text-gray-900 focus:ring-2 focus:ring-gray-200',
+      'bg-white hover:bg-gray-300 text-gray-800 hover:text-gray-800 dark:ring-gray-100 focus:text-gray-800 focus:ring-2 focus:ring-gray-100',
   },
   outline: {
     default:
       'bg-white text-gray-800 ring-1 ring-gray-900 hover:bg-gray-800 hover:text-white focus:ring-1 focus:ring-gray-200 dark:ring-white',
     primary:
-      'bg-white ring-1 ring-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white focus:ring-2 focus:ring-blue-300',
+      'bg-white ring-1 ring-blue-700 text-blue-700 hover:bg-blue-800 hover:text-white focus:ring-2 focus:ring-blue-200',
     danger:
-      'text-red-600 ring-1 ring-red-600 hover:bg-red-700 hover:text-white focus:ring-2 focus:ring-red-300',
+      'text-red-700 ring-1 ring-red-700 hover:bg-red-800 hover:text-white focus:ring-2 focus:ring-red-200',
     success:
-      'text-green-500 ring-1 ring-green-500  hover:bg-green-500 hover:text-white focus:ring-2 focus:ring-green-300',
+      'text-green-700 ring-1 ring-green-700  hover:bg-green-800 hover:text-white focus:ring-2 focus:ring-green-200',
     normal:
-      'bg-white ring-1 ring-gray-200  hover:bg-gray-100 text-gray-700 hover:text-gray-900 focus:text-gray-900 focus:ring-2 focus:ring-gray-200',
+      'bg-white dark:bg-gray-800 ring-1 ring-gray-200  hover:bg-gray-100 hover:dark:bg-gray-700 text-gray-700 dark:text-gray-400 hover:text-gray-900 focus:text-gray-900 focus:ring-2 focus:ring-gray-200 focus:ring-gray-600 dark:ring-gray-600',
   },
   startIcon: {
     xs: 'mr-[10.4px]',
@@ -116,8 +116,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               [classes.outline.normal]: color === 'normal' && outline,
 
               [classes.disabled]: disabled,
-              'dark:text-white dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-2 dark:focus:ring-gray-400':
-                outline,
             },
           ),
           className,

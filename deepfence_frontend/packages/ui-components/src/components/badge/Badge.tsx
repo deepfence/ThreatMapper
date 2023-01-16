@@ -25,10 +25,10 @@ export interface BadgeProps extends Omit<ComponentProps<'span'>, 'ref' | 'color'
 
 const classes = {
   color: {
-    default: 'bg-gray-200 text-gray-900 dark:text-gray-900',
-    primary: 'bg-blue-200 text-blue-900 dark:text-blue-900',
-    success: 'bg-green-200 text-green-900 dark:text-green-900',
-    danger: 'bg-red-200 text-red-900 dark:text-red-900',
+    default: 'bg-gray-100 text-gray-900 dark:text-gray-900',
+    primary: 'bg-blue-100 text-blue-800 dark:text-blue-800',
+    success: 'bg-green-100 text-green-800 dark:text-green-800',
+    danger: 'bg-red-100 text-red-800 dark:text-red-800',
   },
   size: {
     sm: `${Typography.size.sm} py-0.5 px-2.5`,

@@ -60,7 +60,11 @@ export const AccordionTrigger = React.forwardRef<
       className={cx(
         'flex outline-none p-5 place-items-center',
         'w-full group',
-        `leading-4 ${Typography.size.base} ${Typography.weight.medium}`,
+        `leading-4 ${Typography.size.base} ${Typography.weight.medium} `,
+        'radix-state-open:text-gray-900',
+        'radix-state-closed:text-gray-500',
+        'dark:radix-state-open:text-white',
+        'dark:radix-state-closed:text-gray-400',
         className,
       )}
       {...props}

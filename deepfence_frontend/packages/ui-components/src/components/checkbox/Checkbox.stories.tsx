@@ -16,6 +16,12 @@ Default.args = {
   label: 'Default checkbox',
 };
 
+export const Rounded = Template.bind({});
+Rounded.args = {
+  label: 'Rounded checkbox',
+  rounded: true,
+};
+
 const ControlledCheckboxTemplate: ComponentStory<typeof Checkbox> = (args) => {
   const [checked, setChecked] = useState<CheckedState>(false);
   return (

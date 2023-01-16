@@ -18,11 +18,11 @@ interface Props extends Omit<ComponentProps<'button'>, 'className' | 'color'> {
 const classes = {
   ...buttonClasses,
   size: {
-    xs: `p-1 w-7 h-7`,
-    sm: `p-2 w-9 h-9`,
-    md: `p-2.5 w-10 h-10`,
-    lg: `p-3 w-12 h-12`,
-    xl: `p-3.5 w-[52px] h-[52px]`,
+    xs: `p-[9px]`,
+    sm: `p-[13px]`,
+    md: `p-[15px]`,
+    lg: `p-[18px]`,
+    xl: `p-[20px]`,
   },
   icon: {
     xs: 'w-2.5 h-2.5',

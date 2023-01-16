@@ -12,9 +12,14 @@ export default {
 
 const Template: ComponentStory<typeof Switch> = (args) => <Switch {...args} />;
 
-export const Default = Template.bind({});
-Default.args = {
+export const DefaultSM = Template.bind({});
+DefaultSM.args = {
   label: 'Toggle',
+};
+export const DefaultMd = Template.bind({});
+DefaultMd.args = {
+  label: 'Toggle',
+  size: 'md',
 };
 
 export const Disabled = Template.bind({});
