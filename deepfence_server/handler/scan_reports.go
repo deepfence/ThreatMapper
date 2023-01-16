@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -217,15 +216,8 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 var decoder = schema.NewDecoder()
 
 func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
-	namespace, err := directory.ExtractNamespace(r.Context())
-	if err != nil {
-		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
-		return
-	}
 	var params utils.SbomQueryParameters
-	err = decoder.Decode(&params, r.URL.Query())
+	err := decoder.Decode(&params, r.URL.Query())
 	// err = httpext.DecodeQueryParams(r, &params)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -241,7 +233,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	mc, err := directory.MinioClient(directory.NewGlobalContext())
+	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError,
@@ -249,14 +241,8 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = mc.MakeBucket(r.Context(), string(namespace),
-		minio.MakeBucketOptions{ObjectLocking: false})
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-	file := string(namespace) + "/sbom/" + utils.ScanIdReplacer.Replace(params.ScanId) + ".json"
-	info, err := mc.PutObject(r.Context(), string(namespace), file,
-		bytes.NewReader(sbom), int64(len(sbom)),
+	file := "/sbom/" + utils.ScanIdReplacer.Replace(params.ScanId) + ".json"
+	info, err := mc.UploadFile(r.Context(), file, sbom,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -266,7 +252,6 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params.SBOMFilePath = file
-	params.Bucket = string(namespace)
 
 	payload, err := json.Marshal(params)
 	if err != nil {
@@ -277,6 +262,13 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	msg := message.NewMessage(watermill.NewUUID(), payload)
+	namespace, err := directory.ExtractNamespace(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.Response{Success: false, Message: err.Error()})
+		return
+	}
 	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
 	// msg.SetContext(directory.NewContextWithNameSpace(namespace))
 	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)

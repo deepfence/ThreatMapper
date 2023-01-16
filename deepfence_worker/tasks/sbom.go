@@ -54,7 +54,7 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 		return err
 	}
 
-	mc, err := directory.MinioClient(directory.NewGlobalContext())
+	mc, err := directory.MinioClient(directory.NewContextWithNameSpace(directory.NamespaceID(tenantID)))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
@@ -62,8 +62,7 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	sbomFile := path.Join("/tmp", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
 	log.Info().Msgf("sbom file %s", sbomFile)
-	err = mc.FGetObject(context.Background(), params.Bucket, params.SBOMFilePath,
-		sbomFile, minio.GetObjectOptions{})
+	err = mc.DownloadFile(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
