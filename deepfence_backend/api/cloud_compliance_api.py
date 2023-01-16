@@ -1230,6 +1230,11 @@ def start_cloud_compliance_scan(node_id):
     if node_id.endswith(";<cloud_org>"):
         accounts = CloudComplianceNode.query.filter_by(org_account_id=node_id).all()
     else:
+        try:
+            CloudResourceNode.query.filter_by(account_id=node_id).update(dict(last_scanned_time=datetime.now()))
+            db.session.commit()                                      
+        except Exception as e:
+            pass
         accounts = [CloudComplianceNode.query.filter_by(node_id=node_id).first()]
 
     if not accounts:
@@ -1826,7 +1831,8 @@ def cloud_resources_type(account_id):
             "scan_data": {}}
         node_type_data.append(node_data)
         node_type_data_map[cloud_resource.node_id] = node_data
-
+        
+    
     aggs_cc_scan = {
         "check_type": {
             "terms": {
@@ -1911,6 +1917,16 @@ def cloud_resources_type(account_id):
                 for status_name in ['alarm', 'info', 'pass', 'ok']:
                     if not status_data.get(status_name, None):
                         status_data[status_name] = 0
+                        
+        for node_type_datam in node_type_data:
+            last_scanned = ""
+            if not node_type_datam.get("scan_data", {}):
+                node_id_info = CloudResourceNode.query.filter_by(node_id=node_type_datam.get("arn", None)).first()
+                if node_id_info:
+                    node_type_datam["scan_data"]["last_scanned"] = node_id_info.last_scanned_time
+                else:
+                    node_type_datam["scan_data"]["last_scanned"] = last_scanned
+            
     return set_response(node_type_data)
 
 
