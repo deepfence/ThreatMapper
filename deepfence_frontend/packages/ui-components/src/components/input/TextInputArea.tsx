@@ -16,6 +16,7 @@ export interface TextInputAreaProps
   color?: ColorType;
 }
 
+// TODO: use the same color classes as input
 const classes = {
   size: {
     sm: `${Typography.size.sm} p-3`,
@@ -76,14 +77,7 @@ export const TextInputArea = forwardRef<HTMLTextAreaElement, TextInputAreaProps>
             {...rest}
           />
         </div>
-        {helperText && (
-          <HelperText
-            sizing={sizing}
-            color={color}
-            text={helperText}
-            className="mb-2.5"
-          />
-        )}
+        {helperText && <HelperText color={color} text={helperText} className="mb-2.5" />}
       </div>
     );
   },
