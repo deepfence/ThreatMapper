@@ -1500,6 +1500,15 @@ def enumerate_node_filters():
                 "required": True
             }
             response["filters"].append(item)
+    if "severity" in filters_needed:
+        item = {
+            "label": "Severity",
+            "name": "severity",
+            "options": ["critical", "high", "medium", "low"],
+            "type": "string",
+            "required": True
+        }
+        response["filters"].append(item)
     if resource_filters and response.get('filters'):
         merged_filters = resource_filters + response.get('filters')
         # merged_filters = list(filter(lambda x: x.get('name') in [y.get('name') for y in response.get('filters')],
