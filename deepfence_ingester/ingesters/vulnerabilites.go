@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -74,18 +75,21 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Cve{node_id:row.cve_id}) SET n+= row",
 		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
+		log.Error().Msgf(err.Error())
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:Cve) MERGE (m:CveScan{node_id: n.scan_id, host_name:n.host_name, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)",
+	if _, err = tx.Run("MATCH (n:Cve) MERGE (m:VulnerabilityScan{node_id: n.scan_id}) MERGE (m) -[:DETECTED]-> (n)",
 		map[string]interface{}{}); err != nil {
+		log.Error().Msgf(err.Error())
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:CveScan) MERGE (m:Node{node_id: n.host_name}) MERGE (n) -[:SCANNED]-> (m)",
-		map[string]interface{}{}); err != nil {
-		return err
-	}
+	// if _, err = tx.Run("MATCH (n:VulnerabilityScan) MERGE (m:Node{node_id: n.host_name}) MERGE (n) -[:SCANNED]-> (m)",
+	// 	map[string]interface{}{}); err != nil {
+	// 		log.Error().Msgf(err.Error())
+	// 	return err
+	// }
 
 	return tx.Commit()
 }

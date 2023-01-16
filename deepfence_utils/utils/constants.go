@@ -17,9 +17,11 @@ const (
 	CLOUD_TRAIL_ALERTS           = "cloudtrail-alert"
 )
 
+// task names
 const (
 	CleanUpGraphDBTask   = "clean_up_graph_db"
 	RetryFailedScansTask = "retry_failed_scans"
+	ParseSBOMTask        = "tasks_parse_sbom"
 )
 
 const (

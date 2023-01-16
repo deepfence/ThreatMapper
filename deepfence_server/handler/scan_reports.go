@@ -224,7 +224,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	var params utils.SbomQueryParameters
+	var params model.SbomQueryParameters
 	err = decoder.Decode(&params, r.URL.Query())
 	// err = httpext.DecodeQueryParams(r, &params)
 	if err != nil {
@@ -277,7 +277,8 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	msg := message.NewMessage(watermill.NewUUID(), payload)
-	msg.SetContext(directory.NewContextWithNameSpace(namespace))
+	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
+	// msg.SetContext(directory.NewContextWithNameSpace(namespace))
 	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
 
 	err = h.TasksPublisher.Publish("tasks_parse_sbom", msg)

@@ -1,6 +1,10 @@
 package cronscheduler
 
 import (
+	stdLogger "log"
+	"os"
+	"time"
+
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -9,9 +13,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/robfig/cron/v3"
-	stdLogger "log"
-	"os"
-	"time"
 )
 
 type Scheduler struct {

@@ -3,10 +3,12 @@ package tasks
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path"
 
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -30,17 +32,23 @@ func NewSBOMParser(ingest chan *kgo.Record) SbomParser {
 }
 
 func (s SbomParser) ParseSBOM(msg *message.Message) error {
-	// extract tenant id
-	tenantID, err := directory.ExtractNamespace(msg.Context())
-	if err != nil {
-		log.Error().Msg(err.Error())
-		// 	return err
+	// // extract tenant id
+	// tenantID, err := directory.ExtractNamespace(msg.Context())
+	// if err != nil {
+	// 	log.Error().Msg(err.Error())
+	// 	return err
+	// }
+
+	tenantID := msg.Metadata.Get(directory.NamespaceKey)
+	if len(tenantID) == 0 {
+		log.Error().Msg("tenant-id/namespace is empty")
+		return errors.New("tenant-id/namespace is empty")
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	log.Debug().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
 
-	var params utils.SbomQueryParameters
+	var params model.SbomQueryParameters
 
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
@@ -84,13 +92,15 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
 	if err != nil {
-		log.Error().Msgf("error on generate vulnerability report: %s", err.Error())
+		log.Error().Msgf("error on generate vulnerability report: %s", err)
 	}
+
+	log.Info().Msgf("scan-id=%s vulnerabilities=%d", params.ScanId, len(report))
 
 	// write reports and status to kafka ingester will process from there
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(params.Bucket)},
+		{Key: "tenant_id", Value: []byte(tenantID)},
 	}
 
 	for _, c := range report {
@@ -108,10 +118,10 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	// scan status
 	status := struct {
-		utils.SbomQueryParameters
-		Status string `json:"status,omitempty"`
+		model.SbomQueryParameters
+		ScanStatus string `json:"scan_status,omitempty"`
 	}{
-		Status:              utils.SCAN_STATUS_SUCCESS,
+		ScanStatus:          utils.SCAN_STATUS_SUCCESS,
 		SbomQueryParameters: params,
 	}
 
