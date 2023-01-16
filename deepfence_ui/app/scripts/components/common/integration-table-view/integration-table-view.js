@@ -68,7 +68,6 @@ class IntegrationTableView extends React.Component {
     const wideColumnStyles = {
       maxWidth: '200px',
     };
-
     return recordCollection.map(record => {
       const {
         filters: {
@@ -79,6 +78,8 @@ class IntegrationTableView extends React.Component {
           image_name: imagename = [],
         } = {},
       } = record;
+      record.notification_type = record.notification_type === "secret-scan" ? "secret_scan" : record.notification_type
+      record.notification_type = record.notification_type === "malware-scan" ? "malware_scan" : record.notification_type
       return (
         <tr key={`${record.id}-${record.notification_type}`}>
           <td>
