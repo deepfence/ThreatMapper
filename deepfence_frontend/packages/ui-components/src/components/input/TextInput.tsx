@@ -245,12 +245,14 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             />
           )}
           <input
-            className={inputCva({
-              color,
-              sizing,
-              withStartIcon: !!startIcon,
-              withEndIcon: !!endIcon,
-            })}
+            className={twMerge(
+              inputCva({
+                color,
+                sizing,
+                withStartIcon: !!startIcon,
+                withEndIcon: !!endIcon,
+              }),
+            )}
             disabled={disabled}
             ref={ref}
             id={_id}
