@@ -466,8 +466,10 @@ def start_cve(node_id):
                 lock_key = ""
                 if node.type == constants.NODE_TYPE_HOST:
                     lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, node.host_name)
+                elif node.type == constants.NODE_TYPE_CONTAINER:
+                    lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, node.scope_id)
                 else:
-                    lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, node.image_name_tag)
+                    lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, node.image_id)
                 redis_resp = redis.incr(lock_key)
                 if redis_resp != 1:
                     raise DFError("CVE scan on this node is already in progress")
