@@ -10,22 +10,6 @@ import (
 
 const dockerHubURL = "https://hub.docker.com/v2"
 
-// self.docker_hub_url = "https://hub.docker.com/v2"
-
-//     def validate(self):
-//         try:
-//             # not authenticating for empty username
-//             if self.docker_hub_username == "" or self.docker_hub_username is None:
-//                 return True
-//             resp = requests.post(self.docker_hub_url + "/users/login/",
-//                                  json={"username": self.docker_hub_username, "password": self.docker_hub_password})
-//             if resp.status_code == 200:
-//                 return True
-//             else:
-//                 return False
-//         except Exception as e:
-//             raise DFError("Something went wrong while validating Docker hub registry credentails", error=e)
-
 func New() *RegistryDockerHub {
 	return &RegistryDockerHub{}
 }
