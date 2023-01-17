@@ -1,8 +1,5 @@
-import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { useCopyToClipboard } from 'react-use';
 import {
-  Accordion,
   Button,
   Card,
   Step,

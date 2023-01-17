@@ -10,20 +10,17 @@ type ConnectorHeaderProps = {
 
 const canRoute = (pathname: string) => {
   const path = {
-    addConnector: '',
+    addConnector: '/onboard/connectors/add-connectors',
     scanResult: '',
     viewResult: '',
   };
   if (pathname.includes('view-scan-results')) {
     path.viewResult = '/onboard/view-scan-results';
     path.scanResult = '/onboard/scan-infrastructure';
-    path.addConnector = '/onboard/add-connectors';
   } else if (pathname.includes('scan-infrastructure')) {
     path.scanResult = '/onboard/scan-infrastructure';
-    path.addConnector = '/onboard/add-connectors';
     path.viewResult = '#';
   } else if (pathname.includes('connectors')) {
-    path.addConnector = '/onboard/add-connectors';
     path.scanResult = '#';
     path.viewResult = '#';
   }
@@ -34,7 +31,10 @@ export const ConnectorHeader = ({ title, description }: ConnectorHeaderProps) =>
   const location = useLocation();
 
   const isAddConnectorRoutePath = () => {
-    return location.pathname.includes('connectors');
+    return (
+      location.pathname.startsWith('/onboard/connectors') ||
+      location.pathname.includes('/onboard/instructions')
+    );
   };
 
   const isScanRoutePath = () => {

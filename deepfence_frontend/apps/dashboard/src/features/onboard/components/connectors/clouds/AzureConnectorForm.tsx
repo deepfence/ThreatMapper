@@ -109,7 +109,7 @@ export const AzureConnectorForm = () => {
               color="primary"
               className="ml-auto"
               onClick={() => {
-                navigate('/onboard/my-connectors');
+                navigate('/onboard/connectors/my-connectors');
               }}
             >
               Go to connectors
