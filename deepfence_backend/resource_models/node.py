@@ -147,6 +147,8 @@ class Node(object):
             "host_name": self.host_name,
             "node_id": cve_node_id,
             "node_type": node_type,
+            "image_name": self.image_name_tag,
+            "container_name": self.container_name,
         }
         ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
         scan_details = {"cve_node_id": cve_node_id, "scan_types": scan_types, "node_id": self.node_id,
