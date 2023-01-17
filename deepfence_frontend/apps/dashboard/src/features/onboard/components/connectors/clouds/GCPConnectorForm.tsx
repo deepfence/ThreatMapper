@@ -29,7 +29,7 @@ export const GCPConnectorForm = () => {
 
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation.">
+      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
           <a

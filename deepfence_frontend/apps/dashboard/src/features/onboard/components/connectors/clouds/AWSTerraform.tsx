@@ -24,7 +24,7 @@ module "cloud-scanner_example_single-account-ecs" {
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation.">
+        <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect to your AWS Cloud Account via Teraform. Find out more information by{' '}
             <a
