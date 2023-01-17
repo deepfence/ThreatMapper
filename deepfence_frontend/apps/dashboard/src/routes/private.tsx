@@ -11,6 +11,7 @@ import { Connector } from '../features/onboard/pages/Connector';
 import { DockerConnector } from '../features/onboard/pages/DockerConnector';
 import { GCPConnector } from '../features/onboard/pages/GCPConnector';
 import { K8sConnector } from '../features/onboard/pages/K8sConnector';
+import { LinuxConnector } from '../features/onboard/pages/LinuxConnector';
 
 export const privateRoutes: RouteObject[] = [
   {
@@ -45,6 +46,10 @@ export const privateRoutes: RouteObject[] = [
           {
             path: 'docker',
             element: <DockerConnector />,
+          },
+          {
+            path: 'host-linux',
+            element: <LinuxConnector />,
           },
           {
             path: 'registry/amazon-ecr',
