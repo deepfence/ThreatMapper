@@ -45,6 +45,8 @@ export * from './ReportColumn';
 export * from './ReportMetadataRow';
 export * from './ReportRow';
 export * from './ReportTable';
+export * from './ReportersContainsFilter';
+export * from './ReportersFieldsFilters';
 export * from './ReportersLookupFilter';
 export * from './ReportersNodeInfo';
 export * from './ReportersProviderThreatGraph';

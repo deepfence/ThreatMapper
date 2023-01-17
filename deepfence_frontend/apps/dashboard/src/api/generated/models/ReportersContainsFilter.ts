@@ -16,50 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ReportersLookupFilter
+ * @interface ReportersContainsFilter
  */
-export interface ReportersLookupFilter {
+export interface ReportersContainsFilter {
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ReportersLookupFilter
+     * @type {{ [key: string]: Array<any>; }}
+     * @memberof ReportersContainsFilter
      */
-    in_field_filter: Array<string> | null;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ReportersLookupFilter
-     */
-    node_ids: Array<string> | null;
+    filter_in: { [key: string]: Array<any>; } | null;
 }
 
 /**
- * Check if a given object implements the ReportersLookupFilter interface.
+ * Check if a given object implements the ReportersContainsFilter interface.
  */
-export function instanceOfReportersLookupFilter(value: object): boolean {
+export function instanceOfReportersContainsFilter(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "in_field_filter" in value;
-    isInstance = isInstance && "node_ids" in value;
+    isInstance = isInstance && "filter_in" in value;
 
     return isInstance;
 }
 
-export function ReportersLookupFilterFromJSON(json: any): ReportersLookupFilter {
-    return ReportersLookupFilterFromJSONTyped(json, false);
+export function ReportersContainsFilterFromJSON(json: any): ReportersContainsFilter {
+    return ReportersContainsFilterFromJSONTyped(json, false);
 }
 
-export function ReportersLookupFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersLookupFilter {
+export function ReportersContainsFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersContainsFilter {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'in_field_filter': json['in_field_filter'],
-        'node_ids': json['node_ids'],
+        'filter_in': json['filter_in'],
     };
 }
 
-export function ReportersLookupFilterToJSON(value?: ReportersLookupFilter | null): any {
+export function ReportersContainsFilterToJSON(value?: ReportersContainsFilter | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +60,7 @@ export function ReportersLookupFilterToJSON(value?: ReportersLookupFilter | null
     }
     return {
         
-        'in_field_filter': value.in_field_filter,
-        'node_ids': value.node_ids,
+        'filter_in': value.filter_in,
     };
 }
 

@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ReportersFieldsFilters } from './ReportersFieldsFilters';
+import {
+    ReportersFieldsFiltersFromJSON,
+    ReportersFieldsFiltersFromJSONTyped,
+    ReportersFieldsFiltersToJSON,
+} from './ReportersFieldsFilters';
+
 /**
  * 
  * @export
@@ -25,6 +32,12 @@ export interface ReportersTopologyFilters {
      * @memberof ReportersTopologyFilters
      */
     cloud_filter: Array<string> | null;
+    /**
+     * 
+     * @type {ReportersFieldsFilters}
+     * @memberof ReportersTopologyFilters
+     */
+    field_filters: ReportersFieldsFilters;
     /**
      * 
      * @type {Array<string>}
@@ -57,6 +70,7 @@ export interface ReportersTopologyFilters {
 export function instanceOfReportersTopologyFilters(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cloud_filter" in value;
+    isInstance = isInstance && "field_filters" in value;
     isInstance = isInstance && "host_filter" in value;
     isInstance = isInstance && "kubernetes_filter" in value;
     isInstance = isInstance && "pod_filter" in value;
@@ -76,6 +90,7 @@ export function ReportersTopologyFiltersFromJSONTyped(json: any, ignoreDiscrimin
     return {
         
         'cloud_filter': json['cloud_filter'],
+        'field_filters': ReportersFieldsFiltersFromJSON(json['field_filters']),
         'host_filter': json['host_filter'],
         'kubernetes_filter': json['kubernetes_filter'],
         'pod_filter': json['pod_filter'],
@@ -93,6 +108,7 @@ export function ReportersTopologyFiltersToJSON(value?: ReportersTopologyFilters 
     return {
         
         'cloud_filter': value.cloud_filter,
+        'field_filters': ReportersFieldsFiltersToJSON(value.field_filters),
         'host_filter': value.host_filter,
         'kubernetes_filter': value.kubernetes_filter,
         'pod_filter': value.pod_filter,
