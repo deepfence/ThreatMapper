@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/rs/zerolog"
 )
 
 type config struct {
@@ -33,11 +34,11 @@ func main() {
 	log.Info().Msgf("config: %+v", cfg)
 
 	if cfg.Debug {
-		log.Initialize("debug")
-		wml = watermill.NewStdLogger(true, false)
+		log.Initialize(zerolog.LevelDebugValue)
+		wml = NewZerologWaterMillAdapter(true, false)
 	} else {
-		log.Initialize("info")
-		wml = watermill.NewStdLogger(false, false)
+		log.Initialize(zerolog.LevelInfoValue)
+		wml = NewZerologWaterMillAdapter(false, false)
 	}
 
 	// check connection to kafka broker
