@@ -15,7 +15,7 @@ export const DockerConnectorForm = () => {
     window.location.host ?? '---CONSOLE-IP---'
   }" -e MGMT_CONSOLE_PORT="443" \\
   -e DEEPFENCE_KEY="${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'}" \\
-  deepfenceio/deepfence_agent_ce:${''}`;
+  deepfenceio/deepfence_agent_ce:latest`;
 
   return (
     <Stepper>
