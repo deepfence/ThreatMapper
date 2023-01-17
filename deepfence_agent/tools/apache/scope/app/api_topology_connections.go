@@ -24,7 +24,7 @@ const (
 	vulnerabilityScanStatusKey   = "vulnerability_scan_status"
 	vulnerabilityScanStatusLabel = "Vulnerability Scan Status"
 	secretScanStatusKey          = "secret_scan_status"
-	malwareScanStatusKey          = "malware_scan_status"
+	malwareScanStatusKey         = "malware_scan_status"
 	secretScanStatusLabel        = "Secret Scan Status"
 	malwareScanStatusLabel       = "Malware Scan Status"
 	complianceScanStatusKey      = "compliance_scan_status"
@@ -269,7 +269,7 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 
 	var nodeIdVulnerabilityStatusMap, nodeIdComplianceStatusMap, nodeSeverityMap, nodeIdSecretStatusMap, nodeIdMalwareStatusMap map[string]string
 	if ignoreMetadata == false {
-		nodeIdVulnerabilityStatusMap, _, nodeIdComplianceStatusMap, _, nodeSeverityMap, nodeIdSecretStatusMap, _, nodeIdMalwareStatusMap,_ = nStatus.getNodeStatus()
+		nodeIdVulnerabilityStatusMap, _, nodeIdComplianceStatusMap, _, nodeSeverityMap, nodeIdSecretStatusMap, _, nodeIdMalwareStatusMap, _ = nStatus.getNodeStatus()
 	}
 	childrenCount := make(map[string]map[string]int)
 
@@ -331,13 +331,15 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 						}
 						nodeSeverity, _ = nodeSeverityMap[v.Label]
 					} else if (c.TopologyID == containersID || c.TopologyID == containersByImageID) && v.Pseudo == false {
-						vulnerabilityScanStatus, ok = nodeIdVulnerabilityStatusMap[v.Image]
+						vulnerabilityScanStatus, ok = nodeIdVulnerabilityStatusMap[v.ID]
 						if !ok {
-							vulnerabilityScanStatus = scanStatusNeverScanned
+							vulnerabilityScanStatus, ok = nodeIdVulnerabilityStatusMap[strings.Split(v.ID, ";")[0]]
+							if !ok {
+								vulnerabilityScanStatus = scanStatusNeverScanned
+							}
 						}
 						if c.TopologyID == containersID {
 							secretScanStatus, ok = nodeIdSecretStatusMap[strings.Split(v.ID, ";")[0]]
-							
 						} else {
 							secretScanStatus, ok = nodeIdSecretStatusMap[v.Label]
 						}
@@ -346,7 +348,6 @@ func (wc *connectionWebsocketState) update(ctx context.Context) error {
 						}
 						if c.TopologyID == containersID {
 							malwareScanStatus, ok = nodeIdMalwareStatusMap[strings.Split(v.ID, ";")[0]]
-							
 						} else {
 							malwareScanStatus, ok = nodeIdMalwareStatusMap[v.Label]
 						}
