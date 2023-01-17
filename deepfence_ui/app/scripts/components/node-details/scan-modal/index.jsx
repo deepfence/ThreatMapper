@@ -23,8 +23,10 @@ const ScanModal = (props) => {
   const dispatch = useDispatch();
 
   const pollingFunction = useCallback(({ imageId }) => {
+    const _id = details?.type === 'container' ? id : imageId;
+    
     return Promise.all([
-      dispatch(getCVEScanStatusAction(imageId)),
+      dispatch(getCVEScanStatusAction(_id)),
       dispatch(getSecretScanStatusAction(id)),
       dispatch(getMalwareScanStatusAction(id))
     ]);
