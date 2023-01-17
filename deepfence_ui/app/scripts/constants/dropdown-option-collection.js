@@ -85,11 +85,11 @@ export const NOTIFICATION_RESOURCE_OPTIONS = [
   },
   {
       label: 'Malware Scan',
-    value: 'malware_scan',
+    value: 'malware-scan',
   },
   {
     label: 'Secret Scan',
-    value: 'secret_scan',
+    value: 'secret-scan',
   },
 ];
 
@@ -112,11 +112,11 @@ export const NOTIFICATION_RESOURCE_OPTIONS_CLOUDTRAIL = [
   },
   {
     label: 'Malware Scan',
-    value: 'malware_scan',
+    value: 'malware-scan',
   },
   {
     label: 'Secret Scan',
-    value: 'secret_scan',
+    value: 'secret-scan',
   }
 ];
 
