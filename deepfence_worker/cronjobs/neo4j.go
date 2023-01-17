@@ -1,8 +1,9 @@
 package cronjobs
 
 import (
-	"github.com/ThreeDotsLabs/watermill/message"
 	"time"
+
+	"github.com/ThreeDotsLabs/watermill/message"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"

@@ -225,7 +225,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	log.Info().Msgf("sbom query parameters: %v", params)
+	log.Info().Msgf("sbom query parameters: %+v", params)
 	sbom, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Error().Msg(err.Error())

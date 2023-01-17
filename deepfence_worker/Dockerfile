@@ -11,7 +11,7 @@ WORKDIR /go/deepfence_worker/
 RUN CGO_ENABLED=0 make deepfence_worker
 
 FROM alpine:3.17
-MAINTAINER Deepfence Inc
+LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
 RUN apk add --no-cache kafkacat

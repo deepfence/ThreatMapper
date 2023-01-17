@@ -45,7 +45,7 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
-	log.Debug().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
 
 	var params utils.SbomQueryParameters
 
