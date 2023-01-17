@@ -6,6 +6,9 @@ import { Breadcrumb, BreadcrumbLink, Typography } from 'ui-components';
 type ConnectorHeaderProps = {
   title: string;
   description: string;
+  metadata?: {
+    [key: string]: string;
+  };
 };
 
 const canRoute = (pathname: string) => {
@@ -30,7 +33,11 @@ const canRoute = (pathname: string) => {
   return path;
 };
 
-export const ConnectorHeader = ({ title, description }: ConnectorHeaderProps) => {
+export const ConnectorHeader = ({
+  title,
+  description,
+  metadata = {},
+}: ConnectorHeaderProps) => {
   const location = useLocation();
 
   const isAddConnectorRoutePath = () => {
@@ -46,7 +53,7 @@ export const ConnectorHeader = ({ title, description }: ConnectorHeaderProps) =>
   };
 
   return (
-    <div className="pt-6 mb-8">
+    <div className="pt-6 mb-4">
       <div className="mb-4 -mx-5">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
@@ -81,12 +88,23 @@ export const ConnectorHeader = ({ title, description }: ConnectorHeaderProps) =>
           </BreadcrumbLink>
         </Breadcrumb>
       </div>
-      <h1 className={`text-[32px] text-black dark:text-white`}>{title}</h1>
-      <p
-        className={`${Typography.size.base} ${Typography.weight.normal} mt-1.5 mb-4 dark:text-gray-400 text-gray-900`}
-      >
-        {description}
-      </p>
+      <div className="flex items-center">
+        <div>
+          <h1 className={`text-[32px] text-black dark:text-white`}>{title}</h1>
+          <p
+            className={`${Typography.size.base} ${Typography.weight.normal} mt-1.5 mb-4 dark:text-gray-400 text-gray-900`}
+          >
+            {description}
+          </p>
+        </div>
+        <div className="ml-auto">
+          <span className={`${Typography.size.sm} text-gray-600`}>
+            {metadata.accountId
+              ? `Account: ${metadata.type} / ${metadata.accountId}`
+              : null}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

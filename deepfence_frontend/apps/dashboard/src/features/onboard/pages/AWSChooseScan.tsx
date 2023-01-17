@@ -4,6 +4,7 @@ import LogoAws from '../../../assets/logo-aws.svg';
 import LogoAwsWhite from '../../../assets/logo-aws-white.svg';
 import { useTheme } from '../../../theme/ThemeContext';
 import { usePageNavigation } from '../../../utils/usePageNavigation';
+import { ConnectorHeader } from '../components/ConnectorHeader';
 
 type ScanTypeListProps = {
   scanType: string;
@@ -18,8 +19,8 @@ const scanTypeList: ScanTypeListProps[] = [
     scanType: 'Vulnerability Scan',
     description: `A few words about the compliance scan and why you need to use it.`,
     lastScaned: '3:00pm on 11/22/2022',
-    buttonText: 'Configure Compliance Scan',
-    redirect: '/onboard/scan-infrastructure/cloud/aws/configure',
+    buttonText: 'Configure Vulnerability Scan',
+    redirect: '/onboard/scan-infrastructure/host/configure/vulnerability',
   },
   {
     scanType: 'Compliance Scan',
@@ -32,8 +33,8 @@ const scanTypeList: ScanTypeListProps[] = [
     scanType: 'Secrets Scan',
     description: `A few words about the compliance scan and why you need to use it.`,
     lastScaned: '3:00pm on 11/22/2022',
-    buttonText: 'Configure Compliance Scan',
-    redirect: 'cloud/aws/configure',
+    buttonText: 'Configure Secret Scan',
+    redirect: '/onboard/scan-infrastructure/host/configure/secret',
   },
 ];
 
@@ -116,6 +117,10 @@ export const AWSChooseScan = () => {
   const { goBack } = usePageNavigation();
   return (
     <>
+      <ConnectorHeader
+        title="Choose your scan type"
+        description="Choose from the below options to perform your first scan."
+      />
       <SelectedAccountCard />
       <ScanList />
       <Button onClick={goBack} outline size="xs" className="mt-16">

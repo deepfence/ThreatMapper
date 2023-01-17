@@ -13,6 +13,8 @@ import {
 } from 'ui-components';
 
 import { usePageNavigation } from '../../../utils/usePageNavigation';
+import { ConnectorHeader } from '../components/ConnectorHeader';
+import { ScanInfraLayout } from '../layouts/InfraScanLayout';
 
 type ColumnType = {
   id: number;
@@ -632,7 +634,18 @@ const ComplianceTable = () => {
   return (
     <div>
       <div className="py-2 text-gray-500">
-        {isEmpty(rowSelectionState) ? 'No rows selected' : <div></div>}
+        {isEmpty(rowSelectionState) ? (
+          'No rows selected'
+        ) : (
+          <div>
+            <Switch
+              checked={false}
+              onCheckedChange={(e) => {}}
+              label="Enabled"
+              size="sm"
+            />
+          </div>
+        )}
       </div>
       <Table
         size="sm"
@@ -657,7 +670,7 @@ const hasTypeSelected = (prevTabs: TabsType[], value: string) => {
   return find(prevTabs, ['value', value]);
 };
 
-export const AWSInfraScanConfigure = () => {
+export const ComplianceScanConfigure = () => {
   const { goBack } = usePageNavigation();
   const [selectedTab, setSelectedTab] = useState('');
   const [tabs, setTabs] = useState<TabsType[] | []>([]);
@@ -690,6 +703,14 @@ export const AWSInfraScanConfigure = () => {
 
   return (
     <>
+      <ConnectorHeader
+        title="Configure your scan"
+        description="Choose from the below options to perform your first scan."
+        metadata={{
+          accountId: '234HTY6643',
+          type: 'AWS',
+        }}
+      />
       <div className="mt-8 flex gap-4 mb-8">
         {scanType.map((type) => (
           <Button
@@ -704,7 +725,7 @@ export const AWSInfraScanConfigure = () => {
             {type}
             <IconContext.Provider
               value={{
-                className: 'ml-2.5 w-5 h-5',
+                className: 'ml-2.5 w-4 h-4',
               }}
             >
               {hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
@@ -725,7 +746,7 @@ export const AWSInfraScanConfigure = () => {
           </Tabs>
         )}
       </div>
-      <Button onClick={goBack} outline size="xs" className="mt-16">
+      <Button onClick={goBack} size="xs" className="mt-16">
         Cancel
       </Button>
     </>

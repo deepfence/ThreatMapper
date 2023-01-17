@@ -8,11 +8,13 @@ import {
 import { AmazonECRConnector } from '../features/onboard/pages/AmazonECRConnector';
 import { AWSChooseScan } from '../features/onboard/pages/AWSChooseScan';
 import { AWSConnector } from '../features/onboard/pages/AWSConnector';
-import { AWSInfraScanConfigure } from '../features/onboard/pages/AWSInfraScanConfigure';
 import { AzureConnector } from '../features/onboard/pages/AzureConnector';
+import { ComplianceScanConfigure } from '../features/onboard/pages/ComplianceScanConfigure';
 import { Connector } from '../features/onboard/pages/Connector';
 import { GCPConnector } from '../features/onboard/pages/GCPConnector';
 import { K8sConnector } from '../features/onboard/pages/K8sConnector';
+import { SecretScanConfigure } from '../features/onboard/pages/SecretScanConfigure';
+import { VulnerabilityScanConfigure } from '../features/onboard/pages/VulnerabilityScanConfigure';
 
 export const privateRoutes: RouteObject[] = [
   {
@@ -62,7 +64,7 @@ export const privateRoutes: RouteObject[] = [
       },
       {
         path: 'scan-infrastructure',
-        element: <ScanInfraLayout />,
+        element: <Outlet />,
         children: [
           {
             path: 'cloud/aws',
@@ -70,7 +72,15 @@ export const privateRoutes: RouteObject[] = [
           },
           {
             path: 'cloud/aws/configure',
-            element: <AWSInfraScanConfigure />,
+            element: <ComplianceScanConfigure />,
+          },
+          {
+            path: 'host/configure/vulnerability',
+            element: <VulnerabilityScanConfigure />,
+          },
+          {
+            path: 'host/configure/secret',
+            element: <SecretScanConfigure />,
           },
         ],
       },
