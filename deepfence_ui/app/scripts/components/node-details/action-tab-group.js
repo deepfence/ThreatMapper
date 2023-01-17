@@ -15,6 +15,7 @@ const ActionTabGroup = (props) => {
   const {
     metadata,
     imageId,
+    imageScopeId,
   } = useMemo(() => {
     const metadata = new Map();
 
@@ -25,11 +26,15 @@ const ActionTabGroup = (props) => {
     let imageId;
     if (
       metadata.size &&
-      (details?.type === 'container' || details?.type === 'container_image') &&
-      metadata.has('docker_image_name')
+      (details?.type === 'container' 
+      && metadata.has('docker_image_name'))
     ) {
       imageId = `${metadata.get('docker_image_name')}:${metadata.get('docker_image_tag')}`
-    } else if (metadata.size && details?.type === 'host' && metadata.has('host_name')) {
+    } if (metadata.size &&
+      (details?.type === 'container_image') &&
+      metadata.has('docker_image_id')) {
+        imageId = metadata.get('docker_image_id')
+    }  else if (metadata.size && details?.type === 'host' && metadata.has('host_name')) {
       imageId = metadata.get('host_name')?.trim();
     }
     return {
@@ -59,7 +64,7 @@ const ActionTabGroup = (props) => {
   const showScanButton = (isHost || isContainer || isContainerImage) && !isUIVM;
   const scanModalProps = {
     title: 'Start Scan',
-    modalContent: () => <ScanModal details={details} imageId={imageId} />,
+    modalContent: () => <ScanModal details={details} imageId={imageId} imageScopeId={imageScopeId}/>,
     contentStyles: {
       width: '550px',
     },
