@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-import { privateRoutes } from './private';
-import { publicRoutes } from './public';
+import { privateRoutes } from '@/routes/private';
+import { publicRoutes } from '@/routes/public';
 
 const notFoundRoute = [
   {

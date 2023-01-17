@@ -2,8 +2,8 @@ import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Button, Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
-import { usePageNavigation } from '../../../../../utils/usePageNavigation';
+import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const DockerConnectorForm = () => {
   const { navigate } = usePageNavigation();

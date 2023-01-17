@@ -1,9 +1,9 @@
 import { ActionFunction, redirect } from 'react-router-dom';
 
-import { getAuthenticationApiClient } from '../../../api/api';
-import { ModelResponse } from '../../../api/generated';
-import { ApiError, makeRequest } from '../../../utils/api';
-import storage from '../../../utils/storage';
+import { getAuthenticationApiClient } from '@/api/api';
+import { ModelResponse } from '@/api/generated';
+import { ApiError, makeRequest } from '@/utils/api';
+import storage from '@/utils/storage';
 
 export type LoginActionReturnType = {
   error?: string;

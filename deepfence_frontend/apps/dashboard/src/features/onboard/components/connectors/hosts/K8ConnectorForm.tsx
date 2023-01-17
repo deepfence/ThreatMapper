@@ -12,9 +12,9 @@ import {
   Typography,
 } from 'ui-components';
 
-import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
-import { usePageNavigation } from '../../../../../utils/usePageNavigation';
-import { containsWhiteSpace } from '../../../../../utils/validator';
+import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { usePageNavigation } from '@/utils/usePageNavigation';
+import { containsWhiteSpace } from '@/utils/validator';
 
 const containerRuntimeDropdown = [
   {

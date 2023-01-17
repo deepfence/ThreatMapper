@@ -1,9 +1,9 @@
 import { ActionFunction, redirect } from 'react-router-dom';
 
-import { getUserApiClient } from '../../../api/api';
-import { ModelResponse } from '../../../api/generated';
-import { ApiError, makeRequest } from '../../../utils/api';
-import storage from '../../../utils/storage';
+import { getUserApiClient } from '@/api/api';
+import { ModelResponse } from '@/api/generated';
+import { ApiError, makeRequest } from '@/utils/api';
+import storage from '@/utils/storage';
 
 export type RegisterActionReturnType = {
   error?: string;

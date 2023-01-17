@@ -4,8 +4,8 @@ import { fireEvent } from '@testing-library/react';
 import { Button } from 'ui-components';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { renderUI } from '../tests/utils';
-import { THEME_DARK, THEME_LIGHT, useTheme } from './ThemeContext';
+import { renderUI } from '@/tests/utils';
+import { THEME_DARK, THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const App = () => {
   const theme = useTheme();

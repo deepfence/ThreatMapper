@@ -2,8 +2,8 @@ import './index.css';
 
 import { RouterProvider } from 'react-router-dom';
 
-import { router } from './routes';
-import { ThemeProvider, useThemeMode } from './theme/ThemeContext';
+import { router } from '@/routes';
+import { ThemeProvider, useThemeMode } from '@/theme/ThemeContext';
 
 function App() {
   const { toggleMode, mode } = useThemeMode(true);

@@ -1,8 +1,8 @@
 import { Button } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { AmazonECRConnectorForm } from '../components/connectors/registries/AmazonECRConnectionForm';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { AmazonECRConnectorForm } from '@/features/onboard/components/connectors/registries/AmazonECRConnectionForm';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const AmazonECRConnector = () => {
   const { goBack } = usePageNavigation();

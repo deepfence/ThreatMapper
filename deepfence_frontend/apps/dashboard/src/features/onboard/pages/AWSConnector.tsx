@@ -1,9 +1,9 @@
 import { Button } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { AWSCloudFormation } from '../components/connectors/clouds/AWSCloudFormation';
-import { AWSTerraform } from '../components/connectors/clouds/AWSTerraform';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { AWSCloudFormation } from '@/features/onboard/components/connectors/clouds/AWSCloudFormation';
+import { AWSTerraform } from '@/features/onboard/components/connectors/clouds/AWSTerraform';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const AWSConnector = () => {
   const { goBack } = usePageNavigation();

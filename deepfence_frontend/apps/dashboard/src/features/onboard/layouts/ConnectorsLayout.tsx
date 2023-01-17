@@ -1,8 +1,8 @@
 import { LoaderFunction, Outlet, redirect, useLocation } from 'react-router-dom';
 import { Tabs } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const connectorsLoader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);

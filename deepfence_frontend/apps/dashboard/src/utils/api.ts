@@ -1,4 +1,4 @@
-import { ResponseError } from '../api/generated';
+import { ResponseError } from '@/api/generated';
 
 export class ApiError<T> {
   private _value: T;

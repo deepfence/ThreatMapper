@@ -1,8 +1,8 @@
 import { Button } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { AzureConnectorForm } from '../components/connectors/clouds/AzureConnectorForm';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { AzureConnectorForm } from '@/features/onboard/components/connectors/clouds/AzureConnectorForm';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const AzureConnector = () => {
   const { goBack } = usePageNavigation();
