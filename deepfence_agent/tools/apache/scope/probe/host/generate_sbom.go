@@ -33,7 +33,7 @@ func createPackageScannerClient() (pb.PackageScannerClient, error) {
 	return pb.NewPackageScannerClient(conn), nil
 }
 
-func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, kubernetesClusterName, containerName, scanType string) error {
+func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, kubernetesClusterName, containerName, scanType, nodeId string) error {
 	ctx := context.Background()
 
 	hostName := scopeHostname.Get()
@@ -52,6 +52,8 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, k
 	var source string
 	if imageName == "host" {
 		source = scanPath
+	} else if nodeType == "container" {
+		source = nodeId
 	} else {
 		source = imageName
 	}

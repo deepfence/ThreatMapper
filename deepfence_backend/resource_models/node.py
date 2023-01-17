@@ -126,9 +126,12 @@ class Node(object):
         node_type = constants.NODE_TYPE_HOST
         if self.type == constants.NODE_TYPE_HOST:
             cve_node_id = self.host_name
+        elif self.type == constants.NODE_TYPE_CONTAINER:
+            node_type = constants.NODE_TYPE_CONTAINER
+            cve_node_id = self.scope_id
         else:
             node_type = constants.NODE_TYPE_CONTAINER_IMAGE
-            cve_node_id = self.image_name_tag
+            cve_node_id = self.image_id
         # Add 'QUEUED' doc
         datetime_now = datetime.now()
         scan_id = cve_node_id + "_" + datetime_now.strftime("%Y-%m-%dT%H:%M:%S") + ".000"
@@ -147,14 +150,15 @@ class Node(object):
         }
         ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
         scan_details = {"cve_node_id": cve_node_id, "scan_types": scan_types, "node_id": self.node_id,
-                        "scan_id": scan_id, "mask_cve_ids": mask_cve_ids}
+                        "scan_id": scan_id, "mask_cve_ids": mask_cve_ids, "node_type": node_type}
         celery_task_id = "cve_scan:" + scan_id
         if priority:
-            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),task_id=celery_task_id, kwargs={"scan_details": scan_details},
-                                             queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
+            celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(), task_id=celery_task_id,
+                                 kwargs={"scan_details": scan_details},
+                                 queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
         else:
             celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(), task_id=celery_task_id,
-                             kwargs={"scan_details": scan_details}, queue=constants.VULNERABILITY_SCAN_QUEUE)
+                                 kwargs={"scan_details": scan_details}, queue=constants.VULNERABILITY_SCAN_QUEUE)
         return True
 
     def cve_scan_stop(self):

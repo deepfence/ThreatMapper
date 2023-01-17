@@ -96,6 +96,7 @@ func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	var kubernetesClusterName = ""
 	var containerName = ""
 	var containerId = ""
+	var nodeId = ""
 
 	if imageNameArg, ok := req.ControlArgs["image_name"]; ok {
 		imageName = imageNameArg
@@ -115,6 +116,9 @@ func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	if imageName != "host" && imageId == "" {
 		return xfer.ResponseErrorf("image_id is required for container/image vulnerability scan")
 	}
+	if nodeIdArg, ok := req.ControlArgs["node_id"]; ok {
+		nodeId = nodeIdArg
+	}
 	scanType := "all"
 	if scanTypeArg, ok := req.ControlArgs["scan_type"]; ok {
 		scanType = scanTypeArg
@@ -125,7 +129,7 @@ func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	log.Infof("uploading %s tar to console...", imageName)
 	// call package scanner plugin
 	go func() {
-		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId,containerId, kubernetesClusterName, containerName, scanType)
+		err := GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, kubernetesClusterName, containerName, scanType, nodeId)
 		if err != nil {
 			log.Error(err.Error())
 		}
