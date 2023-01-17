@@ -36,7 +36,7 @@ export const AWSCloudFormation = () => {
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Cloud Formation.">
+        <Step indicator={<HiViewGridAdd />} title="Cloud Formation">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect to your AWS Cloud Account via Cloud Formation. Find out more
             information by{' '}

@@ -8,6 +8,7 @@ import { AmazonECRConnector } from '../features/onboard/pages/AmazonECRConnector
 import { AWSConnector } from '../features/onboard/pages/AWSConnector';
 import { AzureConnector } from '../features/onboard/pages/AzureConnector';
 import { Connector } from '../features/onboard/pages/Connector';
+import { DockerConnector } from '../features/onboard/pages/DockerConnector';
 import { GCPConnector } from '../features/onboard/pages/GCPConnector';
 import { K8sConnector } from '../features/onboard/pages/K8sConnector';
 
@@ -40,6 +41,10 @@ export const privateRoutes: RouteObject[] = [
           {
             path: 'host/k8s',
             element: <K8sConnector />,
+          },
+          {
+            path: 'docker',
+            element: <DockerConnector />,
           },
           {
             path: 'registry/amazon-ecr',
