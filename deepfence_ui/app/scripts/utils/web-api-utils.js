@@ -1709,8 +1709,8 @@ export function getRunningNotification() {
 }
 
 export function startCVEScan(params = {}) {
-  const { nodeId, nodeType, taglist, scanType, scanThisCluster, scanThisNamespace, priority = '' } = params;
-  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_start?scope_id=${nodeId}&node_type=${nodeType}&priority=${priority}`;
+  const { nodeId, imageId, nodeType, taglist, scanType, scanThisCluster, scanThisNamespace, priority = '' } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_start?scope_id=${nodeId}&image_id=${imageId}&node_type=${nodeType}&priority=${priority}`;
   const data = {
     user_defined_tags: taglist,
     scanType,
@@ -1730,8 +1730,8 @@ export function startCVEScan(params = {}) {
 }
 
 export function stopCVEScan(params = {}) {
-  const { nodeId, nodeType } = params;
-  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_stop?scope_id=${nodeId}&node_type=${nodeType}`;
+  const { nodeId, imageId, nodeType } = params;
+  const url = `${backendElasticApiEndPoint()}/node/0/cve_scan_stop?scope_id=${nodeId}&image_id=${imageId}&node_type=${nodeType}`;
   return fetch(url, {
     credentials: 'same-origin',
     method: 'POST',
