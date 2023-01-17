@@ -1,4 +1,4 @@
-import { filter, find } from 'lodash-es';
+import { filter, find, isEmpty } from 'lodash-es';
 import { useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
@@ -630,14 +630,19 @@ const ComplianceTable = () => {
     [],
   );
   return (
-    <Table
-      size="sm"
-      data={tableData}
-      columns={columns}
-      enableRowSelection
-      onRowSelectionChange={setRowSelectionState}
-      rowSelectionState={rowSelectionState}
-    />
+    <div>
+      <div className="py-2 text-gray-500">
+        {isEmpty(rowSelectionState) ? 'No rows selected' : <div></div>}
+      </div>
+      <Table
+        size="sm"
+        data={tableData}
+        columns={columns}
+        enableRowSelection
+        onRowSelectionChange={setRowSelectionState}
+        rowSelectionState={rowSelectionState}
+      />
+    </div>
   );
 };
 
@@ -689,6 +694,7 @@ export const AWSInfraScanConfigure = () => {
         {scanType.map((type) => (
           <Button
             color="primary"
+            outline={hasTypeSelected(tabs, type) ? false : true}
             size="xs"
             key={type}
             onClick={() => {
