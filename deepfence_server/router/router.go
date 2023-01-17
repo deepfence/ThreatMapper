@@ -40,6 +40,7 @@ const (
 	ResourceScan        = "scan"
 	ResourceDiagnosis   = "diagnosis"
 	ResourceCloudNode   = "cloud-node"
+	ResourceRegistry    = "container-registry"
 )
 
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
@@ -209,6 +210,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultsHandler))
 			})
 
+			openApiDocs.AddRegistryOperations()
+			r.Route("container-registry/{type}", func(r chi.Router) {
+				r.Get("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImagesInRegistry))
+				r.Get("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
+				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.AddRegistry))
+			})
+
+			openApiDocs.AddDiagnosisOperations()
 			r.Route("/diagnosis", func(r chi.Router) {
 				r.Get("/notification", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.DiagnosticNotification))
 				r.Post("/console-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateConsoleDiagnosticLogs))

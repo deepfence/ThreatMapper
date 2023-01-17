@@ -292,3 +292,7 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, nil)
 }
+
+func (d *OpenApiDocs) AddRegistryOperations() {
+	// TODO
+}
