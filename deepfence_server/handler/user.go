@@ -237,7 +237,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
-	var inviteUserRequest InviteUserRequest
+	var inviteUserRequest model.InviteUserRequest
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &inviteUserRequest)
 	if err != nil {
@@ -302,7 +302,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		email.SendEmail()
 		message = "Invite sent"
 	}
-	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL}, Message: message})
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: model.InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL}, Message: message})
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {

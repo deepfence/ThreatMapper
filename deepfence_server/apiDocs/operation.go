@@ -1,7 +1,6 @@
 package apiDocs
 
 import (
-	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
@@ -56,7 +55,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 
 	d.AddOperation("inviteUser", http.MethodPost, "/deepfence/user/invite",
 		"Invite User", "Invite a user",
-		http.StatusOK, []string{tagUser}, bearerToken, new(handler.InviteUserRequest), model.Response{Success: true, Data: handler.InviteUserResponse{}})
+		http.StatusOK, []string{tagUser}, bearerToken, new(model.InviteUserRequest), model.Response{Success: true, Data: model.InviteUserResponse{}})
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})

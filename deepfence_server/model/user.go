@@ -186,6 +186,17 @@ type RegisterInvitedUserRequest struct {
 	Code                string `json:"code" validate:"required,uuid4" required:"true"`
 }
 
+type InviteUserRequest struct {
+	Email  string `json:"email" validate:"required,email" required:"true"`
+	Role   string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
+	Action string `json:"action" validate:"required,oneof=send-invite-email get-invite-link" required:"true" enum:"send-invite-email,get-invite-link"`
+}
+
+type InviteUserResponse struct {
+	InviteExpiryHours int32  `json:"invite_expiry_hours"`
+	InviteURL         string `json:"invite_url"`
+}
+
 type PasswordResetRequest struct {
 	Email string `json:"email" validate:"required,email" required:"true"`
 }

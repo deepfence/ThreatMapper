@@ -17,17 +17,6 @@ const (
 	UserInviteGetLink          = "get-invite-link"
 )
 
-type InviteUserRequest struct {
-	Email  string `json:"email" validate:"required,email" required:"true"`
-	Role   string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
-	Action string `json:"action" validate:"required,oneof=send-invite-email get-invite-link" required:"true" enum:"send-invite-email,get-invite-link"`
-}
-
-type InviteUserResponse struct {
-	InviteExpiryHours int32  `json:"invite_expiry_hours"`
-	InviteURL         string `json:"invite_url"`
-}
-
 func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
