@@ -24,7 +24,7 @@ class IntegrationTableView extends React.Component {
     return (
       <tr style={{ border: 'none' }}>
         <th>status</th>
-        {record.notification_type && <th> Resource </th>}
+        {record.notification_type && <th style={{minWidth: '180px'}}> Resource </th>}
         {record.email && <th>Email</th>}
         {record.channel && <th>Channel</th>}
         {record.webhook_url && <th>Webhook url</th>}
@@ -40,7 +40,7 @@ class IntegrationTableView extends React.Component {
         {record.s3_bucket && <th>S3 Bucket</th>}
         {record.folder_path && <th>S3 Folder</th>}
         {record.aws_access_key && <th>AWS Access Key</th>}
-        {record.duration_in_mins && <th>Duration</th>}
+        {record.duration_in_mins && <th style={{minWidth: '105px'}}>Duration</th>}
         {record.jira_site_url && <th>Jira Site URL </th>}
         {record.jira_project_key && <th> Jira Project Key </th>}
         {record.username && <th> Username </th>}
@@ -68,7 +68,6 @@ class IntegrationTableView extends React.Component {
     const wideColumnStyles = {
       maxWidth: '200px',
     };
-
     return recordCollection.map(record => {
       const {
         filters: {
