@@ -13,10 +13,10 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var minioClientMap map[NamespaceID]*MinioFileManager
+var minioClientMap map[NamespaceID]*minio.Client
 
 func init() {
-	minioClientMap = map[NamespaceID]*MinioFileManager{}
+	minioClientMap = map[NamespaceID]*minio.Client{}
 }
 
 type FileManager interface {
@@ -94,7 +94,7 @@ func (mfm *MinioFileManager) createBucketIfNeeded(ctx context.Context) error {
 	return err
 }
 
-func newMinioClient(endpoints DBConfigs) (*MinioFileManager, error) {
+func newMinioClient(endpoints DBConfigs) (*minio.Client, error) {
 	if endpoints.Minio == nil {
 		return nil, errors.New("no defined minio config")
 	}
@@ -102,14 +102,22 @@ func newMinioClient(endpoints DBConfigs) (*MinioFileManager, error) {
 		Creds:  credentials.NewStaticV4(endpoints.Minio.Username, endpoints.Minio.Password, ""),
 		Secure: endpoints.Minio.Secure,
 	})
-	return &MinioFileManager{client: minioClient}, err
+	return minioClient, err
 }
 
 func MinioClient(ctx context.Context) (FileManager, error) {
-	driver, err := getClient(ctx, minioClientMap, newMinioClient)
+	client, err := getClient(NewGlobalContext(), minioClientMap, newMinioClient)
 	if err != nil {
 		return nil, err
 	}
 
-	return driver, err
+	ns, err := ExtractNamespace(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &MinioFileManager{
+		client:    client,
+		namespace: string(ns),
+	}, err
 }
