@@ -56,7 +56,7 @@ CREATE TABLE public.password_reset
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     UNIQUE (code),
-    CONSTRAINT fk_created_by_user_id
+    CONSTRAINT fk_user_id
         FOREIGN KEY (user_id)
             REFERENCES users (id)
 );
@@ -66,5 +66,51 @@ CREATE TRIGGER password_reset_updated_at
     ON password_reset
     FOR EACH ROW
 EXECUTE PROCEDURE update_modified_column();
+
+CREATE TABLE public.user_invite
+(
+    id                 SERIAL PRIMARY KEY,
+    email              character varying(64)                              NOT NULL,
+    code               UUID                                               NOT NULL,
+    created_by_user_id bigint                                             NOT NULL,
+    role_id            integer                                            NOT NULL,
+    company_id         integer                                            NOT NULL,
+    accepted           boolean                  default false             NOT NULL,
+    expiry             timestamp with time zone                           NOT NULL,
+    created_at         timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at         timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    UNIQUE (email),
+    UNIQUE (code),
+    CONSTRAINT fk_created_by_user_id
+        FOREIGN KEY (created_by_user_id)
+            REFERENCES users (id),
+    CONSTRAINT fk_role
+        FOREIGN KEY (role_id)
+            REFERENCES role (id)
+);
+
+CREATE TRIGGER user_invite_updated_at
+    BEFORE UPDATE
+    ON user_invite
+    FOR EACH ROW
+EXECUTE PROCEDURE update_modified_column();
+
+CREATE TABLE public.audit_log
+(
+    id           BIGSERIAL PRIMARY KEY,
+    event        character varying(100)                             NOT NULL,
+    action       character varying(100)                             NOT NULL,
+    resources    text                     default NULL,
+    success      boolean                                            NOT NULL,
+    user_id      integer                                            NOT NULL,
+    user_role_id integer                                            NOT NULL,
+    created_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT fk_user_id
+        FOREIGN KEY (user_id)
+            REFERENCES users (id),
+    CONSTRAINT fk_role
+        FOREIGN KEY (user_role_id)
+            REFERENCES role (id)
+);
 
 COMMIT;

@@ -24,6 +24,17 @@ type ApiToken struct {
 	UpdatedAt       time.Time
 }
 
+type AuditLog struct {
+	ID         int64
+	Event      string
+	Action     string
+	Resources  sql.NullString
+	Success    bool
+	UserID     int32
+	UserRoleID int32
+	CreatedAt  time.Time
+}
+
 type Company struct {
 	ID          int32
 	Name        string
@@ -105,4 +116,17 @@ type UserGroup struct {
 	CompanyID int32
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type UserInvite struct {
+	ID              int32
+	Email           string
+	Code            uuid.UUID
+	CreatedByUserID int64
+	RoleID          int32
+	CompanyID       int32
+	Accepted        bool
+	Expiry          time.Time
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }

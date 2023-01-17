@@ -54,7 +54,7 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	user, grantType, err := h.parseRefreshToken(r.Context())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: "user not found"})
+			httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: utils.ErrorUserNotFound})
 		} else if err.Error() == "access token is revoked" {
 			httpext.JSON(w, http.StatusForbidden, model.Response{Success: false, Message: err.Error()})
 		} else {

@@ -80,6 +80,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 		// public apis
 		r.Group(func(r chi.Router) {
 			r.Post("/user/register", dfHandler.RegisterUser)
+			r.Post("/user/invite/register", dfHandler.RegisterInvitedUser)
 			r.Post("/auth/token", dfHandler.ApiAuthHandler)
 			r.Post("/user/login", dfHandler.LoginHandler)
 
@@ -118,6 +119,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Post("/auth/token/refresh", dfHandler.RefreshTokenHandler)
 
 			// manage other users
+			r.Post("/user/invite", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.InviteUser))
 			r.Route("/users/{userId}", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUser))
 				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUser))

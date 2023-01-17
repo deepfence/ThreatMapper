@@ -227,3 +227,17 @@ func GetCurrentDatetime() time.Time {
 func GetDatetimeNow() string {
 	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
 }
+
+func MapKeys(input map[string]string) []int32 {
+	keys := make([]int32, len(input))
+	i := 0
+	for k := range input {
+		key, err := strconv.ParseInt(k, 10, 32)
+		if err != nil {
+			continue
+		}
+		keys[i] = int32(key)
+		i++
+	}
+	return keys
+}

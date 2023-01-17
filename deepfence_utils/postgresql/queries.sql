@@ -276,3 +276,36 @@ WHERE pr.user_id = u.id
 DELETE
 FROM password_reset
 WHERE expiry >= $1;
+
+-- name: CreateUserInvite :one
+INSERT INTO user_invite (email, code, created_by_user_id, role_id, company_id, accepted, expiry)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING *;
+
+-- name: UpdateUserInvite :one
+UPDATE user_invite
+SET code=$1,
+    created_by_user_id=$2,
+    role_id=$3,
+    company_id=$4,
+    accepted=$5,
+    expiry=$6
+WHERE id = $7
+RETURNING *;
+
+-- name: GetUserInviteByEmail :one
+SELECT *
+FROM user_invite
+WHERE email = $1
+LIMIT 1;
+
+-- name: GetUserInviteByCode :one
+SELECT *
+FROM user_invite
+WHERE code = $1
+LIMIT 1;
+
+-- name: DeleteUserInviteByExpiry :exec
+DELETE
+FROM user_invite
+WHERE expiry >= $1;

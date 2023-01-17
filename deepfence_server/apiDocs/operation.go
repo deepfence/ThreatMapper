@@ -1,6 +1,7 @@
 package apiDocs
 
 import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
@@ -52,6 +53,13 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("verifyResetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/verify",
 		"Verify and Reset Password", "Verify code and reset the password",
 		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetVerifyRequest), model.Response{Success: true})
+
+	d.AddOperation("inviteUser", http.MethodPost, "/deepfence/user/invite",
+		"Invite User", "Invite a user",
+		http.StatusOK, []string{tagUser}, bearerToken, new(handler.InviteUserRequest), model.Response{Success: true, Data: handler.InviteUserResponse{}})
+	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
+		"Register Invited User", "Register invited user",
+		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {

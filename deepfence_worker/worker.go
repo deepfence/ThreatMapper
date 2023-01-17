@@ -81,6 +81,15 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		cronjobs.RetryScansDB,
 	)
 
+	subscribeCleanupPostgresql, err := subscribe(utils.CleanUpPostgresqlTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
+	mux.AddNoPublisherHandler(
+		utils.CleanUpPostgresqlTask, utils.CleanUpPostgresqlTask, subscribeCleanupPostgresql, cronjobs.CleanUpPostgresDB,
+	)
+
 	log.Info().Msg("Starting the consumer")
 	if err = mux.Run(context.Background()); err != nil {
 		cancel()
