@@ -211,7 +211,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			})
 
 			openApiDocs.AddRegistryOperations()
-			r.Route("container-registry/{type}", func(r chi.Router) {
+			r.Route("/container-registry", func(r chi.Router) {
 				r.Get("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImagesInRegistry))
 				r.Get("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.AddRegistry))
