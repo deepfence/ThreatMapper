@@ -109,7 +109,7 @@ module "cloud-scanner_example_single-account-ecs" {
                 color="primary"
                 className="ml-auto"
                 onClick={() => {
-                  navigate('/onboard/my-connectors');
+                  navigate('/onboard/connectors/my-connectors');
                 }}
               >
                 Go to connectors

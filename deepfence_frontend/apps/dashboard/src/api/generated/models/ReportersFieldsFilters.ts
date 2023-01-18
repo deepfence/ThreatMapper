@@ -13,53 +13,52 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ReportersContainsFilter } from './ReportersContainsFilter';
+import {
+    ReportersContainsFilterFromJSON,
+    ReportersContainsFilterFromJSONTyped,
+    ReportersContainsFilterToJSON,
+} from './ReportersContainsFilter';
+
 /**
  * 
  * @export
- * @interface ReportersLookupFilter
+ * @interface ReportersFieldsFilters
  */
-export interface ReportersLookupFilter {
+export interface ReportersFieldsFilters {
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ReportersLookupFilter
+     * @type {ReportersContainsFilter}
+     * @memberof ReportersFieldsFilters
      */
-    in_field_filter: Array<string> | null;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ReportersLookupFilter
-     */
-    node_ids: Array<string> | null;
+    contains_filter: ReportersContainsFilter;
 }
 
 /**
- * Check if a given object implements the ReportersLookupFilter interface.
+ * Check if a given object implements the ReportersFieldsFilters interface.
  */
-export function instanceOfReportersLookupFilter(value: object): boolean {
+export function instanceOfReportersFieldsFilters(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "in_field_filter" in value;
-    isInstance = isInstance && "node_ids" in value;
+    isInstance = isInstance && "contains_filter" in value;
 
     return isInstance;
 }
 
-export function ReportersLookupFilterFromJSON(json: any): ReportersLookupFilter {
-    return ReportersLookupFilterFromJSONTyped(json, false);
+export function ReportersFieldsFiltersFromJSON(json: any): ReportersFieldsFilters {
+    return ReportersFieldsFiltersFromJSONTyped(json, false);
 }
 
-export function ReportersLookupFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersLookupFilter {
+export function ReportersFieldsFiltersFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersFieldsFilters {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'in_field_filter': json['in_field_filter'],
-        'node_ids': json['node_ids'],
+        'contains_filter': ReportersContainsFilterFromJSON(json['contains_filter']),
     };
 }
 
-export function ReportersLookupFilterToJSON(value?: ReportersLookupFilter | null): any {
+export function ReportersFieldsFiltersToJSON(value?: ReportersFieldsFilters | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +67,7 @@ export function ReportersLookupFilterToJSON(value?: ReportersLookupFilter | null
     }
     return {
         
-        'in_field_filter': value.in_field_filter,
-        'node_ids': value.node_ids,
+        'contains_filter': ReportersContainsFilterToJSON(value.contains_filter),
     };
 }
 

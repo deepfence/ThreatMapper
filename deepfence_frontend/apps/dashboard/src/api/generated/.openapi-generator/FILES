@@ -5,6 +5,7 @@ apis/CloudResourcesApi.ts
 apis/ComplianceApi.ts
 apis/ControlsApi.ts
 apis/DiagnosisApi.ts
+apis/LookupApi.ts
 apis/MalwareScanApi.ts
 apis/SecretScanApi.ts
 apis/ThreatApi.ts
@@ -58,6 +59,8 @@ models/ReportColumn.ts
 models/ReportMetadataRow.ts
 models/ReportRow.ts
 models/ReportTable.ts
+models/ReportersContainsFilter.ts
+models/ReportersFieldsFilters.ts
 models/ReportersLookupFilter.ts
 models/ReportersNodeInfo.ts
 models/ReportersProviderThreatGraph.ts

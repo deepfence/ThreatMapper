@@ -1,12 +1,11 @@
-import { Outlet, redirect } from 'react-router-dom';
+import { LoaderFunction, Outlet, redirect } from 'react-router-dom';
 
 import { OnboardAppHeader } from '../components/OnBoardAppHeader';
 
-export const rootOnboardLoader = async ({ request }: any) => {
-  const index = request.url.lastIndexOf('/onboard');
-  const subpath = request.url.substring(index);
-  if (subpath === '/onboard' || subpath === '/onboard/') {
-    return redirect('/onboard/add-connectors', 302);
+export const rootOnboardLoader: LoaderFunction = async ({ request }) => {
+  const url = new URL(request.url);
+  if (['/onboard', '/onboard/'].includes(url.pathname)) {
+    return redirect('/onboard/connectors', 302);
   }
   return null;
 };

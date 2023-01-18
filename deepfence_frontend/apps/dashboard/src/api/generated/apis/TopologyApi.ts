@@ -18,11 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ApiDocsGraphResult,
-  ModelContainer,
-  ModelHost,
-  ModelProcess,
   ModelRawReport,
-  ReportersLookupFilter,
   ReportersTopologyFilters,
 } from '../models';
 import {
@@ -32,30 +28,26 @@ import {
     ApiDocsFailureResponseToJSON,
     ApiDocsGraphResultFromJSON,
     ApiDocsGraphResultToJSON,
-    ModelContainerFromJSON,
-    ModelContainerToJSON,
-    ModelHostFromJSON,
-    ModelHostToJSON,
-    ModelProcessFromJSON,
-    ModelProcessToJSON,
     ModelRawReportFromJSON,
     ModelRawReportToJSON,
-    ReportersLookupFilterFromJSON,
-    ReportersLookupFilterToJSON,
     ReportersTopologyFiltersFromJSON,
     ReportersTopologyFiltersToJSON,
 } from '../models';
 
-export interface GetContainersRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+export interface GetContainersTopologyGraphRequest {
+    reportersTopologyFilters?: ReportersTopologyFilters;
 }
 
-export interface GetHostsRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+export interface GetHostsTopologyGraphRequest {
+    reportersTopologyFilters?: ReportersTopologyFilters;
 }
 
-export interface GetProcessesRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+export interface GetKubernetesTopologyGraphRequest {
+    reportersTopologyFilters?: ReportersTopologyFilters;
+}
+
+export interface GetPodsTopologyGraphRequest {
+    reportersTopologyFilters?: ReportersTopologyFilters;
 }
 
 export interface GetTopologyGraphRequest {
@@ -74,52 +66,68 @@ export interface IngestAgentReportRequest {
  */
 export interface TopologyApiInterface {
     /**
-     * Retrieve all the data associated with containers
-     * @summary Retrieve Containers data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * Retrieve the full topology graph associated with the account from Containers
+     * @summary Get Containers Topology Graph
+     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getContainersRaw(requestParameters: GetContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainer>>>;
+    getContainersTopologyGraphRaw(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
 
     /**
-     * Retrieve all the data associated with containers
-     * Retrieve Containers data
+     * Retrieve the full topology graph associated with the account from Containers
+     * Get Containers Topology Graph
      */
-    getContainers(requestParameters: GetContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainer>>;
+    getContainersTopologyGraph(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
 
     /**
-     * Retrieve all the data associated with hosts
-     * @summary Retrieve Hosts data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * Retrieve the full topology graph associated with the account from Hosts
+     * @summary Get Hosts Topology Graph
+     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getHostsRaw(requestParameters: GetHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelHost>>>;
+    getHostsTopologyGraphRaw(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
 
     /**
-     * Retrieve all the data associated with hosts
-     * Retrieve Hosts data
+     * Retrieve the full topology graph associated with the account from Hosts
+     * Get Hosts Topology Graph
      */
-    getHosts(requestParameters: GetHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>>;
+    getHostsTopologyGraph(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
 
     /**
-     * Retrieve all the data associated with processes
-     * @summary Retrieve Processes data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * Retrieve the full topology graph associated with the account from Kubernetes
+     * @summary Get Kubernetes Topology Graph
+     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    getProcessesRaw(requestParameters: GetProcessesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelProcess>>>;
+    getKubernetesTopologyGraphRaw(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
 
     /**
-     * Retrieve all the data associated with processes
-     * Retrieve Processes data
+     * Retrieve the full topology graph associated with the account from Kubernetes
+     * Get Kubernetes Topology Graph
      */
-    getProcesses(requestParameters: GetProcessesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelProcess>>;
+    getKubernetesTopologyGraph(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
+
+    /**
+     * Retrieve the full topology graph associated with the account from Pods
+     * @summary Get Pods Topology Graph
+     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TopologyApiInterface
+     */
+    getPodsTopologyGraphRaw(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>>;
+
+    /**
+     * Retrieve the full topology graph associated with the account from Pods
+     * Get Pods Topology Graph
+     */
+    getPodsTopologyGraph(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult>;
 
     /**
      * Retrieve the full topology graph associated with the account
@@ -161,10 +169,10 @@ export interface TopologyApiInterface {
 export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface {
 
     /**
-     * Retrieve all the data associated with containers
-     * Retrieve Containers data
+     * Retrieve the full topology graph associated with the account from Containers
+     * Get Containers Topology Graph
      */
-    async getContainersRaw(requestParameters: GetContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainer>>> {
+    async getContainersTopologyGraphRaw(requestParameters: GetContainersTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -180,30 +188,30 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/lookup/containers`,
+            path: `/deepfence/graph/topology/containers`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
     }
 
     /**
-     * Retrieve all the data associated with containers
-     * Retrieve Containers data
+     * Retrieve the full topology graph associated with the account from Containers
+     * Get Containers Topology Graph
      */
-    async getContainers(requestParameters: GetContainersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainer>> {
-        const response = await this.getContainersRaw(requestParameters, initOverrides);
+    async getContainersTopologyGraph(requestParameters: GetContainersTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+        const response = await this.getContainersTopologyGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Retrieve all the data associated with hosts
-     * Retrieve Hosts data
+     * Retrieve the full topology graph associated with the account from Hosts
+     * Get Hosts Topology Graph
      */
-    async getHostsRaw(requestParameters: GetHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelHost>>> {
+    async getHostsTopologyGraphRaw(requestParameters: GetHostsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -219,30 +227,30 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/lookup/hosts`,
+            path: `/deepfence/graph/topology/hosts`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelHostFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
     }
 
     /**
-     * Retrieve all the data associated with hosts
-     * Retrieve Hosts data
+     * Retrieve the full topology graph associated with the account from Hosts
+     * Get Hosts Topology Graph
      */
-    async getHosts(requestParameters: GetHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>> {
-        const response = await this.getHostsRaw(requestParameters, initOverrides);
+    async getHostsTopologyGraph(requestParameters: GetHostsTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+        const response = await this.getHostsTopologyGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Retrieve all the data associated with processes
-     * Retrieve Processes data
+     * Retrieve the full topology graph associated with the account from Kubernetes
+     * Get Kubernetes Topology Graph
      */
-    async getProcessesRaw(requestParameters: GetProcessesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelProcess>>> {
+    async getKubernetesTopologyGraphRaw(requestParameters: GetKubernetesTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -258,22 +266,61 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/lookup/processes`,
+            path: `/deepfence/graph/topology/kubernetes`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelProcessFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
     }
 
     /**
-     * Retrieve all the data associated with processes
-     * Retrieve Processes data
+     * Retrieve the full topology graph associated with the account from Kubernetes
+     * Get Kubernetes Topology Graph
      */
-    async getProcesses(requestParameters: GetProcessesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelProcess>> {
-        const response = await this.getProcessesRaw(requestParameters, initOverrides);
+    async getKubernetesTopologyGraph(requestParameters: GetKubernetesTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+        const response = await this.getKubernetesTopologyGraphRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve the full topology graph associated with the account from Pods
+     * Get Pods Topology Graph
+     */
+    async getPodsTopologyGraphRaw(requestParameters: GetPodsTopologyGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ApiDocsGraphResult>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/graph/topology/pods`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Retrieve the full topology graph associated with the account from Pods
+     * Get Pods Topology Graph
+     */
+    async getPodsTopologyGraph(requestParameters: GetPodsTopologyGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ApiDocsGraphResult> {
+        const response = await this.getPodsTopologyGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -297,7 +344,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/graph/topology`,
+            path: `/deepfence/graph/topology/`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
