@@ -18,7 +18,6 @@ const (
 	tagSecretScan      = "Secret Scan"
 	tagMalwareScan     = "Malware Scan"
 	tagVulnerability   = "Vulnerability"
-	tagMalwareScan     = "Malware Scan"
 	tagControls        = "Controls"
 	tagDiagnosis       = "Diagnosis"
 
