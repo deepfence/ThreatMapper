@@ -1,3 +1,4 @@
+import { HiSwitchHorizontal } from 'react-icons/hi';
 import { useLocation } from 'react-router-dom';
 import { Button, Card, Separator, Typography } from 'ui-components';
 
@@ -41,6 +42,7 @@ const scanTypes: ScanTypeListProps[] = [
 
 const SelectedAccountCard = () => {
   const { mode } = useTheme();
+  const { navigate } = usePageNavigation();
   return (
     <div className="flex w-fit p-3 pt-0 items-center mb-8">
       <span className="mr-6">
@@ -59,8 +61,15 @@ const SelectedAccountCard = () => {
         </span>
       </div>
       <div>
-        <Button className="ml-auto" color="primary" size="xs" outline>
-          Swith connector
+        <Button
+          className="ml-auto bg-gray-100 px-2 py-1"
+          size="sm"
+          startIcon={<HiSwitchHorizontal />}
+          onClick={() => {
+            navigate('/onboard/connectors/my-connectors');
+          }}
+        >
+          Switch connector
         </Button>
       </div>
     </div>
@@ -104,7 +113,6 @@ const ScanType = () => {
                 size="xs"
                 color="primary"
                 onClick={() => {
-                  // redirect: '/onboard/scan/configure/secret',
                   goNext(`${location.pathname}${redirect}`);
                 }}
               >
