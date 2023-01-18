@@ -28,6 +28,7 @@ const (
 	PermissionStart    = "start"
 	PermissionStop     = "stop"
 	PermissionGenerate = "generate"
+	PermissionRegister = "register"
 
 	//	API RBAC Resources
 
@@ -38,6 +39,7 @@ const (
 	ResourceScanReport  = "scan-report"
 	ResourceScan        = "scan"
 	ResourceDiagnosis   = "diagnosis"
+	ResourceCloudNode   = "cloud-node"
 )
 
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
@@ -162,6 +164,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/secret-scan-logs", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestSecretScanStatusHandler))
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestComplianceReportHandler))
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestCloudComplianceReportHandler))
+			})
+
+			r.Route("/cloud-node", func(r chi.Router) {
+				r.Post("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionRegister, dfHandler.RegisterCloudNodeAccountHandler))
+				r.Post("/accounts/list", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
 			})
 
 			r.Route("/scan/start", func(r chi.Router) {

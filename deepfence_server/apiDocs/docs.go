@@ -14,6 +14,7 @@ const (
 	tagCompliance      = "Compliance"
 	tagCloudCompliance = "Cloud Compliance"
 	tagCloudResources  = "Cloud Resources"
+	tagCloudNodes      = "Cloud Nodes"
 	tagTopology        = "Topology"
 	tagLookup          = "Lookup"
 	tagThreat          = "Threat"

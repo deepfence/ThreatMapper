@@ -127,6 +127,15 @@ func (d *OpenApiDocs) AddControlsOperations() {
 		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls.AgentControls))
 }
 
+func (d *OpenApiDocs) AddCloudNodeOperations() {
+	d.AddOperation("registerCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/account",
+		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
+		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(model.CloudNodeAccountRegisterReq), new(model.CloudNodeAccountRegisterResp))
+	d.AddOperation("listCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/accounts/list",
+		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
+		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(model.CloudNodeAccountsListReq), new(model.CloudNodeAccountsListResp))
+}
+
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",

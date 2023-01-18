@@ -57,6 +57,26 @@ func StringToResourceType(s string) ScanResource {
 	return -1
 }
 
+type CloudProvider int
+
+const (
+	AWS CloudProvider = iota
+	GCP
+	Azure
+)
+
+func StringToCloudProvider(s string) CloudProvider {
+	switch s {
+	case "aws":
+		return AWS
+	case "gcp":
+		return GCP
+	case "azure":
+		return Azure
+	}
+	return -1
+}
+
 type StartVulnerabilityScanRequest struct {
 	NodeId   string            `json:"node_id" required:"true"`
 	NodeType ScanResource      `json:"node_type" required:"true"`
