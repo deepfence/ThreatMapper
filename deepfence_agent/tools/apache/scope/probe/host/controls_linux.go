@@ -101,9 +101,11 @@ func (r *Reporter) handleGenerateSBOM(req xfer.Request) xfer.Response {
 	if imageNameArg, ok := req.ControlArgs["image_name"]; ok {
 		imageName = imageNameArg
 	}
+	
 	if containerNameArg, ok := req.ControlArgs["container_name"]; ok {
 		containerName = containerNameArg
 	}
+	log.Error("image name",imageName,containerName)
 	if kubernetesClusterNameArg, ok := req.ControlArgs["kubernetes_cluster_name"]; ok {
 		kubernetesClusterName = kubernetesClusterNameArg
 	}
