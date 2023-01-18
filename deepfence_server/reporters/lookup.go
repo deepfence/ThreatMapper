@@ -38,6 +38,12 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 			return nil, err
 		}
 		hosts[i].Containers = containers
+
+		container_images, err := getHostContainerImages(ctx, hosts[i])
+		if err != nil {
+			return nil, err
+		}
+		hosts[i].ContainerImages = container_images
 	}
 	return hosts, nil
 }
@@ -201,6 +207,12 @@ func getHostContainers(ctx context.Context, host model.Host) ([]model.Container,
 		[]string{host.ID})
 }
 
+func getHostContainerImages(ctx context.Context, host model.Host) ([]model.ContainerImage, error) {
+	return getIndirectFromIDs[model.ContainerImage](ctx,
+		`MATCH (n:Node) -[:HOSTS]-> (m:ContainerImage) WHERE n.node_id IN $ids RETURN m`,
+		[]string{host.ID})
+}
+
 func getHostProcesses(ctx context.Context, host model.Host) ([]model.Process, error) {
 	return getIndirectFromIDs[model.Process](ctx,
 		`MATCH (n:Node) -[:HOSTS]-> (m:Process) WHERE n.node_id IN $ids RETURN m`,
@@ -208,6 +220,12 @@ func getHostProcesses(ctx context.Context, host model.Host) ([]model.Process, er
 }
 
 func getContainerProcesses(ctx context.Context, container model.Container) ([]model.Process, error) {
+	return getIndirectFromIDs[model.Process](ctx,
+		`MATCH (n:Node) -[:HOSTS]-> (m:Process) WHERE n.node_id IN $ids RETURN m`,
+		[]string{container.ID})
+}
+
+func getContainerContainerImages(ctx context.Context, container model.Container) ([]model.Process, error) {
 	return getIndirectFromIDs[model.Process](ctx,
 		`MATCH (n:Node) -[:HOSTS]-> (m:Process) WHERE n.node_id IN $ids RETURN m`,
 		[]string{container.ID})

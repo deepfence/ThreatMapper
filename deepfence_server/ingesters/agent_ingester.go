@@ -127,15 +127,17 @@ func (nc *neo4jIngester) runEnqueueReport() {
 }
 
 type ReportIngestionData struct {
-	Process_batch   []map[string]string
-	Host_batch      []map[string]string
-	Container_batch []map[string]string
-	Pod_batch       []map[string]string
+	Process_batch         []map[string]string
+	Host_batch            []map[string]string
+	Container_batch       []map[string]string
+	Pod_batch             []map[string]string
+	Container_image_batch []map[string]string
 
-	Process_edges_batch   []map[string]interface{}
-	Container_edges_batch []map[string]interface{}
-	Pod_edges_batch       []map[string]interface{}
-	Endpoint_edges_batch  []map[string]interface{}
+	Process_edges_batch        []map[string]interface{}
+	Container_edges_batch      []map[string]interface{}
+	Pod_edges_batch            []map[string]interface{}
+	Endpoint_edges_batch       []map[string]interface{}
+	Container_image_edge_batch []map[string]interface{}
 
 	//Endpoint_batch []map[string]string
 	//Endpoint_edges []map[string]string
@@ -157,11 +159,13 @@ func (nd *ReportIngestionData) merge(other *ReportIngestionData) {
 	nd.Process_batch = append(nd.Process_batch, other.Process_batch...)
 	nd.Host_batch = append(nd.Host_batch, other.Host_batch...)
 	nd.Container_batch = append(nd.Container_batch, other.Container_batch...)
+	nd.Container_image_batch = append(nd.Container_image_batch, other.Container_image_batch...)
 	nd.Pod_batch = append(nd.Pod_batch, other.Pod_batch...)
 	nd.Process_edges_batch = append(nd.Process_edges_batch, other.Process_edges_batch...)
 	nd.Container_edges_batch = append(nd.Container_edges_batch, other.Container_edges_batch...)
 	nd.Pod_edges_batch = append(nd.Pod_edges_batch, other.Pod_edges_batch...)
 	nd.Endpoint_edges_batch = append(nd.Endpoint_edges_batch, other.Endpoint_edges_batch...)
+	nd.Container_image_edge_batch = append(nd.Container_image_edge_batch, other.Container_image_edge_batch...)
 	//nd.Endpoint_batch = append(nd.Endpoint_batch, other.Endpoint_batch...)
 	//nd.Endpoint_edges = append(nd.Endpoint_edges, other.Endpoint_edges...)
 	nd.Hosts = append(nd.Hosts, other.Hosts...)
@@ -354,23 +358,40 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		container_edges_batch[host] = append(container_edges_batch[host], node_info["node_id"])
 	}
 
-	pod_batch := make([]map[string]string, 0, len(rpt.Pod.Nodes))
-	pod_edges_batch := map[string][]string{}
-	for _, n := range rpt.Pod.Nodes {
+	container_image_batch := make([]map[string]string, 0, len(rpt.Container.Nodes))
+	container_image_edges_batch := map[string][]string{}
+	for _, n := range rpt.ContainerImage.Nodes {
 		node_info := n.ToDataMap()
 		host, ok := node_info["host_name"]
 		if !ok {
 			hni, ok := node_info["host_node_id"]
-			if ok {
-				host = extractHostFromHostNodeID(hni)
-			} else {
-				host, ok = resolvers.get_host(node_info["kubernetes_ip"])
-				if !ok {
-					continue
-				}
+			if !ok {
+				continue
 			}
+			host = extractHostFromHostNodeID(hni)
 		}
-		node_info["host_name"] = host
+		container_image_batch = append(container_image_batch, node_info)
+		container_image_edges_batch[host] = append(container_image_edges_batch[host], node_info["node_id"])
+	}
+
+	pod_batch := make([]map[string]string, 0, len(rpt.Pod.Nodes))
+	log.Error().Msgf("Pods: %v", rpt.Pod)
+	pod_edges_batch := map[string][]string{}
+	for _, n := range rpt.Pod.Nodes {
+		node_info := n.ToDataMap()
+		host, _ := node_info["host_name"]
+		//if !ok {
+		//	hni, ok := node_info["host_node_id"]
+		//	if ok {
+		//		host = extractHostFromHostNodeID(hni)
+		//	} else {
+		//		host, ok = resolvers.get_host(node_info["kubernetes_ip"])
+		//		if !ok {
+		//			continue
+		//		}
+		//	}
+		//}
+		//node_info["host_name"] = host
 		pod_batch = append(pod_batch, node_info)
 		pod_edges_batch[host] = append(pod_edges_batch[host], node_info["node_id"])
 	}
@@ -378,14 +399,16 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	return ReportIngestionData{
 		Endpoint_edges_batch: endpoint_edges_batch,
 
-		Process_batch:   process_batch,
-		Host_batch:      host_batch,
-		Container_batch: container_batch,
-		Pod_batch:       pod_batch,
+		Process_batch:         process_batch,
+		Host_batch:            host_batch,
+		Container_batch:       container_batch,
+		Pod_batch:             pod_batch,
+		Container_image_batch: container_image_batch,
 
-		Process_edges_batch:   concatMaps(process_edges_batch),
-		Container_edges_batch: concatMaps(container_edges_batch),
-		Pod_edges_batch:       concatMaps(pod_edges_batch),
+		Process_edges_batch:        concatMaps(process_edges_batch),
+		Container_edges_batch:      concatMaps(container_edges_batch),
+		Pod_edges_batch:            concatMaps(pod_edges_batch),
+		Container_image_edge_batch: concatMaps(container_image_edges_batch),
 
 		//Endpoint_batch: endpoint_batch,
 		//Endpoint_edges: endpoint_edges,
@@ -430,6 +453,10 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 		return err
 	}
 
+	if _, err := tx.Run("UNWIND $batch as row MERGE (n:ContainerImage{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Container_image_batch}); err != nil {
+		return err
+	}
+
 	if _, err := tx.Run("UNWIND $batch as row MERGE (n:Pod{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
 		return err
 	}
@@ -446,6 +473,10 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	//}
 
 	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:Container{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Container_edges_batch}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.source}) WITH n, row UNWIND row.destinations as dest MATCH (m:ContainerImage{node_id: dest}) MERGE (n)-[:HOSTS]->(m)", map[string]interface{}{"batch": batches.Container_image_edge_batch}); err != nil {
 		return err
 	}
 
@@ -577,6 +608,7 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 		return err
 	}
 
+	tx.Run("CREATE CONSTRAINT ON (n:ContainerImage) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
