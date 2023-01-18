@@ -7,8 +7,12 @@ Method | HTTP request | Description
 [**DeleteCurrentUser**](UserApi.md#DeleteCurrentUser) | **Delete** /deepfence/user | Delete Current User
 [**GetApiTokens**](UserApi.md#GetApiTokens) | **Get** /deepfence/api-token | Get User&#39;s API Tokens
 [**GetCurrentUser**](UserApi.md#GetCurrentUser) | **Get** /deepfence/user | Get Current User
+[**InviteUser**](UserApi.md#InviteUser) | **Post** /deepfence/user/invite | Invite User
+[**RegisterInvitedUser**](UserApi.md#RegisterInvitedUser) | **Post** /deepfence/user/invite/register | Register Invited User
 [**RegisterUser**](UserApi.md#RegisterUser) | **Post** /deepfence/user/register | Register User
+[**ResetPasswordRequest**](UserApi.md#ResetPasswordRequest) | **Post** /deepfence/user/reset-password/request | Reset Password Request
 [**UpdateCurrentUser**](UserApi.md#UpdateCurrentUser) | **Put** /deepfence/user | Update Current User
+[**VerifyResetPasswordRequest**](UserApi.md#VerifyResetPasswordRequest) | **Post** /deepfence/user/reset-password/verify | Verify and Reset Password
 
 
 
@@ -193,6 +197,138 @@ Other parameters are passed through a pointer to a apiGetCurrentUserRequest stru
 [[Back to README]](../README.md)
 
 
+## InviteUser
+
+> ModelResponse InviteUser(ctx).ModelInviteUserRequest(modelInviteUserRequest).Execute()
+
+Invite User
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    modelInviteUserRequest := *openapiclient.NewModelInviteUserRequest("Action_example", "Email_example", "Role_example") // ModelInviteUserRequest |  (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.UserApi.InviteUser(context.Background()).ModelInviteUserRequest(modelInviteUserRequest).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `UserApi.InviteUser``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `InviteUser`: ModelResponse
+    fmt.Fprintf(os.Stdout, "Response from `UserApi.InviteUser`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiInviteUserRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **modelInviteUserRequest** | [**ModelInviteUserRequest**](ModelInviteUserRequest.md) |  | 
+
+### Return type
+
+[**ModelResponse**](ModelResponse.md)
+
+### Authorization
+
+[bearer_token](../README.md#bearer_token)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## RegisterInvitedUser
+
+> ModelResponse RegisterInvitedUser(ctx).ModelRegisterInvitedUserRequest(modelRegisterInvitedUserRequest).Execute()
+
+Register Invited User
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    modelRegisterInvitedUserRequest := *openapiclient.NewModelRegisterInvitedUserRequest("Code_example", "FirstName_example", false, "LastName_example", "Password_example") // ModelRegisterInvitedUserRequest |  (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.UserApi.RegisterInvitedUser(context.Background()).ModelRegisterInvitedUserRequest(modelRegisterInvitedUserRequest).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `UserApi.RegisterInvitedUser``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `RegisterInvitedUser`: ModelResponse
+    fmt.Fprintf(os.Stdout, "Response from `UserApi.RegisterInvitedUser`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiRegisterInvitedUserRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **modelRegisterInvitedUserRequest** | [**ModelRegisterInvitedUserRequest**](ModelRegisterInvitedUserRequest.md) |  | 
+
+### Return type
+
+[**ModelResponse**](ModelResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
 ## RegisterUser
 
 > ModelResponse RegisterUser(ctx).ModelUserRegisterRequest(modelUserRegisterRequest).Execute()
@@ -240,6 +376,72 @@ Other parameters are passed through a pointer to a apiRegisterUserRequest struct
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **modelUserRegisterRequest** | [**ModelUserRegisterRequest**](ModelUserRegisterRequest.md) |  | 
+
+### Return type
+
+[**ModelResponse**](ModelResponse.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## ResetPasswordRequest
+
+> ModelResponse ResetPasswordRequest(ctx).ModelPasswordResetRequest(modelPasswordResetRequest).Execute()
+
+Reset Password Request
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    modelPasswordResetRequest := *openapiclient.NewModelPasswordResetRequest("Email_example") // ModelPasswordResetRequest |  (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.UserApi.ResetPasswordRequest(context.Background()).ModelPasswordResetRequest(modelPasswordResetRequest).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `UserApi.ResetPasswordRequest``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `ResetPasswordRequest`: ModelResponse
+    fmt.Fprintf(os.Stdout, "Response from `UserApi.ResetPasswordRequest`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiResetPasswordRequestRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **modelPasswordResetRequest** | [**ModelPasswordResetRequest**](ModelPasswordResetRequest.md) |  | 
 
 ### Return type
 
@@ -314,6 +516,72 @@ Name | Type | Description  | Notes
 ### Authorization
 
 [bearer_token](../README.md#bearer_token)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## VerifyResetPasswordRequest
+
+> ModelResponse VerifyResetPasswordRequest(ctx).ModelPasswordResetVerifyRequest(modelPasswordResetVerifyRequest).Execute()
+
+Verify and Reset Password
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "./openapi"
+)
+
+func main() {
+    modelPasswordResetVerifyRequest := *openapiclient.NewModelPasswordResetVerifyRequest("Code_example", "Password_example") // ModelPasswordResetVerifyRequest |  (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.UserApi.VerifyResetPasswordRequest(context.Background()).ModelPasswordResetVerifyRequest(modelPasswordResetVerifyRequest).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `UserApi.VerifyResetPasswordRequest``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `VerifyResetPasswordRequest`: ModelResponse
+    fmt.Fprintf(os.Stdout, "Response from `UserApi.VerifyResetPasswordRequest`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiVerifyResetPasswordRequestRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **modelPasswordResetVerifyRequest** | [**ModelPasswordResetVerifyRequest**](ModelPasswordResetVerifyRequest.md) |  | 
+
+### Return type
+
+[**ModelResponse**](ModelResponse.md)
+
+### Authorization
+
+No authorization required
 
 ### HTTP request headers
 
