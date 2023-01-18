@@ -230,35 +230,37 @@ interface IconProps extends VariantProps<typeof iconCva> {
 
 const StartIcon = ({ id, startIcon, endIcon, size }: IconProps) => {
   return (
-    <IconContext.Provider
-      data-testid={`button-icon-start-${id}`}
-      value={{
-        className: iconCva({
-          size,
-          withStartIcon: !!startIcon,
-          withEndIcon: !!endIcon,
-        }),
-      }}
-    >
-      {startIcon}
-    </IconContext.Provider>
+    <span data-testid={`button-icon-start-${id}`}>
+      <IconContext.Provider
+        value={{
+          className: iconCva({
+            size,
+            withStartIcon: !!startIcon,
+            withEndIcon: !!endIcon,
+          }),
+        }}
+      >
+        {startIcon}
+      </IconContext.Provider>
+    </span>
   );
 };
 
 const EndIcon = ({ id, size, startIcon, endIcon }: IconProps) => {
   return (
-    <IconContext.Provider
-      data-testid={`button-icon-end-${id}`}
-      value={{
-        className: iconCva({
-          size,
-          withStartIcon: !!startIcon,
-          withEndIcon: !!endIcon,
-        }),
-      }}
-    >
-      {endIcon}
-    </IconContext.Provider>
+    <span data-testid={`button-icon-end-${id}`}>
+      <IconContext.Provider
+        value={{
+          className: iconCva({
+            size,
+            withStartIcon: !!startIcon,
+            withEndIcon: !!endIcon,
+          }),
+        }}
+      >
+        {endIcon}
+      </IconContext.Provider>
+    </span>
   );
 };
 
