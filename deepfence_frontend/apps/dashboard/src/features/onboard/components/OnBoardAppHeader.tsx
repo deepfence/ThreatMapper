@@ -11,10 +11,10 @@ import {
   Typography,
 } from 'ui-components';
 
-import LogoDeepfenceDarkBlue from '../../../assets/logo-deepfence-dark-blue.svg';
-import { useTheme } from '../../../theme/ThemeContext';
-import storage from '../../../utils/storage';
-import { usePageNavigation } from '../../../utils/usePageNavigation';
+import LogoDeepfenceDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
+import { useTheme } from '@/theme/ThemeContext';
+import storage from '@/utils/storage';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const OnboardAppHeader = () => {
   const { navigate } = usePageNavigation();

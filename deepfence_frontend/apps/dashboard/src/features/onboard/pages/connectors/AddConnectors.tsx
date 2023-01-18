@@ -3,19 +3,19 @@ import { IconContext } from 'react-icons';
 import { HiOutlineArrowCircleRight } from 'react-icons/hi';
 import { Card, Typography } from 'ui-components';
 
-import LogoAws from '../../../../assets/logo-aws.svg';
-import LogoAwsWhite from '../../../../assets/logo-aws-white.svg';
-import LogoAzure from '../../../../assets/logo-azure.svg';
-import LogoAzureRegistry from '../../../../assets/logo-azure-registry.svg';
-import LogoCloudConnector from '../../../../assets/logo-cloud-connector.svg';
-import LogoDocker from '../../../../assets/logo-docker.svg';
-import LogoGoogle from '../../../../assets/logo-google.svg';
-import LogoHostConnector from '../../../../assets/logo-host-connector.svg';
-import LogoK8 from '../../../../assets/logo-k8.svg';
-import LogoLinux from '../../../../assets/logo-linux.svg';
-import LogoRegistryConnector from '../../../../assets/logo-registry-connector.svg';
-import { useTheme } from '../../../../theme/ThemeContext';
-import { usePageNavigation } from '../../../../utils/usePageNavigation';
+import LogoAws from '@/assets/logo-aws.svg';
+import LogoAwsWhite from '@/assets/logo-aws-white.svg';
+import LogoAzure from '@/assets/logo-azure.svg';
+import LogoAzureRegistry from '@/assets/logo-azure-registry.svg';
+import LogoCloudConnector from '@/assets/logo-cloud-connector.svg';
+import LogoDocker from '@/assets/logo-docker.svg';
+import LogoGoogle from '@/assets/logo-google.svg';
+import LogoHostConnector from '@/assets/logo-host-connector.svg';
+import LogoK8 from '@/assets/logo-k8.svg';
+import LogoLinux from '@/assets/logo-linux.svg';
+import LogoRegistryConnector from '@/assets/logo-registry-connector.svg';
+import { useTheme } from '@/theme/ThemeContext';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 interface CardConnectProps {
   path: string;

@@ -1,6 +1,6 @@
 import { LoaderFunction, Outlet, redirect } from 'react-router-dom';
 
-import { OnboardAppHeader } from '../components/OnBoardAppHeader';
+import { OnboardAppHeader } from '@/features/onboard/components/OnBoardAppHeader';
 
 export const rootOnboardLoader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);

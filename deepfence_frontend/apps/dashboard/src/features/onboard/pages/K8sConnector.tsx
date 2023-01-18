@@ -1,8 +1,8 @@
 import { Button } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { K8ConnectorForm } from '../components/connectors/hosts/K8ConnectorForm';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { K8ConnectorForm } from '@/features/onboard/components/connectors/hosts/K8ConnectorForm';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const K8sConnector = () => {
   const { goBack } = usePageNavigation();

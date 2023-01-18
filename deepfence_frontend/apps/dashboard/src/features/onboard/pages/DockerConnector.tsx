@@ -1,8 +1,8 @@
 import { Button } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { DockerConnectorForm } from '../components/connectors/hosts/DockerConnectorForm';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { DockerConnectorForm } from '@/features/onboard/components/connectors/hosts/DockerConnectorForm';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const DockerConnector = () => {
   const { goBack } = usePageNavigation();

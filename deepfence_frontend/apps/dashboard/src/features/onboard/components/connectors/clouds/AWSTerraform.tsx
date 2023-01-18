@@ -3,8 +3,8 @@ import { memo } from 'react';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Button, Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
-import { usePageNavigation } from '../../../../../utils/usePageNavigation';
+import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const AWSTerraform = memo(() => {
   const { navigate } = usePageNavigation();

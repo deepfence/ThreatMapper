@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { Card } from 'ui-components';
 
-import LoginBackground from '../../../assets/background-login.svg';
+import LoginBackground from '@/assets/background-login.svg';
 
 export const AuthLayout = () => {
   return (

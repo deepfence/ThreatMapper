@@ -1,8 +1,8 @@
 import { Button } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { LinuxConnectorForm } from '../components/connectors/hosts/LinuxConnectorForm';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { LinuxConnectorForm } from '@/features/onboard/components/connectors/hosts/LinuxConnectorForm';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const LinuxConnector = () => {
   const { goBack } = usePageNavigation();

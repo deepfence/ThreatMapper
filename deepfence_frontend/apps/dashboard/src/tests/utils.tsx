@@ -2,7 +2,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { rest } from 'msw';
 import React, { FC, ReactElement } from 'react';
 
-import { ThemeProvider, useThemeMode } from '../theme/ThemeContext';
+import { ThemeProvider, useThemeMode } from '@/theme/ThemeContext';
 
 export const handlers = [
   rest.get('*/api', (req, res, ctx) => {
