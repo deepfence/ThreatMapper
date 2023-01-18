@@ -24,6 +24,11 @@ type Fruit = {
 const Template: ComponentStory<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
 
+  const checkboxRow = getRowSelectionColumn(columnHelper, {
+    size: 100,
+    minSize: 100,
+    maxSize: 100,
+  });
   const columns = useMemo(
     () => [
       columnHelper.accessor('id', {
@@ -42,6 +47,9 @@ const Template: ComponentStory<typeof Table<Fruit>> = (args) => {
     ],
     [],
   );
+  if (args.enableRowSelection) {
+    columns.unshift(checkboxRow);
+  }
   return (
     <Table
       {...args}
@@ -73,6 +81,11 @@ Default.args = {};
 export const SmallTable = Template.bind({});
 SmallTable.args = {
   size: 'sm',
+  enableRowSelection: true,
+  rowSelectionState: {},
+  onRowSelectionChange: () => {
+    return false;
+  },
 };
 
 export const StripedTable = Template.bind({});

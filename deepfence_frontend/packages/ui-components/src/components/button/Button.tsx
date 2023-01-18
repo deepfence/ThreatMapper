@@ -1,5 +1,6 @@
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, useId } from 'react';
+import { IconContext } from 'react-icons';
 import { twMerge } from 'tailwind-merge';
 
 import { ObjectWithNonNullableValues } from '@/types/utils';
@@ -156,11 +157,11 @@ interface ButtonProps
 const iconCva = cva('', {
   variants: {
     size: {
-      xs: '',
-      sm: '',
-      md: '',
-      lg: '',
-      xl: '',
+      xs: 'w-3 h-3',
+      sm: 'w-3.5 h-3.5',
+      md: 'w-4.5 h-4.5',
+      lg: 'w-5.5 h-5.5',
+      xl: 'w-5.5 h-5.5',
     },
     withStartIcon: {
       true: '',
@@ -229,31 +230,35 @@ interface IconProps extends VariantProps<typeof iconCva> {
 
 const StartIcon = ({ id, startIcon, endIcon, size }: IconProps) => {
   return (
-    <span
-      className={iconCva({
-        size,
-        withStartIcon: !!startIcon,
-        withEndIcon: !!endIcon,
-      })}
+    <IconContext.Provider
       data-testid={`button-icon-start-${id}`}
+      value={{
+        className: iconCva({
+          size,
+          withStartIcon: !!startIcon,
+          withEndIcon: !!endIcon,
+        }),
+      }}
     >
       {startIcon}
-    </span>
+    </IconContext.Provider>
   );
 };
 
 const EndIcon = ({ id, size, startIcon, endIcon }: IconProps) => {
   return (
-    <span
-      className={iconCva({
-        size,
-        withStartIcon: !!startIcon,
-        withEndIcon: !!endIcon,
-      })}
+    <IconContext.Provider
       data-testid={`button-icon-end-${id}`}
+      value={{
+        className: iconCva({
+          size,
+          withStartIcon: !!startIcon,
+          withEndIcon: !!endIcon,
+        }),
+      }}
     >
       {endIcon}
-    </span>
+    </IconContext.Provider>
   );
 };
 
