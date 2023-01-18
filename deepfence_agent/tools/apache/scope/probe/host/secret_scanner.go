@@ -88,7 +88,7 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 			}}
 		} else {
 			greq = pb.FindRequest{Input: &pb.FindRequest_Image{
-				Image: &pb.DockerImage{Id: req.NodeId},
+				Image: &pb.DockerImage{Id: req.NodeId, Name: "dummy"},
 			}}
 		}
 	case ctl.Host:

@@ -71,7 +71,16 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret MERGE (r:Rule{node_id:rule.id}) SET r+=rule WITH secret as row, r MERGE (n:Secret{node_id:row.node_id}) SET n+= row WITH n, r, row MERGE (n)-[:IS]->(r) MERGE (m:SecretScan{node_id: row.scan_id}) WITH n, m, row MATCH (l:Node{node_id: row.host_name}) MERGE (m) -[:DETECTED]-> (n) MERGE (m) -[:SCANNED]-> (l)",
+	if _, err = tx.Run(`
+		UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret
+		MERGE (r:Rule{node_id:rule.id})
+		SET r+=rule WITH secret as row, r
+		MERGE (n:Secret{node_id:row.node_id})
+		SET n+= row WITH n, r, row
+		MERGE (n)-[:IS]->(r)
+		MERGE (m:SecretScan{node_id: row.scan_id})
+		WITH n, m, row
+		MERGE (m) -[:DETECTED]-> (n)`,
 		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
 	}
@@ -103,7 +112,10 @@ func CommitFuncSecretScanStatus(ns string, data []SecretScanStatus) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:SecretScan{node_id: row.scan_id}) SET n.status = row.scan_status, n.updated_at = TIMESTAMP()",
+	if _, err = tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:SecretScan{node_id: row.scan_id})
+		SET n.status = row.scan_status, n.updated_at = TIMESTAMP()`,
 		map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 		return err
 	}
