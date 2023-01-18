@@ -11,7 +11,7 @@ import { ObjectWithNonNullableValues } from '@/types/utils';
 export type SizeType = 'sm' | 'md' | 'lg';
 export type ColorType = 'default' | 'error' | 'success';
 
-const inputElementClassnames = cva(
+const inputCva = cva(
   [
     'block w-full ring-1 rounded-lg',
     'font-normal',
@@ -92,7 +92,7 @@ const inputElementClassnames = cva(
   },
 );
 
-const iconContextClasses = cva('', {
+const iconContextCva = cva('', {
   variants: {
     color: {
       default: ['text-gray-500', 'dark:text-gray-400'],
@@ -131,7 +131,7 @@ const iconContextClasses = cva('', {
 });
 
 interface IconProps
-  extends ObjectWithNonNullableValues<VariantProps<typeof iconContextClasses>> {
+  extends ObjectWithNonNullableValues<VariantProps<typeof iconContextCva>> {
   icon: React.ReactNode;
   id?: string;
 }
@@ -146,7 +146,7 @@ export const LeftIcon = ({ icon, id, color, sizing, disabled }: IconProps) => {
     >
       <IconContext.Provider
         value={{
-          className: iconContextClasses({
+          className: iconContextCva({
             color,
             sizing,
             disabled,
@@ -169,7 +169,7 @@ export const RightIcon = ({ icon, id, color, sizing, disabled }: IconProps) => {
     >
       <IconContext.Provider
         value={{
-          className: iconContextClasses({
+          className: iconContextCva({
             color,
             sizing,
             disabled,
@@ -185,7 +185,7 @@ export const RightIcon = ({ icon, id, color, sizing, disabled }: IconProps) => {
 export interface TextInputProps
   extends Omit<ComponentProps<'input'>, 'ref' | 'color' | 'className' | 'size'>,
     ObjectWithNonNullableValues<
-      Omit<VariantProps<typeof inputElementClassnames>, 'withStartIcon' | 'withEndIcon'>
+      Omit<VariantProps<typeof inputCva>, 'withStartIcon' | 'withEndIcon'>
     > {
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
@@ -245,12 +245,14 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             />
           )}
           <input
-            className={inputElementClassnames({
-              color,
-              sizing,
-              withStartIcon: !!startIcon,
-              withEndIcon: !!endIcon,
-            })}
+            className={twMerge(
+              inputCva({
+                color,
+                sizing,
+                withStartIcon: !!startIcon,
+                withEndIcon: !!endIcon,
+              }),
+            )}
             disabled={disabled}
             ref={ref}
             id={_id}

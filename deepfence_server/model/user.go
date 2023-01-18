@@ -115,7 +115,7 @@ func (c *Company) CreateDefaultUserGroup(ctx context.Context, pgClient *postgres
 
 func GetDefaultUserGroupMap(ctx context.Context, pgClient *postgresqlDb.Queries, companyID int32) (map[string]string, error) {
 	groups, err := pgClient.GetUserGroups(ctx, companyID)
-	if err != nil {
+	if err != nil || len(groups) == 0 {
 		return nil, err
 	}
 	return map[string]string{strconv.Itoa(int(groups[0].ID)): groups[0].Name}, nil
@@ -138,7 +138,7 @@ func (c *Company) GetDefaultUserGroupMap(ctx context.Context, pgClient *postgres
 
 func GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries, companyID int32) (*postgresqlDb.UserGroup, error) {
 	groups, err := pgClient.GetUserGroups(ctx, companyID)
-	if err != nil {
+	if err != nil || len(groups) == 0 {
 		return nil, err
 	}
 	return &groups[0], nil
