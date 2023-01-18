@@ -126,12 +126,12 @@ const Host = () => {
     {
       icon: LogoDocker,
       label: 'Docker Container',
-      path: 'docker',
+      path: 'host/docker',
     },
     {
       icon: LogoLinux,
       label: 'Linux Bare-Metal/VM',
-      path: 'host-linux',
+      path: 'host/linux',
     },
   ];
 

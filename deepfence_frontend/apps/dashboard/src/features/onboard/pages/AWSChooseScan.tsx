@@ -1,10 +1,11 @@
+import { useLocation } from 'react-router-dom';
 import { Button, Card, Separator, Typography } from 'ui-components';
 
-import LogoAws from '../../../assets/logo-aws.svg';
-import LogoAwsWhite from '../../../assets/logo-aws-white.svg';
-import { useTheme } from '../../../theme/ThemeContext';
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
+import LogoAws from '@/assets/logo-aws.svg';
+import LogoAwsWhite from '@/assets/logo-aws-white.svg';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { useTheme } from '@/theme/ThemeContext';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 type ScanTypeListProps = {
   scanType: string;
@@ -14,27 +15,27 @@ type ScanTypeListProps = {
   redirect: string;
 };
 
-const scanTypeList: ScanTypeListProps[] = [
+const scanTypes: ScanTypeListProps[] = [
   {
     scanType: 'Vulnerability Scan',
     description: `A few words about the compliance scan and why you need to use it.`,
     lastScaned: '3:00pm on 11/22/2022',
     buttonText: 'Configure Vulnerability Scan',
-    redirect: '/onboard/scan-infrastructure/host/configure/vulnerability',
+    redirect: '/vulnerability',
   },
   {
     scanType: 'Compliance Scan',
     description: `A few words about the compliance scan and why you need to use it.`,
     lastScaned: '3:00pm on 11/22/2022',
     buttonText: 'Configure Compliance Scan',
-    redirect: '/onboard/scan-infrastructure/cloud/aws/configure',
+    redirect: '/compliance',
   },
   {
     scanType: 'Secrets Scan',
     description: `A few words about the compliance scan and why you need to use it.`,
     lastScaned: '3:00pm on 11/22/2022',
     buttonText: 'Configure Secret Scan',
-    redirect: '/onboard/scan-infrastructure/host/configure/secret',
+    redirect: '/secret',
   },
 ];
 
@@ -66,14 +67,16 @@ const SelectedAccountCard = () => {
   );
 };
 
-const ScanList = () => {
+const ScanType = () => {
+  const location = useLocation();
   const { navigate } = usePageNavigation();
   const goNext = (path: string) => {
     navigate(path);
   };
+
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-      {scanTypeList.map(
+      {scanTypes.map(
         ({
           scanType,
           description,
@@ -101,7 +104,8 @@ const ScanList = () => {
                 size="xs"
                 color="primary"
                 onClick={() => {
-                  goNext(redirect);
+                  // redirect: '/onboard/scan/configure/secret',
+                  goNext(`${location.pathname}${redirect}`);
                 }}
               >
                 {buttonText}
@@ -122,9 +126,9 @@ export const AWSChooseScan = () => {
         description="Choose from the below options to perform your first scan."
       />
       <SelectedAccountCard />
-      <ScanList />
+      <ScanType />
       <Button onClick={goBack} outline size="xs" className="mt-16">
-        Cancel
+        Go Back
       </Button>
     </>
   );

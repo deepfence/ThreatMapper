@@ -1,37 +1,7 @@
-import { Button, Checkbox, Switch, Typography } from 'ui-components';
+import { Button, Typography } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-
-const packages = [
-  {
-    name: 'OS Packages',
-  },
-  {
-    name: 'Java',
-  },
-  {
-    name: 'Javascript',
-  },
-  {
-    name: 'Rust',
-  },
-  {
-    name: 'GoLang',
-  },
-  {
-    name: 'Ruby',
-  },
-  {
-    name: 'Python',
-  },
-  {
-    name: 'PHP',
-  },
-  {
-    name: 'Dotnet',
-  },
-];
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const SecretScanConfigure = () => {
   const { goBack } = usePageNavigation();
@@ -48,13 +18,11 @@ export const SecretScanConfigure = () => {
       <section>
         <h6
           className={`${Typography.size.lg} ${Typography.weight.medium} mt-4 dark:text-white`}
-        >
-          Packages
-        </h6>
+        ></h6>
       </section>
 
       <Button onClick={goBack} color="default" size="xs" className="mt-16">
-        Cancel
+        Go Back
       </Button>
     </>
   );

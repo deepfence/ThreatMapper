@@ -12,9 +12,8 @@ import {
   Typography,
 } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { ScanInfraLayout } from '../layouts/InfraScanLayout';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 type ColumnType = {
   id: number;
@@ -747,7 +746,7 @@ export const ComplianceScanConfigure = () => {
         )}
       </div>
       <Button onClick={goBack} size="xs" className="mt-16">
-        Cancel
+        Go Back
       </Button>
     </>
   );

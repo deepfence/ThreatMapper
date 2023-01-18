@@ -15,7 +15,7 @@ export const AzureConnector = () => {
       />
       <AzureConnectorForm />
       <Button onClick={goBack} size="xs" className="mt-16" color="default">
-        Cancel
+        Go Back
       </Button>
     </div>
   );
