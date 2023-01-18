@@ -21,19 +21,17 @@ var _ MappedNullable = &ModelScanTriggerReq{}
 // ModelScanTriggerReq struct for ModelScanTriggerReq
 type ModelScanTriggerReq struct {
 	NodeId string `json:"node_id"`
-	ResourceId string `json:"resource_id"`
-	ResourceType string `json:"resource_type"`
+	NodeType string `json:"node_type"`
 }
 
 // NewModelScanTriggerReq instantiates a new ModelScanTriggerReq object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelScanTriggerReq(nodeId string, resourceId string, resourceType string) *ModelScanTriggerReq {
+func NewModelScanTriggerReq(nodeId string, nodeType string) *ModelScanTriggerReq {
 	this := ModelScanTriggerReq{}
 	this.NodeId = nodeId
-	this.ResourceId = resourceId
-	this.ResourceType = resourceType
+	this.NodeType = nodeType
 	return &this
 }
 
@@ -69,52 +67,28 @@ func (o *ModelScanTriggerReq) SetNodeId(v string) {
 	o.NodeId = v
 }
 
-// GetResourceId returns the ResourceId field value
-func (o *ModelScanTriggerReq) GetResourceId() string {
+// GetNodeType returns the NodeType field value
+func (o *ModelScanTriggerReq) GetNodeType() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.ResourceId
+	return o.NodeType
 }
 
-// GetResourceIdOk returns a tuple with the ResourceId field value
+// GetNodeTypeOk returns a tuple with the NodeType field value
 // and a boolean to check if the value has been set.
-func (o *ModelScanTriggerReq) GetResourceIdOk() (*string, bool) {
+func (o *ModelScanTriggerReq) GetNodeTypeOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.ResourceId, true
+	return &o.NodeType, true
 }
 
-// SetResourceId sets field value
-func (o *ModelScanTriggerReq) SetResourceId(v string) {
-	o.ResourceId = v
-}
-
-// GetResourceType returns the ResourceType field value
-func (o *ModelScanTriggerReq) GetResourceType() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.ResourceType
-}
-
-// GetResourceTypeOk returns a tuple with the ResourceType field value
-// and a boolean to check if the value has been set.
-func (o *ModelScanTriggerReq) GetResourceTypeOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.ResourceType, true
-}
-
-// SetResourceType sets field value
-func (o *ModelScanTriggerReq) SetResourceType(v string) {
-	o.ResourceType = v
+// SetNodeType sets field value
+func (o *ModelScanTriggerReq) SetNodeType(v string) {
+	o.NodeType = v
 }
 
 func (o ModelScanTriggerReq) MarshalJSON() ([]byte, error) {
@@ -128,8 +102,7 @@ func (o ModelScanTriggerReq) MarshalJSON() ([]byte, error) {
 func (o ModelScanTriggerReq) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["node_id"] = o.NodeId
-	toSerialize["resource_id"] = o.ResourceId
-	toSerialize["resource_type"] = o.ResourceType
+	toSerialize["node_type"] = o.NodeType
 	return toSerialize, nil
 }
 

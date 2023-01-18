@@ -38,16 +38,14 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	binArgs := map[string]string{
 		"scan_id":   scanId,
-		"hostname":  req.NodeId,
-		"node_type": req.ResourceType,
-		"node_id":   req.ResourceId,
+		"node_type": req.NodeType,
+		"node_id":   req.NodeId,
 	}
 
 	internal_req := ctl.StartSecretScanRequest{
-		ResourceId:   req.ResourceId,
-		ResourceType: ctl.StringToResourceType(req.ResourceType),
-		BinArgs:      binArgs,
-		Hostname:     req.NodeId,
+		NodeId:   req.NodeId,
+		NodeType: ctl.StringToResourceType(req.NodeType),
+		BinArgs:  binArgs,
 	}
 
 	b, err := json.Marshal(internal_req)
@@ -62,7 +60,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		RequestPayload: string(b),
 	}
 
-	startScan(w, r, utils.NEO4J_VULNERABILITY_SCAN, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_VULNERABILITY_SCAN, scanId, ctl.StringToResourceType(req.NodeType), req.NodeId, action)
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -76,16 +74,14 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 
 	binArgs := map[string]string{
 		"scan_id":   scanId,
-		"hostname":  req.NodeId,
-		"node_type": req.ResourceType,
+		"node_type": req.NodeType,
 		"node_id":   req.NodeId,
 	}
 
 	internal_req := ctl.StartSecretScanRequest{
-		ResourceId:   req.ResourceId,
-		ResourceType: ctl.StringToResourceType(req.ResourceType),
-		BinArgs:      binArgs,
-		Hostname:     req.NodeId,
+		NodeId:   req.NodeId,
+		NodeType: ctl.StringToResourceType(req.NodeType),
+		BinArgs:  binArgs,
 	}
 
 	b, err := json.Marshal(internal_req)
@@ -101,7 +97,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	startScan(w, r, utils.NEO4J_SECRET_SCAN, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_SECRET_SCAN, scanId, ctl.StringToResourceType(req.NodeType), req.NodeId, action)
 }
 
 func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +113,9 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		RequestPayload: "",
 	}
 
-	startScan(w, r, utils.NEO4J_COMPLIANCE_SCAN, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_COMPLIANCE_SCAN, scanId,
+		ctl.StringToResourceType(req.NodeType), req.NodeId,
+		action)
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -133,7 +131,9 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		RequestPayload: "",
 	}
 
-	startScan(w, r, utils.NEO4J_MALWARE_SCAN, scanId, req.NodeId, action)
+	startScan(w, r, utils.NEO4J_MALWARE_SCAN, scanId,
+		ctl.StringToResourceType(req.NodeType), req.NodeId,
+		action)
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -155,10 +155,12 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 func startScan(
 	w http.ResponseWriter, r *http.Request,
 	scanType utils.Neo4jScanType,
-	scanId string, nodeId string,
+	scanId string,
+	nodeType ctl.ScanResource,
+	nodeId string,
 	action ctl.Action) {
 
-	err := ingesters.AddNewScan(r.Context(), scanType, scanId, nodeId, action)
+	err := ingesters.AddNewScan(r.Context(), scanType, scanId, nodeType, nodeId, action)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err.Error()})
@@ -366,8 +368,8 @@ func extractScanTrigger(w http.ResponseWriter, r *http.Request) (model.ScanTrigg
 		return req, err
 	}
 
-	if ctl.StringToResourceType(req.ResourceType) == -1 {
-		err = fmt.Errorf("Unknown ResourceType: %s", req.ResourceType)
+	if ctl.StringToResourceType(req.NodeType) == -1 {
+		err = fmt.Errorf("Unknown ResourceType: %s", req.NodeType)
 		log.Error().Msgf("%v", err)
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Data: err.Error()})
 	}

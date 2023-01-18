@@ -5,9 +5,8 @@ import (
 )
 
 type ScanTriggerReq struct {
-	NodeId       string `json:"node_id" required:"true"`
-	ResourceId   string `json:"resource_id" required:"true"`
-	ResourceType string `json:"resource_type" required:"true" enum:"image,host,container"`
+	NodeId   string `json:"node_id" required:"true"`
+	NodeType string `json:"node_type" required:"true" enum:"image,host,container"`
 }
 
 type ScanStatus string

@@ -33,12 +33,7 @@ var scanStartSubCmd = &cobra.Command{
 			log.Fatal().Msg("Please provide a node-id")
 		}
 
-		resource_id, _ := cmd.Flags().GetString("resource-id")
-		if resource_id == "" {
-			log.Fatal().Msg("Please provide a reousrce-id")
-		}
-
-		resource_type, _ := cmd.Flags().GetString("resource-type")
+		resource_type, _ := cmd.Flags().GetString("node-type")
 		res_type := ctl.StringToResourceType(resource_type)
 		if res_type == -1 {
 			log.Fatal().Msg("Please provide a valid resource-type")
@@ -51,18 +46,16 @@ var scanStartSubCmd = &cobra.Command{
 			req := http.Client().SecretScanApi.StartSecretScan(context.Background())
 			req = req.ModelScanTriggerReq(
 				deepfence_server_client.ModelScanTriggerReq{
-					NodeId:       scan_node_id,
-					ResourceId:   resource_id,
-					ResourceType: resource_type,
+					NodeId:   scan_node_id,
+					NodeType: resource_type,
 				})
 			res, _, err = http.Client().SecretScanApi.StartSecretScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StartVulnerabilityScan(context.Background())
 			req = req.ModelScanTriggerReq(
 				deepfence_server_client.ModelScanTriggerReq{
-					NodeId:       scan_node_id,
-					ResourceId:   resource_id,
-					ResourceType: resource_type,
+					NodeId:   scan_node_id,
+					NodeType: resource_type,
 				})
 			res, _, err = http.Client().VulnerabilityApi.StartVulnerabilityScanExecute(req)
 		default:
@@ -221,8 +214,7 @@ func init() {
 	scanCmd.PersistentFlags().String("type", "", "Scan type")
 
 	scanStartSubCmd.PersistentFlags().String("node-id", "", "Node id")
-	scanStartSubCmd.PersistentFlags().String("resource-id", "", "Resource id")
-	scanStartSubCmd.PersistentFlags().String("resource-type", "", "Resource type (host, container, image)")
+	scanStartSubCmd.PersistentFlags().String("node-type", "", "Resource type (host, container, image)")
 
 	scanStatusSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
 

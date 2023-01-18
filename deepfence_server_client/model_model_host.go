@@ -21,6 +21,7 @@ var _ MappedNullable = &ModelHost{}
 // ModelHost struct for ModelHost
 type ModelHost struct {
 	CloudMetadata map[string]interface{} `json:"cloud_metadata"`
+	ContainerImages []ModelContainerImage `json:"container_images"`
 	Containers []ModelContainer `json:"containers"`
 	HostName string `json:"host_name"`
 	Metrics ModelComputeMetrics `json:"metrics"`
@@ -33,9 +34,10 @@ type ModelHost struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelHost(cloudMetadata map[string]interface{}, containers []ModelContainer, hostName string, metrics ModelComputeMetrics, nodeId string, pods []ModelPod, processes []ModelProcess) *ModelHost {
+func NewModelHost(cloudMetadata map[string]interface{}, containerImages []ModelContainerImage, containers []ModelContainer, hostName string, metrics ModelComputeMetrics, nodeId string, pods []ModelPod, processes []ModelProcess) *ModelHost {
 	this := ModelHost{}
 	this.CloudMetadata = cloudMetadata
+	this.ContainerImages = containerImages
 	this.Containers = containers
 	this.HostName = hostName
 	this.Metrics = metrics
@@ -75,6 +77,32 @@ func (o *ModelHost) GetCloudMetadataOk() (map[string]interface{}, bool) {
 // SetCloudMetadata sets field value
 func (o *ModelHost) SetCloudMetadata(v map[string]interface{}) {
 	o.CloudMetadata = v
+}
+
+// GetContainerImages returns the ContainerImages field value
+// If the value is explicit nil, the zero value for []ModelContainerImage will be returned
+func (o *ModelHost) GetContainerImages() []ModelContainerImage {
+	if o == nil {
+		var ret []ModelContainerImage
+		return ret
+	}
+
+	return o.ContainerImages
+}
+
+// GetContainerImagesOk returns a tuple with the ContainerImages field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *ModelHost) GetContainerImagesOk() ([]ModelContainerImage, bool) {
+	if o == nil || isNil(o.ContainerImages) {
+		return nil, false
+	}
+	return o.ContainerImages, true
+}
+
+// SetContainerImages sets field value
+func (o *ModelHost) SetContainerImages(v []ModelContainerImage) {
+	o.ContainerImages = v
 }
 
 // GetContainers returns the Containers field value
@@ -238,6 +266,9 @@ func (o ModelHost) MarshalJSON() ([]byte, error) {
 func (o ModelHost) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["cloud_metadata"] = o.CloudMetadata
+	if o.ContainerImages != nil {
+		toSerialize["container_images"] = o.ContainerImages
+	}
 	if o.Containers != nil {
 		toSerialize["containers"] = o.Containers
 	}

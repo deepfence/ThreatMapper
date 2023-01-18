@@ -5,6 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **CloudMetadata** | **map[string]interface{}** |  | 
+**ContainerImages** | [**[]ModelContainerImage**](ModelContainerImage.md) |  | 
 **Containers** | [**[]ModelContainer**](ModelContainer.md) |  | 
 **HostName** | **string** |  | 
 **Metrics** | [**ModelComputeMetrics**](ModelComputeMetrics.md) |  | 
@@ -16,7 +17,7 @@ Name | Type | Description | Notes
 
 ### NewModelHost
 
-`func NewModelHost(cloudMetadata map[string]interface{}, containers []ModelContainer, hostName string, metrics ModelComputeMetrics, nodeId string, pods []ModelPod, processes []ModelProcess, ) *ModelHost`
+`func NewModelHost(cloudMetadata map[string]interface{}, containerImages []ModelContainerImage, containers []ModelContainer, hostName string, metrics ModelComputeMetrics, nodeId string, pods []ModelPod, processes []ModelProcess, ) *ModelHost`
 
 NewModelHost instantiates a new ModelHost object
 This constructor will assign default values to properties that have it defined,
@@ -51,6 +52,36 @@ and a boolean to check if the value has been set.
 SetCloudMetadata sets CloudMetadata field to given value.
 
 
+### GetContainerImages
+
+`func (o *ModelHost) GetContainerImages() []ModelContainerImage`
+
+GetContainerImages returns the ContainerImages field if non-nil, zero value otherwise.
+
+### GetContainerImagesOk
+
+`func (o *ModelHost) GetContainerImagesOk() (*[]ModelContainerImage, bool)`
+
+GetContainerImagesOk returns a tuple with the ContainerImages field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetContainerImages
+
+`func (o *ModelHost) SetContainerImages(v []ModelContainerImage)`
+
+SetContainerImages sets ContainerImages field to given value.
+
+
+### SetContainerImagesNil
+
+`func (o *ModelHost) SetContainerImagesNil(b bool)`
+
+ SetContainerImagesNil sets the value for ContainerImages to be an explicit nil
+
+### UnsetContainerImages
+`func (o *ModelHost) UnsetContainerImages()`
+
+UnsetContainerImages ensures that no value is present for ContainerImages, not even an explicit nil
 ### GetContainers
 
 `func (o *ModelHost) GetContainers() []ModelContainer`

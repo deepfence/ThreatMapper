@@ -5,14 +5,13 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **NodeId** | **string** |  | 
-**ResourceId** | **string** |  | 
-**ResourceType** | **string** |  | 
+**NodeType** | **string** |  | 
 
 ## Methods
 
 ### NewModelScanTriggerReq
 
-`func NewModelScanTriggerReq(nodeId string, resourceId string, resourceType string, ) *ModelScanTriggerReq`
+`func NewModelScanTriggerReq(nodeId string, nodeType string, ) *ModelScanTriggerReq`
 
 NewModelScanTriggerReq instantiates a new ModelScanTriggerReq object
 This constructor will assign default values to properties that have it defined,
@@ -47,44 +46,24 @@ and a boolean to check if the value has been set.
 SetNodeId sets NodeId field to given value.
 
 
-### GetResourceId
+### GetNodeType
 
-`func (o *ModelScanTriggerReq) GetResourceId() string`
+`func (o *ModelScanTriggerReq) GetNodeType() string`
 
-GetResourceId returns the ResourceId field if non-nil, zero value otherwise.
+GetNodeType returns the NodeType field if non-nil, zero value otherwise.
 
-### GetResourceIdOk
+### GetNodeTypeOk
 
-`func (o *ModelScanTriggerReq) GetResourceIdOk() (*string, bool)`
+`func (o *ModelScanTriggerReq) GetNodeTypeOk() (*string, bool)`
 
-GetResourceIdOk returns a tuple with the ResourceId field if it's non-nil, zero value otherwise
+GetNodeTypeOk returns a tuple with the NodeType field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetResourceId
+### SetNodeType
 
-`func (o *ModelScanTriggerReq) SetResourceId(v string)`
+`func (o *ModelScanTriggerReq) SetNodeType(v string)`
 
-SetResourceId sets ResourceId field to given value.
-
-
-### GetResourceType
-
-`func (o *ModelScanTriggerReq) GetResourceType() string`
-
-GetResourceType returns the ResourceType field if non-nil, zero value otherwise.
-
-### GetResourceTypeOk
-
-`func (o *ModelScanTriggerReq) GetResourceTypeOk() (*string, bool)`
-
-GetResourceTypeOk returns a tuple with the ResourceType field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetResourceType
-
-`func (o *ModelScanTriggerReq) SetResourceType(v string)`
-
-SetResourceType sets ResourceType field to given value.
+SetNodeType sets NodeType field to given value.
 
 
 

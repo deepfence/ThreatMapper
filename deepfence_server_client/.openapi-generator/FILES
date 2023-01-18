@@ -47,9 +47,9 @@ docs/ModelAgentId.md
 docs/ModelApiAuthRequest.md
 docs/ModelComputeMetrics.md
 docs/ModelContainer.md
+docs/ModelContainerImage.md
 docs/ModelFetchWindow.md
 docs/ModelHost.md
-docs/ModelImage.md
 docs/ModelInviteUserRequest.md
 docs/ModelInviteUserResponse.md
 docs/ModelLoginRequest.md
@@ -112,9 +112,9 @@ model_model_agent_id.go
 model_model_api_auth_request.go
 model_model_compute_metrics.go
 model_model_container.go
+model_model_container_image.go
 model_model_fetch_window.go
 model_model_host.go
-model_model_image.go
 model_model_invite_user_request.go
 model_model_invite_user_response.go
 model_model_login_request.go

@@ -5,7 +5,6 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Containers** | [**[]ModelContainer**](ModelContainer.md) |  | 
-**Image** | **string** |  | 
 **Metadata** | **map[string]interface{}** |  | 
 **Metrics** | [**ModelComputeMetrics**](ModelComputeMetrics.md) |  | 
 **Name** | **string** |  | 
@@ -16,7 +15,7 @@ Name | Type | Description | Notes
 
 ### NewModelPod
 
-`func NewModelPod(containers []ModelContainer, image string, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess, ) *ModelPod`
+`func NewModelPod(containers []ModelContainer, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess, ) *ModelPod`
 
 NewModelPod instantiates a new ModelPod object
 This constructor will assign default values to properties that have it defined,
@@ -61,26 +60,6 @@ SetContainers sets Containers field to given value.
 `func (o *ModelPod) UnsetContainers()`
 
 UnsetContainers ensures that no value is present for Containers, not even an explicit nil
-### GetImage
-
-`func (o *ModelPod) GetImage() string`
-
-GetImage returns the Image field if non-nil, zero value otherwise.
-
-### GetImageOk
-
-`func (o *ModelPod) GetImageOk() (*string, bool)`
-
-GetImageOk returns a tuple with the Image field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetImage
-
-`func (o *ModelPod) SetImage(v string)`
-
-SetImage sets Image field to given value.
-
-
 ### GetMetadata
 
 `func (o *ModelPod) GetMetadata() map[string]interface{}`
