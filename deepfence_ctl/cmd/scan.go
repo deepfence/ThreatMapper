@@ -98,6 +98,10 @@ var scanStatusSubCmd = &cobra.Command{
 			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
 			req = req.ScanId(scan_id)
 			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
+		case "vulnerability":
+			req := http.Client().VulnerabilityApi.StatusVulnerabilityScan(context.Background())
+			req = req.ScanId(scan_id)
+			res, _, err = http.Client().VulnerabilityApi.StatusVulnerabilityScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -137,6 +141,16 @@ var scanListSubCmd = &cobra.Command{
 				},
 			})
 			res, _, err = http.Client().SecretScanApi.ListSecretScanExecute(req)
+		case "vulnerability":
+			req := http.Client().VulnerabilityApi.ListVulnerabilityScans(context.Background())
+			req = req.ModelScanListReq(deepfence_server_client.ModelScanListReq{
+				NodeId: node_id,
+				Window: deepfence_server_client.ModelFetchWindow{
+					Offset: 0,
+					Size:   20,
+				},
+			})
+			res, _, err = http.Client().VulnerabilityApi.ListVulnerabilityScansExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -176,6 +190,16 @@ var scanResultsSubCmd = &cobra.Command{
 				},
 			})
 			res, _, err = http.Client().SecretScanApi.ResultsSecretScanExecute(req)
+		case "vulnerability":
+			req := http.Client().VulnerabilityApi.ResultsVulnerabilityScans(context.Background())
+			req = req.ModelScanResultsReq(deepfence_server_client.ModelScanResultsReq{
+				ScanId: scan_id,
+				Window: deepfence_server_client.ModelFetchWindow{
+					Offset: 0,
+					Size:   20,
+				},
+			})
+			res, _, err = http.Client().VulnerabilityApi.ResultsVulnerabilityScansExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
