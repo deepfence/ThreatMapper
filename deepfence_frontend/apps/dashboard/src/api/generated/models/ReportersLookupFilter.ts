@@ -21,16 +21,16 @@ import { exists, mapValues } from '../runtime';
 export interface ReportersLookupFilter {
     /**
      * 
-     * @type {{ [key: string]: object; }}
+     * @type {Array<string>}
      * @memberof ReportersLookupFilter
      */
-    in_field_filter: { [key: string]: object; } | null;
+    in_field_filter: Array<string> | null;
     /**
      * 
-     * @type {{ [key: string]: object; }}
+     * @type {Array<string>}
      * @memberof ReportersLookupFilter
      */
-    node_ids: { [key: string]: object; } | null;
+    node_ids: Array<string> | null;
 }
 
 /**

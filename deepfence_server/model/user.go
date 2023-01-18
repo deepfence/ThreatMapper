@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"regexp"
 	"strconv"
 	"time"
@@ -112,13 +113,21 @@ func (c *Company) CreateDefaultUserGroup(ctx context.Context, pgClient *postgres
 	return &group, nil
 }
 
+func GetDefaultUserGroupMap(ctx context.Context, pgClient *postgresqlDb.Queries, companyID int32) (map[string]string, error) {
+	groups, err := pgClient.GetUserGroups(ctx, companyID)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]string{strconv.Itoa(int(groups[0].ID)): groups[0].Name}, nil
+}
+
 func (c *Company) GetDefaultUserGroupMap(ctx context.Context, pgClient *postgresqlDb.Queries) (map[string]string, error) {
-	groups, err := pgClient.GetUserGroups(ctx, c.ID)
+	groups, err := GetDefaultUserGroupMap(ctx, pgClient, c.ID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
-	if len(groups) > 0 {
-		return map[string]string{strconv.Itoa(int(groups[0].ID)): groups[0].Name}, nil
+	if groups != nil {
+		return groups, nil
 	}
 	group, err := c.CreateDefaultUserGroup(ctx, pgClient)
 	if err != nil {
@@ -127,15 +136,23 @@ func (c *Company) GetDefaultUserGroupMap(ctx context.Context, pgClient *postgres
 	return map[string]string{strconv.Itoa(int(group.ID)): group.Name}, nil
 }
 
+func GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries, companyID int32) (*postgresqlDb.UserGroup, error) {
+	groups, err := pgClient.GetUserGroups(ctx, companyID)
+	if err != nil {
+		return nil, err
+	}
+	return &groups[0], nil
+}
+
 func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.UserGroup, error) {
-	groups, err := pgClient.GetUserGroups(ctx, c.ID)
+	group, err := GetDefaultUserGroup(ctx, pgClient, c.ID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
-	if len(groups) > 0 {
-		return &groups[0], nil
+	if group != nil {
+		return group, nil
 	}
-	group, err := c.CreateDefaultUserGroup(ctx, pgClient)
+	group, err = c.CreateDefaultUserGroup(ctx, pgClient)
 	if err != nil {
 		return nil, err
 	}
@@ -159,6 +176,34 @@ type UserRegisterRequest struct {
 	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
 	IsTemporaryPassword bool   `json:"is_temporary_password" required:"true"`
 	ConsoleURL          string `json:"console_url" validate:"required,url" required:"true"`
+}
+
+type RegisterInvitedUserRequest struct {
+	FirstName           string `json:"first_name" validate:"required,user_name,min=2,max=32" required:"true"`
+	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32" required:"true"`
+	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
+	IsTemporaryPassword bool   `json:"is_temporary_password" required:"true"`
+	Code                string `json:"code" validate:"required,uuid4" required:"true"`
+}
+
+type InviteUserRequest struct {
+	Email  string `json:"email" validate:"required,email" required:"true"`
+	Role   string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
+	Action string `json:"action" validate:"required,oneof=send-invite-email get-invite-link" required:"true" enum:"send-invite-email,get-invite-link"`
+}
+
+type InviteUserResponse struct {
+	InviteExpiryHours int32  `json:"invite_expiry_hours"`
+	InviteURL         string `json:"invite_url"`
+}
+
+type PasswordResetRequest struct {
+	Email string `json:"email" validate:"required,email" required:"true"`
+}
+
+type PasswordResetVerifyRequest struct {
+	Code     string `json:"code" validate:"required,uuid4" required:"true"`
+	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
 }
 
 type User struct {
@@ -198,6 +243,19 @@ func (u *User) CompareHashAndPassword(ctx context.Context, pgClient *postgresqlD
 	return true, nil
 }
 
+func GetUserByID(userID int64) (*User, int, context.Context, *postgresqlDb.Queries, error) {
+	user := User{ID: userID}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	err = user.LoadFromDbByID(ctx, pgClient)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, http.StatusNotFound, ctx, pgClient, errors.New(utils.ErrorUserNotFound)
+	} else if err != nil {
+		return nil, http.StatusInternalServerError, ctx, pgClient, err
+	}
+	return &user, http.StatusOK, ctx, pgClient, nil
+}
+
 func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	// Set ID field and load other fields from db
 	var err error
@@ -219,6 +277,19 @@ func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Querie
 	u.CompanyNamespace = user.CompanyNamespace
 	_ = json.Unmarshal(user.GroupIds, &u.Groups)
 	return nil
+}
+
+func GetUserByEmail(email string) (*User, int, context.Context, *postgresqlDb.Queries, error) {
+	user := User{Email: email}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	err = user.LoadFromDbByEmail(ctx, pgClient)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, http.StatusNotFound, ctx, pgClient, errors.New(utils.ErrorUserNotFound)
+	} else if err != nil {
+		return nil, http.StatusInternalServerError, ctx, pgClient, err
+	}
+	return &user, http.StatusOK, ctx, pgClient, nil
 }
 
 func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Queries) error {
@@ -245,7 +316,7 @@ func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Que
 }
 
 func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {
-	groupIDs, err := json.Marshal(MapKeys(u.Groups))
+	groupIDs, err := json.Marshal(utils.MapKeys(u.Groups))
 	if err != nil {
 		return nil, err
 	}
@@ -259,6 +330,27 @@ func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 		PasswordHash:        u.Password,
 		IsActive:            false,
 		PasswordInvalidated: false,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (u *User) Update(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {
+	groupIDs, err := json.Marshal(utils.MapKeys(u.Groups))
+	if err != nil {
+		return nil, err
+	}
+	user, err := pgClient.UpdateUser(ctx, postgresqlDb.UpdateUserParams{
+		FirstName:           u.FirstName,
+		LastName:            u.LastName,
+		RoleID:              u.RoleID,
+		GroupIds:            groupIDs,
+		PasswordHash:        u.Password,
+		IsActive:            u.IsActive,
+		PasswordInvalidated: u.PasswordInvalidated,
+		ID:                  u.ID,
 	})
 	if err != nil {
 		return nil, err

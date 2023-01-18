@@ -2,8 +2,8 @@ import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Button, Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
-import { usePageNavigation } from '../../../../../utils/usePageNavigation';
+import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const GCPConnectorForm = () => {
   const { navigate } = usePageNavigation();
@@ -29,7 +29,7 @@ export const GCPConnectorForm = () => {
 
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation.">
+      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
           <a
@@ -114,7 +114,7 @@ export const GCPConnectorForm = () => {
               color="primary"
               className="ml-auto"
               onClick={() => {
-                navigate('/onboard/my-connectors');
+                navigate('/onboard/connectors/my-connectors');
               }}
             >
               Go to connectors

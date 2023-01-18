@@ -131,7 +131,7 @@ func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 		scanId = scanIdArg
 	}
 	log.Infof("vulnerability scan request: %v", req)
-	log.Infof("uploading %s tar to console...", imageName)
+	log.Infof("uploading %s sbom to console...", imageName)
 	// call package scanner plugin
 	go func() {
 		err := GenerateSbomForVulnerabilityScan(node_type, imageName, imageId, scanId,

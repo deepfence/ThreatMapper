@@ -140,6 +140,7 @@ importers:
       autoprefixer: ^10.4.11
       babel-loader: ^8.2.5
       classnames: ^2.3.2
+      cva: npm:class-variance-authority@^0.4.0
       eslint: ^8.23.1
       eslint-config-prettier: ^8.5.0
       eslint-plugin-import: ^2.26.0
@@ -180,6 +181,7 @@ importers:
       '@tanstack/react-table': 8.7.0_biqbaboplfbrettd7655fr4n2y
       ariakit: 2.0.0-next.41_biqbaboplfbrettd7655fr4n2y
       classnames: 2.3.2
+      cva: /class-variance-authority/0.4.0_typescript@4.9.3
       lodash-es: 4.17.21
       tailwind-merge: 1.8.0
       tailwindcss-radix: 2.6.1
@@ -6469,6 +6471,17 @@ packages:
       isobject: 3.0.1
       static-extend: 0.1.2
     dev: true
+
+  /class-variance-authority/0.4.0_typescript@4.9.3:
+    resolution: {integrity: sha512-74enNN8O9ZNieycac/y8FxqgyzZhZbxmCitAtAeUrLPlxjSd5zA7LfpprmxEcOmQBnaGs5hYhiSGnJ0mqrtBLQ==}
+    peerDependencies:
+      typescript: '>= 4.5.5 < 5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      typescript: 4.9.3
+    dev: false
 
   /classnames/2.3.2:
     resolution: {integrity: sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==}
@@ -14024,7 +14037,6 @@ packages:
     resolution: {integrity: sha512-CIfGzTelbKNEnLpLdGFgdyKhG23CKdKgQPOBc+OUNrkJ2vr+KSzsSV5kq5iWhEQbok+quxgGzrAtGWCyU7tHnA==}
     engines: {node: '>=4.2.0'}
     hasBin: true
-    dev: true
 
   /uglify-js/3.17.4:
     resolution: {integrity: sha512-T9q82TJI9e/C1TAxYvfb16xO120tMVFZrGA3f9/P4424DNu6ypK103y0GPFVa17yotwSyZW5iYXgjYHkGrJW/g==}

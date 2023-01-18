@@ -122,8 +122,12 @@ Class | Method | HTTP request | Description
 *UserApi* | [**DeleteCurrentUser**](docs/UserApi.md#deletecurrentuser) | **Delete** /deepfence/user | Delete Current User
 *UserApi* | [**GetApiTokens**](docs/UserApi.md#getapitokens) | **Get** /deepfence/api-token | Get User&#39;s API Tokens
 *UserApi* | [**GetCurrentUser**](docs/UserApi.md#getcurrentuser) | **Get** /deepfence/user | Get Current User
+*UserApi* | [**InviteUser**](docs/UserApi.md#inviteuser) | **Post** /deepfence/user/invite | Invite User
+*UserApi* | [**RegisterInvitedUser**](docs/UserApi.md#registerinviteduser) | **Post** /deepfence/user/invite/register | Register Invited User
 *UserApi* | [**RegisterUser**](docs/UserApi.md#registeruser) | **Post** /deepfence/user/register | Register User
+*UserApi* | [**ResetPasswordRequest**](docs/UserApi.md#resetpasswordrequest) | **Post** /deepfence/user/reset-password/request | Reset Password Request
 *UserApi* | [**UpdateCurrentUser**](docs/UserApi.md#updatecurrentuser) | **Put** /deepfence/user | Update Current User
+*UserApi* | [**VerifyResetPasswordRequest**](docs/UserApi.md#verifyresetpasswordrequest) | **Post** /deepfence/user/reset-password/verify | Verify and Reset Password
 *VulnerabilityApi* | [**IngestVulnerabilities**](docs/VulnerabilityApi.md#ingestvulnerabilities) | **Post** /deepfence/ingest/vulnerabilities | Ingest Vulnerabilities
 *VulnerabilityApi* | [**ListVulnerabilityScans**](docs/VulnerabilityApi.md#listvulnerabilityscans) | **Post** /deepfence/scan/list/vulnerability | Get Vulnerability Scans List
 *VulnerabilityApi* | [**ResultsVulnerabilityScans**](docs/VulnerabilityApi.md#resultsvulnerabilityscans) | **Post** /deepfence/scan/results/vulnerability | Get Vulnerability Scans Results
@@ -159,10 +163,15 @@ Class | Method | HTTP request | Description
  - [ModelFetchWindow](docs/ModelFetchWindow.md)
  - [ModelHost](docs/ModelHost.md)
  - [ModelImage](docs/ModelImage.md)
+ - [ModelInviteUserRequest](docs/ModelInviteUserRequest.md)
+ - [ModelInviteUserResponse](docs/ModelInviteUserResponse.md)
  - [ModelLoginRequest](docs/ModelLoginRequest.md)
+ - [ModelPasswordResetRequest](docs/ModelPasswordResetRequest.md)
+ - [ModelPasswordResetVerifyRequest](docs/ModelPasswordResetVerifyRequest.md)
  - [ModelPod](docs/ModelPod.md)
  - [ModelProcess](docs/ModelProcess.md)
  - [ModelRawReport](docs/ModelRawReport.md)
+ - [ModelRegisterInvitedUserRequest](docs/ModelRegisterInvitedUserRequest.md)
  - [ModelResponse](docs/ModelResponse.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
  - [ModelScanInfo](docs/ModelScanInfo.md)

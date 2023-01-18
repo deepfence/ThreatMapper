@@ -34,8 +34,6 @@ deepfence_agent/tools/apache/scope/proto/
 
 deepfence_server/vendor
 deepfence_worker/vendor
-deepfence_ingester/vendor
-deepfence_ingester/deepfence_ingester
 
 openapi.json
 openapi.yaml

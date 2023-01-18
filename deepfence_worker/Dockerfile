@@ -3,13 +3,18 @@ FROM golang:1.19-alpine3.17 AS build
 RUN apk add --no-cache git make
 ADD deepfence_worker /go/deepfence_worker/
 ADD deepfence_utils /go/deepfence_utils/
+ADD deepfence_server /go/deepfence_server/
+ADD deepfence_utils /go/deepfence_utils/
+ADD deepfence_server_client /go/deepfence_server_client/
 WORKDIR /go/deepfence_worker/
 # "make vendor" is run before separately to avoid docker cache invalidation
 RUN CGO_ENABLED=0 make deepfence_worker
 
 FROM alpine:3.17
-MAINTAINER Deepfence Inc
+LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
+
+RUN apk add --no-cache kafkacat
 
 ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_POSTGRES_USER_DB_PORT=5432 \
@@ -31,6 +36,11 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_MINIO_BUCKET=deepfence \
     DEEPFENCE_MINIO_SECURE=false \
     DEEPFENCE_SAAS_DEPLOYMENT=false \
+    DEEPFENCE_KAFKA_BROKERS=deepfence-kafka-broker:9092 \
+    DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
+    DEEPFENCE_KAFKA_TOPIC_REPLICAS=1 \
+    DEEPFENCE_KAFKA_TOPIC_RETENTION_MS="86400000" \
+    DEEPFENCE_DEBUG=false \
     DEEPFENCE_MODE=worker
 
 RUN apk add --no-cache --update bash curl \

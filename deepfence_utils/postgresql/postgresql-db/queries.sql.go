@@ -102,6 +102,32 @@ func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (C
 	return i, err
 }
 
+const createPasswordReset = `-- name: CreatePasswordReset :one
+INSERT INTO password_reset (code, expiry, user_id)
+VALUES ($1, $2, $3)
+RETURNING id, user_id, code, expiry, created_at, updated_at
+`
+
+type CreatePasswordResetParams struct {
+	Code   uuid.UUID
+	Expiry time.Time
+	UserID int64
+}
+
+func (q *Queries) CreatePasswordReset(ctx context.Context, arg CreatePasswordResetParams) (PasswordReset, error) {
+	row := q.db.QueryRowContext(ctx, createPasswordReset, arg.Code, arg.Expiry, arg.UserID)
+	var i PasswordReset
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Code,
+		&i.Expiry,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createRole = `-- name: CreateRole :one
 INSERT INTO role (name)
 VALUES ($1)
@@ -221,6 +247,48 @@ func (q *Queries) CreateUserGroup(ctx context.Context, arg CreateUserGroupParams
 	return i, err
 }
 
+const createUserInvite = `-- name: CreateUserInvite :one
+INSERT INTO user_invite (email, code, created_by_user_id, role_id, company_id, accepted, expiry)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, email, code, created_by_user_id, role_id, company_id, accepted, expiry, created_at, updated_at
+`
+
+type CreateUserInviteParams struct {
+	Email           string
+	Code            uuid.UUID
+	CreatedByUserID int64
+	RoleID          int32
+	CompanyID       int32
+	Accepted        bool
+	Expiry          time.Time
+}
+
+func (q *Queries) CreateUserInvite(ctx context.Context, arg CreateUserInviteParams) (UserInvite, error) {
+	row := q.db.QueryRowContext(ctx, createUserInvite,
+		arg.Email,
+		arg.Code,
+		arg.CreatedByUserID,
+		arg.RoleID,
+		arg.CompanyID,
+		arg.Accepted,
+		arg.Expiry,
+	)
+	var i UserInvite
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Code,
+		&i.CreatedByUserID,
+		&i.RoleID,
+		&i.CompanyID,
+		&i.Accepted,
+		&i.Expiry,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const deleteApiToken = `-- name: DeleteApiToken :exec
 DELETE
 FROM api_token
@@ -243,6 +311,30 @@ func (q *Queries) DeleteCompany(ctx context.Context, id int32) error {
 	return err
 }
 
+const deletePasswordResetByExpiry = `-- name: DeletePasswordResetByExpiry :exec
+DELETE
+FROM password_reset
+WHERE expiry >= $1
+`
+
+func (q *Queries) DeletePasswordResetByExpiry(ctx context.Context, expiry time.Time) error {
+	_, err := q.db.ExecContext(ctx, deletePasswordResetByExpiry, expiry)
+	return err
+}
+
+const deletePasswordResetByUserEmail = `-- name: DeletePasswordResetByUserEmail :exec
+DELETE
+FROM password_reset pr
+    USING users u
+WHERE pr.user_id = u.id
+  AND u.email = $1
+`
+
+func (q *Queries) DeletePasswordResetByUserEmail(ctx context.Context, email string) error {
+	_, err := q.db.ExecContext(ctx, deletePasswordResetByUserEmail, email)
+	return err
+}
+
 const deleteUser = `-- name: DeleteUser :exec
 DELETE
 FROM users
@@ -251,6 +343,17 @@ WHERE id = $1
 
 func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	return err
+}
+
+const deleteUserInviteByExpiry = `-- name: DeleteUserInviteByExpiry :exec
+DELETE
+FROM user_invite
+WHERE expiry >= $1
+`
+
+func (q *Queries) DeleteUserInviteByExpiry(ctx context.Context, expiry time.Time) error {
+	_, err := q.db.ExecContext(ctx, deleteUserInviteByExpiry, expiry)
 	return err
 }
 
@@ -561,6 +664,78 @@ func (q *Queries) GetPasswordHash(ctx context.Context, id int64) (string, error)
 	return password_hash, err
 }
 
+const getPasswordResetByCode = `-- name: GetPasswordResetByCode :one
+SELECT password_reset.id,
+       password_reset.code,
+       password_reset.expiry,
+       password_reset.user_id,
+       password_reset.created_at,
+       password_reset.updated_at
+FROM password_reset
+         INNER JOIN users u on password_reset.user_id = u.id
+WHERE password_reset.code = $1
+LIMIT 1
+`
+
+type GetPasswordResetByCodeRow struct {
+	ID        int32
+	Code      uuid.UUID
+	Expiry    time.Time
+	UserID    int64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (q *Queries) GetPasswordResetByCode(ctx context.Context, code uuid.UUID) (GetPasswordResetByCodeRow, error) {
+	row := q.db.QueryRowContext(ctx, getPasswordResetByCode, code)
+	var i GetPasswordResetByCodeRow
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Expiry,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getPasswordResetById = `-- name: GetPasswordResetById :one
+SELECT password_reset.id,
+       password_reset.code,
+       password_reset.expiry,
+       password_reset.user_id,
+       password_reset.created_at,
+       password_reset.updated_at
+FROM password_reset
+         INNER JOIN users u on password_reset.user_id = u.id
+WHERE password_reset.id = $1
+LIMIT 1
+`
+
+type GetPasswordResetByIdRow struct {
+	ID        int32
+	Code      uuid.UUID
+	Expiry    time.Time
+	UserID    int64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (q *Queries) GetPasswordResetById(ctx context.Context, id int32) (GetPasswordResetByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getPasswordResetById, id)
+	var i GetPasswordResetByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Expiry,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getRoleByID = `-- name: GetRoleByID :one
 SELECT id, name, created_at, updated_at
 FROM role
@@ -696,10 +871,10 @@ SELECT users.id,
        users.last_name,
        users.email,
        users.role_id,
-       role.name    as role_name,
+       role.name         as role_name,
        users.group_ids,
        users.company_id,
-       company.name as company_name,
+       company.name      as company_name,
        users.password_hash,
        users.is_active,
        users.password_invalidated,
@@ -760,10 +935,10 @@ SELECT users.id,
        users.last_name,
        users.email,
        users.role_id,
-       role.name    as role_name,
+       role.name         as role_name,
        users.group_ids,
        users.company_id,
-       company.name as company_name,
+       company.name      as company_name,
        users.password_hash,
        users.is_active,
        users.password_invalidated,
@@ -876,6 +1051,56 @@ func (q *Queries) GetUserGroups(ctx context.Context, companyID int32) ([]UserGro
 	return items, nil
 }
 
+const getUserInviteByCode = `-- name: GetUserInviteByCode :one
+SELECT id, email, code, created_by_user_id, role_id, company_id, accepted, expiry, created_at, updated_at
+FROM user_invite
+WHERE code = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserInviteByCode(ctx context.Context, code uuid.UUID) (UserInvite, error) {
+	row := q.db.QueryRowContext(ctx, getUserInviteByCode, code)
+	var i UserInvite
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Code,
+		&i.CreatedByUserID,
+		&i.RoleID,
+		&i.CompanyID,
+		&i.Accepted,
+		&i.Expiry,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserInviteByEmail = `-- name: GetUserInviteByEmail :one
+SELECT id, email, code, created_by_user_id, role_id, company_id, accepted, expiry, created_at, updated_at
+FROM user_invite
+WHERE email = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserInviteByEmail(ctx context.Context, email string) (UserInvite, error) {
+	row := q.db.QueryRowContext(ctx, getUserInviteByEmail, email)
+	var i UserInvite
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Code,
+		&i.CreatedByUserID,
+		&i.RoleID,
+		&i.CompanyID,
+		&i.Accepted,
+		&i.Expiry,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getUsers = `-- name: GetUsers :many
 SELECT id, first_name, last_name, email, role_id, group_ids, company_id, password_hash, is_active, password_invalidated, created_at, updated_at
 FROM users
@@ -956,22 +1181,6 @@ func (q *Queries) GetVisibleSettings(ctx context.Context) ([]Setting, error) {
 	return items, nil
 }
 
-const updatePasswordHash = `-- name: UpdatePasswordHash :exec
-UPDATE users
-SET password_hash = $1
-WHERE id = $2
-`
-
-type UpdatePasswordHashParams struct {
-	PasswordHash string
-	ID           int64
-}
-
-func (q *Queries) UpdatePasswordHash(ctx context.Context, arg UpdatePasswordHashParams) error {
-	_, err := q.db.ExecContext(ctx, updatePasswordHash, arg.PasswordHash, arg.ID)
-	return err
-}
-
 const updateSetting = `-- name: UpdateSetting :exec
 UPDATE setting
 SET value = $1 AND is_visible_on_ui = $2
@@ -987,4 +1196,105 @@ type UpdateSettingParams struct {
 func (q *Queries) UpdateSetting(ctx context.Context, arg UpdateSettingParams) error {
 	_, err := q.db.ExecContext(ctx, updateSetting, arg.Value, arg.IsVisibleOnUi, arg.Key)
 	return err
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET first_name           = $1,
+    last_name            = $2,
+    role_id              = $3,
+    group_ids            = $4,
+    password_hash        = $5,
+    is_active            = $6,
+    password_invalidated = $7
+WHERE id = $8
+RETURNING id, first_name, last_name, email, role_id, group_ids, company_id, password_hash, is_active, password_invalidated, created_at, updated_at
+`
+
+type UpdateUserParams struct {
+	FirstName           string
+	LastName            string
+	RoleID              int32
+	GroupIds            json.RawMessage
+	PasswordHash        string
+	IsActive            bool
+	PasswordInvalidated bool
+	ID                  int64
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUser,
+		arg.FirstName,
+		arg.LastName,
+		arg.RoleID,
+		arg.GroupIds,
+		arg.PasswordHash,
+		arg.IsActive,
+		arg.PasswordInvalidated,
+		arg.ID,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.RoleID,
+		&i.GroupIds,
+		&i.CompanyID,
+		&i.PasswordHash,
+		&i.IsActive,
+		&i.PasswordInvalidated,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserInvite = `-- name: UpdateUserInvite :one
+UPDATE user_invite
+SET code=$1,
+    created_by_user_id=$2,
+    role_id=$3,
+    company_id=$4,
+    accepted=$5,
+    expiry=$6
+WHERE id = $7
+RETURNING id, email, code, created_by_user_id, role_id, company_id, accepted, expiry, created_at, updated_at
+`
+
+type UpdateUserInviteParams struct {
+	Code            uuid.UUID
+	CreatedByUserID int64
+	RoleID          int32
+	CompanyID       int32
+	Accepted        bool
+	Expiry          time.Time
+	ID              int32
+}
+
+func (q *Queries) UpdateUserInvite(ctx context.Context, arg UpdateUserInviteParams) (UserInvite, error) {
+	row := q.db.QueryRowContext(ctx, updateUserInvite,
+		arg.Code,
+		arg.CreatedByUserID,
+		arg.RoleID,
+		arg.CompanyID,
+		arg.Accepted,
+		arg.Expiry,
+		arg.ID,
+	)
+	var i UserInvite
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Code,
+		&i.CreatedByUserID,
+		&i.RoleID,
+		&i.CompanyID,
+		&i.Accepted,
+		&i.Expiry,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

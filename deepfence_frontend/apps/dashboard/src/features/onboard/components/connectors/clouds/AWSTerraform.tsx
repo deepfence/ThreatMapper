@@ -3,8 +3,8 @@ import { memo } from 'react';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Button, Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '../../../../../components/CopyToClipboardIcon';
-import { usePageNavigation } from '../../../../../utils/usePageNavigation';
+import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const AWSTerraform = memo(() => {
   const { navigate } = usePageNavigation();
@@ -24,7 +24,7 @@ module "cloud-scanner_example_single-account-ecs" {
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation.">
+        <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect to your AWS Cloud Account via Teraform. Find out more information by{' '}
             <a
@@ -109,7 +109,7 @@ module "cloud-scanner_example_single-account-ecs" {
                 color="primary"
                 className="ml-auto"
                 onClick={() => {
-                  navigate('/onboard/my-connectors');
+                  navigate('/onboard/connectors/my-connectors');
                 }}
               >
                 Go to connectors

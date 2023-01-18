@@ -1,8 +1,5 @@
-import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { useCopyToClipboard } from 'react-use';
 import {
-  Accordion,
   Button,
   Card,
   Step,
@@ -15,7 +12,7 @@ import {
 export const AmazonECRConnectorForm = () => {
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation.">
+      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
           <a

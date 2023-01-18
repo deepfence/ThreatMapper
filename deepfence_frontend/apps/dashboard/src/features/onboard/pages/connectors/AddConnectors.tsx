@@ -1,24 +1,21 @@
 import cx from 'classnames';
-import { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineArrowCircleRight } from 'react-icons/hi';
-import { Card, Tabs, Typography } from 'ui-components';
+import { Card, Typography } from 'ui-components';
 
-import LogoAws from '../../../assets/logo-aws.svg';
-import LogoAwsWhite from '../../../assets/logo-aws-white.svg';
-import LogoAzure from '../../../assets/logo-azure.svg';
-import LogoAzureRegistry from '../../../assets/logo-azure-registry.svg';
-import LogoCloudConnector from '../../../assets/logo-cloud-connector.svg';
-import LogoDocker from '../../../assets/logo-docker.svg';
-import LogoGoogle from '../../../assets/logo-google.svg';
-import LogoHostConnector from '../../../assets/logo-host-connector.svg';
-import LogoK8 from '../../../assets/logo-k8.svg';
-import LogoLinux from '../../../assets/logo-linux.svg';
-import LogoRegistryConnector from '../../../assets/logo-registry-connector.svg';
-import { useTheme } from '../../../theme/ThemeContext';
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { NoConnectors } from '../components/connectors/NoConnectors';
+import LogoAws from '@/assets/logo-aws.svg';
+import LogoAwsWhite from '@/assets/logo-aws-white.svg';
+import LogoAzure from '@/assets/logo-azure.svg';
+import LogoAzureRegistry from '@/assets/logo-azure-registry.svg';
+import LogoCloudConnector from '@/assets/logo-cloud-connector.svg';
+import LogoDocker from '@/assets/logo-docker.svg';
+import LogoGoogle from '@/assets/logo-google.svg';
+import LogoHostConnector from '@/assets/logo-host-connector.svg';
+import LogoK8 from '@/assets/logo-k8.svg';
+import LogoLinux from '@/assets/logo-linux.svg';
+import LogoRegistryConnector from '@/assets/logo-registry-connector.svg';
+import { useTheme } from '@/theme/ThemeContext';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 interface CardConnectProps {
   path: string;
@@ -29,7 +26,7 @@ interface CardConnectProps {
 const CardConnect = ({ label, path, icon }: CardConnectProps) => {
   const { navigate } = usePageNavigation();
   const handleSelection = () => {
-    navigate(`${path}`);
+    navigate(`../../instructions/${path}`);
   };
 
   return (
@@ -207,12 +204,12 @@ const Registries = () => {
     {
       icon: LogoAzureRegistry,
       label: 'Azure Container Registry',
-      path: 'registry-azure',
+      path: 'registry-azure-1',
     },
     {
       icon: LogoGoogle,
       label: 'Container Registry | Google Cloud',
-      path: 'registry-linux',
+      path: 'registry-linux-1',
     },
   ];
   return (
@@ -243,7 +240,7 @@ const Registries = () => {
           {connectors.map((connector) => {
             return (
               <div
-                key={connector.label}
+                key={connector.path}
                 className={cx(
                   'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
                   'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
@@ -259,17 +256,6 @@ const Registries = () => {
   );
 };
 
-const tabs = [
-  {
-    label: 'Add Connectors',
-    value: 'add-connectors',
-  },
-  {
-    label: 'My Connectors',
-    value: 'my-connectors',
-  },
-];
-
 export const AddConnector = () => {
   return (
     <div className="grid grid-cols-1 gap-4 gap-y-6 lg:grid-cols-3 sm:grid-cols-2">
@@ -283,44 +269,5 @@ export const AddConnector = () => {
         <Registries />
       </Card>
     </div>
-  );
-};
-
-export const Connector = ({ page }: { page: string }) => {
-  const [tab, setTab] = useState(page);
-  const { navigate } = usePageNavigation();
-
-  const onTabChange = (tab: string) => {
-    navigate(`/onboard/${tab}`);
-  };
-
-  useEffect(() => {
-    if (page) {
-      setTab(page);
-    }
-  }, [page]);
-  return (
-    <>
-      <ConnectorHeader
-        title="Let's Get Started"
-        description="ThreatMapper’s unique approach learns the active topology of your application and classifies vulnerabilities based on the attack surfaces that your application presents."
-      />
-      <Tabs
-        value={tab}
-        defaultValue={tab}
-        tabs={tabs}
-        onValueChange={onTabChange}
-        size="md"
-      >
-        <div className="h-full dark:text-white mt-8">
-          {tab === 'add-connectors' && <AddConnector />}
-          {tab === 'my-connectors' && (
-            <>
-              <NoConnectors />
-            </>
-          )}
-        </div>
-      </Tabs>
-    </>
   );
 };

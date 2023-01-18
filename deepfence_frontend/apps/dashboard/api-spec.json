@@ -477,12 +477,220 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/graph/topology": {
+    "/deepfence/graph/topology/": {
       "post": {
         "tags": ["Topology"],
         "summary": "Get Topology Graph",
         "description": "Retrieve the full topology graph associated with the account",
         "operationId": "getTopologyGraph",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/graph/topology/containers": {
+      "post": {
+        "tags": ["Topology"],
+        "summary": "Get Containers Topology Graph",
+        "description": "Retrieve the full topology graph associated with the account from Containers",
+        "operationId": "getContainersTopologyGraph",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/graph/topology/hosts": {
+      "post": {
+        "tags": ["Topology"],
+        "summary": "Get Hosts Topology Graph",
+        "description": "Retrieve the full topology graph associated with the account from Hosts",
+        "operationId": "getHostsTopologyGraph",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/graph/topology/kubernetes": {
+      "post": {
+        "tags": ["Topology"],
+        "summary": "Get Kubernetes Topology Graph",
+        "description": "Retrieve the full topology graph associated with the account from Kubernetes",
+        "operationId": "getKubernetesTopologyGraph",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsGraphResult" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/graph/topology/pods": {
+      "post": {
+        "tags": ["Topology"],
+        "summary": "Get Pods Topology Graph",
+        "description": "Retrieve the full topology graph associated with the account from Pods",
+        "operationId": "getPodsTopologyGraph",
         "requestBody": {
           "content": {
             "application/json": {
@@ -870,7 +1078,7 @@
     },
     "/deepfence/lookup/containers": {
       "post": {
-        "tags": ["Topology"],
+        "tags": ["Lookup"],
         "summary": "Retrieve Containers data",
         "description": "Retrieve all the data associated with containers",
         "operationId": "getContainers",
@@ -925,7 +1133,7 @@
     },
     "/deepfence/lookup/hosts": {
       "post": {
-        "tags": ["Topology"],
+        "tags": ["Lookup"],
         "summary": "Retrieve Hosts data",
         "description": "Retrieve all the data associated with hosts",
         "operationId": "getHosts",
@@ -980,7 +1188,7 @@
     },
     "/deepfence/lookup/processes": {
       "post": {
-        "tags": ["Topology"],
+        "tags": ["Lookup"],
         "summary": "Retrieve Processes data",
         "description": "Retrieve all the data associated with processes",
         "operationId": "getProcesses",
@@ -2956,20 +3164,34 @@
           "type": { "type": "string" }
         }
       },
+      "ReportersContainsFilter": {
+        "required": ["filter_in"],
+        "type": "object",
+        "properties": {
+          "filter_in": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": {} },
+            "nullable": true
+          }
+        }
+      },
+      "ReportersFieldsFilters": {
+        "required": ["contains_filter"],
+        "type": "object",
+        "properties": {
+          "contains_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" }
+        }
+      },
       "ReportersLookupFilter": {
         "required": ["in_field_filter", "node_ids"],
         "type": "object",
         "properties": {
           "in_field_filter": {
-            "type": "object",
-            "additionalProperties": { "type": "object" },
+            "type": "array",
+            "items": { "type": "string" },
             "nullable": true
           },
-          "node_ids": {
-            "type": "object",
-            "additionalProperties": { "type": "object" },
-            "nullable": true
-          }
+          "node_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ReportersNodeInfo": {
@@ -3062,7 +3284,8 @@
           "region_filter",
           "kubernetes_filter",
           "host_filter",
-          "pod_filter"
+          "pod_filter",
+          "field_filters"
         ],
         "type": "object",
         "properties": {
@@ -3071,6 +3294,7 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "field_filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "host_filter": {
             "type": "array",
             "items": { "type": "string" },

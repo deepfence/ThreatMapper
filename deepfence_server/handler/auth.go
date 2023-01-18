@@ -54,7 +54,7 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	user, grantType, err := h.parseRefreshToken(r.Context())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: "user not found"})
+			httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: utils.ErrorUserNotFound})
 		} else if err.Error() == "access token is revoked" {
 			httpext.JSON(w, http.StatusForbidden, model.Response{Success: false, Message: err.Error()})
 		} else {
@@ -97,10 +97,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 	if err != nil {
 		return nil, "", err
 	}
-	user := model.User{ID: userId}
-	ctx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(ctx)
-	err = user.LoadFromDbByID(ctx, pgClient)
+	user, _, _, _, err := model.GetUserByID(userId)
 	if err != nil {
 		return nil, "", err
 	}
@@ -108,7 +105,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 	if err != nil {
 		return nil, "", err
 	}
-	return &user, grantType, nil
+	return user, grantType, nil
 }
 
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -125,19 +122,9 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
 		return
 	}
-	ctx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(ctx)
+	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(loginRequest.Email)
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
-		return
-	}
-	u := model.User{Email: loginRequest.Email}
-	err = u.LoadFromDbByEmail(ctx, pgClient)
-	if errors.Is(err, sql.ErrNoRows) {
-		httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: "user not found"})
-		return
-	} else if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, statusCode, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)

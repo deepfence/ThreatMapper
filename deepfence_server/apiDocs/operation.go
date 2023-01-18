@@ -6,12 +6,12 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/weaveworks/scope/render/detailed"
 
-	ingester "github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 )
 
 func (d *OpenApiDocs) AddUserAuthOperations() {
@@ -45,6 +45,20 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
 		http.StatusOK, []string{tagUser}, bearerToken, nil, model.Response{Success: true, Data: []postgresqldb.ApiToken{}})
+
+	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
+		"Reset Password Request", "Request for resetting the password",
+		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetRequest), model.Response{Success: true})
+	d.AddOperation("verifyResetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/verify",
+		"Verify and Reset Password", "Verify code and reset the password",
+		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetVerifyRequest), model.Response{Success: true})
+
+	d.AddOperation("inviteUser", http.MethodPost, "/deepfence/user/invite",
+		"Invite User", "Invite a user",
+		http.StatusOK, []string{tagUser}, bearerToken, new(model.InviteUserRequest), model.Response{Success: true, Data: model.InviteUserResponse{}})
+	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
+		"Register Invited User", "Register invited user",
+		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {

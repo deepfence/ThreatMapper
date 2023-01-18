@@ -7,7 +7,7 @@ import { TextInputArea } from '@/components/input/TextInputArea';
 import { renderUI } from '@/tests/utils';
 
 describe(`Component TextInputArea`, () => {
-  it(`render with placehoder, label, onChange, startIcon, endIcon, helperText, style width`, () => {
+  it(`render with placehoder, label, onChange, startIcon, endIcon, helperText`, () => {
     const onChange = vi.fn();
     const { getByTestId, getByPlaceholderText, getByText, getByLabelText } = renderUI(
       <TextInputArea
@@ -16,7 +16,6 @@ describe(`Component TextInputArea`, () => {
         onChange={onChange}
         label="Comments"
         helperText="Put your comments"
-        width="w-4/12"
       />,
     );
     expect(getByPlaceholderText('test@email.com')).toBeInTheDocument();
@@ -26,8 +25,6 @@ describe(`Component TextInputArea`, () => {
     expect(getByText('Put your comments')).toBeInTheDocument();
 
     const textInputArea = getByTestId('textinputarea-id');
-
-    expect(textInputArea).toHaveClass('w-4/12');
 
     // action
     fireEvent.change(textInputArea, { target: { value: 'I am very satisfied' } });

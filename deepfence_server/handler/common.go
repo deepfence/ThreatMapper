@@ -13,6 +13,8 @@ import (
 
 const (
 	RevokedAccessTokenIdPrefix = "Revoked-AccessTokenID-"
+	UserInviteSendEmail        = "send-invite-email"
+	UserInviteGetLink          = "get-invite-link"
 )
 
 func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {

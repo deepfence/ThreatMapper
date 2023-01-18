@@ -1,5 +1,9 @@
 package utils
 
+const (
+	ErrorUserNotFound = "user not found"
+)
+
 // kafka topics
 const (
 	VULNERABILITY_SCAN           = "vulnerability-scan"
@@ -17,9 +21,12 @@ const (
 	CLOUD_TRAIL_ALERTS           = "cloudtrail-alert"
 )
 
+// task names
 const (
-	CleanUpGraphDBTask   = "clean_up_graph_db"
-	RetryFailedScansTask = "retry_failed_scans"
+	CleanUpGraphDBTask    = "clean_up_graph_db"
+	CleanUpPostgresqlTask = "clean_up_postgresql"
+	RetryFailedScansTask  = "retry_failed_scans"
+	ParseSBOMTask         = "tasks_parse_sbom"
 )
 
 const (

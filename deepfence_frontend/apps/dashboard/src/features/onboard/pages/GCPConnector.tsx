@@ -1,8 +1,8 @@
 import { Button } from 'ui-components';
 
-import { usePageNavigation } from '../../../utils/usePageNavigation';
-import { ConnectorHeader } from '../components/ConnectorHeader';
-import { GCPConnectorForm } from '../components/connectors/clouds/GCPConnectorForm';
+import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { GCPConnectorForm } from '@/features/onboard/components/connectors/clouds/GCPConnectorForm';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const GCPConnector = () => {
   const { goBack } = usePageNavigation();

@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path"
 
@@ -30,15 +31,21 @@ func NewSBOMParser(ingest chan *kgo.Record) SbomParser {
 }
 
 func (s SbomParser) ParseSBOM(msg *message.Message) error {
-	// extract tenant id
-	tenantID, err := directory.ExtractNamespace(msg.Context())
-	if err != nil {
-		log.Error().Msg(err.Error())
-		// 	return err
+	// // extract tenant id
+	// tenantID, err := directory.ExtractNamespace(msg.Context())
+	// if err != nil {
+	// 	log.Error().Msg(err.Error())
+	// 	return err
+	// }
+
+	tenantID := msg.Metadata.Get(directory.NamespaceKey)
+	if len(tenantID) == 0 {
+		log.Error().Msg("tenant-id/namespace is empty")
+		return errors.New("tenant-id/namespace is empty")
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
-	log.Debug().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
+	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
 
 	var params utils.SbomQueryParameters
 
@@ -47,7 +54,7 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 		return err
 	}
 
-	mc, err := directory.MinioClient(directory.NewGlobalContext())
+	mc, err := directory.MinioClient(directory.NewContextWithNameSpace(directory.NamespaceID(tenantID)))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
@@ -55,8 +62,7 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	sbomFile := path.Join("/tmp", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
 	log.Info().Msgf("sbom file %s", sbomFile)
-	err = mc.FGetObject(context.Background(), params.Bucket, params.SBOMFilePath,
-		sbomFile, minio.GetObjectOptions{})
+	err = mc.DownloadFile(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
@@ -84,13 +90,15 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
 	if err != nil {
-		log.Error().Msgf("error on generate vulnerability report: %s", err.Error())
+		log.Error().Msgf("error on generate vulnerability report: %s", err)
 	}
+
+	log.Info().Msgf("scan-id=%s vulnerabilities=%d", params.ScanId, len(report))
 
 	// write reports and status to kafka ingester will process from there
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(params.Bucket)},
+		{Key: "tenant_id", Value: []byte(tenantID)},
 	}
 
 	for _, c := range report {
@@ -109,9 +117,9 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 	// scan status
 	status := struct {
 		utils.SbomQueryParameters
-		Status string `json:"status,omitempty"`
+		ScanStatus string `json:"scan_status,omitempty"`
 	}{
-		Status:              utils.SCAN_STATUS_SUCCESS,
+		ScanStatus:          utils.SCAN_STATUS_SUCCESS,
 		SbomQueryParameters: params,
 	}
 

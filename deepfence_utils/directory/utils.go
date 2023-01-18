@@ -2,6 +2,7 @@ package directory
 
 import (
 	"context"
+
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/minio/minio-go/v7"
 

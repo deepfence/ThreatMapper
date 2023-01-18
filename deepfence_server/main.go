@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"flag"
+	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"math/rand"
 	"net/http"
 	"os"
@@ -45,28 +46,40 @@ type Config struct {
 func main() {
 	flag.Parse()
 
+	openApiDocs := apiDocs.InitializeOpenAPIReflector()
+	initializeOpenApiDocs(openApiDocs)
+
+	if *exportOpenapiDocsPath != "" {
+		if *exportOpenapiDocsPath != filepath.Clean(*exportOpenapiDocsPath) {
+			log.Fatal().Msgf("File path %s is not valid", *exportOpenapiDocsPath)
+		}
+		openApiYaml, err := openApiDocs.Yaml()
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+		err = os.WriteFile(*exportOpenapiDocsPath, openApiYaml, 0666)
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+		log.Info().Msgf("OpenAPI yaml saved at %s", *exportOpenapiDocsPath)
+		os.Exit(0)
+	}
+
 	config, err := initialize()
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
-
-	if *exportOpenapiDocsPath == "" {
-		config.JwtSecret, err = initializeDatabase()
-		if err != nil {
-			log.Fatal().Msg(err.Error())
-		}
-
-		err = initializeKafka()
-		if err != nil {
-			log.Fatal().Msg(err.Error())
-		}
-
-		log.Info().Msg("starting deepfence-server")
-	} else {
-		if *exportOpenapiDocsPath != filepath.Clean(*exportOpenapiDocsPath) {
-			log.Fatal().Msgf("File path %s is not valid", *exportOpenapiDocsPath)
-		}
+	config.JwtSecret, err = initializeDatabase()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
 	}
+
+	err = initializeKafka()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+
+	log.Info().Msg("starting deepfence-server")
 
 	mux := chi.NewRouter()
 	mux.Use(middleware.Recoverer)
@@ -102,26 +115,12 @@ func main() {
 	}
 	defer publisher.Close()
 
-	dfHandler, err := router.SetupRoutes(mux,
+	err = router.SetupRoutes(mux,
 		config.HttpListenEndpoint, config.JwtSecret,
-		*serveOpenapiDocs, ingestC, publisher,
+		*serveOpenapiDocs, ingestC, publisher, openApiDocs,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return
-	}
-
-	if *exportOpenapiDocsPath != "" {
-		openApiYaml, err := dfHandler.OpenApiDocs.Yaml()
-		if err != nil {
-			return
-		}
-		err = os.WriteFile(*exportOpenapiDocsPath, openApiYaml, 0666)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return
-		}
-		log.Info().Msgf("OpenAPI yaml saved at %s", *exportOpenapiDocsPath)
 		return
 	}
 
@@ -196,6 +195,17 @@ func initializeDatabase() ([]byte, error) {
 		return nil, err
 	}
 	return jwtSecret, nil
+}
+
+func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
+	openApiDocs.AddUserAuthOperations()
+	openApiDocs.AddUserOperations()
+	openApiDocs.AddGraphOperations()
+	openApiDocs.AddLookupOperations()
+	openApiDocs.AddControlsOperations()
+	openApiDocs.AddIngestersOperations()
+	openApiDocs.AddScansOperations()
+	openApiDocs.AddDiagnosisOperations()
 }
 
 func initializeKafka() error {

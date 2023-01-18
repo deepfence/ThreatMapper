@@ -3,7 +3,6 @@ package model
 import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-playground/validator/v10"
-	"strconv"
 	"strings"
 	"unicode"
 )
@@ -66,18 +65,4 @@ func ParseValidatorError(errMsg string) map[string]string {
 		}
 	}
 	return fields
-}
-
-func MapKeys(input map[string]string) []int32 {
-	keys := make([]int32, len(input))
-	i := 0
-	for k := range input {
-		key, err := strconv.ParseInt(k, 10, 32)
-		if err != nil {
-			continue
-		}
-		keys[i] = int32(key)
-		i++
-	}
-	return keys
 }

@@ -2026,6 +2026,90 @@ paths:
       summary: Update Current User
       tags:
       - User
+  /deepfence/user/invite:
+    post:
+      description: Invite a user
+      operationId: inviteUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelInviteUserRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Invite User
+      tags:
+      - User
+  /deepfence/user/invite/register:
+    post:
+      description: Register invited user
+      operationId: registerInvitedUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelRegisterInvitedUserRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      summary: Register Invited User
+      tags:
+      - User
   /deepfence/user/login:
     post:
       description: Login API
@@ -2140,6 +2224,88 @@ paths:
                 $ref: '#/components/schemas/ApiDocsFailureResponse'
           description: Internal Server Error
       summary: Register User
+      tags:
+      - User
+  /deepfence/user/reset-password/request:
+    post:
+      description: Request for resetting the password
+      operationId: resetPasswordRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelPasswordResetRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      summary: Reset Password Request
+      tags:
+      - User
+  /deepfence/user/reset-password/verify:
+    post:
+      description: Verify code and reset the password
+      operationId: verifyResetPasswordRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelPasswordResetVerifyRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      summary: Verify and Reset Password
       tags:
       - User
 components:
@@ -3437,6 +3603,37 @@ components:
       - tag
       - virtual_mb
       type: object
+    ModelInviteUserRequest:
+      example:
+        role: admin
+        action: send-invite-email
+        email: email
+      properties:
+        action:
+          enum:
+          - send-invite-email
+          - get-invite-link
+          type: string
+        email:
+          type: string
+        role:
+          enum:
+          - admin
+          - standard-user
+          - read-only-user
+          type: string
+      required:
+      - action
+      - email
+      - role
+      type: object
+    ModelInviteUserResponse:
+      properties:
+        invite_expiry_hours:
+          type: integer
+        invite_url:
+          type: string
+      type: object
     ModelLoginRequest:
       example:
         password: password
@@ -3452,6 +3649,28 @@ components:
       type: object
     ModelMetadata:
       additionalProperties: {}
+      type: object
+    ModelPasswordResetRequest:
+      example:
+        email: email
+      properties:
+        email:
+          type: string
+      required:
+      - email
+      type: object
+    ModelPasswordResetVerifyRequest:
+      example:
+        password: password
+        code: code
+      properties:
+        code:
+          type: string
+        password:
+          type: string
+      required:
+      - code
+      - password
       type: object
     ModelPod:
       example:
@@ -3655,6 +3874,31 @@ components:
           type: string
       required:
       - payload
+      type: object
+    ModelRegisterInvitedUserRequest:
+      example:
+        password: password
+        code: code
+        last_name: last_name
+        first_name: first_name
+        is_temporary_password: true
+      properties:
+        code:
+          type: string
+        first_name:
+          type: string
+        is_temporary_password:
+          type: boolean
+        last_name:
+          type: string
+        password:
+          type: string
+      required:
+      - code
+      - first_name
+      - is_temporary_password
+      - last_name
+      - password
       type: object
     ModelResponse:
       example:

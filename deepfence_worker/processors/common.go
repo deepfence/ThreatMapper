@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/deepfence/ThreatMapper/deepfence_ingester/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 

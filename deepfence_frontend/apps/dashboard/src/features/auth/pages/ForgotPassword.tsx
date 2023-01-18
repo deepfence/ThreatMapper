@@ -2,14 +2,9 @@ import cx from 'classnames';
 import { Link, useFetcher } from 'react-router-dom';
 import { Button, TextInput, Typography } from 'ui-components';
 
-import LogoDarkBlue from '../../../assets/logo-deepfence-dark-blue.svg';
+import LogoDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
 
-export const forgotPasswordAction = async ({
-  request,
-}: {
-  request: Request;
-  params: Record<string, unknown>;
-}) => {
+export const forgotPasswordAction = async () => {
   return {
     success: true,
   };

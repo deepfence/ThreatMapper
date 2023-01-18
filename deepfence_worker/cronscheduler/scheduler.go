@@ -1,6 +1,10 @@
 package cronscheduler
 
 import (
+	stdLogger "log"
+	"os"
+	"time"
+
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -9,9 +13,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/robfig/cron/v3"
-	stdLogger "log"
-	"os"
-	"time"
 )
 
 type Scheduler struct {
@@ -43,6 +44,10 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	_, err = s.cron.AddFunc("@every 10m", s.CleanUpPostgresqlTask)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -61,6 +66,14 @@ func (s *Scheduler) CleanUpGraphDBTask() {
 func (s *Scheduler) RetryFailedScansTask() {
 	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
 	err := s.publishNewCronJob(metadata, utils.RetryFailedScansTask, []byte(utils.GetDatetimeNow()))
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (s *Scheduler) CleanUpPostgresqlTask() {
+	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+	err := s.publishNewCronJob(metadata, utils.CleanUpPostgresqlTask, []byte(utils.GetDatetimeNow()))
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}

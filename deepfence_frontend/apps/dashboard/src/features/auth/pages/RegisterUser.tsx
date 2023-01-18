@@ -2,8 +2,8 @@ import cx from 'classnames';
 import { Link, useFetcher } from 'react-router-dom';
 import { Button, TextInput, Typography } from 'ui-components';
 
-import LogoDarkBlue from '../../../assets/logo-deepfence-dark-blue.svg';
-import { RegisterActionReturnType } from '../actions/registerAction';
+import LogoDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
+import { RegisterActionReturnType } from '@/features/auth/actions/registerAction';
 
 export const RegisterUser = () => {
   const fetcher = useFetcher<RegisterActionReturnType>();
