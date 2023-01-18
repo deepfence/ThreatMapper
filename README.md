@@ -131,6 +131,7 @@ Please file GitHub issues as needed, and join the Deepfence Community [Slack cha
 
 # License
 
+
 The Deepfence ThreatMapper project (this repository) is offered under the [Apache2 license](https://www.apache.org/licenses/LICENSE-2.0).
 
 [Contributions](CONTRIBUTING.md) to Deepfence ThreatMapper project are similarly accepted under the Apache2 license, as per [GitHub's inbound=outbound policy](https://docs.github.com/en/github/site-policy/github-terms-of-service#6-contributions-under-repository-license).
