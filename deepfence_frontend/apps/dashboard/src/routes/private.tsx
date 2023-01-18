@@ -81,7 +81,7 @@ export const privateRoutes: RouteObject[] = [
         path: 'scan',
         children: [
           {
-            path: 'configure',
+            path: 'choose',
             element: <ChooseScan />,
           },
           {

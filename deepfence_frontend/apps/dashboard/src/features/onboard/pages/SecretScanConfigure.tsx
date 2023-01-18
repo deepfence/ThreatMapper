@@ -8,15 +8,16 @@ export const SecretScanConfigure = () => {
   return (
     <>
       <ConnectorHeader
-        title="Configure your scan"
+        title="Configure Secret Scan"
         description="Just click the start scan button to start your secret scanning"
         metadata={{
           accountId: '234HTY6643',
           type: 'Host',
         }}
       />
-      <section>
-        <Button size="xs" color="primary">
+      <section className="flex">
+        <div></div>
+        <Button size="sm" color="primary" className="ml-auto">
           Start scan
         </Button>
       </section>

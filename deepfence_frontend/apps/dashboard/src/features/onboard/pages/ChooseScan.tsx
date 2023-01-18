@@ -113,7 +113,7 @@ const ScanType = () => {
                 size="xs"
                 color="primary"
                 onClick={() => {
-                  goNext(`${location.pathname}${redirect}`);
+                  goNext(`../configure${redirect}`);
                 }}
               >
                 {buttonText}

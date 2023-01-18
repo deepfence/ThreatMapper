@@ -1,7 +1,7 @@
 import { filter, find, isEmpty } from 'lodash-es';
 import { useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
+import { HiBan, HiLightBulb, HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
 import {
   Button,
   createColumnHelper,
@@ -619,7 +619,7 @@ const ComplianceTable = () => {
         header: () => 'Enabled',
         cell: (info) => (
           <Switch
-            checked={info.renderValue()}
+            checked={!!info.renderValue()}
             onCheckedChange={(e) => {
               updateTableData(info, e);
             }}
@@ -634,15 +634,15 @@ const ComplianceTable = () => {
     <div>
       <div className="py-2 text-gray-500">
         {isEmpty(rowSelectionState) ? (
-          'No rows selected'
+          <span className="mb-3 block">No rows selected</span>
         ) : (
-          <div>
-            <Switch
-              checked={false}
-              onCheckedChange={(e) => {}}
-              label="Enabled"
-              size="sm"
-            />
+          <div className="flex gap-2">
+            <Button size="xs" startIcon={<HiBan />}>
+              Disable Selected
+            </Button>
+            <Button size="xs" startIcon={<HiLightBulb />}>
+              Enable Selected
+            </Button>
           </div>
         )}
       </div>
@@ -678,7 +678,7 @@ export const ComplianceScanConfigure = () => {
     setTabs((prevTabs) => {
       const found = hasTypeSelected(prevTabs, name);
       if (found) {
-        return [...filter(prevTabs, (tab) => tab.value !== found.value)];
+        return [...filter(prevTabs, (tab: TabsType) => tab.value !== found.value)];
       } else {
         return [
           ...prevTabs,
@@ -703,14 +703,14 @@ export const ComplianceScanConfigure = () => {
   return (
     <>
       <ConnectorHeader
-        title="Configure your scan"
+        title="Configure Compliance Scan"
         description="Choose from the below options to perform your first scan."
         metadata={{
           accountId: '234HTY6643',
           type: 'AWS',
         }}
       />
-      <div className="mt-8 flex gap-4 mb-8">
+      <div className="mt-6 flex gap-4 mb-6">
         {scanType.map((type) => (
           <Button
             color="primary"
@@ -720,23 +720,25 @@ export const ComplianceScanConfigure = () => {
             onClick={() => {
               onScanTypeSelection(type);
             }}
+            endIcon={hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
           >
             {type}
-            <IconContext.Provider
-              value={{
-                className: 'ml-2.5 w-4 h-4',
-              }}
-            >
-              {hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
-            </IconContext.Provider>
           </Button>
         ))}
+        <Button
+          size="sm"
+          color="primary"
+          className="ml-auto"
+          disabled={tabs.length === 0}
+        >
+          Start Scan
+        </Button>
       </div>
       <div
         className={`${Typography.size.sm} ${Typography.weight.medium} mt-4 dark:text-white`}
       >
         {selectedTab === '' ? (
-          <p>Please select at least one compliance type.</p>
+          <p>Please select at least one compliance type to start your scan.</p>
         ) : (
           <Tabs value={selectedTab} tabs={tabs} onValueChange={(v) => setSelectedTab(v)}>
             <div className="h-full p-2 dark:text-white">
