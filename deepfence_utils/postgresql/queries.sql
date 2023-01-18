@@ -351,6 +351,19 @@ SELECT container_registry.id,
 FROM container_registry
 WHERE container_registry.registry_type = $1;
 
+-- name: GetContainerRegistryByTypeAndName :one
+SELECT container_registry.id,
+       container_registry.name,
+       container_registry.registry_type,
+       container_registry.encrypted_secret,
+       container_registry.non_secret,
+       container_registry.created_at,
+       container_registry.updated_at
+FROM container_registry
+WHERE container_registry.registry_type = $1
+AND container_registry.name = $2
+LIMIT 1;
+
 -- name: DeleteContainerRegistry :exec
 DELETE
 FROM container_registry

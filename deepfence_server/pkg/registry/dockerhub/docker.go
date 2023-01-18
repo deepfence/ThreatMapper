@@ -5,13 +5,19 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 const dockerHubURL = "https://hub.docker.com/v2"
 
-func New() *RegistryDockerHub {
-	return &RegistryDockerHub{}
+func New(requestByte []byte) (*RegistryDockerHub, error) {
+	r := RegistryDockerHub{}
+	err := json.Unmarshal(requestByte, &r)
+	if err != nil {
+		return &r, err
+	}
+	return &r, nil
 }
 
 func (d *RegistryDockerHub) IsValidCredential() bool {
@@ -36,4 +42,22 @@ func (d *RegistryDockerHub) IsValidCredential() bool {
 		return true
 	}
 	return false
+}
+
+func (d *RegistryDockerHub) EncryptSecret(aes encryption.AES) error {
+	d.Secret.DockerHubPassword = aes.Encrypt(d.Secret.DockerHubPassword)
+	return nil
+}
+
+func (d *RegistryDockerHub) DecryptSecret(aes encryption.AES) error {
+	// todo
+	return nil
+}
+
+// getters
+func (d *RegistryDockerHub) GetSecret() map[string]interface{} {
+	var secret map[string]interface{}
+	b, _ := json.Marshal(d.Secret)
+	json.Unmarshal(b, &secret)
+	return secret
 }

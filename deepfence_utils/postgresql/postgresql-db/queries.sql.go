@@ -852,6 +852,50 @@ func (q *Queries) GetContainerRegistryByType(ctx context.Context, registryType s
 	return items, nil
 }
 
+const getContainerRegistryByTypeAndName = `-- name: GetContainerRegistryByTypeAndName :one
+SELECT container_registry.id,
+       container_registry.name,
+       container_registry.registry_type,
+       container_registry.encrypted_secret,
+       container_registry.non_secret,
+       container_registry.created_at,
+       container_registry.updated_at
+FROM container_registry
+WHERE container_registry.registry_type = $1
+AND container_registry.name = $2
+LIMIT 1
+`
+
+type GetContainerRegistryByTypeAndNameParams struct {
+	RegistryType string
+	Name         string
+}
+
+type GetContainerRegistryByTypeAndNameRow struct {
+	ID              int32
+	Name            string
+	RegistryType    string
+	EncryptedSecret json.RawMessage
+	NonSecret       json.RawMessage
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+func (q *Queries) GetContainerRegistryByTypeAndName(ctx context.Context, arg GetContainerRegistryByTypeAndNameParams) (GetContainerRegistryByTypeAndNameRow, error) {
+	row := q.db.QueryRowContext(ctx, getContainerRegistryByTypeAndName, arg.RegistryType, arg.Name)
+	var i GetContainerRegistryByTypeAndNameRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.RegistryType,
+		&i.EncryptedSecret,
+		&i.NonSecret,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getPasswordHash = `-- name: GetPasswordHash :one
 SELECT password_hash
 FROM users
