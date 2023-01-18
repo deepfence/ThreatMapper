@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -39,7 +40,8 @@ const (
 	ResourceDiagnosis   = "diagnosis"
 )
 
-func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool, ingestC chan *kgo.Record) (*handler.Handler, error) {
+func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
+	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher) (*handler.Handler, error) {
 	// JWT
 	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
 
@@ -58,6 +60,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 		SaasDeployment: IsSaasDeployment(),
 		Validator:      validator.New(),
 		IngestChan:     ingestC,
+		TasksPublisher: taskPublisher,
 	}
 
 	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)
@@ -75,7 +78,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 	r.Route("/deepfence", func(r chi.Router) {
 		r.Get("/ping", dfHandler.Ping)
-		r.Get("/async_ping", dfHandler.AsyncPing)
 
 		// public apis
 		r.Group(func(r chi.Router) {
@@ -124,8 +126,21 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 			openApiDocs.AddGraphOperations()
 			r.Route("/graph", func(r chi.Router) {
-				r.Post("/topology", dfHandler.GetTopologyGraph)
+				r.Route("/topology", func(r chi.Router) {
+					r.Post("/", dfHandler.GetTopologyGraph)
+					r.Post("/hosts", dfHandler.GetTopologyHostsGraph)
+					r.Post("/kubernetes", dfHandler.GetTopologyKubernetesGraph)
+					r.Post("/containers", dfHandler.GetTopologyContainersGraph)
+					r.Post("/pods", dfHandler.GetTopologyPodsGraph)
+				})
 				r.Post("/threat", dfHandler.GetThreatGraph)
+			})
+
+			openApiDocs.AddLookupOperations()
+			r.Route("/lookup", func(r chi.Router) {
+				r.Post("/hosts", dfHandler.GetHosts)
+				r.Post("/containers", dfHandler.GetContainers)
+				r.Post("/processes", dfHandler.GetProcesses)
 			})
 
 			openApiDocs.AddControlsOperations()
@@ -150,10 +165,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 			openApiDocs.AddScansOperations()
 			r.Route("/scan/start", func(r chi.Router) {
-				r.Get("/cves", dfHandler.StartCVEScanHandler)
-				r.Get("/secrets", dfHandler.StartSecretScanHandler)
-				r.Get("/malware", dfHandler.StartMalwareScanHandler)
-				r.Get("/compliances", dfHandler.StartComplianceScanHandler)
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartVulnerabilityScanHandler))
 				r.Post("/secret", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartSecretScanHandler))
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartComplianceScanHandler))
