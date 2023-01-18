@@ -9,9 +9,9 @@ import {
   rootOnboardLoader,
 } from '@/features/onboard/layouts/OnboardLayout';
 import { AmazonECRConnector } from '@/features/onboard/pages/AmazonECRConnector';
-import { AWSChooseScan } from '@/features/onboard/pages/AWSChooseScan';
 import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
 import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
+import { ChooseScan } from '@/features/onboard/pages/ChooseScan';
 import { ComplianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { MyConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
@@ -82,7 +82,7 @@ export const privateRoutes: RouteObject[] = [
         children: [
           {
             path: 'configure',
-            element: <AWSChooseScan />,
+            element: <ChooseScan />,
           },
           {
             path: 'configure/compliance',

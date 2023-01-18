@@ -1,4 +1,4 @@
-import { Button, Typography } from 'ui-components';
+import { Button } from 'ui-components';
 
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -9,16 +9,16 @@ export const SecretScanConfigure = () => {
     <>
       <ConnectorHeader
         title="Configure your scan"
-        description="Choose from the below options to perform your first scan."
+        description="Just click the start scan button to start your secret scanning"
         metadata={{
           accountId: '234HTY6643',
           type: 'Host',
         }}
       />
       <section>
-        <h6
-          className={`${Typography.size.lg} ${Typography.weight.medium} mt-4 dark:text-white`}
-        ></h6>
+        <Button size="xs" color="primary">
+          Start scan
+        </Button>
       </section>
 
       <Button onClick={goBack} color="default" size="xs" className="mt-16">

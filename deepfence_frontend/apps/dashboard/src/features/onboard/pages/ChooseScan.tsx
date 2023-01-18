@@ -125,7 +125,7 @@ const ScanType = () => {
     </div>
   );
 };
-export const AWSChooseScan = () => {
+export const ChooseScan = () => {
   const { goBack } = usePageNavigation();
   return (
     <>
