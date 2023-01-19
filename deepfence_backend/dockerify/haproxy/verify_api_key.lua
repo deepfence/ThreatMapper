@@ -56,7 +56,7 @@ end
 
 core.register_init(function()
     enable_auth = os.getenv("ENABLE_AUTH")
-    r_wrap = redis_wrapper.new(os.getenv("REDIS_HOST"), os.getenv("REDIS_PORT"), 50)
+    r_wrap = redis_wrapper.new(os.getenv("REDIS_HOST"), os.getenv("REDIS_PORT"), 500)
 end)
 
 core.register_action('deepfence-key-verify', { 'http-req' }, deepfence_key_verify, 0)
