@@ -269,10 +269,6 @@ const DfTableV2 = forwardRef(({
       totalRows,
       data
     });
-  } else if (showPagination) {
-    additionalTableParams.initialState = {
-      pageSize: defaultPageSize
-    };
   }
 
   const tableInstance = useTable(
@@ -336,6 +332,8 @@ const DfTableV2 = forwardRef(({
 
   useEffect(() => {
     if (defaultPageSize !== data.length) {
+      setPageSize(defaultPageSize);
+    } else if (!manual && data.length) {
       setPageSize(defaultPageSize);
     }
   }, [defaultPageSize, data]);
