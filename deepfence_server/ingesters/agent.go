@@ -251,7 +251,10 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		host_batch = append(host_batch, node_info)
 
 		if node_info["kubernetes_cluster_id"] != "" {
-			kubernetes_batch = append(kubernetes_batch, map[string]string{"node_id": node_info["kubernetes_cluster_id"]})
+			kubernetes_batch = append(kubernetes_batch, map[string]string{
+				"node_id":   node_info["kubernetes_cluster_id"],
+				"node_name": node_info["kubernetes_cluster_name"],
+			})
 			kubernetes_edge_batch[node_info["kubernetes_cluster_id"]] = append(kubernetes_edge_batch[node_info["kubernetes_cluster_id"]], node_info["node_id"])
 		}
 	}
@@ -394,6 +397,9 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		k8sid, ok := node_info["kubernetes_cluster_id"]
 		if !ok {
 			continue
+		}
+		if val, ok := resolvers.get_host(node_info["kubernetes_ip"]); ok {
+			node_info["host_node_id"] = val
 		}
 		pod_batch = append(pod_batch, node_info)
 		pod_edges_batch[k8sid] = append(pod_edges_batch[k8sid], node_info["node_id"])
