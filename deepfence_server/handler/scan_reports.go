@@ -24,6 +24,7 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -380,8 +381,18 @@ func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.R
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestMalwareScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
+func (h *Handler) IngestMalwareReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func (h *Handler) IngestCloudComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
-	ingester := ingesters.NewCloudComplianceIngester()
+	ingester := ingesters.NewMalwareIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
