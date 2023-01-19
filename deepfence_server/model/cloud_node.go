@@ -45,6 +45,7 @@ type CloudNodeAccountsListReq struct {
 
 type CloudNodeAccountsListResp struct {
 	CloudNodeAccountInfo []CloudNodeAccountInfo `json:"cloud_node_accounts_info" required:"true"`
+	Total                int                    `json:"total" required:"true"`
 }
 
 type CloudNodeAccountInfo struct {
@@ -134,30 +135,30 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw FetchWindow) (CloudNodeAccountsListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return CloudNodeAccountsListResp{}, err
+		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
-		return CloudNodeAccountsListResp{}, err
+		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return CloudNodeAccountsListResp{}, err
+		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`MATCH (n:Node{cloud_provider: $cloud_provider}) RETURN n.node_id, n.node_name, n.cloud_provider ORDER BY m.updated_at SKIP $skip LIMIT $limit`,
+	res, err := tx.Run(`MATCH (n:Node{cloud_provider: $cloud_provider}) RETURN n.node_id, n.node_name, n.cloud_provider ORDER BY n.updated_at SKIP $skip LIMIT $limit`,
 		map[string]interface{}{"cloud_provider": cloudProvider, "skip": fw.Offset, "limit": fw.Size})
 	if err != nil {
-		return CloudNodeAccountsListResp{}, err
+		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 
 	recs, err := res.Collect()
 	if err != nil {
-		return CloudNodeAccountsListResp{}, err
+		return CloudNodeAccountsListResp{Total: 0}, err
 	}
 
 	cloud_node_accounts_info := []CloudNodeAccountInfo{}
@@ -172,7 +173,18 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		cloud_node_accounts_info = append(cloud_node_accounts_info, tmp)
 	}
 
-	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info}, nil
+	total := fw.Offset + len(cloud_node_accounts_info)
+	countRes, err := tx.Run(`MATCH (n:Node {cloud_provider: $cloud_provider}) RETURN COUNT(*)`,
+		map[string]interface{}{"cloud_provider": cloudProvider})
+
+	countRec, err := countRes.Single()
+	if err != nil {
+		return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
+	}
+
+	total = int(countRec.Values[0].(int64))
+
+	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
 }
 
 //type ScanStatus string

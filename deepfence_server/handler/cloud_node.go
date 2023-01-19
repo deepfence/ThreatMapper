@@ -33,7 +33,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	logrus.Infof("Request: %+v", req)
+	logrus.Debugf("Register Cloud Node Account Request: %+v", req)
 
 	monitoredAccountIds := req.MonitoredAccountIds
 	orgAccountId := req.OrgAccountId
@@ -42,28 +42,33 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	cloudtrailTrails := make([]model.CloudNodeCloudtrailTrail, 10)
 	nodeId := req.NodeId
 
-	ctx := directory.NewGlobalContext()
+	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
 	redisClient, err := directory.RedisClient(ctx)
 	if err != nil {
 		return
 	}
 
-	doRefresh, err := redisClient.HGet(ctx, CloudComplianceRefreshInventory, nodeId).Result()
-	if err != nil {
-		return
-	}
+	logrus.Debugf("Getting CLOUD_COMPLIANCE_REFRESH_INVENTORY value from Redis for node: %s", nodeId)
+	//doRefresh, err := redisClient.HGet(ctx, CloudComplianceRefreshInventory, nodeId).Result()
+	//if err != nil {
+	//	return
+	//}
 
-	if doRefresh == "" {
-		doRefresh = "false"
-	}
-	if doRefresh == "true" {
-		err := redisClient.HSet(ctx, CloudComplianceRefreshInventory, nodeId, "false").Err()
-		if err != nil {
-			return
-		}
-	}
+	//if doRefresh == "" {
+	//	doRefresh = "false"
+	//}
+	//if doRefresh == "true" {
+	//	logrus.Debugf("Setting CLOUD_COMPLIANCE_REFRESH_INVENTORY value from Redis for node: %s", nodeId)
+	//	err := redisClient.HSet(ctx, CloudComplianceRefreshInventory, nodeId, "false").Err()
+	//	if err != nil {
+	//		return
+	//	}
+	//}
+	doRefresh := "false"
 
+	logrus.Debugf("Monitored account ids count: %d", len(monitoredAccountIds))
 	if len(monitoredAccountIds) != 0 {
+		logrus.Debugf("More than 1 account to be monitored: %+v", monitoredAccountIds)
 		if orgAccountId != "" {
 			complianceError(w, "Org account id is needed for multi account setup")
 			return
@@ -99,26 +104,26 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		//}
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
 			var monitoredNode map[string]interface{}
-			complianceScanNodeDetailsStr, err := redisClient.HGet(ctx, CloudComplianceScanNodesCacheKey, monitoredNodeId).Result()
-			if err != nil {
-				complianceError(w, err.Error())
+			//complianceScanNodeDetailsStr, err := redisClient.HGet(ctx, CloudComplianceScanNodesCacheKey, monitoredNodeId).Result()
+			//if err != nil {
+			//	complianceError(w, err.Error())
+			//}
+			//if complianceScanNodeDetailsStr != "" {
+			//	err = json.Unmarshal([]byte(complianceScanNodeDetailsStr), &monitoredNode)
+			//}
+			//monitoredNodeUpdatedAt, ok := monitoredNode["updated_at"].(int64)
+			//if !ok {
+			//	monitoredNodeUpdatedAt = updatedAtTimestamp
+			//}
+			//if len(monitoredNode) > 0 && updatedAtTimestamp > monitoredNodeUpdatedAt {
+			//	monitoredNode["updated_at"] = updatedAtTimestamp
+			//} else if len(monitoredNode) == 0 {
+			monitoredNode = map[string]interface{}{
+				"node_id":        monitoredNodeId,
+				"cloud_provider": req.CloudProvider,
+				"node_name":      monitoredAccountId,
 			}
-			if complianceScanNodeDetailsStr != "" {
-				err = json.Unmarshal([]byte(complianceScanNodeDetailsStr), &monitoredNode)
-			}
-			monitoredNodeUpdatedAt, ok := monitoredNode["updated_at"].(int64)
-			if !ok {
-				monitoredNodeUpdatedAt = updatedAtTimestamp
-			}
-			if len(monitoredNode) > 0 && updatedAtTimestamp > monitoredNodeUpdatedAt {
-				monitoredNode["updated_at"] = updatedAtTimestamp
-			} else if len(monitoredNode) == 0 {
-				monitoredNode = map[string]interface{}{
-					"node_id":        monitoredNodeId,
-					"cloud_provider": req.CloudProvider,
-					"node_name":      monitoredAccountId,
-				}
-			}
+			//}
 			//jsonMonitoredNode, err := json.Marshal(node)
 			//if err != nil {
 			//	complianceError(w, err.Error())
@@ -241,18 +246,22 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 
 		}
 	} else {
+		logrus.Debugf("Single account monitoring for node: %s", nodeId)
 		node := map[string]interface{}{
 			//"node_id":        fmt.Sprintf("%s-%s-cloud-acc", req.CloudProvider, req.CloudAccount),
 			"node_id":        nodeId,
 			"cloud_provider": req.CloudProvider,
-			"node_name":      orgAccountId,
+			"node_name":      req.CloudAccount,
 		}
+		logrus.Debugf("Node for upsert: %+v", node)
 		err = model.UpsertCloudComplianceNode(ctx, node)
 		if err != nil {
+			logrus.Infof("Error while upserting node: %+v", err)
 			complianceError(w, err.Error())
 		}
 		pendingScansList, err := reporters.GetPendingScansList(ctx, utils.CLOUD_COMPLIANCE_SCAN, nodeId)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
+			logrus.Debugf("No pending scans found for node id: %s", nodeId)
 			httpext.JSON(w, http.StatusOK,
 				model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
 					CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh}})
@@ -266,7 +275,9 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			}
 			scanList[scan.ScanId] = scanDetail
 		}
+		logrus.Debugf("Pending scans for node: %+v", scanList)
 	}
+	logrus.Debugf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
 	httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{Data: model.CloudNodeAccountRegisterRespData{Scans: scanList,
 			CloudtrailTrails: cloudtrailTrails, Refresh: doRefresh}})
