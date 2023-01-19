@@ -22,22 +22,22 @@ var _ MappedNullable = &ModelKubernetesCluster{}
 type ModelKubernetesCluster struct {
 	CloudMetadata map[string]interface{} `json:"cloud_metadata"`
 	Containers []ModelHost `json:"containers"`
-	HostName string `json:"host_name"`
 	Metrics ModelComputeMetrics `json:"metrics"`
 	NodeId string `json:"node_id"`
+	NodeName string `json:"node_name"`
 }
 
 // NewModelKubernetesCluster instantiates a new ModelKubernetesCluster object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelKubernetesCluster(cloudMetadata map[string]interface{}, containers []ModelHost, hostName string, metrics ModelComputeMetrics, nodeId string) *ModelKubernetesCluster {
+func NewModelKubernetesCluster(cloudMetadata map[string]interface{}, containers []ModelHost, metrics ModelComputeMetrics, nodeId string, nodeName string) *ModelKubernetesCluster {
 	this := ModelKubernetesCluster{}
 	this.CloudMetadata = cloudMetadata
 	this.Containers = containers
-	this.HostName = hostName
 	this.Metrics = metrics
 	this.NodeId = nodeId
+	this.NodeName = nodeName
 	return &this
 }
 
@@ -99,30 +99,6 @@ func (o *ModelKubernetesCluster) SetContainers(v []ModelHost) {
 	o.Containers = v
 }
 
-// GetHostName returns the HostName field value
-func (o *ModelKubernetesCluster) GetHostName() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.HostName
-}
-
-// GetHostNameOk returns a tuple with the HostName field value
-// and a boolean to check if the value has been set.
-func (o *ModelKubernetesCluster) GetHostNameOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.HostName, true
-}
-
-// SetHostName sets field value
-func (o *ModelKubernetesCluster) SetHostName(v string) {
-	o.HostName = v
-}
-
 // GetMetrics returns the Metrics field value
 func (o *ModelKubernetesCluster) GetMetrics() ModelComputeMetrics {
 	if o == nil {
@@ -171,6 +147,30 @@ func (o *ModelKubernetesCluster) SetNodeId(v string) {
 	o.NodeId = v
 }
 
+// GetNodeName returns the NodeName field value
+func (o *ModelKubernetesCluster) GetNodeName() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.NodeName
+}
+
+// GetNodeNameOk returns a tuple with the NodeName field value
+// and a boolean to check if the value has been set.
+func (o *ModelKubernetesCluster) GetNodeNameOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.NodeName, true
+}
+
+// SetNodeName sets field value
+func (o *ModelKubernetesCluster) SetNodeName(v string) {
+	o.NodeName = v
+}
+
 func (o ModelKubernetesCluster) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -185,9 +185,9 @@ func (o ModelKubernetesCluster) ToMap() (map[string]interface{}, error) {
 	if o.Containers != nil {
 		toSerialize["containers"] = o.Containers
 	}
-	toSerialize["host_name"] = o.HostName
 	toSerialize["metrics"] = o.Metrics
 	toSerialize["node_id"] = o.NodeId
+	toSerialize["node_name"] = o.NodeName
 	return toSerialize, nil
 }
 

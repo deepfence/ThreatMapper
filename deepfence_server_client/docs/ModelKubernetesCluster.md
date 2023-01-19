@@ -6,15 +6,15 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **CloudMetadata** | **map[string]interface{}** |  | 
 **Containers** | [**[]ModelHost**](ModelHost.md) |  | 
-**HostName** | **string** |  | 
 **Metrics** | [**ModelComputeMetrics**](ModelComputeMetrics.md) |  | 
 **NodeId** | **string** |  | 
+**NodeName** | **string** |  | 
 
 ## Methods
 
 ### NewModelKubernetesCluster
 
-`func NewModelKubernetesCluster(cloudMetadata map[string]interface{}, containers []ModelHost, hostName string, metrics ModelComputeMetrics, nodeId string, ) *ModelKubernetesCluster`
+`func NewModelKubernetesCluster(cloudMetadata map[string]interface{}, containers []ModelHost, metrics ModelComputeMetrics, nodeId string, nodeName string, ) *ModelKubernetesCluster`
 
 NewModelKubernetesCluster instantiates a new ModelKubernetesCluster object
 This constructor will assign default values to properties that have it defined,
@@ -79,26 +79,6 @@ SetContainers sets Containers field to given value.
 `func (o *ModelKubernetesCluster) UnsetContainers()`
 
 UnsetContainers ensures that no value is present for Containers, not even an explicit nil
-### GetHostName
-
-`func (o *ModelKubernetesCluster) GetHostName() string`
-
-GetHostName returns the HostName field if non-nil, zero value otherwise.
-
-### GetHostNameOk
-
-`func (o *ModelKubernetesCluster) GetHostNameOk() (*string, bool)`
-
-GetHostNameOk returns a tuple with the HostName field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetHostName
-
-`func (o *ModelKubernetesCluster) SetHostName(v string)`
-
-SetHostName sets HostName field to given value.
-
-
 ### GetMetrics
 
 `func (o *ModelKubernetesCluster) GetMetrics() ModelComputeMetrics`
@@ -137,6 +117,26 @@ and a boolean to check if the value has been set.
 `func (o *ModelKubernetesCluster) SetNodeId(v string)`
 
 SetNodeId sets NodeId field to given value.
+
+
+### GetNodeName
+
+`func (o *ModelKubernetesCluster) GetNodeName() string`
+
+GetNodeName returns the NodeName field if non-nil, zero value otherwise.
+
+### GetNodeNameOk
+
+`func (o *ModelKubernetesCluster) GetNodeNameOk() (*string, bool)`
+
+GetNodeNameOk returns a tuple with the NodeName field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetNodeName
+
+`func (o *ModelKubernetesCluster) SetNodeName(v string)`
+
+SetNodeName sets NodeName field to given value.
 
 
 

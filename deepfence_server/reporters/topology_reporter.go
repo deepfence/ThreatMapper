@@ -16,6 +16,13 @@ type neo4jTopologyReporter struct {
 	driver neo4j.Driver
 }
 
+type NodeID string
+
+type NodeStub struct {
+	ID   NodeID `json:"id"`
+	Name string `json:"name"`
+}
+
 func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
 
 	r, err := tx.Run(`
@@ -61,8 +68,8 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]string, error) {
-	res := []string{}
+func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]NodeStub, error) {
+	res := []NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:Node)
 		WHERE n.cloud_provider <> 'internet' return n.cloud_provider`, nil)
@@ -77,14 +84,14 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]stri
 	}
 
 	for _, record := range records {
-		res = append(res, record.Values[0].(string))
+		res = append(res, NodeStub{NodeID(record.Values[0].(string)), record.Values[0].(string)})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[string][]string, error) {
-	res := map[string][]string{}
+func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[NodeID][]NodeStub, error) {
+	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:Node)
 		WHERE n.kubernetes_cluster_name = ""
@@ -102,25 +109,25 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 	}
 
 	for _, record := range records {
-		provider := record.Values[0].(string)
-		region := record.Values[1].(string)
+		provider := NodeID(record.Values[0].(string))
+		region := NodeID(record.Values[1].(string))
 		if _, present := res[provider]; !present {
-			res[provider] = []string{}
+			res[provider] = []NodeStub{}
 		}
-		res[provider] = append(res[provider], region)
+		res[provider] = append(res[provider], NodeStub{ID: region, Name: string(region)})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
-	res := map[string][]string{}
+func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[FieldsFilters]) (map[NodeID][]NodeStub, error) {
+	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:KubernetesCluster) -[:INSTANCIATE]-> (m:Node)
 		WITH DISTINCT m.cloud_provider as cloud_provider, n
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cloud_provider IN $providers END
 		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
-		RETURN cloud_provider, n.node_id`,
+		RETURN cloud_provider, n.node_id, n.node_name`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
 
 	if err != nil {
@@ -133,12 +140,13 @@ func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_
 	}
 
 	for _, record := range records {
-		provider := record.Values[0].(string)
-		region := record.Values[1].(string)
+		provider := NodeID(record.Values[0].(string))
+		cluster := NodeID(record.Values[1].(string))
+		name := record.Values[2].(string)
 		if _, present := res[provider]; !present {
-			res[provider] = []string{}
+			res[provider] = []NodeStub{}
 		}
-		res[provider] = append(res[provider], region)
+		res[provider] = append(res[provider], NodeStub{ID: cluster, Name: name})
 	}
 
 	return res, nil
@@ -153,8 +161,8 @@ func filterNil(params map[string]interface{}) map[string]interface{} {
 	return params
 }
 
-func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
-	res := map[string][]string{}
+func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string, fieldfilters mo.Option[FieldsFilters]) (map[NodeID][]NodeStub, error) {
+	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
@@ -179,26 +187,26 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 
 	for _, record := range records {
 		//provider := record.Values[0].(string)
-		region := record.Values[1].(string)
-		host_id := record.Values[2].(string)
+		region := NodeID(record.Values[1].(string))
+		host_id := NodeID(record.Values[2].(string))
 		if _, present := res[region]; !present {
-			res[region] = []string{}
+			res[region] = []NodeStub{}
 		}
 
-		res[region] = append(res[region], host_id)
+		res[region] = append(res[region], NodeStub{ID: host_id, Name: string(host_id)})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []string) (map[string][]string, error) {
-	res := map[string][]string{}
+func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []string) (map[NodeID][]NodeStub, error) {
+	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
 		WHERE n.host_name IN $hosts WITH n
 		MATCH (n)-[:HOSTS]->(m:Process)
-		RETURN n.node_id, m.node_id`,
+		RETURN n.node_id, m.node_id, m.name`,
 		map[string]interface{}{"hosts": hosts})
 	if err != nil {
 		return res, err
@@ -210,26 +218,27 @@ func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []stri
 	}
 
 	for _, record := range records {
-		host_id := record.Values[0].(string)
-		process_id := record.Values[1].(string)
+		host_id := NodeID(record.Values[0].(string))
+		process_id := NodeID(record.Values[1].(string))
+		process_name := record.Values[2].(string)
 		if _, present := res[host_id]; !present {
-			res[host_id] = []string{}
+			res[host_id] = []NodeStub{}
 		}
-		res[host_id] = append(res[host_id], process_id)
+		res[host_id] = append(res[host_id], NodeStub{ID: process_id, Name: process_name})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
-	res := map[string][]string{}
+func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, fieldfilters mo.Option[FieldsFilters]) (map[NodeID][]NodeStub, error) {
+	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
 		MATCH (n:Pod)
 		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, true)+`
 		MATCH (m:Node{node_id:n.host_node_id})
 		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE m.host_name IN $hosts END
-		RETURN m.host_name, n.node_id`,
+		RETURN m.host_name, n.node_id, n.kubernetes_name`,
 		filterNil(map[string]interface{}{"hosts": hosts}))
 	if err != nil {
 		return res, err
@@ -241,19 +250,20 @@ func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, f
 	}
 
 	for _, record := range records {
-		host_id := record.Values[0].(string)
-		pod_id := record.Values[1].(string)
+		host_id := NodeID(record.Values[0].(string))
+		pod_id := NodeID(record.Values[1].(string))
+		pod_name := record.Values[2].(string)
 		if _, present := res[host_id]; !present {
-			res[host_id] = []string{}
+			res[host_id] = []NodeStub{}
 		}
-		res[host_id] = append(res[host_id], pod_id)
+		res[host_id] = append(res[host_id], NodeStub{ID: pod_id, Name: pod_name})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
-	res := map[string][]string{}
+func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods []string, fieldfilters mo.Option[FieldsFilters]) (map[NodeID][]NodeStub, error) {
+	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
@@ -262,7 +272,7 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods
 		WITH n
 		MATCH (n)-[:HOSTS]->(m:Container)
 		`+parseFieldFilters2CypherWhereConditions("m", fieldfilters, true)+`
-		RETURN coalesce(n.`+"`docker_label_io.kubernetes.pod.name`"+`, n.node_id), m.node_id`,
+		RETURN coalesce(n.`+"`docker_label_io.kubernetes.pod.name`"+`, n.node_id), m.node_id, m.docker_container_name`,
 		filterNil(map[string]interface{}{"hosts": hosts, "pods": pods}))
 	if err != nil {
 		return res, err
@@ -274,12 +284,13 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods
 	}
 
 	for _, record := range records {
-		parent_id := record.Values[0].(string)
-		container_id := record.Values[1].(string)
+		parent_id := NodeID(record.Values[0].(string))
+		container_id := NodeID(record.Values[1].(string))
+		container_name := record.Values[2].(string)
 		if _, present := res[parent_id]; !present {
-			res[parent_id] = []string{}
+			res[parent_id] = []NodeStub{}
 		}
-		res[parent_id] = append(res[parent_id], container_id)
+		res[parent_id] = append(res[parent_id], NodeStub{ID: container_id, Name: container_name})
 	}
 
 	return res, nil
@@ -291,14 +302,14 @@ type ConnectionSummary struct {
 }
 
 type RenderedGraph struct {
-	Hosts       map[string][]string `json:"hosts" required:"true"`
-	Processes   map[string][]string `json:"processes" required:"true"`
-	Pods        map[string][]string `json:"pods" required:"true"`
-	Containers  map[string][]string `json:"containers" required:"true"`
-	Providers   []string            `json:"providers" required:"true"`
-	Regions     map[string][]string `json:"regions" required:"true"`
-	Kubernetes  map[string][]string `json:"kubernetes" required:"true"`
-	Connections []ConnectionSummary `json:"connections" required:"true"`
+	Hosts       map[NodeID][]NodeStub `json:"hosts" required:"true"`
+	Processes   map[NodeID][]NodeStub `json:"processes" required:"true"`
+	Pods        map[NodeID][]NodeStub `json:"pods" required:"true"`
+	Containers  map[NodeID][]NodeStub `json:"containers" required:"true"`
+	Providers   []NodeStub            `json:"providers" required:"true"`
+	Regions     map[NodeID][]NodeStub `json:"regions" required:"true"`
+	Kubernetes  map[NodeID][]NodeStub `json:"kubernetes" required:"true"`
+	Connections []ConnectionSummary   `json:"connections" required:"true"`
 }
 
 type FilterOperations string

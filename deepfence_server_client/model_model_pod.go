@@ -21,9 +21,11 @@ var _ MappedNullable = &ModelPod{}
 // ModelPod struct for ModelPod
 type ModelPod struct {
 	Containers []ModelContainer `json:"containers"`
+	HostNodeId string `json:"host_node_id"`
+	KubernetesName string `json:"kubernetes_name"`
+	KubernetesNamespace string `json:"kubernetes_namespace"`
 	Metadata map[string]interface{} `json:"metadata"`
 	Metrics ModelComputeMetrics `json:"metrics"`
-	Name string `json:"name"`
 	NodeId string `json:"node_id"`
 	Processes []ModelProcess `json:"processes"`
 }
@@ -32,12 +34,14 @@ type ModelPod struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelPod(containers []ModelContainer, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess) *ModelPod {
+func NewModelPod(containers []ModelContainer, hostNodeId string, kubernetesName string, kubernetesNamespace string, metadata map[string]interface{}, metrics ModelComputeMetrics, nodeId string, processes []ModelProcess) *ModelPod {
 	this := ModelPod{}
 	this.Containers = containers
+	this.HostNodeId = hostNodeId
+	this.KubernetesName = kubernetesName
+	this.KubernetesNamespace = kubernetesNamespace
 	this.Metadata = metadata
 	this.Metrics = metrics
-	this.Name = name
 	this.NodeId = nodeId
 	this.Processes = processes
 	return &this
@@ -75,6 +79,78 @@ func (o *ModelPod) GetContainersOk() ([]ModelContainer, bool) {
 // SetContainers sets field value
 func (o *ModelPod) SetContainers(v []ModelContainer) {
 	o.Containers = v
+}
+
+// GetHostNodeId returns the HostNodeId field value
+func (o *ModelPod) GetHostNodeId() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.HostNodeId
+}
+
+// GetHostNodeIdOk returns a tuple with the HostNodeId field value
+// and a boolean to check if the value has been set.
+func (o *ModelPod) GetHostNodeIdOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.HostNodeId, true
+}
+
+// SetHostNodeId sets field value
+func (o *ModelPod) SetHostNodeId(v string) {
+	o.HostNodeId = v
+}
+
+// GetKubernetesName returns the KubernetesName field value
+func (o *ModelPod) GetKubernetesName() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.KubernetesName
+}
+
+// GetKubernetesNameOk returns a tuple with the KubernetesName field value
+// and a boolean to check if the value has been set.
+func (o *ModelPod) GetKubernetesNameOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.KubernetesName, true
+}
+
+// SetKubernetesName sets field value
+func (o *ModelPod) SetKubernetesName(v string) {
+	o.KubernetesName = v
+}
+
+// GetKubernetesNamespace returns the KubernetesNamespace field value
+func (o *ModelPod) GetKubernetesNamespace() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.KubernetesNamespace
+}
+
+// GetKubernetesNamespaceOk returns a tuple with the KubernetesNamespace field value
+// and a boolean to check if the value has been set.
+func (o *ModelPod) GetKubernetesNamespaceOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.KubernetesNamespace, true
+}
+
+// SetKubernetesNamespace sets field value
+func (o *ModelPod) SetKubernetesNamespace(v string) {
+	o.KubernetesNamespace = v
 }
 
 // GetMetadata returns the Metadata field value
@@ -123,30 +199,6 @@ func (o *ModelPod) GetMetricsOk() (*ModelComputeMetrics, bool) {
 // SetMetrics sets field value
 func (o *ModelPod) SetMetrics(v ModelComputeMetrics) {
 	o.Metrics = v
-}
-
-// GetName returns the Name field value
-func (o *ModelPod) GetName() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.Name
-}
-
-// GetNameOk returns a tuple with the Name field value
-// and a boolean to check if the value has been set.
-func (o *ModelPod) GetNameOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Name, true
-}
-
-// SetName sets field value
-func (o *ModelPod) SetName(v string) {
-	o.Name = v
 }
 
 // GetNodeId returns the NodeId field value
@@ -212,9 +264,11 @@ func (o ModelPod) ToMap() (map[string]interface{}, error) {
 	if o.Containers != nil {
 		toSerialize["containers"] = o.Containers
 	}
+	toSerialize["host_node_id"] = o.HostNodeId
+	toSerialize["kubernetes_name"] = o.KubernetesName
+	toSerialize["kubernetes_namespace"] = o.KubernetesNamespace
 	toSerialize["metadata"] = o.Metadata
 	toSerialize["metrics"] = o.Metrics
-	toSerialize["name"] = o.Name
 	toSerialize["node_id"] = o.NodeId
 	if o.Processes != nil {
 		toSerialize["processes"] = o.Processes

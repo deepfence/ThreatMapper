@@ -3471,7 +3471,8 @@ components:
           host_name: host_name
           node_id: node_id
         pods:
-        - metadata:
+        - kubernetes_namespace: kubernetes_namespace
+          metadata:
             key: ""
           processes:
           - metadata:
@@ -3496,7 +3497,7 @@ components:
               cpu_percent: 0.8008281904610115
             node_id: node_id
             ppid: ppid
-          name: name
+          kubernetes_name: kubernetes_name
           containers:
           - docker_labels:
               key: ""
@@ -3587,8 +3588,10 @@ components:
           metrics:
             memory_mb: 6.027456183070403
             cpu_percent: 0.8008281904610115
+          host_node_id: host_node_id
           node_id: node_id
-        - metadata:
+        - kubernetes_namespace: kubernetes_namespace
+          metadata:
             key: ""
           processes:
           - metadata:
@@ -3613,7 +3616,7 @@ components:
               cpu_percent: 0.8008281904610115
             node_id: node_id
             ppid: ppid
-          name: name
+          kubernetes_name: kubernetes_name
           containers:
           - docker_labels:
               key: ""
@@ -3704,6 +3707,7 @@ components:
           metrics:
             memory_mb: 6.027456183070403
             cpu_percent: 0.8008281904610115
+          host_node_id: host_node_id
           node_id: node_id
         metrics:
           memory_mb: 6.027456183070403
@@ -3785,6 +3789,7 @@ components:
       example:
         cloud_metadata:
           key: ""
+        node_name: node_name
         containers:
         - processes:
           - metadata:
@@ -3918,7 +3923,8 @@ components:
             host_name: host_name
             node_id: node_id
           pods:
-          - metadata:
+          - kubernetes_namespace: kubernetes_namespace
+            metadata:
               key: ""
             processes:
             - metadata:
@@ -3943,7 +3949,7 @@ components:
                 cpu_percent: 0.8008281904610115
               node_id: node_id
               ppid: ppid
-            name: name
+            kubernetes_name: kubernetes_name
             containers:
             - docker_labels:
                 key: ""
@@ -4034,8 +4040,10 @@ components:
             metrics:
               memory_mb: 6.027456183070403
               cpu_percent: 0.8008281904610115
+            host_node_id: host_node_id
             node_id: node_id
-          - metadata:
+          - kubernetes_namespace: kubernetes_namespace
+            metadata:
               key: ""
             processes:
             - metadata:
@@ -4060,7 +4068,7 @@ components:
                 cpu_percent: 0.8008281904610115
               node_id: node_id
               ppid: ppid
-            name: name
+            kubernetes_name: kubernetes_name
             containers:
             - docker_labels:
                 key: ""
@@ -4151,6 +4159,7 @@ components:
             metrics:
               memory_mb: 6.027456183070403
               cpu_percent: 0.8008281904610115
+            host_node_id: host_node_id
             node_id: node_id
           metrics:
             memory_mb: 6.027456183070403
@@ -4289,7 +4298,8 @@ components:
             host_name: host_name
             node_id: node_id
           pods:
-          - metadata:
+          - kubernetes_namespace: kubernetes_namespace
+            metadata:
               key: ""
             processes:
             - metadata:
@@ -4314,7 +4324,7 @@ components:
                 cpu_percent: 0.8008281904610115
               node_id: node_id
               ppid: ppid
-            name: name
+            kubernetes_name: kubernetes_name
             containers:
             - docker_labels:
                 key: ""
@@ -4405,8 +4415,10 @@ components:
             metrics:
               memory_mb: 6.027456183070403
               cpu_percent: 0.8008281904610115
+            host_node_id: host_node_id
             node_id: node_id
-          - metadata:
+          - kubernetes_namespace: kubernetes_namespace
+            metadata:
               key: ""
             processes:
             - metadata:
@@ -4431,7 +4443,7 @@ components:
                 cpu_percent: 0.8008281904610115
               node_id: node_id
               ppid: ppid
-            name: name
+            kubernetes_name: kubernetes_name
             containers:
             - docker_labels:
                 key: ""
@@ -4522,6 +4534,7 @@ components:
             metrics:
               memory_mb: 6.027456183070403
               cpu_percent: 0.8008281904610115
+            host_node_id: host_node_id
             node_id: node_id
           metrics:
             memory_mb: 6.027456183070403
@@ -4531,7 +4544,6 @@ components:
         metrics:
           memory_mb: 6.027456183070403
           cpu_percent: 0.8008281904610115
-        host_name: host_name
         node_id: node_id
       properties:
         cloud_metadata:
@@ -4542,18 +4554,18 @@ components:
             $ref: '#/components/schemas/ModelHost'
           nullable: true
           type: array
-        host_name:
-          type: string
         metrics:
           $ref: '#/components/schemas/ModelComputeMetrics'
         node_id:
           type: string
+        node_name:
+          type: string
       required:
       - cloud_metadata
       - containers
-      - host_name
       - metrics
       - node_id
+      - node_name
       type: object
     ModelLoginRequest:
       example:
@@ -4595,6 +4607,7 @@ components:
       type: object
     ModelPod:
       example:
+        kubernetes_namespace: kubernetes_namespace
         metadata:
           key: ""
         processes:
@@ -4620,7 +4633,7 @@ components:
             cpu_percent: 0.8008281904610115
           node_id: node_id
           ppid: ppid
-        name: name
+        kubernetes_name: kubernetes_name
         containers:
         - docker_labels:
             key: ""
@@ -4711,6 +4724,7 @@ components:
         metrics:
           memory_mb: 6.027456183070403
           cpu_percent: 0.8008281904610115
+        host_node_id: host_node_id
         node_id: node_id
       properties:
         containers:
@@ -4718,13 +4732,17 @@ components:
             $ref: '#/components/schemas/ModelContainer'
           nullable: true
           type: array
+        host_node_id:
+          type: string
+        kubernetes_name:
+          type: string
+        kubernetes_namespace:
+          type: string
         metadata:
           additionalProperties: {}
           type: object
         metrics:
           $ref: '#/components/schemas/ModelComputeMetrics'
-        name:
-          type: string
         node_id:
           type: string
         processes:
@@ -4734,9 +4752,11 @@ components:
           type: array
       required:
       - containers
+      - host_node_id
+      - kubernetes_name
+      - kubernetes_namespace
       - metadata
       - metrics
-      - name
       - node_id
       - processes
       type: object

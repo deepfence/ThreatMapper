@@ -121,6 +121,30 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 	respondWith(ctx, w, http.StatusOK, GraphResult{Nodes: newTopo, Edges: newConnections})
 }
 
+func nodeStubToMetadata(stub reporters.NodeStub) []report.MetadataRow {
+	return []report.MetadataRow{
+		{
+			ID:       "id",
+			Label:    "ID",
+			Value:    string(stub.ID),
+			Priority: 1,
+		},
+		{
+			ID:       "label",
+			Label:    "Label",
+			Value:    stub.Name,
+			Priority: 2,
+		},
+	}
+}
+
+func nodeStubToSummary(stub reporters.NodeStub) detailed.BasicNodeSummary {
+	return detailed.BasicNodeSummary{
+		ID:    string(stub.ID),
+		Label: stub.Name,
+	}
+}
+
 func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_filter, kubernetes_filter, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
 	nodes := detailed.NodeSummaries{}
 	edges := detailed.TopologyConnectionSummaries{}
@@ -178,108 +202,49 @@ func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_fil
 		Type: "pseudo",
 	}
 
-	for _, cp := range graph.Providers {
+	for _, cp_stub := range graph.Providers {
+		cp := string(cp_stub.ID)
 		nodes[cp] = detailed.NodeSummary{
 			ImmediateParentID: "",
-			BasicNodeSummary: detailed.BasicNodeSummary{
-				ID: cp,
-			},
-			Metadata: []report.MetadataRow{
-				{
-					ID:       "name",
-					Label:    "Name",
-					Value:    cp,
-					Priority: 1,
-				},
-				{
-					ID:       "label",
-					Label:    "Label",
-					Value:    cp,
-					Priority: 2,
-				},
-			},
-			Type: report.CloudProvider,
+			BasicNodeSummary:  nodeStubToSummary(cp_stub),
+			Type:              report.CloudProvider,
 		}
 	}
 
 	for cp, crs := range graph.Kubernetes {
-		for _, cr := range crs {
+		for _, cr_stub := range crs {
+			cr := string(cr_stub.ID)
 			nodes[cr] = detailed.NodeSummary{
-				ImmediateParentID: cp,
-				BasicNodeSummary: detailed.BasicNodeSummary{
-					ID: cr,
-				},
-				Metadata: []report.MetadataRow{
-					{
-						ID:       "name",
-						Label:    "Name",
-						Value:    cr,
-						Priority: 1,
-					},
-					{
-						ID:       "label",
-						Label:    "Label",
-						Value:    cr,
-						Priority: 2,
-					},
-				},
-				Type: report.KubernetesCluster,
+				ImmediateParentID: string(cp),
+				BasicNodeSummary:  nodeStubToSummary(cr_stub),
+				Type:              report.KubernetesCluster,
 			}
 		}
 	}
 
 	for cp, crs := range graph.Regions {
-		for _, cr := range crs {
+		for _, cr_stub := range crs {
+			cr := string(cr_stub.ID)
 			nodes[cr] = detailed.NodeSummary{
-				ImmediateParentID: cp,
-				BasicNodeSummary: detailed.BasicNodeSummary{
-					ID: cr,
-				},
-				Metadata: []report.MetadataRow{
-					{
-						ID:       "name",
-						Label:    "Name",
-						Value:    cr,
-						Priority: 1,
-					},
-					{
-						ID:       "label",
-						Label:    "Label",
-						Value:    cr,
-						Priority: 2,
-					},
-				},
-				Type: report.CloudRegion,
+				ImmediateParentID: string(cp),
+				BasicNodeSummary:  nodeStubToSummary(cr_stub),
+				Type:              report.CloudRegion,
 			}
 		}
 	}
 
 	for cr, n := range graph.Hosts {
-		for _, host := range n {
+		for _, host_stub := range n {
+			host := string(host_stub.ID)
 			nodes[host] = detailed.NodeSummary{
-				ImmediateParentID: cr,
-				BasicNodeSummary: detailed.BasicNodeSummary{
-					ID:    host,
-					Label: host,
-				},
+				ImmediateParentID: string(cr),
+				BasicNodeSummary:  nodeStubToSummary(host_stub),
 				Metrics: []report.MetricRow{
 					{ID: hst.CPUUsage, Metric: &report.Metric{}, Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
 					{ID: hst.MemoryUsage, Metric: &report.Metric{}, Label: "Memory", Value: 0.0, Format: report.FilesizeFormat, Priority: 2},
 					{ID: hst.Load1, Metric: &report.Metric{}, Label: "Load (1m)", Value: 0.0, Format: report.DefaultFormat, Group: "load", Priority: 11},
 				},
 				Metadata: []report.MetadataRow{
-					{
-						ID:       "name",
-						Label:    "Name",
-						Value:    host,
-						Priority: 1,
-					},
-					{
-						ID:       "label",
-						Label:    "Label",
-						Value:    host,
-						Priority: 2,
-					},
 					{ID: report.KernelVersion, Label: "Kernel version", Value: report.FromLatest, Priority: 1},
 					{ID: report.Uptime, Label: "Uptime", Value: report.FromLatest, Priority: 2},
 					{ID: report.HostName, Label: "Hostname", Value: host, Priority: 11},
@@ -306,68 +271,34 @@ func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_fil
 	}
 
 	for h, n := range graph.Processes {
-		for _, id := range n {
+		for _, id_stub := range n {
+			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
-				ImmediateParentID: h,
-				BasicNodeSummary: detailed.BasicNodeSummary{
-					ID:    id,
-					Label: id,
-				},
-				Metadata: []report.MetadataRow{
-					{
-						ID:       "name",
-						Label:    "Name",
-						Value:    id,
-						Priority: 1,
-					},
-					{
-						ID:       "label",
-						Label:    "Label",
-						Value:    id,
-						Priority: 2,
-					},
-				},
-				Type: report.Process,
+				ImmediateParentID: string(h),
+				BasicNodeSummary:  nodeStubToSummary(id_stub),
+				Type:              report.Process,
 			}
 		}
 	}
 
 	for h, n := range graph.Pods {
-		for _, id := range n {
+		for _, id_stub := range n {
+			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
-				ImmediateParentID: h,
-				BasicNodeSummary: detailed.BasicNodeSummary{
-					ID:    id,
-					Label: id,
-				},
-				Metadata: []report.MetadataRow{
-					{
-						ID:       "name",
-						Label:    "Name",
-						Value:    id,
-						Priority: 1,
-					},
-					{
-						ID:       "label",
-						Label:    "Label",
-						Value:    id,
-						Priority: 2,
-					},
-				},
-				Type: report.Pod,
+				ImmediateParentID: string(h),
+				BasicNodeSummary:  nodeStubToSummary(id_stub),
+				Type:              report.Pod,
 			}
 		}
 	}
 
 	for h, n := range graph.Containers {
-		for _, id := range n {
+		for _, id_stub := range n {
+			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
-				ImmediateParentID: h,
-				BasicNodeSummary: detailed.BasicNodeSummary{
-					ID:    id,
-					Label: id,
-				},
-				Type: report.Container,
+				ImmediateParentID: string(h),
+				BasicNodeSummary:  nodeStubToSummary(id_stub),
+				Type:              report.Container,
 			}
 		}
 	}

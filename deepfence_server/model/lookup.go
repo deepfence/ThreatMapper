@@ -1,5 +1,8 @@
 package model
 
+// "nested_json" fields are string json maps 
+// that can be unmarshalled on the fly
+
 type Cypherable interface {
 	NodeType() string
 }

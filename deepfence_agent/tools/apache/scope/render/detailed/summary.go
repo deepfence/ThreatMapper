@@ -49,8 +49,8 @@ type Column struct {
 type BasicNodeSummary struct {
 	ID         string `json:"id"`
 	Label      string `json:"label"`
-	LabelMinor string `json:"labelMinor"`
-	Rank       string `json:"rank"`
+	LabelMinor string `json:"labelMinor,omitempty"`
+	Rank       string `json:"rank,omitempty"`
 	Image      string `json:"image,omitempty"`
 	Shape      string `json:"shape,omitempty"`
 	Tag        string `json:"tag,omitempty"`
