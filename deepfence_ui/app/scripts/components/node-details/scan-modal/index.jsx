@@ -21,6 +21,7 @@ const ScanModal = (props) => {
   const { details, imageId, registerPolling, startPolling, stopPolling } = props;
   const { id } = details;
   const dispatch = useDispatch();
+
   const pollingFunction = useCallback(({ imageId }) => {
     return Promise.all([
       dispatch(getCVEScanStatusAction(imageId)),
@@ -28,12 +29,10 @@ const ScanModal = (props) => {
       dispatch(getMalwareScanStatusAction(id))
     ]);
   }, []);
-  
-  const _id = details?.type === 'container' ? id : imageId;
 
   useEffect(() => {
     registerPolling(pollingFunction);
-    startPolling({ imageId: _id });
+    startPolling({ imageId });
     return () => {
       stopPolling();
     }
@@ -45,7 +44,7 @@ const ScanModal = (props) => {
         return (
           // eslint-disable-next-line react/no-array-index-key
           <Fragment key={index}>
-            <ScanComponent details={details} imageId={_id} />
+            <ScanComponent details={details} imageId={imageId} />
             {index !== scans.length - 1 && <Devider />}
           </Fragment>
         );

@@ -23,16 +23,9 @@ const ActionTabGroup = (props) => {
     });
 
     let imageId;
-    if (
-      metadata.size &&
-      details?.type === 'container' &&
-      metadata.has('docker_image_name')
-    ) {
-      imageId = `${metadata.get('docker_image_name')}:${metadata.get(
-        'docker_image_tag'
-      )}`;
-    }
-    if (
+    if (metadata.size && details?.type === 'container') {
+      imageId = details?.id;
+    } else if (
       metadata.size &&
       details?.type === 'container_image' &&
       metadata.has('docker_image_id')
