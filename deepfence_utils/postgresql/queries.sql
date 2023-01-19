@@ -330,11 +330,31 @@ FROM container_registry
 WHERE container_registry.id = $1
 LIMIT 1;
 
+-- name: GetContainerRegistrySafe :one
+SELECT container_registry.id,
+       container_registry.name,
+       container_registry.registry_type,
+       container_registry.non_secret,
+       container_registry.created_at,
+       container_registry.updated_at
+FROM container_registry
+WHERE container_registry.id = $1
+LIMIT 1;
+
 -- name: GetContainerRegistries :many
 SELECT container_registry.id,
        container_registry.name,
        container_registry.registry_type,
        container_registry.encrypted_secret,
+       container_registry.non_secret,
+       container_registry.created_at,
+       container_registry.updated_at
+FROM container_registry;
+
+-- name: GetContainerRegistriesSafe :many
+SELECT container_registry.id,
+       container_registry.name,
+       container_registry.registry_type,
        container_registry.non_secret,
        container_registry.created_at,
        container_registry.updated_at

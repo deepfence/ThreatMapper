@@ -17,19 +17,18 @@ type RegistryAddReq struct {
 	RegistryType string                 `json:"registry_type"`
 }
 
-type DockerNonSecretField struct {
-	DockerHubNamespace string `json:"docker_hub_namespace"`
-	DockerHubUsername  string `json:"docker_hub_username"`
+// todo: add support to list by name and type, id
+type RegistryListReq struct{}
+
+// ListRegistriesSafe doesnot get secret field from DB
+func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.GetContainerRegistriesSafeRow, error) {
+	return pgClient.GetContainerRegistriesSafe(ctx)
 }
 
-type DockerSecretField struct {
-	DockerHubPassword string `json:"docker_hub_password"`
-}
-
-func (r *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
+func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
 	_, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{
-		RegistryType: r.RegistryType,
-		Name:         r.Name,
+		RegistryType: ra.RegistryType,
+		Name:         ra.Name,
 	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil
@@ -39,7 +38,7 @@ func (r *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresq
 	return true, nil
 }
 
-func (r *RegistryAddReq) GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
+func (ra *RegistryAddReq) GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
 	s := Setting{}
 	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
 	if err != nil {
@@ -59,25 +58,23 @@ func (r *RegistryAddReq) GetAESValueForEncryption(ctx context.Context, pgClient 
 	return json.RawMessage(b), nil
 }
 
-func (r *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
-	bSecret, err := json.Marshal(r.Secret)
+func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
 		return err
 	}
-	// rawSecretJSON := json.RawMessage(string(bSecret))
 
-	bNonSecret, err := json.Marshal(r.NonSecret)
+	bNonSecret, err := json.Marshal(ra.NonSecret)
 	if err != nil {
 		return err
 	}
-	// rawNonSecretJSON := json.RawMessage(string(bNonSecret))
-	some := "{}"
+	extra := "{}"
 	_, err = pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
-		Name:            r.Name,
-		RegistryType:    r.RegistryType,
-		EncryptedSecret: bSecret,      // rawSecretJSON,
-		NonSecret:       bNonSecret,   //rawNonSecretJSON,
-		Extras:          []byte(some), //json.RawMessage([]byte{}),
+		Name:            ra.Name,
+		RegistryType:    ra.RegistryType,
+		EncryptedSecret: bSecret,       // rawSecretJSON,
+		NonSecret:       bNonSecret,    //rawNonSecretJSON,
+		Extras:          []byte(extra), //json.RawMessage([]byte{}),
 	})
 	return err
 }

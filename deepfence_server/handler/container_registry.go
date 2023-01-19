@@ -14,6 +14,23 @@ import (
 )
 
 func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
+	var req model.RegistryListReq
+
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		return
+	}
+	registries, err := req.ListRegistriesSafe(ctx, pgClient)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: registries})
 
 }
 
