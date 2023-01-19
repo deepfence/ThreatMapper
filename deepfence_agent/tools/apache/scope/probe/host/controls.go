@@ -45,7 +45,7 @@ func (r *Reporter) registerControls() {
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
 	r.handlerRegistry.Register(DeleteUserDefinedTags, r.deleteUserDefinedTags)
 	//r.handlerRegistry.Register(StartSecretsScan, r.startSecretsScan)
-	r.handlerRegistry.Register(StartMalwareScan, r.startMalwareScan)
+	//r.handlerRegistry.Register(StartMalwareScan, r.startMalwareScan)
 }
 
 func (r *Reporter) deregisterControls() {
