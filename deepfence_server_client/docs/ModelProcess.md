@@ -4,20 +4,20 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Command** | **string** |  | 
+**Cmdline** | **string** |  | 
 **Metadata** | **map[string]interface{}** |  | 
 **Metrics** | [**ModelComputeMetrics**](ModelComputeMetrics.md) |  | 
 **Name** | **string** |  | 
 **NodeId** | **string** |  | 
 **Pid** | **string** |  | 
 **Ppid** | **string** |  | 
-**ThreadNumber** | **int32** |  | 
+**Threads** | **int32** |  | 
 
 ## Methods
 
 ### NewModelProcess
 
-`func NewModelProcess(command string, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, pid string, ppid string, threadNumber int32, ) *ModelProcess`
+`func NewModelProcess(cmdline string, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, pid string, ppid string, threads int32, ) *ModelProcess`
 
 NewModelProcess instantiates a new ModelProcess object
 This constructor will assign default values to properties that have it defined,
@@ -32,24 +32,24 @@ NewModelProcessWithDefaults instantiates a new ModelProcess object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetCommand
+### GetCmdline
 
-`func (o *ModelProcess) GetCommand() string`
+`func (o *ModelProcess) GetCmdline() string`
 
-GetCommand returns the Command field if non-nil, zero value otherwise.
+GetCmdline returns the Cmdline field if non-nil, zero value otherwise.
 
-### GetCommandOk
+### GetCmdlineOk
 
-`func (o *ModelProcess) GetCommandOk() (*string, bool)`
+`func (o *ModelProcess) GetCmdlineOk() (*string, bool)`
 
-GetCommandOk returns a tuple with the Command field if it's non-nil, zero value otherwise
+GetCmdlineOk returns a tuple with the Cmdline field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetCommand
+### SetCmdline
 
-`func (o *ModelProcess) SetCommand(v string)`
+`func (o *ModelProcess) SetCmdline(v string)`
 
-SetCommand sets Command field to given value.
+SetCmdline sets Cmdline field to given value.
 
 
 ### GetMetadata
@@ -172,24 +172,24 @@ and a boolean to check if the value has been set.
 SetPpid sets Ppid field to given value.
 
 
-### GetThreadNumber
+### GetThreads
 
-`func (o *ModelProcess) GetThreadNumber() int32`
+`func (o *ModelProcess) GetThreads() int32`
 
-GetThreadNumber returns the ThreadNumber field if non-nil, zero value otherwise.
+GetThreads returns the Threads field if non-nil, zero value otherwise.
 
-### GetThreadNumberOk
+### GetThreadsOk
 
-`func (o *ModelProcess) GetThreadNumberOk() (*int32, bool)`
+`func (o *ModelProcess) GetThreadsOk() (*int32, bool)`
 
-GetThreadNumberOk returns a tuple with the ThreadNumber field if it's non-nil, zero value otherwise
+GetThreadsOk returns a tuple with the Threads field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetThreadNumber
+### SetThreads
 
-`func (o *ModelProcess) SetThreadNumber(v int32)`
+`func (o *ModelProcess) SetThreads(v int32)`
 
-SetThreadNumber sets ThreadNumber field to given value.
+SetThreads sets Threads field to given value.
 
 
 

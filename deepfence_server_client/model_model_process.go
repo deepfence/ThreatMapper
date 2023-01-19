@@ -20,30 +20,30 @@ var _ MappedNullable = &ModelProcess{}
 
 // ModelProcess struct for ModelProcess
 type ModelProcess struct {
-	Command string `json:"command"`
+	Cmdline string `json:"cmdline"`
 	Metadata map[string]interface{} `json:"metadata"`
 	Metrics ModelComputeMetrics `json:"metrics"`
 	Name string `json:"name"`
 	NodeId string `json:"node_id"`
 	Pid string `json:"pid"`
 	Ppid string `json:"ppid"`
-	ThreadNumber int32 `json:"thread_number"`
+	Threads int32 `json:"threads"`
 }
 
 // NewModelProcess instantiates a new ModelProcess object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelProcess(command string, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, pid string, ppid string, threadNumber int32) *ModelProcess {
+func NewModelProcess(cmdline string, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, pid string, ppid string, threads int32) *ModelProcess {
 	this := ModelProcess{}
-	this.Command = command
+	this.Cmdline = cmdline
 	this.Metadata = metadata
 	this.Metrics = metrics
 	this.Name = name
 	this.NodeId = nodeId
 	this.Pid = pid
 	this.Ppid = ppid
-	this.ThreadNumber = threadNumber
+	this.Threads = threads
 	return &this
 }
 
@@ -55,28 +55,28 @@ func NewModelProcessWithDefaults() *ModelProcess {
 	return &this
 }
 
-// GetCommand returns the Command field value
-func (o *ModelProcess) GetCommand() string {
+// GetCmdline returns the Cmdline field value
+func (o *ModelProcess) GetCmdline() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.Command
+	return o.Cmdline
 }
 
-// GetCommandOk returns a tuple with the Command field value
+// GetCmdlineOk returns a tuple with the Cmdline field value
 // and a boolean to check if the value has been set.
-func (o *ModelProcess) GetCommandOk() (*string, bool) {
+func (o *ModelProcess) GetCmdlineOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Command, true
+	return &o.Cmdline, true
 }
 
-// SetCommand sets field value
-func (o *ModelProcess) SetCommand(v string) {
-	o.Command = v
+// SetCmdline sets field value
+func (o *ModelProcess) SetCmdline(v string) {
+	o.Cmdline = v
 }
 
 // GetMetadata returns the Metadata field value
@@ -223,28 +223,28 @@ func (o *ModelProcess) SetPpid(v string) {
 	o.Ppid = v
 }
 
-// GetThreadNumber returns the ThreadNumber field value
-func (o *ModelProcess) GetThreadNumber() int32 {
+// GetThreads returns the Threads field value
+func (o *ModelProcess) GetThreads() int32 {
 	if o == nil {
 		var ret int32
 		return ret
 	}
 
-	return o.ThreadNumber
+	return o.Threads
 }
 
-// GetThreadNumberOk returns a tuple with the ThreadNumber field value
+// GetThreadsOk returns a tuple with the Threads field value
 // and a boolean to check if the value has been set.
-func (o *ModelProcess) GetThreadNumberOk() (*int32, bool) {
+func (o *ModelProcess) GetThreadsOk() (*int32, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.ThreadNumber, true
+	return &o.Threads, true
 }
 
-// SetThreadNumber sets field value
-func (o *ModelProcess) SetThreadNumber(v int32) {
-	o.ThreadNumber = v
+// SetThreads sets field value
+func (o *ModelProcess) SetThreads(v int32) {
+	o.Threads = v
 }
 
 func (o ModelProcess) MarshalJSON() ([]byte, error) {
@@ -257,14 +257,14 @@ func (o ModelProcess) MarshalJSON() ([]byte, error) {
 
 func (o ModelProcess) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["command"] = o.Command
+	toSerialize["cmdline"] = o.Cmdline
 	toSerialize["metadata"] = o.Metadata
 	toSerialize["metrics"] = o.Metrics
 	toSerialize["name"] = o.Name
 	toSerialize["node_id"] = o.NodeId
 	toSerialize["pid"] = o.Pid
 	toSerialize["ppid"] = o.Ppid
-	toSerialize["thread_number"] = o.ThreadNumber
+	toSerialize["threads"] = o.Threads
 	return toSerialize, nil
 }
 

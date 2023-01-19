@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **DockerLabels** | **map[string]interface{}** |  | 
 **HostName** | **string** |  | 
-**Image** | [**ModelImage**](ModelImage.md) |  | 
+**Image** | [**ModelContainerImage**](ModelContainerImage.md) |  | 
 **Metadata** | **map[string]interface{}** |  | 
 **Metrics** | [**ModelComputeMetrics**](ModelComputeMetrics.md) |  | 
 **Name** | **string** |  | 
@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 
 ### NewModelContainer
 
-`func NewModelContainer(dockerLabels map[string]interface{}, hostName string, image ModelImage, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess, ) *ModelContainer`
+`func NewModelContainer(dockerLabels map[string]interface{}, hostName string, image ModelContainerImage, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess, ) *ModelContainer`
 
 NewModelContainer instantiates a new ModelContainer object
 This constructor will assign default values to properties that have it defined,
@@ -74,20 +74,20 @@ SetHostName sets HostName field to given value.
 
 ### GetImage
 
-`func (o *ModelContainer) GetImage() ModelImage`
+`func (o *ModelContainer) GetImage() ModelContainerImage`
 
 GetImage returns the Image field if non-nil, zero value otherwise.
 
 ### GetImageOk
 
-`func (o *ModelContainer) GetImageOk() (*ModelImage, bool)`
+`func (o *ModelContainer) GetImageOk() (*ModelContainerImage, bool)`
 
 GetImageOk returns a tuple with the Image field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetImage
 
-`func (o *ModelContainer) SetImage(v ModelImage)`
+`func (o *ModelContainer) SetImage(v ModelContainerImage)`
 
 SetImage sets Image field to given value.
 

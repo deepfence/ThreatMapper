@@ -21,7 +21,6 @@ var _ MappedNullable = &ModelPod{}
 // ModelPod struct for ModelPod
 type ModelPod struct {
 	Containers []ModelContainer `json:"containers"`
-	Image string `json:"image"`
 	Metadata map[string]interface{} `json:"metadata"`
 	Metrics ModelComputeMetrics `json:"metrics"`
 	Name string `json:"name"`
@@ -33,10 +32,9 @@ type ModelPod struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelPod(containers []ModelContainer, image string, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess) *ModelPod {
+func NewModelPod(containers []ModelContainer, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess) *ModelPod {
 	this := ModelPod{}
 	this.Containers = containers
-	this.Image = image
 	this.Metadata = metadata
 	this.Metrics = metrics
 	this.Name = name
@@ -77,30 +75,6 @@ func (o *ModelPod) GetContainersOk() ([]ModelContainer, bool) {
 // SetContainers sets field value
 func (o *ModelPod) SetContainers(v []ModelContainer) {
 	o.Containers = v
-}
-
-// GetImage returns the Image field value
-func (o *ModelPod) GetImage() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.Image
-}
-
-// GetImageOk returns a tuple with the Image field value
-// and a boolean to check if the value has been set.
-func (o *ModelPod) GetImageOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Image, true
-}
-
-// SetImage sets field value
-func (o *ModelPod) SetImage(v string) {
-	o.Image = v
 }
 
 // GetMetadata returns the Metadata field value
@@ -238,7 +212,6 @@ func (o ModelPod) ToMap() (map[string]interface{}, error) {
 	if o.Containers != nil {
 		toSerialize["containers"] = o.Containers
 	}
-	toSerialize["image"] = o.Image
 	toSerialize["metadata"] = o.Metadata
 	toSerialize["metrics"] = o.Metrics
 	toSerialize["name"] = o.Name

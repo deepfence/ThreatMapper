@@ -19,7 +19,7 @@ type neo4jTopologyReporter struct {
 func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
 
 	r, err := tx.Run(`
-	MATCH (n:Node) -[r:CONNECTS]-> (m:Node) 
+	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
 	WITH coalesce(n.kubernete_cluster_name, '') <> '' AS is_kub, n, m, r
 	RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_name ELSE n.cloud_region END, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid`, nil)
 
@@ -64,7 +64,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]string, error) {
 	res := []string{}
 	r, err := tx.Run(`
-		MATCH (n:Node) 
+		MATCH (n:Node)
 		WHERE n.cloud_provider <> 'internet' return n.cloud_provider`, nil)
 
 	if err != nil {
@@ -86,9 +86,9 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]stri
 func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[string][]string, error) {
 	res := map[string][]string{}
 	r, err := tx.Run(`
-		MATCH (n:Node) 
-		WHERE n.kubernetes_cluster_name = "" 
-		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END 
+		MATCH (n:Node)
+		WHERE n.kubernetes_cluster_name = ""
+		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
 		RETURN n.cloud_provider, n.cloud_region`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
 
@@ -116,10 +116,11 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[FieldsFilters]) (map[string][]string, error) {
 	res := map[string][]string{}
 	r, err := tx.Run(`
-		MATCH (n:Node) 
-		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
+		MATCH (n:KubernetesCluster) -[:INSTANCIATE]-> (m:Node)
+		WITH DISTINCT m.cloud_provider as cloud_provider, n
+		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cloud_provider IN $providers END
 		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
-		RETURN n.cloud_provider, n.kubernetes_cluster_name`,
+		RETURN cloud_provider, n.node_id`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
 
 	if err != nil {
@@ -156,7 +157,7 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 	res := map[string][]string{}
 
 	r, err := tx.Run(`
-		MATCH (n:Node) 
+		MATCH (n:Node)
 		WITH coalesce(n.kubernete_cluster_name, '') <> '' AS is_kub, n
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
 		AND CASE WHEN is_kub THEN
@@ -195,8 +196,8 @@ func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []stri
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WHERE n.host_name IN $hosts WITH n 
-		MATCH (n)-[:HOSTS]->(m:Process) 
+		WHERE n.host_name IN $hosts WITH n
+		MATCH (n)-[:HOSTS]->(m:Process)
 		RETURN n.node_id, m.node_id`,
 		map[string]interface{}{"hosts": hosts})
 	if err != nil {
@@ -224,10 +225,11 @@ func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, f
 	res := map[string][]string{}
 
 	r, err := tx.Run(`
-		MATCH (n:Container) 
-		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE n.host_name IN $hosts END
-		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
-		RETURN n.host_name, n.`+"`docker_label_io.kubernetes.pod.name`",
+		MATCH (n:Pod)
+		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, true)+`
+		MATCH (m:Node{node_id:n.host_node_id})
+		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE m.host_name IN $hosts END
+		RETURN m.host_name, n.node_id`,
 		filterNil(map[string]interface{}{"hosts": hosts}))
 	if err != nil {
 		return res, err
@@ -254,10 +256,10 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods
 	res := map[string][]string{}
 
 	r, err := tx.Run(`
-		MATCH (n:Node) 
+		MATCH (n:Node)
 		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE n.host_name IN $hosts END
 		OR CASE WHEN $pods IS NULL THEN [1] ELSE n.`+"`docker_label_io.kubernetes.pod.name`"+`IN $pods END
-		WITH n 
+		WITH n
 		MATCH (n)-[:HOSTS]->(m:Container)
 		`+parseFieldFilters2CypherWhereConditions("m", fieldfilters, true)+`
 		RETURN coalesce(n.`+"`docker_label_io.kubernetes.pod.name`"+`, n.node_id), m.node_id`,

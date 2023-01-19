@@ -75,21 +75,24 @@ func init() {
 func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 	log.Infof("Start secret scan: %v\n", req)
 	var greq pb.FindRequest
-	switch req.ResourceType {
+	switch req.NodeType {
 	case ctl.Container:
 		greq = pb.FindRequest{Input: &pb.FindRequest_Container{
-			Container: &pb.Container{Id: req.ResourceId},
+			Container: &pb.Container{Id: req.NodeId},
 		}}
 	case ctl.Image:
-		splits := strings.Split(req.ResourceId, ";")
-		if len(splits) != 2 {
-			return errors.New("image id format is incorrect")
+		splits := strings.Split(req.NodeId, ";")
+		if len(splits) == 2 {
+			greq = pb.FindRequest{Input: &pb.FindRequest_Image{
+				Image: &pb.DockerImage{Id: splits[0], Name: splits[1]},
+			}}
+		} else {
+			greq = pb.FindRequest{Input: &pb.FindRequest_Image{
+				Image: &pb.DockerImage{Id: req.NodeId, Name: "dummy"},
+			}}
 		}
-		greq = pb.FindRequest{Input: &pb.FindRequest_Image{
-			Image: &pb.DockerImage{Id: splits[0], Name: splits[1]},
-		}}
 	case ctl.Host:
-		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: req.ResourceId}}
+		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: "/"}}
 	}
 
 	ssClient, err := newSecretScannerClient()
@@ -100,7 +103,6 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 		client:      ssClient,
 		req:         &greq,
 		controlArgs: req.BinArgs,
-		hostName:    req.Hostname,
 	})
 	return nil
 }

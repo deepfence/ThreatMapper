@@ -230,7 +230,7 @@ import (
 )
 
 func main() {
-    modelScanTriggerReq := *openapiclient.NewModelScanTriggerReq("NodeId_example", "ResourceId_example", "ResourceType_example") // ModelScanTriggerReq |  (optional)
+    modelScanTriggerReq := *openapiclient.NewModelScanTriggerReq("NodeId_example", "NodeType_example") // ModelScanTriggerReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
@@ -362,7 +362,7 @@ import (
 )
 
 func main() {
-    modelScanTriggerReq := *openapiclient.NewModelScanTriggerReq("NodeId_example", "ResourceId_example", "ResourceType_example") // ModelScanTriggerReq |  (optional)
+    modelScanTriggerReq := *openapiclient.NewModelScanTriggerReq("NodeId_example", "NodeType_example") // ModelScanTriggerReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)

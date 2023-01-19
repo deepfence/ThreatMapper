@@ -22,7 +22,7 @@ var _ MappedNullable = &ModelContainer{}
 type ModelContainer struct {
 	DockerLabels map[string]interface{} `json:"docker_labels"`
 	HostName string `json:"host_name"`
-	Image ModelImage `json:"image"`
+	Image ModelContainerImage `json:"image"`
 	Metadata map[string]interface{} `json:"metadata"`
 	Metrics ModelComputeMetrics `json:"metrics"`
 	Name string `json:"name"`
@@ -34,7 +34,7 @@ type ModelContainer struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelContainer(dockerLabels map[string]interface{}, hostName string, image ModelImage, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess) *ModelContainer {
+func NewModelContainer(dockerLabels map[string]interface{}, hostName string, image ModelContainerImage, metadata map[string]interface{}, metrics ModelComputeMetrics, name string, nodeId string, processes []ModelProcess) *ModelContainer {
 	this := ModelContainer{}
 	this.DockerLabels = dockerLabels
 	this.HostName = hostName
@@ -104,9 +104,9 @@ func (o *ModelContainer) SetHostName(v string) {
 }
 
 // GetImage returns the Image field value
-func (o *ModelContainer) GetImage() ModelImage {
+func (o *ModelContainer) GetImage() ModelContainerImage {
 	if o == nil {
-		var ret ModelImage
+		var ret ModelContainerImage
 		return ret
 	}
 
@@ -115,7 +115,7 @@ func (o *ModelContainer) GetImage() ModelImage {
 
 // GetImageOk returns a tuple with the Image field value
 // and a boolean to check if the value has been set.
-func (o *ModelContainer) GetImageOk() (*ModelImage, bool) {
+func (o *ModelContainer) GetImageOk() (*ModelContainerImage, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -123,7 +123,7 @@ func (o *ModelContainer) GetImageOk() (*ModelImage, bool) {
 }
 
 // SetImage sets field value
-func (o *ModelContainer) SetImage(v ModelImage) {
+func (o *ModelContainer) SetImage(v ModelContainerImage) {
 	o.Image = v
 }
 
