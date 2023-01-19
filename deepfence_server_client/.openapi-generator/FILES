@@ -36,9 +36,11 @@ docs/IngestersCloudCompliance.md
 docs/IngestersCloudResource.md
 docs/IngestersCompliance.md
 docs/IngestersSecret.md
+docs/IngestersMalware.md
 docs/IngestersSecretMatch.md
 docs/IngestersSecretRule.md
 docs/IngestersSecretScanStatus.md
+docs/IngestersMalwareScanStatus.md
 docs/IngestersSecretSeverity.md
 docs/IngestersVulnerability.md
 docs/LookupApi.md
@@ -108,6 +110,7 @@ model_ingesters_secret_rule.go
 model_ingesters_secret_scan_status.go
 model_ingesters_secret_severity.go
 model_ingesters_vulnerability.go
+model_ingesters_malware.go
 model_model_agent_id.go
 model_model_api_auth_request.go
 model_model_compute_metrics.go

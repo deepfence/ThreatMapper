@@ -20,7 +20,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/gorilla/schema"
-	"github.com/minio/minio-go/v7"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -313,8 +312,18 @@ func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.R
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestMalwareScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
+func (h *Handler) IngestMalwareReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func (h *Handler) IngestCloudComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
-	ingester := ingesters.NewCloudComplianceIngester()
+	ingester := ingesters.NewMalwareIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
