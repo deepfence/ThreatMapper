@@ -27,9 +27,17 @@ func (d *RegistryDockerHub) IsValidCredential() bool {
 
 	jsonData := map[string]interface{}{"username": d.NonSecret.DockerHubUsername, "password": d.Secret.DockerHubPassword}
 
-	jsonValue, _ := json.Marshal(jsonData)
+	jsonValue, err := json.Marshal(jsonData)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return false
+	}
 
-	req, _ := http.NewRequest("POST", dockerHubURL, bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("POST", dockerHubURL+"/users/login/", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return false
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -45,8 +53,9 @@ func (d *RegistryDockerHub) IsValidCredential() bool {
 }
 
 func (d *RegistryDockerHub) EncryptSecret(aes encryption.AES) error {
-	d.Secret.DockerHubPassword = aes.Encrypt(d.Secret.DockerHubPassword)
-	return nil
+	var err error
+	d.Secret.DockerHubPassword, err = aes.Encrypt(d.Secret.DockerHubPassword)
+	return err
 }
 
 func (d *RegistryDockerHub) DecryptSecret(aes encryption.AES) error {

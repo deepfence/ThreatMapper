@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"crypto/aes"
 	"database/sql"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"flag"
-	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"math/rand"
 	"net/http"
 	"os"
@@ -13,6 +15,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
+	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
@@ -75,6 +80,12 @@ func main() {
 	}
 
 	err = initializeKafka()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+
+	log.Info().Msg("generating aes setting")
+	err = initializeAES()
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
@@ -164,6 +175,57 @@ func initialize() (*Config, error) {
 	return &Config{
 		HttpListenEndpoint: ":" + httpListenEndpoint,
 	}, nil
+}
+
+func initializeAES() error {
+	// set aes_secret in setting table, if !exists
+	// TODO
+	// generate aes and aes-iv
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = pgClient.GetSetting(ctx, common.AES_SECRET)
+	if err != nil {
+		key := make([]byte, 32) // 32 bytes for AES-256
+		iv := make([]byte, aes.BlockSize)
+		_, err = rand.Read(key)
+		if err != nil {
+			return err
+		}
+
+		_, err = rand.Read(iv)
+		if err != nil {
+			return err
+		}
+
+		aesValue := &model.SettingValue{
+			Label:       "AES Encryption Setting",
+			Description: "AES Encryption Key-IV pair",
+			Value: map[string]string{
+				"aes_iv":  hex.EncodeToString(iv),
+				"aes_key": hex.EncodeToString(key),
+			},
+		}
+
+		rawAES, err := json.Marshal(aesValue)
+		if err != nil {
+			return err
+		}
+		rawMessageAES := json.RawMessage(rawAES)
+
+		_, err = pgClient.CreateSetting(ctx, postgresql_db.CreateSettingParams{
+			Key:           common.AES_SECRET,
+			Value:         rawMessageAES,
+			IsVisibleOnUi: false,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func initializeDatabase() ([]byte, error) {

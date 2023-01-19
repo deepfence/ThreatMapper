@@ -35,17 +35,17 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	registry, err := registry.GetRegistry(req.Name, b)
+	registry, err := registry.GetRegistry(req.RegistryType, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadGateway, model.Response{Success: false})
+		httpext.JSON(w, http.StatusBadGateway, model.Response{Success: false, Message: err.Error()})
 		return
 	}
 
 	// validate if registry credential is correct
 	if !registry.IsValidCredential() {
-		log.Error().Msgf("")
 		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Message: api_messages.ErrRegistryAuthFailed})
+		return
 	}
 
 	// add registry to database
@@ -84,7 +84,12 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	registry.EncryptSecret(aes)
+	err = registry.EncryptSecret(aes)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: "something went wrong"})
+		return
+	}
 	req.Secret = registry.GetSecret()
 
 	// add to registry db
@@ -94,6 +99,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
 		return
 	}
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Message: api_messages.SuccessRegistryCreated})
 }
 
 func (h *Handler) ListImagesInRegistry(w http.ResponseWriter, r *http.Request) {

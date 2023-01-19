@@ -43,3 +43,13 @@ p, admin, diagnosis, generate
 p, standard-user, diagnosis, generate
 p, admin, diagnosis, read
 p, standard-user, diagnosis, read
+
+p, admin, container-registry, start
+p, admin, container-registry, stop
+p, admin, container-registry, read
+p, admin, container-registry, write
+p, admin, container-registry, delete
+p, standard-user, container-registry, start
+p, standard-user, container-registry, stop
+p, standard-user, container-registry, read
+p, read-only-user, container-registry, read

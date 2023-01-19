@@ -14,18 +14,24 @@ type AES struct {
 
 const blockSize = aes.BlockSize
 
-func (a *AES) Encrypt(plaintext string) string {
-	bKey := []byte(a.Key)
-	bIV := []byte(a.IV)
+func (a *AES) Encrypt(plaintext string) (string, error) {
+	bKey, err := hex.DecodeString(a.Key)
+	if err != nil {
+		return "", nil
+	}
+	bIV, err := hex.DecodeString(a.IV)
+	if err != nil {
+		return "", nil
+	}
 	bPlaintext := PKCS5Padding([]byte(plaintext), blockSize, len(plaintext))
 	block, err := aes.NewCipher(bKey)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	ciphertext := make([]byte, len(bPlaintext))
 	mode := cipher.NewCBCEncrypter(block, bIV)
 	mode.CryptBlocks(ciphertext, bPlaintext)
-	return hex.EncodeToString(ciphertext)
+	return hex.EncodeToString(ciphertext), nil
 }
 
 func (a *AES) Decrypt(cipherText string, encKey string, iv string) (decryptedString string) {

@@ -2,18 +2,19 @@ package model
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
-	"reflect"
+	"errors"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
 type RegistryAddReq struct {
-	Name         string `json:"name"`
-	NonSecret    map[string]interface{}
-	Secret       map[string]interface{}
-	RegistryType string `json:"registry_type"`
+	Name         string                 `json:"name"`
+	NonSecret    map[string]interface{} `json:"non_secret"`
+	Secret       map[string]interface{} `json:"secret"`
+	RegistryType string                 `json:"registry_type"`
 }
 
 type DockerNonSecretField struct {
@@ -26,16 +27,15 @@ type DockerSecretField struct {
 }
 
 func (r *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
-	// pgClient, err := directory.PostgresClient(ctx)
-	registry, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{r.RegistryType, r.Name})
-	if err != nil {
+	_, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{
+		RegistryType: r.RegistryType,
+		Name:         r.Name,
+	})
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
-	// check if empty
-	if reflect.DeepEqual(postgresqlDb.GetContainerRegistryByTypeAndNameParams{}, registry) {
-		return false, nil
-	}
-
 	return true, nil
 }
 
@@ -45,19 +45,39 @@ func (r *RegistryAddReq) GetAESValueForEncryption(ctx context.Context, pgClient 
 	if err != nil {
 		return nil, err
 	}
-	return aes.Value, nil
+	var sValue SettingValue
+	err = json.Unmarshal(aes.Value, &sValue)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := json.Marshal(sValue.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.RawMessage(b), nil
 }
 
 func (r *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
-	b, err := json.Marshal(r.Secret)
+	bSecret, err := json.Marshal(r.Secret)
 	if err != nil {
 		return err
 	}
-	rawSecretJSON := json.RawMessage(b)
+	// rawSecretJSON := json.RawMessage(string(bSecret))
+
+	bNonSecret, err := json.Marshal(r.NonSecret)
+	if err != nil {
+		return err
+	}
+	// rawNonSecretJSON := json.RawMessage(string(bNonSecret))
+	some := "{}"
 	_, err = pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
 		Name:            r.Name,
 		RegistryType:    r.RegistryType,
-		EncryptedSecret: rawSecretJSON,
+		EncryptedSecret: bSecret,      // rawSecretJSON,
+		NonSecret:       bNonSecret,   //rawNonSecretJSON,
+		Extras:          []byte(some), //json.RawMessage([]byte{}),
 	})
 	return err
 }

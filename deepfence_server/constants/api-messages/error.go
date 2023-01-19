@@ -1,7 +1,7 @@
 package api_messages
 
 // Registry errors
-var (
+const (
 	ErrRegistryExists     = "registry with this name already exists"
 	ErrRegistryAuthFailed = "Authentication failed for given credentials"
 )
