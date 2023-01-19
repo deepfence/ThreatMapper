@@ -35,8 +35,8 @@ func getRedisDbNumber() int {
 func newRedisPool() *redis.Pool {
 	redisDbNumber := getRedisDbNumber()
 	return &redis.Pool{
-		MaxIdle:   15,
-		MaxActive: 30, // max number of connections
+		MaxIdle:   50,
+		MaxActive: 500, // max number of connections
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", redisAddr, redis.DialDatabase(redisDbNumber))
 			if err != nil {
@@ -83,9 +83,9 @@ func syncPoliciesAndNotificationsSettings() {
 	var cloudTrailNotificationCount int
 	row = postgresDb.QueryRow("SELECT COUNT(*) FROM cloudtrail_alert_notification where duration_in_mins=-1")
 	err = row.Scan(&cloudTrailNotificationCount)
-        if err != nil {
-                log.Println(err)
-        }
+	if err != nil {
+		log.Println(err)
+	}
 	notificationSettings.Lock()
 	if vulnerabilityNotificationCount > 0 {
 		notificationSettings.vulnerabilityNotificationsSet = true

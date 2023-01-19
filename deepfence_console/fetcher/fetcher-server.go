@@ -1384,8 +1384,8 @@ func newRedisPool() *redis.Pool {
 	}
 	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 	return &redis.Pool{
-		MaxIdle:   25,
-		MaxActive: 150, // max number of connections
+		MaxIdle:   50,
+		MaxActive: 500, // max number of connections
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", redisAddr, redis.DialDatabase(redisDbNumber))
 			if err != nil {

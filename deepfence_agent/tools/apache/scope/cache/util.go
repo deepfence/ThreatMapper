@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ugorji/go/codec"
-	"github.com/weaveworks/scope/report"
 	"io"
 	"os"
 	"os/exec"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/ugorji/go/codec"
+	"github.com/weaveworks/scope/report"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -475,8 +476,8 @@ func NewRedisPool() (*redis.Pool, int) {
 	}
 	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 	return &redis.Pool{
-		MaxIdle:   5,
-		MaxActive: 10, // max number of connections
+		MaxIdle:   50,
+		MaxActive: 500, // max number of connections
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", redisAddr, redis.DialDatabase(dbNumInt))
 			if err != nil {
