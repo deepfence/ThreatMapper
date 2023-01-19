@@ -52,6 +52,7 @@ docs/ModelFetchWindow.md
 docs/ModelHost.md
 docs/ModelInviteUserRequest.md
 docs/ModelInviteUserResponse.md
+docs/ModelKubernetesCluster.md
 docs/ModelLoginRequest.md
 docs/ModelPasswordResetRequest.md
 docs/ModelPasswordResetVerifyRequest.md
@@ -117,6 +118,7 @@ model_model_fetch_window.go
 model_model_host.go
 model_model_invite_user_request.go
 model_model_invite_user_response.go
+model_model_kubernetes_cluster.go
 model_model_login_request.go
 model_model_password_reset_request.go
 model_model_password_reset_verify_request.go

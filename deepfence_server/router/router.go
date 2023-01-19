@@ -141,6 +141,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/hosts", dfHandler.GetHosts)
 				r.Post("/containers", dfHandler.GetContainers)
 				r.Post("/processes", dfHandler.GetProcesses)
+				r.Post("/kubernetesclusters", dfHandler.GetKubernetesClusters)
+				r.Post("/containerimages", dfHandler.GetContainerImages)
+				r.Post("/pods", dfHandler.GetPods)
 			})
 
 			r.Route("/controls", func(r chi.Router) {

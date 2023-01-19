@@ -97,8 +97,11 @@ Class | Method | HTTP request | Description
 *DiagnosisApi* | [**GenerateAgentDiagnosticLogs**](docs/DiagnosisApi.md#generateagentdiagnosticlogs) | **Post** /deepfence/diagnosis/agent-logs | Generate Agent Diagnostic Logs
 *DiagnosisApi* | [**GenerateConsoleDiagnosticLogs**](docs/DiagnosisApi.md#generateconsolediagnosticlogs) | **Post** /deepfence/diagnosis/console-logs | Generate Console Diagnostic Logs
 *DiagnosisApi* | [**GetDiagnosticLogs**](docs/DiagnosisApi.md#getdiagnosticlogs) | **Get** /deepfence/diagnosis/diagnostic-logs | Get Diagnostic Logs
+*LookupApi* | [**GetContainerImages**](docs/LookupApi.md#getcontainerimages) | **Post** /deepfence/lookup/containerimages | Retrieve Container Images data
 *LookupApi* | [**GetContainers**](docs/LookupApi.md#getcontainers) | **Post** /deepfence/lookup/containers | Retrieve Containers data
 *LookupApi* | [**GetHosts**](docs/LookupApi.md#gethosts) | **Post** /deepfence/lookup/hosts | Retrieve Hosts data
+*LookupApi* | [**GetKubernetesClusters**](docs/LookupApi.md#getkubernetesclusters) | **Post** /deepfence/lookup/kubernetesclusters | Retrieve K8S data
+*LookupApi* | [**GetPods**](docs/LookupApi.md#getpods) | **Post** /deepfence/lookup/pods | Retrieve Pods data
 *LookupApi* | [**GetProcesses**](docs/LookupApi.md#getprocesses) | **Post** /deepfence/lookup/processes | Retrieve Processes data
 *MalwareScanApi* | [**ListMalwareScan**](docs/MalwareScanApi.md#listmalwarescan) | **Post** /deepfence/scan/list/malware | Get Malware Scans List
 *MalwareScanApi* | [**ResultsMalwareScan**](docs/MalwareScanApi.md#resultsmalwarescan) | **Post** /deepfence/scan/results/malware | Get Malware Scans Results
@@ -165,6 +168,7 @@ Class | Method | HTTP request | Description
  - [ModelHost](docs/ModelHost.md)
  - [ModelInviteUserRequest](docs/ModelInviteUserRequest.md)
  - [ModelInviteUserResponse](docs/ModelInviteUserResponse.md)
+ - [ModelKubernetesCluster](docs/ModelKubernetesCluster.md)
  - [ModelLoginRequest](docs/ModelLoginRequest.md)
  - [ModelPasswordResetRequest](docs/ModelPasswordResetRequest.md)
  - [ModelPasswordResetVerifyRequest](docs/ModelPasswordResetVerifyRequest.md)

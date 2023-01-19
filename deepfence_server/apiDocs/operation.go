@@ -103,6 +103,18 @@ func (d *OpenApiDocs) AddLookupOperations() {
 	d.AddOperation("getProcesses", http.MethodPost, "/deepfence/lookup/processes",
 		"Retrieve Processes data", "Retrieve all the data associated with processes",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.Process))
+
+	d.AddOperation("getKubernetesClusters", http.MethodPost, "/deepfence/lookup/kubernetesclusters",
+		"Retrieve K8S data", "Retrieve all the data associated with k8s clusters",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.KubernetesCluster))
+
+	d.AddOperation("getPods", http.MethodPost, "/deepfence/lookup/pods",
+		"Retrieve Pods data", "Retrieve all the data associated with pods",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.Pod))
+
+	d.AddOperation("getContainerImages", http.MethodPost, "/deepfence/lookup/containerimages",
+		"Retrieve Container Images data", "Retrieve all the data associated with images",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.ContainerImage))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {

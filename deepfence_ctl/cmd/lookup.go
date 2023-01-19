@@ -54,6 +54,30 @@ var lookupCmd = &cobra.Command{
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
+		case "pod":
+			req := http.Client().LookupApi.GetPods(context.Background())
+			req = req.ReportersLookupFilter(filters)
+			res, rh, err := http.Client().LookupApi.GetPodsExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
+		case "cluster":
+			req := http.Client().LookupApi.GetKubernetesClusters(context.Background())
+			req = req.ReportersLookupFilter(filters)
+			res, rh, err := http.Client().LookupApi.GetKubernetesClustersExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
+		case "image":
+			req := http.Client().LookupApi.GetContainerImages(context.Background())
+			req = req.ReportersLookupFilter(filters)
+			res, rh, err := http.Client().LookupApi.GetContainerImagesExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
 		default:
 			log.Fatal().Msgf("Unsupported type:%s", root)
 		}

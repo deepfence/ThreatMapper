@@ -58,3 +58,55 @@ func (h *Handler) GetProcesses(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msg(err.Error())
 	}
 }
+
+func (h *Handler) GetKubernetesClusters(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.LookupFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.GetKubernetesClustersReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) GetContainerImages(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.LookupFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.GetContainerImagesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+
+func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.LookupFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.GetPodsReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}

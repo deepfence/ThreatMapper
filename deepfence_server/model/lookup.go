@@ -11,6 +11,18 @@ type PresentationContext struct {
 
 type Metadata map[string]interface{}
 
+type KubernetesCluster struct {
+	ID       string         `json:"node_id" required:"true"`
+	Name     string         `json:"host_name" required:"true"`
+	Hosts    []Host         `json:"containers" required:"true"`
+	Metadata Metadata       `json:"cloud_metadata" required:"true" nested_json:"true"`
+	Metrics  ComputeMetrics `json:"metrics" required:"true"`
+}
+
+func (KubernetesCluster) NodeType() string {
+	return "KubernetesCluster"
+}
+
 type Host struct {
 	ID              string           `json:"node_id" required:"true"`
 	Name            string           `json:"host_name" required:"true"`

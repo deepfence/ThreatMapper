@@ -922,6 +922,51 @@ paths:
       summary: Ingest Vulnerabilities
       tags:
       - Vulnerability
+  /deepfence/lookup/containerimages:
+    post:
+      description: Retrieve all the data associated with images
+      operationId: getContainerImages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersLookupFilter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ModelContainerImage'
+                type: array
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Retrieve Container Images data
+      tags:
+      - Lookup
   /deepfence/lookup/containers:
     post:
       description: Retrieve all the data associated with containers
@@ -1010,6 +1055,96 @@ paths:
       security:
       - bearer_token: []
       summary: Retrieve Hosts data
+      tags:
+      - Lookup
+  /deepfence/lookup/kubernetesclusters:
+    post:
+      description: Retrieve all the data associated with k8s clusters
+      operationId: getKubernetesClusters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersLookupFilter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ModelKubernetesCluster'
+                type: array
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Retrieve K8S data
+      tags:
+      - Lookup
+  /deepfence/lookup/pods:
+    post:
+      description: Retrieve all the data associated with pods
+      operationId: getPods
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportersLookupFilter'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ModelPod'
+                type: array
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Retrieve Pods data
       tags:
       - Lookup
   /deepfence/lookup/processes:
@@ -3100,7 +3235,7 @@ components:
             key: ""
           cmdline: cmdline
           name: name
-          threads: 1
+          threads: 0
           pid: pid
           metrics:
             memory_mb: 6.027456183070403
@@ -3111,7 +3246,7 @@ components:
             key: ""
           cmdline: cmdline
           name: name
-          threads: 1
+          threads: 0
           pid: pid
           metrics:
             memory_mb: 6.027456183070403
@@ -3209,7 +3344,7 @@ components:
             key: ""
           cmdline: cmdline
           name: name
-          threads: 1
+          threads: 0
           pid: pid
           metrics:
             memory_mb: 6.027456183070403
@@ -3220,7 +3355,7 @@ components:
             key: ""
           cmdline: cmdline
           name: name
-          threads: 1
+          threads: 0
           pid: pid
           metrics:
             memory_mb: 6.027456183070403
@@ -3268,7 +3403,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3279,7 +3414,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3311,7 +3446,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3322,7 +3457,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3343,7 +3478,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3354,7 +3489,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3382,7 +3517,7 @@ components:
                 key: ""
               cmdline: cmdline
               name: name
-              threads: 1
+              threads: 0
               pid: pid
               metrics:
                 memory_mb: 6.027456183070403
@@ -3393,7 +3528,7 @@ components:
                 key: ""
               cmdline: cmdline
               name: name
-              threads: 1
+              threads: 0
               pid: pid
               metrics:
                 memory_mb: 6.027456183070403
@@ -3425,7 +3560,7 @@ components:
                 key: ""
               cmdline: cmdline
               name: name
-              threads: 1
+              threads: 0
               pid: pid
               metrics:
                 memory_mb: 6.027456183070403
@@ -3436,7 +3571,7 @@ components:
                 key: ""
               cmdline: cmdline
               name: name
-              threads: 1
+              threads: 0
               pid: pid
               metrics:
                 memory_mb: 6.027456183070403
@@ -3460,7 +3595,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3471,7 +3606,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3499,7 +3634,7 @@ components:
                 key: ""
               cmdline: cmdline
               name: name
-              threads: 1
+              threads: 0
               pid: pid
               metrics:
                 memory_mb: 6.027456183070403
@@ -3510,7 +3645,7 @@ components:
                 key: ""
               cmdline: cmdline
               name: name
-              threads: 1
+              threads: 0
               pid: pid
               metrics:
                 memory_mb: 6.027456183070403
@@ -3542,7 +3677,7 @@ components:
                 key: ""
               cmdline: cmdline
               name: name
-              threads: 1
+              threads: 0
               pid: pid
               metrics:
                 memory_mb: 6.027456183070403
@@ -3553,7 +3688,7 @@ components:
                 key: ""
               cmdline: cmdline
               name: name
-              threads: 1
+              threads: 0
               pid: pid
               metrics:
                 memory_mb: 6.027456183070403
@@ -3646,6 +3781,780 @@ components:
         invite_url:
           type: string
       type: object
+    ModelKubernetesCluster:
+      example:
+        cloud_metadata:
+          key: ""
+        containers:
+        - processes:
+          - metadata:
+              key: ""
+            cmdline: cmdline
+            name: name
+            threads: 0
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            node_id: node_id
+            ppid: ppid
+          - metadata:
+              key: ""
+            cmdline: cmdline
+            name: name
+            threads: 0
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            node_id: node_id
+            ppid: ppid
+          cloud_metadata:
+            key: ""
+          container_images:
+          - metadata:
+              key: ""
+            docker_image_tag: docker_image_tag
+            docker_image_size: docker_image_size
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            docker_image_name: docker_image_name
+            node_id: node_id
+          - metadata:
+              key: ""
+            docker_image_tag: docker_image_tag
+            docker_image_size: docker_image_size
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            docker_image_name: docker_image_name
+            node_id: node_id
+          containers:
+          - docker_labels:
+              key: ""
+            image:
+              metadata:
+                key: ""
+              docker_image_tag: docker_image_tag
+              docker_image_size: docker_image_size
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              docker_image_name: docker_image_name
+              node_id: node_id
+            metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            name: name
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            host_name: host_name
+            node_id: node_id
+          - docker_labels:
+              key: ""
+            image:
+              metadata:
+                key: ""
+              docker_image_tag: docker_image_tag
+              docker_image_size: docker_image_size
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              docker_image_name: docker_image_name
+              node_id: node_id
+            metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            name: name
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            host_name: host_name
+            node_id: node_id
+          pods:
+          - metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            name: name
+            containers:
+            - docker_labels:
+                key: ""
+              image:
+                metadata:
+                  key: ""
+                docker_image_tag: docker_image_tag
+                docker_image_size: docker_image_size
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                docker_image_name: docker_image_name
+                node_id: node_id
+              metadata:
+                key: ""
+              processes:
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              name: name
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              host_name: host_name
+              node_id: node_id
+            - docker_labels:
+                key: ""
+              image:
+                metadata:
+                  key: ""
+                docker_image_tag: docker_image_tag
+                docker_image_size: docker_image_size
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                docker_image_name: docker_image_name
+                node_id: node_id
+              metadata:
+                key: ""
+              processes:
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              name: name
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              host_name: host_name
+              node_id: node_id
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            node_id: node_id
+          - metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            name: name
+            containers:
+            - docker_labels:
+                key: ""
+              image:
+                metadata:
+                  key: ""
+                docker_image_tag: docker_image_tag
+                docker_image_size: docker_image_size
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                docker_image_name: docker_image_name
+                node_id: node_id
+              metadata:
+                key: ""
+              processes:
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              name: name
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              host_name: host_name
+              node_id: node_id
+            - docker_labels:
+                key: ""
+              image:
+                metadata:
+                  key: ""
+                docker_image_tag: docker_image_tag
+                docker_image_size: docker_image_size
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                docker_image_name: docker_image_name
+                node_id: node_id
+              metadata:
+                key: ""
+              processes:
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              name: name
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              host_name: host_name
+              node_id: node_id
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            node_id: node_id
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          host_name: host_name
+          node_id: node_id
+        - processes:
+          - metadata:
+              key: ""
+            cmdline: cmdline
+            name: name
+            threads: 0
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            node_id: node_id
+            ppid: ppid
+          - metadata:
+              key: ""
+            cmdline: cmdline
+            name: name
+            threads: 0
+            pid: pid
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            node_id: node_id
+            ppid: ppid
+          cloud_metadata:
+            key: ""
+          container_images:
+          - metadata:
+              key: ""
+            docker_image_tag: docker_image_tag
+            docker_image_size: docker_image_size
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            docker_image_name: docker_image_name
+            node_id: node_id
+          - metadata:
+              key: ""
+            docker_image_tag: docker_image_tag
+            docker_image_size: docker_image_size
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            docker_image_name: docker_image_name
+            node_id: node_id
+          containers:
+          - docker_labels:
+              key: ""
+            image:
+              metadata:
+                key: ""
+              docker_image_tag: docker_image_tag
+              docker_image_size: docker_image_size
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              docker_image_name: docker_image_name
+              node_id: node_id
+            metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            name: name
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            host_name: host_name
+            node_id: node_id
+          - docker_labels:
+              key: ""
+            image:
+              metadata:
+                key: ""
+              docker_image_tag: docker_image_tag
+              docker_image_size: docker_image_size
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              docker_image_name: docker_image_name
+              node_id: node_id
+            metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            name: name
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            host_name: host_name
+            node_id: node_id
+          pods:
+          - metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            name: name
+            containers:
+            - docker_labels:
+                key: ""
+              image:
+                metadata:
+                  key: ""
+                docker_image_tag: docker_image_tag
+                docker_image_size: docker_image_size
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                docker_image_name: docker_image_name
+                node_id: node_id
+              metadata:
+                key: ""
+              processes:
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              name: name
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              host_name: host_name
+              node_id: node_id
+            - docker_labels:
+                key: ""
+              image:
+                metadata:
+                  key: ""
+                docker_image_tag: docker_image_tag
+                docker_image_size: docker_image_size
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                docker_image_name: docker_image_name
+                node_id: node_id
+              metadata:
+                key: ""
+              processes:
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              name: name
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              host_name: host_name
+              node_id: node_id
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            node_id: node_id
+          - metadata:
+              key: ""
+            processes:
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            - metadata:
+                key: ""
+              cmdline: cmdline
+              name: name
+              threads: 0
+              pid: pid
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              node_id: node_id
+              ppid: ppid
+            name: name
+            containers:
+            - docker_labels:
+                key: ""
+              image:
+                metadata:
+                  key: ""
+                docker_image_tag: docker_image_tag
+                docker_image_size: docker_image_size
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                docker_image_name: docker_image_name
+                node_id: node_id
+              metadata:
+                key: ""
+              processes:
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              name: name
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              host_name: host_name
+              node_id: node_id
+            - docker_labels:
+                key: ""
+              image:
+                metadata:
+                  key: ""
+                docker_image_tag: docker_image_tag
+                docker_image_size: docker_image_size
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                docker_image_name: docker_image_name
+                node_id: node_id
+              metadata:
+                key: ""
+              processes:
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              - metadata:
+                  key: ""
+                cmdline: cmdline
+                name: name
+                threads: 0
+                pid: pid
+                metrics:
+                  memory_mb: 6.027456183070403
+                  cpu_percent: 0.8008281904610115
+                node_id: node_id
+                ppid: ppid
+              name: name
+              metrics:
+                memory_mb: 6.027456183070403
+                cpu_percent: 0.8008281904610115
+              host_name: host_name
+              node_id: node_id
+            metrics:
+              memory_mb: 6.027456183070403
+              cpu_percent: 0.8008281904610115
+            node_id: node_id
+          metrics:
+            memory_mb: 6.027456183070403
+            cpu_percent: 0.8008281904610115
+          host_name: host_name
+          node_id: node_id
+        metrics:
+          memory_mb: 6.027456183070403
+          cpu_percent: 0.8008281904610115
+        host_name: host_name
+        node_id: node_id
+      properties:
+        cloud_metadata:
+          additionalProperties: {}
+          type: object
+        containers:
+          items:
+            $ref: '#/components/schemas/ModelHost'
+          nullable: true
+          type: array
+        host_name:
+          type: string
+        metrics:
+          $ref: '#/components/schemas/ModelComputeMetrics'
+        node_id:
+          type: string
+      required:
+      - cloud_metadata
+      - containers
+      - host_name
+      - metrics
+      - node_id
+      type: object
     ModelLoginRequest:
       example:
         password: password
@@ -3693,7 +4602,7 @@ components:
             key: ""
           cmdline: cmdline
           name: name
-          threads: 1
+          threads: 0
           pid: pid
           metrics:
             memory_mb: 6.027456183070403
@@ -3704,7 +4613,7 @@ components:
             key: ""
           cmdline: cmdline
           name: name
-          threads: 1
+          threads: 0
           pid: pid
           metrics:
             memory_mb: 6.027456183070403
@@ -3732,7 +4641,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3743,7 +4652,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3775,7 +4684,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3786,7 +4695,7 @@ components:
               key: ""
             cmdline: cmdline
             name: name
-            threads: 1
+            threads: 0
             pid: pid
             metrics:
               memory_mb: 6.027456183070403
@@ -3837,7 +4746,7 @@ components:
           key: ""
         cmdline: cmdline
         name: name
-        threads: 1
+        threads: 0
         pid: pid
         metrics:
           memory_mb: 6.027456183070403

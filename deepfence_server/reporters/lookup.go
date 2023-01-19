@@ -81,8 +81,33 @@ func GetProcessesReport(ctx context.Context, filter LookupFilter) ([]model.Proce
 	return processes, nil
 }
 
-func getGenericDirectNodeReport[T any](ctx context.Context, filter LookupFilter) ([]T, error) {
+func GetPodsReport(ctx context.Context, filter LookupFilter) ([]model.Pod, error) {
+	pods, err := getGenericDirectNodeReport[model.Pod](ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return pods, nil
+}
+
+func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model.ContainerImage, error) {
+	images, err := getGenericDirectNodeReport[model.ContainerImage](ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return images, nil
+}
+
+func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]model.KubernetesCluster, error) {
+	clusters, err := getGenericDirectNodeReport[model.KubernetesCluster](ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return clusters, nil
+}
+
+func getGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filter LookupFilter) ([]T, error) {
 	res := []T{}
+	var dummy T
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -104,11 +129,11 @@ func getGenericDirectNodeReport[T any](ctx context.Context, filter LookupFilter)
 	var r neo4j.Result
 	if len(filter.NodeIds) == 0 {
 		r, err = tx.Run(`
-		MATCH (n:Node) RETURN `+fieldFilterCypher("n", filter.InFieldFilter)+`
+		MATCH (n:`+dummy.NodeType()+`) RETURN `+fieldFilterCypher("n", filter.InFieldFilter)+`
 		`, nil)
 	} else {
 		r, err = tx.Run(`
-		MATCH (n:Node) WHERE n.node_id IN $ids RETURN `+fieldFilterCypher("n", filter.InFieldFilter)+`
+		MATCH (n:`+dummy.NodeType()+`) WHERE n.node_id IN $ids RETURN `+fieldFilterCypher("n", filter.InFieldFilter)+`
 		`, map[string]interface{}{"ids": filter.NodeIds})
 	}
 
