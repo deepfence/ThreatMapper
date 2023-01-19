@@ -1,13 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"math/rand"
 	"sync"
 
-	"context"
+	"github.com/pkg/errors"
 
 	"github.com/weaveworks/scope/common/xfer"
 )
@@ -55,7 +54,6 @@ func (l *localControlRouter) Register(_ context.Context, probeID string, handler
 	//logrus.Infof("Register: probeId: %s, randId: %d", probeID, id)
 	// If probeId is already there, disconnect. Let the client reconnect.
 	if _, ok := l.probes[probeID]; ok {
-		logrus.Infof("Register: probeId %s already found", probeID)
 		return id, errors.New("probeId already found")
 	}
 	l.probes[probeID] = probe{
