@@ -15,7 +15,7 @@ export const AmazonECRConnector = () => {
       <AmazonECRConnectorForm />
       <div className="flex mt-16">
         <Button onClick={goBack} size="xs">
-          Cancel
+          Go Back
         </Button>
       </div>
     </div>

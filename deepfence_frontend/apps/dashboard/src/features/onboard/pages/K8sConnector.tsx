@@ -18,7 +18,7 @@ export const K8sConnector = () => {
       </div>
       <div className="flex flex-row mt-16">
         <Button onClick={goBack} size="xs">
-          Cancel
+          Go Back
         </Button>
       </div>
     </div>

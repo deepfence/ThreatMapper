@@ -66,8 +66,8 @@ export const AmazonECRConnectorForm = () => {
               placeholder="AWS Region"
             />
           </div>
-          <Button color="primary" size="xs" className="ml-auto mt-4">
-            Save Credentials And Go To Connectors
+          <Button color="primary" size="xs" className="ml-auto mt-6">
+            Save And Go To Connectors
           </Button>
         </Card>
       </Step>
