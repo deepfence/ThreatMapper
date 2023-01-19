@@ -13,7 +13,7 @@ type Metadata map[string]interface{}
 
 type KubernetesCluster struct {
 	ID       string         `json:"node_id" required:"true"`
-	Name     string         `json:"host_name" required:"true"`
+	Name     string         `json:"node_name" required:"true"`
 	Hosts    []Host         `json:"containers" required:"true"`
 	Metadata Metadata       `json:"cloud_metadata" required:"true" nested_json:"true"`
 	Metrics  ComputeMetrics `json:"metrics" required:"true"`
@@ -51,7 +51,9 @@ type Connection struct {
 
 type Pod struct {
 	ID         string         `json:"node_id" required:"true"`
-	Name       string         `json:"name" required:"true"`
+	Name       string         `json:"kubernetes_name" required:"true"`
+	Namespace  string         `json:"kubernetes_namespace" required:"true"`
+	Host       string         `json:"host_node_id" required:"true"`
 	Metrics    ComputeMetrics `json:"metrics" required:"true"`
 	Containers []Container    `json:"containers" required:"true"`
 	Processes  []Process      `json:"processes" required:"true" required:"true"`
