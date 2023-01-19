@@ -1,6 +1,5 @@
 import { filter, find, isEmpty } from 'lodash-es';
 import { useEffect, useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
 import { HiBan, HiLightBulb, HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
 import {
   Button,
