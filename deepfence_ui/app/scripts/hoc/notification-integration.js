@@ -4,6 +4,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 // Custom component imports
+import { differenceWith } from 'lodash';
 import SeverityDropdownView from '../components/common/severity-radio-button-collection/severity-radio-button-collection';
 import DFSelect from '../components/common/multi-select/app';
 import {
@@ -24,7 +25,7 @@ import AdvanceFilterOption, {
 
 const allNodeType = 'host,container_image,pod,aws';
 
-const withIntegrationForm = WrappedComponent => {
+const withIntegrationForm = (WrappedComponent, ingoreResources) => {
   class HOC extends React.PureComponent {
     constructor(props) {
       super(props);
@@ -303,6 +304,13 @@ const withIntegrationForm = WrappedComponent => {
         notificationOptionsCheck = NOTIFICATION_RESOURCE_OPTIONS;
       } else {
         notificationOptionsCheck = NOTIFICATION_RESOURCE_OPTIONS_CLOUDTRAIL;
+        if (ingoreResources && ingoreResources.length) {
+          notificationOptionsCheck = differenceWith(
+            NOTIFICATION_RESOURCE_OPTIONS_CLOUDTRAIL, 
+            ingoreResources, 
+            ({ value }, id) => id === value
+          );
+        }
       }
 
       const cloudTrailOptions =

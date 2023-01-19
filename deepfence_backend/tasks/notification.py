@@ -6,7 +6,7 @@ import calendar
 import time
 from jira import JIRA, JIRAError
 from config.app import app, celery_app
-from models.notification import UserActivityNotification, VulnerabilityNotification, MalwareNotification, SecretNotification
+from models.notification import UserActivityNotification, VulnerabilityNotification, MalwareNotification, SecretNotification, CloudtrailAlertNotification
 from models.user_activity_log import UserActivityLog
 from models.user import User
 from utils.common import get_epochtime

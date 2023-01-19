@@ -24,11 +24,27 @@ import (
 
 // Agent version to dispay in metadata
 var (
-	agentVersionNo = "1.4.1"
-	agentCommitID  = "Unknown"
-	agentBuildTime = "0"
-	agentRunning   = "yes"
+	agentVersionNo           = "1.4.2"
+	agentCommitID            = "Unknown"
+	agentBuildTime           = "0"
+	agentRunning             = "yes"
+	DockerSocketPath         = os.Getenv("DOCKER_SOCKET_PATH")
+	ContainerdSocketPath     = os.Getenv("CONTAINERD_SOCKET_PATH")
+	CrioSocketPath           = os.Getenv("CRIO_SOCKET_PATH")
+	foundContainerSocketPath = false
 )
+
+func init() {
+	if DockerSocketPath != "" && dfUtils.FileExists(DockerSocketPath) {
+		foundContainerSocketPath = true
+	}
+	if ContainerdSocketPath != "" && dfUtils.FileExists(ContainerdSocketPath) {
+		foundContainerSocketPath = true
+	}
+	if CrioSocketPath != "" && dfUtils.FileExists(CrioSocketPath) {
+		foundContainerSocketPath = true
+	}
+}
 
 // Keys for use in Node.Latest.
 const (
@@ -134,12 +150,10 @@ func getCloudMetadata(cloudProvider string) (string, string, string, string) {
 	} else {
 		var err error
 		cloudMetadata, err = cloud_metadata.GetGenericMetadata(false)
-		if err == nil {
-			if !dfUtils.FileExists("/var/run/docker.sock") && !dfUtils.FileExists("/run/containerd/containerd.sock") && !dfUtils.FileExists("/run/k3s/containerd/containerd.sock") {
-				cloudProvider = report.CloudProviderServerless
-				cloudMetadata.CloudProvider = report.CloudProviderServerless
-				cloudMetadata.Region = report.CloudProviderServerless
-			}
+		if err == nil && !foundContainerSocketPath {
+			cloudProvider = report.CloudProviderServerless
+			cloudMetadata.CloudProvider = report.CloudProviderServerless
+			cloudMetadata.Region = report.CloudProviderServerless
 		}
 	}
 	cloudMetadataJson, err := json.Marshal(cloudMetadata)
@@ -296,7 +310,6 @@ func (r *Reporter) updateHostDetails(cloudProvider string) {
 	// Set for the first time
 	r.updateHostDetailsMetrics()
 	r.updateHostDetailsEveryMinute()
-	r.updateCloudMetadata(cloudProvider)
 
 	// Update it every now and then
 	minuteTicker := time.NewTicker(1 * time.Minute)

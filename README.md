@@ -5,6 +5,8 @@
 [![Hacktoberfest](https://img.shields.io/github/hacktoberfest/2022/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
 [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues)
 [![Documentation](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/docs/threatmapper)
+[![Chinese](https://img.shields.io/badge/read-Chinese%20Simplified-yellow)](https://github.com/deepfence/ThreatMapper/blob/master/README.zh-CN.md)
+[![Chinese](https://img.shields.io/badge/read-Chinese%20Traditional-pink)](https://github.com/deepfence/ThreatMapper/blob/master/README.zh-TW.md)
 [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/docs/threatmapper/demo)
 [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
@@ -100,7 +102,7 @@ For example, run the following command to start the ThreatMapper sensor on a Doc
 docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=host --net=host --privileged=true \
   -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
   -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" -e USER_DEFINED_TAGS="" \
-  deepfenceio/deepfence_agent_ce:1.4.1
+  deepfenceio/deepfence_agent_ce:1.4.2
 ```
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/docs/threatmapper/sensors/kubernetes/)

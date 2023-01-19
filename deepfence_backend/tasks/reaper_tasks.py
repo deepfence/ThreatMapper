@@ -100,7 +100,7 @@ def cve_fix_interrupted(*args):
             total_diff_minutes = int(
                 round((datetime_now - last_status_timestamp).total_seconds() / 60))
             if cve_status["action"] == CVE_SCAN_STATUS_QUEUED:
-                # If scan is in QUEUED state for 7 days, then it has failed
+                # If scan is in QUEUED state for 1 day, then it has failed
                 if total_diff_minutes >= 1440:
                     insert_cve_error_doc(cve_status, datetime_now, host, cve_node_id,
                                          "Scan was stopped because it was in queued state for a week. Please start again.")

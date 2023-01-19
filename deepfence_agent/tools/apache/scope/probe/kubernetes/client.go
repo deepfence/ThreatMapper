@@ -13,7 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	apiappsv1 "k8s.io/api/apps/v1"
 	apibatchv1 "k8s.io/api/batch/v1"
-	apibatchv1beta1 "k8s.io/api/batch/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -289,7 +288,7 @@ func (c *client) clientAndType(resource string) (rest.Interface, interface{}, er
 	case "statefulsets":
 		return c.client.AppsV1().RESTClient(), &apiappsv1.StatefulSet{}, nil
 	case "cronjobs":
-		return c.client.BatchV1beta1().RESTClient(), &apibatchv1beta1.CronJob{}, nil
+		return c.client.BatchV1().RESTClient(), &apibatchv1.CronJob{}, nil
 	}
 	return nil, nil, fmt.Errorf("Invalid resource: %v", resource)
 }
@@ -456,7 +455,7 @@ func (c *client) WalkCronJobs(f func(CronJob) error) error {
 		jobs[j.UID] = j
 	}
 	for _, m := range c.cronJobStore.List() {
-		cj := m.(*apibatchv1beta1.CronJob)
+		cj := m.(*apibatchv1.CronJob)
 		if err := f(NewCronJob(cj, jobs)); err != nil {
 			return err
 		}

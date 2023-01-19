@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import classnames from 'classnames';
 import { Redirect } from 'react-router-dom';
 import moment from 'moment';
+import { formValueSelector } from 'redux-form/immutable';
 import HeaderView from '../common/header-view/header-view';
 import SideNavigation from '../common/side-navigation/side-navigation';
 import NotificationToaster from '../common/notification-toaster/notification-toaster';
@@ -35,6 +36,8 @@ const SecretScanResultsView = props => {
   const [isLicenseExpiryModalVisible, setIsLicenseExpiryModalVisible] =
     useState(false);
 
+  const [refreshCounter, setRefreshCounter] = useState(0);
+
   const hosts = useSelector(state => state.get('hosts'));
   const isToasterVisible = useSelector(state => state.get('isToasterVisible'));
   const isSideNavCollapsed = useSelector(state =>
@@ -43,6 +46,12 @@ const SecretScanResultsView = props => {
   const isFiltersViewVisible = useSelector(state =>
     state.get('isFiltersViewVisible')
   );
+
+  const hideMasked = useSelector(state => {
+    const selector = formValueSelector('secrets-mask-form');
+    const hideMasked = selector(state, 'hideMasked');
+    return hideMasked ?? true;
+  })
 
   const handleBackButton = () => {
     setRedirectBack(true);
@@ -99,6 +108,12 @@ const SecretScanResultsView = props => {
     []
   );
 
+  useEffect(() => {
+    if (hideMasked !== undefined) {
+      onRowActionCallback()
+    }
+  }, [hideMasked])
+
   if (redirectBack) {
     return <Redirect to={link} />;
   }
@@ -118,6 +133,10 @@ const SecretScanResultsView = props => {
     'with-filters': isFiltersViewVisible,
   });
 
+  const onRowActionCallback = () => {
+    setRefreshCounter((prev) => prev + 1);
+  }
+  
   return (
     <div>
       <SideNavigation
@@ -140,16 +159,20 @@ const SecretScanResultsView = props => {
           <SecretScanImageStatsContainer
             imageName={unEscapedImageName}
             scanId={unEscapedScanId}
+            refreshCounter={refreshCounter}
+            hideMasked={hideMasked}
           />
           <SecretScanChartView
             imageName={unEscapedImageName}
             scanId={unEscapedScanId}
+            refreshCounter={refreshCounter}
           />
         </div>
         <div className="vulnerability-view-table-wrapper">
           <SecretScanTableV2
             imageName={unEscapedImageName}
             scanId={unEscapedScanId}
+            onRowActionCallback={onRowActionCallback}
           />
         </div>
       </div>

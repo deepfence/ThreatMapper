@@ -104,8 +104,18 @@ export const AwsTerraFormScript = withRouter(props => {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Deploy --&gt;{' '}
+                    Deploy on one AWS account--&gt;{' '}
                   </a>
+                  <br/>
+                  <a
+                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacksets/create`}
+                    disabled={regionValue === undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Deploy on multiple AWS accounts--&gt;{' '}
+                  </a>
+                  <p>(Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template)</p>
                 </div>
               )}
             </div>
@@ -191,13 +201,6 @@ deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXX
       ) : null}
       <ComplianceStats />
       <ComplianceTable cloudType="aws" />
-      <Route
-        exact
-        path={`${props.match.path}/:id`}
-        render={() => {
-          return <ComplianceSummary />;
-        }}
-      />
     </div>
   );
 });

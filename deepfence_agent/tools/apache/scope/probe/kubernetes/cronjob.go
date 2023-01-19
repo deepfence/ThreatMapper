@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	apibatchv1 "k8s.io/api/batch/v1"
 	batchv1 "k8s.io/api/batch/v1"
-	apibatchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -29,14 +29,14 @@ type CronJob interface {
 }
 
 type cronJob struct {
-	*apibatchv1beta1.CronJob
+	*apibatchv1.CronJob
 	Meta
 	jobs []*batchv1.Job
 }
 
 // NewCronJob creates a new cron job. jobs should be all jobs, which will be filtered
 // for those matching this cron job.
-func NewCronJob(cj *apibatchv1beta1.CronJob, jobs map[types.UID]*batchv1.Job) CronJob {
+func NewCronJob(cj *apibatchv1.CronJob, jobs map[types.UID]*batchv1.Job) CronJob {
 	myJobs := []*batchv1.Job{}
 	for _, o := range cj.Status.Active {
 		if j, ok := jobs[o.UID]; ok {
