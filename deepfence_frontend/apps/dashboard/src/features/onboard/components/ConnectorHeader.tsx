@@ -6,25 +6,23 @@ import { Breadcrumb, BreadcrumbLink, Typography } from 'ui-components';
 type ConnectorHeaderProps = {
   title: string;
   description: string;
-  metadata?: {
-    [key: string]: string;
-  };
+  endComponent?: JSX.Element;
 };
 
 const canRoute = (pathname: string) => {
   const path = {
     addConnector: '/onboard/connectors/add-connectors',
-    scanResult: '',
+    configureScan: '',
     viewResult: '',
   };
-  if (pathname.includes('view-scan-results')) {
-    path.viewResult = '/onboard/view-scan-results';
-    path.scanResult = '/onboard/scan-infrastructure';
-  } else if (pathname.includes('scan-infrastructure')) {
-    path.scanResult = '/onboard/scan-infrastructure';
+  if (pathname.includes('view-summary')) {
+    path.viewResult = '/onboard/scan/view-summary';
+    path.configureScan = '#';
+  } else if (pathname.includes('scan/configure')) {
+    path.configureScan = '#';
     path.viewResult = '#';
   } else if (pathname.includes('connectors')) {
-    path.scanResult = '#';
+    path.configureScan = '#';
     path.viewResult = '#';
   }
   return path;
@@ -33,7 +31,7 @@ const canRoute = (pathname: string) => {
 export const ConnectorHeader = ({
   title,
   description,
-  metadata = {},
+  endComponent,
 }: ConnectorHeaderProps) => {
   const location = useLocation();
 
@@ -45,11 +43,14 @@ export const ConnectorHeader = ({
   };
 
   const isScanRoutePath = () => {
-    return location.pathname.includes('scan-infrastructure');
+    return (
+      location.pathname.startsWith('/onboard/scan/choose') ||
+      location.pathname.startsWith('/onboard/scan/configure')
+    );
   };
 
-  const isViewResultsRoutePath = () => {
-    return location.pathname.includes('view-scan-results');
+  const isViewScanSummaryRoutePath = () => {
+    return location.pathname.includes('scan/view-summary');
   };
 
   return (
@@ -68,7 +69,7 @@ export const ConnectorHeader = ({
           </BreadcrumbLink>
           <BreadcrumbLink>
             <Link
-              to={canRoute(location.pathname).scanResult}
+              to={'#'}
               className={cx({
                 ['text-blue-600 dark:text-blue-500']: isScanRoutePath(),
               })}
@@ -80,7 +81,7 @@ export const ConnectorHeader = ({
             <Link
               to={canRoute(location.pathname).viewResult}
               className={cx({
-                ['text-blue-600 dark:text-blue-500']: isViewResultsRoutePath(),
+                ['text-blue-600 dark:text-blue-500']: isViewScanSummaryRoutePath(),
               })}
             >
               View Scan Results
@@ -97,13 +98,7 @@ export const ConnectorHeader = ({
             {description}
           </p>
         </div>
-        <div className="ml-auto">
-          <span className={`${Typography.size.sm} text-gray-600`}>
-            {metadata.accountId
-              ? `Account: ${metadata.type} / ${metadata.accountId}`
-              : null}
-          </span>
-        </div>
+        {endComponent ? <div className="ml-auto">{endComponent}</div> : null}
       </div>
     </div>
   );

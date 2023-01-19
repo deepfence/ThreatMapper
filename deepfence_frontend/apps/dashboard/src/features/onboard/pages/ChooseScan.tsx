@@ -1,5 +1,4 @@
 import { HiSwitchHorizontal } from 'react-icons/hi';
-import { useLocation } from 'react-router-dom';
 import { Button, Card, Separator, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
@@ -77,7 +76,6 @@ const SelectedAccount = () => {
 };
 
 const ScanType = () => {
-  const location = useLocation();
   const { navigate } = usePageNavigation();
   const goNext = (path: string) => {
     navigate(path);

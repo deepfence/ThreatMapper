@@ -8,6 +8,7 @@ import {
   Switch,
   Table,
   Tabs,
+  Tooltip,
   Typography,
 } from 'ui-components';
 
@@ -142,494 +143,6 @@ const complianceTableData = [
     test_number: 'control.cis_v140_4_11',
     status: 'Active',
   },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 12,
-    is_enabled: true,
-    test_category: 'CloudWatch',
-    test_desc:
-      '4.12 Ensure a log metric filter and alarm exist for changes to network gateways',
-    test_number: 'control.cis_v140_4_12',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 13,
-    is_enabled: true,
-    test_category: 'CloudWatch',
-    test_desc: '4.13 Ensure a log metric filter and alarm exist for route table changes',
-    test_number: 'control.cis_v140_4_13',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 14,
-    is_enabled: true,
-    test_category: 'CloudWatch',
-    test_desc: '4.14 Ensure a log metric filter and alarm exist for VPC changes',
-    test_number: 'control.cis_v140_4_14',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 15,
-    is_enabled: true,
-    test_category: 'CloudWatch',
-    test_desc:
-      '4.15 Ensure a log metric filter and alarm exists for AWS Organizations changes',
-    test_number: 'control.cis_v140_4_15',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 16,
-    is_enabled: true,
-    test_category: 'VPC',
-    test_desc:
-      '5.1 Ensure no Network ACLs allow ingress from 0.0.0.0/0 to remote server administration ports',
-    test_number: 'control.cis_v140_5_1',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 17,
-    is_enabled: true,
-    test_category: 'VPC',
-    test_desc:
-      '5.2 Ensure no security groups allow ingress from 0.0.0.0/0 to remote server administration ports',
-    test_number: 'control.cis_v140_5_2',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 18,
-    is_enabled: true,
-    test_category: 'VPC',
-    test_desc: '5.3 Ensure the default security group of every VPC restricts all traffic',
-    test_number: 'control.cis_v140_5_3',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 19,
-    is_enabled: true,
-    test_category: 'VPC',
-    test_desc: '5.4 Ensure routing tables for VPC peering are \\"least access\\',
-    test_number: 'control.cis_v140_5_4',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 20,
-    is_enabled: true,
-    test_category: 'CloudTrail',
-    test_desc: '3.1 Ensure CloudTrail is enabled in all regions',
-    test_number: 'control.cis_v140_3_1',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 21,
-    is_enabled: true,
-    test_category: 'CloudTrail',
-    test_desc: '3.2 Ensure CloudTrail log file validation is enabled',
-    test_number: 'control.cis_v140_3_2',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 22,
-    is_enabled: true,
-    test_category: 'CloudTrail',
-    test_desc:
-      '3.3 Ensure the S3 bucket used to store CloudTrail logs is not publicly accessible',
-    test_number: 'control.cis_v140_3_3',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 23,
-    is_enabled: true,
-    test_category: 'CloudTrail',
-    test_desc: '3.4 Ensure CloudTrail trails are integrated with CloudWatch Logs',
-    test_number: 'control.cis_v140_3_4',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 24,
-    is_enabled: true,
-    test_category: 'Config',
-    test_desc: '3.5 Ensure AWS Config is enabled in all regions',
-    test_number: 'control.cis_v140_3_5',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 25,
-    is_enabled: true,
-    test_category: 'CloudTrail',
-    test_desc:
-      '3.6 Ensure S3 bucket access logging is enabled on the CloudTrail S3 bucket',
-    test_number: 'control.cis_v140_3_6',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 26,
-    is_enabled: true,
-    test_category: 'CloudTrail',
-    test_desc: '3.7 Ensure CloudTrail logs are encrypted at rest using KMS CMKs',
-    test_number: 'control.cis_v140_3_7',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 27,
-    is_enabled: true,
-    test_category: 'KMS',
-    test_desc: '3.8 Ensure rotation for customer created CMKs is enabled',
-    test_number: 'control.cis_v140_3_8',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 28,
-    is_enabled: true,
-    test_category: 'VPC',
-    test_desc: '3.9 Ensure VPC flow logging is enabled in all VPCs',
-    test_number: 'control.cis_v140_3_9',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 29,
-    is_enabled: true,
-    test_category: 'S3',
-    test_desc:
-      '3.10 Ensure that Object-level logging for write events is enabled for S3 bucket',
-    test_number: 'control.cis_v140_3_10',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 30,
-    is_enabled: true,
-    test_category: 'S3',
-    test_desc:
-      '3.11 Ensure that Object-level logging for read events is enabled for S3 bucket',
-    test_number: 'control.cis_v140_3_11',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 31,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.1 Maintain current contact details',
-    test_number: 'control.cis_v140_1_1',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 32,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.2 Ensure security contact information is registered',
-    test_number: 'control.cis_v140_1_2',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 33,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.3 Ensure security questions are registered in the AWS account',
-    test_number: 'control.cis_v140_1_3',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 34,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: "1.4 Ensure no 'root' user account access key exists",
-    test_number: 'control.cis_v140_1_4',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 35,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: "1.5 Ensure MFA is enabled for the 'root' user account",
-    test_number: 'control.cis_v140_1_5',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 36,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: "1.6 Ensure hardware MFA is enabled for the 'root' user account",
-    test_number: 'control.cis_v140_1_6',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 37,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: "1.7 Eliminate use of the 'root' user for administrative and daily tasks",
-    test_number: 'control.cis_v140_1_7',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 38,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.8 Ensure IAM password policy requires minimum length of 14 or greater',
-    test_number: 'control.cis_v140_1_8',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 39,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.9 Ensure IAM password policy prevents password reuse',
-    test_number: 'control.cis_v140_1_9',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 40,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc:
-      '1.10 Ensure multi-factor authentication (MFA) is enabled for all IAM users that have a console password',
-    test_number: 'control.cis_v140_1_10',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 41,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc:
-      '1.11 Do not setup access keys during initial user setup for all IAM users that have a console password',
-    test_number: 'control.cis_v140_1_11',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 42,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.12 Ensure credentials unused for 45 days or greater are disabled',
-    test_number: 'control.cis_v140_1_12',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 43,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc:
-      '1.13 Ensure there is only one active access key available for any single IAM user',
-    test_number: 'control.cis_v140_1_13',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 44,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.14 Ensure access keys are rotated every 90 days or less',
-    test_number: 'control.cis_v140_1_14',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 45,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.15 Ensure IAM Users Receive Permissions Only Through Groups',
-    test_number: 'control.cis_v140_1_15',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 46,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc:
-      '1.16 Ensure IAM policies that allow full \\"*:*\\" administrative privileges are not attached',
-    test_number: 'control.cis_v140_1_16',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 47,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc:
-      '1.17 Ensure a support role has been created to manage incidents with AWS Support',
-    test_number: 'control.cis_v140_1_17',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 48,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc:
-      '1.18 Ensure IAM instance roles are used for AWS resource access from instances',
-    test_number: 'control.cis_v140_1_18',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 49,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc:
-      '1.19 Ensure that all the expired SSL/TLS certificates stored in AWS IAM are removed',
-    test_number: 'control.cis_v140_1_19',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 50,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc: '1.20 Ensure that IAM Access analyzer is enabled for all regions',
-    test_number: 'control.cis_v140_1_20',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 51,
-    is_enabled: true,
-    test_category: 'IAM',
-    test_desc:
-      '1.21 Ensure IAM users are managed centrally via identity federation or AWS Organizations for multi-account environments',
-    test_number: 'control.cis_v140_1_21',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 52,
-    is_enabled: true,
-    test_category: 'S3',
-    test_desc: '2.1.1 Ensure all S3 buckets employ encryption-at-rest',
-    test_number: 'control.cis_v140_2_1_1',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 53,
-    is_enabled: true,
-    test_category: 'S3',
-    test_desc: '2.1.2 Ensure S3 Bucket Policy is set to deny HTTP requests',
-    test_number: 'control.cis_v140_2_1_2',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 54,
-    is_enabled: true,
-    test_category: 'S3',
-    test_desc: '2.1.3 Ensure MFA Delete is enabled on S3 buckets',
-    test_number: 'control.cis_v140_2_1_3',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 55,
-    is_enabled: true,
-    test_category: 'S3',
-    test_desc:
-      '2.1.4 Ensure all data in Amazon S3 has been discovered, classified and secured when required',
-    test_number: 'control.cis_v140_2_1_4',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 56,
-    is_enabled: true,
-    test_category: 'S3',
-    test_desc:
-      "2.1.5 Ensure that S3 Buckets are configured with 'Block public access (bucket settings)'",
-    test_number: 'control.cis_v140_2_1_5',
-    status: 'Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 57,
-    is_enabled: true,
-    test_category: 'EBS',
-    test_desc: '2.2.1 Ensure EBS volume encryption is enabled',
-    test_number: 'control.cis_v140_2_2_1',
-    status: 'Non Active',
-  },
-  {
-    cloud_provider: 'aws',
-    compliance_check_type: 'cis',
-    id: 58,
-    is_enabled: true,
-    test_category: 'RDS',
-    test_desc: '2.3.1 Ensure that encryption is enabled for RDS Instances',
-    test_number: 'control.cis_v140_2_3_1',
-    status: 'Non Active',
-  },
 ];
 
 const ComplianceTable = () => {
@@ -638,8 +151,7 @@ const ComplianceTable = () => {
 
   const [rowSelectionState, setRowSelectionState] = useState<any>({});
 
-  const updateTableData = (rowData: any, flag: boolean) => {
-    console.log(flag, 'data is ', rowData);
+  const onToggleChange = (rowData: any, flag: boolean) => {
     setTableData((data) => {
       data[rowData.row.index].is_enabled = flag;
 
@@ -669,7 +181,7 @@ const ComplianceTable = () => {
       }),
       columnHelper.accessor('status', {
         header: () => 'Status',
-        cell: (info) => 'Active',
+        cell: (info) => info.renderValue(),
         maxSize: 50,
       }),
       columnHelper.accessor('is_enabled', {
@@ -678,7 +190,7 @@ const ComplianceTable = () => {
           <Switch
             checked={!!info.renderValue()}
             onCheckedChange={(e) => {
-              updateTableData(info, e);
+              onToggleChange(info, e);
             }}
           />
         ),
@@ -726,10 +238,33 @@ const hasTypeSelected = (prevTabs: TabsType[], value: string) => {
   return find(prevTabs, ['value', value]);
 };
 
+const SelectedAccountComponent = ({
+  type,
+  accounts,
+}: {
+  type: string;
+  accounts: string[];
+}) => {
+  return (
+    <span className={`${Typography.size.sm} text-gray-600 dark:text-gray-400`}>
+      {accounts.length > 0 ? `Account: ${type} / ${accounts[0]}` : null}
+      &nbsp;
+      {accounts.length > 1 && (
+        <Tooltip content={accounts.slice(1).join(', ')}>
+          <span className={`${Typography.size.sm} text-blue-500 dark:text-blue-400`}>
+            +{accounts.length - 1} more
+          </span>
+        </Tooltip>
+      )}
+    </span>
+  );
+};
+
 export const ComplianceScanConfigure = () => {
   const { goBack } = usePageNavigation();
   const [selectedTab, setSelectedTab] = useState('');
   const [tabs, setTabs] = useState<TabsType[] | []>([]);
+  const { navigate } = usePageNavigation();
 
   const onScanTypeSelection = (name: string) => {
     setTabs((prevTabs) => {
@@ -762,10 +297,22 @@ export const ComplianceScanConfigure = () => {
       <ConnectorHeader
         title="Configure Compliance Scan"
         description="Choose from the below options to perform your first scan."
-        metadata={{
-          accountId: '234HTY6643',
-          type: 'AWS',
-        }}
+        endComponent={
+          <SelectedAccountComponent
+            accounts={[
+              '234HTY6643',
+              'dummy',
+              'dummy',
+              'dummy',
+              'dummy',
+              'dummy',
+              'dummy',
+              'dummy',
+              'dummy',
+            ]}
+            type={'AWS'}
+          />
+        }
       />
       <div className="mt-6 flex gap-4 mb-6">
         {scanType.map((type) => (
@@ -778,6 +325,7 @@ export const ComplianceScanConfigure = () => {
               onScanTypeSelection(type);
             }}
             endIcon={hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
+            className="self-start"
           >
             {type}
           </Button>
@@ -787,6 +335,7 @@ export const ComplianceScanConfigure = () => {
           color="primary"
           className="ml-auto"
           disabled={tabs.length === 0}
+          onClick={() => navigate('/onboard/scan/view-summary')}
         >
           Start Scan
         </Button>
