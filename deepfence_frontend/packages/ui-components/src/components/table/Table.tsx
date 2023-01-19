@@ -251,8 +251,8 @@ function Th<TData>({
       onClick={header.column.getToggleSortingHandler()}
     >
       <div
-        className={cx(`w-full h-full flex`, {
-          ['p-3']: size === 'sm',
+        className={cx(`w-full h-full flex px-4`, {
+          ['py-3']: size === 'sm',
           ['p-4']: size === 'md',
         })}
       >
@@ -360,12 +360,16 @@ function Td<TData>({
     <td
       key={cell.id}
       style={{ width: cell.column.getSize() }}
-      className={cx(`text-sm text-gray-900 dark:text-white`, Typography.weight.normal, {
-        'border-b border-gray-200 dark:border-gray-700':
-          !striped && rowIdx !== totalRows - 1,
-        ['p-2']: size === 'sm',
-        ['p-4']: size === 'md',
-      })}
+      className={cx(
+        `text-sm text-gray-900 dark:text-white px-4`,
+        Typography.weight.normal,
+        {
+          'border-b border-gray-200 dark:border-gray-700':
+            !striped && rowIdx !== totalRows - 1,
+          ['py-2']: size === 'sm',
+          ['p-4']: size === 'md',
+        },
+      )}
     >
       {flexRender(cell.column.columnDef.cell, cell.getContext())}
     </td>

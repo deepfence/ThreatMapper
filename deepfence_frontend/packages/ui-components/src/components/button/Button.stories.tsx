@@ -18,6 +18,40 @@ Default.args = {
   children: 'Button text md',
 };
 
+export const XsSize = Template.bind({});
+XsSize.args = {
+  children: 'Button text md',
+  endIcon: <FaAmazon />,
+  size: 'xs',
+};
+
+export const SMSize = Template.bind({});
+SMSize.args = {
+  children: 'Button text md',
+  endIcon: <FaAmazon />,
+  size: 'sm',
+};
+
+export const MDSize = Template.bind({});
+MDSize.args = {
+  children: 'Button text md',
+  endIcon: <FaAmazon />,
+};
+
+export const LGSize = Template.bind({});
+LGSize.args = {
+  children: 'Button text md',
+  endIcon: <FaAmazon />,
+  size: 'lg',
+};
+
+export const XLSize = Template.bind({});
+XLSize.args = {
+  children: 'Button text md',
+  endIcon: <FaAmazon />,
+  size: 'xl',
+};
+
 export const NormalButton = Template.bind({});
 NormalButton.args = {
   children: 'Normal text md',
@@ -112,8 +146,8 @@ PrimaryWithBothIcon.args = {
   endIcon: <FaAmazon />,
 };
 
-export const DefaultWithIcon = Template.bind({});
-DefaultWithIcon.args = {
+export const XSWithIcon = Template.bind({});
+XSWithIcon.args = {
   children: 'Button text',
   size: 'xs',
   startIcon: <FaAmazon />,
