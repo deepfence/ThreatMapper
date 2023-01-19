@@ -55,10 +55,10 @@ func GenerateSbomForVulnerabilityScan(nodeType, imageName, imageId, scanId, cont
 	if nodeType == "host" {
 		source = scanPath
 	} else if nodeType == "container_image" {
-		if imageId != "" {
-			source = imageId
-		} else {
+		if imageName != "" {
 			source = imageName
+		} else {
+			source = imageId
 		}
 	} else if nodeType == "container" {
 		if containerId != "" {
@@ -107,13 +107,15 @@ func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 		node_id = node_id_Arg
 	}
 
+	if image_name_Arg, ok := req.BinArgs["image_name"]; ok {
+		imageName = image_name_Arg
+	}
+
 	switch node_type {
 	case "container":
 		containerId = node_id
-		containerName = node_id
 	case "image":
 		imageId = node_id
-		imageName = node_id
 		node_type = "container_image"
 	}
 
@@ -121,8 +123,8 @@ func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 		kubernetesClusterName = kubernetesClusterNameArg
 	}
 	if (node_type == "container" && containerId == "") ||
-		(node_type == "container_image" && imageId == "") {
-		return errors.New("image_id/container_id is required for container/image vulnerability scan")
+		(node_type == "container_image" && (imageId == "" || imageName == "")) {
+		return errors.New("image_id/image_name/container_id is required for container/image vulnerability scan")
 	}
 	if scanTypeArg, ok := req.BinArgs["scan_type"]; ok {
 		scanType = scanTypeArg

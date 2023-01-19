@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -21,11 +22,50 @@ import (
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/gorilla/schema"
 	"github.com/minio/minio-go/v7"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 func scanId(req model.ScanTriggerReq) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
+}
+
+func GetImageFromId(ctx context.Context, node_id string) (string, string, error) {
+	var name string
+	var tag string
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return name, tag, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return name, tag, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return name, tag, err
+	}
+	defer tx.Close()
+
+	query := "MATCH (n:ContainerImage{node_id:$node_id}) return  n.docker_image_name,n.docker_image_tag"
+	res, err := tx.Run(query, map[string]interface{}{"node_id": node_id})
+	if err != nil {
+		return name, tag, err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return name, tag, err
+	}
+
+	name = rec.Values[0].(string)
+	tag = rec.Values[1].(string)
+
+	return name, tag, nil
 }
 
 func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,9 +82,22 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		"node_id":   req.NodeId,
 	}
 
+	nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
+
+	if nodeTypeInternal == ctl.Image {
+		name, tag, err := GetImageFromId(r.Context(), req.NodeId)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+			return
+		}
+		binArgs["image_name"] = name + ":" + tag
+		log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
+	}
+
 	internal_req := ctl.StartSecretScanRequest{
 		NodeId:   req.NodeId,
-		NodeType: ctl.StringToResourceType(req.NodeType),
+		NodeType: nodeTypeInternal,
 		BinArgs:  binArgs,
 	}
 

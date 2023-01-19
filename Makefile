@@ -30,9 +30,9 @@ console_plugins: secretscanner malwarescanner packagescanner
 
 .PHONY: bootstrap-agent-plugins
 bootstrap-agent-plugins:
-	cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh && cd -
-	cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh && cd -
-	cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh && cd -
+	(cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh)
+	(cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh)
+	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
 
 .PHONY: agent
 agent:
