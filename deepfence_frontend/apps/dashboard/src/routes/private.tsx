@@ -1,5 +1,6 @@
 import { Outlet, RouteObject } from 'react-router-dom';
 
+import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -99,5 +100,9 @@ export const privateRoutes: RouteObject[] = [
         ],
       },
     ],
+  },
+  {
+    path: '/',
+    loader: dashboardLoader,
   },
 ];
