@@ -40,7 +40,7 @@ const scanTypes: ScanTypeListProps[] = [
   },
 ];
 
-const SelectedAccountCard = () => {
+const SelectedAccount = () => {
   const { mode } = useTheme();
   const { navigate } = usePageNavigation();
   return (
@@ -133,7 +133,7 @@ export const ChooseScan = () => {
         title="Choose your scan type"
         description="Choose from the below options to perform your first scan."
       />
-      <SelectedAccountCard />
+      <SelectedAccount />
       <ScanType />
       <Button onClick={goBack} outline size="xs" className="mt-16">
         Go Back
