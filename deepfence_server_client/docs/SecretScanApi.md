@@ -163,7 +163,7 @@ import (
 )
 
 func main() {
-    modelScanListReq := *openapiclient.NewModelScanListReq("NodeId_example", *openapiclient.NewModelFetchWindow(int32(123), int32(123))) // ModelScanListReq |  (optional)
+    modelScanListReq := *openapiclient.NewModelScanListReq("NodeId_example", "NodeType_example", *openapiclient.NewModelFetchWindow(int32(123), int32(123))) // ModelScanListReq |  (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)

@@ -15,6 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -505,7 +506,7 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 		return
 	}
 
-	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeId, req.Window)
+	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeId, controls.StringToResourceType(req.NodeType), req.Window)
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
 		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})

@@ -4890,6 +4890,7 @@ components:
       type: object
     ModelScanListReq:
       example:
+        node_type: image
         window:
           offset: 0
           size: 6
@@ -4897,10 +4898,17 @@ components:
       properties:
         node_id:
           type: string
+        node_type:
+          enum:
+          - image
+          - host
+          - container
+          type: string
         window:
           $ref: '#/components/schemas/ModelFetchWindow'
       required:
       - node_id
+      - node_type
       - window
       type: object
     ModelScanListResp:

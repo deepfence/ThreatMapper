@@ -21,6 +21,7 @@ var _ MappedNullable = &ModelScanListReq{}
 // ModelScanListReq struct for ModelScanListReq
 type ModelScanListReq struct {
 	NodeId string `json:"node_id"`
+	NodeType string `json:"node_type"`
 	Window ModelFetchWindow `json:"window"`
 }
 
@@ -28,9 +29,10 @@ type ModelScanListReq struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewModelScanListReq(nodeId string, window ModelFetchWindow) *ModelScanListReq {
+func NewModelScanListReq(nodeId string, nodeType string, window ModelFetchWindow) *ModelScanListReq {
 	this := ModelScanListReq{}
 	this.NodeId = nodeId
+	this.NodeType = nodeType
 	this.Window = window
 	return &this
 }
@@ -65,6 +67,30 @@ func (o *ModelScanListReq) GetNodeIdOk() (*string, bool) {
 // SetNodeId sets field value
 func (o *ModelScanListReq) SetNodeId(v string) {
 	o.NodeId = v
+}
+
+// GetNodeType returns the NodeType field value
+func (o *ModelScanListReq) GetNodeType() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.NodeType
+}
+
+// GetNodeTypeOk returns a tuple with the NodeType field value
+// and a boolean to check if the value has been set.
+func (o *ModelScanListReq) GetNodeTypeOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.NodeType, true
+}
+
+// SetNodeType sets field value
+func (o *ModelScanListReq) SetNodeType(v string) {
+	o.NodeType = v
 }
 
 // GetWindow returns the Window field value
@@ -102,6 +128,7 @@ func (o ModelScanListReq) MarshalJSON() ([]byte, error) {
 func (o ModelScanListReq) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["node_id"] = o.NodeId
+	toSerialize["node_type"] = o.NodeType
 	toSerialize["window"] = o.Window
 	return toSerialize, nil
 }

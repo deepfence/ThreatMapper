@@ -36,8 +36,9 @@ type ScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	NodeId string      `json:"node_id" required:"true"`
-	Window FetchWindow `json:"window"  required:"true"`
+	NodeId   string      `json:"node_id" required:"true"`
+	NodeType string      `json:"node_type" required:"true" enum:"image,host,container"`
+	Window   FetchWindow `json:"window"  required:"true"`
 }
 
 type ScanListResp struct {

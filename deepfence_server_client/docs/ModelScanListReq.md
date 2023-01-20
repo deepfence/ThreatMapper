@@ -5,13 +5,14 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **NodeId** | **string** |  | 
+**NodeType** | **string** |  | 
 **Window** | [**ModelFetchWindow**](ModelFetchWindow.md) |  | 
 
 ## Methods
 
 ### NewModelScanListReq
 
-`func NewModelScanListReq(nodeId string, window ModelFetchWindow, ) *ModelScanListReq`
+`func NewModelScanListReq(nodeId string, nodeType string, window ModelFetchWindow, ) *ModelScanListReq`
 
 NewModelScanListReq instantiates a new ModelScanListReq object
 This constructor will assign default values to properties that have it defined,
@@ -44,6 +45,26 @@ and a boolean to check if the value has been set.
 `func (o *ModelScanListReq) SetNodeId(v string)`
 
 SetNodeId sets NodeId field to given value.
+
+
+### GetNodeType
+
+`func (o *ModelScanListReq) GetNodeType() string`
+
+GetNodeType returns the NodeType field if non-nil, zero value otherwise.
+
+### GetNodeTypeOk
+
+`func (o *ModelScanListReq) GetNodeTypeOk() (*string, bool)`
+
+GetNodeTypeOk returns a tuple with the NodeType field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetNodeType
+
+`func (o *ModelScanListReq) SetNodeType(v string)`
+
+SetNodeType sets NodeType field to given value.
 
 
 ### GetWindow

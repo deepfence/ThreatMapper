@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -28,7 +29,9 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_id s
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(fmt.Sprintf("MATCH (m:%s{node_id: $scan_id}) RETURN m.status", scan_type),
+	res, err := tx.Run(fmt.Sprintf(`
+		MATCH (m:%s{node_id: $scan_id})
+		RETURN m.status`, scan_type),
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return model.ScanStatusResp{}, err
@@ -42,7 +45,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_id s
 	return model.ScanStatusResp{Status: model.ScanStatus(rec.Values[0].(string))}, nil
 }
 
-func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_id string, fw model.FetchWindow) (model.ScanListResp, error) {
+func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_id string, node_type controls.ScanResource, fw model.FetchWindow) (model.ScanListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.ScanListResp{}, err
@@ -60,7 +63,12 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_id st
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (:Node{node_id: $node_id}) RETURN m.node_id, m.status, m.updated_at ORDER BY m.updated_at SKIP $skip LIMIT $limit`,
+	res, err := tx.Run(`
+		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (:`+controls.ResourceTypeToNeo4j(node_type)+`{node_id: $node_id})
+		RETURN m.node_id, m.status, m.updated_at 
+		ORDER BY m.updated_at 
+		SKIP $skip 
+		LIMIT $limit`,
 		map[string]interface{}{"node_id": node_id, "skip": fw.Offset, "limit": fw.Size})
 	if err != nil {
 		return model.ScanListResp{}, err
