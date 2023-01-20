@@ -76,6 +76,7 @@ func addCVE(cve dfCveStruct, acrossImages bool) {
 	maskedCVELock.Lock()
 	defer maskedCVELock.Unlock()
 	nodes, found := maskedCVE[cve.Cve_id]
+	log.Errorf("it is coming from add cve: %+v", cve)
 	if !found {
 		nodes = make(map[string]string)
 		if !acrossImages {
@@ -155,6 +156,7 @@ func processCVE(cve []byte, bulkp *elastic.BulkProcessor) {
 		log.Errorf("error unmarshal cve: %s", err)
 		return
 	}
+	log.Errorf("process %+v", cve)
 	cveStruct.Timestamp = getCurrentTime()
 	if cveStruct.Cve_severity != "critical" && cveStruct.Cve_severity != "high" && cveStruct.Cve_severity != "medium" {
 		cveStruct.Cve_severity = "low"
