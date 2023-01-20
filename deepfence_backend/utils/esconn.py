@@ -1122,12 +1122,12 @@ class ESConn:
               "scan_message": ""
             },
             "deepfenceio/wordpress:latest": {
-              "action": "COMPLETED",
+              "scan_status": "COMPLETED",
               "timestamp": "2018-06-18T06:45:17.478Z",
               "scan_message": ""
             },
             "ramanan-dev-2": {
-              "action": "STARTED",
+              "scan_status": "STARTED",
               "timestamp": "2018-06-18T06:50:14.869Z",
               "scan_message": "No feature has been detected on the image. This usually means that the image isn't supported by deepaudit, will do what we can."
             }
@@ -1152,7 +1152,7 @@ class ESConn:
                                         "field": "node_type.keyword", "size": ES_TERMS_AGGR_SIZE
                                     }
                                 },
-                                "action": {
+                                "scan_status": {
                                     "terms": {
                                         "field": "scan_status.keyword", "size": ES_TERMS_AGGR_SIZE
                                     },
@@ -1191,8 +1191,8 @@ class ESConn:
                 node_type = ""
                 if node_aggr["node_type"]["buckets"]:
                     node_type = node_aggr["node_type"]["buckets"][0]["key"]
-                if node_aggr["action"]["buckets"]:
-                    recent_action = max(node_aggr["action"]["buckets"],
+                if node_aggr["scan_status"]["buckets"]:
+                    recent_action = max(node_aggr["scan_status"]["buckets"],
                                         key=lambda x: x["action_max_timestamp"]["value"])
                     secret_scan_message = ""
                     secret_scan_messages = recent_action["scan_message"]["buckets"]
@@ -1203,8 +1203,8 @@ class ESConn:
                     if scan_id_buckets:
                         scan_id = scan_id_buckets[-1]["key"]
                     response[host_aggr["key"]][node_aggr["key"]] = {
-                        "action": recent_action["key"], "timestamp": recent_action["action_max_timestamp"]["value"],
-                        "scan_message": secret_scan_message, "scan_id": scan_id, "node_type": node_type}
+                        "scan_status": recent_action["key"], "scan_message": secret_scan_message, "scan_id": scan_id,
+                        "timestamp": recent_action["action_max_timestamp"]["value"], "node_type": node_type}
         return response
 
     @staticmethod
