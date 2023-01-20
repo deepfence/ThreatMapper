@@ -155,13 +155,13 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
-echo "Building agent"
-cd $DEEPFENCE_AGENT_DIR
-env IMAGE_REPOSITORY="${IMAGE_REPOSITORY:-deepfenceio}" DF_IMG_TAG="${DF_IMG_TAG:-latest}" bash build.sh
+# echo "Building agent"
+# cd $DEEPFENCE_AGENT_DIR
+# env IMAGE_REPOSITORY="${IMAGE_REPOSITORY:-deepfenceio}" DF_IMG_TAG="${DF_IMG_TAG:-latest}" bash build.sh
 
-if [ ! $? -eq 0 ]; then
-    echo "Building agent image failed. Exiting"
-    exit 1
-fi
+# if [ ! $? -eq 0 ]; then
+#     echo "Building agent image failed. Exiting"
+#     exit 1
+# fi
 
 cd $DEEPFENCE_CONSOLE_DIR
