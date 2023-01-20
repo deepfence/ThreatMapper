@@ -95,7 +95,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
 	}
 
-	internal_req := ctl.StartSecretScanRequest{
+	internal_req := ctl.StartVulnerabilityScanRequest{
 		NodeId:   req.NodeId,
 		NodeType: nodeTypeInternal,
 		BinArgs:  binArgs,
