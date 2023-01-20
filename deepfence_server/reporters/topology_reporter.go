@@ -21,7 +21,6 @@ type NodeID string
 type NodeStub struct {
 	ID     NodeID `json:"id"`
 	Name   string `json:"name"`
-	Fileds map[string]interface{}
 }
 
 func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {

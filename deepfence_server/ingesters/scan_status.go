@@ -116,6 +116,9 @@ func AddNewScan(ctx context.Context,
 		if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:Node) -[:HOSTS]-> (:ContainerImage{node_id:$node_id})
+		WITH n, m
+		ORDER BY rand()
+		LIMIT 1
 		MERGE (n)-[:SCHEDULED]->(m)`, scan_type),
 			map[string]interface{}{
 				"scan_id": scan_id,

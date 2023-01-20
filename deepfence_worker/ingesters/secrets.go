@@ -76,10 +76,11 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 		MERGE (r:Rule{node_id:rule.id})
 		SET r+=rule WITH secret as row, r
 		MERGE (n:Secret{node_id:row.node_id})
-		SET n+= row WITH n, r, row
+		SET n+= row
+		WITH n, r, row
 		MERGE (n)-[:IS]->(r)
 		MERGE (m:SecretScan{node_id: row.scan_id})
-		WITH n, m, row
+		WITH n, m
 		MERGE (m) -[:DETECTED]-> (n)`,
 		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
