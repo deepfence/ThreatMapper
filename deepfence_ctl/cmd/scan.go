@@ -50,6 +50,14 @@ var scanStartSubCmd = &cobra.Command{
 					NodeType: resource_type,
 				})
 			res, _, err = http.Client().SecretScanApi.StartSecretScanExecute(req)
+		case "malware":
+			req := http.Client().MalwareScanApi.StartMalwareScan(context.Background())
+			req = req.ModelScanTriggerReq(
+				deepfence_server_client.ModelScanTriggerReq{
+					NodeId:   scan_node_id,
+					NodeType: resource_type,
+				})
+			res, _, err = http.Client().MalwareScanApi.StartMalwareScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StartVulnerabilityScan(context.Background())
 			req = req.ModelScanTriggerReq(
