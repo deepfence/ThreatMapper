@@ -14,6 +14,7 @@ import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
 import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
 import { ChooseScan } from '@/features/onboard/pages/ChooseScan';
 import { ComplianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
+import { ComplianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { MyConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
 import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
@@ -96,6 +97,10 @@ export const privateRoutes: RouteObject[] = [
           {
             path: 'configure/secret',
             element: <SecretScanConfigure />,
+          },
+          {
+            path: 'view-summary/compliance',
+            element: <ComplianceScanSummary />,
           },
         ],
       },
