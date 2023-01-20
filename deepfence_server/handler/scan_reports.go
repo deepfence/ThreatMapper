@@ -342,7 +342,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	// msg.SetContext(directory.NewContextWithNameSpace(namespace))
 	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
 
-	err = h.TasksPublisher.Publish("tasks_parse_sbom", msg)
+	err = h.TasksPublisher.Publish(utils.ParseSBOMTask, msg)
 	if err != nil {
 		log.Error().Msgf("cannot publish message:", err)
 		httpext.JSON(w, http.StatusInternalServerError,
