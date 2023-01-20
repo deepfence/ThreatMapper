@@ -78,19 +78,16 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 	switch req.NodeType {
 	case ctl.Container:
 		greq = pb.FindRequest{Input: &pb.FindRequest_Container{
-			Container: &pb.Container{Id: req.NodeId},
+			Container: &pb.Container{Id: req.BinArgs["node_id"]},
 		}}
 	case ctl.Image:
-		splits := strings.Split(req.NodeId, ";")
-		if len(splits) == 2 {
-			greq = pb.FindRequest{Input: &pb.FindRequest_Image{
-				Image: &pb.DockerImage{Id: splits[0], Name: splits[1]},
-			}}
-		} else {
-			greq = pb.FindRequest{Input: &pb.FindRequest_Image{
-				Image: &pb.DockerImage{Id: req.NodeId, Name: "dummy"},
-			}}
+		splits := strings.Split(req.BinArgs["node_id"], ";")
+		if len(splits) != 2 {
+			return errors.New("image id format is incorrect")
 		}
+		greq = pb.FindRequest{Input: &pb.FindRequest_Image{
+			Image: &pb.DockerImage{Id: splits[0], Name: splits[1]},
+		}}
 	case ctl.Host:
 		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: "/"}}
 	}
