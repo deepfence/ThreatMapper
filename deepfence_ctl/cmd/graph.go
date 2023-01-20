@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -20,11 +21,34 @@ var graphCmd = &cobra.Command{
 	Long:  `This subcommand controls graph with remote server`,
 }
 
+func csvs2FieldsFilter(csvs []string) (deepfence_server_client.ReportersFieldsFilters, error) {
+	println(len(csvs))
+	if len(csvs) == 0 {
+		return deepfence_server_client.ReportersFieldsFilters{}, nil
+	}
+
+	filters := map[string][]interface{}{}
+	for i := range csvs {
+		key_value := strings.Split(csvs[i], "=")
+		if len(key_value) != 2 {
+			return deepfence_server_client.ReportersFieldsFilters{}, fmt.Errorf("Unexpected entry format: %v", csvs[i])
+		}
+		filters[key_value[0]] = append(filters[key_value[0]], key_value[1])
+	}
+	return deepfence_server_client.ReportersFieldsFilters{
+		ContainsFilter: deepfence_server_client.ReportersContainsFilter{
+			FilterIn: filters,
+		},
+	}, nil
+}
+
 var graphTopologySubCmd = &cobra.Command{
 	Use:   "topology",
 	Short: "Get Topology graph",
 	Long:  `This subcommand retrieve the topology graph`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		var err error
 		host_filter, _ := cmd.Flags().GetString("host-filter")
 		host_entries := strings.Split(host_filter, ",")
 
@@ -40,19 +64,30 @@ var graphTopologySubCmd = &cobra.Command{
 		pod_filter, _ := cmd.Flags().GetString("pod-filter")
 		pod_entries := strings.Split(pod_filter, ",")
 
+		var field_filters deepfence_server_client.ReportersFieldsFilters
+		fields_contains_filter, _ := cmd.Flags().GetString("fields-contain")
+		if len(fields_contains_filter) != 0 {
+			fields_contains_entries := strings.Split(fields_contains_filter, ",")
+			field_filters, err = csvs2FieldsFilter(fields_contains_entries)
+		}
+
+		if err != nil {
+			log.Fatal().Msgf("Filter parsing err:%v", err)
+		}
+
 		filters := deepfence_server_client.ReportersTopologyFilters{
 			CloudFilter:      provider_entries,
 			HostFilter:       host_entries,
 			RegionFilter:     region_entries,
 			KubernetesFilter: k8s_entries,
 			PodFilter:        pod_entries,
+			FieldFilters:     field_filters,
 		}
 
 		root, _ := cmd.Flags().GetString("root")
 
 		var res *deepfence_server_client.ApiDocsGraphResult
 		var rh *stdhttp.Response
-		var err error
 		switch root {
 		case "":
 			req := http.Client().TopologyApi.GetTopologyGraph(context.Background())
@@ -109,6 +144,7 @@ func init() {
 	graphTopologySubCmd.PersistentFlags().String("provider-filter", "", "CSV provider filter")
 	graphTopologySubCmd.PersistentFlags().String("kubernetes-filter", "", "CSV k8s filter")
 	graphTopologySubCmd.PersistentFlags().String("pod-filter", "", "CSV pod filter")
+	graphTopologySubCmd.PersistentFlags().String("fields-contain", "", "CSV fields filter containing values, e.g. (blah=boo,foo=bar)")
 
 	graphTopologySubCmd.PersistentFlags().String("root", "", "Root can be: ''/hosts/containers/pods/kubernetes")
 

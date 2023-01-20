@@ -22,8 +22,11 @@ var lookupCmd = &cobra.Command{
 		lookup_ids, _ := cmd.Flags().GetString("ids")
 		ids := strings.Split(lookup_ids, ",")
 
+		lookup_fields, _ := cmd.Flags().GetString("fields")
+		fields := strings.Split(lookup_fields, ",")
+
 		filters := deepfence_server_client.ReportersLookupFilter{
-			InFieldFilter: []string{}, // TODO
+			InFieldFilter: fields,
 			NodeIds:       ids,
 		}
 
@@ -90,6 +93,7 @@ func init() {
 
 	lookupCmd.PersistentFlags().String("type", "", "host/container/process")
 	lookupCmd.PersistentFlags().String("ids", "", "CSV ids to lookup")
+	lookupCmd.PersistentFlags().String("fields", "", "CSV fields to lookup")
 
 	graphCmd.AddCommand(graphThreatSubCmd)
 }
