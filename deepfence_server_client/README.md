@@ -111,7 +111,7 @@ Class | Method | HTTP request | Description
 *SecretScanApi* | [**IngestSecretScanStatus**](docs/SecretScanApi.md#ingestsecretscanstatus) | **Post** /deepfence/ingest/secret-scan-logs | Ingest Secrets Scan Status
 *SecretScanApi* | [**IngestSecrets**](docs/SecretScanApi.md#ingestsecrets) | **Post** /deepfence/ingest/secrets | Ingest Secrets
 *MalwareScanApi* | [**IngestMalwareScanStatus**](docs/MalwareScanApi.md#ingestmalwarescanstatus) | **Post** /deepfence/ingest/malware-scan-logs | Ingest Malware Scan Status
-*MalwareScanApi* | [**IngestMalwares**](docs/MalwareScanApi.md#ingestmalware) | **Post** /deepfence/ingest/malwares | Ingest Malware
+*MalwareScanApi* | [**IngestMalwares**](docs/MalwareScanApi.md#ingestmalware) | **Post** /deepfence/ingest/malware | Ingest Malware
 *SecretScanApi* | [**ListSecretScan**](docs/SecretScanApi.md#listsecretscan) | **Post** /deepfence/scan/list/secret | Get Secret Scans List
 *SecretScanApi* | [**ResultsSecretScan**](docs/SecretScanApi.md#resultssecretscan) | **Post** /deepfence/scan/results/secret | Get Secret Scans Results
 *SecretScanApi* | [**StartSecretScan**](docs/SecretScanApi.md#startsecretscan) | **Post** /deepfence/scan/start/secret | Start Secret Scan
