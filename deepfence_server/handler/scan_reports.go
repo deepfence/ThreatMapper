@@ -584,4 +584,3 @@ func listScanResultsHandler(w http.ResponseWriter, r *http.Request, scan_type ut
 
 	httpext.JSON(w, http.StatusOK, results)
 }
-Footer
