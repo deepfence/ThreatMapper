@@ -201,6 +201,19 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		"node_id":   req.NodeId,
 	}
 
+	nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
+
+	if nodeTypeInternal == ctl.Image {
+		name, tag, err := GetImageFromId(r.Context(), req.NodeId)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+			return
+		}
+		binArgs["node_id"] = fmt.Sprintf("%s;%s", req.NodeId, name+":"+tag)
+		log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["node_id"])
+	}
+
 	internal_req := ctl.StartMalwareScanRequest{
 		NodeId:   req.NodeId,
 		NodeType: ctl.StringToResourceType(req.NodeType),
@@ -215,9 +228,13 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		RequestPayload: bstr,
 	}
 
-	startScan(w, r, utils.NEO4J_MALWARE_SCAN, scanId,
-		ctl.StringToResourceType(req.NodeType), req.NodeId,
-		action)
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		return
+	}
+
+	startScan(w, r, utils.NEO4J_MALWARE_SCAN, scanId, ctl.StringToResourceType(req.NodeType), req.NodeId, action)
+
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
