@@ -77,32 +77,32 @@ services:
       options:
         max-size: "1g"
   
-  #deepfence-console-agent:
-  #  container_name: deepfence-console-agent
-  #  image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-1.4.1}
-  #  ulimits:
-  #    core: 0
-  #  deploy:
-  #    resources:
-  #      limits:
-  #        cpus: ".2"
-  #  restart: on-failure
-  #  environment:
-  #  - MGMT_CONSOLE_URL=127.0.0.1
-  #  - MGMT_CONSOLE_PORT=8443
-  #  - DEEPFENCE_KEY=""
-  #  network_mode: "host"
-  #  volumes:
-  #  - /sys/kernel/debug:/sys/kernel/debug:rw
-  #  - /var/log/fenced
-  #  - /var/run/docker.sock:/var/run/docker.sock
-  #  - /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw
-  #  - /:/fenced/mnt/host/:ro
-  #  privileged: true
-  #  logging:
-  #    driver: "json-file"
-  #    options:
-  #      max-size: "1g"
+  deepfence-console-agent:
+    container_name: deepfence-console-agent
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-1.4.1}
+    ulimits:
+      core: 0
+    deploy:
+      resources:
+        limits:
+          cpus: ".2"
+    restart: on-failure
+    environment:
+    - MGMT_CONSOLE_URL=127.0.0.1
+    - MGMT_CONSOLE_PORT=8443
+    - DEEPFENCE_KEY=""
+    network_mode: "host"
+    volumes:
+    - /sys/kernel/debug:/sys/kernel/debug:rw
+    - /var/log/fenced
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw
+    - /:/fenced/mnt/host/:ro
+    privileged: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
   
   deepfence-router:
     container_name: deepfence-router
