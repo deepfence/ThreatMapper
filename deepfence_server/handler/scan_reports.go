@@ -126,9 +126,24 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 
 	scanId := scanId(req)
 
+	binArgs := map[string]string{
+		"scan_id":   scanId,
+		"node_type": req.NodeType,
+		"node_id":   req.NodeId,
+	}
+
+	internal_req := ctl.StartMalwareScanRequest{
+		NodeId:   req.NodeId,
+		NodeType: ctl.StringToResourceType(req.NodeType),
+		BinArgs:  binArgs,
+	}
+
+	b, err := json.Marshal(internal_req)
+	bstr := string(b)
+
 	action := ctl.Action{
 		ID:             ctl.StartMalwareScan,
-		RequestPayload: "",
+		RequestPayload: bstr,
 	}
 
 	startScan(w, r, utils.NEO4J_MALWARE_SCAN, scanId,
