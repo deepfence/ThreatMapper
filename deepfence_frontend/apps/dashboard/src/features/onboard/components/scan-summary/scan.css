@@ -1,0 +1,42 @@
+.scan-summary svg circle {
+  stroke: #a4cafe;
+}
+
+.scan-summary .circle {
+  transform-origin: center;
+}
+
+#arc3 {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: 16s 0s rota infinite linear;
+}
+#arc4 {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: 6s 0s rota infinite linear reverse;
+}
+#arc5 {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: 4s 0s rota infinite linear;
+}
+#arc6 {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: 8s 0s rota infinite linear alternate;
+}
+#arc7 {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: 4s 0s rota infinite linear reverse;
+}
+
+@keyframes rota {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

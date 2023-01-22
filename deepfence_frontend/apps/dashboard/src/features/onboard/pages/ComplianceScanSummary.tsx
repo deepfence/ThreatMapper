@@ -5,6 +5,7 @@ import { Card, Separator, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { ScanInProgress } from '@/features/onboard/components/scan-summary/ScanInProgress';
 import { useTheme } from '@/theme/ThemeContext';
 
 const color: { [key: string]: string } = {
@@ -245,26 +246,38 @@ export const ComplianceScanResult = ({ scanData }: { scanData: ScanResultType })
 
 export const ComplianceScanSummary = () => {
   const [scanData] = useState(data);
+  const [scanning, setScanning] = useState(true);
 
+  const headerText = scanning
+    ? 'Compliance Scan'
+    : 'View Compliance Scan Summary Results';
+
+  const subHeaderText = scanning
+    ? 'A scan has been initiated, soon you will see your scan result.'
+    : 'Following are few scan result, for details information, go to dashboard';
   return (
     <div className="flex flex-col">
-      <ConnectorHeader
-        title="View Compliance Scan Summary Results"
-        description="Following are few scan data for your scan"
-      />
-      <Button size="sm" color="primary" className="ml-auto">
-        Go To Main Dashboard
-      </Button>
-      <div className="flex flex-col gap-4 mt-4">
-        {scanData.map((accountScanData: ScanResultType) => {
-          return (
-            <ComplianceScanResult
-              key={accountScanData.accountId}
-              scanData={accountScanData}
-            />
-          );
-        })}
-      </div>
+      <ConnectorHeader title={headerText} description={subHeaderText} />
+
+      {scanning ? (
+        <ScanInProgress />
+      ) : (
+        <>
+          <Button size="sm" color="primary" className="ml-auto">
+            Go To Main Dashboard
+          </Button>
+          <div className="flex flex-col gap-4 mt-4">
+            {scanData.map((accountScanData: ScanResultType) => {
+              return (
+                <ComplianceScanResult
+                  key={accountScanData.accountId}
+                  scanData={accountScanData}
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 };
