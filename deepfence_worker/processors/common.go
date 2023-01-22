@@ -82,14 +82,6 @@ func StartKafkaProcessors(ctx context.Context) {
 		utils.CLOUD_COMPLIANCE_SCAN_STATUS,
 		desWrapper(ingesters.CommitFuncCloudComplianceScanStatus),
 	)
-	processors[utils.MALWARE_SCAN] = NewBulkProcessor(
-		utils.MALWARE_SCAN,
-		desWrapper(ingesters.CommitFuncMalware),
-	)
-	processors[utils.MALWARE_SCAN_STATUS] = NewBulkProcessor(
-		utils.MALWARE_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncMalwareScanStatus),
-	)
 
 	for i := range processors {
 		processors[i].Start(ctx)
