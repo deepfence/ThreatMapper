@@ -45,6 +45,7 @@ type dfCveStruct struct {
 	Cve_cvss_score             float64 `json:"cve_cvss_score"`
 	Cve_overall_score          float64 `json:"cve_overall_score"`
 	Cve_attack_vector          string  `json:"cve_attack_vector"`
+	RegistryId                 string  `json:"registry_id"`
 }
 
 type Nodes map[string]string
