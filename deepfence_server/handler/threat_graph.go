@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 func (h *Handler) GetThreatGraph(w http.ResponseWriter, r *http.Request) {

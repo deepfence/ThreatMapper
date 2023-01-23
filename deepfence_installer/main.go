@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
+	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
 )
 
 type SemVer struct {
