@@ -408,6 +408,11 @@ func (h *Handler) IngestSecretScanStatusHandler(w http.ResponseWriter, r *http.R
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestMalwareScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewComplianceIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
