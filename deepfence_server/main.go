@@ -206,6 +206,7 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddIngestersOperations()
 	openApiDocs.AddScansOperations()
 	openApiDocs.AddDiagnosisOperations()
+	openApiDocs.AddCloudNodeOperations()
 }
 
 func initializeKafka() error {

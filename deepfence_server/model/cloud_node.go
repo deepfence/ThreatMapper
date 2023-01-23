@@ -24,20 +24,6 @@ type CloudNodeAccountRegisterRespData struct {
 	Refresh          string                                `json:"refresh"`
 }
 
-//type CloudNodeAccountsListReq struct {
-//	NodeId              string            `json:"node_id" required:"true"`
-//	CloudAccount        string            `json:"cloud_account" required:"true"`
-//	CloudProvider       string            `json:"cloud_provider" required:"true"  enum:"aws,gcp,azure"`
-//	MonitoredAccountIds map[string]string `json:"monitored_account_ids"`
-//	OrgAccountId        string            `json:"org_acc_id"`
-//}
-//
-//type CloudNodeAccountsListResp struct {
-//	Scans            map[string]CloudComplianceScanDetails `json:"scans"`
-//	CloudtrailTrails []CloudNodeCloudtrailTrail            `json:"cloudtrail_trails"`
-//	Refresh          string                                `json:"refresh"`
-//}
-
 type CloudNodeAccountsListReq struct {
 	CloudProvider string      `json:"cloud_provider"`
 	Window        FetchWindow `json:"window" required:"true"`
@@ -67,48 +53,12 @@ type CloudNodeCloudtrailTrail struct {
 	TrailName string `json:"trail_name"`
 }
 
-//type CloudNodeAccount struct {
-//	ID                   int64          `json:"id"`
-//	NodeID               string         `json:"node_id" validate:"required,min=2,max=32"`
-//	NodeName             string         `json:"node_name" validate:"required,min=2,max=32"`
-//	CloudProvider        string         `json:"cloud_provider" validate:"required,min=2,max=32"`
-//	CompliancePercentage string         `json:"compliance_percentage"`
-//	OrgAccountID         sql.NullString `json:"org_account_id"`
-//}
-
 type PendingCloudComplianceScan struct {
 	ScanId    string   `json:"scan_id"`
 	ScanType  string   `json:"scan_type"`
 	Controls  []string `json:"controls"`
 	AccountId string   `json:"account_id"`
 }
-
-//func (c *CloudNodeAccount) LoadFromDbByNodeId(ctx context.Context, pgClient *postgresqlDb.Queries) error {
-//	// Set email field and load other fields from db
-//	var err error
-//	var cloudComplianceNode postgresqlDb.CloudComplianceNode
-//	cloudComplianceNode, err = pgClient.GetCloudComplianceNodeByNodeId(ctx, c.NodeID)
-//	if err != nil {
-//		return err
-//	}
-//	c.ID = cloudComplianceNode.ID
-//	c.NodeID = cloudComplianceNode.NodeID
-//	c.NodeName = cloudComplianceNode.NodeName
-//	c.CloudProvider = cloudComplianceNode.CloudProvider
-//	c.CompliancePercentage = cloudComplianceNode.CompliancePercentage
-//	c.OrgAccountID = cloudComplianceNode.OrgAccountID
-//	return nil
-//}
-//
-//func (c *CloudNodeAccount) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.CloudComplianceNode, error) {
-//	cloudComplianceNode, err := pgClient.CreateCloudComplianceNode(ctx,
-//		postgresqlDb.CreateCloudComplianceNodeParams{NodeID: c.NodeID, NodeName: c.NodeName,
-//			CloudProvider: c.CloudProvider, CompliancePercentage: c.CompliancePercentage, OrgAccountID: c.OrgAccountID})
-//	if err != nil {
-//		return nil, err
-//	}
-//	return &cloudComplianceNode, nil
-//}
 
 func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}) error {
 	driver, err := directory.Neo4jClient(ctx)
@@ -186,47 +136,3 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 
 	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
 }
-
-//type ScanStatus string
-//
-//type ScanInfo struct {
-//	ScanId    string `json:"scan_id" required:"true"`
-//	Status    string `json:"status" required:"true"`
-//	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
-//}
-//
-//const (
-//	SCAN_STATUS_SUCCESS    = utils.SCAN_STATUS_SUCCESS
-//	SCAN_STATUS_STARTING   = utils.SCAN_STATUS_STARTING
-//	SCAN_STATUS_INPROGRESS = utils.SCAN_STATUS_INPROGRESS
-//)
-//
-//type ScanTriggerResp struct {
-//	ScanId string `json:"scan_id" required:"true"`
-//}
-//
-//type ScanStatusReq struct {
-//	ScanId string `query:"scan_id" form:"scan_id" required:"true"`
-//}
-//
-//type ScanStatusResp struct {
-//	Status ScanStatus `json:"status" required:"true"`
-//}
-//
-//type ScanListReq struct {
-//	NodeId string      `json:"node_id" required:"true"`
-//	Window FetchWindow `json:"window"  required:"true"`
-//}
-//
-//type ScanListResp struct {
-//	ScansInfo []ScanInfo `json:"scans_info" required:"true"`
-//}
-//
-//type ScanResultsReq struct {
-//	ScanId string      `json:"scan_id" required:"true"`
-//	Window FetchWindow `json:"window"  required:"true"`
-//}
-//
-//type ScanResultsResp struct {
-//	Results []map[string]interface{} `json:"results" required:"true"`
-//}
