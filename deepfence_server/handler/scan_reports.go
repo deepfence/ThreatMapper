@@ -418,6 +418,16 @@ func (h *Handler) IngestCloudComplianceReportHandler(w http.ResponseWriter, r *h
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestMalwareReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
+func (h *Handler) IngestMalwareScanStatusReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func ingest_scan_report_kafka[T any](
 	respWrite http.ResponseWriter,
 	req *http.Request,
