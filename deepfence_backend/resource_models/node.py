@@ -471,8 +471,10 @@ class Node(object):
             node_id = image_name_tag
         elif self.type == constants.NODE_TYPE_HOST:
             node_id = self.host_name
+        elif self.type == constants.NODE_TYPE_CONTAINER_IMAGE:
+            node_id = self.image_id
         else:
-            node_id = self.image_name_tag
+            node_id = self.scope_id
         es_response = ESConn.search_by_and_clause(constants.CVE_SCAN_LOGS_INDEX, {"node_id": node_id}, 0, size=1)
         latest_cve_scan_doc = {}
         cve_scan_list = es_response.get("hits", [])
