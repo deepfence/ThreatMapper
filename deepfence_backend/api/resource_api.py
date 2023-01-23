@@ -1502,7 +1502,7 @@ def enumerate_node_filters():
                 "required": True
             }
             response["filters"].append(item)
-    if "severity" in filters_needed:
+    if filters_needed and "severity" in filters_needed:
         item = {
             "label": "Severity",
             "name": "severity",
