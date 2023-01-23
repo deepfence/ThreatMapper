@@ -29,7 +29,7 @@ var (
 	cloudTrailAlertsIndexName        = ToCustomerSpecificESIndex("cloudtrail-alert")
 )
 
-//ToCustomerSpecificESIndex : convert root ES index to customer specific ES index
+// ToCustomerSpecificESIndex : convert root ES index to customer specific ES index
 func ToCustomerSpecificESIndex(rootIndex string) string {
 	customerUniqueId := os.Getenv("CUSTOMER_UNIQUE_ID")
 	if customerUniqueId != "" {
@@ -148,6 +148,7 @@ func addToES(data []byte, index string, bulkp *elastic.BulkProcessor) error {
 	}
 	dataMap["masked"] = "false"
 	dataMap["@timestamp"] = getCurrentTime()
+	log.Infof("thi is from add to elstic las time %+v", dataMap)
 	bulkp.Add(elastic.NewBulkIndexRequest().Index(index).Doc(dataMap))
 	return nil
 }

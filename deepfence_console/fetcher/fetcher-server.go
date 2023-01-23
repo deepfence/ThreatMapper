@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -957,6 +956,7 @@ type dfCveStruct struct {
 	Type                       string   `json:"type"`
 	Host                       string   `json:"host"`
 	HostName                   string   `json:"host_name"`
+	ImageName                  string   `json:"image_name"`
 	KubernetesClusterName      string   `json:"kubernetes_cluster_name"`
 	NodeType                   string   `json:"node_type"`
 	Scan_id                    string   `json:"scan_id"`

@@ -26,6 +26,7 @@ type dfCveStruct struct {
 	Type                       string  `json:"type"`
 	Host                       string  `json:"host"`
 	HostName                   string  `json:"host_name"`
+	ImageName                  string  `json:"image_name"`
 	KubernetesClusterName      string  `json:"kubernetes_cluster_name"`
 	NodeType                   string  `json:"node_type"`
 	Scan_id                    string  `json:"scan_id"`
@@ -44,6 +45,7 @@ type dfCveStruct struct {
 	Cve_cvss_score             float64 `json:"cve_cvss_score"`
 	Cve_overall_score          float64 `json:"cve_overall_score"`
 	Cve_attack_vector          string  `json:"cve_attack_vector"`
+	RegistryId                 string  `json:"registry_id"`
 }
 
 type Nodes map[string]string
@@ -75,6 +77,7 @@ func addCVE(cve dfCveStruct, acrossImages bool) {
 	maskedCVELock.Lock()
 	defer maskedCVELock.Unlock()
 	nodes, found := maskedCVE[cve.Cve_id]
+	log.Errorf("it is coming from add cve: %+v", cve)
 	if !found {
 		nodes = make(map[string]string)
 		if !acrossImages {
@@ -154,6 +157,7 @@ func processCVE(cve []byte, bulkp *elastic.BulkProcessor) {
 		log.Errorf("error unmarshal cve: %s", err)
 		return
 	}
+	log.Errorf("process %+v", cve)
 	cveStruct.Timestamp = getCurrentTime()
 	if cveStruct.Cve_severity != "critical" && cveStruct.Cve_severity != "high" && cveStruct.Cve_severity != "medium" {
 		cveStruct.Cve_severity = "low"

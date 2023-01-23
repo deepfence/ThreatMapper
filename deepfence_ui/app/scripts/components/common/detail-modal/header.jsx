@@ -10,7 +10,7 @@ const HeaderKVPair = ({ dataKey, value, valueAsText }) => {
   return (
     <div className={styles.alertSummaryItem}>
       <div className={styles.alertSummaryItemTitle}>{dataKey}</div>
-      <div className={styles.alertSummaryItemContent} title={valueAsText}>{value}</div>
+      <div className={styles.alertSummaryItemContent} title={valueAsText}>{valueAsText}</div>
     </div>
   );
 }
