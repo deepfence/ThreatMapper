@@ -84,6 +84,8 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**Login**](docs/AuthenticationApi.md#login) | **Post** /deepfence/user/login | Login API
 *AuthenticationApi* | [**Logout**](docs/AuthenticationApi.md#logout) | **Post** /deepfence/user/logout | Logout API
 *CloudComplianceApi* | [**IngestCloudCompliances**](docs/CloudComplianceApi.md#ingestcloudcompliances) | **Post** /deepfence/ingest/cloud-compliance | Ingest Cloud Compliances
+*CloudNodesApi* | [**ListCloudNodeAccount**](docs/CloudNodesApi.md#listcloudnodeaccount) | **Post** /deepfence/cloud-node/accounts/list | List Cloud Node Accounts
+*CloudNodesApi* | [**RegisterCloudNodeAccount**](docs/CloudNodesApi.md#registercloudnodeaccount) | **Post** /deepfence/cloud-node/account | Register Cloud Node Account
 *CloudResourcesApi* | [**IngestCloudResources**](docs/CloudResourcesApi.md#ingestcloudresources) | **Post** /deepfence/ingest/cloud-resources | Ingest Cloud resources
 *ComplianceApi* | [**IngestCompliances**](docs/ComplianceApi.md#ingestcompliances) | **Post** /deepfence/ingest/compliance | Ingest Compliances
 *ComplianceApi* | [**ListComplianceScan**](docs/ComplianceApi.md#listcompliancescan) | **Post** /deepfence/scan/list/compliance | Get Compliance Scans List
@@ -94,7 +96,7 @@ Class | Method | HTTP request | Description
 *ControlsApi* | [**AddAgentVersion**](docs/ControlsApi.md#addagentversion) | **Post** /deepfence/controls/agent-version | Push new agent version
 *ControlsApi* | [**GetAgentControls**](docs/ControlsApi.md#getagentcontrols) | **Post** /deepfence/controls/agent | Fetch Agent Actions
 *ControlsApi* | [**GetAgentInitControls**](docs/ControlsApi.md#getagentinitcontrols) | **Post** /deepfence/controls/agent-init | Fetch Agent Init Actions
-*ControlsApi* | [**GetLatestAgentVersion**](docs/ControlsApi.md#getlatestagentversion) | **Get** /deepfence/controls/agent-version | Fetch latest agent version
+*ControlsApi* | [**GetLatestAgentVersion**](docs/ControlsApi.md#getlatestagentversion) | **Get** /deepfence/controls/get-agent-version | Fetch latest agent version
 *DiagnosisApi* | [**DiagnosticNotification**](docs/DiagnosisApi.md#diagnosticnotification) | **Get** /deepfence/diagnosis/notification | Get Diagnostic Notification
 *DiagnosisApi* | [**GenerateAgentDiagnosticLogs**](docs/DiagnosisApi.md#generateagentdiagnosticlogs) | **Post** /deepfence/diagnosis/agent-logs | Generate Agent Diagnostic Logs
 *DiagnosisApi* | [**GenerateConsoleDiagnosticLogs**](docs/DiagnosisApi.md#generateconsolediagnosticlogs) | **Post** /deepfence/diagnosis/console-logs | Generate Console Diagnostic Logs
@@ -133,7 +135,9 @@ Class | Method | HTTP request | Description
 *UserApi* | [**ResetPasswordRequest**](docs/UserApi.md#resetpasswordrequest) | **Post** /deepfence/user/reset-password/request | Reset Password Request
 *UserApi* | [**UpdateCurrentUser**](docs/UserApi.md#updatecurrentuser) | **Put** /deepfence/user | Update Current User
 *UserApi* | [**VerifyResetPasswordRequest**](docs/UserApi.md#verifyresetpasswordrequest) | **Post** /deepfence/user/reset-password/verify | Verify and Reset Password
+*VulnerabilityApi* | [**IngestSbom**](docs/VulnerabilityApi.md#ingestsbom) | **Post** /deepfence/ingest/sbom | Ingest SBOM from Scan
 *VulnerabilityApi* | [**IngestVulnerabilities**](docs/VulnerabilityApi.md#ingestvulnerabilities) | **Post** /deepfence/ingest/vulnerabilities | Ingest Vulnerabilities
+*VulnerabilityApi* | [**IngestVulnerabilitiesScanStatus**](docs/VulnerabilityApi.md#ingestvulnerabilitiesscanstatus) | **Post** /deepfence/ingest/vulnerabilities-scan-logs | Ingest Vulnerabilities Scan Status
 *VulnerabilityApi* | [**ListVulnerabilityScans**](docs/VulnerabilityApi.md#listvulnerabilityscans) | **Post** /deepfence/scan/list/vulnerability | Get Vulnerability Scans List
 *VulnerabilityApi* | [**ResultsVulnerabilityScans**](docs/VulnerabilityApi.md#resultsvulnerabilityscans) | **Post** /deepfence/scan/results/vulnerability | Get Vulnerability Scans Results
 *VulnerabilityApi* | [**StartVulnerabilityScan**](docs/VulnerabilityApi.md#startvulnerabilityscan) | **Post** /deepfence/scan/start/vulnerability | Start Vulnerability Scan
@@ -161,9 +165,18 @@ Class | Method | HTTP request | Description
  - [IngestersSecretScanStatus](docs/IngestersSecretScanStatus.md)
  - [IngestersSecretSeverity](docs/IngestersSecretSeverity.md)
  - [IngestersVulnerability](docs/IngestersVulnerability.md)
+ - [IngestersVulnerabilityScanStatus](docs/IngestersVulnerabilityScanStatus.md)
  - [ModelAgentId](docs/ModelAgentId.md)
  - [ModelAgentImageMetadata](docs/ModelAgentImageMetadata.md)
  - [ModelApiAuthRequest](docs/ModelApiAuthRequest.md)
+ - [ModelCloudComplianceScanDetails](docs/ModelCloudComplianceScanDetails.md)
+ - [ModelCloudNodeAccountInfo](docs/ModelCloudNodeAccountInfo.md)
+ - [ModelCloudNodeAccountRegisterReq](docs/ModelCloudNodeAccountRegisterReq.md)
+ - [ModelCloudNodeAccountRegisterResp](docs/ModelCloudNodeAccountRegisterResp.md)
+ - [ModelCloudNodeAccountRegisterRespData](docs/ModelCloudNodeAccountRegisterRespData.md)
+ - [ModelCloudNodeAccountsListReq](docs/ModelCloudNodeAccountsListReq.md)
+ - [ModelCloudNodeAccountsListResp](docs/ModelCloudNodeAccountsListResp.md)
+ - [ModelCloudNodeCloudtrailTrail](docs/ModelCloudNodeCloudtrailTrail.md)
  - [ModelComputeMetrics](docs/ModelComputeMetrics.md)
  - [ModelContainer](docs/ModelContainer.md)
  - [ModelContainerImage](docs/ModelContainerImage.md)
@@ -177,7 +190,6 @@ Class | Method | HTTP request | Description
  - [ModelPasswordResetVerifyRequest](docs/ModelPasswordResetVerifyRequest.md)
  - [ModelPod](docs/ModelPod.md)
  - [ModelProcess](docs/ModelProcess.md)
- - [ModelRawReport](docs/ModelRawReport.md)
  - [ModelRegisterInvitedUserRequest](docs/ModelRegisterInvitedUserRequest.md)
  - [ModelResponse](docs/ModelResponse.md)
  - [ModelResponseAccessToken](docs/ModelResponseAccessToken.md)
@@ -202,6 +214,7 @@ Class | Method | HTTP request | Description
  - [ReportersProviderThreatGraph](docs/ReportersProviderThreatGraph.md)
  - [ReportersThreatNodeInfo](docs/ReportersThreatNodeInfo.md)
  - [ReportersTopologyFilters](docs/ReportersTopologyFilters.md)
+ - [UtilsSbomRequest](docs/UtilsSbomRequest.md)
 
 
 ## Documentation For Authorization

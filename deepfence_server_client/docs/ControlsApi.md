@@ -7,7 +7,7 @@ Method | HTTP request | Description
 [**AddAgentVersion**](ControlsApi.md#AddAgentVersion) | **Post** /deepfence/controls/agent-version | Push new agent version
 [**GetAgentControls**](ControlsApi.md#GetAgentControls) | **Post** /deepfence/controls/agent | Fetch Agent Actions
 [**GetAgentInitControls**](ControlsApi.md#GetAgentInitControls) | **Post** /deepfence/controls/agent-init | Fetch Agent Init Actions
-[**GetLatestAgentVersion**](ControlsApi.md#GetLatestAgentVersion) | **Get** /deepfence/controls/agent-version | Fetch latest agent version
+[**GetLatestAgentVersion**](ControlsApi.md#GetLatestAgentVersion) | **Get** /deepfence/controls/get-agent-version | Fetch latest agent version
 
 
 

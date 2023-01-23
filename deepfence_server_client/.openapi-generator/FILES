@@ -4,6 +4,7 @@ README.md
 api/openapi.yaml
 api_authentication.go
 api_cloud_compliance.go
+api_cloud_nodes.go
 api_cloud_resources.go
 api_compliance.go
 api_controls.go
@@ -22,6 +23,7 @@ docs/ApiDocsFailureResponse.md
 docs/ApiDocsGraphResult.md
 docs/AuthenticationApi.md
 docs/CloudComplianceApi.md
+docs/CloudNodesApi.md
 docs/CloudResourcesApi.md
 docs/ComplianceApi.md
 docs/ControlsAction.md
@@ -41,11 +43,20 @@ docs/IngestersSecretRule.md
 docs/IngestersSecretScanStatus.md
 docs/IngestersSecretSeverity.md
 docs/IngestersVulnerability.md
+docs/IngestersVulnerabilityScanStatus.md
 docs/LookupApi.md
 docs/MalwareScanApi.md
 docs/ModelAgentId.md
 docs/ModelAgentImageMetadata.md
 docs/ModelApiAuthRequest.md
+docs/ModelCloudComplianceScanDetails.md
+docs/ModelCloudNodeAccountInfo.md
+docs/ModelCloudNodeAccountRegisterReq.md
+docs/ModelCloudNodeAccountRegisterResp.md
+docs/ModelCloudNodeAccountRegisterRespData.md
+docs/ModelCloudNodeAccountsListReq.md
+docs/ModelCloudNodeAccountsListResp.md
+docs/ModelCloudNodeCloudtrailTrail.md
 docs/ModelComputeMetrics.md
 docs/ModelContainer.md
 docs/ModelContainerImage.md
@@ -59,7 +70,6 @@ docs/ModelPasswordResetRequest.md
 docs/ModelPasswordResetVerifyRequest.md
 docs/ModelPod.md
 docs/ModelProcess.md
-docs/ModelRawReport.md
 docs/ModelRegisterInvitedUserRequest.md
 docs/ModelResponse.md
 docs/ModelResponseAccessToken.md
@@ -88,6 +98,7 @@ docs/SecretScanApi.md
 docs/ThreatApi.md
 docs/TopologyApi.md
 docs/UserApi.md
+docs/UtilsSbomRequest.md
 docs/VulnerabilityApi.md
 git_push.sh
 go.mod
@@ -110,9 +121,18 @@ model_ingesters_secret_rule.go
 model_ingesters_secret_scan_status.go
 model_ingesters_secret_severity.go
 model_ingesters_vulnerability.go
+model_ingesters_vulnerability_scan_status.go
 model_model_agent_id.go
 model_model_agent_image_metadata.go
 model_model_api_auth_request.go
+model_model_cloud_compliance_scan_details.go
+model_model_cloud_node_account_info.go
+model_model_cloud_node_account_register_req.go
+model_model_cloud_node_account_register_resp.go
+model_model_cloud_node_account_register_resp_data.go
+model_model_cloud_node_accounts_list_req.go
+model_model_cloud_node_accounts_list_resp.go
+model_model_cloud_node_cloudtrail_trail.go
 model_model_compute_metrics.go
 model_model_container.go
 model_model_container_image.go
@@ -126,7 +146,6 @@ model_model_password_reset_request.go
 model_model_password_reset_verify_request.go
 model_model_pod.go
 model_model_process.go
-model_model_raw_report.go
 model_model_register_invited_user_request.go
 model_model_response.go
 model_model_response_access_token.go
@@ -151,5 +170,6 @@ model_reporters_node_info.go
 model_reporters_provider_threat_graph.go
 model_reporters_threat_node_info.go
 model_reporters_topology_filters.go
+model_utils_sbom_request.go
 response.go
 utils.go

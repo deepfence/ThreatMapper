@@ -11,6 +11,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 )
 
@@ -147,11 +148,19 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(model.RawReport), nil)
+		http.StatusOK, []string{tagTopology}, bearerToken, new([]byte), nil)
+
+	d.AddOperation("ingestSbom", http.MethodPost, "/deepfence/ingest/sbom",
+		"Ingest SBOM from Scan", "Ingest SBOM from Scan",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(utils.SbomRequest), nil)
 
 	d.AddOperation("ingestVulnerabilities", http.MethodPost, "/deepfence/ingest/vulnerabilities",
 		"Ingest Vulnerabilities", "Ingest vulnerabilities found while scanning the agent host or containers",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new([]ingester.Vulnerability), nil)
+
+	d.AddOperation("ingestVulnerabilitiesScanStatus", http.MethodPost, "/deepfence/ingest/vulnerabilities-scan-logs",
+		"Ingest Vulnerabilities Scan Status", "Ingest vulnerabilities scan status from agent",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new([]ingester.VulnerabilityScanStatus), nil)
 
 	d.AddOperation("ingestSecrets", http.MethodPost, "/deepfence/ingest/secrets",
 		"Ingest Secrets", "Ingest secrets found while scanning the agent",

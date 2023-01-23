@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -21,11 +20,12 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/gorilla/schema"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+const MaxSbomRequestSize = 500 * 1e6
 
 func scanId(req model.ScanTriggerReq) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
@@ -282,26 +282,14 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 	fmt.Fprintf(respWrite, "Ok")
 }
 
-var decoder = schema.NewDecoder()
-
 func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
-	var params utils.SbomQueryParameters
-	err := decoder.Decode(&params, r.URL.Query())
-	// err = httpext.DecodeQueryParams(r, &params)
+	var params utils.SbomRequest
+	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &params)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	log.Info().Msgf("sbom query parameters: %+v", params)
-	sbom, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
-		return
-	}
+
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -311,7 +299,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file := "/sbom/" + utils.ScanIdReplacer.Replace(params.ScanId) + ".json"
-	info, err := mc.UploadFile(r.Context(), file, sbom,
+	info, err := mc.UploadFile(r.Context(), file, params.SBOM,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -322,7 +310,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 
 	params.SBOMFilePath = file
 
-	payload, err := json.Marshal(params)
+	payload, err := json.Marshal(params.SbomParameters)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError,

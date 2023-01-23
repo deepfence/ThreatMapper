@@ -47,14 +47,16 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
 
-	var params utils.SbomQueryParameters
+	var params utils.SbomParameters
 
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
 		return err
 	}
 
-	mc, err := directory.MinioClient(directory.NewContextWithNameSpace(directory.NamespaceID(tenantID)))
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
+
+	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
@@ -116,11 +118,11 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	// scan status
 	status := struct {
-		utils.SbomQueryParameters
+		utils.SbomParameters
 		ScanStatus string `json:"scan_status,omitempty"`
 	}{
-		ScanStatus:          utils.SCAN_STATUS_SUCCESS,
-		SbomQueryParameters: params,
+		ScanStatus:     utils.SCAN_STATUS_SUCCESS,
+		SbomParameters: params,
 	}
 
 	sb, err := json.Marshal(status)

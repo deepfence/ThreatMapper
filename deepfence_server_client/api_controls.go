@@ -468,7 +468,7 @@ func (a *ControlsApiService) GetLatestAgentVersionExecute(r ApiGetLatestAgentVer
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/deepfence/controls/agent-version"
+	localVarPath := localBasePath + "/deepfence/controls/get-agent-version"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}

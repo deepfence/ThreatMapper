@@ -32,12 +32,12 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-redis/redis/v9 v9.0.0-rc.2
 	github.com/google/uuid v1.3.0
-	github.com/gorilla/schema v1.2.0
 	github.com/minio/minio-go/v7 v7.0.47
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/rs/zerolog v1.28.0
 	github.com/samber/mo v1.7.0
+	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.26
 	github.com/twmb/franz-go v1.11.0
 	github.com/ugorji/go/codec v1.2.8
@@ -146,7 +146,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rs/xid v1.4.0 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/swaggest/jsonschema-go v0.3.42 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
