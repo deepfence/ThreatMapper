@@ -1,11 +1,11 @@
 import cx from 'classnames';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, Separator, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ScanInProgress } from '@/features/onboard/components/scan-summary/ScanInProgress';
-import { Link } from 'react-router-dom';
 
 const color: { [key: string]: string } = {
   alarm: 'bg-red-400 dark:bg-red-500',
