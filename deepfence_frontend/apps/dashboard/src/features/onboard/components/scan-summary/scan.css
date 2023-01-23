@@ -1,38 +1,42 @@
 .scan-summary svg circle {
-  stroke: #a4cafe;
+  stroke: #76a9fa;
+}
+
+.dark .scan-summary svg circle {
+  stroke: #1a56db;
 }
 
 .scan-summary .circle {
   transform-origin: center;
 }
 
-#arc3 {
+#cir3 {
   stroke-dasharray: 400;
   stroke-dashoffset: 400;
-  animation: 16s 0s rota infinite linear;
+  animation: 16s 0s rotate infinite linear;
 }
-#arc4 {
+#cir4 {
   stroke-dasharray: 400;
   stroke-dashoffset: 400;
-  animation: 6s 0s rota infinite linear reverse;
+  animation: 6s 0s rotate infinite linear reverse;
 }
-#arc5 {
+#cir5 {
   stroke-dasharray: 400;
   stroke-dashoffset: 400;
-  animation: 4s 0s rota infinite linear;
+  animation: 4s 0s rotate infinite linear;
 }
-#arc6 {
+#cir6 {
   stroke-dasharray: 400;
   stroke-dashoffset: 400;
-  animation: 8s 0s rota infinite linear alternate;
+  animation: 8s 0s rotate infinite linear alternate;
 }
-#arc7 {
+#cir7 {
   stroke-dasharray: 400;
   stroke-dashoffset: 400;
-  animation: 4s 0s rota infinite linear reverse;
+  animation: 4s 0s rotate infinite linear reverse;
 }
 
-@keyframes rota {
+@keyframes rotate {
   from {
     transform: rotate(0deg);
   }
