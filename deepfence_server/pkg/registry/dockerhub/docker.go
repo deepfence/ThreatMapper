@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
@@ -59,8 +60,23 @@ func (d *RegistryDockerHub) EncryptSecret(aes encryption.AES) error {
 }
 
 func (d *RegistryDockerHub) DecryptSecret(aes encryption.AES) error {
-	// todo
-	return nil
+	var err error
+	d.Secret.DockerHubPassword, err = aes.Decrypt(d.Secret.DockerHubPassword)
+	return err
+}
+
+func (d *RegistryDockerHub) FetchImagesFromRegistry() (model.RegistryImages, error) {
+	b, err := getImagesList(d.NonSecret.DockerHubUsername, d.Secret.DockerHubPassword, d.NonSecret.DockerHubNamespace)
+	if err != nil {
+		return model.RegistryImages{}, err
+	}
+
+	var images model.RegistryImages
+	err = json.Unmarshal(b, &images)
+	if err != nil {
+		return model.RegistryImages{}, err
+	}
+	return images, nil
 }
 
 // getters

@@ -18,6 +18,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
@@ -86,6 +87,13 @@ func main() {
 
 	log.Info().Msg("generating aes setting")
 	err = initializeAES()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+
+	log.Info().Msg("syncing images from registries")
+	// todo: do this in cron
+	err = registrysync.Sync()
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}

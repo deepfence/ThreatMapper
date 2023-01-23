@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
@@ -19,6 +20,30 @@ type RegistryAddReq struct {
 
 // todo: add support to list by name and type, id
 type RegistryListReq struct{}
+
+type RegistryImages struct {
+	Count    int             `json:"count"`
+	Next     string          `json:"next"`
+	Previous interface{}     `json:"previous"`
+	Results  []RegistryImage `json:"results"`
+}
+
+type RegistryImage struct {
+	Name              string    `json:"name"`
+	Namespace         string    `json:"namespace"`
+	RepositoryType    string    `json:"repository_type"`
+	Status            int       `json:"status"`
+	StatusDescription string    `json:"status_description"`
+	Description       string    `json:"description"`
+	IsPrivate         bool      `json:"is_private"`
+	StarCount         int       `json:"star_count"`
+	PullCount         int       `json:"pull_count"`
+	LastUpdated       time.Time `json:"last_updated"`
+	DateRegistered    time.Time `json:"date_registered"`
+	Affiliation       string    `json:"affiliation"`
+	MediaTypes        []string  `json:"media_types"`
+	ContentTypes      []string  `json:"content_types"`
+}
 
 // ListRegistriesSafe doesnot get secret field from DB
 func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.GetContainerRegistriesSafeRow, error) {
