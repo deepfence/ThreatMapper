@@ -45,6 +45,43 @@ const (
 	NEO4J_COMPLIANCE_SCAN    Neo4jScanType = "ComplianceScan"
 )
 
+type CloudProvider int
+
+const (
+	AWS CloudProvider = iota
+	GCP
+	Azure
+	DO
+)
+
+func StringToCloudProvider(s string) CloudProvider {
+	switch s {
+	case "aws":
+		return AWS
+	case "gcp":
+		return GCP
+	case "azure":
+		return Azure
+	case "do":
+		return DO
+	}
+	return -1
+}
+
+func ResourceTypeToNeo4jLabel(t CloudProvider) string {
+	switch t {
+	case AWS:
+		return "AWS"
+	case GCP:
+		return "GCP"
+	case Azure:
+		return "Azure"
+	case DO:
+		return "DO"
+	}
+	return ""
+}
+
 var Topics = []string{
 	VULNERABILITY_SCAN, VULNERABILITY_SCAN_STATUS,
 	SECRET_SCAN, SECRET_SCAN_STATUS,

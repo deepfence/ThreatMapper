@@ -34,6 +34,11 @@ p, standard-user, agent-report, ingest
 p, admin, cloud-report, ingest
 p, standard-user, cloud-report, ingest
 
+p, admin, cloud-node, register
+p, admin, cloud-node, read
+p, standard-user, cloud-node, register
+p, standard-user, cloud-node, read
+
 p, admin, diagnosis, generate
 p, standard-user, diagnosis, generate
 p, admin, diagnosis, read
