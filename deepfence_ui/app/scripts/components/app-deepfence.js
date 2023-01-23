@@ -141,7 +141,7 @@ class DeepFenceApp extends React.Component {
 
             <PrivateRoute path="/topology" component={TopologyView} />
             <PrivateRoute
-              path="/vulnerability/details/:scanId"
+              path="/vulnerability/details/:scanId/:scanName"
               component={CVEDetailsView}
             />
             <PrivateRoute
