@@ -44,6 +44,7 @@ docs/IngestersVulnerability.md
 docs/LookupApi.md
 docs/MalwareScanApi.md
 docs/ModelAgentId.md
+docs/ModelAgentImageMetadata.md
 docs/ModelApiAuthRequest.md
 docs/ModelComputeMetrics.md
 docs/ModelContainer.md
@@ -110,6 +111,7 @@ model_ingesters_secret_scan_status.go
 model_ingesters_secret_severity.go
 model_ingesters_vulnerability.go
 model_model_agent_id.go
+model_model_agent_image_metadata.go
 model_model_api_auth_request.go
 model_model_compute_metrics.go
 model_model_container.go

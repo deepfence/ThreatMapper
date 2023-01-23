@@ -151,6 +151,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/controls", func(r chi.Router) {
 				r.Post("/agent", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentControls))
 				r.Post("/agent-init", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentInitControls))
+				r.Get("/get-agent-version", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetLatestAgentVersion))
+				r.Post("/agent-version", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.AddLatestAgentVersion))
 			})
 
 			r.Route("/ingest", func(r chi.Router) {

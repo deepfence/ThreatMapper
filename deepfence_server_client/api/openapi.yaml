@@ -234,6 +234,82 @@ paths:
       summary: Fetch Agent Init Actions
       tags:
       - Controls
+  /deepfence/controls/agent-version:
+    get:
+      description: Fetch latest agent version to check for upgrade
+      operationId: getLatestAgentVersion
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelAgentImageMetadata'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Fetch latest agent version
+      tags:
+      - Controls
+    post:
+      description: Push new agent version
+      operationId: addAgentVersion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelAgentImageMetadata'
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Push new agent version
+      tags:
+      - Controls
   /deepfence/diagnosis/agent-logs:
     post:
       description: Generate Agent Diagnostic Logs
@@ -3191,6 +3267,23 @@ components:
           type: string
       required:
       - node_id
+      type: object
+    ModelAgentImageMetadata:
+      example:
+        image_name: image_name
+        image_tag: image_tag
+        version: version
+      properties:
+        image_name:
+          type: string
+        image_tag:
+          type: string
+        version:
+          type: string
+      required:
+      - image_name
+      - image_tag
+      - version
       type: object
     ModelApiAuthRequest:
       example:

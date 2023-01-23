@@ -91,8 +91,10 @@ Class | Method | HTTP request | Description
 *ComplianceApi* | [**StartComplianceScan**](docs/ComplianceApi.md#startcompliancescan) | **Post** /deepfence/scan/start/compliance | Start Compliance Scan
 *ComplianceApi* | [**StatusComplianceScan**](docs/ComplianceApi.md#statuscompliancescan) | **Get** /deepfence/scan/status/compliance | Get Compliance Scan Status
 *ComplianceApi* | [**StopComplianceScan**](docs/ComplianceApi.md#stopcompliancescan) | **Post** /deepfence/scan/stop/compliance | Stop Compliance Scan
+*ControlsApi* | [**AddAgentVersion**](docs/ControlsApi.md#addagentversion) | **Post** /deepfence/controls/agent-version | Push new agent version
 *ControlsApi* | [**GetAgentControls**](docs/ControlsApi.md#getagentcontrols) | **Post** /deepfence/controls/agent | Fetch Agent Actions
 *ControlsApi* | [**GetAgentInitControls**](docs/ControlsApi.md#getagentinitcontrols) | **Post** /deepfence/controls/agent-init | Fetch Agent Init Actions
+*ControlsApi* | [**GetLatestAgentVersion**](docs/ControlsApi.md#getlatestagentversion) | **Get** /deepfence/controls/agent-version | Fetch latest agent version
 *DiagnosisApi* | [**DiagnosticNotification**](docs/DiagnosisApi.md#diagnosticnotification) | **Get** /deepfence/diagnosis/notification | Get Diagnostic Notification
 *DiagnosisApi* | [**GenerateAgentDiagnosticLogs**](docs/DiagnosisApi.md#generateagentdiagnosticlogs) | **Post** /deepfence/diagnosis/agent-logs | Generate Agent Diagnostic Logs
 *DiagnosisApi* | [**GenerateConsoleDiagnosticLogs**](docs/DiagnosisApi.md#generateconsolediagnosticlogs) | **Post** /deepfence/diagnosis/console-logs | Generate Console Diagnostic Logs
@@ -160,6 +162,7 @@ Class | Method | HTTP request | Description
  - [IngestersSecretSeverity](docs/IngestersSecretSeverity.md)
  - [IngestersVulnerability](docs/IngestersVulnerability.md)
  - [ModelAgentId](docs/ModelAgentId.md)
+ - [ModelAgentImageMetadata](docs/ModelAgentImageMetadata.md)
  - [ModelApiAuthRequest](docs/ModelApiAuthRequest.md)
  - [ModelComputeMetrics](docs/ModelComputeMetrics.md)
  - [ModelContainer](docs/ModelContainer.md)
