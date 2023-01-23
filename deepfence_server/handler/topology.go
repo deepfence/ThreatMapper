@@ -9,8 +9,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	hst "github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/render/detailed"
 	"github.com/weaveworks/scope/report"

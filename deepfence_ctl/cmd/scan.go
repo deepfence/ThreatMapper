@@ -7,9 +7,9 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
-	"github.com/deepfence/ThreatMapper/deepfence_server_client"
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	deepfence_server_client "github.com/deepfence/golang_deepfence_sdk/client"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 var scanCmd = &cobra.Command{
@@ -121,13 +121,19 @@ var scanListSubCmd = &cobra.Command{
 			log.Fatal().Msg("Please provide a node-id")
 		}
 
+		node_type, _ := cmd.Flags().GetString("node-type")
+		if node_type == "" {
+			log.Fatal().Msg("Please provide a node-type")
+		}
+
 		var err error
 		var res *deepfence_server_client.ModelScanListResp
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanApi.ListSecretScan(context.Background())
 			req = req.ModelScanListReq(deepfence_server_client.ModelScanListReq{
-				NodeId: node_id,
+				NodeId:   node_id,
+				NodeType: node_type,
 				Window: deepfence_server_client.ModelFetchWindow{
 					Offset: 0,
 					Size:   20,
@@ -137,7 +143,8 @@ var scanListSubCmd = &cobra.Command{
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.ListVulnerabilityScans(context.Background())
 			req = req.ModelScanListReq(deepfence_server_client.ModelScanListReq{
-				NodeId: node_id,
+				NodeId:   node_id,
+				NodeType: node_type,
 				Window: deepfence_server_client.ModelFetchWindow{
 					Offset: 0,
 					Size:   20,
@@ -219,6 +226,7 @@ func init() {
 	scanStatusSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
 
 	scanListSubCmd.PersistentFlags().String("node-id", "", "Node id")
+	scanListSubCmd.PersistentFlags().String("node-type", "", "Resource type (host, container, image)")
 
 	scanResultsSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
 }

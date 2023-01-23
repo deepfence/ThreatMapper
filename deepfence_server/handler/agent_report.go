@@ -7,8 +7,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/weaveworks/scope/report"
 
 	"github.com/bytedance/sonic"

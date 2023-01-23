@@ -148,6 +148,93 @@ paths:
       summary: Refresh access token
       tags:
       - Authentication
+  /deepfence/cloud-node/account:
+    post:
+      description: Register Cloud Node Account and return any pending compliance scans
+        from console
+      operationId: registerCloudNodeAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelCloudNodeAccountRegisterReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelCloudNodeAccountRegisterResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Register Cloud Node Account
+      tags:
+      - Cloud Nodes
+  /deepfence/cloud-node/accounts/list:
+    post:
+      description: List Cloud Node Accounts registered with the console
+      operationId: listCloudNodeAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelCloudNodeAccountsListReq'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelCloudNodeAccountsListResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: List Cloud Node Accounts
+      tags:
+      - Cloud Nodes
   /deepfence/controls/agent:
     post:
       description: Fetch actions for a given agent
@@ -232,6 +319,83 @@ paths:
       security:
       - bearer_token: []
       summary: Fetch Agent Init Actions
+      tags:
+      - Controls
+  /deepfence/controls/agent-version:
+    post:
+      description: Push new agent version
+      operationId: addAgentVersion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelAgentImageMetadata'
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Push new agent version
+      tags:
+      - Controls
+  /deepfence/controls/get-agent-version:
+    get:
+      description: Fetch latest agent version to check for upgrade
+      operationId: getLatestAgentVersion
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelAgentImageMetadata'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Fetch latest agent version
       tags:
       - Controls
   /deepfence/diagnosis/agent-logs:
@@ -765,7 +929,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ModelRawReport'
+              items:
+                minimum: 0
+                type: integer
+              nullable: true
+              type: array
       responses:
         "200":
           description: OK
@@ -796,6 +964,45 @@ paths:
       summary: Ingest Topology Data
       tags:
       - Topology
+  /deepfence/ingest/sbom:
+    post:
+      description: Ingest SBOM from Scan
+      operationId: ingestSbom
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UtilsSbomRequest'
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Ingest SBOM from Scan
+      tags:
+      - Vulnerability
   /deepfence/ingest/secret-scan-logs:
     post:
       description: Ingest secrets scan status from the agent
@@ -920,6 +1127,48 @@ paths:
       security:
       - bearer_token: []
       summary: Ingest Vulnerabilities
+      tags:
+      - Vulnerability
+  /deepfence/ingest/vulnerabilities-scan-logs:
+    post:
+      description: Ingest vulnerabilities scan status from agent
+      operationId: ingestVulnerabilitiesScanStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/IngestersVulnerabilityScanStatus'
+              nullable: true
+              type: array
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsBadRequestResponse'
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Not Found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDocsFailureResponse'
+          description: Internal Server Error
+      security:
+      - bearer_token: []
+      summary: Ingest Vulnerabilities Scan Status
       tags:
       - Vulnerability
   /deepfence/lookup/containerimages:
@@ -3183,6 +3432,41 @@ components:
           nullable: true
           type: array
       type: object
+    IngestersVulnerabilityScanStatus:
+      example:
+        '@timestamp': 2000-01-23T04:56:07.000+00:00
+        node_type: node_type
+        container_name: container_name
+        scan_status: scan_status
+        kubernetes_cluster_name: kubernetes_cluster_name
+        masked: masked
+        node_name: node_name
+        scan_id: scan_id
+        host_name: host_name
+        node_id: node_id
+      properties:
+        '@timestamp':
+          format: date-time
+          type: string
+        container_name:
+          type: string
+        host_name:
+          type: string
+        kubernetes_cluster_name:
+          type: string
+        masked:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+        node_type:
+          type: string
+        scan_id:
+          type: string
+        scan_status:
+          type: string
+      type: object
     ModelAgentId:
       example:
         node_id: node_id
@@ -3192,6 +3476,23 @@ components:
       required:
       - node_id
       type: object
+    ModelAgentImageMetadata:
+      example:
+        image_name: image_name
+        image_tag: image_tag
+        version: version
+      properties:
+        image_name:
+          type: string
+        image_tag:
+          type: string
+        version:
+          type: string
+      required:
+      - image_name
+      - image_tag
+      - version
+      type: object
     ModelApiAuthRequest:
       example:
         api_token: api_token
@@ -3200,6 +3501,164 @@ components:
           type: string
       required:
       - api_token
+      type: object
+    ModelCloudComplianceScanDetails:
+      example:
+        account_id: account_id
+        scan_type: scan_type
+        scan_id: scan_id
+      properties:
+        account_id:
+          type: string
+        scan_id:
+          type: string
+        scan_type:
+          type: string
+      type: object
+    ModelCloudNodeAccountInfo:
+      example:
+        compliance_percentage: compliance_percentage
+        node_name: node_name
+        active: active
+        cloud_provider: cloud_provider
+        node_id: node_id
+      properties:
+        active:
+          type: string
+        cloud_provider:
+          type: string
+        compliance_percentage:
+          type: string
+        node_id:
+          type: string
+        node_name:
+          type: string
+      type: object
+    ModelCloudNodeAccountRegisterReq:
+      example:
+        cloud_account: cloud_account
+        monitored_account_ids:
+          key: monitored_account_ids
+        org_acc_id: org_acc_id
+        cloud_provider: aws
+        node_id: node_id
+      properties:
+        cloud_account:
+          type: string
+        cloud_provider:
+          enum:
+          - aws
+          - gcp
+          - azure
+          type: string
+        monitored_account_ids:
+          additionalProperties:
+            type: string
+          nullable: true
+          type: object
+        node_id:
+          type: string
+        org_acc_id:
+          type: string
+      required:
+      - cloud_account
+      - cloud_provider
+      - node_id
+      type: object
+    ModelCloudNodeAccountRegisterResp:
+      example:
+        data:
+          cloudtrail_trails:
+          - account_id: account_id
+            trail_name: trail_name
+          - account_id: account_id
+            trail_name: trail_name
+          scans:
+            key:
+              account_id: account_id
+              scan_type: scan_type
+              scan_id: scan_id
+          refresh: refresh
+      properties:
+        data:
+          $ref: '#/components/schemas/ModelCloudNodeAccountRegisterRespData'
+      type: object
+    ModelCloudNodeAccountRegisterRespData:
+      example:
+        cloudtrail_trails:
+        - account_id: account_id
+          trail_name: trail_name
+        - account_id: account_id
+          trail_name: trail_name
+        scans:
+          key:
+            account_id: account_id
+            scan_type: scan_type
+            scan_id: scan_id
+        refresh: refresh
+      properties:
+        cloudtrail_trails:
+          items:
+            $ref: '#/components/schemas/ModelCloudNodeCloudtrailTrail'
+          nullable: true
+          type: array
+        refresh:
+          type: string
+        scans:
+          additionalProperties:
+            $ref: '#/components/schemas/ModelCloudComplianceScanDetails'
+          nullable: true
+          type: object
+      type: object
+    ModelCloudNodeAccountsListReq:
+      example:
+        cloud_provider: cloud_provider
+        window:
+          offset: 0
+          size: 6
+      properties:
+        cloud_provider:
+          type: string
+        window:
+          $ref: '#/components/schemas/ModelFetchWindow'
+      required:
+      - window
+      type: object
+    ModelCloudNodeAccountsListResp:
+      example:
+        total: 0
+        cloud_node_accounts_info:
+        - compliance_percentage: compliance_percentage
+          node_name: node_name
+          active: active
+          cloud_provider: cloud_provider
+          node_id: node_id
+        - compliance_percentage: compliance_percentage
+          node_name: node_name
+          active: active
+          cloud_provider: cloud_provider
+          node_id: node_id
+      properties:
+        cloud_node_accounts_info:
+          items:
+            $ref: '#/components/schemas/ModelCloudNodeAccountInfo'
+          nullable: true
+          type: array
+        total:
+          type: integer
+      required:
+      - cloud_node_accounts_info
+      - total
+      type: object
+    ModelCloudNodeCloudtrailTrail:
+      example:
+        account_id: account_id
+        trail_name: trail_name
+      properties:
+        account_id:
+          type: string
+        trail_name:
+          type: string
       type: object
     ModelComputeMetrics:
       example:
@@ -4801,15 +5260,6 @@ components:
       - ppid
       - threads
       type: object
-    ModelRawReport:
-      example:
-        payload: payload
-      properties:
-        payload:
-          type: string
-      required:
-      - payload
-      type: object
     ModelRegisterInvitedUserRequest:
       example:
         password: password
@@ -4890,6 +5340,7 @@ components:
       type: object
     ModelScanListReq:
       example:
+        node_type: image
         window:
           offset: 0
           size: 6
@@ -4897,10 +5348,17 @@ components:
       properties:
         node_id:
           type: string
+        node_type:
+          enum:
+          - image
+          - host
+          - container
+          type: string
         window:
           $ref: '#/components/schemas/ModelFetchWindow'
       required:
       - node_id
+      - node_type
       - window
       type: object
     ModelScanListResp:
@@ -5363,6 +5821,51 @@ components:
       - kubernetes_filter
       - pod_filter
       - region_filter
+      type: object
+    UtilsSbomRequest:
+      example:
+        mode: mode
+        image_name: image_name
+        node_type: node_type
+        container_name: container_name
+        kubernetes_cluster_name: kubernetes_cluster_name
+        sbom:
+        - 0
+        - 0
+        scan_type: scan_type
+        scan_id: scan_id
+        image_id: image_id
+        sbom_file_path: sbom_file_path
+        host_name: host_name
+        node_id: node_id
+      properties:
+        container_name:
+          type: string
+        host_name:
+          type: string
+        image_id:
+          type: string
+        image_name:
+          type: string
+        kubernetes_cluster_name:
+          type: string
+        mode:
+          type: string
+        node_id:
+          type: string
+        node_type:
+          type: string
+        sbom:
+          items:
+            minimum: 0
+            type: integer
+          type: array
+        sbom_file_path:
+          type: string
+        scan_id:
+          type: string
+        scan_type:
+          type: string
       type: object
     IngestersSecret_Match:
       example:

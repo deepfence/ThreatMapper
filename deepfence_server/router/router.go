@@ -10,8 +10,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
@@ -28,6 +28,7 @@ const (
 	PermissionStart    = "start"
 	PermissionStop     = "stop"
 	PermissionGenerate = "generate"
+	PermissionRegister = "register"
 
 	//	API RBAC Resources
 
@@ -38,6 +39,7 @@ const (
 	ResourceScanReport  = "scan-report"
 	ResourceScan        = "scan"
 	ResourceDiagnosis   = "diagnosis"
+	ResourceCloudNode   = "cloud-node"
 )
 
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
@@ -149,6 +151,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/controls", func(r chi.Router) {
 				r.Post("/agent", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentControls))
 				r.Post("/agent-init", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentInitControls))
+				r.Get("/get-agent-version", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetLatestAgentVersion))
+				r.Post("/agent-version", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.AddLatestAgentVersion))
 			})
 
 			r.Route("/ingest", func(r chi.Router) {
@@ -162,6 +166,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/secret-scan-logs", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestSecretScanStatusHandler))
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestComplianceReportHandler))
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestCloudComplianceReportHandler))
+			})
+
+			r.Route("/cloud-node", func(r chi.Router) {
+				r.Post("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionRegister, dfHandler.RegisterCloudNodeAccountHandler))
+				r.Post("/accounts/list", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
 			})
 
 			r.Route("/scan/start", func(r chi.Router) {

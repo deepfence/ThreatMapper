@@ -17,12 +17,16 @@ DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="2.0.0"
 
-default: console_plugins agent console
+default: bootstrap console_plugins agent console
 
 .PHONY: console_plugins agent console
 console: redis postgres kafka-broker router server worker ui console_plugins file-server
 
 console_plugins: secretscanner malwarescanner packagescanner
+
+.PHONY: bootstrap
+bootstrap:
+	./bootstrap.sh
 
 #.PHONY: init-container
 #init-container:

@@ -9,9 +9,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
+	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	postgresqldb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	utils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 func (d *OpenApiDocs) AddUserAuthOperations() {
@@ -125,16 +126,41 @@ func (d *OpenApiDocs) AddControlsOperations() {
 	d.AddOperation("getAgentInitControls", http.MethodPost, "/deepfence/controls/agent-init",
 		"Fetch Agent Init Actions", "Fetch initial actions for a given agent after it started",
 		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls.AgentControls))
+
+	d.AddOperation("getLatestAgentVersion", http.MethodGet, "/deepfence/controls/get-agent-version",
+		"Fetch latest agent version", "Fetch latest agent version to check for upgrade",
+		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentImageMetadata), new(model.AgentImageMetadata))
+
+	d.AddOperation("addAgentVersion", http.MethodPost, "/deepfence/controls/agent-version",
+		"Push new agent version", "Push new agent version",
+		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentImageMetadata), nil)
+}
+
+func (d *OpenApiDocs) AddCloudNodeOperations() {
+	d.AddOperation("registerCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/account",
+		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
+		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(model.CloudNodeAccountRegisterReq), new(model.CloudNodeAccountRegisterResp))
+	d.AddOperation("listCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/accounts/list",
+		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
+		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(model.CloudNodeAccountsListReq), new(model.CloudNodeAccountsListResp))
 }
 
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(model.RawReport), nil)
+		http.StatusOK, []string{tagTopology}, bearerToken, new([]byte), nil)
+
+	d.AddOperation("ingestSbom", http.MethodPost, "/deepfence/ingest/sbom",
+		"Ingest SBOM from Scan", "Ingest SBOM from Scan",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(utils.SbomRequest), nil)
 
 	d.AddOperation("ingestVulnerabilities", http.MethodPost, "/deepfence/ingest/vulnerabilities",
 		"Ingest Vulnerabilities", "Ingest vulnerabilities found while scanning the agent host or containers",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new([]ingester.Vulnerability), nil)
+
+	d.AddOperation("ingestVulnerabilitiesScanStatus", http.MethodPost, "/deepfence/ingest/vulnerabilities-scan-logs",
+		"Ingest Vulnerabilities Scan Status", "Ingest vulnerabilities scan status from agent",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new([]ingester.VulnerabilityScanStatus), nil)
 
 	d.AddOperation("ingestSecrets", http.MethodPost, "/deepfence/ingest/secrets",
 		"Ingest Secrets", "Ingest secrets found while scanning the agent",

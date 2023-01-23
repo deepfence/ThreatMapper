@@ -1,14 +1,24 @@
 package utils
 
-type SbomQueryParameters struct {
-	ImageName             string `schema:"image_name" json:"image_name"`
-	ImageId               string `schema:"image_id" json:"image_id"`
-	ScanId                string `schema:"scan_id" json:"scan_id"`
-	KubernetesClusterName string `schema:"kubernetes_cluster_name" json:"kubernetes_cluster_name"`
-	HostName              string `schema:"host_name" json:"host_name"`
-	NodeId                string `schema:"node_id" json:"node_id"`
-	NodeType              string `schema:"node_type" json:"node_type"`
-	ScanType              string `schema:"scan_type" json:"scan_type"`
-	ContainerName         string `schema:"container_name" json:"container_name"`
-	SBOMFilePath          string `schema:"-" json:"sbom_file_path"`
+type SbomRequest struct {
+	SbomParameters
+	SbomBody
+}
+
+type SbomParameters struct {
+	ImageName             string `json:"image_name,omitempty"`
+	ImageId               string `json:"image_id,omitempty"`
+	ScanId                string `json:"scan_id,omitempty"`
+	KubernetesClusterName string `json:"kubernetes_cluster_name,omitempty"`
+	HostName              string `json:"host_name,omitempty"`
+	NodeId                string `json:"node_id,omitempty"`
+	NodeType              string `json:"node_type,omitempty"`
+	ScanType              string `json:"scan_type,omitempty"`
+	ContainerName         string `json:"container_name,omitempty"`
+	SBOMFilePath          string `json:"sbom_file_path,omitempty"`
+	Mode                  string `json:"mode,omitempty"`
+}
+
+type SbomBody struct {
+	SBOM []byte `json:"sbom,omitempty"`
 }

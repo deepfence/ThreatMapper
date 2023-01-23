@@ -2,9 +2,9 @@ module github.com/deepfence/ThreatMapper/deepfence_worker
 
 go 1.19
 
-replace github.com/deepfence/ThreatMapper/deepfence_utils => ../deepfence_utils/
+replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
-replace github.com/deepfence/ThreatMapper/deepfence_server_client => ../deepfence_server_client
+replace github.com/deepfence/ThreatMapper/deepfence_server_client => ../golang_deepfence_sdk/client
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server
 
@@ -13,7 +13,7 @@ replace github.com/deepfence/package-scanner => github.com/deepfence/package-sca
 require (
 	github.com/ThreeDotsLabs/watermill v1.1.1
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.47
