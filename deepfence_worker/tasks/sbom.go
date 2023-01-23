@@ -121,8 +121,8 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 		utils.SbomParameters
 		ScanStatus string `json:"scan_status,omitempty"`
 	}{
-		ScanStatus:     utils.SCAN_STATUS_SUCCESS,
 		SbomParameters: params,
+		ScanStatus:     utils.SCAN_STATUS_SUCCESS,
 	}
 
 	sb, err := json.Marshal(status)

@@ -21,3 +21,4 @@
 [submodule "golang_deepfence_sdk"]
 	path = golang_deepfence_sdk
 	url = https://github.com/deepfence/golang_deepfence_sdk
+	branch = main

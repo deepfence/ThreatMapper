@@ -63,8 +63,12 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 		return name, tag, err
 	}
 
-	name = rec.Values[0].(string)
-	tag = rec.Values[1].(string)
+	if vi, ok := rec.Get("docker_image_name"); ok {
+		name = vi.(string)
+	}
+	if vt, ok := rec.Get("docker_image_tag"); ok {
+		tag = vt.(string)
+	}
 
 	return name, tag, nil
 }
@@ -88,12 +92,11 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 	if nodeTypeInternal == ctl.Image {
 		name, tag, err := GetImageFromId(r.Context(), req.NodeId)
 		if err != nil {
-			log.Error().Msg(err.Error())
-			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
-			return
+			log.Error().Msgf("image not found %s", err.Error())
+		} else {
+			binArgs["image_name"] = name + ":" + tag
+			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
 		}
-		binArgs["image_name"] = name + ":" + tag
-		log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
 	}
 
 	internal_req := ctl.StartVulnerabilityScanRequest{

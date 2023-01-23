@@ -41,7 +41,7 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_KAFKA_BROKERS=deepfence-kafka-broker:9092
 
 ADD deepfence_server/auth /auth
-ADD deepfence_utils/postgresql /usr/local/postgresql-migrate
+ADD golang_deepfence_sdk/utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 RUN apk add --no-cache --update bash curl libpcap tar kafkacat
 RUN apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main
