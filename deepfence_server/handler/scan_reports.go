@@ -232,8 +232,16 @@ func startScan(
 
 	err := ingesters.AddNewScan(r.Context(), scanType, scanId, nodeType, nodeId, action)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err.Error()})
+		var code int
+		switch err.(type) {
+		case *ingesters.NodeNotFoundError:
+			log.Warn().Msg(err.Error())
+			code = http.StatusBadRequest
+		default:
+			log.Error().Msg(err.Error())
+			code = http.StatusInternalServerError
+		}
+		httpext.JSON(w, code, model.Response{Success: false, Data: err.Error()})
 		return
 	}
 
