@@ -6,7 +6,6 @@ RUN apk add --no-cache git build-base libpcap-dev libcap-dev
 ADD deepfence_server /go/deepfence_server/
 ADD deepfence_worker /go/deepfence_worker/
 ADD golang_deepfence_sdk /go/golang_deepfence_sdk
-ADD deepfence_server_client /go/deepfence_server_client/
 RUN mkdir -p /go/deepfence_agent/tools/apache
 ADD deepfence_agent/tools/apache /go/deepfence_agent/tools/apache
 WORKDIR /go/deepfence_server/

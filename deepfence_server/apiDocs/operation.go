@@ -148,7 +148,7 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, bearerToken, new([]byte), nil)
+		http.StatusOK, []string{tagTopology}, bearerToken, new(model.RawReport), nil)
 
 	d.AddOperation("ingestSbom", http.MethodPost, "/deepfence/ingest/sbom",
 		"Ingest SBOM from Scan", "Ingest SBOM from Scan",
