@@ -150,6 +150,10 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Topology Data", "Ingest data reported by one Agent",
 		http.StatusOK, []string{tagTopology}, bearerToken, new(model.RawReport), nil)
 
+	d.AddOperation("ingestSyncAgentReport", http.MethodPost, "/deepfence/ingest/sync-report",
+		"Ingest Topology Data", "Ingest data reported by one Agent",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(ingesters.ReportIngestionData), nil)
+
 	d.AddOperation("ingestSbom", http.MethodPost, "/deepfence/ingest/sbom",
 		"Ingest SBOM from Scan", "Ingest SBOM from Scan",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(utils.SbomRequest), nil)

@@ -135,3 +135,8 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 
 	return bb
 }
+
+func (c *CloudResourceIngester) PushToDB(batches ReportIngestionData) error {
+	//DUMMY
+	return nil
+}
