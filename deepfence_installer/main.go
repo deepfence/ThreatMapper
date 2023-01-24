@@ -77,7 +77,7 @@ func main() {
 	}
 
 	if is_k8s {
-		generic_installer = installer.NewKubernetesInstaller()
+		generic_installer = installer.NewKubernetesInstaller(console_ip, api_token)
 	} else {
 		generic_installer = installer.NewDockerInstaller(console_ip, api_token)
 	}
