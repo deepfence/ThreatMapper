@@ -11,6 +11,19 @@ type KubernetesInstaller struct {
 	current  agent.AgentImage
 }
 
+func NewKubernetesInstaller() *KubernetesInstaller {
+	return &KubernetesInstaller{
+		previous: agent.AgentImage{
+			ImageName: "",
+			ImageTag:  "",
+		},
+		current: agent.AgentImage{
+			ImageName: "",
+			ImageTag:  "",
+		},
+	}
+}
+
 func (ki *KubernetesInstaller) Delete() error {
 	cmd := exec.Command("helm", "delete deepfence-agent")
 	return cmd.Run()
@@ -21,10 +34,11 @@ func (ki *KubernetesInstaller) Install() error {
 	return cmd.Run()
 }
 
-func (ki *KubernetesInstaller) Save(agent.AgentImage) {
+func (ki *KubernetesInstaller) SaveNewConfig(agent.AgentImage) error {
+	return nil
 	//TODO
 }
 
-func (ki *KubernetesInstaller) Rollback() {
+func (ki *KubernetesInstaller) RollBackConfig() {
 	//TODO
 }
