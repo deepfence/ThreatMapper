@@ -74,17 +74,25 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 }
 
 func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
-	req, err := extractScanTrigger(w, r)
+	defer r.Body.Close()
+	var req model.VulnerabilityScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
 		return
 	}
 
-	scanId := scanId(req)
+	scanId := scanId(req.ScanTriggerReq)
 
 	binArgs := map[string]string{
 		"scan_id":   scanId,
 		"node_type": req.NodeType,
 		"node_id":   req.NodeId,
+	}
+
+	if len(req.ScanType) != 0 {
+		binArgs["scan_type"] = req.ScanType
 	}
 
 	nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
