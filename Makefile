@@ -105,14 +105,14 @@ openapi: server
 	-v $(PWD):/local openapitools/openapi-generator-cli generate \
 	-i /local/openapi.yaml \
 	-g go \
-	-o /local/deepfence_server_client \
+	-o /local/golang_deepfence_sdk/client \
 	-p isGoSubmodule=true \
-	-p packageName=deepfence_server_client \
-	--git-repo-id ThreatMapper \
+	-p packageName=client \
+	--git-repo-id golang_deepfence_sdk \
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/deepfence_server_client && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
+	cd $(PWD)/golang_deepfence_sdk/client && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli:
