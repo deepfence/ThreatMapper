@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
@@ -16,11 +15,6 @@ import (
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	// "github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 )
-
-// read from postgres -- getAllRegistries()
-// create registry instance --
-// fetch image using method in instance
-// update neo4j
 
 // todo: move to utils!
 func getAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
@@ -105,35 +99,8 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	return injestToNeo4j(ctx, list)
 }
 
-// func startSync() {
-// 	ticker := time.NewTicker(24 * time.Hour)
-
-// 	cron("*****", sync)
-// }
-
-// func injestToNeo4j(r model.RegistryImages) error {
-// 	ctx := directory.NewGlobalContext()
-// 	driver, err  := directory.Neo4jClient(ctx)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	session, err := driver.Session(neo4j.AccessModeWrite)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer session.Close()
-
-// 	tx, err := session.BeginTransaction()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-func injestToNeo4j(ctx context.Context, r model.RegistryImages) error {
-	log.Info().Msgf("injest this to neo4j +%v", r)
+func injestToNeo4j(ctx context.Context, r []model.ImageAndTag) error {
+	log.Info().Msgf("\n\n\n\n\ninjest this to neo4j +%v\n\n\n\n", r)
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -150,22 +117,34 @@ func injestToNeo4j(ctx context.Context, r model.RegistryImages) error {
 	}
 	defer tx.Close()
 
-	results := r.Results
-	ritm := RegistryImagesToMaps(results)
-	log.Info().Msgf("xxxxxxxxx: %+v", ritm)
-
-	if _, err := tx.Run("UNWIND $batch as row MERGE (n:ContainerImage{node_id: row.name}) SET n.updated_at = TIMESTAMP()",
-		map[string]interface{}{"batch": ritm}); err != nil {
+	results := r
+	imageMap := RegistryImagesToMaps(results)
+	_, err = tx.Run(`
+	UNWIND $batch as row
+	MERGE (n:ContainerImage{node_id:row.digest})
+	SET n+= row, n.updated_at = TIMESTAMP()`,
+		map[string]interface{}{"batch": imageMap})
+	if err != nil {
 		return err
 	}
 
-	return nil
+	return tx.Commit()
 }
 
-func RegistryImagesToMaps(ms []model.RegistryImage) []map[string]interface{} {
+func RegistryImagesToMaps(ms []model.ImageAndTag) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
-		res = append(res, utils.ToMap(v))
+		res = append(res, toMap(v))
 	}
 	return res
+}
+
+func toMap(i model.ImageAndTag) map[string]interface{} {
+	out, err := json.Marshal(i)
+	if err != nil {
+		return nil
+	}
+	bb := map[string]interface{}{}
+	_ = json.Unmarshal(out, &bb)
+	return bb
 }

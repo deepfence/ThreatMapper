@@ -21,6 +21,27 @@ type RegistryAddReq struct {
 // todo: add support to list by name and type, id
 type RegistryListReq struct{}
 
+type ImageAndTag struct {
+	Name                string    `json:"name,omitempty"`
+	LastUpdated         time.Time `json:"last_updated,omitempty"`
+	LastUpdaterUsername string    `json:"last_updater_username,omitempty"`
+	FullSize            int       `json:"full_size,omitempty"`
+	V2                  bool      `json:"v2,omitempty"`
+	TagStatus           string    `json:"tag_status,omitempty"`
+	TagLastPulled       time.Time `json:"tag_last_pulled,omitempty"`
+	TagLastPushed       time.Time `json:"tag_last_pushed,omitempty"`
+	MediaType           string    `json:"media_type,omitempty"`
+	ContentType         string    `json:"content_type,omitempty"`
+	Digest              string    `json:"digest,omitempty"`
+	Tag                 string    `json:"tag,omitempty"`
+	Architecture        string    `json:"architecture,omitempty"`
+	Os                  string    `json:"os,omitempty"`
+	Size                int       `json:"size,omitempty"`
+	Status              string    `json:"status,omitempty"`
+	LastPulled          time.Time `json:"last_pulled,omitempty"`
+	LastPushed          time.Time `json:"last_pushed,omitempty"`
+}
+
 type RegistryImages struct {
 	Count    int             `json:"count"`
 	Next     string          `json:"next"`
