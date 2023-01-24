@@ -169,6 +169,14 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudCompliance}, bearerToken, new([]ingester.CloudCompliance), nil)
 
+	d.AddOperation("ingestMalwareScanStatus", http.MethodPost, "/deepfence/ingest/malware-scan-logs",
+		"Ingest Malware Scan Status", "Ingest malware scan status from the agent",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new([]ingester.MalwareScanStatus), nil)
+
+	d.AddOperation("ingestMalware", http.MethodPost, "/deepfence/ingest/malware",
+		"Ingest Malware", "Ingest malware found while scanning the agent",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new([]ingester.Malware), nil)
+
 	d.AddOperation("ingestCloudResources", http.MethodPost, "/deepfence/ingest/cloud-resources",
 		"Ingest Cloud resources", "Ingest Clouds Resources found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudResources}, bearerToken, new([]ingesters.CloudResource), nil)
