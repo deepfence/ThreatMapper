@@ -16,62 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanTriggerReq
+ * @interface ModelPasswordResetRequest
  */
-export interface ModelScanTriggerReq {
+export interface ModelPasswordResetRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelPasswordResetRequest
      */
-    node_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanTriggerReq
-     */
-    node_type: ModelScanTriggerReqNodeTypeEnum;
+    email: string;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the ModelPasswordResetRequest interface.
  */
-export const ModelScanTriggerReqNodeTypeEnum = {
-    Image: 'image',
-    Host: 'host',
-    Container: 'container'
-} as const;
-export type ModelScanTriggerReqNodeTypeEnum = typeof ModelScanTriggerReqNodeTypeEnum[keyof typeof ModelScanTriggerReqNodeTypeEnum];
-
-
-/**
- * Check if a given object implements the ModelScanTriggerReq interface.
- */
-export function instanceOfModelScanTriggerReq(value: object): boolean {
+export function instanceOfModelPasswordResetRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "node_type" in value;
+    isInstance = isInstance && "email" in value;
 
     return isInstance;
 }
 
-export function ModelScanTriggerReqFromJSON(json: any): ModelScanTriggerReq {
-    return ModelScanTriggerReqFromJSONTyped(json, false);
+export function ModelPasswordResetRequestFromJSON(json: any): ModelPasswordResetRequest {
+    return ModelPasswordResetRequestFromJSONTyped(json, false);
 }
 
-export function ModelScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTriggerReq {
+export function ModelPasswordResetRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelPasswordResetRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'node_id': json['node_id'],
-        'node_type': json['node_type'],
+        'email': json['email'],
     };
 }
 
-export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): any {
+export function ModelPasswordResetRequestToJSON(value?: ModelPasswordResetRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -80,8 +60,7 @@ export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): a
     }
     return {
         
-        'node_id': value.node_id,
-        'node_type': value.node_type,
+        'email': value.email,
     };
 }
 

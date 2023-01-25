@@ -23,70 +23,49 @@ import {
 /**
  * 
  * @export
- * @interface ModelScanListReq
+ * @interface ModelCloudNodeAccountsListReq
  */
-export interface ModelScanListReq {
+export interface ModelCloudNodeAccountsListReq {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanListReq
+     * @memberof ModelCloudNodeAccountsListReq
      */
-    node_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanListReq
-     */
-    node_type: ModelScanListReqNodeTypeEnum;
+    cloud_provider?: string;
     /**
      * 
      * @type {ModelFetchWindow}
-     * @memberof ModelScanListReq
+     * @memberof ModelCloudNodeAccountsListReq
      */
     window: ModelFetchWindow;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the ModelCloudNodeAccountsListReq interface.
  */
-export const ModelScanListReqNodeTypeEnum = {
-    Image: 'image',
-    Host: 'host',
-    Container: 'container'
-} as const;
-export type ModelScanListReqNodeTypeEnum = typeof ModelScanListReqNodeTypeEnum[keyof typeof ModelScanListReqNodeTypeEnum];
-
-
-/**
- * Check if a given object implements the ModelScanListReq interface.
- */
-export function instanceOfModelScanListReq(value: object): boolean {
+export function instanceOfModelCloudNodeAccountsListReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "window" in value;
 
     return isInstance;
 }
 
-export function ModelScanListReqFromJSON(json: any): ModelScanListReq {
-    return ModelScanListReqFromJSONTyped(json, false);
+export function ModelCloudNodeAccountsListReqFromJSON(json: any): ModelCloudNodeAccountsListReq {
+    return ModelCloudNodeAccountsListReqFromJSONTyped(json, false);
 }
 
-export function ModelScanListReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanListReq {
+export function ModelCloudNodeAccountsListReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudNodeAccountsListReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'node_id': json['node_id'],
-        'node_type': json['node_type'],
+        'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
-export function ModelScanListReqToJSON(value?: ModelScanListReq | null): any {
+export function ModelCloudNodeAccountsListReqToJSON(value?: ModelCloudNodeAccountsListReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -95,8 +74,7 @@ export function ModelScanListReqToJSON(value?: ModelScanListReq | null): any {
     }
     return {
         
-        'node_id': value.node_id,
-        'node_type': value.node_type,
+        'cloud_provider': value.cloud_provider,
         'window': ModelFetchWindowToJSON(value.window),
     };
 }

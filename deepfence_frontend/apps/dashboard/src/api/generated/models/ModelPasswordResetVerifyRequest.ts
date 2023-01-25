@@ -16,62 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanTriggerReq
+ * @interface ModelPasswordResetVerifyRequest
  */
-export interface ModelScanTriggerReq {
+export interface ModelPasswordResetVerifyRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelPasswordResetVerifyRequest
      */
-    node_id: string;
+    code: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelPasswordResetVerifyRequest
      */
-    node_type: ModelScanTriggerReqNodeTypeEnum;
+    password: string;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the ModelPasswordResetVerifyRequest interface.
  */
-export const ModelScanTriggerReqNodeTypeEnum = {
-    Image: 'image',
-    Host: 'host',
-    Container: 'container'
-} as const;
-export type ModelScanTriggerReqNodeTypeEnum = typeof ModelScanTriggerReqNodeTypeEnum[keyof typeof ModelScanTriggerReqNodeTypeEnum];
-
-
-/**
- * Check if a given object implements the ModelScanTriggerReq interface.
- */
-export function instanceOfModelScanTriggerReq(value: object): boolean {
+export function instanceOfModelPasswordResetVerifyRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "node_type" in value;
+    isInstance = isInstance && "code" in value;
+    isInstance = isInstance && "password" in value;
 
     return isInstance;
 }
 
-export function ModelScanTriggerReqFromJSON(json: any): ModelScanTriggerReq {
-    return ModelScanTriggerReqFromJSONTyped(json, false);
+export function ModelPasswordResetVerifyRequestFromJSON(json: any): ModelPasswordResetVerifyRequest {
+    return ModelPasswordResetVerifyRequestFromJSONTyped(json, false);
 }
 
-export function ModelScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTriggerReq {
+export function ModelPasswordResetVerifyRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelPasswordResetVerifyRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'node_id': json['node_id'],
-        'node_type': json['node_type'],
+        'code': json['code'],
+        'password': json['password'],
     };
 }
 
-export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): any {
+export function ModelPasswordResetVerifyRequestToJSON(value?: ModelPasswordResetVerifyRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -80,8 +68,8 @@ export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): a
     }
     return {
         
-        'node_id': value.node_id,
-        'node_type': value.node_type,
+        'code': value.code,
+        'password': value.password,
     };
 }
 

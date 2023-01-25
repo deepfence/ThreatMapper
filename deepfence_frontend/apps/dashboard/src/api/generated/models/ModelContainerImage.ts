@@ -23,98 +23,82 @@ import {
 /**
  * 
  * @export
- * @interface ModelProcess
+ * @interface ModelContainerImage
  */
-export interface ModelProcess {
+export interface ModelContainerImage {
     /**
      * 
      * @type {string}
-     * @memberof ModelProcess
+     * @memberof ModelContainerImage
      */
-    cmdline: string;
+    docker_image_name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainerImage
+     */
+    docker_image_size: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainerImage
+     */
+    docker_image_tag: string;
     /**
      * 
      * @type {{ [key: string]: any; }}
-     * @memberof ModelProcess
+     * @memberof ModelContainerImage
      */
     metadata: { [key: string]: any; };
     /**
      * 
      * @type {ModelComputeMetrics}
-     * @memberof ModelProcess
+     * @memberof ModelContainerImage
      */
     metrics: ModelComputeMetrics;
     /**
      * 
      * @type {string}
-     * @memberof ModelProcess
-     */
-    name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelProcess
+     * @memberof ModelContainerImage
      */
     node_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelProcess
-     */
-    pid: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelProcess
-     */
-    ppid: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelProcess
-     */
-    threads: number;
 }
 
 /**
- * Check if a given object implements the ModelProcess interface.
+ * Check if a given object implements the ModelContainerImage interface.
  */
-export function instanceOfModelProcess(value: object): boolean {
+export function instanceOfModelContainerImage(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "cmdline" in value;
+    isInstance = isInstance && "docker_image_name" in value;
+    isInstance = isInstance && "docker_image_size" in value;
+    isInstance = isInstance && "docker_image_tag" in value;
     isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "metrics" in value;
-    isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "pid" in value;
-    isInstance = isInstance && "ppid" in value;
-    isInstance = isInstance && "threads" in value;
 
     return isInstance;
 }
 
-export function ModelProcessFromJSON(json: any): ModelProcess {
-    return ModelProcessFromJSONTyped(json, false);
+export function ModelContainerImageFromJSON(json: any): ModelContainerImage {
+    return ModelContainerImageFromJSONTyped(json, false);
 }
 
-export function ModelProcessFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelProcess {
+export function ModelContainerImageFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelContainerImage {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'cmdline': json['cmdline'],
+        'docker_image_name': json['docker_image_name'],
+        'docker_image_size': json['docker_image_size'],
+        'docker_image_tag': json['docker_image_tag'],
         'metadata': json['metadata'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
-        'name': json['name'],
         'node_id': json['node_id'],
-        'pid': json['pid'],
-        'ppid': json['ppid'],
-        'threads': json['threads'],
     };
 }
 
-export function ModelProcessToJSON(value?: ModelProcess | null): any {
+export function ModelContainerImageToJSON(value?: ModelContainerImage | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -123,14 +107,12 @@ export function ModelProcessToJSON(value?: ModelProcess | null): any {
     }
     return {
         
-        'cmdline': value.cmdline,
+        'docker_image_name': value.docker_image_name,
+        'docker_image_size': value.docker_image_size,
+        'docker_image_tag': value.docker_image_tag,
         'metadata': value.metadata,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
-        'name': value.name,
         'node_id': value.node_id,
-        'pid': value.pid,
-        'ppid': value.ppid,
-        'threads': value.threads,
     };
 }
 
