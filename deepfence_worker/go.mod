@@ -2,9 +2,9 @@ module github.com/deepfence/ThreatMapper/deepfence_worker
 
 go 1.19
 
-replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
+replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
 
-replace github.com/deepfence/ThreatMapper/deepfence_server_client => ../golang_deepfence_sdk/client/
+replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server
 
@@ -21,7 +21,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.28.0
-	github.com/twmb/franz-go v1.11.0
+	github.com/twmb/franz-go v1.11.3
 	github.com/twmb/franz-go/pkg/kadm v1.7.0
 )
 
@@ -31,7 +31,7 @@ require (
 	github.com/Shopify/sarama v1.32.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/containerd/containerd v1.6.14 // indirect
 	github.com/containerd/continuity v0.3.0 // indirect
@@ -54,7 +54,6 @@ require (
 	github.com/go-chi/jwtauth/v5 v5.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-redis/redis/v9 v9.0.0-rc.2 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -104,6 +103,7 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
+	github.com/redis/go-redis/v9 v9.0.0-rc.4 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.2.0 // indirect
@@ -113,10 +113,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.6.1 // indirect
 	golang.org/x/crypto v0.4.0 // indirect
 	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.4.0 // indirect
+	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
 	golang.org/x/tools v0.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37 // indirect
 	google.golang.org/grpc v1.51.0 // indirect

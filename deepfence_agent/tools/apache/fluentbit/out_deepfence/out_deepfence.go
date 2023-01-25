@@ -1,13 +1,10 @@
 package main
 
 import (
-	"C"
-	"crypto/x509"
-	"unsafe"
-
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"io"
@@ -18,10 +15,13 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"unsafe"
+
+	"C"
 
 	"github.com/fluent/fluent-bit-go/output"
 
-	deepfenceAPI "github.com/deepfence/ThreatMapper/deepfence_server_client"
+	deepfenceAPI "github.com/deepfence/golang_deepfence_sdk/client"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	rhttp "github.com/hashicorp/go-retryablehttp"
 )
@@ -121,8 +121,8 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 		return "", "", err
 	}
 
-	accessToken = resp.GetData().AccessToken
-	refreshToken = resp.GetData().RefreshToken
+	accessToken = resp.GetAccessToken()
+	refreshToken = resp.GetRefreshToken()
 	if accessToken == "" || refreshToken == "" {
 		return "", "", errors.New("auth tokens are nil: failed to authenticate")
 	}
@@ -154,8 +154,8 @@ func RefreshToken(url string, apiToken string) (string, string, error) {
 		return "", "", err
 	}
 
-	accessToken = resp.GetData().AccessToken
-	refreshToken = resp.GetData().RefreshToken
+	accessToken = resp.GetAccessToken()
+	refreshToken = resp.GetRefreshToken()
 	if accessToken == "" || refreshToken == "" {
 		return "", "", errors.New("auth tokens are nil: failed to authenticate")
 	}

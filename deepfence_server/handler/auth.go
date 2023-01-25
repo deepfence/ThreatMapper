@@ -11,8 +11,8 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/go-redis/redis/v9"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
