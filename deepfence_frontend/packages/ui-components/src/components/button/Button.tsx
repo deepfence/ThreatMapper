@@ -9,143 +9,170 @@ export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export const buttonCva = cva(
-  [
-    'font-medium',
-    'disabled:cursor-not-allowed',
-    'flex flex-row items-center justify-center',
-    'rounded-lg focus:outline-none select-none',
-    'rounded-lg focus:outline-none select-none',
-  ],
-  {
-    variants: {
-      size: {
-        xs: 'text-xs px-3 py-2',
-        sm: 'text-sm px-3 py-2',
-        md: 'text-base px-5 py-2.5',
-        lg: 'text-lg px-5 py-3',
-        xl: 'text-xl px-6 py-3.5',
-      },
-      color: {
-        default: [
-          // bg styles
-          'bg-gray-200  hover:bg-gray-300 ',
-          // text styles
-          'text-gray-800 hover:text-gray-900 ',
-          // focus styles
-          'focus:ring-2 focus:ring-gray-100',
-        ],
-        primary: [
-          // bg styles
-          'bg-blue-700 hover:bg-blue-800',
-          // text styles
-          'text-white',
-          // focus styles
-          'focus:ring-2 focus:ring-blue-200',
-        ],
-        danger: [
-          // bg styles
-          'bg-red-700 hover:bg-red-800',
-          // text styles
-          'text-white',
-          // focus styles
-          'focus:ring-2 focus:ring-red-200',
-        ],
-        success: [
-          // bg styles
-          'bg-green-700 hover:bg-green-800',
-          // text styles
-          'text-white',
-          // focus styles
-          'focus:ring-2 focus:ring-green-200',
-        ],
-        normal: [
-          // bg styles
-          'bg-white hover:bg-gray-300  ',
-          // text styles
-          'text-gray-800 hover:text-gray-800 focus:text-gray-800 ',
-          // focus styles
-          'dark:ring-gray-100 focus:ring-2 focus:ring-gray-100',
-        ],
-      },
-      pill: {
-        true: 'rounded-full',
-      },
-      withOutline: {
-        true: 'bg-white',
-      },
-    },
-    defaultVariants: {
-      color: 'default',
-      size: 'md',
-    },
-    compoundVariants: [
-      {
-        color: 'default',
-        withOutline: true,
-        className: [
-          // bg styles
-          'bg-transparent hover:bg-gray-300 ',
-          // text styles
-          'text-gray-900  dark:text-white hover:text-black dark:hover:text-black',
-          // ring styles
-          'ring-1 ring-gray-900 focus:ring-1 focus:ring-gray-200 dark:ring-white',
-        ],
-      },
-      {
-        color: 'primary',
-        withOutline: true,
-        className: [
-          // bg styles
-          'hover:bg-blue-800',
-          // text styles
-          'text-blue-700 hover:text-white',
-          // ring styles
-          'ring-1 ring-blue-700 focus:ring-2 focus:ring-blue-200',
-        ],
-      },
-      {
-        color: 'danger',
-        withOutline: true,
-        className: [
-          // bg styles
-          'hover:bg-red-800',
-          // text styles
-          'text-red-700 hover:text-white',
-          // ring styles
-          'ring-1 focus:ring-2 ring-red-700 focus:ring-red-200',
-        ],
-      },
-      {
-        color: 'success',
-        withOutline: true,
-        className: [
-          // bg styles
-          'hover:bg-green-800',
-          // text styles
-          ' text-green-700 hover:text-white',
-          // ring styles
-          'ring-1 ring-green-700 focus:ring-2 focus:ring-green-200',
-        ],
-      },
-      {
-        color: 'normal',
-        withOutline: true,
-        className: [
-          // bg styles
-          'dark:bg-gray-800 hover:bg-gray-100 hover:dark:bg-gray-700',
-          // text styles
-          'text-gray-700 dark:text-gray-400 hover:text-gray-900 focus:text-gray-900',
-          // ring styles
-          'ring-1 focus:ring-2 focus:ring-gray-200 dark:ring-gray-600 ring-gray-200',
-        ],
-      },
+    [
+      'font-medium',
+      'disabled:cursor-not-allowed',
+      'flex flex-row items-center justify-center',
+      'rounded-lg focus:outline-none select-none',
     ],
-  },
+    {
+      variants: {
+        size: {
+          xs: 'text-xs px-3 py-2',
+          sm: 'text-sm px-3 py-2',
+          md: 'text-base px-5 py-2.5',
+          lg: 'text-lg px-5 py-3',
+          xl: 'text-xl px-6 py-3.5',
+        },
+        color: {
+          default: [
+            // bg styles
+            'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700',
+            // text styles
+            'text-gray-700 dark:text-gray-400 dark:hover:text-white',
+            // focus styles
+            'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+            // disabled styles
+            'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
+          ],
+          primary: [
+            // bg styles
+            'bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700',
+            // text styles
+            'text-white',
+            // focus styles
+            'focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800',
+            // disabled styles
+            'disabled:bg-blue-400 dark:disabled:bg-blue-500 disabled:hover:bg-blue-400 dark:disabled:hover:bg-blue-500',
+          ],
+          danger: [
+            // bg styles
+            'bg-red-700 hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700',
+            // text styles
+            'text-white',
+            // focus styles
+            'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
+            // disabled styles
+            'disabled:bg-red-400 dark:disabled:bg-red-500 disabled:hover:bg-red-400 dark:disabled:hover:bg-red-500',
+          ],
+          success: [
+            // bg styles
+            'bg-green-700 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700',
+            // text styles
+            'text-white',
+            // focus styles
+            'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
+            // disabled styles
+            'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
+          ],
+          normal: [
+            // bg styles
+            'bg-white hover:bg-gray-100 dark:bg-transparent dark:hover:bg-gray-800',
+            // text styles
+            'text-gray-700 dark:text-gray-200',
+            // focus styles
+            'focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-800',
+            // disabled styles
+            'disabled:text-gray-400 dark:disabled:text-gray-600 disabled:hover:bg-white dark:disabled:hover:bg-gray-900',
+          ],
+        },
+        pill: {
+          true: 'rounded-full',
+        },
+        withOutline: {
+          true: 'bg-white',
+        },
+      },
+      defaultVariants: {
+        color: 'default',
+        size: 'md',
+      },
+      compoundVariants: [
+        {
+          color: 'default',
+          withOutline: true,
+          className: [
+            // bg styles
+            'bg-transparent hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700',
+            // text styles
+            'text-gray-900 hover:text-blue-700 dark:text-gray-400 dark:hover:text-white',
+            // border styles
+            'border border-gray-200 dark:border-gray-600',
+            // ring styles
+            'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+            // disabled styles
+            'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
+          ],
+        },
+        {
+          color: 'primary',
+          withOutline: true,
+          className: [
+            // bg styles
+            'dark:bg-transparent hover:bg-blue-800 dark:hover:bg-blue-600',
+            // text styles
+            'text-blue-700 hover:text-white dark:text-blue-500 dark:hover:text-white',
+            // border styles
+            'border border-blue-700 dark:border-blue-500',
+            // ring styles
+            'focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800',
+            // disabled styles
+            'disabled:bg-blue-400 dark:disabled:bg-blue-500 disabled:hover:bg-blue-400 dark:disabled:hover:bg-blue-500',
+          ],
+        },
+        {
+          color: 'danger',
+          withOutline: true,
+          className: [
+            // bg styles
+            'dark:bg-transparent hover:bg-red-800 dark:hover:bg-red-600',
+            // text styles
+            'text-red-700 hover:text-white dark:text-red-500 dark:hover:text-white',
+            // border styles
+            'border border-red-700 dark:border-red-500',
+            // ring styles
+            'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
+            // disabled styles
+            'disabled:bg-red-400 dark:disabled:bg-red-500 disabled:hover:bg-red-400 dark:disabled:hover:bg-red-500',
+          ],
+        },
+        {
+          color: 'success',
+          withOutline: true,
+          className: [
+            // bg styles
+            'dark:bg-transparent hover:bg-green-800 dark:hover:bg-green-600',
+            // text styles
+            'text-green-700 hover:text-white dark:text-green-500 dark:hover:text-white',
+            // border styles
+            'border border-green-700 dark:border-green-500',
+            // ring styles
+            'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
+            // disabled styles
+            'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
+          ],
+        },
+        {
+          color: 'normal',
+          withOutline: true,
+          className: [
+            // bg styles
+            'bg-transparent hover:bg-gray-100 hover:dark:bg-gray-800',
+            // text styles
+            'text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300',
+            // ring styles
+            'focus:ring-4 focus:ring-gray-100 dark:ring-gray-800',
+            // disabled styles
+            'disabled:opacity-75 dark:disabled:opacity-100 dark:disabled:text-gray-600 disabled:hover:bg-transparent',
+          ],
+        },
+      ],
+    },
 );
 
 interface ButtonProps
-  extends Omit<ComponentProps<'button'>, 'color'>,
-    ObjectWithNonNullableValues<Omit<VariantProps<typeof buttonCva>, 'withOutline'>> {
+    extends Omit<ComponentProps<'button'>, 'color'>,
+        ObjectWithNonNullableValues<Omit<VariantProps<typeof buttonCva>, 'withOutline'>> {
   size?: SizeType;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
@@ -230,15 +257,15 @@ interface IconProps extends VariantProps<typeof iconCva> {
 
 const StartIcon = ({ id, startIcon, endIcon, size }: IconProps) => {
   return (
-    <span data-testid={`button-icon-start-${id}`}>
+      <span data-testid={`button-icon-start-${id}`}>
       <IconContext.Provider
-        value={{
-          className: iconCva({
-            size,
-            withStartIcon: !!startIcon,
-            withEndIcon: !!endIcon,
-          }),
-        }}
+          value={{
+            className: iconCva({
+              size,
+              withStartIcon: !!startIcon,
+              withEndIcon: !!endIcon,
+            }),
+          }}
       >
         {startIcon}
       </IconContext.Provider>
@@ -248,15 +275,15 @@ const StartIcon = ({ id, startIcon, endIcon, size }: IconProps) => {
 
 const EndIcon = ({ id, size, startIcon, endIcon }: IconProps) => {
   return (
-    <span data-testid={`button-icon-end-${id}`}>
+      <span data-testid={`button-icon-end-${id}`}>
       <IconContext.Provider
-        value={{
-          className: iconCva({
-            size,
-            withStartIcon: !!startIcon,
-            withEndIcon: !!endIcon,
-          }),
-        }}
+          value={{
+            className: iconCva({
+              size,
+              withStartIcon: !!startIcon,
+              withEndIcon: !!endIcon,
+            }),
+          }}
       >
         {endIcon}
       </IconContext.Provider>
@@ -265,50 +292,50 @@ const EndIcon = ({ id, size, startIcon, endIcon }: IconProps) => {
 };
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      children,
-      id,
-      size = 'md',
-      color,
-      disabled,
-      outline,
-      startIcon,
-      endIcon,
-      className,
-      ...props
-    },
-    ref,
-  ) => {
-    const internalId = useId();
-    const _id = id ? id : internalId;
-
-    return (
-      <button
-        ref={ref}
-        id={_id}
-        data-testid={`button-${_id}`}
-        disabled={disabled}
-        className={twMerge(
-          buttonCva({
-            size,
-            color,
-            withOutline: outline,
-          }),
+    (
+        {
+          children,
+          id,
+          size = 'md',
+          color,
+          disabled,
+          outline,
+          startIcon,
+          endIcon,
           className,
-        )}
-        {...props}
-      >
-        {startIcon && (
-          <StartIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />
-        )}
-        {children}
-        {endIcon && (
-          <EndIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />
-        )}
-      </button>
-    );
-  },
+          ...props
+        },
+        ref,
+    ) => {
+      const internalId = useId();
+      const _id = id ? id : internalId;
+
+      return (
+          <button
+              ref={ref}
+              id={_id}
+              data-testid={`button-${_id}`}
+              disabled={disabled}
+              className={twMerge(
+                  buttonCva({
+                    size,
+                    color,
+                    withOutline: outline,
+                  }),
+                  className,
+              )}
+              {...props}
+          >
+            {startIcon && (
+                <StartIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />
+            )}
+            {children}
+            {endIcon && (
+                <EndIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />
+            )}
+          </button>
+      );
+    },
 );
 
 Button.displayName = 'Button';
