@@ -22,7 +22,7 @@ func (ve *AlreadyRunningScanError) Error() string {
 }
 
 type NodeNotFoundError struct {
-	node_id   string
+	node_id string
 }
 
 func (ve *NodeNotFoundError) Error() string {
@@ -59,7 +59,7 @@ func AddNewScan(ctx context.Context,
 		RETURN n IS NOT NULL AS Exists`,
 		controls.ResourceTypeToNeo4j(node_type)),
 		map[string]interface{}{
-			"node_id":  node_id,
+			"node_id": node_id,
 		})
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func AddNewScan(ctx context.Context,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
-			node_id:   node_id,
+			node_id: node_id,
 		}
 	}
 
@@ -145,11 +145,13 @@ func AddNewScan(ctx context.Context,
 	case controls.Image:
 		if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
-		MATCH (m:Node) -[:HOSTS]-> (:ContainerImage{node_id:$node_id})
+		OPTIONAL MATCH (m:Node) -[:HOSTS]-> (:ContainerImage{node_id:$node_id})
 		WITH n, m
 		ORDER BY rand()
 		LIMIT 1
-		MERGE (n)-[:SCHEDULED]->(m)`, scan_type),
+		MATCH (l:Node{node_id: "deepfence-console-cron"})
+		WITH coalesce(m, l) as exec, n
+		MERGE (n)-[:SCHEDULED]->(exec)`, scan_type),
 			map[string]interface{}{
 				"scan_id": scan_id,
 				"node_id": node_id,
