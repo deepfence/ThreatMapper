@@ -6,6 +6,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/weaveworks/scope/render/detailed"
 
+	controls2 "github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -106,7 +107,11 @@ func (d *OpenApiDocs) AddLookupOperations() {
 		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.Process))
 
 	d.AddOperation("getKubernetesClusters", http.MethodPost, "/deepfence/lookup/kubernetesclusters",
-		"Retrieve K8S data", "Retrieve all the data associated with k8s clusters",
+		"Retrieve K8s data", "Retrieve all the data associated with k8s clusters",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.KubernetesCluster))
+
+	d.AddOperation("getKubernetesScanners", http.MethodPost, "/deepfence/lookup/kubernetes-scanners",
+		"Retrieve K8s scanners data", "Retrieve all the data associated with k8s scanners",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.KubernetesCluster))
 
 	d.AddOperation("getPods", http.MethodPost, "/deepfence/lookup/pods",
@@ -122,6 +127,10 @@ func (d *OpenApiDocs) AddControlsOperations() {
 	d.AddOperation("getAgentControls", http.MethodPost, "/deepfence/controls/agent",
 		"Fetch Agent Actions", "Fetch actions for a given agent",
 		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls.AgentControls))
+
+	d.AddOperation("getKubernetesScannerControls", http.MethodPost, "/deepfence/controls/kubernetes-scanner",
+		"Fetch Kubernetes Scanner Actions", "Fetch actions for a given Kubernetes Cluster",
+		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls2.KubernetesScannerControlResponse))
 
 	d.AddOperation("getAgentInitControls", http.MethodPost, "/deepfence/controls/agent-init",
 		"Fetch Agent Init Actions", "Fetch initial actions for a given agent after it started",
@@ -180,7 +189,7 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 
 	d.AddOperation("ingestCloudCompliances", http.MethodPost, "/deepfence/ingest/cloud-compliance",
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
-		http.StatusOK, []string{tagCloudCompliance}, bearerToken, new([]ingester.CloudCompliance), nil)
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
 
 	d.AddOperation("ingestMalwareScanStatus", http.MethodPost, "/deepfence/ingest/malware-scan-logs",
 		"Ingest Malware Scan Status", "Ingest malware scan status from the agent",
@@ -193,6 +202,10 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestCloudResources", http.MethodPost, "/deepfence/ingest/cloud-resources",
 		"Ingest Cloud resources", "Ingest Clouds Resources found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudResources}, bearerToken, new([]ingesters.CloudResource), nil)
+
+	d.AddOperation("registerKubernetesScanner", http.MethodPost, "/deepfence/ingest/kubernetes-scanner",
+		"Register Kubernetes Scanner", "Register Kubernetes Scanner",
+		http.StatusNoContent, []string{tagKubernetesScanner}, bearerToken, new([]ingesters.RegisterKubernetesScannerRequest), nil)
 
 }
 
