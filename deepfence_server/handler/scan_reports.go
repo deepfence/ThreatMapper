@@ -328,6 +328,12 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if params.ScanId == "" {
+		httpext.JSON(w, http.StatusBadRequest,
+			model.Response{Success: false, Message: "scan_id is required to process sbom"})
+		return
+	}
+
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
