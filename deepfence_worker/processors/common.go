@@ -62,6 +62,14 @@ func StartKafkaProcessors(ctx context.Context) {
 		utils.SECRET_SCAN_STATUS,
 		desWrapper(ingesters.CommitFuncSecretScanStatus),
 	)
+	processors[utils.MALWARE_SCAN] = NewBulkProcessor(
+		utils.MALWARE_SCAN,
+		desWrapper(ingesters.CommitFuncMalware),
+	)
+	processors[utils.MALWARE_SCAN_STATUS] = NewBulkProcessor(
+		utils.MALWARE_SCAN_STATUS,
+		desWrapper(ingesters.CommitFuncMalwareScanStatus),
+	)
 	processors[utils.VULNERABILITY_SCAN_STATUS] = NewBulkProcessor(
 		utils.VULNERABILITY_SCAN_STATUS,
 		desWrapper(ingesters.CommitFuncVulnerabilitiesScanStatus),
@@ -73,14 +81,6 @@ func StartKafkaProcessors(ctx context.Context) {
 	processors[utils.CLOUD_COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
 		utils.CLOUD_COMPLIANCE_SCAN_STATUS,
 		desWrapper(ingesters.CommitFuncCloudComplianceScanStatus),
-	)
-	processors[utils.MALWARE_SCAN] = NewBulkProcessor(
-		utils.MALWARE_SCAN,
-		desWrapper(ingesters.CommitFuncMalware),
-	)
-	processors[utils.MALWARE_SCAN_STATUS] = NewBulkProcessor(
-		utils.MALWARE_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncMalwareScanStatus),
 	)
 
 	for i := range processors {

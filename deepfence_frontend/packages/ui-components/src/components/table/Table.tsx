@@ -4,8 +4,10 @@ import {
   ColumnHelper,
   createColumnHelper,
   DisplayColumnDef,
+  ExpandedState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   Header,
@@ -17,15 +19,27 @@ import {
   RowModel,
   RowSelectionState,
   SortingState,
+  Table,
   TableOptions,
   useReactTable,
 } from '@tanstack/react-table';
 import cx from 'classnames';
-import { once } from 'lodash-es';
-import { createContext, Fragment, useContext, useEffect, useState } from 'react';
+import { isNil, once } from 'lodash-es';
+import {
+  createContext,
+  forwardRef,
+  Fragment,
+  ReactElement,
+  Ref,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import { useImperativeHandle } from 'react';
 import { IconContext } from 'react-icons';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 import { HiChevronDown, HiChevronUp, HiOutlineSelector } from 'react-icons/hi';
+import { twMerge } from 'tailwind-merge';
 
 import IconButton from '@/components/button/IconButton';
 import { Checkbox } from '@/components/checkbox/Checkbox';
@@ -55,11 +69,18 @@ export interface TableProps<TData extends RowData> {
   rowSelectionState?: RowSelectionState;
   getRowId?: TableOptions<TData>['getRowId'];
   size?: SizeOf;
+  expanded?: ExpandedState;
+  onExpandedChange?: OnChangeFn<ExpandedState>;
+  getTdProps?: (cell: Cell<TData, unknown>) => React.ComponentProps<'td'>;
+  getTrProps?: (row: Row<TData>, rowIdx: number) => React.ComponentProps<'tr'>;
+  getSubRows?: (originalRow: TData, index: number) => TData[] | undefined;
 }
 
 interface TableContextValues<TData extends RowData> {
   striped?: boolean;
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
+  getTdProps?: (cell: Cell<TData, unknown>) => React.ComponentProps<'td'>;
+  getTrProps?: (row: Row<TData>, rowIdx: number) => React.ComponentProps<'tr'>;
 }
 
 const createTableContext = once(<TData extends RowData>() =>
@@ -69,7 +90,10 @@ function useTableContext<TData extends RowData>() {
   return useContext(createTableContext<TData>());
 }
 
-export function Table<TData extends RowData>(props: TableProps<TData>) {
+const CustomTable = <TData extends RowData>(
+  props: TableProps<TData>,
+  ref: Ref<Table<TData>>,
+) => {
   const {
     data,
     columns,
@@ -92,6 +116,11 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     rowSelectionState,
     getRowId,
     size = 'md',
+    getSubRows,
+    getTdProps,
+    getTrProps,
+    expanded,
+    onExpandedChange,
   } = props;
   const TableContext = createTableContext<TData>();
 
@@ -111,16 +140,18 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
     }
   }, [manualPagination, enablePagination, pageSize]);
 
-  const table = useReactTable<TData>({
+  const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand,
     columnResizeMode: 'onChange',
     enableColumnResizing,
     enableSorting,
+    getSubRows,
     enableRowSelection,
     state: {
       ...(enablePagination && manualPagination
@@ -146,6 +177,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
             rowSelection: rowSelectionState,
           }
         : {}),
+      ...(!isNil(expanded) ? { expanded } : {}),
     },
     ...(enablePagination && manualPagination
       ? {
@@ -168,15 +200,20 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
           getRowId,
         }
       : {}),
+    ...(!isNil(onExpandedChange) ? { onExpandedChange } : {}),
   });
 
   const [headerGroups, rowModel] = [table.getHeaderGroups(), table.getRowModel()];
 
+  useImperativeHandle(ref, () => table, [table]);
+
   return (
-    <TableContext.Provider value={{ striped, renderSubComponent }}>
+    <TableContext.Provider
+      value={{ striped, renderSubComponent, getTdProps, getTrProps }}
+    >
       <div
         className={cx(
-          `overflow-hidden`,
+          `overflow-x-auto overflow-y-hidden`,
           `shadow-[0px_1px_3px_rgba(0,_0,_0,_0.1),_0px_1px_2px_-1px_rgba(0,_0,_0,_0.1)] dark:shadow-sm`,
           `rounded-lg dark:border dark:border-gray-700`,
         )}
@@ -206,7 +243,7 @@ export function Table<TData extends RowData>(props: TableProps<TData>) {
       ) : null}
     </TableContext.Provider>
   );
-}
+};
 
 function TableHead<TData>({
   headerGroups,
@@ -302,43 +339,54 @@ function TableBody<TData>({
   rowModel: RowModel<TData>;
   size: SizeOf;
 }) {
-  const { striped, renderSubComponent } = useTableContext<TData>();
+  const { striped, renderSubComponent, getTdProps, getTrProps } =
+    useTableContext<TData>();
   return (
     <tbody>
-      {rowModel.rows.map((row, rowIdx) => (
-        <Fragment key={row.id}>
-          <tr
-            className={cx(
-              {
-                'bg-gray-50 dark:bg-gray-700': striped && row.index % 2 !== 0,
-                '!bg-gray-100 dark:!bg-gray-600': row.getIsSelected(),
-              },
-              `hover:!bg-gray-100 dark:hover:!bg-gray-600`,
-              'transition-colors',
-            )}
-          >
-            {row.getVisibleCells().map((cell) => (
-              <Td
-                rowIdx={rowIdx}
-                cell={cell}
-                key={cell.id}
-                totalRows={rowModel.rows.length}
-                size={size}
-              />
-            ))}
-          </tr>
-          {row.getIsExpanded() && (
-            <tr>
-              <td
-                colSpan={row.getVisibleCells().length}
-                className="border-b border-t border-gray-200 dark:border-gray-700"
-              >
-                {renderSubComponent?.({ row })}
-              </td>
+      {rowModel.rows.map((row, rowIdx) => {
+        const rowProps = getTrProps?.(row, rowIdx);
+        return (
+          <Fragment key={row.id}>
+            <tr
+              {...rowProps}
+              className={twMerge(
+                cx(
+                  {
+                    'bg-gray-50 dark:bg-gray-700': striped && row.index % 2 !== 0,
+                    '!bg-gray-100 dark:!bg-gray-600': row.getIsSelected(),
+                  },
+                  `hover:!bg-gray-100 dark:hover:!bg-gray-600`,
+                  'transition-colors',
+                ),
+                rowProps?.className ?? '',
+              )}
+            >
+              {row.getVisibleCells().map((cell) => {
+                return (
+                  <Td
+                    {...getTdProps?.(cell)}
+                    rowIdx={rowIdx}
+                    cell={cell}
+                    key={cell.id}
+                    totalRows={rowModel.rows.length}
+                    size={size}
+                  />
+                );
+              })}
             </tr>
-          )}
-        </Fragment>
-      ))}
+            {row.getIsExpanded() && (
+              <tr>
+                <td
+                  colSpan={row.getVisibleCells().length}
+                  className="border-b border-t border-gray-200 dark:border-gray-700"
+                >
+                  {renderSubComponent?.({ row })}
+                </td>
+              </tr>
+            )}
+          </Fragment>
+        );
+      })}
     </tbody>
   );
 }
@@ -348,27 +396,28 @@ function Td<TData>({
   totalRows,
   rowIdx,
   size,
-}: {
+  ...rest
+}: React.ComponentProps<'td'> & {
   cell: Cell<TData, unknown>;
   totalRows: number;
   rowIdx: number;
   size?: SizeOf;
 }) {
   const { striped } = useTableContext<TData>();
-
+  if (!isNil(rest.colSpan) && rest.colSpan === 0) return null;
   return (
     <td
+      {...rest}
       key={cell.id}
       style={{ width: cell.column.getSize() }}
-      className={cx(
-        `text-sm text-gray-900 dark:text-white px-4`,
-        Typography.weight.normal,
-        {
+      className={twMerge(
+        cx(`text-sm text-gray-900 dark:text-white px-4`, Typography.weight.normal, {
           'border-b border-gray-200 dark:border-gray-700':
             !striped && rowIdx !== totalRows - 1,
           ['py-2']: size === 'sm',
-          ['p-4']: size === 'md',
-        },
+          ['py-4']: !size || size === 'md',
+        }),
+        rest.className ?? '',
       )}
     >
       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -378,10 +427,7 @@ function Td<TData>({
 
 export function getRowExpanderColumn<TData extends RowData>(
   columnHelper?: ColumnHelper<TData>,
-  options?: Omit<
-    DisplayColumnDef<TData, unknown>,
-    'id' | 'header' | 'cell' | 'enableResizing'
-  >,
+  options?: Omit<DisplayColumnDef<TData, unknown>, 'id' | 'enableResizing'>,
 ): ColumnDef<TData, unknown> {
   const colHelper = columnHelper ?? createColumnHelper<TData>();
   return colHelper.display({
@@ -405,10 +451,7 @@ export function getRowExpanderColumn<TData extends RowData>(
 
 export function getRowSelectionColumn<TData extends RowData>(
   columnHelper?: ColumnHelper<TData>,
-  options?: Omit<
-    DisplayColumnDef<TData, unknown>,
-    'id' | 'header' | 'cell' | 'enableResizing'
-  >,
+  options?: Omit<DisplayColumnDef<TData, unknown>, 'id' | 'enableResizing'>,
 ): ColumnDef<TData, unknown> {
   const colHelper = columnHelper ?? createColumnHelper<TData>();
   return colHelper.display({
@@ -426,24 +469,38 @@ export function getRowSelectionColumn<TData extends RowData>(
               },
             });
           }}
+          onClick={(e) => e.stopPropagation()}
         />
       );
     },
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(state) => {
-          row.getToggleSelectedHandler()({
-            target: {
-              checked: state === true,
-            },
-          });
-        }}
-      />
-    ),
+    cell: ({ row }) => {
+      return (
+        <Checkbox
+          checked={row.getIsSomeSelected() ? 'indeterminate' : row.getIsSelected()}
+          onCheckedChange={(state) => {
+            if (row.getCanSelect()) {
+              row.toggleSelected(state === true);
+            }
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+      );
+    },
     enableResizing: false,
     ...options,
   });
 }
 
-export { createColumnHelper };
+// https://stackoverflow.com/a/58473012
+const CustomTableWithRef = forwardRef(CustomTable) as <TData extends RowData>(
+  props: TableProps<TData> & { ref?: Ref<Table<TData>> },
+) => ReactElement;
+
+export { createColumnHelper, CustomTableWithRef as Table };
+export type {
+  ExpandedState,
+  PaginationState,
+  RowSelectionState,
+  SortingState,
+  Table as TableInstance,
+};

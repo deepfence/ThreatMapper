@@ -1,13 +1,14 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { RowSelectionState, SortingState } from '@tanstack/react-table';
 import { sortBy } from 'lodash-es';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import {
   createColumnHelper,
   getRowExpanderColumn,
   getRowSelectionColumn,
   Table,
+  TableInstance,
 } from '@/components/table/Table';
 
 export default {
@@ -164,6 +165,7 @@ StripedWithSubcomponent.args = {
 
 const TemplateWithAutoPagination: ComponentStory<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
+  const tableInstanceRef = useRef<TableInstance<Fruit> | null>(null);
 
   const columns = useMemo(
     () => [
@@ -195,7 +197,16 @@ const TemplateWithAutoPagination: ComponentStory<typeof Table<Fruit>> = (args) =
     }
     return data;
   }, []);
-  return <Table {...args} data={data} columns={columns} enablePagination />;
+
+  return (
+    <Table
+      {...args}
+      data={data}
+      columns={columns}
+      enablePagination
+      ref={tableInstanceRef}
+    />
+  );
 };
 
 export const DefaultWithAutoPagination = TemplateWithAutoPagination.bind({});
@@ -444,3 +455,88 @@ const TemplateWithRowSelection: ComponentStory<typeof Table<Fruit>> = (args) => 
 
 export const DefaultWithRowSelection = TemplateWithRowSelection.bind({});
 DefaultWithRowSelection.args = {};
+
+type NestedFruit = Fruit & {
+  fruits?: NestedFruit[];
+};
+
+const TemplateWithSubRows: ComponentStory<typeof Table<NestedFruit>> = (args) => {
+  const columnHelper = createColumnHelper<NestedFruit>();
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+
+  const columns = useMemo(
+    () => [
+      getRowExpanderColumn(columnHelper),
+      getRowSelectionColumn(columnHelper, {
+        size: 100,
+        minSize: 100,
+        maxSize: 100,
+      }),
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+        header: () => 'ID',
+        size: 1500,
+        minSize: 1000,
+        maxSize: 2000,
+      }),
+      columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        cell: (info) => info.getValue(),
+        header: () => <span>Name</span>,
+        size: 1500,
+        minSize: 1000,
+        maxSize: 2000,
+      }),
+      columnHelper.accessor('taste', {
+        header: () => 'Taste',
+        cell: (info) => info.renderValue(),
+        size: 1500,
+        minSize: 1000,
+        maxSize: 2000,
+      }),
+    ],
+    [],
+  );
+
+  const data = useMemo(() => {
+    const data: NestedFruit[] = [];
+    for (let i = 0; i < 20; i++) {
+      data.push({
+        id: i,
+        name: `Fruit ${i}`,
+        taste: `Taste ${i}`,
+        fruits: [
+          { id: (i + 1) * 1000 + 1, name: `Fruit ${i} 1`, taste: `Taste ${i} 1` },
+          { id: (i + 1) * 1000 + 2, name: `Fruit ${i} 2`, taste: `Taste ${i} 2` },
+        ],
+      });
+    }
+    return data;
+  }, []);
+  return (
+    <>
+      <div data-testid="selected-rows">
+        {Object.keys(rowSelectionState)
+          .map((id) => `"${id}"`)
+          .join(', ')}
+      </div>
+      <Table
+        {...args}
+        data={data}
+        columns={columns}
+        enablePagination
+        enableSorting
+        enableRowSelection
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
+        getSubRows={(row) => row.fruits}
+        getRowId={({ id }) => {
+          return `id-${id}`;
+        }}
+      />
+    </>
+  );
+};
+
+export const DefaultWithSubRows = TemplateWithSubRows.bind({});
+DefaultWithSubRows.args = {};

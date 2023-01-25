@@ -81,7 +81,7 @@ func InitializeOpenAPIReflector() *OpenApiDocs {
 				URL:         "https://community.deepfence.io",
 			},
 			Security: nil,
-			Tags:     []openapi3.Tag{{Name: tagAuthentication}, {Name: tagCommon}, {Name: tagCompliance}, {Name: tagTopology}, {Name: tagSecretScan}, {Name: tagVulnerability}},
+			Tags:     []openapi3.Tag{{Name: tagAuthentication}, {Name: tagCommon}, {Name: tagCompliance}, {Name: tagTopology}, {Name: tagSecretScan}, {Name: tagMalwareScan}, {Name: tagVulnerability}},
 		},
 	}
 

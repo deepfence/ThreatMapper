@@ -4,6 +4,11 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
+type VulnerabilityScanTriggerReq struct {
+	ScanTriggerReq
+	ScanType string `json:"scan_type" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+}
+
 type ScanTriggerReq struct {
 	NodeId   string `json:"node_id" required:"true"`
 	NodeType string `json:"node_type" required:"true" enum:"image,host,container"`

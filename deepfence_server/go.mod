@@ -2,11 +2,11 @@ module github.com/deepfence/ThreatMapper/deepfence_server
 
 go 1.19
 
+replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
+
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
 replace github.com/weaveworks/scope => ../deepfence_agent/tools/apache/scope/
-
-replace github.com/deepfence/ThreatMapper/deepfence_server_client => ../golang_deepfence_sdk/client
 
 replace github.com/deepfence/df-utils => ../deepfence_agent/tools/apache/deepfence/df-utils
 
@@ -23,23 +23,23 @@ require (
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
 	github.com/bytedance/sonic v1.7.0
 	github.com/casbin/casbin/v2 v2.60.0
-	github.com/deepfence/ThreatMapper/deepfence_server_client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230123091013-6f8a19aeeb9d
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
-	github.com/go-playground/pkg/v5 v5.10.0
+	github.com/go-playground/pkg/v5 v5.11.0
 	github.com/go-playground/validator/v10 v10.11.1
-	github.com/go-redis/redis/v9 v9.0.0-rc.2
 	github.com/google/uuid v1.3.0
 	github.com/minio/minio-go/v7 v7.0.47
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/redis/go-redis/v9 v9.0.0-rc.4
 	github.com/rs/zerolog v1.28.0
 	github.com/samber/mo v1.7.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/swaggest/openapi-go v0.2.26
-	github.com/twmb/franz-go v1.11.0
+	github.com/swaggest/openapi-go v0.2.28
+	github.com/twmb/franz-go v1.11.3
 	github.com/ugorji/go/codec v1.2.8
 	github.com/weaveworks/scope v1.13.2
 	golang.org/x/crypto v0.5.0
@@ -60,7 +60,7 @@ require (
 	github.com/bluele/gcache v0.0.2 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/containerd/containerd v1.6.14 // indirect
@@ -69,7 +69,6 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230123091013-6f8a19aeeb9d // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/docker v20.10.22+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -100,7 +99,7 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
+	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -148,7 +147,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/swaggest/jsonschema-go v0.3.42 // indirect
+	github.com/swaggest/jsonschema-go v0.3.45 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/twmb/franz-go/pkg/kadm v1.7.0 // indirect

@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -46,5 +46,4 @@ func (tc *CloudComplianceIngester) Ingest(
 	}
 
 	return nil
-
 }

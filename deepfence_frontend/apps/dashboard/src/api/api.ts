@@ -3,8 +3,10 @@
 
 import {
   AuthenticationApi,
+  CloudNodesApi,
   ComplianceApi,
   Configuration,
+  TopologyApi,
   UserApi,
   VulnerabilityApi,
 } from '@/api/generated';
@@ -21,6 +23,7 @@ export function getAuthenticationApiClient() {
   const authenticationApi = new AuthenticationApi(configuration);
   return {
     login: authenticationApi.login.bind(authenticationApi),
+    refreshAccessToken: authenticationApi.authTokenRefresh.bind(authenticationApi),
   };
 }
 
@@ -31,6 +34,19 @@ export function getUserApiClient() {
   };
 }
 
+export function getTopologyApiClient() {
+  const topologyApi = new TopologyApi(configuration);
+  return {
+    getHostsTopologyGraph: topologyApi.getHostsTopologyGraph.bind(topologyApi),
+  };
+}
+
+export function getCloudNodesApi() {
+  const cloudNodesApi = new CloudNodesApi(configuration);
+  return {
+    listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
+  };
+}
 export function vulnerabilityScanApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
   return {

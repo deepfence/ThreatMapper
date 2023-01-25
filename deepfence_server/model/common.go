@@ -4,11 +4,9 @@ const (
 	DefaultUserGroup = "default"
 )
 
-type Response struct {
-	Success     bool               `json:"success"`
-	Message     string             `json:"message"`
-	ErrorFields *map[string]string `json:"error_fields"`
-	Data        interface{}        `json:"data"`
+type ErrorResponse struct {
+	Message     string            `json:"message" required:"true"`
+	ErrorFields map[string]string `json:"error_fields"`
 }
 
 type ResponseAccessToken struct {

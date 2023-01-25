@@ -18,7 +18,10 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ModelContainer,
+  ModelContainerImage,
   ModelHost,
+  ModelKubernetesCluster,
+  ModelPod,
   ModelProcess,
   ReportersLookupFilter,
 } from '../models';
@@ -29,19 +32,37 @@ import {
     ApiDocsFailureResponseToJSON,
     ModelContainerFromJSON,
     ModelContainerToJSON,
+    ModelContainerImageFromJSON,
+    ModelContainerImageToJSON,
     ModelHostFromJSON,
     ModelHostToJSON,
+    ModelKubernetesClusterFromJSON,
+    ModelKubernetesClusterToJSON,
+    ModelPodFromJSON,
+    ModelPodToJSON,
     ModelProcessFromJSON,
     ModelProcessToJSON,
     ReportersLookupFilterFromJSON,
     ReportersLookupFilterToJSON,
 } from '../models';
 
+export interface GetContainerImagesRequest {
+    reportersLookupFilter?: ReportersLookupFilter;
+}
+
 export interface GetContainersRequest {
     reportersLookupFilter?: ReportersLookupFilter;
 }
 
 export interface GetHostsRequest {
+    reportersLookupFilter?: ReportersLookupFilter;
+}
+
+export interface GetKubernetesClustersRequest {
+    reportersLookupFilter?: ReportersLookupFilter;
+}
+
+export interface GetPodsRequest {
     reportersLookupFilter?: ReportersLookupFilter;
 }
 
@@ -56,6 +77,22 @@ export interface GetProcessesRequest {
  * @interface LookupApiInterface
  */
 export interface LookupApiInterface {
+    /**
+     * Retrieve all the data associated with images
+     * @summary Retrieve Container Images data
+     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getContainerImagesRaw(requestParameters: GetContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>>;
+
+    /**
+     * Retrieve all the data associated with images
+     * Retrieve Container Images data
+     */
+    getContainerImages(requestParameters: GetContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>>;
+
     /**
      * Retrieve all the data associated with containers
      * @summary Retrieve Containers data
@@ -89,6 +126,38 @@ export interface LookupApiInterface {
     getHosts(requestParameters: GetHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>>;
 
     /**
+     * Retrieve all the data associated with k8s clusters
+     * @summary Retrieve K8S data
+     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getKubernetesClustersRaw(requestParameters: GetKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>>;
+
+    /**
+     * Retrieve all the data associated with k8s clusters
+     * Retrieve K8S data
+     */
+    getKubernetesClusters(requestParameters: GetKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
+
+    /**
+     * Retrieve all the data associated with pods
+     * @summary Retrieve Pods data
+     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getPodsRaw(requestParameters: GetPodsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelPod>>>;
+
+    /**
+     * Retrieve all the data associated with pods
+     * Retrieve Pods data
+     */
+    getPods(requestParameters: GetPodsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelPod>>;
+
+    /**
      * Retrieve all the data associated with processes
      * @summary Retrieve Processes data
      * @param {ReportersLookupFilter} [reportersLookupFilter] 
@@ -110,6 +179,45 @@ export interface LookupApiInterface {
  * 
  */
 export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
+
+    /**
+     * Retrieve all the data associated with images
+     * Retrieve Container Images data
+     */
+    async getContainerImagesRaw(requestParameters: GetContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/containerimages`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with images
+     * Retrieve Container Images data
+     */
+    async getContainerImages(requestParameters: GetContainerImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>> {
+        const response = await this.getContainerImagesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Retrieve all the data associated with containers
@@ -186,6 +294,84 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
      */
     async getHosts(requestParameters: GetHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>> {
         const response = await this.getHostsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with k8s clusters
+     * Retrieve K8S data
+     */
+    async getKubernetesClustersRaw(requestParameters: GetKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/kubernetesclusters`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelKubernetesClusterFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with k8s clusters
+     * Retrieve K8S data
+     */
+    async getKubernetesClusters(requestParameters: GetKubernetesClustersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>> {
+        const response = await this.getKubernetesClustersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with pods
+     * Retrieve Pods data
+     */
+    async getPodsRaw(requestParameters: GetPodsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelPod>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/pods`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelPodFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with pods
+     * Retrieve Pods data
+     */
+    async getPods(requestParameters: GetPodsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelPod>> {
+        const response = await this.getPodsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -13,7 +13,7 @@ export const buttonCva = cva(
     'font-medium',
     'disabled:cursor-not-allowed',
     'flex flex-row items-center justify-center',
-    'rounded-lg focus:outline-none select-none',
+    'focus:outline-none select-none',
   ],
   {
     variants: {
@@ -78,6 +78,7 @@ export const buttonCva = cva(
       },
       pill: {
         true: 'rounded-full',
+        false: 'rounded-lg',
       },
       withOutline: {
         true: 'bg-white',
@@ -86,6 +87,7 @@ export const buttonCva = cva(
     defaultVariants: {
       color: 'default',
       size: 'md',
+      pill: false,
     },
     compoundVariants: [
       {
@@ -303,6 +305,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       startIcon,
       endIcon,
       className,
+      pill,
       ...props
     },
     ref,
@@ -321,6 +324,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             size,
             color,
             withOutline: outline,
+            pill,
           }),
           className,
         )}

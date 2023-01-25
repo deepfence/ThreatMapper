@@ -21,6 +21,14 @@ func (ve *AlreadyRunningScanError) Error() string {
 	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.scan_type, ve.node_id, ve.scan_id)
 }
 
+type NodeNotFoundError struct {
+	node_id   string
+}
+
+func (ve *NodeNotFoundError) Error() string {
+	return fmt.Sprintf("Node %v not found", ve.node_id)
+}
+
 func AddNewScan(ctx context.Context,
 	scan_type utils.Neo4jScanType,
 	scan_id string,
@@ -47,6 +55,28 @@ func AddNewScan(ctx context.Context,
 	defer tx.Close()
 
 	res, err := tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s{node_id:$node_id})
+		RETURN n IS NOT NULL AS Exists`,
+		controls.ResourceTypeToNeo4j(node_type)),
+		map[string]interface{}{
+			"node_id":  node_id,
+		})
+	if err != nil {
+		return err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return err
+	}
+
+	if !rec.Values[0].(bool) {
+		return &NodeNotFoundError{
+			node_id:   node_id,
+		}
+	}
+
+	res, err = tx.Run(fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
@@ -59,7 +89,7 @@ func AddNewScan(ctx context.Context,
 		return err
 	}
 
-	rec, err := res.Single()
+	rec, err = res.Single()
 	if err != nil {
 		return err
 	}

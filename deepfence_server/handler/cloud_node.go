@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -116,20 +117,21 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	if utils.StringToCloudProvider(req.CloudProvider) == -1 {
 		err = fmt.Errorf("unknown CloudProvider: %s", req.CloudProvider)
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Data: err.Error()})
+		respondError(&BadDecoding{err}, w)
+		return
 	}
 
 	infos, err := model.GetCloudComplianceNodesList(r.Context(), req.CloudProvider, req.Window)
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		respondError(err, w)
 		return
 	}
 
@@ -137,8 +139,7 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 }
 
 func complianceError(w http.ResponseWriter, errorString string) {
-	err := httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false,
-		Data: errorString})
+	err := respondError(errors.New(errorString), w)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -153,14 +154,14 @@ func extractCloudNodeDetails(w http.ResponseWriter, r *http.Request) (model.Clou
 
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		respondError(&BadDecoding{err}, w)
 		return req, err
 	}
 
 	if utils.StringToCloudProvider(req.CloudProvider) == -1 {
 		err = fmt.Errorf("unknown CloudProvider: %s", req.CloudProvider)
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Data: err.Error()})
+		respondError(&NotFoundError{err}, w)
 	}
 
 	return req, err

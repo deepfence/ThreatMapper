@@ -16,7 +16,7 @@ import { ChooseScan } from '@/features/onboard/pages/ChooseScan';
 import { ComplianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
 import { ComplianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
-import { MyConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
+import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
 import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
@@ -49,7 +49,7 @@ export const privateRoutes: RouteObject[] = [
           },
           {
             path: 'my-connectors',
-            element: <MyConnectors />,
+            ...myConnectors,
           },
         ],
       },

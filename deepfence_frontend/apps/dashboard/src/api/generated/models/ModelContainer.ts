@@ -19,12 +19,12 @@ import {
     ModelComputeMetricsFromJSONTyped,
     ModelComputeMetricsToJSON,
 } from './ModelComputeMetrics';
-import type { ModelImage } from './ModelImage';
+import type { ModelContainerImage } from './ModelContainerImage';
 import {
-    ModelImageFromJSON,
-    ModelImageFromJSONTyped,
-    ModelImageToJSON,
-} from './ModelImage';
+    ModelContainerImageFromJSON,
+    ModelContainerImageFromJSONTyped,
+    ModelContainerImageToJSON,
+} from './ModelContainerImage';
 import type { ModelProcess } from './ModelProcess';
 import {
     ModelProcessFromJSON,
@@ -52,10 +52,10 @@ export interface ModelContainer {
     host_name: string;
     /**
      * 
-     * @type {ModelImage}
+     * @type {ModelContainerImage}
      * @memberof ModelContainer
      */
-    image: ModelImage;
+    image: ModelContainerImage;
     /**
      * 
      * @type {{ [key: string]: any; }}
@@ -117,7 +117,7 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'docker_labels': json['docker_labels'],
         'host_name': json['host_name'],
-        'image': ModelImageFromJSON(json['image']),
+        'image': ModelContainerImageFromJSON(json['image']),
         'metadata': json['metadata'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'name': json['name'],
@@ -137,7 +137,7 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
         
         'docker_labels': value.docker_labels,
         'host_name': value.host_name,
-        'image': ModelImageToJSON(value.image),
+        'image': ModelContainerImageToJSON(value.image),
         'metadata': value.metadata,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
         'name': value.name,

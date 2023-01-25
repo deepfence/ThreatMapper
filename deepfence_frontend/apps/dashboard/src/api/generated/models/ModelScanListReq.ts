@@ -34,11 +34,29 @@ export interface ModelScanListReq {
     node_id: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelScanListReq
+     */
+    node_type: ModelScanListReqNodeTypeEnum;
+    /**
+     * 
      * @type {ModelFetchWindow}
      * @memberof ModelScanListReq
      */
     window: ModelFetchWindow;
 }
+
+
+/**
+ * @export
+ */
+export const ModelScanListReqNodeTypeEnum = {
+    Image: 'image',
+    Host: 'host',
+    Container: 'container'
+} as const;
+export type ModelScanListReqNodeTypeEnum = typeof ModelScanListReqNodeTypeEnum[keyof typeof ModelScanListReqNodeTypeEnum];
+
 
 /**
  * Check if a given object implements the ModelScanListReq interface.
@@ -46,6 +64,7 @@ export interface ModelScanListReq {
 export function instanceOfModelScanListReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "window" in value;
 
     return isInstance;
@@ -62,6 +81,7 @@ export function ModelScanListReqFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'node_id': json['node_id'],
+        'node_type': json['node_type'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
@@ -76,6 +96,7 @@ export function ModelScanListReqToJSON(value?: ModelScanListReq | null): any {
     return {
         
         'node_id': value.node_id,
+        'node_type': value.node_type,
         'window': ModelFetchWindowToJSON(value.window),
     };
 }

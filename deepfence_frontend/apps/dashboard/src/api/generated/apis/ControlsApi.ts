@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   ControlsAgentControls,
   ModelAgentId,
+  ModelAgentImageMetadata,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -29,7 +30,13 @@ import {
     ControlsAgentControlsToJSON,
     ModelAgentIdFromJSON,
     ModelAgentIdToJSON,
+    ModelAgentImageMetadataFromJSON,
+    ModelAgentImageMetadataToJSON,
 } from '../models';
+
+export interface AddAgentVersionRequest {
+    modelAgentImageMetadata?: ModelAgentImageMetadata;
+}
 
 export interface GetAgentControlsRequest {
     modelAgentId?: ModelAgentId;
@@ -46,6 +53,22 @@ export interface GetAgentInitControlsRequest {
  * @interface ControlsApiInterface
  */
 export interface ControlsApiInterface {
+    /**
+     * Push new agent version
+     * @summary Push new agent version
+     * @param {ModelAgentImageMetadata} [modelAgentImageMetadata] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    addAgentVersionRaw(requestParameters: AddAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Push new agent version
+     * Push new agent version
+     */
+    addAgentVersion(requestParameters: AddAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
     /**
      * Fetch actions for a given agent
      * @summary Fetch Agent Actions
@@ -78,12 +101,65 @@ export interface ControlsApiInterface {
      */
     getAgentInitControls(requestParameters: GetAgentInitControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls>;
 
+    /**
+     * Fetch latest agent version to check for upgrade
+     * @summary Fetch latest agent version
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    getLatestAgentVersionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelAgentImageMetadata>>;
+
+    /**
+     * Fetch latest agent version to check for upgrade
+     * Fetch latest agent version
+     */
+    getLatestAgentVersion(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelAgentImageMetadata>;
+
 }
 
 /**
  * 
  */
 export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface {
+
+    /**
+     * Push new agent version
+     * Push new agent version
+     */
+    async addAgentVersionRaw(requestParameters: AddAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/agent-version`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAgentImageMetadataToJSON(requestParameters.modelAgentImageMetadata),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Push new agent version
+     * Push new agent version
+     */
+    async addAgentVersion(requestParameters: AddAgentVersionRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.addAgentVersionRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Fetch actions for a given agent
@@ -160,6 +236,42 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
      */
     async getAgentInitControls(requestParameters: GetAgentInitControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls> {
         const response = await this.getAgentInitControlsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Fetch latest agent version to check for upgrade
+     * Fetch latest agent version
+     */
+    async getLatestAgentVersionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelAgentImageMetadata>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/get-agent-version`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelAgentImageMetadataFromJSON(jsonValue));
+    }
+
+    /**
+     * Fetch latest agent version to check for upgrade
+     * Fetch latest agent version
+     */
+    async getLatestAgentVersion(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelAgentImageMetadata> {
+        const response = await this.getLatestAgentVersionRaw(initOverrides);
         return await response.value();
     }
 
