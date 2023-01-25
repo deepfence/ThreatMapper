@@ -20,54 +20,51 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &apiAuthRequest)
 	if err != nil {
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 	err = h.Validator.Struct(apiAuthRequest)
 	if err != nil {
-		errorFields := model.ParseValidatorError(err.Error())
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
+		respondError(&ValidatorError{err}, w)
 		return
 	}
 	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
 	parsedUUID, _ := uuid.Parse(apiAuthRequest.ApiToken)
 	apiToken := &model.ApiToken{ApiToken: parsedUUID}
 	user, err := apiToken.GetUser(ctx, pgClient)
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypeAPIToken)
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: accessTokenResponse})
+	httpext.JSON(w, http.StatusOK, accessTokenResponse)
 }
 
 func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	user, grantType, err := h.parseRefreshToken(r.Context())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			httpext.JSON(w, http.StatusNotFound, model.Response{Success: false, Message: utils.ErrorUserNotFound})
-		} else if err.Error() == "access token is revoked" {
-			httpext.JSON(w, http.StatusForbidden, model.Response{Success: false, Message: err.Error()})
+			respondError(&NotFoundError{err}, w)
 		} else {
-			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+			respondError(err, w)
 		}
 		return
 	}
 	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, grantType)
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: accessTokenResponse})
+	httpext.JSON(w, http.StatusOK, accessTokenResponse)
 }
 
 func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User, string, error) {
@@ -91,7 +88,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 		return nil, "", err
 	}
 	if revoked == true {
-		return nil, "", errors.New("access token is revoked")
+		return nil, "", &ForbiddenError{errors.New("access token is revoked")}
 	}
 	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user")
 	if err != nil {
@@ -113,18 +110,17 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &loginRequest)
 	if err != nil {
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 	err = h.Validator.Struct(loginRequest)
 	if err != nil {
-		errorFields := model.ParseValidatorError(err.Error())
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, ErrorFields: &errorFields})
+		respondError(&ValidatorError{err}, w)
 		return
 	}
 	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(loginRequest.Email)
 	if err != nil {
-		httpext.JSON(w, statusCode, model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, statusCode, model.ErrorResponse{Message: err.Error()})
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)
@@ -134,16 +130,16 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	accessTokenResponse, err := u.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: accessTokenResponse})
+	httpext.JSON(w, http.StatusOK, accessTokenResponse)
 }
 
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	err := LogoutHandler(r.Context())
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

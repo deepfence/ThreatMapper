@@ -27,6 +27,10 @@ const (
 	GrantTypeAPIToken = "api_token"
 )
 
+type MessageResponse struct {
+	Message string `json:"message" required:"true"`
+}
+
 var (
 	AccessTokenExpiry  = time.Minute * 30
 	RefreshTokenExpiry = time.Hour * 24
@@ -195,6 +199,7 @@ type InviteUserRequest struct {
 type InviteUserResponse struct {
 	InviteExpiryHours int32  `json:"invite_expiry_hours"`
 	InviteURL         string `json:"invite_url"`
+	Message           string `json:"message"`
 }
 
 type PasswordResetRequest struct {

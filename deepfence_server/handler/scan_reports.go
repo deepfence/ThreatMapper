@@ -79,7 +79,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 
@@ -116,7 +116,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 	b, err := json.Marshal(internal_req)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		respondError(err, w)
 		return
 	}
 
@@ -149,7 +149,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		name, tag, err := GetImageFromId(r.Context(), req.NodeId)
 		if err != nil {
 			log.Error().Msg(err.Error())
-			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+			respondError(err, w)
 			return
 		}
 		binArgs["node_id"] = fmt.Sprintf("%s;%s", req.NodeId, name+":"+tag)
@@ -171,7 +171,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		respondError(err, w)
 		return
 	}
 
@@ -217,7 +217,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		name, tag, err := GetImageFromId(r.Context(), req.NodeId)
 		if err != nil {
 			log.Error().Msg(err.Error())
-			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+			respondError(err, w)
 			return
 		}
 		binArgs["node_id"] = fmt.Sprintf("%s;%s", req.NodeId, name+":"+tag)
@@ -239,7 +239,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if err != nil {
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		respondError(err, w)
 		return
 	}
 
@@ -273,22 +273,8 @@ func startScan(
 
 	err := ingesters.AddNewScan(r.Context(), scanType, scanId, nodeType, nodeId, action)
 	if err != nil {
-		var code int
-		switch err.(type) {
-		case *ingesters.NodeNotFoundError:
-			log.Warn().Msg(err.Error())
-			code = http.StatusBadRequest
-		default:
-			log.Error().Msg(err.Error())
-			code = http.StatusInternalServerError
-		}
-		httpext.JSON(w, code, model.Response{Success: false, Data: err.Error()})
-		return
-	}
-
-	if err != nil {
 		log.Error().Msgf("%v", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		respondError(err, w)
 		return
 	}
 
@@ -338,15 +324,14 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	var params utils.SbomRequest
 	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &params)
 	if err != nil {
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Message: err.Error()})
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
 
@@ -355,8 +340,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
 
@@ -365,8 +349,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	payload, err := json.Marshal(params.SbomParameters)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
 
@@ -374,8 +357,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	namespace, err := directory.ExtractNamespace(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
 	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
@@ -385,14 +367,12 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	err = h.TasksPublisher.Publish(utils.ParseSBOMTask, msg)
 	if err != nil {
 		log.Error().Msgf("cannot publish message:", err)
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
+		respondError(err, w)
 		return
 	}
 
 	log.Info().Msgf("scan_id: %s, minio file info: %+v", params.ScanId, info)
-	httpext.JSON(w, http.StatusOK,
-		model.Response{Success: true, Message: info.Location})
+	httpext.JSON(w, http.StatusOK, info)
 }
 
 func (h *Handler) IngestVulnerabilityReportHandler(w http.ResponseWriter, r *http.Request) {
@@ -485,15 +465,15 @@ func extractScanTrigger(w http.ResponseWriter, r *http.Request) (model.ScanTrigg
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
 	if err != nil {
-		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		log.Warn().Err(err)
+		respondError(&BadDecoding{err}, w)
 		return req, err
 	}
 
 	if ctl.StringToResourceType(req.NodeType) == -1 {
 		err = fmt.Errorf("Unknown ResourceType: %s", req.NodeType)
-		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Data: err.Error()})
+		log.Warn().Err(err)
+		respondError(&BadDecoding{err}, w)
 	}
 
 	return req, err
@@ -521,14 +501,14 @@ func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.N
 	err := httpext.DecodeQueryParams(r, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	status, err := reporters.GetScanStatus(r.Context(), scan_type, req.ScanId)
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		respondError(err, w)
 		return
 	}
 
@@ -557,14 +537,14 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeId, controls.StringToResourceType(req.NodeType), req.Window)
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		respondError(err, w)
 		return
 	}
 
@@ -593,14 +573,14 @@ func listScanResultsHandler(w http.ResponseWriter, r *http.Request, scan_type ut
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 
 	results, err := reporters.GetScanResults(r.Context(), scan_type, req.ScanId, req.Window)
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		respondError(err, w)
 		return
 	}
 

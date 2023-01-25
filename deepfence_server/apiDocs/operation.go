@@ -18,16 +18,16 @@ import (
 func (d *OpenApiDocs) AddUserAuthOperations() {
 	d.AddOperation("registerUser", http.MethodPost, "/deepfence/user/register",
 		"Register User", "First user registration. Further users needs to be invited.",
-		http.StatusOK, []string{tagUser}, nil, new(model.UserRegisterRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagUser}, nil, new(model.UserRegisterRequest), new(model.ResponseAccessToken))
 	d.AddOperation("authToken", http.MethodPost, "/deepfence/auth/token",
 		"Get Access Token for API Token", "Get access token for programmatic API access, by providing API Token",
-		http.StatusOK, []string{tagAuthentication}, nil, new(model.ApiAuthRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagAuthentication}, nil, new(model.ApiAuthRequest), new(model.ResponseAccessToken))
 	d.AddOperation("authTokenRefresh", http.MethodPost, "/deepfence/auth/token/refresh",
 		"Refresh access token", "Reissue access token using refresh token",
-		http.StatusOK, []string{tagAuthentication}, bearerToken, nil, model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagAuthentication}, bearerToken, nil, new(model.ResponseAccessToken))
 	d.AddOperation("login", http.MethodPost, "/deepfence/user/login",
 		"Login API", "Login API",
-		http.StatusOK, []string{tagAuthentication}, nil, new(model.LoginRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagAuthentication}, nil, new(model.LoginRequest), new(model.ResponseAccessToken))
 	d.AddOperation("logout", http.MethodPost, "/deepfence/user/logout",
 		"Logout API", "Logout API",
 		http.StatusNoContent, []string{tagAuthentication}, bearerToken, nil, nil)
@@ -36,30 +36,30 @@ func (d *OpenApiDocs) AddUserAuthOperations() {
 func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("getCurrentUser", http.MethodGet, "/deepfence/user",
 		"Get Current User", "Get logged in user information",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, model.Response{Success: true, Data: model.User{}})
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new(model.User))
 	d.AddOperation("updateCurrentUser", http.MethodPut, "/deepfence/user",
 		"Update Current User", "Update logged in user information",
-		http.StatusOK, []string{tagUser}, bearerToken, new(model.User), model.Response{Success: true, Data: model.User{}})
+		http.StatusOK, []string{tagUser}, bearerToken, new(model.User), new(model.User))
 	d.AddOperation("deleteCurrentUser", http.MethodDelete, "/deepfence/user",
 		"Delete Current User", "Delete logged in user",
 		http.StatusNoContent, []string{tagUser}, bearerToken, nil, nil)
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, model.Response{Success: true, Data: []postgresqldb.ApiToken{}})
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
 
 	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
 		"Reset Password Request", "Request for resetting the password",
-		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetRequest), model.Response{Success: true})
+		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetRequest), new(model.MessageResponse))
 	d.AddOperation("verifyResetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/verify",
 		"Verify and Reset Password", "Verify code and reset the password",
-		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetVerifyRequest), model.Response{Success: true})
+		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetVerifyRequest), nil)
 
 	d.AddOperation("inviteUser", http.MethodPost, "/deepfence/user/invite",
 		"Invite User", "Invite a user",
-		http.StatusOK, []string{tagUser}, bearerToken, new(model.InviteUserRequest), model.Response{Success: true, Data: model.InviteUserResponse{}})
+		http.StatusOK, []string{tagUser}, bearerToken, new(model.InviteUserRequest), new(model.InviteUserResponse))
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
-		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), new(model.ResponseAccessToken))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -271,7 +271,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 func (d *OpenApiDocs) AddDiagnosisOperations() {
 	d.AddOperation("diagnosticNotification", http.MethodGet, "/deepfence/diagnosis/notification",
 		"Get Diagnostic Notification", "Get Diagnostic Notification",
-		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, model.Response{Success: true, Data: []diagnosis.DiagnosticNotification{}})
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new([]diagnosis.DiagnosticNotification))
 	d.AddOperation("generateConsoleDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/console-logs",
 		"Generate Console Diagnostic Logs", "Generate Console Diagnostic Logs",
 		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, nil, nil)
