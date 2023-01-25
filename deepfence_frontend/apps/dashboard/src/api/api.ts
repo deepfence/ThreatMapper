@@ -4,9 +4,11 @@
 import {
   AuthenticationApi,
   CloudNodesApi,
+  ComplianceApi,
   Configuration,
   TopologyApi,
   UserApi,
+  VulnerabilityApi,
 } from '@/api/generated';
 import storage from '@/utils/storage';
 
@@ -43,5 +45,25 @@ export function getCloudNodesApi() {
   const cloudNodesApi = new CloudNodesApi(configuration);
   return {
     listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
+  };
+}
+export function vulnerabilityScanApiClient() {
+  const vulnerabilityApi = new VulnerabilityApi(configuration);
+  return {
+    startVulnerabilityScan:
+      vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
+    statusVulnerabilityScan:
+      vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
+    resultVulnerabilityScan:
+      vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
+  };
+}
+
+export function complianceScanApiClient() {
+  const complianceApi = new ComplianceApi(configuration);
+  return {
+    startComplianceScan: complianceApi.startComplianceScan.bind(complianceApi),
+    statusComplianceScan: complianceApi.statusComplianceScan.bind(complianceApi),
+    resultComplianceScan: complianceApi.resultsComplianceScan.bind(complianceApi),
   };
 }

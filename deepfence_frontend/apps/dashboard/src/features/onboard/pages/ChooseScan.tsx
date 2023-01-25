@@ -133,7 +133,7 @@ export const ChooseScan = () => {
       />
       <SelectedAccount />
       <ScanType />
-      <Button onClick={goBack} outline size="xs" className="mt-16">
+      <Button onClick={goBack} color="default" size="xs" className="mt-16">
         Go Back
       </Button>
     </>

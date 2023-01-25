@@ -14,14 +14,23 @@ import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
 import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
 import { ChooseScan } from '@/features/onboard/pages/ChooseScan';
 import { ComplianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
+import { ComplianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
 import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
+import {
+  ScanInProgress,
+  ScanInProgressError,
+  scanStatusLoader,
+} from '@/features/onboard/pages/ScanInProgress';
 import { SecretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
-import { VulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
+import {
+  startVulnerabilityScanAction,
+  VulnerabilityScanConfigure,
+} from '@/features/onboard/pages/VulnerabilityScanConfigure';
 
 export const privateRoutes: RouteObject[] = [
   {
@@ -90,12 +99,23 @@ export const privateRoutes: RouteObject[] = [
             element: <ComplianceScanConfigure />,
           },
           {
-            path: 'configure/vulnerability',
+            path: 'configure/vulnerability/:nodeType/:nodeId',
             element: <VulnerabilityScanConfigure />,
+            action: startVulnerabilityScanAction,
           },
           {
             path: 'configure/secret',
             element: <SecretScanConfigure />,
+          },
+          {
+            path: 'view-summary/compliance',
+            element: <ComplianceScanSummary />,
+          },
+          {
+            path: 'view-summary/running/:nodeId/:nodeType/:scanType/:scanId',
+            element: <ScanInProgress />,
+            errorElement: <ScanInProgressError />,
+            loader: scanStatusLoader,
           },
         ],
       },
