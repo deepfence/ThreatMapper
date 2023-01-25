@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { Suspense, useMemo, useRef, useState } from 'react';
 import { HiChevronDown, HiChevronRight, HiCubeTransparent } from 'react-icons/hi';
-import { useLoaderData } from 'react-router-dom';
+import { Await, useLoaderData } from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
@@ -17,6 +17,7 @@ import { DFLink } from '@/components/DFLink';
 import { NoConnectors } from '@/features/onboard/components/connectors/NoConnectors';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { ApiError, makeRequest } from '@/utils/api';
+import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 interface ConnectionNode {
@@ -29,11 +30,11 @@ interface ConnectionNode {
   connections?: ConnectionNode[];
 }
 
-interface LoaderData {
-  data?: Array<ConnectionNode>;
-}
+type LoaderData = {
+  data: Array<ConnectionNode>;
+};
 
-const loader = async (): Promise<LoaderData> => {
+async function getConnectorsData(): Promise<Array<ConnectionNode>> {
   const awsResultsPromise = makeRequest({
     apiFunction: getCloudNodesApi().listCloudNodeAccount,
     apiArgs: [
@@ -52,7 +53,14 @@ const loader = async (): Promise<LoaderData> => {
     apiFunction: getTopologyApiClient().getHostsTopologyGraph,
     apiArgs: [
       {
-        reportersTopologyFilters: {} as any,
+        reportersTopologyFilters: {
+          cloud_filter: [],
+          field_filters: { contains_filter: { filter_in: null } },
+          host_filter: [],
+          kubernetes_filter: [],
+          pod_filter: [],
+          region_filter: [],
+        },
       },
     ],
   });
@@ -63,9 +71,7 @@ const loader = async (): Promise<LoaderData> => {
 
   if (ApiError.isApiError(awsResults) || ApiError.isApiError(hostsResults)) {
     // TODO(manan) handle error cases
-    return {
-      data: [],
-    };
+    return [];
   }
 
   const data: LoaderData['data'] = [];
@@ -107,14 +113,20 @@ const loader = async (): Promise<LoaderData> => {
     }
   }
 
-  return {
-    data,
-  };
+  return data;
+}
+
+const loader = (): TypedDeferredData<LoaderData> => {
+  return typedDefer({
+    data: getConnectorsData(),
+  });
 };
 
 function MyConnectors() {
   const { navigate } = usePageNavigation();
   const navigatedRef = useRef(false);
+  const loaderData = useLoaderData() as LoaderData;
+
   return (
     <Tabs
       value={'my-connectors'}
@@ -126,18 +138,22 @@ function MyConnectors() {
       }}
       size="md"
     >
-      <div className="h-full dark:text-white mt-8">
-        <MyConnectorsTable />
+      <div className="h-full dark:text-white">
+        <Suspense fallback={'loading..............'}>
+          <Await resolve={loaderData.data}>
+            {(data: LoaderData['data']) => {
+              return <MyConnectorsTable data={data} />;
+            }}
+          </Await>
+        </Suspense>
       </div>
     </Tabs>
   );
 }
 
-function MyConnectorsTable() {
-  const loaderData = useLoaderData() as LoaderData;
-
+function MyConnectorsTable({ data }: LoaderData) {
   const [expandedState, setExpandedState] = useState<ExpandedState>(
-    loaderData.data?.reduce<ExpandedState>((_, node) => {
+    data?.reduce<ExpandedState>((_, node) => {
       return {
         [node.id]: true,
       };
@@ -242,15 +258,15 @@ function MyConnectorsTable() {
     [rowSelectionState],
   );
 
-  if (!loaderData.data?.length) {
+  if (!data?.length) {
     return <NoConnectors />;
   }
   return (
-    <div className="-mt-8">
+    <>
       <Filters />
       <Table
         size="sm"
-        data={loaderData.data}
+        data={data}
         columns={columns}
         expanded={expandedState}
         onExpandedChange={setExpandedState}
@@ -286,7 +302,7 @@ function MyConnectorsTable() {
         }}
         getRowId={(row) => row.id}
       />
-    </div>
+    </>
   );
 }
 
