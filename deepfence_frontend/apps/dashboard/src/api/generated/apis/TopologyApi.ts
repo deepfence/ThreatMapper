@@ -18,7 +18,6 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ApiDocsGraphResult,
-  ModelRawReport,
   ReportersTopologyFilters,
 } from '../models';
 import {
@@ -28,8 +27,6 @@ import {
     ApiDocsFailureResponseToJSON,
     ApiDocsGraphResultFromJSON,
     ApiDocsGraphResultToJSON,
-    ModelRawReportFromJSON,
-    ModelRawReportToJSON,
     ReportersTopologyFiltersFromJSON,
     ReportersTopologyFiltersToJSON,
 } from '../models';
@@ -55,7 +52,7 @@ export interface GetTopologyGraphRequest {
 }
 
 export interface IngestAgentReportRequest {
-    modelRawReport?: ModelRawReport;
+    requestBody?: Array<number> | null;
 }
 
 /**
@@ -148,7 +145,7 @@ export interface TopologyApiInterface {
     /**
      * Ingest data reported by one Agent
      * @summary Ingest Topology Data
-     * @param {ModelRawReport} [modelRawReport] 
+     * @param {Array<number>} [requestBody] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
@@ -387,7 +384,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelRawReportToJSON(requestParameters.modelRawReport),
+            body: requestParameters.requestBody,
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

@@ -19,94 +19,84 @@ import {
     ModelComputeMetricsFromJSONTyped,
     ModelComputeMetricsToJSON,
 } from './ModelComputeMetrics';
+import type { ModelHost } from './ModelHost';
+import {
+    ModelHostFromJSON,
+    ModelHostFromJSONTyped,
+    ModelHostToJSON,
+} from './ModelHost';
 
 /**
  * 
  * @export
- * @interface ModelImage
+ * @interface ModelKubernetesCluster
  */
-export interface ModelImage {
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelImage
-     */
-    id: string;
+export interface ModelKubernetesCluster {
     /**
      * 
      * @type {{ [key: string]: any; }}
-     * @memberof ModelImage
+     * @memberof ModelKubernetesCluster
      */
-    metadata: { [key: string]: any; };
+    cloud_metadata: { [key: string]: any; };
+    /**
+     * 
+     * @type {Array<ModelHost>}
+     * @memberof ModelKubernetesCluster
+     */
+    containers: Array<ModelHost> | null;
     /**
      * 
      * @type {ModelComputeMetrics}
-     * @memberof ModelImage
+     * @memberof ModelKubernetesCluster
      */
     metrics: ModelComputeMetrics;
     /**
      * 
      * @type {string}
-     * @memberof ModelImage
+     * @memberof ModelKubernetesCluster
      */
-    name: string;
+    node_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelImage
+     * @memberof ModelKubernetesCluster
      */
-    size_mb: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelImage
-     */
-    tag: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelImage
-     */
-    virtual_mb: string;
+    node_name: string;
 }
 
 /**
- * Check if a given object implements the ModelImage interface.
+ * Check if a given object implements the ModelKubernetesCluster interface.
  */
-export function instanceOfModelImage(value: object): boolean {
+export function instanceOfModelKubernetesCluster(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "metadata" in value;
+    isInstance = isInstance && "cloud_metadata" in value;
+    isInstance = isInstance && "containers" in value;
     isInstance = isInstance && "metrics" in value;
-    isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "size_mb" in value;
-    isInstance = isInstance && "tag" in value;
-    isInstance = isInstance && "virtual_mb" in value;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
 
     return isInstance;
 }
 
-export function ModelImageFromJSON(json: any): ModelImage {
-    return ModelImageFromJSONTyped(json, false);
+export function ModelKubernetesClusterFromJSON(json: any): ModelKubernetesCluster {
+    return ModelKubernetesClusterFromJSONTyped(json, false);
 }
 
-export function ModelImageFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelImage {
+export function ModelKubernetesClusterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelKubernetesCluster {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'id': json['id'],
-        'metadata': json['metadata'],
+        'cloud_metadata': json['cloud_metadata'],
+        'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelHostFromJSON)),
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
-        'name': json['name'],
-        'size_mb': json['size_mb'],
-        'tag': json['tag'],
-        'virtual_mb': json['virtual_mb'],
+        'node_id': json['node_id'],
+        'node_name': json['node_name'],
     };
 }
 
-export function ModelImageToJSON(value?: ModelImage | null): any {
+export function ModelKubernetesClusterToJSON(value?: ModelKubernetesCluster | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -115,13 +105,11 @@ export function ModelImageToJSON(value?: ModelImage | null): any {
     }
     return {
         
-        'id': value.id,
-        'metadata': value.metadata,
+        'cloud_metadata': value.cloud_metadata,
+        'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelHostToJSON)),
         'metrics': ModelComputeMetricsToJSON(value.metrics),
-        'name': value.name,
-        'size_mb': value.size_mb,
-        'tag': value.tag,
-        'virtual_mb': value.virtual_mb,
+        'node_id': value.node_id,
+        'node_name': value.node_name,
     };
 }
 

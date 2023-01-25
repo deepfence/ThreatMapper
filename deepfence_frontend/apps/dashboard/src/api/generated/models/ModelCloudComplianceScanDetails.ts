@@ -16,62 +16,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanTriggerReq
+ * @interface ModelCloudComplianceScanDetails
  */
-export interface ModelScanTriggerReq {
+export interface ModelCloudComplianceScanDetails {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelCloudComplianceScanDetails
      */
-    node_id: string;
+    account_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelCloudComplianceScanDetails
      */
-    node_type: ModelScanTriggerReqNodeTypeEnum;
+    scan_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudComplianceScanDetails
+     */
+    scan_type?: string;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the ModelCloudComplianceScanDetails interface.
  */
-export const ModelScanTriggerReqNodeTypeEnum = {
-    Image: 'image',
-    Host: 'host',
-    Container: 'container'
-} as const;
-export type ModelScanTriggerReqNodeTypeEnum = typeof ModelScanTriggerReqNodeTypeEnum[keyof typeof ModelScanTriggerReqNodeTypeEnum];
-
-
-/**
- * Check if a given object implements the ModelScanTriggerReq interface.
- */
-export function instanceOfModelScanTriggerReq(value: object): boolean {
+export function instanceOfModelCloudComplianceScanDetails(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "node_type" in value;
 
     return isInstance;
 }
 
-export function ModelScanTriggerReqFromJSON(json: any): ModelScanTriggerReq {
-    return ModelScanTriggerReqFromJSONTyped(json, false);
+export function ModelCloudComplianceScanDetailsFromJSON(json: any): ModelCloudComplianceScanDetails {
+    return ModelCloudComplianceScanDetailsFromJSONTyped(json, false);
 }
 
-export function ModelScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTriggerReq {
+export function ModelCloudComplianceScanDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudComplianceScanDetails {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'node_id': json['node_id'],
-        'node_type': json['node_type'],
+        'account_id': !exists(json, 'account_id') ? undefined : json['account_id'],
+        'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
+        'scan_type': !exists(json, 'scan_type') ? undefined : json['scan_type'],
     };
 }
 
-export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): any {
+export function ModelCloudComplianceScanDetailsToJSON(value?: ModelCloudComplianceScanDetails | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -80,8 +73,9 @@ export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): a
     }
     return {
         
-        'node_id': value.node_id,
-        'node_type': value.node_type,
+        'account_id': value.account_id,
+        'scan_id': value.scan_id,
+        'scan_type': value.scan_type,
     };
 }
 

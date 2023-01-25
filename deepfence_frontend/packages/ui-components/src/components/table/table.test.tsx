@@ -434,4 +434,36 @@ describe(`Component Table`, () => {
       });
     });
   });
+
+  it('should use getTrProps and getTdProps correctly', async () => {
+    const { getByRole, getAllByTestId, getAllByRole } = renderUI(
+      <BasicTable
+        tableProps={{
+          getTdProps: () => {
+            return {
+              className: 'text-red-500',
+            };
+          },
+          getTrProps: () => {
+            return {
+              className: 'bg-red-500',
+            };
+          },
+        }}
+      />,
+    );
+    expect(getByRole('table')).toBeInTheDocument();
+    expect(getAllByTestId('table-header-row').length).toEqual(1);
+    expect(getAllByRole('columnheader').length).toEqual(3);
+    const rows = getAllByRole('row');
+    expect(rows.length).toEqual(3);
+    const cells = getAllByRole('cell');
+    expect(cells.length).toEqual(6);
+    rows.forEach((row, index) => {
+      expect(row.outerHTML).toMatchSnapshot(`row with custom props${index}`);
+    });
+    cells.forEach((cell, index) => {
+      expect(cell.outerHTML).toMatchSnapshot(`cells with custom props ${index}`);
+    });
+  });
 });

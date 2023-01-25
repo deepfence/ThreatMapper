@@ -16,62 +16,48 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanTriggerReq
+ * @interface ModelCloudNodeCloudtrailTrail
  */
-export interface ModelScanTriggerReq {
+export interface ModelCloudNodeCloudtrailTrail {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelCloudNodeCloudtrailTrail
      */
-    node_id: string;
+    account_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelCloudNodeCloudtrailTrail
      */
-    node_type: ModelScanTriggerReqNodeTypeEnum;
+    trail_name?: string;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the ModelCloudNodeCloudtrailTrail interface.
  */
-export const ModelScanTriggerReqNodeTypeEnum = {
-    Image: 'image',
-    Host: 'host',
-    Container: 'container'
-} as const;
-export type ModelScanTriggerReqNodeTypeEnum = typeof ModelScanTriggerReqNodeTypeEnum[keyof typeof ModelScanTriggerReqNodeTypeEnum];
-
-
-/**
- * Check if a given object implements the ModelScanTriggerReq interface.
- */
-export function instanceOfModelScanTriggerReq(value: object): boolean {
+export function instanceOfModelCloudNodeCloudtrailTrail(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "node_type" in value;
 
     return isInstance;
 }
 
-export function ModelScanTriggerReqFromJSON(json: any): ModelScanTriggerReq {
-    return ModelScanTriggerReqFromJSONTyped(json, false);
+export function ModelCloudNodeCloudtrailTrailFromJSON(json: any): ModelCloudNodeCloudtrailTrail {
+    return ModelCloudNodeCloudtrailTrailFromJSONTyped(json, false);
 }
 
-export function ModelScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTriggerReq {
+export function ModelCloudNodeCloudtrailTrailFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudNodeCloudtrailTrail {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'node_id': json['node_id'],
-        'node_type': json['node_type'],
+        'account_id': !exists(json, 'account_id') ? undefined : json['account_id'],
+        'trail_name': !exists(json, 'trail_name') ? undefined : json['trail_name'],
     };
 }
 
-export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): any {
+export function ModelCloudNodeCloudtrailTrailToJSON(value?: ModelCloudNodeCloudtrailTrail | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -80,8 +66,8 @@ export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): a
     }
     return {
         
-        'node_id': value.node_id,
-        'node_type': value.node_type,
+        'account_id': value.account_id,
+        'trail_name': value.trail_name,
     };
 }
 

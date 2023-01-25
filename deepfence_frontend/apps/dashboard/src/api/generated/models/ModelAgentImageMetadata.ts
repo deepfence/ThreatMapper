@@ -16,62 +16,58 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanTriggerReq
+ * @interface ModelAgentImageMetadata
  */
-export interface ModelScanTriggerReq {
+export interface ModelAgentImageMetadata {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelAgentImageMetadata
      */
-    node_id: string;
+    image_name: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTriggerReq
+     * @memberof ModelAgentImageMetadata
      */
-    node_type: ModelScanTriggerReqNodeTypeEnum;
+    image_tag: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelAgentImageMetadata
+     */
+    version: string;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the ModelAgentImageMetadata interface.
  */
-export const ModelScanTriggerReqNodeTypeEnum = {
-    Image: 'image',
-    Host: 'host',
-    Container: 'container'
-} as const;
-export type ModelScanTriggerReqNodeTypeEnum = typeof ModelScanTriggerReqNodeTypeEnum[keyof typeof ModelScanTriggerReqNodeTypeEnum];
-
-
-/**
- * Check if a given object implements the ModelScanTriggerReq interface.
- */
-export function instanceOfModelScanTriggerReq(value: object): boolean {
+export function instanceOfModelAgentImageMetadata(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "node_type" in value;
+    isInstance = isInstance && "image_name" in value;
+    isInstance = isInstance && "image_tag" in value;
+    isInstance = isInstance && "version" in value;
 
     return isInstance;
 }
 
-export function ModelScanTriggerReqFromJSON(json: any): ModelScanTriggerReq {
-    return ModelScanTriggerReqFromJSONTyped(json, false);
+export function ModelAgentImageMetadataFromJSON(json: any): ModelAgentImageMetadata {
+    return ModelAgentImageMetadataFromJSONTyped(json, false);
 }
 
-export function ModelScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTriggerReq {
+export function ModelAgentImageMetadataFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAgentImageMetadata {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'node_id': json['node_id'],
-        'node_type': json['node_type'],
+        'image_name': json['image_name'],
+        'image_tag': json['image_tag'],
+        'version': json['version'],
     };
 }
 
-export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): any {
+export function ModelAgentImageMetadataToJSON(value?: ModelAgentImageMetadata | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -80,8 +76,9 @@ export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): a
     }
     return {
         
-        'node_id': value.node_id,
-        'node_type': value.node_type,
+        'image_name': value.image_name,
+        'image_tag': value.image_tag,
+        'version': value.version,
     };
 }
 

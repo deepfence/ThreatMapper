@@ -27,6 +27,14 @@ export { Select, SelectItem } from '@/components/select/Select';
 export { default as Separator } from '@/components/separator/Separator';
 export { Step, Stepper } from '@/components/stepper/Stepper';
 export { default as Switch } from '@/components/switch/Switch';
+export type {
+  ExpandedState,
+  PaginationState,
+  RowSelectionState,
+  SortingState,
+  TableInstance,
+  TableProps,
+} from '@/components/table/Table';
 export {
   createColumnHelper,
   getRowExpanderColumn,

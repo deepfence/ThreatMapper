@@ -49,7 +49,19 @@ export interface ModelPod {
      * @type {string}
      * @memberof ModelPod
      */
-    image: string;
+    host_node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    kubernetes_name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    kubernetes_namespace: string;
     /**
      * 
      * @type {{ [key: string]: any; }}
@@ -62,12 +74,6 @@ export interface ModelPod {
      * @memberof ModelPod
      */
     metrics: ModelComputeMetrics;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelPod
-     */
-    name: string;
     /**
      * 
      * @type {string}
@@ -88,10 +94,11 @@ export interface ModelPod {
 export function instanceOfModelPod(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "containers" in value;
-    isInstance = isInstance && "image" in value;
+    isInstance = isInstance && "host_node_id" in value;
+    isInstance = isInstance && "kubernetes_name" in value;
+    isInstance = isInstance && "kubernetes_namespace" in value;
     isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "metrics" in value;
-    isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "processes" in value;
 
@@ -109,10 +116,11 @@ export function ModelPodFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     return {
         
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
-        'image': json['image'],
+        'host_node_id': json['host_node_id'],
+        'kubernetes_name': json['kubernetes_name'],
+        'kubernetes_namespace': json['kubernetes_namespace'],
         'metadata': json['metadata'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
-        'name': json['name'],
         'node_id': json['node_id'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
     };
@@ -128,10 +136,11 @@ export function ModelPodToJSON(value?: ModelPod | null): any {
     return {
         
         'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
-        'image': value.image,
+        'host_node_id': value.host_node_id,
+        'kubernetes_name': value.kubernetes_name,
+        'kubernetes_namespace': value.kubernetes_namespace,
         'metadata': value.metadata,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
-        'name': value.name,
         'node_id': value.node_id,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
     };

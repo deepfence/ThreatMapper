@@ -25,6 +25,12 @@ import {
     ModelContainerFromJSONTyped,
     ModelContainerToJSON,
 } from './ModelContainer';
+import type { ModelContainerImage } from './ModelContainerImage';
+import {
+    ModelContainerImageFromJSON,
+    ModelContainerImageFromJSONTyped,
+    ModelContainerImageToJSON,
+} from './ModelContainerImage';
 import type { ModelPod } from './ModelPod';
 import {
     ModelPodFromJSON,
@@ -50,6 +56,12 @@ export interface ModelHost {
      * @memberof ModelHost
      */
     cloud_metadata: { [key: string]: any; };
+    /**
+     * 
+     * @type {Array<ModelContainerImage>}
+     * @memberof ModelHost
+     */
+    container_images: Array<ModelContainerImage> | null;
     /**
      * 
      * @type {Array<ModelContainer>}
@@ -94,6 +106,7 @@ export interface ModelHost {
 export function instanceOfModelHost(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cloud_metadata" in value;
+    isInstance = isInstance && "container_images" in value;
     isInstance = isInstance && "containers" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "metrics" in value;
@@ -115,6 +128,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     return {
         
         'cloud_metadata': json['cloud_metadata'],
+        'container_images': (json['container_images'] === null ? null : (json['container_images'] as Array<any>).map(ModelContainerImageFromJSON)),
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
         'host_name': json['host_name'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
@@ -134,6 +148,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
     return {
         
         'cloud_metadata': value.cloud_metadata,
+        'container_images': (value.container_images === null ? null : (value.container_images as Array<any>).map(ModelContainerImageToJSON)),
         'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
         'host_name': value.host_name,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
