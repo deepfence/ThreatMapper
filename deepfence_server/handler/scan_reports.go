@@ -197,6 +197,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
+
 	req, err := extractScanTrigger(w, r)
 	if err != nil {
 		return
@@ -204,14 +205,46 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 
 	scanId := scanId(req)
 
-	action := ctl.Action{
-		ID:             ctl.StartMalwareScan,
-		RequestPayload: "",
+	binArgs := map[string]string{
+		"scan_id":   scanId,
+		"node_type": req.NodeType,
+		"node_id":   req.NodeId,
 	}
 
-	startScan(w, r, utils.NEO4J_MALWARE_SCAN, scanId,
-		ctl.StringToResourceType(req.NodeType), req.NodeId,
-		action)
+	nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
+
+	if nodeTypeInternal == ctl.Image {
+		name, tag, err := GetImageFromId(r.Context(), req.NodeId)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+			return
+		}
+		binArgs["node_id"] = fmt.Sprintf("%s;%s", req.NodeId, name+":"+tag)
+		log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["node_id"])
+	}
+
+	internal_req := ctl.StartMalwareScanRequest{
+		NodeId:   req.NodeId,
+		NodeType: ctl.StringToResourceType(req.NodeType),
+		BinArgs:  binArgs,
+	}
+
+	b, err := json.Marshal(internal_req)
+	bstr := string(b)
+
+	action := ctl.Action{
+		ID:             ctl.StartMalwareScan,
+		RequestPayload: bstr,
+	}
+
+	if err != nil {
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
+		return
+	}
+
+	startScan(w, r, utils.NEO4J_MALWARE_SCAN, scanId, ctl.StringToResourceType(req.NodeType), req.NodeId, action)
+
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -382,6 +415,11 @@ func (h *Handler) IngestSecretScanStatusHandler(w http.ResponseWriter, r *http.R
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestMalwareScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewComplianceIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
@@ -389,6 +427,16 @@ func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.R
 
 func (h *Handler) IngestCloudComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCloudComplianceIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
+func (h *Handler) IngestMalwareReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
+func (h *Handler) IngestMalwareScanStatusReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewMalwareScanStatusIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 

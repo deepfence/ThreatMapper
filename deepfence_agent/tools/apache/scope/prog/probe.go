@@ -133,8 +133,7 @@ func setControls() {
 	err = controls.RegisterControl(ctl.StartMalwareScan,
 		func(req ctl.StartMalwareScanRequest) error {
 			log.Info("Start Malware Scan")
-			//TODO
-			return nil
+			return host.StartMalwareScan(req)
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
