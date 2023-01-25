@@ -76,3 +76,15 @@ func (d *RegistryDockerHub) GetSecret() map[string]interface{} {
 	json.Unmarshal(b, &secret)
 	return secret
 }
+
+func (d *RegistryDockerHub) GetNamespace() string {
+	return d.NonSecret.DockerHubNamespace
+}
+
+func (d *RegistryDockerHub) GetRegistryType() string {
+	return d.RegistryType
+}
+
+func (d *RegistryDockerHub) GetUsername() string {
+	return d.NonSecret.DockerHubUsername
+}

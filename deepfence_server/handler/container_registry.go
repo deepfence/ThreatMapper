@@ -120,5 +120,20 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListImagesInRegistry(w http.ResponseWriter, r *http.Request) {
+	queryParam := r.URL.Query()
+	rType := queryParam.Get("registry_type")
+	ns := queryParam.Get("namespace")
+	req := model.RegistryImageListReq{
+		ResourceType: rType,
+		Namespace:    ns,
+	}
 
+	i, err := req.GetRegistryImages(r.Context())
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Message: err.Error()})
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.Response{Success: true, Data: i})
 }

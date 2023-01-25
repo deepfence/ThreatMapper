@@ -21,7 +21,13 @@ type RegistryAddReq struct {
 // todo: add support to list by name and type, id
 type RegistryListReq struct{}
 
+type RegistryImageListReq struct {
+	ResourceType string `json:"resource_type,omitempty"`
+	Namespace    string `json:"namespace,omitempty"`
+}
+
 type ImageAndTag struct {
+	ImageID             string    `json:"image_id,omitempty"`
 	Name                string    `json:"name,omitempty"`
 	LastUpdated         time.Time `json:"last_updated,omitempty"`
 	LastUpdaterUsername string    `json:"last_updater_username,omitempty"`
@@ -123,4 +129,8 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 		Extras:          []byte(extra), //json.RawMessage([]byte{}),
 	})
 	return err
+}
+
+func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]ImageAndTag, error) {
+	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace)
 }

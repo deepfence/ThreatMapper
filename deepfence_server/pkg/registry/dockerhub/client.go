@@ -12,9 +12,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-// func getClient(u, p string) (*http.Client, error) {
-
-// }
 func getImagesList(u, p, ns string) ([]model.ImageAndTag, error) {
 	token, cookies, err := getAuthTokenAndCookies(u, p)
 	if err != nil {
@@ -150,7 +147,6 @@ func getRepoTag(repoName, ns, token string, cookies []*http.Cookie) (ImageTag, e
 			"\nresp.StatusCode: " + strconv.Itoa(resp.StatusCode))
 		return ImageTag{}, err
 	}
-	log.Info().Msgf("respo: %+v", resp)
 
 	repo, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -188,6 +184,7 @@ func getImageWithTags(imageName string, tag ImageTag) []model.ImageAndTag {
 				TagLastPushed:       tr.TagLastPushed,
 				MediaType:           tr.MediaType,
 				ContentType:         tr.ContentType,
+				ImageID:             model.DigestToID(i.Digest),
 			}
 			imageAndTag = append(imageAndTag, tt)
 		}

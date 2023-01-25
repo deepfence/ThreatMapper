@@ -5,6 +5,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"strings"
 	"unicode"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func ValidateUserName(fl validator.FieldLevel) bool {
@@ -65,4 +67,12 @@ func ParseValidatorError(errMsg string) map[string]string {
 		}
 	}
 	return fields
+}
+
+func DigestToID(digest string) string {
+	return strings.Split(digest, ":")[1]
+}
+
+func GetRegistryID(registryType, ns string) string {
+	return registryType + "_" + ns
 }

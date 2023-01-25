@@ -96,11 +96,11 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	if err != nil {
 		return err
 	}
-	return injestToNeo4j(ctx, list)
+	return injestToNeo4j(ctx, list, r)
 }
 
-func injestToNeo4j(ctx context.Context, r []model.ImageAndTag) error {
-	log.Info().Msgf("\n\n\n\n\ninjest this to neo4j +%v\n\n\n\n", r)
+func injestToNeo4j(ctx context.Context, images []model.ImageAndTag, r registry.Registry) error {
+	// log.Info().Msgf("\n\n\n\n\ninjest this to neo4j +%v\n\n\n\n", images)
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -117,13 +117,15 @@ func injestToNeo4j(ctx context.Context, r []model.ImageAndTag) error {
 	}
 	defer tx.Close()
 
-	results := r
-	imageMap := RegistryImagesToMaps(results)
+	imageMap := RegistryImagesToMaps(images)
+	registryId := model.GetRegistryID(r.GetRegistryType(), r.GetNamespace())
 	_, err = tx.Run(`
 	UNWIND $batch as row
-	MERGE (n:ContainerImage{node_id:row.digest})
+	MERGE (n:ContainerImage{node_id:row.image_id})
+	MERGE (m:Registry{node_id: $node_id })
+    MERGE (m) -[:HOSTS]-> (n)
 	SET n+= row, n.updated_at = TIMESTAMP()`,
-		map[string]interface{}{"batch": imageMap})
+		map[string]interface{}{"batch": imageMap, "node_id": registryId})
 	if err != nil {
 		return err
 	}
