@@ -127,24 +127,24 @@ func (nc *neo4jIngester) runEnqueueReport() {
 }
 
 type ReportIngestionData struct {
-	Process_batch            []map[string]string
-	Host_batch               []map[string]string
-	Container_batch          []map[string]string
-	Pod_batch                []map[string]string
-	Container_image_batch    []map[string]string
-	Kubernetes_cluster_batch []map[string]string
+	Process_batch            []map[string]string `json:"process_batch" required:"true"`
+	Host_batch               []map[string]string `json:"host_batch" required:"true"`
+	Container_batch          []map[string]string `json:"container_batch" required:"true"`
+	Pod_batch                []map[string]string `json:"pod_batch" required:"true"`
+	Container_image_batch    []map[string]string `json:"container_image_batch" required:"true"`
+	Kubernetes_cluster_batch []map[string]string `json:"kubernetes_cluster_batch" required:"true"`
 
-	Process_edges_batch           []map[string]interface{}
-	Container_edges_batch         []map[string]interface{}
-	Pod_edges_batch               []map[string]interface{}
-	Endpoint_edges_batch          []map[string]interface{}
-	Container_image_edge_batch    []map[string]interface{}
-	Kubernetes_cluster_edge_batch []map[string]interface{}
+	Process_edges_batch           []map[string]interface{} `json:"process_edges_batch" required:"true"`
+	Container_edges_batch         []map[string]interface{} `json:"container_edges_batch" required:"true"`
+	Pod_edges_batch               []map[string]interface{} `json:"pod_edges_batch" required:"true"`
+	Endpoint_edges_batch          []map[string]interface{} `json:"endpoint_edges_batch" required:"true"`
+	Container_image_edge_batch    []map[string]interface{} `json:"container_image_edge_batch" required:"true"`
+	Kubernetes_cluster_edge_batch []map[string]interface{} `json:"kubernetes_cluster_edge_batch" required:"true"`
 
 	//Endpoint_batch []map[string]string
 	//Endpoint_edges []map[string]string
 
-	Hosts []map[string]string
+	Hosts []map[string]string `json:"hosts" required:"true"`
 }
 
 func (r *EndpointResolvers) merge(other *EndpointResolvers) {
