@@ -22,7 +22,7 @@ import (
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 )
 
 const (
