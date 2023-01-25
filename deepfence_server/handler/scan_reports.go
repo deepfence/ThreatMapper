@@ -63,10 +63,10 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 		return name, tag, err
 	}
 
-	if vi, ok := rec.Get("n.docker_image_name"); ok {
+	if vi, ok := rec.Get("n.docker_image_name"); ok && vi != nil {
 		name = vi.(string)
 	}
-	if vt, ok := rec.Get("n.docker_image_tag"); ok {
+	if vt, ok := rec.Get("n.docker_image_tag"); ok && vt != nil {
 		tag = vt.(string)
 	}
 
