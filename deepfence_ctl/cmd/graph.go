@@ -110,6 +110,7 @@ var graphTopologySubCmd = &cobra.Command{
 			req = req.ReportersTopologyFilters(filters)
 			res, rh, err = http.Client().TopologyApi.GetKubernetesTopologyGraphExecute(req)
 		default:
+			req := http.Client().TopologyApi.IngestSyncAgentReport(context.Background())
 			log.Fatal().Msgf("Unsupported root:%s", root)
 		}
 
