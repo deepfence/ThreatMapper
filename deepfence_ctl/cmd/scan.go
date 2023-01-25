@@ -59,11 +59,13 @@ var scanStartSubCmd = &cobra.Command{
 				})
 			res, _, err = http.Client().MalwareScanApi.StartMalwareScanExecute(req)
 		case "vulnerability":
+			vuln_scan_type, _ := cmd.Flags().GetString("scan-type")
 			req := http.Client().VulnerabilityApi.StartVulnerabilityScan(context.Background())
-			req = req.ModelScanTriggerReq(
-				deepfence_server_client.ModelScanTriggerReq{
+			req = req.ModelVulnerabilityScanTriggerReq(
+				deepfence_server_client.ModelVulnerabilityScanTriggerReq{
 					NodeId:   scan_node_id,
 					NodeType: resource_type,
+					ScanType: vuln_scan_type,
 				})
 			res, _, err = http.Client().VulnerabilityApi.StartVulnerabilityScanExecute(req)
 		default:
@@ -230,6 +232,7 @@ func init() {
 
 	scanStartSubCmd.PersistentFlags().String("node-id", "", "Node id")
 	scanStartSubCmd.PersistentFlags().String("node-type", "", "Resource type (host, container, image)")
+	scanStartSubCmd.PersistentFlags().String("scan-type", "all", "vulnerability scan type (all,base,ruby,python,javascript,php,golang,java,rust,dotnet)")
 
 	scanStatusSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
 

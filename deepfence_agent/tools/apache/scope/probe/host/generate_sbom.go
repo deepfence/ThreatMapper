@@ -111,6 +111,10 @@ func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 		imageName = image_name_Arg
 	}
 
+	if scan_type_Arg, ok := req.BinArgs["scan_type"]; ok {
+		scanType = scan_type_Arg
+	}
+
 	switch node_type {
 	case "container":
 		containerId = node_id

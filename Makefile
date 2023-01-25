@@ -102,7 +102,7 @@ openapi: server
 	--export-api-docs-path /app/openapi.yaml
 
 	docker run --rm \
-	-v $(PWD):/local openapitools/openapi-generator-cli generate \
+	-v $(PWD):/local openapitools/openapi-generator-cli:latest generate \
 	-i /local/openapi.yaml \
 	-g go \
 	-o /local/golang_deepfence_sdk/client \
@@ -112,7 +112,7 @@ openapi: server
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/golang_deepfence_sdk/client && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
+	cd $(PWD)/golang_deepfence_sdk/client && rm -rf test && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli:

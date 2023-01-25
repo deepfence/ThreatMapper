@@ -63,10 +63,10 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 		return name, tag, err
 	}
 
-	if vi, ok := rec.Get("docker_image_name"); ok {
+	if vi, ok := rec.Get("n.docker_image_name"); ok && vi != nil {
 		name = vi.(string)
 	}
-	if vt, ok := rec.Get("docker_image_tag"); ok {
+	if vt, ok := rec.Get("n.docker_image_tag"); ok && vt != nil {
 		tag = vt.(string)
 	}
 
@@ -74,17 +74,25 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 }
 
 func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
-	req, err := extractScanTrigger(w, r)
+	defer r.Body.Close()
+	var req model.VulnerabilityScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
 		return
 	}
 
-	scanId := scanId(req)
+	scanId := scanId(req.ScanTriggerReq)
 
 	binArgs := map[string]string{
 		"scan_id":   scanId,
 		"node_type": req.NodeType,
 		"node_id":   req.NodeId,
+	}
+
+	if len(req.ScanType) != 0 {
+		binArgs["scan_type"] = req.ScanType
 	}
 
 	nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
@@ -265,8 +273,16 @@ func startScan(
 
 	err := ingesters.AddNewScan(r.Context(), scanType, scanId, nodeType, nodeId, action)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false, Data: err.Error()})
+		var code int
+		switch err.(type) {
+		case *ingesters.NodeNotFoundError:
+			log.Warn().Msg(err.Error())
+			code = http.StatusBadRequest
+		default:
+			log.Error().Msg(err.Error())
+			code = http.StatusInternalServerError
+		}
+		httpext.JSON(w, code, model.Response{Success: false, Data: err.Error()})
 		return
 	}
 
@@ -335,7 +351,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file := "/sbom/" + utils.ScanIdReplacer.Replace(params.ScanId) + ".json"
-	info, err := mc.UploadFile(r.Context(), file, params.SBOM,
+	info, err := mc.UploadFile(r.Context(), file, []byte(params.SBOM),
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msg(err.Error())

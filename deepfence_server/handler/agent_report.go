@@ -99,3 +99,35 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+
+func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	var rpt ingesters.ReportIngestionData
+
+	err = sonic.Unmarshal(data, &rpt)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	ingester, err := getAgentReportIngester(ctx)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := (*ingester).PushToDB(rpt); err != nil {
+		log.Error().Msgf("Error pushing report: %v", err)
+		respondWith(ctx, w, http.StatusInternalServerError, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

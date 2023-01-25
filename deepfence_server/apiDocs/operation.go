@@ -150,6 +150,10 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Topology Data", "Ingest data reported by one Agent",
 		http.StatusOK, []string{tagTopology}, bearerToken, new(model.RawReport), nil)
 
+	d.AddOperation("ingestSyncAgentReport", http.MethodPost, "/deepfence/ingest/sync-report",
+		"Ingest Topology Data", "Ingest data reported by one Agent",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(ingesters.ReportIngestionData), nil)
+
 	d.AddOperation("ingestSbom", http.MethodPost, "/deepfence/ingest/sbom",
 		"Ingest SBOM from Scan", "Ingest SBOM from Scan",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(utils.SbomRequest), nil)
@@ -196,7 +200,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 	// Start scan
 	d.AddOperation("startVulnerabilityScan", http.MethodPost, "/deepfence/scan/start/vulnerability",
 		"Start Vulnerability Scan", "Start Vulnerability Scan on agent or registry",
-		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.ScanTriggerReq), new(model.ScanTriggerResp))
+		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.VulnerabilityScanTriggerReq), new(model.ScanTriggerResp))
 	d.AddOperation("startSecretScan", http.MethodPost, "/deepfence/scan/start/secret",
 		"Start Secret Scan", "Start Secret Scan on agent or registry",
 		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(model.ScanTriggerReq), new(model.ScanTriggerResp))
