@@ -5,7 +5,7 @@ import (
 	"errors"
 	"os"
 
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	log "github.com/sirupsen/logrus"
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
 	pb "github.com/weaveworks/scope/proto"

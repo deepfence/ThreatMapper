@@ -5,8 +5,7 @@ RUN apk add --no-cache git build-base libpcap-dev libcap-dev
 
 ADD deepfence_server /go/deepfence_server/
 ADD deepfence_worker /go/deepfence_worker/
-ADD deepfence_utils /go/deepfence_utils/
-ADD deepfence_server_client /go/deepfence_server_client/
+ADD golang_deepfence_sdk /go/golang_deepfence_sdk
 RUN mkdir -p /go/deepfence_agent/tools/apache
 ADD deepfence_agent/tools/apache /go/deepfence_agent/tools/apache
 WORKDIR /go/deepfence_server/
@@ -41,7 +40,7 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_KAFKA_BROKERS=deepfence-kafka-broker:9092
 
 ADD deepfence_server/auth /auth
-ADD deepfence_utils/postgresql /usr/local/postgresql-migrate
+ADD golang_deepfence_sdk/utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 RUN apk add --no-cache --update bash curl libpcap tar kafkacat
 RUN apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main

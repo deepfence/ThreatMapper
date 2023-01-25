@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -15,17 +14,18 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/gorilla/schema"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+const MaxSbomRequestSize = 500 * 1e6
 
 func scanId(req model.ScanTriggerReq) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
@@ -63,8 +63,12 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 		return name, tag, err
 	}
 
-	name = rec.Values[0].(string)
-	tag = rec.Values[1].(string)
+	if vi, ok := rec.Get("docker_image_name"); ok {
+		name = vi.(string)
+	}
+	if vt, ok := rec.Get("docker_image_tag"); ok {
+		tag = vt.(string)
+	}
 
 	return name, tag, nil
 }
@@ -88,12 +92,11 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 	if nodeTypeInternal == ctl.Image {
 		name, tag, err := GetImageFromId(r.Context(), req.NodeId)
 		if err != nil {
-			log.Error().Msg(err.Error())
-			httpext.JSON(w, http.StatusInternalServerError, model.Response{Success: false})
-			return
+			log.Error().Msgf("image not found %s", err.Error())
+		} else {
+			binArgs["image_name"] = name + ":" + tag
+			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
 		}
-		binArgs["image_name"] = name + ":" + tag
-		log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
 	}
 
 	internal_req := ctl.StartVulnerabilityScanRequest{
@@ -315,26 +318,14 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 	fmt.Fprintf(respWrite, "Ok")
 }
 
-var decoder = schema.NewDecoder()
-
 func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
-	var params utils.SbomQueryParameters
-	err := decoder.Decode(&params, r.URL.Query())
-	// err = httpext.DecodeQueryParams(r, &params)
+	var params utils.SbomRequest
+	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &params)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Message: err.Error()})
 		return
 	}
-	log.Info().Msgf("sbom query parameters: %+v", params)
-	sbom, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		httpext.JSON(w, http.StatusInternalServerError,
-			model.Response{Success: false, Message: err.Error()})
-		return
-	}
+
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -344,7 +335,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file := "/sbom/" + utils.ScanIdReplacer.Replace(params.ScanId) + ".json"
-	info, err := mc.UploadFile(r.Context(), file, sbom,
+	info, err := mc.UploadFile(r.Context(), file, params.SBOM,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -355,7 +346,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 
 	params.SBOMFilePath = file
 
-	payload, err := json.Marshal(params)
+	payload, err := json.Marshal(params.SbomParameters)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		httpext.JSON(w, http.StatusInternalServerError,

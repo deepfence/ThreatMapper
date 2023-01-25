@@ -12,7 +12,7 @@ import (
 
 	"github.com/armon/go-metrics"
 	metrics_prom "github.com/armon/go-metrics/prometheus"
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

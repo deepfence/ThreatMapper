@@ -9,8 +9,8 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	hst "github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/render/detailed"
 	"github.com/weaveworks/scope/report"
@@ -184,24 +184,6 @@ func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_fil
 		edges[source+target] = detailed.ConnectionSummary{Source: source, Target: target}
 	}
 
-	nodes["in-the-internet"] = detailed.NodeSummary{
-		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "in-the-internet",
-			Label: "The Internet",
-		},
-		Type: "pseudo",
-	}
-
-	nodes["out-the-internet"] = detailed.NodeSummary{
-		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "out-the-internet",
-			Label: "The Internet",
-		},
-		Type: "pseudo",
-	}
-
 	for _, cp_stub := range graph.Providers {
 		cp := string(cp_stub.ID)
 		nodes[cp] = detailed.NodeSummary{
@@ -268,6 +250,24 @@ func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_fil
 				Type: report.Host,
 			}
 		}
+	}
+
+	nodes["in-the-internet"] = detailed.NodeSummary{
+		ImmediateParentID: "",
+		BasicNodeSummary: detailed.BasicNodeSummary{
+			ID:    "in-the-internet",
+			Label: "The Internet",
+		},
+		Type: "pseudo",
+	}
+
+	nodes["out-the-internet"] = detailed.NodeSummary{
+		ImmediateParentID: "",
+		BasicNodeSummary: detailed.BasicNodeSummary{
+			ID:    "out-the-internet",
+			Label: "The Internet",
+		},
+		Type: "pseudo",
 	}
 
 	for h, n := range graph.Processes {

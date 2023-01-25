@@ -2,10 +2,8 @@ FROM golang:1.19-alpine3.17 AS build
 
 RUN apk add --no-cache git make
 ADD deepfence_worker /go/deepfence_worker/
-ADD deepfence_utils /go/deepfence_utils/
+ADD golang_deepfence_sdk /go/golang_deepfence_sdk
 ADD deepfence_server /go/deepfence_server/
-ADD deepfence_utils /go/deepfence_utils/
-ADD deepfence_server_client /go/deepfence_server_client/
 WORKDIR /go/deepfence_worker/
 # "make vendor" is run before separately to avoid docker cache invalidation
 RUN CGO_ENABLED=0 make deepfence_worker

@@ -22,7 +22,7 @@ import (
 	"github.com/fluent/fluent-bit-go/output"
 
 	deepfenceAPI "github.com/deepfence/ThreatMapper/deepfence_server_client"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	rhttp "github.com/hashicorp/go-retryablehttp"
 )
 

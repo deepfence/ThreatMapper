@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	openapi "github.com/deepfence/ThreatMapper/deepfence_server_client"
-	oahttp "github.com/deepfence/ThreatMapper/deepfence_utils/http"
+	openapi "github.com/deepfence/golang_deepfence_sdk/client"
+	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/common/xfer"

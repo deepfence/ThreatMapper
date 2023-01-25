@@ -8,9 +8,9 @@ import (
 	"path"
 
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/deepfence/package-scanner/scanner/grype"
 	psUtils "github.com/deepfence/package-scanner/utils"
 	"github.com/minio/minio-go/v7"
@@ -47,14 +47,16 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
 
-	var params utils.SbomQueryParameters
+	var params utils.SbomParameters
 
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
 		return err
 	}
 
-	mc, err := directory.MinioClient(directory.NewContextWithNameSpace(directory.NamespaceID(tenantID)))
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
+
+	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
@@ -116,11 +118,11 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 
 	// scan status
 	status := struct {
-		utils.SbomQueryParameters
+		utils.SbomParameters
 		ScanStatus string `json:"scan_status,omitempty"`
 	}{
-		ScanStatus:          utils.SCAN_STATUS_SUCCESS,
-		SbomQueryParameters: params,
+		SbomParameters: params,
+		ScanStatus:     utils.SCAN_STATUS_SUCCESS,
 	}
 
 	sb, err := json.Marshal(status)

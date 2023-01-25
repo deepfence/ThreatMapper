@@ -17,12 +17,16 @@ DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="2.0.0"
 
-default: console_plugins agent console
+default: bootstrap console_plugins agent console
 
 .PHONY: console_plugins agent console
 console: redis postgres kafka-broker router server worker ui console_plugins file-server
 
 console_plugins: secretscanner malwarescanner packagescanner
+
+.PHONY: bootstrap
+bootstrap:
+	./bootstrap.sh
 
 #.PHONY: init-container
 #init-container:
@@ -101,14 +105,14 @@ openapi: server
 	-v $(PWD):/local openapitools/openapi-generator-cli generate \
 	-i /local/openapi.yaml \
 	-g go \
-	-o /local/deepfence_server_client \
+	-o /local/golang_deepfence_sdk/client \
 	-p isGoSubmodule=true \
-	-p packageName=deepfence_server_client \
-	--git-repo-id ThreatMapper \
+	-p packageName=client \
+	--git-repo-id golang_deepfence_sdk \
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/deepfence_server_client && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
+	cd $(PWD)/golang_deepfence_sdk/client && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli:
