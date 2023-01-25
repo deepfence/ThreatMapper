@@ -330,7 +330,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 
 	if params.ScanId == "" {
 		httpext.JSON(w, http.StatusBadRequest,
-			model.Response{Success: false, Message: "scan_id is required to process sbom"})
+			model.ErrorResponse{Message: "scan_id is required to process sbom"})
 		return
 	}
 
