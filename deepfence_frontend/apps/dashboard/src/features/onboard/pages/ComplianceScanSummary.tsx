@@ -5,7 +5,6 @@ import { Card, Separator, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
-import { ScanInProgress } from '@/features/onboard/components/scan-summary/ScanInProgress';
 
 const color: { [key: string]: string } = {
   alarm: 'bg-red-400 dark:bg-red-500',
@@ -243,39 +242,29 @@ export const Scan = ({ scanData }: { scanData: ScanDataType }) => {
 
 export const ComplianceScanSummary = () => {
   const [scanData] = useState(data);
-  const [scanning] = useState(false);
-
-  const headerText = scanning ? 'Compliance Scan' : 'Compliance Scan Results Summary';
-
-  const subHeaderText = scanning
-    ? 'A scan has been initiated, soon you will see your scan result.'
-    : 'Summary of compliance scan result';
 
   return (
     <div className="flex flex-col">
-      <ConnectorHeader title={headerText} description={subHeaderText} />
+      <ConnectorHeader
+        title={'Compliance Scan Results Summary'}
+        description={'Summary of compliance scan result'}
+      />
 
-      {scanning ? (
-        <ScanInProgress text="Your Compliance Scan is currently running..." />
-      ) : (
-        <>
-          <Link
-            to="/"
-            className={cx(
-              `${Typography.size.sm} `,
-              'underline underline-offset-2 ml-auto bg-transparent text-blue-600 dark:text-blue-500',
-            )}
-          >
-            Go to Posture Dashboard to view details scan result
-          </Link>
+      <Link
+        to="/dashboard"
+        className={cx(
+          `${Typography.size.sm} `,
+          'underline underline-offset-2 ml-auto bg-transparent text-blue-600 dark:text-blue-500',
+        )}
+      >
+        Go to Posture Dashboard to view details scan result
+      </Link>
 
-          <div className="flex flex-col gap-4 mt-4">
-            {scanData.map((accountScanData: ScanDataType) => {
-              return <Scan key={accountScanData.accountId} scanData={accountScanData} />;
-            })}
-          </div>
-        </>
-      )}
+      <div className="flex flex-col gap-4 mt-4">
+        {scanData.map((accountScanData: ScanDataType) => {
+          return <Scan key={accountScanData.accountId} scanData={accountScanData} />;
+        })}
+      </div>
     </div>
   );
 };

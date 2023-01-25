@@ -1,6 +1,6 @@
 import './scan.css';
 
-export const ScanInProgress = ({ text }: { text: string }) => {
+export const ScanLoader = ({ text }: { text: string }) => {
   return (
     <div className="flex flex-col items-center">
       <div className="scan-summary relative flex justify-center items-center">
