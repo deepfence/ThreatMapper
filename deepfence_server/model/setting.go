@@ -45,41 +45,6 @@ func (s *Setting) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*
 	return &setting, nil
 }
 
-func ListSettings(ctx context.Context, pgClient *postgresqlDb.Queries, visible bool) ([]postgresqlDb.Setting, error) {
-	var settings []postgresqlDb.Setting
-	var err error
-	if visible == true {
-		settings, err = pgClient.GetVisibleSettings(ctx)
-	} else {
-		settings, err = pgClient.GetSettings(ctx)
-	}
-	if err != nil {
-		return nil, err
-	}
-	return settings, nil
-}
-
-func GetManagementConsoleURL(ctx context.Context, pgClient *postgresqlDb.Queries) (string, error) {
-	setting, err := pgClient.GetSetting(ctx, ConsoleURLSettingKey)
-	if err != nil {
-		return "", err
-	}
-	var settingVal SettingValue
-	err = json.Unmarshal(setting.Value, &settingVal)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%v", settingVal.Value), nil
-}
-
-func GetSetting(ctx context.Context, pgClient *postgresqlDb.Queries, key string) (*postgresqlDb.Setting, error) {
-	setting, err := pgClient.GetSetting(ctx, key)
-	if err != nil {
-		return nil, err
-	}
-	return &setting, nil
-}
-
 func GetJwtSecretSetting(ctx context.Context, pgClient *postgresqlDb.Queries) ([]byte, error) {
 	setting, err := pgClient.GetSetting(ctx, JwtSecretSettingKey)
 	if errors.Is(err, sql.ErrNoRows) {
