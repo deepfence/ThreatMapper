@@ -137,13 +137,9 @@ func (d *OpenApiDocs) AddControlsOperations() {
 		"Fetch Agent Init Actions", "Fetch initial actions for a given agent after it started",
 		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls.AgentControls))
 
-	d.AddOperation("getLatestAgentVersion", http.MethodGet, "/deepfence/controls/get-agent-version",
-		"Fetch latest agent version", "Fetch latest agent version to check for upgrade",
-		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentImageMetadata), new(model.AgentImageMetadata))
-
-	d.AddOperation("addAgentVersion", http.MethodPost, "/deepfence/controls/agent-version",
-		"Push new agent version", "Push new agent version",
-		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentImageMetadata), nil)
+	d.AddOperation("upgradeAgentVersion", http.MethodPost, "/deepfence/controls/agent-upgrade",
+		"Schedule new agent version upgrade", "Schedule new agent version upgrade",
+		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentUpgrade), nil)
 }
 
 func (d *OpenApiDocs) AddCloudNodeOperations() {

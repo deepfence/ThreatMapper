@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-  
+
   #deepfence-init-container:
   #  container_name: df-init-container
   #  image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-1.4.1}
@@ -14,7 +14,7 @@ services:
   #    driver: "json-file"
   #    options:
   #      max-size: "1g"
-  
+
   deepfence-postgres:
     container_name: deepfence-postgres
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-1.4.1}
@@ -29,7 +29,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-  
+
   deepfence-redis:
     container_name: deepfence-redis
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-1.4.1}
@@ -46,7 +46,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-  
+
   deepfence-neo4j:
     container_name: deepfence-neo4j
     image: neo4j:4.4.12
@@ -179,6 +179,7 @@ services:
       - deepfence-postgres
     volumes:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     logging:
       driver: "json-file"
       options:
