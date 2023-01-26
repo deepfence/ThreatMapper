@@ -12,7 +12,7 @@ import (
 var controls map[ctl.ActionID]func(req []byte) error
 var controls_guard sync.RWMutex
 
-func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRequest | ctl.StartComplianceScanRequest | ctl.StartMalwareScanRequest](id ctl.ActionID, callback func(req T) error) error {
+func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRequest | ctl.StartComplianceScanRequest | ctl.StartMalwareScanRequest | ctl.StartAgentUpgradeRequest](id ctl.ActionID, callback func(req T) error) error {
 
 	controls_guard.Lock()
 	defer controls_guard.Unlock()

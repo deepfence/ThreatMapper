@@ -12,8 +12,8 @@ import (
 
 	"github.com/armon/go-metrics"
 	metrics_prom "github.com/armon/go-metrics/prometheus"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	dfUtils "github.com/deepfence/df-utils"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	docker_client "github.com/fsouza/go-dockerclient"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -134,6 +134,16 @@ func setControls() {
 		func(req ctl.StartMalwareScanRequest) error {
 			log.Info("Start Malware Scan")
 			return host.StartMalwareScan(req)
+		})
+	err = controls.RegisterControl(ctl.StartMalwareScan,
+		func(req ctl.StartMalwareScanRequest) error {
+			log.Info("Start Malware Scan")
+			return host.StartMalwareScan(req)
+		})
+	err = controls.RegisterControl(ctl.StartAgentUpgrade,
+		func(req ctl.StartAgentUpgradeRequest) error {
+			log.Info("Start Agent Upgrade")
+			return host.StartAgentUpgrade(req)
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)

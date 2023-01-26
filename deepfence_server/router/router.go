@@ -153,8 +153,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/agent", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentControls))
 				r.Get("/kubernetes-scanner", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetKubernetesScannerControls))
 				r.Post("/agent-init", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentInitControls))
-				r.Get("/get-agent-version", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetLatestAgentVersion))
-				r.Post("/agent-version", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.AddLatestAgentVersion))
+				r.Post("/agent-upgrade", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.ScheduleAgentUpgrade))
 			})
 
 			r.Route("/ingest", func(r chi.Router) {

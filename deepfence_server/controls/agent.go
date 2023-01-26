@@ -12,9 +12,20 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func GetAgentActions(ctx context.Context, nodeId string) ([]controls.Action, error) {
-	// Aappend more actions here
-	return ExtractStartingAgentScans(ctx, nodeId)
+func GetAgentActions(ctx context.Context, nodeId string) ([]controls.Action, []error) {
+	// Append more actions here
+	actions := []controls.Action{}
+
+	scan_actions, scan_err := ExtractStartingAgentScans(ctx, nodeId)
+	if scan_err == nil {
+		actions = append(actions, scan_actions...)
+	}
+	upgrade_actions, upgrade_err := ExtractPendingAgentUpgrade(ctx, nodeId)
+	if upgrade_err == nil {
+		actions = append(actions, upgrade_actions...)
+	}
+
+	return actions, []error{scan_err, upgrade_err}
 }
 
 func GetPendingAgentScans(ctx context.Context, nodeId string) ([]controls.Action, error) {
@@ -105,6 +116,64 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string) ([]controls.A
 		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
 		WITH s
 		RETURN s.trigger_action`, map[string]interface{}{"id": nodeId})
+
+	if err != nil {
+		return res, err
+	}
+
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		var action controls.Action
+		if record.Values[0] == nil {
+			log.Error().Msgf("Invalid neo4j trigger_action result, skipping")
+			continue
+		}
+		err := json.Unmarshal([]byte(record.Values[0].(string)), &action)
+		if err != nil {
+			log.Error().Msgf("Unmarshal of action failed: %v", err)
+			continue
+		}
+		res = append(res, action)
+	}
+
+	return res, tx.Commit()
+
+}
+
+func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string) ([]controls.Action, error) {
+	res := []controls.Action{}
+	if len(nodeId) == 0 {
+		return res, errors.New("Missing node_id")
+	}
+
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session, err := client.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
+		WHERE r.status = '`+utils.SCAN_STATUS_STARTING+`'
+		AND r.retries < 3
+		SET r.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		WITH r
+		RETURN r.trigger_action`, map[string]interface{}{"id": nodeId})
 
 	if err != nil {
 		return res, err

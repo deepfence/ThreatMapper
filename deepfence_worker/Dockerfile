@@ -12,7 +12,7 @@ FROM alpine:3.17
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
-RUN apk add --no-cache kafkacat
+RUN apk add --no-cache kafkacat docker openrc
 
 ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_POSTGRES_USER_DB_PORT=5432 \
