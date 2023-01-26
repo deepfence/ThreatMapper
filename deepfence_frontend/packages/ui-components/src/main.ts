@@ -41,6 +41,8 @@ export {
   getRowSelectionColumn,
   Table,
 } from '@/components/table/Table';
+export type { TableSkeletonProps } from '@/components/table/TableSkeleton';
+export { TableSkeleton } from '@/components/table/TableSkeleton';
 export { default as Tabs } from '@/components/tabs/Tabs';
 export { Tooltip } from '@/components/tooltip/Tooltip';
 export { Typography } from '@/components/typography/Typography';

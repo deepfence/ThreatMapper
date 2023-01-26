@@ -9,6 +9,7 @@ import {
   getRowSelectionColumn,
   RowSelectionState,
   Table,
+  TableSkeleton,
   Tabs,
 } from 'ui-components';
 
@@ -139,7 +140,9 @@ function MyConnectors() {
       size="md"
     >
       <div className="h-full dark:text-white">
-        <Suspense fallback={'loading..............'}>
+        <Suspense
+          fallback={<TableSkeleton rows={4} columns={5} size="sm" className="mt-8" />}
+        >
           <Await resolve={loaderData.data}>
             {(data: LoaderData['data']) => {
               return <MyConnectorsTable data={data} />;
