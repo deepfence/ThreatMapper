@@ -1,11 +1,10 @@
 package model
 
 import (
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"github.com/go-playground/validator/v10"
 	"strings"
 	"unicode"
 
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/go-playground/validator/v10"
 )
 

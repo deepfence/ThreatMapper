@@ -4,16 +4,16 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
-	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
-	// "github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
+	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	// "github.com/deepfence/golang_deepfence_sdk/utils/directory"
 )
 
 // todo: move to utils!
@@ -50,13 +50,6 @@ func Sync() error {
 	}
 
 	for _, registryRow := range registries {
-		b, err := json.Marshal(registryRow)
-		if err != nil {
-			log.Error().Msgf("unable to marshal: %v", err)
-			continue
-		}
-
-		log.Info().Msgf("reg: +%v", string(b))
 		r, err := registry.GetRegistryWithRegistryRow(registryRow)
 		if err != nil {
 			log.Error().Msgf("unable to get registry for %s: %v", registryRow.RegistryType, err)

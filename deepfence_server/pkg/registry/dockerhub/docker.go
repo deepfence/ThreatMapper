@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 const dockerHubURL = "https://hub.docker.com/v2"

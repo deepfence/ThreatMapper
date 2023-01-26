@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	stdlog "log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -16,24 +17,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
-	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
-	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
-
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"github.com/twmb/franz-go/pkg/kgo"
-
+	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
+	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-
-	stdlog "log"
-
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 var (

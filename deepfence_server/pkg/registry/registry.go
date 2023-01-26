@@ -5,10 +5,9 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerhub"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
-	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
+	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog/log"
 )
 
 // todo: try interface in input not return
@@ -27,7 +26,6 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 	err := errors.Errorf("registry type: %s, not supported", row.RegistryType)
 	// todo: move to constants
 	if row.RegistryType == "docker_hub" {
-		log.Info().Msg("inside if cond")
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
