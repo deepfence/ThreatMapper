@@ -292,3 +292,16 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, nil)
 }
+
+func (d *OpenApiDocs) AddRegistryOperations() {
+	// TODO
+	d.AddOperation("listImagesInRegistry", http.MethodGet, "/deepfence/container-registry/images",
+		"List Images in Registry", "List all the images present in all the registries",
+		http.StatusOK, []string{tagRegistry}, bearerToken, nil, nil)
+	d.AddOperation("ListRegistry", http.MethodGet, "/deepfence/container-registry/",
+		"List Images in Registry", "List all the added Registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryListReq), new([]postgresqldb.GetContainerRegistriesSafeRow))
+	d.AddOperation("AddRegistry", http.MethodPost, "/deepfence/container-registry/",
+		"Add Registry", "Add a new supported registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryAddReq), nil)
+}
