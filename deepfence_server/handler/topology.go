@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -80,7 +80,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 
 	ctx := req.Context()
 
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return

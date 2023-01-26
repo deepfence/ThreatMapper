@@ -6,8 +6,6 @@ replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
-replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server
-
 replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230112121648-782d22a7ebb7
 
 require (

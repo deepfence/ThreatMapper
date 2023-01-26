@@ -2,13 +2,13 @@ package handler
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
-	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	reportUtils "github.com/deepfence/golang_deepfence_sdk/utils/report"
 	"github.com/weaveworks/scope/report"
 
 	"github.com/bytedance/sonic"
@@ -64,13 +64,13 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	//	respondWith(ctx, w, http.StatusBadRequest, fmt.Errorf("Unsupported Content-Type: %v", contentType))
 	//	return
 	//}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 
-	var rawReport openapi.ApiDocsRawReport
+	var rawReport reportUtils.RawReport
 
 	err = sonic.Unmarshal(data, &rawReport)
 	if err != nil {
@@ -104,7 +104,7 @@ func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) 
 
 	ctx := r.Context()
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return

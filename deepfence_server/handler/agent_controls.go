@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
@@ -15,7 +15,7 @@ import (
 func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
@@ -58,7 +58,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
@@ -135,7 +135,7 @@ func (h *Handler) GetLatestAgentVersion(w http.ResponseWriter, r *http.Request) 
 func (h *Handler) AddLatestAgentVersion(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return

@@ -13,6 +13,7 @@ import (
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	postgresqldb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/golang_deepfence_sdk/utils/report"
 	utils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
@@ -157,7 +158,7 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(model.RawReport), nil)
+		http.StatusOK, []string{tagTopology}, bearerToken, new(report.RawReport), nil)
 
 	d.AddOperation("ingestSyncAgentReport", http.MethodPost, "/deepfence/ingest/sync-report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",

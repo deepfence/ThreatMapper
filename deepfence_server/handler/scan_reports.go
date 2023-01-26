@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -296,7 +296,7 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 		http.Error(respWrite, "invalid request", http.StatusInternalServerError)
 		return
 	}
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
@@ -437,7 +437,7 @@ func ingest_scan_report_kafka[T any](
 		http.Error(respWrite, "invalid request", http.StatusInternalServerError)
 		return
 	}
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
