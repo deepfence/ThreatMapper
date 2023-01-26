@@ -3,11 +3,68 @@ import React, { ComponentProps, useId } from 'react';
 import { IconContext } from 'react-icons';
 import { twMerge } from 'tailwind-merge';
 
+import { CircleSpinner } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
+const Spinner = ({
+  color,
+  size,
+  outline,
+}: {
+  color?: ColorType;
+  size?: SizeType;
+  outline?: boolean;
+}) => {
+  return (
+    <CircleSpinner
+      size={size}
+      className={twMerge(
+        cva([], {
+          variants: {
+            color: {
+              primary: 'fill-gray-100 dark:text-gray-400',
+              default: 'fill-gray-400 dark:text-gray-600',
+              danger: 'fill-gray-100 dark:text-gray-400',
+              success: 'fill-gray-100 dark:text-gray-400',
+              normal: 'fill-gray-100 dark:text-gray-400',
+            },
+            withOutline: {
+              true: '',
+            },
+          },
+          defaultVariants: {
+            color: 'default',
+          },
+          compoundVariants: [
+            {
+              withOutline: true,
+              color: 'primary',
+              className: 'fill-blue-600 text-blue-200 dark:text-blue-400',
+            },
+            {
+              withOutline: true,
+              color: 'danger',
+              className: 'fill-red-600 text-red-200 dark:text-red-400',
+            },
+            {
+              withOutline: true,
+              color: 'success',
+              className: 'fill-green-600 text-green-200 dark:text-green-400',
+            },
+            {
+              withOutline: true,
+              color: 'normal',
+              className: 'fill-gray-600 text-gray-200 dark:text-gray-400',
+            },
+          ],
+        })({ color, withOutline: outline }),
+      )}
+    />
+  );
+};
 export const buttonCva = cva(
   [
     'font-medium',
@@ -181,6 +238,7 @@ interface ButtonProps
   outline?: boolean;
   color?: ColorType;
   className?: string;
+  spin?: boolean;
 }
 
 const iconCva = cva('', {
@@ -306,6 +364,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       endIcon,
       className,
       pill,
+      spin,
       ...props
     },
     ref,
@@ -332,6 +391,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {startIcon && (
           <StartIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />
+        )}
+        {spin && (
+          <div className="mr-2 flex justify-center">
+            <Spinner color={color} size={size} outline={outline} />
+          </div>
         )}
         {children}
         {endIcon && (
