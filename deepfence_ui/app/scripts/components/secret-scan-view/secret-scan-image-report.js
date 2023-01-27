@@ -75,7 +75,7 @@ const SecretScanImageReport = props => {
     });
     setPage(0)
     dispatch(saveImageReportTableStateAction({ pageNumber: 0 }));
-  }, [globals]);
+  }, [globals, filterValues]);
 
   useEffect(() => {
     // pollable: register the function which needs to be polled
