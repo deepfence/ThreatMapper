@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
-func getImagesList(u, p, ns string) ([]model.ImageAndTag, error) {
+func getImagesList(u, p, ns string) ([]model.ContainerImage, error) {
 	token, cookies, err := getAuthTokenAndCookies(u, p)
 	if err != nil {
 		return nil, err
@@ -104,12 +105,12 @@ func getAuthTokenAndCookies(u, p string) (string, []*http.Cookie, error) {
 // 	getRepoTags(repoB, ns, token, cookies)
 // }
 
-func getRepoTags(repoB []byte, ns, token string, cookies []*http.Cookie) ([]model.ImageAndTag, error) {
-	var imagesWithTag []model.ImageAndTag
+func getRepoTags(repoB []byte, ns, token string, cookies []*http.Cookie) ([]model.ContainerImage, error) {
+	var imagesWithTag []model.ContainerImage
 	var repo model.RegistryImages
 	err := json.Unmarshal(repoB, &repo)
 	if err != nil {
-		return []model.ImageAndTag{}, err
+		return []model.ContainerImage{}, err
 	}
 	for _, r := range repo.Results {
 		imgTag, err := getRepoTag(r.Name, ns, token, cookies)
@@ -161,30 +162,22 @@ func getRepoTag(repoName, ns, token string, cookies []*http.Cookie) (ImageTag, e
 	return imgTag, nil
 }
 
-func getImageWithTags(imageName string, tag ImageTag) []model.ImageAndTag {
-	var imageAndTag []model.ImageAndTag
+func getImageWithTags(imageName string, tag ImageTag) []model.ContainerImage {
+	var imageAndTag []model.ContainerImage
 	for _, tr := range tag.Results {
 		for _, i := range tr.Images {
-			tt := model.ImageAndTag{
-				Name:                imageName,
-				Architecture:        i.Architecture,
-				Os:                  i.Os,
-				Size:                i.Size,
-				Status:              i.Status,
-				LastPulled:          i.LastPushed,
-				LastPushed:          i.LastPushed,
-				Digest:              i.Digest,
-				Tag:                 tr.Name,
-				LastUpdated:         tr.LastUpdated,
-				LastUpdaterUsername: tr.LastUpdaterUsername,
-				FullSize:            tr.FullSize,
-				V2:                  tr.V2,
-				TagStatus:           tr.TagStatus,
-				TagLastPulled:       tr.TagLastPulled,
-				TagLastPushed:       tr.TagLastPushed,
-				MediaType:           tr.MediaType,
-				ContentType:         tr.ContentType,
-				ImageID:             model.DigestToID(i.Digest),
+			tt := model.ContainerImage{
+				ID:      model.DigestToID(i.Digest),
+				Name:    imageName,
+				Tag:     tr.Name,
+				Size:    fmt.Sprint(i.Size),
+				Metrics: model.ComputeMetrics{},
+				Metadata: model.Metadata{
+					"status":       i.Status,
+					"last_pushed":  i.LastPushed,
+					"digest":       i.Digest,
+					"last_updated": tr.LastUpdated,
+				},
 			}
 			imageAndTag = append(imageAndTag, tt)
 		}

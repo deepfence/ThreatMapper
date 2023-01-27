@@ -65,7 +65,7 @@ func (d *RegistryDockerHub) DecryptSecret(aes encryption.AES) error {
 	return err
 }
 
-func (d *RegistryDockerHub) FetchImagesFromRegistry() ([]model.ImageAndTag, error) {
+func (d *RegistryDockerHub) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
 	return getImagesList(d.NonSecret.DockerHubUsername, d.Secret.DockerHubPassword, d.NonSecret.DockerHubNamespace)
 }
 

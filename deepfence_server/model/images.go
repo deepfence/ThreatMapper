@@ -10,10 +10,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns string) ([]ImageAndTag, error) {
+func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns string) ([]ContainerImage, error) {
 	var registryId string
 	var query string
-	var images []ImageAndTag
+	var images []ContainerImage
 
 	if rType != "" && ns != "" {
 		registryId = GetRegistryID(rType, ns)
@@ -63,7 +63,7 @@ func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns s
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
-		var image ImageAndTag
+		var image ContainerImage
 		// utils.FromMap(da.Props, &image)
 		p, err := json.Marshal(da.Props)
 		if err != nil {

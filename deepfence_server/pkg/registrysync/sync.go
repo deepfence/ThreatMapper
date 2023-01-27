@@ -92,7 +92,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	return injestToNeo4j(ctx, list, r)
 }
 
-func injestToNeo4j(ctx context.Context, images []model.ImageAndTag, r registry.Registry) error {
+func injestToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry) error {
 	// log.Info().Msgf("\n\n\n\n\ninjest this to neo4j +%v\n\n\n\n", images)
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -114,7 +114,7 @@ func injestToNeo4j(ctx context.Context, images []model.ImageAndTag, r registry.R
 	registryId := model.GetRegistryID(r.GetRegistryType(), r.GetNamespace())
 	_, err = tx.Run(`
 	UNWIND $batch as row
-	MERGE (n:ContainerImage{node_id:row.image_id})
+	MERGE (n:ContainerImage{node_id:row.node_id})
 	MERGE (m:Registry{node_id: $node_id })
     MERGE (m) -[:HOSTS]-> (n)
 	SET n+= row, n.updated_at = TIMESTAMP()`,
@@ -126,7 +126,7 @@ func injestToNeo4j(ctx context.Context, images []model.ImageAndTag, r registry.R
 	return tx.Commit()
 }
 
-func RegistryImagesToMaps(ms []model.ImageAndTag) []map[string]interface{} {
+func RegistryImagesToMaps(ms []model.ContainerImage) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		res = append(res, toMap(v))
@@ -134,12 +134,26 @@ func RegistryImagesToMaps(ms []model.ImageAndTag) []map[string]interface{} {
 	return res
 }
 
-func toMap(i model.ImageAndTag) map[string]interface{} {
+func toMap(i model.ContainerImage) map[string]interface{} {
 	out, err := json.Marshal(i)
 	if err != nil {
 		return nil
 	}
 	bb := map[string]interface{}{}
 	_ = json.Unmarshal(out, &bb)
+	bb = convertStructFieldToJSONString(bb, "metrics")
+	bb = convertStructFieldToJSONString(bb, "metadata")
+	return bb
+}
+
+func convertStructFieldToJSONString(bb map[string]interface{}, key string) map[string]interface{} {
+	if val, ok := bb[key]; ok && val != nil {
+		v, e := json.Marshal(val)
+		if e == nil {
+			bb[key] = string(v)
+		} else {
+			bb[key] = "error"
+		}
+	}
 	return bb
 }
