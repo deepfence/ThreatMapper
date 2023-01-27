@@ -1,11 +1,9 @@
-import cx from 'classnames';
 import { cva } from 'cva';
 import { twMerge } from 'tailwind-merge';
 
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default';
 
 type CircleSpinnerProps = {
-  fullScreen?: boolean;
   size?: SizeType;
   className?: string;
 };
@@ -23,21 +21,9 @@ const spinnerCVA = cva(['text-gray-200 animate-spin dark:text-gray-600 fill-blue
   },
 });
 
-export const CircleSpinner = ({
-  fullScreen = false,
-  size = 'default',
-  className,
-}: CircleSpinnerProps) => {
+export const CircleSpinner = ({ size = 'default', className }: CircleSpinnerProps) => {
   return (
-    <div
-      className={twMerge(
-        cx('inline-block bg-transparent', {
-          'flex justify-center items-center h-screen fixed w-full inset-0 overflow-hidden bg-white dark:bg-gray-900 opacity-90':
-            fullScreen,
-        }),
-      )}
-      role="status"
-    >
+    <div className="inline-block bg-transparent" role="status">
       <svg
         aria-hidden="true"
         className={twMerge(

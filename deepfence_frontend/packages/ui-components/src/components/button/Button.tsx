@@ -9,7 +9,7 @@ import { ObjectWithNonNullableValues } from '@/types/utils';
 export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-const Spinner = ({
+const Loader = ({
   color,
   size,
   outline,
@@ -25,7 +25,7 @@ const Spinner = ({
         cva([], {
           variants: {
             color: {
-              primary: 'fill-gray-100 dark:text-gray-400',
+              primary: 'fill-gray-100 dark:text-gray-300',
               default: 'fill-gray-400 dark:text-gray-600',
               danger: 'fill-gray-100 dark:text-gray-400',
               success: 'fill-gray-100 dark:text-gray-400',
@@ -238,7 +238,7 @@ interface ButtonProps
   outline?: boolean;
   color?: ColorType;
   className?: string;
-  spin?: boolean;
+  loading?: boolean;
 }
 
 const iconCva = cva('', {
@@ -364,7 +364,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       endIcon,
       className,
       pill,
-      spin,
+      loading,
       ...props
     },
     ref,
@@ -392,9 +392,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {startIcon && (
           <StartIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />
         )}
-        {spin && (
-          <div className="mr-2 flex justify-center">
-            <Spinner color={color} size={size} outline={outline} />
+        {loading && (
+          <div className="mr-3 flex justify-center">
+            <Loader color={color} size={size} outline={outline} />
           </div>
         )}
         {children}
