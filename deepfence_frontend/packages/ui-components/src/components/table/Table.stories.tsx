@@ -10,6 +10,7 @@ import {
   Table,
   TableInstance,
 } from '@/components/table/Table';
+import { TableSkeleton } from '@/components/table/TableSkeleton';
 
 export default {
   title: 'Components/Table',
@@ -540,3 +541,14 @@ const TemplateWithSubRows: ComponentStory<typeof Table<NestedFruit>> = (args) =>
 
 export const DefaultWithSubRows = TemplateWithSubRows.bind({});
 DefaultWithSubRows.args = {};
+
+const SkeletonTemplate: ComponentStory<typeof TableSkeleton> = (args) => {
+  return <TableSkeleton {...args} />;
+};
+
+export const DefaultTableSkeleton = SkeletonTemplate.bind({});
+DefaultTableSkeleton.args = {
+  columns: 5,
+  rows: 3,
+  size: 'sm',
+};
