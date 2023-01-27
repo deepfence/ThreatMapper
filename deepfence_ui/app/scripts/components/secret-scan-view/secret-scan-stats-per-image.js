@@ -8,7 +8,7 @@ import { constructGlobalSearchQuery } from '../../utils/search-utils';
 const SecretScanStatsPerImage = props => {
   const dispatch = useDispatch();
 
-  const { refreshCounter, hideMasked } = props;
+  const { refreshCounter, hideMasked, scanId } = props;
 
   useEffect(() => {
     const { updatePollParams } = props;
@@ -39,6 +39,9 @@ const SecretScanStatsPerImage = props => {
     const params = {
       lucene_query: globalSearchQuery,
       hideMasked,
+      filters: {
+        scan_id: scanId
+      }
     };
     return dispatch(getSecretScanDataAction(params));
   }
