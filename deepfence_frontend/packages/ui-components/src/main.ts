@@ -25,6 +25,7 @@ export { default as SlidingModal } from '@/components/modal/SlidingModal';
 export { default as Radio } from '@/components/radio/Radio';
 export { Select, SelectItem } from '@/components/select/Select';
 export { default as Separator } from '@/components/separator/Separator';
+export { CircleSpinner } from '@/components/spinner/CircleSpinner';
 export { Step, Stepper } from '@/components/stepper/Stepper';
 export { default as Switch } from '@/components/switch/Switch';
 export type {

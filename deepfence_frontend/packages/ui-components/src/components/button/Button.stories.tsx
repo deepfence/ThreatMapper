@@ -91,12 +91,21 @@ Primary.args = {
   size: 'xs',
 };
 
+export const PrimaryWithLoader = Template.bind({});
+PrimaryWithLoader.args = {
+  children: 'Button text',
+  color: 'primary',
+  size: 'xs',
+  loading: true,
+};
+
 export const PrimaryWithOutline = Template.bind({});
 PrimaryWithOutline.args = {
   children: 'Button text',
   color: 'primary',
   size: 'xs',
   outline: true,
+  loading: true,
 };
 
 export const Danger = Template.bind({});
