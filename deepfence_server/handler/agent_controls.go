@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -118,9 +119,15 @@ func (h *Handler) ScheduleAgentUpgrade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	url, err := controls.GetAgentVersionTarball(ctx, agentUp.Version)
+	if err != nil {
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
 	console_ip := os.Getenv("MGMT_CONSOLE_URL")
 	internal_req := ctl.StartAgentUpgradeRequest{
-		HomeDirectoryUrl: fmt.Sprintf("http://%s:8089/%s.tar.gz", console_ip, agentUp.Version),
+		HomeDirectoryUrl: strings.ReplaceAll(url, "deepfence-file-server:9000", fmt.Sprintf("%s/file-server", console_ip)),
 		Version:          agentUp.Version,
 	}
 

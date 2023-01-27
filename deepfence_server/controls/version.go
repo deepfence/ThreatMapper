@@ -59,3 +59,42 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string,
 	return tx.Commit()
 
 }
+
+func GetAgentVersionTarball(ctx context.Context, version string) (string, error) {
+
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	session, err := client.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return "", err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return "", err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (v:AgentVersion{node_id: $version})
+		return v.url`,
+		map[string]interface{}{
+			"version": version,
+		})
+
+	if err != nil {
+		return "", err
+	}
+
+	r, err := res.Single()
+
+	if err != nil {
+		return "", err
+	}
+
+	return r.Values[0].(string), nil
+}

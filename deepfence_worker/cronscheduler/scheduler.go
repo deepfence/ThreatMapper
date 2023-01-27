@@ -48,7 +48,7 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 1m", s.CheckAgentUpgradeTask)
+	_, err = s.cron.AddFunc("@every 60m", s.CheckAgentUpgradeTask)
 	if err != nil {
 		return err
 	}

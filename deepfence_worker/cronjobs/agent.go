@@ -13,8 +13,8 @@ import (
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	m "github.com/minio/minio-go/v7"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 func getVersionMetadata(url string, result *[]map[string]interface{}) error {
@@ -37,6 +37,8 @@ func getVersionMetadata(url string, result *[]map[string]interface{}) error {
 
 func CheckAgentUpgrade(msg *message.Message) error {
 
+	log.Info().Msg("Start agent version check")
+
 	res := []map[string]interface{}{}
 	getVersionMetadata("https://api.github.com/repos/deepfence/ThreatMapper/tags", &res)
 
@@ -50,16 +52,16 @@ func CheckAgentUpgrade(msg *message.Message) error {
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
-	tags_to_ingest, err := prepareAgentReleases(ctx, tags_to_ingest)
+	tags_with_urls, err := prepareAgentReleases(ctx, tags_to_ingest)
 	if err != nil {
 		return err
 	}
 
-	return ingestAgentVersion(ctx, tags_to_ingest)
+	return ingestAgentVersion(ctx, tags_with_urls)
 }
 
-func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) ([]string, error) {
-	processed_tags := []string{}
+func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[string]string, error) {
+	processed_tags := map[string]string{}
 	minio, err := directory.MinioClient(ctx)
 	if err != nil {
 		return processed_tags, err
@@ -103,13 +105,19 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) ([]strin
 			log.Error().Err(err)
 			continue
 		}
-		log.Info().Msgf("Upload file: %v", res)
-		processed_tags = append(processed_tags, tag)
+
+		url, err := minio.ExposeFile(ctx, res.Key)
+		if err != nil {
+			log.Error().Err(err)
+			continue
+		}
+		log.Info().Msgf("Exposed URL: %v", url)
+		processed_tags[tag] = url
 	}
 	return processed_tags, nil
 }
 
-func ingestAgentVersion(ctx context.Context, tags_to_ingest []string) error {
+func ingestAgentVersion(ctx context.Context, tags_to_url map[string]string) error {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -123,10 +131,15 @@ func ingestAgentVersion(ctx context.Context, tags_to_ingest []string) error {
 	}
 	defer tx.Close()
 
+	tags_to_ingest := []map[string]string{}
+	for k, v := range tags_to_url {
+		tags_to_ingest = append(tags_to_ingest, map[string]string{"tag": k, "url": v})
+	}
+
 	if _, err = tx.Run(`
-		UNWIND $tags as tag
-		MERGE (:AgentVersion{node_id: tag})
-		`, map[string]interface{}{"tags": tags_to_ingest}); err != nil {
+		UNWIND $batch as row
+		MERGE (:AgentVersion{node_id: row.tag, url: row.url})
+		`, map[string]interface{}{"batch": tags_to_ingest}); err != nil {
 		return err
 	}
 
