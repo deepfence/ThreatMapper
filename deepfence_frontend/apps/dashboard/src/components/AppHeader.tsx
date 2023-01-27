@@ -242,7 +242,11 @@ export const AppHeader = () => {
             ref={navIconRef}
             onClick={onNavIconClick}
             color="normal"
-            className="hover:bg-white dark:hover:bg-gray-800 hover:scale-105 duration-100 ease-in-out"
+            className={cx(
+              'hover:bg-white dark:hover:bg-gray-800 hover:scale-105',
+              'duration-100 ease-in-out',
+              'outline-none focus:ring-0 focus-visible:ring-4 dark:focus-visible:ring-gray-700',
+            )}
           />
         </div>
         <div className="flex items-center gap-4">
