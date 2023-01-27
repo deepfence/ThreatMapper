@@ -6,13 +6,13 @@ replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230112121648-782d22a7ebb7
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230127115739-84aacf6856fa
 
 require (
 	github.com/ThreeDotsLabs/watermill v1.1.1
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
-	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230127082250-ebacdd3fa775
+	github.com/deepfence/package-scanner v1.2.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.47
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
@@ -38,7 +38,7 @@ require (
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/deepfence/vessel v0.8.1 // indirect
+	github.com/deepfence/vessel v0.9.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v20.10.22+incompatible // indirect

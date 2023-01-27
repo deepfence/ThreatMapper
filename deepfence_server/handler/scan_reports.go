@@ -74,7 +74,6 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 }
 
 func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
 	var req model.VulnerabilityScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
@@ -329,6 +328,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if params.ScanId == "" {
+		log.Error().Msgf("error scan id is empty, params: %+v", params)
 		httpext.JSON(w, http.StatusBadRequest,
 			model.ErrorResponse{Message: "scan_id is required to process sbom"})
 		return
