@@ -33,6 +33,8 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 		return err
 	}
 
+	Backup("/home/deepfence")
+
 	err = extractTarGz("/tmp/deepfence.tar.gz", "/home/deepfence")
 	if err != nil {
 		return err
@@ -76,6 +78,13 @@ func downloadFile(filepath string, url string) (err error) {
 }
 
 func extractTarGz(input_file, output_dir string) error {
-	cmd := exec.Command("tar", "-xf", input_file, "-C", output_dir)
+	cmd := exec.Command("tar", "xf", input_file, "-C", output_dir)
 	return cmd.Run()
+}
+
+func Backup(dir string) {
+	cmd := exec.Command("mv", dir, dir+".old")
+	cmd.Run()
+	cmd = exec.Command("mkdir", "-p", dir)
+	cmd.Run()
 }
