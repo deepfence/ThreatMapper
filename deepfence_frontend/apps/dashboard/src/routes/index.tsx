@@ -6,7 +6,7 @@ import { publicRoutes } from '@/routes/public';
 const notFoundRoute = [
   {
     path: '*',
-    element: '//TODO change me',
+    element: '404 Not Found',
   },
 ];
 

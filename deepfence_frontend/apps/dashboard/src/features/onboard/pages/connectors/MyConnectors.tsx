@@ -155,13 +155,7 @@ function MyConnectors() {
 }
 
 function MyConnectorsTable({ data }: LoaderData) {
-  const [expandedState, setExpandedState] = useState<ExpandedState>(
-    data?.reduce<ExpandedState>((_, node) => {
-      return {
-        [node.id]: true,
-      };
-    }, {}) ?? {},
-  );
+  const [expandedState, setExpandedState] = useState<ExpandedState>(true);
 
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const columnHelper = createColumnHelper<ConnectionNode>();
