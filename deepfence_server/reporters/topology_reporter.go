@@ -19,15 +19,15 @@ type neo4jTopologyReporter struct {
 type NodeID string
 
 type NodeStub struct {
-	ID     NodeID `json:"id"`
-	Name   string `json:"name"`
+	ID   NodeID `json:"id"`
+	Name string `json:"name"`
 }
 
 func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
 
 	r, err := tx.Run(`
 	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
-	WITH coalesce(n.kubernete_cluster_name, '') <> '' AS is_kub, n, m, r
+	WITH coalesce(n.kubernetes_cluster_name, '') <> '' AS is_kub, n, m, r
 	RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_name ELSE n.cloud_region END, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid`, nil)
 
 	if err != nil {
@@ -166,7 +166,7 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WITH coalesce(n.kubernete_cluster_name, '') <> '' AS is_kub, n
+		WITH coalesce(n.kubernetes_cluster_name, '') <> '' AS is_kub, n
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
 		AND CASE WHEN is_kub THEN
 		    CASE WHEN $kubernetes IS NULL THEN [1] ELSE n.kubernetes_cluster_name IN $kubernetes END
@@ -187,6 +187,9 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 
 	for _, record := range records {
 		//provider := record.Values[0].(string)
+		if record.Values[1] == nil || record.Values[2] == nil {
+			continue
+		}
 		region := NodeID(record.Values[1].(string))
 		host_id := NodeID(record.Values[2].(string))
 		if _, present := res[region]; !present {
