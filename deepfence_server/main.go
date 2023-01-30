@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	stdlog "log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -30,6 +29,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/rs/zerolog"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -103,7 +103,7 @@ func main() {
 		mux.Use(
 			middleware.RequestLogger(
 				&middleware.DefaultLogFormatter{
-					Logger:  stdlog.New(&log.LogInfoWriter{}, "", 0),
+					Logger:  log.NewStdLoggerWithLevel(zerolog.DebugLevel),
 					NoColor: true},
 			),
 		)
@@ -143,7 +143,7 @@ func main() {
 	httpServer := http.Server{
 		Addr:     config.HttpListenEndpoint,
 		Handler:  mux,
-		ErrorLog: stdlog.New(&log.LogErrorWriter{}, "", 0),
+		ErrorLog: log.NewStdLoggerWithLevel(zerolog.ErrorLevel),
 	}
 
 	idleConnectionsClosed := make(chan struct{})
