@@ -360,7 +360,8 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(errors.New("Email not configured"), w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: "A password reset email will be sent if a user exists with the provided email id"})
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{
+		Message: "A password reset email will be sent if a user exists with the provided email id"})
 }
 
 func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Request) {
@@ -439,4 +440,20 @@ func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, i
 		return nil, statusCode, ctx, pgClient, err
 	}
 	return user, http.StatusOK, ctx, pgClient, nil
+}
+
+func (h *Handler) GetApiTokenForConsoleAgent(w http.ResponseWriter, r *http.Request) {
+	// TODO make this local context for saas
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	token, err := pgClient.GetApiTokenByActiveUser(r.Context())
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, map[string]string{"api_token": token.String()})
 }

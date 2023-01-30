@@ -14,6 +14,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -42,8 +43,9 @@ var (
 )
 
 type Config struct {
-	HttpListenEndpoint string
-	JwtSecret          []byte
+	HttpListenEndpoint     string
+	InternalListenEndpoint string
+	JwtSecret              []byte
 }
 
 func main() {
@@ -104,7 +106,21 @@ func main() {
 			middleware.RequestLogger(
 				&middleware.DefaultLogFormatter{
 					Logger:  log.NewStdLoggerWithLevel(zerolog.DebugLevel),
-					NoColor: true},
+					NoColor: true,
+				},
+			),
+		)
+	}
+
+	internalMux := chi.NewRouter()
+	internalMux.Use(middleware.Recoverer)
+	if *enableHttpLogs {
+		internalMux.Use(
+			middleware.RequestLogger(
+				&middleware.DefaultLogFormatter{
+					Logger:  log.NewStdLoggerWithLevel(zerolog.DebugLevel),
+					NoColor: true,
+				},
 			),
 		)
 	}
@@ -140,29 +156,65 @@ func main() {
 		return
 	}
 
+	err = router.InternalRoutes(internalMux,
+		config.InternalListenEndpoint, config.JwtSecret, ingestC, publisher,
+	)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return
+	}
+
 	httpServer := http.Server{
 		Addr:     config.HttpListenEndpoint,
 		Handler:  mux,
 		ErrorLog: log.NewStdLoggerWithLevel(zerolog.ErrorLevel),
 	}
 
-	idleConnectionsClosed := make(chan struct{})
+	internalServer := http.Server{
+		Addr:     config.InternalListenEndpoint,
+		Handler:  internalMux,
+		ErrorLog: log.NewStdLoggerWithLevel(zerolog.ErrorLevel),
+	}
+
+	// start the servers
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		sigint := make(chan os.Signal, 1)
 		signal.Notify(sigint, os.Interrupt)
 		<-sigint
 		if err := httpServer.Shutdown(context.Background()); err != nil {
 			log.Error().Msgf("http server shutdown error: %v", err)
 		}
-		close(idleConnectionsClosed)
+		if err := internalServer.Shutdown(context.Background()); err != nil {
+			log.Error().Msgf("internal server shutdown error: %v", err)
+		}
 	}()
 
-	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-		log.Error().Msgf("http server ListenAndServe error: %v", err)
-		return
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Info().Msgf("start http server at %s", config.HttpListenEndpoint)
+		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+			log.Error().Msgf("http server ListenAndServe error: %v", err)
+			return
+		}
+	}()
 
-	<-idleConnectionsClosed
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Info().Msgf("start internal server at %s", config.InternalListenEndpoint)
+		if err := internalServer.ListenAndServe(); err != http.ErrServerClosed {
+			log.Error().Msgf("internal server ListenAndServe error: %v", err)
+			return
+		}
+	}()
+
+	wg.Wait()
 	cancel()
 
 	log.Info().Msg("deepfence-server stopped")
@@ -178,7 +230,8 @@ func initialize() (*Config, error) {
 	}
 
 	return &Config{
-		HttpListenEndpoint: ":" + httpListenEndpoint,
+		HttpListenEndpoint:     ":" + httpListenEndpoint,
+		InternalListenEndpoint: ":8081",
 	}, nil
 }
 
