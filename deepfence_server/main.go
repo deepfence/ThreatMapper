@@ -53,6 +53,7 @@ func main() {
 
 	openApiDocs := apiDocs.InitializeOpenAPIReflector()
 	initializeOpenApiDocs(openApiDocs)
+	initializeInternalOpenApiDocs(openApiDocs)
 
 	if *exportOpenapiDocsPath != "" {
 		if *exportOpenapiDocsPath != filepath.Clean(*exportOpenapiDocsPath) {
@@ -327,6 +328,10 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddScansOperations()
 	openApiDocs.AddDiagnosisOperations()
 	openApiDocs.AddCloudNodeOperations()
+}
+
+func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
+	openApiDocs.AddInternalAuthOperations()
 }
 
 func initializeKafka() error {

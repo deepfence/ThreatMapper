@@ -74,7 +74,7 @@ func (oc OpenapiClient) Publish(r report.Report) error {
 
 	req := oc.client.TopologyApi.IngestAgentReport(context.Background())
 
-	req = req.ModelRawReport(openapi.ModelRawReport{
+	req = req.ReportRawReport(openapi.ReportRawReport{
 		Payload: string(buf),
 	})
 

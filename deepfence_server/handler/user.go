@@ -455,5 +455,5 @@ func (h *Handler) GetApiTokenForConsoleAgent(w http.ResponseWriter, r *http.Requ
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, map[string]string{"api_token": token.String()})
+	httpext.JSON(w, http.StatusOK, model.ApiAuthRequest{ApiToken: token.String()})
 }

@@ -31,7 +31,7 @@ func InternalRoutes(r *chi.Mux, serverPort string, jwtSecret []byte,
 
 	r.Route("/deepfence/internal", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
-			r.Route("/api-token", func(r chi.Router) {
+			r.Route("/console-api-token", func(r chi.Router) {
 				r.Get("/", dfHandler.GetApiTokenForConsoleAgent)
 			})
 		})

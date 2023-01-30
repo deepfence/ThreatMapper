@@ -25,6 +25,7 @@ const (
 	tagControls          = "Controls"
 	tagDiagnosis         = "Diagnosis"
 	tagRegistry          = "Regisry"
+	tagInternal          = "Internal"
 
 	securityName = "bearer_token"
 )
