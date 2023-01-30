@@ -1,4 +1,5 @@
 import { HiSwitchHorizontal } from 'react-icons/hi';
+import { LoaderFunctionArgs, redirect } from 'react-router-dom';
 import { Button, Card, Separator, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
@@ -6,6 +7,27 @@ import LogoAwsWhite from '@/assets/logo-aws-white.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { useTheme } from '@/theme/ThemeContext';
 import { usePageNavigation } from '@/utils/usePageNavigation';
+
+const loader = ({
+  params,
+}: LoaderFunctionArgs): {
+  nodeType: string;
+  nodeIds: string;
+} => {
+  // TODO: validate node type from url
+  if (
+    !params.nodeType ||
+    !params.nodeType.trim().length ||
+    !params.nodeIds ||
+    !params.nodeIds.trim().length
+  ) {
+    throw redirect('/onboard/connectors/my-connectors');
+  }
+  return {
+    nodeType: params.nodeType,
+    nodeIds: params.nodeIds,
+  };
+};
 
 type ScanTypeListProps = {
   scanType: string;
@@ -123,7 +145,8 @@ const ScanType = () => {
     </div>
   );
 };
-export const ChooseScan = () => {
+
+const ChooseScan = () => {
   const { goBack } = usePageNavigation();
   return (
     <>
@@ -138,4 +161,9 @@ export const ChooseScan = () => {
       </Button>
     </>
   );
+};
+
+export const module = {
+  loader,
+  element: <ChooseScan />,
 };

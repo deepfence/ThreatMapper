@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useRef, useState } from 'react';
 import { HiChevronDown, HiChevronRight, HiCubeTransparent } from 'react-icons/hi';
-import { Await, useLoaderData } from 'react-router-dom';
+import { Await, generatePath, useLoaderData } from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
@@ -23,6 +23,8 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 
 interface ConnectionNode {
   id: string;
+  apiId: string;
+  apiType: string;
   count?: number;
   accountType: string;
   connectionMethod?: string;
@@ -79,32 +81,46 @@ async function getConnectorsData(): Promise<Array<ConnectionNode>> {
   if (awsResults.total) {
     data.push({
       id: 'aws',
+      apiId: 'aws',
+      apiType: 'aws',
       accountType: 'AWS',
       count: awsResults.total,
-      connections:
+      connections: (
         awsResults.cloud_node_accounts_info?.map((result) => ({
-          id: `aws${result.node_id}`,
+          id: `aws-${result.node_id}`,
+          apiId: result.node_id ?? '',
           accountType: 'AWS',
+          apiType: 'aws',
           connectionMethod: 'Terraform',
           accountId: result.node_name ?? '-',
           active: !!result.active,
-        })) ?? [],
+        })) ?? []
+      ).sort((a, b) => {
+        return (a.accountId ?? '').localeCompare(b.accountId ?? '');
+      }),
     });
   }
 
   if (hostsResults.nodes) {
     const hosts = Object.keys(hostsResults.nodes)
       .map((key) => hostsResults.nodes[key])
-      .filter((host) => {
-        return !host.pseudo;
+      .filter((node) => {
+        return node.type === 'host';
+      })
+      .sort((a, b) => {
+        return (a.label ?? a.id ?? '').localeCompare(b.label ?? b.id ?? '');
       });
     if (hosts.length) {
       data.push({
         id: 'hosts',
+        apiId: 'hosts',
+        apiType: 'host',
         accountType: 'Linux Hosts',
         count: hosts.length,
         connections: hosts.map((host) => ({
           id: `hosts-${host.id}`,
+          apiId: host.id ?? '',
+          apiType: 'host',
           accountType: 'Host',
           connectionMethod: 'Agent',
           accountId: host.label ?? host.id ?? '-',
@@ -202,19 +218,35 @@ function MyConnectorsTable({ data }: LoaderData) {
             default:
               nodeText = 'items';
           }
+          const selectedNodesOfSameType = findSelectedNodesOfType(
+            rowSelectionState,
+            info.row.original,
+          );
           return (
             <div className="flex gap-4">
               {info.getValue()} ({info.row.original.count ?? 0} {nodeText})
               {rowSelectionState[info.row.original.id] ? (
-                <DFLink to="/onboard/scan/choose" className="flex items-center">
+                <DFLink
+                  to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
+                    nodeType: info.row.original.apiType,
+                    nodeIds: info.row.original.connections!.map((n) => n.apiId).join(','),
+                  })}
+                  className="flex items-center"
+                >
                   <HiCubeTransparent className="mr-2" /> Configure Scan on all {nodeText}
                 </DFLink>
               ) : null}
               {!rowSelectionState[info.row.original.id] &&
-              Object.keys(rowSelectionState).length ? (
-                <DFLink to="/onboard/scan/choose" className="flex items-center">
+              selectedNodesOfSameType.length ? (
+                <DFLink
+                  to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
+                    nodeType: info.row.original.apiType,
+                    nodeIds: selectedNodesOfSameType.map((n) => n.apiId).join(','),
+                  })}
+                  className="flex items-center"
+                >
                   <HiCubeTransparent className="mr-2" /> Configure Scan on{' '}
-                  {Object.keys(rowSelectionState).length} {nodeText}
+                  {selectedNodesOfSameType.length} {nodeText}
                 </DFLink>
               ) : null}
             </div>
@@ -243,9 +275,15 @@ function MyConnectorsTable({ data }: LoaderData) {
       columnHelper.display({
         size: 200,
         id: 'actions',
-        cell: () => {
+        cell: (info) => {
           return (
-            <DFLink to="/onboard/scan/choose" className="flex items-center">
+            <DFLink
+              to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
+                nodeType: info.row.original.apiType,
+                nodeIds: info.row.original.apiId,
+              })}
+              className="flex items-center"
+            >
               <HiCubeTransparent className="mr-2" /> Configure Scan
             </DFLink>
           );
@@ -324,3 +362,16 @@ export const module = {
   loader,
   element: <MyConnectors />,
 };
+
+function findSelectedNodesOfType(
+  selectionState: RowSelectionState,
+  data: ConnectionNode,
+): ConnectionNode[] {
+  const selectedNodes: ConnectionNode[] = [];
+  data.connections?.forEach((node) => {
+    if (node.id in selectionState) {
+      selectedNodes.push(node);
+    }
+  });
+  return selectedNodes;
+}
