@@ -139,13 +139,13 @@ def secret_fix_interrupted(*args):
             last_status_timestamp = datetime.fromtimestamp(status["timestamp"] / 1000)
             datetime_now = datetime.now()
             total_diff_minutes = int(round((datetime_now - last_status_timestamp).total_seconds() / 60))
-            if status["action"] == CVE_SCAN_STATUS_QUEUED:
+            if status["scan_status"] == CVE_SCAN_STATUS_QUEUED:
                 # If scan is in QUEUED state for 6 hours, then it has failed
                 if total_diff_minutes >= 360:
                     insert_secret_error_doc(status, datetime_now, host, node_id,
                                             "Scan was stopped because it was in queued state longer than expected. "
                                             "Please start again.")
-            elif status["action"] == SECRET_SCAN_STATUS_IN_PROGRESS:
+            elif status["scan_status"] == SECRET_SCAN_STATUS_IN_PROGRESS:
                 # If scan was started 10 minutes ago, still no updated status found, then it has failed
                 if total_diff_minutes >= 10:
                     insert_secret_error_doc(status, datetime_now, host, node_id,
