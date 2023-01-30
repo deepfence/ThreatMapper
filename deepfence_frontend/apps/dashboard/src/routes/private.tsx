@@ -12,7 +12,7 @@ import {
 import { AmazonECRConnector } from '@/features/onboard/pages/AmazonECRConnector';
 import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
 import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
-import { ChooseScan } from '@/features/onboard/pages/ChooseScan';
+import { module as chooseScan } from '@/features/onboard/pages/ChooseScan';
 import { ComplianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
 import { ComplianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
@@ -101,8 +101,8 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'scan',
         children: [
           {
-            path: 'choose',
-            element: <ChooseScan />,
+            path: 'choose/:nodeType/:nodeIds',
+            ...chooseScan,
             meta: { title: 'Choose scan type' },
           },
           {
