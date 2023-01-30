@@ -60,7 +60,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			if err != nil {
 				complianceError(w, err.Error())
 			}
-			pendingScansList, err := reporters.GetPendingScansList(ctx, utils.CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
+			pendingScansList, err := reporters.GetPendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
 			if err != nil {
 				continue
 			}
@@ -86,7 +86,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			logrus.Infof("Error while upserting node: %+v", err)
 			complianceError(w, err.Error())
 		}
-		pendingScansList, err := reporters.GetPendingScansList(ctx, utils.CLOUD_COMPLIANCE_SCAN, nodeId)
+		pendingScansList, err := reporters.GetPendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
 			logrus.Debugf("No pending scans found for node id: %s", nodeId)
 			httpext.JSON(w, http.StatusOK,

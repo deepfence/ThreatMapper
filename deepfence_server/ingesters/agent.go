@@ -661,7 +661,40 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 	tx.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 	tx.Run("MERGE (n:Node{node_id:'deepfence-console-cron', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 
+	err = tx.Commit()
+	if err != nil {
+		log.Warn().Msgf("Neo4j internet nodes commit err: %v", err)
+	}
+	tx.Close()
+	tx, err = session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+	err = runComplianceInitialization(tx)
+
 	return tx.Commit()
+}
+
+func runComplianceInitialization(tx neo4j.Transaction) error {
+	//_ = hclparse.NewParser()
+	//_ = parse.WorkspaceBlockSchema
+	tx.Run("MERGE (n:AWSComplianceNode{node_id:'aws-compliance-node', cloud_provider:'aws'})", map[string]interface{}{})
+	tx.Run("MERGE (n:GCPComplianceNode{node_id:'gcp-compliance-node', cloud_provider:'gcp'})", map[string]interface{}{})
+	tx.Run("MERGE (n:AzureComplianceNode{node_id:'azure-compliance-node', cloud_provider:'azure'})", map[string]interface{}{})
+	tx.Run("MERGE (n:AWSComplianceBenchmark{node_id: $node_id, version: $version, title: $title, description: $description})",
+		map[string]interface{}{"node_id": "aws-compliance-cis-v150", "version": "v1.5.0", "title": "CIS v1.5.0", "description": "The CIS Amazon Web Services Foundations Benchmark provides prescriptive guidance for configuring security options for a subset of Amazon Web Services with an emphasis on foundational, testable, and architecture agnostic settings."})
+	tx.Run("MERGE (n:AWSComplianceBenchmark{node_id: $node_id, title: $title})",
+		map[string]interface{}{"node_id": "aws-compliance-cis-v150-1", "title": "1 Identity and Access Management"})
+	tx.Run("MERGE (n:AWSComplianceControl{node_id: $node_id, title: $title, description: $description, cis_type: $cis_type, service: $service})",
+		map[string]interface{}{"node_id": "aws-compliance-cis-v150-1-1", "title": "1.1 Maintain current contact details",
+			"description": "Ensure contact email and telephone details for AWS accounts are current and map to more than one individual in your organization.",
+			"cis_type":    "manual", "service": "AWS/IAM"})
+	tx.Run("MERGE (n:AWSComplianceControl{node_id: $node_id, title: $title, description: $description, cis_type: $cis_type, service: $service})",
+		map[string]interface{}{"node_id": "aws-compliance-cis-v150-1-7", "title": "1.7 Eliminate use of the 'root' user for administrative and daily tasks",
+			"description": "With the creation of an AWS account, a 'root user' is created that cannot be disabled or deleted. That user has unrestricted access to and control over all resources in the AWS account. It is highly recommended that the use of this account be avoided for everyday tasks.",
+			"cis_type":    "automated", "service": "AWS/IAM"})
+	return nil
 }
 
 func NewNeo4jCollector(ctx context.Context) (Ingester[report.Report], error) {

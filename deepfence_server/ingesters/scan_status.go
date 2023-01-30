@@ -163,6 +163,86 @@ func AddNewScan(ctx context.Context,
 	return tx.Commit()
 }
 
+func AddNewCloudComplianceScan(ctx context.Context,
+	scan_type utils.Neo4jScanType,
+	scan_id string,
+	benchmark_type string,
+	node_id string) error {
+
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:Node{node_id:$node_id})
+		WHERE NOT n.status = $complete
+		AND NOT n.status = $failed
+		AND n.benchmark_type = $benchmark_type
+		RETURN n.node_id`, scan_type),
+		map[string]interface{}{
+			"node_id":        node_id,
+			"complete":       utils.SCAN_STATUS_SUCCESS,
+			"failed":         utils.SCAN_STATUS_FAILED,
+			"benchmark_type": benchmark_type,
+		})
+	if err != nil {
+		return err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return err
+	}
+
+	if rec.Values[0] != nil {
+		return &AlreadyRunningScanError{
+			scan_id:   rec.Values[0].(string),
+			node_id:   node_id,
+			scan_type: string(scan_type),
+		}
+	}
+
+	if _, err = tx.Run(fmt.Sprintf(`
+		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type})
+		MERGE (m:Node{node_id:$node_id})
+		MERGE (n)-[:SCANNED]->(m)`, scan_type),
+		map[string]interface{}{
+			"scan_id":        scan_id,
+			"status":         utils.SCAN_STATUS_STARTING,
+			"node_id":        node_id,
+			"benchmark_type": benchmark_type,
+		}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(fmt.Sprintf(`
+		MATCH (n:%s{node_id: $scan_id})
+		MATCH (m:Node{node_id:$node_id})
+		MERGE (n)-[:SCHEDULED]->(m)`, scan_type),
+		map[string]interface{}{
+			"scan_id": scan_id,
+			"node_id": node_id,
+		}); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, status string) error {
 
 	driver, err := directory.Neo4jClient(ctx)
