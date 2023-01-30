@@ -16,55 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelInviteUserResponse
+ * @interface ModelMessageResponse
  */
-export interface ModelInviteUserResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelInviteUserResponse
-     */
-    invite_expiry_hours?: number;
+export interface ModelMessageResponse {
     /**
      * 
      * @type {string}
-     * @memberof ModelInviteUserResponse
+     * @memberof ModelMessageResponse
      */
-    invite_url?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelInviteUserResponse
-     */
-    message?: string;
+    message: string;
 }
 
 /**
- * Check if a given object implements the ModelInviteUserResponse interface.
+ * Check if a given object implements the ModelMessageResponse interface.
  */
-export function instanceOfModelInviteUserResponse(value: object): boolean {
+export function instanceOfModelMessageResponse(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "message" in value;
 
     return isInstance;
 }
 
-export function ModelInviteUserResponseFromJSON(json: any): ModelInviteUserResponse {
-    return ModelInviteUserResponseFromJSONTyped(json, false);
+export function ModelMessageResponseFromJSON(json: any): ModelMessageResponse {
+    return ModelMessageResponseFromJSONTyped(json, false);
 }
 
-export function ModelInviteUserResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelInviteUserResponse {
+export function ModelMessageResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelMessageResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'invite_expiry_hours': !exists(json, 'invite_expiry_hours') ? undefined : json['invite_expiry_hours'],
-        'invite_url': !exists(json, 'invite_url') ? undefined : json['invite_url'],
-        'message': !exists(json, 'message') ? undefined : json['message'],
+        'message': json['message'],
     };
 }
 
-export function ModelInviteUserResponseToJSON(value?: ModelInviteUserResponse | null): any {
+export function ModelMessageResponseToJSON(value?: ModelMessageResponse | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -73,8 +60,6 @@ export function ModelInviteUserResponseToJSON(value?: ModelInviteUserResponse | 
     }
     return {
         
-        'invite_expiry_hours': value.invite_expiry_hours,
-        'invite_url': value.invite_url,
         'message': value.message,
     };
 }

@@ -62,6 +62,10 @@ export interface GetKubernetesClustersRequest {
     reportersLookupFilter?: ReportersLookupFilter;
 }
 
+export interface GetKubernetesScannersRequest {
+    reportersLookupFilter?: ReportersLookupFilter;
+}
+
 export interface GetPodsRequest {
     reportersLookupFilter?: ReportersLookupFilter;
 }
@@ -127,7 +131,7 @@ export interface LookupApiInterface {
 
     /**
      * Retrieve all the data associated with k8s clusters
-     * @summary Retrieve K8S data
+     * @summary Retrieve K8s data
      * @param {ReportersLookupFilter} [reportersLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -137,9 +141,25 @@ export interface LookupApiInterface {
 
     /**
      * Retrieve all the data associated with k8s clusters
-     * Retrieve K8S data
+     * Retrieve K8s data
      */
     getKubernetesClusters(requestParameters: GetKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
+
+    /**
+     * Retrieve all the data associated with k8s scanners
+     * @summary Retrieve K8s scanners data
+     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getKubernetesScannersRaw(requestParameters: GetKubernetesScannersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>>;
+
+    /**
+     * Retrieve all the data associated with k8s scanners
+     * Retrieve K8s scanners data
+     */
+    getKubernetesScanners(requestParameters: GetKubernetesScannersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
 
     /**
      * Retrieve all the data associated with pods
@@ -299,7 +319,7 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
 
     /**
      * Retrieve all the data associated with k8s clusters
-     * Retrieve K8S data
+     * Retrieve K8s data
      */
     async getKubernetesClustersRaw(requestParameters: GetKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>> {
         const queryParameters: any = {};
@@ -329,10 +349,49 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
 
     /**
      * Retrieve all the data associated with k8s clusters
-     * Retrieve K8S data
+     * Retrieve K8s data
      */
     async getKubernetesClusters(requestParameters: GetKubernetesClustersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>> {
         const response = await this.getKubernetesClustersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with k8s scanners
+     * Retrieve K8s scanners data
+     */
+    async getKubernetesScannersRaw(requestParameters: GetKubernetesScannersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/kubernetes-scanners`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelKubernetesClusterFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with k8s scanners
+     * Retrieve K8s scanners data
+     */
+    async getKubernetesScanners(requestParameters: GetKubernetesScannersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>> {
+        const response = await this.getKubernetesScannersRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

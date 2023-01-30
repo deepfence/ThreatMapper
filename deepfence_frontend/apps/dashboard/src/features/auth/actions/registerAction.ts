@@ -1,7 +1,7 @@
 import { ActionFunction, redirect } from 'react-router-dom';
 
 import { getUserApiClient } from '@/api/api';
-import { ModelResponse } from '@/api/generated';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 import storage from '@/utils/storage';
 
@@ -53,7 +53,7 @@ export const registerAction: ActionFunction = async ({
     errorHandler: async (r) => {
       const error = new ApiError<RegisterActionReturnType>({});
       if (r.status === 400) {
-        const modelResponse: ModelResponse = await r.json();
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           fieldErrors: {
             firstName: modelResponse.error_fields?.first_name as string,
@@ -64,7 +64,7 @@ export const registerAction: ActionFunction = async ({
           },
         });
       } else if (r.status === 403) {
-        const modelResponse: ModelResponse = await r.json();
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           error: modelResponse.message,
         });
@@ -77,8 +77,8 @@ export const registerAction: ActionFunction = async ({
   }
 
   storage.setAuth({
-    accessToken: r.data!.access_token,
-    refreshToken: r.data!.refresh_token,
+    accessToken: r.access_token,
+    refreshToken: r.refresh_token,
   });
   throw redirect('/onboard', 302);
 };

@@ -33,19 +33,19 @@ export interface IngestCloudCompliancesRequest {
 }
 
 /**
- * CloudComplianceApi - interface
+ * CloudScannerApi - interface
  * 
  * @export
- * @interface CloudComplianceApiInterface
+ * @interface CloudScannerApiInterface
  */
-export interface CloudComplianceApiInterface {
+export interface CloudScannerApiInterface {
     /**
      * Ingest Cloud compliances found while scanning cloud provider
      * @summary Ingest Cloud Compliances
      * @param {Array<IngestersCloudCompliance>} [ingestersCloudCompliance] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof CloudComplianceApiInterface
+     * @memberof CloudScannerApiInterface
      */
     ingestCloudCompliancesRaw(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
@@ -60,7 +60,7 @@ export interface CloudComplianceApiInterface {
 /**
  * 
  */
-export class CloudComplianceApi extends runtime.BaseAPI implements CloudComplianceApiInterface {
+export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiInterface {
 
     /**
      * Ingest Cloud compliances found while scanning cloud provider

@@ -16,58 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAgentImageMetadata
+ * @interface ModelAgentUpgrade
  */
-export interface ModelAgentImageMetadata {
+export interface ModelAgentUpgrade {
     /**
      * 
      * @type {string}
-     * @memberof ModelAgentImageMetadata
+     * @memberof ModelAgentUpgrade
      */
-    image_name: string;
+    node_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelAgentImageMetadata
-     */
-    image_tag: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelAgentImageMetadata
+     * @memberof ModelAgentUpgrade
      */
     version: string;
 }
 
 /**
- * Check if a given object implements the ModelAgentImageMetadata interface.
+ * Check if a given object implements the ModelAgentUpgrade interface.
  */
-export function instanceOfModelAgentImageMetadata(value: object): boolean {
+export function instanceOfModelAgentUpgrade(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "image_name" in value;
-    isInstance = isInstance && "image_tag" in value;
+    isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "version" in value;
 
     return isInstance;
 }
 
-export function ModelAgentImageMetadataFromJSON(json: any): ModelAgentImageMetadata {
-    return ModelAgentImageMetadataFromJSONTyped(json, false);
+export function ModelAgentUpgradeFromJSON(json: any): ModelAgentUpgrade {
+    return ModelAgentUpgradeFromJSONTyped(json, false);
 }
 
-export function ModelAgentImageMetadataFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAgentImageMetadata {
+export function ModelAgentUpgradeFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAgentUpgrade {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'image_name': json['image_name'],
-        'image_tag': json['image_tag'],
+        'node_id': json['node_id'],
         'version': json['version'],
     };
 }
 
-export function ModelAgentImageMetadataToJSON(value?: ModelAgentImageMetadata | null): any {
+export function ModelAgentUpgradeToJSON(value?: ModelAgentUpgrade | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -76,8 +68,7 @@ export function ModelAgentImageMetadataToJSON(value?: ModelAgentImageMetadata | 
     }
     return {
         
-        'image_name': value.image_name,
-        'image_tag': value.image_tag,
+        'node_id': value.node_id,
         'version': value.version,
     };
 }

@@ -1,7 +1,7 @@
 import { ActionFunction, redirect } from 'react-router-dom';
 
 import { getAuthenticationApiClient } from '@/api/api';
-import { ModelResponse } from '@/api/generated';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 import storage from '@/utils/storage';
 
@@ -36,7 +36,7 @@ export const loginAction: ActionFunction = async ({
           error: 'Invalid credentials',
         });
       } else if (r.status === 400) {
-        const modelResponse: ModelResponse = await r.json();
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           fieldErrors: {
             email: modelResponse.error_fields?.email,
@@ -52,8 +52,8 @@ export const loginAction: ActionFunction = async ({
   }
 
   storage.setAuth({
-    accessToken: r.data!.access_token,
-    refreshToken: r.data!.refresh_token,
+    accessToken: r.access_token,
+    refreshToken: r.refresh_token,
   });
   throw redirect('/onboard', 302);
 };

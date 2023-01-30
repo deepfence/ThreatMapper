@@ -18,6 +18,8 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ApiDocsGraphResult,
+  IngestersReportIngestionData,
+  ReportRawReport,
   ReportersTopologyFilters,
 } from '../models';
 import {
@@ -27,6 +29,10 @@ import {
     ApiDocsFailureResponseToJSON,
     ApiDocsGraphResultFromJSON,
     ApiDocsGraphResultToJSON,
+    IngestersReportIngestionDataFromJSON,
+    IngestersReportIngestionDataToJSON,
+    ReportRawReportFromJSON,
+    ReportRawReportToJSON,
     ReportersTopologyFiltersFromJSON,
     ReportersTopologyFiltersToJSON,
 } from '../models';
@@ -52,7 +58,11 @@ export interface GetTopologyGraphRequest {
 }
 
 export interface IngestAgentReportRequest {
-    requestBody?: Array<number> | null;
+    reportRawReport?: ReportRawReport;
+}
+
+export interface IngestSyncAgentReportRequest {
+    ingestersReportIngestionData?: IngestersReportIngestionData;
 }
 
 /**
@@ -145,7 +155,7 @@ export interface TopologyApiInterface {
     /**
      * Ingest data reported by one Agent
      * @summary Ingest Topology Data
-     * @param {Array<number>} [requestBody] 
+     * @param {ReportRawReport} [reportRawReport] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
@@ -157,6 +167,22 @@ export interface TopologyApiInterface {
      * Ingest Topology Data
      */
     ingestAgentReport(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Ingest data reported by one Agent
+     * @summary Ingest Topology Data
+     * @param {IngestersReportIngestionData} [ingestersReportIngestionData] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TopologyApiInterface
+     */
+    ingestSyncAgentReportRaw(requestParameters: IngestSyncAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Ingest data reported by one Agent
+     * Ingest Topology Data
+     */
+    ingestSyncAgentReport(requestParameters: IngestSyncAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -384,7 +410,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.requestBody,
+            body: ReportRawReportToJSON(requestParameters.reportRawReport),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -396,6 +422,44 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      */
     async ingestAgentReport(requestParameters: IngestAgentReportRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.ingestAgentReportRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Ingest data reported by one Agent
+     * Ingest Topology Data
+     */
+    async ingestSyncAgentReportRaw(requestParameters: IngestSyncAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/ingest/sync-report`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: IngestersReportIngestionDataToJSON(requestParameters.ingestersReportIngestionData),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Ingest data reported by one Agent
+     * Ingest Topology Data
+     */
+    async ingestSyncAgentReport(requestParameters: IngestSyncAgentReportRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.ingestSyncAgentReportRaw(requestParameters, initOverrides);
     }
 
 }

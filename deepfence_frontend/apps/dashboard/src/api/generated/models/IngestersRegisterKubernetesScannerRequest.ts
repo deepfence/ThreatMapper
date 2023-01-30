@@ -16,55 +16,48 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelInviteUserResponse
+ * @interface IngestersRegisterKubernetesScannerRequest
  */
-export interface ModelInviteUserResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelInviteUserResponse
-     */
-    invite_expiry_hours?: number;
+export interface IngestersRegisterKubernetesScannerRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelInviteUserResponse
+     * @memberof IngestersRegisterKubernetesScannerRequest
      */
-    invite_url?: string;
+    kubernetes_cluster_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelInviteUserResponse
+     * @memberof IngestersRegisterKubernetesScannerRequest
      */
-    message?: string;
+    node_id?: string;
 }
 
 /**
- * Check if a given object implements the ModelInviteUserResponse interface.
+ * Check if a given object implements the IngestersRegisterKubernetesScannerRequest interface.
  */
-export function instanceOfModelInviteUserResponse(value: object): boolean {
+export function instanceOfIngestersRegisterKubernetesScannerRequest(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelInviteUserResponseFromJSON(json: any): ModelInviteUserResponse {
-    return ModelInviteUserResponseFromJSONTyped(json, false);
+export function IngestersRegisterKubernetesScannerRequestFromJSON(json: any): IngestersRegisterKubernetesScannerRequest {
+    return IngestersRegisterKubernetesScannerRequestFromJSONTyped(json, false);
 }
 
-export function ModelInviteUserResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelInviteUserResponse {
+export function IngestersRegisterKubernetesScannerRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): IngestersRegisterKubernetesScannerRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'invite_expiry_hours': !exists(json, 'invite_expiry_hours') ? undefined : json['invite_expiry_hours'],
-        'invite_url': !exists(json, 'invite_url') ? undefined : json['invite_url'],
-        'message': !exists(json, 'message') ? undefined : json['message'],
+        'kubernetes_cluster_name': !exists(json, 'kubernetes_cluster_name') ? undefined : json['kubernetes_cluster_name'],
+        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
     };
 }
 
-export function ModelInviteUserResponseToJSON(value?: ModelInviteUserResponse | null): any {
+export function IngestersRegisterKubernetesScannerRequestToJSON(value?: IngestersRegisterKubernetesScannerRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -73,9 +66,8 @@ export function ModelInviteUserResponseToJSON(value?: ModelInviteUserResponse | 
     }
     return {
         
-        'invite_expiry_hours': value.invite_expiry_hours,
-        'invite_url': value.invite_url,
-        'message': value.message,
+        'kubernetes_cluster_name': value.kubernetes_cluster_name,
+        'node_id': value.node_id,
     };
 }
 
