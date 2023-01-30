@@ -9,6 +9,11 @@ type ScanTriggerReq struct {
 	NodeType string `json:"node_type" required:"true" enum:"image,host,container"`
 }
 
+type CloudComplianceScanTriggerReq struct {
+	NodeId        string `json:"node_id" required:"true"`
+	BenchmarkType string `json:"benchmark_type" required:"true"`
+}
+
 type ScanStatus string
 
 type ScanInfo struct {
