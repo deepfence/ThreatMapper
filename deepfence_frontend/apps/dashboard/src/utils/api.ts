@@ -1,7 +1,7 @@
 import { redirect } from 'react-router-dom';
 
 import { getAuthenticationApiClient } from '@/api/api';
-import { ModelResponse, ResponseError } from '@/api/generated';
+import { ModelResponseAccessToken, ResponseError } from '@/api/generated';
 import storage from '@/utils/storage';
 
 export class ApiError<T> {
@@ -61,7 +61,7 @@ export async function makeRequest<F, V = void>(
 }
 
 // global promise object
-let refreshTokenPromise: Promise<ModelResponse> | null = null;
+let refreshTokenPromise: Promise<ModelResponseAccessToken> | null = null;
 
 async function refreshAccessTokenIfPossible(): Promise<boolean> {
   function cleanup() {
@@ -81,10 +81,10 @@ async function refreshAccessTokenIfPossible(): Promise<boolean> {
       });
     }
     const response = await refreshTokenPromise;
-    if (response.success && response.data?.access_token && response.data?.refresh_token) {
+    if (response.access_token && response.refresh_token) {
       storage.setAuth({
-        accessToken: response.data?.access_token,
-        refreshToken: response.data?.refresh_token,
+        accessToken: response.access_token,
+        refreshToken: response.refresh_token,
       });
     } else {
       throw new Error('Failed to refresh access token');

@@ -12,7 +12,7 @@ import {
 import { useInterval } from 'react-use';
 
 import { complianceScanApiClient, vulnerabilityScanApiClient } from '@/api/api';
-import { ModelResponse, ModelScanStatusResp } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelScanStatusResp } from '@/api/generated';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -76,10 +76,10 @@ export const scanStatusLoader = async ({
     errorHandler: async (r) => {
       const error = new ApiError<ScanStatusLoaderReturnType>({});
       if (r.status === 400 || r.status === 500) {
-        const modelResponse: ModelResponse = await r.json();
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
-          message: modelResponse.data + '',
-          success: modelResponse.success,
+          message: modelResponse.message,
+          success: false,
         });
       }
     },

@@ -19,7 +19,7 @@ import type {
   ApiDocsFailureResponse,
   ModelApiAuthRequest,
   ModelLoginRequest,
-  ModelResponse,
+  ModelResponseAccessToken,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -30,8 +30,8 @@ import {
     ModelApiAuthRequestToJSON,
     ModelLoginRequestFromJSON,
     ModelLoginRequestToJSON,
-    ModelResponseFromJSON,
-    ModelResponseToJSON,
+    ModelResponseAccessTokenFromJSON,
+    ModelResponseAccessTokenToJSON,
 } from '../models';
 
 export interface AuthTokenRequest {
@@ -57,13 +57,13 @@ export interface AuthenticationApiInterface {
      * @throws {RequiredError}
      * @memberof AuthenticationApiInterface
      */
-    authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
+    authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>>;
 
     /**
      * Get access token for programmatic API access, by providing API Token
      * Get Access Token for API Token
      */
-    authToken(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
+    authToken(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
 
     /**
      * Reissue access token using refresh token
@@ -72,13 +72,13 @@ export interface AuthenticationApiInterface {
      * @throws {RequiredError}
      * @memberof AuthenticationApiInterface
      */
-    authTokenRefreshRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
+    authTokenRefreshRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>>;
 
     /**
      * Reissue access token using refresh token
      * Refresh access token
      */
-    authTokenRefresh(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
+    authTokenRefresh(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
 
     /**
      * Login API
@@ -88,13 +88,13 @@ export interface AuthenticationApiInterface {
      * @throws {RequiredError}
      * @memberof AuthenticationApiInterface
      */
-    loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
+    loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>>;
 
     /**
      * Login API
      * Login API
      */
-    login(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
+    login(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
 
     /**
      * Logout API
@@ -122,7 +122,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Get access token for programmatic API access, by providing API Token
      * Get Access Token for API Token
      */
-    async authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
+    async authTokenRaw(requestParameters: AuthTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -137,14 +137,14 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
             body: ModelApiAuthRequestToJSON(requestParameters.modelApiAuthRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));
     }
 
     /**
      * Get access token for programmatic API access, by providing API Token
      * Get Access Token for API Token
      */
-    async authToken(requestParameters: AuthTokenRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
+    async authToken(requestParameters: AuthTokenRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
         const response = await this.authTokenRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -153,7 +153,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Reissue access token using refresh token
      * Refresh access token
      */
-    async authTokenRefreshRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
+    async authTokenRefreshRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -173,14 +173,14 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));
     }
 
     /**
      * Reissue access token using refresh token
      * Refresh access token
      */
-    async authTokenRefresh(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
+    async authTokenRefresh(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
         const response = await this.authTokenRefreshRaw(initOverrides);
         return await response.value();
     }
@@ -189,7 +189,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Login API
      * Login API
      */
-    async loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
+    async loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -204,14 +204,14 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
             body: ModelLoginRequestToJSON(requestParameters.modelLoginRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));
     }
 
     /**
      * Login API
      * Login API
      */
-    async login(requestParameters: LoginRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
+    async login(requestParameters: LoginRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
         const response = await this.loginRaw(requestParameters, initOverrides);
         return await response.value();
     }

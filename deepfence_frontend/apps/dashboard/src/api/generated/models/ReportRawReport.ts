@@ -16,55 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelInviteUserResponse
+ * @interface ReportRawReport
  */
-export interface ModelInviteUserResponse {
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelInviteUserResponse
-     */
-    invite_expiry_hours?: number;
+export interface ReportRawReport {
     /**
      * 
      * @type {string}
-     * @memberof ModelInviteUserResponse
+     * @memberof ReportRawReport
      */
-    invite_url?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelInviteUserResponse
-     */
-    message?: string;
+    payload: string;
 }
 
 /**
- * Check if a given object implements the ModelInviteUserResponse interface.
+ * Check if a given object implements the ReportRawReport interface.
  */
-export function instanceOfModelInviteUserResponse(value: object): boolean {
+export function instanceOfReportRawReport(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "payload" in value;
 
     return isInstance;
 }
 
-export function ModelInviteUserResponseFromJSON(json: any): ModelInviteUserResponse {
-    return ModelInviteUserResponseFromJSONTyped(json, false);
+export function ReportRawReportFromJSON(json: any): ReportRawReport {
+    return ReportRawReportFromJSONTyped(json, false);
 }
 
-export function ModelInviteUserResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelInviteUserResponse {
+export function ReportRawReportFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportRawReport {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'invite_expiry_hours': !exists(json, 'invite_expiry_hours') ? undefined : json['invite_expiry_hours'],
-        'invite_url': !exists(json, 'invite_url') ? undefined : json['invite_url'],
-        'message': !exists(json, 'message') ? undefined : json['message'],
+        'payload': json['payload'],
     };
 }
 
-export function ModelInviteUserResponseToJSON(value?: ModelInviteUserResponse | null): any {
+export function ReportRawReportToJSON(value?: ReportRawReport | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -73,9 +60,7 @@ export function ModelInviteUserResponseToJSON(value?: ModelInviteUserResponse | 
     }
     return {
         
-        'invite_expiry_hours': value.invite_expiry_hours,
-        'invite_url': value.invite_url,
-        'message': value.message,
+        'payload': value.payload,
     };
 }
 
