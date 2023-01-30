@@ -1,8 +1,8 @@
-import { LoaderFunction, Outlet, redirect } from 'react-router-dom';
+import { LoaderFunctionArgs, Outlet, redirect } from 'react-router-dom';
 
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 
-export const connectorsLoader: LoaderFunction = async ({ request }) => {
+export const connectorsLoader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   if (['/onboard/connectors', '/onboard/connectors/'].includes(url.pathname)) {
     throw redirect('/onboard/connectors/add-connectors', 302);

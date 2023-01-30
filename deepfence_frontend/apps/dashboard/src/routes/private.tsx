@@ -1,4 +1,4 @@
-import { Outlet, RouteObject } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import {
@@ -31,8 +31,9 @@ import {
   startVulnerabilityScanAction,
   VulnerabilityScanConfigure,
 } from '@/features/onboard/pages/VulnerabilityScanConfigure';
+import { CustomRouteObject } from '@/utils/router';
 
-export const privateRoutes: RouteObject[] = [
+export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/onboard',
     element: <OnboardLayout />,
@@ -46,10 +47,12 @@ export const privateRoutes: RouteObject[] = [
           {
             path: 'add-connectors',
             element: <AddConnector />,
+            meta: { title: 'Add Connectors' },
           },
           {
             path: 'my-connectors',
             ...myConnectors,
+            meta: { title: 'My Connectors' },
           },
         ],
       },
@@ -60,30 +63,37 @@ export const privateRoutes: RouteObject[] = [
           {
             path: 'cloud/aws',
             element: <AWSConnector />,
+            meta: { title: 'Connect AWS Account' },
           },
           {
             path: 'cloud/gcp',
             element: <GCPConnector />,
+            meta: { title: 'Connect GCP Account' },
           },
           {
             path: 'cloud/azure',
             element: <AzureConnector />,
+            meta: { title: 'Connect Azure Account' },
           },
           {
             path: 'host/k8s',
             element: <K8sConnector />,
+            meta: { title: 'Connect K8S Cluster' },
           },
           {
             path: 'host/docker',
             element: <DockerConnector />,
+            meta: { title: 'Connect Docker Container' },
           },
           {
             path: 'host/linux',
             element: <LinuxConnector />,
+            meta: { title: 'Connect Linux Machine' },
           },
           {
             path: 'registry/amazon-ecr',
             element: <AmazonECRConnector />,
+            meta: { title: 'Connect ECR Registry' },
           },
         ],
       },
@@ -93,29 +103,35 @@ export const privateRoutes: RouteObject[] = [
           {
             path: 'choose',
             element: <ChooseScan />,
+            meta: { title: 'Choose scan type' },
           },
           {
             path: 'configure/compliance',
             element: <ComplianceScanConfigure />,
+            meta: { title: 'Configure Compliance Scan' },
           },
           {
             path: 'configure/vulnerability/:nodeType/:nodeId',
             element: <VulnerabilityScanConfigure />,
             action: startVulnerabilityScanAction,
+            meta: { title: 'Configure Vulnerability Scan' },
           },
           {
             path: 'configure/secret',
             element: <SecretScanConfigure />,
+            meta: { title: 'Configure Secret Scan' },
           },
           {
             path: 'view-summary/compliance',
             element: <ComplianceScanSummary />,
+            meta: { title: 'Configure Compliance Scan' },
           },
           {
             path: 'view-summary/running/:nodeId/:nodeType/:scanType/:scanId',
             element: <ScanInProgress />,
             errorElement: <ScanInProgressError />,
             loader: scanStatusLoader,
+            meta: { title: 'Scan Summary' },
           },
         ],
       },

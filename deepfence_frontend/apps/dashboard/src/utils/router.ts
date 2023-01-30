@@ -1,4 +1,8 @@
-import { defer as routerDefer } from 'react-router-dom';
+import {
+  defer as routerDefer,
+  IndexRouteObject,
+  NonIndexRouteObject,
+} from 'react-router-dom';
 
 type MaybePromiseObject<T> = {
   [K in keyof T]: Awaited<T[K]>;
@@ -13,3 +17,16 @@ export type TypedDeferredData<Data extends Record<string, unknown>> = ReturnType
 export function typedDefer<Data extends Record<string, unknown>>(data: Data) {
   return routerDefer(data) as TypedDeferredData<Data>;
 }
+
+type MetaType = {
+  title: string;
+};
+
+export type CustomRouteObject =
+  | (IndexRouteObject & {
+      meta?: MetaType;
+    })
+  | (Omit<NonIndexRouteObject, 'children'> & {
+      meta?: MetaType;
+      children?: CustomRouteObject[];
+    });
