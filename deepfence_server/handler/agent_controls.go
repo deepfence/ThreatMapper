@@ -2,11 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -125,9 +122,8 @@ func (h *Handler) ScheduleAgentUpgrade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	console_ip := os.Getenv("MGMT_CONSOLE_URL")
 	internal_req := ctl.StartAgentUpgradeRequest{
-		HomeDirectoryUrl: strings.ReplaceAll(url, "deepfence-file-server:9000", fmt.Sprintf("%s/file-server", console_ip)),
+		HomeDirectoryUrl: url,
 		Version:          agentUp.Version,
 	}
 

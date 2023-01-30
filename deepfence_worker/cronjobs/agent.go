@@ -90,7 +90,7 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			continue
 		}
 		out_file := fmt.Sprintf("%s.tar.gz", tag)
-		cmd = exec.Command("tar", []string{"zcvf", out_file, "/tmp/" + tag}...)
+		cmd = exec.Command("tar", []string{"zcvf", out_file, "-C", "/tmp/" + tag, "."}...)
 		if err := cmd.Run(); err != nil {
 			log.Error().Err(err)
 			continue
