@@ -37,6 +37,10 @@ func bulkScanId() string {
 	return fmt.Sprintf("%s", random_id.String())
 }
 
+func cloudComplianceScanId(req model.CloudComplianceScanTriggerReq) string {
+	return fmt.Sprintf("%s-%s-%d", req.NodeId, req.BenchmarkType, time.Now().Unix())
+}
+
 func GetImageFromId(ctx context.Context, node_id string) (string, string, error) {
 	var name string
 	var tag string
@@ -223,6 +227,34 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	//		ctl.StringToResourceType(req.NodeType), req.NodeId,
 	//		action)
 	//}
+}
+
+func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
+	req, err := extractCloudComplianceScanTrigger(w, r)
+	if err != nil {
+		return
+	}
+
+	scanId := cloudComplianceScanId(req)
+
+	err = ingesters.AddNewCloudComplianceScan(r.Context(), utils.NEO4J_CLOUD_COMPLIANCE_SCAN, scanId, req.BenchmarkType,
+		req.NodeId)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+		return
+	}
+
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanId: scanId})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -442,6 +474,11 @@ func (h *Handler) IngestMalwareScanStatusReportHandler(w http.ResponseWriter, r 
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestCloudComplianceScanStatusReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewCloudComplianceScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func ingest_scan_report_kafka[T any](
 	respWrite http.ResponseWriter,
 	req *http.Request,
@@ -480,6 +517,48 @@ func ingest_scan_report_kafka[T any](
 
 func stopScan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
 	//	Stopping scan is on best-effort basis, not guaranteed
+}
+
+func extractCloudComplianceScanTrigger(w http.ResponseWriter, r *http.Request) (model.CloudComplianceScanTriggerReq, error) {
+	defer r.Body.Close()
+	var req model.CloudComplianceScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
+		return req, err
+	}
+
+	// TODO: Add benchmarkType check here
+	//if ctl.StringToResourceType(req.BenchmarkType) == -1 {
+	//	err = fmt.Errorf("Unknown ResourceType: %s", req.NodeType)
+	//	log.Error().Msgf("%v", err)
+	//	httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Data: err.Error()})
+	//}
+
+	return req, err
+}
+
+func extractCloudComplianceScanTrigger(w http.ResponseWriter, r *http.Request) (model.CloudComplianceScanTriggerReq, error) {
+	defer r.Body.Close()
+	var req model.CloudComplianceScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return req, err
+	}
+
+	// TODO: Add benchmarkType check here
+	//if ctl.StringToResourceType(req.BenchmarkType) == -1 {
+	//	err = fmt.Errorf("Unknown ResourceType: %s", req.NodeType)
+	//	log.Error().Msgf("%v", err)
+	//	httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Data: err.Error()})
+	//}
+
+	return req, err
 }
 
 func (h *Handler) StatusVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
