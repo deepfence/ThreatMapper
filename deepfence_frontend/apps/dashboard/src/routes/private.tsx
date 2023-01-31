@@ -111,7 +111,7 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Compliance Scan' },
           },
           {
-            path: 'configure/vulnerability/:nodeType/:nodeId',
+            path: 'configure/vulnerability/:nodeType/:nodeIds',
             element: <VulnerabilityScanConfigure />,
             action: startVulnerabilityScanAction,
             meta: { title: 'Configure Vulnerability Scan' },
