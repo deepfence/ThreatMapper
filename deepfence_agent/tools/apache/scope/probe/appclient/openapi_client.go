@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
@@ -39,7 +40,13 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 	}
 
 	api_token := os.Getenv("DEEPFENCE_KEY")
-	if port == "" {
+	if strings.Trim(api_token, "\"") == "" && oahttp.IsConsoleAgent(url) {
+		logrus.Infof("fetch console agent token")
+		var err error
+		if api_token, err = oahttp.GetConsoleApiToken(url); err != nil {
+			return nil, err
+		}
+	} else {
 		return nil, errors.New("DEEPFENCE_KEY not set")
 	}
 

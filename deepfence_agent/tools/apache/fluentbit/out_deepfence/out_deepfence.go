@@ -21,10 +21,12 @@ import (
 
 	"github.com/fluent/fluent-bit-go/output"
 
-	deepfenceAPI "github.com/deepfence/golang_deepfence_sdk/client"
+	dsc "github.com/deepfence/golang_deepfence_sdk/client"
+	dschttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	rhttp "github.com/hashicorp/go-retryablehttp"
 )
+import "strings"
 
 var (
 	cfg      map[string]Config
@@ -103,17 +105,17 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 		accessToken  string
 		refreshToken string
 	)
-	cfg := deepfenceAPI.NewConfiguration()
+	cfg := dsc.NewConfiguration()
 	cfg.HTTPClient = hc
-	cfg.Servers = deepfenceAPI.ServerConfigurations{
+	cfg.Servers = dsc.ServerConfigurations{
 		{URL: url, Description: "deepfence_server"},
 	}
 
-	apiClient := deepfenceAPI.NewAPIClient(cfg)
+	apiClient := dsc.NewAPIClient(cfg)
 
 	req := apiClient.AuthenticationApi.AuthToken(context.Background()).
 		ModelApiAuthRequest(
-			deepfenceAPI.ModelApiAuthRequest{ApiToken: apiToken},
+			dsc.ModelApiAuthRequest{ApiToken: apiToken},
 		)
 
 	resp, _, err := apiClient.AuthenticationApi.AuthTokenExecute(req)
@@ -137,15 +139,15 @@ func RefreshToken(url string, apiToken string) (string, string, error) {
 		accessToken  string
 		refreshToken string
 	)
-	cfg := deepfenceAPI.NewConfiguration()
+	cfg := dsc.NewConfiguration()
 	cfg.HTTPClient = hc
-	cfg.Servers = deepfenceAPI.ServerConfigurations{
+	cfg.Servers = dsc.ServerConfigurations{
 		{URL: url, Description: "deepfence_server"},
 	}
 
 	cfg.AddDefaultHeader("Authorization", "Bearer "+apiToken)
 
-	apiClient := deepfenceAPI.NewAPIClient(cfg)
+	apiClient := dsc.NewAPIClient(cfg)
 
 	req := apiClient.AuthenticationApi.AuthTokenRefresh(context.Background())
 
@@ -235,6 +237,13 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	}
 
 	hc = rhc.StandardClient()
+
+	if dschttp.IsConsoleAgent(host) && strings.Trim(apiToken, "\"") == "" {
+		var err error
+		if apiToken, err = dschttp.GetConsoleApiToken(host); err != nil {
+			log.Panic(err)
+		}
+	}
 
 	access, refresh, err := Authenticate(getURL(schema, host, port), apiToken)
 	if err != nil {
