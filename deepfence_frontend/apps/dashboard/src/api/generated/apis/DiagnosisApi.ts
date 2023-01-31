@@ -17,15 +17,15 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ModelResponse,
+  DiagnosisDiagnosticNotification,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelResponseFromJSON,
-    ModelResponseToJSON,
+    DiagnosisDiagnosticNotificationFromJSON,
+    DiagnosisDiagnosticNotificationToJSON,
 } from '../models';
 
 /**
@@ -42,13 +42,13 @@ export interface DiagnosisApiInterface {
      * @throws {RequiredError}
      * @memberof DiagnosisApiInterface
      */
-    diagnosticNotificationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>>;
+    diagnosticNotificationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DiagnosisDiagnosticNotification>>>;
 
     /**
      * Get Diagnostic Notification
      * Get Diagnostic Notification
      */
-    diagnosticNotification(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse>;
+    diagnosticNotification(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DiagnosisDiagnosticNotification>>;
 
     /**
      * Generate Agent Diagnostic Logs
@@ -106,7 +106,7 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
      * Get Diagnostic Notification
      * Get Diagnostic Notification
      */
-    async diagnosticNotificationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponse>> {
+    async diagnosticNotificationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DiagnosisDiagnosticNotification>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -126,14 +126,14 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DiagnosisDiagnosticNotificationFromJSON));
     }
 
     /**
      * Get Diagnostic Notification
      * Get Diagnostic Notification
      */
-    async diagnosticNotification(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponse> {
+    async diagnosticNotification(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DiagnosisDiagnosticNotification>> {
         const response = await this.diagnosticNotificationRaw(initOverrides);
         return await response.value();
     }

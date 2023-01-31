@@ -18,7 +18,9 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ControlsAgentControls,
+  ControlsKubernetesScannerControlResponse,
   ModelAgentId,
+  ModelAgentUpgrade,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -27,8 +29,12 @@ import {
     ApiDocsFailureResponseToJSON,
     ControlsAgentControlsFromJSON,
     ControlsAgentControlsToJSON,
+    ControlsKubernetesScannerControlResponseFromJSON,
+    ControlsKubernetesScannerControlResponseToJSON,
     ModelAgentIdFromJSON,
     ModelAgentIdToJSON,
+    ModelAgentUpgradeFromJSON,
+    ModelAgentUpgradeToJSON,
 } from '../models';
 
 export interface GetAgentControlsRequest {
@@ -37,6 +43,14 @@ export interface GetAgentControlsRequest {
 
 export interface GetAgentInitControlsRequest {
     modelAgentId?: ModelAgentId;
+}
+
+export interface GetKubernetesScannerControlsRequest {
+    modelAgentId?: ModelAgentId;
+}
+
+export interface UpgradeAgentVersionRequest {
+    modelAgentUpgrade?: ModelAgentUpgrade;
 }
 
 /**
@@ -77,6 +91,38 @@ export interface ControlsApiInterface {
      * Fetch Agent Init Actions
      */
     getAgentInitControls(requestParameters: GetAgentInitControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls>;
+
+    /**
+     * Fetch actions for a given Kubernetes Cluster
+     * @summary Fetch Kubernetes Scanner Actions
+     * @param {ModelAgentId} [modelAgentId] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    getKubernetesScannerControlsRaw(requestParameters: GetKubernetesScannerControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsKubernetesScannerControlResponse>>;
+
+    /**
+     * Fetch actions for a given Kubernetes Cluster
+     * Fetch Kubernetes Scanner Actions
+     */
+    getKubernetesScannerControls(requestParameters: GetKubernetesScannerControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsKubernetesScannerControlResponse>;
+
+    /**
+     * Schedule new agent version upgrade
+     * @summary Schedule new agent version upgrade
+     * @param {ModelAgentUpgrade} [modelAgentUpgrade] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    upgradeAgentVersionRaw(requestParameters: UpgradeAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Schedule new agent version upgrade
+     * Schedule new agent version upgrade
+     */
+    upgradeAgentVersion(requestParameters: UpgradeAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -161,6 +207,83 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
     async getAgentInitControls(requestParameters: GetAgentInitControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls> {
         const response = await this.getAgentInitControlsRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Fetch actions for a given Kubernetes Cluster
+     * Fetch Kubernetes Scanner Actions
+     */
+    async getKubernetesScannerControlsRaw(requestParameters: GetKubernetesScannerControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsKubernetesScannerControlResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/kubernetes-scanner`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAgentIdToJSON(requestParameters.modelAgentId),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ControlsKubernetesScannerControlResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Fetch actions for a given Kubernetes Cluster
+     * Fetch Kubernetes Scanner Actions
+     */
+    async getKubernetesScannerControls(requestParameters: GetKubernetesScannerControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsKubernetesScannerControlResponse> {
+        const response = await this.getKubernetesScannerControlsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Schedule new agent version upgrade
+     * Schedule new agent version upgrade
+     */
+    async upgradeAgentVersionRaw(requestParameters: UpgradeAgentVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/agent-upgrade`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAgentUpgradeToJSON(requestParameters.modelAgentUpgrade),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Schedule new agent version upgrade
+     * Schedule new agent version upgrade
+     */
+    async upgradeAgentVersion(requestParameters: UpgradeAgentVersionRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.upgradeAgentVersionRaw(requestParameters, initOverrides);
     }
 
 }

@@ -1,7 +1,8 @@
 import cx from 'classnames';
+import { useRef } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineArrowCircleRight } from 'react-icons/hi';
-import { Card, Typography } from 'ui-components';
+import { Card, Tabs, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
 import LogoAwsWhite from '@/assets/logo-aws-white.svg';
@@ -14,6 +15,7 @@ import LogoHostConnector from '@/assets/logo-host-connector.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
 import LogoRegistryConnector from '@/assets/logo-registry-connector.svg';
+import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { useTheme } from '@/theme/ThemeContext';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -257,17 +259,33 @@ const Registries = () => {
 };
 
 export const AddConnector = () => {
+  const { navigate } = usePageNavigation();
+  const navigatedRef = useRef(false);
+
   return (
-    <div className="grid grid-cols-1 gap-4 gap-y-6 lg:grid-cols-3 sm:grid-cols-2">
-      <Card className="dark:border-0">
-        <Cloud />
-      </Card>
-      <Card className="dark:border-0">
-        <Host />
-      </Card>
-      <Card className="dark:border-0">
-        <Registries />
-      </Card>
-    </div>
+    <Tabs
+      value={'add-connectors'}
+      tabs={connectorLayoutTabs}
+      onValueChange={() => {
+        if (navigatedRef.current) return;
+        navigatedRef.current = true;
+        navigate(`/onboard/connectors/my-connectors`);
+      }}
+      size="md"
+    >
+      <div className="h-full dark:text-white mt-8">
+        <div className="grid grid-cols-1 gap-4 gap-y-6 lg:grid-cols-3 sm:grid-cols-2">
+          <Card className="dark:border-0">
+            <Cloud />
+          </Card>
+          <Card className="dark:border-0">
+            <Host />
+          </Card>
+          <Card className="dark:border-0">
+            <Registries />
+          </Card>
+        </div>
+      </div>
+    </Tabs>
   );
 };

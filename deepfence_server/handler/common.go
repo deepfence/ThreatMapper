@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/opentracing/opentracing-go"
@@ -52,4 +54,60 @@ func respondWith(ctx context.Context, w http.ResponseWriter, code int, response 
 	if err := encoder.Encode(response); err != nil {
 		log.Error().Msgf("Error encoding response: %v", err)
 	}
+}
+
+type BadDecoding struct {
+	err error
+}
+
+func (bd *BadDecoding) Error() string {
+	return bd.err.Error()
+}
+
+type ValidatorError struct {
+	err error
+}
+
+func (bd *ValidatorError) Error() string {
+	return bd.err.Error()
+}
+
+type ForbiddenError struct {
+	err error
+}
+
+func (bd *ForbiddenError) Error() string {
+	return bd.err.Error()
+}
+
+type NotFoundError struct {
+	err error
+}
+
+func (bd *NotFoundError) Error() string {
+	return bd.err.Error()
+}
+
+func respondError(err error, w http.ResponseWriter) error {
+	var code int
+	var errorFields map[string]string
+	switch err.(type) {
+	case *ingesters.NodeNotFoundError:
+		code = http.StatusNotFound
+	case *ingesters.AlreadyRunningScanError:
+		code = http.StatusConflict
+	case *BadDecoding:
+		code = http.StatusBadRequest
+	case *ValidatorError:
+		code = http.StatusBadRequest
+		errorFields = model.ParseValidatorError(err.Error())
+	case *ForbiddenError:
+		code = http.StatusForbidden
+	case *NotFoundError:
+		code = http.StatusNotFound
+	default:
+		code = http.StatusInternalServerError
+	}
+
+	return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields})
 }

@@ -2,12 +2,12 @@ module github.com/deepfence/ThreatMapper/deepfence_ctl
 
 go 1.19
 
+replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
+
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
-replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client
-
 require (
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230123091013-6f8a19aeeb9d
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
 	github.com/spf13/cobra v1.6.1
 )
@@ -20,5 +20,5 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/sys v0.2.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
 )

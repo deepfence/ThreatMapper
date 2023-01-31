@@ -16,7 +16,7 @@ const canRoute = (pathname: string) => {
     viewResult: '',
   };
   if (pathname.includes('view-summary')) {
-    path.viewResult = '/onboard/scan/view-summary';
+    path.viewResult = '#';
     path.configureScan = '#';
   } else if (pathname.includes('scan/configure')) {
     path.configureScan = '#';

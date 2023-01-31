@@ -21,6 +21,14 @@ func (ve *AlreadyRunningScanError) Error() string {
 	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.scan_type, ve.node_id, ve.scan_id)
 }
 
+type NodeNotFoundError struct {
+	node_id string
+}
+
+func (ve *NodeNotFoundError) Error() string {
+	return fmt.Sprintf("Node %v not found", ve.node_id)
+}
+
 func AddNewScan(ctx context.Context,
 	scan_type utils.Neo4jScanType,
 	scan_id string,
@@ -47,6 +55,28 @@ func AddNewScan(ctx context.Context,
 	defer tx.Close()
 
 	res, err := tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s{node_id:$node_id})
+		RETURN n IS NOT NULL AS Exists`,
+		controls.ResourceTypeToNeo4j(node_type)),
+		map[string]interface{}{
+			"node_id": node_id,
+		})
+	if err != nil {
+		return err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return err
+	}
+
+	if !rec.Values[0].(bool) {
+		return &NodeNotFoundError{
+			node_id: node_id,
+		}
+	}
+
+	res, err = tx.Run(fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
@@ -59,7 +89,7 @@ func AddNewScan(ctx context.Context,
 		return err
 	}
 
-	rec, err := res.Single()
+	rec, err = res.Single()
 	if err != nil {
 		return err
 	}
@@ -115,11 +145,13 @@ func AddNewScan(ctx context.Context,
 	case controls.Image:
 		if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
-		MATCH (m:Node) -[:HOSTS]-> (:ContainerImage{node_id:$node_id})
+		OPTIONAL MATCH (m:Node) -[:HOSTS]-> (:ContainerImage{node_id:$node_id})
 		WITH n, m
 		ORDER BY rand()
 		LIMIT 1
-		MERGE (n)-[:SCHEDULED]->(m)`, scan_type),
+		MATCH (l:Node{node_id: "deepfence-console-cron"})
+		WITH coalesce(m, l) as exec, n
+		MERGE (n)-[:SCHEDULED]->(exec)`, scan_type),
 			map[string]interface{}{
 				"scan_id": scan_id,
 				"node_id": node_id,

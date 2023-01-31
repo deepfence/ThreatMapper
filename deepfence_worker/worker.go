@@ -9,10 +9,10 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -88,6 +88,18 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	}
 	mux.AddNoPublisherHandler(
 		utils.CleanUpPostgresqlTask, utils.CleanUpPostgresqlTask, subscribeCleanupPostgresql, cronjobs.CleanUpPostgresDB,
+	)
+
+	check_agent_upgrade_task, err := subscribe(utils.CheckAgentUpgradeTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
+	mux.AddNoPublisherHandler(
+		utils.CheckAgentUpgradeTask,
+		utils.CheckAgentUpgradeTask,
+		check_agent_upgrade_task,
+		cronjobs.CheckAgentUpgrade,
 	)
 
 	log.Info().Msg("Starting the consumer")

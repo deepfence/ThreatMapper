@@ -40,6 +40,7 @@ const (
 	ResourceScan        = "scan"
 	ResourceDiagnosis   = "diagnosis"
 	ResourceCloudNode   = "cloud-node"
+	ResourceRegistry    = "container-registry"
 )
 
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
@@ -144,20 +145,23 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/containers", dfHandler.GetContainers)
 				r.Post("/processes", dfHandler.GetProcesses)
 				r.Post("/kubernetesclusters", dfHandler.GetKubernetesClusters)
+				r.Post("/kubernetes-scanners", dfHandler.GetKubernetesScanners)
 				r.Post("/containerimages", dfHandler.GetContainerImages)
 				r.Post("/pods", dfHandler.GetPods)
 			})
 
 			r.Route("/controls", func(r chi.Router) {
 				r.Post("/agent", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentControls))
+				r.Get("/kubernetes-scanner", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetKubernetesScannerControls))
 				r.Post("/agent-init", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentInitControls))
-				r.Get("/get-agent-version", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetLatestAgentVersion))
-				r.Post("/agent-version", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.AddLatestAgentVersion))
+				r.Post("/agent-upgrade", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.ScheduleAgentUpgrade))
 			})
 
 			r.Route("/ingest", func(r chi.Router) {
 				r.Post("/report", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.IngestAgentReport))
+				r.Post("/sync-report", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.IngestSyncAgentReport))
 				r.Post("/cloud-resources", dfHandler.AuthHandler(ResourceCloudReport, PermissionIngest, dfHandler.IngestCloudResourcesReportHandler))
+				r.Post("/kubernetes-scanner", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.RegisterKubernetesScanner))
 				// below api's write to kafka
 				r.Post("/sbom", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestSbomHandler))
 				r.Post("/vulnerabilities", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestVulnerabilityReportHandler))
@@ -166,6 +170,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/secret-scan-logs", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestSecretScanStatusHandler))
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestComplianceReportHandler))
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestCloudComplianceReportHandler))
+				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestMalwareReportHandler))
+				r.Post("/malware-scan-logs", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestMalwareScanStatusHandler))
 				r.Post("/cloud-compliance-status", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestCloudComplianceScanStatusReportHandler))
 			})
 
@@ -206,6 +212,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultsHandler))
 			})
 
+			openApiDocs.AddRegistryOperations()
+			r.Route("/container-registry", func(r chi.Router) {
+				r.Get("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImagesInRegistry))
+				r.Get("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
+				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
+			})
+
+			openApiDocs.AddDiagnosisOperations()
 			r.Route("/diagnosis", func(r chi.Router) {
 				r.Get("/notification", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.DiagnosticNotification))
 				r.Post("/console-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateConsoleDiagnosticLogs))

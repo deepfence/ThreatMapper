@@ -101,18 +101,20 @@ openapi: server
 	-v $(PWD):/app $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) \
 	--export-api-docs-path /app/openapi.yaml
 
+	rm -rf golang_deepfence_sdk/client/*
+
 	docker run --rm \
-	-v $(PWD):/local openapitools/openapi-generator-cli generate \
+	-v $(PWD):/local openapitools/openapi-generator-cli:latest generate \
 	-i /local/openapi.yaml \
 	-g go \
-	-o /local/deepfence_server_client \
+	-o /local/golang_deepfence_sdk/client \
 	-p isGoSubmodule=true \
-	-p packageName=deepfence_server_client \
-	--git-repo-id ThreatMapper \
+	-p packageName=client \
+	--git-repo-id golang_deepfence_sdk \
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/deepfence_server_client && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
+	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli:

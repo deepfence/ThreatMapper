@@ -335,7 +335,7 @@ export const ComplianceScanConfigure = () => {
           color="primary"
           className="ml-auto"
           disabled={tabs.length === 0}
-          onClick={() => navigate('/onboard/scan/view-summary')}
+          onClick={() => navigate('/onboard/scan/view-summary/compliance')}
         >
           Start Scan
         </Button>

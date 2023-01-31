@@ -30,25 +30,19 @@ export interface ModelScanTriggerReq {
      * @type {string}
      * @memberof ModelScanTriggerReq
      */
-    resource_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanTriggerReq
-     */
-    resource_type: ModelScanTriggerReqResourceTypeEnum;
+    node_type: ModelScanTriggerReqNodeTypeEnum;
 }
 
 
 /**
  * @export
  */
-export const ModelScanTriggerReqResourceTypeEnum = {
+export const ModelScanTriggerReqNodeTypeEnum = {
     Image: 'image',
     Host: 'host',
     Container: 'container'
 } as const;
-export type ModelScanTriggerReqResourceTypeEnum = typeof ModelScanTriggerReqResourceTypeEnum[keyof typeof ModelScanTriggerReqResourceTypeEnum];
+export type ModelScanTriggerReqNodeTypeEnum = typeof ModelScanTriggerReqNodeTypeEnum[keyof typeof ModelScanTriggerReqNodeTypeEnum];
 
 
 /**
@@ -57,8 +51,7 @@ export type ModelScanTriggerReqResourceTypeEnum = typeof ModelScanTriggerReqReso
 export function instanceOfModelScanTriggerReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "resource_id" in value;
-    isInstance = isInstance && "resource_type" in value;
+    isInstance = isInstance && "node_type" in value;
 
     return isInstance;
 }
@@ -74,8 +67,7 @@ export function ModelScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'node_id': json['node_id'],
-        'resource_id': json['resource_id'],
-        'resource_type': json['resource_type'],
+        'node_type': json['node_type'],
     };
 }
 
@@ -89,8 +81,7 @@ export function ModelScanTriggerReqToJSON(value?: ModelScanTriggerReq | null): a
     return {
         
         'node_id': value.node_id,
-        'resource_id': value.resource_id,
-        'resource_type': value.resource_type,
+        'node_type': value.node_type,
     };
 }
 
