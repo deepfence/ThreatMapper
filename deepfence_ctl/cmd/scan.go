@@ -81,7 +81,7 @@ var scanStartSubCmd = &cobra.Command{
 }
 
 var scanBulkStartSubCmd = &cobra.Command{
-	Use:   "bulk",
+	Use:   "bulkstart",
 	Short: "Bulk start scan",
 	Long:  `This subcommand triggers multiple scans`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -133,6 +133,63 @@ var scanBulkStartSubCmd = &cobra.Command{
 					ScanConfig:   vuln_scan_type,
 				})
 			res, _, err = http.Client().VulnerabilityApi.StartBulkVulnerabilityScanExecute(req)
+		default:
+			log.Fatal().Msg("Unsupported")
+		}
+
+		if err != nil {
+			log.Fatal().Msgf("Fail to execute: %v", err)
+		}
+		output.Out(res)
+	},
+}
+
+var scanBulkListSubCmd = &cobra.Command{
+	Use:   "bulklist",
+	Short: "Bulk start scan",
+	Long:  `This subcommand triggers multiple scans`,
+	Run: func(cmd *cobra.Command, args []string) {
+		scan_type, _ := cmd.Flags().GetString("type")
+		if scan_type == "" {
+			log.Fatal().Msg("Please provide an type")
+		}
+
+		scan_id, _ := cmd.Flags().GetString("scan-id")
+		if scan_id == "" {
+			log.Fatal().Msg("Please provide a scan-id")
+		}
+
+		var err error
+		var res *deepfence_server_client.ModelBulkScanIdsResp
+		switch scan_type {
+		case "secret":
+			req := http.Client().SecretScanApi.ListBulkSecretBulkScans(context.Background())
+			req = req.ModelBulkScanReq(
+				deepfence_server_client.ModelBulkScanReq{
+					ScanId: scan_id,
+				})
+			res, _, err = http.Client().SecretScanApi.ListBulkSecretBulkScansExecute(req)
+		case "compliance":
+			req := http.Client().ComplianceApi.ListBulkComplianceBulkScans(context.Background())
+			req = req.ModelBulkScanReq(
+				deepfence_server_client.ModelBulkScanReq{
+					ScanId: scan_id,
+				})
+			res, _, err = http.Client().ComplianceApi.ListBulkComplianceBulkScansExecute(req)
+		case "malware":
+			req := http.Client().MalwareScanApi.ListBulkMalwareBulkScans(context.Background())
+			req = req.ModelBulkScanReq(
+				deepfence_server_client.ModelBulkScanReq{
+					ScanId: scan_id,
+				})
+			res, _, err = http.Client().MalwareScanApi.ListBulkMalwareBulkScansExecute(req)
+		case "vulnerability":
+			req := http.Client().VulnerabilityApi.ListBulkVulnerabilityScans(context.Background())
+			req = req.ModelBulkScanReq(
+				deepfence_server_client.ModelBulkScanReq{
+					ScanId: scan_id,
+				})
+			res, _, err = http.Client().VulnerabilityApi.ListBulkVulnerabilityScansExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
