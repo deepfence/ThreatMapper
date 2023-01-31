@@ -73,7 +73,7 @@ class HostReport extends React.PureComponent {
     const { handleDownload } = this.props;
     return handleDownload({
       scanId,
-      nodeType,
+      nodeType : this.props.scanType,
     });
   }
 
