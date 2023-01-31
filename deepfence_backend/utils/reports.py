@@ -471,7 +471,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                     global_hits.extend(hits)
             else:
                 and_terms_per_batch = copy.deepcopy(and_terms)
-                and_terms_per_batch.append({'term': {'node_type.keyword': node_type}})
+                # and_terms_per_batch.append({'term': {'node_type.keyword': node_type}})
 
                 query_body = {
                     "query": {"bool": {"must": and_terms_per_batch}}, "sort": [{"@timestamp": {"order": "desc"}}],
