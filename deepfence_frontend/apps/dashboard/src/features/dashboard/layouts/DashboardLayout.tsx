@@ -1,14 +1,23 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import { AppHeader } from '@/components/AppHeader';
+import { SideNavigation } from '@/components/SideNavigation';
 
 export const DashboardLayout = () => {
+  const [sideNavExpanded, setSideNavExpanded] = useState(true);
   return (
-    <div>
-      <div className="mx-2 pt-[64px] pb-8 min-h-screen">
-        <Outlet />
+    <div className="bg-gray-50 dark:bg-gray-900">
+      <AppHeader
+        sideNavExpanded={sideNavExpanded}
+        onSideNavExpandedChange={(state) => setSideNavExpanded(state)}
+      />
+      <div className="flex">
+        <SideNavigation expanded={sideNavExpanded} />
+        <div>
+          <Outlet />
+        </div>
       </div>
-      <AppHeader />
     </div>
   );
 };
