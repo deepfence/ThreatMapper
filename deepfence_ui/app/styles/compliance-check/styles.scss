@@ -105,7 +105,7 @@
   justify-content: center;
 }
 
-.compliance-cis-info, .compliance-hipaa-info, .compliance-gdpr-info, .compliance-soc2-info, .compliance-pci-info, .compliance-nist-info {
+.compliance-cis-info, .compliance-hipaa-info, .compliance-gdpr-info, .compliance-soc2-info, .compliance-pci-info, .compliance-nist-info, .compliance-nsa-cisa-info {
   color: $low-alert-color;
   background-color: transparent;
 
@@ -127,7 +127,7 @@
   }
 }
 
-.compliance-cis-ok, .compliance-cis-pass, .compliance-gdpr-pass, .compliance-pci-pass, .compliance-nist-pass,  .compliance-gdpr-ok, .compliance-pci-ok, .compliance-nist-ok, .compliance-hipaa-pass, .compliance-soc2-ok, .compliance-hipaa-ok {
+.compliance-cis-ok, .compliance-cis-pass, .compliance-gdpr-pass, .compliance-pci-pass, .compliance-nist-pass,  .compliance-gdpr-ok, .compliance-pci-ok, .compliance-nist-ok, .compliance-hipaa-pass, .compliance-soc2-ok, .compliance-hipaa-ok, .compliance-nsa-cisa-ok {
   color: $color-success;
   background-color: transparent;
 
@@ -149,7 +149,7 @@
   }
 }
 
-.compliance-cis-warn, .compliance-cis-note, .compliance-hipaa-warn, .compliance-gdpr-warn, .compliance-pci-warn, .compliance-nist-warn, .compliance-cis-alarm, .compliance-hipaa-alarm, .compliance-gdpr-alarm, .compliance-pci-alarm, .compliance-nist-alarm, .compliance-soc2-alarm {
+.compliance-cis-warn, .compliance-cis-note, .compliance-hipaa-warn, .compliance-gdpr-warn, .compliance-pci-warn, .compliance-nist-warn, .compliance-cis-alarm, .compliance-hipaa-alarm, .compliance-gdpr-alarm, .compliance-pci-alarm, .compliance-nist-alarm, .compliance-soc2-alarm, .compliance-nsa-cisa-alarm {
   color: $critical-alert-color;
   background-color: transparent;
 
@@ -193,7 +193,7 @@
   }
 }
 
-.compliance-hipaa-note, .compliance-gdpr-note, .compliance-pci-note, .compliance-nist-note, .compliance-cis-skip,.compliance-gdpr-skip, .compliance-hipaa-skip, .compliance-pci-skip, .compliance-soc2-skip, .compliance-nist-skip {
+.compliance-hipaa-note, .compliance-gdpr-note, .compliance-pci-note, .compliance-nist-note, .compliance-cis-skip,.compliance-gdpr-skip, .compliance-hipaa-skip, .compliance-pci-skip, .compliance-soc2-skip, .compliance-nist-skip, .compliance-nsa-cisa-skip {
   color: $medium-alert-color;
   background-color: transparent;
 
