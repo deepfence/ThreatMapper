@@ -46,7 +46,7 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 		if api_token, err = oahttp.GetConsoleApiToken(url); err != nil {
 			return nil, err
 		}
-	} else {
+	} else if api_token == "" {
 		return nil, errors.New("DEEPFENCE_KEY not set")
 	}
 
