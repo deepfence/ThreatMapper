@@ -4,9 +4,18 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
+type VulnerabilityScanConfig struct {
+	ScanConfig string `json:"scan_config" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+}
+
 type VulnerabilityScanTriggerReq struct {
 	ScanTriggerReq
-	ScanType string `json:"scan_type" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+	VulnerabilityScanConfig
+}
+
+type BulkVulnerabilityScanTriggerReq struct {
+	ScanRequests []ScanTriggerReq `json:"scan_requests" required:"true"`
+	VulnerabilityScanConfig
 }
 
 type ScanTriggerReq struct {
@@ -30,6 +39,19 @@ const (
 
 type ScanTriggerResp struct {
 	ScanId string `json:"scan_id" required:"true"`
+}
+
+type BulkScanTriggerResp struct {
+	BulkScanId string `json:"bulk_scan_id" required:"true"`
+}
+
+type BulkScanReq struct {
+	ScanId string      `json:"scan_id" required:"true"`
+	Window FetchWindow `json:"window"  required:"true"`
+}
+
+type BulkScanIdsResp struct {
+	ScanIds []string `json:"scan_ids" required:"true"`
 }
 
 type ScanStatusReq struct {

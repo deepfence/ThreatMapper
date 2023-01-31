@@ -152,7 +152,11 @@ func GetScanResults(ctx context.Context, scan_type utils.Neo4jScanType, scan_id 
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d) RETURN d SKIP $skip LIMIT $limit`,
+	res, err := tx.Run(`
+		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d) 
+		RETURN d 
+		SKIP $skip 
+		LIMIT $limit`,
 		map[string]interface{}{"scan_id": scan_id, "skip": fw.Offset, "limit": fw.Size})
 	if err != nil {
 		return model.ScanResultsResp{}, err
@@ -173,4 +177,45 @@ func GetScanResults(ctx context.Context, scan_type utils.Neo4jScanType, scan_id 
 	}
 
 	return model.ScanResultsResp{Results: scan_result}, nil
+}
+
+func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string, fw model.FetchWindow) (model.BulkScanIdsResp, error) {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return model.BulkScanIdsResp{}, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return model.BulkScanIdsResp{}, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return model.BulkScanIdsResp{}, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (m:Bulk`+string(scan_type)+`{node_id: $scan_id}) -[:BATCH]-> (d:`+string(scan_type)+`) 
+		RETURN d.node_id 
+		SKIP $skip 
+		LIMIT $limit`,
+		map[string]interface{}{"scan_id": scan_id, "skip": fw.Offset, "limit": fw.Size})
+	if err != nil {
+		return model.BulkScanIdsResp{}, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return model.BulkScanIdsResp{}, err
+	}
+
+	scan_ids := []string{}
+	for _, rec := range recs {
+		scan_ids = append(scan_ids, rec.Values[0].(string))
+	}
+
+	return model.BulkScanIdsResp{ScanIds: scan_ids}, nil
 }

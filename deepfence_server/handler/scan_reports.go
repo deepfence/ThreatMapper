@@ -20,6 +20,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -29,6 +30,11 @@ const MaxSbomRequestSize = 500 * 1e6
 
 func scanId(req model.ScanTriggerReq) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
+}
+
+func bulkScanId() string {
+	random_id := uuid.New()
+	return fmt.Sprintf("%s", random_id.String())
 }
 
 func GetImageFromId(ctx context.Context, node_id string) (string, string, error) {
@@ -82,49 +88,17 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	scanId := scanId(req.ScanTriggerReq)
+	scanId, err := startVulnerabilityScan(r.Context(), req.ScanTriggerReq, req.ScanConfig)
 
-	binArgs := map[string]string{
-		"scan_id":   scanId,
-		"node_type": req.NodeType,
-		"node_id":   req.NodeId,
-	}
-
-	if len(req.ScanType) != 0 {
-		binArgs["scan_type"] = req.ScanType
-	}
-
-	nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
-
-	if nodeTypeInternal == ctl.Image {
-		name, tag, err := GetImageFromId(r.Context(), req.NodeId)
-		if err != nil {
-			log.Error().Msgf("image not found %s", err.Error())
-		} else {
-			binArgs["image_name"] = name + ":" + tag
-			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
-		}
-	}
-
-	internal_req := ctl.StartVulnerabilityScanRequest{
-		NodeId:   req.NodeId,
-		NodeType: nodeTypeInternal,
-		BinArgs:  binArgs,
-	}
-
-	b, err := json.Marshal(internal_req)
 	if err != nil {
-		log.Error().Msg(err.Error())
 		respondError(err, w)
 		return
 	}
 
-	action := ctl.Action{
-		ID:             ctl.StartVulnerabilityScan,
-		RequestPayload: string(b),
+	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanId: scanId})
+	if err != nil {
+		log.Error().Msg(err.Error())
 	}
-
-	startScan(w, r, utils.NEO4J_VULNERABILITY_SCAN, scanId, ctl.StringToResourceType(req.NodeType), req.NodeId, action)
 }
 
 func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -262,6 +236,7 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 	stopScan(w, r, ctl.StartMalwareScan)
 }
 
+// TODO: removeme
 func startScan(
 	w http.ResponseWriter, r *http.Request,
 	scanType utils.Neo4jScanType,
@@ -591,4 +566,132 @@ func listScanResultsHandler(w http.ResponseWriter, r *http.Request, scan_type ut
 	}
 
 	httpext.JSON(w, http.StatusOK, results)
+}
+
+func (h *Handler) ListVulnerabilityBulkScansHandler(w http.ResponseWriter, r *http.Request) {
+	listBulkScansHandler(w, r, utils.NEO4J_VULNERABILITY_SCAN)
+}
+
+func (h *Handler) ListSecretBulkScansHandler(w http.ResponseWriter, r *http.Request) {
+	listBulkScansHandler(w, r, utils.NEO4J_SECRET_SCAN)
+}
+
+func (h *Handler) ListComplianceBulkScansHandler(w http.ResponseWriter, r *http.Request) {
+	listBulkScansHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+}
+
+func (h *Handler) ListMalwareBulkScansHandler(w http.ResponseWriter, r *http.Request) {
+	listBulkScansHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+}
+
+func listBulkScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+	defer r.Body.Close()
+	var req model.BulkScanReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	results, err := reporters.GetBulkScans(r.Context(), scan_type, req.ScanId, req.Window)
+	if err != nil {
+		log.Error().Msgf("%v, req=%v", err, req)
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, results)
+}
+
+func (h *Handler) StartBulkVulnerabilityScansHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var breq model.BulkVulnerabilityScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &breq)
+
+	if err != nil {
+		log.Warn().Msg(err.Error())
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	bulkScanId := bulkScanId()
+
+	scan_ids := []string{}
+	for _, req := range breq.ScanRequests {
+		scan_id, err := startVulnerabilityScan(r.Context(), req, breq.ScanConfig)
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			continue
+		}
+		scan_ids = append(scan_ids, scan_id)
+	}
+
+	err = ingesters.AddBulkScan(r.Context(), utils.NEO4J_VULNERABILITY_SCAN, bulkScanId, scan_ids)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, model.BulkScanTriggerResp{BulkScanId: bulkScanId})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func startVulnerabilityScan(ctx context.Context, req model.ScanTriggerReq, config string) (string, error) {
+	scanId := scanId(req)
+
+	binArgs := map[string]string{
+		"scan_id":   scanId,
+		"node_type": req.NodeType,
+		"node_id":   req.NodeId,
+	}
+
+	if len(config) != 0 {
+		binArgs["scan_type"] = config
+	}
+
+	nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
+
+	if nodeTypeInternal == ctl.Image {
+		name, tag, err := GetImageFromId(ctx, req.NodeId)
+		if err != nil {
+			log.Error().Msgf("image not found %s", err.Error())
+		} else {
+			binArgs["image_name"] = name + ":" + tag
+			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
+		}
+	}
+
+	internal_req := ctl.StartVulnerabilityScanRequest{
+		NodeId:   req.NodeId,
+		NodeType: nodeTypeInternal,
+		BinArgs:  binArgs,
+	}
+
+	b, err := json.Marshal(internal_req)
+	if err != nil {
+		log.Error().Err(err)
+		return scanId, err
+	}
+
+	action := ctl.Action{
+		ID:             ctl.StartVulnerabilityScan,
+		RequestPayload: string(b),
+	}
+
+	err = ingesters.AddNewScan(ctx,
+		utils.NEO4J_VULNERABILITY_SCAN,
+		scanId,
+		ctl.StringToResourceType(req.NodeType),
+		req.NodeId,
+		action)
+
+	if err != nil {
+		log.Error().Err(err)
+		return scanId, err
+	}
+	return scanId, nil
 }

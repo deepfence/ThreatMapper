@@ -211,6 +211,9 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("startVulnerabilityScan", http.MethodPost, "/deepfence/scan/start/vulnerability",
 		"Start Vulnerability Scan", "Start Vulnerability Scan on agent or registry",
 		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.VulnerabilityScanTriggerReq), new(model.ScanTriggerResp))
+	d.AddOperation("startBulkVulnerabilityScan", http.MethodPost, "/deepfence/scan/bulk/start/vulnerability",
+		"Start Bulk Vulnerability Scans", "Start Vulnerability Scans on agent or registry",
+		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.BulkVulnerabilityScanTriggerReq), new(model.BulkScanTriggerResp))
 	d.AddOperation("startSecretScan", http.MethodPost, "/deepfence/scan/start/secret",
 		"Start Secret Scan", "Start Secret Scan on agent or registry",
 		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(model.ScanTriggerReq), new(model.ScanTriggerResp))
@@ -248,6 +251,20 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
+
+	// Bulk list scans
+	d.AddOperation("listBulkVulnerabilityScans", http.MethodPost, "/deepfence/scan/bulk/list/vulnerability",
+		"Get Vulnerability Bulk Scanss List", "Get Vulnerability Bulk Scans list on agent or registry",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(model.BulkScanReq), new(model.BulkScanIdsResp))
+	d.AddOperation("listBulkSecretBulk Scans", http.MethodPost, "/deepfence/scan/bulk/list/secret",
+		"Get Secret Bulk Scanss List", "Get Secret Bulk Scanss list on agent or registry",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, new(model.BulkScanReq), new(model.BulkScanIdsResp))
+	d.AddOperation("listBulkComplianceBulk Scans", http.MethodPost, "/deepfence/scan/bulk/list/compliance",
+		"Get Compliance Bulk Scanss List", "Get Compliance Bulk Scanss list on agent or registry",
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(model.BulkScanReq), new(model.BulkScanIdsResp))
+	d.AddOperation("listBulkMalwareBulk Scans", http.MethodPost, "/deepfence/scan/bulk/list/malware",
+		"Get Malware Bulk Scanss List", "Get Malware Bulk Scanss list on agent or registry",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.BulkScanReq), new(model.BulkScanIdsResp))
 
 	// List scans
 	d.AddOperation("listVulnerabilityScans", http.MethodPost, "/deepfence/scan/list/vulnerability",
