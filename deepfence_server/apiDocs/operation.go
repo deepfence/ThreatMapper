@@ -211,32 +211,29 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("startVulnerabilityScan", http.MethodPost, "/deepfence/scan/start/vulnerability",
 		"Start Vulnerability Scan", "Start Vulnerability Scan on agent or registry",
 		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.VulnerabilityScanTriggerReq), new(model.ScanTriggerResp))
-	d.AddOperation("startBulkVulnerabilityScan", http.MethodPost, "/deepfence/scan/bulk/start/vulnerability",
-		"Start Bulk Vulnerability Scans", "Start Vulnerability Scans on agent or registry",
-		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.BulkVulnerabilityScanTriggerReq), new(model.BulkScanTriggerResp))
 	d.AddOperation("startSecretScan", http.MethodPost, "/deepfence/scan/start/secret",
 		"Start Secret Scan", "Start Secret Scan on agent or registry",
-		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(model.ScanTriggerReq), new(model.ScanTriggerResp))
+		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(model.SecretScanTriggerReq), new(model.ScanTriggerResp))
 	d.AddOperation("startComplianceScan", http.MethodPost, "/deepfence/scan/start/compliance",
 		"Start Compliance Scan", "Start Compliance Scan on agent or registry",
-		http.StatusAccepted, []string{tagCompliance}, bearerToken, new(model.ScanTriggerReq), new(model.ScanTriggerResp))
+		http.StatusAccepted, []string{tagCompliance}, bearerToken, new(model.ComplianceScanTriggerReq), new(model.ScanTriggerResp))
 	d.AddOperation("startMalwareScan", http.MethodPost, "/deepfence/scan/start/malware",
 		"Start Malware Scan", "Start Malware Scan on agent or registry",
-		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(model.ScanTriggerReq), new(model.ScanTriggerResp))
+		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(model.MalwareScanTriggerReq), new(model.ScanTriggerResp))
 
 	// Stop scan
 	d.AddOperation("stopVulnerabilityScan", http.MethodPost, "/deepfence/scan/stop/vulnerability",
 		"Stop Vulnerability Scan", "Stop Vulnerability Scan on agent or registry",
-		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.ScanTriggerReq), nil)
+		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.VulnerabilityScanTriggerReq), nil)
 	d.AddOperation("stopSecretScan", http.MethodPost, "/deepfence/scan/stop/secret",
 		"Stop Secret Scan", "Stop Secret Scan on agent or registry",
-		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(model.ScanTriggerReq), nil)
+		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(model.SecretScanTriggerReq), nil)
 	d.AddOperation("stopComplianceScan", http.MethodPost, "/deepfence/scan/stop/compliance",
 		"Stop Compliance Scan", "Stop Compliance Scan on agent or registry",
-		http.StatusAccepted, []string{tagCompliance}, bearerToken, new(model.ScanTriggerReq), nil)
+		http.StatusAccepted, []string{tagCompliance}, bearerToken, new(model.ComplianceScanTriggerReq), nil)
 	d.AddOperation("stopMalwareScan", http.MethodPost, "/deepfence/scan/stop/malware",
 		"Stop Malware Scan", "Stop Malware Scan on agent or registry",
-		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(model.ScanTriggerReq), nil)
+		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(model.MalwareScanTriggerReq), nil)
 
 	// Status scan
 	d.AddOperation("statusVulnerabilityScan", http.MethodGet, "/deepfence/scan/status/vulnerability",
@@ -251,20 +248,6 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
-
-	// Bulk list scans
-	d.AddOperation("listBulkVulnerabilityScans", http.MethodPost, "/deepfence/scan/bulk/list/vulnerability",
-		"Get Vulnerability Bulk Scanss List", "Get Vulnerability Bulk Scans list on agent or registry",
-		http.StatusOK, []string{tagVulnerability}, bearerToken, new(model.BulkScanReq), new(model.BulkScanIdsResp))
-	d.AddOperation("listBulkSecretBulk Scans", http.MethodPost, "/deepfence/scan/bulk/list/secret",
-		"Get Secret Bulk Scanss List", "Get Secret Bulk Scanss list on agent or registry",
-		http.StatusOK, []string{tagSecretScan}, bearerToken, new(model.BulkScanReq), new(model.BulkScanIdsResp))
-	d.AddOperation("listBulkComplianceBulk Scans", http.MethodPost, "/deepfence/scan/bulk/list/compliance",
-		"Get Compliance Bulk Scanss List", "Get Compliance Bulk Scanss list on agent or registry",
-		http.StatusOK, []string{tagCompliance}, bearerToken, new(model.BulkScanReq), new(model.BulkScanIdsResp))
-	d.AddOperation("listBulkMalwareBulk Scans", http.MethodPost, "/deepfence/scan/bulk/list/malware",
-		"Get Malware Bulk Scanss List", "Get Malware Bulk Scanss list on agent or registry",
-		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.BulkScanReq), new(model.BulkScanIdsResp))
 
 	// List scans
 	d.AddOperation("listVulnerabilityScans", http.MethodPost, "/deepfence/scan/list/vulnerability",
@@ -283,16 +266,16 @@ func (d *OpenApiDocs) AddScansOperations() {
 	// Scans' Results
 	d.AddOperation("resultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/vulnerability",
 		"Get Vulnerability Scans Results", "Get Vulnerability Scan results on agent or registry",
-		http.StatusOK, []string{tagVulnerability}, bearerToken, new(model.ScanResultsReq), new(model.ScanResultsResp))
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(model.ScanResultsReq), new(model.VulnerabilityScanResult))
 	d.AddOperation("resultsSecretScan", http.MethodPost, "/deepfence/scan/results/secret",
 		"Get Secret Scans Results", "Get Secret Scans results on agent or registry",
-		http.StatusOK, []string{tagSecretScan}, bearerToken, new(model.ScanResultsReq), new(model.ScanResultsResp))
+		http.StatusOK, []string{tagSecretScan}, bearerToken, new(model.ScanResultsReq), new(model.SecretScanResult))
 	d.AddOperation("resultsComplianceScan", http.MethodPost, "/deepfence/scan/results/compliance",
 		"Get Compliance Scans Results", "Get Compliance Scans results on agent or registry",
-		http.StatusOK, []string{tagCompliance}, bearerToken, new(model.ScanResultsReq), new(model.ScanResultsResp))
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(model.ScanResultsReq), new(model.ComplianceScanResult))
 	d.AddOperation("resultsMalwareScan", http.MethodPost, "/deepfence/scan/results/malware",
 		"Get Malware Scans Results", "Get Malware Scans results on agent or registry",
-		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanResultsReq), new(model.ScanResultsResp))
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanResultsReq), new(model.MalwareScanResult))
 }
 
 func (d *OpenApiDocs) AddDiagnosisOperations() {
