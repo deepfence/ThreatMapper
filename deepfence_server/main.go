@@ -2,32 +2,36 @@ package main
 
 import (
 	"context"
+	"crypto/aes"
 	"database/sql"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"flag"
-	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"github.com/twmb/franz-go/pkg/kgo"
-
+	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
+	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-
-	stdlog "log"
-
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/rs/zerolog"
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 var (
@@ -39,8 +43,9 @@ var (
 )
 
 type Config struct {
-	HttpListenEndpoint string
-	JwtSecret          []byte
+	HttpListenEndpoint     string
+	InternalListenEndpoint string
+	JwtSecret              []byte
 }
 
 func main() {
@@ -48,6 +53,7 @@ func main() {
 
 	openApiDocs := apiDocs.InitializeOpenAPIReflector()
 	initializeOpenApiDocs(openApiDocs)
+	initializeInternalOpenApiDocs(openApiDocs)
 
 	if *exportOpenapiDocsPath != "" {
 		if *exportOpenapiDocsPath != filepath.Clean(*exportOpenapiDocsPath) {
@@ -79,6 +85,19 @@ func main() {
 		log.Fatal().Msg(err.Error())
 	}
 
+	log.Info().Msg("generating aes setting")
+	err = initializeAES()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+
+	log.Info().Msg("syncing images from registries")
+	// todo: do this in cron
+	err = registrysync.Sync()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+
 	log.Info().Msg("starting deepfence-server")
 
 	mux := chi.NewRouter()
@@ -87,8 +106,22 @@ func main() {
 		mux.Use(
 			middleware.RequestLogger(
 				&middleware.DefaultLogFormatter{
-					Logger:  stdlog.New(&log.LogInfoWriter{}, "", 0),
-					NoColor: true},
+					Logger:  log.NewStdLoggerWithLevel(zerolog.DebugLevel),
+					NoColor: true,
+				},
+			),
+		)
+	}
+
+	internalMux := chi.NewRouter()
+	internalMux.Use(middleware.Recoverer)
+	if *enableHttpLogs {
+		internalMux.Use(
+			middleware.RequestLogger(
+				&middleware.DefaultLogFormatter{
+					Logger:  log.NewStdLoggerWithLevel(zerolog.DebugLevel),
+					NoColor: true,
+				},
 			),
 		)
 	}
@@ -124,29 +157,65 @@ func main() {
 		return
 	}
 
+	err = router.InternalRoutes(internalMux,
+		config.InternalListenEndpoint, config.JwtSecret, ingestC, publisher,
+	)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return
+	}
+
 	httpServer := http.Server{
 		Addr:     config.HttpListenEndpoint,
 		Handler:  mux,
-		ErrorLog: stdlog.New(&log.LogErrorWriter{}, "", 0),
+		ErrorLog: log.NewStdLoggerWithLevel(zerolog.ErrorLevel),
 	}
 
-	idleConnectionsClosed := make(chan struct{})
+	internalServer := http.Server{
+		Addr:     config.InternalListenEndpoint,
+		Handler:  internalMux,
+		ErrorLog: log.NewStdLoggerWithLevel(zerolog.ErrorLevel),
+	}
+
+	// start the servers
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		sigint := make(chan os.Signal, 1)
 		signal.Notify(sigint, os.Interrupt)
 		<-sigint
 		if err := httpServer.Shutdown(context.Background()); err != nil {
 			log.Error().Msgf("http server shutdown error: %v", err)
 		}
-		close(idleConnectionsClosed)
+		if err := internalServer.Shutdown(context.Background()); err != nil {
+			log.Error().Msgf("internal server shutdown error: %v", err)
+		}
 	}()
 
-	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-		log.Error().Msgf("http server ListenAndServe error: %v", err)
-		return
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Info().Msgf("start http server at %s", config.HttpListenEndpoint)
+		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+			log.Error().Msgf("http server ListenAndServe error: %v", err)
+			return
+		}
+	}()
 
-	<-idleConnectionsClosed
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Info().Msgf("start internal server at %s", config.InternalListenEndpoint)
+		if err := internalServer.ListenAndServe(); err != http.ErrServerClosed {
+			log.Error().Msgf("internal server ListenAndServe error: %v", err)
+			return
+		}
+	}()
+
+	wg.Wait()
 	cancel()
 
 	log.Info().Msg("deepfence-server stopped")
@@ -162,8 +231,60 @@ func initialize() (*Config, error) {
 	}
 
 	return &Config{
-		HttpListenEndpoint: ":" + httpListenEndpoint,
+		HttpListenEndpoint:     ":" + httpListenEndpoint,
+		InternalListenEndpoint: ":8081",
 	}, nil
+}
+
+func initializeAES() error {
+	// set aes_secret in setting table, if !exists
+	// TODO
+	// generate aes and aes-iv
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = pgClient.GetSetting(ctx, common.AES_SECRET)
+	if err != nil {
+		key := make([]byte, 32) // 32 bytes for AES-256
+		iv := make([]byte, aes.BlockSize)
+		_, err = rand.Read(key)
+		if err != nil {
+			return err
+		}
+
+		_, err = rand.Read(iv)
+		if err != nil {
+			return err
+		}
+
+		aesValue := &model.SettingValue{
+			Label:       "AES Encryption Setting",
+			Description: "AES Encryption Key-IV pair",
+			Value: map[string]string{
+				"aes_iv":  hex.EncodeToString(iv),
+				"aes_key": hex.EncodeToString(key),
+			},
+		}
+
+		rawAES, err := json.Marshal(aesValue)
+		if err != nil {
+			return err
+		}
+		rawMessageAES := json.RawMessage(rawAES)
+
+		_, err = pgClient.CreateSetting(ctx, postgresql_db.CreateSettingParams{
+			Key:           common.AES_SECRET,
+			Value:         rawMessageAES,
+			IsVisibleOnUi: false,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func initializeDatabase() ([]byte, error) {
@@ -207,6 +328,10 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddScansOperations()
 	openApiDocs.AddDiagnosisOperations()
 	openApiDocs.AddCloudNodeOperations()
+}
+
+func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
+	openApiDocs.AddInternalAuthOperations()
 }
 
 func initializeKafka() error {

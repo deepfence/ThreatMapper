@@ -12,8 +12,8 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	redis2 "github.com/go-redis/redis/v9"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	redis2 "github.com/redis/go-redis/v9"
 	"github.com/weaveworks/scope/report"
 )
 
@@ -127,24 +127,24 @@ func (nc *neo4jIngester) runEnqueueReport() {
 }
 
 type ReportIngestionData struct {
-	Process_batch            []map[string]string
-	Host_batch               []map[string]string
-	Container_batch          []map[string]string
-	Pod_batch                []map[string]string
-	Container_image_batch    []map[string]string
-	Kubernetes_cluster_batch []map[string]string
+	Process_batch            []map[string]string `json:"process_batch" required:"true"`
+	Host_batch               []map[string]string `json:"host_batch" required:"true"`
+	Container_batch          []map[string]string `json:"container_batch" required:"true"`
+	Pod_batch                []map[string]string `json:"pod_batch" required:"true"`
+	Container_image_batch    []map[string]string `json:"container_image_batch" required:"true"`
+	Kubernetes_cluster_batch []map[string]string `json:"kubernetes_cluster_batch" required:"true"`
 
-	Process_edges_batch           []map[string]interface{}
-	Container_edges_batch         []map[string]interface{}
-	Pod_edges_batch               []map[string]interface{}
-	Endpoint_edges_batch          []map[string]interface{}
-	Container_image_edge_batch    []map[string]interface{}
-	Kubernetes_cluster_edge_batch []map[string]interface{}
+	Process_edges_batch           []map[string]interface{} `json:"process_edges_batch" required:"true"`
+	Container_edges_batch         []map[string]interface{} `json:"container_edges_batch" required:"true"`
+	Pod_edges_batch               []map[string]interface{} `json:"pod_edges_batch" required:"true"`
+	Endpoint_edges_batch          []map[string]interface{} `json:"endpoint_edges_batch" required:"true"`
+	Container_image_edge_batch    []map[string]interface{} `json:"container_image_edge_batch" required:"true"`
+	Kubernetes_cluster_edge_batch []map[string]interface{} `json:"kubernetes_cluster_edge_batch" required:"true"`
 
 	//Endpoint_batch []map[string]string
 	//Endpoint_edges []map[string]string
 
-	Hosts []map[string]string
+	Hosts []map[string]string `json:"hosts" required:"true"`
 }
 
 func (r *EndpointResolvers) merge(other *EndpointResolvers) {
@@ -627,6 +627,7 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 		return err
 	}
 
+	tx.Run("CREATE CONSTRAINT ON (n:AgentVersion) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:KubernetesCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:ContainerImage) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
@@ -635,9 +636,11 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 	tx.Run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:Malware) ASSERT n.malware_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:Cve) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	tx.Run("CREATE CONSTRAINT ON (n:Registry) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_SECRET_SCAN), map[string]interface{}{})
 	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_VULNERABILITY_SCAN), map[string]interface{}{})
 	tx.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_COMPLIANCE_SCAN), map[string]interface{}{})
@@ -656,6 +659,7 @@ func (nc *neo4jIngester) applyDBConstraints() error {
 
 	tx.Run("MERGE (n:Node{node_id:'in-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 	tx.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
+	tx.Run("MERGE (n:Node{node_id:'deepfence-console-cron', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 
 	return tx.Commit()
 }

@@ -31,7 +31,7 @@ export interface ModelProcess {
      * @type {string}
      * @memberof ModelProcess
      */
-    command: string;
+    cmdline: string;
     /**
      * 
      * @type {{ [key: string]: any; }}
@@ -73,7 +73,7 @@ export interface ModelProcess {
      * @type {number}
      * @memberof ModelProcess
      */
-    thread_number: number;
+    threads: number;
 }
 
 /**
@@ -81,14 +81,14 @@ export interface ModelProcess {
  */
 export function instanceOfModelProcess(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "command" in value;
+    isInstance = isInstance && "cmdline" in value;
     isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "metrics" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "pid" in value;
     isInstance = isInstance && "ppid" in value;
-    isInstance = isInstance && "thread_number" in value;
+    isInstance = isInstance && "threads" in value;
 
     return isInstance;
 }
@@ -103,14 +103,14 @@ export function ModelProcessFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'command': json['command'],
+        'cmdline': json['cmdline'],
         'metadata': json['metadata'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'name': json['name'],
         'node_id': json['node_id'],
         'pid': json['pid'],
         'ppid': json['ppid'],
-        'thread_number': json['thread_number'],
+        'threads': json['threads'],
     };
 }
 
@@ -123,14 +123,14 @@ export function ModelProcessToJSON(value?: ModelProcess | null): any {
     }
     return {
         
-        'command': value.command,
+        'cmdline': value.cmdline,
         'metadata': value.metadata,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
         'name': value.name,
         'node_id': value.node_id,
         'pid': value.pid,
         'ppid': value.ppid,
-        'thread_number': value.thread_number,
+        'threads': value.threads,
     };
 }
 

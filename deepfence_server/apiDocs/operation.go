@@ -6,28 +6,30 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/weaveworks/scope/render/detailed"
 
+	controls2 "github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	postgresqldb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/golang_deepfence_sdk/utils/report"
 	utils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 func (d *OpenApiDocs) AddUserAuthOperations() {
 	d.AddOperation("registerUser", http.MethodPost, "/deepfence/user/register",
 		"Register User", "First user registration. Further users needs to be invited.",
-		http.StatusOK, []string{tagUser}, nil, new(model.UserRegisterRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagUser}, nil, new(model.UserRegisterRequest), new(model.ResponseAccessToken))
 	d.AddOperation("authToken", http.MethodPost, "/deepfence/auth/token",
 		"Get Access Token for API Token", "Get access token for programmatic API access, by providing API Token",
-		http.StatusOK, []string{tagAuthentication}, nil, new(model.ApiAuthRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagAuthentication}, nil, new(model.ApiAuthRequest), new(model.ResponseAccessToken))
 	d.AddOperation("authTokenRefresh", http.MethodPost, "/deepfence/auth/token/refresh",
 		"Refresh access token", "Reissue access token using refresh token",
-		http.StatusOK, []string{tagAuthentication}, bearerToken, nil, model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagAuthentication}, bearerToken, nil, new(model.ResponseAccessToken))
 	d.AddOperation("login", http.MethodPost, "/deepfence/user/login",
 		"Login API", "Login API",
-		http.StatusOK, []string{tagAuthentication}, nil, new(model.LoginRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagAuthentication}, nil, new(model.LoginRequest), new(model.ResponseAccessToken))
 	d.AddOperation("logout", http.MethodPost, "/deepfence/user/logout",
 		"Logout API", "Logout API",
 		http.StatusNoContent, []string{tagAuthentication}, bearerToken, nil, nil)
@@ -36,30 +38,30 @@ func (d *OpenApiDocs) AddUserAuthOperations() {
 func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("getCurrentUser", http.MethodGet, "/deepfence/user",
 		"Get Current User", "Get logged in user information",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, model.Response{Success: true, Data: model.User{}})
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new(model.User))
 	d.AddOperation("updateCurrentUser", http.MethodPut, "/deepfence/user",
 		"Update Current User", "Update logged in user information",
-		http.StatusOK, []string{tagUser}, bearerToken, new(model.User), model.Response{Success: true, Data: model.User{}})
+		http.StatusOK, []string{tagUser}, bearerToken, new(model.User), new(model.User))
 	d.AddOperation("deleteCurrentUser", http.MethodDelete, "/deepfence/user",
 		"Delete Current User", "Delete logged in user",
 		http.StatusNoContent, []string{tagUser}, bearerToken, nil, nil)
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, model.Response{Success: true, Data: []postgresqldb.ApiToken{}})
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
 
 	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
 		"Reset Password Request", "Request for resetting the password",
-		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetRequest), model.Response{Success: true})
+		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetRequest), new(model.MessageResponse))
 	d.AddOperation("verifyResetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/verify",
 		"Verify and Reset Password", "Verify code and reset the password",
-		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetVerifyRequest), model.Response{Success: true})
+		http.StatusOK, []string{tagUser}, nil, new(model.PasswordResetVerifyRequest), nil)
 
 	d.AddOperation("inviteUser", http.MethodPost, "/deepfence/user/invite",
 		"Invite User", "Invite a user",
-		http.StatusOK, []string{tagUser}, bearerToken, new(model.InviteUserRequest), model.Response{Success: true, Data: model.InviteUserResponse{}})
+		http.StatusOK, []string{tagUser}, bearerToken, new(model.InviteUserRequest), new(model.InviteUserResponse))
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
-		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), model.Response{Success: true, Data: model.ResponseAccessToken{}})
+		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), new(model.ResponseAccessToken))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -106,7 +108,11 @@ func (d *OpenApiDocs) AddLookupOperations() {
 		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.Process))
 
 	d.AddOperation("getKubernetesClusters", http.MethodPost, "/deepfence/lookup/kubernetesclusters",
-		"Retrieve K8S data", "Retrieve all the data associated with k8s clusters",
+		"Retrieve K8s data", "Retrieve all the data associated with k8s clusters",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.KubernetesCluster))
+
+	d.AddOperation("getKubernetesScanners", http.MethodPost, "/deepfence/lookup/kubernetes-scanners",
+		"Retrieve K8s scanners data", "Retrieve all the data associated with k8s scanners",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.KubernetesCluster))
 
 	d.AddOperation("getPods", http.MethodPost, "/deepfence/lookup/pods",
@@ -123,17 +129,17 @@ func (d *OpenApiDocs) AddControlsOperations() {
 		"Fetch Agent Actions", "Fetch actions for a given agent",
 		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls.AgentControls))
 
+	d.AddOperation("getKubernetesScannerControls", http.MethodPost, "/deepfence/controls/kubernetes-scanner",
+		"Fetch Kubernetes Scanner Actions", "Fetch actions for a given Kubernetes Cluster",
+		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls2.KubernetesScannerControlResponse))
+
 	d.AddOperation("getAgentInitControls", http.MethodPost, "/deepfence/controls/agent-init",
 		"Fetch Agent Init Actions", "Fetch initial actions for a given agent after it started",
 		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls.AgentControls))
 
-	d.AddOperation("getLatestAgentVersion", http.MethodGet, "/deepfence/controls/get-agent-version",
-		"Fetch latest agent version", "Fetch latest agent version to check for upgrade",
-		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentImageMetadata), new(model.AgentImageMetadata))
-
-	d.AddOperation("addAgentVersion", http.MethodPost, "/deepfence/controls/agent-version",
-		"Push new agent version", "Push new agent version",
-		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentImageMetadata), nil)
+	d.AddOperation("upgradeAgentVersion", http.MethodPost, "/deepfence/controls/agent-upgrade",
+		"Schedule new agent version upgrade", "Schedule new agent version upgrade",
+		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentUpgrade), nil)
 }
 
 func (d *OpenApiDocs) AddCloudNodeOperations() {
@@ -148,7 +154,11 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, bearerToken, new([]byte), nil)
+		http.StatusOK, []string{tagTopology}, bearerToken, new(report.RawReport), nil)
+
+	d.AddOperation("ingestSyncAgentReport", http.MethodPost, "/deepfence/ingest/sync-report",
+		"Ingest Topology Data", "Ingest data reported by one Agent",
+		http.StatusOK, []string{tagTopology}, bearerToken, new(ingesters.ReportIngestionData), nil)
 
 	d.AddOperation("ingestSbom", http.MethodPost, "/deepfence/ingest/sbom",
 		"Ingest SBOM from Scan", "Ingest SBOM from Scan",
@@ -176,11 +186,23 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 
 	d.AddOperation("ingestCloudCompliances", http.MethodPost, "/deepfence/ingest/cloud-compliance",
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
-		http.StatusOK, []string{tagCloudCompliance}, bearerToken, new([]ingester.CloudCompliance), nil)
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
+
+	d.AddOperation("ingestMalwareScanStatus", http.MethodPost, "/deepfence/ingest/malware-scan-logs",
+		"Ingest Malware Scan Status", "Ingest malware scan status from the agent",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new([]ingester.MalwareScanStatus), nil)
+
+	d.AddOperation("ingestMalware", http.MethodPost, "/deepfence/ingest/malware",
+		"Ingest Malware", "Ingest malware found while scanning the agent",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new([]ingester.Malware), nil)
 
 	d.AddOperation("ingestCloudResources", http.MethodPost, "/deepfence/ingest/cloud-resources",
 		"Ingest Cloud resources", "Ingest Clouds Resources found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudResources}, bearerToken, new([]ingesters.CloudResource), nil)
+
+	d.AddOperation("registerKubernetesScanner", http.MethodPost, "/deepfence/ingest/kubernetes-scanner",
+		"Register Kubernetes Scanner", "Register Kubernetes Scanner",
+		http.StatusNoContent, []string{tagKubernetesScanner}, bearerToken, new([]ingesters.RegisterKubernetesScannerRequest), nil)
 
 }
 
@@ -188,7 +210,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 	// Start scan
 	d.AddOperation("startVulnerabilityScan", http.MethodPost, "/deepfence/scan/start/vulnerability",
 		"Start Vulnerability Scan", "Start Vulnerability Scan on agent or registry",
-		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.ScanTriggerReq), new(model.ScanTriggerResp))
+		http.StatusAccepted, []string{tagVulnerability}, bearerToken, new(model.VulnerabilityScanTriggerReq), new(model.ScanTriggerResp))
 	d.AddOperation("startSecretScan", http.MethodPost, "/deepfence/scan/start/secret",
 		"Start Secret Scan", "Start Secret Scan on agent or registry",
 		http.StatusAccepted, []string{tagSecretScan}, bearerToken, new(model.ScanTriggerReq), new(model.ScanTriggerResp))
@@ -259,7 +281,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 func (d *OpenApiDocs) AddDiagnosisOperations() {
 	d.AddOperation("diagnosticNotification", http.MethodGet, "/deepfence/diagnosis/notification",
 		"Get Diagnostic Notification", "Get Diagnostic Notification",
-		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, model.Response{Success: true, Data: []diagnosis.DiagnosticNotification{}})
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new([]diagnosis.DiagnosticNotification))
 	d.AddOperation("generateConsoleDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/console-logs",
 		"Generate Console Diagnostic Logs", "Generate Console Diagnostic Logs",
 		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, nil, nil)
@@ -269,4 +291,17 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 	d.AddOperation("getDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/diagnostic-logs",
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, nil)
+}
+
+func (d *OpenApiDocs) AddRegistryOperations() {
+	// TODO
+	d.AddOperation("listImagesInRegistry", http.MethodGet, "/deepfence/container-registry/images",
+		"List Images in Registry", "List all the images present in all the registries",
+		http.StatusOK, []string{tagRegistry}, bearerToken, nil, nil)
+	d.AddOperation("ListRegistry", http.MethodGet, "/deepfence/container-registry/",
+		"List Images in Registry", "List all the added Registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryListReq), new([]postgresqldb.GetContainerRegistriesSafeRow))
+	d.AddOperation("AddRegistry", http.MethodPost, "/deepfence/container-registry/",
+		"Add Registry", "Add a new supported registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryAddReq), nil)
 }

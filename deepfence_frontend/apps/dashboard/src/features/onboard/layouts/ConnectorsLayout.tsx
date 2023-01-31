@@ -1,10 +1,8 @@
-import { LoaderFunction, Outlet, redirect, useLocation } from 'react-router-dom';
-import { Tabs } from 'ui-components';
+import { LoaderFunctionArgs, Outlet, redirect } from 'react-router-dom';
 
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
-export const connectorsLoader: LoaderFunction = async ({ request }) => {
+export const connectorsLoader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   if (['/onboard/connectors', '/onboard/connectors/'].includes(url.pathname)) {
     throw redirect('/onboard/connectors/add-connectors', 302);
@@ -12,7 +10,10 @@ export const connectorsLoader: LoaderFunction = async ({ request }) => {
   return null;
 };
 
-const tabs = [
+export const connectorLayoutTabs: Array<{
+  label: string;
+  value: 'add-connectors' | 'my-connectors';
+}> = [
   {
     label: 'Add Connectors',
     value: 'add-connectors',
@@ -24,34 +25,13 @@ const tabs = [
 ];
 
 export const ConnectorsLayout = () => {
-  const location = useLocation();
-  const { navigate } = usePageNavigation();
-
-  const tab = location.pathname.startsWith('/onboard/connectors/my-connectors')
-    ? 'my-connectors'
-    : 'add-connectors';
-
-  const onTabChange = (tab: string) => {
-    navigate(`/onboard/connectors/${tab}`);
-  };
-
   return (
     <>
       <ConnectorHeader
         title="Let's Get Started"
         description="ThreatMapper's unique approach learns the active topology of your application and classifies vulnerabilities based on the attack surfaces that your application presents."
       />
-      <Tabs
-        value={tab}
-        defaultValue={tab}
-        tabs={tabs}
-        onValueChange={onTabChange}
-        size="md"
-      >
-        <div key={tab} className="h-full dark:text-white mt-8">
-          <Outlet />
-        </div>
-      </Tabs>
+      <Outlet />
     </>
   );
 };

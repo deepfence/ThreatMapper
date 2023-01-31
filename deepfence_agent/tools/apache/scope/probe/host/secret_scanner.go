@@ -89,7 +89,7 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 			Image: &pb.DockerImage{Id: splits[0], Name: splits[1]},
 		}}
 	case ctl.Host:
-		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: "/"}}
+		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: "/fenced/mnt/host"}}
 	}
 
 	ssClient, err := newSecretScannerClient()

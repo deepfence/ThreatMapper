@@ -8,21 +8,24 @@ import (
 )
 
 const (
-	tagAuthentication  = "Authentication"
-	tagUser            = "User"
-	tagCommon          = "Common"
-	tagCompliance      = "Compliance"
-	tagCloudCompliance = "Cloud Compliance"
-	tagCloudResources  = "Cloud Resources"
-	tagCloudNodes      = "Cloud Nodes"
-	tagTopology        = "Topology"
-	tagLookup          = "Lookup"
-	tagThreat          = "Threat"
-	tagSecretScan      = "Secret Scan"
-	tagVulnerability   = "Vulnerability"
-	tagMalwareScan     = "Malware Scan"
-	tagControls        = "Controls"
-	tagDiagnosis       = "Diagnosis"
+	tagAuthentication    = "Authentication"
+	tagUser              = "User"
+	tagCommon            = "Common"
+	tagCompliance        = "Compliance"
+	tagCloudScanner      = "Cloud Scanner"
+	tagKubernetesScanner = "Kubernetes Scanner"
+	tagCloudResources    = "Cloud Resources"
+	tagCloudNodes        = "Cloud Nodes"
+	tagTopology          = "Topology"
+	tagLookup            = "Lookup"
+	tagThreat            = "Threat"
+	tagSecretScan        = "Secret Scan"
+	tagVulnerability     = "Vulnerability"
+	tagMalwareScan       = "Malware Scan"
+	tagControls          = "Controls"
+	tagDiagnosis         = "Diagnosis"
+	tagRegistry          = "Regisry"
+	tagInternal          = "Internal"
 
 	securityName = "bearer_token"
 )
@@ -81,7 +84,7 @@ func InitializeOpenAPIReflector() *OpenApiDocs {
 				URL:         "https://community.deepfence.io",
 			},
 			Security: nil,
-			Tags:     []openapi3.Tag{{Name: tagAuthentication}, {Name: tagCommon}, {Name: tagCompliance}, {Name: tagTopology}, {Name: tagSecretScan}, {Name: tagVulnerability}},
+			Tags:     []openapi3.Tag{{Name: tagAuthentication}, {Name: tagCommon}, {Name: tagCompliance}, {Name: tagTopology}, {Name: tagSecretScan}, {Name: tagMalwareScan}, {Name: tagVulnerability}},
 		},
 	}
 

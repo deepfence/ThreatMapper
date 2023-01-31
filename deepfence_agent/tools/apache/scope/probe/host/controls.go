@@ -22,8 +22,8 @@ const (
 	AddUserDefinedTags    = "host_add_user_defined_tags"
 	DeleteUserDefinedTags = "host_delete_user_defined_tags"
 	//StartSecretsScan      = "secret_scan_start"
-	secretScanSocket  = "/tmp/secretScanner.sock"
-	StartMalwareScan  = "malware_scan_start"
+	secretScanSocket = "/tmp/secretScanner.sock"
+	//StartMalwareScan  = "malware_scan_start"
 	malwareScanSocket = "/tmp/yaraHunter.sock"
 	unixProtocol      = "unix"
 	tcpProtocol       = "tcp"
@@ -45,7 +45,7 @@ func (r *Reporter) registerControls() {
 	r.handlerRegistry.Register(AddUserDefinedTags, r.addUserDefinedTags)
 	r.handlerRegistry.Register(DeleteUserDefinedTags, r.deleteUserDefinedTags)
 	//r.handlerRegistry.Register(StartSecretsScan, r.startSecretsScan)
-	r.handlerRegistry.Register(StartMalwareScan, r.startMalwareScan)
+	//r.handlerRegistry.Register(StartMalwareScan, r.startMalwareScan)
 }
 
 func (r *Reporter) deregisterControls() {

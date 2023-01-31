@@ -71,8 +71,8 @@ var userRegisterSubCmd = &cobra.Command{
 		}
 
 		tokens := http.AuthTokens{
-			AccessToken:  res.GetData().AccessToken,
-			RefreshToken: res.GetData().RefreshToken,
+			AccessToken:  res.AccessToken,
+			RefreshToken: res.RefreshToken,
 		}
 
 		b, err := json.Marshal(tokens)
@@ -99,7 +99,7 @@ var userApiKeySubCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Msgf("Failed to retrieve apikey %v: %v\n", err, rh)
 		}
-		output.Out(res.GetData())
+		output.Out(res)
 	},
 }
 

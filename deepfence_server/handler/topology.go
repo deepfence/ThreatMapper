@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -80,7 +80,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 
 	ctx := req.Context()
 
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
@@ -184,24 +184,6 @@ func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_fil
 		edges[source+target] = detailed.ConnectionSummary{Source: source, Target: target}
 	}
 
-	nodes["in-the-internet"] = detailed.NodeSummary{
-		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "in-the-internet",
-			Label: "The Internet",
-		},
-		Type: "pseudo",
-	}
-
-	nodes["out-the-internet"] = detailed.NodeSummary{
-		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "out-the-internet",
-			Label: "The Internet",
-		},
-		Type: "pseudo",
-	}
-
 	for _, cp_stub := range graph.Providers {
 		cp := string(cp_stub.ID)
 		nodes[cp] = detailed.NodeSummary{
@@ -268,6 +250,24 @@ func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_fil
 				Type: report.Host,
 			}
 		}
+	}
+
+	nodes["in-the-internet"] = detailed.NodeSummary{
+		ImmediateParentID: "",
+		BasicNodeSummary: detailed.BasicNodeSummary{
+			ID:    "in-the-internet",
+			Label: "The Internet",
+		},
+		Type: "pseudo",
+	}
+
+	nodes["out-the-internet"] = detailed.NodeSummary{
+		ImmediateParentID: "",
+		BasicNodeSummary: detailed.BasicNodeSummary{
+			ID:    "out-the-internet",
+			Label: "The Internet",
+		},
+		Type: "pseudo",
 	}
 
 	for h, n := range graph.Processes {

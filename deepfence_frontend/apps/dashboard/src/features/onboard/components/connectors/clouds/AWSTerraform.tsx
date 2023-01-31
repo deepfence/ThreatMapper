@@ -13,11 +13,11 @@ export const AWSTerraform = memo(() => {
 }
 
 module "cloud-scanner_example_single-account-ecs" {
-  source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version                       = "0.1.0"
-  mgmt-console-url              = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port             = "443"
-  deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  source = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
+  version = "0.1.0"
+  mgmt-console-url = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port = "443"
+  deepfence-key = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 }
 `;
 

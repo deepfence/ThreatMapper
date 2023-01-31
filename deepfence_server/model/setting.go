@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
@@ -42,6 +43,14 @@ func (s *Setting) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*
 		return nil, err
 	}
 	return &setting, nil
+}
+
+func (s *Setting) GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key string) (postgresqlDb.Setting, error) {
+	setting, err := pgClient.GetSetting(ctx, key)
+	if err != nil {
+		return postgresqlDb.Setting{}, err
+	}
+	return setting, nil
 }
 
 func GetJwtSecretSetting(ctx context.Context, pgClient *postgresqlDb.Queries) ([]byte, error) {

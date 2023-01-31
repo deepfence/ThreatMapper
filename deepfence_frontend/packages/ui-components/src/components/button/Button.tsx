@@ -3,17 +3,74 @@ import React, { ComponentProps, useId } from 'react';
 import { IconContext } from 'react-icons';
 import { twMerge } from 'tailwind-merge';
 
+import { CircleSpinner } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
+const Loader = ({
+  color,
+  size,
+  outline,
+}: {
+  color?: ColorType;
+  size?: SizeType;
+  outline?: boolean;
+}) => {
+  return (
+    <CircleSpinner
+      size={size}
+      className={twMerge(
+        cva([], {
+          variants: {
+            color: {
+              primary: 'fill-gray-100 dark:text-gray-300',
+              default: 'fill-gray-400 dark:text-gray-600',
+              danger: 'fill-gray-100 dark:text-gray-400',
+              success: 'fill-gray-100 dark:text-gray-400',
+              normal: 'fill-gray-100 dark:text-gray-400',
+            },
+            withOutline: {
+              true: '',
+            },
+          },
+          defaultVariants: {
+            color: 'default',
+          },
+          compoundVariants: [
+            {
+              withOutline: true,
+              color: 'primary',
+              className: 'fill-blue-600 text-blue-200 dark:text-blue-400',
+            },
+            {
+              withOutline: true,
+              color: 'danger',
+              className: 'fill-red-600 text-red-200 dark:text-red-400',
+            },
+            {
+              withOutline: true,
+              color: 'success',
+              className: 'fill-green-600 text-green-200 dark:text-green-400',
+            },
+            {
+              withOutline: true,
+              color: 'normal',
+              className: 'fill-gray-600 text-gray-200 dark:text-gray-400',
+            },
+          ],
+        })({ color, withOutline: outline }),
+      )}
+    />
+  );
+};
 export const buttonCva = cva(
   [
     'font-medium',
     'disabled:cursor-not-allowed',
     'flex flex-row items-center justify-center',
-    'rounded-lg focus:outline-none select-none',
+    'focus:outline-none select-none',
   ],
   {
     variants: {
@@ -78,6 +135,7 @@ export const buttonCva = cva(
       },
       pill: {
         true: 'rounded-full',
+        false: 'rounded-lg',
       },
       withOutline: {
         true: 'bg-white',
@@ -86,6 +144,7 @@ export const buttonCva = cva(
     defaultVariants: {
       color: 'default',
       size: 'md',
+      pill: false,
     },
     compoundVariants: [
       {
@@ -179,6 +238,7 @@ interface ButtonProps
   outline?: boolean;
   color?: ColorType;
   className?: string;
+  loading?: boolean;
 }
 
 const iconCva = cva('', {
@@ -303,6 +363,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       startIcon,
       endIcon,
       className,
+      pill,
+      loading,
       ...props
     },
     ref,
@@ -321,6 +383,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             size,
             color,
             withOutline: outline,
+            pill,
           }),
           className,
         )}
@@ -328,6 +391,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {startIcon && (
           <StartIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />
+        )}
+        {loading && (
+          <div className="mr-3 flex justify-center">
+            <Loader color={color} size={size} outline={outline} />
+          </div>
         )}
         {children}
         {endIcon && (

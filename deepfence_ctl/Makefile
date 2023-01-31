@@ -8,6 +8,6 @@ deepfencectl: ./*.go ./**/*.go
 	CGO_ENABLED=0 go build -o deepfencectl
 
 clean:
-	rm deepfencectl
+	rm -f deepfencectl
 
 .PHONY: vendor clean
