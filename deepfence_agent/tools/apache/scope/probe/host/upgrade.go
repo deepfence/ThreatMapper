@@ -1,6 +1,7 @@
 package host
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,7 +9,6 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
-	"crypto/tls"
 
 	"github.com/abrander/go-supervisord"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
@@ -19,6 +19,7 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 
 	console_ip := os.Getenv("MGMT_CONSOLE_URL")
 	url := strings.ReplaceAll(req.HomeDirectoryUrl, "deepfence-file-server:9000", fmt.Sprintf("%s/file-server", console_ip))
+	url = strings.ReplaceAll(url, "http://", "https://")
 	fmt.Println("Fetching %v", url)
 	err := downloadFile("/tmp/deepfence.tar.gz", url)
 	if err != nil {
