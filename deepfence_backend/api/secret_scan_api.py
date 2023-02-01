@@ -59,7 +59,8 @@ def secret_scanned_nodes():
         req_filters = request.json.get("filters", {})
         node_ids = []
         node_ids.extend(req_filters.get("image_name_with_tag", []))
-        node_ids.extend(req_filters.get("host_name", []))
+        for host_name in req_filters.get("host_name", []):
+            node_ids.append(host_name + ";<host>")
         filters["node_id"] = node_ids
         if len(req_filters.get("container_name", [])) > 0:
             filters["container_name"] = req_filters.get("container_name", [])
