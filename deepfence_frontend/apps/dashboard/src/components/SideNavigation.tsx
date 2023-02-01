@@ -88,7 +88,7 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
     <NavigationMenu.Root
       orientation="vertical"
       className={classNames(
-        'overflow-x-hidden overflow-y-auto',
+        'overflow-x-hidden overflow-y-auto shrink-0',
         'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700',
         'transition-[width]',
         'sticky left-0 top-[64px] scrolling-touch',
