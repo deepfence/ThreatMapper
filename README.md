@@ -12,6 +12,15 @@
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
+
+<h3 align="center">
+  <a href="https://community.deepfence.io/docs/threatmapper/"><b>Documentation</b></a> &bull;
+  <a href="https://github.com/deepfence/ThreatMapper/blob/master/README.zh-CN.md"><b>ReadMe in Chinese</b></a> &bull;
+  <a href="https://github.com/deepfence/ThreatMapper/blob/master/README.zh-TW.md"><b>ReadMe in Chinese (Taiwan)</b></a> &bull;
+  <a href="https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ"><b>Slack Community</b></a> &bull;
+  <a href="https://discord.gg/Nf9BxeBPQN"><b>Discord Community </b></a>
+</h3>
+
 ## :tada: Announcing ThreatMapper 1.4
 
 > [ThreatMapper 1.4.0](https://github.com/deepfence/ThreatMapper/releases/tag/v1.4.0) adds ThreatGraph, a rich visualization that uses runtime context such as network flows to prioritize threat scan results.  ThreatGraph enables organizations to narrow down attack path alerts from thousands to a handful of the most meaningful (and threatening). Release 1.4.0 also adds agentless cloud security posture management (CSPM) of cloud assets and agent-based posture management of hosts, evaluating posture against industry-standard compliance benchmarks.
