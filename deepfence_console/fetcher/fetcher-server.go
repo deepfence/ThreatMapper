@@ -57,12 +57,13 @@ type VulnerabilityDbDetail struct {
 	Checksum string    `json:"checksum"`
 }
 
-type VulnerabilityDbListingV3 struct {
+type VulnerabilityDbListingVersions struct {
 	V3 []VulnerabilityDbDetail `json:"3"`
+	V5 []VulnerabilityDbDetail `json:"5"`
 }
 
 type VulnerabilityDbListing struct {
-	Available VulnerabilityDbListingV3 `json:"available"`
+	Available VulnerabilityDbListingVersions `json:"available"`
 }
 
 type VulnerabilityDbUpdater struct {
@@ -78,7 +79,7 @@ func NewVulnerabilityDbUpdater() *VulnerabilityDbUpdater {
 	updater := &VulnerabilityDbUpdater{
 		vulnerabilityDbListingJson: VulnerabilityDbListing{},
 		vulnerabilityDbPath:        "/data/vulnerability-db/",
-		grypeVulnerabilityDbPath:   "/root/.cache/grype/db/3",
+		grypeVulnerabilityDbPath:   "/root/.cache/grype/db/5",
 	}
 	// Update once
 	fmt.Println("Updating vulnerability database")
@@ -255,8 +256,9 @@ func (v *VulnerabilityDbUpdater) updateVulnerabilityDbListing() error {
 	vulnerabilityDbDetail.URL = "http://deepfence-fetcher:8006/df-api/download" + currentFilePath
 	v.Lock()
 	v.vulnerabilityDbListingJson = VulnerabilityDbListing{
-		Available: VulnerabilityDbListingV3{
-			V3: []VulnerabilityDbDetail{vulnerabilityDbDetail},
+		Available: VulnerabilityDbListingVersions{
+			// V3: []VulnerabilityDbDetail{vulnerabilityDbDetail},
+			V5: []VulnerabilityDbDetail{vulnerabilityDbDetail},
 		},
 	}
 	v.currentFilePath = currentFilePath
@@ -326,10 +328,7 @@ func sha256sum(filePath string) (string, error) {
 
 func fileExists(path string) bool {
 	_, err := os.Stat(path)
-	if err == nil {
-		return true
-	}
-	return false
+	return err == nil
 }
 
 func runCommand(name string, args ...string) (stdout string, stderr string, exitCode int) {
@@ -467,7 +466,7 @@ func handleDeleteDumpsMethod(respWrite http.ResponseWriter, req *http.Request) {
 			for _, dumpName := range files {
 				filePath = folderPath + "/" + f.Name() + "/" + dumpName.Name()
 				fileInfo, _ := os.Stat(filePath)
-				timeDiff := time.Now().Sub(fileInfo.ModTime()).Seconds()
+				timeDiff := time.Since(fileInfo.ModTime()).Seconds()
 				if timeDiff/60 > 15 {
 					err = os.Remove(filePath)
 					if err != nil {
@@ -667,7 +666,6 @@ func updateVulnerabilityMapperDB() {
 		fmt.Println(errMsg)
 		return
 	}
-	return
 }
 
 type registryCredentialRequest struct {
@@ -730,7 +728,7 @@ func registryCredential(respWrite http.ResponseWriter, req *http.Request) {
 		http.Error(respWrite, "error getting credentials", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(respWrite, credentialsData)
+	fmt.Fprint(respWrite, credentialsData)
 }
 
 func fileDownloadHandler(fileName string, respWrite http.ResponseWriter, req *http.Request) {
@@ -751,7 +749,7 @@ func fileDownloadHandler(fileName string, respWrite http.ResponseWriter, req *ht
 		       return
 		   }
 		*/
-		if checkOwaspDependencyDataDownloading() == true {
+		if checkOwaspDependencyDataDownloading() {
 			respWrite.WriteHeader(http.StatusProcessing)
 			fmt.Fprintf(respWrite, "Retry later")
 			return
@@ -839,7 +837,7 @@ func handleUserDefinedTags(respWrite http.ResponseWriter, req *http.Request) {
 		return
 	}
 	respWrite.WriteHeader(http.StatusOK)
-	fmt.Fprintf(respWrite, string(nodeTagsBytes))
+	fmt.Fprint(respWrite, string(nodeTagsBytes))
 }
 
 type dfCveScanStruct struct {
@@ -921,7 +919,7 @@ func getFimConfig(respWrite http.ResponseWriter, req *http.Request) {
 		return
 	}
 	respWrite.WriteHeader(http.StatusOK)
-	fmt.Fprintf(respWrite, string(fimConfigBytes))
+	fmt.Fprint(respWrite, string(fimConfigBytes))
 }
 
 func packetCaptureConfig(respWrite http.ResponseWriter, req *http.Request) {
@@ -946,7 +944,7 @@ func packetCaptureConfig(respWrite http.ResponseWriter, req *http.Request) {
 		return
 	}
 	respWrite.WriteHeader(http.StatusOK)
-	fmt.Fprintf(respWrite, string(captureConfig))
+	fmt.Fprint(respWrite, string(captureConfig))
 }
 
 type dfCveStruct struct {
