@@ -111,10 +111,12 @@ var scanStatusSubCmd = &cobra.Command{
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
+			req = req.BulkScanId("")
 			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StatusVulnerabilityScan(context.Background())
+			req = req.BulkScanId("")
 			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().VulnerabilityApi.StatusVulnerabilityScanExecute(req)
 		default:

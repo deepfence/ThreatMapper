@@ -29,30 +29,20 @@ func (ve *NodeNotFoundError) Error() string {
 	return fmt.Sprintf("Node %v not found", ve.node_id)
 }
 
-func AddNewScan(ctx context.Context,
+type WriteDBTransaction struct {
+	Tx neo4j.Transaction
+}
+
+func (t WriteDBTransaction) Run(cypher string, params map[string]interface{}) (neo4j.Result, error) {
+	return t.Tx.Run(cypher, params)
+}
+
+func AddNewScan(tx WriteDBTransaction,
 	scan_type utils.Neo4jScanType,
 	scan_id string,
 	node_type controls.ScanResource,
 	node_id string,
 	action controls.Action) error {
-
-	driver, err := directory.Neo4jClient(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
 
 	res, err := tx.Run(fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
@@ -159,8 +149,7 @@ func AddNewScan(ctx context.Context,
 			return err
 		}
 	}
-
-	return tx.Commit()
+	return nil
 }
 
 func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, status string) error {
@@ -195,32 +184,14 @@ func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, sta
 	return tx.Commit()
 }
 
-func AddBulkScan(ctx context.Context, scan_type utils.Neo4jScanType, bulk_scan_id string, scan_ids []string) error {
+func AddBulkScan(tx WriteDBTransaction, scan_type utils.Neo4jScanType, bulk_scan_id string, scan_ids []string) error {
 
-	driver, err := directory.Neo4jClient(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run(fmt.Sprintf(`
+	if _, err := tx.Run(fmt.Sprintf(`
 		MERGE (n:Bulk%s{node_id: $bscan_id})
 		SET n.updated_at = TIMESTAMP()
 		WITH n
-		UNWIND $scan_ids as scan_id
-		MATCH (m:%s{node_id: scan_id})
+		MATCH (m:%s)
+		WHERE m.node_id IN $scan_ids
 		MERGE (n) -[:BATCH]-> (m)`, scan_type, scan_type),
 		map[string]interface{}{
 			"bscan_id": bulk_scan_id,
@@ -228,5 +199,5 @@ func AddBulkScan(ctx context.Context, scan_type utils.Neo4jScanType, bulk_scan_i
 		return err
 	}
 
-	return tx.Commit()
+	return nil
 }
