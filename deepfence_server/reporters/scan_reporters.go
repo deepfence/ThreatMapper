@@ -184,11 +184,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	for _, rec := range recs {
 		var tmp T
-		map_tmp := map[string]interface{}{}
-		for i, key := range rec.Keys {
-			map_tmp[key] = rec.Values[i]
-		}
-		utils.FromMap(map_tmp, &tmp)
+		utils.FromMap(rec.Values[0].(neo4j.Node).Props, &tmp)
 		res = append(res, tmp)
 	}
 
