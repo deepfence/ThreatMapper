@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { defineConfig } from 'vite';
+import { defineConfig, PluginOption } from 'vite';
 import dts from 'vite-plugin-dts';
 import { configDefaults } from 'vitest/config';
 
@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
       dts({
         insertTypesEntry: true,
       }),
-      ...(mode === 'production' ? [visualizer()] : []),
+      ...(mode === 'production' ? [visualizer() as unknown as PluginOption] : []),
     ],
     test: {
       includeSource: ['src/**/*.test.{ts, tsx}'],
