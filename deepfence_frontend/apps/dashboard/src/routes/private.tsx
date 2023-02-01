@@ -142,14 +142,12 @@ export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/',
     loader: dashboardLoader,
-  },
-  {
-    path: '/dashboard',
     element: <DashboardLayout />,
     children: [
       {
         path: 'dashboard',
         element: <Dashboard />,
+        meta: { title: 'Dashboard' },
       },
     ],
   },

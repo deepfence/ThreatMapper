@@ -1,6 +1,6 @@
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import classNames from 'classnames';
-import { ReactNode } from 'react';
+import { forwardRef, ReactNode, useEffect } from 'react';
 import { IconContext, IconType } from 'react-icons';
 import { HiChartPie } from 'react-icons/hi';
 import { NavLink } from 'react-router-dom';
@@ -58,42 +58,51 @@ const MenuItems: Array<{
   },
 ];
 
-function ItemWrapper({
-  expanded,
-  title,
-  children,
-}: {
-  expanded?: boolean;
-  title: string;
-  children: ReactNode;
-}) {
-  if (expanded) return <div>{children}</div>;
-  return (
-    <Tooltip placement="right" content={title} triggerAsChild>
-      <div tabIndex={-1}>{children}</div>
-    </Tooltip>
-  );
-}
+const ItemWrapper = forwardRef(
+  (
+    {
+      expanded,
+      title,
+      children,
+    }: {
+      expanded?: boolean;
+      title: string;
+      children: ReactNode;
+    },
+    _,
+  ) => {
+    if (expanded) return <div>{children}</div>;
+    return (
+      <Tooltip placement="right" content={title} triggerAsChild>
+        <div tabIndex={-1}>{children}</div>
+      </Tooltip>
+    );
+  },
+);
 
 export function SideNavigation({ expanded }: SideNavigationRootProps) {
+  useEffect(() => {
+    setSideNavigationState(expanded ? 'open' : 'closed');
+  }, [expanded]);
   return (
     <NavigationMenu.Root
       orientation="vertical"
       className={classNames(
-        'h-screen overflow-x-hidden overflow-y-auto',
-        'bg-white dark:bg-gray-800 pt-[64px] border-r border-gray-200 dark:border-gray-700',
-        'transition-[width] transition-slowest ease',
-      )}
-      style={{
-        width: expanded ? '240px' : '61px',
-      }}
-    >
-      <NavigationMenu.List
-        className={classNames('flex flex-col gap-1.5', {
+        'overflow-x-hidden overflow-y-auto',
+        'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700',
+        'transition-[width]',
+        'sticky left-0 top-[64px] scrolling-touch',
+        {
           ['p-3']: expanded,
           ['px-2.5 py-3']: !expanded,
-        })}
-      >
+        },
+      )}
+      style={{
+        width: expanded ? '240px' : '60px',
+        height: 'calc(100vh - 64px)',
+      }}
+    >
+      <NavigationMenu.List className={classNames('flex flex-col gap-1.5')}>
         {MenuItems.map((menuItem) => {
           const linkClass = classNames(
             'text-base font-medium text-gray-900 dark:text-white rounded-xl p-2 block',
@@ -101,6 +110,9 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
             'flex gap-3 whitespace-nowrap',
             'group',
             'focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-700',
+            {
+              ['w-fit']: !expanded,
+            },
           );
 
           return (
@@ -146,4 +158,15 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
       </NavigationMenu.List>
     </NavigationMenu.Root>
   );
+}
+
+type SideNavigationState = 'open' | 'closed';
+const storageKey = 'sideNavigationState';
+export function getSideNavigationState(): SideNavigationState {
+  return localStorage.getItem(storageKey)?.length
+    ? (localStorage.getItem(storageKey) as SideNavigationState)
+    : 'open';
+}
+export function setSideNavigationState(state: SideNavigationState) {
+  localStorage.setItem(storageKey, state);
 }
