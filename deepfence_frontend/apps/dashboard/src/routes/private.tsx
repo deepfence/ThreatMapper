@@ -33,6 +33,7 @@ import {
   startVulnerabilityScanAction,
   VulnerabilityScanConfigure,
 } from '@/features/onboard/pages/VulnerabilityScanConfigure';
+import { Registries } from '@/features/registries/pages/Registries';
 import { CustomRouteObject } from '@/utils/router';
 
 export const privateRoutes: CustomRouteObject[] = [
@@ -148,6 +149,11 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'dashboard',
         element: <Dashboard />,
         meta: { title: 'Dashboard' },
+      },
+      {
+        path: 'registries',
+        element: <Registries />,
+        meta: { title: 'Registries' },
       },
     ],
   },

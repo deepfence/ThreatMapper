@@ -28,7 +28,7 @@ This turborepo has some additional tools already setup for you:
 To build all apps and packages, run the following command:
 
 ```
-npm run build
+pnpm run build
 ```
 
 ### Develop
@@ -36,7 +36,7 @@ npm run build
 To develop all apps and packages, run the following command:
 
 ```
-npm run dev
+pnpm run dev
 ```
 
 ### Check for code formatting issues
@@ -44,7 +44,7 @@ npm run dev
 To check for code formatting issues, run the following command:
 
 ```
-npm run format
+pnpm run format
 ```
 
 ### Fix code formatting issues
@@ -52,7 +52,7 @@ npm run format
 To fix code formatting issues automatically, run the following command:
 
 ```
-npm run format:fix
+pnpm run format:fix
 ```
 
 ### Check for linting issues
@@ -60,7 +60,7 @@ npm run format:fix
 To check for lint errors, run the following command:
 
 ```
-npm run lint
+pnpm run lint
 ```
 
 ### Fix linting issues
@@ -68,5 +68,5 @@ npm run lint
 To fix linting issues automatically, run the following command:
 
 ```
-npm run lint:fix
+pnpm run lint:fix
 ```
