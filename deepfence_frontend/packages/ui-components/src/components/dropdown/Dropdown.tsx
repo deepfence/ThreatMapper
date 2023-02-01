@@ -29,7 +29,7 @@ export const Dropdown: React.FC<DropdownProps> = (props) => {
           className={cx(
             'radix-side-top:animate-slide-up radix-side-bottom:animate-slide-down',
             'shadow-md bg-white dark:bg-gray-700 min-w-[195px]',
-            'rounded-md',
+            'rounded-md overflow-hidden',
           )}
         >
           {content}

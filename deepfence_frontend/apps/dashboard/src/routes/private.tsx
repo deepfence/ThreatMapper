@@ -1,6 +1,8 @@
 import { Outlet } from 'react-router-dom';
 
+import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
+import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -140,5 +142,13 @@ export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/',
     loader: dashboardLoader,
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: 'dashboard',
+        element: <Dashboard />,
+        meta: { title: 'Dashboard' },
+      },
+    ],
   },
 ];

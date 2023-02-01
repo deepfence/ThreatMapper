@@ -45,7 +45,8 @@ const ModalHeader: FC<{ title?: string }> = ({ title }) => {
           'text-gray-400 hover:text-gray-900 dark:hover:text-white',
           'hover:bg-gray-200 dark:hover:bg-gray-600',
           'absolute right-3.5 inline-flex items-center justify-center p-1',
-          'focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-800',
+          'focus:outline-none',
+          'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
           {
             'top-[22px]': title,
             'top-[8px]': !title,
@@ -120,7 +121,7 @@ export const SlidingModal: FC<ModalProps> = ({
               'flex flex-col h-[100vh] fixed',
               'overflow-hidden focus:outline-none',
               'bg-white text-gray-900',
-              'dark:bg-gray-700 dark:text-white ',
+              'dark:bg-gray-900 dark:text-white ',
               `${width}`,
               {
                 '-left-[100%]': direction === 'left',
@@ -132,7 +133,7 @@ export const SlidingModal: FC<ModalProps> = ({
             onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           >
             <ModalHeader title={title} />
-            <div className="p-6 overflow-y-auto flex-auto">{children}</div>
+            <div className="overflow-y-auto flex-auto">{children}</div>
             <ModalFooter>{footer}</ModalFooter>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>
