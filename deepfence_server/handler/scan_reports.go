@@ -188,7 +188,6 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		}, nil
 	}
 
-
 	scan_ids, bulkId, err := startMultiScan(r.Context(), reqs.GenerateBulkScanId, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggers, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -474,8 +473,9 @@ func ingest_scan_report_kafka[T any](
 		return
 	}
 
-	respWrite.WriteHeader(http.StatusOK)
-	fmt.Fprintf(respWrite, "Ok")
+	// respWrite.WriteHeader(http.StatusOK)
+	// fmt.Fprint(respWrite, "Ok")
+	httpext.JSON(respWrite, http.StatusOK, map[string]string{"status": "ok"})
 }
 
 func stopScan(w http.ResponseWriter, r *http.Request, action ctl.ActionID) {
