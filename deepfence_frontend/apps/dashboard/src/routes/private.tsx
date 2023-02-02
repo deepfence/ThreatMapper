@@ -21,16 +21,9 @@ import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
-import {
-  ScanInProgress,
-  ScanInProgressError,
-  scanStatusLoader,
-} from '@/features/onboard/pages/ScanInProgress';
+import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
 import { SecretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
-import {
-  startVulnerabilityScanAction,
-  VulnerabilityScanConfigure,
-} from '@/features/onboard/pages/VulnerabilityScanConfigure';
+import { module as ulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { CustomRouteObject } from '@/utils/router';
 
 export const privateRoutes: CustomRouteObject[] = [
@@ -112,8 +105,7 @@ export const privateRoutes: CustomRouteObject[] = [
           },
           {
             path: 'configure/vulnerability/:nodeType/:nodeIds',
-            element: <VulnerabilityScanConfigure />,
-            action: startVulnerabilityScanAction,
+            ...ulnerabilityScanConfigure,
             meta: { title: 'Configure Vulnerability Scan' },
           },
           {
@@ -127,10 +119,8 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Compliance Scan' },
           },
           {
-            path: 'view-summary/running/:nodeId/:nodeType/:scanType/:scanId',
-            element: <ScanInProgress />,
-            errorElement: <ScanInProgressError />,
-            loader: scanStatusLoader,
+            path: 'view-summary/running/:nodeId/:nodeType/:scanType/:bulkScanId',
+            ...scanInProgress,
             meta: { title: 'Scan Summary' },
           },
         ],

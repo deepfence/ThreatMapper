@@ -11,28 +11,28 @@
 }
 
 #cir3 {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
   animation: 16s 0s rotate infinite linear;
 }
 #cir4 {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
   animation: 6s 0s rotate infinite linear reverse;
 }
 #cir5 {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
   animation: 4s 0s rotate infinite linear;
 }
 #cir6 {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
   animation: 8s 0s rotate infinite linear alternate;
 }
 #cir7 {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
+  stroke-dasharray: 150;
+  stroke-dashoffset: 150;
   animation: 4s 0s rotate infinite linear reverse;
 }
 

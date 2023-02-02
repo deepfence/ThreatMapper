@@ -22,10 +22,10 @@ import type {
   ModelScanListReq,
   ModelScanListResp,
   ModelScanResultsReq,
-  ModelScanResultsResp,
   ModelScanStatusResp,
-  ModelScanTriggerReq,
   ModelScanTriggerResp,
+  ModelSecretScanResult,
+  ModelSecretScanTriggerReq,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -42,14 +42,14 @@ import {
     ModelScanListRespToJSON,
     ModelScanResultsReqFromJSON,
     ModelScanResultsReqToJSON,
-    ModelScanResultsRespFromJSON,
-    ModelScanResultsRespToJSON,
     ModelScanStatusRespFromJSON,
     ModelScanStatusRespToJSON,
-    ModelScanTriggerReqFromJSON,
-    ModelScanTriggerReqToJSON,
     ModelScanTriggerRespFromJSON,
     ModelScanTriggerRespToJSON,
+    ModelSecretScanResultFromJSON,
+    ModelSecretScanResultToJSON,
+    ModelSecretScanTriggerReqFromJSON,
+    ModelSecretScanTriggerReqToJSON,
 } from '../models';
 
 export interface IngestSecretScanStatusRequest {
@@ -69,15 +69,16 @@ export interface ResultsSecretScanRequest {
 }
 
 export interface StartSecretScanRequest {
-    modelScanTriggerReq?: ModelScanTriggerReq;
+    modelSecretScanTriggerReq?: ModelSecretScanTriggerReq;
 }
 
 export interface StatusSecretScanRequest {
-    scanId: string;
+    scanIds: Array<string>;
+    bulkScanId: string;
 }
 
 export interface StopSecretScanRequest {
-    modelScanTriggerReq?: ModelScanTriggerReq;
+    modelSecretScanTriggerReq?: ModelSecretScanTriggerReq;
 }
 
 /**
@@ -143,18 +144,18 @@ export interface SecretScanApiInterface {
      * @throws {RequiredError}
      * @memberof SecretScanApiInterface
      */
-    resultsSecretScanRaw(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanResultsResp>>;
+    resultsSecretScanRaw(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSecretScanResult>>;
 
     /**
      * Get Secret Scans results on agent or registry
      * Get Secret Scans Results
      */
-    resultsSecretScan(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanResultsResp>;
+    resultsSecretScan(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelSecretScanResult>;
 
     /**
      * Start Secret Scan on agent or registry
      * @summary Start Secret Scan
-     * @param {ModelScanTriggerReq} [modelScanTriggerReq] 
+     * @param {ModelSecretScanTriggerReq} [modelSecretScanTriggerReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SecretScanApiInterface
@@ -170,7 +171,8 @@ export interface SecretScanApiInterface {
     /**
      * Get Secret Scan Status on agent or registry
      * @summary Get Secret Scan Status
-     * @param {string} scanId 
+     * @param {Array<string>} scanIds 
+     * @param {string} bulkScanId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SecretScanApiInterface
@@ -186,7 +188,7 @@ export interface SecretScanApiInterface {
     /**
      * Stop Secret Scan on agent or registry
      * @summary Stop Secret Scan
-     * @param {ModelScanTriggerReq} [modelScanTriggerReq] 
+     * @param {ModelSecretScanTriggerReq} [modelSecretScanTriggerReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SecretScanApiInterface
@@ -325,7 +327,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
      * Get Secret Scans results on agent or registry
      * Get Secret Scans Results
      */
-    async resultsSecretScanRaw(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanResultsResp>> {
+    async resultsSecretScanRaw(requestParameters: ResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSecretScanResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -348,14 +350,14 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
             body: ModelScanResultsReqToJSON(requestParameters.modelScanResultsReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanResultsRespFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelSecretScanResultFromJSON(jsonValue));
     }
 
     /**
      * Get Secret Scans results on agent or registry
      * Get Secret Scans Results
      */
-    async resultsSecretScan(requestParameters: ResultsSecretScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanResultsResp> {
+    async resultsSecretScan(requestParameters: ResultsSecretScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelSecretScanResult> {
         const response = await this.resultsSecretScanRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -384,7 +386,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelScanTriggerReqToJSON(requestParameters.modelScanTriggerReq),
+            body: ModelSecretScanTriggerReqToJSON(requestParameters.modelSecretScanTriggerReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanTriggerRespFromJSON(jsonValue));
@@ -404,14 +406,22 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
      * Get Secret Scan Status
      */
     async statusSecretScanRaw(requestParameters: StatusSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanStatusResp>> {
-        if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
-            throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling statusSecretScan.');
+        if (requestParameters.scanIds === null || requestParameters.scanIds === undefined) {
+            throw new runtime.RequiredError('scanIds','Required parameter requestParameters.scanIds was null or undefined when calling statusSecretScan.');
+        }
+
+        if (requestParameters.bulkScanId === null || requestParameters.bulkScanId === undefined) {
+            throw new runtime.RequiredError('bulkScanId','Required parameter requestParameters.bulkScanId was null or undefined when calling statusSecretScan.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.scanId !== undefined) {
-            queryParameters['scan_id'] = requestParameters.scanId;
+        if (requestParameters.scanIds) {
+            queryParameters['scan_ids'] = requestParameters.scanIds;
+        }
+
+        if (requestParameters.bulkScanId !== undefined) {
+            queryParameters['bulk_scan_id'] = requestParameters.bulkScanId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -467,7 +477,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelScanTriggerReqToJSON(requestParameters.modelScanTriggerReq),
+            body: ModelSecretScanTriggerReqToJSON(requestParameters.modelSecretScanTriggerReq),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

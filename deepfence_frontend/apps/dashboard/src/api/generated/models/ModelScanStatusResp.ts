@@ -21,10 +21,10 @@ import { exists, mapValues } from '../runtime';
 export interface ModelScanStatusResp {
     /**
      * 
-     * @type {string}
+     * @type {{ [key: string]: string; }}
      * @memberof ModelScanStatusResp
      */
-    status: string;
+    statuses: { [key: string]: string; } | null;
 }
 
 /**
@@ -32,7 +32,7 @@ export interface ModelScanStatusResp {
  */
 export function instanceOfModelScanStatusResp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "status" in value;
+    isInstance = isInstance && "statuses" in value;
 
     return isInstance;
 }
@@ -47,7 +47,7 @@ export function ModelScanStatusRespFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'status': json['status'],
+        'statuses': json['statuses'],
     };
 }
 
@@ -60,7 +60,7 @@ export function ModelScanStatusRespToJSON(value?: ModelScanStatusResp | null): a
     }
     return {
         
-        'status': value.status,
+        'statuses': value.statuses,
     };
 }
 

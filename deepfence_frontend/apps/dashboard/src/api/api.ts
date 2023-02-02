@@ -52,10 +52,10 @@ export function vulnerabilityScanApiClient() {
   return {
     startVulnerabilityScan:
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
-    statusVulnerabilityScan:
-      vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
     resultVulnerabilityScan:
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
+    statusVulnerabilityScan:
+      vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
   };
 }
 

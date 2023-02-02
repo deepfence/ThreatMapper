@@ -23,77 +23,50 @@ import {
 /**
  * 
  * @export
- * @interface ModelVulnerabilityScanTriggerReq
+ * @interface ModelComplianceScanTriggerReq
  */
-export interface ModelVulnerabilityScanTriggerReq {
+export interface ModelComplianceScanTriggerReq {
     /**
      * 
      * @type {boolean}
-     * @memberof ModelVulnerabilityScanTriggerReq
+     * @memberof ModelComplianceScanTriggerReq
      */
     generate_bulk_scan_id: boolean;
     /**
      * 
-     * @type {string}
-     * @memberof ModelVulnerabilityScanTriggerReq
-     */
-    scan_config: ModelVulnerabilityScanTriggerReqScanConfigEnum;
-    /**
-     * 
      * @type {Array<ModelScanTrigger>}
-     * @memberof ModelVulnerabilityScanTriggerReq
+     * @memberof ModelComplianceScanTriggerReq
      */
     scan_triggers: Array<ModelScanTrigger> | null;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the ModelComplianceScanTriggerReq interface.
  */
-export const ModelVulnerabilityScanTriggerReqScanConfigEnum = {
-    All: 'all',
-    Base: 'base',
-    Ruby: 'ruby',
-    Python: 'python',
-    Javascript: 'javascript',
-    Php: 'php',
-    Golang: 'golang',
-    Java: 'java',
-    Rust: 'rust',
-    Dotnet: 'dotnet'
-} as const;
-export type ModelVulnerabilityScanTriggerReqScanConfigEnum = typeof ModelVulnerabilityScanTriggerReqScanConfigEnum[keyof typeof ModelVulnerabilityScanTriggerReqScanConfigEnum];
-
-
-/**
- * Check if a given object implements the ModelVulnerabilityScanTriggerReq interface.
- */
-export function instanceOfModelVulnerabilityScanTriggerReq(value: object): boolean {
+export function instanceOfModelComplianceScanTriggerReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "generate_bulk_scan_id" in value;
-    isInstance = isInstance && "scan_config" in value;
     isInstance = isInstance && "scan_triggers" in value;
 
     return isInstance;
 }
 
-export function ModelVulnerabilityScanTriggerReqFromJSON(json: any): ModelVulnerabilityScanTriggerReq {
-    return ModelVulnerabilityScanTriggerReqFromJSONTyped(json, false);
+export function ModelComplianceScanTriggerReqFromJSON(json: any): ModelComplianceScanTriggerReq {
+    return ModelComplianceScanTriggerReqFromJSONTyped(json, false);
 }
 
-export function ModelVulnerabilityScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelVulnerabilityScanTriggerReq {
+export function ModelComplianceScanTriggerReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelComplianceScanTriggerReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'generate_bulk_scan_id': json['generate_bulk_scan_id'],
-        'scan_config': json['scan_config'],
         'scan_triggers': (json['scan_triggers'] === null ? null : (json['scan_triggers'] as Array<any>).map(ModelScanTriggerFromJSON)),
     };
 }
 
-export function ModelVulnerabilityScanTriggerReqToJSON(value?: ModelVulnerabilityScanTriggerReq | null): any {
+export function ModelComplianceScanTriggerReqToJSON(value?: ModelComplianceScanTriggerReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -103,7 +76,6 @@ export function ModelVulnerabilityScanTriggerReqToJSON(value?: ModelVulnerabilit
     return {
         
         'generate_bulk_scan_id': value.generate_bulk_scan_id,
-        'scan_config': value.scan_config,
         'scan_triggers': (value.scan_triggers === null ? null : (value.scan_triggers as Array<any>).map(ModelScanTriggerToJSON)),
     };
 }
