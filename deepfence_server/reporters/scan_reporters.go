@@ -191,6 +191,54 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	return res, common, nil
 }
 
+func type2sev_field(scan_type utils.Neo4jScanType) string {
+	switch scan_type {
+	case utils.NEO4J_VULNERABILITY_SCAN:
+		return "cve_severity"
+	}
+	return "error_sev_field_unknown"
+}
+
+func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (map[string]int, error) {
+	res := map[string]int{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		RETURN d.`+type2sev_field(scan_type),
+		map[string]interface{}{"scan_id": scan_id})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for i := range recs {
+		res[recs[i].Values[0].(string)] += 1
+	}
+
+	return res, nil
+}
+
+
 func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (model.ScanStatusResp, error) {
 	scan_ids := model.ScanStatusResp{
 		Statuses: map[string]model.ScanStatus{},

@@ -566,8 +566,13 @@ func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *
 		respondError(err, w)
 		return
 	}
+	counts, err := reporters.GetSevCounts(r.Context(), utils.NEO4J_VULNERABILITY_SCAN, common.ScanID)
+	if err != nil {
+		log.Error().Err(err).Msg("Counts computation issue")
+	}
 
-	httpext.JSON(w, http.StatusOK, model.VulnerabilityScanResult{Vulnerabilities: entries, ScanResultsCommon: common})
+	httpext.JSON(w, http.StatusOK, model.VulnerabilityScanResult{
+		Vulnerabilities: entries, ScanResultsCommon: common, SeverityCounts: counts})
 }
 
 func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -609,7 +614,12 @@ func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_
 		return nil, model.ScanResultsCommon{}, &BadDecoding{err}
 	}
 
-	return reporters.GetScanResults[T](r.Context(), scan_type, req.ScanId, req.Window)
+	entries, common, err := reporters.GetScanResults[T](r.Context(), scan_type, req.ScanId, req.Window)
+	if err != nil {
+		return nil, model.ScanResultsCommon{}, err
+	}
+	common.ScanID = req.ScanId
+	return entries, common, nil
 }
 
 func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4jScanType, reqs []model.ScanTrigger, actionBuilder func(string, model.ScanTrigger) (ctl.Action, error)) ([]string, string, error) {

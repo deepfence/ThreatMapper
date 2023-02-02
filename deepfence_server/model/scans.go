@@ -100,6 +100,7 @@ type SecretScanResult struct {
 type VulnerabilityScanResult struct {
 	ScanResultsCommon
 	Vulnerabilities []Vulnerability `json:"vulnerabilities" required:"true" required:"true"`
+	SeverityCounts  map[string]int  `json:"severity_counts" required:"true"`
 }
 
 type MalwareScanResult struct {
