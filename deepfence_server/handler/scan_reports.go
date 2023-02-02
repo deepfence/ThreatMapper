@@ -582,7 +582,13 @@ func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.SecretScanResult{Secrets: entries, ScanResultsCommon: common})
+	counts, err := reporters.GetSevCounts(r.Context(), utils.NEO4J_SECRET_SCAN, common.ScanID)
+	if err != nil {
+		log.Error().Err(err).Msg("Counts computation issue")
+	}
+
+	httpext.JSON(w, http.StatusOK, model.SecretScanResult{
+		Secrets: entries, ScanResultsCommon: common, SeverityCounts: counts})
 }
 
 func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {

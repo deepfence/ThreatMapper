@@ -195,6 +195,8 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 	switch scan_type {
 	case utils.NEO4J_VULNERABILITY_SCAN:
 		return "cve_severity"
+	case utils.NEO4J_SECRET_SCAN:
+		return "level"
 	}
 	return "error_sev_field_unknown"
 }
@@ -237,7 +239,6 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 	return res, nil
 }
-
 
 func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (model.ScanStatusResp, error) {
 	scan_ids := model.ScanStatusResp{

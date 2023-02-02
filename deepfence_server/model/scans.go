@@ -92,9 +92,10 @@ type ScanResultsCommon struct {
 
 type SecretScanResult struct {
 	ScanResultsCommon
-	Secrets     []Secret      `json:"secrets" required:"true"`
-	Rules       []Rule        `json:"rules" required:"true"`
-	RuleSecrets map[int][]int `json:"rule_2_secrets" required:"true"`
+	Secrets        []Secret       `json:"secrets" required:"true"`
+	Rules          []Rule         `json:"rules" required:"true"`
+	RuleSecrets    map[int][]int  `json:"rule_2_secrets" required:"true"`
+	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
 }
 
 type VulnerabilityScanResult struct {
