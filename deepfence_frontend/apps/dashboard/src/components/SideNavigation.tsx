@@ -22,6 +22,11 @@ const MenuItems: Array<{
     to: '/dashboard',
   },
   {
+    title: 'Topology',
+    Icon: HiChartPie,
+    to: '/topology',
+  },
+  {
     title: 'Threat Graph',
     Icon: HiChartPie,
     to: '/threatgraph',

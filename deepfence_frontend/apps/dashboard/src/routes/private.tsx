@@ -34,6 +34,8 @@ import {
   VulnerabilityScanConfigure,
 } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { Registries } from '@/features/registries/pages/Registries';
+import { module as topologyCloudTable } from '@/features/topology/pages/cloud/Table';
+import { module as topology } from '@/features/topology/pages/Topology';
 import { CustomRouteObject } from '@/utils/router';
 
 export const privateRoutes: CustomRouteObject[] = [
@@ -154,6 +156,17 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'registries',
         element: <Registries />,
         meta: { title: 'Registries' },
+      },
+      {
+        path: 'topology',
+        ...topology,
+        children: [
+          {
+            path: 'cloud/table',
+            ...topologyCloudTable,
+            meta: { title: 'Cloud Topology' },
+          },
+        ],
       },
     ],
   },
