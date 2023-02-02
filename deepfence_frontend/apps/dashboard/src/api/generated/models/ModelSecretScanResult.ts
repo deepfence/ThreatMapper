@@ -37,13 +37,13 @@ export interface ModelSecretScanResult {
      * @type {string}
      * @memberof ModelSecretScanResult
      */
-    ImageLayerId: string;
+    docker_container_name: string;
     /**
      * 
      * @type {string}
      * @memberof ModelSecretScanResult
      */
-    container_name: string;
+    docker_image_name: string;
     /**
      * 
      * @type {string}
@@ -56,12 +56,6 @@ export interface ModelSecretScanResult {
      * @memberof ModelSecretScanResult
      */
     kubernetes_cluster_name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelSecretScanResult
-     */
-    masked: string;
     /**
      * 
      * @type {string}
@@ -104,6 +98,12 @@ export interface ModelSecretScanResult {
      * @memberof ModelSecretScanResult
      */
     secrets: Array<ModelSecret> | null;
+    /**
+     * 
+     * @type {{ [key: string]: number; }}
+     * @memberof ModelSecretScanResult
+     */
+    severity_counts: { [key: string]: number; } | null;
 }
 
 /**
@@ -111,11 +111,10 @@ export interface ModelSecretScanResult {
  */
 export function instanceOfModelSecretScanResult(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "ImageLayerId" in value;
-    isInstance = isInstance && "container_name" in value;
+    isInstance = isInstance && "docker_container_name" in value;
+    isInstance = isInstance && "docker_image_name" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "kubernetes_cluster_name" in value;
-    isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
@@ -123,6 +122,7 @@ export function instanceOfModelSecretScanResult(value: object): boolean {
     isInstance = isInstance && "rules" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "secrets" in value;
+    isInstance = isInstance && "severity_counts" in value;
 
     return isInstance;
 }
@@ -137,11 +137,10 @@ export function ModelSecretScanResultFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'ImageLayerId': json['ImageLayerId'],
-        'container_name': json['container_name'],
+        'docker_container_name': json['docker_container_name'],
+        'docker_image_name': json['docker_image_name'],
         'host_name': json['host_name'],
         'kubernetes_cluster_name': json['kubernetes_cluster_name'],
-        'masked': json['masked'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'node_type': json['node_type'],
@@ -149,6 +148,7 @@ export function ModelSecretScanResultFromJSONTyped(json: any, ignoreDiscriminato
         'rules': (json['rules'] === null ? null : (json['rules'] as Array<any>).map(ModelRuleFromJSON)),
         'scan_id': json['scan_id'],
         'secrets': (json['secrets'] === null ? null : (json['secrets'] as Array<any>).map(ModelSecretFromJSON)),
+        'severity_counts': json['severity_counts'],
     };
 }
 
@@ -161,11 +161,10 @@ export function ModelSecretScanResultToJSON(value?: ModelSecretScanResult | null
     }
     return {
         
-        'ImageLayerId': value.ImageLayerId,
-        'container_name': value.container_name,
+        'docker_container_name': value.docker_container_name,
+        'docker_image_name': value.docker_image_name,
         'host_name': value.host_name,
         'kubernetes_cluster_name': value.kubernetes_cluster_name,
-        'masked': value.masked,
         'node_id': value.node_id,
         'node_name': value.node_name,
         'node_type': value.node_type,
@@ -173,6 +172,7 @@ export function ModelSecretScanResultToJSON(value?: ModelSecretScanResult | null
         'rules': (value.rules === null ? null : (value.rules as Array<any>).map(ModelRuleToJSON)),
         'scan_id': value.scan_id,
         'secrets': (value.secrets === null ? null : (value.secrets as Array<any>).map(ModelSecretToJSON)),
+        'severity_counts': value.severity_counts,
     };
 }
 

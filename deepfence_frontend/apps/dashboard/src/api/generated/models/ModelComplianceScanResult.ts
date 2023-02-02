@@ -28,12 +28,6 @@ import {
 export interface ModelComplianceScanResult {
     /**
      * 
-     * @type {string}
-     * @memberof ModelComplianceScanResult
-     */
-    ImageLayerId: string;
-    /**
-     * 
      * @type {Array<ModelCompliance>}
      * @memberof ModelComplianceScanResult
      */
@@ -43,7 +37,13 @@ export interface ModelComplianceScanResult {
      * @type {string}
      * @memberof ModelComplianceScanResult
      */
-    container_name: string;
+    docker_container_name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelComplianceScanResult
+     */
+    docker_image_name: string;
     /**
      * 
      * @type {string}
@@ -56,12 +56,6 @@ export interface ModelComplianceScanResult {
      * @memberof ModelComplianceScanResult
      */
     kubernetes_cluster_name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelComplianceScanResult
-     */
-    masked: string;
     /**
      * 
      * @type {string}
@@ -93,12 +87,11 @@ export interface ModelComplianceScanResult {
  */
 export function instanceOfModelComplianceScanResult(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "ImageLayerId" in value;
     isInstance = isInstance && "compliances" in value;
-    isInstance = isInstance && "container_name" in value;
+    isInstance = isInstance && "docker_container_name" in value;
+    isInstance = isInstance && "docker_image_name" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "kubernetes_cluster_name" in value;
-    isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
@@ -117,12 +110,11 @@ export function ModelComplianceScanResultFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
-        'ImageLayerId': json['ImageLayerId'],
         'compliances': (json['compliances'] === null ? null : (json['compliances'] as Array<any>).map(ModelComplianceFromJSON)),
-        'container_name': json['container_name'],
+        'docker_container_name': json['docker_container_name'],
+        'docker_image_name': json['docker_image_name'],
         'host_name': json['host_name'],
         'kubernetes_cluster_name': json['kubernetes_cluster_name'],
-        'masked': json['masked'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'node_type': json['node_type'],
@@ -139,12 +131,11 @@ export function ModelComplianceScanResultToJSON(value?: ModelComplianceScanResul
     }
     return {
         
-        'ImageLayerId': value.ImageLayerId,
         'compliances': (value.compliances === null ? null : (value.compliances as Array<any>).map(ModelComplianceToJSON)),
-        'container_name': value.container_name,
+        'docker_container_name': value.docker_container_name,
+        'docker_image_name': value.docker_image_name,
         'host_name': value.host_name,
         'kubernetes_cluster_name': value.kubernetes_cluster_name,
-        'masked': value.masked,
         'node_id': value.node_id,
         'node_name': value.node_name,
         'node_type': value.node_type,

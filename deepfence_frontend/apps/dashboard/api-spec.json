@@ -4270,29 +4270,27 @@
       },
       "ModelComplianceScanResult": {
         "required": [
-          "container_name",
+          "docker_container_name",
+          "docker_image_name",
           "host_name",
           "kubernetes_cluster_name",
-          "masked",
           "node_id",
           "node_name",
           "node_type",
           "scan_id",
-          "ImageLayerId",
           "compliances"
         ],
         "type": "object",
         "properties": {
-          "ImageLayerId": { "type": "string" },
           "compliances": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelCompliance" },
             "nullable": true
           },
-          "container_name": { "type": "string" },
+          "docker_container_name": { "type": "string" },
+          "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
           "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
@@ -4486,21 +4484,20 @@
       },
       "ModelMalwareScanResult": {
         "required": [
-          "container_name",
+          "docker_container_name",
+          "docker_image_name",
           "host_name",
           "kubernetes_cluster_name",
-          "masked",
           "node_id",
           "node_name",
           "node_type",
           "scan_id",
-          "ImageLayerId",
           "malwares"
         ],
         "type": "object",
         "properties": {
-          "ImageLayerId": { "type": "string" },
-          "container_name": { "type": "string" },
+          "docker_container_name": { "type": "string" },
+          "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
           "kubernetes_cluster_name": { "type": "string" },
           "malwares": {
@@ -4508,7 +4505,6 @@
             "items": { "$ref": "#/components/schemas/ModelMalware" },
             "nullable": true
           },
-          "masked": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
@@ -4731,26 +4727,25 @@
       },
       "ModelSecretScanResult": {
         "required": [
-          "container_name",
+          "docker_container_name",
+          "docker_image_name",
           "host_name",
           "kubernetes_cluster_name",
-          "masked",
           "node_id",
           "node_name",
           "node_type",
           "scan_id",
-          "ImageLayerId",
           "secrets",
           "rules",
-          "rule_2_secrets"
+          "rule_2_secrets",
+          "severity_counts"
         ],
         "type": "object",
         "properties": {
-          "ImageLayerId": { "type": "string" },
-          "container_name": { "type": "string" },
+          "docker_container_name": { "type": "string" },
+          "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
           "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
@@ -4768,6 +4763,11 @@
           "secrets": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelSecret" },
+            "nullable": true
+          },
+          "severity_counts": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" },
             "nullable": true
           }
         }
@@ -4862,28 +4862,32 @@
       },
       "ModelVulnerabilityScanResult": {
         "required": [
-          "container_name",
+          "docker_container_name",
+          "docker_image_name",
           "host_name",
           "kubernetes_cluster_name",
-          "masked",
           "node_id",
           "node_name",
           "node_type",
           "scan_id",
-          "ImageLayerId",
-          "vulnerabilities"
+          "vulnerabilities",
+          "severity_counts"
         ],
         "type": "object",
         "properties": {
-          "ImageLayerId": { "type": "string" },
-          "container_name": { "type": "string" },
+          "docker_container_name": { "type": "string" },
+          "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
           "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
+          "severity_counts": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" },
+            "nullable": true
+          },
           "vulnerabilities": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelVulnerability" },

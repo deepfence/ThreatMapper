@@ -23,7 +23,8 @@ import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
 import { SecretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
-import { module as ulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
+import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
+import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { CustomRouteObject } from '@/utils/router';
 
 export const privateRoutes: CustomRouteObject[] = [
@@ -105,7 +106,7 @@ export const privateRoutes: CustomRouteObject[] = [
           },
           {
             path: 'configure/vulnerability/:nodeType/:nodeIds',
-            ...ulnerabilityScanConfigure,
+            ...vulnerabilityScanConfigure,
             meta: { title: 'Configure Vulnerability Scan' },
           },
           {
@@ -117,6 +118,11 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'view-summary/compliance',
             element: <ComplianceScanSummary />,
             meta: { title: 'Configure Compliance Scan' },
+          },
+          {
+            path: 'view-summary/vulnerability/:scanIds',
+            ...vulnerabilityScanSumary,
+            meta: { title: 'Summary Vulnerability Scan' },
           },
           {
             path: 'view-summary/running/:nodeId/:nodeType/:scanType/:bulkScanId',

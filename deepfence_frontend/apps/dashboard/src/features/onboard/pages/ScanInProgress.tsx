@@ -1,17 +1,19 @@
 import cx from 'classnames';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FaCheckDouble, FaExclamationTriangle, FaStream } from 'react-icons/fa';
 import {
   HiCheck,
   HiChevronDown,
   HiChevronRight,
   HiExclamationCircle,
+  HiOutlineChevronDoubleLeft,
   HiOutlineChevronDoubleRight,
   HiOutlineChevronRight,
   HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
+  generatePath,
   Link,
   LoaderFunctionArgs,
   useLoaderData,
@@ -32,43 +34,7 @@ import { ApiDocsBadRequestResponse, ModelScanStatusResp } from '@/api/generated'
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
-
-export const ScanInProgressError = () => {
-  return (
-    <>
-      <ConnectorHeader
-        title={'Scan Error'}
-        description={'An error has occured, please retry.'}
-      />
-      <div className="flex flex-col items-center">
-        <IconContext.Provider
-          value={{
-            className: 'w-[70px] h-[70px] dark:text-gray-400 text-gray-900',
-          }}
-        >
-          <FaExclamationTriangle />
-        </IconContext.Provider>
-        <p className="text-sm text-red-500 mt-3">
-          Opps! An error has occured during your scan, please try again
-        </p>
-
-        <Link
-          to="/onboard/connectors/my-connectors"
-          className={cx(
-            `test-sm mt-2`,
-            'underline underline-offset-4 bg-transparent text-blue-600 dark:text-blue-500',
-          )}
-        >
-          Try Again
-        </Link>
-      </div>
-    </>
-  );
-};
-
-const statusScanApiFunctionMap = {
-  vulnerability: vulnerabilityScanApiClient().statusVulnerabilityScan,
-};
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export type LoaderDataType = {
   error?: string;
@@ -78,45 +44,9 @@ export type LoaderDataType = {
   } | null;
 };
 
-async function getScanStatus(
-  scanType: keyof typeof statusScanApiFunctionMap,
-  bulkScanId: string,
-): Promise<LoaderDataType> {
-  const r = await makeRequest({
-    apiFunction: statusScanApiFunctionMap[scanType],
-    apiArgs: [
-      {
-        scanIds: [],
-        bulkScanId,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({});
-      if (r.status === 400 || r.status === 500) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-  if (ApiError.isApiError(r)) {
-    throw r.value();
-  }
-  const result = r as ModelScanStatusResp;
-  return {
-    data: {
-      'dev-agent-cluster-pool-4vgtqrhcq-m91ov-1675323869': SCAN_STATUS_FAILED,
-      'dev-agent-cluster-pool-4vgtqrhcq-m91ov-167532386911': SCAN_STATUS_FAILED,
-    },
-  };
-}
-
-const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> => {
-  const bulkScanId = params?.bulkScanId ?? '';
-  const scanType = params?.scanType as keyof typeof statusScanApiFunctionMap;
-
-  return await getScanStatus(scanType, bulkScanId);
+type TableDataType = {
+  account: string;
+  status: string;
 };
 
 type TextProps = {
@@ -124,12 +54,17 @@ type TextProps = {
   headerText: string;
   subHeaderText: string;
 };
+
 type ConfigProps = {
   vulnerability: TextProps;
   secret: TextProps;
   malware: TextProps;
   posture: TextProps;
   alert: TextProps;
+};
+
+const statusScanApiFunctionMap = {
+  vulnerability: vulnerabilityScanApiClient().statusVulnerabilityScan,
 };
 
 const configMap: ConfigProps = {
@@ -165,23 +100,110 @@ const configMap: ConfigProps = {
   },
 };
 
-type TableDataType = {
-  account: string;
-  status: string;
+async function getScanStatus(
+  scanType: keyof typeof statusScanApiFunctionMap,
+  bulkScanId: string,
+): Promise<LoaderDataType> {
+  const r = await makeRequest({
+    apiFunction: statusScanApiFunctionMap[scanType],
+    apiArgs: [
+      {
+        scanIds: [],
+        bulkScanId,
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<LoaderDataType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+  if (ApiError.isApiError(r)) {
+    throw r.value();
+  }
+  const result = r as ModelScanStatusResp;
+  return {
+    data: result.statuses ?? {},
+  };
+}
+
+const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> => {
+  const bulkScanId = params?.bulkScanId ?? '';
+  const scanType = params?.scanType as keyof typeof statusScanApiFunctionMap;
+  return await getScanStatus(scanType, bulkScanId);
 };
 
-const SCAN_STATUS_IN_PROGRESS = 'IN_PROGRESS';
-const SCAN_STATUS_GENERATING_SBOM = 'GENERATING_SBOM';
-const SCAN_STATUS_IN_COMPLETE = 'COMPLETE';
-const SCAN_STATUS_FAILED = 'FAILED';
+function areAllScanDone(scanStatuses: string[]) {
+  return (
+    scanStatuses.filter((status) => {
+      return ['COMPLETE', 'FAILED'].includes(status);
+    }).length === scanStatuses.length
+  );
+}
+
+function areAllScanFailed(scanStatuses: string[]) {
+  return (
+    scanStatuses.filter((status) => {
+      return ['FAILED'].includes(status);
+    }).length === scanStatuses.length
+  );
+}
+
+function isScanDone(status: string) {
+  return status === 'COMPLETE' || status === 'FAILED';
+}
+
+function isScanCompleted(status: string) {
+  return status === 'COMPLETE';
+}
+
+function isScanFailed(status: string) {
+  return status === 'FAILED';
+}
+
+export const ScanInProgressError = () => {
+  return (
+    <>
+      <ConnectorHeader
+        title={'Scan Error'}
+        description={'An error has occured, please retry.'}
+      />
+      <div className="flex flex-col items-center">
+        <IconContext.Provider
+          value={{
+            className: 'w-[70px] h-[70px] dark:text-gray-400 text-gray-900',
+          }}
+        >
+          <FaExclamationTriangle />
+        </IconContext.Provider>
+        <p className="text-sm text-red-500 mt-3">
+          Opps! An error has occured during your scan, please try again
+        </p>
+
+        <Link
+          to="/onboard/connectors/my-connectors"
+          className={cx(
+            `test-sm mt-2`,
+            'underline underline-offset-4 bg-transparent text-blue-600 dark:text-blue-500',
+          )}
+        >
+          Try Again
+        </Link>
+      </div>
+    </>
+  );
+};
 
 const ScanInProgress = () => {
   const params = useParams();
+  const { navigate } = usePageNavigation();
   const loaderData = useLoaderData() as LoaderDataType;
   const revalidator = useRevalidator();
-  const [isAllScanFailed, setIsAllScanFailed] = useState(false);
   const [expand, setExpand] = useState(false);
-  const [allScanDone, setAllScanDone] = useState(false);
 
   const { scanType } = params as { scanType: keyof ConfigProps };
   const textMap = configMap[scanType];
@@ -193,6 +215,9 @@ const ScanInProgress = () => {
       status: loaderData.data?.[id] ?? '',
     };
   });
+
+  const allScanFailed = areAllScanFailed(Object.values(loaderData?.data ?? {}));
+  const allScanDone = areAllScanDone(Object.values(loaderData?.data ?? {}));
 
   const columns = useMemo(
     () => [
@@ -206,17 +231,13 @@ const ScanInProgress = () => {
         cell: (info) => {
           let color = null;
           let icon = null;
-          if (
-            [SCAN_STATUS_IN_PROGRESS, SCAN_STATUS_GENERATING_SBOM].includes(
-              info.row.original.status,
-            )
-          ) {
+          if (!isScanDone(info.row.original.status)) {
             color = 'text-blue-500';
             icon = <CircleSpinner size="xs" className="mr-2" />;
-          } else if (info.row.original.status.toLowerCase() === 'complete') {
+          } else if (isScanCompleted(info.row.original.status)) {
             color = 'text-green-500';
             icon = <HiCheck />;
-          } else if (info.row.original.status === SCAN_STATUS_FAILED) {
+          } else if (isScanFailed(info.row.original.status)) {
             color = 'text-red-500';
             icon = <HiExclamationCircle />;
           }
@@ -240,11 +261,7 @@ const ScanInProgress = () => {
         size: 10,
         maxSize: 10,
         cell: ({ row }) => {
-          if (
-            [SCAN_STATUS_IN_PROGRESS, SCAN_STATUS_IN_COMPLETE].includes(
-              row.original.status,
-            )
-          ) {
+          if (!isScanFailed(row.original.status)) {
             return null;
           }
           return row.getCanExpand() ? (
@@ -261,36 +278,11 @@ const ScanInProgress = () => {
         },
       }),
     ],
-    [],
+    [tableData],
   );
 
-  useEffect(() => {
-    if (loaderData.data) {
-      let allDone = true;
-      for (const id in loaderData.data) {
-        const status = loaderData.data[id];
-        if (
-          status === SCAN_STATUS_IN_PROGRESS ||
-          status === SCAN_STATUS_GENERATING_SBOM
-        ) {
-          allDone = false;
-        } else {
-          const set = new Set(Object.values(loaderData.data));
-          if (set.size === 1) {
-            const values = [...set];
-            setIsAllScanFailed(values[0] === SCAN_STATUS_FAILED);
-          }
-        }
-      }
-
-      if (allDone) {
-        setAllScanDone(true);
-      }
-    }
-  }, [loaderData]);
-
   useInterval(() => {
-    if (!allScanDone) {
+    if (!loaderData.message && !allScanDone) {
       revalidator.revalidate();
     }
   }, 5000);
@@ -306,26 +298,42 @@ const ScanInProgress = () => {
             <IconContext.Provider
               value={{
                 className: cx('w-[80px] h-[80px]', {
-                  'text-green-500': !isAllScanFailed,
-                  'text-red-500': isAllScanFailed,
+                  'text-green-500': !allScanFailed,
+                  'text-red-500': allScanFailed,
                 }),
               }}
             >
-              {isAllScanFailed ? <HiOutlineExclamationCircle /> : <FaCheckDouble />}
+              {allScanFailed ? <HiOutlineExclamationCircle /> : <FaCheckDouble />}
             </IconContext.Provider>
             <h3 className="text-2xl font-semibold pt-1">
-              Scan {isAllScanFailed ? 'Failed' : 'Completed'}
+              Scan {allScanFailed ? 'Failed' : 'Done'}
             </h3>
             <div className="mt-6">
-              <Button
-                size="sm"
-                endIcon={<HiOutlineChevronDoubleRight />}
-                onClick={() => setExpand((state) => !state)}
-                color="primary"
-                disabled={isAllScanFailed}
-              >
-                Go to scan results
-              </Button>
+              {allScanFailed ? (
+                <Button
+                  size="sm"
+                  startIcon={<HiOutlineChevronDoubleLeft />}
+                  onClick={() => navigate('/onboard/connectors/my-connectors')}
+                  color="primary"
+                >
+                  Go back to try again
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  endIcon={<HiOutlineChevronDoubleRight />}
+                  onClick={() =>
+                    navigate(
+                      generatePath('/onboard/scan/view-summary/vulnerability/:scanIds', {
+                        scanIds: tableData.map((data) => data.account).join(','),
+                      }),
+                    )
+                  }
+                  color="primary"
+                >
+                  Go to scan results
+                </Button>
+              )}
             </div>
           </>
         )}
@@ -340,8 +348,8 @@ const ScanInProgress = () => {
             {!allScanDone
               ? `${
                   scanType.charAt(0).toUpperCase() + scanType.slice(1)
-                } Scan has been started for ${tableData.length} hosts`
-              : 'All scan has been finished'}
+                } Scan started for ${tableData.length} hosts`
+              : 'All the scan are done'}
           </p>
           <Button
             size="sm"
@@ -364,7 +372,7 @@ const ScanInProgress = () => {
             getRowCanExpand={() => {
               return true;
             }}
-            renderSubComponent={({ row }) => {
+            renderSubComponent={() => {
               return (
                 <p className="dark:text-gray-200 py-2 px-4 overflow-auto text-sm">
                   Error message will be here
