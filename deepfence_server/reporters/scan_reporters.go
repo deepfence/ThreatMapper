@@ -188,6 +188,21 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		res = append(res, tmp)
 	}
 
+	ncommonres, err := tx.Run(`
+		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:SCANNED]-> (n)
+		RETURN n`,
+		map[string]interface{}{"scan_id": scan_id})
+	if err != nil {
+		return res, common, err
+	}
+
+	rec, err := ncommonres.Single()
+	if err != nil {
+		return res, common, err
+	}
+
+	utils.FromMap(rec.Values[0].(neo4j.Node).Props, &common)
+
 	return res, common, nil
 }
 

@@ -79,15 +79,14 @@ type ScanResultsReq struct {
 }
 
 type ScanResultsCommon struct {
-	ContainerName         string `json:"container_name" required:"true"`
+	ContainerName         string `json:"docker_container_name" required:"true"`
+	ImageName             string `json:"docker_image_name" required:"true"`
 	HostName              string `json:"host_name" required:"true"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name" required:"true"`
-	Masked                string `json:"masked" required:"true"`
 	NodeID                string `json:"node_id" required:"true"`
 	NodeName              string `json:"node_name" required:"true"`
 	NodeType              string `json:"node_type" required:"true"`
 	ScanID                string `json:"scan_id" required:"true"`
-	ImageLayerID          string `json:"ImageLayerId" required:"true"`
 }
 
 type SecretScanResult struct {
