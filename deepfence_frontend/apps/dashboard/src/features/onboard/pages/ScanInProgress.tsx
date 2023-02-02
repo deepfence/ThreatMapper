@@ -344,11 +344,13 @@ const ScanInProgress = () => {
             '-mt-10': !allScanDone,
           })}
         >
-          <p className="text-sm">
+          <p className="text-sm text-gray-700 dark:text-gray-200">
             {!allScanDone
               ? `${
                   scanType.charAt(0).toUpperCase() + scanType.slice(1)
-                } Scan started for ${tableData.length} hosts`
+                } Scan started for ${tableData.length} host ${
+                  tableData.length > 1 ? 's' : ''
+                }`
               : 'All the scan are done'}
           </p>
           <Button
