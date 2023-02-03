@@ -22,7 +22,8 @@ import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
-import { SecretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
+import { module as secretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
+import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { CustomRouteObject } from '@/utils/router';
@@ -110,8 +111,8 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Vulnerability Scan' },
           },
           {
-            path: 'configure/secret',
-            element: <SecretScanConfigure />,
+            path: 'configure/secret/:nodeType/:nodeIds',
+            ...secretScanConfigure,
             meta: { title: 'Configure Secret Scan' },
           },
           {
@@ -123,6 +124,11 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'view-summary/vulnerability/:scanIds',
             ...vulnerabilityScanSumary,
             meta: { title: 'Summary Vulnerability Scan' },
+          },
+          {
+            path: 'view-summary/secret/:scanIds',
+            ...secretScanSumary,
+            meta: { title: 'Summary Secret Scan' },
           },
           {
             path: 'view-summary/running/:nodeId/:nodeType/:scanType/:bulkScanId',

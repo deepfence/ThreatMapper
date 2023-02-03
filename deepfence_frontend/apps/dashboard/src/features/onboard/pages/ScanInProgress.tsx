@@ -29,7 +29,7 @@ import {
   Table,
 } from 'ui-components';
 
-import { vulnerabilityScanApiClient } from '@/api/api';
+import { secretScanApiClient, vulnerabilityScanApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelScanStatusResp } from '@/api/generated';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -65,6 +65,7 @@ type ConfigProps = {
 
 const statusScanApiFunctionMap = {
   vulnerability: vulnerabilityScanApiClient().statusVulnerabilityScan,
+  secret: secretScanApiClient().statusSecretScan,
 };
 
 const configMap: ConfigProps = {
@@ -75,10 +76,9 @@ const configMap: ConfigProps = {
       'Vulnerability Scan has been initiated, it will be completed in few moments.',
   },
   secret: {
-    scanningText: 'Your Vulnerability Scan is currently running...',
-    headerText: 'Vulnerability Scan',
-    subHeaderText:
-      'Vulnerability Scan has been initiated, it will be completed in few moments.',
+    scanningText: 'Your Secret Scan is currently running...',
+    headerText: 'Secret Scan',
+    subHeaderText: 'Secret Scan has been initiated, it will be completed in few moments.',
   },
   malware: {
     scanningText: 'Your Vulnerability Scan is currently running...',
@@ -228,6 +228,7 @@ const ScanInProgress = () => {
       }),
       columnHelper.accessor((row) => row.status, {
         id: 'status',
+        minSize: 200,
         cell: (info) => {
           let color = null;
           let icon = null;
@@ -243,7 +244,7 @@ const ScanInProgress = () => {
           }
           return (
             <div className={cx(`${color} flex items-center gap-x-2`)}>
-              {info.getValue()}
+              {info.getValue().replaceAll('_', ' ')}
               <IconContext.Provider
                 value={{
                   className: `${color} w-4 h-4 mr-2`,
@@ -324,7 +325,7 @@ const ScanInProgress = () => {
                   endIcon={<HiOutlineChevronDoubleRight />}
                   onClick={() =>
                     navigate(
-                      generatePath('/onboard/scan/view-summary/vulnerability/:scanIds', {
+                      generatePath(`/onboard/scan/view-summary/${scanType}/:scanIds`, {
                         scanIds: tableData.map((data) => data.account).join(','),
                       }),
                     )

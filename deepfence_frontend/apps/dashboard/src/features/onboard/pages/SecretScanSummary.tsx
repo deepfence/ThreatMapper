@@ -3,8 +3,8 @@ import { Suspense } from 'react';
 import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Typography } from 'ui-components';
 
-import { vulnerabilityScanApiClient } from '@/api/api';
-import { ModelVulnerabilityScanResult } from '@/api/generated/models/ModelVulnerabilityScanResult';
+import { secretScanApiClient } from '@/api/api';
+import { ModelSecretScanResult } from '@/api/generated/models/ModelSecretScanResult';
 import LogoLinux from '@/assets/logo-linux.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -32,7 +32,7 @@ type SeverityType = {
 };
 
 type ScanData = {
-  accountId: ModelVulnerabilityScanResult['kubernetes_cluster_name'];
+  accountId: ModelSecretScanResult['kubernetes_cluster_name'];
   data: {
     total: number;
     counts: SeverityType[] | null;
@@ -48,7 +48,7 @@ export type LoaderDataType = {
 async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
   const bulkRequest = scanIds.split(',').map((scanId) => {
     return makeRequest({
-      apiFunction: vulnerabilityScanApiClient().resultVulnerabilityScan,
+      apiFunction: secretScanApiClient().resultSecretScan,
       apiArgs: [
         {
           modelScanResultsReq: {
@@ -67,7 +67,7 @@ async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
     throw responses; // TODO: handle any one request has an error on this bulk request
   }
 
-  const resultData = responses.map((response: ModelVulnerabilityScanResult) => {
+  const resultData = responses.map((response: ModelSecretScanResult) => {
     return {
       accountId: response.kubernetes_cluster_name,
       data: [
@@ -196,14 +196,14 @@ const Scan = ({ scanData }: { scanData: ScanData }) => {
   );
 };
 
-const VulnerabilityScanSummary = () => {
+const SecretScanSummary = () => {
   const loaderData = useLoaderData() as LoaderDataType;
 
   return (
     <div className="flex flex-col">
       <ConnectorHeader
-        title={'Vulnerability Scan Results Summary'}
-        description={'Summary of vulnerability scan result'}
+        title={'Secret Scan Results Summary'}
+        description={'Summary of secret scan result'}
       />
 
       <Link
@@ -213,7 +213,7 @@ const VulnerabilityScanSummary = () => {
           'underline underline-offset-2 ml-auto bg-transparent text-blue-600 dark:text-blue-500',
         )}
       >
-        Go to Vulnerability Dashboard to view details scan result
+        Go to Secret Dashboard to view details scan result
       </Link>
 
       <div className="flex flex-col gap-4 mt-4">
@@ -233,5 +233,5 @@ const VulnerabilityScanSummary = () => {
 
 export const module = {
   loader,
-  element: <VulnerabilityScanSummary />,
+  element: <SecretScanSummary />,
 };
