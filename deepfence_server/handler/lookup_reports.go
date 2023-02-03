@@ -76,23 +76,6 @@ func (h *Handler) GetKubernetesClusters(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (h *Handler) GetKubernetesScanners(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.LookupFilter
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	clusters, err := reporters.GetKubernetesClustersReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, clusters)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
 func (h *Handler) GetContainerImages(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req reporters.LookupFilter

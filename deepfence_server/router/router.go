@@ -145,23 +145,21 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/containers", dfHandler.GetContainers)
 				r.Post("/processes", dfHandler.GetProcesses)
 				r.Post("/kubernetesclusters", dfHandler.GetKubernetesClusters)
-				r.Post("/kubernetes-scanners", dfHandler.GetKubernetesScanners)
 				r.Post("/containerimages", dfHandler.GetContainerImages)
 				r.Post("/pods", dfHandler.GetPods)
 			})
 
 			r.Route("/controls", func(r chi.Router) {
-				r.Post("/agent", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentControls))
-				r.Get("/kubernetes-scanner", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetKubernetesScannerControls))
-				r.Post("/agent-init", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.GetAgentInitControls))
-				r.Post("/agent-upgrade", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.ScheduleAgentUpgrade))
+				r.Post("/agent", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetAgentControls))
+				r.Post("/kubernetes-cluster", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetKubernetesClusterControls))
+				r.Post("/agent-init", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetAgentInitControls))
+				r.Post("/agent-upgrade", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentUpgrade))
 			})
 
 			r.Route("/ingest", func(r chi.Router) {
 				r.Post("/report", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.IngestAgentReport))
 				r.Post("/sync-report", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.IngestSyncAgentReport))
 				r.Post("/cloud-resources", dfHandler.AuthHandler(ResourceCloudReport, PermissionIngest, dfHandler.IngestCloudResourcesReportHandler))
-				r.Post("/kubernetes-scanner", dfHandler.AuthHandler(ResourceAgentReport, PermissionIngest, dfHandler.RegisterKubernetesScanner))
 				// below api's write to kafka
 				r.Post("/sbom", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestSbomHandler))
 				r.Post("/vulnerabilities", dfHandler.AuthHandler(ResourceScanReport, PermissionIngest, dfHandler.IngestVulnerabilityReportHandler))
