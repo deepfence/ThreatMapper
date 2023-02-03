@@ -208,7 +208,7 @@ const IntegrationsData = [
   },
 ];
 
-export const Integrations = () => {
+const Integrations = () => {
   return (
     <div className="flex flex-col space-y-8">
       {IntegrationsData.map((integration) => {
@@ -271,4 +271,8 @@ export const Integrations = () => {
       })}
     </div>
   );
+};
+
+export const module = {
+  element: <Integrations />,
 };
