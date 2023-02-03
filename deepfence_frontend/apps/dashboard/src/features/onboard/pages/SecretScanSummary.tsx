@@ -63,31 +63,34 @@ async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
     });
   });
   const responses = await Promise.all(bulkRequest);
-  if (ApiError.isApiError(responses)) {
-    throw responses; // TODO: handle any one request has an error on this bulk request
-  }
-
-  const resultData = responses.map((response: ModelSecretScanResult) => {
-    return {
-      accountId: response.kubernetes_cluster_name,
-      data: [
-        {
-          total: Object.keys(response.severity_counts ?? {}).reduce((acc, severity) => {
-            acc = acc + (response.severity_counts?.[severity] ?? 0);
-            return acc;
-          }, 0),
-          counts: Object.keys(response.severity_counts ?? {}).map((severity) => {
-            return {
-              name: severity,
-              value: response.severity_counts![severity],
-            };
-          }),
-        },
-      ],
-    };
+  const resultData = responses.map((response: ModelSecretScanResult | ApiError<void>) => {
+    if (ApiError.isApiError(response)) {
+      // TODO: handle any one request has an error on this bulk request
+      return null;
+    } else {
+      const resp = response as ModelSecretScanResult;
+      return {
+        accountId: resp.kubernetes_cluster_name,
+        data: [
+          {
+            total: Object.keys(resp.severity_counts ?? {}).reduce((acc, severity) => {
+              acc = acc + (resp.severity_counts?.[severity] ?? 0);
+              return acc;
+            }, 0),
+            counts: Object.keys(resp.severity_counts ?? {}).map((severity) => {
+              return {
+                name: severity,
+                value: resp.severity_counts![severity],
+              };
+            }),
+          },
+        ],
+      };
+    }
   });
+
   return {
-    data: resultData ?? [],
+    data: resultData,
   };
 }
 

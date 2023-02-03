@@ -32,7 +32,6 @@ const action = async ({
             node_id: nodeId,
             node_type: nodeType as ModelScanTriggerNodeTypeEnum,
           })),
-          scan_config: 'all',
         },
       },
     ],
