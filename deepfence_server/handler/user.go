@@ -61,8 +61,8 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	companies, err := pgClient.CountCompanies(ctx)
-	if err != nil || companies > 0 {
+	users, err := pgClient.CountActiveUsers(ctx)
+	if err != nil || users > 0 {
 		respondError(&ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}, w)
 		return
 	}
