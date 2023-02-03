@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
+import { Integrations } from '@/features/integrations/pages/Integrations';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -154,6 +155,11 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'registries',
         element: <Registries />,
         meta: { title: 'Registries' },
+      },
+      {
+        path: 'integrations',
+        element: <Integrations />,
+        meta: { title: 'Integrations' },
       },
     ],
   },
