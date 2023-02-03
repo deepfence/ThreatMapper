@@ -37,7 +37,8 @@ ENV DEEPFENCE_POSTGRES_USER_DB_HOST=deepfence-postgres \
     DEEPFENCE_MINIO_SECURE=false \
     DEEPFENCE_HTTP_LISTEN_ENDPOINT=8080 \
     DEEPFENCE_SAAS_DEPLOYMENT=false \
-    DEEPFENCE_KAFKA_BROKERS=deepfence-kafka-broker:9092
+    DEEPFENCE_KAFKA_BROKERS=deepfence-kafka-broker:9092 \
+    DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES=30
 
 ADD deepfence_server/auth /auth
 ADD golang_deepfence_sdk/utils/postgresql /usr/local/postgresql-migrate

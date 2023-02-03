@@ -71,38 +71,43 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 		agent_image := "deepfenceio/deepfence_agent_ce:" + tag[1:]
 		cmd := exec.Command("docker", []string{"pull", agent_image}...)
 		if err := cmd.Run(); err != nil {
-			log.Error().Err(err)
+			log.Error().Err(err).Msg("Docker pull")
 			continue
 		}
 		cmd = exec.Command("docker", []string{"create", "--name=dummy", agent_image}...)
 		if err := cmd.Run(); err != nil {
-			log.Error().Err(err)
+			log.Error().Err(err).Msg("Docker create")
 			continue
 		}
 		cmd = exec.Command("docker", []string{"cp", "dummy:/home/deepfence", "/tmp/" + tag}...)
 		if err := cmd.Run(); err != nil {
-			log.Error().Err(err)
+			log.Error().Err(err).Msg("Docker cp")
 			continue
 		}
 		cmd = exec.Command("docker", []string{"rm", "dummy"}...)
 		if err := cmd.Run(); err != nil {
-			log.Error().Err(err)
+			log.Error().Err(err).Msg("Docker rm")
 			continue
 		}
 		out_file := fmt.Sprintf("%s.tar.gz", tag)
 		cmd = exec.Command("tar", []string{"zcvf", out_file, "-C", "/tmp/" + tag, "."}...)
 		if err := cmd.Run(); err != nil {
-			log.Error().Err(err)
+			log.Error().Err(err).Msg("Untar")
 			continue
 		}
 		b, err := os.ReadFile(out_file)
 		if err != nil {
-			log.Error().Err(err)
+			log.Error().Err(err).Msg("ReadFile")
 			continue
 		}
 		res, err := minio.UploadFile(ctx, out_file, b, m.PutObjectOptions{ContentType: "application/gzip"})
 		if err != nil {
-			log.Error().Err(err)
+			_, ok := err.(directory.AlreadyPresentError)
+			if ok {
+				log.Warn().Err(err).Msg("Upload")
+			} else {
+				log.Error().Err(err).Msg("Upload")
+			}
 			continue
 		}
 

@@ -5,21 +5,17 @@ import LoginBackground from '@/assets/background-login.svg';
 
 export const AuthLayout = () => {
   return (
-    <>
-      <div className={`h-full w-full fixed`}>
-        <img
-          src={LoginBackground}
-          alt="Login Background"
-          className="w-full object-cover h-full"
-        />
+    <div className="grid h-screen place-items-center">
+      <div className="fixed">
+        <img src={LoginBackground} alt="Login Background" className="object-cover" />
       </div>
-      <div className="relative h-screen bg-[linear-gradient(0deg,_rgba(0_0,_0,_0.2),_rgba(0,_0,_0,_0.2)),_#FFFFFF]">
+      <div className="relative">
         <div className="h-full grid place-items-center">
-          <Card className="w-[384px] p-8">
+          <Card className="w-[384px] p-8 my-8">
             <Outlet />
           </Card>
         </div>
       </div>
-    </>
+    </div>
   );
 };

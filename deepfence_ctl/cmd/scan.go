@@ -44,29 +44,41 @@ var scanStartSubCmd = &cobra.Command{
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanApi.StartSecretScan(context.Background())
-			req = req.ModelScanTriggerReq(
-				deepfence_server_client.ModelScanTriggerReq{
-					NodeId:   scan_node_id,
-					NodeType: resource_type,
-				})
+			req = req.ModelSecretScanTriggerReq(
+				*deepfence_server_client.NewModelSecretScanTriggerReq(
+					false,
+					[]deepfence_server_client.ModelScanTrigger{
+						{
+							NodeId:   scan_node_id,
+							NodeType: resource_type,
+						},
+					}))
 			res, _, err = http.Client().SecretScanApi.StartSecretScanExecute(req)
 		case "malware":
 			req := http.Client().MalwareScanApi.StartMalwareScan(context.Background())
-			req = req.ModelScanTriggerReq(
-				deepfence_server_client.ModelScanTriggerReq{
-					NodeId:   scan_node_id,
-					NodeType: resource_type,
-				})
+			req = req.ModelMalwareScanTriggerReq(
+				*deepfence_server_client.NewModelMalwareScanTriggerReq(
+					false,
+					[]deepfence_server_client.ModelScanTrigger{
+						{
+							NodeId:   scan_node_id,
+							NodeType: resource_type,
+						},
+					}))
 			res, _, err = http.Client().MalwareScanApi.StartMalwareScanExecute(req)
 		case "vulnerability":
-			vuln_scan_type, _ := cmd.Flags().GetString("scan-type")
+			vuln_scan_type, _ := cmd.Flags().GetString("scan-config")
 			req := http.Client().VulnerabilityApi.StartVulnerabilityScan(context.Background())
 			req = req.ModelVulnerabilityScanTriggerReq(
-				deepfence_server_client.ModelVulnerabilityScanTriggerReq{
-					NodeId:   scan_node_id,
-					NodeType: resource_type,
-					ScanType: vuln_scan_type,
-				})
+				*deepfence_server_client.NewModelVulnerabilityScanTriggerReq(
+					false,
+					vuln_scan_type,
+					[]deepfence_server_client.ModelScanTrigger{
+						{
+							NodeId:   scan_node_id,
+							NodeType: resource_type,
+						},
+					}))
 			res, _, err = http.Client().VulnerabilityApi.StartVulnerabilityScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
@@ -99,11 +111,13 @@ var scanStatusSubCmd = &cobra.Command{
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
-			req = req.ScanId(scan_id)
+			req = req.BulkScanId("")
+			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StatusVulnerabilityScan(context.Background())
-			req = req.ScanId(scan_id)
+			req = req.BulkScanId("")
+			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().VulnerabilityApi.StatusVulnerabilityScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
@@ -188,7 +202,7 @@ var scanResultsSubCmd = &cobra.Command{
 		}
 
 		var err error
-		var res *deepfence_server_client.ModelScanResultsResp
+		var res interface{}
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanApi.ResultsSecretScan(context.Background())
@@ -232,7 +246,7 @@ func init() {
 
 	scanStartSubCmd.PersistentFlags().String("node-id", "", "Node id")
 	scanStartSubCmd.PersistentFlags().String("node-type", "", "Resource type (host, container, image)")
-	scanStartSubCmd.PersistentFlags().String("scan-type", "all", "vulnerability scan type (all,base,ruby,python,javascript,php,golang,java,rust,dotnet)")
+	scanStartSubCmd.PersistentFlags().String("scan-config", "all", "vulnerability scan type (all,base,ruby,python,javascript,php,golang,java,rust,dotnet)")
 
 	scanStatusSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
 
@@ -240,4 +254,5 @@ func init() {
 	scanListSubCmd.PersistentFlags().String("node-type", "", "Resource type (host, container, image)")
 
 	scanResultsSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
+
 }

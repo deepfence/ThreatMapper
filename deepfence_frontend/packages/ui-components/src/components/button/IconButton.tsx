@@ -26,43 +26,53 @@ export const iconButtonCVA = cva(
       color: {
         default: [
           // bg styles
-          'bg-gray-200  hover:bg-gray-300 ',
+          'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700',
           // text styles
-          'text-gray-800 hover:text-gray-900 ',
+          'text-gray-700 dark:text-gray-400 dark:hover:text-white',
           // focus styles
-          'focus:ring-2 focus:ring-gray-100',
+          'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+          // disabled styles
+          'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
         ],
         primary: [
           // bg styles
-          'bg-blue-700  hover:bg-blue-800',
+          'bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700',
           // text styles
           'text-white',
           // focus styles
-          'focus:ring-2 focus:ring-blue-200',
+          'focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800',
+          // disabled styles
+          'disabled:bg-blue-400 dark:disabled:bg-blue-500 disabled:hover:bg-blue-400 dark:disabled:hover:bg-blue-500',
         ],
         danger: [
           // bg styles
-          'bg-red-700 hover:bg-red-800',
+          'bg-red-700 hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700',
           // text styles
           'text-white',
           // focus styles
-          'focus:ring-2 focus:ring-red-200',
+          'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
+          // disabled styles
+          'disabled:bg-red-400 dark:disabled:bg-red-500 disabled:hover:bg-red-400 dark:disabled:hover:bg-red-500',
         ],
         success: [
           // bg styles
-          'bg-green-700  hover:bg-green-800',
+          'bg-green-700 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700',
           // text styles
           'text-white',
           // focus styles
-          'focus:ring-2 focus:ring-green-200',
+          'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
+          // disabled styles
+          'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
         ],
         normal: [
           // bg styles
-          'bg-white hover:bg-gray-300  ',
+          'bg-white hover:bg-gray-100 dark:bg-transparent dark:hover:bg-gray-800',
           // text styles
-          'text-gray-800 hover:text-gray-800 focus:text-gray-800 ',
+          'text-gray-700 dark:text-gray-200',
           // focus styles
-          'dark:ring-gray-100 focus:ring-2 focus:ring-gray-100',
+          'focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-800',
+          // disabled styles
+          'disabled:text-gray-400 dark:disabled:text-gray-600 disabled:hover:bg-white dark:disabled:hover:bg-gray-900',
         ],
       },
       withOutline: {
@@ -78,11 +88,16 @@ export const iconButtonCVA = cva(
         color: 'default',
         withOutline: true,
         className: [
-          'bg-transparent hover:bg-gray-300 ',
+          // bg styles
+          'bg-transparent hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700',
           // text styles
-          'text-gray-900  dark:text-white hover:text-black dark:hover:text-black',
+          'text-gray-900 hover:text-blue-700 dark:text-gray-400 dark:hover:text-white',
+          // border styles
+          'border border-gray-200 dark:border-gray-600',
           // ring styles
-          'ring-1 ring-gray-900 focus:ring-1 focus:ring-gray-200 dark:ring-white',
+          'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+          // disabled styles
+          'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
         ],
       },
       {
@@ -90,11 +105,15 @@ export const iconButtonCVA = cva(
         withOutline: true,
         className: [
           // bg styles
-          'hover:bg-blue-800',
+          'dark:bg-transparent hover:bg-blue-800 dark:hover:bg-blue-600',
           // text styles
-          'text-blue-700 hover:text-white',
+          'text-blue-700 hover:text-white dark:text-blue-500 dark:hover:text-white',
+          // border styles
+          'border border-blue-700 dark:border-blue-500',
           // ring styles
-          'ring-1 ring-blue-700 focus:ring-2 focus:ring-blue-200',
+          'focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800',
+          // disabled styles
+          'disabled:bg-blue-400 dark:disabled:bg-blue-500 disabled:hover:bg-blue-400 dark:disabled:hover:bg-blue-500',
         ],
       },
       {
@@ -102,11 +121,15 @@ export const iconButtonCVA = cva(
         withOutline: true,
         className: [
           // bg styles
-          'hover:bg-red-800',
+          'dark:bg-transparent hover:bg-red-800 dark:hover:bg-red-600',
           // text styles
-          'text-red-700 hover:text-white',
+          'text-red-700 hover:text-white dark:text-red-500 dark:hover:text-white',
+          // border styles
+          'border border-red-700 dark:border-red-500',
           // ring styles
-          'ring-1 focus:ring-2 ring-red-700 focus:ring-red-200',
+          'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
+          // disabled styles
+          'disabled:bg-red-400 dark:disabled:bg-red-500 disabled:hover:bg-red-400 dark:disabled:hover:bg-red-500',
         ],
       },
       {
@@ -114,11 +137,15 @@ export const iconButtonCVA = cva(
         withOutline: true,
         className: [
           // bg styles
-          'hover:bg-green-800',
+          'dark:bg-transparent hover:bg-green-800 dark:hover:bg-green-600',
           // text styles
-          ' text-green-700 hover:text-white',
+          'text-green-700 hover:text-white dark:text-green-500 dark:hover:text-white',
+          // border styles
+          'border border-green-700 dark:border-green-500',
           // ring styles
-          'ring-1 ring-green-700 focus:ring-2 focus:ring-green-200',
+          'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
+          // disabled styles
+          'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
         ],
       },
       {
@@ -126,11 +153,13 @@ export const iconButtonCVA = cva(
         withOutline: true,
         className: [
           // bg styles
-          'dark:bg-gray-800 hover:bg-gray-100 hover:dark:bg-gray-700',
+          'bg-transparent hover:bg-gray-100 hover:dark:bg-gray-800',
           // text styles
-          'text-gray-700 dark:text-gray-400 hover:text-gray-900 focus:text-gray-900',
+          'text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300',
           // ring styles
-          'ring-1 focus:ring-2 focus:ring-gray-200 dark:ring-gray-600 ring-gray-200',
+          'focus:ring-4 focus:ring-gray-100 dark:ring-gray-800',
+          // disabled styles
+          'disabled:opacity-75 dark:disabled:opacity-100 dark:disabled:text-gray-600 disabled:hover:bg-transparent',
         ],
       },
     ],
@@ -138,7 +167,7 @@ export const iconButtonCVA = cva(
 );
 
 interface IconButtonProps
-  extends Omit<ComponentProps<'button'>, 'className' | 'color'>,
+  extends Omit<ComponentProps<'button'>, 'color'>,
     ObjectWithNonNullableValues<Omit<VariantProps<typeof iconButtonCVA>, 'withOutline'>> {
   icon?: React.ReactNode;
   outline?: boolean;
@@ -157,7 +186,7 @@ const iconCva = cva('', {
 });
 
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ size = 'md', color, disabled, outline, icon, id, ...props }, ref) => {
+  ({ size = 'md', color, disabled, outline, icon, id, className, ...props }, ref) => {
     const internalId = useId();
     const _id = id ? id : internalId;
 
@@ -173,6 +202,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
             color,
             withOutline: outline,
           }),
+          className,
         )}
         {...props}
       >

@@ -11,7 +11,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (model.ScanStatusResp, error) {
+func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids []string) (model.ScanStatusResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.ScanStatusResp{}, err
@@ -30,22 +30,32 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_id s
 	defer tx.Close()
 
 	res, err := tx.Run(fmt.Sprintf(`
-		MATCH (m:%s{node_id: $scan_id})
-		RETURN m.status`, scan_type),
-		map[string]interface{}{"scan_id": scan_id})
+		MATCH (m:%s)
+		WHERE m.node_id IN $scan_ids
+		RETURN m.node_id, m.status`, scan_type),
+		map[string]interface{}{"scan_ids": scan_ids})
 	if err != nil {
 		return model.ScanStatusResp{}, err
 	}
 
-	rec, err := res.Single()
+	recs, err := res.Collect()
 	if err != nil {
 		return model.ScanStatusResp{}, err
 	}
 
-	return model.ScanStatusResp{Status: model.ScanStatus(rec.Values[0].(string))}, nil
+	statuses := map[string]model.ScanStatus{}
+	for i := range recs {
+		statuses[recs[i].Values[0].(string)] = model.ScanStatus(recs[i].Values[1].(string))
+	}
+
+	return model.ScanStatusResp{Statuses: statuses}, nil
 }
 
-func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_id string, node_type controls.ScanResource, fw model.FetchWindow) (model.ScanListResp, error) {
+func GetScansList(ctx context.Context,
+	scan_type utils.Neo4jScanType,
+	node_id string,
+	node_type controls.ScanResource,
+	fw model.FetchWindow) (model.ScanListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.ScanListResp{}, err
@@ -65,9 +75,9 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_id st
 
 	res, err := tx.Run(`
 		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (:`+controls.ResourceTypeToNeo4j(node_type)+`{node_id: $node_id})
-		RETURN m.node_id, m.status, m.updated_at 
-		ORDER BY m.updated_at 
-		SKIP $skip 
+		RETURN m.node_id, m.status, m.updated_at
+		ORDER BY m.updated_at
+		SKIP $skip
 		LIMIT $limit`,
 		map[string]interface{}{"node_id": node_id, "skip": fw.Offset, "limit": fw.Size})
 	if err != nil {
@@ -110,7 +120,10 @@ func GetPendingScansList(ctx context.Context, scan_type utils.Neo4jScanType, nod
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (:Node{node_id: $node_id}) WHERE NOT m.status = $complete AND NOT m.status = $failed AND NOT m.status = $in_progress RETURN m.node_id, m.status, m.updated_at ORDER BY m.updated_at`,
+	res, err := tx.Run(`
+		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (:Node{node_id: $node_id})
+		WHERE NOT m.status = $complete AND NOT m.status = $failed AND NOT m.status = $in_progress
+		RETURN m.node_id, m.status, m.updated_at ORDER BY m.updated_at`,
 		map[string]interface{}{"node_id": node_id, "complete": utils.SCAN_STATUS_SUCCESS, "failed": utils.SCAN_STATUS_FAILED, "in_progress": utils.SCAN_STATUS_INPROGRESS})
 	if err != nil {
 		return model.ScanListResp{}, err
@@ -134,43 +147,151 @@ func GetPendingScansList(ctx context.Context, scan_type utils.Neo4jScanType, nod
 	return model.ScanListResp{ScansInfo: scans_info}, nil
 }
 
-func GetScanResults(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string, fw model.FetchWindow) (model.ScanResultsResp, error) {
+func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, scan_id string, fw model.FetchWindow) ([]T, model.ScanResultsCommon, error) {
+	res := []T{}
+	common := model.ScanResultsCommon{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return model.ScanResultsResp{}, err
+		return res, common, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
-		return model.ScanResultsResp{}, err
+		return res, common, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return model.ScanResultsResp{}, err
+		return res, common, err
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d) RETURN d SKIP $skip LIMIT $limit`,
+	nres, err := tx.Run(`
+		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		RETURN d
+		SKIP $skip
+		LIMIT $limit`,
 		map[string]interface{}{"scan_id": scan_id, "skip": fw.Offset, "limit": fw.Size})
 	if err != nil {
-		return model.ScanResultsResp{}, err
+		return res, common, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := nres.Collect()
 	if err != nil {
-		return model.ScanResultsResp{}, err
+		return res, common, err
 	}
 
-	scan_result := []map[string]interface{}{}
 	for _, rec := range recs {
-		tmp := map[string]interface{}{}
-		for i, key := range rec.Keys {
-			tmp[key] = rec.Values[i]
-		}
-		scan_result = append(scan_result, tmp)
+		var tmp T
+		utils.FromMap(rec.Values[0].(neo4j.Node).Props, &tmp)
+		res = append(res, tmp)
 	}
 
-	return model.ScanResultsResp{Results: scan_result}, nil
+	ncommonres, err := tx.Run(`
+		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:SCANNED]-> (n)
+		RETURN n`,
+		map[string]interface{}{"scan_id": scan_id})
+	if err != nil {
+		return res, common, err
+	}
+
+	rec, err := ncommonres.Single()
+	if err != nil {
+		return res, common, err
+	}
+
+	utils.FromMap(rec.Values[0].(neo4j.Node).Props, &common)
+
+	return res, common, nil
+}
+
+func type2sev_field(scan_type utils.Neo4jScanType) string {
+	switch scan_type {
+	case utils.NEO4J_VULNERABILITY_SCAN:
+		return "cve_severity"
+	case utils.NEO4J_SECRET_SCAN:
+		return "level"
+	}
+	return "error_sev_field_unknown"
+}
+
+func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (map[string]int, error) {
+	res := map[string]int{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		RETURN d.`+type2sev_field(scan_type),
+		map[string]interface{}{"scan_id": scan_id})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for i := range recs {
+		res[recs[i].Values[0].(string)] += 1
+	}
+
+	return res, nil
+}
+
+func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (model.ScanStatusResp, error) {
+	scan_ids := model.ScanStatusResp{
+		Statuses: map[string]model.ScanStatus{},
+	}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return scan_ids, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return scan_ids, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return scan_ids, err
+	}
+	defer tx.Close()
+
+	neo_res, err := tx.Run(`
+		MATCH (m:Bulk`+string(scan_type)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scan_type)+`)
+		RETURN d.node_id, d.status`,
+		map[string]interface{}{"scan_id": scan_id})
+	if err != nil {
+		return scan_ids, err
+	}
+
+	recs, err := neo_res.Collect()
+	if err != nil {
+		return scan_ids, err
+	}
+
+	for _, rec := range recs {
+		scan_ids.Statuses[rec.Values[0].(string)] = model.ScanStatus(rec.Values[1].(string))
+	}
+
+	return scan_ids, nil
 }

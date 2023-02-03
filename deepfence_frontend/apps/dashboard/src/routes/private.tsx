@@ -1,6 +1,8 @@
 import { Outlet } from 'react-router-dom';
 
+import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
+import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -26,6 +28,7 @@ import { module as secretScanConfigure } from '@/features/onboard/pages/SecretSc
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
+import { Registries } from '@/features/registries/pages/Registries';
 import { CustomRouteObject } from '@/utils/router';
 
 export const privateRoutes: CustomRouteObject[] = [
@@ -142,5 +145,18 @@ export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/',
     loader: dashboardLoader,
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: 'dashboard',
+        element: <Dashboard />,
+        meta: { title: 'Dashboard' },
+      },
+      {
+        path: 'registries',
+        element: <Registries />,
+        meta: { title: 'Registries' },
+      },
+    ],
   },
 ];
