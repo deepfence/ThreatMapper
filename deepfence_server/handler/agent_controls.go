@@ -28,7 +28,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, agentId.NodeId)
+	actions, errs := controls.GetAgentActions(ctx, agentId.NodeId, agentId.AvailableWorkload)
 	for _, err := range errs {
 		if err != nil {
 			log.Warn().Msgf("Cannot some actions for %s: %v, skipping", agentId.NodeId, err)

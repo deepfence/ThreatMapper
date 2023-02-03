@@ -9,6 +9,7 @@ import (
 	"time"
 
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/hostname"
@@ -103,15 +104,22 @@ func (OpenapiClient) Stop() {
 	panic("unimplemented")
 }
 
+const (
+	MAX_AGENT_WORKLOAD = 2
+)
+
 func (ct *OpenapiClient) StartControlsWatching() error {
 
+	workload_allocator := ctl.NewWorkloadAllocator(MAX_AGENT_WORKLOAD)
 	req := ct.client.ControlsApi.GetAgentInitControls(context.Background())
-	req = req.ModelAgentId(*openapi.NewModelAgentId(hostname.Get()))
+	req = req.ModelAgentId(*openapi.NewModelAgentId(workload_allocator.MaxAllocable(), hostname.Get()))
 	ctl, _, err := ct.client.ControlsApi.GetAgentInitControlsExecute(req)
 
 	if err != nil {
 		return err
 	}
+
+	workload_allocator.Reserve(int32(len(ctl.Commands)))
 
 	for _, action := range ctl.Commands {
 		logrus.Infof("Init execute :%v", action.Id)
@@ -119,22 +127,29 @@ func (ct *OpenapiClient) StartControlsWatching() error {
 		if err != nil {
 			logrus.Errorf("Control %v failed: %v\n", action, err)
 		}
+		// TODO: call when work truly completes
+		workload_allocator.Free()
 	}
 
 	go func() {
 		req := ct.client.ControlsApi.GetAgentControls(context.Background())
-		req = req.ModelAgentId(*openapi.NewModelAgentId(hostname.Get()))
+		agentId := openapi.NewModelAgentId(workload_allocator.MaxAllocable(), hostname.Get())
+		req = req.ModelAgentId(*agentId)
 		for {
 			select {
 			case <-time.After(time.Second * 10):
 			case <-ct.stopControlListening:
 				break
 			}
+			agentId.SetAvailableWorkload(workload_allocator.MaxAllocable())
+			req = req.ModelAgentId(*agentId)
 			ctl, _, err := ct.client.ControlsApi.GetAgentControlsExecute(req)
 			if err != nil {
 				logrus.Errorf("Getting controls failed: %v\n", err)
 				continue
 			}
+
+			workload_allocator.Reserve(int32(len(ctl.Commands)))
 
 			for _, action := range ctl.Commands {
 				logrus.Infof("Execute :%v", action.Id)
@@ -142,6 +157,8 @@ func (ct *OpenapiClient) StartControlsWatching() error {
 				if err != nil {
 					logrus.Errorf("Control %v failed: %v\n", action, err)
 				}
+				// TODO: call when work truly completes
+				workload_allocator.Free()
 			}
 
 		}
