@@ -109,7 +109,24 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 	}
 }
 
-func setControls() {
+func setClusterAgentControls() {
+	err := controls.RegisterControl(ctl.StartComplianceScan,
+		func(req ctl.StartComplianceScanRequest) error {
+			return kubernetes.StartComplianceScan(req)
+		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+	err = controls.RegisterControl(ctl.StartAgentUpgrade,
+		func(req ctl.StartAgentUpgradeRequest) error {
+			return kubernetes.StartClusterAgentUpgrade(req)
+		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+}
+
+func setAgentControls() {
 	err := controls.RegisterControl(ctl.StartVulnerabilityScan,
 		func(req ctl.StartVulnerabilityScanRequest) error {
 			return host.StartVulnerabilityScan(req)
@@ -155,7 +172,11 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	setLogLevel(flags.logLevel)
 	setLogFormatter(flags.logPrefix)
 
-	setControls()
+	if flags.kubernetesRole == kubernetesRoleCluster {
+		setClusterAgentControls()
+	} else {
+		setAgentControls()
+	}
 
 	if flags.basicAuth {
 		log.Infof("Basic authentication enabled")
@@ -240,86 +261,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	//	)
 	//}
 
-	var clients interface {
-		probe.ReportPublisher
-		controls.PipeClient
-	}
-	if flags.printOnStdout {
-		if len(targets) > 0 {
-			log.Warnf("Dumping to stdout only: targets %v will be ignored", targets)
-		}
-		clients = new(struct {
-			report.StdoutPublisher
-			controls.DummyPipeClient
-		})
-	} else {
-		var multiClients *appclient.OpenapiClient
-		for {
-			multiClients, err = appclient.NewOpenapiClient()
-			if err == nil {
-				break
-			} else if errors.Is(err, appclient.ConnError) {
-				log.Warnln("Failed to authenticate. Retrying...")
-				time.Sleep(authCheckPeriod)
-			} else {
-				log.Fatalf("Fatal: %v", err)
-			}
-		}
-		for {
-			err = multiClients.StartControlsWatching()
-			if err == nil {
-				break
-			}
-			log.Errorf("Failed to get init controls %v. Retrying...\n", err)
-			time.Sleep(authCheckPeriod)
-		}
-		defer multiClients.Stop()
-
-		//dnsLookupFn := net.LookupIP
-		//if flags.resolver != "" {
-		//	dnsLookupFn = appclient.LookupUsing(flags.resolver)
-		//}
-		//resolver, err := appclient.NewResolver(appclient.ResolverConfig{
-		//	Targets:       targets,
-		//	ResolveDomain: flags.resolveDomain,
-		//	Lookup:        dnsLookupFn,
-		//	Set:           multiClients.Set,
-		//})
-		//if err != nil {
-		//	log.Fatalf("Failed to create resolver: %v", err)
-		//	return
-		//}
-		//defer resolver.Stop()
-
-		//if flags.weaveEnabled && flags.weaveHostname != "" {
-		//	dockerBridgeIP, err := network.GetFirstAddressOf(flags.dockerBridge)
-		//	if err != nil {
-		//		log.Errorf("Error getting docker bridge ip: %v", err)
-		//	} else {
-		//		weaveDNSLookup := appclient.LookupUsing(dockerBridgeIP + ":53")
-		//		weaveTargets, err := appclient.ParseTargets([]string{flags.weaveHostname})
-		//		if err != nil {
-		//			log.Errorf("Failed to parse weave targets: %v", err)
-		//		} else {
-		//			weaveResolver, err := appclient.NewResolver(appclient.ResolverConfig{
-		//				Targets: weaveTargets,
-		//				Lookup:  weaveDNSLookup,
-		//				Set:     multiClients.Set,
-		//			})
-		//			if err != nil {
-		//				log.Errorf("Failed to create weave resolver: %v", err)
-		//			} else {
-		//				defer weaveResolver.Stop()
-		//			}
-		//		}
-		//	}
-		//}
-		clients = multiClients
-	}
-
-	p := probe.New(flags.spyInterval, flags.publishInterval, clients, flags.ticksPerFullReport, flags.noControls)
-	p.AddTagger(probe.NewTopologyTagger())
-	var processCache *process.CachingWalker
 	if flags.kubernetesEnabled {
 		// If KUBERNETES_SERVICE_HOST env is not there, get it from kube-proxy container in this host
 		// KUBERNETES_PORT_443_TCP_PROTO="tcp"
@@ -374,6 +315,91 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	if err != nil {
 		log.Error(err.Error())
 	}
+
+	var clients interface {
+		probe.ReportPublisher
+		controls.PipeClient
+	}
+	if flags.printOnStdout {
+		if len(targets) > 0 {
+			log.Warnf("Dumping to stdout only: targets %v will be ignored", targets)
+		}
+		clients = new(struct {
+			report.StdoutPublisher
+			controls.DummyPipeClient
+		})
+	} else {
+		var multiClients *appclient.OpenapiClient
+		for {
+			multiClients, err = appclient.NewOpenapiClient()
+			if err == nil {
+				break
+			} else if errors.Is(err, appclient.ConnError) {
+				log.Warnln("Failed to authenticate. Retrying...")
+				time.Sleep(authCheckPeriod)
+			} else {
+				log.Fatalf("Fatal: %v", err)
+			}
+		}
+		for {
+			if flags.kubernetesRole == kubernetesRoleCluster {
+				err = multiClients.StartControlsWatching(k8sClusterId, true)
+			} else {
+				err = multiClients.StartControlsWatching(hostname.Get(), false)
+			}
+			if err == nil {
+				break
+			}
+			log.Errorf("Failed to get init controls %v. Retrying...\n", err)
+			time.Sleep(authCheckPeriod)
+		}
+		defer multiClients.Stop()
+
+		//dnsLookupFn := net.LookupIP
+		//if flags.resolver != "" {
+		//	dnsLookupFn = appclient.LookupUsing(flags.resolver)
+		//}
+		//resolver, err := appclient.NewResolver(appclient.ResolverConfig{
+		//	Targets:       targets,
+		//	ResolveDomain: flags.resolveDomain,
+		//	Lookup:        dnsLookupFn,
+		//	Set:           multiClients.Set,
+		//})
+		//if err != nil {
+		//	log.Fatalf("Failed to create resolver: %v", err)
+		//	return
+		//}
+		//defer resolver.Stop()
+
+		//if flags.weaveEnabled && flags.weaveHostname != "" {
+		//	dockerBridgeIP, err := network.GetFirstAddressOf(flags.dockerBridge)
+		//	if err != nil {
+		//		log.Errorf("Error getting docker bridge ip: %v", err)
+		//	} else {
+		//		weaveDNSLookup := appclient.LookupUsing(dockerBridgeIP + ":53")
+		//		weaveTargets, err := appclient.ParseTargets([]string{flags.weaveHostname})
+		//		if err != nil {
+		//			log.Errorf("Failed to parse weave targets: %v", err)
+		//		} else {
+		//			weaveResolver, err := appclient.NewResolver(appclient.ResolverConfig{
+		//				Targets: weaveTargets,
+		//				Lookup:  weaveDNSLookup,
+		//				Set:     multiClients.Set,
+		//			})
+		//			if err != nil {
+		//				log.Errorf("Failed to create weave resolver: %v", err)
+		//			} else {
+		//				defer weaveResolver.Stop()
+		//			}
+		//		}
+		//	}
+		//}
+		clients = multiClients
+	}
+
+	p := probe.New(flags.spyInterval, flags.publishInterval, clients, flags.ticksPerFullReport, flags.noControls)
+	p.AddTagger(probe.NewTopologyTagger())
+	var processCache *process.CachingWalker
 
 	if flags.kubernetesRole != kubernetesRoleCluster {
 		hostReporter, cloudProvider, cloudRegion := host.NewReporter(hostID, hostName, probeID, version, clients, handlerRegistry)
