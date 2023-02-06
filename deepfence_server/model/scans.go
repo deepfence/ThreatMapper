@@ -51,6 +51,12 @@ type ScanListReq struct {
 	Window   FetchWindow `json:"window"  required:"true"`
 }
 
+type CloudComplianceScanListReq struct {
+	NodeId        string      `json:"node_id"`
+	BenchmarkType string      `json:"benchmark_type"`
+	Window        FetchWindow `json:"window"  required:"true"`
+}
+
 type ScanListResp struct {
 	ScansInfo []ScanInfo `json:"scans_info" required:"true"`
 }

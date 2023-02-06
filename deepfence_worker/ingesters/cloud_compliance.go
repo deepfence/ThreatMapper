@@ -10,7 +10,14 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type ComplianceStats map[string]interface{}
+type ComplianceStats struct {
+	Alarm                int     `json:"alarm"`
+	Ok                   int     `json:"ok"`
+	Info                 int     `json:"info"`
+	Skip                 int     `json:"skip"`
+	Error                int     `json:"error"`
+	CompliancePercentage float64 `json:"compliance_percentage"`
+}
 
 type CloudComplianceScanStatus struct {
 	Timestamp           time.Time       `json:"@timestamp"`
@@ -109,13 +116,14 @@ func CommitFuncCloudComplianceScanStatus(ns string, data []CloudComplianceScanSt
 	}
 	defer tx.Close()
 
+	ccScanMaps := CloudComplianceScansToMaps(data)
 	if _, err = tx.Run(fmt.Sprintf(`
 		UNWIND $batch as row
 		MATCH (n:%s{node_id: row.scan_id})
-		MATCH (m:Node{node_id: row.node_id})
+		MATCH (m:Node{node_id: row.connected_node_id})
 		MATCH (n) -[:SCANNED]-> (m)
 		SET n+= row`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
-		map[string]interface{}{"batch": CloudComplianceScansToMaps(data)}); err != nil {
+		map[string]interface{}{"batch": ccScanMaps}); err != nil {
 		return err
 	}
 
@@ -133,7 +141,8 @@ func CloudCompliancesToMaps(ms []CloudCompliance) []map[string]interface{} {
 func CloudComplianceScansToMaps(ms []CloudComplianceScanStatus) []map[string]interface{} {
 	var res []map[string]interface{}
 	for _, v := range ms {
-		res = append(res, utils.ToMap(v))
+		out := v.ToMap()
+		res = append(res, out)
 	}
 	return res
 }
@@ -147,3 +156,25 @@ func (c CloudCompliance) ToMap() map[string]interface{} {
 	_ = json.Unmarshal(out, &bb)
 	return bb
 }
+
+func (c CloudComplianceScanStatus) ToMap() map[string]interface{} {
+	out, err := json.Marshal(c)
+	if err != nil {
+		return nil
+	}
+	bb := map[string]interface{}{}
+	_ = json.Unmarshal(out, &bb)
+	if results, ok := bb["result"]; ok {
+		resultsByte, err := json.Marshal(results)
+		if err != nil {
+			resultsByte = []byte{}
+		}
+		bb["result"] = string(resultsByte)
+	}
+	if nodeId, ok := bb["node_id"]; ok {
+		bb["connected_node_id"] = nodeId
+		delete(bb, "node_id")
+	}
+	return bb
+}
+

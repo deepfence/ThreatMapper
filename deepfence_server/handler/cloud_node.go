@@ -97,8 +97,9 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		for _, scan := range pendingScansList.ScansInfo {
 			scanDetail := model.CloudComplianceScanDetails{
 				ScanId:    scan.ScanId,
-				ScanType:  utils.CLOUD_COMPLIANCE_SCAN,
-				AccountId: nodeId,
+				ScanType:  "cis",
+				AccountId: req.CloudAccount,
+				Controls:  []string{"control.cis_v140_1_1", "control.cis_v140_1_2", "control.cis_v140_1_4"},
 			}
 			scanList[scan.ScanId] = scanDetail
 		}
@@ -114,7 +115,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.CloudNodeAccountsListReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	err := httpext.DecodeQueryParams(r, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
@@ -128,7 +129,7 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	infos, err := model.GetCloudComplianceNodesList(r.Context(), req.CloudProvider, req.Window)
+	infos, err := model.GetCloudComplianceNodesList(r.Context(), req.CloudProvider, req.Offset, req.Size)
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
 		respondError(err, w)

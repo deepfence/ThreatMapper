@@ -485,11 +485,13 @@ func ingest_scan_report_kafka[T any](
 	var data T
 	err = json.Unmarshal(body, &data)
 	if err != nil {
+		log.Error().Msgf("Error while unmarshalling data %+v %s", err, string(body))
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
 	err = ingester.Ingest(ctx, data, ingestChan)
 	if err != nil {
+		log.Error().Msgf("Error while ingesting data %+v %+v", err, data)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
@@ -559,6 +561,10 @@ func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Reques
 	statusScanHandler(w, r, utils.NEO4J_MALWARE_SCAN)
 }
 
+func (h *Handler) StatusCloudComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
+	statusScanHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+}
+
 func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanStatusReq
@@ -595,6 +601,27 @@ func (h *Handler) ListMalwareScansHandler(w http.ResponseWriter, r *http.Request
 	listScansHandler(w, r, utils.NEO4J_MALWARE_SCAN)
 }
 
+func (h *Handler) ListCloudComplianceScansHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.CloudComplianceScanListReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	infos, err := reporters.GetCloudComplianceScansList(r.Context(), utils.NEO4J_CLOUD_COMPLIANCE_SCAN, req.NodeId, req.BenchmarkType, req.Window)
+	if err != nil {
+		log.Error().Msgf("%v, req=%v", err, req)
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, infos)
+}
+
+
 func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanListReq
@@ -629,6 +656,10 @@ func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *htt
 
 func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
 	listScanResultsHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+}
+
+func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	listScanResultsHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 }
 
 func listScanResultsHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
