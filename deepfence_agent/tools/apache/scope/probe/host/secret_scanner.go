@@ -18,8 +18,8 @@ import (
 	"time"
 
 	"github.com/Jeffail/tunny"
-	"github.com/weaveworks/scope/common/xfer"
 	log "github.com/sirupsen/logrus"
+	"github.com/weaveworks/scope/common/xfer"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 )
@@ -27,7 +27,7 @@ import (
 const (
 	ebpfSocketPath          = "/tmp/secret-scanner.sock"
 	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
-	defaultScanConcurrency  = 5
+	defaultScanConcurrency  = 1
 	secretScanIndexName     = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
 )
@@ -144,7 +144,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
-	log.Info("started conrext background",context.Background(), req)
+	log.Info("started conrext background", context.Background(), req)
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	if req.GetPath() != "" && err == nil && res != nil {
 		if scanDir == HostMountDir {
