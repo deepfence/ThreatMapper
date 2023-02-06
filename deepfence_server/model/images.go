@@ -37,9 +37,9 @@ func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns s
 	defer tx.Close()
 
 	if registryId != "" {
-		query = "MATCH (n:Registry{node_id: $node_id})-[r:HOSTS]->(m:ContainerImage) RETURN m"
+		query = "MATCH (n:RegistryAccount{node_id: $node_id})-[r:HOSTS]->(m:ContainerImage) RETURN m"
 	} else {
-		query = "MATCH (n:Registry{})-[r:HOSTS]->(m:ContainerImage) RETURN m"
+		query = "MATCH (n:RegistryAccount{})-[r:HOSTS]->(m:ContainerImage) RETURN m"
 	}
 
 	res, err := tx.Run(query, map[string]interface{}{"node_id": registryId})

@@ -114,7 +114,7 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 	_, err = tx.Run(`
 	UNWIND $batch as row
 	MERGE (n:ContainerImage{node_id:row.node_id})
-	MERGE (m:Registry{node_id: $node_id })
+	MERGE (m:RegistryAccount{node_id: $node_id })
     MERGE (m) -[:HOSTS]-> (n)
 	SET n+= row, n.updated_at = TIMESTAMP()`,
 		map[string]interface{}{"batch": imageMap, "node_id": registryId})
