@@ -37,7 +37,7 @@ func bulkScanId() string {
 	return fmt.Sprintf("%s", random_id.String())
 }
 
-func cloudComplianceScanId(req model.CloudComplianceScanTriggerReq) string {
+func cloudComplianceScanId(req model.CloudComplianceScanTrigger) string {
 	return fmt.Sprintf("%s-%s-%d", req.NodeId, req.BenchmarkType, time.Now().Unix())
 }
 
@@ -134,7 +134,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), reqs.GenerateBulkScanId, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggers, actionBuilder)
+	scan_ids, bulkId, err := startMultiScan(r.Context(), utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggers, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -192,7 +192,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), reqs.GenerateBulkScanId, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggers, actionBuilder)
+	scan_ids, bulkId, err := startMultiScan(r.Context(), utils.NEO4J_SECRET_SCAN, reqs.ScanTriggers, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -230,28 +230,22 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	req, err := extractCloudComplianceScanTrigger(w, r)
+	var reqs model.CloudComplianceScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
 	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
 		return
 	}
 
-	scanId := cloudComplianceScanId(req)
-
-	err = ingesters.AddNewCloudComplianceScan(r.Context(), utils.NEO4J_CLOUD_COMPLIANCE_SCAN, scanId, req.BenchmarkType,
-		req.NodeId)
+	bulkId, err := startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
 	}
 
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: []string{scanId}})
+	err = httpext.JSON(w, http.StatusOK, model.CloudComplianceScanTriggerResp{BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -302,7 +296,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), reqs.GenerateBulkScanId, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggers, actionBuilder)
+	scan_ids, bulkId, err := startMultiScan(r.Context(), utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggers, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -624,7 +618,6 @@ func (h *Handler) ListCloudComplianceScansHandler(w http.ResponseWriter, r *http
 	httpext.JSON(w, http.StatusOK, infos)
 }
 
-
 func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanListReq
@@ -723,7 +716,7 @@ func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_
 	return entries, common, nil
 }
 
-func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4jScanType, reqs []model.ScanTrigger, actionBuilder func(string, model.ScanTrigger) (ctl.Action, error)) ([]string, string, error) {
+func startMultiScan(ctx context.Context, scan_type utils.Neo4jScanType, reqs []model.ScanTrigger, actionBuilder func(string, model.ScanTrigger) (ctl.Action, error)) ([]string, string, error) {
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -771,14 +764,63 @@ func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4j
 		return []string{}, "", nil
 	}
 
-	var bulkId string
-	if gen_bulk_id {
-		bulkId = bulkScanId()
-		err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scan_type, bulkId, scanIds)
-		if err != nil {
-			log.Error().Msgf("%v", err)
-			return nil, "", err
-		}
+	bulkId := bulkScanId()
+	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scan_type, bulkId, scanIds)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		return nil, "", err
 	}
 	return scanIds, bulkId, tx.Commit()
+}
+
+func startMultiCloudComplianceScan(ctx context.Context, reqs []model.CloudComplianceScanTrigger) (string, error) {
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return "", err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return "", err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return "", err
+	}
+
+	defer tx.Close()
+	scanIds := []string{}
+
+	for _, req := range reqs {
+		scanId := cloudComplianceScanId(req)
+
+		err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
+			scanId,
+			req.BenchmarkType,
+			req.NodeId)
+
+		if err != nil {
+			log.Error().Err(err)
+			return "", err
+		}
+		scanIds = append(scanIds, scanId)
+	}
+
+	if len(scanIds) == 0 {
+		return "", nil
+	}
+
+	var bulkId string
+
+	bulkId = bulkScanId()
+	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, bulkId, scanIds)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		return "", err
+	}
+
+	return bulkId, tx.Commit()
 }

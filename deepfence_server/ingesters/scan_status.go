@@ -152,41 +152,16 @@ func AddNewScan(tx WriteDBTransaction,
 	return nil
 }
 
-func AddNewCloudComplianceScan(ctx context.Context,
-	scan_type utils.Neo4jScanType,
+func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	scan_id string,
 	benchmark_type string,
 	node_id string) error {
 
-	driver, err := directory.Neo4jClient(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	res, err := tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:Node{node_id:$node_id})
-		WHERE NOT n.status = $complete
-		AND NOT n.status = $failed
-		AND n.benchmark_type = $benchmark_type
-		RETURN n.node_id`, scan_type),
+	res, err := tx.Run(`
+		OPTIONAL MATCH (n:Node{node_id:$node_id})
+		RETURN n IS NOT NULL AS Exists`,
 		map[string]interface{}{
-			"node_id":        node_id,
-			"complete":       utils.SCAN_STATUS_SUCCESS,
-			"failed":         utils.SCAN_STATUS_FAILED,
-			"benchmark_type": benchmark_type,
+			"node_id": node_id,
 		})
 	if err != nil {
 		return err
@@ -197,18 +172,45 @@ func AddNewCloudComplianceScan(ctx context.Context,
 		return err
 	}
 
+	if !rec.Values[0].(bool) {
+		return &NodeNotFoundError{
+			node_id: node_id,
+		}
+	}
+
+	res, err = tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:Node{node_id:$node_id})
+		WHERE NOT n.status = $complete
+		AND NOT n.status = $failed
+		AND n.benchmark_type = $benchmark_type
+		RETURN n.node_id`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+		map[string]interface{}{
+			"node_id":        node_id,
+			"complete":       utils.SCAN_STATUS_SUCCESS,
+			"failed":         utils.SCAN_STATUS_FAILED,
+			"benchmark_type": benchmark_type,
+		})
+	if err != nil {
+		return err
+	}
+
+	rec, err = res.Single()
+	if err != nil {
+		return err
+	}
+
 	if rec.Values[0] != nil {
 		return &AlreadyRunningScanError{
 			scan_id:   rec.Values[0].(string),
 			node_id:   node_id,
-			scan_type: string(scan_type),
+			scan_type: string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
 		}
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type})
 		MERGE (m:Node{node_id:$node_id})
-		MERGE (n)-[:SCANNED]->(m)`, scan_type),
+		MERGE (n)-[:SCANNED]->(m)`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
 		map[string]interface{}{
 			"scan_id":        scan_id,
 			"status":         utils.SCAN_STATUS_STARTING,
@@ -221,7 +223,7 @@ func AddNewCloudComplianceScan(ctx context.Context,
 	if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:Node{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, scan_type),
+		MERGE (n)-[:SCHEDULED]->(m)`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
 		map[string]interface{}{
 			"scan_id": scan_id,
 			"node_id": node_id,
@@ -229,7 +231,7 @@ func AddNewCloudComplianceScan(ctx context.Context,
 		return err
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, status string) error {
