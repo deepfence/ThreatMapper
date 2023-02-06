@@ -44,6 +44,10 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	_, err = s.cron.AddFunc("@every 120s", s.RetryFailedUpgradesTask)
+	if err != nil {
+		return err
+	}
 	_, err = s.cron.AddFunc("@every 10m", s.CleanUpPostgresqlTask)
 	if err != nil {
 		return err
@@ -74,6 +78,14 @@ func (s *Scheduler) CleanUpGraphDBTask() {
 func (s *Scheduler) RetryFailedScansTask() {
 	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
 	err := s.publishNewCronJob(metadata, utils.RetryFailedScansTask, []byte(utils.GetDatetimeNow()))
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (s *Scheduler) RetryFailedUpgradesTask() {
+	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+	err := s.publishNewCronJob(metadata, utils.RetryFailedUpgradesTask, []byte(utils.GetDatetimeNow()))
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
