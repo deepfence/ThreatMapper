@@ -32,6 +32,10 @@ func scanId(req model.ScanTrigger) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
 }
 
+func cloudComplianceScanId(nodeId, benchmarkType string) string {
+	return fmt.Sprintf("%s-%s-%d", nodeId, benchmarkType, time.Now().Unix())
+}
+
 func bulkScanId() string {
 	random_id := uuid.New()
 	return fmt.Sprintf("%s", random_id.String())
@@ -278,6 +282,28 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
+	var reqs model.CloudComplianceScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	scanIds, bulkId, err := startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(err, w)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -685,5 +711,59 @@ func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4j
 			return nil, "", err
 		}
 	}
+	return scanIds, bulkId, tx.Commit()
+}
+
+func startMultiCloudComplianceScan(ctx context.Context, reqs []model.CloudComplianceScanTrigger) ([]string, string, error) {
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return nil, "", err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return nil, "", err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return nil, "", err
+	}
+
+	defer tx.Close()
+	scanIds := []string{}
+
+	for _, req := range reqs {
+		for _, benchmarkType := range req.BenchmarkTypes {
+			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
+
+			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
+				scanId,
+				benchmarkType,
+				req.NodeId)
+
+			if err != nil {
+				log.Error().Err(err)
+				return nil, "", err
+			}
+			scanIds = append(scanIds, scanId)
+		}
+	}
+
+	if len(scanIds) == 0 {
+		return []string{}, "", nil
+	}
+
+	var bulkId string
+
+	bulkId = bulkScanId()
+	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, bulkId, scanIds)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		return nil, "", err
+	}
+
 	return scanIds, bulkId, tx.Commit()
 }
