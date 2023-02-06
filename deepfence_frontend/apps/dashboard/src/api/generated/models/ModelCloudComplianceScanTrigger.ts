@@ -16,48 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface IngestersRegisterKubernetesScannerRequest
+ * @interface ModelCloudComplianceScanTrigger
  */
-export interface IngestersRegisterKubernetesScannerRequest {
+export interface ModelCloudComplianceScanTrigger {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ModelCloudComplianceScanTrigger
+     */
+    benchmark_types: Array<string> | null;
     /**
      * 
      * @type {string}
-     * @memberof IngestersRegisterKubernetesScannerRequest
+     * @memberof ModelCloudComplianceScanTrigger
      */
-    kubernetes_cluster_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersRegisterKubernetesScannerRequest
-     */
-    node_id?: string;
+    node_id: string;
 }
 
 /**
- * Check if a given object implements the IngestersRegisterKubernetesScannerRequest interface.
+ * Check if a given object implements the ModelCloudComplianceScanTrigger interface.
  */
-export function instanceOfIngestersRegisterKubernetesScannerRequest(value: object): boolean {
+export function instanceOfModelCloudComplianceScanTrigger(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "benchmark_types" in value;
+    isInstance = isInstance && "node_id" in value;
 
     return isInstance;
 }
 
-export function IngestersRegisterKubernetesScannerRequestFromJSON(json: any): IngestersRegisterKubernetesScannerRequest {
-    return IngestersRegisterKubernetesScannerRequestFromJSONTyped(json, false);
+export function ModelCloudComplianceScanTriggerFromJSON(json: any): ModelCloudComplianceScanTrigger {
+    return ModelCloudComplianceScanTriggerFromJSONTyped(json, false);
 }
 
-export function IngestersRegisterKubernetesScannerRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): IngestersRegisterKubernetesScannerRequest {
+export function ModelCloudComplianceScanTriggerFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudComplianceScanTrigger {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'kubernetes_cluster_name': !exists(json, 'kubernetes_cluster_name') ? undefined : json['kubernetes_cluster_name'],
-        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
+        'benchmark_types': json['benchmark_types'],
+        'node_id': json['node_id'],
     };
 }
 
-export function IngestersRegisterKubernetesScannerRequestToJSON(value?: IngestersRegisterKubernetesScannerRequest | null): any {
+export function ModelCloudComplianceScanTriggerToJSON(value?: ModelCloudComplianceScanTrigger | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -66,7 +68,7 @@ export function IngestersRegisterKubernetesScannerRequestToJSON(value?: Ingester
     }
     return {
         
-        'kubernetes_cluster_name': value.kubernetes_cluster_name,
+        'benchmark_types': value.benchmark_types,
         'node_id': value.node_id,
     };
 }
