@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, useId } from 'react';
 import { IconContext } from 'react-icons';
@@ -9,7 +10,7 @@ import { ObjectWithNonNullableValues } from '@/types/utils';
 export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-const Loader = ({
+export const Loader = ({
   color,
   size,
   outline,
@@ -246,9 +247,9 @@ const iconCva = cva('', {
     size: {
       xs: 'w-3 h-3',
       sm: 'w-3.5 h-3.5',
-      md: 'w-4.5 h-4.5',
-      lg: 'w-5.5 h-5.5',
-      xl: 'w-5.5 h-5.5',
+      md: 'w-4 h-4',
+      lg: 'w-[18px] h-[18px]',
+      xl: 'w-5 h-5',
     },
     withStartIcon: {
       true: '',
@@ -310,26 +311,54 @@ const iconCva = cva('', {
 });
 
 interface IconProps extends VariantProps<typeof iconCva> {
+  size?: SizeType;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   id?: string;
+  loading?: boolean;
+  outline?: boolean;
+  color?: ColorType;
 }
 
-const StartIcon = ({ id, startIcon, endIcon, size }: IconProps) => {
+const iconLoaderCva = cva('flex justify-center');
+const StartIcon = ({
+  id,
+  startIcon,
+  endIcon,
+  loading,
+  color,
+  outline,
+  size,
+}: IconProps) => {
   return (
-    <span data-testid={`button-icon-start-${id}`}>
-      <IconContext.Provider
-        value={{
-          className: iconCva({
-            size,
-            withStartIcon: !!startIcon,
-            withEndIcon: !!endIcon,
-          }),
-        }}
-      >
-        {startIcon}
-      </IconContext.Provider>
-    </span>
+    <div data-testid={`button-icon-start-${id}`}>
+      {loading ? (
+        <div
+          className={cx(
+            iconLoaderCva({}),
+            iconCva({
+              size,
+              withStartIcon: !!startIcon,
+              withEndIcon: !!endIcon,
+            }),
+          )}
+        >
+          <Loader color={color} size={size} outline={outline} />
+        </div>
+      ) : (
+        <IconContext.Provider
+          value={{
+            className: iconCva({
+              size,
+              withStartIcon: !!startIcon,
+              withEndIcon: !!endIcon,
+            }),
+          }}
+        >
+          {startIcon}
+        </IconContext.Provider>
+      )}
+    </div>
   );
 };
 
@@ -390,12 +419,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {startIcon && (
-          <StartIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />
-        )}
-        {loading && (
-          <div className="mr-3 flex justify-center">
-            <Loader color={color} size={size} outline={outline} />
-          </div>
+          <StartIcon
+            startIcon={startIcon}
+            endIcon={endIcon}
+            id={_id}
+            size={size}
+            loading={loading}
+            color={color}
+          />
         )}
         {children}
         {endIcon && (

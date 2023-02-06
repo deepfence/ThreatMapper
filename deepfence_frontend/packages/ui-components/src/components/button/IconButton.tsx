@@ -3,6 +3,7 @@ import { ComponentProps, forwardRef, useId } from 'react';
 import { IconContext } from 'react-icons';
 import { twMerge } from 'tailwind-merge';
 
+import { Loader } from '@/components/button/Button';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
@@ -171,22 +172,26 @@ interface IconButtonProps
     ObjectWithNonNullableValues<Omit<VariantProps<typeof iconButtonCVA>, 'withOutline'>> {
   icon?: React.ReactNode;
   outline?: boolean;
+  loading?: boolean;
 }
 
 const iconCva = cva('', {
   variants: {
     size: {
-      xs: 'w-2.5 h-2.5',
-      sm: 'w-2.5 h-2.5',
-      md: 'w-2.5 h-2.5',
-      lg: 'w-3 h-3',
-      xl: 'w-3 h-3',
+      xs: 'w-3 h-3',
+      sm: 'w-3.5 h-3.5',
+      md: 'w-4 h-4',
+      lg: 'w-[18px] h-[18px]',
+      xl: 'w-5 h-5',
     },
   },
 });
 
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ size = 'md', color, disabled, outline, icon, id, className, ...props }, ref) => {
+  (
+    { size = 'md', color, disabled, outline, icon, id, className, loading, ...props },
+    ref,
+  ) => {
     const internalId = useId();
     const _id = id ? id : internalId;
 
@@ -206,7 +211,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         )}
         {...props}
       >
-        {icon && (
+        {icon && !loading && (
           <IconContext.Provider
             value={{
               className: iconCva({
@@ -216,6 +221,11 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           >
             {icon}
           </IconContext.Provider>
+        )}
+        {loading && (
+          <div className="flex justify-center">
+            <Loader color={color} size={size} outline={outline} />
+          </div>
         )}
       </button>
     );
