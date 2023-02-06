@@ -102,6 +102,58 @@ func GetScansList(ctx context.Context,
 	return model.ScanListResp{ScansInfo: scans_info}, nil
 }
 
+func GetCloudComplianceScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeId string,
+	benchmarkType string, fw model.FetchWindow) (model.ScanListResp, error) {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return model.ScanListResp{}, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return model.ScanListResp{}, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return model.ScanListResp{}, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (:Node{node_id: $node_id})
+		WHERE NOT m.status = $in_progress
+		AND m.benchmark_type = $benchmark_type
+		RETURN m.node_id, m.status, m.updated_at
+		ORDER BY m.updated_at
+		SKIP $skip
+		LIMIT $limit`,
+		map[string]interface{}{"node_id": nodeId, "benchmark_type": benchmarkType, "skip": fw.Offset,
+			"limit": fw.Size, "in_progress": utils.SCAN_STATUS_INPROGRESS})
+	if err != nil {
+		return model.ScanListResp{}, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return model.ScanListResp{}, err
+	}
+
+	scans_info := []model.ScanInfo{}
+	for _, rec := range recs {
+		tmp := model.ScanInfo{
+			ScanId:    rec.Values[0].(string),
+			Status:    rec.Values[1].(string),
+			UpdatedAt: rec.Values[2].(int64),
+		}
+		scans_info = append(scans_info, tmp)
+	}
+
+	return model.ScanListResp{ScansInfo: scans_info}, nil
+}
+
+
 func GetPendingScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_id string) (model.ScanListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {

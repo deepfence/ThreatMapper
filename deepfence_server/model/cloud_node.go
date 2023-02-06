@@ -25,8 +25,9 @@ type CloudNodeAccountRegisterRespData struct {
 }
 
 type CloudNodeAccountsListReq struct {
-	CloudProvider string      `json:"cloud_provider"`
-	Window        FetchWindow `json:"window" required:"true"`
+	CloudProvider string `query:"cloud_provider" form:"cloud_provider"`
+	Offset        int    `query:"offset" form:"offset"`
+	Size          int    `query:"size" form:"size"`
 }
 
 type CloudNodeAccountsListResp struct {
@@ -43,9 +44,10 @@ type CloudNodeAccountInfo struct {
 }
 
 type CloudComplianceScanDetails struct {
-	ScanId    string `json:"scan_id"`
-	ScanType  string `json:"scan_type"`
-	AccountId string `json:"account_id"`
+	ScanId    string   `json:"scan_id"`
+	ScanType  string   `json:"scan_type"`
+	Controls  []string `json:"controls"`
+	AccountId string   `json:"account_id"`
 }
 
 type CloudNodeCloudtrailTrail struct {
@@ -82,7 +84,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	return tx.Commit()
 }
 
-func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw FetchWindow) (CloudNodeAccountsListResp, error) {
+func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, offset int, size int) (CloudNodeAccountsListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return CloudNodeAccountsListResp{Total: 0}, err
@@ -101,7 +103,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	defer tx.Close()
 
 	res, err := tx.Run(`MATCH (n:Node{cloud_provider: $cloud_provider}) RETURN n.node_id, n.node_name, n.cloud_provider ORDER BY n.updated_at SKIP $skip LIMIT $limit`,
-		map[string]interface{}{"cloud_provider": cloudProvider, "skip": fw.Offset, "limit": fw.Size})
+		map[string]interface{}{"cloud_provider": cloudProvider, "skip": offset, "limit": size})
 	if err != nil {
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
@@ -123,7 +125,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		cloud_node_accounts_info = append(cloud_node_accounts_info, tmp)
 	}
 
-	total := fw.Offset + len(cloud_node_accounts_info)
+	total := offset + len(cloud_node_accounts_info)
 	countRes, err := tx.Run(`MATCH (n:Node {cloud_provider: $cloud_provider}) RETURN COUNT(*)`,
 		map[string]interface{}{"cloud_provider": cloudProvider})
 

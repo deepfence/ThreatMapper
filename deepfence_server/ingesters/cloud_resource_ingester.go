@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -56,20 +57,29 @@ func NewCloudResourceIngester() Ingester[[]CloudResource] {
 }
 
 func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource) error {
-	session, err := tc.driver.Session(neo4j.AccessModeWrite)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("Error initializing Neo4j driver: %s", err.Error())
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 
 	if err != nil {
+		log.Error().Msgf("Error initiating Neo4j session: %s", err.Error())
 		return err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
+		log.Error().Msgf("Error beginning Neo4j transaction: %s", err.Error())
 		return err
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.security_groups) as group WITH group, row WHERE group IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName}) MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) SET m+=row MERGE (n:Node {node_id: m.account_id}) MERGE (m)-[:DISCOVERED_IN]->(n)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
+		log.Error().Msgf("Error executing Neo4j query: %s", err.Error())
 		return err
 	}
 
