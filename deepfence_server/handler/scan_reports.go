@@ -37,8 +37,8 @@ func bulkScanId() string {
 	return fmt.Sprintf("%s", random_id.String())
 }
 
-func cloudComplianceScanId(req model.CloudComplianceScanTrigger) string {
-	return fmt.Sprintf("%s-%s-%d", req.NodeId, req.BenchmarkType, time.Now().Unix())
+func cloudComplianceScanId(nodeId, benchmarkType string) string {
+	return fmt.Sprintf("%s-%s-%d", nodeId, benchmarkType, time.Now().Unix())
 }
 
 func GetImageFromId(ctx context.Context, node_id string) (string, string, error) {
@@ -796,7 +796,7 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.CloudCompli
 
 	for _, req := range reqs {
 		for _, benchmarkType := range req.BenchmarkTypes {
-			scanId := cloudComplianceScanId(req)
+			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
 
 			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
 				scanId,
