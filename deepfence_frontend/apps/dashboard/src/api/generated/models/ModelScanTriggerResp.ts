@@ -24,7 +24,13 @@ export interface ModelScanTriggerResp {
      * @type {string}
      * @memberof ModelScanTriggerResp
      */
-    scan_id: string;
+    bulk_scan_id: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ModelScanTriggerResp
+     */
+    scan_ids: Array<string> | null;
 }
 
 /**
@@ -32,7 +38,8 @@ export interface ModelScanTriggerResp {
  */
 export function instanceOfModelScanTriggerResp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "scan_id" in value;
+    isInstance = isInstance && "bulk_scan_id" in value;
+    isInstance = isInstance && "scan_ids" in value;
 
     return isInstance;
 }
@@ -47,7 +54,8 @@ export function ModelScanTriggerRespFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'scan_id': json['scan_id'],
+        'bulk_scan_id': json['bulk_scan_id'],
+        'scan_ids': json['scan_ids'],
     };
 }
 
@@ -60,7 +68,8 @@ export function ModelScanTriggerRespToJSON(value?: ModelScanTriggerResp | null):
     }
     return {
         
-        'scan_id': value.scan_id,
+        'bulk_scan_id': value.bulk_scan_id,
+        'scan_ids': value.scan_ids,
     };
 }
 

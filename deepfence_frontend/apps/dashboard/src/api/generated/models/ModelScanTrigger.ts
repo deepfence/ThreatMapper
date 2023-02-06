@@ -16,42 +16,62 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanResultsResp
+ * @interface ModelScanTrigger
  */
-export interface ModelScanResultsResp {
+export interface ModelScanTrigger {
     /**
      * 
-     * @type {Array<{ [key: string]: any; }>}
-     * @memberof ModelScanResultsResp
+     * @type {string}
+     * @memberof ModelScanTrigger
      */
-    results: Array<{ [key: string]: any; }> | null;
+    node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelScanTrigger
+     */
+    node_type: ModelScanTriggerNodeTypeEnum;
 }
 
+
 /**
- * Check if a given object implements the ModelScanResultsResp interface.
+ * @export
  */
-export function instanceOfModelScanResultsResp(value: object): boolean {
+export const ModelScanTriggerNodeTypeEnum = {
+    Image: 'image',
+    Host: 'host',
+    Container: 'container'
+} as const;
+export type ModelScanTriggerNodeTypeEnum = typeof ModelScanTriggerNodeTypeEnum[keyof typeof ModelScanTriggerNodeTypeEnum];
+
+
+/**
+ * Check if a given object implements the ModelScanTrigger interface.
+ */
+export function instanceOfModelScanTrigger(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "results" in value;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_type" in value;
 
     return isInstance;
 }
 
-export function ModelScanResultsRespFromJSON(json: any): ModelScanResultsResp {
-    return ModelScanResultsRespFromJSONTyped(json, false);
+export function ModelScanTriggerFromJSON(json: any): ModelScanTrigger {
+    return ModelScanTriggerFromJSONTyped(json, false);
 }
 
-export function ModelScanResultsRespFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanResultsResp {
+export function ModelScanTriggerFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTrigger {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'results': json['results'],
+        'node_id': json['node_id'],
+        'node_type': json['node_type'],
     };
 }
 
-export function ModelScanResultsRespToJSON(value?: ModelScanResultsResp | null): any {
+export function ModelScanTriggerToJSON(value?: ModelScanTrigger | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,7 +80,8 @@ export function ModelScanResultsRespToJSON(value?: ModelScanResultsResp | null):
     }
     return {
         
-        'results': value.results,
+        'node_id': value.node_id,
+        'node_type': value.node_type,
     };
 }
 

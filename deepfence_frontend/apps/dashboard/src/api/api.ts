@@ -6,6 +6,7 @@ import {
   CloudNodesApi,
   ComplianceApi,
   Configuration,
+  SecretScanApi,
   TopologyApi,
   UserApi,
   VulnerabilityApi,
@@ -52,10 +53,19 @@ export function vulnerabilityScanApiClient() {
   return {
     startVulnerabilityScan:
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
-    statusVulnerabilityScan:
-      vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
     resultVulnerabilityScan:
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
+    statusVulnerabilityScan:
+      vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
+  };
+}
+
+export function secretScanApiClient() {
+  const secretApi = new SecretScanApi(configuration);
+  return {
+    startSecretScan: secretApi.startSecretScan.bind(secretApi),
+    resultSecretScan: secretApi.resultsSecretScan.bind(secretApi),
+    statusSecretScan: secretApi.statusSecretScan.bind(secretApi),
   };
 }
 

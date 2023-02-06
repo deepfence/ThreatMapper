@@ -99,6 +99,7 @@ const possibleScanMap: R = {
 };
 
 const logoAndTextMap = (
+  nodeIds: string,
   mode: Mode,
 ): Record<
   NodeType,
@@ -107,35 +108,36 @@ const logoAndTextMap = (
     logo: string;
   }
 > => {
+  const nodeCount = nodeIds.split(',').length;
   return {
     aws:
       mode === 'dark'
         ? {
-            title: 'Amazon Web Services',
+            title: `(${nodeCount}) Amazon Web Service${nodeCount > 1 ? 's' : ''}`,
             logo: LogoAwsWhite,
           }
         : {
-            title: 'Amazon Web Services',
+            title: `(${nodeCount}) Amazon Web Service${nodeCount > 1 ? 's' : ''}`,
             logo: LogoAws,
           },
     gcp: {
-      title: 'Google Cloud Services',
+      title: `(${nodeCount}) Google Cloud Service`,
       logo: LogoGoogle,
     },
     azure: {
-      title: 'Azure Web Services',
+      title: `(${nodeCount}) Azure Web Service${nodeCount > 1 ? 's' : ''}`,
       logo: LogoAzure,
     },
     host: {
-      title: 'A Linux Host',
+      title: `(${nodeCount}) Linux Host${nodeCount > 1 ? 's' : ''}`,
       logo: LogoLinux,
     },
     kubernetes: {
-      title: 'A Kubernetes Service',
+      title: `(${nodeCount}) Kubernetes Service${nodeCount > 1 ? 's' : ''}`,
       logo: LogoK8,
     },
     registry: {
-      title: 'A registry',
+      title: `(${nodeCount}) Registr${nodeCount > 1 ? 'ies' : 'y'}`,
       logo: LogoAzureRegistry,
     },
   };
@@ -149,13 +151,13 @@ const SelectedAccount = () => {
   return (
     <div className="flex w-fit p-3 pt-0 items-center mb-8">
       <span className="mr-6">
-        <img src={logoAndTextMap(mode)[nodeType].logo} alt="logo" />
+        <img src={logoAndTextMap(nodeIds, mode)[nodeType].logo} alt="logo" />
       </span>
       <div className="flex flex-col mr-20">
         <span
           className={`${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100`}
         >
-          {logoAndTextMap(mode)[nodeType].title}
+          {logoAndTextMap(nodeIds, mode)[nodeType].title}
         </span>
         <span
           className={`${Typography.size.base} ${Typography.weight.medium} text-gray-500 dark:text-gray-400`}

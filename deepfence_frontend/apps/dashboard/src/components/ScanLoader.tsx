@@ -2,18 +2,18 @@ import './scan.css';
 
 export const ScanLoader = ({ text }: { text: string }) => {
   return (
-    <div className="flex flex-col items-center">
-      <div className="scan-summary relative flex justify-center items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300">
+    <div className="flex flex-col items-center mb-10">
+      <div className="scan-summary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150">
           <circle
             id="cir2"
             className="circle"
-            cx="150"
-            cy="150"
-            r="120"
+            cx="75"
+            cy="75"
+            r="60"
             opacity=".49"
             fill="none"
-            strokeWidth="8"
+            strokeWidth="10"
             strokeLinecap="square"
             strokeOpacity=".99213"
             paintOrder="fill markers stroke"
@@ -21,12 +21,12 @@ export const ScanLoader = ({ text }: { text: string }) => {
           <circle
             id="cir3"
             className="circle"
-            cx="150"
-            cy="150"
-            r="100"
+            cx="75"
+            cy="75"
+            r="40"
             opacity=".49"
             fill="none"
-            strokeWidth="15"
+            strokeWidth="12"
             strokeLinecap="square"
             strokeOpacity=".99213"
             paintOrder="fill markers stroke"
@@ -34,12 +34,12 @@ export const ScanLoader = ({ text }: { text: string }) => {
           <circle
             id="cir4"
             className="circle"
-            cx="150"
-            cy="150"
-            r="120"
+            cx="75"
+            cy="75"
+            r="60"
             opacity=".49"
             fill="none"
-            strokeWidth="20"
+            strokeWidth="14"
             strokeLinecap="square"
             strokeOpacity=".99213"
             paintOrder="fill markers stroke"
@@ -47,9 +47,9 @@ export const ScanLoader = ({ text }: { text: string }) => {
           <circle
             id="cir5"
             className="circle"
-            cx="150"
-            cy="150"
-            r="100"
+            cx="75"
+            cy="75"
+            r="40"
             opacity=".89"
             fill="none"
             strokeWidth="8"
@@ -60,12 +60,12 @@ export const ScanLoader = ({ text }: { text: string }) => {
           <circle
             id="cir6"
             className="circle"
-            cx="150"
-            cy="150"
-            r="90"
+            cx="75"
+            cy="75"
+            r="30"
             opacity=".49"
             fill="none"
-            strokeWidth="16"
+            strokeWidth="11"
             strokeLinecap="square"
             strokeOpacity=".99213"
             paintOrder="fill markers stroke"
@@ -73,9 +73,9 @@ export const ScanLoader = ({ text }: { text: string }) => {
           <circle
             id="cir7"
             className="circle"
-            cx="150"
-            cy="150"
-            r="90"
+            cx="75"
+            cy="75"
+            r="30"
             opacity=".89"
             fill="none"
             strokeWidth="8"
@@ -86,9 +86,9 @@ export const ScanLoader = ({ text }: { text: string }) => {
           <circle
             id="cir8"
             className="circle"
-            cx="150"
-            cy="150"
-            r="80"
+            cx="75"
+            cy="75"
+            r="20"
             opacity=".79"
             fillOpacity="0"
             strokeWidth="8"
@@ -97,8 +97,10 @@ export const ScanLoader = ({ text }: { text: string }) => {
             paintOrder="fill markers stroke"
           />
         </svg>
-        <span className="absolute text-blue-500 animate-bounce">Scanning...</span>
       </div>
+      <span className="text-blue-500 animate-pulse text-md tracking-wider">
+        Scanning...
+      </span>
       <section className="text-center mt-4">
         <h2 className="text-base font-medium text-gray-700 dark:text-gray-400">{text}</h2>
       </section>

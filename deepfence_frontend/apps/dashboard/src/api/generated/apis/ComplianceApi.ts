@@ -18,12 +18,12 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   IngestersCompliance,
+  ModelComplianceScanResult,
+  ModelComplianceScanTriggerReq,
   ModelScanListReq,
   ModelScanListResp,
   ModelScanResultsReq,
-  ModelScanResultsResp,
   ModelScanStatusResp,
-  ModelScanTriggerReq,
   ModelScanTriggerResp,
 } from '../models';
 import {
@@ -33,18 +33,18 @@ import {
     ApiDocsFailureResponseToJSON,
     IngestersComplianceFromJSON,
     IngestersComplianceToJSON,
+    ModelComplianceScanResultFromJSON,
+    ModelComplianceScanResultToJSON,
+    ModelComplianceScanTriggerReqFromJSON,
+    ModelComplianceScanTriggerReqToJSON,
     ModelScanListReqFromJSON,
     ModelScanListReqToJSON,
     ModelScanListRespFromJSON,
     ModelScanListRespToJSON,
     ModelScanResultsReqFromJSON,
     ModelScanResultsReqToJSON,
-    ModelScanResultsRespFromJSON,
-    ModelScanResultsRespToJSON,
     ModelScanStatusRespFromJSON,
     ModelScanStatusRespToJSON,
-    ModelScanTriggerReqFromJSON,
-    ModelScanTriggerReqToJSON,
     ModelScanTriggerRespFromJSON,
     ModelScanTriggerRespToJSON,
 } from '../models';
@@ -62,15 +62,16 @@ export interface ResultsComplianceScanRequest {
 }
 
 export interface StartComplianceScanRequest {
-    modelScanTriggerReq?: ModelScanTriggerReq;
+    modelComplianceScanTriggerReq?: ModelComplianceScanTriggerReq;
 }
 
 export interface StatusComplianceScanRequest {
-    scanId: string;
+    scanIds: Array<string>;
+    bulkScanId: string;
 }
 
 export interface StopComplianceScanRequest {
-    modelScanTriggerReq?: ModelScanTriggerReq;
+    modelComplianceScanTriggerReq?: ModelComplianceScanTriggerReq;
 }
 
 /**
@@ -120,18 +121,18 @@ export interface ComplianceApiInterface {
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
      */
-    resultsComplianceScanRaw(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanResultsResp>>;
+    resultsComplianceScanRaw(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanResult>>;
 
     /**
      * Get Compliance Scans results on agent or registry
      * Get Compliance Scans Results
      */
-    resultsComplianceScan(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanResultsResp>;
+    resultsComplianceScan(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanResult>;
 
     /**
      * Start Compliance Scan on agent or registry
      * @summary Start Compliance Scan
-     * @param {ModelScanTriggerReq} [modelScanTriggerReq] 
+     * @param {ModelComplianceScanTriggerReq} [modelComplianceScanTriggerReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
@@ -147,7 +148,8 @@ export interface ComplianceApiInterface {
     /**
      * Get Compliance Scan Status on agent or registry
      * @summary Get Compliance Scan Status
-     * @param {string} scanId 
+     * @param {Array<string>} scanIds 
+     * @param {string} bulkScanId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
@@ -163,7 +165,7 @@ export interface ComplianceApiInterface {
     /**
      * Stop Compliance Scan on agent or registry
      * @summary Stop Compliance Scan
-     * @param {ModelScanTriggerReq} [modelScanTriggerReq] 
+     * @param {ModelComplianceScanTriggerReq} [modelComplianceScanTriggerReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
@@ -264,7 +266,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Get Compliance Scans results on agent or registry
      * Get Compliance Scans Results
      */
-    async resultsComplianceScanRaw(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanResultsResp>> {
+    async resultsComplianceScanRaw(requestParameters: ResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanResult>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -287,14 +289,14 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             body: ModelScanResultsReqToJSON(requestParameters.modelScanResultsReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanResultsRespFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplianceScanResultFromJSON(jsonValue));
     }
 
     /**
      * Get Compliance Scans results on agent or registry
      * Get Compliance Scans Results
      */
-    async resultsComplianceScan(requestParameters: ResultsComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanResultsResp> {
+    async resultsComplianceScan(requestParameters: ResultsComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanResult> {
         const response = await this.resultsComplianceScanRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -323,7 +325,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelScanTriggerReqToJSON(requestParameters.modelScanTriggerReq),
+            body: ModelComplianceScanTriggerReqToJSON(requestParameters.modelComplianceScanTriggerReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanTriggerRespFromJSON(jsonValue));
@@ -343,14 +345,22 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Get Compliance Scan Status
      */
     async statusComplianceScanRaw(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanStatusResp>> {
-        if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
-            throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling statusComplianceScan.');
+        if (requestParameters.scanIds === null || requestParameters.scanIds === undefined) {
+            throw new runtime.RequiredError('scanIds','Required parameter requestParameters.scanIds was null or undefined when calling statusComplianceScan.');
+        }
+
+        if (requestParameters.bulkScanId === null || requestParameters.bulkScanId === undefined) {
+            throw new runtime.RequiredError('bulkScanId','Required parameter requestParameters.bulkScanId was null or undefined when calling statusComplianceScan.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.scanId !== undefined) {
-            queryParameters['scan_id'] = requestParameters.scanId;
+        if (requestParameters.scanIds) {
+            queryParameters['scan_ids'] = requestParameters.scanIds;
+        }
+
+        if (requestParameters.bulkScanId !== undefined) {
+            queryParameters['bulk_scan_id'] = requestParameters.bulkScanId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -406,7 +416,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelScanTriggerReqToJSON(requestParameters.modelScanTriggerReq),
+            body: ModelComplianceScanTriggerReqToJSON(requestParameters.modelComplianceScanTriggerReq),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
