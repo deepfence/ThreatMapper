@@ -39,8 +39,8 @@ type ScanTrigger struct {
 }
 
 type CloudComplianceScanTrigger struct {
-	NodeId        string `json:"node_id" required:"true"`
-	BenchmarkType string `json:"benchmark_type" required:"true"`
+	NodeId         string   `json:"node_id" required:"true"`
+	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
 type ScanStatus string
@@ -60,10 +60,6 @@ const (
 type ScanTriggerResp struct {
 	ScanIds    []string `json:"scan_ids" required:"true"`
 	BulkScanId string   `json:"bulk_scan_id" required:"true"`
-}
-
-type CloudComplianceScanTriggerResp struct {
-	BulkScanId string `json:"bulk_scan_id" required:"true"`
 }
 
 type ScanStatusReq struct {

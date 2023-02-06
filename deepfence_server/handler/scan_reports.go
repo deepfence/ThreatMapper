@@ -238,14 +238,14 @@ func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	bulkId, err := startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
+	scanIds, bulkId, err := startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
 	}
 
-	err = httpext.JSON(w, http.StatusOK, model.CloudComplianceScanTriggerResp{BulkScanId: bulkId})
+	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -773,44 +773,46 @@ func startMultiScan(ctx context.Context, scan_type utils.Neo4jScanType, reqs []m
 	return scanIds, bulkId, tx.Commit()
 }
 
-func startMultiCloudComplianceScan(ctx context.Context, reqs []model.CloudComplianceScanTrigger) (string, error) {
+func startMultiCloudComplianceScan(ctx context.Context, reqs []model.CloudComplianceScanTrigger) ([]string, string, error) {
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
 	defer tx.Close()
 	scanIds := []string{}
 
 	for _, req := range reqs {
-		scanId := cloudComplianceScanId(req)
+		for _, benchmarkType := range req.BenchmarkTypes {
+			scanId := cloudComplianceScanId(req)
 
-		err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
-			scanId,
-			req.BenchmarkType,
-			req.NodeId)
+			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
+				scanId,
+				benchmarkType,
+				req.NodeId)
 
-		if err != nil {
-			log.Error().Err(err)
-			return "", err
+			if err != nil {
+				log.Error().Err(err)
+				return nil, "", err
+			}
+			scanIds = append(scanIds, scanId)
 		}
-		scanIds = append(scanIds, scanId)
 	}
 
 	if len(scanIds) == 0 {
-		return "", nil
+		return []string{}, "", nil
 	}
 
 	var bulkId string
@@ -819,8 +821,8 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.CloudCompli
 	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, bulkId, scanIds)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		return "", err
+		return nil, "", err
 	}
 
-	return bulkId, tx.Commit()
+	return scanIds, bulkId, tx.Commit()
 }
