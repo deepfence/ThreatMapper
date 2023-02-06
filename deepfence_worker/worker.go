@@ -87,7 +87,10 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		return err
 	}
 	mux.AddNoPublisherHandler(
-		utils.CleanUpPostgresqlTask, utils.CleanUpPostgresqlTask, subscribeCleanupPostgresql, cronjobs.CleanUpPostgresDB,
+		utils.CleanUpPostgresqlTask,
+		utils.CleanUpPostgresqlTask,
+		subscribeCleanupPostgresql,
+		cronjobs.CleanUpPostgresDB,
 	)
 
 	check_agent_upgrade_task, err := subscribe(utils.CheckAgentUpgradeTask, cfg.KafkaBrokers, wml)
@@ -100,6 +103,18 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		utils.CheckAgentUpgradeTask,
 		check_agent_upgrade_task,
 		cronjobs.CheckAgentUpgrade,
+	)
+
+	sync_registry_task, err := subscribe(utils.SyncRegistryTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
+	mux.AddNoPublisherHandler(
+		utils.SyncRegistryTask,
+		utils.SyncRegistryTask,
+		sync_registry_task,
+		cronjobs.SyncRegistry,
 	)
 
 	log.Info().Msg("Starting the consumer")

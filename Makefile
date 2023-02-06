@@ -103,7 +103,7 @@ openapi: server
 
 
 	docker run --rm \
-	-v $(PWD):/local openapitools/openapi-generator-cli:latest generate \
+	-v $(PWD):/local openapitools/openapi-generator-cli generate \
 	-i /local/openapi.yaml \
 	-g go \
 	-o /local/golang_deepfence_sdk/client \

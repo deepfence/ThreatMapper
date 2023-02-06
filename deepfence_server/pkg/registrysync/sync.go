@@ -89,11 +89,10 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	if err != nil {
 		return err
 	}
-	return injestToNeo4j(ctx, list, r)
+	return insertToNeo4j(ctx, list, r)
 }
 
-func injestToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry) error {
-	// log.Info().Msgf("\n\n\n\n\ninjest this to neo4j +%v\n\n\n\n", images)
+func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err

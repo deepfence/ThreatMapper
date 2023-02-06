@@ -52,6 +52,10 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	_, err = s.cron.AddFunc("@every 300s", s.SyncRegistryTask)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -86,6 +90,14 @@ func (s *Scheduler) CleanUpPostgresqlTask() {
 func (s *Scheduler) CheckAgentUpgradeTask() {
 	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
 	err := s.publishNewCronJob(metadata, utils.CheckAgentUpgradeTask, []byte(utils.GetDatetimeNow()))
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (s *Scheduler) SyncRegistryTask() {
+	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+	err := s.publishNewCronJob(metadata, utils.SyncRegistryTask, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}

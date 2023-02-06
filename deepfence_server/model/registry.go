@@ -25,6 +25,7 @@ type RegistryImageListReq struct {
 	ResourceType string `json:"resource_type,omitempty"`
 	Namespace    string `json:"namespace,omitempty"`
 }
+
 type RegistryImages struct {
 	Count    int             `json:"count"`
 	Next     string          `json:"next"`
