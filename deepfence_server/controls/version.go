@@ -44,7 +44,7 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string,
 		MATCH (v:AgentVersion{node_id: $version})
 		MATCH (n:Node)
 		WHERE n.node_id IN $node_ids
-		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, trigger_action: $action}]-> (n)`,
+		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()}]-> (n)`,
 		map[string]interface{}{
 			"version":  version,
 			"node_ids": nodeIds,
@@ -119,10 +119,9 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 	defer tx.Close()
 
 	_, err = tx.Run(`
-		MERGE (v:AgentVersion{node_id: $version})
-		WITH v
-		MATCH (n:Node{node_id:$node_id})
-		MERGE (v) -[:SCHEDULED{status: $status}]-> (n)`,
+		MERGE (v:AgentVersion{node_id:$version})
+		MERGE (n:Node{node_id:$node_id})
+		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, updated_at: TIMESTAMP()}]-> (n)`,
 		map[string]interface{}{
 			"version": version,
 			"node_id": nodeId,

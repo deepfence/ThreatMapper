@@ -101,17 +101,21 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			continue
 		}
 		res, err := minio.UploadFile(ctx, out_file, b, m.PutObjectOptions{ContentType: "application/gzip"})
+		key := ""
 		if err != nil {
-			_, ok := err.(directory.AlreadyPresentError)
+			ape, ok := err.(directory.AlreadyPresentError)
 			if ok {
-				log.Warn().Err(err).Msg("Upload")
+				log.Warn().Err(err).Msg("Skip upload")
+				key = ape.Path
 			} else {
 				log.Error().Err(err).Msg("Upload")
+				continue
 			}
-			continue
+		} else {
+			key = res.Key
 		}
 
-		url, err := minio.ExposeFile(ctx, res.Key)
+		url, err := minio.ExposeFile(ctx, key)
 		if err != nil {
 			log.Error().Err(err)
 			continue

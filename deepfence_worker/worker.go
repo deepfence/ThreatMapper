@@ -81,11 +81,24 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		cronjobs.RetryScansDB,
 	)
 
+	subscribe_retry_failed_upgrades, err := subscribe(utils.RetryFailedUpgradesTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
+	mux.AddNoPublisherHandler(
+		utils.RetryFailedUpgradesTask,
+		utils.RetryFailedUpgradesTask,
+		subscribe_retry_failed_upgrades,
+		cronjobs.RetryUpgradeAgent,
+	)
+
 	subscribeCleanupPostgresql, err := subscribe(utils.CleanUpPostgresqlTask, cfg.KafkaBrokers, wml)
 	if err != nil {
 		cancel()
 		return err
 	}
+
 	mux.AddNoPublisherHandler(
 		utils.CleanUpPostgresqlTask,
 		utils.CleanUpPostgresqlTask,
