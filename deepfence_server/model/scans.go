@@ -25,6 +25,10 @@ type ComplianceScanTriggerReq struct {
 	ScanTriggerCommon
 }
 
+type CloudComplianceScanTriggerReq struct {
+	ScanTriggers []CloudComplianceScanTrigger `json:"scan_triggers" required:"true"`
+}
+
 type ScanTriggerCommon struct {
 	ScanTriggers       []ScanTrigger `json:"scan_triggers" required:"true"`
 	GenerateBulkScanId bool          `json:"generate_bulk_scan_id" required:"true"`
@@ -33,6 +37,11 @@ type ScanTriggerCommon struct {
 type ScanTrigger struct {
 	NodeId   string `json:"node_id" required:"true"`
 	NodeType string `json:"node_type" required:"true" enum:"image,host,container"`
+}
+
+type CloudComplianceScanTrigger struct {
+	NodeId         string   `json:"node_id" required:"true"`
+	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
 type ScanStatus string
