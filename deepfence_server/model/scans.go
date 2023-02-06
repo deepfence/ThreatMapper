@@ -124,6 +124,11 @@ type ComplianceScanResult struct {
 	Compliances []Compliance `json:"compliances" required:"true"`
 }
 
+type CloudComplianceScanResult struct {
+	ScanResultsCommon
+	Compliances []CloudCompliance `json:"compliances" required:"true"`
+}
+
 type Secret struct {
 	StartingIndex         int    `json:"starting_index" required:"true"`
 	RelativeStartingIndex int    `json:"relative_starting_index" required:"true"`
@@ -187,3 +192,20 @@ type Compliance struct {
 	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
 	ComplianceNodeType  string `json:"compliance_node_type" required:"true"`
 }
+
+type CloudCompliance struct {
+	TestCategory        string `json:"test_category" required:"true"`
+	TestNumber          string `json:"test_number" required:"true"`
+	TestInfo            string `json:"description" required:"true"`
+	RemediationScript   string `json:"remediation_script,omitempty" required:"true"`
+	RemediationAnsible  string `json:"remediation_ansible,omitempty" required:"true"`
+	RemediationPuppet   string `json:"remediation_puppet,omitempty" required:"true"`
+	Resource            string `json:"resource" required:"true"`
+	TestRationale       string `json:"test_rationale" required:"true"`
+	TestSeverity        string `json:"test_severity" required:"true"`
+	TestDesc            string `json:"test_desc" required:"true"`
+	Status              string `json:"status" required:"true"`
+	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
+	ComplianceNodeType  string `json:"compliance_node_type" required:"true"`
+}
+

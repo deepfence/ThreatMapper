@@ -278,7 +278,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanResultsReq), new(model.MalwareScanResult))
 	d.AddOperation("resultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/cloud-compliance",
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
-		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(model.ScanResultsReq), new(model.ScanResultsResp))
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(model.ScanResultsReq), new(model.CloudComplianceScanResult))
 
 }
 

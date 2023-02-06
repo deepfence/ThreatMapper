@@ -251,7 +251,7 @@ func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanId: scanId})
+	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: []string{scanId}})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -528,27 +528,6 @@ func extractCloudComplianceScanTrigger(w http.ResponseWriter, r *http.Request) (
 
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false})
-		return req, err
-	}
-
-	// TODO: Add benchmarkType check here
-	//if ctl.StringToResourceType(req.BenchmarkType) == -1 {
-	//	err = fmt.Errorf("Unknown ResourceType: %s", req.NodeType)
-	//	log.Error().Msgf("%v", err)
-	//	httpext.JSON(w, http.StatusBadRequest, model.Response{Success: false, Data: err.Error()})
-	//}
-
-	return req, err
-}
-
-func extractCloudComplianceScanTrigger(w http.ResponseWriter, r *http.Request) (model.CloudComplianceScanTriggerReq, error) {
-	defer r.Body.Close()
-	var req model.CloudComplianceScanTriggerReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	if err != nil {
-		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
 		return req, err
 	}
@@ -718,13 +697,13 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 }
 
 func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.CloudComplianceScanDetails](w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	entries, common, err := listScanResultsHandler[model.CloudCompliance](w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common})
+	httpext.JSON(w, http.StatusOK, model.CloudComplianceScanResult{Compliances: entries, ScanResultsCommon: common})
 }
 
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
