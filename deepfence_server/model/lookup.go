@@ -1,6 +1,6 @@
 package model
 
-// "nested_json" fields are string json maps 
+// "nested_json" fields are string json maps
 // that can be unmarshalled on the fly
 
 type Cypherable interface {
@@ -35,6 +35,16 @@ type Host struct {
 	ContainerImages []ContainerImage `json:"container_images" required:"true"`
 	Metadata        Metadata         `json:"cloud_metadata" required:"true" nested_json:"true"`
 	Metrics         ComputeMetrics   `json:"metrics" required:"true"`
+}
+
+type RegistryAccount struct {
+	ID              string           `json:"node_id" required:"true"`
+	Name            string           `json:"host_name" required:"true"`
+	ContainerImages []ContainerImage `json:"container_images" required:"true"`
+}
+
+func (RegistryAccount) NodeType() string {
+	return "RegistryAccount"
 }
 
 func (Host) NodeType() string {

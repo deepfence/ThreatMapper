@@ -105,6 +105,22 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 	return clusters, nil
 }
 
+func GetRegistryAccountReport(ctx context.Context, filter LookupFilter) ([]model.RegistryAccount, error) {
+	registry, err := getGenericDirectNodeReport[model.RegistryAccount](ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range registry {
+		container_images, err := getRegistryImages(ctx, registry[i])
+		if err != nil {
+			return nil, err
+		}
+		registry[i].ContainerImages = container_images
+	}
+	return registry, nil
+}
+
 func getGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filter LookupFilter) ([]T, error) {
 	res := []T{}
 	var dummy T
@@ -236,6 +252,12 @@ func getHostContainerImages(ctx context.Context, host model.Host) ([]model.Conta
 	return getIndirectFromIDs[model.ContainerImage](ctx,
 		`MATCH (n:Node) -[:HOSTS]-> (m:ContainerImage) WHERE n.node_id IN $ids RETURN m`,
 		[]string{host.ID})
+}
+
+func getRegistryImages(ctx context.Context, registry model.RegistryAccount) ([]model.ContainerImage, error) {
+	return getIndirectFromIDs[model.ContainerImage](ctx,
+		`MATCH (n:RegistryAccount) -[:HOSTS]-> (m:ContainerImage) WHERE n.node_id IN $ids RETURN m`,
+		[]string{registry.ID})
 }
 
 func getHostProcesses(ctx context.Context, host model.Host) ([]model.Process, error) {

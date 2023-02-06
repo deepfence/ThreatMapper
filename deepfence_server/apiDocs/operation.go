@@ -117,6 +117,10 @@ func (d *OpenApiDocs) AddLookupOperations() {
 	d.AddOperation("getContainerImages", http.MethodPost, "/deepfence/lookup/containerimages",
 		"Retrieve Container Images data", "Retrieve all the data associated with images",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.ContainerImage))
+
+	d.AddOperation("getRegistryAccount", http.MethodPost, "/deepfence/lookup/registryaccount",
+		"Get Images in Registry", "List all the images present in the given registry",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.LookupFilter), new([]model.RegistryAccount))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {
@@ -284,14 +288,10 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 }
 
 func (d *OpenApiDocs) AddRegistryOperations() {
-	// TODO
-	d.AddOperation("listImagesInRegistry", http.MethodGet, "/deepfence/container-registry/images",
-		"List Images in Registry", "List all the images present in all the registries",
-		http.StatusOK, []string{tagRegistry}, bearerToken, nil, nil)
-	d.AddOperation("ListRegistry", http.MethodGet, "/deepfence/container-registry/",
-		"List Images in Registry", "List all the added Registry",
+	d.AddOperation("listRegistry", http.MethodGet, "/deepfence/registryaccount/list",
+		"List Registries", "List all the added Registries",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryListReq), new([]postgresqldb.GetContainerRegistriesSafeRow))
-	d.AddOperation("AddRegistry", http.MethodPost, "/deepfence/container-registry/",
+	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/container-registry/",
 		"Add Registry", "Add a new supported registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryAddReq), nil)
 }

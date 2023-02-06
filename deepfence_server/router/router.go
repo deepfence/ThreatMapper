@@ -147,6 +147,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/kubernetesclusters", dfHandler.GetKubernetesClusters)
 				r.Post("/containerimages", dfHandler.GetContainerImages)
 				r.Post("/pods", dfHandler.GetPods)
+				r.Post("/registryaccount", dfHandler.GetRegistryAccount)
 			})
 
 			r.Route("/controls", func(r chi.Router) {
@@ -209,9 +210,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			})
 
 			openApiDocs.AddRegistryOperations()
-			r.Route("/container-registry", func(r chi.Router) {
-				r.Get("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImagesInRegistry))
-				r.Get("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
+			r.Route("/registryaccount", func(r chi.Router) {
+				r.Get("/list", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
 			})
 
@@ -234,3 +234,9 @@ func newAuthorizationHandler() (*casbin.Enforcer, error) {
 func IsSaasDeployment() bool {
 	return strings.ToLower(os.Getenv("DEEPFENCE_SAAS_DEPLOYMENT")) == "true"
 }
+
+/*
+
+
+
+ */
