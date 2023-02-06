@@ -50,24 +50,22 @@ func CleanUpDB(msg *message.Message) error {
 
 	if _, err = tx.Run(`
 		MATCH (n) -[:SCANNED]-> (:Node)
-		WHERE n.status <> $start_status AND n.updated_at < TIMESTAMP()-$time_ms AND n.retries >= 3
+		WHERE n.retries >= 3
 		SET n.status = $new_status`,
 		map[string]interface{}{
-			"time_ms":      dbScanTimeout.Milliseconds(),
-			"start_status": utils.SCAN_STATUS_STARTING,
-			"new_status":   utils.SCAN_STATUS_FAILED,
+			"time_ms":    dbScanTimeout.Milliseconds(),
+			"new_status": utils.SCAN_STATUS_FAILED,
 		}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (:Node) -[n:SCHEDULED]-> (:AgentVersion)
-		WHERE n.status <> $start_status AND n.updated_at < TIMESTAMP()-$time_ms AND n.retries >= 3
+		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)
+		WHERE n.retries >= 3
 		SET n.status = $new_status`,
 		map[string]interface{}{
-			"time_ms":      dbUpgradeTimeout.Milliseconds(),
-			"start_status": utils.SCAN_STATUS_STARTING,
-			"new_status":   utils.SCAN_STATUS_FAILED,
+			"time_ms":    dbUpgradeTimeout.Milliseconds(),
+			"new_status": utils.SCAN_STATUS_FAILED,
 		}); err != nil {
 		return err
 	}
