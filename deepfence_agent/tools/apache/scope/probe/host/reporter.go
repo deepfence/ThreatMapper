@@ -24,7 +24,7 @@ import (
 
 // Agent version to dispay in metadata
 var (
-	agentVersionNo           = "1.4.2"
+	AgentVersionNo           = "v1.4.2"
 	agentCommitID            = "Unknown"
 	agentBuildTime           = "0"
 	agentRunning             = "yes"
@@ -376,7 +376,7 @@ func NewReporter(hostID, hostName, probeID, version string, pipes controls.PipeC
 		k8sClusterName:  os.Getenv(report.KubernetesClusterName),
 		OSVersion:       runtime.GOOS,
 		KernelVersion:   kernel,
-		AgentVersion:    agentVersionNo + "-" + agentCommitID + "-" + agentBuildTime,
+		AgentVersion:    AgentVersionNo + "-" + agentCommitID + "-" + agentBuildTime,
 		IsUiVm:          isUIvm,
 		userDefinedTags: UserDefinedTags{
 			tags: make([]string, 0),

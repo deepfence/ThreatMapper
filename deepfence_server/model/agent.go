@@ -1,5 +1,10 @@
 package model
 
+type InitAgentReq struct {
+	AgentId
+	Version string `json:"version" required:"true"`
+}
+
 type AgentId struct {
 	NodeId            string `json:"node_id" required:"true"`
 	AvailableWorkload int    `json:"available_workload" required:"true"`

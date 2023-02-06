@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/probe/controls"
+	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/report"
 
 	"github.com/bytedance/sonic"
@@ -113,7 +114,13 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 
 	} else {
 		req := ct.client.ControlsApi.GetAgentInitControls(context.Background())
-		req = req.ModelAgentId(*openapi.NewModelAgentId(workload_allocator.MaxAllocable(), nodeId))
+		req = req.ModelInitAgentReq(
+			*openapi.NewModelInitAgentReq(
+				workload_allocator.MaxAllocable(),
+				nodeId,
+				host.AgentVersionNo,
+			),
+		)
 		ctl, _, err := ct.client.ControlsApi.GetAgentInitControlsExecute(req)
 
 		if err != nil {

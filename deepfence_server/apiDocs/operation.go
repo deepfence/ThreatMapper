@@ -134,7 +134,7 @@ func (d *OpenApiDocs) AddControlsOperations() {
 
 	d.AddOperation("getAgentInitControls", http.MethodPost, "/deepfence/controls/agent-init",
 		"Fetch Agent Init Actions", "Fetch initial actions for a given agent after it started",
-		http.StatusOK, []string{tagControls}, bearerToken, new(model.AgentId), new(controls.AgentControls))
+		http.StatusOK, []string{tagControls}, bearerToken, new(model.InitAgentReq), new(controls.AgentControls))
 
 	d.AddOperation("upgradeAgentVersion", http.MethodPost, "/deepfence/controls/agent-upgrade",
 		"Schedule new agent version upgrade", "Schedule new agent version upgrade",

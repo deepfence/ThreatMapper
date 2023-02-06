@@ -98,3 +98,41 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 
 	return r.Values[0].(string), nil
 }
+
+func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) error {
+
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session, err := client.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	_, err = tx.Run(`
+		MERGE (v:AgentVersion{node_id: $version})
+		WITH v
+		MATCH (n:Node{node_id:$node_id})
+		MERGE (v) -[:SCHEDULED{status: $status}]-> (n)`,
+		map[string]interface{}{
+			"version": version,
+			"node_id": nodeId,
+			"status":  utils.SCAN_STATUS_SUCCESS,
+		})
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+
+}
