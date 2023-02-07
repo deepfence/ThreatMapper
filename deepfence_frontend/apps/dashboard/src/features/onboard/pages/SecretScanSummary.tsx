@@ -123,7 +123,7 @@ const AccountComponent = ({ accountId }: { accountId: string }) => {
   );
 };
 
-const TypeAndPercentageComponent = ({ total }: { total: number }) => {
+const TypeAndCountComponent = ({ total }: { total: number }) => {
   return (
     <div className="flex flex-col gap-y-1 items-center justify-center">
       <data className="text-sm text-gray-400 dark:text-gray-500">Total Results</data>
@@ -187,7 +187,7 @@ const Scan = ({ scanData }: { scanData: ScanData }) => {
             return (
               <div className="flex flex-col p-4" key={index}>
                 <div className="grid grid-cols-[40%_60%]">
-                  <TypeAndPercentageComponent total={total} />
+                  <TypeAndCountComponent total={total} />
                   {counts && <ChartComponent counts={counts} />}
                 </div>
               </div>
