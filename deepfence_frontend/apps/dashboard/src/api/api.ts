@@ -6,6 +6,7 @@ import {
   CloudNodesApi,
   ComplianceApi,
   Configuration,
+  MalwareScanApi,
   RegistryApi,
   SecretScanApi,
   TopologyApi,
@@ -83,5 +84,14 @@ export function complianceScanApiClient() {
     startComplianceScan: complianceApi.startComplianceScan.bind(complianceApi),
     statusComplianceScan: complianceApi.statusComplianceScan.bind(complianceApi),
     resultComplianceScan: complianceApi.resultsComplianceScan.bind(complianceApi),
+  };
+}
+
+export function malwareScanApiClient() {
+  const malwareApi = new MalwareScanApi(configuration);
+  return {
+    startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
+    resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
+    statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),
   };
 }

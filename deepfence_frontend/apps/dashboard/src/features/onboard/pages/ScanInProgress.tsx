@@ -29,7 +29,11 @@ import {
   Table,
 } from 'ui-components';
 
-import { secretScanApiClient, vulnerabilityScanApiClient } from '@/api/api';
+import {
+  malwareScanApiClient,
+  secretScanApiClient,
+  vulnerabilityScanApiClient,
+} from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelScanStatusResp } from '@/api/generated';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -66,6 +70,7 @@ type ConfigProps = {
 const statusScanApiFunctionMap = {
   vulnerability: vulnerabilityScanApiClient().statusVulnerabilityScan,
   secret: secretScanApiClient().statusSecretScan,
+  malware: malwareScanApiClient().statusMalwareScan,
 };
 
 const configMap: ConfigProps = {

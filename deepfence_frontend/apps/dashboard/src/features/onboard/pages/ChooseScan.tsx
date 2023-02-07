@@ -74,7 +74,7 @@ const scanTypes: ScanTypeListProps[] = [
   {
     scanTitle: 'Vulnerability Scan',
     scanType: 'vulnerability',
-    description: `A few words about the compliance scan and why you need to use it.`,
+    description: `A few words about the vulnerability scan and why you need to use it.`,
     lastScaned: '3:00pm on 11/22/2022',
     buttonText: 'Configure Vulnerability Scan',
   },
@@ -82,9 +82,16 @@ const scanTypes: ScanTypeListProps[] = [
   {
     scanTitle: 'Secrets Scan',
     scanType: 'secret',
-    description: `A few words about the compliance scan and why you need to use it.`,
+    description: `A few words about the secret scan and why you need to use it.`,
     lastScaned: '3:00pm on 11/22/2022',
     buttonText: 'Configure Secret Scan',
+  },
+  {
+    scanTitle: 'Malware Scan',
+    scanType: 'malware',
+    description: `A few words about the malware scan and why you need to use it.`,
+    lastScaned: '3:00pm on 11/22/2022',
+    buttonText: 'Configure Malware Scan',
   },
 ];
 type R = Record<NodeType, ScanTypeListProps[]>;

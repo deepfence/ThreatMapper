@@ -283,6 +283,53 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/cloud-node/providers/list": {
+      "post": {
+        "tags": ["Cloud Nodes"],
+        "summary": "List Cloud Node Providers",
+        "description": "List Cloud Node Providers registered with the console",
+        "operationId": "listCloudProviders",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelCloudNodeProvidersListResp"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/controls/agent": {
       "post": {
         "tags": ["Controls"],
@@ -4183,6 +4230,17 @@
         "properties": {
           "account_id": { "type": "string" },
           "trail_name": { "type": "string" }
+        }
+      },
+      "ModelCloudNodeProvidersListResp": {
+        "required": ["providers"],
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
         }
       },
       "ModelCompliance": {
