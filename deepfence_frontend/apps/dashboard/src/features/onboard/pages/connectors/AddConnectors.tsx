@@ -1,8 +1,10 @@
 import cx from 'classnames';
 import { useRef } from 'react';
+import { useState } from 'react';
+import { useMemo } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineArrowCircleRight } from 'react-icons/hi';
-import { Card, Tabs, Typography } from 'ui-components';
+import { Button, Card, Tabs, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
 import LogoAwsWhite from '@/assets/logo-aws-white.svg';
@@ -182,11 +184,13 @@ const Host = () => {
 
 const Registries = () => {
   const { mode } = useTheme();
-  const connectors = [
+  const [showAll, setShowAll] = useState(false);
+
+  const registriesConnectors = [
     {
       icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
       label: 'Amazon Elastic Container Registry',
-      path: 'registry/amazon-ecr',
+      path: 'registry-amazon-ecr',
     },
     {
       icon: LogoAzureRegistry,
@@ -199,21 +203,50 @@ const Registries = () => {
       path: 'registry-linux',
     },
     {
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
-      label: 'Amazon Elastic Container Registry',
-      path: 'registry-k8',
+      icon: LogoGoogle,
+      label: 'Docker Container Registry',
+      path: 'registry-docker',
     },
     {
       icon: LogoAzureRegistry,
-      label: 'Azure Container Registry',
-      path: 'registry-azure-1',
+      label: 'Docker Container Registry | Self Hosted',
+      path: 'registry-docker-selfhosted',
     },
     {
       icon: LogoGoogle,
-      label: 'Container Registry | Google Cloud',
-      path: 'registry-linux-1',
+      label: 'Quay Container Registry',
+      path: 'registry-quay',
+    },
+    {
+      icon: LogoGoogle,
+      label: 'Harbor Container Registry',
+      path: 'registry-harbor',
+    },
+    {
+      icon: LogoGoogle,
+      label: 'Smarter Docker Registry | JFrog',
+      path: 'registry-jfrog',
+    },
+    {
+      icon: LogoGoogle,
+      label: 'GitLab Container Registry',
+      path: 'registry-gitlab',
     },
   ];
+  const onShowAll = () => {
+    setShowAll((state) => {
+      return !state;
+    });
+  };
+
+  const connectors = useMemo(() => {
+    if (showAll) {
+      return [...registriesConnectors];
+    } else {
+      return [...registriesConnectors.slice(0, 3)];
+    }
+  }, [showAll]);
+
   return (
     <>
       <div className="py-4 items-center flex px-6">
@@ -252,6 +285,15 @@ const Registries = () => {
               </div>
             );
           })}
+          {!showAll ? (
+            <Button
+              size="sm"
+              onClick={onShowAll}
+              className="bg-transparent hover:bg-transparent ml-3 mt-2"
+            >
+              +6 more
+            </Button>
+          ) : null}
         </div>
       </div>
     </>

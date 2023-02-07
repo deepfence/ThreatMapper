@@ -6,6 +6,7 @@ import {
   CloudNodesApi,
   ComplianceApi,
   Configuration,
+  RegistryApi,
   SecretScanApi,
   TopologyApi,
   UserApi,
@@ -48,6 +49,13 @@ export function getCloudNodesApi() {
     listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
   };
 }
+export function getRegistriesApi() {
+  const registriesApi = new RegistryApi(configuration);
+  return {
+    addRegistry: registriesApi.addRegistry.bind(registriesApi),
+  };
+}
+
 export function vulnerabilityScanApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
   return {

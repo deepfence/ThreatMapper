@@ -33,19 +33,19 @@ export interface AddRegistryRequest {
 }
 
 /**
- * RegisryApi - interface
+ * RegistryApi - interface
  * 
  * @export
- * @interface RegisryApiInterface
+ * @interface RegistryApiInterface
  */
-export interface RegisryApiInterface {
+export interface RegistryApiInterface {
     /**
      * Add a new supported registry
      * @summary Add Registry
      * @param {ModelRegistryAddReq} [modelRegistryAddReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof RegisryApiInterface
+     * @memberof RegistryApiInterface
      */
     addRegistryRaw(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
@@ -56,32 +56,17 @@ export interface RegisryApiInterface {
     addRegistry(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
-     * List all the images present in all the registries
-     * @summary List Images in Registry
+     * List all the added Registries
+     * @summary List Registries
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof RegisryApiInterface
-     */
-    listImagesInRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
-
-    /**
-     * List all the images present in all the registries
-     * List Images in Registry
-     */
-    listImagesInRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
-
-    /**
-     * List all the added Registry
-     * @summary List Images in Registry
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof RegisryApiInterface
+     * @memberof RegistryApiInterface
      */
     listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
 
     /**
-     * List all the added Registry
-     * List Images in Registry
+     * List all the added Registries
+     * List Registries
      */
     listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
 
@@ -90,7 +75,7 @@ export interface RegisryApiInterface {
 /**
  * 
  */
-export class RegisryApi extends runtime.BaseAPI implements RegisryApiInterface {
+export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface {
 
     /**
      * Add a new supported registry
@@ -112,7 +97,7 @@ export class RegisryApi extends runtime.BaseAPI implements RegisryApiInterface {
             }
         }
         const response = await this.request({
-            path: `/deepfence/container-registry/`,
+            path: `/deepfence/registryaccount/`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -131,43 +116,8 @@ export class RegisryApi extends runtime.BaseAPI implements RegisryApiInterface {
     }
 
     /**
-     * List all the images present in all the registries
-     * List Images in Registry
-     */
-    async listImagesInRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/container-registry/images`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * List all the images present in all the registries
-     * List Images in Registry
-     */
-    async listImagesInRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.listImagesInRegistryRaw(initOverrides);
-    }
-
-    /**
-     * List all the added Registry
-     * List Images in Registry
+     * List all the added Registries
+     * List Registries
      */
     async listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
         const queryParameters: any = {};
@@ -183,7 +133,7 @@ export class RegisryApi extends runtime.BaseAPI implements RegisryApiInterface {
             }
         }
         const response = await this.request({
-            path: `/deepfence/container-registry/`,
+            path: `/deepfence/registryaccount/list`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -193,8 +143,8 @@ export class RegisryApi extends runtime.BaseAPI implements RegisryApiInterface {
     }
 
     /**
-     * List all the added Registry
-     * List Images in Registry
+     * List all the added Registries
+     * List Registries
      */
     async listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
         const response = await this.listRegistryRaw(initOverrides);

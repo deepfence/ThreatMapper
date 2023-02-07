@@ -18,9 +18,9 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ControlsAgentControls,
-  ControlsKubernetesScannerControlResponse,
   ModelAgentId,
   ModelAgentUpgrade,
+  ModelInitAgentReq,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -29,12 +29,12 @@ import {
     ApiDocsFailureResponseToJSON,
     ControlsAgentControlsFromJSON,
     ControlsAgentControlsToJSON,
-    ControlsKubernetesScannerControlResponseFromJSON,
-    ControlsKubernetesScannerControlResponseToJSON,
     ModelAgentIdFromJSON,
     ModelAgentIdToJSON,
     ModelAgentUpgradeFromJSON,
     ModelAgentUpgradeToJSON,
+    ModelInitAgentReqFromJSON,
+    ModelInitAgentReqToJSON,
 } from '../models';
 
 export interface GetAgentControlsRequest {
@@ -42,10 +42,10 @@ export interface GetAgentControlsRequest {
 }
 
 export interface GetAgentInitControlsRequest {
-    modelAgentId?: ModelAgentId;
+    modelInitAgentReq?: ModelInitAgentReq;
 }
 
-export interface GetKubernetesScannerControlsRequest {
+export interface GetKubernetesClusterControlsRequest {
     modelAgentId?: ModelAgentId;
 }
 
@@ -79,7 +79,7 @@ export interface ControlsApiInterface {
     /**
      * Fetch initial actions for a given agent after it started
      * @summary Fetch Agent Init Actions
-     * @param {ModelAgentId} [modelAgentId] 
+     * @param {ModelInitAgentReq} [modelInitAgentReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ControlsApiInterface
@@ -94,19 +94,19 @@ export interface ControlsApiInterface {
 
     /**
      * Fetch actions for a given Kubernetes Cluster
-     * @summary Fetch Kubernetes Scanner Actions
+     * @summary Fetch Kubernetes Cluster Actions
      * @param {ModelAgentId} [modelAgentId] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ControlsApiInterface
      */
-    getKubernetesScannerControlsRaw(requestParameters: GetKubernetesScannerControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsKubernetesScannerControlResponse>>;
+    getKubernetesClusterControlsRaw(requestParameters: GetKubernetesClusterControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsAgentControls>>;
 
     /**
      * Fetch actions for a given Kubernetes Cluster
-     * Fetch Kubernetes Scanner Actions
+     * Fetch Kubernetes Cluster Actions
      */
-    getKubernetesScannerControls(requestParameters: GetKubernetesScannerControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsKubernetesScannerControlResponse>;
+    getKubernetesClusterControls(requestParameters: GetKubernetesClusterControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls>;
 
     /**
      * Schedule new agent version upgrade
@@ -194,7 +194,7 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelAgentIdToJSON(requestParameters.modelAgentId),
+            body: ModelInitAgentReqToJSON(requestParameters.modelInitAgentReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ControlsAgentControlsFromJSON(jsonValue));
@@ -211,9 +211,9 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
 
     /**
      * Fetch actions for a given Kubernetes Cluster
-     * Fetch Kubernetes Scanner Actions
+     * Fetch Kubernetes Cluster Actions
      */
-    async getKubernetesScannerControlsRaw(requestParameters: GetKubernetesScannerControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsKubernetesScannerControlResponse>> {
+    async getKubernetesClusterControlsRaw(requestParameters: GetKubernetesClusterControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsAgentControls>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -229,22 +229,22 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/controls/kubernetes-scanner`,
+            path: `/deepfence/controls/kubernetes-cluster`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
             body: ModelAgentIdToJSON(requestParameters.modelAgentId),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ControlsKubernetesScannerControlResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ControlsAgentControlsFromJSON(jsonValue));
     }
 
     /**
      * Fetch actions for a given Kubernetes Cluster
-     * Fetch Kubernetes Scanner Actions
+     * Fetch Kubernetes Cluster Actions
      */
-    async getKubernetesScannerControls(requestParameters: GetKubernetesScannerControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsKubernetesScannerControlResponse> {
-        const response = await this.getKubernetesScannerControlsRaw(requestParameters, initOverrides);
+    async getKubernetesClusterControls(requestParameters: GetKubernetesClusterControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls> {
+        const response = await this.getKubernetesClusterControlsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

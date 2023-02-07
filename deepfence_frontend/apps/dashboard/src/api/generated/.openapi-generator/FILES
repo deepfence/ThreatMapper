@@ -7,10 +7,9 @@ apis/ComplianceApi.ts
 apis/ControlsApi.ts
 apis/DiagnosisApi.ts
 apis/InternalApi.ts
-apis/KubernetesScannerApi.ts
 apis/LookupApi.ts
 apis/MalwareScanApi.ts
-apis/RegisryApi.ts
+apis/RegistryApi.ts
 apis/SecretScanApi.ts
 apis/ThreatApi.ts
 apis/TopologyApi.ts
@@ -23,9 +22,6 @@ models/ApiDocsFailureResponse.ts
 models/ApiDocsGraphResult.ts
 models/ControlsAction.ts
 models/ControlsAgentControls.ts
-models/ControlsKubernetesScannerControlResponse.ts
-models/ControlsKubernetesScannerPendingScan.ts
-models/ControlsKubernetesScannerPendingScans.ts
 models/DetailedConnectionSummary.ts
 models/DetailedNodeSummary.ts
 models/DetailedParent.ts
@@ -35,7 +31,6 @@ models/IngestersCloudResource.ts
 models/IngestersCompliance.ts
 models/IngestersMalware.ts
 models/IngestersMalwareScanStatus.ts
-models/IngestersRegisterKubernetesScannerRequest.ts
 models/IngestersReportIngestionData.ts
 models/IngestersSecret.ts
 models/IngestersSecretMatch.ts
@@ -48,6 +43,8 @@ models/ModelAgentId.ts
 models/ModelAgentUpgrade.ts
 models/ModelApiAuthRequest.ts
 models/ModelCloudComplianceScanDetails.ts
+models/ModelCloudComplianceScanTrigger.ts
+models/ModelCloudComplianceScanTriggerReq.ts
 models/ModelCloudNodeAccountInfo.ts
 models/ModelCloudNodeAccountRegisterReq.ts
 models/ModelCloudNodeAccountRegisterResp.ts
@@ -63,6 +60,7 @@ models/ModelContainer.ts
 models/ModelContainerImage.ts
 models/ModelFetchWindow.ts
 models/ModelHost.ts
+models/ModelInitAgentReq.ts
 models/ModelInviteUserRequest.ts
 models/ModelInviteUserResponse.ts
 models/ModelKubernetesCluster.ts
@@ -76,6 +74,7 @@ models/ModelPasswordResetVerifyRequest.ts
 models/ModelPod.ts
 models/ModelProcess.ts
 models/ModelRegisterInvitedUserRequest.ts
+models/ModelRegistryAccount.ts
 models/ModelRegistryAddReq.ts
 models/ModelResponseAccessToken.ts
 models/ModelRule.ts

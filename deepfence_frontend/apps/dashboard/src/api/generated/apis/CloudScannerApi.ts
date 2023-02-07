@@ -18,6 +18,8 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   IngestersCloudCompliance,
+  ModelCloudComplianceScanTriggerReq,
+  ModelScanTriggerResp,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -26,10 +28,18 @@ import {
     ApiDocsFailureResponseToJSON,
     IngestersCloudComplianceFromJSON,
     IngestersCloudComplianceToJSON,
+    ModelCloudComplianceScanTriggerReqFromJSON,
+    ModelCloudComplianceScanTriggerReqToJSON,
+    ModelScanTriggerRespFromJSON,
+    ModelScanTriggerRespToJSON,
 } from '../models';
 
 export interface IngestCloudCompliancesRequest {
     ingestersCloudCompliance?: Array<IngestersCloudCompliance> | null;
+}
+
+export interface StartCloudComplianceScansRequest {
+    modelCloudComplianceScanTriggerReq?: ModelCloudComplianceScanTriggerReq;
 }
 
 /**
@@ -54,6 +64,22 @@ export interface CloudScannerApiInterface {
      * Ingest Cloud Compliances
      */
     ingestCloudCompliances(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Start Cloud Compliance Scans on cloud nodes
+     * @summary Start Cloud Compliance Scans
+     * @param {ModelCloudComplianceScanTriggerReq} [modelCloudComplianceScanTriggerReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CloudScannerApiInterface
+     */
+    startCloudComplianceScansRaw(requestParameters: StartCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanTriggerResp>>;
+
+    /**
+     * Start Cloud Compliance Scans on cloud nodes
+     * Start Cloud Compliance Scans
+     */
+    startCloudComplianceScans(requestParameters: StartCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanTriggerResp>;
 
 }
 
@@ -98,6 +124,45 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
      */
     async ingestCloudCompliances(requestParameters: IngestCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.ingestCloudCompliancesRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Start Cloud Compliance Scans on cloud nodes
+     * Start Cloud Compliance Scans
+     */
+    async startCloudComplianceScansRaw(requestParameters: StartCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanTriggerResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/start/cloud-compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelCloudComplianceScanTriggerReqToJSON(requestParameters.modelCloudComplianceScanTriggerReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanTriggerRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Start Cloud Compliance Scans on cloud nodes
+     * Start Cloud Compliance Scans
+     */
+    async startCloudComplianceScans(requestParameters: StartCloudComplianceScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanTriggerResp> {
+        const response = await this.startCloudComplianceScansRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }

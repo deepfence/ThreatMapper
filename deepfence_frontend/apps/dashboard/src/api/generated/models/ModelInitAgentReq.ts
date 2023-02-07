@@ -16,39 +16,46 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelAgentId
+ * @interface ModelInitAgentReq
  */
-export interface ModelAgentId {
+export interface ModelInitAgentReq {
     /**
      * 
      * @type {number}
-     * @memberof ModelAgentId
+     * @memberof ModelInitAgentReq
      */
     available_workload: number;
     /**
      * 
      * @type {string}
-     * @memberof ModelAgentId
+     * @memberof ModelInitAgentReq
      */
     node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelInitAgentReq
+     */
+    version: string;
 }
 
 /**
- * Check if a given object implements the ModelAgentId interface.
+ * Check if a given object implements the ModelInitAgentReq interface.
  */
-export function instanceOfModelAgentId(value: object): boolean {
+export function instanceOfModelInitAgentReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "available_workload" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "version" in value;
 
     return isInstance;
 }
 
-export function ModelAgentIdFromJSON(json: any): ModelAgentId {
-    return ModelAgentIdFromJSONTyped(json, false);
+export function ModelInitAgentReqFromJSON(json: any): ModelInitAgentReq {
+    return ModelInitAgentReqFromJSONTyped(json, false);
 }
 
-export function ModelAgentIdFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAgentId {
+export function ModelInitAgentReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelInitAgentReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -56,10 +63,11 @@ export function ModelAgentIdFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'available_workload': json['available_workload'],
         'node_id': json['node_id'],
+        'version': json['version'],
     };
 }
 
-export function ModelAgentIdToJSON(value?: ModelAgentId | null): any {
+export function ModelInitAgentReqToJSON(value?: ModelInitAgentReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -70,6 +78,7 @@ export function ModelAgentIdToJSON(value?: ModelAgentId | null): any {
         
         'available_workload': value.available_workload,
         'node_id': value.node_id,
+        'version': value.version,
     };
 }
 

@@ -21,6 +21,7 @@ import { ComplianceScanSummary } from '@/features/onboard/pages/ComplianceScanSu
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
 import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
+import { module as dockerRegistryConnector } from '@/features/onboard/pages/DockerRegistryConnector';
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
@@ -90,9 +91,14 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Connect Linux Machine' },
           },
           {
-            path: 'registry/amazon-ecr',
+            path: 'registry-amazon-ecr',
             element: <AmazonECRConnector />,
             meta: { title: 'Connect ECR Registry' },
+          },
+          {
+            path: 'registry-docker',
+            ...dockerRegistryConnector,
+            meta: { title: 'Docker Container Registry' },
           },
         ],
       },
