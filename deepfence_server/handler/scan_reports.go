@@ -541,6 +541,10 @@ func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.N
 		statuses, err = reporters.GetScanStatus(r.Context(), scan_type, req.ScanIds)
 	}
 
+	if err == reporters.NotFoundErr {
+		err = &NotFoundError{err}
+	}
+
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
 		respondError(err, w)
@@ -577,6 +581,9 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 	}
 
 	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeId, controls.StringToResourceType(req.NodeType), req.Window)
+	if err == reporters.NotFoundErr {
+		err = &NotFoundError{err}
+	}
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
 		respondError(err, w)

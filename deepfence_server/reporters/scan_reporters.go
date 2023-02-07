@@ -72,7 +72,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 
 	recs, err := res.Collect()
 	if err != nil {
-		return model.ScanStatusResp{}, err
+		return model.ScanStatusResp{}, NotFoundErr
 	}
 
 	statuses := map[string]model.ScanStatus{}
@@ -118,7 +118,7 @@ func GetScansList(ctx context.Context,
 
 	recs, err := res.Collect()
 	if err != nil {
-		return model.ScanListResp{}, err
+		return model.ScanListResp{}, NotFoundErr
 	}
 
 	scans_info := []model.ScanInfo{}
@@ -362,7 +362,7 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 	recs, err := neo_res.Collect()
 	if err != nil {
-		return scan_ids, err
+		return scan_ids, NotFoundErr
 	}
 
 	for _, rec := range recs {
