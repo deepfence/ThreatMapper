@@ -21,6 +21,7 @@ import type {
   ModelCloudNodeAccountRegisterResp,
   ModelCloudNodeAccountsListReq,
   ModelCloudNodeAccountsListResp,
+  ModelCloudNodeProvidersListResp,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -35,6 +36,8 @@ import {
     ModelCloudNodeAccountsListReqToJSON,
     ModelCloudNodeAccountsListRespFromJSON,
     ModelCloudNodeAccountsListRespToJSON,
+    ModelCloudNodeProvidersListRespFromJSON,
+    ModelCloudNodeProvidersListRespToJSON,
 } from '../models';
 
 export interface ListCloudNodeAccountRequest {
@@ -67,6 +70,21 @@ export interface CloudNodesApiInterface {
      * List Cloud Node Accounts
      */
     listCloudNodeAccount(requestParameters: ListCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeAccountsListResp>;
+
+    /**
+     * List Cloud Node Providers registered with the console
+     * @summary List Cloud Node Providers
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CloudNodesApiInterface
+     */
+    listCloudProvidersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCloudNodeProvidersListResp>>;
+
+    /**
+     * List Cloud Node Providers registered with the console
+     * List Cloud Node Providers
+     */
+    listCloudProviders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeProvidersListResp>;
 
     /**
      * Register Cloud Node Account and return any pending compliance scans from console
@@ -127,6 +145,42 @@ export class CloudNodesApi extends runtime.BaseAPI implements CloudNodesApiInter
      */
     async listCloudNodeAccount(requestParameters: ListCloudNodeAccountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeAccountsListResp> {
         const response = await this.listCloudNodeAccountRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List Cloud Node Providers registered with the console
+     * List Cloud Node Providers
+     */
+    async listCloudProvidersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCloudNodeProvidersListResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/cloud-node/providers/list`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelCloudNodeProvidersListRespFromJSON(jsonValue));
+    }
+
+    /**
+     * List Cloud Node Providers registered with the console
+     * List Cloud Node Providers
+     */
+    async listCloudProviders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeProvidersListResp> {
+        const response = await this.listCloudProvidersRaw(initOverrides);
         return await response.value();
     }
 

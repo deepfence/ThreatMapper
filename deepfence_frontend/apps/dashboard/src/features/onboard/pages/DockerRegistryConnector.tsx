@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, Form, redirect, useActionData } from 'react-router-dom';
 import { Button } from 'ui-components';
 
-import { getRegistriesApi } from '@/api/api';
+import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { DockerConnectionForm } from '@/features/onboard/components/connectors/registries/DockerConnectionForm';
@@ -17,7 +17,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   const body = Object.fromEntries(formData);
 
   const r = await makeRequest({
-    apiFunction: getRegistriesApi().addRegistry,
+    apiFunction: getRegistriesApiClient().addRegistry,
     apiArgs: [
       {
         modelRegistryAddReq: {

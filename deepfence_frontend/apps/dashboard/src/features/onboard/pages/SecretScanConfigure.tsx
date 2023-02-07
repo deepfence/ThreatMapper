@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, Form, generatePath, redirect } from 'react-router-dom';
 import { Button } from 'ui-components';
 
-import { secretScanApiClient } from '@/api/api';
+import { getSecretApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelScanTriggerNodeTypeEnum } from '@/api/generated/models/ModelScanTrigger';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -23,7 +23,7 @@ const action = async ({
   const nodeIdArray = nodeIds?.split(',');
 
   const r = await makeRequest({
-    apiFunction: secretScanApiClient().startSecretScan,
+    apiFunction: getSecretApiClient().startSecretScan,
     apiArgs: [
       {
         modelSecretScanTriggerReq: {

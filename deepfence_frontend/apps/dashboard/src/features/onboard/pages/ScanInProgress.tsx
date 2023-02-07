@@ -29,7 +29,7 @@ import {
   Table,
 } from 'ui-components';
 
-import { secretScanApiClient, vulnerabilityScanApiClient } from '@/api/api';
+import { getSecretApiClient, getVulnerabilityApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelScanStatusResp } from '@/api/generated';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -64,8 +64,8 @@ type ConfigProps = {
 };
 
 const statusScanApiFunctionMap = {
-  vulnerability: vulnerabilityScanApiClient().statusVulnerabilityScan,
-  secret: secretScanApiClient().statusSecretScan,
+  vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
+  secret: getSecretApiClient().statusSecretScan,
 };
 
 const configMap: ConfigProps = {
@@ -127,7 +127,10 @@ async function getScanStatus(
   }
   const result = r as ModelScanStatusResp;
   return {
-    data: result.statuses ?? {},
+    data: Object.keys(result.statuses ?? {}).reduce((prev, curr) => {
+      prev[curr] = result.statuses?.[curr].status ?? '';
+      return prev;
+    }, {} as Record<string, string>),
   };
 }
 

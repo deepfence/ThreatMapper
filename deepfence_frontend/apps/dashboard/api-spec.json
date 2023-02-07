@@ -283,6 +283,53 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/cloud-node/providers/list": {
+      "post": {
+        "tags": ["Cloud Nodes"],
+        "summary": "List Cloud Node Providers",
+        "description": "List Cloud Node Providers registered with the console",
+        "operationId": "listCloudProviders",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelCloudNodeProvidersListResp"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/controls/agent": {
       "post": {
         "tags": ["Controls"],
@@ -4185,6 +4232,17 @@
           "trail_name": { "type": "string" }
         }
       },
+      "ModelCloudNodeProvidersListResp": {
+        "required": ["providers"],
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
+        }
+      },
       "ModelCompliance": {
         "required": [
           "test_category",
@@ -4451,7 +4509,8 @@
           "node_name",
           "node_type",
           "scan_id",
-          "malwares"
+          "malwares",
+          "severity_counts"
         ],
         "type": "object",
         "properties": {
@@ -4467,7 +4526,12 @@
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
-          "scan_id": { "type": "string" }
+          "scan_id": { "type": "string" },
+          "severity_counts": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" },
+            "nullable": true
+          }
         }
       },
       "ModelMalwareScanTriggerReq": {
@@ -4616,9 +4680,11 @@
         }
       },
       "ModelScanInfo": {
-        "required": ["scan_id", "status", "updated_at"],
+        "required": ["scan_id", "status", "updated_at", "node_id", "node_type"],
         "type": "object",
         "properties": {
+          "node_id": { "type": "string" },
+          "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
           "status": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
@@ -4652,14 +4718,13 @@
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
-      "ModelScanStatus": { "type": "string" },
       "ModelScanStatusResp": {
         "required": ["statuses"],
         "type": "object",
         "properties": {
           "statuses": {
             "type": "object",
-            "additionalProperties": { "$ref": "#/components/schemas/ModelScanStatus" },
+            "additionalProperties": { "$ref": "#/components/schemas/ModelScanInfo" },
             "nullable": true
           }
         }

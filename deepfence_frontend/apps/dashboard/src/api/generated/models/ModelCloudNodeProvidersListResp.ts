@@ -13,52 +13,45 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelScanInfo } from './ModelScanInfo';
-import {
-    ModelScanInfoFromJSON,
-    ModelScanInfoFromJSONTyped,
-    ModelScanInfoToJSON,
-} from './ModelScanInfo';
-
 /**
  * 
  * @export
- * @interface ModelScanStatusResp
+ * @interface ModelCloudNodeProvidersListResp
  */
-export interface ModelScanStatusResp {
+export interface ModelCloudNodeProvidersListResp {
     /**
      * 
-     * @type {{ [key: string]: ModelScanInfo; }}
-     * @memberof ModelScanStatusResp
+     * @type {Array<string>}
+     * @memberof ModelCloudNodeProvidersListResp
      */
-    statuses: { [key: string]: ModelScanInfo; } | null;
+    providers: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the ModelScanStatusResp interface.
+ * Check if a given object implements the ModelCloudNodeProvidersListResp interface.
  */
-export function instanceOfModelScanStatusResp(value: object): boolean {
+export function instanceOfModelCloudNodeProvidersListResp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "statuses" in value;
+    isInstance = isInstance && "providers" in value;
 
     return isInstance;
 }
 
-export function ModelScanStatusRespFromJSON(json: any): ModelScanStatusResp {
-    return ModelScanStatusRespFromJSONTyped(json, false);
+export function ModelCloudNodeProvidersListRespFromJSON(json: any): ModelCloudNodeProvidersListResp {
+    return ModelCloudNodeProvidersListRespFromJSONTyped(json, false);
 }
 
-export function ModelScanStatusRespFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanStatusResp {
+export function ModelCloudNodeProvidersListRespFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudNodeProvidersListResp {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'statuses': (json['statuses'] === null ? null : mapValues(json['statuses'], ModelScanInfoFromJSON)),
+        'providers': json['providers'],
     };
 }
 
-export function ModelScanStatusRespToJSON(value?: ModelScanStatusResp | null): any {
+export function ModelCloudNodeProvidersListRespToJSON(value?: ModelCloudNodeProvidersListResp | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -67,7 +60,7 @@ export function ModelScanStatusRespToJSON(value?: ModelScanStatusResp | null): a
     }
     return {
         
-        'statuses': (value.statuses === null ? null : mapValues(value.statuses, ModelScanInfoToJSON)),
+        'providers': value.providers,
     };
 }
 
