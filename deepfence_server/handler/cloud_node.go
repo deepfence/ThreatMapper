@@ -138,6 +138,18 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 	httpext.JSON(w, http.StatusOK, infos)
 }
 
+func (h *Handler) ListCloudNodeProvidersHandler(w http.ResponseWriter, r *http.Request) {
+
+	providers, err := model.GetCloudProvidersList(r.Context())
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.CloudNodeProvidersListResp{Providers: providers})
+}
+
 func complianceError(w http.ResponseWriter, errorString string) {
 	err := respondError(errors.New(errorString), w)
 	if err != nil {
