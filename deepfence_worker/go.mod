@@ -6,6 +6,12 @@ replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
+replace github.com/deepfence/df-utils => ../deepfence_agent/tools/apache/deepfence/df-utils
+
+replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
+
+replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/deepfence/tcptracer-bpf
+
 replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230127115739-84aacf6856fa
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server/
