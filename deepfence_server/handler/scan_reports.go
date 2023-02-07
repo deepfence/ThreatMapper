@@ -641,7 +641,12 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common})
+	counts, err := reporters.GetSevCounts(r.Context(), utils.NEO4J_MALWARE_SCAN, common.ScanID)
+	if err != nil {
+		log.Error().Err(err).Msg("Counts computation issue")
+	}
+
+	httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common, SeverityCounts: counts})
 }
 
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
