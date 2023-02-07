@@ -12,11 +12,11 @@ const spinnerCVA = cva(['text-gray-200 animate-spin dark:text-gray-600 fill-blue
   variants: {
     size: {
       default: 'w-8 h-8',
-      xs: 'w-4 h-4',
-      sm: 'w-[18px] h-[18px]',
-      md: 'w-5 h-5',
-      lg: 'w-6 h-6',
-      xl: 'w-7 h-7',
+      xs: 'w-3 h-3',
+      sm: 'w-3.5 h-3.5',
+      md: 'w-4 h-4',
+      lg: 'w-[18px] h-[18px]',
+      xl: 'w-5 h-5',
     },
   },
 });
