@@ -35,6 +35,7 @@ export * from './ModelCloudNodeAccountRegisterRespData';
 export * from './ModelCloudNodeAccountsListReq';
 export * from './ModelCloudNodeAccountsListResp';
 export * from './ModelCloudNodeCloudtrailTrail';
+export * from './ModelCloudNodeProvidersListResp';
 export * from './ModelCompliance';
 export * from './ModelComplianceScanResult';
 export * from './ModelComplianceScanTriggerReq';

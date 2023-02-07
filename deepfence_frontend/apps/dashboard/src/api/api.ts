@@ -40,23 +40,18 @@ export function getTopologyApiClient() {
   const topologyApi = new TopologyApi(configuration);
   return {
     getHostsTopologyGraph: topologyApi.getHostsTopologyGraph.bind(topologyApi),
+    getKubernetesTopologyGraph: topologyApi.getKubernetesTopologyGraph.bind(topologyApi),
   };
 }
 
-export function getCloudNodesApi() {
+export function getCloudNodesApiClient() {
   const cloudNodesApi = new CloudNodesApi(configuration);
   return {
     listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
   };
 }
-export function getRegistriesApi() {
-  const registriesApi = new RegistryApi(configuration);
-  return {
-    addRegistry: registriesApi.addRegistry.bind(registriesApi),
-  };
-}
 
-export function vulnerabilityScanApiClient() {
+export function getVulnerabilityApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
   return {
     startVulnerabilityScan:
@@ -68,7 +63,7 @@ export function vulnerabilityScanApiClient() {
   };
 }
 
-export function secretScanApiClient() {
+export function getSecretApiClient() {
   const secretApi = new SecretScanApi(configuration);
   return {
     startSecretScan: secretApi.startSecretScan.bind(secretApi),
@@ -77,11 +72,19 @@ export function secretScanApiClient() {
   };
 }
 
-export function complianceScanApiClient() {
+export function getComplianceApiClient() {
   const complianceApi = new ComplianceApi(configuration);
   return {
     startComplianceScan: complianceApi.startComplianceScan.bind(complianceApi),
     statusComplianceScan: complianceApi.statusComplianceScan.bind(complianceApi),
     resultComplianceScan: complianceApi.resultsComplianceScan.bind(complianceApi),
+  };
+}
+
+export function getRegistriesApiClient() {
+  const registriesApi = new RegistryApi(configuration);
+  return {
+    listRegistries: registriesApi.listRegistry.bind(registriesApi),
+    addRegistry: registriesApi.addRegistry.bind(registriesApi),
   };
 }

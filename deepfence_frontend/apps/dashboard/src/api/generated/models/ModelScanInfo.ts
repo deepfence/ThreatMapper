@@ -24,6 +24,18 @@ export interface ModelScanInfo {
      * @type {string}
      * @memberof ModelScanInfo
      */
+    node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelScanInfo
+     */
+    node_type: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelScanInfo
+     */
     scan_id: string;
     /**
      * 
@@ -44,6 +56,8 @@ export interface ModelScanInfo {
  */
 export function instanceOfModelScanInfo(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "status" in value;
     isInstance = isInstance && "updated_at" in value;
@@ -61,6 +75,8 @@ export function ModelScanInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
     }
     return {
         
+        'node_id': json['node_id'],
+        'node_type': json['node_type'],
         'scan_id': json['scan_id'],
         'status': json['status'],
         'updated_at': json['updated_at'],
@@ -76,6 +92,8 @@ export function ModelScanInfoToJSON(value?: ModelScanInfo | null): any {
     }
     return {
         
+        'node_id': value.node_id,
+        'node_type': value.node_type,
         'scan_id': value.scan_id,
         'status': value.status,
         'updated_at': value.updated_at,
