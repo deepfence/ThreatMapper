@@ -546,7 +546,7 @@ func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.N
 	}
 
 	if err != nil {
-		log.Error().Msgf("%v, req=%v", err, req)
+		log.Error().Msgf("%v, req=%s,%v", err, req.BulkScanId, req.ScanIds)
 		respondError(err, w)
 		return
 	}
