@@ -52,6 +52,13 @@ type ScanInfo struct {
 	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
 }
 
+type CloudComplianceScanInfo struct {
+	ScanId        string `json:"scan_id" required:"true"`
+	BenchmarkType string `json:"benchmark_type" required:"true"`
+	Status        string `json:"status" required:"true"`
+	UpdatedAt     int64  `json:"updated_at" required:"true" format:"int64"`
+}
+
 const (
 	SCAN_STATUS_SUCCESS    = utils.SCAN_STATUS_SUCCESS
 	SCAN_STATUS_STARTING   = utils.SCAN_STATUS_STARTING
@@ -80,6 +87,10 @@ type ScanListReq struct {
 
 type ScanListResp struct {
 	ScansInfo []ScanInfo `json:"scans_info" required:"true"`
+}
+
+type CloudComplianceScanListResp struct {
+	ScansInfo []CloudComplianceScanInfo `json:"scans_info" required:"true"`
 }
 
 type ScanResultsReq struct {
