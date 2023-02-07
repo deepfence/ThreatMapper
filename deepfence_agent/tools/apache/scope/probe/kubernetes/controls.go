@@ -7,22 +7,19 @@ import (
 )
 
 func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
-	_, err := k8sscanner.NewComplianceScanner(
+	scanner, err := k8sscanner.NewComplianceScanner(
 		k8sscannerutil.Config{
-			ManagementConsoleUrl:      "",
-			ManagementConsolePort:     "",
-			DeepfenceKey:              "",
-			ComplianceCheckType:       "",
-			ComplianceBenchmark:       "",
-			CloudProvider:             "",
+			ComplianceCheckType:       k8sscannerutil.NsaCisaCheckType,
 			ScanId:                    "",
-			NodeId:                    "",
+			NodeId:                    req.NodeId,
 			NodeName:                  "",
-			ComplianceResultsFilePath: "",
-			ComplianceStatusFilePath:  "",
-		},
-		"",
-		k8sscannerutil.NsaCisaCheckType)
+			ComplianceResultsFilePath: "/var/log/compliance/compliance-scan/<scan_id>.log",
+			ComplianceStatusFilePath:  "/var/log/compliance/compliance-status/status.log",
+		})
+	if err != nil {
+		return err
+	}
+	err = scanner.RunComplianceScan()
 	if err != nil {
 		return err
 	}
