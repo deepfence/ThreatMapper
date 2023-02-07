@@ -119,13 +119,23 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 	defer tx.Close()
 
 	_, err = tx.Run(`
-		MERGE (v:AgentVersion{node_id:$version})
-		MERGE (n:Node{node_id:$node_id})
-		MERGE (v) -[:SCHEDULED{status: $status, retries: 0, updated_at: TIMESTAMP()}]-> (n)`,
+		OPTIONAL MATCH (n:Node{node_id:$node_id}) -[old:VERSIONED]-> (v)
+		DELETE old`,
+		map[string]interface{}{
+			"node_id": nodeId,
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Run(`
+		MERGE (n:Node{node_id:$node_id}) -[r:VERSIONED]-> (v:AgentVersion{node_id:$version})
+		WITH n, v
+		OPTIONAL MATCH (v) -[r:SCHEDULED]-> (n)
+		DELETE r`,
 		map[string]interface{}{
 			"version": version,
 			"node_id": nodeId,
-			"status":  utils.SCAN_STATUS_SUCCESS,
 		})
 
 	if err != nil {

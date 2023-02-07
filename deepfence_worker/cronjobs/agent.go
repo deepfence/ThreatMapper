@@ -68,8 +68,24 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 	}
 
 	for _, tag := range tags_to_ingest {
+		local_root := "/tmp/" + tag
+		cmd := exec.Command("rm", []string{"-rf", local_root}...)
+		if err := cmd.Run(); err != nil {
+			log.Warn().Err(err).Msg("rm")
+		}
+		cmd = exec.Command("mkdir", []string{"-p", local_root + "/home"}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("mkdir1")
+			continue
+		}
+		cmd = exec.Command("mkdir", []string{"-p", local_root + "/usr/local"}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("mkdir2")
+			continue
+		}
+
 		agent_image := "deepfenceio/deepfence_agent_ce:" + tag[1:]
-		cmd := exec.Command("docker", []string{"pull", agent_image}...)
+		cmd = exec.Command("docker", []string{"pull", agent_image}...)
 		if err := cmd.Run(); err != nil {
 			log.Error().Err(err).Msg("Docker pull")
 			continue
@@ -79,7 +95,12 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			log.Error().Err(err).Msg("Docker create")
 			continue
 		}
-		cmd = exec.Command("docker", []string{"cp", "dummy:/home/deepfence", "/tmp/" + tag}...)
+		cmd = exec.Command("docker", []string{"cp", "dummy:/home/deepfence", local_root + "/home"}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("Docker cp")
+			continue
+		}
+		cmd = exec.Command("docker", []string{"cp", "dummy:/usr/local/discovery", local_root + "/usr/local"}...)
 		if err := cmd.Run(); err != nil {
 			log.Error().Err(err).Msg("Docker cp")
 			continue
@@ -90,7 +111,7 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			continue
 		}
 		out_file := fmt.Sprintf("%s.tar.gz", tag)
-		cmd = exec.Command("tar", []string{"zcvf", out_file, "-C", "/tmp/" + tag, "."}...)
+		cmd = exec.Command("tar", []string{"zcvf", out_file, "-C", local_root, "."}...)
 		if err := cmd.Run(); err != nil {
 			log.Error().Err(err).Msg("Untar")
 			continue
@@ -147,8 +168,9 @@ func ingestAgentVersion(ctx context.Context, tags_to_url map[string]string) erro
 
 	if _, err = tx.Run(`
 		UNWIND $batch as row
-		MERGE (:AgentVersion{node_id: row.tag, url: row.url})
-		`, map[string]interface{}{"batch": tags_to_ingest}); err != nil {
+		MERGE (n:AgentVersion{node_id: row.tag})
+		SET n.url = row.url`,
+		map[string]interface{}{"batch": tags_to_ingest}); err != nil {
 		return err
 	}
 

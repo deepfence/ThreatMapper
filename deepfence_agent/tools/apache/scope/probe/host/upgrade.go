@@ -20,26 +20,37 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 	console_ip := os.Getenv("MGMT_CONSOLE_URL")
 	url := strings.ReplaceAll(req.HomeDirectoryUrl, "deepfence-file-server:9000", fmt.Sprintf("%s/file-server", console_ip))
 	url = strings.ReplaceAll(url, "http://", "https://")
-	fmt.Println("Fetching %v", url)
+	fmt.Printf("Fetching %v\n", url)
 	err := downloadFile("/tmp/deepfence.tar.gz", url)
 	if err != nil {
+		fmt.Printf("Download failed\n")
 		return err
 	}
+	fmt.Printf("Download done\n")
 
 	Backup("/home/deepfence")
+	Backup("/usr/local/discovery")
+
+	fmt.Printf("Backup done\n")
 
 	pid, _, _ := syscall.Syscall(syscall.SYS_FORK, 0, 0, 0)
 	if pid == 0 {
+
+		fmt.Printf("Inside child")
 
 		c, err := supervisord.NewUnixSocketClient("/var/run/supervisor.sock")
 		if err != nil {
 			log.Fatal().Err(err)
 		}
 
-		err = extractTarGz("/tmp/deepfence.tar.gz", "/home/deepfence")
+		fmt.Printf("Extract")
+
+		err = extractTarGz("/tmp/deepfence.tar.gz", "/")
 		if err != nil {
 			log.Fatal().Err(err)
 		}
+
+		fmt.Printf("Restart")
 
 		err = c.Restart()
 		if err != nil {
@@ -47,6 +58,8 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 		}
 		os.Exit(0)
 	}
+
+	fmt.Printf("Child created: %v", pid)
 	return nil
 }
 
