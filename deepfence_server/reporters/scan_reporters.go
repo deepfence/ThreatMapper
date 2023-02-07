@@ -11,6 +11,14 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
+type NodeNotFoundError struct {
+	node_id string
+}
+
+func (ve *NodeNotFoundError) Error() string {
+	return fmt.Sprintf("Node %v not found", ve.node_id)
+}
+
 func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids []string) (model.ScanStatusResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -28,6 +36,30 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 		return model.ScanStatusResp{}, err
 	}
 	defer tx.Close()
+
+	r, err := tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:Bulk%s)
+		WHERE n.node_id IN $node_ids
+		RETURN COUNT(n) <> 0 AS Exists`,
+		scan_type),
+		map[string]interface{}{
+			"node_ids": scan_ids,
+		})
+	if err != nil {
+		return model.ScanStatusResp{}, err
+	}
+
+	recc, err := r.Single()
+	if err != nil {
+		return model.ScanStatusResp{}, err
+	}
+
+	if !recc.Values[0].(bool) {
+		return model.ScanStatusResp{},
+			&NodeNotFoundError{
+				node_id: "unknown",
+			}
+	}
 
 	res, err := tx.Run(fmt.Sprintf(`
 		MATCH (m:%s)
@@ -167,6 +199,28 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	}
 	defer tx.Close()
 
+	r, err := tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s{node_id:$node_id})
+		RETURN n IS NOT NULL AS Exists`,
+		scan_type),
+		map[string]interface{}{
+			"node_id": scan_id,
+		})
+	if err != nil {
+		return res, common, err
+	}
+
+	rec, err := r.Single()
+	if err != nil {
+		return res, common, err
+	}
+
+	if !rec.Values[0].(bool) {
+		return res, common, &NodeNotFoundError{
+			node_id: scan_id,
+		}
+	}
+
 	nres, err := tx.Run(`
 		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
 		RETURN d
@@ -196,7 +250,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		return res, common, err
 	}
 
-	rec, err := ncommonres.Single()
+	rec, err = ncommonres.Single()
 	if err != nil {
 		return res, common, err
 	}
@@ -275,6 +329,28 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 		return scan_ids, err
 	}
 	defer tx.Close()
+
+	r, err := tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:Bulk%s{node_id:$node_id})
+		RETURN n IS NOT NULL AS Exists`,
+		scan_type),
+		map[string]interface{}{
+			"node_id": scan_id,
+		})
+	if err != nil {
+		return scan_ids, err
+	}
+
+	recc, err := r.Single()
+	if err != nil {
+		return scan_ids, err
+	}
+
+	if !recc.Values[0].(bool) {
+		return scan_ids, &NodeNotFoundError{
+			node_id: scan_id,
+		}
+	}
 
 	neo_res, err := tx.Run(`
 		MATCH (m:Bulk`+string(scan_type)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scan_type)+`)
