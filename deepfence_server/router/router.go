@@ -215,6 +215,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/registryaccount", func(r chi.Router) {
 				r.Get("/list", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
+				r.Delete("/{id}", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
 			})
 
 			openApiDocs.AddDiagnosisOperations()
@@ -236,9 +237,3 @@ func newAuthorizationHandler() (*casbin.Enforcer, error) {
 func IsSaasDeployment() bool {
 	return strings.ToLower(os.Getenv("DEEPFENCE_SAAS_DEPLOYMENT")) == "true"
 }
-
-/*
-
-
-
- */

@@ -296,8 +296,11 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("listRegistry", http.MethodGet, "/deepfence/registryaccount/list",
 		"List Registries", "List all the added Registries",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryListReq), new([]postgresqldb.GetContainerRegistriesSafeRow))
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryListReq), new([]model.RegistryListResp))
 	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount/",
 		"Add Registry", "Add a new supported registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryAddReq), nil)
+	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{id}",
+		"Add Registry", "Add a new supported registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryDeleteReq), nil)
 }
