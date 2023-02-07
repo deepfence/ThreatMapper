@@ -8,6 +8,7 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -79,6 +80,12 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		},
 	}
 
+	if params.ImageName != "" {
+		cfg.Source = params.ImageName
+	} else {
+		cfg.Source = params.ImageId
+	}
+
 	log.Debug().Msgf("config: %+v", cfg)
 
 	rawSbom, err := syft.GenerateSBOM(cfg)
@@ -119,6 +126,8 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	}
 
 	scanMsg := message.NewMessage(watermill.NewUUID(), payload)
+	scanMsg.Metadata = map[string]string{directory.NamespaceKey: tenantID}
+	middleware.SetCorrelationID(watermill.NewShortUUID(), scanMsg)
 
 	return []*message.Message{scanMsg}, nil
 }
