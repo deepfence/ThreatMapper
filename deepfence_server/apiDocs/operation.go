@@ -13,7 +13,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	postgresqldb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/report"
-	utils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 func (d *OpenApiDocs) AddUserAuthOperations() {

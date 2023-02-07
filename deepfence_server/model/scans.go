@@ -29,12 +29,27 @@ type CloudComplianceScanTriggerReq struct {
 	ScanTriggers []CloudComplianceScanTrigger `json:"scan_triggers" required:"true"`
 }
 
-type ScanTriggerCommon struct {
-	ScanTriggers       []ScanTrigger `json:"scan_triggers" required:"true"`
-	GenerateBulkScanId bool          `json:"generate_bulk_scan_id" required:"true"`
+type KeyValue struct {
+	Key   string `json:"key" required:"true"`
+	Value string `json:"value" required:"true"`
 }
 
-type ScanTrigger struct {
+type FieldsFilter struct {
+	FieldsValues []KeyValue `json:"fields_values" required:"true"`
+}
+
+type ScanFilter struct {
+	ImageScanFilter     FieldsFilter `json:"image_scan_filter" required:"true"`
+	ContainerScanFilter FieldsFilter `json:"container_scan_filter" required:"true"`
+	HostScanFilter      FieldsFilter `json:"host_scan_filter" required:"true"`
+}
+
+type ScanTriggerCommon struct {
+	NodeIds []NodeIdentifier `json:"node_ids" required:"true"`
+	Filters ScanFilter       `json:"filters" required:"true"`
+}
+
+type NodeIdentifier struct {
 	NodeId   string `json:"node_id" required:"true"`
 	NodeType string `json:"node_type" required:"true" enum:"image,host,container"`
 }

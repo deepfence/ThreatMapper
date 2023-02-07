@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -29,7 +30,7 @@ import (
 
 const MaxSbomRequestSize = 500 * 1e6
 
-func scanId(req model.ScanTrigger) string {
+func scanId(req model.NodeIdentifier) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
 }
 
@@ -95,7 +96,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.ScanTrigger) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier) (ctl.Action, error) {
 		binArgs := map[string]string{
 			"scan_id":   scanId,
 			"node_type": req.NodeType,
@@ -135,7 +136,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), reqs.GenerateBulkScanId, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggers, actionBuilder)
+	scan_ids, bulkId, err := startMultiScan(r.Context(), true, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -157,7 +158,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.ScanTrigger) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier) (ctl.Action, error) {
 		binArgs := map[string]string{
 			"scan_id":   scanId,
 			"node_type": req.NodeType,
@@ -193,7 +194,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), reqs.GenerateBulkScanId, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggers, actionBuilder)
+	scan_ids, bulkId, err := startMultiScan(r.Context(), true, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -239,7 +240,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.ScanTrigger) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier) (ctl.Action, error) {
 		binArgs := map[string]string{
 			"scan_id":   scanId,
 			"node_type": req.NodeType,
@@ -275,7 +276,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), reqs.GenerateBulkScanId, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggers, actionBuilder)
+	scan_ids, bulkId, err := startMultiScan(r.Context(), true, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -410,7 +411,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
-	// msg.SetContext(directory.NewContextWithNameSpace(namespace))
+	msg.SetContext(directory.NewContextWithNameSpace(namespace))
 	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
 
 	err = h.TasksPublisher.Publish(utils.ScanSBOMTask, msg)
@@ -667,7 +668,80 @@ func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_
 	return entries, common, nil
 }
 
-func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4jScanType, reqs []model.ScanTrigger, actionBuilder func(string, model.ScanTrigger) (ctl.Action, error)) ([]string, string, error) {
+func fields_filter2cypher(node string, firstCond bool, fieldsFilter model.FieldsFilter) string {
+	if len(fieldsFilter.FieldsValues) == 0 {
+		return ""
+	}
+	res := ""
+	if firstCond {
+		res += "WHERE"
+	} else {
+		res += "AND"
+	}
+	strs := []string{}
+	for i := range fieldsFilter.FieldsValues {
+		strs = append(strs, fmt.Sprintf("%s=%s", fieldsFilter.FieldsValues[i].Key, fieldsFilter.FieldsValues[i].Value))
+	}
+
+	return res + strings.Join(strs, ",")
+}
+
+func get_node_ids(tx neo4j.Transaction, neo4jNode string, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+	nres, err := tx.Run(fmt.Sprintf(`
+		MATCH (n:%s)
+		%s
+		RETURN n.node_id`,
+		neo4jNode,
+		fields_filter2cypher("n", true, filter)),
+		map[string]interface{}{})
+	if err != nil {
+		return res, err
+	}
+
+	rec, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for i := range rec {
+		res = append(res, model.NodeIdentifier{
+			NodeId:   rec[i].Values[0].(string),
+			NodeType: "host",
+		})
+	}
+	return res, nil
+}
+
+func FindNodesMatching(ctx context.Context, filter model.ScanFilter) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	rh, err := get_node_ids(tx, "Node", filter.HostScanFilter)
+	ri, err := get_node_ids(tx, "ContainerImage", filter.ImageScanFilter)
+	rc, err := get_node_ids(tx, "Container", filter.ContainerScanFilter)
+
+	return append(append(rh, ri...), rc...), nil
+}
+
+func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4jScanType, req model.ScanTriggerCommon, actionBuilder func(string, model.NodeIdentifier) (ctl.Action, error)) ([]string, string, error) {
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -684,6 +758,16 @@ func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4j
 	tx, err := session.BeginTransaction()
 	if err != nil {
 		return nil, "", err
+	}
+
+	reqs := []model.NodeIdentifier{}
+	if len(req.NodeIds) == 0 {
+		reqs, err = FindNodesMatching(ctx, req.Filters)
+		if err != nil {
+			return nil, "", err
+		}
+	} else {
+		reqs = req.NodeIds
 	}
 
 	defer tx.Close()
