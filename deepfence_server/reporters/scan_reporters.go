@@ -38,7 +38,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 	defer tx.Close()
 
 	r, err := tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:Bulk%s)
+		OPTIONAL MATCH (n:%s)
 		WHERE n.node_id IN $node_ids
 		RETURN COUNT(n) <> 0 AS Exists`,
 		scan_type),
@@ -62,9 +62,9 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 	}
 
 	res, err := tx.Run(fmt.Sprintf(`
-		MATCH (m:%s)
+		MATCH (m:%s) -> (n)
 		WHERE m.node_id IN $scan_ids
-		RETURN m.node_id, m.status`, scan_type),
+		RETURN m.node_id, m.status, n.node_id, n.node_type, m.updated_at`, scan_type),
 		map[string]interface{}{"scan_ids": scan_ids})
 	if err != nil {
 		return model.ScanStatusResp{}, err
@@ -72,12 +72,19 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 
 	recs, err := res.Collect()
 	if err != nil {
-		return model.ScanStatusResp{}, err
+		return model.ScanStatusResp{}, NotFoundErr
 	}
 
-	statuses := map[string]model.ScanStatus{}
-	for i := range recs {
-		statuses[recs[i].Values[0].(string)] = model.ScanStatus(recs[i].Values[1].(string))
+	statuses := map[string]model.ScanInfo{}
+	for _, rec := range recs {
+		info := model.ScanInfo{
+			ScanId:    rec.Values[0].(string),
+			Status:    rec.Values[1].(string),
+			NodeId:    rec.Values[2].(string),
+			NodeType:  rec.Values[3].(string),
+			UpdatedAt: rec.Values[4].(int64),
+		}
+		statuses[rec.Values[0].(string)] = info
 	}
 
 	return model.ScanStatusResp{Statuses: statuses}, nil
@@ -118,7 +125,7 @@ func GetScansList(ctx context.Context,
 
 	recs, err := res.Collect()
 	if err != nil {
-		return model.ScanListResp{}, err
+		return model.ScanListResp{}, NotFoundErr
 	}
 
 	scans_info := []model.ScanInfo{}
@@ -311,7 +318,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (model.ScanStatusResp, error) {
 	scan_ids := model.ScanStatusResp{
-		Statuses: map[string]model.ScanStatus{},
+		Statuses: map[string]model.ScanInfo{},
 	}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -353,8 +360,8 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	}
 
 	neo_res, err := tx.Run(`
-		MATCH (m:Bulk`+string(scan_type)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scan_type)+`)
-		RETURN d.node_id, d.status`,
+		MATCH (m:Bulk`+string(scan_type)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scan_type)+`) -[:SCANNED]-> (n)
+		RETURN d.node_id as scan_id, d.status as status, n.node_id as node_id, n.node_type as node_type, d.updated_at`,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return scan_ids, err
@@ -362,11 +369,18 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 	recs, err := neo_res.Collect()
 	if err != nil {
-		return scan_ids, err
+		return scan_ids, NotFoundErr
 	}
 
 	for _, rec := range recs {
-		scan_ids.Statuses[rec.Values[0].(string)] = model.ScanStatus(rec.Values[1].(string))
+		info := model.ScanInfo{
+			ScanId:    rec.Values[0].(string),
+			Status:    rec.Values[1].(string),
+			NodeId:    rec.Values[2].(string),
+			NodeType:  rec.Values[3].(string),
+			UpdatedAt: rec.Values[4].(int64),
+		}
+		scan_ids.Statuses[rec.Values[0].(string)] = info
 	}
 
 	return scan_ids, nil

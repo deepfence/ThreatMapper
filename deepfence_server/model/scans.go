@@ -50,6 +50,8 @@ type ScanInfo struct {
 	ScanId    string `json:"scan_id" required:"true"`
 	Status    string `json:"status" required:"true"`
 	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
+	NodeId    string `json:"node_id" required:"true"`
+	NodeType  string `json:"node_type" required:"true"`
 }
 
 const (
@@ -69,7 +71,7 @@ type ScanStatusReq struct {
 }
 
 type ScanStatusResp struct {
-	Statuses map[string]ScanStatus `json:"statuses" required:"true"`
+	Statuses map[string]ScanInfo `json:"statuses" required:"true"`
 }
 
 type ScanListReq struct {
