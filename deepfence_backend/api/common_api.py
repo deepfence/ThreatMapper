@@ -1662,7 +1662,6 @@ def user_activity_log():
             post_data = {}
         params = get_default_params(post_data)
         if params.get("size")and not from_time and not to_time:
-            print("it should not come here")
             start_index = int(params.get("start_index"))
             page = params.get("page")
             if not page:
