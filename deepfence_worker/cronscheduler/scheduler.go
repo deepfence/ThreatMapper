@@ -36,6 +36,10 @@ func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
 func (s *Scheduler) addJobs() error {
 	var err error
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
+	_, err = s.cron.AddFunc("@every 30s", s.TriggerConsoleActionsTask)
+	if err != nil {
+		return err
+	}
 	_, err = s.cron.AddFunc("@every 120s", s.CleanUpGraphDBTask)
 	if err != nil {
 		return err
@@ -65,6 +69,14 @@ func (s *Scheduler) addJobs() error {
 
 func (s *Scheduler) Run() {
 	s.cron.Run()
+}
+
+func (s *Scheduler) TriggerConsoleActionsTask() {
+	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+	err := s.publishNewCronJob(metadata, utils.TriggerConsoleActionsTask, []byte(utils.GetDatetimeNow()))
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (s *Scheduler) CleanUpGraphDBTask() {

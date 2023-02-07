@@ -118,6 +118,18 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		cronjobs.CheckAgentUpgrade,
 	)
 
+	trigger_console_actions_task, err := subscribe(utils.TriggerConsoleActionsTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
+	mux.AddNoPublisherHandler(
+		utils.TriggerConsoleActionsTask,
+		utils.TriggerConsoleActionsTask,
+		trigger_console_actions_task,
+		cronjobs.TriggerConsoleControls,
+	)
+
 	sync_registry_task, err := subscribe(utils.SyncRegistryTask, cfg.KafkaBrokers, wml)
 	if err != nil {
 		cancel()
