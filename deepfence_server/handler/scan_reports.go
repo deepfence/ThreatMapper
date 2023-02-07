@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -362,7 +363,7 @@ func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
 }
 
 func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
-	var params utils.SbomRequest
+	var params utils.ScanSbomRequest
 	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &params)
 	if err != nil {
 		respondError(&BadDecoding{err}, w)
@@ -383,7 +384,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file := "/sbom/" + utils.ScanIdReplacer.Replace(params.ScanId) + ".json"
+	file := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
 	info, err := mc.UploadFile(r.Context(), file, []byte(params.SBOM),
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
@@ -412,7 +413,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	// msg.SetContext(directory.NewContextWithNameSpace(namespace))
 	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
 
-	err = h.TasksPublisher.Publish(utils.ParseSBOMTask, msg)
+	err = h.TasksPublisher.Publish(utils.ScanSBOMTask, msg)
 	if err != nil {
 		log.Error().Msgf("cannot publish message:", err)
 		respondError(err, w)

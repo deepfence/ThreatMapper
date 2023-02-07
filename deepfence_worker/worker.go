@@ -10,7 +10,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -21,6 +21,20 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	ingestC := make(chan *kgo.Record, 10000)
 	ctx, cancel := context.WithCancel(context.Background())
 	go utils.StartKafkaProducer(ctx, cfg.KafkaBrokers, ingestC)
+
+	// task publisher
+	publisher, err := kafka.NewPublisher(
+		kafka.PublisherConfig{
+			Brokers:   cfg.KafkaBrokers,
+			Marshaler: kafka.DefaultMarshaler{},
+		},
+		wml,
+	)
+	if err != nil {
+		cancel()
+		return err
+	}
+	defer publisher.Close()
 
 	// task router
 	mux, err := message.NewRouter(message.RouterConfig{}, wml)
@@ -45,16 +59,30 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	)
 
 	// sbom
-	subscribe_parse_sbom, err := subscribe(utils.ParseSBOMTask, cfg.KafkaBrokers, wml)
+	subscribe_scan_sbom, err := subscribe(utils.ScanSBOMTask, cfg.KafkaBrokers, wml)
 	if err != nil {
 		cancel()
 		return err
 	}
 	mux.AddNoPublisherHandler(
-		utils.ParseSBOMTask,
-		utils.ParseSBOMTask,
-		subscribe_parse_sbom,
-		tasks.NewSBOMParser(ingestC).ParseSBOM,
+		utils.ScanSBOMTask,
+		utils.ScanSBOMTask,
+		subscribe_scan_sbom,
+		sbom.NewSBOMScanner(ingestC).ScanSBOM,
+	)
+
+	subscribe_generate_sbom, err := subscribe(utils.GenerateSBOMTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
+	mux.AddHandler(
+		utils.GenerateSBOMTask,
+		utils.GenerateSBOMTask,
+		subscribe_generate_sbom,
+		utils.ScanSBOMTask,
+		publisher,
+		sbom.NewSbomGenerator(ingestC).GenerateSbom,
 	)
 
 	subscribe_cleanup_graph_db, err := subscribe(utils.CleanUpGraphDBTask, cfg.KafkaBrokers, wml)

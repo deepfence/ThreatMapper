@@ -164,7 +164,7 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 
 	d.AddOperation("ingestSbom", http.MethodPost, "/deepfence/ingest/sbom",
 		"Ingest SBOM from Scan", "Ingest SBOM from Scan",
-		http.StatusOK, []string{tagVulnerability}, bearerToken, new(utils.SbomRequest), nil)
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(utils.ScanSbomRequest), nil)
 
 	d.AddOperation("ingestVulnerabilities", http.MethodPost, "/deepfence/ingest/vulnerabilities",
 		"Ingest Vulnerabilities", "Ingest vulnerabilities found while scanning the agent host or containers",
