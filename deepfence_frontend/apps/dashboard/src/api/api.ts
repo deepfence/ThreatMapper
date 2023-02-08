@@ -91,15 +91,7 @@ export function getRegistriesApiClient() {
   };
 }
 
-// export function cloudScanApiClient() {
-//   const cloudScannerApi = new CloudScannerApi(configuration);
-//   return {
-//     startCloudComplianceScan:
-//       cloudScannerApi.startCloudComplianceScans.bind(cloudScannerApi),
-//   };
-// }
-
-export function malwareScanApiClient() {
+export function getMalwareScanApiClient() {
   const malwareApi = new MalwareScanApi(configuration);
   return {
     startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
