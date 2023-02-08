@@ -3,6 +3,10 @@ package kubernetes
 import (
 	"os"
 	"strings"
+	"sync"
+	"time"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -217,16 +221,22 @@ var (
 	//}
 )
 
+type kubernetesReportCache struct {
+	k8sReport report.Report
+	sync.RWMutex
+}
+
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
-	client             Client
-	pipes              controls.PipeClient
-	probeID            string
-	probe              *probe.Probe
-	hostID             string
-	handlerRegistry    *controls.HandlerRegistry
-	nodeName           string
-	k8sClusterTopology report.Topology
+	client                Client
+	pipes                 controls.PipeClient
+	probeID               string
+	probe                 *probe.Probe
+	hostID                string
+	kubernetesReportCache kubernetesReportCache
+	handlerRegistry       *controls.HandlerRegistry
+	nodeName              string
+	k8sClusterTopology    report.Topology
 }
 
 // NewReporter makes a new Reporter
@@ -236,17 +246,19 @@ func NewReporter(client Client, pipes controls.PipeClient, probeID string, hostI
 	kubernetesClusterName = os.Getenv(k8sClusterName)
 
 	reporter := &Reporter{
-		client:          client,
-		pipes:           pipes,
-		probeID:         probeID,
-		probe:           probe,
-		hostID:          hostID,
-		handlerRegistry: handlerRegistry,
-		nodeName:        nodeName,
+		client:                client,
+		pipes:                 pipes,
+		probeID:               probeID,
+		probe:                 probe,
+		hostID:                hostID,
+		handlerRegistry:       handlerRegistry,
+		nodeName:              nodeName,
+		kubernetesReportCache: kubernetesReportCache{k8sReport: report.Report{}},
 	}
 	k8sClusterTopology, _ := reporter.kubernetesClusterTopology()
 	reporter.k8sClusterTopology = k8sClusterTopology
 	client.WatchPods(reporter.podEvent)
+	go reporter.updateReportCache()
 	return reporter
 }
 
@@ -346,8 +358,41 @@ func (r *Tagger) Tag(rpt report.Report) (report.Report, error) {
 	return rpt, nil
 }
 
-// Report generates a Report containing Container and ContainerImage topologies
+func (r *Reporter) updateReportCache() {
+	k8sReport, err := r.generateReport()
+	if err != nil {
+		logrus.Error(err.Error())
+	} else {
+		r.kubernetesReportCache.Lock()
+		r.kubernetesReportCache.k8sReport = k8sReport
+		r.kubernetesReportCache.Unlock()
+	}
+	ticker := time.NewTicker(5 * time.Minute)
+	for {
+		select {
+		case <-ticker.C:
+			k8sReport, err = r.generateReport()
+			if err != nil {
+				logrus.Error(err.Error())
+				continue
+			}
+			r.kubernetesReportCache.Lock()
+			r.kubernetesReportCache.k8sReport = k8sReport
+			r.kubernetesReportCache.Unlock()
+		}
+	}
+}
+
 func (r *Reporter) Report() (report.Report, error) {
+	r.kubernetesReportCache.RLock()
+	k8sReport := r.kubernetesReportCache.k8sReport
+	r.kubernetesReportCache.RUnlock()
+	k8sReport.TS = mtime.Now()
+	return k8sReport, nil
+}
+
+// Report generates a Report containing Container and ContainerImage topologies
+func (r *Reporter) generateReport() (report.Report, error) {
 	result := report.MakeReport()
 	serviceTopology, services, err := r.serviceTopology()
 	if err != nil {

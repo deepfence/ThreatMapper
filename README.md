@@ -11,6 +11,29 @@
 [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce)
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
+<h3 align="center">
+<a
+    href="https://runacap.com/ross-index/annual-2022/"
+    target="_blank"
+    rel="noopener"
+>
+    <img
+        style="width: 260px; height: 56px"
+        src="https://runacap.com/wp-content/uploads/2023/02/Annual_ROSS_badge_black_2022.svg"
+        alt="ROSS Index - Fastest Growing Open-Source Startups | Runa Capital"
+        width="260"
+        height="56"
+    />
+</a>
+</h3>
+
+<h3 align="center">
+  <a href="https://community.deepfence.io/docs/threatmapper/"><b>Documentation</b></a> &bull;
+  <a href="https://github.com/deepfence/ThreatMapper/blob/master/README.zh-CN.md"><b>ReadMe in Chinese</b></a> &bull;
+  <a href="https://github.com/deepfence/ThreatMapper/blob/master/README.zh-TW.md"><b>ReadMe in Chinese (Taiwan)</b></a> &bull;
+  <a href="https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ"><b>Slack Community</b></a> &bull;
+  <a href="https://discord.gg/Nf9BxeBPQN"><b>Discord Community </b></a>
+</h3>
 
 ## :tada: Announcing ThreatMapper 1.4
 

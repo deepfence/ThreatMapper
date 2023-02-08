@@ -44,6 +44,7 @@ from utils.resource import encrypt_cloud_credential
 from resource_models.node import Node
 from utils.common import get_rounding_time_unit
 import time
+import pytz
 
 common_api = Blueprint("common_api", __name__)
 
@@ -1639,12 +1640,28 @@ def user_activity_log():
         if not request.is_json:
             raise InvalidUsage("Missing JSON post data in request")
         post_data = request.json
-        logs = UserActivityLog.query.order_by(UserActivityLog.created_at.desc()).all()
+        
+        from_time = post_data.get("from_time", "")
+        to_time = post_data.get("to_time","")
+        
+        if from_time and to_time:
+            from_time_object = datetime.fromisoformat(from_time).astimezone(pytz.utc)
+            to_time_object = datetime.fromisoformat(to_time).astimezone(pytz.utc)
+            logs = UserActivityLog.query.filter(UserActivityLog.created_at >= from_time_object).filter(UserActivityLog.created_at <= to_time_object).order_by(UserActivityLog.created_at.desc()).all()
+        elif from_time and not to_time:
+            from_time_object = datetime.fromisoformat(from_time).astimezone(pytz.utc)
+            logs = UserActivityLog.query.filter(UserActivityLog.created_at >= from_time_object).order_by(UserActivityLog.created_at.desc()).all()
+        elif not from_time and to_time:
+            to_time_object = datetime.fromisoformat(to_time).astimezone(pytz.utc)
+            logs = UserActivityLog.query.filter(UserActivityLog.created_at <= to_time_object).order_by(UserActivityLog.created_at.desc()).all()
+        else:
+            logs = UserActivityLog.query.order_by(UserActivityLog.created_at.desc()).all()
+            
         total = len(logs)
         if not post_data:
             post_data = {}
         params = get_default_params(post_data)
-        if params.get("size"):
+        if params.get("size")and not from_time and not to_time:
             start_index = int(params.get("start_index"))
             page = params.get("page")
             if not page:

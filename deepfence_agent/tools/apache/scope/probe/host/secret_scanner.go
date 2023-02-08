@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -25,8 +24,7 @@ import (
 )
 
 const (
-	ebpfSocketPath          = "/tmp/secret-scanner.sock"
-	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
+	secretScannerSocketPath = "/tmp/secret-scanner.sock"
 	defaultScanConcurrency  = 1
 	secretScanIndexName     = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
@@ -144,7 +142,24 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
-	log.Info("started conrext background", context.Background(), req)
+
+	stopScanStatus := make(chan bool, 1)
+	go func(secretScanLogDoc map[string]interface{}) {
+		ticker := time.NewTicker(2 * time.Minute)
+		for {
+			select {
+			case <-ticker.C:
+				secretScanLogDoc["scan_status"] = "IN_PROGRESS"
+				secretScanLogDoc["time_stamp"] = getTimestamp()
+				secretScanLogDoc["@timestamp"] = getCurrentTime()
+				byteJson, _ = json.Marshal(secretScanLogDoc)
+				ingestScanData(string(byteJson), secretScanLogsIndexName)
+			case <-stopScanStatus:
+				return
+			}
+		}
+	}(secretScanLogDoc)
+
 	res, err := client.FindSecretInfo(context.Background(), &req)
 	if req.GetPath() != "" && err == nil && res != nil {
 		if scanDir == HostMountDir {
@@ -153,6 +168,9 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 			}
 		}
 	}
+
+	stopScanStatus <- true
+	time.Sleep(2 * time.Second)
 	timestamp := getTimestamp()
 	currTime := getCurrentTime()
 	if err != nil {
@@ -255,7 +273,9 @@ func writeScanDataToFile(secretScanMsg string, index string) error {
 }
 
 func newSecretScannerClient() (pb.SecretScannerClient, error) {
-	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"), grpc.WithInsecure())
+	maxMsgSize := 1024 * 1024 * 100 // 100 mb
+	conn, err := grpc.Dial("unix://"+secretScannerSocketPath, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMsgSize)),
+		grpc.WithAuthority("dummy"), grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
 		return nil, err
@@ -282,7 +302,7 @@ func buildClient() (*http.Client, error) {
 	}
 
 	// Load our trusted certificate path
-	pemData, err := ioutil.ReadFile(certPath)
+	pemData, err := os.ReadFile(certPath)
 	if err != nil {
 		return nil, err
 	}

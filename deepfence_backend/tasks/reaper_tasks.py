@@ -67,7 +67,7 @@ def insert_secret_error_doc(status, datetime_now, host_name, node_id, scan_messa
     body = {
         "masked": "false", "scan_id": status["scan_id"], "node_type": status["node_type"],
         "scan_message": scan_message, "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "time_stamp": int(time.time() * 1000.0), "host": host_name, "action": CVE_SCAN_STATUS_ERROR,
+        "time_stamp": int(time.time() * 1000.0), "host": host_name, "scan_status": CVE_SCAN_STATUS_ERROR,
         "host_name": host_name, "node_id": node_id, "node_name": host_name
     }
     ESConn.create_doc(SECRET_SCAN_LOGS_INDEX, body)
@@ -94,20 +94,18 @@ def cve_fix_interrupted(*args):
         if host in windows_hosts:
             continue
         for cve_node_id, cve_status in host_cves.items():
-            last_status_timestamp = datetime.fromtimestamp(
-                cve_status["timestamp"] / 1000)
+            last_status_timestamp = datetime.fromtimestamp(cve_status["timestamp"] / 1000)
             datetime_now = datetime.now()
-            total_diff_minutes = int(
-                round((datetime_now - last_status_timestamp).total_seconds() / 60))
+            total_diff_minutes = int(round((datetime_now - last_status_timestamp).total_seconds() / 60))
             if cve_status["action"] == CVE_SCAN_STATUS_QUEUED:
-                # If scan is in QUEUED state for 1 day, then it has failed
-                if total_diff_minutes >= 1440:
+                # If scan is in QUEUED state for 6 hours, then it has failed
+                if total_diff_minutes >= 360:
                     insert_cve_error_doc(cve_status, datetime_now, host, cve_node_id,
-                                         "Scan was stopped because it was in queued state for a week. Please start again.")
+                                         "Scan was stopped because it was in queued state longer than expected. "
+                                         "Please start again.")
                     celery_task_id = "cve_scan:" + cve_status["scan_id"]
                     try:
-                        celery_app.control.revoke(
-                            celery_task_id, terminate=False)
+                        celery_app.control.revoke(celery_task_id, terminate=False)
                     except:
                         pass
             elif cve_status["action"] in CVE_SCAN_RUNNING_STATUS:
@@ -138,19 +136,17 @@ def secret_fix_interrupted(*args):
         if host in windows_hosts:
             continue
         for node_id, status in host_secrets.items():
-            last_status_timestamp = datetime.fromtimestamp(
-                status["timestamp"] / 1000)
+            last_status_timestamp = datetime.fromtimestamp(status["timestamp"] / 1000)
             datetime_now = datetime.now()
-            total_diff_minutes = int(
-                round((datetime_now - last_status_timestamp).total_seconds() / 60))
-            if status["action"] == CVE_SCAN_STATUS_QUEUED:
-                # If scan is in QUEUED state for 7 days, then it has failed
-                if total_diff_minutes >= 1440:
+            total_diff_minutes = int(round((datetime_now - last_status_timestamp).total_seconds() / 60))
+            if status["scan_status"] == CVE_SCAN_STATUS_QUEUED:
+                # If scan is in QUEUED state for 6 hours, then it has failed
+                if total_diff_minutes >= 360:
                     insert_secret_error_doc(status, datetime_now, host, node_id,
-                                            "Scan was stopped because it was in queued state for a week. Please start "
-                                            "again.")
-            elif status["action"] in SECRET_SCAN_STATUS_IN_PROGRESS:
-                # If scan was started 40 minutes ago, still no updated status found, then it has failed
+                                            "Scan was stopped because it was in queued state longer than expected. "
+                                            "Please start again.")
+            elif status["scan_status"] == SECRET_SCAN_STATUS_IN_PROGRESS:
+                # If scan was started 10 minutes ago, still no updated status found, then it has failed
                 if total_diff_minutes >= 10:
                     insert_secret_error_doc(status, datetime_now, host, node_id,
                                             "Scan was interrupted. Please restart.")
