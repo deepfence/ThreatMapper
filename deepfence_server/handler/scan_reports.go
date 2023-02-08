@@ -219,27 +219,6 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	ctx := r.Context()
-	driver, err := directory.Neo4jClient(ctx)
-
-	if err != nil {
-		respondError(err, w)
-		return
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		respondError(err, w)
-		return
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		respondError(err, w)
-		return
-	}
-
-	defer tx.Close()
 
 	var nodes []model.NodeIdentifier
 	if len(reqs.NodeIds) == 0 {
@@ -253,16 +232,16 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	var scanTrigger model.NodeIdentifier
-	if len(reqs.NodeIds) > 0 {
-		scanTrigger = reqs.NodeIds[0]
+	if len(nodes) > 0 {
+		scanTrigger = nodes[0]
 	}
 
 	var scanIds []string
 	var bulkId string
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) {
-		scanIds, bulkId, err = startMultiCloudComplianceScan(r.Context(), nodes, reqs.BenchmarkTypes)
+		scanIds, bulkId, err = startMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	} else {
-		scanIds, bulkId, err = startMultiComplianceScan(r.Context(), nodes, reqs.BenchmarkTypes)
+		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	}
 
 	if err != nil {
