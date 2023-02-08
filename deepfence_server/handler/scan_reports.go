@@ -208,27 +208,37 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	var req model.ComplianceScanTriggerReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	var reqs model.ComplianceScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
 		return
 	}
 
-	//TODO
-	//for _, req := range reqq.ScanTriggers {
-	//	scanId := scanId(req)
+	var scanTrigger model.ComplianceScanTrigger
+	if len(reqs.ScanTriggers) > 0 {
+		scanTrigger = reqs.ScanTriggers[0]
+	}
 
-	//	action := ctl.Action{
-	//		ID:             ctl.StartComplianceScan,
-	//		RequestPayload: "",
-	//	}
+	var scanIds []string
+	var bulkId string
+	if scanTrigger.NodeType == reporters.CLOUD_AWS || scanTrigger.NodeType == reporters.CLOUD_GCP || scanTrigger.NodeType == reporters.CLOUD_AZURE {
+		scanIds, bulkId, err = startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
+	} else {
+		scanIds, bulkId, err = startMultiComplianceScan(r.Context(), reqs.ScanTriggers)
+	}
 
-	//	startScan(w, r, utils.NEO4J_COMPLIANCE_SCAN, scanId,
-	//		ctl.StringToResourceType(req.NodeType), req.NodeId,
-	//		action)
-	//}
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(err, w)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -284,40 +294,6 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	var reqs model.ComplianceScanTriggerReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	var scanTrigger model.ComplianceScanTrigger
-	if len(reqs.ScanTriggers) > 0 {
-		scanTrigger = reqs.ScanTriggers[0]
-	}
-
-	var scanIds []string
-	var bulkId string
-	if scanTrigger.NodeType == reporters.CLOUD_AWS || scanTrigger.NodeType == reporters.CLOUD_GCP || scanTrigger.NodeType == reporters.CLOUD_AZURE {
-		scanIds, bulkId, err = startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
-	} else {
-		scanIds, bulkId, err = startMultiComplianceScan(r.Context(), reqs.ScanTriggers)
-	}
-
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		respondError(err, w)
-		return
-	}
-
-	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
