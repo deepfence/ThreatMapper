@@ -970,8 +970,10 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
         else:
             if node_type == NODE_TYPE_CONTAINER:
                 pivot = "container_name"
+                summary_heading = "Container Secrets"
             else:
                 pivot = "node_name"
+                summary_heading = "Image Secrets"
 
             df3 = df[df['node_type'] == node_type][["Severity.level", pivot, 'count']]
             pivot_table = pd.pivot_table(df3, index=[pivot, "Severity.level"], aggfunc=[np.sum])
@@ -989,7 +991,7 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                     node_count_info[i[0]] = {i[1]: v}
                 else:
                     node_count_info[i[0]][i[1]] = v
-            summary_heading = "Image Secrets"
+            
             start_index = 0
             arr_index = 0
             end_index = 0
@@ -1268,8 +1270,10 @@ def malware_pdf_report(filters, lucene_query_string, number, time_unit, resource
         else:
             if node_type == NODE_TYPE_CONTAINER:
                 pivot = "container_name"
+                summary_heading = "Container Malwares"
             else:
                 pivot = "node_name"
+                summary_heading = "Image Malwares"
 
             df3 = df[df['node_type'] == node_type][["FileSeverity", pivot, 'count']]
             pivot_table = pd.pivot_table(df3, index=[pivot, "FileSeverity"], aggfunc=[np.sum])
@@ -1287,7 +1291,7 @@ def malware_pdf_report(filters, lucene_query_string, number, time_unit, resource
                     node_count_info[i[0]] = {i[1]: v}
                 else:
                     node_count_info[i[0]][i[1]] = v
-            summary_heading = "Image Malwares"
+            
             start_index = 0
             arr_index = 0
             end_index = 0
