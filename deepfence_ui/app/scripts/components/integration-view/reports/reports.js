@@ -35,10 +35,6 @@ const config = [
     label: 'Malware Scan',
     value: 'malware-scan',
   },
-  {
-    label: 'Secret Scan',
-    value: 'secret-scan',
-  }
 ];
 
 const cveSeverityOptions = [
