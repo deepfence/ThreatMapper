@@ -1,14 +1,11 @@
 package cronjobs
 
 import (
-	"fmt"
-
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -23,15 +20,15 @@ func TriggerConsoleControls(msg *message.Message) error {
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
-	actions, err := controls.GetAgentActions(ctx, ConsoleAgentId, MaxWorkload)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		return fmt.Errorf("%v", err)
-		// return nil
+	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, MaxWorkload)
+	for _, e := range errs {
+		if e != nil {
+			log.Error().Msgf(e.Error())
+		}
 	}
 
 	for _, action := range actions {
-		logrus.Infof("Init execute :%v", action.ID)
+		log.Info().Msgf("Init execute: %v", action.ID)
 		err := ctl.ApplyControl(action)
 		if err != nil {
 			log.Error().Msgf("Control %v failed: %v\n", action, err)
