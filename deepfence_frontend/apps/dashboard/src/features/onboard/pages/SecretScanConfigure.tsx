@@ -2,8 +2,10 @@ import { ActionFunctionArgs, Form, generatePath, redirect } from 'react-router-d
 import { Button } from 'ui-components';
 
 import { getSecretApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
-import { ModelScanTriggerNodeTypeEnum } from '@/api/generated/models/ModelScanTrigger';
+import {
+  ApiDocsBadRequestResponse,
+  ModelNodeIdentifierNodeTypeEnum,
+} from '@/api/generated';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -27,10 +29,16 @@ const action = async ({
     apiArgs: [
       {
         modelSecretScanTriggerReq: {
-          generate_bulk_scan_id: true,
-          scan_triggers: nodeIdArray.map((nodeId) => ({
+          filters: {
+            container_scan_filter: {
+              fields_values: null,
+            },
+            host_scan_filter: { fields_values: null },
+            image_scan_filter: { fields_values: null },
+          },
+          node_ids: nodeIdArray.map((nodeId) => ({
             node_id: nodeId,
-            node_type: nodeType as ModelScanTriggerNodeTypeEnum,
+            node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
           })),
         },
       },

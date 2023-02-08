@@ -30,7 +30,11 @@ import {
 } from 'ui-components';
 
 import { getSecretApiClient, getVulnerabilityApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelScanStatusResp } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelScanInfo,
+  ModelScanStatusResp,
+} from '@/api/generated';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -39,15 +43,10 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 export type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: {
-    [key: string]: string;
-  } | null;
+  data?: ModelScanInfo[];
 };
 
-type TableDataType = {
-  account: string;
-  status: string;
-};
+type TableDataType = ModelScanInfo;
 
 type TextProps = {
   scanningText: string;
@@ -104,7 +103,7 @@ async function getScanStatus(
   scanType: keyof typeof statusScanApiFunctionMap,
   bulkScanId: string,
 ): Promise<LoaderDataType> {
-  const r = await makeRequest({
+  const result = await makeRequest({
     apiFunction: statusScanApiFunctionMap[scanType],
     apiArgs: [
       {
@@ -122,15 +121,19 @@ async function getScanStatus(
       }
     },
   });
-  if (ApiError.isApiError(r)) {
-    throw r.value();
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
   }
-  const result = r as ModelScanStatusResp;
+
+  if (result === null) {
+    return {
+      data: [],
+    };
+  }
+
   return {
-    data: Object.keys(result.statuses ?? {}).reduce((prev, curr) => {
-      prev[curr] = result.statuses?.[curr].status ?? '';
-      return prev;
-    }, {} as Record<string, string>),
+    data: Object.values(result.statuses ?? {}),
   };
 }
 
@@ -212,19 +215,20 @@ const ScanInProgress = () => {
   const textMap = configMap[scanType];
 
   const columnHelper = createColumnHelper<TableDataType>();
-  const tableData = Object.keys(loaderData.data || []).map((id: string) => {
-    return {
-      account: id,
-      status: loaderData.data?.[id] ?? '',
-    };
-  });
 
-  const allScanFailed = areAllScanFailed(Object.values(loaderData?.data ?? {}));
-  const allScanDone = areAllScanDone(Object.values(loaderData?.data ?? {}));
+  const allScanFailed = areAllScanFailed(
+    loaderData?.data?.map((data) => data.status) ?? [],
+  );
+  const allScanDone = areAllScanDone(loaderData?.data?.map((data) => data.status) ?? []);
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor('account', {
+      columnHelper.accessor('node_type', {
+        cell: (info) => info.getValue(),
+        header: () => 'Type',
+        minSize: 200,
+      }),
+      columnHelper.accessor('node_id', {
         cell: (info) => info.getValue(),
         header: () => 'Name',
         minSize: 500,
@@ -282,7 +286,7 @@ const ScanInProgress = () => {
         },
       }),
     ],
-    [tableData],
+    [loaderData.data],
   );
 
   useInterval(() => {
@@ -329,7 +333,8 @@ const ScanInProgress = () => {
                   onClick={() =>
                     navigate(
                       generatePath(`/onboard/scan/view-summary/${scanType}/:scanIds`, {
-                        scanIds: tableData.map((data) => data.account).join(','),
+                        scanIds:
+                          loaderData?.data?.map((data) => data.scan_id).join(',') ?? '',
                       }),
                     )
                   }
@@ -352,8 +357,8 @@ const ScanInProgress = () => {
             {!allScanDone
               ? `${
                   scanType.charAt(0).toUpperCase() + scanType.slice(1)
-                } Scan started for ${tableData.length} host ${
-                  tableData.length > 1 ? 's' : ''
+                } Scan started for ${loaderData?.data?.length} host ${
+                  (loaderData?.data?.length ?? 0) > 1 ? 's' : ''
                 }`
               : 'All the scan are done'}
           </p>
@@ -373,7 +378,7 @@ const ScanInProgress = () => {
         <section className="mt-4 flex justify-center">
           <Table
             size="sm"
-            data={tableData}
+            data={loaderData.data ?? []}
             columns={columns}
             getRowCanExpand={() => {
               return true;

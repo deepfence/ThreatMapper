@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ModelRegistryAddReq,
+  ModelRegistryListResp,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -26,6 +27,8 @@ import {
     ApiDocsFailureResponseToJSON,
     ModelRegistryAddReqFromJSON,
     ModelRegistryAddReqToJSON,
+    ModelRegistryListRespFromJSON,
+    ModelRegistryListRespToJSON,
 } from '../models';
 
 export interface AddRegistryRequest {
@@ -62,13 +65,13 @@ export interface RegistryApiInterface {
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
+    listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelRegistryListResp>>>;
 
     /**
      * List all the added Registries
      * List Registries
      */
-    listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
+    listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryListResp>>;
 
 }
 
@@ -119,7 +122,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * List all the added Registries
      * List Registries
      */
-    async listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
+    async listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelRegistryListResp>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -139,14 +142,14 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelRegistryListRespFromJSON));
     }
 
     /**
      * List all the added Registries
      * List Registries
      */
-    async listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
+    async listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryListResp>> {
         const response = await this.listRegistryRaw(initOverrides);
         return await response.value();
     }
