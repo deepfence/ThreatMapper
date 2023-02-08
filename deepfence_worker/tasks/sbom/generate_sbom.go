@@ -57,7 +57,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	}
 
 	// get registry credentials
-	authFile, err := GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authFile, namespace, insecure, err := GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		return nil, err
 	}
@@ -76,12 +76,16 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		RegistryId:            params.RegistryId,
 		RegistryCreds: psUtils.RegistryCreds{
 			AuthFilePath:     authFile,
-			InsecureRegistry: false,
+			InsecureRegistry: insecure,
 		},
 	}
 
 	if params.ImageName != "" {
-		cfg.Source = params.ImageName
+		if namespace != "" {
+			cfg.Source = namespace + "/" + params.ImageName
+		} else {
+			cfg.Source = params.ImageName
+		}
 	} else {
 		cfg.Source = params.ImageId
 	}
