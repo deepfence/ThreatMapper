@@ -96,11 +96,12 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
 		binArgs := map[string]string{
-			"scan_id":   scanId,
-			"node_type": req.NodeType,
-			"node_id":   req.NodeId,
+			"scan_id":     scanId,
+			"node_type":   req.NodeType,
+			"node_id":     req.NodeId,
+			"registry_id": registryId,
 		}
 
 		if len(reqs.ScanConfig) != 0 {
@@ -158,11 +159,12 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
 		binArgs := map[string]string{
-			"scan_id":   scanId,
-			"node_type": req.NodeType,
-			"node_id":   req.NodeId,
+			"scan_id":     scanId,
+			"node_type":   req.NodeType,
+			"node_id":     req.NodeId,
+			"registry_id": registryId,
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
@@ -250,11 +252,12 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
 		binArgs := map[string]string{
-			"scan_id":   scanId,
-			"node_type": req.NodeType,
-			"node_id":   req.NodeId,
+			"scan_id":     scanId,
+			"node_type":   req.NodeType,
+			"node_id":     req.NodeId,
+			"registry_id": registryId,
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
@@ -764,7 +767,50 @@ func FindNodesMatching(ctx context.Context, filter model.ScanFilter) ([]model.No
 	return append(append(rh, ri...), rc...), nil
 }
 
-func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4jScanType, req model.ScanTriggerCommon, actionBuilder func(string, model.NodeIdentifier) (ctl.Action, error)) ([]string, string, error) {
+func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
+	res := ""
+
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (n:ContainerImage{node_id:$node_id})
+		MATCH (m:RegistryAccount) -[:HOSTS]-> (n)
+		RETURN m.container_registry_id
+		LIMIT 1`,
+		map[string]interface{}{"node_id": image_id})
+	if err != nil {
+		return res, err
+	}
+
+	rec, err := nres.Single()
+	if err != nil {
+		return res, nil
+	}
+
+	return rec.Values[0].(string), nil
+}
+
+func startMultiScan(ctx context.Context,
+	gen_bulk_id bool,
+	scan_type utils.Neo4jScanType,
+	req model.ScanTriggerCommon,
+	actionBuilder func(string, model.NodeIdentifier, string) (ctl.Action, error)) ([]string, string, error) {
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -798,7 +844,15 @@ func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4j
 	for _, req := range reqs {
 		scanId := scanId(req)
 
-		action, err := actionBuilder(scanId, req)
+		registryId := ""
+		if req.NodeType == ctl.ResourceTypeToString(controls.Image) {
+			registryId, err = FindImageRegistryId(ctx, req.NodeId)
+			if err != nil {
+				return nil, "", err
+			}
+		}
+
+		action, err := actionBuilder(scanId, req, registryId)
 		if err != nil {
 			log.Error().Err(err)
 			return nil, "", err
