@@ -1299,7 +1299,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/UtilsSbomRequest" }
+              "schema": { "$ref": "#/components/schemas/UtilsScanSbomRequest" }
             }
           }
         },
@@ -2065,9 +2065,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PostgresqlDbGetContainerRegistriesSafeRow"
-                  }
+                  "items": { "$ref": "#/components/schemas/ModelRegistryListResp" }
                 }
               }
             }
@@ -4306,13 +4304,13 @@
         }
       },
       "ModelComplianceScanTriggerReq": {
-        "required": ["scan_triggers", "generate_bulk_scan_id"],
+        "required": ["node_ids", "filters"],
         "type": "object",
         "properties": {
-          "generate_bulk_scan_id": { "type": "boolean" },
-          "scan_triggers": {
+          "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "node_ids": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelScanTrigger" },
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
             "nullable": true
           }
         }
@@ -4375,6 +4373,17 @@
         "required": ["offset", "size"],
         "type": "object",
         "properties": { "offset": { "type": "integer" }, "size": { "type": "integer" } }
+      },
+      "ModelFieldsFilter": {
+        "required": ["fields_values"],
+        "type": "object",
+        "properties": {
+          "fields_values": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelKeyValue" },
+            "nullable": true
+          }
+        }
       },
       "ModelHost": {
         "required": [
@@ -4446,6 +4455,11 @@
           "invite_url": { "type": "string" },
           "message": { "type": "string" }
         }
+      },
+      "ModelKeyValue": {
+        "required": ["key", "value"],
+        "type": "object",
+        "properties": { "key": { "type": "string" }, "value": { "type": "string" } }
       },
       "ModelKubernetesCluster": {
         "required": ["node_id", "node_name", "containers", "cloud_metadata", "metrics"],
@@ -4535,13 +4549,13 @@
         }
       },
       "ModelMalwareScanTriggerReq": {
-        "required": ["scan_triggers", "generate_bulk_scan_id"],
+        "required": ["node_ids", "filters"],
         "type": "object",
         "properties": {
-          "generate_bulk_scan_id": { "type": "boolean" },
-          "scan_triggers": {
+          "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "node_ids": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelScanTrigger" },
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
             "nullable": true
           }
         }
@@ -4552,6 +4566,14 @@
         "properties": { "message": { "type": "string" } }
       },
       "ModelMetadata": { "type": "object", "additionalProperties": {} },
+      "ModelNodeIdentifier": {
+        "required": ["node_id", "node_type"],
+        "type": "object",
+        "properties": {
+          "node_id": { "type": "string" },
+          "node_type": { "enum": ["image", "host", "container"], "type": "string" }
+        }
+      },
       "ModelPasswordResetRequest": {
         "required": ["email"],
         "type": "object",
@@ -4659,6 +4681,17 @@
           "secret": { "type": "object", "additionalProperties": {}, "nullable": true }
         }
       },
+      "ModelRegistryListResp": {
+        "type": "object",
+        "properties": {
+          "created_at": { "type": "string", "format": "date-time" },
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "non_secret": {},
+          "registry_type": { "type": "string" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
       "ModelResponseAccessToken": {
         "required": ["access_token", "refresh_token"],
         "type": "object",
@@ -4677,6 +4710,15 @@
           "part": { "type": "string" },
           "score": { "type": "number" },
           "signature_to_match": { "type": "string" }
+        }
+      },
+      "ModelScanFilter": {
+        "required": ["image_scan_filter", "container_scan_filter", "host_scan_filter"],
+        "type": "object",
+        "properties": {
+          "container_scan_filter": { "$ref": "#/components/schemas/ModelFieldsFilter" },
+          "host_scan_filter": { "$ref": "#/components/schemas/ModelFieldsFilter" },
+          "image_scan_filter": { "$ref": "#/components/schemas/ModelFieldsFilter" }
         }
       },
       "ModelScanInfo": {
@@ -4727,14 +4769,6 @@
             "additionalProperties": { "$ref": "#/components/schemas/ModelScanInfo" },
             "nullable": true
           }
-        }
-      },
-      "ModelScanTrigger": {
-        "required": ["node_id", "node_type"],
-        "type": "object",
-        "properties": {
-          "node_id": { "type": "string" },
-          "node_type": { "enum": ["image", "host", "container"], "type": "string" }
         }
       },
       "ModelScanTriggerResp": {
@@ -4810,13 +4844,13 @@
         }
       },
       "ModelSecretScanTriggerReq": {
-        "required": ["scan_triggers", "generate_bulk_scan_id"],
+        "required": ["node_ids", "filters"],
         "type": "object",
         "properties": {
-          "generate_bulk_scan_id": { "type": "boolean" },
-          "scan_triggers": {
+          "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "node_ids": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelScanTrigger" },
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
             "nullable": true
           }
         }
@@ -4933,10 +4967,15 @@
         }
       },
       "ModelVulnerabilityScanTriggerReq": {
-        "required": ["scan_triggers", "generate_bulk_scan_id", "scan_config"],
+        "required": ["node_ids", "filters", "scan_config"],
         "type": "object",
         "properties": {
-          "generate_bulk_scan_id": { "type": "boolean" },
+          "filters": { "$ref": "#/components/schemas/ModelScanFilter" },
+          "node_ids": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
+            "nullable": true
+          },
           "scan_config": {
             "enum": [
               "all",
@@ -4951,16 +4990,10 @@
               "dotnet"
             ],
             "type": "string"
-          },
-          "scan_triggers": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelScanTrigger" },
-            "nullable": true
           }
         }
       },
       "PostgresqlDbApiToken": { "type": "object" },
-      "PostgresqlDbGetContainerRegistriesSafeRow": { "type": "object" },
       "ReportColumn": {
         "type": "object",
         "properties": {
@@ -5170,7 +5203,7 @@
           }
         }
       },
-      "UtilsSbomRequest": {
+      "UtilsScanSbomRequest": {
         "required": ["scan_id", "sbom"],
         "type": "object",
         "properties": {
@@ -5182,6 +5215,7 @@
           "mode": { "type": "string" },
           "node_id": { "type": "string" },
           "node_type": { "type": "string" },
+          "registry_id": { "type": "string" },
           "sbom": { "type": "string" },
           "sbom_file_path": { "type": "string" },
           "scan_id": { "type": "string" },

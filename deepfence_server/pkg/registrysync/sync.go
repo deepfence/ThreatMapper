@@ -56,7 +56,7 @@ func Sync() error {
 			continue
 		}
 
-		err = SyncRegistry(ctx, pgClient, r)
+		err = SyncRegistry(ctx, pgClient, r, registryRow.ID)
 		if err != nil {
 			log.Error().Msgf("unable to get sync registry: %s: %v", registryRow.RegistryType, err)
 			continue
@@ -65,7 +65,7 @@ func Sync() error {
 	return nil
 }
 
-func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry) error {
+func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
 
 	// decrypt secret
 	aesValue, err := getAESValueForEncryption(ctx, pgClient)
@@ -89,10 +89,10 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	if err != nil {
 		return err
 	}
-	return insertToNeo4j(ctx, list, r)
+	return insertToNeo4j(ctx, list, r, pgId)
 }
 
-func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry) error {
+func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry, pgId int32) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -116,8 +116,8 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 	MERGE (n:ContainerImage{node_id:row.node_id})
 	MERGE (m:RegistryAccount{node_id: $node_id })
     MERGE (m) -[:HOSTS]-> (n)
-	SET n+= row, n.updated_at = TIMESTAMP()`,
-		map[string]interface{}{"batch": imageMap, "node_id": registryId})
+	SET n+= row, n.updated_at = TIMESTAMP(), m.container_registry_id=$pgId`,
+		map[string]interface{}{"batch": imageMap, "node_id": registryId, "pgId": pgId})
 	if err != nil {
 		return err
 	}

@@ -22,15 +22,18 @@ image:
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
-managementConsoleUrl: &managementConsoleUrl ""
-managementConsolePort: &managementConsolePort "443"
-
-priorityClassName: ""
+managementConsoleUrl: ""
+managementConsolePort: "443"
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
-deepfenceKey: &deepfenceKey ""
+deepfenceKey: ""
 # If kubernetes secret is already defined externally, change following value to false
 createDeepfenceKeySecret: true
+
+# Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
+# Example: prod-cluster or dev1-cluster
+# It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
+clusterName: ""
 
 # Suffix cloud instance id to hostnames
 instanceIdSuffix: "N"
@@ -38,10 +41,7 @@ instanceIdSuffix: "N"
 # comma separated list of tags (labels) to set for all agents
 userDefinedTags: ""
 
-# Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
-# Example: prod-cluster or dev1-cluster
-# It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
-clusterName: &clusterName ""
+priorityClassName: ""
 
 # Deploy Deepfence Kubernetes Scanner helm chart along with agent
 deployKubernetesScanner: false
@@ -93,12 +93,3 @@ serviceAccount:
 
 nameOverride: ""
 fullnameOverride: ""
-
-deepfence-k8s-scanner:
-  managementConsoleUrl: *managementConsoleUrl
-  managementConsolePort: *managementConsolePort
-  deepfenceKey: *deepfenceKey
-  clusterName: *clusterName
-  createDeepfenceKeySecret: false
-  image:
-    tag: "1.0.0"

@@ -25,6 +25,8 @@ import { module as dockerRegistryConnector } from '@/features/onboard/pages/Dock
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
+import { module as malwareScanConfigure } from '@/features/onboard/pages/MalwareScanConfigure';
+import { module as malwareScanSumary } from '@/features/onboard/pages/MalwareScanSummary';
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
 import { module as secretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
@@ -106,7 +108,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'scan',
         children: [
           {
-            path: 'choose/:nodeType/:nodeIds',
+            path: 'choose',
             ...chooseScan,
             meta: { title: 'Choose scan type' },
           },
@@ -116,14 +118,19 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Compliance Scan' },
           },
           {
-            path: 'configure/vulnerability/:nodeType/:nodeIds',
+            path: 'configure/vulnerability',
             ...vulnerabilityScanConfigure,
             meta: { title: 'Configure Vulnerability Scan' },
           },
           {
-            path: 'configure/secret/:nodeType/:nodeIds',
+            path: 'configure/secret',
             ...secretScanConfigure,
             meta: { title: 'Configure Secret Scan' },
+          },
+          {
+            path: 'configure/malware',
+            ...malwareScanConfigure,
+            meta: { title: 'Configure Malware Scan' },
           },
           {
             path: 'view-summary/compliance',
@@ -141,7 +148,12 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Summary Secret Scan' },
           },
           {
-            path: 'view-summary/running/:nodeId/:nodeType/:scanType/:bulkScanId',
+            path: 'view-summary/malware/:scanIds',
+            ...malwareScanSumary,
+            meta: { title: 'Summary Malware Scan' },
+          },
+          {
+            path: 'view-summary/running/:scanType/:bulkScanId',
             ...scanInProgress,
             meta: { title: 'Scan Summary' },
           },

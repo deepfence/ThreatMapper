@@ -16,15 +16,15 @@ replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/d
 
 replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230207100755-ec39717c899b
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230208064404-21bb3a595a07
 
 require (
-	github.com/ThreeDotsLabs/watermill v1.1.1
+	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
 	github.com/bytedance/sonic v1.7.0
 	github.com/casbin/casbin/v2 v2.60.0
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230201135148-7845948f4d9a
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230208050316-1756cc042520
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
@@ -61,7 +61,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.180 // indirect
 	github.com/bluele/gcache v0.0.2 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
-	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
+	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect

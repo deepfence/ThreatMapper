@@ -47,6 +47,9 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
+	d.AddOperation("getApiTokens", http.MethodPost, "/deepfence/api-token/reset",
+		"Reset User's API Tokens", "Reset user's API Tokens",
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
 
 	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
 		"Reset Password Request", "Request for resetting the password",
@@ -61,6 +64,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), new(model.ResponseAccessToken))
+
+	d.AddOperation("getUsers", http.MethodGet, "/deepfence/users",
+		"Get users", "Get users",
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]model.User))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -190,6 +197,10 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
 
+	d.AddOperation("ingestCloudComplianceScanStatus", http.MethodPost, "/deepfence/ingest/cloud-compliance-scan-status",
+		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
+
 	d.AddOperation("ingestMalwareScanStatus", http.MethodPost, "/deepfence/ingest/malware-scan-logs",
 		"Ingest Malware Scan Status", "Ingest malware scan status from the agent",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new([]ingester.MalwareScanStatus), nil)
@@ -217,9 +228,6 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("startMalwareScan", http.MethodPost, "/deepfence/scan/start/malware",
 		"Start Malware Scan", "Start Malware Scan on agent or registry",
 		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(model.MalwareScanTriggerReq), new(model.ScanTriggerResp))
-	d.AddOperation("startCloudComplianceScans", http.MethodPost, "/deepfence/scan/start/cloud-compliance",
-		"Start Cloud Compliance Scans", "Start Cloud Compliance Scans on cloud nodes", http.StatusAccepted,
-		[]string{tagCloudScanner}, bearerToken, new(model.CloudComplianceScanTriggerReq), new(model.ScanTriggerResp))
 
 	// Stop scan
 	d.AddOperation("stopVulnerabilityScan", http.MethodPost, "/deepfence/scan/stop/vulnerability",
@@ -244,10 +252,13 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
 	d.AddOperation("statusComplianceScan", http.MethodGet, "/deepfence/scan/status/compliance",
 		"Get Compliance Scan Status", "Get Compliance Scan Status on agent or registry",
-		http.StatusOK, []string{tagCompliance}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(model.ScanStatusReq), new(model.ComplianceScanStatusResp))
 	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
+	d.AddOperation("statusCloudComplianceScan", http.MethodGet, "/deepfence/scan/status/cloud-compliance",
+		"Get Cloud Compliance Scan Status", "Get Cloud Compliance Scan Status on cloud node",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(model.ScanStatusReq), new(model.ComplianceScanStatusResp))
 
 	// List scans
 	d.AddOperation("listVulnerabilityScans", http.MethodPost, "/deepfence/scan/list/vulnerability",

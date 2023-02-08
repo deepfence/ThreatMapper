@@ -12,16 +12,16 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 
 replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/deepfence/tcptracer-bpf
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230207100755-ec39717c899b
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230208064404-21bb3a595a07
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server/
 
 require (
-	github.com/ThreeDotsLabs/watermill v1.1.1
+	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
 	github.com/aws/aws-sdk-go v1.44.180
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230201135148-7845948f4d9a
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230208050316-1756cc042520
 	github.com/deepfence/package-scanner v1.2.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.47
@@ -29,7 +29,6 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.28.0
-	github.com/sirupsen/logrus v1.9.0
 	github.com/twmb/franz-go v1.11.3
 	github.com/twmb/franz-go/pkg/kadm v1.7.0
 )
@@ -39,7 +38,7 @@ require (
 	github.com/Microsoft/hcsshim v0.9.6 // indirect
 	github.com/Shopify/sarama v1.32.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
+	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/containerd/containerd v1.6.14 // indirect
@@ -114,11 +113,12 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
-	github.com/prometheus/common v0.37.0 // indirect
-	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/prometheus/common v0.39.0 // indirect
+	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/redis/go-redis/v9 v9.0.0-rc.4 // indirect
 	github.com/rs/xid v1.4.0 // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.2.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/Shopify/sarama/otelsarama v0.31.0 // indirect
