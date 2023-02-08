@@ -103,7 +103,7 @@ async function getScanStatus(
   scanType: keyof typeof statusScanApiFunctionMap,
   bulkScanId: string,
 ): Promise<LoaderDataType> {
-  const r = await makeRequest({
+  const result = await makeRequest({
     apiFunction: statusScanApiFunctionMap[scanType],
     apiArgs: [
       {
@@ -121,10 +121,10 @@ async function getScanStatus(
       }
     },
   });
-  if (ApiError.isApiError(r)) {
-    throw r.value();
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
   }
-  const result = r as ModelScanStatusResp;
 
   if (result === null) {
     return {
