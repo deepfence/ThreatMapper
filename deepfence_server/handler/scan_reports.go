@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -247,6 +248,11 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
+		return
+	}
+
+	if len(scanIds) == 0 {
+		respondError(errors.New("unable to spawn any new scans with the given criteria"), w)
 		return
 	}
 
@@ -713,9 +719,9 @@ func fields_filter2cypher(node string, firstCond bool, fieldsFilter model.Fields
 	}
 	res := ""
 	if firstCond {
-		res += "WHERE"
+		res += " WHERE "
 	} else {
-		res += "AND"
+		res += " AND "
 	}
 	strs := []string{}
 	for _, fieldValue := range fieldsFilter.FieldsValues {
@@ -724,18 +730,22 @@ func fields_filter2cypher(node string, firstCond bool, fieldsFilter model.Fields
 		}
 	}
 
-	return res + strings.Join(strs, ",")
+	return res + strings.Join(strs, " AND ")
 }
 
 func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
+	wherePattern := fields_filter2cypher("n", false, filter)
+	if wherePattern == "" {
+		return res, nil
+	}
 	nres, err := tx.Run(fmt.Sprintf(`
 		MATCH (n:%s)
 		WHERE n.node_id IN $ids
 		%s
 		RETURN n.node_id`,
 		controls.ResourceTypeToNeo4j(neo4jNode),
-		fields_filter2cypher("n", false, filter)),
+		wherePattern),
 		map[string]interface{}{"ids": reporters.NodeIdentifierToIdList(ids)})
 	if err != nil {
 		return res, err
