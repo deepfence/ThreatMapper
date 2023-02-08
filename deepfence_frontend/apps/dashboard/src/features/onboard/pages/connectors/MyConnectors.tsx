@@ -6,7 +6,7 @@ import {
   HiCubeTransparent,
   HiRefresh,
 } from 'react-icons/hi';
-import { Await, generatePath, useLoaderData, useRevalidator } from 'react-router-dom';
+import { Await, useLoaderData, useRevalidator } from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
@@ -32,7 +32,7 @@ import { getRegistryDisplayId } from '@/utils/registry';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-interface ConnectionNode {
+export interface OnboardConnectionNode {
   id: string;
   // url friendly id of the node
   urlId: string;
@@ -47,14 +47,14 @@ interface ConnectionNode {
   // account id to display in the table
   accountId?: string;
   active?: boolean;
-  connections?: ConnectionNode[];
+  connections?: OnboardConnectionNode[];
 }
 
 type LoaderData = {
-  data: Array<ConnectionNode>;
+  data: Array<OnboardConnectionNode>;
 };
 
-async function getConnectorsData(): Promise<Array<ConnectionNode>> {
+async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
   const awsResultsPromise = makeRequest({
     apiFunction: getCloudNodesApiClient().listCloudNodeAccount,
     apiArgs: [
@@ -263,9 +263,10 @@ function MyConnectors() {
 
 function MyConnectorsTable({ data }: LoaderData) {
   const [expandedState, setExpandedState] = useState<ExpandedState>(true);
+  const { navigate } = usePageNavigation();
 
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const columnHelper = createColumnHelper<ConnectionNode>();
+  const columnHelper = createColumnHelper<OnboardConnectionNode>();
   const columns = useMemo(
     () => [
       getRowExpanderColumn(columnHelper, {
@@ -324,10 +325,13 @@ function MyConnectorsTable({ data }: LoaderData) {
               {info.getValue()} ({info.row.original.count ?? 0} {nodeText})
               {rowSelectionState[info.row.original.id] ? (
                 <DFLink
-                  to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
-                    nodeType: info.row.original.urlType,
-                    nodeIds: info.row.original.connections!.map((n) => n.urlId).join(','),
-                  })}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/onboard/scan/choose', {
+                      state: info.row.original.connections,
+                    });
+                  }}
                   className="flex items-center"
                 >
                   <HiCubeTransparent className="mr-2" /> Configure Scan on all {nodeText}
@@ -336,10 +340,13 @@ function MyConnectorsTable({ data }: LoaderData) {
               {!rowSelectionState[info.row.original.id] &&
               selectedNodesOfSameType.length ? (
                 <DFLink
-                  to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
-                    nodeType: info.row.original.urlType,
-                    nodeIds: selectedNodesOfSameType.map((n) => n.urlId).join(','),
-                  })}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/onboard/scan/choose', {
+                      state: selectedNodesOfSameType,
+                    });
+                  }}
                   className="flex items-center"
                 >
                   <HiCubeTransparent className="mr-2" /> Configure Scan on{' '}
@@ -375,10 +382,13 @@ function MyConnectorsTable({ data }: LoaderData) {
         cell: (info) => {
           return (
             <DFLink
-              to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
-                nodeType: info.row.original.urlType,
-                nodeIds: info.row.original.urlId,
-              })}
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/onboard/scan/choose', {
+                  state: [info.row.original],
+                });
+              }}
               className="flex items-center"
             >
               <HiCubeTransparent className="mr-2" /> Configure Scan
@@ -387,7 +397,7 @@ function MyConnectorsTable({ data }: LoaderData) {
         },
       }),
     ],
-    [rowSelectionState],
+    [rowSelectionState, navigate],
   );
 
   if (!data?.length) {
@@ -464,9 +474,9 @@ export const module = {
 
 function findSelectedNodesOfType(
   selectionState: RowSelectionState,
-  data: ConnectionNode,
-): ConnectionNode[] {
-  const selectedNodes: ConnectionNode[] = [];
+  data: OnboardConnectionNode,
+): OnboardConnectionNode[] {
+  const selectedNodes: OnboardConnectionNode[] = [];
   data.connections?.forEach((node) => {
     if (node.id in selectionState) {
       selectedNodes.push(node);

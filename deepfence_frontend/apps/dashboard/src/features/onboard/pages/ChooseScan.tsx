@@ -1,10 +1,6 @@
-import { HiSwitchHorizontal } from 'react-icons/hi';
-import {
-  generatePath,
-  LoaderFunctionArgs,
-  redirect,
-  useLoaderData,
-} from 'react-router-dom';
+import { IconContext } from 'react-icons';
+import { HiArrowRight, HiDocumentSearch, HiSwitchHorizontal } from 'react-icons/hi';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Button, Card, Separator, Tooltip, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
@@ -15,15 +11,11 @@ import LogoGoogle from '@/assets/logo-google.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-type NodeType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes' | 'registry';
-
-type LoaderDataType = {
-  nodeType: NodeType;
-  nodeIds: string;
-};
+type NodeType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster' | 'registry';
 
 const getNodeDisplayText = (text: string) => {
   const splittedText = text.split(',');
@@ -37,76 +29,57 @@ const getNodeDisplayText = (text: string) => {
   }
 };
 
-const loader = ({ params }: LoaderFunctionArgs): LoaderDataType => {
-  // TODO: validate node type from url
-  if (
-    !params.nodeType ||
-    !params.nodeType.trim().length ||
-    !params.nodeIds ||
-    !params.nodeIds.trim().length
-  ) {
-    throw redirect('/onboard/connectors/my-connectors');
-  }
-  return {
-    nodeType: params.nodeType as NodeType,
-    nodeIds: params.nodeIds,
-  };
-};
-
 type ScanTypeListProps = {
   scanTitle: string;
   scanType: string;
   description: string;
-  lastScaned: string;
   buttonText: string;
 };
 
-const awsScanType = [
-  {
-    scanTitle: 'Compliance Scan',
-    scanType: 'compliance',
-    description: `A few words about the compliance scan and why you need to use it.`,
-    lastScaned: '3:00pm on 11/22/2022',
-    buttonText: 'Configure Compliance Scan',
-  },
-];
-const scanTypes: ScanTypeListProps[] = [
-  {
-    scanTitle: 'Vulnerability Scan',
-    scanType: 'vulnerability',
-    description: `A few words about the vulnerability scan and why you need to use it.`,
-    lastScaned: '3:00pm on 11/22/2022',
-    buttonText: 'Configure Vulnerability Scan',
-  },
-  awsScanType[0],
-  {
-    scanTitle: 'Secrets Scan',
-    scanType: 'secret',
-    description: `A few words about the secret scan and why you need to use it.`,
-    lastScaned: '3:00pm on 11/22/2022',
-    buttonText: 'Configure Secret Scan',
-  },
-  {
-    scanTitle: 'Malware Scan',
-    scanType: 'malware',
-    description: `A few words about the malware scan and why you need to use it.`,
-    lastScaned: '3:00pm on 11/22/2022',
-    buttonText: 'Configure Malware Scan',
-  },
-];
-type R = Record<NodeType, ScanTypeListProps[]>;
+const complianceScanData = {
+  scanTitle: 'Compliance Scan',
+  scanType: 'compliance',
+  description: `A few words about the compliance scan and why you need to use it.`,
+  buttonText: 'Configure Compliance Scan',
+};
 
-const possibleScanMap: R = {
-  aws: awsScanType,
-  gcp: awsScanType,
-  azure: awsScanType,
-  host: scanTypes,
-  kubernetes: scanTypes,
-  registry: scanTypes,
+const vulnerabilityScanData = {
+  scanTitle: 'Vulnerability Scan',
+  scanType: 'vulnerability',
+  description: `A few words about the vulnerability scan and why you need to use it.`,
+  buttonText: 'Configure Vulnerability Scan',
+};
+const secretScanData = {
+  scanTitle: 'Secrets Scan',
+  scanType: 'secret',
+  description: `A few words about the secret scan and why you need to use it.`,
+  buttonText: 'Configure Secret Scan',
+};
+const malwareScanData = {
+  scanTitle: 'Malwares Scan',
+  scanType: 'malware',
+  description: `A few words about the malwawre scan and why you need to use it.`,
+  buttonText: 'Configure Malware Scan',
+};
+
+type PossibleScanMapType = Record<NodeType, ScanTypeListProps[]>;
+
+const possibleScanMap: PossibleScanMapType = {
+  aws: [complianceScanData],
+  gcp: [complianceScanData],
+  azure: [complianceScanData],
+  host: [vulnerabilityScanData, complianceScanData, secretScanData, malwareScanData],
+  kubernetes_cluster: [
+    vulnerabilityScanData,
+    complianceScanData,
+    secretScanData,
+    malwareScanData,
+  ],
+  registry: [vulnerabilityScanData, complianceScanData, secretScanData],
 };
 
 const logoAndTextMap = (
-  nodeIds: string,
+  count: number,
   mode: Mode,
 ): Record<
   NodeType,
@@ -115,68 +88,73 @@ const logoAndTextMap = (
     logo: string;
   }
 > => {
-  const nodeCount = nodeIds.split(',').length;
   return {
     aws:
       mode === 'dark'
         ? {
-            title: `(${nodeCount}) Amazon Web Service${nodeCount > 1 ? 's' : ''}`,
+            title: `(${count}) Amazon Web Service Account${count > 1 ? 's' : ''}`,
             logo: LogoAwsWhite,
           }
         : {
-            title: `(${nodeCount}) Amazon Web Service${nodeCount > 1 ? 's' : ''}`,
+            title: `(${count}) Amazon Web Service Account${count > 1 ? 's' : ''}`,
             logo: LogoAws,
           },
     gcp: {
-      title: `(${nodeCount}) Google Cloud Service`,
+      title: `(${count}) Google Cloud Service Account${count > 1 ? 's' : ''}`,
       logo: LogoGoogle,
     },
     azure: {
-      title: `(${nodeCount}) Azure Web Service${nodeCount > 1 ? 's' : ''}`,
+      title: `(${count}) Azure Web Service Account${count > 1 ? 's' : ''}`,
       logo: LogoAzure,
     },
     host: {
-      title: `(${nodeCount}) Linux Host${nodeCount > 1 ? 's' : ''}`,
+      title: `(${count}) Linux Host${count > 1 ? 's' : ''}`,
       logo: LogoLinux,
     },
-    kubernetes: {
-      title: `(${nodeCount}) Kubernetes Service${nodeCount > 1 ? 's' : ''}`,
+    kubernetes_cluster: {
+      title: `(${count}) Kubernetes Service${count > 1 ? 's' : ''}`,
       logo: LogoK8,
     },
     registry: {
-      title: `(${nodeCount}) Registr${nodeCount > 1 ? 'ies' : 'y'}`,
+      title: `(${count}) Registr${count > 1 ? 'ies' : 'y'}`,
       logo: LogoAzureRegistry,
     },
   };
 };
 
-const SelectedAccount = () => {
+const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
   const { mode } = useTheme();
   const { navigate } = usePageNavigation();
-  const { nodeIds = '', nodeType } = useLoaderData() as LoaderDataType;
+
+  const nodeType = state[0].urlType as NodeType;
 
   return (
     <div className="flex w-fit p-3 pt-0 items-center mb-8">
       <span className="mr-6">
-        <img src={logoAndTextMap(nodeIds, mode)[nodeType].logo} alt="logo" />
+        <img src={logoAndTextMap(state.length, mode)[nodeType].logo} alt="logo" />
       </span>
       <div className="flex flex-col mr-20">
         <span
           className={`${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100`}
         >
-          {logoAndTextMap(nodeIds, mode)[nodeType].title}
+          {logoAndTextMap(state.length, mode)[nodeType].title}
         </span>
         <span
           className={`${Typography.size.base} ${Typography.weight.medium} text-gray-500 dark:text-gray-400`}
         >
-          <Tooltip content={nodeIds.split(',')[0]}>
-            <span>{getNodeDisplayText(nodeIds)}</span>
+          <Tooltip content={state[0].accountId ?? ''}>
+            <span>{getNodeDisplayText(state[0].accountId ?? '')}</span>
           </Tooltip>
           &nbsp;
-          {nodeIds.split(',').length > 1 && (
-            <Tooltip content={nodeIds.split(',').slice(1).join(', ')}>
+          {state.length > 1 && (
+            <Tooltip
+              content={state
+                .map((node) => node.accountId)
+                .slice(1)
+                .join(', ')}
+            >
               <span className={`${Typography.size.sm} text-blue-500 dark:text-blue-400`}>
-                +{nodeIds.split(',').length - 1} more
+                +{state.length - 1} more
               </span>
             </Tooltip>
           )}
@@ -198,53 +176,37 @@ const SelectedAccount = () => {
   );
 };
 
-const ScanType = () => {
+const ScanType = ({ state }: { state: OnboardConnectionNode[] }) => {
   const { navigate } = usePageNavigation();
-  const { nodeIds = '', nodeType } = useLoaderData() as LoaderDataType;
-
-  const goNext = (path: string) => {
-    navigate(path);
-  };
-
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-      {possibleScanMap[nodeType].map(
-        ({
-          scanTitle,
-          scanType,
-          description,
-          lastScaned,
-          buttonText,
-        }: ScanTypeListProps) => {
+      {possibleScanMap[state[0].urlType as NodeType].map(
+        ({ scanTitle, scanType, description, buttonText }: ScanTypeListProps) => {
           return (
             <Card key={scanType} className="p-5">
               <h2
-                className={`${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100 pb-2`}
+                className={`flex items-center gap-x-2 ${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100 pb-2`}
               >
+                <IconContext.Provider
+                  value={{ className: 'w-8 h-8 text-blue-600 dark:text-blue-500' }}
+                >
+                  <HiDocumentSearch />
+                </IconContext.Provider>
                 {scanTitle}
               </h2>
               <Separator />
               <p className={`${Typography.size.sm} ${Typography.weight.normal} py-2`}>
                 {description}
               </p>
-              <div
-                className={`mb-4 text-gray-500 dark:text-gray-400 ${Typography.size.sm} ${Typography.weight.normal}`}
-              >
-                Last scan:&nbsp;{lastScaned}
-              </div>
               <Button
                 size="xs"
                 color="primary"
+                className="mt-2 w-full"
+                endIcon={<HiArrowRight />}
                 onClick={() => {
-                  goNext(
-                    generatePath(
-                      `/onboard/scan/configure/${scanType}/:nodeType/:nodeIds`,
-                      {
-                        nodeType,
-                        nodeIds,
-                      },
-                    ),
-                  );
+                  navigate(`/onboard/scan/configure/${scanType}`, {
+                    state,
+                  });
                 }}
               >
                 {buttonText}
@@ -259,14 +221,22 @@ const ScanType = () => {
 
 const ChooseScan = () => {
   const { goBack } = usePageNavigation();
+  const location = useLocation();
+
+  if (!Array.isArray(location.state) || !location.state.length) {
+    return <Navigate to="/onboard/connectors/my-connectors" />;
+  }
+
+  const state = location.state as unknown as OnboardConnectionNode[];
+
   return (
     <>
       <ConnectorHeader
         title="Choose your scan type"
         description="Choose from the below options to perform your first scan."
       />
-      <SelectedAccount />
-      <ScanType />
+      <SelectedAccount state={state} />
+      <ScanType state={state} />
       <Button onClick={goBack} color="default" size="xs" className="mt-16">
         Go Back
       </Button>
@@ -275,6 +245,5 @@ const ChooseScan = () => {
 };
 
 export const module = {
-  loader,
   element: <ChooseScan />,
 };
