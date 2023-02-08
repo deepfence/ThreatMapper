@@ -17,6 +17,7 @@
     "codegen:clean": "rm -rf ./src/api/generated"
   },
   "dependencies": {
+    "@ant-design/charts": "^1.4.2",
     "@radix-ui/react-navigation-menu": "^1.1.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/user-event": "^14.4.3",
