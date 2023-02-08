@@ -25,14 +25,16 @@ func TriggerConsoleControls(msg *message.Message) error {
 
 	actions, err := controls.GetAgentActions(ctx, ConsoleAgentId, MaxWorkload)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		return fmt.Errorf("%v", err)
+		// return nil
 	}
 
 	for _, action := range actions {
 		logrus.Infof("Init execute :%v", action.ID)
 		err := ctl.ApplyControl(action)
 		if err != nil {
-			logrus.Errorf("Control %v failed: %v\n", action, err)
+			log.Error().Msgf("Control %v failed: %v\n", action, err)
 		}
 	}
 	return nil
