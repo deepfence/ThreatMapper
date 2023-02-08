@@ -12,7 +12,7 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 
 replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/deepfence/tcptracer-bpf
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230207100755-ec39717c899b
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230208064404-21bb3a595a07
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server/
 
@@ -21,7 +21,7 @@ require (
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
 	github.com/aws/aws-sdk-go v1.44.180
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230201135148-7845948f4d9a
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230208050316-1756cc042520
 	github.com/deepfence/package-scanner v1.2.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.47
