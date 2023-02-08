@@ -303,7 +303,7 @@ func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http
 
 	var scanIds []string
 	var bulkId string
-	if scanTrigger.NodeType == "aws" || scanTrigger.NodeType == "gcp" || scanTrigger.NodeType == "azure" {
+	if scanTrigger.NodeType == reporters.CLOUD_AWS || scanTrigger.NodeType == reporters.CLOUD_GCP || scanTrigger.NodeType == reporters.CLOUD_AZURE {
 		scanIds, bulkId, err = startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(r.Context(), reqs.ScanTriggers)
