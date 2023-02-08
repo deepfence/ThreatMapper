@@ -1,4 +1,4 @@
-package tasks
+package sbom
 
 import (
 	"context"
@@ -26,11 +26,11 @@ type SbomParser struct {
 	ingestC chan *kgo.Record
 }
 
-func NewSBOMParser(ingest chan *kgo.Record) SbomParser {
+func NewSBOMScanner(ingest chan *kgo.Record) SbomParser {
 	return SbomParser{ingestC: ingest}
 }
 
-func (s SbomParser) ParseSBOM(msg *message.Message) error {
+func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	// // extract tenant id
 	// tenantID, err := directory.ExtractNamespace(msg.Context())
 	// if err != nil {
@@ -117,24 +117,8 @@ func (s SbomParser) ParseSBOM(msg *message.Message) error {
 	}
 
 	// scan status
-	status := struct {
-		utils.SbomParameters
-		ScanStatus string `json:"scan_status,omitempty"`
-	}{
-		SbomParameters: params,
-		ScanStatus:     utils.SCAN_STATUS_SUCCESS,
-	}
-
-	sb, err := json.Marshal(status)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	} else {
-		s.ingestC <- &kgo.Record{
-			Topic:   utils.VULNERABILITY_SCAN_STATUS,
-			Value:   sb,
-			Headers: rh,
-		}
+	if err := SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS), rh); err != nil {
+		log.Error().Msgf("error sending scan status: %s", err.Error())
 	}
 
 	return nil

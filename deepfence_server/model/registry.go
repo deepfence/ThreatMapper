@@ -18,6 +18,10 @@ type RegistryAddReq struct {
 	RegistryType string                 `json:"registry_type"`
 }
 
+type RegistryDeleteReq struct {
+	ID int32 `json:"id"`
+}
+
 // todo: add support to list by name and type, id
 type RegistryListReq struct{}
 
@@ -50,9 +54,23 @@ type RegistryImage struct {
 	ContentTypes      []string  `json:"content_types"`
 }
 
+type RegistryListResp struct {
+	ID           int32           `json:"id"`
+	Name         string          `json:"name"`
+	RegistryType string          `json:"registry_type"`
+	NonSecret    json.RawMessage `json:"non_secret"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
+}
+
 // ListRegistriesSafe doesnot get secret field from DB
 func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.GetContainerRegistriesSafeRow, error) {
 	return pgClient.GetContainerRegistriesSafe(ctx)
+}
+
+// ListRegistriesSafe doesnot get secret field from DB
+func (rl *RegistryDeleteReq) DeleteRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	return pgClient.DeleteContainerRegistry(ctx, rl.ID)
 }
 
 func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {

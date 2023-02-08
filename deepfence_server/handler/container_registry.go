@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -10,6 +11,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/go-chi/chi"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
@@ -29,8 +31,21 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusInternalServerError, model.ErrorResponse{Message: err.Error()})
 		return
 	}
+	var registriesResponse []model.RegistryListResp
+	for _, r := range registries {
+		var registryResponse model.RegistryListResp
+		registryResponse = model.RegistryListResp{
+			ID:           r.ID,
+			Name:         r.Name,
+			RegistryType: r.RegistryType,
+			NonSecret:    r.NonSecret,
+			CreatedAt:    r.CreatedAt,
+			UpdatedAt:    r.UpdatedAt,
+		}
+		registriesResponse = append(registriesResponse, registryResponse)
+	}
 
-	httpext.JSON(w, http.StatusOK, registries)
+	httpext.JSON(w, http.StatusOK, registriesResponse)
 
 }
 
@@ -136,4 +151,31 @@ func (h *Handler) ListImagesInRegistry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpext.JSON(w, http.StatusOK, i)
+}
+
+func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
+	var req model.RegistryDeleteReq
+	regID := chi.URLParam(r, "id")
+
+	x, _ := strconv.ParseInt(regID, 10, 64)
+	req = model.RegistryDeleteReq{
+		ID: int32(x),
+	}
+
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusInternalServerError, model.ErrorResponse{Message: err.Error()})
+		return
+	}
+	err = req.DeleteRegistry(ctx, pgClient)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		httpext.JSON(w, http.StatusInternalServerError, model.ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: "registry deleted successfully"})
+
 }

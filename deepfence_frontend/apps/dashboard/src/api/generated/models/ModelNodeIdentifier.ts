@@ -16,60 +16,51 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanInfo
+ * @interface ModelNodeIdentifier
  */
-export interface ModelScanInfo {
+export interface ModelNodeIdentifier {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanInfo
+     * @memberof ModelNodeIdentifier
      */
     node_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelScanInfo
+     * @memberof ModelNodeIdentifier
      */
-    node_type: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanInfo
-     */
-    scan_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanInfo
-     */
-    status: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelScanInfo
-     */
-    updated_at: number;
+    node_type: ModelNodeIdentifierNodeTypeEnum;
 }
 
+
 /**
- * Check if a given object implements the ModelScanInfo interface.
+ * @export
  */
-export function instanceOfModelScanInfo(value: object): boolean {
+export const ModelNodeIdentifierNodeTypeEnum = {
+    Image: 'image',
+    Host: 'host',
+    Container: 'container'
+} as const;
+export type ModelNodeIdentifierNodeTypeEnum = typeof ModelNodeIdentifierNodeTypeEnum[keyof typeof ModelNodeIdentifierNodeTypeEnum];
+
+
+/**
+ * Check if a given object implements the ModelNodeIdentifier interface.
+ */
+export function instanceOfModelNodeIdentifier(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_type" in value;
-    isInstance = isInstance && "scan_id" in value;
-    isInstance = isInstance && "status" in value;
-    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
 
-export function ModelScanInfoFromJSON(json: any): ModelScanInfo {
-    return ModelScanInfoFromJSONTyped(json, false);
+export function ModelNodeIdentifierFromJSON(json: any): ModelNodeIdentifier {
+    return ModelNodeIdentifierFromJSONTyped(json, false);
 }
 
-export function ModelScanInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanInfo {
+export function ModelNodeIdentifierFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelNodeIdentifier {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -77,13 +68,10 @@ export function ModelScanInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         
         'node_id': json['node_id'],
         'node_type': json['node_type'],
-        'scan_id': json['scan_id'],
-        'status': json['status'],
-        'updated_at': json['updated_at'],
     };
 }
 
-export function ModelScanInfoToJSON(value?: ModelScanInfo | null): any {
+export function ModelNodeIdentifierToJSON(value?: ModelNodeIdentifier | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -94,9 +82,6 @@ export function ModelScanInfoToJSON(value?: ModelScanInfo | null): any {
         
         'node_id': value.node_id,
         'node_type': value.node_type,
-        'scan_id': value.scan_id,
-        'status': value.status,
-        'updated_at': value.updated_at,
     };
 }
 

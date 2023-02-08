@@ -16,87 +16,93 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface UtilsSbomRequest
+ * @interface UtilsScanSbomRequest
  */
-export interface UtilsSbomRequest {
+export interface UtilsScanSbomRequest {
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     container_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     host_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     image_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     image_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     kubernetes_cluster_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     mode?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     node_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     node_type?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
+     */
+    registry_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UtilsScanSbomRequest
      */
     sbom: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     sbom_file_path?: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     scan_id: string;
     /**
      * 
      * @type {string}
-     * @memberof UtilsSbomRequest
+     * @memberof UtilsScanSbomRequest
      */
     scan_type?: string;
 }
 
 /**
- * Check if a given object implements the UtilsSbomRequest interface.
+ * Check if a given object implements the UtilsScanSbomRequest interface.
  */
-export function instanceOfUtilsSbomRequest(value: object): boolean {
+export function instanceOfUtilsScanSbomRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "sbom" in value;
     isInstance = isInstance && "scan_id" in value;
@@ -104,11 +110,11 @@ export function instanceOfUtilsSbomRequest(value: object): boolean {
     return isInstance;
 }
 
-export function UtilsSbomRequestFromJSON(json: any): UtilsSbomRequest {
-    return UtilsSbomRequestFromJSONTyped(json, false);
+export function UtilsScanSbomRequestFromJSON(json: any): UtilsScanSbomRequest {
+    return UtilsScanSbomRequestFromJSONTyped(json, false);
 }
 
-export function UtilsSbomRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): UtilsSbomRequest {
+export function UtilsScanSbomRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): UtilsScanSbomRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -122,6 +128,7 @@ export function UtilsSbomRequestFromJSONTyped(json: any, ignoreDiscriminator: bo
         'mode': !exists(json, 'mode') ? undefined : json['mode'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
+        'registry_id': !exists(json, 'registry_id') ? undefined : json['registry_id'],
         'sbom': json['sbom'],
         'sbom_file_path': !exists(json, 'sbom_file_path') ? undefined : json['sbom_file_path'],
         'scan_id': json['scan_id'],
@@ -129,7 +136,7 @@ export function UtilsSbomRequestFromJSONTyped(json: any, ignoreDiscriminator: bo
     };
 }
 
-export function UtilsSbomRequestToJSON(value?: UtilsSbomRequest | null): any {
+export function UtilsScanSbomRequestToJSON(value?: UtilsScanSbomRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -146,6 +153,7 @@ export function UtilsSbomRequestToJSON(value?: UtilsSbomRequest | null): any {
         'mode': value.mode,
         'node_id': value.node_id,
         'node_type': value.node_type,
+        'registry_id': value.registry_id,
         'sbom': value.sbom,
         'sbom_file_path': value.sbom_file_path,
         'scan_id': value.scan_id,

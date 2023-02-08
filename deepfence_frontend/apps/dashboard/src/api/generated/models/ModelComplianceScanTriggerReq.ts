@@ -13,12 +13,18 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelScanTrigger } from './ModelScanTrigger';
+import type { ModelNodeIdentifier } from './ModelNodeIdentifier';
 import {
-    ModelScanTriggerFromJSON,
-    ModelScanTriggerFromJSONTyped,
-    ModelScanTriggerToJSON,
-} from './ModelScanTrigger';
+    ModelNodeIdentifierFromJSON,
+    ModelNodeIdentifierFromJSONTyped,
+    ModelNodeIdentifierToJSON,
+} from './ModelNodeIdentifier';
+import type { ModelScanFilter } from './ModelScanFilter';
+import {
+    ModelScanFilterFromJSON,
+    ModelScanFilterFromJSONTyped,
+    ModelScanFilterToJSON,
+} from './ModelScanFilter';
 
 /**
  * 
@@ -28,16 +34,16 @@ import {
 export interface ModelComplianceScanTriggerReq {
     /**
      * 
-     * @type {boolean}
+     * @type {ModelScanFilter}
      * @memberof ModelComplianceScanTriggerReq
      */
-    generate_bulk_scan_id: boolean;
+    filters: ModelScanFilter;
     /**
      * 
-     * @type {Array<ModelScanTrigger>}
+     * @type {Array<ModelNodeIdentifier>}
      * @memberof ModelComplianceScanTriggerReq
      */
-    scan_triggers: Array<ModelScanTrigger> | null;
+    node_ids: Array<ModelNodeIdentifier> | null;
 }
 
 /**
@@ -45,8 +51,8 @@ export interface ModelComplianceScanTriggerReq {
  */
 export function instanceOfModelComplianceScanTriggerReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "generate_bulk_scan_id" in value;
-    isInstance = isInstance && "scan_triggers" in value;
+    isInstance = isInstance && "filters" in value;
+    isInstance = isInstance && "node_ids" in value;
 
     return isInstance;
 }
@@ -61,8 +67,8 @@ export function ModelComplianceScanTriggerReqFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
-        'generate_bulk_scan_id': json['generate_bulk_scan_id'],
-        'scan_triggers': (json['scan_triggers'] === null ? null : (json['scan_triggers'] as Array<any>).map(ModelScanTriggerFromJSON)),
+        'filters': ModelScanFilterFromJSON(json['filters']),
+        'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
     };
 }
 
@@ -75,8 +81,8 @@ export function ModelComplianceScanTriggerReqToJSON(value?: ModelComplianceScanT
     }
     return {
         
-        'generate_bulk_scan_id': value.generate_bulk_scan_id,
-        'scan_triggers': (value.scan_triggers === null ? null : (value.scan_triggers as Array<any>).map(ModelScanTriggerToJSON)),
+        'filters': ModelScanFilterToJSON(value.filters),
+        'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
     };
 }
 

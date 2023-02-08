@@ -13,52 +13,52 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelScanInfo } from './ModelScanInfo';
+import type { ModelKeyValue } from './ModelKeyValue';
 import {
-    ModelScanInfoFromJSON,
-    ModelScanInfoFromJSONTyped,
-    ModelScanInfoToJSON,
-} from './ModelScanInfo';
+    ModelKeyValueFromJSON,
+    ModelKeyValueFromJSONTyped,
+    ModelKeyValueToJSON,
+} from './ModelKeyValue';
 
 /**
  * 
  * @export
- * @interface ModelScanStatusResp
+ * @interface ModelFieldsFilter
  */
-export interface ModelScanStatusResp {
+export interface ModelFieldsFilter {
     /**
      * 
-     * @type {{ [key: string]: ModelScanInfo; }}
-     * @memberof ModelScanStatusResp
+     * @type {Array<ModelKeyValue>}
+     * @memberof ModelFieldsFilter
      */
-    statuses: { [key: string]: ModelScanInfo; } | null;
+    fields_values: Array<ModelKeyValue> | null;
 }
 
 /**
- * Check if a given object implements the ModelScanStatusResp interface.
+ * Check if a given object implements the ModelFieldsFilter interface.
  */
-export function instanceOfModelScanStatusResp(value: object): boolean {
+export function instanceOfModelFieldsFilter(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "statuses" in value;
+    isInstance = isInstance && "fields_values" in value;
 
     return isInstance;
 }
 
-export function ModelScanStatusRespFromJSON(json: any): ModelScanStatusResp {
-    return ModelScanStatusRespFromJSONTyped(json, false);
+export function ModelFieldsFilterFromJSON(json: any): ModelFieldsFilter {
+    return ModelFieldsFilterFromJSONTyped(json, false);
 }
 
-export function ModelScanStatusRespFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanStatusResp {
+export function ModelFieldsFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelFieldsFilter {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'statuses': (json['statuses'] === null ? null : mapValues(json['statuses'], ModelScanInfoFromJSON)),
+        'fields_values': (json['fields_values'] === null ? null : (json['fields_values'] as Array<any>).map(ModelKeyValueFromJSON)),
     };
 }
 
-export function ModelScanStatusRespToJSON(value?: ModelScanStatusResp | null): any {
+export function ModelFieldsFilterToJSON(value?: ModelFieldsFilter | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -67,7 +67,7 @@ export function ModelScanStatusRespToJSON(value?: ModelScanStatusResp | null): a
     }
     return {
         
-        'statuses': (value.statuses === null ? null : mapValues(value.statuses, ModelScanInfoToJSON)),
+        'fields_values': (value.fields_values === null ? null : (value.fields_values as Array<any>).map(ModelKeyValueToJSON)),
     };
 }
 
