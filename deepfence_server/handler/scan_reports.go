@@ -803,7 +803,7 @@ func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
 		return res, nil
 	}
 
-	return rec.Values[0].(string), nil
+	return fmt.Sprintf("%v", rec.Values[0]), nil
 }
 
 func startMultiScan(ctx context.Context,

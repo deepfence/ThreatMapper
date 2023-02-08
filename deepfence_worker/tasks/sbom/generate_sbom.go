@@ -3,6 +3,7 @@ package sbom
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path"
 
@@ -45,6 +46,10 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
+	}
+
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
 
 	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
@@ -54,6 +59,11 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
+	}
+
+	if params.RegistryId == "" {
+		log.Error().Msgf("registry id is empty in params %+v", params)
+		return nil, fmt.Errorf("registry id is empty in params")
 	}
 
 	// get registry credentials
@@ -92,6 +102,8 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	log.Debug().Msgf("config: %+v", cfg)
 
+	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
+
 	rawSbom, err := syft.GenerateSBOM(cfg)
 	if err != nil {
 		return nil, err
@@ -114,10 +126,6 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	log.Info().Msgf("sbom file uploaded %+v", info)
 
 	// write sbom to minio and return details another task will scan sbom
-
-	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
-	}
 
 	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS), rh)
 
