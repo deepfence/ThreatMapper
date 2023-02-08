@@ -50,13 +50,13 @@ const vulnerabilityScanData = {
   buttonText: 'Configure Vulnerability Scan',
 };
 const secretScanData = {
-  scanTitle: 'Secrets Scan',
+  scanTitle: 'Secret Scan',
   scanType: 'secret',
   description: `A few words about the secret scan and why you need to use it.`,
   buttonText: 'Configure Secret Scan',
 };
 const malwareScanData = {
-  scanTitle: 'Malwares Scan',
+  scanTitle: 'Malware Scan',
   scanType: 'malware',
   description: `A few words about the malwawre scan and why you need to use it.`,
   buttonText: 'Configure Malware Scan',

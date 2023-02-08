@@ -8,7 +8,7 @@ import {
   useActionData,
   useLocation,
 } from 'react-router-dom';
-import { Button } from 'ui-components';
+import { Button, Tooltip, Typography } from 'ui-components';
 
 import { getSecretApiClient } from '@/api/api';
 import {
@@ -73,6 +73,28 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
   );
 };
 
+const SelectedAccountComponent = ({
+  type,
+  accounts,
+}: {
+  type: string;
+  accounts: string[];
+}) => {
+  return (
+    <span className={`${Typography.size.sm} text-gray-600 dark:text-gray-400`}>
+      {accounts.length > 0 ? `${type} / ${accounts[0]}` : null}
+      &nbsp;
+      {accounts.length > 1 && (
+        <Tooltip content={accounts.slice(1).join(', ')}>
+          <span className={`${Typography.size.sm} text-blue-500 dark:text-blue-400`}>
+            +{accounts.length - 1} more
+          </span>
+        </Tooltip>
+      )}
+    </span>
+  );
+};
+
 const SecretScanConfigure = () => {
   const { goBack } = usePageNavigation();
   const actionData = useActionData() as ScanActionReturnType;
@@ -97,6 +119,12 @@ const SecretScanConfigure = () => {
       <ConnectorHeader
         title="Configure Secret Scan"
         description="Just click the start scan button to start your secret scanning"
+        endComponent={
+          <SelectedAccountComponent
+            accounts={state.map((node) => node.urlId)}
+            type={state[0].urlType}
+          />
+        }
       />
       {actionData?.message && (
         <section className="mb-4">
