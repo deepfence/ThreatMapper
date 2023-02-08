@@ -51,6 +51,53 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 	return model.ScanStatusResp{Statuses: statuses}, nil
 }
 
+func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, scanIds []string) (model.ComplianceScanStatusResp, error) {
+	scanResponse := model.ComplianceScanStatusResp{
+		Statuses: []model.ComplianceScanStatus{},
+	}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return scanResponse, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return scanResponse, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return scanResponse, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(fmt.Sprintf(`
+		MATCH (m:%s)
+		WHERE m.node_id IN $scan_ids
+		RETURN m.node_id, m.benchmark_type, m.status`, scanType),
+		map[string]interface{}{"scan_ids": scanIds})
+	if err != nil {
+		return scanResponse, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return scanResponse, err
+	}
+
+	for _, rec := range recs {
+		tmp := model.ComplianceScanStatus{
+			ScanId:        rec.Values[0].(string),
+			BenchmarkType: rec.Values[1].(string),
+			Status:        rec.Values[2].(string),
+		}
+		scanResponse.Statuses = append(scanResponse.Statuses, tmp)
+	}
+
+	return scanResponse, nil
+}
+
 func GetScansList(ctx context.Context,
 	scan_type utils.Neo4jScanType,
 	node_id string,
@@ -295,4 +342,50 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	}
 
 	return scan_ids, nil
+}
+
+func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, scanId string) (model.ComplianceScanStatusResp, error) {
+	scanIds := model.ComplianceScanStatusResp{
+		Statuses: []model.ComplianceScanStatus{},
+	}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return scanIds, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return scanIds, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return scanIds, err
+	}
+	defer tx.Close()
+
+	neo_res, err := tx.Run(`
+		MATCH (m:Bulk`+string(scanType)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scanType)+`)
+		RETURN d.node_id, d.benchmark_type, d.status`,
+		map[string]interface{}{"scan_id": scanId})
+	if err != nil {
+		return scanIds, err
+	}
+
+	recs, err := neo_res.Collect()
+	if err != nil {
+		return scanIds, err
+	}
+
+	for _, rec := range recs {
+		tmp := model.ComplianceScanStatus{
+			ScanId:        rec.Values[0].(string),
+			BenchmarkType: rec.Values[1].(string),
+			Status:        rec.Values[2].(string),
+		}
+		scanIds.Statuses = append(scanIds.Statuses, tmp)
+	}
+
+	return scanIds, nil
 }

@@ -112,7 +112,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			scanDetail := model.CloudComplianceScanDetails{
 				ScanId:    scan.ScanId,
 				ScanType:  scan.BenchmarkType,
-				AccountId: nodeId,
+				AccountId: req.CloudAccount,
 				Controls:  controls,
 			}
 			scanList[scan.ScanId] = scanDetail

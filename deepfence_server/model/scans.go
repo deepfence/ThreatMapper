@@ -22,11 +22,7 @@ type MalwareScanTriggerReq struct {
 }
 
 type ComplianceScanTriggerReq struct {
-	ScanTriggerCommon
-}
-
-type CloudComplianceScanTriggerReq struct {
-	ScanTriggers []CloudComplianceScanTrigger `json:"scan_triggers" required:"true"`
+	ScanTriggers []ComplianceScanTrigger `json:"scan_triggers" required:"true"`
 }
 
 type ScanTriggerCommon struct {
@@ -39,8 +35,9 @@ type ScanTrigger struct {
 	NodeType string `json:"node_type" required:"true" enum:"image,host,container"`
 }
 
-type CloudComplianceScanTrigger struct {
+type ComplianceScanTrigger struct {
 	NodeId         string   `json:"node_id" required:"true"`
+	NodeType       string   `json:"node_type" required:"true" enum:"aws,gcp,azure,kubernetes_cluster"`
 	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
@@ -77,6 +74,16 @@ type ScanStatusReq struct {
 
 type ScanStatusResp struct {
 	Statuses map[string]ScanStatus `json:"statuses" required:"true"`
+}
+
+type ComplianceScanStatusResp struct {
+	Statuses []ComplianceScanStatus `json:"statuses" required:"true"`
+}
+
+type ComplianceScanStatus struct {
+	ScanId        string `json:"scan_id"`
+	BenchmarkType string `json:"benchmark_type"`
+	Status        string `json:"status"`
 }
 
 type ScanListReq struct {

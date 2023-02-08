@@ -187,6 +187,10 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
 
+	d.AddOperation("ingestCloudComplianceScanStatus", http.MethodPost, "/deepfence/ingest/cloud-compliance-scan-status",
+		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
+
 	d.AddOperation("ingestMalwareScanStatus", http.MethodPost, "/deepfence/ingest/malware-scan-logs",
 		"Ingest Malware Scan Status", "Ingest malware scan status from the agent",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new([]ingester.MalwareScanStatus), nil)
@@ -216,7 +220,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(model.MalwareScanTriggerReq), new(model.ScanTriggerResp))
 	d.AddOperation("startCloudComplianceScans", http.MethodPost, "/deepfence/scan/start/cloud-compliance",
 		"Start Cloud Compliance Scans", "Start Cloud Compliance Scans on cloud nodes", http.StatusAccepted,
-		[]string{tagCloudScanner}, bearerToken, new(model.CloudComplianceScanTriggerReq), new(model.ScanTriggerResp))
+		[]string{tagCloudScanner}, bearerToken, new(model.ComplianceScanTriggerReq), new(model.ScanTriggerResp))
 
 	// Stop scan
 	d.AddOperation("stopVulnerabilityScan", http.MethodPost, "/deepfence/scan/stop/vulnerability",
@@ -241,13 +245,13 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
 	d.AddOperation("statusComplianceScan", http.MethodGet, "/deepfence/scan/status/compliance",
 		"Get Compliance Scan Status", "Get Compliance Scan Status on agent or registry",
-		http.StatusOK, []string{tagCompliance}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(model.ScanStatusReq), new(model.ComplianceScanStatusResp))
 	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
 	d.AddOperation("statusCloudComplianceScan", http.MethodGet, "/deepfence/scan/status/cloud-compliance",
 		"Get Cloud Compliance Scan Status", "Get Cloud Compliance Scan Status on cloud node",
-		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(model.ScanStatusReq), new(model.ScanStatusResp))
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(model.ScanStatusReq), new(model.ComplianceScanStatusResp))
 
 	// List scans
 	d.AddOperation("listVulnerabilityScans", http.MethodPost, "/deepfence/scan/list/vulnerability",
