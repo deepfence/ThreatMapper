@@ -144,7 +144,6 @@ const CustomTable = <TData extends RowData>(
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand,
@@ -153,6 +152,7 @@ const CustomTable = <TData extends RowData>(
     enableSorting,
     getSubRows,
     enableRowSelection,
+    ...(enablePagination ? { getPaginationRowModel: getPaginationRowModel() } : {}),
     state: {
       ...(enablePagination && manualPagination
         ? {

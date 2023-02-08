@@ -1,3 +1,4 @@
+import { startCase } from 'lodash-es';
 import { Suspense, useMemo, useRef, useState } from 'react';
 import {
   HiChevronDown,
@@ -27,6 +28,7 @@ import { DFLink } from '@/components/DFLink';
 import { NoConnectors } from '@/features/onboard/components/connectors/NoConnectors';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { ApiError, makeRequest } from '@/utils/api';
+import { getRegistryDisplayId } from '@/utils/registry';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -200,25 +202,20 @@ async function getConnectorsData(): Promise<Array<ConnectionNode>> {
     }
   }
 
-  if (registriesResults.length === 1) {
+  if (registriesResults.length) {
     data.push({
       id: 'registry',
       urlId: 'registry',
       urlType: 'registry',
       accountType: 'Container Registries',
       count: registriesResults.length,
-      // TODO: fix types for this once added in the API
-      connections: registriesResults.map((registry: any) => ({
-        id: `registry-${registry.ID}`,
-        urlId: registry.ID ?? '',
+      connections: registriesResults.map((registry) => ({
+        id: `registry-${registry.id}`,
+        urlId: `${registry.id ?? ''}`,
         urlType: 'registry',
-        accountType: registry.RegistryType,
+        accountType: startCase(registry.registry_type ?? 'Registry'),
         connectionMethod: 'Registry',
-        accountId:
-          registry?.NonSecret?.docker_hub_namespace ??
-          registry.Name ??
-          registry.ID ??
-          '-',
+        accountId: getRegistryDisplayId(registry),
         active: true,
       })),
     });
