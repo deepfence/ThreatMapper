@@ -65,6 +65,14 @@ func (bd *BadDecoding) Error() string {
 	return bd.err.Error()
 }
 
+type InternalServerError struct {
+	err error
+}
+
+func (i *InternalServerError) Error() string {
+	return i.err.Error()
+}
+
 type ValidatorError struct {
 	err error
 }
@@ -87,6 +95,14 @@ type NotFoundError struct {
 
 func (bd *NotFoundError) Error() string {
 	return bd.err.Error()
+}
+
+func respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
+	var errorFields map[string]string
+	if code == http.StatusBadRequest {
+		errorFields = model.ParseValidatorError(err.Error())
+	}
+	return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields})
 }
 
 func respondError(err error, w http.ResponseWriter) error {
