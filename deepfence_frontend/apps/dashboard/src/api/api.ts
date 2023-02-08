@@ -4,8 +4,10 @@
 import {
   AuthenticationApi,
   CloudNodesApi,
+  CloudScannerApi,
   ComplianceApi,
   Configuration,
+  MalwareScanApi,
   RegistryApi,
   SecretScanApi,
   TopologyApi,
@@ -86,5 +88,14 @@ export function getRegistriesApiClient() {
   return {
     listRegistries: registriesApi.listRegistry.bind(registriesApi),
     addRegistry: registriesApi.addRegistry.bind(registriesApi),
+  };
+}
+
+export function getMalwareScanApiClient() {
+  const malwareApi = new MalwareScanApi(configuration);
+  return {
+    startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
+    resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
+    statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),
   };
 }

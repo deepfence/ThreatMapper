@@ -25,6 +25,8 @@ import { module as dockerRegistryConnector } from '@/features/onboard/pages/Dock
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
+import { module as malwareScanConfigure } from '@/features/onboard/pages/MalwareScanConfigure';
+import { module as malwareScanSumary } from '@/features/onboard/pages/MalwareScanSummary';
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
 import { module as secretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
@@ -126,6 +128,11 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Secret Scan' },
           },
           {
+            path: 'configure/malware/:nodeType/:nodeIds',
+            ...malwareScanConfigure,
+            meta: { title: 'Configure Malware Scan' },
+          },
+          {
             path: 'view-summary/compliance',
             element: <ComplianceScanSummary />,
             meta: { title: 'Configure Compliance Scan' },
@@ -139,6 +146,11 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'view-summary/secret/:scanIds',
             ...secretScanSumary,
             meta: { title: 'Summary Secret Scan' },
+          },
+          {
+            path: 'view-summary/malware/:scanIds',
+            ...malwareScanSumary,
+            meta: { title: 'Summary Malware Scan' },
           },
           {
             path: 'view-summary/running/:nodeId/:nodeType/:scanType/:bulkScanId',

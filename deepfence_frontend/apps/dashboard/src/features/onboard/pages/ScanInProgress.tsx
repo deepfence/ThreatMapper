@@ -29,12 +29,12 @@ import {
   Table,
 } from 'ui-components';
 
-import { getSecretApiClient, getVulnerabilityApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
-  ModelScanInfo,
-  ModelScanStatusResp,
-} from '@/api/generated';
+  getMalwareScanApiClient,
+  getSecretApiClient,
+  getVulnerabilityApiClient,
+} from '@/api/api';
+import { ApiDocsBadRequestResponse, ModelScanInfo } from '@/api/generated';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -65,6 +65,7 @@ type ConfigProps = {
 const statusScanApiFunctionMap = {
   vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
   secret: getSecretApiClient().statusSecretScan,
+  malware: getMalwareScanApiClient().statusMalwareScan,
 };
 
 const configMap: ConfigProps = {
@@ -80,16 +81,16 @@ const configMap: ConfigProps = {
     subHeaderText: 'Secret Scan has been initiated, it will be completed in few moments.',
   },
   malware: {
-    scanningText: 'Your Vulnerability Scan is currently running...',
-    headerText: 'Vulnerability Scan',
+    scanningText: 'Your Malware Scan is currently running...',
+    headerText: 'Malware Scan',
     subHeaderText:
-      'Vulnerability Scan has been initiated, it will be completed in few moments.',
+      'Malware Scan has been initiated, it will be completed in few moments.',
   },
   posture: {
-    scanningText: 'Your Vulnerability Scan is currently running...',
-    headerText: 'Vulnerability Scan',
+    scanningText: 'Your Compliance Scan is currently running...',
+    headerText: 'Compliance Scan',
     subHeaderText:
-      'Vulnerability Scan has been initiated, it will be completed in few moments.',
+      'Compliance Scan has been initiated, it will be completed in few moments.',
   },
   alert: {
     scanningText: 'Your Vulnerability Scan is currently running...',
