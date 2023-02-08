@@ -108,7 +108,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'scan',
         children: [
           {
-            path: 'choose/:nodeType/:nodeIds',
+            path: 'choose',
             ...chooseScan,
             meta: { title: 'Choose scan type' },
           },
@@ -118,17 +118,17 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Compliance Scan' },
           },
           {
-            path: 'configure/vulnerability/:nodeType/:nodeIds',
+            path: 'configure/vulnerability',
             ...vulnerabilityScanConfigure,
             meta: { title: 'Configure Vulnerability Scan' },
           },
           {
-            path: 'configure/secret/:nodeType/:nodeIds',
+            path: 'configure/secret',
             ...secretScanConfigure,
             meta: { title: 'Configure Secret Scan' },
           },
           {
-            path: 'configure/malware/:nodeType/:nodeIds',
+            path: 'configure/malware',
             ...malwareScanConfigure,
             meta: { title: 'Configure Malware Scan' },
           },
@@ -153,7 +153,7 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Summary Malware Scan' },
           },
           {
-            path: 'view-summary/running/:nodeId/:nodeType/:scanType/:bulkScanId',
+            path: 'view-summary/running/:scanType/:bulkScanId',
             ...scanInProgress,
             meta: { title: 'Scan Summary' },
           },

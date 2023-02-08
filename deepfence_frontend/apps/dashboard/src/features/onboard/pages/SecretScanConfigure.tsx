@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import {
   ActionFunctionArgs,
   Form,
   generatePath,
+  Navigate,
   redirect,
   useActionData,
+  useLocation,
 } from 'react-router-dom';
 import { Button } from 'ui-components';
 
@@ -13,6 +16,7 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
 } from '@/api/generated';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
 import { ApiError, makeRequest } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -20,15 +24,11 @@ export type ScanActionReturnType = {
   message?: string;
 };
 
-const action = async ({
-  params = {
-    nodeIds: '',
-    nodeType: '',
-    scanType: '',
-  },
-}: ActionFunctionArgs): Promise<ScanActionReturnType> => {
-  const { nodeIds = '', nodeType = '' } = params;
-  const nodeIdArray = nodeIds?.split(',');
+const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturnType> => {
+  const formData = await request.formData();
+  const body = Object.fromEntries(formData);
+  const nodeIds = body._nodeIds.toString().split(',');
+  const nodeType = body._nodeType.toString();
 
   const r = await makeRequest({
     apiFunction: getSecretApiClient().startSecretScan,
@@ -42,7 +42,7 @@ const action = async ({
             host_scan_filter: { fields_values: null },
             image_scan_filter: { fields_values: null },
           },
-          node_ids: nodeIdArray.map((nodeId) => ({
+          node_ids: nodeIds.map((nodeId) => ({
             node_id: nodeId,
             node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
           })),
@@ -65,15 +65,10 @@ const action = async ({
   }
 
   throw redirect(
-    generatePath(
-      '/onboard/scan/view-summary/running/:nodeIds/:nodeType/:scanType/:bulkScanId',
-      {
-        nodeIds,
-        nodeType,
-        scanType: 'secret',
-        bulkScanId: r.bulk_scan_id,
-      },
-    ),
+    generatePath('/onboard/scan/view-summary/running/:scanType/:bulkScanId', {
+      scanType: 'secret',
+      bulkScanId: r.bulk_scan_id,
+    }),
     302,
   );
 };
@@ -81,9 +76,24 @@ const action = async ({
 const SecretScanConfigure = () => {
   const { goBack } = usePageNavigation();
   const actionData = useActionData() as ScanActionReturnType;
+  const location = useLocation();
+
+  const [pageState] = useState<unknown>(location.state);
+  if (!Array.isArray(pageState) || !pageState.length) {
+    return <Navigate to="/onboard/connectors/my-connectors" />;
+  }
+  const state = pageState as OnboardConnectionNode[];
 
   return (
     <Form method="post">
+      <input
+        type="text"
+        name="_nodeIds"
+        hidden
+        readOnly
+        value={state.map((node) => node.urlId).join(',')}
+      />
+      <input type="text" name="_nodeType" readOnly hidden value={state[0].urlType} />
       <ConnectorHeader
         title="Configure Secret Scan"
         description="Just click the start scan button to start your secret scanning"
