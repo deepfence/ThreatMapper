@@ -230,7 +230,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
-	var reqs model.ComplianceScanTriggerReq
+	var reqs model.MalwareScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
 	if err != nil {
 		log.Error().Msgf("%v", err)

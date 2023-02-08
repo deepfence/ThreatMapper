@@ -37,7 +37,7 @@ type ScanTrigger struct {
 
 type ComplianceScanTrigger struct {
 	NodeId         string   `json:"node_id" required:"true"`
-	NodeType       string   `json:"node_type" required:"true" enum:"aws,gcp,azure,kubernetes_cluster"`
+	NodeType       string   `json:"node_type" required:"true" enum:"aws,gcp,azure,linux,kubernetes_cluster"`
 	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
