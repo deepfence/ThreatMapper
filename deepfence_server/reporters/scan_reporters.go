@@ -137,6 +137,192 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	return scanResponse, nil
 }
 
+func NodeIdentifierToIdList(in []model.NodeIdentifier) []string {
+	res := []string{}
+	for i := range in {
+		res = append(res, in[i].NodeId)
+	}
+	return res
+}
+
+func GetRegisteriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (m:RegistryAccount)
+		WHERE m.node_id IN $node_ids
+		MATCH (m) -[:HOSTS]-> (n:ContainerImage)
+		RETURN distinct n.node_id`,
+		map[string]interface{}{"node_ids": NodeIdentifierToIdList(registryIds)})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		res = append(res, model.NodeIdentifier{
+			NodeId:   rec.Values[0].(string),
+			NodeType: "image",
+		})
+	}
+
+	return res, nil
+}
+
+func GetKubernetesImageIDs(ctx context.Context, k8sIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (m:KubernetesCluster)
+		WHERE m.node_id IN $node_ids
+		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		MATCH (n) -[:HOSTS]-> (i:ContainerImage)
+		RETURN distinct i.node_id`,
+		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		res = append(res, model.NodeIdentifier{
+			NodeId:   rec.Values[0].(string),
+			NodeType: "image",
+		})
+	}
+
+	return res, nil
+}
+
+func GetKubernetesHostsIDs(ctx context.Context, k8sIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (m:KubernetesCluster)
+		WHERE m.node_id IN $node_ids
+		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		RETURN distinct n.node_id`,
+		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		res = append(res, model.NodeIdentifier{
+			NodeId:   rec.Values[0].(string),
+			NodeType: "host",
+		})
+	}
+
+	return res, nil
+}
+
+func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (m:KubernetesCluster)
+		WHERE m.node_id IN $node_ids
+		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		MATCH (n) -[:HOSTS]-> (i:Container)
+		RETURN distinct i.node_id`,
+		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		res = append(res, model.NodeIdentifier{
+			NodeId:   rec.Values[0].(string),
+			NodeType: "host",
+		})
+	}
+
+	return res, nil
+}
+
 func GetScansList(ctx context.Context,
 	scan_type utils.Neo4jScanType,
 	node_id string,

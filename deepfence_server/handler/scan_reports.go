@@ -712,15 +712,16 @@ func fields_filter2cypher(node string, firstCond bool, fieldsFilter model.Fields
 	return res + strings.Join(strs, ",")
 }
 
-func get_node_ids(tx neo4j.Transaction, neo4jNode string, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
+func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode string, node_type string, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
 	nres, err := tx.Run(fmt.Sprintf(`
 		MATCH (n:%s)
+		WHERE n.node_id IN $ids
 		%s
 		RETURN n.node_id`,
 		neo4jNode,
-		fields_filter2cypher("n", true, filter)),
-		map[string]interface{}{})
+		fields_filter2cypher("n", false, filter)),
+		map[string]interface{}{"ids": reporters.NodeIdentifierToIdList(ids)})
 	if err != nil {
 		return res, err
 	}
@@ -733,13 +734,17 @@ func get_node_ids(tx neo4j.Transaction, neo4jNode string, filter model.FieldsFil
 	for i := range rec {
 		res = append(res, model.NodeIdentifier{
 			NodeId:   rec[i].Values[0].(string),
-			NodeType: "host",
+			NodeType: node_type,
 		})
 	}
 	return res, nil
 }
 
-func FindNodesMatching(ctx context.Context, filter model.ScanFilter) ([]model.NodeIdentifier, error) {
+func FindNodesMatching(ctx context.Context,
+	host_ids []model.NodeIdentifier,
+	image_ids []model.NodeIdentifier,
+	container_ids []model.NodeIdentifier,
+	filter model.ScanFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -760,9 +765,9 @@ func FindNodesMatching(ctx context.Context, filter model.ScanFilter) ([]model.No
 	}
 	defer tx.Close()
 
-	rh, err := get_node_ids(tx, "Node", filter.HostScanFilter)
-	ri, err := get_node_ids(tx, "ContainerImage", filter.ImageScanFilter)
-	rc, err := get_node_ids(tx, "Container", filter.ContainerScanFilter)
+	rh, err := get_node_ids(tx, host_ids, "Node", "host", filter.HostScanFilter)
+	ri, err := get_node_ids(tx, image_ids, "ContainerImage", "image", filter.ImageScanFilter)
+	rc, err := get_node_ids(tx, container_ids, "Container", "container", filter.ContainerScanFilter)
 
 	return append(append(rh, ri...), rc...), nil
 }
@@ -806,6 +811,24 @@ func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
 	return fmt.Sprintf("%v", rec.Values[0]), nil
 }
 
+func extractBulksNodes(nodes []model.NodeIdentifier) (regularNodes []model.NodeIdentifier, clusterNodes []model.NodeIdentifier, registryNodes []model.NodeIdentifier) {
+	regularNodes = []model.NodeIdentifier{}
+	clusterNodes = []model.NodeIdentifier{}
+	registryNodes = []model.NodeIdentifier{}
+
+	for i := range nodes {
+		if nodes[i].NodeType == controls.ResourceTypeToString(ctl.KubernetesCluster) {
+			clusterNodes = append(clusterNodes, nodes[i])
+		} else if nodes[i].NodeType == controls.ResourceTypeToString(ctl.RegistryAccount) {
+			registryNodes = append(registryNodes, nodes[i])
+		} else {
+			regularNodes = append(regularNodes, nodes[i])
+		}
+	}
+
+	return registryNodes, clusterNodes, registryNodes
+}
+
 func startMultiScan(ctx context.Context,
 	gen_bulk_id bool,
 	scan_type utils.Neo4jScanType,
@@ -829,12 +852,39 @@ func startMultiScan(ctx context.Context,
 		return nil, "", err
 	}
 
-	reqs := []model.NodeIdentifier{}
-	if len(req.NodeIds) == 0 {
-		reqs, err = FindNodesMatching(ctx, req.Filters)
+	regular, k8s, registry := extractBulksNodes(req.NodeIds)
+
+	image_nodes, err := reporters.GetRegisteriesImageIDs(ctx, registry)
+	if err != nil {
+		return nil, "", err
+	}
+
+	k8s_host_nodes, err := reporters.GetKubernetesHostsIDs(ctx, k8s)
+	if err != nil {
+		return nil, "", err
+	}
+
+	k8s_image_nodes, err := reporters.GetKubernetesImageIDs(ctx, k8s)
+	if err != nil {
+		return nil, "", err
+	}
+
+	k8s_container_nodes, err := reporters.GetKubernetesContainerIDs(ctx, k8s)
+	if err != nil {
+		return nil, "", err
+	}
+
+	reqs := regular
+	if len(k8s) != 0 || len(registry) != 0 {
+		reqs_extra, err := FindNodesMatching(ctx,
+			k8s_host_nodes,
+			append(image_nodes, k8s_image_nodes...),
+			k8s_container_nodes,
+			req.Filters)
 		if err != nil {
 			return nil, "", err
 		}
+		reqs = append(reqs, reqs_extra...)
 	} else {
 		reqs = req.NodeIds
 	}
