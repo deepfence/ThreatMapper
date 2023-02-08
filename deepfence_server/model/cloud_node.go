@@ -50,9 +50,10 @@ type CloudNodeAccountInfo struct {
 }
 
 type CloudComplianceScanDetails struct {
-	ScanId    string `json:"scan_id"`
-	ScanType  string `json:"scan_type"`
-	AccountId string `json:"account_id"`
+	ScanId    string   `json:"scan_id"`
+	ScanType  string   `json:"scan_type"`
+	AccountId string   `json:"account_id"`
+	Controls  []string `json:"controls"`
 }
 
 type CloudNodeCloudtrailTrail struct {

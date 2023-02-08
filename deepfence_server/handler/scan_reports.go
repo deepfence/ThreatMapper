@@ -208,8 +208,8 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	var reqq model.ComplianceScanTriggerReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqq)
+	var req model.ComplianceScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
@@ -232,7 +232,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
-	var reqs model.ComplianceScanTriggerReq
+	var reqs model.MalwareScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -290,7 +290,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	var reqs model.CloudComplianceScanTriggerReq
+	var reqs model.ComplianceScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -298,7 +298,19 @@ func (h *Handler) StartCloudComplianceScanHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	scanIds, bulkId, err := startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
+	var scanTrigger model.ComplianceScanTrigger
+	if len(reqs.ScanTriggers) > 0 {
+		scanTrigger = reqs.ScanTriggers[0]
+	}
+
+	var scanIds []string
+	var bulkId string
+	if scanTrigger.NodeType == reporters.CLOUD_AWS || scanTrigger.NodeType == reporters.CLOUD_GCP || scanTrigger.NodeType == reporters.CLOUD_AZURE {
+		scanIds, bulkId, err = startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
+	} else {
+		scanIds, bulkId, err = startMultiComplianceScan(r.Context(), reqs.ScanTriggers)
+	}
+
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -470,6 +482,11 @@ func (h *Handler) IngestMalwareScanStatusReportHandler(w http.ResponseWriter, r 
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestCloudComplianceScanStatusReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewCloudComplianceScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func ingest_scan_report_kafka[T any](
 	respWrite http.ResponseWriter,
 	req *http.Request,
@@ -519,11 +536,15 @@ func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) StatusComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	statusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	complianceStatusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
 }
 
 func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
 	statusScanHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+}
+
+func (h *Handler) StatusCloudComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
+	complianceStatusScanHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 }
 
 func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
@@ -549,6 +570,32 @@ func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.N
 
 	if err != nil {
 		log.Error().Msgf("%v, req=%s,%v", err, req.BulkScanId, req.ScanIds)
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, statuses)
+}
+
+func complianceStatusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
+	defer r.Body.Close()
+	var req model.ScanStatusReq
+	err := httpext.DecodeQueryParams(r, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	var statuses model.ComplianceScanStatusResp
+	if req.BulkScanId != "" {
+		statuses, err = reporters.GetComplianceBulkScans(r.Context(), scan_type, req.BulkScanId)
+	} else {
+		statuses, err = reporters.GetComplianceScanStatus(r.Context(), scan_type, req.ScanIds)
+	}
+
+	if err != nil {
+		log.Error().Msgf("%v, req=%v", err, req)
 		respondError(err, w)
 		return
 	}
@@ -811,7 +858,7 @@ func startMultiScan(ctx context.Context, gen_bulk_id bool, scan_type utils.Neo4j
 	return scanIds, bulkId, tx.Commit()
 }
 
-func startMultiCloudComplianceScan(ctx context.Context, reqs []model.CloudComplianceScanTrigger) ([]string, string, error) {
+func startMultiCloudComplianceScan(ctx context.Context, reqs []model.ComplianceScanTrigger) ([]string, string, error) {
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
@@ -863,4 +910,15 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.CloudCompli
 	}
 
 	return scanIds, bulkId, tx.Commit()
+}
+
+func startMultiComplianceScan(ctx context.Context, reqs []model.ComplianceScanTrigger) ([]string, string, error) {
+	scanIds := []string{}
+	bulkId := bulkScanId()
+	for _, req := range reqs {
+		for _, benchmarkType := range req.BenchmarkTypes {
+			scanIds = append(scanIds, cloudComplianceScanId(req.NodeId, benchmarkType))
+		}
+	}
+	return scanIds, bulkId, nil
 }

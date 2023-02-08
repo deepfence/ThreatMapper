@@ -22,11 +22,7 @@ type MalwareScanTriggerReq struct {
 }
 
 type ComplianceScanTriggerReq struct {
-	ScanTriggerCommon
-}
-
-type CloudComplianceScanTriggerReq struct {
-	ScanTriggers []CloudComplianceScanTrigger `json:"scan_triggers" required:"true"`
+	ScanTriggers []ComplianceScanTrigger `json:"scan_triggers" required:"true"`
 }
 
 type KeyValue struct {
@@ -54,8 +50,9 @@ type NodeIdentifier struct {
 	NodeType string `json:"node_type" required:"true" enum:"image,host,container"`
 }
 
-type CloudComplianceScanTrigger struct {
+type ComplianceScanTrigger struct {
 	NodeId         string   `json:"node_id" required:"true"`
+	NodeType       string   `json:"node_type" required:"true" enum:"aws,gcp,azure,linux,kubernetes_cluster"`
 	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
@@ -67,6 +64,13 @@ type ScanInfo struct {
 	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
 	NodeId    string `json:"node_id" required:"true"`
 	NodeType  string `json:"node_type" required:"true"`
+}
+
+type CloudComplianceScanInfo struct {
+	ScanId        string `json:"scan_id" required:"true"`
+	BenchmarkType string `json:"benchmark_type" required:"true"`
+	Status        string `json:"status" required:"true"`
+	UpdatedAt     int64  `json:"updated_at" required:"true" format:"int64"`
 }
 
 const (
@@ -89,6 +93,16 @@ type ScanStatusResp struct {
 	Statuses map[string]ScanInfo `json:"statuses" required:"true"`
 }
 
+type ComplianceScanStatusResp struct {
+	Statuses []ComplianceScanStatus `json:"statuses" required:"true"`
+}
+
+type ComplianceScanStatus struct {
+	ScanId        string `json:"scan_id"`
+	BenchmarkType string `json:"benchmark_type"`
+	Status        string `json:"status"`
+}
+
 type ScanListReq struct {
 	NodeId   string      `json:"node_id" required:"true"`
 	NodeType string      `json:"node_type" required:"true" enum:"image,host,container"`
@@ -97,6 +111,10 @@ type ScanListReq struct {
 
 type ScanListResp struct {
 	ScansInfo []ScanInfo `json:"scans_info" required:"true"`
+}
+
+type CloudComplianceScanListResp struct {
+	ScansInfo []CloudComplianceScanInfo `json:"scans_info" required:"true"`
 }
 
 type ScanResultsReq struct {
