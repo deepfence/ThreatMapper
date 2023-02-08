@@ -1,4 +1,4 @@
-import { Pie } from '@ant-design/charts';
+import { Pie } from '@ant-design/plots';
 import { Separator, Typography } from 'ui-components';
 
 const data = [

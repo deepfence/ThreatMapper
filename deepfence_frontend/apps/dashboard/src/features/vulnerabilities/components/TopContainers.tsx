@@ -1,4 +1,4 @@
-import { Bar } from '@ant-design/charts';
+import { Bar } from '@ant-design/plots';
 
 export const TopContainers = () => {
   const data = [
