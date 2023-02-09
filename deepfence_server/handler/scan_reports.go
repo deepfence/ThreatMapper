@@ -717,7 +717,13 @@ func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.CloudComplianceScanResult{Compliances: entries, ScanResultsCommon: common})
+	counts, compliancePercentage, err := reporters.GetCloudComplianceStats(r.Context(), common.ScanID)
+	if err != nil {
+		log.Error().Err(err).Msg("Counts computation issue")
+	}
+
+	httpext.JSON(w, http.StatusOK, model.CloudComplianceScanResult{Compliances: entries, ScanResultsCommon: common,
+		StatusCounts: counts, CompliancePercentage: compliancePercentage})
 }
 
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {

@@ -72,6 +72,8 @@ type CloudComplianceScanInfo struct {
 	BenchmarkType string `json:"benchmark_type" required:"true"`
 	Status        string `json:"status" required:"true"`
 	UpdatedAt     int64  `json:"updated_at" required:"true" format:"int64"`
+	NodeId        string `json:"node_id" required:"true"`
+	NodeType      string `json:"node_type" required:"true"`
 }
 
 const (
@@ -156,12 +158,18 @@ type MalwareScanResult struct {
 
 type ComplianceScanResult struct {
 	ScanResultsCommon
-	Compliances []Compliance `json:"compliances" required:"true"`
+	BenchmarkType        string         `json:"benchmark_type" required:"true"`
+	Compliances          []Compliance   `json:"compliances" required:"true"`
+	StatusCounts         map[string]int `json:"status_counts" required:"true"`
+	CompliancePercentage float64        `json:"compliance_percentage" required:"true"`
 }
 
 type CloudComplianceScanResult struct {
 	ScanResultsCommon
-	Compliances []CloudCompliance `json:"compliances" required:"true"`
+	BenchmarkType        string            `json:"benchmark_type" required:"true"`
+	Compliances          []CloudCompliance `json:"compliances" required:"true"`
+	StatusCounts         map[string]int    `json:"status_counts" required:"true"`
+	CompliancePercentage float64           `json:"compliance_percentage" required:"true"`
 }
 
 type Secret struct {
