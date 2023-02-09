@@ -38,11 +38,13 @@ func TriggerConsoleControls(msg *message.Message) error {
 
 	ScanWorkloadAllocator.Reserve(int32(len(actions)))
 
+	log.Info().Msgf("Trigger console actions #actions=%d", len(actions))
+
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)
 		err := ctl.ApplyControl(action)
 		if err != nil {
-			log.Error().Msgf("Control %v failed: %v\n", action, err)
+			log.Error().Msgf("Control %v failed: %v", action, err)
 		}
 	}
 	return nil
