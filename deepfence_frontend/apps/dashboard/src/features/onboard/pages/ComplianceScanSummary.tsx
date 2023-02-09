@@ -1,10 +1,14 @@
 import cx from 'classnames';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, Separator, Typography } from 'ui-components';
+import { Suspense } from 'react';
+import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { Card, CircleSpinner, Separator, Typography } from 'ui-components';
 
+import { getComplianceApiClient } from '@/api/api';
+import { ModelComplianceScanResult } from '@/api/generated';
 import LogoAws from '@/assets/logo-aws.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { ApiError, makeRequest } from '@/utils/api';
+import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 const color: { [key: string]: string } = {
   alarm: 'bg-red-400 dark:bg-red-500',
@@ -15,118 +19,89 @@ const color: { [key: string]: string } = {
 
 type ScanType = {
   type: string;
-  percentage: string;
+  percentage: number;
   values: SeverityType[];
 };
 type SeverityType = {
   name: string;
   value: number;
 };
-type ScanDataType = {
-  accountId: string;
-  data: ScanType[];
+
+type ScanData = {
+  accountId: ModelComplianceScanResult['kubernetes_cluster_name'];
+  type: string;
+  data: {
+    total: number;
+    counts: SeverityType[] | null;
+  }[];
+} | null;
+
+export type LoaderDataType = {
+  error?: string;
+  message?: string;
+  data?: ScanData[];
 };
 
-const data: ScanDataType[] = [
-  {
-    accountId: 'AWS123456',
-    data: [
-      {
-        percentage: '30%',
-        type: 'CIS',
-        values: [
-          {
-            name: 'Alarm',
-            value: 50,
+async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
+  const bulkRequest = scanIds.split(',').map((scanId) => {
+    return makeRequest({
+      apiFunction: getComplianceApiClient().resultComplianceScan,
+      apiArgs: [
+        {
+          modelScanResultsReq: {
+            scan_id: scanId,
+            window: {
+              offset: 0,
+              size: 1000000,
+            },
           },
-          {
-            name: 'Info',
-            value: 20,
-          },
-          {
-            name: 'Ok',
-            value: 70,
-          },
-          {
-            name: 'Skip',
-            value: 10,
-          },
-        ],
-      },
-      {
-        percentage: '30%',
-        type: 'GDPR',
-        values: [
-          {
-            name: 'Alarm',
-            value: 50,
-          },
-          {
-            name: 'Info',
-            value: 20,
-          },
-          {
-            name: 'Ok',
-            value: 0,
-          },
-          {
-            name: 'Skip',
-            value: 0,
-          },
-        ],
-      },
-      {
-        percentage: '30%',
-        type: 'HIPPA',
-        values: [
-          {
-            name: 'Alarm',
-            value: 50,
-          },
-          {
-            name: 'Info',
-            value: 20,
-          },
-          {
-            name: 'Ok',
-            value: 70,
-          },
-          {
-            name: 'Skip',
-            value: 10,
-          },
-        ],
-      },
-    ],
+        },
+      ],
+    });
+  });
+  const responses = await Promise.all(bulkRequest);
+  const resultData = responses.map(
+    (response: ModelComplianceScanResult | ApiError<void>) => {
+      if (ApiError.isApiError(response)) {
+        // TODO: handle any one request has an error on this bulk request
+        return null;
+      } else {
+        const resp = response as ModelComplianceScanResult;
+        return {
+          accountId: resp.kubernetes_cluster_name,
+          data: [
+            {
+              total: Object.keys(resp.severity_counts ?? {}).reduce((acc, severity) => {
+                acc = acc + (resp.severity_counts?.[severity] ?? 0);
+                return acc;
+              }, 0),
+              counts: Object.keys(resp.severity_counts ?? {}).map((severity) => {
+                return {
+                  name: severity,
+                  value: resp.severity_counts![severity],
+                };
+              }),
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  return {
+    data: resultData,
+  };
+}
+
+const loader = ({
+  params = {
+    scanIds: '',
   },
-  {
-    accountId: 'AWS1234567',
-    data: [
-      {
-        percentage: '45%',
-        type: 'CIS',
-        values: [
-          {
-            name: 'Alarm',
-            value: 50,
-          },
-          {
-            name: 'Info',
-            value: 40,
-          },
-          {
-            name: 'Ok',
-            value: 70,
-          },
-          {
-            name: 'Skip',
-            value: 400,
-          },
-        ],
-      },
-    ],
-  },
-];
+}: LoaderFunctionArgs): TypedDeferredData<LoaderDataType> => {
+  return typedDefer({
+    data: getScanSummary(params.scanIds ?? ''),
+  });
+};
 
 const AccountComponent = ({ accountId }: { accountId: string }) => {
   return (
@@ -152,7 +127,7 @@ const TypeAndPercentageComponent = ({
   percentage,
 }: {
   type: string;
-  percentage: string;
+  percentage: number;
 }) => {
   return (
     <div
@@ -168,18 +143,18 @@ const TypeAndPercentageComponent = ({
         <data className="text-sm text-gray-500 dark:text-gray-400">
           Overall Percentage
         </data>
-        <data className={'text-2xl text-gray-700 dark:text-gray-300'}>{percentage}</data>
+        <data className={'text-2xl text-gray-700 dark:text-gray-300'}>{percentage}%</data>
       </div>
     </div>
   );
 };
 
-const ChartComponent = ({ values }: { values: SeverityType[] }) => {
-  const maxValue = Math.max(...values.map((v) => v.value));
+const ChartComponent = ({ counts }: { counts: SeverityType[] }) => {
+  const maxValue = Math.max(...counts.map((v) => v.value));
 
   return (
     <div>
-      {values.map(({ name, value }) => {
+      {counts.map(({ name, value }) => {
         return (
           <div className="flex items-center w-full" key={name}>
             <data
@@ -211,7 +186,10 @@ const ChartComponent = ({ values }: { values: SeverityType[] }) => {
   );
 };
 
-export const Scan = ({ scanData }: { scanData: ScanDataType }) => {
+const Scan = ({ scanData }: { scanData: ScanData }) => {
+  if (!scanData) {
+    return null;
+  }
   const { accountId, data = [] } = scanData;
 
   return (
@@ -219,7 +197,8 @@ export const Scan = ({ scanData }: { scanData: ScanDataType }) => {
       <div className="grid grid-cols-[250px_1fr] items-center">
         <AccountComponent accountId={accountId} />
         <div className="flex flex-col">
-          {data.map(({ type, values, percentage }: ScanType, index: number) => {
+          {data.map((severityData: ScanType | null, index: number) => {
+            const { counts = [], percentage = 0, type = '' } = severityData ?? {};
             return (
               <div key={type}>
                 {index > 0 && index < data.length ? (
@@ -228,7 +207,7 @@ export const Scan = ({ scanData }: { scanData: ScanDataType }) => {
                 <div className="flex flex-col p-4">
                   <div className="grid grid-cols-[1fr_1fr]">
                     <TypeAndPercentageComponent type={type} percentage={percentage} />
-                    <ChartComponent values={values} />
+                    <ChartComponent counts={counts} />
                   </div>
                 </div>
               </div>
@@ -240,8 +219,8 @@ export const Scan = ({ scanData }: { scanData: ScanDataType }) => {
   );
 };
 
-export const ComplianceScanSummary = () => {
-  const [scanData] = useState(data);
+const ComplianceScanSummary = () => {
+  const loaderData = useLoaderData() as LoaderDataType;
 
   return (
     <div className="flex flex-col">
@@ -261,10 +240,21 @@ export const ComplianceScanSummary = () => {
       </Link>
 
       <div className="flex flex-col gap-4 mt-4">
-        {scanData.map((accountScanData: ScanDataType) => {
-          return <Scan key={accountScanData.accountId} scanData={accountScanData} />;
-        })}
+        <Suspense fallback={<CircleSpinner />}>
+          <Await resolve={loaderData.data ?? []}>
+            {(resolvedData) => {
+              return resolvedData.data?.map((accountScanData: ScanData) => (
+                <Scan key={accountScanData?.accountId} scanData={accountScanData} />
+              ));
+            }}
+          </Await>
+        </Suspense>
       </div>
     </div>
   );
+};
+
+export const module = {
+  loader,
+  element: <ComplianceScanSummary />,
 };

@@ -1,18 +1,33 @@
-import { filter, find, isEmpty } from 'lodash-es';
+import { filter, find } from 'lodash-es';
 import { useEffect, useMemo, useState } from 'react';
-import { HiBan, HiLightBulb, HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
+import { HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
+import {
+  ActionFunctionArgs,
+  Form,
+  generatePath,
+  LoaderFunctionArgs,
+  Navigate,
+  redirect,
+  useLocation,
+  useSearchParams,
+} from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
-  getRowSelectionColumn,
-  Switch,
   Table,
   Tabs,
   Tooltip,
   Typography,
 } from 'ui-components';
 
+import { getComplianceApiClient } from '@/api/api';
+import {
+  ApiDocsBadRequestResponse,
+  ModelNodeIdentifierNodeTypeEnum,
+} from '@/api/generated';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
+import { ApiError, makeRequest } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 type ColumnType = {
@@ -21,6 +36,74 @@ type ColumnType = {
   test_desc: string;
   status: string;
   is_enabled: boolean;
+};
+
+export type ScanActionReturnType = {
+  message?: string;
+};
+
+const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturnType> => {
+  const formData = await request.formData();
+  const body = Object.fromEntries(formData);
+  const nodeIds = body._nodeIds.toString().split(',');
+  const nodeType = body._nodeType.toString();
+
+  const r = await makeRequest({
+    apiFunction: getComplianceApiClient().startComplianceScan,
+    apiArgs: [
+      {
+        modelComplianceScanTriggerReq: {
+          filters: {
+            container_scan_filter: {
+              fields_values: null,
+            },
+            host_scan_filter: { fields_values: null },
+            image_scan_filter: { fields_values: null },
+          },
+          node_ids: nodeIds.map((nodeId) => ({
+            node_id: nodeId,
+            node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
+          })),
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<ScanActionReturnType>({});
+      if (r.status === 400 || r.status === 409) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    return r.value();
+  }
+
+  throw redirect(
+    generatePath('/onboard/scan/view-summary/running/:scanType/:bulkScanId', {
+      scanType: 'compliance',
+      bulkScanId: r.bulk_scan_id,
+    }),
+    302,
+  );
+};
+
+export type LoaderDataType = {
+  error?: string;
+  message?: string;
+  data?: any;
+};
+
+const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderDataType> => {
+  // const formData = await request.formData();
+  // const body = Object.fromEntries(formData);
+  // const nodeIds = body._nodeIds.toString().split(',');
+  // const nodeType = body._nodeType.toString();
+  // const controls = new URL(request.url).searchParams.get('controls');
+  return {};
 };
 const complianceTableData = [
   {
@@ -147,22 +230,10 @@ const complianceTableData = [
 
 const ComplianceTable = () => {
   const columnHelper = createColumnHelper<ColumnType>();
-  const [tableData, setTableData] = useState(complianceTableData);
+  const [tableData] = useState(complianceTableData);
 
-  const [rowSelectionState, setRowSelectionState] = useState<any>({});
-
-  const onToggleChange = (rowData: any, flag: boolean) => {
-    setTableData((data) => {
-      data[rowData.row.index].is_enabled = flag;
-
-      return [...data];
-    });
-  };
   const columns = useMemo(
     () => [
-      getRowSelectionColumn(columnHelper, {
-        maxSize: 10,
-      }),
       columnHelper.accessor('id', {
         cell: (info) => info.getValue(),
         header: () => '#',
@@ -184,50 +255,13 @@ const ComplianceTable = () => {
         cell: (info) => info.renderValue(),
         maxSize: 50,
       }),
-      columnHelper.accessor('is_enabled', {
-        header: () => 'Enabled',
-        cell: (info) => (
-          <Switch
-            checked={!!info.renderValue()}
-            onCheckedChange={(e) => {
-              onToggleChange(info, e);
-            }}
-          />
-        ),
-        maxSize: 50,
-      }),
     ],
     [],
   );
-  return (
-    <div>
-      <div className="py-2 text-gray-500">
-        {isEmpty(rowSelectionState) ? (
-          <span className="mb-3 block">No rows selected</span>
-        ) : (
-          <div className="flex gap-2">
-            <Button size="xs" startIcon={<HiBan />}>
-              Disable Selected
-            </Button>
-            <Button size="xs" startIcon={<HiLightBulb />}>
-              Enable Selected
-            </Button>
-          </div>
-        )}
-      </div>
-      <Table
-        size="sm"
-        data={tableData}
-        columns={columns}
-        enableRowSelection
-        onRowSelectionChange={setRowSelectionState}
-        rowSelectionState={rowSelectionState}
-      />
-    </div>
-  );
+  return <Table size="sm" data={tableData} columns={columns} />;
 };
 
-const scanType = ['CIS', 'GDPR', 'HIPPA', 'PIC', 'SOC2', 'NIST'];
+const scanType = ['CIS', 'GDPR', 'HIPPA', 'PCI', 'SOC2', 'NIST'];
 
 type TabsType = {
   label: string;
@@ -247,7 +281,7 @@ const SelectedAccountComponent = ({
 }) => {
   return (
     <span className={`${Typography.size.sm} text-gray-600 dark:text-gray-400`}>
-      {accounts.length > 0 ? `Account: ${type} / ${accounts[0]}` : null}
+      {accounts.length > 0 ? `${type} / ${accounts[0]}` : null}
       &nbsp;
       {accounts.length > 1 && (
         <Tooltip content={accounts.slice(1).join(', ')}>
@@ -260,28 +294,15 @@ const SelectedAccountComponent = ({
   );
 };
 
-export const ComplianceScanConfigure = () => {
+const ComplianceScanConfigure = () => {
+  const [_, setSearchParams] = useSearchParams();
   const { goBack } = usePageNavigation();
   const [selectedTab, setSelectedTab] = useState('');
   const [tabs, setTabs] = useState<TabsType[] | []>([]);
-  const { navigate } = usePageNavigation();
 
-  const onScanTypeSelection = (name: string) => {
-    setTabs((prevTabs) => {
-      const found = hasTypeSelected(prevTabs, name);
-      if (found) {
-        return [...filter(prevTabs, (tab: TabsType) => tab.value !== found.value)];
-      } else {
-        return [
-          ...prevTabs,
-          {
-            label: name,
-            value: name,
-          },
-        ];
-      }
-    });
-  };
+  const location = useLocation();
+  const [pageState] = useState<unknown>(location.state);
+  const state = pageState as OnboardConnectionNode[];
 
   useEffect(() => {
     // set selected tab by last compliance type
@@ -292,25 +313,53 @@ export const ComplianceScanConfigure = () => {
     }
   }, [tabs]);
 
+  if (!Array.isArray(pageState) || !pageState.length) {
+    return <Navigate to="/onboard/connectors/my-connectors" />;
+  }
+
+  const onScanTypeSelection = (name: string) => {
+    setTabs((prevTabs) => {
+      const found = hasTypeSelected(prevTabs, name);
+      if (found) {
+        const newType = filter(prevTabs, (tab: TabsType) => tab.value !== found.value);
+
+        setSearchParams({
+          controls: newType.map((type) => type.value).join(','),
+        });
+        return [...newType];
+      } else {
+        const newType = [
+          ...prevTabs,
+          {
+            label: name,
+            value: name,
+          },
+        ];
+        setSearchParams({
+          controls: newType.map((type) => type.value).join(','),
+        });
+        return newType;
+      }
+    });
+  };
+
   return (
-    <>
+    <Form method="post">
+      <input
+        type="text"
+        name="_nodeIds"
+        hidden
+        readOnly
+        value={state.map((node) => node.urlId).join(',')}
+      />
+      <input type="text" name="_nodeType" readOnly hidden value={state[0].urlType} />
       <ConnectorHeader
         title="Configure Compliance Scan"
         description="Choose from the below options to perform your first scan."
         endComponent={
           <SelectedAccountComponent
-            accounts={[
-              '234HTY6643',
-              'dummy',
-              'dummy',
-              'dummy',
-              'dummy',
-              'dummy',
-              'dummy',
-              'dummy',
-              'dummy',
-            ]}
-            type={'AWS'}
+            accounts={state.map((node) => node.urlId)}
+            type={state[0].urlType}
           />
         }
       />
@@ -326,17 +375,13 @@ export const ComplianceScanConfigure = () => {
             }}
             endIcon={hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
             className="self-start"
+            name={`${type}[]`}
+            value={type}
           >
             {type}
           </Button>
         ))}
-        <Button
-          size="sm"
-          color="primary"
-          className="ml-auto"
-          disabled={tabs.length === 0}
-          onClick={() => navigate('/onboard/scan/view-summary/compliance')}
-        >
+        <Button size="sm" color="primary" className="ml-auto">
           Start Scan
         </Button>
       </div>
@@ -353,9 +398,15 @@ export const ComplianceScanConfigure = () => {
           </Tabs>
         )}
       </div>
-      <Button onClick={goBack} size="xs" className="mt-16">
+      <Button onClick={goBack} size="xs" className="mt-16" type="submit">
         Go Back
       </Button>
-    </>
+    </Form>
   );
+};
+
+export const module = {
+  action,
+  loader,
+  element: <ComplianceScanConfigure />,
 };
