@@ -597,7 +597,7 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 	neo_res, err := tx.Run(`
 		MATCH (m:Bulk`+string(scan_type)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scan_type)+`) -[:SCANNED]-> (n)
-		RETURN d.node_id as scan_id, d.status as status, n.node_id as node_id, n.node_type as node_type, d.updated_at`,
+		RETURN d.node_id as scan_id, d.status as status, n.node_id as node_id, labels(n) as node_type, d.updated_at`,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return scan_ids, err
@@ -613,13 +613,31 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 			ScanId:    rec.Values[0].(string),
 			Status:    rec.Values[1].(string),
 			NodeId:    rec.Values[2].(string),
-			NodeType:  rec.Values[3].(string),
+			NodeType:  Labels2NodeType(rec.Values[3].([]interface{})),
 			UpdatedAt: rec.Values[4].(int64),
 		}
 		scan_ids.Statuses[rec.Values[0].(string)] = info
 	}
 
 	return scan_ids, nil
+}
+
+func Labels2NodeType(labels []interface{}) string {
+	for i := range labels {
+		str := fmt.Sprintf("%v", labels[i])
+		if str == "Node" {
+			return "host"
+		} else if str == "ContainerImage" {
+			return "image"
+		} else if str == "Container" {
+			return "container"
+		} else if str == "KubernetesCluster" {
+			return "cluster"
+		} else if str == "RegistryAccount" {
+			return "registry"
+		}
+	}
+	return "unknown"
 }
 
 func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, scanId string) (model.ComplianceScanStatusResp, error) {
