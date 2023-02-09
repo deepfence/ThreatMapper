@@ -139,10 +139,10 @@ var scanStatusSubCmd = &cobra.Command{
 			req = req.ScanIds([]string{})
 			res, _, err = http.Client().MalwareScanApi.StatusMalwareScanExecute(req)
 		case "compliance":
-			req := http.Client().ComplianceApi.StatusComplianceScan(context.Background())
+			req := http.Client().CloudScannerApi.StatusCloudComplianceScan(context.Background())
 			req = req.BulkScanId(scan_id)
 			req = req.ScanIds([]string{})
-			res2, _, err = http.Client().ComplianceApi.StatusComplianceScanExecute(req)
+			res2, _, err = http.Client().CloudScannerApi.StatusCloudComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -263,7 +263,7 @@ var scanResultsSubCmd = &cobra.Command{
 			})
 			res, _, err = http.Client().MalwareScanApi.ResultsMalwareScanExecute(req)
 		case "compliance":
-			req := http.Client().ComplianceApi.ResultsComplianceScan(context.Background())
+			req := http.Client().CloudScannerApi.ResultsCloudComplianceScan(context.Background())
 			req = req.ModelScanResultsReq(deepfence_server_client.ModelScanResultsReq{
 				ScanId: scan_id,
 				Window: deepfence_server_client.ModelFetchWindow{
@@ -271,7 +271,7 @@ var scanResultsSubCmd = &cobra.Command{
 					Size:   20,
 				},
 			})
-			res, _, err = http.Client().ComplianceApi.ResultsComplianceScanExecute(req)
+			res, _, err = http.Client().CloudScannerApi.ResultsCloudComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
