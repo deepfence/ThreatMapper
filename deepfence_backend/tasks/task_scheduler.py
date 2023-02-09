@@ -274,7 +274,10 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
             elif node_type == COMPLIANCE_LINUX_HOST:
                 for compliance_check_type in node_action_details.get("compliance_check_type", []):
                     node = Node.get_node(0, node_id, "host")
-                    node.compliance_start_scan(compliance_check_type, None)
+                    if node:
+                        node.compliance_start_scan(compliance_check_type, None)
+                    else:
+                        app.logger.error("node " + node_id + " not found")
             else:
                 if node_id.endswith(";<cloud_org>"):
                     accounts = CloudComplianceNode.query.filter_by(org_account_id=node_id).all()

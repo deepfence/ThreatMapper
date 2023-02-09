@@ -1750,6 +1750,8 @@ def attack_path():
         if not is_network_attack_vector(cve_doc.get("cve_attack_vector", "")):
             continue
         node = Node.get_node("", scope_id, node_type)
+        if not node:
+            continue
         attack_path = node.get_attack_path_for_node(top_n=1)
         if not attack_path:
             ignore_nodes[node.scope_id] = True
