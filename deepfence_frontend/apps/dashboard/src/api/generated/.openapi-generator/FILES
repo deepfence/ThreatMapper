@@ -42,9 +42,9 @@ models/IngestersVulnerabilityScanStatus.ts
 models/ModelAgentId.ts
 models/ModelAgentUpgrade.ts
 models/ModelApiAuthRequest.ts
+models/ModelCloudCompliance.ts
 models/ModelCloudComplianceScanDetails.ts
-models/ModelCloudComplianceScanTrigger.ts
-models/ModelCloudComplianceScanTriggerReq.ts
+models/ModelCloudComplianceScanResult.ts
 models/ModelCloudNodeAccountInfo.ts
 models/ModelCloudNodeAccountRegisterReq.ts
 models/ModelCloudNodeAccountRegisterResp.ts
@@ -55,6 +55,8 @@ models/ModelCloudNodeCloudtrailTrail.ts
 models/ModelCloudNodeProvidersListResp.ts
 models/ModelCompliance.ts
 models/ModelComplianceScanResult.ts
+models/ModelComplianceScanStatus.ts
+models/ModelComplianceScanStatusResp.ts
 models/ModelComplianceScanTriggerReq.ts
 models/ModelComputeMetrics.ts
 models/ModelContainer.ts
@@ -65,7 +67,7 @@ models/ModelHost.ts
 models/ModelInitAgentReq.ts
 models/ModelInviteUserRequest.ts
 models/ModelInviteUserResponse.ts
-models/ModelKeyValue.ts
+models/ModelKeyValues.ts
 models/ModelKubernetesCluster.ts
 models/ModelLoginRequest.ts
 models/ModelMalware.ts

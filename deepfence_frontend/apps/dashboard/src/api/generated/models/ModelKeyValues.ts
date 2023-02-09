@@ -16,50 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelKeyValue
+ * @interface ModelKeyValues
  */
-export interface ModelKeyValue {
+export interface ModelKeyValues {
     /**
      * 
      * @type {string}
-     * @memberof ModelKeyValue
+     * @memberof ModelKeyValues
      */
     key: string;
     /**
      * 
-     * @type {string}
-     * @memberof ModelKeyValue
+     * @type {Array<string>}
+     * @memberof ModelKeyValues
      */
-    value: string;
+    values: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the ModelKeyValue interface.
+ * Check if a given object implements the ModelKeyValues interface.
  */
-export function instanceOfModelKeyValue(value: object): boolean {
+export function instanceOfModelKeyValues(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "key" in value;
-    isInstance = isInstance && "value" in value;
+    isInstance = isInstance && "values" in value;
 
     return isInstance;
 }
 
-export function ModelKeyValueFromJSON(json: any): ModelKeyValue {
-    return ModelKeyValueFromJSONTyped(json, false);
+export function ModelKeyValuesFromJSON(json: any): ModelKeyValues {
+    return ModelKeyValuesFromJSONTyped(json, false);
 }
 
-export function ModelKeyValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelKeyValue {
+export function ModelKeyValuesFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelKeyValues {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'key': json['key'],
-        'value': json['value'],
+        'values': json['values'],
     };
 }
 
-export function ModelKeyValueToJSON(value?: ModelKeyValue | null): any {
+export function ModelKeyValuesToJSON(value?: ModelKeyValues | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -69,7 +69,7 @@ export function ModelKeyValueToJSON(value?: ModelKeyValue | null): any {
     return {
         
         'key': value.key,
-        'value': value.value,
+        'values': value.values,
     };
 }
 

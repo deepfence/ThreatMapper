@@ -31,6 +31,12 @@ export interface ModelScanFilter {
      * @type {ModelFieldsFilter}
      * @memberof ModelScanFilter
      */
+    cloud_account_scan_filter: ModelFieldsFilter;
+    /**
+     * 
+     * @type {ModelFieldsFilter}
+     * @memberof ModelScanFilter
+     */
     container_scan_filter: ModelFieldsFilter;
     /**
      * 
@@ -44,6 +50,12 @@ export interface ModelScanFilter {
      * @memberof ModelScanFilter
      */
     image_scan_filter: ModelFieldsFilter;
+    /**
+     * 
+     * @type {ModelFieldsFilter}
+     * @memberof ModelScanFilter
+     */
+    kubernetes_cluster_scan_filter: ModelFieldsFilter;
 }
 
 /**
@@ -51,9 +63,11 @@ export interface ModelScanFilter {
  */
 export function instanceOfModelScanFilter(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_account_scan_filter" in value;
     isInstance = isInstance && "container_scan_filter" in value;
     isInstance = isInstance && "host_scan_filter" in value;
     isInstance = isInstance && "image_scan_filter" in value;
+    isInstance = isInstance && "kubernetes_cluster_scan_filter" in value;
 
     return isInstance;
 }
@@ -68,9 +82,11 @@ export function ModelScanFilterFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
+        'cloud_account_scan_filter': ModelFieldsFilterFromJSON(json['cloud_account_scan_filter']),
         'container_scan_filter': ModelFieldsFilterFromJSON(json['container_scan_filter']),
         'host_scan_filter': ModelFieldsFilterFromJSON(json['host_scan_filter']),
         'image_scan_filter': ModelFieldsFilterFromJSON(json['image_scan_filter']),
+        'kubernetes_cluster_scan_filter': ModelFieldsFilterFromJSON(json['kubernetes_cluster_scan_filter']),
     };
 }
 
@@ -83,9 +99,11 @@ export function ModelScanFilterToJSON(value?: ModelScanFilter | null): any {
     }
     return {
         
+        'cloud_account_scan_filter': ModelFieldsFilterToJSON(value.cloud_account_scan_filter),
         'container_scan_filter': ModelFieldsFilterToJSON(value.container_scan_filter),
         'host_scan_filter': ModelFieldsFilterToJSON(value.host_scan_filter),
         'image_scan_filter': ModelFieldsFilterToJSON(value.image_scan_filter),
+        'kubernetes_cluster_scan_filter': ModelFieldsFilterToJSON(value.kubernetes_cluster_scan_filter),
     };
 }
 
