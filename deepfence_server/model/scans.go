@@ -67,7 +67,7 @@ type ScanInfo struct {
 	NodeType  string `json:"node_type" required:"true"`
 }
 
-type CloudComplianceScanInfo struct {
+type ComplianceScanInfo struct {
 	ScanId        string `json:"scan_id" required:"true"`
 	BenchmarkType string `json:"benchmark_type" required:"true"`
 	Status        string `json:"status" required:"true"`
@@ -97,13 +97,7 @@ type ScanStatusResp struct {
 }
 
 type ComplianceScanStatusResp struct {
-	Statuses []ComplianceScanStatus `json:"statuses" required:"true"`
-}
-
-type ComplianceScanStatus struct {
-	ScanId        string `json:"scan_id"`
-	BenchmarkType string `json:"benchmark_type"`
-	Status        string `json:"status"`
+	Statuses []ComplianceScanInfo `json:"statuses" required:"true"`
 }
 
 type ScanListReq struct {
@@ -117,7 +111,7 @@ type ScanListResp struct {
 }
 
 type CloudComplianceScanListResp struct {
-	ScansInfo []CloudComplianceScanInfo `json:"scans_info" required:"true"`
+	ScansInfo []ComplianceScanInfo `json:"scans_info" required:"true"`
 }
 
 type ScanResultsReq struct {
