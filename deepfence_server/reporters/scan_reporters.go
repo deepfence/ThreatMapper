@@ -145,7 +145,7 @@ func NodeIdentifierToIdList(in []model.NodeIdentifier) []string {
 	return res
 }
 
-func GetRegisteriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+func GetRegistriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -32,16 +33,19 @@ func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 }
 
 func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, error) {
+	defer cronjobs.ScanWorkloadAllocator.Free()
 	// // extract tenant id
 	// tenantID, err := directory.ExtractNamespace(msg.Context())
 	// if err != nil {
 	// 	log.Error().Msg(err.Error())
 	// 	return err
 	// }
+	var params utils.SbomParameters
 
 	tenantID := msg.Metadata.Get(directory.NamespaceKey)
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), []kgo.RecordHeader{})
 		return nil, errors.New("tenant-id/namespace is empty")
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
@@ -54,21 +58,23 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
 
-	var params utils.SbomParameters
-
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil, err
 	}
 
 	if params.RegistryId == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil, fmt.Errorf("registry id is empty in params")
 	}
 
 	// get registry credentials
 	authFile, namespace, insecure, err := GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
+		log.Error().Msg(err.Error())
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil, err
 	}
 	defer os.Remove(authFile)
@@ -106,6 +112,8 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	rawSbom, err := syft.GenerateSBOM(cfg)
 	if err != nil {
+		log.Error().Msg(err.Error())
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil, err
 	}
 
@@ -113,6 +121,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil, err
 	}
 
@@ -121,6 +130,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msg(err.Error())
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil, err
 	}
 	log.Info().Msgf("sbom file uploaded %+v", info)

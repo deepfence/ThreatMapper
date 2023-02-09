@@ -826,7 +826,7 @@ func extractBulksNodes(nodes []model.NodeIdentifier) (regularNodes []model.NodeI
 		}
 	}
 
-	return registryNodes, clusterNodes, registryNodes
+	return regularNodes, clusterNodes, registryNodes
 }
 
 func startMultiScan(ctx context.Context,
@@ -854,7 +854,7 @@ func startMultiScan(ctx context.Context,
 
 	regular, k8s, registry := extractBulksNodes(req.NodeIds)
 
-	image_nodes, err := reporters.GetRegisteriesImageIDs(ctx, registry)
+	image_nodes, err := reporters.GetRegistriesImageIDs(ctx, registry)
 	if err != nil {
 		return nil, "", err
 	}
