@@ -751,7 +751,7 @@ func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode co
 	res := []model.NodeIdentifier{}
 	wherePattern := fields_filter2cypher("n", false, filter)
 	if wherePattern == "" {
-		return res, nil
+		return ids, nil
 	}
 	nres, err := tx.Run(fmt.Sprintf(`
 		MATCH (n:%s)
