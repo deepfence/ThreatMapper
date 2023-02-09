@@ -34,6 +34,12 @@ import {
 export interface ModelComplianceScanTriggerReq {
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelComplianceScanTriggerReq
+     */
+    benchmark_types: Array<string> | null;
+    /**
+     * 
      * @type {ModelScanFilter}
      * @memberof ModelComplianceScanTriggerReq
      */
@@ -51,6 +57,7 @@ export interface ModelComplianceScanTriggerReq {
  */
 export function instanceOfModelComplianceScanTriggerReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "benchmark_types" in value;
     isInstance = isInstance && "filters" in value;
     isInstance = isInstance && "node_ids" in value;
 
@@ -67,6 +74,7 @@ export function ModelComplianceScanTriggerReqFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
+        'benchmark_types': json['benchmark_types'],
         'filters': ModelScanFilterFromJSON(json['filters']),
         'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
     };
@@ -81,6 +89,7 @@ export function ModelComplianceScanTriggerReqToJSON(value?: ModelComplianceScanT
     }
     return {
         
+        'benchmark_types': value.benchmark_types,
         'filters': ModelScanFilterToJSON(value.filters),
         'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
     };

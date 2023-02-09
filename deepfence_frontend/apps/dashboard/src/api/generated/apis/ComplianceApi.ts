@@ -19,11 +19,11 @@ import type {
   ApiDocsFailureResponse,
   IngestersCompliance,
   ModelComplianceScanResult,
+  ModelComplianceScanStatusResp,
   ModelComplianceScanTriggerReq,
   ModelScanListReq,
   ModelScanListResp,
   ModelScanResultsReq,
-  ModelScanStatusResp,
   ModelScanTriggerResp,
 } from '../models';
 import {
@@ -35,6 +35,8 @@ import {
     IngestersComplianceToJSON,
     ModelComplianceScanResultFromJSON,
     ModelComplianceScanResultToJSON,
+    ModelComplianceScanStatusRespFromJSON,
+    ModelComplianceScanStatusRespToJSON,
     ModelComplianceScanTriggerReqFromJSON,
     ModelComplianceScanTriggerReqToJSON,
     ModelScanListReqFromJSON,
@@ -43,8 +45,6 @@ import {
     ModelScanListRespToJSON,
     ModelScanResultsReqFromJSON,
     ModelScanResultsReqToJSON,
-    ModelScanStatusRespFromJSON,
-    ModelScanStatusRespToJSON,
     ModelScanTriggerRespFromJSON,
     ModelScanTriggerRespToJSON,
 } from '../models';
@@ -154,13 +154,13 @@ export interface ComplianceApiInterface {
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
      */
-    statusComplianceScanRaw(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanStatusResp>>;
+    statusComplianceScanRaw(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanStatusResp>>;
 
     /**
      * Get Compliance Scan Status on agent or registry
      * Get Compliance Scan Status
      */
-    statusComplianceScan(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanStatusResp>;
+    statusComplianceScan(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanStatusResp>;
 
     /**
      * Stop Compliance Scan on agent or registry
@@ -344,7 +344,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Get Compliance Scan Status on agent or registry
      * Get Compliance Scan Status
      */
-    async statusComplianceScanRaw(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanStatusResp>> {
+    async statusComplianceScanRaw(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanStatusResp>> {
         if (requestParameters.scanIds === null || requestParameters.scanIds === undefined) {
             throw new runtime.RequiredError('scanIds','Required parameter requestParameters.scanIds was null or undefined when calling statusComplianceScan.');
         }
@@ -380,14 +380,14 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanStatusRespFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplianceScanStatusRespFromJSON(jsonValue));
     }
 
     /**
      * Get Compliance Scan Status on agent or registry
      * Get Compliance Scan Status
      */
-    async statusComplianceScan(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanStatusResp> {
+    async statusComplianceScan(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanStatusResp> {
         const response = await this.statusComplianceScanRaw(requestParameters, initOverrides);
         return await response.value();
     }
