@@ -8,6 +8,7 @@ import {
   LoaderFunctionArgs,
   Navigate,
   redirect,
+  useActionData,
   useLocation,
   useSearchParams,
 } from 'react-router-dom';
@@ -301,6 +302,7 @@ const SelectedAccountComponent = ({
 };
 
 const ComplianceScanConfigure = () => {
+  const actionData = useActionData() as ScanActionReturnType;
   const [_, setSearchParams] = useSearchParams();
   const { goBack } = usePageNavigation();
   const [selectedTab, setSelectedTab] = useState('');
@@ -393,6 +395,11 @@ const ComplianceScanConfigure = () => {
           </Button>
         </Form>
       </div>
+      {actionData?.message && (
+        <section className="mb-4">
+          <p className={`text-sm text-red-500`}>{actionData.message}</p>
+        </section>
+      )}
       <div
         className={`${Typography.size.sm} ${Typography.weight.medium} mt-4 dark:text-white`}
       >
@@ -406,6 +413,7 @@ const ComplianceScanConfigure = () => {
           </Tabs>
         )}
       </div>
+
       <Button onClick={goBack} size="xs" className="mt-16">
         Go Back
       </Button>

@@ -133,17 +133,17 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Malware Scan' },
           },
           {
-            path: 'view-summary/compliance/:scanIds',
+            path: 'view-summary/compliance/:nodeType/:scanIds',
             ...complianceScanSummary,
             meta: { title: 'Summary Compliance Scan' },
           },
           {
-            path: 'view-summary/vulnerability/:scanIds',
+            path: 'view-summary/vulnerability/:nodeType/:scanIds',
             ...vulnerabilityScanSumary,
             meta: { title: 'Summary Vulnerability Scan' },
           },
           {
-            path: 'view-summary/secret/:scanIds',
+            path: 'view-summary/secret/:nodeType/:scanIds',
             ...secretScanSumary,
             meta: { title: 'Summary Secret Scan' },
           },

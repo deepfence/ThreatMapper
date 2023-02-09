@@ -3,8 +3,11 @@ import { Suspense } from 'react';
 import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Separator, Typography } from 'ui-components';
 
-import { getComplianceApiClient } from '@/api/api';
-import { ModelComplianceScanResult } from '@/api/generated';
+import { getCloudComplianceApiClient, getComplianceApiClient } from '@/api/api';
+import {
+  ModelCloudComplianceScanResult,
+  ModelComplianceScanResult,
+} from '@/api/generated';
 import LogoAws from '@/assets/logo-aws.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -42,7 +45,55 @@ export type LoaderDataType = {
   data?: ScanData[];
 };
 
-async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
+const makeCloudComplianceScanSummary = async (scanIds: string) => {
+  const bulkRequest = scanIds.split(',').map((scanId) => {
+    return makeRequest({
+      apiFunction: getCloudComplianceApiClient().resultCloudComplianceScan,
+      apiArgs: [
+        {
+          modelScanResultsReq: {
+            scan_id: scanId,
+            window: {
+              offset: 0,
+              size: 1000000,
+            },
+          },
+        },
+      ],
+    });
+  });
+  const responses = await Promise.all(bulkRequest);
+  const resultData = responses.map(
+    (response: ModelCloudComplianceScanResult | ApiError<void>) => {
+      if (ApiError.isApiError(response)) {
+        // TODO: handle any one request has an error on this bulk request
+        return null;
+      } else {
+        const resp = response as ModelComplianceScanResult;
+        return {
+          accountId: resp.kubernetes_cluster_name,
+          data: [
+            {
+              total: Object.keys(resp.status_counts ?? {}).reduce((acc, severity) => {
+                acc = acc + (resp.status_counts?.[severity] ?? 0);
+                return acc;
+              }, 0),
+              counts: Object.keys(resp.status_counts ?? {}).map((severity) => {
+                return {
+                  name: severity,
+                  value: resp.status_counts![severity],
+                };
+              }),
+            },
+          ],
+        };
+      }
+    },
+  );
+  return resultData;
+};
+
+const makeComplianceScanSummary = async (scanIds: string) => {
   const bulkRequest = scanIds.split(',').map((scanId) => {
     return makeRequest({
       apiFunction: getComplianceApiClient().resultComplianceScan,
@@ -71,14 +122,14 @@ async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
           accountId: resp.kubernetes_cluster_name,
           data: [
             {
-              total: Object.keys(resp.severity_counts ?? {}).reduce((acc, severity) => {
-                acc = acc + (resp.severity_counts?.[severity] ?? 0);
+              total: Object.keys(resp.status_counts ?? {}).reduce((acc, severity) => {
+                acc = acc + (resp.status_counts?.[severity] ?? 0);
                 return acc;
               }, 0),
-              counts: Object.keys(resp.severity_counts ?? {}).map((severity) => {
+              counts: Object.keys(resp.status_counts ?? {}).map((severity) => {
                 return {
                   name: severity,
-                  value: resp.severity_counts![severity],
+                  value: resp.status_counts![severity],
                 };
               }),
             },
@@ -87,19 +138,32 @@ async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
       }
     },
   );
+  return resultData;
+};
 
-  return {
-    data: resultData,
-  };
+async function getScanSummary(
+  scanIds: string,
+  nodeType: string,
+): Promise<LoaderDataType> {
+  if (nodeType === 'cloud_account') {
+    return {
+      data: makeCloudComplianceScanSummary(scanIds),
+    };
+  } else {
+    return {
+      data: makeComplianceScanSummary(scanIds),
+    };
+  }
 }
 
 const loader = ({
   params = {
     scanIds: '',
+    nodeType: '',
   },
 }: LoaderFunctionArgs): TypedDeferredData<LoaderDataType> => {
   return typedDefer({
-    data: getScanSummary(params.scanIds ?? ''),
+    data: getScanSummary(params.scanIds ?? '', params.nodeType ?? ''),
   });
 };
 

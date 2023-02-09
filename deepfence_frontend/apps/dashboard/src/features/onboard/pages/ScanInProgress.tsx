@@ -36,7 +36,11 @@ import {
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelScanInfo } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelComplianceScanStatus,
+  ModelScanInfo,
+} from '@/api/generated';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -142,6 +146,11 @@ async function getScanStatus(
       data: [],
     };
   }
+  if (result.statuses && Array.isArray(result.statuses)) {
+    return {
+      data: result.statuses,
+    };
+  }
 
   return {
     data: Object.values(result.statuses ?? {}),
@@ -233,8 +242,8 @@ const ScanInProgress = () => {
   );
   const allScanDone = areAllScanDone(loaderData?.data?.map((data) => data.status) ?? []);
 
-  const columns = useMemo(
-    () => [
+  const columns = useMemo(() => {
+    const columns = [
       columnHelper.accessor('node_type', {
         cell: (info) => info.getValue(),
         header: () => 'Type',
@@ -297,9 +306,19 @@ const ScanInProgress = () => {
           ) : null;
         },
       }),
-    ],
-    [loaderData.data],
-  );
+    ];
+
+    if (scanType.startsWith('compliance')) {
+      columns.push(
+        columnHelper.accessor('benchmark_type', {
+          cell: (info) => info.getValue(),
+          header: () => 'Control Type',
+          minSize: 500,
+        }),
+      );
+    }
+    return columns;
+  }, [loaderData.data]);
 
   useInterval(() => {
     if (!loaderData.message && !allScanDone) {
@@ -344,10 +363,14 @@ const ScanInProgress = () => {
                   endIcon={<HiOutlineChevronDoubleRight />}
                   onClick={() =>
                     navigate(
-                      generatePath(`/onboard/scan/view-summary/${scanType}/:scanIds`, {
-                        scanIds:
-                          loaderData?.data?.map((data) => data.scan_id).join(',') ?? '',
-                      }),
+                      generatePath(
+                        `/onboard/scan/view-summary/${scanType}/:nodeType/:scanIds`,
+                        {
+                          nodeType: loaderData?.data?.[0]?.node_type ?? '',
+                          scanIds:
+                            loaderData?.data?.map((data) => data.scan_id).join(',') ?? '',
+                        },
+                      ),
                     )
                   }
                   color="primary"
