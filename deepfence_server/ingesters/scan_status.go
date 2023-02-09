@@ -12,21 +12,21 @@ import (
 )
 
 type AlreadyRunningScanError struct {
-	scan_id   string
-	scan_type string
-	node_id   string
+	ScanId   string
+	ScanType string
+	NodeId   string
 }
 
 func (ve *AlreadyRunningScanError) Error() string {
-	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.scan_type, ve.node_id, ve.scan_id)
+	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.ScanType, ve.NodeId, ve.ScanId)
 }
 
 type NodeNotFoundError struct {
-	node_id string
+	NodeId string
 }
 
 func (ve *NodeNotFoundError) Error() string {
-	return fmt.Sprintf("Node %v not found", ve.node_id)
+	return fmt.Sprintf("Node %v not found", ve.NodeId)
 }
 
 type WriteDBTransaction struct {
@@ -62,7 +62,7 @@ func AddNewScan(tx WriteDBTransaction,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
-			node_id: node_id,
+			NodeId: node_id,
 		}
 	}
 
@@ -86,9 +86,9 @@ func AddNewScan(tx WriteDBTransaction,
 
 	if rec.Values[0] != nil {
 		return &AlreadyRunningScanError{
-			scan_id:   rec.Values[0].(string),
-			node_id:   node_id,
-			scan_type: string(scan_type),
+			ScanId:   rec.Values[0].(string),
+			NodeId:   node_id,
+			ScanType: string(scan_type),
 		}
 	}
 
@@ -174,7 +174,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
-			node_id: node_id,
+			NodeId: node_id,
 		}
 	}
 
@@ -201,9 +201,9 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 
 	if rec.Values[0] != nil {
 		return &AlreadyRunningScanError{
-			scan_id:   rec.Values[0].(string),
-			node_id:   node_id,
-			scan_type: string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+			ScanId:   rec.Values[0].(string),
+			NodeId:   node_id,
+			ScanType: string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
 		}
 	}
 

@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ModelRegistryAddReq,
+  ModelRegistryListResp,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -26,10 +27,16 @@ import {
     ApiDocsFailureResponseToJSON,
     ModelRegistryAddReqFromJSON,
     ModelRegistryAddReqToJSON,
+    ModelRegistryListRespFromJSON,
+    ModelRegistryListRespToJSON,
 } from '../models';
 
 export interface AddRegistryRequest {
     modelRegistryAddReq?: ModelRegistryAddReq;
+}
+
+export interface DeleteRegistryRequest {
+    id: number;
 }
 
 /**
@@ -56,19 +63,35 @@ export interface RegistryApiInterface {
     addRegistry(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
+     * Delete registry
+     * @summary Add Registry
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RegistryApiInterface
+     */
+    deleteRegistryRaw(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete registry
+     * Add Registry
+     */
+    deleteRegistry(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * List all the added Registries
      * @summary List Registries
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
+    listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelRegistryListResp>>>;
 
     /**
      * List all the added Registries
      * List Registries
      */
-    listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
+    listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryListResp>>;
 
 }
 
@@ -116,10 +139,49 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
     }
 
     /**
+     * Delete registry
+     * Add Registry
+     */
+    async deleteRegistryRaw(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling deleteRegistry.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/registryaccount/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete registry
+     * Add Registry
+     */
+    async deleteRegistry(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteRegistryRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * List all the added Registries
      * List Registries
      */
-    async listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
+    async listRegistryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelRegistryListResp>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -139,14 +201,14 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelRegistryListRespFromJSON));
     }
 
     /**
      * List all the added Registries
      * List Registries
      */
-    async listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
+    async listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryListResp>> {
         const response = await this.listRegistryRaw(initOverrides);
         return await response.value();
     }

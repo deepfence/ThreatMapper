@@ -7,7 +7,6 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 
-	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -15,27 +14,6 @@ import (
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	// "github.com/deepfence/golang_deepfence_sdk/utils/directory"
 )
-
-// todo: move to utils!
-func getAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
-	s := model.Setting{}
-	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
-	if err != nil {
-		return nil, err
-	}
-	var sValue model.SettingValue
-	err = json.Unmarshal(aes.Value, &sValue)
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := json.Marshal(sValue.Value)
-	if err != nil {
-		return nil, err
-	}
-
-	return json.RawMessage(b), nil
-}
 
 func Sync() error {
 	postgresCtx := directory.NewGlobalContext()
@@ -56,7 +34,7 @@ func Sync() error {
 			continue
 		}
 
-		err = SyncRegistry(ctx, pgClient, r)
+		err = SyncRegistry(ctx, pgClient, r, registryRow.ID)
 		if err != nil {
 			log.Error().Msgf("unable to get sync registry: %s: %v", registryRow.RegistryType, err)
 			continue
@@ -65,10 +43,10 @@ func Sync() error {
 	return nil
 }
 
-func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry) error {
+func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
 
 	// decrypt secret
-	aesValue, err := getAESValueForEncryption(ctx, pgClient)
+	aesValue, err := encryption.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		return err
 	}
@@ -89,10 +67,10 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	if err != nil {
 		return err
 	}
-	return insertToNeo4j(ctx, list, r)
+	return insertToNeo4j(ctx, list, r, pgId)
 }
 
-func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry) error {
+func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry, pgId int32) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -116,8 +94,8 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 	MERGE (n:ContainerImage{node_id:row.node_id})
 	MERGE (m:RegistryAccount{node_id: $node_id })
     MERGE (m) -[:HOSTS]-> (n)
-	SET n+= row, n.updated_at = TIMESTAMP()`,
-		map[string]interface{}{"batch": imageMap, "node_id": registryId})
+	SET n+= row, n.updated_at = TIMESTAMP(), m.container_registry_id=$pgId`,
+		map[string]interface{}{"batch": imageMap, "node_id": registryId, "pgId": pgId})
 	if err != nil {
 		return err
 	}

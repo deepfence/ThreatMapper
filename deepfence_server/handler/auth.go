@@ -120,7 +120,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(loginRequest.Email)
 	if err != nil {
-		httpext.JSON(w, statusCode, model.ErrorResponse{Message: err.Error()})
+		respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)

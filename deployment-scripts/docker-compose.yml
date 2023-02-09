@@ -180,9 +180,6 @@ services:
     depends_on:
       - deepfence-redis
       - deepfence-postgres
-    volumes:
-      - /etc/docker/certs.d:/etc/docker/certs.d:ro
-      - /var/run/docker.sock:/var/run/docker.sock
     logging:
       driver: "json-file"
       options:

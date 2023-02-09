@@ -16,39 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanTrigger
+ * @interface ModelNodeIdentifier
  */
-export interface ModelScanTrigger {
+export interface ModelNodeIdentifier {
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTrigger
+     * @memberof ModelNodeIdentifier
      */
     node_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelScanTrigger
+     * @memberof ModelNodeIdentifier
      */
-    node_type: ModelScanTriggerNodeTypeEnum;
+    node_type: ModelNodeIdentifierNodeTypeEnum;
 }
 
 
 /**
  * @export
  */
-export const ModelScanTriggerNodeTypeEnum = {
+export const ModelNodeIdentifierNodeTypeEnum = {
     Image: 'image',
     Host: 'host',
-    Container: 'container'
+    Container: 'container',
+    CloudAccount: 'cloud_account',
+    Cluster: 'cluster',
+    Registry: 'registry'
 } as const;
-export type ModelScanTriggerNodeTypeEnum = typeof ModelScanTriggerNodeTypeEnum[keyof typeof ModelScanTriggerNodeTypeEnum];
+export type ModelNodeIdentifierNodeTypeEnum = typeof ModelNodeIdentifierNodeTypeEnum[keyof typeof ModelNodeIdentifierNodeTypeEnum];
 
 
 /**
- * Check if a given object implements the ModelScanTrigger interface.
+ * Check if a given object implements the ModelNodeIdentifier interface.
  */
-export function instanceOfModelScanTrigger(value: object): boolean {
+export function instanceOfModelNodeIdentifier(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_type" in value;
@@ -56,11 +59,11 @@ export function instanceOfModelScanTrigger(value: object): boolean {
     return isInstance;
 }
 
-export function ModelScanTriggerFromJSON(json: any): ModelScanTrigger {
-    return ModelScanTriggerFromJSONTyped(json, false);
+export function ModelNodeIdentifierFromJSON(json: any): ModelNodeIdentifier {
+    return ModelNodeIdentifierFromJSONTyped(json, false);
 }
 
-export function ModelScanTriggerFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanTrigger {
+export function ModelNodeIdentifierFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelNodeIdentifier {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -71,7 +74,7 @@ export function ModelScanTriggerFromJSONTyped(json: any, ignoreDiscriminator: bo
     };
 }
 
-export function ModelScanTriggerToJSON(value?: ModelScanTrigger | null): any {
+export function ModelNodeIdentifierToJSON(value?: ModelNodeIdentifier | null): any {
     if (value === undefined) {
         return undefined;
     }

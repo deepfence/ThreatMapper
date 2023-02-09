@@ -45,16 +45,23 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	mux.AddPlugin(plugin.SignalsHandler)
 
-	retryMiddleware := middleware.Retry{
-		MaxRetries:      3,
-		InitialInterval: time.Second * 10,
-		Logger:          wml,
-	}
+	// Retried disabled in favor of neo4j scheduling
+	//retryMiddleware := middleware.Retry{
+	//	MaxRetries:          3,
+	//	InitialInterval:     time.Second * 10,
+	//	MaxInterval:         time.Second * 120,
+	//	Multiplier:          1.5,
+	//	MaxElapsedTime:      0,
+	//	RandomizationFactor: 0.5,
+	//	OnRetryHook: func(retryNum int, delay time.Duration) {
+	//		log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
+	//	},
+	//	Logger: wml,
+	//}
 
 	mux.AddMiddleware(
 		middleware.Recoverer,
 		middleware.NewThrottle(10, time.Second).Middleware,
-		retryMiddleware.Middleware,
 		middleware.CorrelationID,
 	)
 
@@ -180,11 +187,16 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 }
 
 func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAdapter) (message.Subscriber, error) {
+
+	subscriberConf := kafka.DefaultSaramaSubscriberConfig()
+	subscriberConf.Consumer.Offsets.AutoCommit.Enable = true
+
 	sub, err := kafka.NewSubscriber(
 		kafka.SubscriberConfig{
-			Brokers:       brokers,
-			Unmarshaler:   kafka.DefaultMarshaler{},
-			ConsumerGroup: consumerGroup,
+			Brokers:               brokers,
+			Unmarshaler:           kafka.DefaultMarshaler{},
+			ConsumerGroup:         consumerGroup,
+			OverwriteSaramaConfig: subscriberConf,
 		},
 		logger,
 	)

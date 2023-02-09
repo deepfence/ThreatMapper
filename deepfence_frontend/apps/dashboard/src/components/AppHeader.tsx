@@ -20,7 +20,7 @@ export function AppHeader({
   const { toggleMode, mode } = useTheme();
 
   return (
-    <div className="bg-white dark:bg-gray-800 h-[64px] sticky top-0 w-full border-b border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 h-[64px] w-full border-b border-gray-200 dark:border-gray-700">
       <div className="h-full flex items-center mx-2">
         <div className="mr-auto flex gap-4">
           <button

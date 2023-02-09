@@ -16,50 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelCloudComplianceScanTrigger
+ * @interface ModelKeyValues
  */
-export interface ModelCloudComplianceScanTrigger {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ModelCloudComplianceScanTrigger
-     */
-    benchmark_types: Array<string> | null;
+export interface ModelKeyValues {
     /**
      * 
      * @type {string}
-     * @memberof ModelCloudComplianceScanTrigger
+     * @memberof ModelKeyValues
      */
-    node_id: string;
+    key: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ModelKeyValues
+     */
+    values: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the ModelCloudComplianceScanTrigger interface.
+ * Check if a given object implements the ModelKeyValues interface.
  */
-export function instanceOfModelCloudComplianceScanTrigger(value: object): boolean {
+export function instanceOfModelKeyValues(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "benchmark_types" in value;
-    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "key" in value;
+    isInstance = isInstance && "values" in value;
 
     return isInstance;
 }
 
-export function ModelCloudComplianceScanTriggerFromJSON(json: any): ModelCloudComplianceScanTrigger {
-    return ModelCloudComplianceScanTriggerFromJSONTyped(json, false);
+export function ModelKeyValuesFromJSON(json: any): ModelKeyValues {
+    return ModelKeyValuesFromJSONTyped(json, false);
 }
 
-export function ModelCloudComplianceScanTriggerFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudComplianceScanTrigger {
+export function ModelKeyValuesFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelKeyValues {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'benchmark_types': json['benchmark_types'],
-        'node_id': json['node_id'],
+        'key': json['key'],
+        'values': json['values'],
     };
 }
 
-export function ModelCloudComplianceScanTriggerToJSON(value?: ModelCloudComplianceScanTrigger | null): any {
+export function ModelKeyValuesToJSON(value?: ModelKeyValues | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +68,8 @@ export function ModelCloudComplianceScanTriggerToJSON(value?: ModelCloudComplian
     }
     return {
         
-        'benchmark_types': value.benchmark_types,
-        'node_id': value.node_id,
+        'key': value.key,
+        'values': value.values,
     };
 }
 

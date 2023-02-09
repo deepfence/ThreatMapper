@@ -23,25 +23,24 @@ type MalwareScanTriggerReq struct {
 
 type ComplianceScanTriggerReq struct {
 	ScanTriggerCommon
+	ComplianceBenchmarkTypes
 }
 
-type CloudComplianceScanTriggerReq struct {
-	ScanTriggers []CloudComplianceScanTrigger `json:"scan_triggers" required:"true"`
-}
-
-type KeyValue struct {
-	Key   string `json:"key" required:"true"`
-	Value string `json:"value" required:"true"`
+type KeyValues struct {
+	Key    string   `json:"key" required:"true"`
+	Values []string `json:"values" required:"true"`
 }
 
 type FieldsFilter struct {
-	FieldsValues []KeyValue `json:"fields_values" required:"true"`
+	FieldsValues []KeyValues `json:"fields_values" required:"true"`
 }
 
 type ScanFilter struct {
-	ImageScanFilter     FieldsFilter `json:"image_scan_filter" required:"true"`
-	ContainerScanFilter FieldsFilter `json:"container_scan_filter" required:"true"`
-	HostScanFilter      FieldsFilter `json:"host_scan_filter" required:"true"`
+	ImageScanFilter             FieldsFilter `json:"image_scan_filter" required:"true"`
+	ContainerScanFilter         FieldsFilter `json:"container_scan_filter" required:"true"`
+	HostScanFilter              FieldsFilter `json:"host_scan_filter" required:"true"`
+	CloudAccountScanFilter      FieldsFilter `json:"cloud_account_scan_filter" required:"true"`
+	KubernetesClusterScanFilter FieldsFilter `json:"kubernetes_cluster_scan_filter" required:"true"`
 }
 
 type ScanTriggerCommon struct {
@@ -51,11 +50,10 @@ type ScanTriggerCommon struct {
 
 type NodeIdentifier struct {
 	NodeId   string `json:"node_id" required:"true"`
-	NodeType string `json:"node_type" required:"true" enum:"image,host,container"`
+	NodeType string `json:"node_type" required:"true" enum:"image,host,container,cloud_account,cluster,registry"`
 }
 
-type CloudComplianceScanTrigger struct {
-	NodeId         string   `json:"node_id" required:"true"`
+type ComplianceBenchmarkTypes struct {
 	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
@@ -67,6 +65,15 @@ type ScanInfo struct {
 	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
 	NodeId    string `json:"node_id" required:"true"`
 	NodeType  string `json:"node_type" required:"true"`
+}
+
+type ComplianceScanInfo struct {
+	ScanId        string `json:"scan_id" required:"true"`
+	BenchmarkType string `json:"benchmark_type" required:"true"`
+	Status        string `json:"status" required:"true"`
+	UpdatedAt     int64  `json:"updated_at" required:"true" format:"int64"`
+	NodeId        string `json:"node_id" required:"true"`
+	NodeType      string `json:"node_type" required:"true"`
 }
 
 const (
@@ -89,6 +96,10 @@ type ScanStatusResp struct {
 	Statuses map[string]ScanInfo `json:"statuses" required:"true"`
 }
 
+type ComplianceScanStatusResp struct {
+	Statuses []ComplianceScanInfo `json:"statuses" required:"true"`
+}
+
 type ScanListReq struct {
 	NodeId   string      `json:"node_id" required:"true"`
 	NodeType string      `json:"node_type" required:"true" enum:"image,host,container"`
@@ -97,6 +108,10 @@ type ScanListReq struct {
 
 type ScanListResp struct {
 	ScansInfo []ScanInfo `json:"scans_info" required:"true"`
+}
+
+type CloudComplianceScanListResp struct {
+	ScansInfo []ComplianceScanInfo `json:"scans_info" required:"true"`
 }
 
 type ScanResultsReq struct {
@@ -137,7 +152,18 @@ type MalwareScanResult struct {
 
 type ComplianceScanResult struct {
 	ScanResultsCommon
-	Compliances []Compliance `json:"compliances" required:"true"`
+	BenchmarkType        string         `json:"benchmark_type" required:"true"`
+	Compliances          []Compliance   `json:"compliances" required:"true"`
+	StatusCounts         map[string]int `json:"status_counts" required:"true"`
+	CompliancePercentage float64        `json:"compliance_percentage" required:"true"`
+}
+
+type CloudComplianceScanResult struct {
+	ScanResultsCommon
+	BenchmarkType        string            `json:"benchmark_type" required:"true"`
+	Compliances          []CloudCompliance `json:"compliances" required:"true"`
+	StatusCounts         map[string]int    `json:"status_counts" required:"true"`
+	CompliancePercentage float64           `json:"compliance_percentage" required:"true"`
 }
 
 type Secret struct {
@@ -202,4 +228,27 @@ type Compliance struct {
 	Status              string `json:"status" required:"true"`
 	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
 	ComplianceNodeType  string `json:"compliance_node_type" required:"true"`
+}
+
+type CloudCompliance struct {
+	Timestamp           string `json:"@timestamp" required:"true"`
+	Count               int    `json:"count,omitempty" required:"true"`
+	Reason              string `json:"reason" required:"true"`
+	Resource            string `json:"resource" required:"true"`
+	Status              string `json:"status" required:"true"`
+	Region              string `json:"region" required:"true"`
+	AccountID           string `json:"account_id" required:"true"`
+	Group               string `json:"group" required:"true"`
+	Service             string `json:"service" required:"true"`
+	Title               string `json:"title" required:"true"`
+	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
+	CloudProvider       string `json:"cloud_provider" required:"true"`
+	NodeName            string `json:"node_name" required:"true"`
+	NodeID              string `json:"node_id" required:"true"`
+	ScanID              string `json:"scan_id" required:"true"`
+	Masked              string `json:"masked" required:"true"`
+	Type                string `json:"type" required:"true"`
+	ControlID           string `json:"control_id" required:"true"`
+	Description         string `json:"description" required:"true"`
+	Severity            string `json:"severity" required:"true"`
 }

@@ -3,7 +3,6 @@ package sbom
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"os"
 	"path"
 
@@ -31,19 +30,17 @@ func NewSBOMScanner(ingest chan *kgo.Record) SbomParser {
 }
 
 func (s SbomParser) ScanSBOM(msg *message.Message) error {
-	// // extract tenant id
-	// tenantID, err := directory.ExtractNamespace(msg.Context())
-	// if err != nil {
-	// 	log.Error().Msg(err.Error())
-	// 	return err
-	// }
 
 	tenantID := msg.Metadata.Get(directory.NamespaceKey)
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
-		return errors.New("tenant-id/namespace is empty")
+		return directory.ErrNamespaceNotFound
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
+
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
+	}
 
 	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))
 
@@ -51,7 +48,8 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
-		return err
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil
 	}
 
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
@@ -59,7 +57,8 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return err
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil
 	}
 
 	sbomFile := path.Join("/tmp", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
@@ -67,7 +66,8 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	err = mc.DownloadFile(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return err
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil
 	}
 	defer func() {
 		log.Info().Msgf("remove sbom file %s", sbomFile)
@@ -78,6 +78,8 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFile, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil
 	}
 
 	cfg := psUtils.Config{
@@ -93,15 +95,13 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
 	if err != nil {
 		log.Error().Msgf("error on generate vulnerability report: %s", err)
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil
 	}
 
 	log.Info().Msgf("scan-id=%s vulnerabilities=%d", params.ScanId, len(report))
 
 	// write reports and status to kafka ingester will process from there
-
-	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
-	}
 
 	for _, c := range report {
 		cb, err := json.Marshal(c)
@@ -117,7 +117,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	}
 
 	// scan status
-	if err := SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS), rh); err != nil {
+	if err := SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS, ""), rh); err != nil {
 		log.Error().Msgf("error sending scan status: %s", err.Error())
 	}
 

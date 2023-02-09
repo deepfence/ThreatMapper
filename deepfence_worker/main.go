@@ -50,6 +50,20 @@ func main() {
 	}
 	log.Info().Msgf("connection successful to kafka brokers %v", cfg.KafkaBrokers)
 
+	// task publisher
+	tasksPublisher, err := kafka.NewPublisher(
+		kafka.PublisherConfig{
+			Brokers:   cfg.KafkaBrokers,
+			Marshaler: kafka.DefaultMarshaler{},
+		},
+		wml,
+	)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return
+	}
+	defer tasksPublisher.Close()
+
 	switch cfg.Mode {
 	case "ingester":
 		log.Info().Msg("Starting ingester")
@@ -59,6 +73,10 @@ func main() {
 		}
 	case "worker":
 		log.Info().Msg("Starting worker")
+		if err := controls.ConsoleActionSetup(tasksPublisher); err != nil {
+			log.Error().Msg(err.Error())
+			return
+		}
 		err := startWorker(wml, cfg)
 		if err != nil {
 			log.Error().Msg(err.Error())
@@ -66,23 +84,7 @@ func main() {
 		}
 	case "scheduler":
 		log.Info().Msg("Starting scheduler")
-		err := controls.ConsoleActionSetup()
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return
-		}
-		tasksPublisher, err := kafka.NewPublisher(
-			kafka.PublisherConfig{
-				Brokers:   cfg.KafkaBrokers,
-				Marshaler: kafka.DefaultMarshaler{},
-			},
-			wml,
-		)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return
-		}
-		defer tasksPublisher.Close()
+
 		scheduler, err := cronscheduler.NewScheduler(tasksPublisher)
 		if err != nil {
 			log.Error().Msg(err.Error())

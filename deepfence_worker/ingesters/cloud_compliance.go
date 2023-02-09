@@ -2,25 +2,34 @@ package ingesters
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
+type ComplianceStats struct {
+	Alarm                int     `json:"alarm"`
+	Ok                   int     `json:"ok"`
+	Info                 int     `json:"info"`
+	Skip                 int     `json:"skip"`
+	Error                int     `json:"error"`
+	CompliancePercentage float64 `json:"compliance_percentage"`
+}
+
 type CloudComplianceScanStatus struct {
-	Timestamp             time.Time `json:"@timestamp"`
-	ContainerName         string    `json:"container_name"`
-	HostName              string    `json:"host_name"`
-	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
-	Masked                string    `json:"masked"`
-	NodeID                string    `json:"node_id"`
-	NodeName              string    `json:"node_name"`
-	NodeType              string    `json:"node_type"`
-	ScanID                string    `json:"scan_id"`
-	ScanStatus            string    `json:"scan_status"`
+	Timestamp           time.Time       `json:"@timestamp"`
+	ComplianceCheckType string          `json:"compliance_check_type"`
+	Masked              string          `json:"masked"`
+	NodeID              string          `json:"node_id"`
+	Result              ComplianceStats `json:"result" nested_json:"true"`
+	ScanID              string          `json:"scan_id"`
+	ScanMessage         string          `json:"scan_message"`
+	Status              string          `json:"status"`
+	Type                string          `json:"type"`
+	TotalChecks         int             `json:"total_checks"`
 }
 
 type CloudCompliance struct {
@@ -66,12 +75,21 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:CloudCompliance{resource:row.resource, reason: row.reason}) MERGE (m:CloudResource{node_id:row.resource}) MERGE (n) -[:SCANNED]-> (m) SET n+= row",
+	if _, err = tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:CloudComplianceResult{resource:row.resource, scan_id: row.scan_id, control_id: row.control_id})
+		MERGE (m:CloudResource{node_id: row.resource})
+		MERGE (n) -[:SCANNED]-> (m)
+		SET n+= row`,
 		map[string]interface{}{"batch": CloudCompliancesToMaps(data)}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:CloudCompliance) MERGE (m:CloudComplianceScan{node_id: n.scan_id, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)",
+	if _, err = tx.Run(fmt.Sprintf(`
+		MATCH (n:CloudComplianceResult)
+		MERGE (m:%s{node_id: n.scan_id})
+		SET m.time_stamp = timestamp()
+		MERGE (m) -[:DETECTED]-> (n)`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
 		map[string]interface{}{}); err != nil {
 		return err
 	}
@@ -98,8 +116,16 @@ func CommitFuncCloudComplianceScanStatus(ns string, data []CloudComplianceScanSt
 	}
 	defer tx.Close()
 
-	// TODO: add query to commit for scan status
-	log.Error().Msg("Not implemented")
+	ccScanMaps := CloudComplianceScansToMaps(data)
+	if _, err = tx.Run(fmt.Sprintf(`
+		UNWIND $batch as row
+		MATCH (n:%s{node_id: row.scan_id})
+		MATCH (m:Node{node_id: row.connected_node_id})
+		MATCH (n) -[:SCANNED]-> (m)
+		SET n+= row`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+		map[string]interface{}{"batch": ccScanMaps}); err != nil {
+		return err
+	}
 
 	return tx.Commit()
 }
@@ -112,6 +138,15 @@ func CloudCompliancesToMaps(ms []CloudCompliance) []map[string]interface{} {
 	return res
 }
 
+func CloudComplianceScansToMaps(ms []CloudComplianceScanStatus) []map[string]interface{} {
+	var res []map[string]interface{}
+	for _, v := range ms {
+		out := v.ToMap()
+		res = append(res, out)
+	}
+	return res
+}
+
 func (c CloudCompliance) ToMap() map[string]interface{} {
 	out, err := json.Marshal(c)
 	if err != nil {
@@ -119,5 +154,26 @@ func (c CloudCompliance) ToMap() map[string]interface{} {
 	}
 	bb := map[string]interface{}{}
 	_ = json.Unmarshal(out, &bb)
+	return bb
+}
+
+func (c CloudComplianceScanStatus) ToMap() map[string]interface{} {
+	out, err := json.Marshal(c)
+	if err != nil {
+		return nil
+	}
+	bb := map[string]interface{}{}
+	_ = json.Unmarshal(out, &bb)
+	if results, ok := bb["result"]; ok {
+		resultsByte, err := json.Marshal(results)
+		if err != nil {
+			resultsByte = []byte{}
+		}
+		bb["result"] = string(resultsByte)
+	}
+	if nodeId, ok := bb["node_id"]; ok {
+		bb["connected_node_id"] = nodeId
+		delete(bb, "node_id")
+	}
 	return bb
 }

@@ -16,62 +16,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelCloudComplianceScanDetails
+ * @interface ModelComplianceScanStatus
  */
-export interface ModelCloudComplianceScanDetails {
+export interface ModelComplianceScanStatus {
     /**
      * 
      * @type {string}
-     * @memberof ModelCloudComplianceScanDetails
+     * @memberof ModelComplianceScanStatus
      */
-    account_id?: string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ModelCloudComplianceScanDetails
-     */
-    controls?: Array<string> | null;
+    benchmark_type?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelCloudComplianceScanDetails
+     * @memberof ModelComplianceScanStatus
      */
     scan_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelCloudComplianceScanDetails
+     * @memberof ModelComplianceScanStatus
      */
-    scan_type?: string;
+    status?: string;
 }
 
 /**
- * Check if a given object implements the ModelCloudComplianceScanDetails interface.
+ * Check if a given object implements the ModelComplianceScanStatus interface.
  */
-export function instanceOfModelCloudComplianceScanDetails(value: object): boolean {
+export function instanceOfModelComplianceScanStatus(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelCloudComplianceScanDetailsFromJSON(json: any): ModelCloudComplianceScanDetails {
-    return ModelCloudComplianceScanDetailsFromJSONTyped(json, false);
+export function ModelComplianceScanStatusFromJSON(json: any): ModelComplianceScanStatus {
+    return ModelComplianceScanStatusFromJSONTyped(json, false);
 }
 
-export function ModelCloudComplianceScanDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudComplianceScanDetails {
+export function ModelComplianceScanStatusFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelComplianceScanStatus {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'account_id': !exists(json, 'account_id') ? undefined : json['account_id'],
-        'controls': !exists(json, 'controls') ? undefined : json['controls'],
+        'benchmark_type': !exists(json, 'benchmark_type') ? undefined : json['benchmark_type'],
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
-        'scan_type': !exists(json, 'scan_type') ? undefined : json['scan_type'],
+        'status': !exists(json, 'status') ? undefined : json['status'],
     };
 }
 
-export function ModelCloudComplianceScanDetailsToJSON(value?: ModelCloudComplianceScanDetails | null): any {
+export function ModelComplianceScanStatusToJSON(value?: ModelComplianceScanStatus | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -80,10 +73,9 @@ export function ModelCloudComplianceScanDetailsToJSON(value?: ModelCloudComplian
     }
     return {
         
-        'account_id': value.account_id,
-        'controls': value.controls,
+        'benchmark_type': value.benchmark_type,
         'scan_id': value.scan_id,
-        'scan_type': value.scan_type,
+        'status': value.status,
     };
 }
 

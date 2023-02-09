@@ -101,6 +101,7 @@ openapi: server
 	-v $(PWD):/app $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) \
 	--export-api-docs-path /app/openapi.yaml
 
+	rm -rf golang_deepfence_sdk/client/*
 
 	docker run --rm \
 	-v $(PWD):/local openapitools/openapi-generator-cli generate \
