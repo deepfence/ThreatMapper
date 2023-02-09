@@ -47,7 +47,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
   const body = Object.fromEntries(formData);
   const nodeIds = body._nodeIds.toString().split(',');
   const nodeType = body._nodeType.toString();
-
+  const controls = new URL(request.url).searchParams.get('controls');
   const r = await makeRequest({
     apiFunction: getComplianceApiClient().startComplianceScan,
     apiArgs: [
@@ -344,15 +344,7 @@ const ComplianceScanConfigure = () => {
   };
 
   return (
-    <Form method="post">
-      <input
-        type="text"
-        name="_nodeIds"
-        hidden
-        readOnly
-        value={state.map((node) => node.urlId).join(',')}
-      />
-      <input type="text" name="_nodeType" readOnly hidden value={state[0].urlType} />
+    <div>
       <ConnectorHeader
         title="Configure Compliance Scan"
         description="Choose from the below options to perform your first scan."
@@ -381,9 +373,19 @@ const ComplianceScanConfigure = () => {
             {type}
           </Button>
         ))}
-        <Button size="sm" color="primary" className="ml-auto">
-          Start Scan
-        </Button>
+        <Form method="post" className="self-start ml-auto">
+          <input
+            type="text"
+            name="_nodeIds"
+            hidden
+            readOnly
+            value={state.map((node) => node.urlId).join(',')}
+          />
+          <input type="text" name="_nodeType" readOnly hidden value={state[0].urlType} />
+          <Button size="sm" color="primary" className="ml-auto" type="submit">
+            Start Scan
+          </Button>
+        </Form>
       </div>
       <div
         className={`${Typography.size.sm} ${Typography.weight.medium} mt-4 dark:text-white`}
@@ -401,7 +403,7 @@ const ComplianceScanConfigure = () => {
       <Button onClick={goBack} size="xs" className="mt-16" type="submit">
         Go Back
       </Button>
-    </Form>
+    </div>
   );
 };
 
