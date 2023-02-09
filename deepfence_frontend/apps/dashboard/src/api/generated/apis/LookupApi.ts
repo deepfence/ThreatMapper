@@ -23,6 +23,7 @@ import type {
   ModelKubernetesCluster,
   ModelPod,
   ModelProcess,
+  ModelRegistryAccount,
   ReportersLookupFilter,
 } from '../models';
 import {
@@ -42,6 +43,8 @@ import {
     ModelPodToJSON,
     ModelProcessFromJSON,
     ModelProcessToJSON,
+    ModelRegistryAccountFromJSON,
+    ModelRegistryAccountToJSON,
     ReportersLookupFilterFromJSON,
     ReportersLookupFilterToJSON,
 } from '../models';
@@ -62,15 +65,15 @@ export interface GetKubernetesClustersRequest {
     reportersLookupFilter?: ReportersLookupFilter;
 }
 
-export interface GetKubernetesScannersRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
-}
-
 export interface GetPodsRequest {
     reportersLookupFilter?: ReportersLookupFilter;
 }
 
 export interface GetProcessesRequest {
+    reportersLookupFilter?: ReportersLookupFilter;
+}
+
+export interface GetRegistryAccountRequest {
     reportersLookupFilter?: ReportersLookupFilter;
 }
 
@@ -146,22 +149,6 @@ export interface LookupApiInterface {
     getKubernetesClusters(requestParameters: GetKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
 
     /**
-     * Retrieve all the data associated with k8s scanners
-     * @summary Retrieve K8s scanners data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    getKubernetesScannersRaw(requestParameters: GetKubernetesScannersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>>;
-
-    /**
-     * Retrieve all the data associated with k8s scanners
-     * Retrieve K8s scanners data
-     */
-    getKubernetesScanners(requestParameters: GetKubernetesScannersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
-
-    /**
      * Retrieve all the data associated with pods
      * @summary Retrieve Pods data
      * @param {ReportersLookupFilter} [reportersLookupFilter] 
@@ -192,6 +179,22 @@ export interface LookupApiInterface {
      * Retrieve Processes data
      */
     getProcesses(requestParameters: GetProcessesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelProcess>>;
+
+    /**
+     * List all the images present in the given registry
+     * @summary Get Images in Registry
+     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getRegistryAccountRaw(requestParameters: GetRegistryAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelRegistryAccount>>>;
+
+    /**
+     * List all the images present in the given registry
+     * Get Images in Registry
+     */
+    getRegistryAccount(requestParameters: GetRegistryAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>>;
 
 }
 
@@ -357,45 +360,6 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with k8s scanners
-     * Retrieve K8s scanners data
-     */
-    async getKubernetesScannersRaw(requestParameters: GetKubernetesScannersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/lookup/kubernetes-scanners`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelKubernetesClusterFromJSON));
-    }
-
-    /**
-     * Retrieve all the data associated with k8s scanners
-     * Retrieve K8s scanners data
-     */
-    async getKubernetesScanners(requestParameters: GetKubernetesScannersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>> {
-        const response = await this.getKubernetesScannersRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Retrieve all the data associated with pods
      * Retrieve Pods data
      */
@@ -470,6 +434,45 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
      */
     async getProcesses(requestParameters: GetProcessesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelProcess>> {
         const response = await this.getProcessesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List all the images present in the given registry
+     * Get Images in Registry
+     */
+    async getRegistryAccountRaw(requestParameters: GetRegistryAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelRegistryAccount>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/registryaccount`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelRegistryAccountFromJSON));
+    }
+
+    /**
+     * List all the images present in the given registry
+     * Get Images in Registry
+     */
+    async getRegistryAccount(requestParameters: GetRegistryAccountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>> {
+        const response = await this.getRegistryAccountRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

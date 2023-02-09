@@ -24,7 +24,7 @@ const (
 	tagMalwareScan       = "Malware Scan"
 	tagControls          = "Controls"
 	tagDiagnosis         = "Diagnosis"
-	tagRegistry          = "Regisry"
+	tagRegistry          = "Registry"
 	tagInternal          = "Internal"
 
 	securityName = "bearer_token"

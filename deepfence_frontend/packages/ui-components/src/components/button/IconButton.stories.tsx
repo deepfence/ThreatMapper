@@ -1,4 +1,5 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 
 import IconButton from '@/components/button/IconButton';
@@ -36,6 +37,22 @@ PrimaryIconSm.args = {
   icon: <FaPlus />,
   size: 'sm',
   color: 'primary',
+};
+
+export const IconButtonWithLoader = () => {
+  const [state, setState] = useState(false);
+  return (
+    <div>
+      <IconButton
+        onClick={() => setState(true)}
+        loading={state}
+        color="primary"
+        icon={<FaPlus />}
+      >
+        Click to refresh
+      </IconButton>
+    </div>
+  );
 };
 
 export const PrimaryIconLg = Template.bind({});

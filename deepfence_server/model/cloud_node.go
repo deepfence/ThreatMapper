@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -29,6 +30,12 @@ type CloudNodeAccountsListReq struct {
 	Window        FetchWindow `json:"window" required:"true"`
 }
 
+type CloudNodeProvidersListReq struct{}
+
+type CloudNodeProvidersListResp struct {
+	Providers []string `json:"providers" required:"true"`
+}
+
 type CloudNodeAccountsListResp struct {
 	CloudNodeAccountInfo []CloudNodeAccountInfo `json:"cloud_node_accounts_info" required:"true"`
 	Total                int                    `json:"total" required:"true"`
@@ -43,9 +50,10 @@ type CloudNodeAccountInfo struct {
 }
 
 type CloudComplianceScanDetails struct {
-	ScanId    string `json:"scan_id"`
-	ScanType  string `json:"scan_type"`
-	AccountId string `json:"account_id"`
+	ScanId    string   `json:"scan_id"`
+	ScanType  string   `json:"scan_type"`
+	AccountId string   `json:"account_id"`
+	Controls  []string `json:"controls"`
 }
 
 type CloudNodeCloudtrailTrail struct {
@@ -80,6 +88,44 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	}
 
 	return tx.Commit()
+}
+
+func GetCloudProvidersList(ctx context.Context) ([]string, error) {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return []string{}, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return []string{}, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return []string{}, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (n:Node) 
+		RETURN DISTINCT(n.cloud_provider)`,
+		map[string]interface{}{})
+	if err != nil {
+		return []string{}, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return []string{}, err
+	}
+
+	providers := []string{}
+	for _, rec := range recs {
+		providers = append(providers, rec.Values[0].(string))
+	}
+	return providers, nil
 }
 
 func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw FetchWindow) (CloudNodeAccountsListResp, error) {

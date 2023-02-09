@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
 export interface ModelAgentId {
     /**
      * 
+     * @type {number}
+     * @memberof ModelAgentId
+     */
+    available_workload: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelAgentId
      */
@@ -32,6 +38,7 @@ export interface ModelAgentId {
  */
 export function instanceOfModelAgentId(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "available_workload" in value;
     isInstance = isInstance && "node_id" in value;
 
     return isInstance;
@@ -47,6 +54,7 @@ export function ModelAgentIdFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
+        'available_workload': json['available_workload'],
         'node_id': json['node_id'],
     };
 }
@@ -60,6 +68,7 @@ export function ModelAgentIdToJSON(value?: ModelAgentId | null): any {
     }
     return {
         
+        'available_workload': value.available_workload,
         'node_id': value.node_id,
     };
 }

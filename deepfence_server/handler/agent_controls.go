@@ -28,7 +28,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, agentId.NodeId)
+	actions, errs := controls.GetAgentActions(ctx, agentId.NodeId, agentId.AvailableWorkload)
 	for _, err := range errs {
 		if err != nil {
 			log.Warn().Msgf("Cannot some actions for %s: %v, skipping", agentId.NodeId, err)
@@ -65,11 +65,17 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var agentId model.AgentId
+	var agentId model.InitAgentReq
 
 	err = json.Unmarshal(data, &agentId)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	err = controls.CompleteAgentUpgrade(ctx, agentId.Version, agentId.NodeId)
+	if err != nil {
+		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
 

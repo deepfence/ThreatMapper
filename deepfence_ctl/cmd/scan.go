@@ -46,8 +46,8 @@ var scanStartSubCmd = &cobra.Command{
 			req := http.Client().SecretScanApi.StartSecretScan(context.Background())
 			req = req.ModelSecretScanTriggerReq(
 				*deepfence_server_client.NewModelSecretScanTriggerReq(
-					false,
-					[]deepfence_server_client.ModelScanTrigger{
+					*deepfence_server_client.NewModelScanFilterWithDefaults(),
+					[]deepfence_server_client.ModelNodeIdentifier{
 						{
 							NodeId:   scan_node_id,
 							NodeType: resource_type,
@@ -58,8 +58,8 @@ var scanStartSubCmd = &cobra.Command{
 			req := http.Client().MalwareScanApi.StartMalwareScan(context.Background())
 			req = req.ModelMalwareScanTriggerReq(
 				*deepfence_server_client.NewModelMalwareScanTriggerReq(
-					false,
-					[]deepfence_server_client.ModelScanTrigger{
+					*deepfence_server_client.NewModelScanFilterWithDefaults(),
+					[]deepfence_server_client.ModelNodeIdentifier{
 						{
 							NodeId:   scan_node_id,
 							NodeType: resource_type,
@@ -71,14 +71,15 @@ var scanStartSubCmd = &cobra.Command{
 			req := http.Client().VulnerabilityApi.StartVulnerabilityScan(context.Background())
 			req = req.ModelVulnerabilityScanTriggerReq(
 				*deepfence_server_client.NewModelVulnerabilityScanTriggerReq(
-					false,
-					vuln_scan_type,
-					[]deepfence_server_client.ModelScanTrigger{
+					*deepfence_server_client.NewModelScanFilterWithDefaults(),
+					[]deepfence_server_client.ModelNodeIdentifier{
 						{
 							NodeId:   scan_node_id,
 							NodeType: resource_type,
 						},
-					}))
+					},
+					vuln_scan_type,
+				))
 			res, _, err = http.Client().VulnerabilityApi.StartVulnerabilityScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
@@ -111,12 +112,12 @@ var scanStatusSubCmd = &cobra.Command{
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
-			req = req.BulkScanId("")
+			req = req.BulkScanId(scan_id)
 			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StatusVulnerabilityScan(context.Background())
-			req = req.BulkScanId("")
+			req = req.BulkScanId(scan_id)
 			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().VulnerabilityApi.StatusVulnerabilityScanExecute(req)
 		default:

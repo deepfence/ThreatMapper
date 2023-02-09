@@ -5,9 +5,10 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog"
 )
@@ -49,6 +50,20 @@ func main() {
 	}
 	log.Info().Msgf("connection successful to kafka brokers %v", cfg.KafkaBrokers)
 
+	// task publisher
+	tasksPublisher, err := kafka.NewPublisher(
+		kafka.PublisherConfig{
+			Brokers:   cfg.KafkaBrokers,
+			Marshaler: kafka.DefaultMarshaler{},
+		},
+		wml,
+	)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return
+	}
+	defer tasksPublisher.Close()
+
 	switch cfg.Mode {
 	case "ingester":
 		log.Info().Msg("Starting ingester")
@@ -58,6 +73,10 @@ func main() {
 		}
 	case "worker":
 		log.Info().Msg("Starting worker")
+		if err := controls.ConsoleActionSetup(tasksPublisher); err != nil {
+			log.Error().Msg(err.Error())
+			return
+		}
 		err := startWorker(wml, cfg)
 		if err != nil {
 			log.Error().Msg(err.Error())
@@ -65,18 +84,7 @@ func main() {
 		}
 	case "scheduler":
 		log.Info().Msg("Starting scheduler")
-		tasksPublisher, err := kafka.NewPublisher(
-			kafka.PublisherConfig{
-				Brokers:   cfg.KafkaBrokers,
-				Marshaler: kafka.DefaultMarshaler{},
-			},
-			wml,
-		)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return
-		}
-		defer tasksPublisher.Close()
+
 		scheduler, err := cronscheduler.NewScheduler(tasksPublisher)
 		if err != nil {
 			log.Error().Msg(err.Error())

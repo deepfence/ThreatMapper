@@ -22,7 +22,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registrysync"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -91,12 +90,12 @@ func main() {
 		log.Fatal().Msg(err.Error())
 	}
 
-	log.Info().Msg("syncing images from registries")
-	// todo: do this in cron
-	err = registrysync.Sync()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
+	// log.Info().Msg("syncing images from registries")
+	// // todo: do this in cron
+	// err = registrysync.Sync()
+	// if err != nil {
+	// 	log.Fatal().Msg(err.Error())
+	// }
 
 	log.Info().Msg("starting deepfence-server")
 
@@ -328,6 +327,7 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddScansOperations()
 	openApiDocs.AddDiagnosisOperations()
 	openApiDocs.AddCloudNodeOperations()
+	openApiDocs.AddRegistryOperations()
 }
 
 func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
@@ -41,16 +42,15 @@ func (d *RegistryDockerHub) IsValidCredential() bool {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return false
 	}
-	if resp.StatusCode == http.StatusOK {
-		return true
-	}
-	return false
+	defer resp.Body.Close()
+
+	return resp.StatusCode == http.StatusOK
 }
 
 func (d *RegistryDockerHub) EncryptSecret(aes encryption.AES) error {

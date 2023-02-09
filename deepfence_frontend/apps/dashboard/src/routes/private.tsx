@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
+import { module as integrations } from '@/features/integrations/pages/Integrations';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -20,19 +21,17 @@ import { ComplianceScanSummary } from '@/features/onboard/pages/ComplianceScanSu
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
 import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
+import { module as dockerRegistryConnector } from '@/features/onboard/pages/DockerRegistryConnector';
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
-import {
-  ScanInProgress,
-  ScanInProgressError,
-  scanStatusLoader,
-} from '@/features/onboard/pages/ScanInProgress';
-import { SecretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
-import {
-  startVulnerabilityScanAction,
-  VulnerabilityScanConfigure,
-} from '@/features/onboard/pages/VulnerabilityScanConfigure';
+import { module as malwareScanConfigure } from '@/features/onboard/pages/MalwareScanConfigure';
+import { module as malwareScanSumary } from '@/features/onboard/pages/MalwareScanSummary';
+import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
+import { module as secretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
+import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
+import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
+import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
 import { module as topologyCloudTable } from '@/features/topology/pages/cloud/Table';
 import { module as topology } from '@/features/topology/pages/Topology';
@@ -96,9 +95,14 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Connect Linux Machine' },
           },
           {
-            path: 'registry/amazon-ecr',
+            path: 'registry-amazon-ecr',
             element: <AmazonECRConnector />,
             meta: { title: 'Connect ECR Registry' },
+          },
+          {
+            path: 'registry-docker',
+            ...dockerRegistryConnector,
+            meta: { title: 'Docker Container Registry' },
           },
         ],
       },
@@ -106,7 +110,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'scan',
         children: [
           {
-            path: 'choose/:nodeType/:nodeIds',
+            path: 'choose',
             ...chooseScan,
             meta: { title: 'Choose scan type' },
           },
@@ -116,15 +120,19 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Compliance Scan' },
           },
           {
-            path: 'configure/vulnerability/:nodeType/:nodeIds',
-            element: <VulnerabilityScanConfigure />,
-            action: startVulnerabilityScanAction,
+            path: 'configure/vulnerability',
+            ...vulnerabilityScanConfigure,
             meta: { title: 'Configure Vulnerability Scan' },
           },
           {
             path: 'configure/secret',
-            element: <SecretScanConfigure />,
+            ...secretScanConfigure,
             meta: { title: 'Configure Secret Scan' },
+          },
+          {
+            path: 'configure/malware',
+            ...malwareScanConfigure,
+            meta: { title: 'Configure Malware Scan' },
           },
           {
             path: 'view-summary/compliance',
@@ -132,10 +140,23 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Compliance Scan' },
           },
           {
-            path: 'view-summary/running/:nodeId/:nodeType/:scanType/:scanId',
-            element: <ScanInProgress />,
-            errorElement: <ScanInProgressError />,
-            loader: scanStatusLoader,
+            path: 'view-summary/vulnerability/:scanIds',
+            ...vulnerabilityScanSumary,
+            meta: { title: 'Summary Vulnerability Scan' },
+          },
+          {
+            path: 'view-summary/secret/:scanIds',
+            ...secretScanSumary,
+            meta: { title: 'Summary Secret Scan' },
+          },
+          {
+            path: 'view-summary/malware/:scanIds',
+            ...malwareScanSumary,
+            meta: { title: 'Summary Malware Scan' },
+          },
+          {
+            path: 'view-summary/running/:scanType/:bulkScanId',
+            ...scanInProgress,
             meta: { title: 'Scan Summary' },
           },
         ],
@@ -156,6 +177,11 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'registries',
         element: <Registries />,
         meta: { title: 'Registries' },
+      },
+      {
+        path: 'integrations',
+        ...integrations,
+        meta: { title: 'Integrations' },
       },
       {
         path: 'topology',

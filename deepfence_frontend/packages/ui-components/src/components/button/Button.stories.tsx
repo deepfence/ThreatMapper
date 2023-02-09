@@ -1,4 +1,5 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { useState } from 'react';
 import { FaAmazon } from 'react-icons/fa';
 
 import Button from '@/components/button/Button';
@@ -191,4 +192,21 @@ NormalOutlineButton.args = {
   children: 'Outline Normal text md',
   color: 'normal',
   outline: true,
+};
+
+export const ButtonWithLoaderAndStartIcon = () => {
+  const [state, setState] = useState(false);
+  return (
+    <div>
+      <Button
+        onClick={() => setState(true)}
+        loading={state}
+        color="primary"
+        size="lg"
+        startIcon={<FaAmazon />}
+      >
+        Click to refresh
+      </Button>
+    </div>
+  );
 };

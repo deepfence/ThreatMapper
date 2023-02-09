@@ -61,8 +61,8 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	companies, err := pgClient.CountCompanies(ctx)
-	if err != nil || companies > 0 {
+	users, err := pgClient.CountActiveUsers(ctx)
+	if err != nil || users > 0 {
 		respondError(&ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}, w)
 		return
 	}
@@ -113,23 +113,9 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.ID = createdUser.ID
-	apiToken := model.ApiToken{
-		ApiToken:        utils.NewUUID(),
-		Name:            user.Email,
-		CompanyID:       company.ID,
-		RoleID:          role.ID,
-		CreatedByUserID: user.ID,
-	}
-	defaultGroup, err := c.GetDefaultUserGroup(ctx, pgClient)
+	err = h.createApiToken(ctx, pgClient, &user, user.RoleID)
 	if err != nil {
-		log.Error().Msg("GetDefaultUserGroup: " + err.Error())
-		respondError(err, w)
-		return
-	}
-	apiToken.GroupID = defaultGroup.ID
-	_, err = apiToken.Create(ctx, pgClient)
-	if err != nil {
-		log.Error().Msg("apiToken.Create: " + err.Error())
+		log.Error().Msg("createApiToken: " + err.Error())
 		respondError(err, w)
 		return
 	}
@@ -206,23 +192,9 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.ID = createdUser.ID
-	apiToken := model.ApiToken{
-		ApiToken:        utils.NewUUID(),
-		Name:            user.Email,
-		CompanyID:       company.ID,
-		RoleID:          role.ID,
-		CreatedByUserID: user.ID,
-	}
-	defaultGroup, err := model.GetDefaultUserGroup(ctx, pgClient, company.ID)
+	err = h.createApiToken(ctx, pgClient, &user, user.RoleID)
 	if err != nil {
-		log.Error().Msg("GetDefaultUserGroup: " + err.Error())
-		respondError(err, w)
-		return
-	}
-	apiToken.GroupID = defaultGroup.ID
-	_, err = apiToken.Create(ctx, pgClient)
-	if err != nil {
-		log.Error().Msg("apiToken.Create: " + err.Error())
+		log.Error().Msg("createApiToken: " + err.Error())
 		respondError(err, w)
 		return
 	}
@@ -250,7 +222,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
 	if err != nil {
-		httpext.JSON(w, statusCode, model.ErrorResponse{Message: err.Error()})
+		respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	role, err := pgClient.GetRoleByName(ctx, inviteUserRequest.Role)
@@ -303,10 +275,41 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, model.InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL, Message: message})
 }
 
+func (h *Handler) userModel(pgUser postgresql_db.GetUsersRow) model.User {
+	return model.User{
+		ID:                  pgUser.ID,
+		FirstName:           pgUser.FirstName,
+		LastName:            pgUser.LastName,
+		Email:               pgUser.Email,
+		IsActive:            pgUser.IsActive,
+		PasswordInvalidated: pgUser.PasswordInvalidated,
+		Role:                pgUser.RoleName,
+		RoleID:              pgUser.RoleID,
+		Company:             pgUser.CompanyName,
+	}
+}
+
+func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+	}
+	pgUsers, err := pgClient.GetUsers(ctx)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+	}
+	users := make([]model.User, len(pgUsers))
+	for i, pgUser := range pgUsers {
+		users[i] = h.userModel(pgUser)
+	}
+	httpext.JSON(w, http.StatusOK, users)
+}
+
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
 	if err != nil {
-		httpext.JSON(w, statusCode, model.ErrorResponse{Message: err.Error()})
+		respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	httpext.JSON(w, http.StatusOK, user)
@@ -415,7 +418,52 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
 	if err != nil {
-		httpext.JSON(w, statusCode, model.ErrorResponse{Message: err.Error()})
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	apiTokens, err := pgClient.GetApiTokensByUser(ctx, user.ID)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, apiTokens)
+}
+
+func (h *Handler) createApiToken(ctx context.Context, pgClient *postgresql_db.Queries, user *model.User, roleID int32) error {
+	apiToken := model.ApiToken{
+		ApiToken:        utils.NewUUID(),
+		Name:            user.Email,
+		CompanyID:       user.CompanyID,
+		RoleID:          roleID,
+		CreatedByUserID: user.ID,
+	}
+	company := &model.Company{ID: user.CompanyID, Name: user.Company}
+	defaultGroup, err := company.GetDefaultUserGroup(ctx, pgClient)
+	if err != nil {
+		return err
+	}
+	apiToken.GroupID = defaultGroup.ID
+	_, err = apiToken.Create(ctx, pgClient)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
+	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	err = pgClient.DeleteApiTokensByUserID(ctx, user.ID)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = h.createApiToken(ctx, pgClient, user, user.RoleID)
+	if err != nil {
+		respondError(err, w)
 		return
 	}
 	apiTokens, err := pgClient.GetApiTokensByUser(ctx, user.ID)

@@ -71,7 +71,7 @@ server:
 .PHONY: worker
 worker:
 	(cd ./deepfence_worker && make vendor)
-	docker build -f ./deepfence_worker/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) .
+	docker build -f ./deepfence_worker/Dockerfile --build-arg IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) --build-arg DF_IMG_TAG=$(DF_IMG_TAG) -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) .
 
 .PHONY: ui
 ui:
@@ -104,7 +104,7 @@ openapi: server
 	rm -rf golang_deepfence_sdk/client/*
 
 	docker run --rm \
-	-v $(PWD):/local openapitools/openapi-generator-cli:latest generate \
+	-v $(PWD):/local openapitools/openapi-generator-cli generate \
 	-i /local/openapi.yaml \
 	-g go \
 	-o /local/golang_deepfence_sdk/client \

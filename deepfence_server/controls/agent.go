@@ -12,17 +12,24 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func GetAgentActions(ctx context.Context, nodeId string) ([]controls.Action, []error) {
+func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int) ([]controls.Action, []error) {
 	// Append more actions here
 	actions := []controls.Action{}
 
-	scan_actions, scan_err := ExtractStartingAgentScans(ctx, nodeId)
-	if scan_err == nil {
-		actions = append(actions, scan_actions...)
+	if work_num_to_extract == 0 {
+		return actions, []error{nil, nil}
 	}
-	upgrade_actions, upgrade_err := ExtractPendingAgentUpgrade(ctx, nodeId)
+
+	upgrade_actions, upgrade_err := ExtractPendingAgentUpgrade(ctx, nodeId, work_num_to_extract)
+	work_num_to_extract -= len(upgrade_actions)
 	if upgrade_err == nil {
 		actions = append(actions, upgrade_actions...)
+	}
+
+	scan_actions, scan_err := ExtractStartingAgentScans(ctx, nodeId, work_num_to_extract)
+	work_num_to_extract -= len(scan_actions)
+	if scan_err == nil {
+		actions = append(actions, scan_actions...)
 	}
 
 	return actions, []error{scan_err, upgrade_err}
@@ -87,7 +94,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string) ([]controls.Action
 
 }
 
-func ExtractStartingAgentScans(ctx context.Context, nodeId string) ([]controls.Action, error) {
+func ExtractStartingAgentScans(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
 		return res, errors.New("Missing node_id")
@@ -113,9 +120,11 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string) ([]controls.A
 	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND s.retries < 3
+		WITH s LIMIT $max_work
 		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
 		WITH s
-		RETURN s.trigger_action`, map[string]interface{}{"id": nodeId})
+		RETURN s.trigger_action`,
+		map[string]interface{}{"id": nodeId, "max_work": max_work})
 
 	if err != nil {
 		return res, err
@@ -145,7 +154,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string) ([]controls.A
 
 }
 
-func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string) ([]controls.Action, error) {
+func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
 		return res, errors.New("Missing node_id")
@@ -171,9 +180,11 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string) ([]controls.
 	r, err := tx.Run(`MATCH (s:AgentVersion) -[r:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE r.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND r.retries < 3
+		WITH r LIMIT $max_work
 		SET r.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
 		WITH r
-		RETURN r.trigger_action`, map[string]interface{}{"id": nodeId})
+		RETURN r.trigger_action`,
+		map[string]interface{}{"id": nodeId, "max_work": max_work})
 
 	if err != nil {
 		return res, err

@@ -2,14 +2,9 @@ package host
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net"
-	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -258,37 +253,6 @@ func newSecretScannerClient() (pb.SecretScannerClient, error) {
 		return nil, err
 	}
 	return pb.NewSecretScannerClient(conn), nil
-}
-
-func buildClient() (*http.Client, error) {
-	// Set up our own certificate pool
-	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig:     tlsConfig,
-			DisableKeepAlives:   false,
-			MaxIdleConnsPerHost: 1024,
-			DialContext: (&net.Dialer{
-				Timeout:   15 * time.Minute,
-				KeepAlive: 15 * time.Minute,
-			}).DialContext,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ResponseHeaderTimeout: 5 * time.Minute,
-		},
-		Timeout: 15 * time.Minute,
-	}
-
-	// Load our trusted certificate path
-	pemData, err := ioutil.ReadFile(certPath)
-	if err != nil {
-		return nil, err
-	}
-	ok := tlsConfig.RootCAs.AppendCertsFromPEM(pemData)
-	if !ok {
-		return nil, errors.New("unable to append certificates to PEM")
-	}
-
-	return client, nil
 }
 
 // func formatToKafka(data map[string]interface{}) []byte {

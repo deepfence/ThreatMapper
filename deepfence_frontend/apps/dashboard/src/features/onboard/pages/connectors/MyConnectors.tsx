@@ -1,6 +1,12 @@
+import { startCase } from 'lodash-es';
 import { Suspense, useMemo, useRef, useState } from 'react';
-import { HiChevronDown, HiChevronRight, HiCubeTransparent } from 'react-icons/hi';
-import { Await, generatePath, useLoaderData } from 'react-router-dom';
+import {
+  HiChevronDown,
+  HiChevronRight,
+  HiCubeTransparent,
+  HiRefresh,
+} from 'react-icons/hi';
+import { Await, useLoaderData, useRevalidator } from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
@@ -13,33 +19,44 @@ import {
   Tabs,
 } from 'ui-components';
 
-import { getCloudNodesApi, getTopologyApiClient } from '@/api/api';
+import {
+  getCloudNodesApiClient,
+  getRegistriesApiClient,
+  getTopologyApiClient,
+} from '@/api/api';
 import { DFLink } from '@/components/DFLink';
 import { NoConnectors } from '@/features/onboard/components/connectors/NoConnectors';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { ApiError, makeRequest } from '@/utils/api';
+import { getRegistryDisplayId } from '@/utils/registry';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-interface ConnectionNode {
+export interface OnboardConnectionNode {
   id: string;
-  apiId: string;
-  apiType: string;
+  // url friendly id of the node
+  urlId: string;
+  // url friendly api type of the node
+  urlType: string;
+  // applies only to the parent node
   count?: number;
+  // account type to display in the table
   accountType: string;
+  // connection method to display in the table
   connectionMethod?: string;
+  // account id to display in the table
   accountId?: string;
   active?: boolean;
-  connections?: ConnectionNode[];
+  connections?: OnboardConnectionNode[];
 }
 
 type LoaderData = {
-  data: Array<ConnectionNode>;
+  data: Array<OnboardConnectionNode>;
 };
 
-async function getConnectorsData(): Promise<Array<ConnectionNode>> {
+async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
   const awsResultsPromise = makeRequest({
-    apiFunction: getCloudNodesApi().listCloudNodeAccount,
+    apiFunction: getCloudNodesApiClient().listCloudNodeAccount,
     apiArgs: [
       {
         modelCloudNodeAccountsListReq: {
@@ -67,12 +84,39 @@ async function getConnectorsData(): Promise<Array<ConnectionNode>> {
       },
     ],
   });
-  const [awsResults, hostsResults] = await Promise.all([
-    awsResultsPromise,
-    hostsResultsPromise,
-  ]);
+  const kubernetesResultsPromise = makeRequest({
+    apiFunction: getTopologyApiClient().getKubernetesTopologyGraph,
+    apiArgs: [
+      {
+        reportersTopologyFilters: {
+          cloud_filter: [],
+          field_filters: { contains_filter: { filter_in: null } },
+          host_filter: [],
+          kubernetes_filter: [],
+          pod_filter: [],
+          region_filter: [],
+        },
+      },
+    ],
+  });
+  const registriesResultsPromise = makeRequest({
+    apiFunction: getRegistriesApiClient().listRegistries,
+    apiArgs: [],
+  });
+  const [awsResults, hostsResults, kubernetesResults, registriesResults] =
+    await Promise.all([
+      awsResultsPromise,
+      hostsResultsPromise,
+      kubernetesResultsPromise,
+      registriesResultsPromise,
+    ]);
 
-  if (ApiError.isApiError(awsResults) || ApiError.isApiError(hostsResults)) {
+  if (
+    ApiError.isApiError(awsResults) ||
+    ApiError.isApiError(hostsResults) ||
+    ApiError.isApiError(kubernetesResults) ||
+    ApiError.isApiError(registriesResults)
+  ) {
     // TODO(manan) handle error cases
     return [];
   }
@@ -81,16 +125,16 @@ async function getConnectorsData(): Promise<Array<ConnectionNode>> {
   if (awsResults.total) {
     data.push({
       id: 'aws',
-      apiId: 'aws',
-      apiType: 'aws',
+      urlId: 'aws',
+      urlType: 'aws',
       accountType: 'AWS',
       count: awsResults.total,
       connections: (
         awsResults.cloud_node_accounts_info?.map((result) => ({
           id: `aws-${result.node_id}`,
-          apiId: result.node_id ?? '',
+          urlId: result.node_id ?? '',
           accountType: 'AWS',
-          apiType: 'aws',
+          urlType: 'aws',
           connectionMethod: 'Terraform',
           accountId: result.node_name ?? '-',
           active: !!result.active,
@@ -113,14 +157,14 @@ async function getConnectorsData(): Promise<Array<ConnectionNode>> {
     if (hosts.length) {
       data.push({
         id: 'hosts',
-        apiId: 'hosts',
-        apiType: 'host',
+        urlId: 'hosts',
+        urlType: 'host',
         accountType: 'Linux Hosts',
         count: hosts.length,
         connections: hosts.map((host) => ({
           id: `hosts-${host.id}`,
-          apiId: host.id ?? '',
-          apiType: 'host',
+          urlId: host.id ?? '',
+          urlType: 'host',
           accountType: 'Host',
           connectionMethod: 'Agent',
           accountId: host.label ?? host.id ?? '-',
@@ -128,6 +172,53 @@ async function getConnectorsData(): Promise<Array<ConnectionNode>> {
         })),
       });
     }
+  }
+  if (kubernetesResults.nodes) {
+    const clusters = Object.keys(kubernetesResults.nodes)
+      .map((key) => kubernetesResults.nodes[key])
+      .filter((node) => {
+        return node.type === 'kubernetes_cluster';
+      })
+      .sort((a, b) => {
+        return (a.label ?? a.id ?? '').localeCompare(b.label ?? b.id ?? '');
+      });
+    if (clusters.length) {
+      data.push({
+        id: 'kubernetesCluster',
+        urlId: 'kubernetes_cluster',
+        urlType: 'kubernetes_cluster',
+        accountType: 'Kubernetes Cluster',
+        count: clusters.length,
+        connections: clusters.map((cluster) => ({
+          id: `kubernetesCluster-${cluster.id}`,
+          urlId: cluster.id ?? '',
+          urlType: 'kubernetes_cluster',
+          accountType: 'Kubernetes Cluster',
+          connectionMethod: 'Agent',
+          accountId: cluster.label ?? cluster.id ?? '-',
+          active: true,
+        })),
+      });
+    }
+  }
+
+  if (registriesResults.length) {
+    data.push({
+      id: 'registry',
+      urlId: 'registry',
+      urlType: 'registry',
+      accountType: 'Container Registries',
+      count: registriesResults.length,
+      connections: registriesResults.map((registry) => ({
+        id: `registry-${registry.id}`,
+        urlId: `${registry.id ?? ''}`,
+        urlType: 'registry',
+        accountType: startCase(registry.registry_type ?? 'Registry'),
+        connectionMethod: 'Registry',
+        accountId: getRegistryDisplayId(registry),
+        active: true,
+      })),
+    });
   }
 
   return data;
@@ -172,9 +263,10 @@ function MyConnectors() {
 
 function MyConnectorsTable({ data }: LoaderData) {
   const [expandedState, setExpandedState] = useState<ExpandedState>(true);
+  const { navigate } = usePageNavigation();
 
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const columnHelper = createColumnHelper<ConnectionNode>();
+  const columnHelper = createColumnHelper<OnboardConnectionNode>();
   const columns = useMemo(
     () => [
       getRowExpanderColumn(columnHelper, {
@@ -215,6 +307,12 @@ function MyConnectorsTable({ data }: LoaderData) {
             case 'hosts':
               nodeText = 'hosts';
               break;
+            case 'kubernetesCluster':
+              nodeText = 'clusters';
+              break;
+            case 'registry':
+              nodeText = 'registries';
+              break;
             default:
               nodeText = 'items';
           }
@@ -227,10 +325,13 @@ function MyConnectorsTable({ data }: LoaderData) {
               {info.getValue()} ({info.row.original.count ?? 0} {nodeText})
               {rowSelectionState[info.row.original.id] ? (
                 <DFLink
-                  to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
-                    nodeType: info.row.original.apiType,
-                    nodeIds: info.row.original.connections!.map((n) => n.apiId).join(','),
-                  })}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/onboard/scan/choose', {
+                      state: info.row.original.connections,
+                    });
+                  }}
                   className="flex items-center"
                 >
                   <HiCubeTransparent className="mr-2" /> Configure Scan on all {nodeText}
@@ -239,10 +340,13 @@ function MyConnectorsTable({ data }: LoaderData) {
               {!rowSelectionState[info.row.original.id] &&
               selectedNodesOfSameType.length ? (
                 <DFLink
-                  to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
-                    nodeType: info.row.original.apiType,
-                    nodeIds: selectedNodesOfSameType.map((n) => n.apiId).join(','),
-                  })}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/onboard/scan/choose', {
+                      state: selectedNodesOfSameType,
+                    });
+                  }}
                   className="flex items-center"
                 >
                   <HiCubeTransparent className="mr-2" /> Configure Scan on{' '}
@@ -278,10 +382,13 @@ function MyConnectorsTable({ data }: LoaderData) {
         cell: (info) => {
           return (
             <DFLink
-              to={generatePath('/onboard/scan/choose/:nodeType/:nodeIds', {
-                nodeType: info.row.original.apiType,
-                nodeIds: info.row.original.apiId,
-              })}
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/onboard/scan/choose', {
+                  state: [info.row.original],
+                });
+              }}
               className="flex items-center"
             >
               <HiCubeTransparent className="mr-2" /> Configure Scan
@@ -290,7 +397,7 @@ function MyConnectorsTable({ data }: LoaderData) {
         },
       }),
     ],
-    [rowSelectionState],
+    [rowSelectionState, navigate],
   );
 
   if (!data?.length) {
@@ -298,7 +405,7 @@ function MyConnectorsTable({ data }: LoaderData) {
   }
   return (
     <>
-      <Filters />
+      <RefreshButton />
       <Table
         size="sm"
         data={data}
@@ -341,18 +448,20 @@ function MyConnectorsTable({ data }: LoaderData) {
   );
 }
 
-function Filters() {
+function RefreshButton() {
+  const { revalidate, state } = useRevalidator();
+
   return (
     <div className="flex gap-2 mb-2 items-center justify-end">
-      <div className="text-gray-500 dark:text-gray-300 text-sm">Filter by</div>
-      <Button color="primary" size="xs" pill outline>
-        All
-      </Button>
-      <Button color="primary" size="xs" pill outline>
-        AWS
-      </Button>
-      <Button color="primary" size="xs" pill outline>
-        GCP
+      <Button
+        size="xs"
+        loading={state === 'loading'}
+        startIcon={<HiRefresh />}
+        onClick={() => {
+          revalidate();
+        }}
+      >
+        Refresh
       </Button>
     </div>
   );
@@ -365,9 +474,9 @@ export const module = {
 
 function findSelectedNodesOfType(
   selectionState: RowSelectionState,
-  data: ConnectionNode,
-): ConnectionNode[] {
-  const selectedNodes: ConnectionNode[] = [];
+  data: OnboardConnectionNode,
+): OnboardConnectionNode[] {
+  const selectedNodes: OnboardConnectionNode[] = [];
   data.connections?.forEach((node) => {
     if (node.id in selectionState) {
       selectedNodes.push(node);

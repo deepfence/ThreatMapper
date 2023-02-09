@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -45,6 +46,18 @@ var (
 	CompanyRegex  = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
 	UserNameRegex = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
 )
+
+func init() {
+	accessTokenExpiryStr := os.Getenv("DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES")
+	if accessTokenExpiryStr != "" {
+		accessTokenExpiry, err := strconv.Atoi(accessTokenExpiryStr)
+		if err != nil {
+			if accessTokenExpiry > 0 && accessTokenExpiry < 1440 {
+				AccessTokenExpiry = time.Minute * time.Duration(accessTokenExpiry)
+			}
+		}
+	}
+}
 
 type ApiToken struct {
 	ApiToken         uuid.UUID `json:"api_token" required:"true"`
