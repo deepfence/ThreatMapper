@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -81,6 +82,21 @@ var scanStartSubCmd = &cobra.Command{
 					vuln_scan_type,
 				))
 			res, _, err = http.Client().VulnerabilityApi.StartVulnerabilityScanExecute(req)
+		case "compliance":
+			scan_config, _ := cmd.Flags().GetString("scan-config")
+			req := http.Client().ComplianceApi.StartComplianceScan(context.Background())
+			req = req.ModelComplianceScanTriggerReq(
+				*deepfence_server_client.NewModelComplianceScanTriggerReq(
+					strings.Split(scan_config, ","),
+					*deepfence_server_client.NewModelScanFilterWithDefaults(),
+					[]deepfence_server_client.ModelNodeIdentifier{
+						{
+							NodeId:   scan_node_id,
+							NodeType: resource_type,
+						},
+					},
+				))
+			res, _, err = http.Client().ComplianceApi.StartComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -109,17 +125,24 @@ var scanStatusSubCmd = &cobra.Command{
 
 		var err error
 		var res *deepfence_server_client.ModelScanStatusResp
+		var res2 *deepfence_server_client.ModelComplianceScanStatusResp
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
 			req = req.BulkScanId(scan_id)
-			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StatusVulnerabilityScan(context.Background())
 			req = req.BulkScanId(scan_id)
-			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().VulnerabilityApi.StatusVulnerabilityScanExecute(req)
+		case "malware":
+			req := http.Client().MalwareScanApi.StatusMalwareScan(context.Background())
+			req = req.BulkScanId(scan_id)
+			res, _, err = http.Client().MalwareScanApi.StatusMalwareScanExecute(req)
+		case "compliance":
+			req := http.Client().ComplianceApi.StatusComplianceScan(context.Background())
+			req = req.BulkScanId(scan_id)
+			res2, _, err = http.Client().ComplianceApi.StatusComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -127,7 +150,11 @@ var scanStatusSubCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v", err)
 		}
-		output.Out(res)
+		if res != nil {
+			output.Out(res)
+		} else {
+			output.Out(res2)
+		}
 	},
 }
 
@@ -225,6 +252,26 @@ var scanResultsSubCmd = &cobra.Command{
 				},
 			})
 			res, _, err = http.Client().VulnerabilityApi.ResultsVulnerabilityScansExecute(req)
+		case "malware":
+			req := http.Client().MalwareScanApi.ResultsMalwareScan(context.Background())
+			req = req.ModelScanResultsReq(deepfence_server_client.ModelScanResultsReq{
+				ScanId: scan_id,
+				Window: deepfence_server_client.ModelFetchWindow{
+					Offset: 0,
+					Size:   20,
+				},
+			})
+			res, _, err = http.Client().MalwareScanApi.ResultsMalwareScanExecute(req)
+		case "compliance":
+			req := http.Client().ComplianceApi.ResultsComplianceScan(context.Background())
+			req = req.ModelScanResultsReq(deepfence_server_client.ModelScanResultsReq{
+				ScanId: scan_id,
+				Window: deepfence_server_client.ModelFetchWindow{
+					Offset: 0,
+					Size:   20,
+				},
+			})
+			res, _, err = http.Client().ComplianceApi.ResultsComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
