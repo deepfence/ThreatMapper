@@ -145,7 +145,7 @@ func NodeIdentifierToIdList(in []model.NodeIdentifier) []string {
 	return res
 }
 
-func GetRegisteriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+func GetRegistriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -211,7 +211,7 @@ func GetKubernetesImageIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 	nres, err := tx.Run(`
 		MATCH (m:KubernetesCluster)
 		WHERE m.node_id IN $node_ids
-		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		MATCH (m) -[:INSTANCIATE]-> (n:Node)
 		MATCH (n) -[:HOSTS]-> (i:ContainerImage)
 		RETURN distinct i.node_id`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
@@ -256,7 +256,7 @@ func GetKubernetesHostsIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 	nres, err := tx.Run(`
 		MATCH (m:KubernetesCluster)
 		WHERE m.node_id IN $node_ids
-		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		MATCH (m) -[:INSTANCIATE]-> (n:Node)
 		RETURN distinct n.node_id`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
 	if err != nil {
@@ -300,7 +300,7 @@ func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifie
 	nres, err := tx.Run(`
 		MATCH (m:KubernetesCluster)
 		WHERE m.node_id IN $node_ids
-		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		MATCH (m) -[:INSTANCIATE]-> (n:Node)
 		MATCH (n) -[:HOSTS]-> (i:Container)
 		RETURN distinct i.node_id`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
@@ -317,6 +317,49 @@ func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifie
 		res = append(res, model.NodeIdentifier{
 			NodeId:   rec.Values[0].(string),
 			NodeType: "host",
+		})
+	}
+
+	return res, nil
+}
+
+func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (n:Node)
+		WHERE n.cloud_provider IN $node_ids
+		RETURN n.node_id`,
+		map[string]interface{}{"node_ids": NodeIdentifierToIdList(cloudProviderIds)})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		res = append(res, model.NodeIdentifier{
+			NodeId:   rec.Values[0].(string),
+			NodeType: controls.ResourceTypeToString(controls.CloudAccount),
 		})
 	}
 

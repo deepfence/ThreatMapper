@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -218,22 +219,54 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var scanTrigger model.ComplianceScanTrigger
-	if len(reqs.ScanTriggers) > 0 {
-		scanTrigger = reqs.ScanTriggers[0]
+	ctx := r.Context()
+
+	regular, k8s, _ := extractBulksNodes(reqs.NodeIds)
+
+	cloudNodeIds, err := reporters.GetCloudAccountIDs(ctx, regular)
+	if err != nil {
+		respondError(errors.New(err.Error()), w)
+		return
+	}
+
+	var nodes []model.NodeIdentifier
+	if len(reqs.NodeIds) == 0 {
+		nodes, err = FindNodesMatching(ctx,
+			[]model.NodeIdentifier{},
+			[]model.NodeIdentifier{},
+			[]model.NodeIdentifier{},
+			cloudNodeIds,
+			k8s,
+			reqs.Filters)
+		if err != nil {
+			respondError(err, w)
+			return
+		}
+	} else {
+		nodes = reqs.NodeIds
+	}
+
+	var scanTrigger model.NodeIdentifier
+	if len(nodes) > 0 {
+		scanTrigger = nodes[0]
 	}
 
 	var scanIds []string
 	var bulkId string
-	if scanTrigger.NodeType == reporters.CLOUD_AWS || scanTrigger.NodeType == reporters.CLOUD_GCP || scanTrigger.NodeType == reporters.CLOUD_AZURE {
-		scanIds, bulkId, err = startMultiCloudComplianceScan(r.Context(), reqs.ScanTriggers)
+	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) {
+		scanIds, bulkId, err = startMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	} else {
-		scanIds, bulkId, err = startMultiComplianceScan(r.Context(), reqs.ScanTriggers)
+		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	}
 
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
+		return
+	}
+
+	if len(scanIds) == 0 {
+		respondError(errors.New("unable to spawn any new scans with the given criteria"), w)
 		return
 	}
 
@@ -677,6 +710,16 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 	httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common, SeverityCounts: counts})
 }
 
+func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, common, err := listScanResultsHandler[model.CloudCompliance](w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.CloudComplianceScanResult{Compliances: entries, ScanResultsCommon: common})
+}
+
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
 	defer r.Body.Close()
 	var req model.ScanResultsReq
@@ -700,27 +743,33 @@ func fields_filter2cypher(node string, firstCond bool, fieldsFilter model.Fields
 	}
 	res := ""
 	if firstCond {
-		res += "WHERE"
+		res += " WHERE "
 	} else {
-		res += "AND"
+		res += " AND "
 	}
 	strs := []string{}
-	for i := range fieldsFilter.FieldsValues {
-		strs = append(strs, fmt.Sprintf("%s=%s", fieldsFilter.FieldsValues[i].Key, fieldsFilter.FieldsValues[i].Value))
+	for _, fieldValue := range fieldsFilter.FieldsValues {
+		if len(fieldValue.Values) > 0 {
+			strs = append(strs, fmt.Sprintf("%s.%s IN ['%v']", node, fieldValue.Key, strings.Join(fieldValue.Values, "','")))
+		}
 	}
 
-	return res + strings.Join(strs, ",")
+	return res + strings.Join(strs, " AND ")
 }
 
-func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode string, node_type string, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
+func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
+	wherePattern := fields_filter2cypher("n", false, filter)
+	if len(wherePattern) == 0 {
+		return ids, nil
+	}
 	nres, err := tx.Run(fmt.Sprintf(`
 		MATCH (n:%s)
 		WHERE n.node_id IN $ids
 		%s
 		RETURN n.node_id`,
-		neo4jNode,
-		fields_filter2cypher("n", false, filter)),
+		controls.ResourceTypeToNeo4j(neo4jNode),
+		wherePattern),
 		map[string]interface{}{"ids": reporters.NodeIdentifierToIdList(ids)})
 	if err != nil {
 		return res, err
@@ -734,7 +783,7 @@ func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode st
 	for i := range rec {
 		res = append(res, model.NodeIdentifier{
 			NodeId:   rec[i].Values[0].(string),
-			NodeType: node_type,
+			NodeType: controls.ResourceTypeToString(neo4jNode),
 		})
 	}
 	return res, nil
@@ -744,6 +793,8 @@ func FindNodesMatching(ctx context.Context,
 	host_ids []model.NodeIdentifier,
 	image_ids []model.NodeIdentifier,
 	container_ids []model.NodeIdentifier,
+	cloud_account_ids []model.NodeIdentifier,
+	kubernetes_cluster_ids []model.NodeIdentifier,
 	filter model.ScanFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
 
@@ -765,11 +816,33 @@ func FindNodesMatching(ctx context.Context,
 	}
 	defer tx.Close()
 
-	rh, err := get_node_ids(tx, host_ids, "Node", "host", filter.HostScanFilter)
-	ri, err := get_node_ids(tx, image_ids, "ContainerImage", "image", filter.ImageScanFilter)
-	rc, err := get_node_ids(tx, container_ids, "Container", "container", filter.ContainerScanFilter)
+	rh, err := get_node_ids(tx, host_ids, controls.Host, filter.HostScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, rh...)
+	ri, err := get_node_ids(tx, image_ids, controls.Image, filter.ImageScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, ri...)
+	rc, err := get_node_ids(tx, container_ids, controls.Container, filter.ContainerScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, rc...)
+	rca, err := get_node_ids(tx, cloud_account_ids, controls.CloudAccount, filter.CloudAccountScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, rca...)
+	rk, err := get_node_ids(tx, kubernetes_cluster_ids, controls.KubernetesCluster, filter.KubernetesClusterScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, rk...)
 
-	return append(append(rh, ri...), rc...), nil
+	return res, nil
 }
 
 func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
@@ -826,7 +899,7 @@ func extractBulksNodes(nodes []model.NodeIdentifier) (regularNodes []model.NodeI
 		}
 	}
 
-	return registryNodes, clusterNodes, registryNodes
+	return regularNodes, clusterNodes, registryNodes
 }
 
 func startMultiScan(ctx context.Context,
@@ -854,7 +927,7 @@ func startMultiScan(ctx context.Context,
 
 	regular, k8s, registry := extractBulksNodes(req.NodeIds)
 
-	image_nodes, err := reporters.GetRegisteriesImageIDs(ctx, registry)
+	image_nodes, err := reporters.GetRegistriesImageIDs(ctx, registry)
 	if err != nil {
 		return nil, "", err
 	}
@@ -880,6 +953,8 @@ func startMultiScan(ctx context.Context,
 			k8s_host_nodes,
 			append(image_nodes, k8s_image_nodes...),
 			k8s_container_nodes,
+			[]model.NodeIdentifier{},
+			[]model.NodeIdentifier{},
 			req.Filters)
 		if err != nil {
 			return nil, "", err
@@ -916,6 +991,10 @@ func startMultiScan(ctx context.Context,
 			action)
 
 		if err != nil {
+			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
+				scanIds = append(scanIds, e.ScanId)
+				continue
+			}
 			log.Error().Err(err)
 			return nil, "", err
 		}
@@ -938,7 +1017,7 @@ func startMultiScan(ctx context.Context,
 	return scanIds, bulkId, tx.Commit()
 }
 
-func startMultiCloudComplianceScan(ctx context.Context, reqs []model.ComplianceScanTrigger) ([]string, string, error) {
+func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
@@ -960,7 +1039,7 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.ComplianceS
 	scanIds := []string{}
 
 	for _, req := range reqs {
-		for _, benchmarkType := range req.BenchmarkTypes {
+		for _, benchmarkType := range benchmarkTypes {
 			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
 
 			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
@@ -992,11 +1071,11 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.ComplianceS
 	return scanIds, bulkId, tx.Commit()
 }
 
-func startMultiComplianceScan(ctx context.Context, reqs []model.ComplianceScanTrigger) ([]string, string, error) {
+func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
 	scanIds := []string{}
 	bulkId := bulkScanId()
 	for _, req := range reqs {
-		for _, benchmarkType := range req.BenchmarkTypes {
+		for _, benchmarkType := range benchmarkTypes {
 			scanIds = append(scanIds, cloudComplianceScanId(req.NodeId, benchmarkType))
 		}
 	}

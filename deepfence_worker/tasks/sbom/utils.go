@@ -10,11 +10,12 @@ import (
 
 type SbomScanStatus struct {
 	utils.SbomParameters
-	ScanStatus string `json:"scan_status,omitempty"`
+	ScanStatus  string `json:"scan_status,omitempty"`
+	ScanMessage string `json:"scan_message,omitempty"`
 }
 
-func NewSbomScanStatus(params utils.SbomParameters, Status string) SbomScanStatus {
-	return SbomScanStatus{SbomParameters: params, ScanStatus: Status}
+func NewSbomScanStatus(params utils.SbomParameters, status string, msg string) SbomScanStatus {
+	return SbomScanStatus{SbomParameters: params, ScanStatus: status, ScanMessage: msg}
 }
 
 func SendScanStatus(ingestC chan *kgo.Record, status SbomScanStatus, rh []kgo.RecordHeader) error {

@@ -7,7 +7,6 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 
-	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -15,27 +14,6 @@ import (
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	// "github.com/deepfence/golang_deepfence_sdk/utils/directory"
 )
-
-// todo: move to utils!
-func getAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
-	s := model.Setting{}
-	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
-	if err != nil {
-		return nil, err
-	}
-	var sValue model.SettingValue
-	err = json.Unmarshal(aes.Value, &sValue)
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := json.Marshal(sValue.Value)
-	if err != nil {
-		return nil, err
-	}
-
-	return json.RawMessage(b), nil
-}
 
 func Sync() error {
 	postgresCtx := directory.NewGlobalContext()
@@ -68,7 +46,7 @@ func Sync() error {
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
 
 	// decrypt secret
-	aesValue, err := getAESValueForEncryption(ctx, pgClient)
+	aesValue, err := encryption.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		return err
 	}

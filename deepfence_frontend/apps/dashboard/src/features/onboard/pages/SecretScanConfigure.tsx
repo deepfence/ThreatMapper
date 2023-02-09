@@ -14,6 +14,7 @@ import { getSecretApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelNodeIdentifierNodeTypeEnum,
+  ModelSecretScanTriggerReq,
 } from '@/api/generated';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
@@ -26,27 +27,30 @@ export type ScanActionReturnType = {
 
 const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturnType> => {
   const formData = await request.formData();
-  const body = Object.fromEntries(formData);
-  const nodeIds = body._nodeIds.toString().split(',');
-  const nodeType = body._nodeType.toString();
+  const nodeIds = formData.get('_nodeIds')?.toString().split(',') ?? [];
+  const nodeType = formData.get('_nodeType')?.toString() ?? '';
+
+  const requestBody: ModelSecretScanTriggerReq = {
+    filters: {
+      cloud_account_scan_filter: { fields_values: null },
+      kubernetes_cluster_scan_filter: { fields_values: null },
+      container_scan_filter: { fields_values: null },
+      host_scan_filter: { fields_values: null },
+      image_scan_filter: { fields_values: null },
+    },
+    node_ids: nodeIds.map((nodeId) => ({
+      node_id: nodeId,
+      node_type: (nodeType === 'kubernetes_cluster'
+        ? 'cluster'
+        : nodeType) as ModelNodeIdentifierNodeTypeEnum,
+    })),
+  };
 
   const r = await makeRequest({
     apiFunction: getSecretApiClient().startSecretScan,
     apiArgs: [
       {
-        modelSecretScanTriggerReq: {
-          filters: {
-            container_scan_filter: {
-              fields_values: null,
-            },
-            host_scan_filter: { fields_values: null },
-            image_scan_filter: { fields_values: null },
-          },
-          node_ids: nodeIds.map((nodeId) => ({
-            node_id: nodeId,
-            node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
-          })),
-        },
+        modelSecretScanTriggerReq: requestBody,
       },
     ],
     errorHandler: async (r) => {
