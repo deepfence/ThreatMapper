@@ -108,7 +108,6 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		log.Error().Msg(err.Error())
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
 		return nil, nil
-
 	}
 
 	// upload sbom to minio
