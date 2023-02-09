@@ -760,7 +760,7 @@ func fields_filter2cypher(node string, firstCond bool, fieldsFilter model.Fields
 func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
 	wherePattern := fields_filter2cypher("n", false, filter)
-	if wherePattern == "" {
+	if len(wherePattern) == 0 {
 		return ids, nil
 	}
 	nres, err := tx.Run(fmt.Sprintf(`
@@ -991,6 +991,10 @@ func startMultiScan(ctx context.Context,
 			action)
 
 		if err != nil {
+			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
+				scanIds = append(scanIds, e.ScanId)
+				continue
+			}
 			log.Error().Err(err)
 			return nil, "", err
 		}

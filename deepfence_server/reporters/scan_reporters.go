@@ -211,7 +211,7 @@ func GetKubernetesImageIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 	nres, err := tx.Run(`
 		MATCH (m:KubernetesCluster)
 		WHERE m.node_id IN $node_ids
-		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		MATCH (m) -[:INSTANCIATE]-> (n:Node)
 		MATCH (n) -[:HOSTS]-> (i:ContainerImage)
 		RETURN distinct i.node_id`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
@@ -256,7 +256,7 @@ func GetKubernetesHostsIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 	nres, err := tx.Run(`
 		MATCH (m:KubernetesCluster)
 		WHERE m.node_id IN $node_ids
-		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		MATCH (m) -[:INSTANCIATE]-> (n:Node)
 		RETURN distinct n.node_id`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
 	if err != nil {
@@ -300,7 +300,7 @@ func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifie
 	nres, err := tx.Run(`
 		MATCH (m:KubernetesCluster)
 		WHERE m.node_id IN $node_ids
-		MATCH (m) -[:INSTANCIATE]-> (n:Host)
+		MATCH (m) -[:INSTANCIATE]-> (n:Node)
 		MATCH (n) -[:HOSTS]-> (i:Container)
 		RETURN distinct i.node_id`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(k8sIds)})
