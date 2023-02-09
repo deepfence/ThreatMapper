@@ -3,90 +3,118 @@ import { Bar } from '@ant-design/plots';
 export const TopContainers = () => {
   const data = [
     {
-      year: '1991',
+      node: 'wordpress:latest',
+      type: 'low',
+      value: 67,
+    },
+    {
+      node: 'deepfenceio/log4j-vulnerable-app:latest',
+      type: 'low',
+      value: 153,
+    },
+    {
+      node: 'mysql:latest',
+      type: 'low',
+      value: 22,
+    },
+    {
+      node: 'nginx:latest',
+      type: 'low',
+      value: 20,
+    },
+    {
+      node: 'wordpress:latest',
+      type: 'medium',
+      value: 494,
+    },
+    {
+      node: 'deepfenceio/log4j-vulnerable-app:latest',
+      type: 'medium',
+      value: 124,
+    },
+    {
+      node: 'mysql:latest',
+      type: 'medium',
+      value: 90,
+    },
+    {
+      node: 'nginx:latest',
+      type: 'medium',
+      value: 121,
+    },
+    {
+      node: 'deepfenceio/haproxy-log4j:latest',
+      type: 'medium',
+      value: 2,
+    },
+    {
+      node: 'wordpress:latest',
+      type: 'high',
+      value: 348,
+    },
+    {
+      node: 'deepfenceio/log4j-vulnerable-app:latest',
+      type: 'high',
+      value: 53,
+    },
+    {
+      node: 'mysql:latest',
+      type: 'high',
+      value: 94,
+    },
+    {
+      node: 'nginx:latest',
+      type: 'high',
+      value: 80,
+    },
+    {
+      node: 'deepfenceio/haproxy-log4j:latest',
+      type: 'high',
+      value: 6,
+    },
+    {
+      node: 'wordpress:latest',
+      type: 'critical',
+      value: 79,
+    },
+    {
+      node: 'deepfenceio/log4j-vulnerable-app:latest',
+      type: 'critical',
+      value: 14,
+    },
+    {
+      node: 'mysql:latest',
+      type: 'critical',
+      value: 25,
+    },
+    {
+      node: 'nginx:latest',
+      type: 'critical',
+      value: 37,
+    },
+    {
+      node: 'deepfenceio/haproxy-log4j:latest',
+      type: 'critical',
       value: 3,
-      type: 'Lon',
-    },
-    {
-      year: '1992',
-      value: 4,
-      type: 'Lon',
-    },
-    {
-      year: '1993',
-      value: 3.5,
-      type: 'Lon',
-    },
-    {
-      year: '1994',
-      value: 5,
-      type: 'Lon',
-    },
-    {
-      year: '1995',
-      value: 4.9,
-      type: 'Lon',
-    },
-    {
-      year: '1991',
-      value: 3,
-      type: 'Bor',
-    },
-    {
-      year: '1992',
-      value: 4,
-      type: 'Bor',
-    },
-    {
-      year: '1993',
-      value: 3.5,
-      type: 'Bor',
-    },
-    {
-      year: '1994',
-      value: 5,
-      type: 'Bor',
-    },
-    {
-      year: '1995',
-      value: 4.9,
-      type: 'Bor',
     },
   ];
   const config = {
-    data: data.reverse(),
+    data,
     isStack: true,
     xField: 'value',
-    yField: 'year',
+    yField: 'node',
     seriesField: 'type',
-    maxBarWidth: 10,
+    theme: 'light',
+    height: 200,
     appendPadding: 10,
+    maxBarWidth: 10,
     animation: false,
-    height: 180,
-    label: {
-      // 可手动配置 label 数据标签位置
-      position: 'middle',
-      // 'left', 'middle', 'right'
-      // 可配置附加的布局方法
-      layout: [
-        // 柱形图数据标签位置自动调整
-        {
-          type: 'interval-adjust-position',
-        }, // 数据标签防遮挡
-        {
-          type: 'interval-hide-overlap',
-        }, // 数据标签文颜色自动调整
-        {
-          type: 'adjust-color',
-        },
-      ],
+    barStyle: {
+      // stroke: dfStyles.background,
     },
     legend: {
       layout: 'horizontal',
       position: 'bottom',
-    },
-    axis: {
-      title: null,
     },
     xAxis: {
       label: {
@@ -98,7 +126,7 @@ export const TopContainers = () => {
       grid: {
         line: {
           style: {
-            stroke: '#E5E7EB',
+            stroke: 'transparent',
           },
         },
       },
@@ -107,17 +135,22 @@ export const TopContainers = () => {
       label: {
         style: {
           fontSize: 14,
+          // fontFamily: dfStyles.fontFamily,
           fill: '#8f93a2',
         },
         formatter: (el) => (el.length > 14 ? `${el.substring(0, 13)}...` : `${el}`),
       },
     },
+    // color: ({ type }) => getComplianceColor(type),
     interactions: [{ type: 'element-active' }],
     state: {
       active: {
         animate: { duration: 100, easing: 'easeLinear' },
         // style: ({ data }) => getActiveStyle(data),
       },
+    },
+    axis: {
+      title: null,
     },
   };
   return <Bar {...config} />;
