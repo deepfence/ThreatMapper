@@ -159,6 +159,11 @@ type ComplianceScanResult struct {
 	Compliances []Compliance `json:"compliances" required:"true"`
 }
 
+type CloudComplianceScanResult struct {
+	ScanResultsCommon
+	Compliances []CloudCompliance `json:"compliances" required:"true"`
+}
+
 type Secret struct {
 	StartingIndex         int    `json:"starting_index" required:"true"`
 	RelativeStartingIndex int    `json:"relative_starting_index" required:"true"`
@@ -221,4 +226,27 @@ type Compliance struct {
 	Status              string `json:"status" required:"true"`
 	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
 	ComplianceNodeType  string `json:"compliance_node_type" required:"true"`
+}
+
+type CloudCompliance struct {
+	Timestamp           string `json:"@timestamp" required:"true"`
+	Count               int    `json:"count,omitempty" required:"true"`
+	Reason              string `json:"reason" required:"true"`
+	Resource            string `json:"resource" required:"true"`
+	Status              string `json:"status" required:"true"`
+	Region              string `json:"region" required:"true"`
+	AccountID           string `json:"account_id" required:"true"`
+	Group               string `json:"group" required:"true"`
+	Service             string `json:"service" required:"true"`
+	Title               string `json:"title" required:"true"`
+	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
+	CloudProvider       string `json:"cloud_provider" required:"true"`
+	NodeName            string `json:"node_name" required:"true"`
+	NodeID              string `json:"node_id" required:"true"`
+	ScanID              string `json:"scan_id" required:"true"`
+	Masked              string `json:"masked" required:"true"`
+	Type                string `json:"type" required:"true"`
+	ControlID           string `json:"control_id" required:"true"`
+	Description         string `json:"description" required:"true"`
+	Severity            string `json:"severity" required:"true"`
 }

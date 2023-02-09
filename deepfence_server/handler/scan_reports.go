@@ -710,6 +710,16 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 	httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common, SeverityCounts: counts})
 }
 
+func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, common, err := listScanResultsHandler[model.CloudCompliance](w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, model.CloudComplianceScanResult{Compliances: entries, ScanResultsCommon: common})
+}
+
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
 	defer r.Body.Close()
 	var req model.ScanResultsReq
