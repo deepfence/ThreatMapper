@@ -1,6 +1,7 @@
 import G6 from '@antv/g6';
 import { isNil } from 'lodash-es';
 import { useEffect, useRef, useState } from 'react';
+import { Radio } from 'ui-components';
 // import { AutoSizer } from 'react-virtualized';
 
 G6.registerEdge(
@@ -309,7 +310,7 @@ export const DagreGraph = ({ height, width, style, className }) => {
       const graph = new G6.Graph({
         container: ref.current,
         width: 500,
-        height: 400,
+        height: 500,
         fitView: true,
         layout: {
           type: 'dagre',
@@ -394,42 +395,24 @@ const graphOptions = [
   {
     label: 'Most vulnerable attack paths',
     value: 'most_vulnerable_attack_paths',
+    id: 'most_vulnerable_attack_paths',
   },
   {
     label: 'Paths with direct internet exposure',
     value: 'direct_internet_exposure',
+    id: 'direct_internet_exposure',
   },
   {
     label: 'Paths with indirect internet exposure',
     value: 'indirect_internet_exposure',
+    id: 'indirect_internet_exposure',
   },
 ];
 
 export const DagreeSelector = () => {
   return (
     <div>
-      {graphOptions.map((option) => {
-        return (
-          <div
-            key={option.value}
-            // className={classNames(
-            //   styles.graphSelectItem,
-            //   {
-            //     [styles.selected]: checkedOption.value === option.value,
-            //   },
-            //   styles[`option_${option.value}`],
-            // )}
-          >
-            <input
-              type="radio"
-              id={`graph-selector-${option.value}`}
-              name="graph-type"
-              value={option.value}
-            />
-            <label htmlFor={`graph-selector-${option.value}`}>{option.label}</label>
-          </div>
-        );
-      })}
+      <Radio name="attackPathSelection" options={graphOptions} />
     </div>
   );
 };

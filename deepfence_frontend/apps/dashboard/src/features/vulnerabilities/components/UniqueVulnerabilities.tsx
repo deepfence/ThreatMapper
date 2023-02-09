@@ -69,22 +69,22 @@ const color_total = '#1A56DB';
 const VULNERABLE_COUNTS = [
   {
     label: 'Critical',
-    count: 183,
+    count: 1224,
     color: color_critical,
   },
   {
     label: 'High',
-    count: 371,
+    count: 473,
     color: color_high,
   },
   {
     label: 'Medium',
-    count: 290,
+    count: 562,
     color: color_medium,
   },
   {
     label: 'Low',
-    count: 53,
+    count: 97,
     color: color_low,
   },
 ];
@@ -92,12 +92,13 @@ const VULNERABLE_COUNTS = [
 export const UniqueVulnerabilitiesCount = () => {
   return (
     <div className="flex items-center justify-center mt-2 gap-6">
-      <div className="px-4 flex items-center border-r border-gray-200 dark:border-gray-700 w-24 h-24">
+      <div className="px-4 flex flex-col items-center justify-center border-r border-gray-200 dark:border-gray-700 w-24 h-24">
         <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
           300
         </span>
+        <span className="self-start text-sm text-gray-400 dark:text-gray-500">Total</span>
       </div>
-      <div className="flex gap-x-4">
+      <div className="ml-4 flex gap-x-4">
         {VULNERABLE_COUNTS.map((vuln) => {
           return (
             <div className="flex flex-col" key={vuln.label}>

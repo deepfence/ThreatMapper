@@ -1,4 +1,4 @@
-import { Bar } from '@ant-design/plots';
+import { Bar, BarConfig } from '@ant-design/plots';
 
 export const TopContainers = () => {
   const data = [
@@ -98,13 +98,12 @@ export const TopContainers = () => {
       value: 3,
     },
   ];
-  const config = {
+  const config: BarConfig = {
     data,
     isStack: true,
     xField: 'value',
     yField: 'node',
     seriesField: 'type',
-    theme: 'light',
     height: 200,
     appendPadding: 10,
     maxBarWidth: 10,
@@ -114,7 +113,13 @@ export const TopContainers = () => {
     },
     legend: {
       layout: 'horizontal',
-      position: 'bottom',
+      position: 'top',
+      label: {
+        style: {
+          fill: '#8f93a2',
+          fontSize: 24,
+        },
+      },
     },
     xAxis: {
       label: {
