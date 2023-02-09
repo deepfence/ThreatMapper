@@ -406,7 +406,7 @@ const ComplianceScanConfigure = () => {
           </Tabs>
         )}
       </div>
-      <Button onClick={goBack} size="xs" className="mt-16" type="submit">
+      <Button onClick={goBack} size="xs" className="mt-16">
         Go Back
       </Button>
     </div>
