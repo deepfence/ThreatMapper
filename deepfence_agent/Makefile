@@ -37,7 +37,7 @@ gocode:
 	$(CD) tools/apache/deepfence/df-utils/get_cloud_instance_id && env CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .
 
 	echo "Building compliance checker"
-	$(CD) tools/apache/compliance_check/ && go build -o deepfence_compliance_check $(GOFLAGS) *.go
+	$(CD) tools/apache/compliance_check/ && env CGO_ENABLED=0 go build -o deepfence_compliance_check $(GOFLAGS) *.go
 
 install:
 
