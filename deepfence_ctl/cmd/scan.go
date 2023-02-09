@@ -29,15 +29,24 @@ var scanStartSubCmd = &cobra.Command{
 			log.Fatal().Msg("Please provide an type")
 		}
 
-		scan_node_id, _ := cmd.Flags().GetString("node-id")
+		scan_node_id, _ := cmd.Flags().GetString("node-ids")
 		if scan_node_id == "" {
-			log.Fatal().Msg("Please provide a node-id")
+			log.Fatal().Msg("Please provide a node-ids")
 		}
+		scan_node_ids := strings.Split(scan_node_id, ",")
 
 		resource_type, _ := cmd.Flags().GetString("node-type")
 		res_type := ctl.StringToResourceType(resource_type)
 		if res_type == -1 {
 			log.Fatal().Msg("Please provide a valid resource-type")
+		}
+
+		identifiers := []deepfence_server_client.ModelNodeIdentifier{}
+		for i := range scan_node_ids {
+			identifiers = append(identifiers, deepfence_server_client.ModelNodeIdentifier{
+				NodeId:   scan_node_ids[i],
+				NodeType: resource_type,
+			})
 		}
 
 		var err error
@@ -48,24 +57,16 @@ var scanStartSubCmd = &cobra.Command{
 			req = req.ModelSecretScanTriggerReq(
 				*deepfence_server_client.NewModelSecretScanTriggerReq(
 					*deepfence_server_client.NewModelScanFilterWithDefaults(),
-					[]deepfence_server_client.ModelNodeIdentifier{
-						{
-							NodeId:   scan_node_id,
-							NodeType: resource_type,
-						},
-					}))
+					identifiers,
+				))
 			res, _, err = http.Client().SecretScanApi.StartSecretScanExecute(req)
 		case "malware":
 			req := http.Client().MalwareScanApi.StartMalwareScan(context.Background())
 			req = req.ModelMalwareScanTriggerReq(
 				*deepfence_server_client.NewModelMalwareScanTriggerReq(
 					*deepfence_server_client.NewModelScanFilterWithDefaults(),
-					[]deepfence_server_client.ModelNodeIdentifier{
-						{
-							NodeId:   scan_node_id,
-							NodeType: resource_type,
-						},
-					}))
+					identifiers,
+				))
 			res, _, err = http.Client().MalwareScanApi.StartMalwareScanExecute(req)
 		case "vulnerability":
 			vuln_scan_type, _ := cmd.Flags().GetString("scan-config")
@@ -73,12 +74,7 @@ var scanStartSubCmd = &cobra.Command{
 			req = req.ModelVulnerabilityScanTriggerReq(
 				*deepfence_server_client.NewModelVulnerabilityScanTriggerReq(
 					*deepfence_server_client.NewModelScanFilterWithDefaults(),
-					[]deepfence_server_client.ModelNodeIdentifier{
-						{
-							NodeId:   scan_node_id,
-							NodeType: resource_type,
-						},
-					},
+					identifiers,
 					vuln_scan_type,
 				))
 			res, _, err = http.Client().VulnerabilityApi.StartVulnerabilityScanExecute(req)
@@ -130,18 +126,22 @@ var scanStatusSubCmd = &cobra.Command{
 		case "secret":
 			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
 			req = req.BulkScanId(scan_id)
+			req = req.ScanIds([]string{})
 			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StatusVulnerabilityScan(context.Background())
 			req = req.BulkScanId(scan_id)
+			req = req.ScanIds([]string{})
 			res, _, err = http.Client().VulnerabilityApi.StatusVulnerabilityScanExecute(req)
 		case "malware":
 			req := http.Client().MalwareScanApi.StatusMalwareScan(context.Background())
 			req = req.BulkScanId(scan_id)
+			req = req.ScanIds([]string{})
 			res, _, err = http.Client().MalwareScanApi.StatusMalwareScanExecute(req)
 		case "compliance":
 			req := http.Client().ComplianceApi.StatusComplianceScan(context.Background())
 			req = req.BulkScanId(scan_id)
+			req = req.ScanIds([]string{})
 			res2, _, err = http.Client().ComplianceApi.StatusComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
@@ -226,7 +226,7 @@ var scanResultsSubCmd = &cobra.Command{
 
 		scan_id, _ := cmd.Flags().GetString("scan-id")
 		if scan_id == "" {
-			log.Fatal().Msg("Please provide a node-id")
+			log.Fatal().Msg("Please provide a node-ids")
 		}
 
 		var err error
@@ -292,7 +292,7 @@ func init() {
 
 	scanCmd.PersistentFlags().String("type", "", "Scan type")
 
-	scanStartSubCmd.PersistentFlags().String("node-id", "", "Node id")
+	scanStartSubCmd.PersistentFlags().String("node-ids", "", "Node id")
 	scanStartSubCmd.PersistentFlags().String("node-type", "", "Resource type (host, container, image)")
 	scanStartSubCmd.PersistentFlags().String("scan-config", "all", "vulnerability scan type (all,base,ruby,python,javascript,php,golang,java,rust,dotnet)")
 
