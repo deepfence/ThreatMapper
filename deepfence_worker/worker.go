@@ -45,23 +45,23 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	mux.AddPlugin(plugin.SignalsHandler)
 
-	retryMiddleware := middleware.Retry{
-		MaxRetries:          3,
-		InitialInterval:     time.Second * 10,
-		MaxInterval:         time.Second * 120,
-		Multiplier:          1.5,
-		MaxElapsedTime:      0,
-		RandomizationFactor: 0.5,
-		OnRetryHook: func(retryNum int, delay time.Duration) {
-			log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
-		},
-		Logger: wml,
-	}
+	// Retried disabled in favor of neo4j scheduling
+	//retryMiddleware := middleware.Retry{
+	//	MaxRetries:          3,
+	//	InitialInterval:     time.Second * 10,
+	//	MaxInterval:         time.Second * 120,
+	//	Multiplier:          1.5,
+	//	MaxElapsedTime:      0,
+	//	RandomizationFactor: 0.5,
+	//	OnRetryHook: func(retryNum int, delay time.Duration) {
+	//		log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
+	//	},
+	//	Logger: wml,
+	//}
 
 	mux.AddMiddleware(
 		middleware.Recoverer,
 		middleware.NewThrottle(10, time.Second).Middleware,
-		retryMiddleware.Middleware,
 		middleware.CorrelationID,
 	)
 

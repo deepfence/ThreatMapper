@@ -61,7 +61,7 @@ func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
 		numWorkers:    1,
 		bulkActions:   100,
 		flushInterval: 10 * time.Second,
-		requestsC:     make(chan BulkRequest, 100),
+		requestsC:     make(chan BulkRequest, 200),
 	}
 }
 
@@ -133,11 +133,41 @@ func (p *BulkProcessor) Close() error {
 	return nil
 }
 
+type bulKBuffer struct {
+	buffer map[string][][]byte
+	size   int
+}
+
+func NewBulkBuffer() *bulKBuffer {
+	return &bulKBuffer{
+		buffer: make(map[string][][]byte),
+		size:   0,
+	}
+}
+
+func (b *bulKBuffer) Add(req BulkRequest) {
+	b.buffer[req.NameSpace] = append(b.buffer[req.NameSpace], req.Data)
+	b.size++
+}
+
+func (b *bulKBuffer) Reset() {
+	b.buffer = make(map[string][][]byte)
+	b.size = 0
+}
+
+func (b *bulKBuffer) Read() map[string][][]byte {
+	return b.buffer
+}
+
+func (b *bulKBuffer) Size() int {
+	return b.size
+}
+
 type bulkWorker struct {
 	p           *BulkProcessor
 	i           int
 	bulkActions int
-	buffer      map[string][][]byte
+	buffer      *bulKBuffer
 	flushC      chan struct{}
 	flushAckC   chan struct{}
 	worker_id   string
@@ -148,7 +178,7 @@ func newBulkWorker(p *BulkProcessor, i int) *bulkWorker {
 		p:           p,
 		i:           i,
 		bulkActions: p.bulkActions,
-		buffer:      make(map[string][][]byte),
+		buffer:      NewBulkBuffer(),
 		flushC:      make(chan struct{}),
 		flushAckC:   make(chan struct{}),
 		worker_id:   fmt.Sprintf("%s.%d", p.name, i),
@@ -170,7 +200,7 @@ func (w *bulkWorker) work(ctx context.Context) {
 		case req, open := <-w.p.requestsC:
 			if open {
 				// Received a new request
-				w.buffer[req.NameSpace] = append(w.buffer[req.NameSpace], req.Data)
+				w.buffer.Add(req)
 				if w.commitRequired() {
 					log.Info().Str("worker", w.worker_id).Msg("buffer full commit all")
 					if errs := w.commit(ctx); len(errs) != 0 {
@@ -181,7 +211,7 @@ func (w *bulkWorker) work(ctx context.Context) {
 			} else {
 				// Channel closed: Stop.
 				stop = true
-				if len(w.buffer) > 0 {
+				if w.buffer.Size() > 0 {
 					log.Info().Str("worker", w.worker_id).Msg("exit called commit all")
 					if errs := w.commit(ctx); len(errs) != 0 {
 						log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
@@ -191,7 +221,7 @@ func (w *bulkWorker) work(ctx context.Context) {
 
 		case <-w.flushC:
 			// Commit outstanding requests
-			if len(w.buffer) > 0 {
+			if w.buffer.Size() > 0 {
 				log.Info().Str("worker", w.worker_id).Msg("flush called commit all")
 				if errs := w.commit(ctx); len(errs) != 0 {
 					log.Error().Str("worker", w.worker_id).Msgf("%v", errs)
@@ -203,21 +233,18 @@ func (w *bulkWorker) work(ctx context.Context) {
 }
 
 func (w *bulkWorker) commitRequired() bool {
-	if w.bulkActions >= 0 && len(w.buffer) >= w.bulkActions {
-		return true
-	}
-	return false
+	return w.buffer.Size() >= w.bulkActions
 }
 
 func (w *bulkWorker) commit(ctx context.Context) []error {
 	errs := []error{}
-	for k, v := range w.buffer {
+	for k, v := range w.buffer.Read() {
 		log.Info().Str("worker", w.worker_id).Msgf("namespace=%s #data=%d", k, len(v))
 		if err := w.p.commitFn(k, v); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	// reset buffer after commit
-	w.buffer = make(map[string][][]byte)
+	w.buffer.Reset()
 	return errs
 }

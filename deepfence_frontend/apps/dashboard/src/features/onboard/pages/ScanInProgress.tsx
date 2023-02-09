@@ -1,6 +1,7 @@
 import cx from 'classnames';
+import { uniq } from 'lodash-es';
 import { useMemo, useState } from 'react';
-import { FaCheckDouble, FaExclamationTriangle, FaStream } from 'react-icons/fa';
+import { FaCheckDouble, FaExclamationTriangle } from 'react-icons/fa';
 import {
   HiCheck,
   HiChevronDown,
@@ -8,7 +9,6 @@ import {
   HiExclamationCircle,
   HiOutlineChevronDoubleLeft,
   HiOutlineChevronDoubleRight,
-  HiOutlineChevronRight,
   HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
@@ -147,7 +147,7 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> =
 function areAllScanDone(scanStatuses: string[]) {
   return (
     scanStatuses.filter((status) => {
-      return ['COMPLETE', 'FAILED'].includes(status);
+      return ['COMPLETE', 'ERROR'].includes(status);
     }).length === scanStatuses.length
   );
 }
@@ -155,13 +155,13 @@ function areAllScanDone(scanStatuses: string[]) {
 function areAllScanFailed(scanStatuses: string[]) {
   return (
     scanStatuses.filter((status) => {
-      return ['FAILED'].includes(status);
+      return ['ERROR'].includes(status);
     }).length === scanStatuses.length
   );
 }
 
 function isScanDone(status: string) {
-  return status === 'COMPLETE' || status === 'FAILED';
+  return status === 'COMPLETE' || status === 'ERROR';
 }
 
 function isScanCompleted(status: string) {
@@ -169,7 +169,7 @@ function isScanCompleted(status: string) {
 }
 
 function isScanFailed(status: string) {
-  return status === 'FAILED';
+  return status === 'ERROR';
 }
 
 export const ScanInProgressError = () => {
@@ -294,7 +294,7 @@ const ScanInProgress = () => {
     if (!loaderData.message && !allScanDone) {
       revalidator.revalidate();
     }
-  }, 5000);
+  }, 10000);
 
   return (
     <>
@@ -314,7 +314,7 @@ const ScanInProgress = () => {
             >
               {allScanFailed ? <HiOutlineExclamationCircle /> : <FaCheckDouble />}
             </IconContext.Provider>
-            <h3 className="text-2xl font-semibold pt-1">
+            <h3 className="text-2xl font-semibold pt-1 dark:text-gray-200">
               Scan {allScanFailed ? 'Failed' : 'Done'}
             </h3>
             <div className="mt-6">
@@ -358,22 +358,22 @@ const ScanInProgress = () => {
             {!allScanDone
               ? `${
                   scanType.charAt(0).toUpperCase() + scanType.slice(1)
-                } Scan started for ${loaderData?.data?.length} host ${
-                  (loaderData?.data?.length ?? 0) > 1 ? 's' : ''
-                }`
+                } scan started for ${loaderData?.data?.length} ${uniq(
+                  loaderData.data?.map((data) => data.node_type) ?? [],
+                ).join(' and ')}${(loaderData?.data?.length ?? 0) > 1 ? 's' : ''}`
               : 'All the scan are done'}
           </p>
-          <Button
-            size="sm"
-            startIcon={<FaStream />}
-            endIcon={<HiOutlineChevronRight />}
-            onClick={() => setExpand((state) => !state)}
-            color="normal"
-            className="ring-0 outline-none focus:ring-0 hover:bg-transparent"
-          >
-            Click here to {expand ? 'collapse' : 'see'} details
-          </Button>
         </div>
+        <Button
+          size="sm"
+          endIcon={expand ? <HiChevronDown /> : <HiChevronRight />}
+          onClick={() => setExpand((state) => !state)}
+          color={expand ? 'primary' : 'normal'}
+          outline={expand ? false : true}
+          className="mt-4"
+        >
+          {expand ? 'Less' : 'More'} details
+        </Button>
       </section>
       {expand ? (
         <section className="mt-4 flex justify-center">
@@ -387,7 +387,7 @@ const ScanInProgress = () => {
             renderSubComponent={() => {
               return (
                 <p className="dark:text-gray-200 py-2 px-4 overflow-auto text-sm">
-                  Error message will be here
+                  Error message will be displayed here
                 </p>
               );
             }}

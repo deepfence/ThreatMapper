@@ -12,7 +12,7 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 
 replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/deepfence/tcptracer-bpf
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230208064404-21bb3a595a07
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230209093321-4d2b03f0d65f
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server/
 
