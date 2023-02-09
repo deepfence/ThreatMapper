@@ -62,13 +62,13 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 		return regCreds{}, err
 	}
 
-	key, err := pgClient.GetSetting(ctx, "aes_secret")
+	key, err := encryption.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return regCreds{}, err
 	}
 	aes := encryption.AES{}
-	err = json.Unmarshal(key.Value, &aes)
+	err = json.Unmarshal(key, &aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return regCreds{}, err

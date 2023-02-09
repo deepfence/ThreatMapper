@@ -253,8 +253,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/decred/dcrd/crypto/blake256 v1.0.0/go.mod h1:sQl2p6Y26YV+ZOcSTP6thNdn47hh8kt6rqSlvmrXFAc=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1owhMVTHFZIlnvd4=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
-github.com/deepfence/package-scanner v1.2.4-0.20230208064404-21bb3a595a07 h1:L/Hwe4bC0D20yPlqVxX3mzq5Pba/tF1JQS4MFxtR0ew=
-github.com/deepfence/package-scanner v1.2.4-0.20230208064404-21bb3a595a07/go.mod h1:C/99c1osekhOmGgV6pOs28/eK7l0gze7IrKS9WH5QXM=
+github.com/deepfence/package-scanner v1.2.4-0.20230209093321-4d2b03f0d65f h1:kX4iHYJ6rUfEX6rdjkKbcBGcjd4lewN+ddUlJsyOZ/U=
+github.com/deepfence/package-scanner v1.2.4-0.20230209093321-4d2b03f0d65f/go.mod h1:C/99c1osekhOmGgV6pOs28/eK7l0gze7IrKS9WH5QXM=
 github.com/deepfence/vessel v0.9.1 h1:43IuWdrRqHRW8O065qtporepudEGQWhMSqpxiI0/lSE=
 github.com/deepfence/vessel v0.9.1/go.mod h1:cN+m37ETZPBZvsZGZWxuMGagSC2dllUam5ypvC23IbI=
 github.com/denverdino/aliyungo v0.0.0-20190125010748-a747050bb1ba/go.mod h1:dV8lFg6daOBZbT6/BDGIz6Y3WFGn8juu6G+CQ6LHtl0=
