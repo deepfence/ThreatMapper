@@ -6,9 +6,9 @@ from utils.helper import get_topology_network_graph, get_recent_scan_ids, split_
     get_top_exploitable_vulnerabilities
 from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, CLOUD_AWS, CLOUD_GCP, \
     CLOUD_AZURE, THREAT_GRAPH_CACHE_KEY, THREAT_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
-    CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_INDEX, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, SECRET_SCAN_LOGS_INDEX, \
-    TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
-    SECRET_SCAN_INDEX, CLOUD_TOPOLOGY_COUNT
+    CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_ES_TYPE, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, \
+    TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
+    CLOUD_TOPOLOGY_COUNT, COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_ES_TYPE
 import networkx as nx
 from collections import defaultdict
 import json
@@ -401,7 +401,7 @@ def compute_azure_cloud_network_graph(cloud_resources, graph, include_nodes):
     return graph
 
 
-def get_mis_config_count(index_name, logs_index_name, aggs_field):
+def get_mis_config_count(index_name, index_es_type, logs_index_name, aggs_field):
     recent_scan_ids = get_recent_scan_ids(logs_index_name, number, time_unit, None)
     if not recent_scan_ids:
         return {}
@@ -426,11 +426,11 @@ def get_mis_config_count(index_name, logs_index_name, aggs_field):
                 continue
             for scan_bkt in bkt["scan_id"]["buckets"]:
                 if mis_config_count[bkt["key"]]:
-                    mis_config_count[bkt["key"]]["scan_id"][scan_bkt["key"]] = index_name
+                    mis_config_count[bkt["key"]]["scan_id"][scan_bkt["key"]] = index_es_type
                     mis_config_count[bkt["key"]]["count"] += scan_bkt["doc_count"]
                 else:
                     mis_config_count[bkt["key"]] = {
-                        "scan_id": {scan_bkt["key"]: index_name}, "count": scan_bkt["doc_count"]}
+                        "scan_id": {scan_bkt["key"]: index_es_type}, "count": scan_bkt["doc_count"]}
     return mis_config_count
 
 
@@ -442,16 +442,17 @@ def get_vulnerability_count():
             vulnerability_count[vulnerability["_source"]["cve_container_image"]]["count"] += 1
         else:
             vulnerability_count[vulnerability["_source"]["cve_container_image"]] = {
-                "scan_id": {vulnerability["_source"]["scan_id"]: CVE_INDEX}, "count": 1}
+                "scan_id": {vulnerability["_source"]["scan_id"]: CVE_ES_TYPE}, "count": 1}
     return vulnerability_count
 
 
 def get_compliance_count():
-    return get_mis_config_count(COMPLIANCE_INDEX, COMPLIANCE_LOGS_INDEX, "node_id")
+    return get_mis_config_count(COMPLIANCE_INDEX, COMPLIANCE_ES_TYPE, COMPLIANCE_LOGS_INDEX, "node_id")
 
 
 def get_cloud_compliance_count():
-    return get_mis_config_count(CLOUD_COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, "resource")
+    return get_mis_config_count(CLOUD_COMPLIANCE_INDEX, CLOUD_COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_LOGS_INDEX,
+                                "resource")
 
 
 def get_secrets_count():
@@ -464,9 +465,8 @@ def _compute_threat_graph():
     vulnerability_count_map = get_vulnerability_count()
     compliance_count_map = get_compliance_count()
     cloud_compliance_count_map = get_cloud_compliance_count()
-    secrets_count_map = get_secrets_count()
-    include_nodes = {**vulnerability_count_map, **compliance_count_map,
-                     **cloud_compliance_count_map, **secrets_count_map}
+    # secrets_count_map = get_secrets_count()
+    include_nodes = {**vulnerability_count_map, **compliance_count_map, **cloud_compliance_count_map}
 
     graph = {CLOUD_AWS: nx.DiGraph(), CLOUD_GCP: nx.DiGraph(), CLOUD_AZURE: nx.DiGraph(), pvt_cloud: nx.DiGraph()}
     for cloud_provider, _ in graph.items():
@@ -589,9 +589,9 @@ def _compute_threat_graph():
                                 **cloud_compliance_count_map.get(cloud_id, {}).get("scan_id", {}),
                                 **compliance_scan_id,
                             }
-                        secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
-                        if secrets_count > 0:
-                            secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                        # secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
+                        # if secrets_count > 0:
+                        #     secrets_scan_id = secrets_count_map[node_id]["scan_id"]
                     elif node_type == NODE_TYPE_CONTAINER:
                         vulnerability_count = vulnerability_count_map.get(meta["image_name"], {}).get("count", 0)
                         if vulnerability_count > 0:
@@ -599,9 +599,9 @@ def _compute_threat_graph():
                         compliance_count = compliance_count_map.get(node_id, {}).get("count", 0)
                         if compliance_count > 0:
                             compliance_scan_id = compliance_count_map[node_id]["scan_id"]
-                        secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
-                        if secrets_count > 0:
-                            secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                        # secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
+                        # if secrets_count > 0:
+                        #     secrets_scan_id = secrets_count_map[node_id]["scan_id"]
                     else:
                         cloud_id = node_id
                         compliance_count = cloud_compliance_count_map.get(node_id, {}).get("count", 0)
