@@ -1804,7 +1804,6 @@ def node_action():
                                            "time_unit": constants.TIME_UNIT_MAPPING.get(duration_time_unit)}
 
     if node_type == constants.NODE_TYPE_REGISTRY_IMAGE:
-        print("here 1")
         if not registry_images:
             raise InvalidUsage("registry_images is required for node_type registry_image")
         if not registry_images.get("registry_id") or type(registry_images["registry_id"]) != int:
@@ -1840,7 +1839,6 @@ def node_action():
         node_action_details["node_id_list"] = node_ids
 
     if action in [constants.NODE_ACTION_CVE_SCAN_START, constants.NODE_ACTION_SCHEDULE_CVE_SCAN]:
-        print("here 2")
         if node_type not in [constants.NODE_TYPE_HOST, constants.NODE_TYPE_CONTAINER,
                              constants.NODE_TYPE_CONTAINER_IMAGE, constants.NODE_TYPE_REGISTRY_IMAGE]:
             raise InvalidUsage("action {0} not applicable for node_type {1}".format(action, node_type))
@@ -1903,8 +1901,6 @@ def node_action():
                                resources=[node_action_details_user_activity], success=True)
     if action in [constants.NODE_ACTION_CVE_SCAN_START, constants.NODE_ACTION_CVE_SCAN_STOP]:
         from config.app import celery_app
-        print("here it will call the celery_app")
-        print(node_action_details)
         celery_app.send_task(
             'tasks.common_worker.common_worker', args=(), queue=constants.CELERY_NODE_ACTION_QUEUE,
             kwargs={"action": action, "node_action_details": node_action_details, "task_type": "node_task"})

@@ -202,6 +202,8 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                                 topology_data_df_format=topology_data_df_format)
                     if node.type == constants.NODE_TYPE_HOST:
                         lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, node.host_name)
+                    elif node.type == constants.NODE_TYPE_CONTAINER:
+                        lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, node.scope_id)
                     else:
                         if not node.image_name_tag:
                             continue
