@@ -22,22 +22,25 @@ type MalwareScanTriggerReq struct {
 }
 
 type ComplianceScanTriggerReq struct {
-	ScanTriggers []ComplianceScanTrigger `json:"scan_triggers" required:"true"`
+	ScanTriggerCommon
+	ComplianceBenchmarkTypes
 }
 
-type KeyValue struct {
-	Key   string `json:"key" required:"true"`
-	Value string `json:"value" required:"true"`
+type KeyValues struct {
+	Key    string   `json:"key" required:"true"`
+	Values []string `json:"values" required:"true"`
 }
 
 type FieldsFilter struct {
-	FieldsValues []KeyValue `json:"fields_values" required:"true"`
+	FieldsValues []KeyValues `json:"fields_values" required:"true"`
 }
 
 type ScanFilter struct {
-	ImageScanFilter     FieldsFilter `json:"image_scan_filter" required:"true"`
-	ContainerScanFilter FieldsFilter `json:"container_scan_filter" required:"true"`
-	HostScanFilter      FieldsFilter `json:"host_scan_filter" required:"true"`
+	ImageScanFilter             FieldsFilter `json:"image_scan_filter" required:"true"`
+	ContainerScanFilter         FieldsFilter `json:"container_scan_filter" required:"true"`
+	HostScanFilter              FieldsFilter `json:"host_scan_filter" required:"true"`
+	CloudAccountScanFilter      FieldsFilter `json:"cloud_account_scan_filter" required:"true"`
+	KubernetesClusterScanFilter FieldsFilter `json:"kubernetes_cluster_scan_filter" required:"true"`
 }
 
 type ScanTriggerCommon struct {
@@ -47,12 +50,10 @@ type ScanTriggerCommon struct {
 
 type NodeIdentifier struct {
 	NodeId   string `json:"node_id" required:"true"`
-	NodeType string `json:"node_type" required:"true" enum:"image,host,container,cluster,registry"`
+	NodeType string `json:"node_type" required:"true" enum:"image,host,container,cloud_account,cluster,registry"`
 }
 
-type ComplianceScanTrigger struct {
-	NodeId         string   `json:"node_id" required:"true"`
-	NodeType       string   `json:"node_type" required:"true" enum:"aws,gcp,azure,linux,kubernetes_cluster"`
+type ComplianceBenchmarkTypes struct {
 	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
