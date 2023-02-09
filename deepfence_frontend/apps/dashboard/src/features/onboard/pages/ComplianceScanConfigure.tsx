@@ -42,21 +42,31 @@ export type ScanActionReturnType = {
   message?: string;
 };
 
+const cloudAccount = ['aws', 'gcp', 'azure'];
+
 const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturnType> => {
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
   const nodeIds = body._nodeIds.toString().split(',');
-  const nodeType = body._nodeType.toString();
+  let nodeType = body._nodeType.toString();
   const controls = new URL(request.url).searchParams.get('controls');
+
+  if (nodeType === 'kubernetes_cluster') {
+    nodeType = 'cluster';
+  } else if (cloudAccount.includes(nodeType)) {
+    nodeType = 'cloud_account';
+  }
+
   const r = await makeRequest({
     apiFunction: getComplianceApiClient().startComplianceScan,
     apiArgs: [
       {
         modelComplianceScanTriggerReq: {
+          benchmark_types: controls ? controls.split(',') : [],
           filters: {
-            container_scan_filter: {
-              fields_values: null,
-            },
+            cloud_account_scan_filter: { fields_values: null },
+            kubernetes_cluster_scan_filter: { fields_values: null },
+            container_scan_filter: { fields_values: null },
             host_scan_filter: { fields_values: null },
             image_scan_filter: { fields_values: null },
           },
@@ -83,7 +93,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
   }
 
   throw redirect(
-    generatePath('/onboard/scan/view-summary/running/:scanType/:bulkScanId', {
+    generatePath('/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId', {
+      nodeType,
       scanType: 'compliance',
       bulkScanId: r.bulk_scan_id,
     }),
@@ -98,11 +109,6 @@ export type LoaderDataType = {
 };
 
 const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderDataType> => {
-  // const formData = await request.formData();
-  // const body = Object.fromEntries(formData);
-  // const nodeIds = body._nodeIds.toString().split(',');
-  // const nodeType = body._nodeType.toString();
-  // const controls = new URL(request.url).searchParams.get('controls');
   return {};
 };
 const complianceTableData = [
@@ -336,7 +342,7 @@ const ComplianceScanConfigure = () => {
           },
         ];
         setSearchParams({
-          controls: newType.map((type) => type.value).join(','),
+          controls: newType.map((type) => type.value.toLowerCase()).join(','),
         });
         return newType;
       }

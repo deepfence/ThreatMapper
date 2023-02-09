@@ -30,6 +30,8 @@ import {
 } from 'ui-components';
 
 import {
+  getCloudComplianceApiClient,
+  getComplianceApiClient,
   getMalwareScanApiClient,
   getSecretApiClient,
   getVulnerabilityApiClient,
@@ -58,7 +60,7 @@ type ConfigProps = {
   vulnerability: TextProps;
   secret: TextProps;
   malware: TextProps;
-  posture: TextProps;
+  compliance: TextProps;
   alert: TextProps;
 };
 
@@ -66,6 +68,8 @@ const statusScanApiFunctionMap = {
   vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
   secret: getSecretApiClient().statusSecretScan,
   malware: getMalwareScanApiClient().statusMalwareScan,
+  compliance: getComplianceApiClient().statusComplianceScan,
+  cloudCompliance: getCloudComplianceApiClient().statusCloudComplianceScan,
 };
 
 const configMap: ConfigProps = {
@@ -86,7 +90,7 @@ const configMap: ConfigProps = {
     subHeaderText:
       'Malware Scan has been initiated, it will be completed in few moments.',
   },
-  posture: {
+  compliance: {
     scanningText: 'Your Compliance Scan is currently running...',
     headerText: 'Compliance Scan',
     subHeaderText:
@@ -103,7 +107,13 @@ const configMap: ConfigProps = {
 async function getScanStatus(
   scanType: keyof typeof statusScanApiFunctionMap,
   bulkScanId: string,
+  nodeType: string,
 ): Promise<LoaderDataType> {
+  // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
+  if (scanType === 'compliance' && nodeType === 'cloud_account') {
+    scanType = 'cloudCompliance';
+  }
+
   const result = await makeRequest({
     apiFunction: statusScanApiFunctionMap[scanType],
     apiArgs: [
@@ -139,9 +149,10 @@ async function getScanStatus(
 }
 
 const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> => {
+  const nodeType = params?.nodeType ?? '';
   const bulkScanId = params?.bulkScanId ?? '';
   const scanType = params?.scanType as keyof typeof statusScanApiFunctionMap;
-  return await getScanStatus(scanType, bulkScanId);
+  return await getScanStatus(scanType, bulkScanId, nodeType);
 };
 
 function areAllScanDone(scanStatuses: string[]) {

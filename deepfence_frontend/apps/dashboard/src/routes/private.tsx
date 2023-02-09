@@ -153,7 +153,7 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Summary Malware Scan' },
           },
           {
-            path: 'view-summary/running/:scanType/:bulkScanId',
+            path: 'view-summary/running/:nodeType/:scanType/:bulkScanId',
             ...scanInProgress,
             meta: { title: 'Scan Summary' },
           },

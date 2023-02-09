@@ -69,7 +69,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
   }
 
   throw redirect(
-    generatePath('/onboard/scan/view-summary/running/:scanType/:bulkScanId', {
+    generatePath('/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId', {
+      nodeType,
       scanType: 'secret',
       bulkScanId: r.bulk_scan_id,
     }),
