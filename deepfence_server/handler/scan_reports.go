@@ -221,9 +221,23 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	ctx := r.Context()
 
+	regular, k8s, _ := extractBulksNodes(reqs.NodeIds)
+
+	cloudNodeIds, err := reporters.GetCloudAccountIDs(ctx, regular)
+	if err != nil {
+		respondError(errors.New(err.Error()), w)
+		return
+	}
+
 	var nodes []model.NodeIdentifier
 	if len(reqs.NodeIds) == 0 {
-		nodes, err = FindNodesMatching(ctx, []model.NodeIdentifier{}, []model.NodeIdentifier{}, []model.NodeIdentifier{}, []model.NodeIdentifier{}, []model.NodeIdentifier{}, reqs.Filters)
+		nodes, err = FindNodesMatching(ctx,
+			[]model.NodeIdentifier{},
+			[]model.NodeIdentifier{},
+			[]model.NodeIdentifier{},
+			cloudNodeIds,
+			k8s,
+			reqs.Filters)
 		if err != nil {
 			respondError(err, w)
 			return
@@ -793,12 +807,32 @@ func FindNodesMatching(ctx context.Context,
 	defer tx.Close()
 
 	rh, err := get_node_ids(tx, host_ids, controls.Host, filter.HostScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, rh...)
 	ri, err := get_node_ids(tx, image_ids, controls.Image, filter.ImageScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, ri...)
 	rc, err := get_node_ids(tx, container_ids, controls.Container, filter.ContainerScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, rc...)
 	rca, err := get_node_ids(tx, cloud_account_ids, controls.CloudAccount, filter.CloudAccountScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, rca...)
 	rk, err := get_node_ids(tx, kubernetes_cluster_ids, controls.KubernetesCluster, filter.KubernetesClusterScanFilter)
+	if err != nil {
+		return res, err
+	}
+	res = append(res, rk...)
 
-	return append(append(append(append(rh, ri...), rc...), rca...), rk...), nil
+	return res, nil
 }
 
 func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
