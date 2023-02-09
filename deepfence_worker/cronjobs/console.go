@@ -11,7 +11,7 @@ import (
 
 const (
 	ConsoleAgentId = "deepfence-console-cron"
-	MaxWorkload    = 40
+	MaxWorkload    = 5
 )
 
 var (
