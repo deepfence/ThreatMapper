@@ -319,7 +319,7 @@ func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifie
 	for _, rec := range recs {
 		res = append(res, model.NodeIdentifier{
 			NodeId:   rec.Values[0].(string),
-			NodeType: "host",
+			NodeType: "container",
 		})
 	}
 
