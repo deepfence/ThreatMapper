@@ -195,8 +195,6 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-    env_file:
-      - 'creds.env'
 
   deepfence-worker:
     container_name: deepfence-worker
@@ -249,8 +247,6 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-    env_file:
-      - 'creds.env'
 
   deepfence-secret-scanner:
     container_name: deepfence-secret-scanner
