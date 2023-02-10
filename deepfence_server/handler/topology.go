@@ -270,6 +270,15 @@ func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_fil
 		Type: "pseudo",
 	}
 
+	nodes["deepfence-console-cron"] = detailed.NodeSummary{
+		ImmediateParentID: "",
+		BasicNodeSummary: detailed.BasicNodeSummary{
+			ID:    "deepfence-console-cron",
+			Label: "Console",
+		},
+		Type: "pseudo",
+	}
+
 	for h, n := range graph.Processes {
 		for _, id_stub := range n {
 			id := string(id_stub.ID)
