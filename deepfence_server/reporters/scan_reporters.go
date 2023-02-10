@@ -600,25 +600,40 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	return res, nil
 }
 
-func GetCloudComplianceStats(ctx context.Context, scanId string) (map[string]int, float64, error) {
-	compliancePercentage := 0.0
+func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {
 	res := map[string]int{}
+	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return res, compliancePercentage, err
+		return additionalInfo, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
-		return res, compliancePercentage, err
+		return additionalInfo, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return res, compliancePercentage, err
+		return additionalInfo, err
 	}
 	defer tx.Close()
+
+	benchRes, err := tx.Run(`
+		MATCH (m:`+string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN)+`{node_id: $scan_id})
+		RETURN m.benchmark_type`,
+		map[string]interface{}{"scan_id": scanId})
+	if err != nil {
+		return additionalInfo, err
+	}
+
+	benchRec, err := benchRes.Single()
+	if err != nil {
+		return additionalInfo, err
+	}
+
+	additionalInfo.BenchmarkType = benchRec.Values[0].(string)
 
 	nres, err := tx.Run(`
 		MATCH (m:`+string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
@@ -626,12 +641,12 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (map[string]int
 		RETURN status, COUNT(status)`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
-		return res, compliancePercentage, err
+		return additionalInfo, err
 	}
 
 	recs, err := nres.Collect()
 	if err != nil {
-		return res, compliancePercentage, err
+		return additionalInfo, err
 	}
 
 	var positiveStatusCount int
@@ -645,9 +660,10 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (map[string]int
 		}
 		totalStatusCount += statusCount
 	}
-	compliancePercentage = float64(positiveStatusCount) / float64(totalStatusCount)
+	additionalInfo.StatusCounts = res
+	additionalInfo.CompliancePercentage = float64(positiveStatusCount) * 100 / float64(totalStatusCount)
 
-	return res, compliancePercentage, nil
+	return additionalInfo, nil
 }
 
 func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (model.ScanStatusResp, error) {
