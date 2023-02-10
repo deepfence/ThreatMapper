@@ -267,7 +267,17 @@ const ComplianceTable = () => {
   return <Table size="sm" data={tableData} columns={columns} />;
 };
 
-const scanType = ['CIS', 'GDPR', 'HIPPA', 'PCI', 'SOC2', 'NIST'];
+type ComplianceType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster';
+
+const complianceType: {
+  [key in ComplianceType]: string[];
+} = {
+  aws: ['cis', 'nist', 'pci', 'hipaa', 'soc2', 'gdpr'],
+  gcp: ['cis'],
+  azure: ['cis', 'nist', 'hipaa'],
+  host: ['hipaa', 'gdpr', 'pci', 'nist'],
+  kubernetes_cluster: ['nsa-cisa'],
+};
 
 type TabsType = {
   label: string;
@@ -310,6 +320,7 @@ const ComplianceScanConfigure = () => {
   const location = useLocation();
   const [pageState] = useState<unknown>(location.state);
   const state = pageState as OnboardConnectionNode[];
+  const nodeType = state[0]?.urlType as ComplianceType;
 
   useEffect(() => {
     // set selected tab by last compliance type
@@ -343,7 +354,7 @@ const ComplianceScanConfigure = () => {
           },
         ];
         setSearchParams({
-          controls: newType.map((type) => type.value.toLowerCase()).join(','),
+          controls: newType.map((type) => type.value).join(','),
         });
         return newType;
       }
@@ -363,7 +374,7 @@ const ComplianceScanConfigure = () => {
         }
       />
       <div className="mt-6 flex gap-4 mb-6">
-        {scanType.map((type) => (
+        {complianceType[nodeType]?.map((type: string) => (
           <Button
             color="primary"
             outline={hasTypeSelected(tabs, type) ? false : true}
@@ -375,9 +386,9 @@ const ComplianceScanConfigure = () => {
             endIcon={hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
             className="self-start"
             name={`${type}[]`}
-            value={type.toLowerCase()}
+            value={type}
           >
-            {type}
+            {type.toUpperCase()}
           </Button>
         ))}
         <Form method="post" className="self-start ml-auto">
