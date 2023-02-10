@@ -346,7 +346,7 @@ func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 		GroupIds:            groupIDs,
 		CompanyID:           u.CompanyID,
 		PasswordHash:        u.Password,
-		IsActive:            false,
+		IsActive:            true,
 		PasswordInvalidated: false,
 	})
 	if err != nil {
