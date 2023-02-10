@@ -54,8 +54,8 @@ models/ModelCloudNodeAccountsListResp.ts
 models/ModelCloudNodeCloudtrailTrail.ts
 models/ModelCloudNodeProvidersListResp.ts
 models/ModelCompliance.ts
+models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
-models/ModelComplianceScanStatus.ts
 models/ModelComplianceScanStatusResp.ts
 models/ModelComplianceScanTriggerReq.ts
 models/ModelComputeMetrics.ts

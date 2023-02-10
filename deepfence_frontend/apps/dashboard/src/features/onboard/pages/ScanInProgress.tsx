@@ -36,11 +36,8 @@ import {
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelComplianceScanStatus,
-  ModelScanInfo,
-} from '@/api/generated';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ModelComplianceScanInfo } from '@/api/generated/models/ModelComplianceScanInfo';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -49,10 +46,10 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 export type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ModelScanInfo[];
+  data?: ModelComplianceScanInfo[];
 };
 
-type TableDataType = ModelScanInfo;
+type TableDataType = ModelComplianceScanInfo;
 
 type TextProps = {
   scanningText: string;
