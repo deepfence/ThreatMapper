@@ -223,7 +223,8 @@ services:
       core: 0
     restart: on-failure
     environment:
-      - DEEPFENCE_MODE=scheduler
+      <<: *common-creds
+      DEEPFENCE_MODE: scheduler
     networks:
       - deepfence_net
     depends_on:
