@@ -12,7 +12,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
@@ -156,9 +156,10 @@ func (h *Handler) ListImagesInRegistry(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	var req model.RegistryDeleteReq
-	regID := chi.URLParam(r, "id")
-
-	x, _ := strconv.ParseInt(regID, 10, 64)
+	// id := r.Context().Value("registryId").(string)
+	id := chi.URLParam(r, "registryId")
+	log.Info().Msgf("IDssss: %v", id)
+	x, _ := strconv.ParseInt(id, 10, 64)
 	req = model.RegistryDeleteReq{
 		ID: int32(x),
 	}
@@ -170,6 +171,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+	log.Info().Msgf("ID: %v", id)
 	err = req.DeleteRegistry(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf("%v", err)

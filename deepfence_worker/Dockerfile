@@ -17,7 +17,7 @@ FROM alpine:3.17 AS final
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
-RUN apk add --no-cache kafkacat docker openrc bash
+RUN apk add --no-cache kafkacat docker openrc bash skopeo
 
 ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_KAFKA_TOPIC_REPLICAS=1 \

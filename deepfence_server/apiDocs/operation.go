@@ -314,7 +314,7 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount/",
 		"Add Registry", "Add a new supported registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryAddReq), nil)
-	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{id}",
+	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{id}/",
 		"Add Registry", "Delete registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(model.RegistryDeleteReq), nil)
 }
