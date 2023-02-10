@@ -213,6 +213,9 @@ services:
         max-size: "1g"
     environment:
       <<: *common-creds
+    volumes:
+      - /etc/docker/certs.d:/etc/docker/certs.d:ro
+      - /var/run/docker.sock:/var/run/docker.sock
 
   deepfence-scheduler:
     container_name: deepfence-scheduler
