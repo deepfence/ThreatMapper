@@ -201,17 +201,14 @@ type Vulnerability struct {
 }
 
 type Malware struct {
-	ImageLayerID     string            `json:"ImageLayerId,omitempty" required:"true"`
-	Class            string            `json:"Class,omitempty" required:"true"`
-	CompleteFilename string            `json:"CompleteFilename,omitempty,omitempty" required:"true"`
-	FileSevScore     float64           `json:"FileSevScore,omitempty" required:"true"`
-	FileSeverity     string            `json:"FileSeverity,omitempty" required:"true"`
-	SeverityScore    float64           `json:"SeverityScore,omitempty" required:"true"`
-	Meta             []string          `json:"Meta,omitempty" required:"true"`
-	MetaRules        map[string]string `json:"Meta Rules,omitempty" required:"true"`
-	Summary          string            `json:"Summary,omitempty" required:"true"`
-	RuleName         string            `json:"RuleName,omitempty" required:"true"`
-	StringsToMatch   []string          `json:"StringsToMatch,omitempty" required:"true"`
+	ImageLayerID     string  `json:"image_layer_id" required:"true"`
+	Class            string  `json:"class" required:"true"`
+	CompleteFilename string  `json:"complete_filename" required:"true"`
+	FileSevScore     float64 `json:"file_sevScore" required:"true"`
+	FileSeverity     string  `json:"file_severity" required:"true"`
+	SeverityScore    float64 `json:"severity_score" required:"true"`
+	Summary          string  `json:"summary" required:"true"`
+	RuleName         string  `json:"rule_name" required:"true"`
 }
 
 type Compliance struct {

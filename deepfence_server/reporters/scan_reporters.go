@@ -556,7 +556,7 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 	case utils.NEO4J_SECRET_SCAN:
 		return "level"
 	case utils.NEO4J_MALWARE_SCAN:
-		return "FileSeverity"
+		return "file_severity"
 	}
 	return "error_sev_field_unknown"
 }
