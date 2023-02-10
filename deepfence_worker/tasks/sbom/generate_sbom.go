@@ -70,7 +70,12 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
 		return nil, nil
 	}
-	defer os.Remove(authFile)
+	defer func() {
+		log.Info().Msgf("remove auth directory %s", authFile)
+		if err := os.RemoveAll(authFile); err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}()
 
 	// generate sbom
 	cfg := psUtils.Config{
