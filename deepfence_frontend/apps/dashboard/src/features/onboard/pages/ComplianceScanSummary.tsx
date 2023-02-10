@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { groupBy } from 'lodash-es';
 import { Suspense } from 'react';
 import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Separator, Typography } from 'ui-components';
@@ -20,23 +21,23 @@ const color: { [key: string]: string } = {
   skip: 'bg-gray-400 dark:bg-gray-500',
 };
 
-type ScanType = {
-  type: string;
-  percentage: number;
-  values: SeverityType[];
-};
 type SeverityType = {
   name: string;
   value: number;
 };
 
 type ScanData = {
-  accountId: ModelComplianceScanResult['kubernetes_cluster_name'];
-  type: string;
-  data: {
-    total: number;
-    counts: SeverityType[] | null;
-  }[];
+  accountId: string;
+  accountName: string;
+  accountType: string;
+  benchmarkResults: Array<{
+    benchmarkType: string;
+    compliancePercentage: number;
+    data: {
+      total: number;
+      counts: SeverityType[] | null;
+    };
+  }>;
 } | null;
 
 export type LoaderDataType = {
@@ -45,7 +46,7 @@ export type LoaderDataType = {
   data?: ScanData[];
 };
 
-const makeCloudComplianceScanSummary = async (scanIds: string) => {
+const getCloudComplianceScanSummary = async (scanIds: string): Promise<ScanData[]> => {
   const bulkRequest = scanIds.split(',').map((scanId) => {
     return makeRequest({
       apiFunction: getCloudComplianceApiClient().resultCloudComplianceScan,
@@ -63,37 +64,45 @@ const makeCloudComplianceScanSummary = async (scanIds: string) => {
     });
   });
   const responses = await Promise.all(bulkRequest);
-  const resultData = responses.map(
-    (response: ModelCloudComplianceScanResult | ApiError<void>) => {
-      if (ApiError.isApiError(response)) {
-        // TODO: handle any one request has an error on this bulk request
-        return null;
-      } else {
-        const resp = response as ModelComplianceScanResult;
+  // TODO handle errors
+  const responseWithoutErrors = responses.filter((response) => {
+    if (ApiError.isApiError(response)) {
+      return false;
+    }
+    return true;
+  }) as ModelCloudComplianceScanResult[];
+
+  const groupedData = groupBy(responseWithoutErrors, 'node_id');
+  const resultData = Object.keys(groupedData).map((key) => {
+    const data = groupedData[key];
+    return {
+      accountId: data[0].node_id,
+      accountName: data[0].node_name,
+      accountType: data[0].node_type,
+      benchmarkResults: data.map((item) => {
         return {
-          accountId: resp.kubernetes_cluster_name,
-          data: [
-            {
-              total: Object.keys(resp.status_counts ?? {}).reduce((acc, severity) => {
-                acc = acc + (resp.status_counts?.[severity] ?? 0);
-                return acc;
-              }, 0),
-              counts: Object.keys(resp.status_counts ?? {}).map((severity) => {
-                return {
-                  name: severity,
-                  value: resp.status_counts![severity],
-                };
-              }),
-            },
-          ],
+          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+          compliancePercentage: item.compliance_percentage,
+          data: {
+            total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
+              acc = acc + (item.status_counts?.[severity] ?? 0);
+              return acc;
+            }, 0),
+            counts: Object.keys(item.status_counts ?? {}).map((severity) => {
+              return {
+                name: severity,
+                value: item.status_counts?.[severity] ?? 0,
+              };
+            }),
+          },
         };
-      }
-    },
-  );
+      }),
+    };
+  });
   return resultData;
 };
 
-const makeComplianceScanSummary = async (scanIds: string) => {
+const getComplianceScanSummary = async (scanIds: string): Promise<ScanData[]> => {
   const bulkRequest = scanIds.split(',').map((scanId) => {
     return makeRequest({
       apiFunction: getComplianceApiClient().resultComplianceScan,
@@ -111,82 +120,75 @@ const makeComplianceScanSummary = async (scanIds: string) => {
     });
   });
   const responses = await Promise.all(bulkRequest);
-  const resultData = responses.map(
-    (response: ModelComplianceScanResult | ApiError<void>) => {
-      if (ApiError.isApiError(response)) {
-        // TODO: handle any one request has an error on this bulk request
-        return null;
-      } else {
-        const resp = response as ModelComplianceScanResult;
+  const responseWithoutErrors = responses.filter((response) => {
+    if (ApiError.isApiError(response)) {
+      return false;
+    }
+    return true;
+  }) as ModelComplianceScanResult[];
+  const groupedData = groupBy(responseWithoutErrors, 'node_id');
+  const resultData = Object.keys(groupedData).map((key) => {
+    const data = groupedData[key];
+    return {
+      accountId: data[0].node_id,
+      accountName: data[0].node_name,
+      accountType: data[0].node_type,
+      benchmarkResults: data.map((item) => {
         return {
-          accountId: resp.kubernetes_cluster_name,
-          data: [
-            {
-              total: Object.keys(resp.status_counts ?? {}).reduce((acc, severity) => {
-                acc = acc + (resp.status_counts?.[severity] ?? 0);
-                return acc;
-              }, 0),
-              counts: Object.keys(resp.status_counts ?? {}).map((severity) => {
-                return {
-                  name: severity,
-                  value: resp.status_counts![severity],
-                };
-              }),
-            },
-          ],
+          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+          compliancePercentage: item.compliance_percentage,
+          data: {
+            total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
+              acc = acc + (item.status_counts?.[severity] ?? 0);
+              return acc;
+            }, 0),
+            counts: Object.keys(item.status_counts ?? {}).map((severity) => {
+              return {
+                name: severity,
+                value: item.status_counts?.[severity] ?? 0,
+              };
+            }),
+          },
         };
-      }
-    },
-  );
+      }),
+    };
+  });
   return resultData;
 };
 
-async function getScanSummary(
-  scanIds: string,
-  nodeType: string,
-): Promise<LoaderDataType> {
-  if (nodeType === 'cloud_account') {
-    return {
-      data: makeCloudComplianceScanSummary(scanIds),
-    };
-  } else {
-    return {
-      data: makeComplianceScanSummary(scanIds),
-    };
+const loader = ({ params }: LoaderFunctionArgs): TypedDeferredData<LoaderDataType> => {
+  const { scanIds, nodeType } = params;
+  if (!scanIds?.length || !nodeType?.length) {
+    throw new Error('Invalid params');
   }
-}
-
-const loader = ({
-  params = {
-    scanIds: '',
-    nodeType: '',
-  },
-}: LoaderFunctionArgs): TypedDeferredData<LoaderDataType> => {
   return typedDefer({
-    data: getScanSummary(params.scanIds ?? '', params.nodeType ?? ''),
+    data:
+      nodeType === 'cloud_account'
+        ? getCloudComplianceScanSummary(scanIds)
+        : getComplianceScanSummary(scanIds),
   });
 };
 
-const AccountComponent = ({ accountId }: { accountId: string }) => {
+const Account = ({ scanData }: { scanData: ScanData }) => {
   return (
     <div
       className={cx(
         'h-full flex flex-col items-center justify-center gap-y-3',
         'border-r dark:border-gray-700',
-        'bg-gray-100 dark:bg-gray-700',
+        'bg-gray-100 dark:bg-gray-700 p-2',
       )}
     >
       <img src={LogoAws} alt="logo" height={40} width={40} />
       <data
-        className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300`}
+        className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300 text-center`}
       >
-        {accountId}
+        {scanData?.accountName}
       </data>
     </div>
   );
 };
 
-const TypeAndPercentageComponent = ({
+const BenchmarkTypeAndPercentage = ({
   type,
   percentage,
 }: {
@@ -196,24 +198,25 @@ const TypeAndPercentageComponent = ({
   return (
     <div
       className={cx(
-        'flex w-full flex-col md:flex-row gap-x-0 gap-y-2',
-        'items-center ml-0 lg:ml-[20%]',
+        'flex w-full flex-col md:flex-row gap-x-0 gap-y-2 items-center justify-evenly',
       )}
     >
       <div className="flex flex-col gap-y-1 md:min-w-[100px] lg:min-w-[200px]">
-        <data className={'text-2xl text-gray-700 dark:text-gray-300'}>{type}</data>
+        <data className={'text-2xl text-gray-700 dark:text-gray-300 uppercase'}>
+          {type}
+        </data>
       </div>
       <div className="flex flex-col gap-y-1">
-        <data className="text-sm text-gray-500 dark:text-gray-400">
-          Overall Percentage
+        <data className="text-sm text-gray-500 dark:text-gray-400">Compliance %</data>
+        <data className={'text-2xl text-gray-700 dark:text-gray-300'}>
+          {percentage.toFixed(2)}%
         </data>
-        <data className={'text-2xl text-gray-700 dark:text-gray-300'}>{percentage}%</data>
       </div>
     </div>
   );
 };
 
-const ChartComponent = ({ counts }: { counts: SeverityType[] }) => {
+const SeverityChart = ({ counts }: { counts: SeverityType[] }) => {
   const maxValue = Math.max(...counts.map((v) => v.value));
 
   return (
@@ -227,12 +230,7 @@ const ChartComponent = ({ counts }: { counts: SeverityType[] }) => {
             >
               {name}
             </data>
-            <div
-              className={cx(
-                'w-[80%] overflow-hidden flex items-center',
-                'cursor-pointer transition duration-100 hover:scale-y-125',
-              )}
-            >
+            <div className={cx('w-[80%] overflow-hidden flex items-center')}>
               <div
                 className={cx('rounded h-2 relative', color[name.toLowerCase()])}
                 style={{
@@ -254,24 +252,27 @@ const Scan = ({ scanData }: { scanData: ScanData }) => {
   if (!scanData) {
     return null;
   }
-  const { accountId, data = [] } = scanData;
+  const { benchmarkResults } = scanData;
 
   return (
     <Card>
       <div className="grid grid-cols-[250px_1fr] items-center">
-        <AccountComponent accountId={accountId} />
+        <Account scanData={scanData} />
         <div className="flex flex-col">
-          {data.map((severityData: ScanType | null, index: number) => {
-            const { counts = [], percentage = 0, type = '' } = severityData ?? {};
+          {benchmarkResults.map((benchmarkResult, index) => {
+            const { data, compliancePercentage, benchmarkType } = benchmarkResult;
             return (
-              <div key={type}>
-                {index > 0 && index < data.length ? (
+              <div key={benchmarkType}>
+                {index !== 0 ? (
                   <Separator className="mx-6 h-[1px] bg-gray-100 dark:bg-gray-700" />
                 ) : null}
                 <div className="flex flex-col p-4">
-                  <div className="grid grid-cols-[1fr_1fr]">
-                    <TypeAndPercentageComponent type={type} percentage={percentage} />
-                    <ChartComponent counts={counts} />
+                  <div className="grid grid-cols-[3fr_2fr]">
+                    <BenchmarkTypeAndPercentage
+                      type={benchmarkType}
+                      percentage={compliancePercentage}
+                    />
+                    <SeverityChart counts={data.counts ?? []} />
                   </div>
                 </div>
               </div>
@@ -300,14 +301,20 @@ const ComplianceScanSummary = () => {
           'underline underline-offset-2 ml-auto bg-transparent text-blue-600 dark:text-blue-500',
         )}
       >
-        Go to Posture Dashboard to view details scan result
+        Go to Posture dashboard to view detailed scan results
       </Link>
 
       <div className="flex flex-col gap-4 mt-4">
-        <Suspense fallback={<CircleSpinner />}>
+        <Suspense
+          fallback={
+            <div className="w-full mt-16 flex justify-center">
+              <CircleSpinner />
+            </div>
+          }
+        >
           <Await resolve={loaderData.data ?? []}>
-            {(resolvedData) => {
-              return resolvedData.data?.map((accountScanData: ScanData) => (
+            {(resolvedData: ScanData[] | undefined) => {
+              return resolvedData?.map((accountScanData: ScanData) => (
                 <Scan key={accountScanData?.accountId} scanData={accountScanData} />
               ));
             }}

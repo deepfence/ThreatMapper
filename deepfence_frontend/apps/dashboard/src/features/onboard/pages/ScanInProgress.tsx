@@ -6,6 +6,7 @@ import {
   HiCheck,
   HiChevronDown,
   HiChevronRight,
+  HiChevronUp,
   HiExclamationCircle,
   HiOutlineChevronDoubleLeft,
   HiOutlineChevronDoubleRight,
@@ -36,7 +37,7 @@ import {
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelScanInfo } from '@/api/generated';
 import { ModelComplianceScanInfo } from '@/api/generated/models/ModelComplianceScanInfo';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -46,10 +47,10 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 export type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ModelComplianceScanInfo[];
+  data?: (ModelComplianceScanInfo | ModelScanInfo)[];
 };
 
-type TableDataType = ModelComplianceScanInfo;
+type TableDataType = ModelComplianceScanInfo | ModelScanInfo;
 
 type TextProps = {
   scanningText: string;
@@ -242,7 +243,11 @@ const ScanInProgress = () => {
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('node_type', {
-        cell: (info) => info.getValue(),
+        cell: (info) => {
+          return (
+            <span className="capitalize">{info.getValue()?.replaceAll('_', ' ')}</span>
+          );
+        },
         header: () => 'Type',
         minSize: 200,
       }),
@@ -251,6 +256,17 @@ const ScanInProgress = () => {
         header: () => 'Name',
         minSize: 500,
       }),
+    ];
+    if (scanType.startsWith('compliance')) {
+      columns.push(
+        columnHelper.accessor('benchmark_type', {
+          cell: (info) => info.getValue()?.toUpperCase(),
+          header: () => 'Control Type',
+          minSize: 200,
+        }),
+      );
+    }
+    columns.push(
       columnHelper.accessor((row) => row.status, {
         id: 'status',
         minSize: 200,
@@ -282,6 +298,8 @@ const ScanInProgress = () => {
         },
         header: () => <span>Status</span>,
       }),
+    );
+    columns.push(
       getRowExpanderColumn(columnHelper, {
         minSize: 10,
         size: 10,
@@ -303,17 +321,7 @@ const ScanInProgress = () => {
           ) : null;
         },
       }),
-    ];
-
-    if (scanType.startsWith('compliance')) {
-      columns.push(
-        columnHelper.accessor('benchmark_type', {
-          cell: (info) => info.getValue(),
-          header: () => 'Control Type',
-          minSize: 500,
-        }),
-      );
-    }
+    );
     return columns;
   }, [loaderData.data]);
 
@@ -365,7 +373,10 @@ const ScanInProgress = () => {
                         {
                           nodeType: loaderData?.data?.[0]?.node_type ?? '',
                           scanIds:
-                            loaderData?.data?.map((data) => data.scan_id).join(',') ?? '',
+                            loaderData?.data
+                              ?.filter((data) => data.status === 'COMPLETE')
+                              .map((data) => data.scan_id)
+                              .join(',') ?? '',
                         },
                       ),
                     )
@@ -390,14 +401,14 @@ const ScanInProgress = () => {
               ? `${
                   scanType.charAt(0).toUpperCase() + scanType.slice(1)
                 } scan started for ${loaderData?.data?.length} ${uniq(
-                  loaderData.data?.map((data) => data.node_type) ?? [],
+                  loaderData.data?.map((data) => data.node_type?.replace('_', ' ')) ?? [],
                 ).join(' and ')}${(loaderData?.data?.length ?? 0) > 1 ? 's' : ''}`
               : 'All the scan are done'}
           </p>
         </div>
         <Button
           size="sm"
-          endIcon={expand ? <HiChevronDown /> : <HiChevronRight />}
+          endIcon={expand ? <HiChevronUp /> : <HiChevronDown />}
           onClick={() => setExpand((state) => !state)}
           color={expand ? 'primary' : 'normal'}
           outline={expand ? false : true}

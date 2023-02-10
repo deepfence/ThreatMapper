@@ -57,7 +57,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
   } else if (cloudAccount.includes(nodeType)) {
     nodeType = 'cloud_account';
   }
-
   const r = await makeRequest({
     apiFunction: getComplianceApiClient().startComplianceScan,
     apiArgs: [
@@ -376,7 +375,7 @@ const ComplianceScanConfigure = () => {
             endIcon={hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
             className="self-start"
             name={`${type}[]`}
-            value={type}
+            value={type.toLowerCase()}
           >
             {type}
           </Button>
