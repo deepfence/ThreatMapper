@@ -257,6 +257,9 @@ const iconCva = cva('', {
     withEndIcon: {
       true: '',
     },
+    withLoader: {
+      true: '',
+    },
   },
   compoundVariants: [
     {
@@ -274,6 +277,22 @@ const iconCva = cva('', {
       withStartIcon: true,
       className: 'mr-[15px]',
     },
+    {
+      size: ['xs', 'sm'],
+      withLoader: true,
+      className: 'mr-[10.4px]',
+    },
+    {
+      size: 'md',
+      withLoader: true,
+      className: 'mr-[11px]',
+    },
+    {
+      size: ['lg', 'xl'],
+      withLoader: true,
+      className: 'mr-[15px]',
+    },
+
     {
       size: ['xs', 'sm'],
       withEndIcon: true,
@@ -428,6 +447,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             color={color}
           />
         )}
+        {loading && !startIcon ? (
+          <div
+            className={cx(
+              iconLoaderCva({}),
+              iconCva({
+                size,
+                withStartIcon: false,
+                withEndIcon: !!endIcon,
+                withLoader: true,
+              }),
+            )}
+          >
+            <Loader color={color} size={size} outline={outline} />
+          </div>
+        ) : null}
         {children}
         {endIcon && (
           <EndIcon startIcon={startIcon} endIcon={endIcon} id={_id} size={size} />

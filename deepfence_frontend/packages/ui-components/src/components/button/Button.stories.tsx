@@ -106,7 +106,6 @@ PrimaryWithOutline.args = {
   color: 'primary',
   size: 'xs',
   outline: true,
-  loading: true,
 };
 
 export const Danger = Template.bind({});
