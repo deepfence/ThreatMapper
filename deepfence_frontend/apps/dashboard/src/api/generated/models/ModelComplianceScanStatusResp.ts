@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelComplianceScanStatus } from './ModelComplianceScanStatus';
+import type { ModelComplianceScanInfo } from './ModelComplianceScanInfo';
 import {
-    ModelComplianceScanStatusFromJSON,
-    ModelComplianceScanStatusFromJSONTyped,
-    ModelComplianceScanStatusToJSON,
-} from './ModelComplianceScanStatus';
+    ModelComplianceScanInfoFromJSON,
+    ModelComplianceScanInfoFromJSONTyped,
+    ModelComplianceScanInfoToJSON,
+} from './ModelComplianceScanInfo';
 
 /**
  * 
@@ -28,10 +28,10 @@ import {
 export interface ModelComplianceScanStatusResp {
     /**
      * 
-     * @type {Array<ModelComplianceScanStatus>}
+     * @type {Array<ModelComplianceScanInfo>}
      * @memberof ModelComplianceScanStatusResp
      */
-    statuses: Array<ModelComplianceScanStatus> | null;
+    statuses: Array<ModelComplianceScanInfo> | null;
 }
 
 /**
@@ -54,7 +54,7 @@ export function ModelComplianceScanStatusRespFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
-        'statuses': (json['statuses'] === null ? null : (json['statuses'] as Array<any>).map(ModelComplianceScanStatusFromJSON)),
+        'statuses': (json['statuses'] === null ? null : (json['statuses'] as Array<any>).map(ModelComplianceScanInfoFromJSON)),
     };
 }
 
@@ -67,7 +67,7 @@ export function ModelComplianceScanStatusRespToJSON(value?: ModelComplianceScanS
     }
     return {
         
-        'statuses': (value.statuses === null ? null : (value.statuses as Array<any>).map(ModelComplianceScanStatusToJSON)),
+        'statuses': (value.statuses === null ? null : (value.statuses as Array<any>).map(ModelComplianceScanInfoToJSON)),
     };
 }
 

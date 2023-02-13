@@ -28,6 +28,18 @@ import {
 export interface ModelComplianceScanResult {
     /**
      * 
+     * @type {string}
+     * @memberof ModelComplianceScanResult
+     */
+    benchmark_type: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelComplianceScanResult
+     */
+    compliance_percentage: number;
+    /**
+     * 
      * @type {Array<ModelCompliance>}
      * @memberof ModelComplianceScanResult
      */
@@ -80,6 +92,12 @@ export interface ModelComplianceScanResult {
      * @memberof ModelComplianceScanResult
      */
     scan_id: string;
+    /**
+     * 
+     * @type {{ [key: string]: number; }}
+     * @memberof ModelComplianceScanResult
+     */
+    status_counts: { [key: string]: number; } | null;
 }
 
 /**
@@ -87,6 +105,8 @@ export interface ModelComplianceScanResult {
  */
 export function instanceOfModelComplianceScanResult(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "benchmark_type" in value;
+    isInstance = isInstance && "compliance_percentage" in value;
     isInstance = isInstance && "compliances" in value;
     isInstance = isInstance && "docker_container_name" in value;
     isInstance = isInstance && "docker_image_name" in value;
@@ -96,6 +116,7 @@ export function instanceOfModelComplianceScanResult(value: object): boolean {
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "scan_id" in value;
+    isInstance = isInstance && "status_counts" in value;
 
     return isInstance;
 }
@@ -110,6 +131,8 @@ export function ModelComplianceScanResultFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
+        'benchmark_type': json['benchmark_type'],
+        'compliance_percentage': json['compliance_percentage'],
         'compliances': (json['compliances'] === null ? null : (json['compliances'] as Array<any>).map(ModelComplianceFromJSON)),
         'docker_container_name': json['docker_container_name'],
         'docker_image_name': json['docker_image_name'],
@@ -119,6 +142,7 @@ export function ModelComplianceScanResultFromJSONTyped(json: any, ignoreDiscrimi
         'node_name': json['node_name'],
         'node_type': json['node_type'],
         'scan_id': json['scan_id'],
+        'status_counts': json['status_counts'],
     };
 }
 
@@ -131,6 +155,8 @@ export function ModelComplianceScanResultToJSON(value?: ModelComplianceScanResul
     }
     return {
         
+        'benchmark_type': value.benchmark_type,
+        'compliance_percentage': value.compliance_percentage,
         'compliances': (value.compliances === null ? null : (value.compliances as Array<any>).map(ModelComplianceToJSON)),
         'docker_container_name': value.docker_container_name,
         'docker_image_name': value.docker_image_name,
@@ -140,6 +166,7 @@ export function ModelComplianceScanResultToJSON(value?: ModelComplianceScanResul
         'node_name': value.node_name,
         'node_type': value.node_type,
         'scan_id': value.scan_id,
+        'status_counts': value.status_counts,
     };
 }
 

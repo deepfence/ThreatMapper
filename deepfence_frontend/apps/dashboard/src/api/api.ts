@@ -83,6 +83,16 @@ export function getComplianceApiClient() {
   };
 }
 
+export function getCloudComplianceApiClient() {
+  const cloudScannerApi = new CloudScannerApi(configuration);
+  return {
+    statusCloudComplianceScan:
+      cloudScannerApi.statusCloudComplianceScan.bind(cloudScannerApi),
+    resultCloudComplianceScan:
+      cloudScannerApi.resultsCloudComplianceScan.bind(cloudScannerApi),
+  };
+}
+
 export function getRegistriesApiClient() {
   const registriesApi = new RegistryApi(configuration);
   return {

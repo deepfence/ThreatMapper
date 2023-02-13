@@ -75,7 +75,7 @@ const possibleScanMap: PossibleScanMapType = {
     secretScanData,
     malwareScanData,
   ],
-  registry: [vulnerabilityScanData, complianceScanData, secretScanData],
+  registry: [vulnerabilityScanData, malwareScanData, secretScanData],
 };
 
 const logoAndTextMap = (

@@ -16,8 +16,8 @@ import { AmazonECRConnector } from '@/features/onboard/pages/AmazonECRConnector'
 import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
 import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
 import { module as chooseScan } from '@/features/onboard/pages/ChooseScan';
-import { ComplianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
-import { ComplianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
+import { module as complianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
+import { module as complianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
 import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
@@ -113,8 +113,8 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Choose scan type' },
           },
           {
-            path: 'configure/compliance',
-            element: <ComplianceScanConfigure />,
+            path: 'configure/compliance/:controls?',
+            ...complianceScanConfigure,
             meta: { title: 'Configure Compliance Scan' },
           },
           {
@@ -133,27 +133,27 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Malware Scan' },
           },
           {
-            path: 'view-summary/compliance',
-            element: <ComplianceScanSummary />,
-            meta: { title: 'Configure Compliance Scan' },
+            path: 'view-summary/compliance/:nodeType/:bulkScanId',
+            ...complianceScanSummary,
+            meta: { title: 'Summary Compliance Scan' },
           },
           {
-            path: 'view-summary/vulnerability/:scanIds',
+            path: 'view-summary/vulnerability/:nodeType/:bulkScanId',
             ...vulnerabilityScanSumary,
             meta: { title: 'Summary Vulnerability Scan' },
           },
           {
-            path: 'view-summary/secret/:scanIds',
+            path: 'view-summary/secret/:nodeType/:bulkScanId',
             ...secretScanSumary,
             meta: { title: 'Summary Secret Scan' },
           },
           {
-            path: 'view-summary/malware/:scanIds',
+            path: 'view-summary/malware/:nodeType/:bulkScanId',
             ...malwareScanSumary,
             meta: { title: 'Summary Malware Scan' },
           },
           {
-            path: 'view-summary/running/:scanType/:bulkScanId',
+            path: 'view-summary/running/:nodeType/:scanType/:bulkScanId',
             ...scanInProgress,
             meta: { title: 'Scan Summary' },
           },

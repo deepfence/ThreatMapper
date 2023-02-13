@@ -4443,10 +4443,15 @@
           "node_name",
           "node_type",
           "scan_id",
-          "compliances"
+          "benchmark_type",
+          "compliances",
+          "status_counts",
+          "compliance_percentage"
         ],
         "type": "object",
         "properties": {
+          "benchmark_type": { "type": "string" },
+          "compliance_percentage": { "type": "number" },
           "compliances": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelCloudCompliance" },
@@ -4459,7 +4464,12 @@
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
-          "scan_id": { "type": "string" }
+          "scan_id": { "type": "string" },
+          "status_counts": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" },
+            "nullable": true
+          }
         }
       },
       "ModelCloudNodeAccountInfo": {
@@ -4582,6 +4592,25 @@
           "test_severity": { "type": "string" }
         }
       },
+      "ModelComplianceScanInfo": {
+        "required": [
+          "scan_id",
+          "benchmark_type",
+          "status",
+          "updated_at",
+          "node_id",
+          "node_type"
+        ],
+        "type": "object",
+        "properties": {
+          "benchmark_type": { "type": "string" },
+          "node_id": { "type": "string" },
+          "node_type": { "type": "string" },
+          "scan_id": { "type": "string" },
+          "status": { "type": "string" },
+          "updated_at": { "type": "integer", "format": "int64" }
+        }
+      },
       "ModelComplianceScanResult": {
         "required": [
           "docker_container_name",
@@ -4592,10 +4621,15 @@
           "node_name",
           "node_type",
           "scan_id",
-          "compliances"
+          "benchmark_type",
+          "compliances",
+          "status_counts",
+          "compliance_percentage"
         ],
         "type": "object",
         "properties": {
+          "benchmark_type": { "type": "string" },
+          "compliance_percentage": { "type": "number" },
           "compliances": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelCompliance" },
@@ -4608,15 +4642,12 @@
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
-          "scan_id": { "type": "string" }
-        }
-      },
-      "ModelComplianceScanStatus": {
-        "type": "object",
-        "properties": {
-          "benchmark_type": { "type": "string" },
           "scan_id": { "type": "string" },
-          "status": { "type": "string" }
+          "status_counts": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" },
+            "nullable": true
+          }
         }
       },
       "ModelComplianceScanStatusResp": {
@@ -4625,7 +4656,7 @@
         "properties": {
           "statuses": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelComplianceScanStatus" },
+            "items": { "$ref": "#/components/schemas/ModelComplianceScanInfo" },
             "nullable": true
           }
         }
