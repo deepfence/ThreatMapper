@@ -60,7 +60,7 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 300s", s.SyncRegistryTask)
+	_, err = s.cron.AddFunc("@every 300s", s.enqeueTask(sdkUtils.SyncRegistryTask))
 	if err != nil {
 		return err
 	}
@@ -69,30 +69,6 @@ func (s *Scheduler) addJobs() error {
 	// 	return err
 	// }
 	return nil
-}
-
-func (s *Scheduler) TriggerConsoleActionsTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := utils.PublishNewJob(s.tasksPublisher, metadata, sdkUtils.TriggerConsoleActionsTask, []byte(sdkUtils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (s *Scheduler) CleanUpGraphDBTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := utils.PublishNewJob(s.tasksPublisher, metadata, sdkUtils.CleanUpGraphDBTask, []byte(sdkUtils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (s *Scheduler) RetryFailedScansTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := utils.PublishNewJob(s.tasksPublisher, metadata, sdkUtils.RetryFailedScansTask, []byte(sdkUtils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
 }
 
 func (s *Scheduler) startImmediately() {
