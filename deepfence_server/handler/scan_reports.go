@@ -175,8 +175,8 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 			if err != nil {
 				return ctl.Action{}, err
 			}
-			binArgs["node_id"] = fmt.Sprintf("%s;%s", req.NodeId, name+":"+tag)
-			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["node_id"])
+			binArgs["image_name"] = name + ":" + tag
+			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
 		}
 
 		internal_req := ctl.StartSecretScanRequest{

@@ -8,9 +8,11 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/SecretScanner/core"
+	"github.com/deepfence/SecretScanner/output"
 	secretScan "github.com/deepfence/SecretScanner/scan"
 	"github.com/deepfence/SecretScanner/signature"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
+	pb "github.com/deepfence/agent-plugins-grpc/proto"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -111,8 +113,16 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 		return nil
 	}
 
-	for _, c := range scanResult.Secrets {
-		cb, err := json.Marshal(c)
+	type secretScanResult struct {
+		utils.SecretScanParameters
+		pb.SecretInfo
+	}
+
+	for _, c := range output.SecretsToSecretInfos(scanResult.Secrets) {
+		var r secretScanResult
+		r.SecretScanParameters = params
+		r.SecretInfo = *c
+		cb, err := json.Marshal(r)
 		if err != nil {
 			log.Error().Msg(err.Error())
 		} else {

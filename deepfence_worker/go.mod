@@ -22,6 +22,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.180
 	github.com/deepfence/SecretScanner v1.2.0
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
+	github.com/deepfence/agent-plugins-grpc v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230208050316-1756cc042520
 	github.com/deepfence/package-scanner v1.2.5
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -49,7 +50,6 @@ require (
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/deepfence/agent-plugins-grpc v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/vessel v0.9.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
