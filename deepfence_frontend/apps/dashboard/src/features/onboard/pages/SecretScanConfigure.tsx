@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import {
   ActionFunctionArgs,
-  Form,
   generatePath,
   Navigate,
   redirect,
   useActionData,
+  useFetcher,
   useLocation,
+  useNavigation,
 } from 'react-router-dom';
 import { Button, Tooltip, Typography } from 'ui-components';
 
@@ -104,6 +105,8 @@ const SecretScanConfigure = () => {
   const { goBack } = usePageNavigation();
   const actionData = useActionData() as ScanActionReturnType;
   const location = useLocation();
+  const fetcher = useFetcher();
+  const navigation = useNavigation();
 
   const [pageState] = useState<unknown>(location.state);
   if (!Array.isArray(pageState) || !pageState.length) {
@@ -111,8 +114,12 @@ const SecretScanConfigure = () => {
   }
   const state = pageState as OnboardConnectionNode[];
 
+  const isStatusPageLoading =
+    navigation.location?.pathname.includes('/view-summary/running') &&
+    navigation.state === 'loading';
+
   return (
-    <Form method="post">
+    <fetcher.Form method="post">
       <input
         type="text"
         name="_nodeIds"
@@ -138,15 +145,22 @@ const SecretScanConfigure = () => {
       )}
       <section className="flex">
         <div></div>
-        <Button size="sm" color="primary" className="ml-auto" type="submit">
+        <Button
+          disabled={fetcher.state === 'submitting' || isStatusPageLoading}
+          loading={fetcher.state === 'submitting' || isStatusPageLoading}
+          size="sm"
+          color="primary"
+          className="ml-auto"
+          type="submit"
+        >
           Start scan
         </Button>
       </section>
 
-      <Button onClick={goBack} color="default" size="xs" className="mt-16">
+      <Button color="default" size="xs" className="mt-16" onClick={goBack}>
         Go Back
       </Button>
-    </Form>
+    </fetcher.Form>
   );
 };
 

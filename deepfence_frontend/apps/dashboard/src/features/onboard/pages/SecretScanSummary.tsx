@@ -185,11 +185,12 @@ const Account = ({ scanData }: { scanData: ScanData }) => {
         'h-full flex flex-col items-center justify-center gap-y-3',
         'border-r dark:border-gray-700',
         'bg-gray-100 dark:bg-gray-700',
+        'p-2',
       )}
     >
       <img src={LogoLinux} alt="logo" height={40} width={40} />
       <data
-        className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300`}
+        className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300 overflow-hidden text-ellipsis w-full text-center`}
       >
         {scanData?.accountName}
       </data>
@@ -306,9 +307,12 @@ const SecretScanSummary = () => {
           }
         >
           <Await resolve={loaderData.data ?? []}>
-            {(resolvedData) => {
-              return resolvedData?.map((accountScanData: ScanData) => (
-                <Scan key={accountScanData?.accountName} scanData={accountScanData} />
+            {(resolvedData: ScanData[] | undefined) => {
+              return resolvedData?.map((accountScanData, index) => (
+                <Scan
+                  key={`${accountScanData?.accountName}-${index}`}
+                  scanData={accountScanData}
+                />
               ));
             }}
           </Await>

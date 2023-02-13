@@ -3,13 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
-  Form,
   generatePath,
   LoaderFunctionArgs,
   Navigate,
   redirect,
   useActionData,
+  useFetcher,
   useLocation,
+  useNavigation,
   useSearchParams,
 } from 'react-router-dom';
 import {
@@ -316,6 +317,8 @@ const ComplianceScanConfigure = () => {
   const { goBack } = usePageNavigation();
   const [selectedTab, setSelectedTab] = useState('');
   const [tabs, setTabs] = useState<TabsType[] | []>([]);
+  const fetcher = useFetcher();
+  const navigation = useNavigation();
 
   const location = useLocation();
   const [pageState] = useState<unknown>(location.state);
@@ -361,6 +364,10 @@ const ComplianceScanConfigure = () => {
     });
   };
 
+  const isStatusPageLoading =
+    navigation.location?.pathname.includes('/view-summary/running') &&
+    navigation.state === 'loading';
+
   return (
     <div>
       <ConnectorHeader
@@ -391,7 +398,7 @@ const ComplianceScanConfigure = () => {
             {type.toUpperCase()}
           </Button>
         ))}
-        <Form method="post" className="self-start ml-auto">
+        <fetcher.Form method="post" className="self-start ml-auto">
           <input
             type="text"
             name="_nodeIds"
@@ -400,10 +407,17 @@ const ComplianceScanConfigure = () => {
             value={state.map((node) => node.urlId).join(',')}
           />
           <input type="text" name="_nodeType" readOnly hidden value={state[0].urlType} />
-          <Button size="sm" color="primary" className="ml-auto" type="submit">
+          <Button
+            disabled={fetcher.state === 'submitting' || isStatusPageLoading}
+            loading={fetcher.state === 'submitting' || isStatusPageLoading}
+            size="sm"
+            color="primary"
+            className="ml-auto"
+            type="submit"
+          >
             Start Scan
           </Button>
-        </Form>
+        </fetcher.Form>
       </div>
       {actionData?.message && (
         <section className="mb-4">

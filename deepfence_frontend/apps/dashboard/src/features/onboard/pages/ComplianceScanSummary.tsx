@@ -322,7 +322,7 @@ const Account = ({ scanData }: { scanData: ScanData }) => {
     >
       <img src={LogoAws} alt="logo" height={40} width={40} />
       <data
-        className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300 text-center`}
+        className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300 overflow-hidden text-ellipsis w-full text-center`}
       >
         {scanData?.accountName}
       </data>
@@ -458,8 +458,11 @@ const ComplianceScanSummary = () => {
         >
           <Await resolve={loaderData.data ?? []}>
             {(resolvedData: ScanData[] | undefined) => {
-              return resolvedData?.map((accountScanData: ScanData) => (
-                <Scan key={accountScanData?.accountName} scanData={accountScanData} />
+              return resolvedData?.map((accountScanData, index) => (
+                <Scan
+                  key={`${accountScanData?.accountName}-${index}`}
+                  scanData={accountScanData}
+                />
               ));
             }}
           </Await>
