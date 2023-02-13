@@ -1,5 +1,11 @@
-import G6 from '@antv/g6';
-import { isNil } from 'lodash-es';
+import G6, {
+  ComboConfig,
+  EdgeConfig,
+  IG6GraphEvent,
+  IGraph,
+  NodeConfig,
+  TreeGraphData,
+} from '@antv/g6';
 import { useEffect, useRef, useState } from 'react';
 import { Radio } from 'ui-components';
 // import { AutoSizer } from 'react-virtualized';
@@ -9,10 +15,10 @@ G6.registerEdge(
   {
     afterDraw(_, group) {
       const circleCount = 4;
-      const shape = group.get('children')[0];
+      const shape = group?.get('children')[0];
 
-      const _loop = function _loop(i) {
-        const circle = group.addShape('circle', {
+      const _loop = function _loop(i: number) {
+        const circle = group?.addShape('circle', {
           attrs: {
             x: 0,
             y: 0,
@@ -22,8 +28,8 @@ G6.registerEdge(
           },
           name: 'circle-shape',
         });
-        circle.animate(
-          (ratio) => {
+        circle?.animate(
+          (ratio: number) => {
             ratio += i / circleCount;
             if (ratio > 1) {
               ratio %= 1;
@@ -52,117 +58,24 @@ G6.registerEdge(
   'cubic-vertical',
 );
 
-function fitLabel(label) {
-  if (label.length >= 15) {
-    return `${label.substring(0, 15)}...`;
-  }
-  return label;
-}
-
 /* Api response could be containing multiple different end nodes
  * depending upon the api call made.
  * we also want to highlight first edge since that would be the shortest
  */
-export const formatApiDataForDagreGraph = (apiResponse, highlightTarget) => {
-  if (!Array.isArray(apiResponse)) {
-    apiResponse = [apiResponse];
-  }
-  const nodesMap = new Map();
-  const edgesMap = new Map();
-  apiResponse.forEach((attackPathsInfo) => {
-    const { attack_path: attackPathsBetweenNodes, ...rest } = attackPathsInfo;
-    if (!attackPathsBetweenNodes.length) return;
-    attackPathsBetweenNodes.forEach((attackPath) => {
-      attackPath.forEach((attackNode, index) => {
-        let nodeProps = {};
-        if (highlightTarget && highlightTarget === attackNode) {
-          nodeProps = {
-            ...rest,
-            style: { fill: '#db2547' },
-          };
-        } else if (!highlightTarget && index === attackPath.length - 1) {
-          nodeProps = {
-            ...rest,
-            style: { fill: '#db2547' },
-          };
-        }
-        if (nodesMap.has(attackNode)) {
-          nodesMap.set(attackNode, {
-            ...nodesMap.get(attackNode),
-            ...nodeProps,
-          });
-        } else {
-          const truncatedLabel = fitLabel(attackNode);
-          nodesMap.set(attackNode, {
-            id: attackNode,
-            label: truncatedLabel,
-            truncatedLabel,
-            originalLabel: attackNode,
-            ...nodeProps,
-          });
-        }
 
-        if (index === 0) return;
+type Node = NodeConfig | EdgeConfig | ComboConfig | TreeGraphData;
 
-        const prevNode = attackPath[index - 1];
-        const lastNode = attackPath[attackPath.length - 1];
-        const edgeKey = `${prevNode}<-->${attackNode}`;
-
-        const edgesProps = {};
-        if (
-          (highlightTarget &&
-            highlightTarget === lastNode &&
-            rest.cve_attack_vector === 'network') ||
-          (!highlightTarget && rest.cve_attack_vector === 'network')
-        ) {
-          edgesProps.type = 'circles-running';
-          edgesProps.style = {
-            stroke: '#db2547',
-            opacity: 0.5,
-            shadowColor: 'white',
-            endArrow: {
-              fillOpacity: 0.5,
-              strokeOpacity: 0.5,
-              opacity: 0.5,
-              fill: '#db2547',
-              stroke: '#db2547',
-            },
-          };
-        }
-
-        if (edgesMap.has(edgeKey)) {
-          edgesMap.set(edgeKey, {
-            ...edgesMap.get(edgeKey),
-            ...edgesProps,
-          });
-        } else {
-          edgesMap.set(edgeKey, {
-            source: prevNode,
-            target: attackNode,
-            ...edgesProps,
-          });
-        }
-      });
-    });
-  });
-
-  if (nodesMap.has('The Internet')) {
-    nodesMap.set('The Internet', {
-      ...nodesMap.get('The Internet'),
-      img: '',
-      type: 'image',
-      size: 10,
-    });
-  }
-
-  return {
-    nodes: [...nodesMap.values()],
-    edges: [...edgesMap.values()],
-  };
-};
-
-function getTooltipContent(node) {
-  if (node.cve_attack_vector) {
+function getTooltipContent(
+  node:
+    | Node
+    | {
+        cve_id: string[];
+        ports: string[];
+        cve_attack_vector: string;
+        originalLabel: string;
+      },
+) {
+  if (node?.cve_attack_vector) {
     const hr = `<div style="border-bottom: 1px solid rgb(166, 166, 166);margin: 8px 0px;"></div>`;
 
     return `
@@ -179,14 +92,16 @@ function getTooltipContent(node) {
         <div>
           <strong>Top CVEs</strong>
           <div>
-          ${node.cve_id.length ? node.cve_id.join('<br />') : 'None'}
+          ${
+            (node as any)?.cve_id?.length ? (node as any)?.cve_id?.join('<br />') : 'None'
+          }
           </div>
         </div>
         ${hr}
         <div>
           <strong>PORTS</strong>
           <div>
-            ${node.ports?.length ? node.ports.join(', ') : 'None'}
+            ${(node as any).ports?.length ? (node as any).ports.join(', ') : 'None'}
           </div>
         </div>
       </div>
@@ -287,21 +202,25 @@ const data = {
   ],
 };
 
-export const DagreGraph = ({ height, width, style, className }) => {
-  const ref = useRef(null);
-  const graphRef = useRef(null);
+export const DagreGraph = () => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const graphRef = useRef<IGraph | null>(null);
 
   useEffect(() => {
-    if (!graphRef.current) {
+    if (!graphRef.current && ref.current) {
       const tooltip = new G6.Tooltip({
-        getContent(e) {
-          const nodeType = e.item.getType();
+        getContent(e: IG6GraphEvent | undefined) {
+          const nodeType = e?.item?.getType();
           const outDiv = document.createElement('div');
           if (nodeType === 'node') {
-            const model = e.item.getModel();
+            const model = e?.item?.getModel();
+            if (!model) {
+              return '';
+            }
             outDiv.innerHTML = getTooltipContent(model);
             return outDiv;
           }
+          return '';
         },
         itemTypes: ['node'],
         className: 'dagre-node-tooltip',
@@ -347,7 +266,6 @@ export const DagreGraph = ({ height, width, style, className }) => {
             opacity: 0.4,
             endArrow: {
               opacity: 0.9,
-              shadowBlur: 0,
               path: G6.Arrow.triangle(2, 3, 0),
               fill: '#55c1e9',
               stroke: '#55c1e9',
@@ -385,7 +303,7 @@ export const DagreGraph = ({ height, width, style, className }) => {
           graphRef.current.render();
         }
     }} */}
-      <div style={style} className={className} ref={ref} />
+      <div ref={ref} />
       {/* </AutoSizer> */}
     </div>
   );

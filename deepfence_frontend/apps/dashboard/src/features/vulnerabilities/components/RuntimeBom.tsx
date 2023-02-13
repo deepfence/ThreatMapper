@@ -1,11 +1,7 @@
-import React from 'react';
-import { Typography } from 'ui-components';
-
 const color_critical = '#ff4570';
 const color_high = '#f90';
 const color_medium = '#F8CD39';
 const color_low = '#9CA3AF';
-const color_total = '#1A56DB';
 
 const RUNTIME_BOM_COUNTS = [
   {
