@@ -1,6 +1,7 @@
 import cx from 'classnames';
 import { isEmpty } from 'lodash-es';
 import { Suspense } from 'react';
+import { IconContext } from 'react-icons/lib';
 import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Typography } from 'ui-components';
 
@@ -10,8 +11,8 @@ import {
   ModelScanInfo,
   ModelSecretScanResult,
 } from '@/api/generated';
-import LogoLinux from '@/assets/logo-linux.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
 import { getAccountName } from '@/features/onboard/utils/summary';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -40,6 +41,7 @@ type SeverityType = {
 
 type ScanData = {
   accountName: string;
+  accountType: string;
   data: {
     total: number;
     counts: SeverityType[] | null;
@@ -98,6 +100,7 @@ async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
     }
     return {
       accountName: getAccountName(response),
+      accountType: response.node_type,
       data: [
         {
           total: Object.keys(response.severity_counts ?? {}).reduce((acc, severity) => {
@@ -119,6 +122,7 @@ async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
     initial.accEmpty.map((response) => {
       return {
         accountName: getAccountName(response),
+        accountType: response.node_type,
         data: [
           {
             total: 0,
@@ -188,7 +192,13 @@ const Account = ({ scanData }: { scanData: ScanData }) => {
         'p-2',
       )}
     >
-      <img src={LogoLinux} alt="logo" height={40} width={40} />
+      <IconContext.Provider
+        value={{
+          className: 'w-8 h-8 text-blue-600 dark:text-blue-500',
+        }}
+      >
+        {scanData?.accountType ? IconMapForNodeType[scanData?.accountType] : null}
+      </IconContext.Provider>
       <data
         className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300 overflow-hidden text-ellipsis w-full text-center`}
       >

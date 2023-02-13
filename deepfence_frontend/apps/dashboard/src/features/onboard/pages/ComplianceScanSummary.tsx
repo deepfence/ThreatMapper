@@ -1,6 +1,7 @@
 import cx from 'classnames';
 import { groupBy, isEmpty } from 'lodash-es';
 import { Suspense } from 'react';
+import { IconContext } from 'react-icons/lib';
 import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Separator, Typography } from 'ui-components';
 
@@ -12,8 +13,8 @@ import {
   ModelComplianceScanResult,
   ModelScanInfo,
 } from '@/api/generated';
-import LogoAws from '@/assets/logo-aws.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -320,7 +321,13 @@ const Account = ({ scanData }: { scanData: ScanData }) => {
         'bg-gray-100 dark:bg-gray-700 p-2',
       )}
     >
-      <img src={LogoAws} alt="logo" height={40} width={40} />
+      <IconContext.Provider
+        value={{
+          className: 'w-8 h-8 text-blue-600 dark:text-blue-500',
+        }}
+      >
+        {scanData?.accountType ? IconMapForNodeType[scanData?.accountType] : null}
+      </IconContext.Provider>
       <data
         className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300 overflow-hidden text-ellipsis w-full text-center`}
       >
