@@ -228,8 +228,8 @@ export const DagreGraph = () => {
 
       const graph = new G6.Graph({
         container: ref.current,
-        width: 500,
-        height: 500,
+        width: 450,
+        height: 450,
         fitView: true,
         layout: {
           type: 'dagre',

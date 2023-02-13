@@ -1,9 +1,27 @@
 import { HiArrowSmRight } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
-import { Card } from 'ui-components';
+import { Card, Tabs } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { DagreGraph } from '@/features/vulnerabilities/components/DagreGraph';
+
+export const attackPathTabs: Array<{
+  label: string;
+  value: string;
+}> = [
+  {
+    label: 'Most attack paths',
+    value: 'most',
+  },
+  {
+    label: 'Direct internet exposure',
+    value: 'direct',
+  },
+  {
+    label: 'Indirect internet exposure',
+    value: 'indirect',
+  },
+];
 
 export const TopAttackPaths = () => {
   return (
@@ -22,7 +40,9 @@ export const TopAttackPaths = () => {
         </DFLink>
       </div>
       <div className="flex items-center justify-center">
-        <DagreGraph />
+        <Tabs value={'most'} tabs={attackPathTabs} size="xs" variant="secondary">
+          <DagreGraph />
+        </Tabs>
       </div>
     </Card>
   );
