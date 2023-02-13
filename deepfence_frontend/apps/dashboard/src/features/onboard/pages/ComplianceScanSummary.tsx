@@ -361,7 +361,7 @@ const BenchmarkTypeAndPercentage = ({
 const SeverityChart = ({ counts }: { counts: SeverityType[] }) => {
   const maxValue = Math.max(...counts.map((v) => v.value));
   if (counts.length === 0) {
-    return <span>No Data</span>;
+    return <div className="flex items-center w-full justify-center">No Data</div>;
   }
   return (
     <div>
