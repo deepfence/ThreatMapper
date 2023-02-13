@@ -220,7 +220,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/registryaccount", func(r chi.Router) {
 				r.Get("/list", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
-				r.Delete("/{id}", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
+				r.Route("/{registryId}", func(r chi.Router) {
+					// r.Use(directory.RegistryCtx)
+					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
+				})
 			})
 
 			r.Route("/diagnosis", func(r chi.Router) {

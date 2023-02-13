@@ -143,6 +143,7 @@ func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 		for k, v := range utils.ToMap(i.Severity) {
 			secret[k] = v
 		}
+
 		for k, v := range utils.ToMap(i.Match) {
 			secret[k] = v
 		}
