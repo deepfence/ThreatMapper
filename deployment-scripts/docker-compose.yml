@@ -231,6 +231,7 @@ services:
     depends_on:
       - deepfence-redis
       - deepfence-postgres
+      - deepfence-worker
     logging:
       driver: "json-file"
       options:
