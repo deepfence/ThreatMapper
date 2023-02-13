@@ -5,13 +5,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	sdkUtils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/robfig/cron/v3"
 )
 
@@ -30,111 +28,64 @@ func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
 	if err != nil {
 		return nil, err
 	}
+	scheduler.startImmediately()
 	return scheduler, nil
 }
 
 func (s *Scheduler) addJobs() error {
+	log.Info().Msg("Register cronjobs")
 	var err error
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
-	_, err = s.cron.AddFunc("@every 30s", s.TriggerConsoleActionsTask)
+	_, err = s.cron.AddFunc("@every 30s", s.enqeueTask(sdkUtils.TriggerConsoleActionsTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.CleanUpGraphDBTask)
+	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.CleanUpGraphDBTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.RetryFailedScansTask)
+	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.RetryFailedScansTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.RetryFailedUpgradesTask)
+	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.RetryFailedUpgradesTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 10m", s.CleanUpPostgresqlTask)
+	_, err = s.cron.AddFunc("@every 10m", s.enqeueTask(sdkUtils.CleanUpPostgresqlTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", s.CheckAgentUpgradeTask)
+	_, err = s.cron.AddFunc("@every 60m", s.enqeueTask(sdkUtils.CheckAgentUpgradeTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 300s", s.SyncRegistryTask)
+	_, err = s.cron.AddFunc("@every 300s", s.enqeueTask(sdkUtils.SyncRegistryTask))
 	if err != nil {
 		return err
 	}
+
 	return nil
+}
+
+func (s *Scheduler) startImmediately() {
+	log.Info().Msg("Start immediate cronjobs")
+	s.enqeueTask(sdkUtils.CheckAgentUpgradeTask)()
+	s.enqeueTask(sdkUtils.SyncRegistryTask)()
 }
 
 func (s *Scheduler) Run() {
 	s.cron.Run()
 }
 
-func (s *Scheduler) TriggerConsoleActionsTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := s.publishNewCronJob(metadata, utils.TriggerConsoleActionsTask, []byte(utils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
+func (s *Scheduler) enqeueTask(task string) func() {
+	log.Info().Msgf("Registering task: %s", task)
+	return func() {
+		log.Info().Msgf("Enqueuing task: %s", task)
+		metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+		err := utils.PublishNewJob(s.tasksPublisher, metadata, task, []byte(sdkUtils.GetDatetimeNow()))
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 	}
-}
-
-func (s *Scheduler) CleanUpGraphDBTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := s.publishNewCronJob(metadata, utils.CleanUpGraphDBTask, []byte(utils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (s *Scheduler) RetryFailedScansTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := s.publishNewCronJob(metadata, utils.RetryFailedScansTask, []byte(utils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (s *Scheduler) RetryFailedUpgradesTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := s.publishNewCronJob(metadata, utils.RetryFailedUpgradesTask, []byte(utils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (s *Scheduler) CleanUpPostgresqlTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := s.publishNewCronJob(metadata, utils.CleanUpPostgresqlTask, []byte(utils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (s *Scheduler) CheckAgentUpgradeTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := s.publishNewCronJob(metadata, utils.CheckAgentUpgradeTask, []byte(utils.GetDatetimeNow()))
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (s *Scheduler) SyncRegistryTask() {
-	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-	err := s.publishNewCronJob(metadata, utils.SyncRegistryTask, nil)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (s *Scheduler) publishNewCronJob(metadata map[string]string, topic string, data []byte) error {
-	msg := message.NewMessage(watermill.NewUUID(), data)
-	msg.Metadata = metadata
-	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
-
-	err := s.tasksPublisher.Publish(topic, msg)
-	if err != nil {
-		return err
-	}
-	return nil
 }

@@ -9,14 +9,14 @@ export const DashboardLayout = () => {
     getSideNavigationState() === 'open' ? true : false,
   );
   return (
-    <div className="bg-gray-50 dark:bg-gray-900">
+    <div className="bg-gray-50 dark:bg-gray-900 h-screen overflow-hidden">
       <AppHeader
         sideNavExpanded={sideNavExpanded}
         onSideNavExpandedChange={(state) => setSideNavExpanded(state)}
       />
-      <div className="flex">
+      <div className="flex h-[calc(100%-64px)]">
         <SideNavigation expanded={sideNavExpanded} />
-        <div className="p-2 overflow-x-auto w-full">
+        <div className="p-6 overflow-auto h-full">
           <Outlet />
         </div>
       </div>

@@ -27,6 +27,12 @@ export interface ModelCloudComplianceScanDetails {
     account_id?: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelCloudComplianceScanDetails
+     */
+    controls?: Array<string> | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelCloudComplianceScanDetails
      */
@@ -59,6 +65,7 @@ export function ModelCloudComplianceScanDetailsFromJSONTyped(json: any, ignoreDi
     return {
         
         'account_id': !exists(json, 'account_id') ? undefined : json['account_id'],
+        'controls': !exists(json, 'controls') ? undefined : json['controls'],
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
         'scan_type': !exists(json, 'scan_type') ? undefined : json['scan_type'],
     };
@@ -74,6 +81,7 @@ export function ModelCloudComplianceScanDetailsToJSON(value?: ModelCloudComplian
     return {
         
         'account_id': value.account_id,
+        'controls': value.controls,
         'scan_id': value.scan_id,
         'scan_type': value.scan_type,
     };

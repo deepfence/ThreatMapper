@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelKeyValue } from './ModelKeyValue';
+import type { ModelKeyValues } from './ModelKeyValues';
 import {
-    ModelKeyValueFromJSON,
-    ModelKeyValueFromJSONTyped,
-    ModelKeyValueToJSON,
-} from './ModelKeyValue';
+    ModelKeyValuesFromJSON,
+    ModelKeyValuesFromJSONTyped,
+    ModelKeyValuesToJSON,
+} from './ModelKeyValues';
 
 /**
  * 
@@ -28,10 +28,10 @@ import {
 export interface ModelFieldsFilter {
     /**
      * 
-     * @type {Array<ModelKeyValue>}
+     * @type {Array<ModelKeyValues>}
      * @memberof ModelFieldsFilter
      */
-    fields_values: Array<ModelKeyValue> | null;
+    fields_values: Array<ModelKeyValues> | null;
 }
 
 /**
@@ -54,7 +54,7 @@ export function ModelFieldsFilterFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'fields_values': (json['fields_values'] === null ? null : (json['fields_values'] as Array<any>).map(ModelKeyValueFromJSON)),
+        'fields_values': (json['fields_values'] === null ? null : (json['fields_values'] as Array<any>).map(ModelKeyValuesFromJSON)),
     };
 }
 
@@ -67,7 +67,7 @@ export function ModelFieldsFilterToJSON(value?: ModelFieldsFilter | null): any {
     }
     return {
         
-        'fields_values': (value.fields_values === null ? null : (value.fields_values as Array<any>).map(ModelKeyValueToJSON)),
+        'fields_values': (value.fields_values === null ? null : (value.fields_values as Array<any>).map(ModelKeyValuesToJSON)),
     };
 }
 

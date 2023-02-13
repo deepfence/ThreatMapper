@@ -23,43 +23,55 @@ import (
 	"github.com/aws/aws-sdk-go/service/ecr"
 )
 
-func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, error) {
-	registryUrl, username, password, err := GetCredentialsFromRegistry(ctx, registryId)
-	if username == "" || err != nil {
-		return "", nil
-	}
-	authFile, err := createAuthFile(registryId, registryUrl, username, password)
-	if err != nil {
-		return "", fmt.Errorf("unable to create credential file for docker")
-	}
-	return authFile, nil
+type regCreds struct {
+	URL       string
+	UserName  string
+	Password  string
+	NameSpace string
 }
 
-func GetCredentialsFromRegistry(ctx context.Context, registryId string) (string, string, string, error) {
-	pgClient, err := directory.PostgresClient(ctx)
+func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, string, bool, error) {
+	rc, err := GetCredentialsFromRegistry(ctx, registryId)
+	if rc.UserName == "" || err != nil {
+		return "", "", false, nil
+	}
+	authFile, err := createAuthFile(registryId, rc.URL, rc.UserName, rc.Password)
 	if err != nil {
-		return "", "", "", err
+		return "", "", false, fmt.Errorf("unable to create credential file for docker")
+	}
+	return authFile, rc.NameSpace, !strings.HasPrefix(rc.URL, "https://"), nil
+}
+
+func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCreds, error) {
+	// pgCtx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+	pgClient, err := directory.PostgresClient(directory.NewGlobalContext())
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return regCreds{}, err
 	}
 
 	i, err := strconv.ParseInt(registryId, 10, 64)
 	if err != nil {
-		return "", "", "", err
+		log.Error().Msgf(err.Error())
+		return regCreds{}, err
 	}
 
 	reg, err := pgClient.GetContainerRegistry(ctx, int32(i))
 	if err != nil {
-		return "", "", "", err
+		log.Error().Msgf(err.Error())
+		return regCreds{}, err
 	}
 
-	key, err := pgClient.GetSetting(ctx, "aes_secret")
-	if err != nil {
-		return "", "", "", err
-	}
-	aes := encryption.AES{}
-	err = json.Unmarshal(key.Value, &aes)
+	key, err := encryption.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		return "", "", "", err
+		return regCreds{}, err
+	}
+	aes := encryption.AES{}
+	err = json.Unmarshal(key, &aes)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		return regCreds{}, err
 	}
 
 	switch reg.RegistryType {
@@ -88,10 +100,15 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (string,
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
-		return "https://index.docker.io/v1/", hub.NonSecret.DockerHubUsername, hub.Secret.DockerHubPassword, nil
+		return regCreds{
+			URL:       "https://index.docker.io/v1/",
+			UserName:  hub.NonSecret.DockerHubUsername,
+			Password:  hub.Secret.DockerHubPassword,
+			NameSpace: hub.NonSecret.DockerHubNamespace,
+		}, nil
 	}
 
-	return "", "", "", nil
+	return regCreds{}, nil
 }
 
 func GetDockerCredentials(registryData map[string]interface{}) (string, string, string) {

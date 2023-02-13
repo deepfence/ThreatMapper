@@ -23,16 +23,16 @@ func SyncRegistry(msg *message.Message) error {
 		return err
 	}
 
-	for _, registryRow := range registries {
-		r, err := registry.GetRegistryWithRegistryRow(registryRow)
+	for _, row := range registries {
+		r, err := registry.GetRegistryWithRegistryRow(row)
 		if err != nil {
-			log.Error().Msgf("unable to get registry for %s: %v", registryRow.RegistryType, err)
+			log.Error().Msgf("unable to get registry for %s: %v", row.RegistryType, err)
 			continue
 		}
 
-		err = sync.SyncRegistry(ctx, pgClient, r)
+		err = sync.SyncRegistry(ctx, pgClient, r, row.ID)
 		if err != nil {
-			log.Error().Msgf("unable to get sync registry: %s: %v", registryRow.RegistryType, err)
+			log.Error().Msgf("unable to get sync registry: %s: %v", row.RegistryType, err)
 			continue
 		}
 	}

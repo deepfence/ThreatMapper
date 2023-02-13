@@ -16,7 +16,7 @@ replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/d
 
 replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230207100755-ec39717c899b
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230210142931-d7ece294a35f
 
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
@@ -24,7 +24,7 @@ require (
 	github.com/bytedance/sonic v1.7.0
 	github.com/casbin/casbin/v2 v2.60.0
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230201135148-7845948f4d9a
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230208050316-1756cc042520
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0

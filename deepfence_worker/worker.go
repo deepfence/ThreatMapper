@@ -45,38 +45,28 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	mux.AddPlugin(plugin.SignalsHandler)
 
-	retryMiddleware := middleware.Retry{
-		MaxRetries:          3,
-		InitialInterval:     time.Second * 10,
-		MaxInterval:         time.Second * 120,
-		Multiplier:          1.5,
-		MaxElapsedTime:      0,
-		RandomizationFactor: 0.5,
-		OnRetryHook: func(retryNum int, delay time.Duration) {
-			log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
-		},
-		Logger: wml,
-	}
+	// Retried disabled in favor of neo4j scheduling
+	//retryMiddleware := middleware.Retry{
+	//	MaxRetries:          3,
+	//	InitialInterval:     time.Second * 10,
+	//	MaxInterval:         time.Second * 120,
+	//	Multiplier:          1.5,
+	//	MaxElapsedTime:      0,
+	//	RandomizationFactor: 0.5,
+	//	OnRetryHook: func(retryNum int, delay time.Duration) {
+	//		log.Info().Msgf("retry=%d delay=%s", retryNum, delay)
+	//	},
+	//	Logger: wml,
+	//}
 
 	mux.AddMiddleware(
 		middleware.Recoverer,
 		middleware.NewThrottle(10, time.Second).Middleware,
-		retryMiddleware.Middleware,
 		middleware.CorrelationID,
 	)
 
 	// sbom
-	subscribe_scan_sbom, err := subscribe(utils.ScanSBOMTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		utils.ScanSBOMTask,
-		utils.ScanSBOMTask,
-		subscribe_scan_sbom,
-		sbom.NewSBOMScanner(ingestC).ScanSBOM,
-	)
+	addTerminalHandler(wml, cfg, mux, utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
 
 	subscribe_generate_sbom, err := subscribe(utils.GenerateSBOMTask, cfg.KafkaBrokers, wml)
 	if err != nil {
@@ -92,90 +82,19 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		sbom.NewSbomGenerator(ingestC).GenerateSbom,
 	)
 
-	subscribe_cleanup_graph_db, err := subscribe(utils.CleanUpGraphDBTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		utils.CleanUpGraphDBTask,
-		utils.CleanUpGraphDBTask,
-		subscribe_cleanup_graph_db,
-		cronjobs.CleanUpDB,
-	)
+	addTerminalHandler(wml, cfg, mux, utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
 
-	subscribe_retry_failed_scans, err := subscribe(utils.RetryFailedScansTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		utils.RetryFailedScansTask,
-		utils.RetryFailedScansTask,
-		subscribe_retry_failed_scans,
-		cronjobs.RetryScansDB,
-	)
+	addTerminalHandler(wml, cfg, mux, utils.RetryFailedScansTask, cronjobs.RetryScansDB)
 
-	subscribe_retry_failed_upgrades, err := subscribe(utils.RetryFailedUpgradesTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		utils.RetryFailedUpgradesTask,
-		utils.RetryFailedUpgradesTask,
-		subscribe_retry_failed_upgrades,
-		cronjobs.RetryUpgradeAgent,
-	)
+	addTerminalHandler(wml, cfg, mux, utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
 
-	subscribeCleanupPostgresql, err := subscribe(utils.CleanUpPostgresqlTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
+	addTerminalHandler(wml, cfg, mux, utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
 
-	mux.AddNoPublisherHandler(
-		utils.CleanUpPostgresqlTask,
-		utils.CleanUpPostgresqlTask,
-		subscribeCleanupPostgresql,
-		cronjobs.CleanUpPostgresDB,
-	)
+	addTerminalHandler(wml, cfg, mux, utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
 
-	check_agent_upgrade_task, err := subscribe(utils.CheckAgentUpgradeTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		utils.CheckAgentUpgradeTask,
-		utils.CheckAgentUpgradeTask,
-		check_agent_upgrade_task,
-		cronjobs.CheckAgentUpgrade,
-	)
+	addTerminalHandler(wml, cfg, mux, utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
 
-	trigger_console_actions_task, err := subscribe(utils.TriggerConsoleActionsTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		utils.TriggerConsoleActionsTask,
-		utils.TriggerConsoleActionsTask,
-		trigger_console_actions_task,
-		cronjobs.TriggerConsoleControls,
-	)
-
-	sync_registry_task, err := subscribe(utils.SyncRegistryTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		utils.SyncRegistryTask,
-		utils.SyncRegistryTask,
-		sync_registry_task,
-		cronjobs.SyncRegistry,
-	)
+	addTerminalHandler(wml, cfg, mux, utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
 	log.Info().Msg("Starting the consumer")
 	if err = mux.Run(context.Background()); err != nil {
@@ -205,4 +124,24 @@ func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAd
 	}
 
 	return sub, nil
+}
+
+func addTerminalHandler(
+	wml watermill.LoggerAdapter,
+	cfg config,
+	mux *message.Router,
+	task string,
+	callback func(*message.Message) error) error {
+
+	subscriber, err := subscribe(utils.CleanUpGraphDBTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		return err
+	}
+	mux.AddNoPublisherHandler(
+		task,
+		task,
+		subscriber,
+		callback,
+	)
+	return nil
 }

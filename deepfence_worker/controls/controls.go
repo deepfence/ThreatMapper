@@ -5,7 +5,12 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	sdkUtils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 var controls map[ctl.ActionID]func(req []byte) error
@@ -16,7 +21,7 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRe
 	controls_guard.Lock()
 	defer controls_guard.Unlock()
 	if controls[id] != nil {
-		return fmt.Errorf("Action %v already registered", id)
+		return fmt.Errorf("action %v already registered", id)
 	}
 	controls[id] = func(req []byte) error {
 		var typedReq T
@@ -27,12 +32,15 @@ func RegisterControl[T ctl.StartVulnerabilityScanRequest | ctl.StartSecretScanRe
 		return callback(typedReq)
 	}
 
+	log.Info().Msgf("registered controls for action %v", ctl.ActionID(id))
+
 	return nil
 }
 
 func ApplyControl(req ctl.Action) error {
 	controls_guard.RLock()
 	defer controls_guard.RUnlock()
+	log.Info().Msgf("apply control req: %+v", req)
 	return controls[ctl.ActionID(req.ID)]([]byte(req.RequestPayload))
 }
 
@@ -40,11 +48,20 @@ func init() {
 	controls = map[ctl.ActionID]func(req []byte) error{}
 }
 
-func ConsoleActionSetup() error {
+func ConsoleActionSetup(pub *kafka.Publisher) error {
 	err := RegisterControl(ctl.StartVulnerabilityScan,
-		func(req ctl.StartAgentUpgradeRequest) error {
-			//TODO
-			//return kubernetes.StartClusterAgentUpgrade(req)
+		func(req ctl.StartVulnerabilityScanRequest) error {
+			metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+			log.Info().Msgf("payload: %+v", req.BinArgs)
+			data, err := json.Marshal(req.BinArgs)
+			if err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			if err := utils.PublishNewJob(pub, metadata, sdkUtils.GenerateSBOMTask, data); err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
 			return nil
 		})
 	if err != nil {

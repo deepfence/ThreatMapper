@@ -47,6 +47,9 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
+	d.AddOperation("resetApiTokens", http.MethodPost, "/deepfence/api-token/reset",
+		"Reset User's API Tokens", "Reset user's API Tokens",
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
 
 	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
 		"Reset Password Request", "Request for resetting the password",
@@ -61,6 +64,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(model.RegisterInvitedUserRequest), new(model.ResponseAccessToken))
+
+	d.AddOperation("getUsers", http.MethodGet, "/deepfence/users",
+		"Get users", "Get users",
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]model.User))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -280,6 +287,9 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("resultsMalwareScan", http.MethodPost, "/deepfence/scan/results/malware",
 		"Get Malware Scans Results", "Get Malware Scans results on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(model.ScanResultsReq), new(model.MalwareScanResult))
+	d.AddOperation("resultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/cloud-compliance",
+		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(model.ScanResultsReq), new(model.CloudComplianceScanResult))
 }
 
 func (d *OpenApiDocs) AddDiagnosisOperations() {

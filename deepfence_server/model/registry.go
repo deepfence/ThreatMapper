@@ -19,7 +19,7 @@ type RegistryAddReq struct {
 }
 
 type RegistryDeleteReq struct {
-	ID int32 `json:"id"`
+	ID int32 `path:"id"`
 }
 
 // todo: add support to list by name and type, id

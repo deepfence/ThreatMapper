@@ -129,6 +129,21 @@ export interface UserApiInterface {
     getCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser>;
 
     /**
+     * Get users
+     * @summary Get users
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApiInterface
+     */
+    getUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelUser>>>;
+
+    /**
+     * Get users
+     * Get users
+     */
+    getUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelUser>>;
+
+    /**
      * Invite a user
      * @summary Invite User
      * @param {ModelInviteUserRequest} [modelInviteUserRequest] 
@@ -175,6 +190,21 @@ export interface UserApiInterface {
      * Register User
      */
     registerUser(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
+
+    /**
+     * Reset user\'s API Tokens
+     * @summary Reset User\'s API Tokens
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApiInterface
+     */
+    resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
+
+    /**
+     * Reset user\'s API Tokens
+     * Reset User\'s API Tokens
+     */
+    resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
 
     /**
      * Request for resetting the password
@@ -339,6 +369,42 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
     }
 
     /**
+     * Get users
+     * Get users
+     */
+    async getUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelUser>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/users`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelUserFromJSON));
+    }
+
+    /**
+     * Get users
+     * Get users
+     */
+    async getUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelUser>> {
+        const response = await this.getUsersRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Invite a user
      * Invite User
      */
@@ -436,6 +502,42 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      */
     async registerUser(requestParameters: RegisterUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
         const response = await this.registerUserRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Reset user\'s API Tokens
+     * Reset User\'s API Tokens
+     */
+    async resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/api-token/reset`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Reset user\'s API Tokens
+     * Reset User\'s API Tokens
+     */
+    async resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
+        const response = await this.resetApiTokensRaw(initOverrides);
         return await response.value();
     }
 

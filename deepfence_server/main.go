@@ -327,6 +327,7 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddScansOperations()
 	openApiDocs.AddDiagnosisOperations()
 	openApiDocs.AddCloudNodeOperations()
+	openApiDocs.AddRegistryOperations()
 }
 
 func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
