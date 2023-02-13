@@ -66,7 +66,7 @@ type ConfigProps = {
   alert: TextProps;
 };
 
-const statusScanApiFunctionMap = {
+export const statusScanApiFunctionMap = {
   vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
   secret: getSecretApiClient().statusSecretScan,
   malware: getMalwareScanApiClient().statusMalwareScan,
@@ -230,9 +230,11 @@ const ScanInProgress = () => {
   const revalidator = useRevalidator();
   const [expand, setExpand] = useState(false);
 
-  const { scanType } = params as { scanType: keyof ConfigProps };
+  const { scanType, bulkScanId } = params as {
+    scanType: keyof ConfigProps;
+    bulkScanId: string;
+  };
   const textMap = configMap[scanType];
-
   const columnHelper = createColumnHelper<TableDataType>();
 
   const allScanFailed = areAllScanFailed(
@@ -369,14 +371,10 @@ const ScanInProgress = () => {
                   onClick={() =>
                     navigate(
                       generatePath(
-                        `/onboard/scan/view-summary/${scanType}/:nodeType/:scanIds`,
+                        `/onboard/scan/view-summary/${scanType}/:nodeType/:bulkScanId`,
                         {
                           nodeType: loaderData?.data?.[0]?.node_type ?? '',
-                          scanIds:
-                            loaderData?.data
-                              ?.filter((data) => data.status === 'COMPLETE')
-                              .map((data) => data.scan_id)
-                              .join(',') ?? '',
+                          bulkScanId,
                         },
                       ),
                     )

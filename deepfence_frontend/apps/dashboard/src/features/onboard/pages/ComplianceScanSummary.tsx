@@ -1,16 +1,20 @@
 import cx from 'classnames';
-import { groupBy } from 'lodash-es';
+import { groupBy, isEmpty } from 'lodash-es';
 import { Suspense } from 'react';
 import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Separator, Typography } from 'ui-components';
 
 import { getCloudComplianceApiClient, getComplianceApiClient } from '@/api/api';
 import {
+  ApiDocsBadRequestResponse,
   ModelCloudComplianceScanResult,
+  ModelComplianceScanInfo,
   ModelComplianceScanResult,
+  ModelScanInfo,
 } from '@/api/generated';
 import LogoAws from '@/assets/logo-aws.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
@@ -27,7 +31,6 @@ type SeverityType = {
 };
 
 type ScanData = {
-  accountId: string;
   accountName: string;
   accountType: string;
   benchmarkResults: Array<{
@@ -46,8 +49,8 @@ export type LoaderDataType = {
   data?: ScanData[];
 };
 
-const getCloudComplianceScanSummary = async (scanIds: string): Promise<ScanData[]> => {
-  const bulkRequest = scanIds.split(',').map((scanId) => {
+const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> => {
+  const bulkRequest = scanIds.map((scanId) => {
     return makeRequest({
       apiFunction: getCloudComplianceApiClient().resultCloudComplianceScan,
       apiArgs: [
@@ -64,19 +67,60 @@ const getCloudComplianceScanSummary = async (scanIds: string): Promise<ScanData[
     });
   });
   const responses = await Promise.all(bulkRequest);
-  // TODO handle errors
-  const responseWithoutErrors = responses.filter((response) => {
+  const initial: {
+    err: ApiError<void>[];
+    accNonEmpty: ModelCloudComplianceScanResult[];
+    accEmpty: ModelCloudComplianceScanResult[];
+  } = {
+    err: [],
+    accNonEmpty: [],
+    accEmpty: [],
+  };
+  responses.forEach((response) => {
     if (ApiError.isApiError(response)) {
-      return false;
+      // TODO: handle any one request has an error on this bulk request
+      return initial.err.push(response);
+    } else {
+      if (isEmpty(response.status_counts)) {
+        initial.accEmpty.push(response);
+      } else {
+        initial.accNonEmpty.push(response);
+      }
     }
-    return true;
-  }) as ModelCloudComplianceScanResult[];
+  });
 
-  const groupedData = groupBy(responseWithoutErrors, 'node_id');
-  const resultData = Object.keys(groupedData).map((key) => {
-    const data = groupedData[key];
+  const groupedNonEmptySeverityData = groupBy(initial.accNonEmpty, 'node_id');
+  const resultNonEmptySeverityData = Object.keys(groupedNonEmptySeverityData).map(
+    (key) => {
+      const data = groupedNonEmptySeverityData[key];
+      return {
+        accountName: data[0].node_name,
+        accountType: data[0].node_type,
+        benchmarkResults: data.map((item) => {
+          return {
+            benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+            compliancePercentage: item.compliance_percentage,
+            data: {
+              total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
+                acc = acc + (item.status_counts?.[severity] ?? 0);
+                return acc;
+              }, 0),
+              counts: Object.keys(item.status_counts ?? {}).map((severity) => {
+                return {
+                  name: severity,
+                  value: item.status_counts?.[severity] ?? 0,
+                };
+              }),
+            },
+          };
+        }),
+      };
+    },
+  );
+  const groupedEmptySeverityData = groupBy(initial.accEmpty, 'node_id');
+  const resulEmptySeverityData = Object.keys(groupedEmptySeverityData).map((key) => {
+    const data = groupedEmptySeverityData[key];
     return {
-      accountId: data[0].node_id,
       accountName: data[0].node_name,
       accountType: data[0].node_type,
       benchmarkResults: data.map((item) => {
@@ -99,11 +143,13 @@ const getCloudComplianceScanSummary = async (scanIds: string): Promise<ScanData[
       }),
     };
   });
-  return resultData;
+  const resultWithEmptySeverityAtEnd =
+    resultNonEmptySeverityData.concat(resulEmptySeverityData);
+  return resultWithEmptySeverityAtEnd;
 };
 
-const getComplianceScanSummary = async (scanIds: string): Promise<ScanData[]> => {
-  const bulkRequest = scanIds.split(',').map((scanId) => {
+const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> => {
+  const bulkRequest = scanIds.map((scanId) => {
     return makeRequest({
       apiFunction: getComplianceApiClient().resultComplianceScan,
       apiArgs: [
@@ -120,17 +166,59 @@ const getComplianceScanSummary = async (scanIds: string): Promise<ScanData[]> =>
     });
   });
   const responses = await Promise.all(bulkRequest);
-  const responseWithoutErrors = responses.filter((response) => {
+  const initial: {
+    err: ApiError<void>[];
+    accNonEmpty: ModelComplianceScanResult[];
+    accEmpty: ModelComplianceScanResult[];
+  } = {
+    err: [],
+    accNonEmpty: [],
+    accEmpty: [],
+  };
+  responses.forEach((response) => {
     if (ApiError.isApiError(response)) {
-      return false;
+      // TODO: handle any one request has an error on this bulk request
+      return initial.err.push(response);
+    } else {
+      if (isEmpty(response.status_counts)) {
+        initial.accEmpty.push(response);
+      } else {
+        initial.accNonEmpty.push(response);
+      }
     }
-    return true;
-  }) as ModelComplianceScanResult[];
-  const groupedData = groupBy(responseWithoutErrors, 'node_id');
-  const resultData = Object.keys(groupedData).map((key) => {
-    const data = groupedData[key];
+  });
+  const groupedNonEmptySevirityData = groupBy(initial.accNonEmpty, 'node_id');
+  const resultNonEmptySeverityData = Object.keys(groupedNonEmptySevirityData).map(
+    (key) => {
+      const data = groupedNonEmptySevirityData[key];
+      return {
+        accountName: data[0].node_name,
+        accountType: data[0].node_type,
+        benchmarkResults: data.map((item) => {
+          return {
+            benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+            compliancePercentage: item.compliance_percentage,
+            data: {
+              total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
+                acc = acc + (item.status_counts?.[severity] ?? 0);
+                return acc;
+              }, 0),
+              counts: Object.keys(item.status_counts ?? {}).map((severity) => {
+                return {
+                  name: severity,
+                  value: item.status_counts?.[severity] ?? 0,
+                };
+              }),
+            },
+          };
+        }),
+      };
+    },
+  );
+  const groupedEmptySevirityData = groupBy(initial.accEmpty, 'node_id');
+  const resulEmptySeverityData = Object.keys(groupedEmptySevirityData).map((key) => {
+    const data = groupedNonEmptySevirityData[key];
     return {
-      accountId: data[0].node_id,
       accountName: data[0].node_name,
       accountType: data[0].node_type,
       benchmarkResults: data.map((item) => {
@@ -153,14 +241,68 @@ const getComplianceScanSummary = async (scanIds: string): Promise<ScanData[]> =>
       }),
     };
   });
-  return resultData;
+  const resultWithEmptySeverityAtEnd =
+    resultNonEmptySeverityData.concat(resulEmptySeverityData);
+  return resultWithEmptySeverityAtEnd;
 };
 
-const loader = ({ params }: LoaderFunctionArgs): TypedDeferredData<LoaderDataType> => {
-  const { scanIds, nodeType } = params;
-  if (!scanIds?.length || !nodeType?.length) {
+async function getScanStatus(
+  bulkScanId: string,
+  nodeType: string,
+): Promise<Array<ModelScanInfo> | Array<ModelComplianceScanInfo>> {
+  let scanType = 'compliance' as keyof typeof statusScanApiFunctionMap;
+  // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
+  if (nodeType === 'cloud_account') {
+    scanType = 'cloudCompliance';
+  }
+  const result = await makeRequest({
+    apiFunction: statusScanApiFunctionMap[scanType],
+    apiArgs: [
+      {
+        scanIds: [],
+        bulkScanId,
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<LoaderDataType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
+  }
+
+  if (result === null) {
+    return [];
+  }
+  if (result.statuses && Array.isArray(result.statuses)) {
+    return result.statuses;
+  }
+
+  return Object.values(result.statuses ?? {});
+}
+
+const loader = async ({
+  params,
+}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
+  const { nodeType, bulkScanId } = params;
+
+  if (!bulkScanId?.length || !nodeType?.length) {
     throw new Error('Invalid params');
   }
+
+  const statuses = await getScanStatus(bulkScanId, nodeType);
+  const scanIds =
+    statuses
+      ?.filter((status) => status?.status === 'COMPLETE')
+      .map((status) => status.scan_id) ?? [];
+
   return typedDefer({
     data:
       nodeType === 'cloud_account'
@@ -218,7 +360,9 @@ const BenchmarkTypeAndPercentage = ({
 
 const SeverityChart = ({ counts }: { counts: SeverityType[] }) => {
   const maxValue = Math.max(...counts.map((v) => v.value));
-
+  if (counts.length === 0) {
+    return <div className="flex items-center w-full justify-center">No Data</div>;
+  }
   return (
     <div>
       {counts.map(({ name, value }) => {
@@ -315,7 +459,7 @@ const ComplianceScanSummary = () => {
           <Await resolve={loaderData.data ?? []}>
             {(resolvedData: ScanData[] | undefined) => {
               return resolvedData?.map((accountScanData: ScanData) => (
-                <Scan key={accountScanData?.accountId} scanData={accountScanData} />
+                <Scan key={accountScanData?.accountName} scanData={accountScanData} />
               ));
             }}
           </Await>
