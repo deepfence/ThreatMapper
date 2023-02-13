@@ -31,7 +31,6 @@ type SeverityType = {
 };
 
 type ScanData = {
-  accountId: string;
   accountName: string;
   accountType: string;
   benchmarkResults: Array<{
@@ -49,13 +48,6 @@ export type LoaderDataType = {
   message?: string;
   data?: ScanData[];
 };
-
-type accErr = ApiError<void>[];
-type accCloudNonEmpty = ModelCloudComplianceScanResult[];
-type accCloudEmpty = ModelCloudComplianceScanResult[];
-
-type accNonEmpty = ModelComplianceScanResult[];
-type accEmpty = ModelComplianceScanResult[];
 
 const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> => {
   const bulkRequest = scanIds.map((scanId) => {
@@ -76,9 +68,9 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
   });
   const responses = await Promise.all(bulkRequest);
   const initial: {
-    err: accErr;
-    accNonEmpty: accCloudNonEmpty;
-    accEmpty: accCloudEmpty;
+    err: ApiError<void>[];
+    accNonEmpty: ModelCloudComplianceScanResult[];
+    accEmpty: ModelCloudComplianceScanResult[];
   } = {
     err: [],
     accNonEmpty: [],
@@ -102,7 +94,6 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
     (key) => {
       const data = groupedNonEmptySeverityData[key];
       return {
-        accountId: data[0].node_id,
         accountName: data[0].node_name,
         accountType: data[0].node_type,
         benchmarkResults: data.map((item) => {
@@ -130,7 +121,6 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
   const resulEmptySeverityData = Object.keys(groupedEmptySeverityData).map((key) => {
     const data = groupedEmptySeverityData[key];
     return {
-      accountId: data[0].node_id,
       accountName: data[0].node_name,
       accountType: data[0].node_type,
       benchmarkResults: data.map((item) => {
@@ -177,9 +167,9 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
   });
   const responses = await Promise.all(bulkRequest);
   const initial: {
-    err: accErr;
-    accNonEmpty: accNonEmpty;
-    accEmpty: accEmpty;
+    err: ApiError<void>[];
+    accNonEmpty: ModelComplianceScanResult[];
+    accEmpty: ModelComplianceScanResult[];
   } = {
     err: [],
     accNonEmpty: [],
@@ -202,7 +192,6 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
     (key) => {
       const data = groupedNonEmptySevirityData[key];
       return {
-        accountId: data[0].node_id,
         accountName: data[0].node_name,
         accountType: data[0].node_type,
         benchmarkResults: data.map((item) => {
@@ -230,7 +219,6 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
   const resulEmptySeverityData = Object.keys(groupedEmptySevirityData).map((key) => {
     const data = groupedNonEmptySevirityData[key];
     return {
-      accountId: data[0].node_id,
       accountName: data[0].node_name,
       accountType: data[0].node_type,
       benchmarkResults: data.map((item) => {
@@ -471,7 +459,7 @@ const ComplianceScanSummary = () => {
           <Await resolve={loaderData.data ?? []}>
             {(resolvedData: ScanData[] | undefined) => {
               return resolvedData?.map((accountScanData: ScanData) => (
-                <Scan key={accountScanData?.accountId} scanData={accountScanData} />
+                <Scan key={accountScanData?.accountName} scanData={accountScanData} />
               ));
             }}
           </Await>

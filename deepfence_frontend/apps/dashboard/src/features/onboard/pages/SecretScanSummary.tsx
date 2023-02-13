@@ -39,7 +39,6 @@ type SeverityType = {
 };
 
 type ScanData = {
-  accountId: string;
   accountName: string;
   data: {
     total: number;
@@ -52,9 +51,6 @@ export type LoaderDataType = {
   message?: string;
   data?: ScanData[];
 };
-type accErr = ApiError<void>[];
-type accNonEmpty = ModelSecretScanResult[];
-type accEmpty = ModelSecretScanResult[];
 
 async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
   const bulkRequest = scanIds.map((scanId) => {
@@ -75,9 +71,9 @@ async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
   });
   const responses = await Promise.all(bulkRequest);
   const initial: {
-    err: accErr;
-    accNonEmpty: accNonEmpty;
-    accEmpty: accEmpty;
+    err: ApiError<void>[];
+    accNonEmpty: ModelSecretScanResult[];
+    accEmpty: ModelSecretScanResult[];
   } = {
     err: [],
     accNonEmpty: [],
@@ -101,7 +97,6 @@ async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
       return null;
     }
     return {
-      accountId: response.kubernetes_cluster_name,
       accountName: getAccountName(response),
       data: [
         {
@@ -123,7 +118,6 @@ async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
   const resultWithEmptySeverityAtEnd = resultData.concat(
     initial.accEmpty.map((response) => {
       return {
-        accountId: response.kubernetes_cluster_name,
         accountName: getAccountName(response),
         data: [
           {
@@ -159,13 +153,6 @@ async function getScanStatus(bulkScanId: string): Promise<Array<ModelScanInfo>> 
 
   if (ApiError.isApiError(result)) {
     throw result.value();
-  }
-
-  if (result === null) {
-    return [];
-  }
-  if (result.statuses && Array.isArray(result.statuses)) {
-    return result.statuses;
   }
 
   return Object.values(result.statuses ?? {});
@@ -321,7 +308,7 @@ const SecretScanSummary = () => {
           <Await resolve={loaderData.data ?? []}>
             {(resolvedData) => {
               return resolvedData?.map((accountScanData: ScanData) => (
-                <Scan key={accountScanData?.accountId} scanData={accountScanData} />
+                <Scan key={accountScanData?.accountName} scanData={accountScanData} />
               ));
             }}
           </Await>
