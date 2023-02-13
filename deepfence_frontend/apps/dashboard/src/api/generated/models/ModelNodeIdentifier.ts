@@ -40,7 +40,10 @@ export interface ModelNodeIdentifier {
 export const ModelNodeIdentifierNodeTypeEnum = {
     Image: 'image',
     Host: 'host',
-    Container: 'container'
+    Container: 'container',
+    CloudAccount: 'cloud_account',
+    Cluster: 'cluster',
+    Registry: 'registry'
 } as const;
 export type ModelNodeIdentifierNodeTypeEnum = typeof ModelNodeIdentifierNodeTypeEnum[keyof typeof ModelNodeIdentifierNodeTypeEnum];
 

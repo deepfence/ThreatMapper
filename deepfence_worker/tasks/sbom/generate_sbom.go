@@ -2,8 +2,6 @@ package sbom
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"os"
 	"path"
 
@@ -34,19 +32,13 @@ func NewSbomGenerator(ingest chan *kgo.Record) SbomGenerator {
 
 func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, error) {
 	defer cronjobs.ScanWorkloadAllocator.Free()
-	// // extract tenant id
-	// tenantID, err := directory.ExtractNamespace(msg.Context())
-	// if err != nil {
-	// 	log.Error().Msg(err.Error())
-	// 	return err
-	// }
+
 	var params utils.SbomParameters
 
 	tenantID := msg.Metadata.Get(directory.NamespaceKey)
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), []kgo.RecordHeader{})
-		return nil, errors.New("tenant-id/namespace is empty")
+		return nil, directory.ErrNamespaceNotFound
 	}
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
@@ -60,30 +52,36 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
-		return nil, err
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil, nil
 	}
 
 	if params.RegistryId == "" {
 		log.Error().Msgf("registry id is empty in params %+v", params)
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
-		return nil, fmt.Errorf("registry id is empty in params")
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED,
+			"registry id is empty in params"), rh)
+		return nil, nil
 	}
 
 	// get registry credentials
 	authFile, namespace, insecure, err := GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
-		return nil, err
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil, nil
 	}
-	defer os.Remove(authFile)
+	defer func() {
+		log.Info().Msgf("remove auth directory %s", authFile)
+		if err := os.RemoveAll(authFile); err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}()
 
 	// generate sbom
 	cfg := psUtils.Config{
 		SyftBinPath:           syftBin,
 		HostName:              params.HostName,
-		NodeType:              params.NodeType,
+		NodeType:              "container_image", // this is required by package scanner
 		NodeId:                params.NodeId,
 		KubernetesClusterName: params.KubernetesClusterName,
 		ScanId:                params.ScanId,
@@ -108,21 +106,21 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	log.Debug().Msgf("config: %+v", cfg)
 
-	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
+	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, ""), rh)
 
 	rawSbom, err := syft.GenerateSBOM(cfg)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
-		return nil, err
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil, nil
 	}
 
 	// upload sbom to minio
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
-		return nil, err
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil, nil
 	}
 
 	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
@@ -130,21 +128,21 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
-		return nil, err
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		return nil, nil
 	}
 	log.Info().Msgf("sbom file uploaded %+v", info)
 
 	// write sbom to minio and return details another task will scan sbom
 
-	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS), rh)
+	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS, ""), rh)
 
 	params.SBOMFilePath = sbomFile
 
 	payload, err := json.Marshal(params)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return nil, err
+		return nil, nil
 	}
 
 	scanMsg := message.NewMessage(watermill.NewUUID(), payload)

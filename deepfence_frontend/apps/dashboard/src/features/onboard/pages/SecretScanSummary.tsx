@@ -1,12 +1,20 @@
 import cx from 'classnames';
+import { isEmpty } from 'lodash-es';
 import { Suspense } from 'react';
+import { IconContext } from 'react-icons/lib';
 import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Typography } from 'ui-components';
 
 import { getSecretApiClient } from '@/api/api';
-import { ModelSecretScanResult } from '@/api/generated/models/ModelSecretScanResult';
-import LogoLinux from '@/assets/logo-linux.svg';
+import {
+  ApiDocsBadRequestResponse,
+  ModelScanInfo,
+  ModelSecretScanResult,
+} from '@/api/generated';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
+import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
+import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
+import { getAccountName } from '@/features/onboard/utils/summary';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
@@ -32,7 +40,8 @@ type SeverityType = {
 };
 
 type ScanData = {
-  accountId: ModelSecretScanResult['kubernetes_cluster_name'];
+  accountName: string;
+  accountType: string;
   data: {
     total: number;
     counts: SeverityType[] | null;
@@ -45,8 +54,8 @@ export type LoaderDataType = {
   data?: ScanData[];
 };
 
-async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
-  const bulkRequest = scanIds.split(',').map((scanId) => {
+async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
+  const bulkRequest = scanIds.map((scanId) => {
     return makeRequest({
       apiFunction: getSecretApiClient().resultSecretScan,
       apiArgs: [
@@ -63,61 +72,137 @@ async function getScanSummary(scanIds: string): Promise<LoaderDataType> {
     });
   });
   const responses = await Promise.all(bulkRequest);
-  const resultData = responses.map((response: ModelSecretScanResult | ApiError<void>) => {
+  const initial: {
+    err: ApiError<void>[];
+    accNonEmpty: ModelSecretScanResult[];
+    accEmpty: ModelSecretScanResult[];
+  } = {
+    err: [],
+    accNonEmpty: [],
+    accEmpty: [],
+  };
+  responses.forEach((response) => {
+    if (ApiError.isApiError(response)) {
+      // TODO: handle any one request has an error on this bulk request
+      return initial.err.push(response);
+    } else {
+      if (isEmpty(response.severity_counts)) {
+        initial.accEmpty.push(response);
+      } else {
+        initial.accNonEmpty.push(response);
+      }
+    }
+  });
+  const resultData = responses.map((response) => {
     if (ApiError.isApiError(response)) {
       // TODO: handle any one request has an error on this bulk request
       return null;
-    } else {
-      const resp = response as ModelSecretScanResult;
+    }
+    return {
+      accountName: getAccountName(response),
+      accountType: response.node_type,
+      data: [
+        {
+          total: Object.keys(response.severity_counts ?? {}).reduce((acc, severity) => {
+            acc = acc + (response.severity_counts?.[severity] ?? 0);
+            return acc;
+          }, 0),
+          counts: Object.keys(response.severity_counts ?? {}).map((severity) => {
+            return {
+              name: severity,
+              value: response.severity_counts?.[severity] ?? 0,
+            };
+          }),
+        },
+      ],
+    };
+  });
+
+  const resultWithEmptySeverityAtEnd = resultData.concat(
+    initial.accEmpty.map((response) => {
       return {
-        accountId: resp.kubernetes_cluster_name,
+        accountName: getAccountName(response),
+        accountType: response.node_type,
         data: [
           {
-            total: Object.keys(resp.severity_counts ?? {}).reduce((acc, severity) => {
-              acc = acc + (resp.severity_counts?.[severity] ?? 0);
-              return acc;
-            }, 0),
-            counts: Object.keys(resp.severity_counts ?? {}).map((severity) => {
-              return {
-                name: severity,
-                value: resp.severity_counts![severity],
-              };
-            }),
+            total: 0,
+            counts: [],
           },
         ],
       };
-    }
-  });
-
-  return {
-    data: resultData,
-  };
+    }),
+  );
+  return resultWithEmptySeverityAtEnd;
 }
 
-const loader = ({
+async function getScanStatus(bulkScanId: string): Promise<Array<ModelScanInfo>> {
+  const result = await makeRequest({
+    apiFunction: statusScanApiFunctionMap['secret'],
+    apiArgs: [
+      {
+        scanIds: [],
+        bulkScanId,
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<LoaderDataType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
+  }
+
+  return Object.values(result.statuses ?? {});
+}
+
+const loader = async ({
   params = {
-    scanIds: '',
+    bulkScanId: '',
   },
-}: LoaderFunctionArgs): TypedDeferredData<LoaderDataType> => {
+}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
+  const { bulkScanId } = params;
+  if (!bulkScanId?.length) {
+    throw new Error('Invalid params');
+  }
+  const statuses = await getScanStatus(bulkScanId);
+  const scanIds =
+    statuses
+      ?.filter((status) => status?.status === 'COMPLETE')
+      .map((status) => status.scan_id) ?? [];
+
   return typedDefer({
-    data: getScanSummary(params.scanIds ?? ''),
+    data: getScanSummary(scanIds),
   });
 };
 
-const AccountComponent = ({ accountId }: { accountId: string }) => {
+const Account = ({ scanData }: { scanData: ScanData }) => {
   return (
     <div
       className={cx(
         'h-full flex flex-col items-center justify-center gap-y-3',
         'border-r dark:border-gray-700',
         'bg-gray-100 dark:bg-gray-700',
+        'p-2',
       )}
     >
-      <img src={LogoLinux} alt="logo" height={40} width={40} />
-      <data
-        className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300`}
+      <IconContext.Provider
+        value={{
+          className: 'w-8 h-8 text-blue-600 dark:text-blue-500',
+        }}
       >
-        {accountId}
+        {scanData?.accountType ? IconMapForNodeType[scanData?.accountType] : null}
+      </IconContext.Provider>
+      <data
+        className={`${Typography.size.base} ${Typography.weight.normal} text-gray-700 dark:text-gray-300 overflow-hidden text-ellipsis w-full text-center`}
+      >
+        {scanData?.accountName}
       </data>
     </div>
   );
@@ -126,7 +211,7 @@ const AccountComponent = ({ accountId }: { accountId: string }) => {
 const TypeAndCountComponent = ({ total }: { total: number }) => {
   return (
     <div className="flex flex-col gap-y-1 items-center justify-center">
-      <data className="text-sm text-gray-400 dark:text-gray-500">Total Results</data>
+      <data className="text-sm text-gray-400 dark:text-gray-500">Total Issues</data>
       <data className={'text-[2rem] text-gray-900 dark:text-gray-200 font-light'}>
         {total}
       </data>
@@ -136,6 +221,10 @@ const TypeAndCountComponent = ({ total }: { total: number }) => {
 
 const ChartComponent = ({ counts }: { counts: SeverityType[] }) => {
   const maxValue = Math.max(...counts.map((v) => v.value));
+
+  if (counts.length === 0) {
+    return <div className="flex items-center w-full justify-center">No Data</div>;
+  }
 
   return (
     <div>
@@ -175,12 +264,12 @@ const Scan = ({ scanData }: { scanData: ScanData }) => {
   if (!scanData) {
     return null;
   }
-  const { accountId, data = [] } = scanData;
+  const { data = [] } = scanData;
 
   return (
     <Card>
       <div className="grid grid-cols-[450px_1fr] items-center">
-        <AccountComponent accountId={accountId} />
+        <Account scanData={scanData} />
         <div className="flex flex-col">
           {data.map((severityData: ScanType | null, index: number) => {
             const { counts = [], total = 0 } = severityData ?? {};
@@ -220,11 +309,20 @@ const SecretScanSummary = () => {
       </Link>
 
       <div className="flex flex-col gap-4 mt-4">
-        <Suspense fallback={<CircleSpinner />}>
+        <Suspense
+          fallback={
+            <div className="w-full mt-16 flex justify-center">
+              <CircleSpinner />
+            </div>
+          }
+        >
           <Await resolve={loaderData.data ?? []}>
-            {(resolvedData) => {
-              return resolvedData.data?.map((accountScanData: ScanData) => (
-                <Scan key={accountScanData?.accountId} scanData={accountScanData} />
+            {(resolvedData: ScanData[] | undefined) => {
+              return resolvedData?.map((accountScanData, index) => (
+                <Scan
+                  key={`${accountScanData?.accountName}-${index}`}
+                  scanData={accountScanData}
+                />
               ));
             }}
           </Await>

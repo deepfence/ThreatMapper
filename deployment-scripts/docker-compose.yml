@@ -1,4 +1,30 @@
 version: "3.7"
+
+x-service-variables: &common-creds
+    DEEPFENCE_NEO4J_USER: neo4j
+    DEEPFENCE_NEO4J_PASSWORD: e16908ffa5b9f8e9d4ed
+    NEO4J_AUTH: neo4j/e16908ffa5b9f8e9d4ed
+    DEEPFENCE_POSTGRES_USER_DB_USER: deepfence
+    DEEPFENCE_POSTGRES_USER_DB_PASSWORD: deepfence
+    DEEPFENCE_KAFKA_BROKERS: deepfence-kafka-broker:9092
+    DEEPFENCE_MINIO_BUCKET: deepfence
+    DEEPFENCE_MINIO_HOST: deepfence-file-server
+    DEEPFENCE_MINIO_PASSWORD: deepfence
+    DEEPFENCE_MINIO_PORT: 9000
+    DEEPFENCE_MINIO_SECURE: "false"
+    DEEPFENCE_MINIO_USER: deepfence
+    DEEPFENCE_NEO4J_BOLT_PORT: 7687
+    DEEPFENCE_NEO4J_HOST: deepfence-neo4j
+    DEEPFENCE_POSTGRES_USER_DB_HOST: deepfence-postgres
+    DEEPFENCE_POSTGRES_USER_DB_NAME: users
+    DEEPFENCE_POSTGRES_USER_DB_PORT: 5432
+    DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
+    DEEPFENCE_REDIS_DB_NUMBER: 0
+    DEEPFENCE_REDIS_HOST: deepfence-redis
+    DEEPFENCE_REDIS_PORT: 6379
+    DEEPFENCE_SAAS_DEPLOYMENT: "false"
+    DEEPFENCE_DEBUG: "false"
+
 services:
 
   #deepfence-init-container:
@@ -58,11 +84,11 @@ services:
     networks:
     - deepfence_net
     environment:
-    - NEO4J_dbms_memory_pagecache_size=2600m
-    - NEO4J_dbms.memory.heap.initial_size=3800m
-    - NEO4J_dbms_memory_heap_max__size=3800m
-    - NEO4J_AUTH=neo4j/password
-    - NEO4JLABS_PLUGINS=["apoc"]
+      <<: *common-creds
+      NEO4J_dbms_memory_pagecache_size: 2600m
+      NEO4J_dbms.memory.heap.initial_size: 3800m
+      NEO4J_dbms_memory_heap_max__size: 3800m
+      NEO4JLABS_PLUGINS: '["apoc"]'
     ports:
       - "0.0.0.0:7474:7474"
       - "0.0.0.0:7687:7687"
@@ -152,6 +178,7 @@ services:
     tmpfs:
       - /tmp
     environment:
+      <<: *common-creds
       ELASTICSEARCH_SCHEME: "http"
     networks:
       - deepfence_net
@@ -180,13 +207,15 @@ services:
     depends_on:
       - deepfence-redis
       - deepfence-postgres
-    volumes:
-      - /etc/docker/certs.d:/etc/docker/certs.d:ro
-      - /var/run/docker.sock:/var/run/docker.sock
     logging:
       driver: "json-file"
       options:
         max-size: "1g"
+    environment:
+      <<: *common-creds
+    volumes:
+      - /etc/docker/certs.d:/etc/docker/certs.d:ro
+      - /var/run/docker.sock:/var/run/docker.sock
 
   deepfence-scheduler:
     container_name: deepfence-scheduler
@@ -195,12 +224,14 @@ services:
       core: 0
     restart: on-failure
     environment:
-      - DEEPFENCE_MODE=scheduler
+      <<: *common-creds
+      DEEPFENCE_MODE: scheduler
     networks:
       - deepfence_net
     depends_on:
       - deepfence-redis
       - deepfence-postgres
+      - deepfence-worker
     logging:
       driver: "json-file"
       options:
@@ -276,7 +307,8 @@ services:
     ports:
       - "127.0.0.1:8090:8090"
     environment:
-      - DEEPFENCE_MODE=ingester
+      <<: *common-creds
+      DEEPFENCE_MODE: ingester
     networks:
       - deepfence_net
     depends_on:

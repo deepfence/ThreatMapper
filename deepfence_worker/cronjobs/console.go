@@ -11,7 +11,7 @@ import (
 
 const (
 	ConsoleAgentId = "deepfence-console-cron"
-	MaxWorkload    = 40
+	MaxWorkload    = 5
 )
 
 var (
@@ -24,7 +24,7 @@ Hence Allocator can be shared across tasks
 */
 func TriggerConsoleControls(msg *message.Message) error {
 
-	log.Info().Msgf("Trigger console actions, capacity: %v", ScanWorkloadAllocator.MaxAllocable())
+	log.Info().Msgf("Trigger console actions #capacity: %v", ScanWorkloadAllocator.MaxAllocable())
 
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
@@ -38,7 +38,7 @@ func TriggerConsoleControls(msg *message.Message) error {
 
 	ScanWorkloadAllocator.Reserve(int32(len(actions)))
 
-	log.Info().Msgf("Trigger console actions #actions=%d", len(actions))
+	log.Info().Msgf("Trigger console actions #actions: %d", len(actions))
 
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)

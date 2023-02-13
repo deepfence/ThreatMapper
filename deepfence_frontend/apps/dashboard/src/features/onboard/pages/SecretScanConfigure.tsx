@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import {
   ActionFunctionArgs,
-  Form,
   generatePath,
   Navigate,
   redirect,
   useActionData,
+  useFetcher,
   useLocation,
+  useNavigation,
 } from 'react-router-dom';
 import { Button, Tooltip, Typography } from 'ui-components';
 
@@ -14,6 +15,7 @@ import { getSecretApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelNodeIdentifierNodeTypeEnum,
+  ModelSecretScanTriggerReq,
 } from '@/api/generated';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
@@ -26,27 +28,30 @@ export type ScanActionReturnType = {
 
 const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturnType> => {
   const formData = await request.formData();
-  const body = Object.fromEntries(formData);
-  const nodeIds = body._nodeIds.toString().split(',');
-  const nodeType = body._nodeType.toString();
+  const nodeIds = formData.get('_nodeIds')?.toString().split(',') ?? [];
+  const nodeType = formData.get('_nodeType')?.toString() ?? '';
+
+  const requestBody: ModelSecretScanTriggerReq = {
+    filters: {
+      cloud_account_scan_filter: { fields_values: null },
+      kubernetes_cluster_scan_filter: { fields_values: null },
+      container_scan_filter: { fields_values: null },
+      host_scan_filter: { fields_values: null },
+      image_scan_filter: { fields_values: null },
+    },
+    node_ids: nodeIds.map((nodeId) => ({
+      node_id: nodeId,
+      node_type: (nodeType === 'kubernetes_cluster'
+        ? 'cluster'
+        : nodeType) as ModelNodeIdentifierNodeTypeEnum,
+    })),
+  };
 
   const r = await makeRequest({
     apiFunction: getSecretApiClient().startSecretScan,
     apiArgs: [
       {
-        modelSecretScanTriggerReq: {
-          filters: {
-            container_scan_filter: {
-              fields_values: null,
-            },
-            host_scan_filter: { fields_values: null },
-            image_scan_filter: { fields_values: null },
-          },
-          node_ids: nodeIds.map((nodeId) => ({
-            node_id: nodeId,
-            node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
-          })),
-        },
+        modelSecretScanTriggerReq: requestBody,
       },
     ],
     errorHandler: async (r) => {
@@ -65,7 +70,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
   }
 
   throw redirect(
-    generatePath('/onboard/scan/view-summary/running/:scanType/:bulkScanId', {
+    generatePath('/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId', {
+      nodeType,
       scanType: 'secret',
       bulkScanId: r.bulk_scan_id,
     }),
@@ -99,6 +105,8 @@ const SecretScanConfigure = () => {
   const { goBack } = usePageNavigation();
   const actionData = useActionData() as ScanActionReturnType;
   const location = useLocation();
+  const fetcher = useFetcher();
+  const navigation = useNavigation();
 
   const [pageState] = useState<unknown>(location.state);
   if (!Array.isArray(pageState) || !pageState.length) {
@@ -106,8 +114,12 @@ const SecretScanConfigure = () => {
   }
   const state = pageState as OnboardConnectionNode[];
 
+  const isStatusPageLoading =
+    navigation.location?.pathname.includes('/view-summary/running') &&
+    navigation.state === 'loading';
+
   return (
-    <Form method="post">
+    <fetcher.Form method="post">
       <input
         type="text"
         name="_nodeIds"
@@ -133,15 +145,22 @@ const SecretScanConfigure = () => {
       )}
       <section className="flex">
         <div></div>
-        <Button size="sm" color="primary" className="ml-auto" type="submit">
+        <Button
+          disabled={fetcher.state === 'submitting' || isStatusPageLoading}
+          loading={fetcher.state === 'submitting' || isStatusPageLoading}
+          size="sm"
+          color="primary"
+          className="ml-auto"
+          type="submit"
+        >
           Start scan
         </Button>
       </section>
 
-      <Button onClick={goBack} color="default" size="xs" className="mt-16">
+      <Button color="default" size="xs" className="mt-16" onClick={goBack}>
         Go Back
       </Button>
-    </Form>
+    </fetcher.Form>
   );
 };
 

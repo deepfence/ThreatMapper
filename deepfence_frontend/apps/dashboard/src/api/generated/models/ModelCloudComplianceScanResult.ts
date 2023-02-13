@@ -13,97 +13,97 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelCompliance } from './ModelCompliance';
+import type { ModelCloudCompliance } from './ModelCloudCompliance';
 import {
-    ModelComplianceFromJSON,
-    ModelComplianceFromJSONTyped,
-    ModelComplianceToJSON,
-} from './ModelCompliance';
+    ModelCloudComplianceFromJSON,
+    ModelCloudComplianceFromJSONTyped,
+    ModelCloudComplianceToJSON,
+} from './ModelCloudCompliance';
 
 /**
  * 
  * @export
- * @interface ModelComplianceScanResult
+ * @interface ModelCloudComplianceScanResult
  */
-export interface ModelComplianceScanResult {
+export interface ModelCloudComplianceScanResult {
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     benchmark_type: string;
     /**
      * 
      * @type {number}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     compliance_percentage: number;
     /**
      * 
-     * @type {Array<ModelCompliance>}
-     * @memberof ModelComplianceScanResult
+     * @type {Array<ModelCloudCompliance>}
+     * @memberof ModelCloudComplianceScanResult
      */
-    compliances: Array<ModelCompliance> | null;
+    compliances: Array<ModelCloudCompliance> | null;
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     docker_container_name: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     docker_image_name: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     host_name: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     kubernetes_cluster_name: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     node_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     node_name: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     node_type: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     scan_id: string;
     /**
      * 
      * @type {{ [key: string]: number; }}
-     * @memberof ModelComplianceScanResult
+     * @memberof ModelCloudComplianceScanResult
      */
     status_counts: { [key: string]: number; } | null;
 }
 
 /**
- * Check if a given object implements the ModelComplianceScanResult interface.
+ * Check if a given object implements the ModelCloudComplianceScanResult interface.
  */
-export function instanceOfModelComplianceScanResult(value: object): boolean {
+export function instanceOfModelCloudComplianceScanResult(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "benchmark_type" in value;
     isInstance = isInstance && "compliance_percentage" in value;
@@ -121,11 +121,11 @@ export function instanceOfModelComplianceScanResult(value: object): boolean {
     return isInstance;
 }
 
-export function ModelComplianceScanResultFromJSON(json: any): ModelComplianceScanResult {
-    return ModelComplianceScanResultFromJSONTyped(json, false);
+export function ModelCloudComplianceScanResultFromJSON(json: any): ModelCloudComplianceScanResult {
+    return ModelCloudComplianceScanResultFromJSONTyped(json, false);
 }
 
-export function ModelComplianceScanResultFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelComplianceScanResult {
+export function ModelCloudComplianceScanResultFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudComplianceScanResult {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -133,7 +133,7 @@ export function ModelComplianceScanResultFromJSONTyped(json: any, ignoreDiscrimi
         
         'benchmark_type': json['benchmark_type'],
         'compliance_percentage': json['compliance_percentage'],
-        'compliances': (json['compliances'] === null ? null : (json['compliances'] as Array<any>).map(ModelComplianceFromJSON)),
+        'compliances': (json['compliances'] === null ? null : (json['compliances'] as Array<any>).map(ModelCloudComplianceFromJSON)),
         'docker_container_name': json['docker_container_name'],
         'docker_image_name': json['docker_image_name'],
         'host_name': json['host_name'],
@@ -146,7 +146,7 @@ export function ModelComplianceScanResultFromJSONTyped(json: any, ignoreDiscrimi
     };
 }
 
-export function ModelComplianceScanResultToJSON(value?: ModelComplianceScanResult | null): any {
+export function ModelCloudComplianceScanResultToJSON(value?: ModelCloudComplianceScanResult | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -157,7 +157,7 @@ export function ModelComplianceScanResultToJSON(value?: ModelComplianceScanResul
         
         'benchmark_type': value.benchmark_type,
         'compliance_percentage': value.compliance_percentage,
-        'compliances': (value.compliances === null ? null : (value.compliances as Array<any>).map(ModelComplianceToJSON)),
+        'compliances': (value.compliances === null ? null : (value.compliances as Array<any>).map(ModelCloudComplianceToJSON)),
         'docker_container_name': value.docker_container_name,
         'docker_image_name': value.docker_image_name,
         'host_name': value.host_name,

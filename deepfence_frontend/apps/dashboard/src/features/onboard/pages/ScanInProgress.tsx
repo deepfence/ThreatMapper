@@ -1,14 +1,15 @@
 import cx from 'classnames';
+import { uniq } from 'lodash-es';
 import { useMemo, useState } from 'react';
-import { FaCheckDouble, FaExclamationTriangle, FaStream } from 'react-icons/fa';
+import { FaCheckDouble, FaExclamationTriangle } from 'react-icons/fa';
 import {
   HiCheck,
   HiChevronDown,
   HiChevronRight,
+  HiChevronUp,
   HiExclamationCircle,
   HiOutlineChevronDoubleLeft,
   HiOutlineChevronDoubleRight,
-  HiOutlineChevronRight,
   HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
@@ -30,11 +31,14 @@ import {
 } from 'ui-components';
 
 import {
+  getCloudComplianceApiClient,
+  getComplianceApiClient,
   getMalwareScanApiClient,
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelScanInfo } from '@/api/generated';
+import { ModelComplianceScanInfo } from '@/api/generated/models/ModelComplianceScanInfo';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -43,10 +47,10 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 export type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ModelScanInfo[];
+  data?: (ModelComplianceScanInfo | ModelScanInfo)[];
 };
 
-type TableDataType = ModelScanInfo;
+type TableDataType = ModelComplianceScanInfo | ModelScanInfo;
 
 type TextProps = {
   scanningText: string;
@@ -58,14 +62,16 @@ type ConfigProps = {
   vulnerability: TextProps;
   secret: TextProps;
   malware: TextProps;
-  posture: TextProps;
+  compliance: TextProps;
   alert: TextProps;
 };
 
-const statusScanApiFunctionMap = {
+export const statusScanApiFunctionMap = {
   vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
   secret: getSecretApiClient().statusSecretScan,
   malware: getMalwareScanApiClient().statusMalwareScan,
+  compliance: getComplianceApiClient().statusComplianceScan,
+  cloudCompliance: getCloudComplianceApiClient().statusCloudComplianceScan,
 };
 
 const configMap: ConfigProps = {
@@ -86,7 +92,7 @@ const configMap: ConfigProps = {
     subHeaderText:
       'Malware Scan has been initiated, it will be completed in few moments.',
   },
-  posture: {
+  compliance: {
     scanningText: 'Your Compliance Scan is currently running...',
     headerText: 'Compliance Scan',
     subHeaderText:
@@ -103,7 +109,13 @@ const configMap: ConfigProps = {
 async function getScanStatus(
   scanType: keyof typeof statusScanApiFunctionMap,
   bulkScanId: string,
+  nodeType: string,
 ): Promise<LoaderDataType> {
+  // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
+  if (scanType === 'compliance' && nodeType === 'cloud_account') {
+    scanType = 'cloudCompliance';
+  }
+
   const result = await makeRequest({
     apiFunction: statusScanApiFunctionMap[scanType],
     apiArgs: [
@@ -132,6 +144,11 @@ async function getScanStatus(
       data: [],
     };
   }
+  if (result.statuses && Array.isArray(result.statuses)) {
+    return {
+      data: result.statuses,
+    };
+  }
 
   return {
     data: Object.values(result.statuses ?? {}),
@@ -139,15 +156,16 @@ async function getScanStatus(
 }
 
 const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> => {
+  const nodeType = params?.nodeType ?? '';
   const bulkScanId = params?.bulkScanId ?? '';
   const scanType = params?.scanType as keyof typeof statusScanApiFunctionMap;
-  return await getScanStatus(scanType, bulkScanId);
+  return await getScanStatus(scanType, bulkScanId, nodeType);
 };
 
 function areAllScanDone(scanStatuses: string[]) {
   return (
     scanStatuses.filter((status) => {
-      return ['COMPLETE', 'FAILED'].includes(status);
+      return ['COMPLETE', 'ERROR'].includes(status);
     }).length === scanStatuses.length
   );
 }
@@ -155,13 +173,13 @@ function areAllScanDone(scanStatuses: string[]) {
 function areAllScanFailed(scanStatuses: string[]) {
   return (
     scanStatuses.filter((status) => {
-      return ['FAILED'].includes(status);
+      return ['ERROR'].includes(status);
     }).length === scanStatuses.length
   );
 }
 
 function isScanDone(status: string) {
-  return status === 'COMPLETE' || status === 'FAILED';
+  return status === 'COMPLETE' || status === 'ERROR';
 }
 
 function isScanCompleted(status: string) {
@@ -169,7 +187,7 @@ function isScanCompleted(status: string) {
 }
 
 function isScanFailed(status: string) {
-  return status === 'FAILED';
+  return status === 'ERROR';
 }
 
 export const ScanInProgressError = () => {
@@ -212,9 +230,11 @@ const ScanInProgress = () => {
   const revalidator = useRevalidator();
   const [expand, setExpand] = useState(false);
 
-  const { scanType } = params as { scanType: keyof ConfigProps };
+  const { scanType, bulkScanId } = params as {
+    scanType: keyof ConfigProps;
+    bulkScanId: string;
+  };
   const textMap = configMap[scanType];
-
   const columnHelper = createColumnHelper<TableDataType>();
 
   const allScanFailed = areAllScanFailed(
@@ -222,10 +242,14 @@ const ScanInProgress = () => {
   );
   const allScanDone = areAllScanDone(loaderData?.data?.map((data) => data.status) ?? []);
 
-  const columns = useMemo(
-    () => [
+  const columns = useMemo(() => {
+    const columns = [
       columnHelper.accessor('node_type', {
-        cell: (info) => info.getValue(),
+        cell: (info) => {
+          return (
+            <span className="capitalize">{info.getValue()?.replaceAll('_', ' ')}</span>
+          );
+        },
         header: () => 'Type',
         minSize: 200,
       }),
@@ -234,6 +258,17 @@ const ScanInProgress = () => {
         header: () => 'Name',
         minSize: 500,
       }),
+    ];
+    if (scanType.startsWith('compliance')) {
+      columns.push(
+        columnHelper.accessor('benchmark_type', {
+          cell: (info) => info.getValue()?.toUpperCase(),
+          header: () => 'Control Type',
+          minSize: 200,
+        }),
+      );
+    }
+    columns.push(
       columnHelper.accessor((row) => row.status, {
         id: 'status',
         minSize: 200,
@@ -265,6 +300,8 @@ const ScanInProgress = () => {
         },
         header: () => <span>Status</span>,
       }),
+    );
+    columns.push(
       getRowExpanderColumn(columnHelper, {
         minSize: 10,
         size: 10,
@@ -286,15 +323,15 @@ const ScanInProgress = () => {
           ) : null;
         },
       }),
-    ],
-    [loaderData.data],
-  );
+    );
+    return columns;
+  }, [loaderData.data]);
 
   useInterval(() => {
     if (!loaderData.message && !allScanDone) {
       revalidator.revalidate();
     }
-  }, 5000);
+  }, 10000);
 
   return (
     <>
@@ -314,7 +351,7 @@ const ScanInProgress = () => {
             >
               {allScanFailed ? <HiOutlineExclamationCircle /> : <FaCheckDouble />}
             </IconContext.Provider>
-            <h3 className="text-2xl font-semibold pt-1">
+            <h3 className="text-2xl font-semibold pt-1 dark:text-gray-200">
               Scan {allScanFailed ? 'Failed' : 'Done'}
             </h3>
             <div className="mt-6">
@@ -333,10 +370,13 @@ const ScanInProgress = () => {
                   endIcon={<HiOutlineChevronDoubleRight />}
                   onClick={() =>
                     navigate(
-                      generatePath(`/onboard/scan/view-summary/${scanType}/:scanIds`, {
-                        scanIds:
-                          loaderData?.data?.map((data) => data.scan_id).join(',') ?? '',
-                      }),
+                      generatePath(
+                        `/onboard/scan/view-summary/${scanType}/:nodeType/:bulkScanId`,
+                        {
+                          nodeType: loaderData?.data?.[0]?.node_type ?? '',
+                          bulkScanId,
+                        },
+                      ),
                     )
                   }
                   color="primary"
@@ -358,22 +398,22 @@ const ScanInProgress = () => {
             {!allScanDone
               ? `${
                   scanType.charAt(0).toUpperCase() + scanType.slice(1)
-                } Scan started for ${loaderData?.data?.length} host ${
-                  (loaderData?.data?.length ?? 0) > 1 ? 's' : ''
-                }`
+                } scan started for ${loaderData?.data?.length} ${uniq(
+                  loaderData.data?.map((data) => data.node_type?.replace('_', ' ')) ?? [],
+                ).join(' and ')}${(loaderData?.data?.length ?? 0) > 1 ? 's' : ''}`
               : 'All the scan are done'}
           </p>
-          <Button
-            size="sm"
-            startIcon={<FaStream />}
-            endIcon={<HiOutlineChevronRight />}
-            onClick={() => setExpand((state) => !state)}
-            color="normal"
-            className="ring-0 outline-none focus:ring-0 hover:bg-transparent"
-          >
-            Click here to {expand ? 'collapse' : 'see'} details
-          </Button>
         </div>
+        <Button
+          size="sm"
+          endIcon={expand ? <HiChevronUp /> : <HiChevronDown />}
+          onClick={() => setExpand((state) => !state)}
+          color={expand ? 'primary' : 'normal'}
+          outline={expand ? false : true}
+          className="mt-4"
+        >
+          {expand ? 'Less' : 'More'} details
+        </Button>
       </section>
       {expand ? (
         <section className="mt-4 flex justify-center">
@@ -387,7 +427,7 @@ const ScanInProgress = () => {
             renderSubComponent={() => {
               return (
                 <p className="dark:text-gray-200 py-2 px-4 overflow-auto text-sm">
-                  Error message will be here
+                  Error message will be displayed here
                 </p>
               );
             }}
