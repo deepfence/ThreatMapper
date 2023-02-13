@@ -97,14 +97,14 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	addTerminalHandler(wml, cfg, mux, utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
-	secret_scan_task, err := subscribe("task_secret_scan", cfg.KafkaBrokers, wml)
+	secret_scan_task, err := subscribe(utils.SecretScanTask, cfg.KafkaBrokers, wml)
 	if err != nil {
 		cancel()
 		return err
 	}
 	mux.AddNoPublisherHandler(
-		"task_secret_scan",
-		"task_secret_scan",
+		utils.SecretScanTask,
+		utils.SecretScanTask,
 		secret_scan_task,
 		secretscan.NewSecretScanner(ingestC).StartSecretScan,
 	)

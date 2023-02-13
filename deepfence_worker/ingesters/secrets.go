@@ -38,10 +38,7 @@ type Secret struct {
 		Part             string `json:"part"`
 		SignatureToMatch string `json:"signature_to_match"`
 	} `json:"Rule"`
-	Severity struct {
-		Level string  `json:"level"`
-		Score float64 `json:"score"`
-	} `json:"Severity"`
+	Severity              string `json:"Severity"`
 	ContainerName         string `json:"container_name"`
 	HostName              string `json:"host_name"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name"`
@@ -140,9 +137,6 @@ func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 		delete(secret, "Rule")
 		delete(secret, "Match")
 
-		for k, v := range utils.ToMap(i.Severity) {
-			secret[k] = v
-		}
 		for k, v := range utils.ToMap(i.Match) {
 			secret[k] = v
 		}

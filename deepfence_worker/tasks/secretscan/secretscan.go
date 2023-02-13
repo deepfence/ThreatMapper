@@ -7,12 +7,19 @@ import (
 	"os/exec"
 
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/deepfence/SecretScanner/core"
 	secretScan "github.com/deepfence/SecretScanner/scan"
+	"github.com/deepfence/SecretScanner/signature"
+	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+func init() {
+	initSecretScanner()
+}
 
 type SecretScan struct {
 	ingestC chan *kgo.Record
@@ -50,11 +57,16 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	}
 
 	// get registry credentials
-	authFile, namespace, _, err := GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authDir, namespace, _, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		return nil
 	}
-	defer os.Remove(authFile)
+	defer func() {
+		log.Info().Msgf("remove auth directory %s", authDir)
+		if err := os.RemoveAll(authDir); err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}()
 
 	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
 
@@ -77,19 +89,22 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	}
 	defer os.RemoveAll(dir)
 
-	imgTar := dir + "/image.tar"
+	authFile := authDir + "/config.json"
+	imgTar := dir + "/save-output.tar"
 	// todo: move to skopeo
-	cmd := exec.Command("skopeo", []string{"--authfile", authFile, "docker://" + imagename, "docker-archive:" + imgTar}...)
+	cmd := exec.Command("skopeo", []string{"copy", "--authfile", authFile, "docker://" + imagename, "docker-archive:" + imgTar}...)
 	log.Info().Msgf("command: %s", cmd.String())
 	// cmd.Env = append(cmd.Env, fmt.Sprintf("DOCKER_CONFIG=%s", authFile))
-	if err := cmd.Run(); err != nil {
+	if out, err := workerUtils.RunCommand(cmd); err != nil {
 		log.Error().Err(err).Msg(cmd.String())
+		log.Error().Msgf("output: %s", out.String())
 		return nil
 	}
 
 	// init secret scan
-	// SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
-	scanResult, err := secretScan.ExtractAndScanFromTar(imgTar, imagename)
+	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
+
+	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imagename)
 	// secretScan.ExtractAndScanFromTar(tarPath,)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -114,4 +129,11 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	}
 
 	return nil
+}
+
+func initSecretScanner() {
+	var sessionSecretScanner = core.GetSession()
+	// init secret scan builds hsdb
+	signature.ProcessSignatures(sessionSecretScanner.Config.Signatures)
+	signature.BuildHsDb()
 }
