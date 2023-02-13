@@ -48,7 +48,7 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.RetryFailedUpgradesTask))
+	_, err = s.cron.AddFunc("@every 10m", s.enqeueTask(sdkUtils.RetryFailedUpgradesTask))
 	if err != nil {
 		return err
 	}
