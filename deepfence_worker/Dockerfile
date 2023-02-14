@@ -1,7 +1,8 @@
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
-RUN ls -l /usr/local/bin/
+FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
+
 
 FROM golang:1.19-alpine3.17 AS build
 
@@ -35,12 +36,15 @@ ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
 #     && apk upgrade \
 #     && curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin v0.55.0
 
-COPY --from=build /go/deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
 COPY --from=packagescanner /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=packagescanner /usr/local/bin/grype /usr/local/bin/grype
+COPY --from=packagescanner /root/.grype.yaml /usr/local/bin/grype.yaml
+
+COPY --from=secretscanner /home/deepfence/usr/config.yaml /config.yaml
+
+COPY --from=build /go/deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
 COPY --from=build /go/deepfence_worker/entrypoint.sh /entrypoint.sh
-COPY --from=build /go/deepfence_worker/grype.yaml /usr/local/bin/grype.yaml
-COPY --from=build /go/deepfence_worker/secretscan-config.yaml /config.yaml
+# COPY --from=build /go/deepfence_worker/secretscan-config.yaml /config.yaml
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

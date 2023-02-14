@@ -11,6 +11,7 @@ import (
 	"github.com/deepfence/SecretScanner/output"
 	secretScan "github.com/deepfence/SecretScanner/scan"
 	"github.com/deepfence/SecretScanner/signature"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/proto"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -32,6 +33,8 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 }
 
 func (s SecretScan) StartSecretScan(msg *message.Message) error {
+	defer cronjobs.ScanWorkloadAllocator.Free()
+
 	tenantID := msg.Metadata.Get(directory.NamespaceKey)
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
