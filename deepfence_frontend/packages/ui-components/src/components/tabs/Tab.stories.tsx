@@ -69,7 +69,7 @@ const WithBackgroundComp = () => {
       defaultValue={tab}
       tabs={tabs2}
       onValueChange={(v) => setTab(v)}
-      variant={'secondary'}
+      variant={'tab'}
     >
       <div className="h-full p-2 dark:text-white">
         You are now on {tabs2.find((t) => t.value === tab)?.label}
@@ -82,33 +82,33 @@ export const TabWithBackground = WithBackgroundComp.bind({});
 export const DefaultXS = Template.bind({});
 DefaultXS.args = {
   tabs,
-  variant: 'secondary',
+  variant: 'tab',
   size: 'xs',
 };
 export const DefaultSM = Template.bind({});
 DefaultSM.args = {
   tabs,
-  variant: 'secondary',
+  variant: 'tab',
   size: 'sm',
 };
 
 export const DefaultMD = Template.bind({});
 DefaultMD.args = {
   tabs,
-  variant: 'secondary',
+  variant: 'tab',
   size: 'md',
 };
 
 export const DefaultLG = Template.bind({});
 DefaultLG.args = {
   tabs,
-  variant: 'secondary',
+  variant: 'tab',
   size: 'lg',
 };
 
 export const DefaultXL = Template.bind({});
 DefaultXL.args = {
   tabs,
-  variant: 'secondary',
+  variant: 'tab',
   size: 'xl',
 };

@@ -6,8 +6,12 @@ import React from 'react';
 import { IconContext } from 'react-icons';
 
 import { Typography } from '@/components/typography/Typography';
+import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type TabVariantProps = ObjectWithNonNullableValues<
+  VariantProps<typeof tabListCva>
+>;
 export type TabProps = TabsPrimitive.TabsProps & {
   size?: SizeType;
   tabs: {
@@ -18,7 +22,7 @@ export type TabProps = TabsPrimitive.TabsProps & {
   }[];
   value: string;
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary';
+  variant?: keyof TabVariantProps;
 };
 
 const classes = {
@@ -31,35 +35,32 @@ const classes = {
   },
 };
 const tabListCva = cva(
-  [
-    'inline-flex gap-x-8 border-b border-gray-200 dark:border-gray-700',
-    'text-gray-500 dark:text-gray-400',
-    'bg-transparent',
-  ],
+  ['inline-flex', 'text-sm font-medium text-center text-gray-500 dark:text-gray-400'],
   {
     variants: {
-      withBackgroundSet: {
+      underline: {
+        true: ['gap-x-6 border-b', 'border-gray-200 dark:border-gray-700'],
+      },
+      tab: {
         true: [
-          'border-b-0 dark:bg-gray-800',
-          'gap-x-0',
+          'shadow dark:bg-gray-800',
           'w-fit overflow-hidden',
-          'text-sm font-medium text-center text-gray-500',
-          'divide-x divide-gray-200 rounded-lg shadow',
-          'dark:divide-gray-700 dark:text-gray-400',
+          'divide-x divide-gray-200 rounded-lg',
+          'dark:divide-gray-700',
         ],
       },
+    },
+    defaultVariants: {
+      underline: true,
     },
   },
 );
 
 const tabItemCva = cva(
   [
-    'group',
-    'outline-none pb-2 px-3',
-    'radix-state-active:border-b radix-state-active:-mb-px radix-state-active:text-blue-600 radix-state-active:border-blue-600',
-    'dark:radix-state-active:border-blue-500',
-    'focus-visible:radix-state-active:ring-4 focus-visible:radix-state-active:ring-blue-200', // TODO: fix me focust ring for secondary variant
-    'dark:focus-visible:radix-state-active:ring-blue-800',
+    'outline-none',
+    'ring-offset-0 focus-visible:radix-state-active:ring-4',
+    'focus-visible:radix-state-active:ring-blue-200 dark:focus-visible:radix-state-active:ring-blue-800',
   ],
   {
     variants: {
@@ -70,51 +71,62 @@ const tabItemCva = cva(
         lg: '',
         xl: '',
       },
-      withBackgroundSet: {
+      underline: {
         true: [
-          'radix-state-active:border-b-0 radix-state-active:mb-0 radix-state-active:text-gray-900 dark:radix-state-active:text-white',
-          'dark:radix-state-active:border-blue-500',
+          'pb-2 px-3',
+          'border-gray-200 dark:border-gray-700',
+          'radix-state-active:border-b radix-state-active:-mb-px radix-state-active:text-blue-600 radix-state-active:border-blue-600',
+        ],
+      },
+      tab: {
+        true: [
+          'inline-flex radix-state-active:text-gray-900 dark:radix-state-active:text-white',
           'radix-state-active:bg-gray-100 dark:radix-state-active:bg-gray-700',
         ],
       },
     },
     compoundVariants: [
       {
-        withBackgroundSet: true,
+        tab: true,
         size: 'xs',
-        className: 'py-2',
+        className: 'py-2 px-3',
       },
       {
-        withBackgroundSet: true,
+        tab: true,
         size: 'sm',
         className: 'py-2.5 px-4',
       },
       {
-        withBackgroundSet: true,
+        tab: true,
         size: 'md',
         className: 'py-3 px-5',
       },
       {
-        withBackgroundSet: true,
+        tab: true,
         size: 'lg',
         className: 'py-3.5 px-6',
       },
       {
-        withBackgroundSet: true,
+        tab: true,
         size: 'xl',
         className: 'py-4 px-7',
       },
     ],
+    defaultVariants: {
+      underline: true,
+      size: 'sm',
+    },
   },
 );
 
 const Tabs = (props: TabProps) => {
-  const { tabs, value, size = 'sm', children, variant = 'primary', ...rest } = props;
+  const { tabs, value, size = 'sm', children, variant = 'underline', ...rest } = props;
   return (
     <TabsPrimitive.Root {...rest} data-testid={'tabs-testid'} value={value}>
       <TabsPrimitive.List
         className={tabListCva({
-          withBackgroundSet: variant === 'secondary',
+          underline: variant === 'underline',
+          tab: variant === 'tab',
         })}
       >
         {tabs.map(({ label, value, id, icon }) => {
@@ -125,7 +137,8 @@ const Tabs = (props: TabProps) => {
               value={value}
               data-testid={`tab-item-${_id}`}
               className={tabItemCva({
-                withBackgroundSet: variant === 'secondary',
+                underline: variant === 'underline',
+                tab: variant === 'tab',
                 size,
               })}
             >
