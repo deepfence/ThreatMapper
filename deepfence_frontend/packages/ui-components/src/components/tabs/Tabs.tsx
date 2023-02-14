@@ -43,10 +43,10 @@ const tabListCva = cva(
       },
       tab: {
         true: [
-          'shadow dark:bg-gray-800',
+          'shadow dark:bg-gray-700',
           'w-fit overflow-hidden',
           'divide-x divide-gray-200 rounded-lg',
-          'dark:divide-gray-700',
+          'dark:divide-gray-600',
         ],
       },
     },
@@ -81,7 +81,7 @@ const tabItemCva = cva(
       tab: {
         true: [
           'inline-flex radix-state-active:text-gray-900 dark:radix-state-active:text-white',
-          'radix-state-active:bg-gray-100 dark:radix-state-active:bg-gray-700',
+          'radix-state-active:bg-gray-100 dark:radix-state-active:bg-gray-600',
         ],
       },
     },
