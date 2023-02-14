@@ -67,5 +67,25 @@ func ConsoleActionSetup(pub *kafka.Publisher) error {
 	if err != nil {
 		return err
 	}
+
+	// for secret scan
+	err = RegisterControl(ctl.StartSecretScan,
+		func(req ctl.StartSecretScanRequest) error {
+			metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+			log.Info().Msgf("payload: %+v", req.BinArgs)
+			data, err := json.Marshal(req.BinArgs)
+			if err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			if err := utils.PublishNewJob(pub, metadata, sdkUtils.SecretScanTask, data); err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			return nil
+		})
+	if err != nil {
+		return err
+	}
 	return nil
 }

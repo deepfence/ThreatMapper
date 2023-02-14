@@ -11,6 +11,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -82,6 +83,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		sbom.NewSbomGenerator(ingestC).GenerateSbom,
 	)
 
+	addTerminalHandler(wml, cfg, mux, utils.SetUpGraphDBTask, cronjobs.ApplyGraphDBStartup)
+
 	addTerminalHandler(wml, cfg, mux, utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
 
 	addTerminalHandler(wml, cfg, mux, utils.RetryFailedScansTask, cronjobs.RetryScansDB)
@@ -95,6 +98,18 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	addTerminalHandler(wml, cfg, mux, utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
 
 	addTerminalHandler(wml, cfg, mux, utils.SyncRegistryTask, cronjobs.SyncRegistry)
+
+	secret_scan_task, err := subscribe(utils.SecretScanTask, cfg.KafkaBrokers, wml)
+	if err != nil {
+		cancel()
+		return err
+	}
+	mux.AddNoPublisherHandler(
+		utils.SecretScanTask,
+		utils.SecretScanTask,
+		secret_scan_task,
+		secretscan.NewSecretScanner(ingestC).StartSecretScan,
+	)
 
 	log.Info().Msg("Starting the consumer")
 	if err = mux.Run(context.Background()); err != nil {

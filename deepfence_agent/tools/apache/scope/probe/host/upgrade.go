@@ -36,30 +36,36 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 	pid, _, _ := syscall.Syscall(syscall.SYS_FORK, 0, 0, 0)
 	if pid == 0 {
 
-		fmt.Printf("Inside child")
+		fmt.Printf("Inside child\n")
 
 		c, err := supervisord.NewUnixSocketClient("/var/run/supervisor.sock")
 		if err != nil {
 			log.Fatal().Err(err)
 		}
 
-		fmt.Printf("Extract")
+		fmt.Printf("Extract\n")
 
 		err = extractTarGz("/tmp/deepfence.tar.gz", "/")
 		if err != nil {
 			log.Fatal().Err(err)
 		}
 
-		fmt.Printf("Restart")
+		fmt.Printf("Kill\n")
+		c.SignalAllProcesses(syscall.SIGKILL)
 
-		err = c.Restart()
-		if err != nil {
-			log.Fatal().Err(err)
-		}
+		fmt.Printf("Done\n")
+
 		os.Exit(0)
 	}
 
-	fmt.Printf("Child created: %v", pid)
+	fmt.Printf("Child created: %v\n", pid)
+
+	proc, err := os.FindProcess(int(pid))
+	proc.Wait()
+
+	fmt.Printf("Child dead\n")
+	os.Exit(0)
+
 	return nil
 }
 

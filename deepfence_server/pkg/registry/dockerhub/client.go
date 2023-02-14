@@ -43,7 +43,6 @@ func getImagesList(u, p, ns string) ([]model.ContainerImage, error) {
 			"\nresp.StatusCode: " + strconv.Itoa(resp.StatusCode))
 		return nil, err
 	}
-	log.Info().Msgf("respo: %+v", resp)
 
 	repo, err := io.ReadAll(resp.Body)
 	if err != nil {
