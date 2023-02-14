@@ -5,7 +5,6 @@ import { cva, VariantProps } from 'cva';
 import React from 'react';
 import { IconContext } from 'react-icons';
 
-import { Typography } from '@/components/typography/Typography';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -25,15 +24,17 @@ export type TabProps = TabsPrimitive.TabsProps & {
   variant?: keyof TabVariantProps;
 };
 
-const classes = {
-  size: {
-    xs: `${Typography.size.xs} ${Typography.weight.medium}`,
-    sm: `${Typography.size.sm} ${Typography.weight.medium}`,
-    md: `${Typography.size.base} ${Typography.weight.medium}`,
-    lg: `${Typography.size.lg} ${Typography.weight.medium}`,
-    xl: `${Typography.size.xl} ${Typography.weight.medium}`,
+const labelCva = cva('cursor-pointer font-medium', {
+  variants: {
+    size: {
+      xs: 'text-xs',
+      sm: 'text-sm',
+      md: 'text-base',
+      lg: 'text-lg',
+      xl: 'text-xl',
+    },
   },
-};
+});
 const tabListCva = cva(
   ['inline-flex', 'text-sm font-medium text-center text-gray-500 dark:text-gray-400'],
   {
@@ -149,7 +150,9 @@ const Tabs = (props: TabProps) => {
               )}
               <LabelPrimitive.Label
                 htmlFor={_id}
-                className={cx(`${classes.size[size]} cursor-pointer leading-[125%]`)}
+                className={labelCva({
+                  size,
+                })}
               >
                 {label}
               </LabelPrimitive.Label>
