@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { LoaderFunctionArgs } from 'react-router-dom';
+import { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router-dom';
 import {
   createColumnHelper,
   getRowExpanderColumn,
@@ -9,6 +9,10 @@ import {
 } from 'ui-components';
 
 const loader = ({ request }: LoaderFunctionArgs) => {
+  return null;
+};
+
+const actions = (args: ActionFunctionArgs) => {
   return null;
 };
 

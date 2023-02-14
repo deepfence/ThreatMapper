@@ -26,6 +26,7 @@ importers:
       '@typescript-eslint/parser': ^5.50.0
       '@vitejs/plugin-react': ^3.0.1
       '@vitest/coverage-c8': ^0.28.3
+      '@xstate/react': ^3.2.0
       autoprefixer: ^10.4.13
       classnames: ^2.3.2
       eslint: ^8.33.0
@@ -54,10 +55,12 @@ importers:
       vite: ^4.0.4
       vitest: ^0.28.3
       whatwg-fetch: ^3.6.2
+      xstate: ^4.36.0
     dependencies:
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
       '@testing-library/jest-dom': 5.16.5
       '@testing-library/user-event': 14.4.3_aaq3sbffpfe3jnxzm2zngsddei
+      '@xstate/react': 3.2.0_gtag2pdc6ctwabmisrelzywdam
       classnames: 2.3.2
       lodash-es: 4.17.21
       react: 18.2.0
@@ -67,6 +70,7 @@ importers:
       react-use: 17.4.0_biqbaboplfbrettd7655fr4n2y
       tailwind-merge: 1.9.0
       ui-components: link:../../packages/ui-components
+      xstate: 4.36.0
     devDependencies:
       '@openapitools/openapi-generator-cli': 2.5.2
       '@playwright/test': 1.30.0
@@ -5606,6 +5610,26 @@ packages:
 
   /@xobotyi/scrollbar-width/1.9.5:
     resolution: {integrity: sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==}
+    dev: false
+
+  /@xstate/react/3.2.0_gtag2pdc6ctwabmisrelzywdam:
+    resolution: {integrity: sha512-Oxz1WB3/Z9IHjrd2uCIQGjGA8P7UsTTPc3YuIbIsgDgfSntQuvvjR0rZlL9NKQltrCRTXvzGf/wI95wAc2u7Uw==}
+    peerDependencies:
+      '@xstate/fsm': ^2.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      xstate: ^4.36.0
+    peerDependenciesMeta:
+      '@xstate/fsm':
+        optional: true
+      xstate:
+        optional: true
+    dependencies:
+      react: 18.2.0
+      use-isomorphic-layout-effect: 1.1.2_3stiutgnnbnfnf3uowm5cip22i
+      use-sync-external-store: 1.2.0_react@18.2.0
+      xstate: 4.36.0
+    transitivePeerDependencies:
+      - '@types/react'
     dev: false
 
   /@xtuc/ieee754/1.2.0:
@@ -14655,6 +14679,14 @@ packages:
       tslib: 2.4.1
     dev: false
 
+  /use-sync-external-store/1.2.0_react@18.2.0:
+    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /use/3.1.1:
     resolution: {integrity: sha512-cwESVXlO3url9YWlFW/TA9cshCEhtu7IKJ/p5soJ/gGpj7vbvFrAY/eIioQ6Dw23KjZhYgiIo8HOs1nQ2vr/oQ==}
     engines: {node: '>=0.10.0'}
@@ -15368,6 +15400,10 @@ packages:
   /xmlchars/2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
     dev: true
+
+  /xstate/4.36.0:
+    resolution: {integrity: sha512-AUI+KPgyy3g4PDpZWzUy/5ubd8VymbqikNmrJx5AQfqh+AQnemkBiabGROno+am1wUl2yeuT3UDrzUTSidfa6g==}
+    dev: false
 
   /xtend/4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
