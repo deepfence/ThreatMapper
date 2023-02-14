@@ -135,9 +135,9 @@ const data = {
       label: 'The Internet',
       truncatedLabel: 'The Internet',
       originalLabel: 'The Internet',
-      img: '3e9fbf2410f1aa9cd787.svg',
-      type: 'image',
-      size: 10,
+      style: {
+        fill: '#db2547',
+      },
     },
     {
       id: 'deepfence-poc-agent-2',
