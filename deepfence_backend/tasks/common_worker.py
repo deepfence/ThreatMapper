@@ -621,8 +621,12 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
                 set(active_node_images_count['image_names']) - scanned_images_names_dead_active)
             scanned_image_names_dead_count = len(
                 scanned_images_names_dead_active - set(active_node_images_count['image_names']))
-
-            active_image_summary = "Image Summary (scanned {scanned_image_names_active_count} out of {active} images)".format(
+            
+            if node_type == NODE_TYPE_CONTAINER:
+                active_image_summary = "Container Summary (scanned {scanned_image_names_active_count} out of {active} images)".format(
+                scanned_image_names_active_count=scanned_image_names_active_count, active=count_data['active'])
+            else:
+                active_image_summary = "Image Summary (scanned {scanned_image_names_active_count} out of {active} images)".format(
                 scanned_image_names_active_count=scanned_image_names_active_count, active=count_data['active'])
 
             dead_image_summary = "{scanned_image_names_dead_count} images currently not monitored. ".format(
@@ -697,7 +701,11 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
                     node_count_info[i[0]] = {i[1]: v}
                 else:
                     node_count_info[i[0]][i[1]] = v
-            summary_heading = "Image vulnerabilities"
+            
+            if node_type == NODE_TYPE_CONTAINER:
+                summary_heading = "Container vulnerabilities"
+            else:
+                summary_heading = "Image vulnerabilities"
             start_index = 0
             arr_index = 0
             end_index = 0
