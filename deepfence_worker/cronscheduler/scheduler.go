@@ -73,6 +73,7 @@ func (s *Scheduler) addJobs() error {
 
 func (s *Scheduler) startImmediately() {
 	log.Info().Msg("Start immediate cronjobs")
+	s.enqeueTask(sdkUtils.SetUpGraphDBTask)()
 	s.enqeueTask(sdkUtils.CheckAgentUpgradeTask)()
 	s.enqeueTask(sdkUtils.SyncRegistryTask)()
 }

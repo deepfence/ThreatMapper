@@ -83,6 +83,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		sbom.NewSbomGenerator(ingestC).GenerateSbom,
 	)
 
+	addTerminalHandler(wml, cfg, mux, utils.SetUpGraphDBTask, cronjobs.ApplyGraphDBStartup)
+
 	addTerminalHandler(wml, cfg, mux, utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
 
 	addTerminalHandler(wml, cfg, mux, utils.RetryFailedScansTask, cronjobs.RetryScansDB)
