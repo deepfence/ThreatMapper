@@ -40,7 +40,7 @@ export const TopAttackPaths = () => {
         </DFLink>
       </div>
       <div className="flex items-center justify-center">
-        <Tabs value={'most'} tabs={attackPathTabs} size="xs" variant="secondary">
+        <Tabs value={'most'} tabs={attackPathTabs} size="xs" variant="tab">
           <DagreGraph />
         </Tabs>
       </div>
