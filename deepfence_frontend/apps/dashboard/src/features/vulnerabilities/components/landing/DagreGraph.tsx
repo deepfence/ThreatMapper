@@ -8,7 +8,6 @@ import G6, {
 } from '@antv/g6';
 import { useEffect, useRef, useState } from 'react';
 import { Radio } from 'ui-components';
-// import { AutoSizer } from 'react-virtualized';
 
 G6.registerEdge(
   'circles-running',
@@ -135,9 +134,9 @@ const data = {
       label: 'The Internet',
       truncatedLabel: 'The Internet',
       originalLabel: 'The Internet',
-      style: {
-        fill: '#db2547',
-      },
+      img: '3e9fbf2410f1aa9cd787.svg',
+      type: 'image',
+      size: 10,
     },
     {
       id: 'deepfence-poc-agent-2',
@@ -289,22 +288,8 @@ export const DagreGraph = () => {
   }, [data]);
 
   return (
-    <div
-      style={{ position: 'relative', textAlign: 'left' }}
-      //   className={styles.dagreGraphContainer}
-    >
-      {/* <AutoSizer> */}
-      {/* {({ height: calculatedHeight, width: calculatedWidth }) => {
-        if ((isNil(height) || isNil(width)) && graphRef.current) {
-          graphRef.current.changeSize(
-            width ?? calculatedWidth,
-            height ?? calculatedHeight,
-          );
-          graphRef.current.render();
-        }
-    }} */}
+    <div style={{ position: 'relative', textAlign: 'left' }}>
       <div ref={ref} />
-      {/* </AutoSizer> */}
     </div>
   );
 };
