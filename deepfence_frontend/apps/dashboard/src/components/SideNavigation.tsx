@@ -1,11 +1,20 @@
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import classNames from 'classnames';
 import { forwardRef, ReactNode, useEffect } from 'react';
-import { IconContext, IconType } from 'react-icons';
-import { HiChartPie } from 'react-icons/hi';
 import { NavLink } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { Tooltip } from 'ui-components';
+
+import { DashboardIcon } from '@/components/sideNavigation/icons/Dashboard';
+import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
+import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
+import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { SettingsIcon } from '@/components/sideNavigation/icons/Settings';
+import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
+import { TopologyIcon } from '@/components/sideNavigation/icons/Topology';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 
 export interface SideNavigationRootProps {
   expanded?: boolean;
@@ -13,47 +22,57 @@ export interface SideNavigationRootProps {
 
 const MenuItems: Array<{
   title: string;
-  Icon: IconType;
+  Icon: () => JSX.Element;
   to: string;
 }> = [
   {
     title: 'Dashboard',
-    Icon: HiChartPie,
+    Icon: DashboardIcon,
     to: '/dashboard',
   },
   {
+    title: 'Topology',
+    Icon: TopologyIcon,
+    to: '/topology',
+  },
+  {
     title: 'Threat Graph',
-    Icon: HiChartPie,
+    Icon: ThreatGraphIcon,
     to: '/threatgraph',
   },
   {
     title: 'Vulnerability',
-    Icon: HiChartPie,
+    Icon: VulnerabilityIcon,
     to: '/vulnerability',
   },
   {
     title: 'Secrets',
-    Icon: HiChartPie,
+    Icon: SecretsIcon,
     to: '/secrets',
   },
   {
     title: 'Malware',
-    Icon: HiChartPie,
+    Icon: MalwareIcon,
     to: '/malware',
   },
   {
+    title: 'Posture',
+    Icon: PostureIcon,
+    to: '/posture',
+  },
+  {
     title: 'Registries',
-    Icon: HiChartPie,
+    Icon: RegistryIcon,
     to: '/registries',
   },
   {
     title: 'Integrations',
-    Icon: HiChartPie,
+    Icon: IntegrationsIcon,
     to: '/integrations',
   },
   {
     title: 'Settings',
-    Icon: HiChartPie,
+    Icon: SettingsIcon,
     to: '/settings',
   },
 ];
@@ -130,19 +149,17 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
                     {({ isActive }) => {
                       return (
                         <>
-                          <IconContext.Provider
-                            value={{
-                              className: classNames(
-                                'w-6 h-6 group-hover:text-gray-900 dark:group-hover:text-white shrink-0',
-                                {
-                                  ['text-gray-900 dark:text-white']: isActive,
-                                  ['text-gray-500 dark:text-gray-400']: !isActive,
-                                },
-                              ),
-                            }}
+                          <div
+                            className={classNames(
+                              'w-6 h-6 group-hover:text-gray-900 dark:group-hover:text-white shrink-0',
+                              {
+                                ['text-gray-900 dark:text-white']: isActive,
+                                ['text-gray-500 dark:text-gray-400']: !isActive,
+                              },
+                            )}
                           >
                             <menuItem.Icon />
-                          </IconContext.Provider>
+                          </div>
                           {expanded && (
                             <div className="overflow-hidden flex-1">{menuItem.title}</div>
                           )}
