@@ -16,7 +16,9 @@ replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/d
 
 replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230210142931-d7ece294a35f
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230214045743-895f4fde21cc
+
+replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/agent-plugins-grpc
 
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0

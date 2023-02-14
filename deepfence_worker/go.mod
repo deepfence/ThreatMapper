@@ -12,9 +12,11 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 
 replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/deepfence/tcptracer-bpf
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230210142931-d7ece294a35f
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230214045743-895f4fde21cc
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server/
+
+replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/agent-plugins-grpc
 
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
@@ -141,5 +143,3 @@ require (
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/agent-plugins-grpc

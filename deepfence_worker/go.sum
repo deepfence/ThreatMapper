@@ -275,8 +275,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
 github.com/deepfence/SecretScanner v1.2.0 h1:FOyVrImNbtpqvBCrO+1CwksuXtRAl33SHvKHN6+U0W4=
 github.com/deepfence/SecretScanner v1.2.0/go.mod h1:4jjUsmJVc+rnGRyBzCTVkAzgVJ/rV0xNvP0L2+U7eYc=
-github.com/deepfence/package-scanner v1.2.4-0.20230210142931-d7ece294a35f h1:old5doaAm1Vbd25FisshZJ+TpBGWzMEfUMwWPdqjMls=
-github.com/deepfence/package-scanner v1.2.4-0.20230210142931-d7ece294a35f/go.mod h1:X96ePPwstdu6LmtDfp6C0ZPLbS1enV0HNOoEwDMYaPs=
+github.com/deepfence/package-scanner v1.2.4-0.20230214045743-895f4fde21cc h1:Im10ASMRAPOTj/1GFPvLLMiwIbpsORDzZHN3HkLD1jY=
+github.com/deepfence/package-scanner v1.2.4-0.20230214045743-895f4fde21cc/go.mod h1:X96ePPwstdu6LmtDfp6C0ZPLbS1enV0HNOoEwDMYaPs=
 github.com/deepfence/vessel v0.9.1 h1:43IuWdrRqHRW8O065qtporepudEGQWhMSqpxiI0/lSE=
 github.com/deepfence/vessel v0.9.1/go.mod h1:cN+m37ETZPBZvsZGZWxuMGagSC2dllUam5ypvC23IbI=
 github.com/denverdino/aliyungo v0.0.0-20190125010748-a747050bb1ba/go.mod h1:dV8lFg6daOBZbT6/BDGIz6Y3WFGn8juu6G+CQ6LHtl0=
