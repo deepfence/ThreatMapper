@@ -52,6 +52,33 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 	return r, err
 }
 
+func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafeRow) (Registry, error) {
+	var r Registry
+	err := errors.Errorf("registry type: %s, not supported", row.RegistryType)
+	// todo: move to constants
+	if row.RegistryType == "docker_hub" {
+		var nonSecret map[string]string
+		var secret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &dockerhub.RegistryDockerHub{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: dockerhub.NonSecret{
+				DockerHubNamespace: nonSecret["docker_hub_namespace"],
+				DockerHubUsername:  nonSecret["docker_hub_username"],
+			},
+			Secret: dockerhub.Secret{
+				DockerHubPassword: secret["docker_hub_password"],
+			},
+		}
+		return r, nil
+	}
+	return r, err
+}
+
 // Registry is the interface for all the supported registries
 type Registry interface {
 	IsValidCredential() bool

@@ -180,8 +180,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 			r.Route("/cloud-node", func(r chi.Router) {
 				r.Post("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionRegister, dfHandler.RegisterCloudNodeAccountHandler))
-				r.Post("/accounts/list", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
-				r.Get("/providers/list", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))
+				r.Post("/list/accounts", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
+				r.Get("/list/providers", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))
 			})
 
 			r.Route("/scan/start", func(r chi.Router) {
