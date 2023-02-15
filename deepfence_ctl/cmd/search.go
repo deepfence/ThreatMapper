@@ -86,6 +86,7 @@ var topCmd = &cobra.Command{
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
+			log.Info().Msgf("%v", res)
 			output.Out(res)
 			//	case "vulnerability":
 			//		req := http.Client().LookupApi.SearchContainerImages(context.Background())

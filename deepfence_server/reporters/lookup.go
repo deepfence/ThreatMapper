@@ -308,11 +308,13 @@ func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filt
 	}
 	defer tx.Close()
 
-	r, err := tx.Run(`
-		MATCH (n:`+dummy.NodeType()+`) `+
-		parseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true)+
-		` RETURN `+fieldFilterCypher("n", filter.InFieldFilter)+` `+
-		orderFilter2CypherCondition("n", filter.Filters.OrderFilter),
+	query := `
+		MATCH (n:` + dummy.NodeType() + `) ` +
+		parseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+		` RETURN ` + fieldFilterCypher("n", filter.InFieldFilter) + ` ` +
+		orderFilter2CypherCondition("n", filter.Filters.OrderFilter)
+	log.Info().Msgf("search query: %v", query)
+	r, err := tx.Run(query,
 		map[string]interface{}{})
 
 	if err != nil {
