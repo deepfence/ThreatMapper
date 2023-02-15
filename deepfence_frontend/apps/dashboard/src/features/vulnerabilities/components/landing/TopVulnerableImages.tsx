@@ -1,3 +1,4 @@
+import { truncate } from 'lodash-es';
 import { HiArrowSmRight } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { Card } from 'ui-components';
@@ -5,7 +6,6 @@ import { Card } from 'ui-components';
 import { DFLink } from '@/components/DFLink';
 import { ReactECharts } from '@/components/ReactEcharts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { truncateString } from '@/utils/string';
 
 export const TopContainers = ({ theme }: { theme: Mode }) => {
   return (
@@ -48,7 +48,7 @@ export const TopContainers = ({ theme }: { theme: Mode }) => {
           type: 'category',
           axisLabel: {
             formatter: (value: string) => {
-              return truncateString(value, 10);
+              return truncate(value, { length: 13 });
             },
           },
           axisTick: {
