@@ -25,6 +25,8 @@ kubectl delete -f https://deepfence-public.s3.amazonaws.com/kubernetes/deepfence
 - Deploy deepfence-agent helm chart
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm show readme deepfence/deepfence-agent
+helm show values deepfence/deepfence-agent
 
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
