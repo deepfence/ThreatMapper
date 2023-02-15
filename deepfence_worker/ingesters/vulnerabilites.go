@@ -94,41 +94,6 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 	return tx.Commit()
 }
 
-func CommitFuncVulnerabilitiesScanStatus(ns string, data []VulnerabilityScanStatus) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:VulnerabilityScan{node_id: row.scan_id}) SET n.status = row.scan_status, n.updated_at = TIMESTAMP()",
-		map[string]interface{}{"batch": cveStatusToMaps(data)}); err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-func cveStatusToMaps(data []VulnerabilityScanStatus) []map[string]interface{} {
-	statuses := []map[string]interface{}{}
-	for _, i := range data {
-		statuses = append(statuses, utils.ToMap(i))
-	}
-	return statuses
-}
-
 func CVEsToMaps(ms []Vulnerability) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {

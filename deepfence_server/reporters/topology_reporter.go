@@ -352,6 +352,13 @@ func orderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 	return fmt.Sprintf("ORDER BY %s.%s LIMIT %v", cypherNodeName, filter.OrderField, filter.Limit)
 }
 
+func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {
+	if filter.OrderField != "" {
+		return []string{fmt.Sprintf("%s.%s IS NOT NULL", cypherNodeName, filter.OrderField)}
+	}
+	return []string{}
+}
+
 func parseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {
 
 	f, has := filters.Get()
@@ -361,13 +368,15 @@ func parseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.O
 
 	conditions := containsFilter2CypherConditions(cypherNodeName, f.ContainsFilter)
 
+	conditions = append(conditions, orderFilter2CypherWhere(cypherNodeName, f.OrderFilter)...)
+
 	if len(conditions) == 0 {
 		return ""
 	}
 
-	first_clause := "AND"
+	first_clause := " AND "
 	if starts_where_clause {
-		first_clause = "WHERE"
+		first_clause = " WHERE "
 	}
 
 	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))

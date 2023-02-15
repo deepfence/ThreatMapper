@@ -89,49 +89,6 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	return tx.Commit()
 }
 
-func CommitFuncSecretScanStatus(ns string, data []SecretScanStatus) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
-	driver, err := directory.Neo4jClient(ctx)
-
-	if len(data) == 0 {
-		return nil
-	}
-
-	if err != nil {
-		return err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run(`
-		UNWIND $batch as row
-		MERGE (n:SecretScan{node_id: row.scan_id})
-		SET n.status = row.scan_status, n.updated_at = TIMESTAMP()`,
-		map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-func statusesToMaps(data []SecretScanStatus) []map[string]interface{} {
-	statuses := []map[string]interface{}{}
-	for _, i := range data {
-		statuses = append(statuses, utils.ToMap(i))
-	}
-	return statuses
-}
-
 func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 	secrets := []map[string]map[string]interface{}{}
 	for _, i := range data {
