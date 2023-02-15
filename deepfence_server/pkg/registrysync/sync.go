@@ -12,7 +12,6 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	// "github.com/deepfence/golang_deepfence_sdk/utils/directory"
 )
 
 func Sync() error {
