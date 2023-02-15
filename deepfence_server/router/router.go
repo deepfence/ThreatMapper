@@ -154,6 +154,17 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/registryaccount", dfHandler.GetRegistryAccount)
 			})
 
+			r.Route("/search", func(r chi.Router) {
+				r.Post("/hosts", dfHandler.SearchHosts)
+				r.Post("/containers", dfHandler.SearchContainers)
+				r.Post("/images", dfHandler.SearchContainerImages)
+				r.Post("/vulnerabilities", dfHandler.SearchVulnerabilities)
+				r.Post("/secrets", dfHandler.SearchSecrets)
+				r.Post("/malwares", dfHandler.SearchMalwares)
+				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
+				r.Post("/compliances", dfHandler.SearchCompliances)
+			})
+
 			r.Route("/controls", func(r chi.Router) {
 				r.Post("/agent", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetAgentControls))
 				r.Post("/kubernetes-cluster", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetKubernetesClusterControls))

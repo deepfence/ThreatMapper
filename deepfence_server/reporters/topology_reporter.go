@@ -325,8 +325,14 @@ type ContainsFilter struct {
 	FieldsValues map[string][]interface{} `json:"filter_in" required:"true"`
 }
 
+type OrderFilter struct {
+	OrderField string `json:"order_field" required:"true"`
+	Limit      int    `json:"limit" required:"true"`
+}
+
 type FieldsFilters struct {
 	ContainsFilter ContainsFilter `json:"contains_filter" required:"true"`
+	OrderFilter    OrderFilter    `json:"order_filter" required:"true"`
 }
 
 func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter) []string {
@@ -340,6 +346,10 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 		conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
 	}
 	return conditions
+}
+
+func orderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
+	return fmt.Sprintf("ORDER BY %s.%s LIMIT %v", cypherNodeName, filter.OrderField, filter.Limit)
 }
 
 func parseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {

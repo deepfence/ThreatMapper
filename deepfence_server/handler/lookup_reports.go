@@ -126,3 +126,139 @@ func (h *Handler) GetRegistryAccount(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msg(err.Error())
 	}
 }
+
+func (h *Handler) SearchHosts(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.SearchFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.SearchHostsReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) SearchContainers(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.SearchFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.SearchContainersReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) SearchContainerImages(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.SearchFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.SearchContainerImagesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) SearchVulnerabilities(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.SearchFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.SearchVulnerabilitiesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) SearchSecrets(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.SearchFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.SearchSecretsReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) SearchMalwares(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.SearchFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.SearchMalwaresReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) SearchCloudCompliances(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.SearchFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.SearchCloudCompliancesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) SearchCompliances(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters.SearchFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	hosts, err := reporters.SearchCompliancesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
