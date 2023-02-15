@@ -1,46 +1,38 @@
 import cx from 'classnames';
 import { useMemo, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { FiFilter } from 'react-icons/fi';
-import { HiClock, HiDotsVertical } from 'react-icons/hi';
-import { RxDoubleArrowLeft } from 'react-icons/rx';
-import {
-  Badge,
-  Button,
-  createColumnHelper,
-  getRowSelectionColumn,
-  Table,
-} from 'ui-components';
+import { HiArrowSmLeft, HiDotsVertical } from 'react-icons/hi';
+import { IoIosGitNetwork } from 'react-icons/io';
+import { Badge, createColumnHelper, getRowSelectionColumn, Table } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
-import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { UniqueVulnerabilityFilterModal } from '@/features/vulnerabilities/components/unique-vulnerabilities/UniqueVulnerabilityFilterModal';
 
 type TableDataType = {
-  nodeType: string;
-  nodeName: string;
-  timestamp: string;
-  status: string;
-  total: number;
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
+  rank: number;
+  id: string;
+  severity: string;
+  score: number;
+  attackVector: string;
+  liveConnection: string;
+  exploit: string;
+  type: string;
+  description: string;
   action?: null;
 };
 
 const data = Array.from(Array(25).keys()).map((i) => {
   return {
-    nodeType: i % 2 === 0 ? 'container_image' : 'host',
-    nodeName: 'nginx',
-    timestamp: 'Dec 2 2022 6:42:09',
-    status: i % 2 === 0 ? 'Completed' : 'Failed',
-    total: 1234,
-    critical: 99,
-    high: 3,
-    medium: 29,
-    low: 188,
+    rank: 1,
+    id: 'CVE-2022-234',
+    severity: i % 2 === 0 ? 'critical' : i % 3 === 0 ? 'medium' : 'low',
+    score: i,
+    attackVector: 'network',
+    liveConnection: i % 2 === 0 ? 'yes' : 'no',
+    exploit: 'Link',
+    type: 'deepfence-poc-agent-2 + 1 image(s)',
+    description:
+      'Apache Log4j2 2.0-beta9 through 2.15.0 (excluding security releases 2.12.2, 2.12.3, and',
   };
 });
 const UniqueVulnerabilities = () => {
@@ -55,131 +47,121 @@ const UniqueVulnerabilities = () => {
         minSize: 0,
         maxSize: 0,
       }),
-      columnHelper.accessor('nodeType', {
-        enableSorting: false,
-        cell: (info) => {
-          return (
-            <div className="flex items-center gap-x-2">
-              <div className="bg-blue-100 dark:bg-blue-500/10 p-2 rounded-lg">
-                <IconContext.Provider
-                  value={{ className: 'w-5 h-5 text-blue-500 dark:text-blue-400' }}
-                >
-                  {IconMapForNodeType[info.getValue()]}
-                </IconContext.Provider>
-              </div>
-              <span className="capitalize">{info.getValue()?.replaceAll('_', ' ')}</span>
-            </div>
-          );
-        },
-        header: () => 'Type',
-        minSize: 500,
-      }),
-      columnHelper.accessor('nodeName', {
-        enableSorting: false,
+      columnHelper.accessor('rank', {
+        enableSorting: true,
         cell: (info) => info.getValue(),
-        header: () => 'Name',
-        minSize: 500,
+        header: () => 'Rank',
+        minSize: 10,
+        size: 20,
+        maxSize: 20,
       }),
-      columnHelper.accessor('timestamp', {
-        cell: (info) => (
-          <div className="flex items-center gap-x-2">
-            <IconContext.Provider value={{ className: 'text-gray-400 ' }}>
-              <HiClock />
-            </IconContext.Provider>
-            {info.getValue()}
-          </div>
-        ),
-        header: () => 'Timestamp',
-        minSize: 500,
+      columnHelper.accessor('id', {
+        enableSorting: false,
+        cell: (info) => <DFLink to="#">{info.getValue()}</DFLink>,
+        header: () => 'CVE ID',
+        minSize: 200,
       }),
-      columnHelper.accessor('status', {
+      columnHelper.accessor('severity', {
         enableSorting: false,
         cell: (info) => (
           <Badge
             label={info.getValue()}
             className={cx({
-              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                info.getValue().toLocaleLowerCase() === 'completed',
               'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                info.getValue().toLocaleLowerCase() === 'failed',
+                info.getValue().toLocaleLowerCase() === 'critical',
+              'bg-pink-100 dark:bg-pink-600/10 text-pink-600 dark:text-pink-400':
+                info.getValue().toLocaleLowerCase() === 'high',
+              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
+                info.getValue().toLocaleLowerCase() === 'medium',
+              'bg-yellow-300/20 dark:bg-yellow-400/10 text-yellow-500 dark:text-yellow-400':
+                info.getValue().toLocaleLowerCase() === 'low',
             })}
             size="sm"
           />
         ),
-        header: () => 'Status',
-        minSize: 500,
+        header: () => 'Severity',
+        minSize: 60,
+        size: 80,
+        maxSize: 100,
       }),
-      columnHelper.accessor('total', {
+      columnHelper.accessor('score', {
         enableSorting: true,
-        cell: (info) => (
-          <div className="flex items-center gap-x-2">
-            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500"></div>
-            {info.getValue()}
-          </div>
-        ),
-        header: () => (
-          <div className="flex items-center">
-            <span className="w-5 h-5 mr-1 text-blue-500 dark:text-blue-400">
-              <VulnerabilityIcon />
-            </span>
-            Total
-          </div>
-        ),
-        minSize: 200,
+        cell: (info) => info.getValue(),
+        header: () => 'Score',
+        minSize: 20,
+        size: 20,
+        maxSize: 40,
       }),
-      columnHelper.accessor('critical', {
+      columnHelper.accessor('attackVector', {
         enableSorting: false,
         cell: (info) => (
           <div className="flex items-center gap-x-2">
-            <div className="w-2 h-2 bg-red-400 dark:bg-red-500 rounded-full"></div>
+            <div>
+              <IconContext.Provider
+                value={{
+                  className: cx('w-4 h-4 text-gray-400 dark:text-gray-500'),
+                }}
+              >
+                <IoIosGitNetwork />
+              </IconContext.Provider>
+            </div>
             {info.getValue()}
           </div>
         ),
-        header: () => '',
-        minSize: 200,
+        header: () => 'Attack Vector',
+        minSize: 100,
       }),
-      columnHelper.accessor('high', {
+      columnHelper.accessor('liveConnection', {
         enableSorting: false,
         cell: (info) => (
           <div className="flex items-center gap-x-2">
-            <div className="w-2 h-2 bg-pink-400 dark:bg-pink-500 rounded-full"></div>
-            {info.getValue()}
+            <div
+              className={cx('w-3 h-3 rounded-full', {
+                'bg-green-400 dark:bg-green-500 ': info.getValue() === 'yes',
+                'bg-gray-400': info.getValue() === 'no',
+              })}
+            ></div>
           </div>
         ),
-        header: () => '',
-        minSize: 200,
+        header: () => 'Live',
+        minSize: 50,
+        size: 60,
       }),
-      columnHelper.accessor('medium', {
+      columnHelper.accessor('exploit', {
         enableSorting: false,
-        cell: (info) => (
-          <div className="flex items-center gap-x-2">
-            <div className="w-2 h-2 bg-blue-400 dark:bg-blue-500 rounded-full"></div>
-            {info.getValue()}
-          </div>
-        ),
-        header: () => '',
-        minSize: 200,
+        cell: (info) => <DFLink to="#">{info.getValue()}</DFLink>,
+        header: () => 'Exploit',
+        minSize: 30,
+        size: 50,
+        maxSize: 50,
       }),
-      columnHelper.accessor('low', {
+      columnHelper.accessor('type', {
         enableSorting: false,
-        cell: (info) => (
-          <div className="flex items-center gap-x-2">
-            <div className="w-2 h-2 bg-yellow-300 dark:bg-yellow-500 rounded-full"></div>
-            {info.getValue()}
-          </div>
-        ),
-        header: () => '',
-        minSize: 200,
+        cell: (info) => info.getValue(),
+        header: () => 'Asset Type',
+        minSize: 300,
+        size: 400,
+        maxSize: 400,
+      }),
+      columnHelper.accessor('description', {
+        enableSorting: false,
+        cell: (info) => info.getValue(),
+        header: () => 'Description',
+        minSize: 300,
+        size: 500,
+        maxSize: 500,
       }),
       columnHelper.accessor('action', {
         enableSorting: false,
-        cell: (info) => (
+        cell: () => (
           <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
             <HiDotsVertical />
           </IconContext.Provider>
         ),
         header: () => '',
         minSize: 10,
+        size: 10,
+        maxSize: 10,
       }),
     ];
 
@@ -192,43 +174,22 @@ const UniqueVulnerabilities = () => {
         setShowFilter={setShowFilter}
         elementToFocusOnClose={elementToFocusOnClose.current}
       />
-      <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <span className="text-lg font-medium text-gray-700 dark:text-gray-200 mr-2">
-          Unique Vulnerabilities
-        </span>
+      <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <DFLink
           to={'/vulnerability'}
-          className="flex hover:no-underline items-center justify-center"
+          className="flex hover:no-underline items-center justify-center  mr-2"
         >
           <IconContext.Provider
             value={{
               className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
             }}
           >
-            <RxDoubleArrowLeft />
+            <HiArrowSmLeft />
           </IconContext.Provider>
-          <span className="text-sm text-blue-600 dark:text-blue-500">Back</span>
         </DFLink>
-        <div className="ml-auto relative">
-          <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-          <Button
-            className="ml-auto bg-blue-100 dark:bg-blue-300/10"
-            size="xs"
-            color="normal"
-            ref={elementToFocusOnClose}
-            onClick={() => {
-              setShowFilter(true);
-            }}
-          >
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <FiFilter />
-            </IconContext.Provider>
-          </Button>
-        </div>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+          UNIQUE VULNERABILITIES
+        </span>
       </div>
       <div className="m-2">
         <Table
