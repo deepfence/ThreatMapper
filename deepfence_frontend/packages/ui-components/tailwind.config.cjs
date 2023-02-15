@@ -106,7 +106,7 @@ module.exports = {
         // modal
         'pop-in': 'pop-in 0.5s ease',
         'pop-out': 'pop-out 0.5s ease',
-        'slide-right-in': 'slide-right-in 0.5s forwards',
+        'slide-right-in': 'slide-right-in 0.2s forwards',
         'slide-right-out': 'slide-right-out 0.5s forwards',
         'slide-left-in': 'slide-left-in 0.2s forwards',
         'slide-left-out': 'slide-left-out 0.5s forwards',
