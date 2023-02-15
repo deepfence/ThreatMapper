@@ -19,7 +19,7 @@ export interface ModalProps extends DialogPrimitive.DialogProps {
   width?: string;
   title?: string;
   footer?: React.ReactNode;
-  elementToFocusOnCloseRef?: React.RefObject<FocusableElement>;
+  elementToFocusOnCloseRef?: React.RefObject<FocusableElement> | null;
 }
 
 const ModalHeader: FC<{ title?: string }> = ({ title }) => {

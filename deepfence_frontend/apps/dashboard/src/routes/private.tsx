@@ -33,6 +33,7 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
+import { module as uniqueVulnerability } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
 import { CustomRouteObject } from '@/utils/router';
 
@@ -186,6 +187,11 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability',
         ...vulnerability,
         meta: { title: 'Vulnerability' },
+      },
+      {
+        path: 'vulnerability/unique-vulnerability',
+        ...uniqueVulnerability,
+        meta: { title: 'Unique Vulnerability' },
       },
     ],
   },
