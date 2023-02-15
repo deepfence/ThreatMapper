@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/Jeffail/tunny"
-	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
@@ -153,7 +152,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 				secretScanLogDoc["time_stamp"] = getTimestamp()
 				secretScanLogDoc["@timestamp"] = getCurrentTime()
 				byteJson, _ = json.Marshal(secretScanLogDoc)
-				ingestScanData(string(byteJson), secretScanLogsIndexName)
+				writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 			case <-stopScanStatus:
 				return
 			}

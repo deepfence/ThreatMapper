@@ -1267,7 +1267,8 @@ def enumerate_node_filters():
                         if node_type == constants.NODE_TYPE_CONTAINER_IMAGE:
                             images.append(node_id)
                         if node_type == constants.NODE_TYPE_CONTAINER:
-                            containers.append(node_id_bucket.get("container_name", {}).get("buckets", [{}])[0].get("key", ""))
+                            for container_bucket in node_id_bucket.get("container_name", {}).get("buckets", [{}]):
+                                containers.append(container_bucket.get("key", ""))
                         if node_type == constants.NODE_TYPE_HOST:
                             hosts.append(node_id)
 
