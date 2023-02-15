@@ -14,13 +14,64 @@ export const TopContainers = ({ theme }: { theme: Mode }) => {
       option={{
         backgroundColor: 'transparent',
         dataset: {
+          dimensions: [
+            {
+              name: 'containerName',
+              displayName: 'Container Name',
+            },
+            {
+              name: 'low',
+              displayName: 'Low',
+            },
+            {
+              name: 'medium',
+              displayName: 'Medium',
+            },
+            {
+              name: 'high',
+              displayName: 'High',
+            },
+            {
+              name: 'critical',
+              displayName: 'Critical',
+            },
+          ],
           source: [
-            ['Container Name', 'Low', 'Medium', 'High', 'Critical'],
-            ['nginx:latest', 4, 1, 4, 1],
-            ['mysql:latest', 2, 4, 4, 1],
-            ['wordpress:latest', 3, 6, 4, 1],
-            ['deepfenceio/haproxy:latest', 5, 3, 4, 2],
-            ['deepfenceio/test-123-123:latest', 3, 0, 4, 7],
+            {
+              containerName: 'nginx:latest',
+              low: 400,
+              medium: 100,
+              high: 246,
+              critical: 118,
+            },
+            {
+              containerName: 'mysql:latest',
+              low: 12,
+              medium: 108,
+              high: 321,
+              critical: 89,
+            },
+            {
+              containerName: 'wordpress:latest',
+              low: 40,
+              medium: 189,
+              high: 370,
+              critical: 110,
+            },
+            {
+              containerName: 'deepfenceio/haproxy:latest',
+              low: 234,
+              medium: 456,
+              high: 66,
+              critical: 200,
+            },
+            {
+              containerName: 'deepfenceio/test-123-123:latest',
+              low: 40,
+              medium: 134,
+              high: 410,
+              critical: 334,
+            },
           ],
         },
         tooltip: {
