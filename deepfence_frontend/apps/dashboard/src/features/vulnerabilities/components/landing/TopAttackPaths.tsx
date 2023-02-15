@@ -28,7 +28,10 @@ export const TopAttackPaths = () => {
     <Card className="min-h-[100px] p-2 grid grid-flow-row">
       <div className="p-2 flex items-center">
         <h4 className="text-gray-900 text-sm dark:text-white">Top Attack Paths</h4>
-        <DFLink to={'/'} className="flex items-center hover:no-underline ml-auto mr-2">
+        <DFLink
+          to={'/vulnerability/scan-results'}
+          className="flex items-center hover:no-underline ml-auto mr-2"
+        >
           <span className="text-xs text-blue-600 dark:text-blue-500">Details</span>
           <IconContext.Provider
             value={{
