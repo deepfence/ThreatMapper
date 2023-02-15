@@ -79,7 +79,7 @@ describe(`Component SlidingModal`, () => {
             open={open}
             onOpenChange={() => setOpen(false)}
             elementToFocusOnCloseRef={ref}
-            title="Test title"
+            header="Test title"
             footer={<Footer />}
           >
             This is a content

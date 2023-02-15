@@ -21,7 +21,7 @@ export {
 export { default as TextInput } from '@/components/input/TextInput';
 export { default as TextInputArea } from '@/components/input/TextInputArea';
 export { default as Modal } from '@/components/modal/Modal';
-export { default as SlidingModal } from '@/components/modal/SlidingModal';
+export { ModalHeader, default as SlidingModal } from '@/components/modal/SlidingModal';
 export { default as Radio } from '@/components/radio/Radio';
 export { Select, SelectItem } from '@/components/select/Select';
 export { default as Separator } from '@/components/separator/Separator';

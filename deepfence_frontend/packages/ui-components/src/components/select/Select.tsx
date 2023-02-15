@@ -23,7 +23,7 @@ type MutableValue<T extends Value = Value> = T extends string ? string : T;
 
 export interface SelectProps<T extends Value = Value> {
   defaultValue?: T;
-  label?: string;
+  label?: React.ReactNode;
   children: React.ReactNode;
   name?: string;
   value?: MutableValue<T>;
