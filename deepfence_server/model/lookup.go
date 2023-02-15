@@ -26,15 +26,27 @@ func (KubernetesCluster) NodeType() string {
 	return "KubernetesCluster"
 }
 
+type RegularScanStatus struct {
+	VulnerabilitiesCount int `json:"vulnerabilities_count"`
+	VulnerabilityScanStatus string `json:"vulnerability_scan_status"`
+	SecretsCount int `json:"secrets_count"`
+	SecretScanStatus string `json:"secret_scan_status"`
+	MalwaresCount int `json:"malwares_count"`
+	MalwareScanStatus string `json:"malware_scan_status"`
+	CompliancesCount int `json:"compliances_count"`
+	ComplianceScanStatus string `json:"compliance_scan_status"`
+}
+
 type Host struct {
-	ID              string           `json:"node_id" required:"true"`
-	Name            string           `json:"host_name" required:"true"`
-	Containers      []Container      `json:"containers" required:"true"`
-	Processes       []Process        `json:"processes" required:"true"`
-	Pods            []Pod            `json:"pods" required:"true"`
-	ContainerImages []ContainerImage `json:"container_images" required:"true"`
-	Metadata        Metadata         `json:"cloud_metadata" required:"true" nested_json:"true"`
-	Metrics         ComputeMetrics   `json:"metrics" required:"true"`
+	ID                string           `json:"node_id" required:"true"`
+	Name              string           `json:"host_name" required:"true"`
+	Containers        []Container      `json:"containers" required:"true"`
+	Processes         []Process        `json:"processes" required:"true"`
+	Pods              []Pod            `json:"pods" required:"true"`
+	ContainerImages   []ContainerImage `json:"container_images" required:"true"`
+	Metadata          Metadata         `json:"cloud_metadata" required:"true" nested_json:"true"`
+	Metrics           ComputeMetrics   `json:"metrics" required:"true"`
+	RegularScanStatus
 }
 
 type RegistryAccount struct {
@@ -78,14 +90,15 @@ func (Pod) NodeType() string {
 }
 
 type Container struct {
-	ID             string         `json:"node_id" required:"true"`
-	Name           string         `json:"name" required:"true"`
-	ContainerImage ContainerImage `json:"image" required:"true"`
-	Processes      []Process      `json:"processes" required:"true"`
-	Metrics        ComputeMetrics `json:"metrics" required:"true"`
-	Metadata       Metadata       `json:"metadata" required:"true" nested_json:"true"`
-	DockerLabels   Metadata       `json:"docker_labels" required:"true" nested_json:"true"`
-	HostName       string         `json:"host_name" required:"true"`
+	ID                string           `json:"node_id" required:"true"`
+	Name              string           `json:"name" required:"true"`
+	ContainerImage    ContainerImage   `json:"image" required:"true"`
+	Processes         []Process        `json:"processes" required:"true"`
+	Metrics           ComputeMetrics   `json:"metrics" required:"true"`
+	Metadata          Metadata         `json:"metadata" required:"true" nested_json:"true"`
+	DockerLabels      Metadata         `json:"docker_labels" required:"true" nested_json:"true"`
+	HostName          string           `json:"host_name" required:"true"`
+	RegularScanStatus
 }
 
 func (Container) NodeType() string {
@@ -108,12 +121,13 @@ func (Process) NodeType() string {
 }
 
 type ContainerImage struct {
-	ID       string         `json:"node_id" required:"true"`
-	Name     string         `json:"docker_image_name" required:"true"`
-	Tag      string         `json:"docker_image_tag" required:"true"`
-	Size     string         `json:"docker_image_size" required:"true"`
-	Metrics  ComputeMetrics `json:"metrics" required:"true"`
-	Metadata Metadata       `json:"metadata" required:"true" nested_json:"true"`
+	ID                string           `json:"node_id" required:"true"`
+	Name              string           `json:"docker_image_name" required:"true"`
+	Tag               string           `json:"docker_image_tag" required:"true"`
+	Size              string           `json:"docker_image_size" required:"true"`
+	Metrics           ComputeMetrics   `json:"metrics" required:"true"`
+	Metadata          Metadata         `json:"metadata" required:"true" nested_json:"true"`
+	RegularScanStatus
 }
 
 func (ContainerImage) NodeType() string {
