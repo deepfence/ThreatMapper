@@ -148,7 +148,7 @@ func addTerminalHandler(
 	task string,
 	callback func(*message.Message) error) error {
 
-	subscriber, err := subscribe(utils.CleanUpGraphDBTask, cfg.KafkaBrokers, wml)
+	subscriber, err := subscribe(task, cfg.KafkaBrokers, wml)
 	if err != nil {
 		return err
 	}
