@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
-	"github.com/swaggest/jsonschema-go"
 	"github.com/weaveworks/scope/render/detailed"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -16,10 +15,6 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
-
-type Test struct {
-	Arr []jsonschema.AnyOfExposer `json:"arr"`
-}
 
 func (d *OpenApiDocs) AddUserAuthOperations() {
 	d.AddOperation("registerUser", http.MethodPost, "/deepfence/user/register",
@@ -139,40 +134,55 @@ func (d *OpenApiDocs) AddSearchOperations() {
 
 	d.AddOperation("searchHosts", http.MethodPost, "/deepfence/search/hosts",
 		"Search hosts", "Retrieve all the data associated with hosts",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.Host))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchFilter), new([]model.Host))
 
 	d.AddOperation("searchContainers", http.MethodPost, "/deepfence/search/containers",
 		"Search Containers data", "Retrieve all the data associated with containers",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.Container))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchFilter), new([]model.Container))
 
 	d.AddOperation("searchContainerImages", http.MethodPost, "/deepfence/search/images",
 		"Search Container images", "Retrieve all the data associated with processes",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.ContainerImage))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchFilter), new([]model.ContainerImage))
 
 	d.AddOperation("searchVulnerabilities", http.MethodPost, "/deepfence/search/vulnerabilities",
 		"Search Vulnerabilities", "Retrieve all the data associated with k8s clusters",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.Vulnerability))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchFilter), new([]model.Vulnerability))
 
 	d.AddOperation("searchSecrets", http.MethodPost, "/deepfence/search/secrets",
 		"Search Secrets", "Retrieve all the data associated with pods",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.Secret))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchFilter), new([]model.Secret))
 
 	d.AddOperation("searchMalwares", http.MethodPost, "/deepfence/search/malwares",
 		"Search Malwares", "List all the images present in the given registry",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.Malware))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchFilter), new([]model.Malware))
 
 	d.AddOperation("searchCloudCompliances", http.MethodPost, "/deepfence/search/cloud-compliances",
 		"Search Cloud compliances", "List all the images present in the given registry",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.CloudCompliance))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchFilter), new([]model.CloudCompliance))
 
 	d.AddOperation("searchCompliances", http.MethodPost, "/deepfence/search/compliances",
 		"Search Compliances", "List all the images present in the given registry",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.Compliance))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchFilter), new([]model.Compliance))
 
-	d.AddOperation("searchScanResults", http.MethodPost, "/deepfence/search/scan-results",
-		"Search Scan results", "Search scan results",
-		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter),
-		Test{Arr: []jsonschema.AnyOfExposer{jsonschema.AnyOf(model.Host{}, model.ContainerImage{}, model.Container{})}})
+	d.AddOperation("searchVulnerabilityScans", http.MethodPost, "/deepfence/search/vulnerability/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchScanReq), new([]model.ScanInfo))
+
+	d.AddOperation("searchSecretsScans", http.MethodPost, "/deepfence/search/secret/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchScanReq), new([]model.ScanInfo))
+
+	d.AddOperation("searchMalwareScans", http.MethodPost, "/deepfence/search/malware/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchScanReq), new([]model.ScanInfo))
+
+	d.AddOperation("searchComplianceScans", http.MethodPost, "/deepfence/search/compliance/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchScanReq), new([]model.ScanInfo))
+
+	d.AddOperation("searchCloudComplianceScans", http.MethodPost, "/deepfence/search/cloud-compliance/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(reporters.SearchScanReq), new([]model.ScanInfo))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {

@@ -30,6 +30,12 @@ type SearchFilter struct {
 	Filters       FieldsFilters `json:"filters" required:"true"`
 }
 
+type SearchScanReq struct {
+	ScanFilter     SearchFilter      `json:"scan_filters" required:"true"`
+	ResourceFilter SearchFilter      `json:"resource_filters" required:"true"`
+	Window         model.FetchWindow `json:"window" required:"true"`
+}
+
 func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, error) {
 	hosts, err := getGenericDirectNodeReport[model.Host](ctx, filter)
 	if err != nil {
@@ -350,6 +356,66 @@ func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filt
 		var node T
 		utils.FromMap(node_map, &node)
 		res = append(res, node)
+	}
+
+	return res, nil
+}
+
+func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanType, scan_filter SearchFilter, resource_filter SearchFilter) ([]model.ScanInfo, error) {
+	res := []model.ScanInfo{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	query := `
+		MATCH (n:` + string(scan_type) + `) ` +
+		parseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
+		`MATCH (n) -[:SCANNED]- (m)` +
+		parseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
+		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, m.node_type, counts` +
+		orderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter)
+	log.Info().Msgf("search query: %v", query)
+	r, err := tx.Run(query,
+		map[string]interface{}{})
+
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+
+		counts, err := GetSevCounts(ctx, scan_type, rec.Values[0].(string))
+		if err != nil {
+			log.Error().Msgf("%v", err)
+		}
+		res = append(res, model.ScanInfo{
+			ScanId:         rec.Values[0].(string),
+			Status:         rec.Values[1].(string),
+			UpdatedAt:      rec.Values[2].(int64),
+			NodeId:         rec.Values[3].(string),
+			NodeType:       rec.Values[4].(string),
+			SeverityCounts: counts,
+		})
 	}
 
 	return res, nil

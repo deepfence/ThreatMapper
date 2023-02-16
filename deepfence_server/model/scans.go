@@ -60,20 +60,22 @@ type ComplianceBenchmarkTypes struct {
 type ScanStatus string
 
 type ScanInfo struct {
-	ScanId    string `json:"scan_id" required:"true"`
-	Status    string `json:"status" required:"true"`
-	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
-	NodeId    string `json:"node_id" required:"true"`
-	NodeType  string `json:"node_type" required:"true"`
+	ScanId         string         `json:"scan_id" required:"true"`
+	Status         string         `json:"status" required:"true"`
+	UpdatedAt      int64          `json:"updated_at" required:"true" format:"int64"`
+	NodeId         string         `json:"node_id" required:"true"`
+	NodeType       string         `json:"node_type" required:"true"`
+	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
 }
 
 type ComplianceScanInfo struct {
-	ScanId        string `json:"scan_id" required:"true"`
-	BenchmarkType string `json:"benchmark_type" required:"true"`
-	Status        string `json:"status" required:"true"`
-	UpdatedAt     int64  `json:"updated_at" required:"true" format:"int64"`
-	NodeId        string `json:"node_id" required:"true"`
-	NodeType      string `json:"node_type" required:"true"`
+	ScanId         string         `json:"scan_id" required:"true"`
+	BenchmarkType  string         `json:"benchmark_type" required:"true"`
+	Status         string         `json:"status" required:"true"`
+	UpdatedAt      int64          `json:"updated_at" required:"true" format:"int64"`
+	NodeId         string         `json:"node_id" required:"true"`
+	NodeType       string         `json:"node_type" required:"true"`
+	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
 }
 
 const (
@@ -101,9 +103,8 @@ type ComplianceScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	NodeId   string      `json:"node_id" required:"true"`
-	NodeType string      `json:"node_type" required:"true" enum:"image,host,container"`
-	Window   FetchWindow `json:"window"  required:"true"`
+	NodeIds []NodeIdentifier `json:"node_ids" required:"true"`
+	Window  FetchWindow      `json:"window"  required:"true"`
 }
 
 type ScanListResp struct {

@@ -163,6 +163,12 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malwares", dfHandler.SearchMalwares)
 				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
 				r.Post("/compliances", dfHandler.SearchCompliances)
+
+				r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScans)
+				r.Post("/vulnerability/scans", dfHandler.SearchSecretScans)
+				r.Post("/malware/scans", dfHandler.SearchMalwareScans)
+				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
+				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
 			})
 
 			r.Route("/controls", func(r chi.Router) {

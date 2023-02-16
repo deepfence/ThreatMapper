@@ -641,7 +641,7 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 		return
 	}
 
-	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeId, controls.StringToResourceType(req.NodeType), req.Window)
+	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeIds, req.Window)
 	if err == reporters.NotFoundErr {
 		err = &NotFoundError{err}
 	}
