@@ -124,12 +124,12 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 			"WITH apoc.convert.fromJsonList(n.instance_profile_arns) as instance_arns,k,n "+
 			"WHERE k.iam_instance_profile_arn IN instance_arns "+
 			"WITH apoc.convert.fromJsonList(n.attached_policy_arns) as attached_policy_arns,k,n "+
-			"UNWIND attached_policy_arns as policy_arn MATCH (z:CloudResource{resource_type:'aws_iam_policy' })"+
-			"where  z.node_id = policy_arn  WITH apoc.convert.fromJsonMap(z.policy) as policy,z,k,n"+
-			"UNWIND  policy.Statement as statement unwind statement.Action as action"+
-			"MATCH (c:CloudResource{resource_type:'aws_s3_bucket' } )  where action =~ '.*S3.*'"+
-			"and statement.Effect <> 'Deny' and (statement.Resource = '*' or statement.Resource = c.node_id)"+
-			" and (c.policy is null or NOT(c.policy =~  '.*deny.*' ))"+
+			"UNWIND attached_policy_arns as policy_arn MATCH (z:CloudResource{resource_type:'aws_iam_policy' }) "+
+			"where  z.node_id = policy_arn  WITH apoc.convert.fromJsonMap(z.policy) as policy,z,k,n "+
+			"UNWIND  policy.Statement as statement unwind statement.Action as action "+
+			"MATCH (c:CloudResource{resource_type:'aws_s3_bucket' } )  where action =~ '.*S3.*' "+
+			"and statement.Effect <> 'Deny' and (statement.Resource = '*' or statement.Resource = c.node_id) "+
+			" and (c.policy is null or NOT(c.policy =~  '.*deny.*' )) "+
 			"MERGE (k) -[:COMMUNICATES]-> (c)", map[string]interface{}{}); err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_s3_bucket' }) WITH apoc.convert.fromJsonMap(n.event_notification_configuration) as eventConfig,n  UNWIND eventConfig.LambdaFunctionConfigurations AS envconf MATCH (p:CloudResource{resource_type:'aws_lambda_function' , arn: envconf.LambdaFunctionArn }) MERGE (p) -[:PUBLIC]-> (n) ", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_s3_bucket' }) WITH apoc.convert.fromJsonMap(n.event_notification_configuration) as eventConfig,n  UNWIND eventConfig.LambdaFunctionConfigurations AS envconf MATCH (p:CloudResource{resource_type:'aws_lambda_function' , arn: envconf.LambdaFunctionArn }) MERGE (p) -[:USES]-> (n) ", map[string]interface{}{}); err != nil {
 		return err
 	}
 
