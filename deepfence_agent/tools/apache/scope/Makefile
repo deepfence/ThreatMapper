@@ -62,7 +62,7 @@ docker/%: %
 	cp $* docker/
 
 %.tar: docker/Dockerfile.%
-	$(SUDO) docker build --build-arg=revision=$(GIT_REVISION) -t $(DOCKERHUB_USER)/$* -f $< docker/
+	$(SUDO) docker build --build-arg=revision=$(GIT_REVISION) -t $(DOCKERHUB_USER)/$* -f $< ../
 	$(SUDO) docker tag $(DOCKERHUB_USER)/$* $(DOCKERHUB_USER)/$*:$(IMAGE_TAG)
 	$(SUDO) docker save $(DOCKERHUB_USER)/$*:latest > $@
 
