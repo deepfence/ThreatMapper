@@ -192,9 +192,13 @@ func NewClient(config ClientConfig) (Client, error) {
 
 func (c *client) InitCNIPlugin() {
 	// Check the CNI
-	cniPlugin, _ := c.getKubeCNIPlugin()
+	cniPlugin, err := c.getKubeCNIPlugin()
+	if err != nil {
+		log.Errorf("CNI error: %v", err.Error())
+		return
+	}
 	c.cniPlugin = cniPlugin
-	log.Info("CNI:", c.cniPlugin)
+	log.Info("CNI: ", c.cniPlugin)
 	if c.cniPlugin == K8sCniCalico {
 		//calicoClient, err := calico_helper.NewCalicoAPIClient()
 		//if err != nil {
@@ -218,7 +222,7 @@ func (c *client) GetCNIPlugin() string {
 }
 
 func (c *client) getKubeCNIPlugin() (string, error) {
-	daemonSets, err := c.client.ExtensionsV1beta1().DaemonSets("kube-system").List(context.Background(), metav1.ListOptions{})
+	daemonSets, err := c.client.AppsV1().DaemonSets("kube-system").List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		return K8sCniUnknown, err
 	}

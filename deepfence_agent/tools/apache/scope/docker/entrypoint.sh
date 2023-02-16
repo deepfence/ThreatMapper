@@ -60,6 +60,16 @@ elif [[ "$MODE" == "topology" ]]; then
   export DF_PROG_NAME="topology"
   exec -a deepfence-topology /home/deepfence/deepfence_exe --mode=app --weave=false --app.externalUI=true --app.log.level="$app_log_level"
 elif [[ "$MODE" == "cluster-agent" ]]; then
+  export MGMT_CONSOLE_URL=$TOPOLOGY_IP
+  export MGMT_CONSOLE_PORT=$TOPOLOGY_PORT
+  echo "Start agent authentication..."
+  /usr/local/bin/agentAuth
+  auth_result=$?
+  if [ $auth_result -ne 0 ]; then
+      echo "Error: Authentication failed"
+      sleep 30
+      exit 1
+  fi
   probe_log_level=${LOG_LEVEL:-info}
   exec -a deepfence-cluster-agent /home/deepfence/deepfence_exe --mode=probe --probe-only --probe.kubernetes.role=cluster --probe.log.level="$probe_log_level" --weave=false --probe.docker=false --probe.spy.interval=5s --probe.publish.interval=10s --probe.insecure=true --probe.token="$DEEPFENCE_KEY" --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "https://$TOPOLOGY_IP:$TOPOLOGY_PORT"
 fi

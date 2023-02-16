@@ -397,7 +397,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			reporter := kubernetes.NewReporter(client, clients, probeID, hostID, p, handlerRegistry, flags.kubernetesNodeName)
 			defer reporter.Stop()
 			p.AddReporter(reporter)
-			go client.InitCNIPlugin()
+			client.InitCNIPlugin()
 			if flags.kubernetesRole != kubernetesRoleCluster && flags.kubernetesNodeName == "" {
 				log.Warnf("No value for --probe.kubernetes.node-name, reporting all pods from every probe (which may impact performance).")
 			}

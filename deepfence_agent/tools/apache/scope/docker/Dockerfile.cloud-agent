@@ -1,4 +1,4 @@
-FROM alpine:3.14.2
+FROM alpine:3.17.1
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
 
@@ -22,7 +22,8 @@ RUN apk add --no-cache --update bash conntrack-tools iproute2 util-linux curl bi
     && rm -f crictl-$VERSION-linux-amd64.tar.gz \
 	&& rm -rf /var/cache/apk/*
 
-COPY ./deepfence_exe /home/deepfence/
+COPY scope/docker/deepfence_exe /home/deepfence/
+COPY deepfence/df-utils/agent_auth/agentAuth /usr/local/bin/agentAuth
 # COPY ./capture_topology_container.sh /home/deepfence/capture_start.sh
 # RUN cp /home/deepfence/capture_start.sh /home/deepfence/capture_stop.sh \
 #     && cp /home/deepfence/capture_start.sh /home/deepfence/capture_status.sh \
