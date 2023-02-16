@@ -25,18 +25,11 @@ export interface ModalProps extends DialogPrimitive.DialogProps {
 export const ModalHeader: FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
     <>
-      <div className={'w-full flex flex-row items-center min-h-[40px]'}>
-        {children && (
-          <>
-            <DialogPrimitive.Title data-testid="sliding-modal-title" className="block">
-              {children}
-            </DialogPrimitive.Title>
-          </>
-        )}
+      <div className={'w-full flex flex-row items-center'}>
         <DialogPrimitive.Close
           aria-label="Close"
           className={cx(
-            'ml-auto mr-2 h-36px rounded-lg cursor-pointer',
+            'absolute right-0 mr-2 h-36px rounded-lg cursor-pointer',
             'text-gray-400 hover:text-gray-900 dark:hover:text-white',
             'hover:bg-gray-200 dark:hover:bg-gray-600',
             'focus:outline-none',
@@ -53,6 +46,13 @@ export const ModalHeader: FC<{ children?: React.ReactNode }> = ({ children }) =>
             <HiX />
           </IconContext.Provider>
         </DialogPrimitive.Close>
+        {children && (
+          <>
+            <div data-testid="sliding-modal-title" className="w-full">
+              {children}
+            </div>
+          </>
+        )}
       </div>
       <Separator className="w-full h-px block bg-gray-200 dark:bg-gray-600" />
     </>
@@ -110,7 +110,7 @@ export const SlidingModal: FC<ModalProps> = ({
         >
           <DialogPrimitive.Content
             className={cx(
-              'flex flex-col h-[100vh] fixed',
+              'flex flex-col h-[100vh] fixed overflow-auto',
               'overflow-hidden focus:outline-none',
               'bg-white text-gray-900',
               'dark:bg-gray-900 dark:text-white ',
@@ -124,9 +124,12 @@ export const SlidingModal: FC<ModalProps> = ({
             )}
             onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           >
-            {header}
-            <div className="overflow-y-auto flex-auto">{children}</div>
-            <ModalFooter>{footer}</ModalFooter>
+            <>
+              {typeof header === 'string' ? <ModalHeader>{header}</ModalHeader> : header}
+
+              <div className="overflow-y-auto flex-auto">{children}</div>
+              <ModalFooter>{footer}</ModalFooter>
+            </>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>
       </DialogPrimitive.Portal>
