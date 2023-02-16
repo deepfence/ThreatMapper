@@ -5,11 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
+)
+
+// used to replace http:// or https:// from registry url
+var httpReplacer = strings.NewReplacer(
+	"http://", "",
+	"https://", "",
 )
 
 func PublishNewJob(pub *kafka.Publisher, metadata map[string]string, topic string, data []byte) error {

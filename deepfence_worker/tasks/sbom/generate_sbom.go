@@ -65,7 +65,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	}
 
 	// get registry credentials
-	authFile, namespace, insecure, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authFile, imagePrefix, insecure, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
@@ -96,8 +96,8 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	}
 
 	if params.ImageName != "" {
-		if namespace != "" {
-			cfg.Source = namespace + "/" + params.ImageName
+		if imagePrefix != "" {
+			cfg.Source = imagePrefix + "/" + params.ImageName
 		} else {
 			cfg.Source = params.ImageName
 		}
