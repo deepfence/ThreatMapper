@@ -40,6 +40,7 @@ require (
 	github.com/rs/zerolog v1.28.0
 	github.com/samber/mo v1.7.0
 	github.com/sirupsen/logrus v1.9.0
+	github.com/swaggest/jsonschema-go v0.3.45
 	github.com/swaggest/openapi-go v0.2.28
 	github.com/twmb/franz-go v1.11.3
 	github.com/ugorji/go/codec v1.2.8
@@ -152,7 +153,6 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/swaggest/jsonschema-go v0.3.45 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/twmb/franz-go/pkg/kadm v1.7.0 // indirect

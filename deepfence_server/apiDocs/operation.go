@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
+	"github.com/swaggest/jsonschema-go"
 	"github.com/weaveworks/scope/render/detailed"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -15,6 +16,10 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
+
+type Test struct {
+	Arr []jsonschema.AnyOfExposer `json:"arr"`
+}
 
 func (d *OpenApiDocs) AddUserAuthOperations() {
 	d.AddOperation("registerUser", http.MethodPost, "/deepfence/user/register",
@@ -163,6 +168,11 @@ func (d *OpenApiDocs) AddSearchOperations() {
 	d.AddOperation("searchCompliances", http.MethodPost, "/deepfence/search/compliances",
 		"Search Compliances", "List all the images present in the given registry",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter), new([]model.Compliance))
+
+	d.AddOperation("searchScanResults", http.MethodPost, "/deepfence/search/scan-results",
+		"Search Scan results", "Search scan results",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(reporters.SearchFilter),
+		Test{Arr: []jsonschema.AnyOfExposer{jsonschema.AnyOf(model.Host{}, model.ContainerImage{}, model.Container{})}})
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {
