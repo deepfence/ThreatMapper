@@ -89,7 +89,7 @@ export const TopContainers = ({ theme }: { theme: Mode }) => {
           left: '2%',
           right: '5%',
           top: '10%',
-          bottom: '20%',
+          bottom: '15%',
           containLabel: true,
         },
         xAxis: {
@@ -149,8 +149,11 @@ export const TopVulnerableHosts = () => {
         <h4 className="text-gray-900 text-md dark:text-white">
           Top Vulnerable Running Hosts
         </h4>
-        <DFLink to={'/'} className="flex items-center hover:no-underline ml-auto mr-2">
-          <span className="text-xs text-blue-600 dark:text-blue-500">Details</span>
+        <DFLink
+          to={'/vulnerability/scan-results'}
+          className="flex items-center hover:no-underline active:no-underline focus:no-underline ml-auto mr-2"
+        >
+          <span className="text-xs text-blue-600 dark:text-blue-500">Go to Scans</span>
           <IconContext.Provider
             value={{
               className: 'text-blue-600 dark:text-blue-500 ',

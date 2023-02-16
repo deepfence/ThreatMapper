@@ -36,12 +36,12 @@ const MenuItems: Array<{
     to: '/topology',
   },
   {
-    title: 'Threat Graph',
+    title: 'ThreatGraph',
     Icon: ThreatGraphIcon,
     to: '/threatgraph',
   },
   {
-    title: 'Vulnerability',
+    title: 'Vulnerabilities',
     Icon: VulnerabilityIcon,
     to: '/vulnerability',
   },
@@ -51,7 +51,7 @@ const MenuItems: Array<{
     to: '/secrets',
   },
   {
-    title: 'Malware',
+    title: 'Malwares',
     Icon: MalwareIcon,
     to: '/malware',
   },
@@ -142,7 +142,10 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
                     to={menuItem.to}
                     className={({ isActive }) =>
                       isActive
-                        ? twMerge(linkClass, 'bg-gray-100 dark:bg-gray-700')
+                        ? twMerge(
+                            linkClass,
+                            'bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-500',
+                          )
                         : linkClass
                     }
                   >
@@ -150,12 +153,15 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
                       return (
                         <>
                           <div
-                            className={classNames(
-                              'w-6 h-6 group-hover:text-gray-900 dark:group-hover:text-white shrink-0',
-                              {
-                                ['text-gray-900 dark:text-white']: isActive,
-                                ['text-gray-500 dark:text-gray-400']: !isActive,
-                              },
+                            className={twMerge(
+                              classNames(
+                                'w-6 h-6 group-hover:text-gray-900 dark:group-hover:text-white shrink-0',
+                                {
+                                  ['text-blue-600 dark:text-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-500']:
+                                    isActive,
+                                  ['text-gray-500 dark:text-gray-400']: !isActive,
+                                },
+                              ),
                             )}
                           >
                             <menuItem.Icon />

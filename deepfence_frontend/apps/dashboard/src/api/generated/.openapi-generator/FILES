@@ -109,7 +109,9 @@ models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
 models/ReportersLookupFilter.ts
 models/ReportersNodeInfo.ts
+models/ReportersOrderFilter.ts
 models/ReportersProviderThreatGraph.ts
+models/ReportersSearchFilter.ts
 models/ReportersThreatNodeInfo.ts
 models/ReportersTopologyFilters.ts
 models/UtilsScanSbomRequest.ts

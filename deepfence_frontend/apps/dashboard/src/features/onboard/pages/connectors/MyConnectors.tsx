@@ -75,7 +75,10 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
       {
         reportersTopologyFilters: {
           cloud_filter: [],
-          field_filters: { contains_filter: { filter_in: null } },
+          field_filters: {
+            contains_filter: { filter_in: null },
+            order_filter: null as any,
+          },
           host_filter: [],
           kubernetes_filter: [],
           pod_filter: [],
@@ -90,7 +93,10 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
       {
         reportersTopologyFilters: {
           cloud_filter: [],
-          field_filters: { contains_filter: { filter_in: null } },
+          field_filters: {
+            contains_filter: { filter_in: null },
+            order_filter: null as any,
+          },
           host_filter: [],
           kubernetes_filter: [],
           pod_filter: [],
