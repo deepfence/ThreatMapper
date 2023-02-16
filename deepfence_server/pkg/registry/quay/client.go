@@ -33,7 +33,6 @@ func listImages(url, namespace, token string) ([]model.ContainerImage, error) {
 		images = append(images, getImageWithTags(repo, tags)...)
 	}
 
-	log.Info().Msgf("found %d images in registry %s namespace %s", len(images), url, namespace)
 	return images, nil
 }
 

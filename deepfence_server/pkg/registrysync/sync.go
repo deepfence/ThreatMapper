@@ -66,7 +66,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	if err != nil {
 		return err
 	}
-	log.Info().Msgf("sync registry id %d type %s, found %d images", pgId, r.GetRegistryType(), len(list))
+	log.Info().Msgf("sync registry id=%d type=%s found %d images", pgId, r.GetRegistryType(), len(list))
 	return insertToNeo4j(ctx, list, r, pgId)
 }
 
