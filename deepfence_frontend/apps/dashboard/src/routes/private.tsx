@@ -33,6 +33,7 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
+import { module as uniqueScanResults } from '@/features/vulnerabilities/pages/UniqueScanResults';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
 import { module as vulnerabilityScanResult } from '@/features/vulnerabilities/pages/VulnerabilityScanResult';
@@ -190,8 +191,13 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Vulnerability' },
       },
       {
-        path: 'vulnerability/scan-results',
+        path: 'vulnerability/scan-results/:scanOn',
         ...vulnerabilityScanResult,
+        meta: { title: 'Vulnerability Scan Results' },
+      },
+      {
+        path: 'vulnerability/scan-results/:assetType',
+        ...uniqueScanResults,
         meta: { title: 'Vulnerability Scan Results' },
       },
       {

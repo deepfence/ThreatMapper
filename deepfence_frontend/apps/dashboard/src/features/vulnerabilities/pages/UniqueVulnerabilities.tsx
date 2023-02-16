@@ -1,12 +1,12 @@
 import cx from 'classnames';
 import { useMemo, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { HiArrowSmLeft, HiDotsVertical, HiOutlineDocumentText } from 'react-icons/hi';
+import { HiArrowSmLeft, HiDotsVertical, HiExternalLink } from 'react-icons/hi';
 import { IoIosGitNetwork } from 'react-icons/io';
-import { TbEqual, TbEqualNot } from 'react-icons/tb';
 import { Badge, createColumnHelper, getRowSelectionColumn, Table } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { VulnerabilityDetails } from '@/features/vulnerabilities/components/unique-vulnerabilities/VulnerabilityDetails';
 
 type TableDataType = {
@@ -64,7 +64,13 @@ const UniqueVulnerabilities = () => {
             onClick={() => {
               setShowDetails(true);
             }}
+            className="flex items-center gap-x-2"
           >
+            <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg">
+              <div className="w-5 h-5">
+                <VulnerabilityIcon />
+              </div>
+            </div>
             {info.getValue()}
           </DFLink>
         ),
@@ -124,19 +130,12 @@ const UniqueVulnerabilities = () => {
       columnHelper.accessor('liveConnection', {
         enableSorting: false,
         cell: (info) => (
-          <div className="flex items-center gap-x-2">
-            <IconContext.Provider
-              value={{
-                className: cx('', {
-                  'text-green-400 text:bg-green-500 rotate-180':
-                    info.getValue() === 'yes',
-                  'text-gray-400': info.getValue() === 'no',
-                }),
-              }}
-            >
-              {info.getValue() === 'no' ? <TbEqualNot /> : <TbEqual />}
-            </IconContext.Provider>
-          </div>
+          <div
+            className={cx('h-2.5 w-2.5 rounded-full', {
+              'bg-green-400 text:bg-green-500': info.getValue() === 'yes',
+              'bg-gray-400 text:bg-gray-500': info.getValue() === 'no',
+            })}
+          ></div>
         ),
         header: () => 'Live',
         minSize: 50,
@@ -144,7 +143,17 @@ const UniqueVulnerabilities = () => {
       }),
       columnHelper.accessor('exploit', {
         enableSorting: false,
-        cell: (info) => <DFLink to="#">{info.getValue()}</DFLink>,
+        cell: () => (
+          <DFLink to="#">
+            <IconContext.Provider
+              value={{
+                className: 'w-4 h-4',
+              }}
+            >
+              <HiExternalLink />
+            </IconContext.Provider>
+          </DFLink>
+        ),
         header: () => 'Exploit',
         minSize: 30,
         size: 50,
@@ -160,18 +169,7 @@ const UniqueVulnerabilities = () => {
       }),
       columnHelper.accessor('description', {
         enableSorting: false,
-        cell: (info) => (
-          <div className="flex items-center gap-x-2">
-            <div className="bg-blue-100 dark:bg-blue-500/10 p-2 rounded-lg">
-              <IconContext.Provider
-                value={{ className: 'w-5 h-5 text-blue-500 dark:text-blue-400' }}
-              >
-                <HiOutlineDocumentText />
-              </IconContext.Provider>
-            </div>
-            <span className="capitalize">{info.getValue()}</span>
-          </div>
-        ),
+        cell: (info) => info.getValue(),
         header: () => 'Description',
         minSize: 300,
         size: 500,
