@@ -7,6 +7,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -141,6 +142,7 @@ func RetryUpgradeAgent(msg *message.Message) error {
 }
 
 func ApplyGraphDBStartup(msg *message.Message) error {
+	log.Info().Msgf("DB Startup")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
@@ -149,12 +151,6 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	}
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
 
 	session.Run("CREATE CONSTRAINT ON (n:AgentVersion) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:KubernetesCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
