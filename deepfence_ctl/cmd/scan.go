@@ -223,7 +223,7 @@ var scanSearchSubCmd = &cobra.Command{
 		}
 
 		scan_filter, _ := cmd.Flags().GetString("scan-filter")
-		scan_filters := deepfence_server_client.ReportersSearchFilter{}
+		scan_filters := deepfence_server_client.SearchSearchFilter{}
 		if scan_filter != "" {
 			orderFilter := deepfence_server_client.ReportersOrderFilter{}
 
@@ -238,7 +238,7 @@ var scanSearchSubCmd = &cobra.Command{
 
 			}
 
-			scan_filters = deepfence_server_client.ReportersSearchFilter{
+			scan_filters = deepfence_server_client.SearchSearchFilter{
 				InFieldFilter: []string{},
 				Filters: deepfence_server_client.ReportersFieldsFilters{
 					ContainsFilter: deepfence_server_client.ReportersContainsFilter{
@@ -250,7 +250,7 @@ var scanSearchSubCmd = &cobra.Command{
 		}
 
 		node_filter, _ := cmd.Flags().GetString("node-filter")
-		node_filters := deepfence_server_client.ReportersSearchFilter{}
+		node_filters := deepfence_server_client.SearchSearchFilter{}
 		if node_filter != "" {
 			orderFilter := deepfence_server_client.ReportersOrderFilter{}
 
@@ -265,7 +265,7 @@ var scanSearchSubCmd = &cobra.Command{
 
 			}
 
-			node_filters = deepfence_server_client.ReportersSearchFilter{
+			node_filters = deepfence_server_client.SearchSearchFilter{
 				InFieldFilter: []string{},
 				Filters: deepfence_server_client.ReportersFieldsFilters{
 					ContainsFilter: deepfence_server_client.ReportersContainsFilter{
@@ -281,7 +281,7 @@ var scanSearchSubCmd = &cobra.Command{
 		switch scan_type {
 		case "secret":
 			req := http.Client().SearchApi.SearchSecretsScans(context.Background())
-			req = req.ReportersSearchScanReq(deepfence_server_client.ReportersSearchScanReq{
+			req = req.SearchSearchScanReq(deepfence_server_client.SearchSearchScanReq{
 				ScanFilters: scan_filters,
 				NodeFilters: node_filters,
 				Window: deepfence_server_client.ModelFetchWindow{
@@ -292,7 +292,7 @@ var scanSearchSubCmd = &cobra.Command{
 			res, _, err = http.Client().SearchApi.SearchSecretsScansExecute(req)
 		case "vulnerability":
 			req := http.Client().SearchApi.SearchVulnerabilityScans(context.Background())
-			req = req.ReportersSearchScanReq(deepfence_server_client.ReportersSearchScanReq{
+			req = req.SearchSearchScanReq(deepfence_server_client.SearchSearchScanReq{
 				ScanFilters: scan_filters,
 				NodeFilters: node_filters,
 				Window: deepfence_server_client.ModelFetchWindow{

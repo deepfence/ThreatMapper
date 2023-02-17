@@ -75,7 +75,7 @@ var graphTopologySubCmd = &cobra.Command{
 			log.Fatal().Msgf("Filter parsing err:%v", err)
 		}
 
-		filters := deepfence_server_client.ReportersTopologyFilters{
+		filters := deepfence_server_client.GraphTopologyFilters{
 			CloudFilter:      provider_entries,
 			HostFilter:       host_entries,
 			RegionFilter:     region_entries,
@@ -91,23 +91,23 @@ var graphTopologySubCmd = &cobra.Command{
 		switch root {
 		case "":
 			req := http.Client().TopologyApi.GetTopologyGraph(context.Background())
-			req = req.ReportersTopologyFilters(filters)
+			req = req.GraphTopologyFilters(filters)
 			res, rh, err = http.Client().TopologyApi.GetTopologyGraphExecute(req)
 		case "hosts":
 			req := http.Client().TopologyApi.GetHostsTopologyGraph(context.Background())
-			req = req.ReportersTopologyFilters(filters)
+			req = req.GraphTopologyFilters(filters)
 			res, rh, err = http.Client().TopologyApi.GetHostsTopologyGraphExecute(req)
 		case "containers":
 			req := http.Client().TopologyApi.GetContainersTopologyGraph(context.Background())
-			req = req.ReportersTopologyFilters(filters)
+			req = req.GraphTopologyFilters(filters)
 			res, rh, err = http.Client().TopologyApi.GetContainersTopologyGraphExecute(req)
 		case "pods":
 			req := http.Client().TopologyApi.GetPodsTopologyGraph(context.Background())
-			req = req.ReportersTopologyFilters(filters)
+			req = req.GraphTopologyFilters(filters)
 			res, rh, err = http.Client().TopologyApi.GetPodsTopologyGraphExecute(req)
 		case "kubernetes":
 			req := http.Client().TopologyApi.GetKubernetesTopologyGraph(context.Background())
-			req = req.ReportersTopologyFilters(filters)
+			req = req.GraphTopologyFilters(filters)
 			res, rh, err = http.Client().TopologyApi.GetKubernetesTopologyGraphExecute(req)
 		default:
 			log.Fatal().Msgf("Unsupported root:%s", root)

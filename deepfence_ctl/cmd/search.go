@@ -53,8 +53,8 @@ var topCmd = &cobra.Command{
 			OrderField: type2field(search_type),
 		}
 
-		filtreq := deepfence_server_client.ReportersSearchNodeReq{
-			NodeFilter: deepfence_server_client.ReportersSearchFilter{
+		filtreq := deepfence_server_client.SearchSearchNodeReq{
+			NodeFilter: deepfence_server_client.SearchSearchFilter{
 				InFieldFilter: fields,
 				Filters: deepfence_server_client.ReportersFieldsFilters{
 					ContainsFilter: deepfence_server_client.ReportersContainsFilter{},
@@ -67,7 +67,7 @@ var topCmd = &cobra.Command{
 		switch target_type {
 		case "host":
 			req := http.Client().SearchApi.SearchHosts(context.Background())
-			req = req.ReportersSearchNodeReq(filtreq)
+			req = req.SearchSearchNodeReq(filtreq)
 			res, rh, err := http.Client().SearchApi.SearchHostsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -75,7 +75,7 @@ var topCmd = &cobra.Command{
 			output.Out(res)
 		case "container":
 			req := http.Client().SearchApi.SearchContainers(context.Background())
-			req = req.ReportersSearchNodeReq(filtreq)
+			req = req.SearchSearchNodeReq(filtreq)
 			res, rh, err := http.Client().SearchApi.SearchContainersExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -83,7 +83,7 @@ var topCmd = &cobra.Command{
 			output.Out(res)
 		case "image":
 			req := http.Client().SearchApi.SearchContainerImages(context.Background())
-			req = req.ReportersSearchNodeReq(filtreq)
+			req = req.SearchSearchNodeReq(filtreq)
 			res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
