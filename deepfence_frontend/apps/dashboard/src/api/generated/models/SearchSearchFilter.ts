@@ -23,27 +23,27 @@ import {
 /**
  * 
  * @export
- * @interface ReportersSearchFilter
+ * @interface SearchSearchFilter
  */
-export interface ReportersSearchFilter {
+export interface SearchSearchFilter {
     /**
      * 
      * @type {ReportersFieldsFilters}
-     * @memberof ReportersSearchFilter
+     * @memberof SearchSearchFilter
      */
     filters: ReportersFieldsFilters;
     /**
      * 
      * @type {Array<string>}
-     * @memberof ReportersSearchFilter
+     * @memberof SearchSearchFilter
      */
     in_field_filter: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the ReportersSearchFilter interface.
+ * Check if a given object implements the SearchSearchFilter interface.
  */
-export function instanceOfReportersSearchFilter(value: object): boolean {
+export function instanceOfSearchSearchFilter(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "filters" in value;
     isInstance = isInstance && "in_field_filter" in value;
@@ -51,11 +51,11 @@ export function instanceOfReportersSearchFilter(value: object): boolean {
     return isInstance;
 }
 
-export function ReportersSearchFilterFromJSON(json: any): ReportersSearchFilter {
-    return ReportersSearchFilterFromJSONTyped(json, false);
+export function SearchSearchFilterFromJSON(json: any): SearchSearchFilter {
+    return SearchSearchFilterFromJSONTyped(json, false);
 }
 
-export function ReportersSearchFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersSearchFilter {
+export function SearchSearchFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): SearchSearchFilter {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -66,7 +66,7 @@ export function ReportersSearchFilterFromJSONTyped(json: any, ignoreDiscriminato
     };
 }
 
-export function ReportersSearchFilterToJSON(value?: ReportersSearchFilter | null): any {
+export function SearchSearchFilterToJSON(value?: SearchSearchFilter | null): any {
     if (value === undefined) {
         return undefined;
     }

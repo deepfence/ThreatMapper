@@ -16,69 +16,69 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ReportersNodeInfo
+ * @interface GraphNodeInfo
  */
-export interface ReportersNodeInfo {
+export interface GraphNodeInfo {
     /**
      * 
      * @type {number}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     compliance_count: number;
     /**
      * 
      * @type {string}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     compliance_scan_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     image_name: string;
     /**
      * 
      * @type {string}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     node_id: string;
     /**
      * 
      * @type {number}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     secrets_count: number;
     /**
      * 
      * @type {string}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     secrets_scan_id: string;
     /**
      * 
      * @type {number}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     vulnerability_count: number;
     /**
      * 
      * @type {string}
-     * @memberof ReportersNodeInfo
+     * @memberof GraphNodeInfo
      */
     vulnerability_scan_id: string;
 }
 
 /**
- * Check if a given object implements the ReportersNodeInfo interface.
+ * Check if a given object implements the GraphNodeInfo interface.
  */
-export function instanceOfReportersNodeInfo(value: object): boolean {
+export function instanceOfGraphNodeInfo(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "compliance_count" in value;
     isInstance = isInstance && "compliance_scan_id" in value;
@@ -93,11 +93,11 @@ export function instanceOfReportersNodeInfo(value: object): boolean {
     return isInstance;
 }
 
-export function ReportersNodeInfoFromJSON(json: any): ReportersNodeInfo {
-    return ReportersNodeInfoFromJSONTyped(json, false);
+export function GraphNodeInfoFromJSON(json: any): GraphNodeInfo {
+    return GraphNodeInfoFromJSONTyped(json, false);
 }
 
-export function ReportersNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersNodeInfo {
+export function GraphNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): GraphNodeInfo {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -115,7 +115,7 @@ export function ReportersNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: b
     };
 }
 
-export function ReportersNodeInfoToJSON(value?: ReportersNodeInfo | null): any {
+export function GraphNodeInfoToJSON(value?: GraphNodeInfo | null): any {
     if (value === undefined) {
         return undefined;
     }

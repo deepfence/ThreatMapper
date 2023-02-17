@@ -19,68 +19,62 @@ import {
     ModelFetchWindowFromJSONTyped,
     ModelFetchWindowToJSON,
 } from './ModelFetchWindow';
-import type { ReportersSearchFilter } from './ReportersSearchFilter';
-import {
-    ReportersSearchFilterFromJSON,
-    ReportersSearchFilterFromJSONTyped,
-    ReportersSearchFilterToJSON,
-} from './ReportersSearchFilter';
 
 /**
  * 
  * @export
- * @interface ReportersSearchScanReq
+ * @interface LookupLookupFilter
  */
-export interface ReportersSearchScanReq {
+export interface LookupLookupFilter {
     /**
      * 
-     * @type {ReportersSearchFilter}
-     * @memberof ReportersSearchScanReq
+     * @type {Array<string>}
+     * @memberof LookupLookupFilter
      */
-    node_filters: ReportersSearchFilter;
+    in_field_filter: Array<string> | null;
     /**
      * 
-     * @type {ReportersSearchFilter}
-     * @memberof ReportersSearchScanReq
+     * @type {Array<string>}
+     * @memberof LookupLookupFilter
      */
-    scan_filters: ReportersSearchFilter;
+    node_ids: Array<string> | null;
     /**
      * 
      * @type {ModelFetchWindow}
-     * @memberof ReportersSearchScanReq
+     * @memberof LookupLookupFilter
      */
     window: ModelFetchWindow;
 }
 
 /**
- * Check if a given object implements the ReportersSearchScanReq interface.
+ * Check if a given object implements the LookupLookupFilter interface.
  */
-export function instanceOfReportersSearchScanReq(value: object): boolean {
+export function instanceOfLookupLookupFilter(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_filters" in value;
-    isInstance = isInstance && "scan_filters" in value;
+    isInstance = isInstance && "in_field_filter" in value;
+    isInstance = isInstance && "node_ids" in value;
     isInstance = isInstance && "window" in value;
 
     return isInstance;
 }
 
-export function ReportersSearchScanReqFromJSON(json: any): ReportersSearchScanReq {
-    return ReportersSearchScanReqFromJSONTyped(json, false);
+export function LookupLookupFilterFromJSON(json: any): LookupLookupFilter {
+    return LookupLookupFilterFromJSONTyped(json, false);
 }
 
-export function ReportersSearchScanReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersSearchScanReq {
+export function LookupLookupFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): LookupLookupFilter {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'node_filters': ReportersSearchFilterFromJSON(json['node_filters']),
-        'scan_filters': ReportersSearchFilterFromJSON(json['scan_filters']),
+        'in_field_filter': json['in_field_filter'],
+        'node_ids': json['node_ids'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
-export function ReportersSearchScanReqToJSON(value?: ReportersSearchScanReq | null): any {
+export function LookupLookupFilterToJSON(value?: LookupLookupFilter | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -89,8 +83,8 @@ export function ReportersSearchScanReqToJSON(value?: ReportersSearchScanReq | nu
     }
     return {
         
-        'node_filters': ReportersSearchFilterToJSON(value.node_filters),
-        'scan_filters': ReportersSearchFilterToJSON(value.scan_filters),
+        'in_field_filter': value.in_field_filter,
+        'node_ids': value.node_ids,
         'window': ModelFetchWindowToJSON(value.window),
     };
 }

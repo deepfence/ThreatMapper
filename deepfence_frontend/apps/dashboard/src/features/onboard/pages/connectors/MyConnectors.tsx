@@ -73,7 +73,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
     apiFunction: getTopologyApiClient().getHostsTopologyGraph,
     apiArgs: [
       {
-        reportersTopologyFilters: {
+        graphTopologyFilters: {
           cloud_filter: [],
           field_filters: {
             contains_filter: { filter_in: null },
@@ -91,7 +91,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
     apiFunction: getTopologyApiClient().getKubernetesTopologyGraph,
     apiArgs: [
       {
-        reportersTopologyFilters: {
+        graphTopologyFilters: {
           cloud_filter: [],
           field_filters: {
             contains_filter: { filter_in: null },

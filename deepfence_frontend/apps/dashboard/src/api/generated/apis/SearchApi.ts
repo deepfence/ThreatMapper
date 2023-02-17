@@ -26,8 +26,8 @@ import type {
   ModelScanInfo,
   ModelSecret,
   ModelVulnerability,
-  ReportersSearchNodeReq,
-  ReportersSearchScanReq,
+  SearchSearchNodeReq,
+  SearchSearchScanReq,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -52,62 +52,62 @@ import {
     ModelSecretToJSON,
     ModelVulnerabilityFromJSON,
     ModelVulnerabilityToJSON,
-    ReportersSearchNodeReqFromJSON,
-    ReportersSearchNodeReqToJSON,
-    ReportersSearchScanReqFromJSON,
-    ReportersSearchScanReqToJSON,
+    SearchSearchNodeReqFromJSON,
+    SearchSearchNodeReqToJSON,
+    SearchSearchScanReqFromJSON,
+    SearchSearchScanReqToJSON,
 } from '../models';
 
 export interface SearchCloudComplianceScansRequest {
-    reportersSearchScanReq?: ReportersSearchScanReq;
+    searchSearchScanReq?: SearchSearchScanReq;
 }
 
 export interface SearchCloudCompliancesRequest {
-    reportersSearchNodeReq?: ReportersSearchNodeReq;
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchComplianceScansRequest {
-    reportersSearchScanReq?: ReportersSearchScanReq;
+    searchSearchScanReq?: SearchSearchScanReq;
 }
 
 export interface SearchCompliancesRequest {
-    reportersSearchNodeReq?: ReportersSearchNodeReq;
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchContainerImagesRequest {
-    reportersSearchNodeReq?: ReportersSearchNodeReq;
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchContainersRequest {
-    reportersSearchNodeReq?: ReportersSearchNodeReq;
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchHostsRequest {
-    reportersSearchNodeReq?: ReportersSearchNodeReq;
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchMalwareScansRequest {
-    reportersSearchScanReq?: ReportersSearchScanReq;
+    searchSearchScanReq?: SearchSearchScanReq;
 }
 
 export interface SearchMalwaresRequest {
-    reportersSearchNodeReq?: ReportersSearchNodeReq;
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchSecretsRequest {
-    reportersSearchNodeReq?: ReportersSearchNodeReq;
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchSecretsScansRequest {
-    reportersSearchScanReq?: ReportersSearchScanReq;
+    searchSearchScanReq?: SearchSearchScanReq;
 }
 
 export interface SearchVulnerabilitiesRequest {
-    reportersSearchNodeReq?: ReportersSearchNodeReq;
+    searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
 export interface SearchVulnerabilityScansRequest {
-    reportersSearchScanReq?: ReportersSearchScanReq;
+    searchSearchScanReq?: SearchSearchScanReq;
 }
 
 /**
@@ -120,7 +120,7 @@ export interface SearchApiInterface {
     /**
      * Search scan results
      * @summary Search Vulnerability Scan results
-     * @param {ReportersSearchScanReq} [reportersSearchScanReq] 
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -136,7 +136,7 @@ export interface SearchApiInterface {
     /**
      * List all the images present in the given registry
      * @summary Search Cloud compliances
-     * @param {ReportersSearchNodeReq} [reportersSearchNodeReq] 
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -152,7 +152,7 @@ export interface SearchApiInterface {
     /**
      * Search scan results
      * @summary Search Vulnerability Scan results
-     * @param {ReportersSearchScanReq} [reportersSearchScanReq] 
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -168,7 +168,7 @@ export interface SearchApiInterface {
     /**
      * List all the images present in the given registry
      * @summary Search Compliances
-     * @param {ReportersSearchNodeReq} [reportersSearchNodeReq] 
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -184,7 +184,7 @@ export interface SearchApiInterface {
     /**
      * Retrieve all the data associated with processes
      * @summary Search Container images
-     * @param {ReportersSearchNodeReq} [reportersSearchNodeReq] 
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -200,7 +200,7 @@ export interface SearchApiInterface {
     /**
      * Retrieve all the data associated with containers
      * @summary Search Containers data
-     * @param {ReportersSearchNodeReq} [reportersSearchNodeReq] 
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -216,7 +216,7 @@ export interface SearchApiInterface {
     /**
      * Retrieve all the data associated with hosts
      * @summary Search hosts
-     * @param {ReportersSearchNodeReq} [reportersSearchNodeReq] 
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -232,7 +232,7 @@ export interface SearchApiInterface {
     /**
      * Search scan results
      * @summary Search Vulnerability Scan results
-     * @param {ReportersSearchScanReq} [reportersSearchScanReq] 
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -248,7 +248,7 @@ export interface SearchApiInterface {
     /**
      * List all the images present in the given registry
      * @summary Search Malwares
-     * @param {ReportersSearchNodeReq} [reportersSearchNodeReq] 
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -264,7 +264,7 @@ export interface SearchApiInterface {
     /**
      * Retrieve all the data associated with pods
      * @summary Search Secrets
-     * @param {ReportersSearchNodeReq} [reportersSearchNodeReq] 
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -280,7 +280,7 @@ export interface SearchApiInterface {
     /**
      * Search scan results
      * @summary Search Vulnerability Scan results
-     * @param {ReportersSearchScanReq} [reportersSearchScanReq] 
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -296,7 +296,7 @@ export interface SearchApiInterface {
     /**
      * Retrieve all the data associated with k8s clusters
      * @summary Search Vulnerabilities
-     * @param {ReportersSearchNodeReq} [reportersSearchNodeReq] 
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -312,7 +312,7 @@ export interface SearchApiInterface {
     /**
      * Search scan results
      * @summary Search Vulnerability Scan results
-     * @param {ReportersSearchScanReq} [reportersSearchScanReq] 
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApiInterface
@@ -356,7 +356,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchScanReqToJSON(requestParameters.reportersSearchScanReq),
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelScanInfoFromJSON));
@@ -395,7 +395,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchNodeReqToJSON(requestParameters.reportersSearchNodeReq),
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelCloudComplianceFromJSON));
@@ -434,7 +434,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchScanReqToJSON(requestParameters.reportersSearchScanReq),
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelScanInfoFromJSON));
@@ -473,7 +473,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchNodeReqToJSON(requestParameters.reportersSearchNodeReq),
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelComplianceFromJSON));
@@ -512,7 +512,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchNodeReqToJSON(requestParameters.reportersSearchNodeReq),
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageFromJSON));
@@ -551,7 +551,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchNodeReqToJSON(requestParameters.reportersSearchNodeReq),
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerFromJSON));
@@ -590,7 +590,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchNodeReqToJSON(requestParameters.reportersSearchNodeReq),
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelHostFromJSON));
@@ -629,7 +629,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchScanReqToJSON(requestParameters.reportersSearchScanReq),
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelScanInfoFromJSON));
@@ -668,7 +668,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchNodeReqToJSON(requestParameters.reportersSearchNodeReq),
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelMalwareFromJSON));
@@ -707,7 +707,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchNodeReqToJSON(requestParameters.reportersSearchNodeReq),
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretFromJSON));
@@ -746,7 +746,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchScanReqToJSON(requestParameters.reportersSearchScanReq),
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelScanInfoFromJSON));
@@ -785,7 +785,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchNodeReqToJSON(requestParameters.reportersSearchNodeReq),
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelVulnerabilityFromJSON));
@@ -824,7 +824,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersSearchScanReqToJSON(requestParameters.reportersSearchScanReq),
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelScanInfoFromJSON));

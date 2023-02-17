@@ -754,7 +754,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ReportersThreatGraph" }
+                "schema": { "$ref": "#/components/schemas/GraphThreatGraph" }
               }
             }
           },
@@ -797,7 +797,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+              "schema": { "$ref": "#/components/schemas/GraphTopologyFilters" }
             }
           }
         },
@@ -849,7 +849,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+              "schema": { "$ref": "#/components/schemas/GraphTopologyFilters" }
             }
           }
         },
@@ -901,7 +901,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+              "schema": { "$ref": "#/components/schemas/GraphTopologyFilters" }
             }
           }
         },
@@ -953,7 +953,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+              "schema": { "$ref": "#/components/schemas/GraphTopologyFilters" }
             }
           }
         },
@@ -1005,7 +1005,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersTopologyFilters" }
+              "schema": { "$ref": "#/components/schemas/GraphTopologyFilters" }
             }
           }
         },
@@ -1728,7 +1728,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersLookupFilter" }
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
             }
           }
         },
@@ -1783,7 +1783,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersLookupFilter" }
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
             }
           }
         },
@@ -1838,7 +1838,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersLookupFilter" }
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
             }
           }
         },
@@ -1893,7 +1893,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersLookupFilter" }
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
             }
           }
         },
@@ -1948,7 +1948,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersLookupFilter" }
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
             }
           }
         },
@@ -2003,7 +2003,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersLookupFilter" }
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
             }
           }
         },
@@ -2058,7 +2058,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersLookupFilter" }
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
             }
           }
         },
@@ -3409,7 +3409,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchScanReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
             }
           }
         },
@@ -3464,7 +3464,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchNodeReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
             }
           }
         },
@@ -3519,7 +3519,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchScanReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
             }
           }
         },
@@ -3574,7 +3574,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchNodeReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
             }
           }
         },
@@ -3629,7 +3629,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchNodeReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
             }
           }
         },
@@ -3684,7 +3684,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchNodeReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
             }
           }
         },
@@ -3739,7 +3739,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchNodeReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
             }
           }
         },
@@ -3794,7 +3794,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchScanReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
             }
           }
         },
@@ -3849,7 +3849,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchNodeReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
             }
           }
         },
@@ -3904,7 +3904,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchScanReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
             }
           }
         },
@@ -3959,7 +3959,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchNodeReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
             }
           }
         },
@@ -4014,7 +4014,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchNodeReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
             }
           }
         },
@@ -4069,7 +4069,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ReportersSearchScanReq" }
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
             }
           }
         },
@@ -4746,6 +4746,129 @@
           "updated_at": { "type": "string" }
         }
       },
+      "GraphNodeInfo": {
+        "required": [
+          "node_id",
+          "image_name",
+          "name",
+          "vulnerability_count",
+          "vulnerability_scan_id",
+          "secrets_count",
+          "secrets_scan_id",
+          "compliance_count",
+          "compliance_scan_id"
+        ],
+        "type": "object",
+        "properties": {
+          "compliance_count": { "type": "integer" },
+          "compliance_scan_id": { "type": "string" },
+          "image_name": { "type": "string" },
+          "name": { "type": "string" },
+          "node_id": { "type": "string" },
+          "secrets_count": { "type": "integer" },
+          "secrets_scan_id": { "type": "string" },
+          "vulnerability_count": { "type": "integer" },
+          "vulnerability_scan_id": { "type": "string" }
+        }
+      },
+      "GraphProviderThreatGraph": {
+        "required": [
+          "resources",
+          "compliance_count",
+          "secrets_count",
+          "vulnerability_count"
+        ],
+        "type": "object",
+        "properties": {
+          "compliance_count": { "type": "integer" },
+          "resources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GraphThreatNodeInfo" },
+            "nullable": true
+          },
+          "secrets_count": { "type": "integer" },
+          "vulnerability_count": { "type": "integer" }
+        }
+      },
+      "GraphThreatGraph": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/GraphProviderThreatGraph"
+        },
+        "nullable": true
+      },
+      "GraphThreatNodeInfo": {
+        "required": [
+          "label",
+          "id",
+          "nodes",
+          "vulnerability_count",
+          "secrets_count",
+          "compliance_count",
+          "count",
+          "node_type",
+          "attack_path"
+        ],
+        "type": "object",
+        "properties": {
+          "attack_path": {
+            "type": "array",
+            "items": { "type": "array", "items": { "type": "string" } },
+            "nullable": true
+          },
+          "compliance_count": { "type": "integer" },
+          "count": { "type": "integer" },
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "node_type": { "type": "string" },
+          "nodes": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/components/schemas/GraphNodeInfo" },
+            "nullable": true
+          },
+          "secrets_count": { "type": "integer" },
+          "vulnerability_count": { "type": "integer" }
+        }
+      },
+      "GraphTopologyFilters": {
+        "required": [
+          "cloud_filter",
+          "region_filter",
+          "kubernetes_filter",
+          "host_filter",
+          "pod_filter",
+          "field_filters"
+        ],
+        "type": "object",
+        "properties": {
+          "cloud_filter": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "field_filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
+          "host_filter": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "kubernetes_filter": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "pod_filter": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "region_filter": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
+        }
+      },
       "IngestersCloudCompliance": {
         "type": "object",
         "properties": {
@@ -5068,6 +5191,23 @@
           "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
           "scan_status": { "type": "string" }
+        }
+      },
+      "LookupLookupFilter": {
+        "required": ["in_field_filter", "node_ids", "window"],
+        "type": "object",
+        "properties": {
+          "in_field_filter": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "node_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
       "ModelAgentId": {
@@ -6234,73 +6374,12 @@
           "order_filter": { "$ref": "#/components/schemas/ReportersOrderFilter" }
         }
       },
-      "ReportersLookupFilter": {
-        "required": ["in_field_filter", "node_ids", "window"],
-        "type": "object",
-        "properties": {
-          "in_field_filter": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "node_ids": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
-        }
-      },
-      "ReportersNodeInfo": {
-        "required": [
-          "node_id",
-          "image_name",
-          "name",
-          "vulnerability_count",
-          "vulnerability_scan_id",
-          "secrets_count",
-          "secrets_scan_id",
-          "compliance_count",
-          "compliance_scan_id"
-        ],
-        "type": "object",
-        "properties": {
-          "compliance_count": { "type": "integer" },
-          "compliance_scan_id": { "type": "string" },
-          "image_name": { "type": "string" },
-          "name": { "type": "string" },
-          "node_id": { "type": "string" },
-          "secrets_count": { "type": "integer" },
-          "secrets_scan_id": { "type": "string" },
-          "vulnerability_count": { "type": "integer" },
-          "vulnerability_scan_id": { "type": "string" }
-        }
-      },
       "ReportersOrderFilter": {
         "required": ["order_field"],
         "type": "object",
         "properties": { "order_field": { "type": "string" } }
       },
-      "ReportersProviderThreatGraph": {
-        "required": [
-          "resources",
-          "compliance_count",
-          "secrets_count",
-          "vulnerability_count"
-        ],
-        "type": "object",
-        "properties": {
-          "compliance_count": { "type": "integer" },
-          "resources": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ReportersThreatNodeInfo" },
-            "nullable": true
-          },
-          "secrets_count": { "type": "integer" },
-          "vulnerability_count": { "type": "integer" }
-        }
-      },
-      "ReportersSearchFilter": {
+      "SearchSearchFilter": {
         "required": ["in_field_filter", "filters"],
         "type": "object",
         "properties": {
@@ -6312,100 +6391,21 @@
           }
         }
       },
-      "ReportersSearchNodeReq": {
+      "SearchSearchNodeReq": {
         "required": ["node_filter", "window"],
         "type": "object",
         "properties": {
-          "node_filter": { "$ref": "#/components/schemas/ReportersSearchFilter" },
+          "node_filter": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
-      "ReportersSearchScanReq": {
+      "SearchSearchScanReq": {
         "required": ["scan_filters", "node_filters", "window"],
         "type": "object",
         "properties": {
-          "node_filters": { "$ref": "#/components/schemas/ReportersSearchFilter" },
-          "scan_filters": { "$ref": "#/components/schemas/ReportersSearchFilter" },
+          "node_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
+          "scan_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
-        }
-      },
-      "ReportersThreatGraph": {
-        "type": "object",
-        "additionalProperties": {
-          "$ref": "#/components/schemas/ReportersProviderThreatGraph"
-        },
-        "nullable": true
-      },
-      "ReportersThreatNodeInfo": {
-        "required": [
-          "label",
-          "id",
-          "nodes",
-          "vulnerability_count",
-          "secrets_count",
-          "compliance_count",
-          "count",
-          "node_type",
-          "attack_path"
-        ],
-        "type": "object",
-        "properties": {
-          "attack_path": {
-            "type": "array",
-            "items": { "type": "array", "items": { "type": "string" } },
-            "nullable": true
-          },
-          "compliance_count": { "type": "integer" },
-          "count": { "type": "integer" },
-          "id": { "type": "string" },
-          "label": { "type": "string" },
-          "node_type": { "type": "string" },
-          "nodes": {
-            "type": "object",
-            "additionalProperties": { "$ref": "#/components/schemas/ReportersNodeInfo" },
-            "nullable": true
-          },
-          "secrets_count": { "type": "integer" },
-          "vulnerability_count": { "type": "integer" }
-        }
-      },
-      "ReportersTopologyFilters": {
-        "required": [
-          "cloud_filter",
-          "region_filter",
-          "kubernetes_filter",
-          "host_filter",
-          "pod_filter",
-          "field_filters"
-        ],
-        "type": "object",
-        "properties": {
-          "cloud_filter": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "field_filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
-          "host_filter": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "kubernetes_filter": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "pod_filter": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "region_filter": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          }
         }
       },
       "UtilsScanSbomRequest": {

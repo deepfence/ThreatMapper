@@ -19,37 +19,37 @@ import {
     ModelFetchWindowFromJSONTyped,
     ModelFetchWindowToJSON,
 } from './ModelFetchWindow';
-import type { ReportersSearchFilter } from './ReportersSearchFilter';
+import type { SearchSearchFilter } from './SearchSearchFilter';
 import {
-    ReportersSearchFilterFromJSON,
-    ReportersSearchFilterFromJSONTyped,
-    ReportersSearchFilterToJSON,
-} from './ReportersSearchFilter';
+    SearchSearchFilterFromJSON,
+    SearchSearchFilterFromJSONTyped,
+    SearchSearchFilterToJSON,
+} from './SearchSearchFilter';
 
 /**
  * 
  * @export
- * @interface ReportersSearchNodeReq
+ * @interface SearchSearchNodeReq
  */
-export interface ReportersSearchNodeReq {
+export interface SearchSearchNodeReq {
     /**
      * 
-     * @type {ReportersSearchFilter}
-     * @memberof ReportersSearchNodeReq
+     * @type {SearchSearchFilter}
+     * @memberof SearchSearchNodeReq
      */
-    node_filter: ReportersSearchFilter;
+    node_filter: SearchSearchFilter;
     /**
      * 
      * @type {ModelFetchWindow}
-     * @memberof ReportersSearchNodeReq
+     * @memberof SearchSearchNodeReq
      */
     window: ModelFetchWindow;
 }
 
 /**
- * Check if a given object implements the ReportersSearchNodeReq interface.
+ * Check if a given object implements the SearchSearchNodeReq interface.
  */
-export function instanceOfReportersSearchNodeReq(value: object): boolean {
+export function instanceOfSearchSearchNodeReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "node_filter" in value;
     isInstance = isInstance && "window" in value;
@@ -57,22 +57,22 @@ export function instanceOfReportersSearchNodeReq(value: object): boolean {
     return isInstance;
 }
 
-export function ReportersSearchNodeReqFromJSON(json: any): ReportersSearchNodeReq {
-    return ReportersSearchNodeReqFromJSONTyped(json, false);
+export function SearchSearchNodeReqFromJSON(json: any): SearchSearchNodeReq {
+    return SearchSearchNodeReqFromJSONTyped(json, false);
 }
 
-export function ReportersSearchNodeReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersSearchNodeReq {
+export function SearchSearchNodeReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): SearchSearchNodeReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'node_filter': ReportersSearchFilterFromJSON(json['node_filter']),
+        'node_filter': SearchSearchFilterFromJSON(json['node_filter']),
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
-export function ReportersSearchNodeReqToJSON(value?: ReportersSearchNodeReq | null): any {
+export function SearchSearchNodeReqToJSON(value?: SearchSearchNodeReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -81,7 +81,7 @@ export function ReportersSearchNodeReqToJSON(value?: ReportersSearchNodeReq | nu
     }
     return {
         
-        'node_filter': ReportersSearchFilterToJSON(value.node_filter),
+        'node_filter': SearchSearchFilterToJSON(value.node_filter),
         'window': ModelFetchWindowToJSON(value.window),
     };
 }

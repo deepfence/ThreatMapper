@@ -27,6 +27,10 @@ models/DetailedConnectionSummary.ts
 models/DetailedNodeSummary.ts
 models/DetailedParent.ts
 models/DiagnosisDiagnosticNotification.ts
+models/GraphNodeInfo.ts
+models/GraphProviderThreatGraph.ts
+models/GraphThreatNodeInfo.ts
+models/GraphTopologyFilters.ts
 models/IngestersCloudCompliance.ts
 models/IngestersCloudResource.ts
 models/IngestersCompliance.ts
@@ -40,6 +44,7 @@ models/IngestersSecretScanStatus.ts
 models/IngestersSecretSeverity.ts
 models/IngestersVulnerability.ts
 models/IngestersVulnerabilityScanStatus.ts
+models/LookupLookupFilter.ts
 models/ModelAgentId.ts
 models/ModelAgentUpgrade.ts
 models/ModelApiAuthRequest.ts
@@ -108,15 +113,10 @@ models/ReportRow.ts
 models/ReportTable.ts
 models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
-models/ReportersLookupFilter.ts
-models/ReportersNodeInfo.ts
 models/ReportersOrderFilter.ts
-models/ReportersProviderThreatGraph.ts
-models/ReportersSearchFilter.ts
-models/ReportersSearchNodeReq.ts
-models/ReportersSearchScanReq.ts
-models/ReportersThreatNodeInfo.ts
-models/ReportersTopologyFilters.ts
+models/SearchSearchFilter.ts
+models/SearchSearchNodeReq.ts
+models/SearchSearchScanReq.ts
 models/UtilsScanSbomRequest.ts
 models/index.ts
 runtime.ts

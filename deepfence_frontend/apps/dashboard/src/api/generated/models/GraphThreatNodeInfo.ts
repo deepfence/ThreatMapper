@@ -13,79 +13,79 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ReportersNodeInfo } from './ReportersNodeInfo';
+import type { GraphNodeInfo } from './GraphNodeInfo';
 import {
-    ReportersNodeInfoFromJSON,
-    ReportersNodeInfoFromJSONTyped,
-    ReportersNodeInfoToJSON,
-} from './ReportersNodeInfo';
+    GraphNodeInfoFromJSON,
+    GraphNodeInfoFromJSONTyped,
+    GraphNodeInfoToJSON,
+} from './GraphNodeInfo';
 
 /**
  * 
  * @export
- * @interface ReportersThreatNodeInfo
+ * @interface GraphThreatNodeInfo
  */
-export interface ReportersThreatNodeInfo {
+export interface GraphThreatNodeInfo {
     /**
      * 
      * @type {Array<Array<string>>}
-     * @memberof ReportersThreatNodeInfo
+     * @memberof GraphThreatNodeInfo
      */
     attack_path: Array<Array<string>> | null;
     /**
      * 
      * @type {number}
-     * @memberof ReportersThreatNodeInfo
+     * @memberof GraphThreatNodeInfo
      */
     compliance_count: number;
     /**
      * 
      * @type {number}
-     * @memberof ReportersThreatNodeInfo
+     * @memberof GraphThreatNodeInfo
      */
     count: number;
     /**
      * 
      * @type {string}
-     * @memberof ReportersThreatNodeInfo
+     * @memberof GraphThreatNodeInfo
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof ReportersThreatNodeInfo
+     * @memberof GraphThreatNodeInfo
      */
     label: string;
     /**
      * 
      * @type {string}
-     * @memberof ReportersThreatNodeInfo
+     * @memberof GraphThreatNodeInfo
      */
     node_type: string;
     /**
      * 
-     * @type {{ [key: string]: ReportersNodeInfo; }}
-     * @memberof ReportersThreatNodeInfo
+     * @type {{ [key: string]: GraphNodeInfo; }}
+     * @memberof GraphThreatNodeInfo
      */
-    nodes: { [key: string]: ReportersNodeInfo; } | null;
+    nodes: { [key: string]: GraphNodeInfo; } | null;
     /**
      * 
      * @type {number}
-     * @memberof ReportersThreatNodeInfo
+     * @memberof GraphThreatNodeInfo
      */
     secrets_count: number;
     /**
      * 
      * @type {number}
-     * @memberof ReportersThreatNodeInfo
+     * @memberof GraphThreatNodeInfo
      */
     vulnerability_count: number;
 }
 
 /**
- * Check if a given object implements the ReportersThreatNodeInfo interface.
+ * Check if a given object implements the GraphThreatNodeInfo interface.
  */
-export function instanceOfReportersThreatNodeInfo(value: object): boolean {
+export function instanceOfGraphThreatNodeInfo(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "attack_path" in value;
     isInstance = isInstance && "compliance_count" in value;
@@ -100,11 +100,11 @@ export function instanceOfReportersThreatNodeInfo(value: object): boolean {
     return isInstance;
 }
 
-export function ReportersThreatNodeInfoFromJSON(json: any): ReportersThreatNodeInfo {
-    return ReportersThreatNodeInfoFromJSONTyped(json, false);
+export function GraphThreatNodeInfoFromJSON(json: any): GraphThreatNodeInfo {
+    return GraphThreatNodeInfoFromJSONTyped(json, false);
 }
 
-export function ReportersThreatNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersThreatNodeInfo {
+export function GraphThreatNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): GraphThreatNodeInfo {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -116,13 +116,13 @@ export function ReportersThreatNodeInfoFromJSONTyped(json: any, ignoreDiscrimina
         'id': json['id'],
         'label': json['label'],
         'node_type': json['node_type'],
-        'nodes': (json['nodes'] === null ? null : mapValues(json['nodes'], ReportersNodeInfoFromJSON)),
+        'nodes': (json['nodes'] === null ? null : mapValues(json['nodes'], GraphNodeInfoFromJSON)),
         'secrets_count': json['secrets_count'],
         'vulnerability_count': json['vulnerability_count'],
     };
 }
 
-export function ReportersThreatNodeInfoToJSON(value?: ReportersThreatNodeInfo | null): any {
+export function GraphThreatNodeInfoToJSON(value?: GraphThreatNodeInfo | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -137,7 +137,7 @@ export function ReportersThreatNodeInfoToJSON(value?: ReportersThreatNodeInfo | 
         'id': value.id,
         'label': value.label,
         'node_type': value.node_type,
-        'nodes': (value.nodes === null ? null : mapValues(value.nodes, ReportersNodeInfoToJSON)),
+        'nodes': (value.nodes === null ? null : mapValues(value.nodes, GraphNodeInfoToJSON)),
         'secrets_count': value.secrets_count,
         'vulnerability_count': value.vulnerability_count,
     };

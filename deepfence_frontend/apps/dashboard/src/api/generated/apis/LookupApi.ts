@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  LookupLookupFilter,
   ModelContainer,
   ModelContainerImage,
   ModelHost,
@@ -24,13 +25,14 @@ import type {
   ModelPod,
   ModelProcess,
   ModelRegistryAccount,
-  ReportersLookupFilter,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    LookupLookupFilterFromJSON,
+    LookupLookupFilterToJSON,
     ModelContainerFromJSON,
     ModelContainerToJSON,
     ModelContainerImageFromJSON,
@@ -45,36 +47,34 @@ import {
     ModelProcessToJSON,
     ModelRegistryAccountFromJSON,
     ModelRegistryAccountToJSON,
-    ReportersLookupFilterFromJSON,
-    ReportersLookupFilterToJSON,
 } from '../models';
 
 export interface GetContainerImagesRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+    lookupLookupFilter?: LookupLookupFilter;
 }
 
 export interface GetContainersRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+    lookupLookupFilter?: LookupLookupFilter;
 }
 
 export interface GetHostsRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+    lookupLookupFilter?: LookupLookupFilter;
 }
 
 export interface GetKubernetesClustersRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+    lookupLookupFilter?: LookupLookupFilter;
 }
 
 export interface GetPodsRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+    lookupLookupFilter?: LookupLookupFilter;
 }
 
 export interface GetProcessesRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+    lookupLookupFilter?: LookupLookupFilter;
 }
 
 export interface GetRegistryAccountRequest {
-    reportersLookupFilter?: ReportersLookupFilter;
+    lookupLookupFilter?: LookupLookupFilter;
 }
 
 /**
@@ -87,7 +87,7 @@ export interface LookupApiInterface {
     /**
      * Retrieve all the data associated with images
      * @summary Retrieve Container Images data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LookupApiInterface
@@ -103,7 +103,7 @@ export interface LookupApiInterface {
     /**
      * Retrieve all the data associated with containers
      * @summary Retrieve Containers data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LookupApiInterface
@@ -119,7 +119,7 @@ export interface LookupApiInterface {
     /**
      * Retrieve all the data associated with hosts
      * @summary Retrieve Hosts data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LookupApiInterface
@@ -135,7 +135,7 @@ export interface LookupApiInterface {
     /**
      * Retrieve all the data associated with k8s clusters
      * @summary Retrieve K8s data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LookupApiInterface
@@ -151,7 +151,7 @@ export interface LookupApiInterface {
     /**
      * Retrieve all the data associated with pods
      * @summary Retrieve Pods data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LookupApiInterface
@@ -167,7 +167,7 @@ export interface LookupApiInterface {
     /**
      * Retrieve all the data associated with processes
      * @summary Retrieve Processes data
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LookupApiInterface
@@ -183,7 +183,7 @@ export interface LookupApiInterface {
     /**
      * List all the images present in the given registry
      * @summary Get Images in Registry
-     * @param {ReportersLookupFilter} [reportersLookupFilter] 
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LookupApiInterface
@@ -227,7 +227,7 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageFromJSON));
@@ -266,7 +266,7 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerFromJSON));
@@ -305,7 +305,7 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelHostFromJSON));
@@ -344,7 +344,7 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelKubernetesClusterFromJSON));
@@ -383,7 +383,7 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelPodFromJSON));
@@ -422,7 +422,7 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelProcessFromJSON));
@@ -461,7 +461,7 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersLookupFilterToJSON(requestParameters.reportersLookupFilter),
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelRegistryAccountFromJSON));
