@@ -129,10 +129,10 @@ func (h *Handler) GetRegistryAccount(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SearchHosts(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.SearchHostsReport(r.Context(), req)
+	hosts, err := reporters.SearchHostsReport(r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -146,10 +146,10 @@ func (h *Handler) SearchHosts(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SearchContainers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.SearchContainersReport(r.Context(), req)
+	hosts, err := reporters.SearchContainersReport(r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -163,10 +163,10 @@ func (h *Handler) SearchContainers(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SearchContainerImages(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.SearchContainerImagesReport(r.Context(), req)
+	hosts, err := reporters.SearchContainerImagesReport(r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -180,10 +180,10 @@ func (h *Handler) SearchContainerImages(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) SearchVulnerabilities(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.SearchVulnerabilitiesReport(r.Context(), req)
+	hosts, err := reporters.SearchVulnerabilitiesReport(r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -197,10 +197,10 @@ func (h *Handler) SearchVulnerabilities(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) SearchSecrets(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.SearchSecretsReport(r.Context(), req)
+	hosts, err := reporters.SearchSecretsReport(r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -214,10 +214,10 @@ func (h *Handler) SearchSecrets(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SearchMalwares(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.SearchMalwaresReport(r.Context(), req)
+	hosts, err := reporters.SearchMalwaresReport(r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -231,10 +231,10 @@ func (h *Handler) SearchMalwares(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SearchCloudCompliances(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.SearchCloudCompliancesReport(r.Context(), req)
+	hosts, err := reporters.SearchCloudCompliancesReport(r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -248,10 +248,10 @@ func (h *Handler) SearchCloudCompliances(w http.ResponseWriter, r *http.Request)
 
 func (h *Handler) SearchCompliances(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.SearchFilter
+	var req reporters.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.SearchCompliancesReport(r.Context(), req)
+	hosts, err := reporters.SearchCompliancesReport(r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)

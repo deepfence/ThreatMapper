@@ -327,7 +327,6 @@ type ContainsFilter struct {
 
 type OrderFilter struct {
 	OrderField string `json:"order_field" required:"true"`
-	Limit      int    `json:"limit" required:"true"`
 }
 
 type FieldsFilters struct {
@@ -349,10 +348,10 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 }
 
 func orderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
-	if filter.Limit == 0 {
+	if len(filter.OrderField) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(" ORDER BY %s.%s LIMIT %v", cypherNodeName, filter.OrderField, filter.Limit)
+	return fmt.Sprintf(" ORDER BY %s.%s ", cypherNodeName, filter.OrderField)
 }
 
 func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {

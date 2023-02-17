@@ -282,8 +282,8 @@ var scanSearchSubCmd = &cobra.Command{
 		case "secret":
 			req := http.Client().SearchApi.SearchSecretsScans(context.Background())
 			req = req.ReportersSearchScanReq(deepfence_server_client.ReportersSearchScanReq{
-				ScanFilters:     scan_filters,
-				ResourceFilters: node_filters,
+				ScanFilters: scan_filters,
+				NodeFilters: node_filters,
 				Window: deepfence_server_client.ModelFetchWindow{
 					Offset: 0,
 					Size:   20,
@@ -293,8 +293,8 @@ var scanSearchSubCmd = &cobra.Command{
 		case "vulnerability":
 			req := http.Client().SearchApi.SearchVulnerabilityScans(context.Background())
 			req = req.ReportersSearchScanReq(deepfence_server_client.ReportersSearchScanReq{
-				ScanFilters:     scan_filters,
-				ResourceFilters: node_filters,
+				ScanFilters: scan_filters,
+				NodeFilters: node_filters,
 				Window: deepfence_server_client.ModelFetchWindow{
 					Offset: 0,
 					Size:   20,

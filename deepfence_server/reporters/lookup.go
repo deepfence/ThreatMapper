@@ -18,8 +18,9 @@ import (
 // If no field are provided, will return all fields.
 // (Fields can only be top level since neo4j does not support nested fields)
 type LookupFilter struct {
-	InFieldFilter []string `json:"in_field_filter" required:"true"` // Fields to return
-	NodeIds       []string `json:"node_ids" required:"true"`        // Node to return
+	InFieldFilter []string          `json:"in_field_filter" required:"true"` // Fields to return
+	NodeIds       []string          `json:"node_ids" required:"true"`        // Node to return
+	Window        model.FetchWindow `json:"window" required:"true"`
 }
 
 // If no nodeIds are provided, will return all
@@ -30,10 +31,15 @@ type SearchFilter struct {
 	Filters       FieldsFilters `json:"filters" required:"true"`
 }
 
+type SearchNodeReq struct {
+	NodeFilter SearchFilter      `json:"node_filter" required:"true"`
+	Window     model.FetchWindow `json:"window" required:"true"`
+}
+
 type SearchScanReq struct {
-	ScanFilter     SearchFilter      `json:"scan_filters" required:"true"`
-	ResourceFilter SearchFilter      `json:"resource_filters" required:"true"`
-	Window         model.FetchWindow `json:"window" required:"true"`
+	ScanFilter SearchFilter      `json:"scan_filters" required:"true"`
+	NodeFilter SearchFilter      `json:"node_filters" required:"true"`
+	Window     model.FetchWindow `json:"window" required:"true"`
 }
 
 func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, error) {
@@ -293,7 +299,7 @@ func getContainerContainerImages(ctx context.Context, container model.Container)
 		[]string{container.ID})
 }
 
-func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filter SearchFilter) ([]T, error) {
+func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	res := []T{}
 	var dummy T
 
@@ -318,10 +324,12 @@ func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filt
 		MATCH (n:` + dummy.NodeType() + `) ` +
 		parseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		` RETURN ` + fieldFilterCypher("n", filter.InFieldFilter) + ` ` +
-		orderFilter2CypherCondition("n", filter.Filters.OrderFilter)
+		orderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
+		` SKIP $skip
+		LIMIT $limit`
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
-		map[string]interface{}{})
+		map[string]interface{}{"skip": fw.Offset, "limit": fw.Size})
 
 	if err != nil {
 		return res, err
@@ -361,7 +369,7 @@ func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filt
 	return res, nil
 }
 
-func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanType, scan_filter SearchFilter, resource_filter SearchFilter) ([]model.ScanInfo, error) {
+func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanType, scan_filter SearchFilter, resource_filter SearchFilter, fw model.FetchWindow) ([]model.ScanInfo, error) {
 	res := []model.ScanInfo{}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -386,11 +394,13 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		parseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
 		`MATCH (n) -[:SCANNED]- (m)` +
 		parseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
-		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, m.node_type` +
-		orderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter)
+		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, m.node_type, m.node_name` +
+		orderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
+		` SKIP $skip
+		LIMIT $limit`
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
-		map[string]interface{}{})
+		map[string]interface{}{"skip": fw.Offset, "limit": fw.Size})
 
 	if err != nil {
 		return res, err
