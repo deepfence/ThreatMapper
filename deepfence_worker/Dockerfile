@@ -2,9 +2,7 @@ ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
-
 FROM $IMAGE_REPOSITORY/yara-hunter:$DF_IMG_TAG AS yarahunter
-RUN ls -l /usr/local/bin/
 
 FROM alpine:3.17 AS builder-yara
 
@@ -84,13 +82,12 @@ COPY --from=packagescanner /root/.grype.yaml /usr/local/bin/grype.yaml
 
 COPY --from=secretscanner /home/deepfence/usr/config.yaml /config.yaml
 
+COPY --from=yarahunter /home/deepfence/usr/config.yaml /malware-config/config.yaml
+
 COPY --from=build /go/deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
 COPY --from=build /go/deepfence_worker/entrypoint.sh /entrypoint.sh
-COPY --from=build /go/deepfence_worker/grype.yaml /usr/local/bin/grype.yaml
-COPY --from=build /go/deepfence_worker/secretscan-config.yaml /config.yaml
 COPY --from=build /go/deepfence_worker/yara-rules /usr/local/yara-rules
-COPY --from=yarahunter /home/deepfence/usr/config.yaml /malware-config/config.yaml
-# COPY --from=yarahunter /usr/local/yara /usr/local/yara
+
 COPY --from=builder-yara /usr/local/yara.tar.gz /usr/local/yara.tar.gz
 # extract
 RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \

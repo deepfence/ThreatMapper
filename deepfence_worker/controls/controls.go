@@ -88,7 +88,7 @@ func ConsoleActionSetup(pub *kafka.Publisher) error {
 	if err != nil {
 		return err
 	}
-	// for secret scan
+	// for malware scan
 	err = RegisterControl(ctl.StartMalwareScan,
 		func(req ctl.StartMalwareScanRequest) error {
 			metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
@@ -98,7 +98,7 @@ func ConsoleActionSetup(pub *kafka.Publisher) error {
 				log.Error().Msg(err.Error())
 				return err
 			}
-			if err := utils.PublishNewJob(pub, metadata, sdkUtils.SecretScanTask, data); err != nil {
+			if err := utils.PublishNewJob(pub, metadata, sdkUtils.MalwareScanTask, data); err != nil {
 				log.Error().Msg(err.Error())
 				return err
 			}
