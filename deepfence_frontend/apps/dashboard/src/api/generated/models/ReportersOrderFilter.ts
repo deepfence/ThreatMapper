@@ -21,12 +21,6 @@ import { exists, mapValues } from '../runtime';
 export interface ReportersOrderFilter {
     /**
      * 
-     * @type {number}
-     * @memberof ReportersOrderFilter
-     */
-    limit: number;
-    /**
-     * 
      * @type {string}
      * @memberof ReportersOrderFilter
      */
@@ -38,7 +32,6 @@ export interface ReportersOrderFilter {
  */
 export function instanceOfReportersOrderFilter(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "limit" in value;
     isInstance = isInstance && "order_field" in value;
 
     return isInstance;
@@ -54,7 +47,6 @@ export function ReportersOrderFilterFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'limit': json['limit'],
         'order_field': json['order_field'],
     };
 }
@@ -68,7 +60,6 @@ export function ReportersOrderFilterToJSON(value?: ReportersOrderFilter | null):
     }
     return {
         
-        'limit': value.limit,
         'order_field': value.order_field,
     };
 }

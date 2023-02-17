@@ -9,6 +9,7 @@ import {
   Configuration,
   MalwareScanApi,
   RegistryApi,
+  SearchApi,
   SecretScanApi,
   TopologyApi,
   UserApi,
@@ -55,6 +56,7 @@ export function getCloudNodesApiClient() {
 
 export function getVulnerabilityApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
+  const searchApi = new SearchApi(configuration);
   return {
     startVulnerabilityScan:
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
@@ -62,6 +64,7 @@ export function getVulnerabilityApiClient() {
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
     statusVulnerabilityScan:
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
+    searchVulnerabilityScan: searchApi.searchVulnerabilityScans.bind(searchApi),
   };
 }
 

@@ -10,6 +10,7 @@ apis/InternalApi.ts
 apis/LookupApi.ts
 apis/MalwareScanApi.ts
 apis/RegistryApi.ts
+apis/SearchApi.ts
 apis/SecretScanApi.ts
 apis/ThreatApi.ts
 apis/TopologyApi.ts
@@ -112,6 +113,8 @@ models/ReportersNodeInfo.ts
 models/ReportersOrderFilter.ts
 models/ReportersProviderThreatGraph.ts
 models/ReportersSearchFilter.ts
+models/ReportersSearchNodeReq.ts
+models/ReportersSearchScanReq.ts
 models/ReportersThreatNodeInfo.ts
 models/ReportersTopologyFilters.ts
 models/UtilsScanSbomRequest.ts

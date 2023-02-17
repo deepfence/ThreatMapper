@@ -11,6 +11,7 @@ export * from './InternalApi';
 export * from './LookupApi';
 export * from './MalwareScanApi';
 export * from './RegistryApi';
+export * from './SearchApi';
 export * from './SecretScanApi';
 export * from './ThreatApi';
 export * from './TopologyApi';

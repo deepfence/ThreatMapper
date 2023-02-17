@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelFetchWindow } from './ModelFetchWindow';
+import {
+    ModelFetchWindowFromJSON,
+    ModelFetchWindowFromJSONTyped,
+    ModelFetchWindowToJSON,
+} from './ModelFetchWindow';
+
 /**
  * 
  * @export
@@ -31,6 +38,12 @@ export interface ReportersLookupFilter {
      * @memberof ReportersLookupFilter
      */
     node_ids: Array<string> | null;
+    /**
+     * 
+     * @type {ModelFetchWindow}
+     * @memberof ReportersLookupFilter
+     */
+    window: ModelFetchWindow;
 }
 
 /**
@@ -40,6 +53,7 @@ export function instanceOfReportersLookupFilter(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "in_field_filter" in value;
     isInstance = isInstance && "node_ids" in value;
+    isInstance = isInstance && "window" in value;
 
     return isInstance;
 }
@@ -56,6 +70,7 @@ export function ReportersLookupFilterFromJSONTyped(json: any, ignoreDiscriminato
         
         'in_field_filter': json['in_field_filter'],
         'node_ids': json['node_ids'],
+        'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
@@ -70,6 +85,7 @@ export function ReportersLookupFilterToJSON(value?: ReportersLookupFilter | null
         
         'in_field_filter': value.in_field_filter,
         'node_ids': value.node_ids,
+        'window': ModelFetchWindowToJSON(value.window),
     };
 }
 

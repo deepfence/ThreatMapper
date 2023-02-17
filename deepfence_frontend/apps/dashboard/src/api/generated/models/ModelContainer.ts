@@ -40,6 +40,18 @@ import {
 export interface ModelContainer {
     /**
      * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    compliance_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelContainer
+     */
+    compliances_count: number;
+    /**
+     * 
      * @type {{ [key: string]: any; }}
      * @memberof ModelContainer
      */
@@ -56,6 +68,18 @@ export interface ModelContainer {
      * @memberof ModelContainer
      */
     image: ModelContainerImage;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    malware_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelContainer
+     */
+    malwares_count: number;
     /**
      * 
      * @type {{ [key: string]: any; }}
@@ -86,6 +110,30 @@ export interface ModelContainer {
      * @memberof ModelContainer
      */
     processes: Array<ModelProcess> | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    secret_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelContainer
+     */
+    secrets_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelContainer
+     */
+    vulnerabilities_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    vulnerability_scan_status: string;
 }
 
 /**
@@ -93,14 +141,22 @@ export interface ModelContainer {
  */
 export function instanceOfModelContainer(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "compliance_scan_status" in value;
+    isInstance = isInstance && "compliances_count" in value;
     isInstance = isInstance && "docker_labels" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "image" in value;
+    isInstance = isInstance && "malware_scan_status" in value;
+    isInstance = isInstance && "malwares_count" in value;
     isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "metrics" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "processes" in value;
+    isInstance = isInstance && "secret_scan_status" in value;
+    isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "vulnerabilities_count" in value;
+    isInstance = isInstance && "vulnerability_scan_status" in value;
 
     return isInstance;
 }
@@ -115,14 +171,22 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
+        'compliance_scan_status': json['compliance_scan_status'],
+        'compliances_count': json['compliances_count'],
         'docker_labels': json['docker_labels'],
         'host_name': json['host_name'],
         'image': ModelContainerImageFromJSON(json['image']),
+        'malware_scan_status': json['malware_scan_status'],
+        'malwares_count': json['malwares_count'],
         'metadata': json['metadata'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'name': json['name'],
         'node_id': json['node_id'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
+        'secret_scan_status': json['secret_scan_status'],
+        'secrets_count': json['secrets_count'],
+        'vulnerabilities_count': json['vulnerabilities_count'],
+        'vulnerability_scan_status': json['vulnerability_scan_status'],
     };
 }
 
@@ -135,14 +199,22 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
     }
     return {
         
+        'compliance_scan_status': value.compliance_scan_status,
+        'compliances_count': value.compliances_count,
         'docker_labels': value.docker_labels,
         'host_name': value.host_name,
         'image': ModelContainerImageToJSON(value.image),
+        'malware_scan_status': value.malware_scan_status,
+        'malwares_count': value.malwares_count,
         'metadata': value.metadata,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
         'name': value.name,
         'node_id': value.node_id,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
+        'secret_scan_status': value.secret_scan_status,
+        'secrets_count': value.secrets_count,
+        'vulnerabilities_count': value.vulnerabilities_count,
+        'vulnerability_scan_status': value.vulnerability_scan_status,
     };
 }
 

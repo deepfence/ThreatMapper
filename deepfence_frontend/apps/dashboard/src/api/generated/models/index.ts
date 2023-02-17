@@ -95,6 +95,8 @@ export * from './ReportersNodeInfo';
 export * from './ReportersOrderFilter';
 export * from './ReportersProviderThreatGraph';
 export * from './ReportersSearchFilter';
+export * from './ReportersSearchNodeReq';
+export * from './ReportersSearchScanReq';
 export * from './ReportersThreatNodeInfo';
 export * from './ReportersTopologyFilters';
 export * from './UtilsScanSbomRequest';

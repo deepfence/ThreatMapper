@@ -17,30 +17,20 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ModelCloudCompliance,
-  ModelCompliance,
   ModelContainer,
   ModelContainerImage,
   ModelHost,
   ModelKubernetesCluster,
-  ModelMalware,
   ModelPod,
   ModelProcess,
   ModelRegistryAccount,
-  ModelSecret,
-  ModelVulnerability,
   ReportersLookupFilter,
-  ReportersSearchFilter,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelCloudComplianceFromJSON,
-    ModelCloudComplianceToJSON,
-    ModelComplianceFromJSON,
-    ModelComplianceToJSON,
     ModelContainerFromJSON,
     ModelContainerToJSON,
     ModelContainerImageFromJSON,
@@ -49,22 +39,14 @@ import {
     ModelHostToJSON,
     ModelKubernetesClusterFromJSON,
     ModelKubernetesClusterToJSON,
-    ModelMalwareFromJSON,
-    ModelMalwareToJSON,
     ModelPodFromJSON,
     ModelPodToJSON,
     ModelProcessFromJSON,
     ModelProcessToJSON,
     ModelRegistryAccountFromJSON,
     ModelRegistryAccountToJSON,
-    ModelSecretFromJSON,
-    ModelSecretToJSON,
-    ModelVulnerabilityFromJSON,
-    ModelVulnerabilityToJSON,
     ReportersLookupFilterFromJSON,
     ReportersLookupFilterToJSON,
-    ReportersSearchFilterFromJSON,
-    ReportersSearchFilterToJSON,
 } from '../models';
 
 export interface GetContainerImagesRequest {
@@ -93,38 +75,6 @@ export interface GetProcessesRequest {
 
 export interface GetRegistryAccountRequest {
     reportersLookupFilter?: ReportersLookupFilter;
-}
-
-export interface SearchCloudCompliancesRequest {
-    reportersSearchFilter?: ReportersSearchFilter;
-}
-
-export interface SearchCompliancesRequest {
-    reportersSearchFilter?: ReportersSearchFilter;
-}
-
-export interface SearchContainerImagesRequest {
-    reportersSearchFilter?: ReportersSearchFilter;
-}
-
-export interface SearchContainersRequest {
-    reportersSearchFilter?: ReportersSearchFilter;
-}
-
-export interface SearchHostsRequest {
-    reportersSearchFilter?: ReportersSearchFilter;
-}
-
-export interface SearchMalwaresRequest {
-    reportersSearchFilter?: ReportersSearchFilter;
-}
-
-export interface SearchSecretsRequest {
-    reportersSearchFilter?: ReportersSearchFilter;
-}
-
-export interface SearchVulnerabilitiesRequest {
-    reportersSearchFilter?: ReportersSearchFilter;
 }
 
 /**
@@ -245,134 +195,6 @@ export interface LookupApiInterface {
      * Get Images in Registry
      */
     getRegistryAccount(requestParameters: GetRegistryAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>>;
-
-    /**
-     * List all the images present in the given registry
-     * @summary Search Cloud compliances
-     * @param {ReportersSearchFilter} [reportersSearchFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    searchCloudCompliancesRaw(requestParameters: SearchCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudCompliance>>>;
-
-    /**
-     * List all the images present in the given registry
-     * Search Cloud compliances
-     */
-    searchCloudCompliances(requestParameters: SearchCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudCompliance>>;
-
-    /**
-     * List all the images present in the given registry
-     * @summary Search Compliances
-     * @param {ReportersSearchFilter} [reportersSearchFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    searchCompliancesRaw(requestParameters: SearchCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCompliance>>>;
-
-    /**
-     * List all the images present in the given registry
-     * Search Compliances
-     */
-    searchCompliances(requestParameters: SearchCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCompliance>>;
-
-    /**
-     * Retrieve all the data associated with processes
-     * @summary Search Container images
-     * @param {ReportersSearchFilter} [reportersSearchFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    searchContainerImagesRaw(requestParameters: SearchContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>>;
-
-    /**
-     * Retrieve all the data associated with processes
-     * Search Container images
-     */
-    searchContainerImages(requestParameters: SearchContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>>;
-
-    /**
-     * Retrieve all the data associated with containers
-     * @summary Search Containers data
-     * @param {ReportersSearchFilter} [reportersSearchFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    searchContainersRaw(requestParameters: SearchContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainer>>>;
-
-    /**
-     * Retrieve all the data associated with containers
-     * Search Containers data
-     */
-    searchContainers(requestParameters: SearchContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainer>>;
-
-    /**
-     * Retrieve all the data associated with hosts
-     * @summary Search hosts
-     * @param {ReportersSearchFilter} [reportersSearchFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    searchHostsRaw(requestParameters: SearchHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelHost>>>;
-
-    /**
-     * Retrieve all the data associated with hosts
-     * Search hosts
-     */
-    searchHosts(requestParameters: SearchHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>>;
-
-    /**
-     * List all the images present in the given registry
-     * @summary Search Malwares
-     * @param {ReportersSearchFilter} [reportersSearchFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    searchMalwaresRaw(requestParameters: SearchMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalware>>>;
-
-    /**
-     * List all the images present in the given registry
-     * Search Malwares
-     */
-    searchMalwares(requestParameters: SearchMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalware>>;
-
-    /**
-     * Retrieve all the data associated with pods
-     * @summary Search Secrets
-     * @param {ReportersSearchFilter} [reportersSearchFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>>;
-
-    /**
-     * Retrieve all the data associated with pods
-     * Search Secrets
-     */
-    searchSecrets(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>>;
-
-    /**
-     * Retrieve all the data associated with k8s clusters
-     * @summary Search Vulnerabilities
-     * @param {ReportersSearchFilter} [reportersSearchFilter] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof LookupApiInterface
-     */
-    searchVulnerabilitiesRaw(requestParameters: SearchVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerability>>>;
-
-    /**
-     * Retrieve all the data associated with k8s clusters
-     * Search Vulnerabilities
-     */
-    searchVulnerabilities(requestParameters: SearchVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>>;
 
 }
 
@@ -651,318 +473,6 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
      */
     async getRegistryAccount(requestParameters: GetRegistryAccountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>> {
         const response = await this.getRegistryAccountRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * List all the images present in the given registry
-     * Search Cloud compliances
-     */
-    async searchCloudCompliancesRaw(requestParameters: SearchCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudCompliance>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/cloud-compliances`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersSearchFilterToJSON(requestParameters.reportersSearchFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelCloudComplianceFromJSON));
-    }
-
-    /**
-     * List all the images present in the given registry
-     * Search Cloud compliances
-     */
-    async searchCloudCompliances(requestParameters: SearchCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudCompliance>> {
-        const response = await this.searchCloudCompliancesRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * List all the images present in the given registry
-     * Search Compliances
-     */
-    async searchCompliancesRaw(requestParameters: SearchCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCompliance>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/compliances`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersSearchFilterToJSON(requestParameters.reportersSearchFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelComplianceFromJSON));
-    }
-
-    /**
-     * List all the images present in the given registry
-     * Search Compliances
-     */
-    async searchCompliances(requestParameters: SearchCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCompliance>> {
-        const response = await this.searchCompliancesRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Retrieve all the data associated with processes
-     * Search Container images
-     */
-    async searchContainerImagesRaw(requestParameters: SearchContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/images`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersSearchFilterToJSON(requestParameters.reportersSearchFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageFromJSON));
-    }
-
-    /**
-     * Retrieve all the data associated with processes
-     * Search Container images
-     */
-    async searchContainerImages(requestParameters: SearchContainerImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>> {
-        const response = await this.searchContainerImagesRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Retrieve all the data associated with containers
-     * Search Containers data
-     */
-    async searchContainersRaw(requestParameters: SearchContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainer>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/containers`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersSearchFilterToJSON(requestParameters.reportersSearchFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerFromJSON));
-    }
-
-    /**
-     * Retrieve all the data associated with containers
-     * Search Containers data
-     */
-    async searchContainers(requestParameters: SearchContainersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainer>> {
-        const response = await this.searchContainersRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Retrieve all the data associated with hosts
-     * Search hosts
-     */
-    async searchHostsRaw(requestParameters: SearchHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelHost>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/hosts`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersSearchFilterToJSON(requestParameters.reportersSearchFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelHostFromJSON));
-    }
-
-    /**
-     * Retrieve all the data associated with hosts
-     * Search hosts
-     */
-    async searchHosts(requestParameters: SearchHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>> {
-        const response = await this.searchHostsRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * List all the images present in the given registry
-     * Search Malwares
-     */
-    async searchMalwaresRaw(requestParameters: SearchMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalware>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/malwares`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersSearchFilterToJSON(requestParameters.reportersSearchFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelMalwareFromJSON));
-    }
-
-    /**
-     * List all the images present in the given registry
-     * Search Malwares
-     */
-    async searchMalwares(requestParameters: SearchMalwaresRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalware>> {
-        const response = await this.searchMalwaresRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Retrieve all the data associated with pods
-     * Search Secrets
-     */
-    async searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/secrets`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersSearchFilterToJSON(requestParameters.reportersSearchFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretFromJSON));
-    }
-
-    /**
-     * Retrieve all the data associated with pods
-     * Search Secrets
-     */
-    async searchSecrets(requestParameters: SearchSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>> {
-        const response = await this.searchSecretsRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Retrieve all the data associated with k8s clusters
-     * Search Vulnerabilities
-     */
-    async searchVulnerabilitiesRaw(requestParameters: SearchVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerability>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/vulnerabilities`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ReportersSearchFilterToJSON(requestParameters.reportersSearchFilter),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelVulnerabilityFromJSON));
-    }
-
-    /**
-     * Retrieve all the data associated with k8s clusters
-     * Search Vulnerabilities
-     */
-    async searchVulnerabilities(requestParameters: SearchVulnerabilitiesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>> {
-        const response = await this.searchVulnerabilitiesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
