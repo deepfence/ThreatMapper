@@ -64,66 +64,66 @@ var topCmd = &cobra.Command{
 
 		switch target_type {
 		case "host":
-			req := http.Client().LookupApi.SearchHosts(context.Background())
+			req := http.Client().SearchApi.SearchHosts(context.Background())
 			req = req.ReportersSearchFilter(filters)
-			res, rh, err := http.Client().LookupApi.SearchHostsExecute(req)
+			res, rh, err := http.Client().SearchApi.SearchHostsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "container":
-			req := http.Client().LookupApi.SearchContainers(context.Background())
+			req := http.Client().SearchApi.SearchContainers(context.Background())
 			req = req.ReportersSearchFilter(filters)
-			res, rh, err := http.Client().LookupApi.SearchContainersExecute(req)
+			res, rh, err := http.Client().SearchApi.SearchContainersExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "image":
-			req := http.Client().LookupApi.SearchContainerImages(context.Background())
+			req := http.Client().SearchApi.SearchContainerImages(context.Background())
 			req = req.ReportersSearchFilter(filters)
-			res, rh, err := http.Client().LookupApi.SearchContainerImagesExecute(req)
+			res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			log.Info().Msgf("%v", res)
 			output.Out(res)
 			//	case "vulnerability":
-			//		req := http.Client().LookupApi.SearchContainerImages(context.Background())
+			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
 			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().LookupApi.SearchContainerImagesExecute(req)
+			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
 			//		if err != nil {
 			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			//		}
 			//		output.Out(res)
 			//	case "secret":
-			//		req := http.Client().LookupApi.SearchContainerImages(context.Background())
+			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
 			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().LookupApi.SearchContainerImagesExecute(req)
+			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
 			//		if err != nil {
 			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			//		}
 			//		output.Out(res)
 			//	case "malware":
-			//		req := http.Client().LookupApi.SearchContainerImages(context.Background())
+			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
 			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().LookupApi.SearchContainerImagesExecute(req)
+			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
 			//		if err != nil {
 			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			//		}
 			//		output.Out(res)
 			//	case "compliance":
-			//		req := http.Client().LookupApi.SearchContainerImages(context.Background())
+			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
 			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().LookupApi.SearchContainerImagesExecute(req)
+			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
 			//		if err != nil {
 			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			//		}
 			//		output.Out(res)
 			//	case "cloud-compliance":
-			//		req := http.Client().LookupApi.SearchContainerImages(context.Background())
+			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
 			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().LookupApi.SearchContainerImagesExecute(req)
+			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
 			//		if err != nil {
 			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			//		}

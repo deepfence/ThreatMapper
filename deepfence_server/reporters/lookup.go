@@ -386,7 +386,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		parseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
 		`MATCH (n) -[:SCANNED]- (m)` +
 		parseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
-		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, m.node_type, counts` +
+		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, m.node_type` +
 		orderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter)
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,

@@ -349,7 +349,10 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 }
 
 func orderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
-	return fmt.Sprintf("ORDER BY %s.%s LIMIT %v", cypherNodeName, filter.OrderField, filter.Limit)
+	if filter.Limit == 0 {
+		return ""
+	}
+	return fmt.Sprintf(" ORDER BY %s.%s LIMIT %v", cypherNodeName, filter.OrderField, filter.Limit)
 }
 
 func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {

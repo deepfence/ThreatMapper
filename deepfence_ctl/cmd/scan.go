@@ -184,8 +184,7 @@ var scanListSubCmd = &cobra.Command{
 		case "secret":
 			req := http.Client().SecretScanApi.ListSecretScan(context.Background())
 			req = req.ModelScanListReq(deepfence_server_client.ModelScanListReq{
-				NodeId:   node_id,
-				NodeType: node_type,
+				NodeIds: []deepfence_server_client.ModelNodeIdentifier{{NodeId: node_id, NodeType: node_type}},
 				Window: deepfence_server_client.ModelFetchWindow{
 					Offset: 0,
 					Size:   20,
@@ -195,14 +194,113 @@ var scanListSubCmd = &cobra.Command{
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.ListVulnerabilityScans(context.Background())
 			req = req.ModelScanListReq(deepfence_server_client.ModelScanListReq{
-				NodeId:   node_id,
-				NodeType: node_type,
+				NodeIds: []deepfence_server_client.ModelNodeIdentifier{{NodeId: node_id, NodeType: node_type}},
 				Window: deepfence_server_client.ModelFetchWindow{
 					Offset: 0,
 					Size:   20,
 				},
 			})
 			res, _, err = http.Client().VulnerabilityApi.ListVulnerabilityScansExecute(req)
+		default:
+			log.Fatal().Msg("Unsupported")
+		}
+
+		if err != nil {
+			log.Fatal().Msgf("Fail to execute: %v", err)
+		}
+		output.Out(res)
+	},
+}
+
+var scanSearchSubCmd = &cobra.Command{
+	Use:   "search",
+	Short: "Search scan list",
+	Long:  `This subcommand retrieve a scan list`,
+	Run: func(cmd *cobra.Command, args []string) {
+		scan_type, _ := cmd.Flags().GetString("type")
+		if scan_type == "" {
+			log.Fatal().Msg("Please provide an type")
+		}
+
+		scan_filter, _ := cmd.Flags().GetString("scan-filter")
+		scan_filters := deepfence_server_client.ReportersSearchFilter{}
+		if scan_filter != "" {
+			orderFilter := deepfence_server_client.ReportersOrderFilter{}
+
+			sfields := map[string][]interface{}{}
+			filters := strings.Split(scan_filter, ",")
+			for i := range filters {
+				field_value := strings.Split(filters[i], "=")
+				if len(field_value) != 2 {
+					continue
+				}
+				sfields[field_value[0]] = append(sfields[field_value[0]], field_value[1])
+
+			}
+
+			scan_filters = deepfence_server_client.ReportersSearchFilter{
+				InFieldFilter: []string{},
+				Filters: deepfence_server_client.ReportersFieldsFilters{
+					ContainsFilter: deepfence_server_client.ReportersContainsFilter{
+						FilterIn: sfields,
+					},
+					OrderFilter: orderFilter,
+				},
+			}
+		}
+
+		node_filter, _ := cmd.Flags().GetString("node-filter")
+		node_filters := deepfence_server_client.ReportersSearchFilter{}
+		if node_filter != "" {
+			orderFilter := deepfence_server_client.ReportersOrderFilter{}
+
+			sfields := map[string][]interface{}{}
+			filters := strings.Split(node_filter, ",")
+			for i := range filters {
+				field_value := strings.Split(filters[i], "=")
+				if len(field_value) != 2 {
+					continue
+				}
+				sfields[field_value[0]] = append(sfields[field_value[0]], field_value[1])
+
+			}
+
+			node_filters = deepfence_server_client.ReportersSearchFilter{
+				InFieldFilter: []string{},
+				Filters: deepfence_server_client.ReportersFieldsFilters{
+					ContainsFilter: deepfence_server_client.ReportersContainsFilter{
+						FilterIn: sfields,
+					},
+					OrderFilter: orderFilter,
+				},
+			}
+		}
+
+		var err error
+		var res []deepfence_server_client.ModelScanInfo
+		switch scan_type {
+		case "secret":
+			req := http.Client().SearchApi.SearchSecretsScans(context.Background())
+			req = req.ReportersSearchScanReq(deepfence_server_client.ReportersSearchScanReq{
+				ScanFilters:     scan_filters,
+				ResourceFilters: node_filters,
+				Window: deepfence_server_client.ModelFetchWindow{
+					Offset: 0,
+					Size:   20,
+				},
+			})
+			res, _, err = http.Client().SearchApi.SearchSecretsScansExecute(req)
+		case "vulnerability":
+			req := http.Client().SearchApi.SearchVulnerabilityScans(context.Background())
+			req = req.ReportersSearchScanReq(deepfence_server_client.ReportersSearchScanReq{
+				ScanFilters:     scan_filters,
+				ResourceFilters: node_filters,
+				Window: deepfence_server_client.ModelFetchWindow{
+					Offset: 0,
+					Size:   20,
+				},
+			})
+			res, _, err = http.Client().SearchApi.SearchVulnerabilityScansExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
@@ -289,6 +387,7 @@ func init() {
 	scanCmd.AddCommand(scanStatusSubCmd)
 	scanCmd.AddCommand(scanListSubCmd)
 	scanCmd.AddCommand(scanResultsSubCmd)
+	scanCmd.AddCommand(scanSearchSubCmd)
 
 	scanCmd.PersistentFlags().String("type", "", "Scan type")
 
@@ -300,6 +399,9 @@ func init() {
 
 	scanListSubCmd.PersistentFlags().String("node-id", "", "Node id")
 	scanListSubCmd.PersistentFlags().String("node-type", "", "Resource type (host, container, image)")
+
+	scanSearchSubCmd.PersistentFlags().String("scan-filter", "", "Scan filter")
+	scanSearchSubCmd.PersistentFlags().String("node-filter", "", "Node filter")
 
 	scanResultsSubCmd.PersistentFlags().String("scan-id", "", "Scan id")
 

@@ -71,40 +71,40 @@ func SearchCompliancesReport(ctx context.Context, filter SearchFilter) ([]model.
 	return hosts, nil
 }
 
-func SearchVulnerabilityScansReport(ctx context.Context, filter SearchFilter) ([]model.ScanInfo, error) {
-	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_VULNERABILITY_SCAN, filter, SearchFilter{})
+func SearchVulnerabilityScansReport(ctx context.Context, filter SearchScanReq) ([]model.ScanInfo, error) {
+	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_VULNERABILITY_SCAN, filter.ScanFilter, filter.ResourceFilter)
 	if err != nil {
 		return nil, err
 	}
 	return hosts, nil
 }
 
-func SearchSecretScansReport(ctx context.Context, filter SearchFilter) ([]model.ScanInfo, error) {
-	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_SECRET_SCAN, filter, SearchFilter{})
+func SearchSecretScansReport(ctx context.Context, filter SearchScanReq) ([]model.ScanInfo, error) {
+	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_SECRET_SCAN, filter.ScanFilter, filter.ResourceFilter)
 	if err != nil {
 		return nil, err
 	}
 	return hosts, nil
 }
 
-func SearchMalwareScansReport(ctx context.Context, filter SearchFilter) ([]model.ScanInfo, error) {
-	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_MALWARE_SCAN, filter, SearchFilter{})
+func SearchMalwareScansReport(ctx context.Context, filter SearchScanReq) ([]model.ScanInfo, error) {
+	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_MALWARE_SCAN, filter.ScanFilter, filter.ResourceFilter)
 	if err != nil {
 		return nil, err
 	}
 	return hosts, nil
 }
 
-func SearchComplianceScansReport(ctx context.Context, filter SearchFilter) ([]model.ScanInfo, error) {
-	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_COMPLIANCE_SCAN, filter, SearchFilter{})
+func SearchComplianceScansReport(ctx context.Context, filter SearchScanReq) ([]model.ScanInfo, error) {
+	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_COMPLIANCE_SCAN, filter.ScanFilter, filter.ResourceFilter)
 	if err != nil {
 		return nil, err
 	}
 	return hosts, nil
 }
 
-func SearchCloudComplianceScansReport(ctx context.Context, filter SearchFilter) ([]model.ScanInfo, error) {
-	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, filter, SearchFilter{})
+func SearchCloudComplianceScansReport(ctx context.Context, filter SearchScanReq) ([]model.ScanInfo, error) {
+	hosts, err := searchGenericScanInfoReport(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, filter.ScanFilter, filter.ResourceFilter)
 	if err != nil {
 		return nil, err
 	}
