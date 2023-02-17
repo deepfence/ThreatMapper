@@ -347,6 +347,20 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("resultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/cloud-compliance",
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(CloudComplianceScanResult))
+
+	// Scan Result Actions
+	d.AddOperation("maskScanResult", http.MethodPost, "/deepfence/scan/results/action/mask",
+		"Mask Scans Results", "Mask scan results",
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+	d.AddOperation("unmaskScanResult", http.MethodPost, "/deepfence/scan/results/action/unmask",
+		"Unmask Scans Results", "Unmask scan results",
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+	d.AddOperation("deleteScanResult", http.MethodPost, "/deepfence/scan/results/action/delete",
+		"Delete Scans Results", "Delete scan results",
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+	d.AddOperation("notifyScanResult", http.MethodPost, "/deepfence/scan/results/action/notify",
+		"Notify Scans Results", "Notify scan results in connected integration channels",
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
 }
 
 func (d *OpenApiDocs) AddDiagnosisOperations() {
