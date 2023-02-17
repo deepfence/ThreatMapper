@@ -49,6 +49,7 @@ func init() {
 }
 
 func ConsoleActionSetup(pub *kafka.Publisher) error {
+	// for vulnerability scan
 	err := RegisterControl(ctl.StartVulnerabilityScan,
 		func(req ctl.StartVulnerabilityScanRequest) error {
 			metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
@@ -87,5 +88,6 @@ func ConsoleActionSetup(pub *kafka.Publisher) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

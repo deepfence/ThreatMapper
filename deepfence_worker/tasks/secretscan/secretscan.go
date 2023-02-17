@@ -11,6 +11,7 @@ import (
 	"github.com/deepfence/SecretScanner/output"
 	secretScan "github.com/deepfence/SecretScanner/scan"
 	"github.com/deepfence/SecretScanner/signature"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/proto"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -32,6 +33,8 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 }
 
 func (s SecretScan) StartSecretScan(msg *message.Message) error {
+	defer cronjobs.ScanWorkloadAllocator.Free()
+
 	tenantID := msg.Metadata.Get(directory.NamespaceKey)
 	if len(tenantID) == 0 {
 		log.Error().Msg("tenant-id/namespace is empty")
@@ -59,7 +62,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	}
 
 	// get registry credentials
-	authDir, namespace, _, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authDir, imagePrefix, _, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		return nil
 	}
@@ -73,15 +76,15 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
 
 	// pull image
-	var imagename string
+	var imageName string
 	if params.ImageName != "" {
-		if namespace != "" {
-			imagename = namespace + "/" + params.ImageName
+		if imagePrefix != "" {
+			imageName = imagePrefix + "/" + params.ImageName
 		} else {
-			imagename = params.ImageName
+			imageName = params.ImageName
 		}
 	} else {
-		imagename = params.ImageId
+		imageName = params.ImageId
 	}
 
 	dir, err := ioutil.TempDir("/tmp", "secretscan-*")
@@ -94,7 +97,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	authFile := authDir + "/config.json"
 	imgTar := dir + "/save-output.tar"
 	// todo: move to skopeo
-	cmd := exec.Command("skopeo", []string{"copy", "--authfile", authFile, "docker://" + imagename, "docker-archive:" + imgTar}...)
+	cmd := exec.Command("skopeo", []string{"copy", "--authfile", authFile, "docker://" + imageName, "docker-archive:" + imgTar}...)
 	log.Info().Msgf("command: %s", cmd.String())
 	// cmd.Env = append(cmd.Env, fmt.Sprintf("DOCKER_CONFIG=%s", authFile))
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
@@ -106,7 +109,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	// init secret scan
 	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
 
-	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imagename)
+	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName)
 	// secretScan.ExtractAndScanFromTar(tarPath,)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -143,7 +146,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 
 func initSecretScanner() {
 	var sessionSecretScanner = core.GetSession()
-	// init secret scan builds hsdb
+	// init secret scan builds hs db
 	signature.ProcessSignatures(sessionSecretScanner.Config.Signatures)
 	signature.BuildHsDb()
 }

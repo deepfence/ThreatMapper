@@ -18,6 +18,7 @@ const (
 	tagCloudNodes        = "Cloud Nodes"
 	tagTopology          = "Topology"
 	tagLookup            = "Lookup"
+	tagSearch            = "Search"
 	tagThreat            = "Threat"
 	tagSecretScan        = "Secret Scan"
 	tagVulnerability     = "Vulnerability"

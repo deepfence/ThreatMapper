@@ -154,6 +154,23 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/registryaccount", dfHandler.GetRegistryAccount)
 			})
 
+			r.Route("/search", func(r chi.Router) {
+				r.Post("/hosts", dfHandler.SearchHosts)
+				r.Post("/containers", dfHandler.SearchContainers)
+				r.Post("/images", dfHandler.SearchContainerImages)
+				r.Post("/vulnerabilities", dfHandler.SearchVulnerabilities)
+				r.Post("/secrets", dfHandler.SearchSecrets)
+				r.Post("/malwares", dfHandler.SearchMalwares)
+				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
+				r.Post("/compliances", dfHandler.SearchCompliances)
+
+				r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScans)
+				r.Post("/secret/scans", dfHandler.SearchSecretScans)
+				r.Post("/malware/scans", dfHandler.SearchMalwareScans)
+				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
+				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
+			})
+
 			r.Route("/controls", func(r chi.Router) {
 				r.Post("/agent", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetAgentControls))
 				r.Post("/kubernetes-cluster", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetKubernetesClusterControls))
@@ -180,8 +197,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 			r.Route("/cloud-node", func(r chi.Router) {
 				r.Post("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionRegister, dfHandler.RegisterCloudNodeAccountHandler))
-				r.Post("/accounts/list", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
-				r.Get("/providers/list", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))
+				r.Post("/list/accounts", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
+				r.Get("/list/providers", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))
 			})
 
 			r.Route("/scan/start", func(r chi.Router) {

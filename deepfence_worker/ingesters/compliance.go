@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -88,31 +87,6 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 		map[string]interface{}{}); err != nil {
 		return err
 	}
-
-	return tx.Commit()
-}
-
-func CommitFuncComplianceScanStatus(ns string, data []ComplianceScanStatus) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	// TODO: add query to commit for scan status
-	log.Error().Msg("Not implemented")
 
 	return tx.Commit()
 }

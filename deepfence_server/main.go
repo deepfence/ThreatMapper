@@ -322,6 +322,7 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddUserOperations()
 	openApiDocs.AddGraphOperations()
 	openApiDocs.AddLookupOperations()
+	openApiDocs.AddSearchOperations()
 	openApiDocs.AddControlsOperations()
 	openApiDocs.AddIngestersOperations()
 	openApiDocs.AddScansOperations()

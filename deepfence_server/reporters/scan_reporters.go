@@ -371,8 +371,7 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 
 func GetScansList(ctx context.Context,
 	scan_type utils.Neo4jScanType,
-	node_id string,
-	node_type controls.ScanResource,
+	node_ids []model.NodeIdentifier,
 	fw model.FetchWindow) (model.ScanListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -392,12 +391,13 @@ func GetScansList(ctx context.Context,
 	defer tx.Close()
 
 	res, err := tx.Run(`
-		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (:`+controls.ResourceTypeToNeo4j(node_type)+`{node_id: $node_id})
-		RETURN m.node_id, m.status, m.updated_at
+		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (n)
+		WHERE n.node_id IN $node_ids
+		RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_type
 		ORDER BY m.updated_at
 		SKIP $skip
 		LIMIT $limit`,
-		map[string]interface{}{"node_id": node_id, "skip": fw.Offset, "limit": fw.Size})
+		map[string]interface{}{"node_ids": NodeIdentifierToIdList(node_ids), "skip": fw.Offset, "limit": fw.Size})
 	if err != nil {
 		return model.ScanListResp{}, err
 	}
@@ -413,6 +413,8 @@ func GetScansList(ctx context.Context,
 			ScanId:    rec.Values[0].(string),
 			Status:    rec.Values[1].(string),
 			UpdatedAt: rec.Values[2].(int64),
+			NodeId:    rec.Values[3].(string),
+			NodeType:  rec.Values[4].(string),
 		}
 		scans_info = append(scans_info, tmp)
 	}

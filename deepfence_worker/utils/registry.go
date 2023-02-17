@@ -10,10 +10,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerhub"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/package-scanner/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -24,10 +27,11 @@ import (
 )
 
 type regCreds struct {
-	URL       string
-	UserName  string
-	Password  string
-	NameSpace string
+	URL         string
+	UserName    string
+	Password    string
+	NameSpace   string
+	ImagePrefix string
 }
 
 func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, string, bool, error) {
@@ -39,7 +43,7 @@ func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, 
 	if err != nil {
 		return "", "", false, fmt.Errorf("unable to create credential file for docker")
 	}
-	return authFile, rc.NameSpace, !strings.HasPrefix(rc.URL, "https://"), nil
+	return authFile, rc.ImagePrefix, !strings.HasPrefix(rc.URL, "https://"), nil
 }
 
 func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCreds, error) {
@@ -75,40 +79,82 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 	}
 
 	switch reg.RegistryType {
-	case "docker_hub":
-		var (
-			err       error
-			hub       dockerhub.RegistryDockerHub
-			nonsecret dockerhub.NonSecret
-			secret    dockerhub.Secret
-		)
-		err = json.Unmarshal(reg.NonSecret, &nonsecret)
-		if err != nil {
-			log.Error().Msg(err.Error())
-		}
-		err = json.Unmarshal(reg.EncryptedSecret, &secret)
-		if err != nil {
-			log.Error().Msg(err.Error())
-		}
-		hub = dockerhub.RegistryDockerHub{
-			Name:      reg.Name,
-			Secret:    secret,
-			NonSecret: nonsecret,
-		}
+	case registry.DOCKER_HUB:
+		return dockerHubCreds(reg, aes)
+	case registry.QUAY:
+		return quayCreds(reg, aes)
+	default:
+		return regCreds{}, nil
+	}
+}
 
-		err = hub.DecryptSecret(aes)
-		if err != nil {
-			log.Error().Msg(err.Error())
-		}
-		return regCreds{
-			URL:       "https://index.docker.io/v1/",
-			UserName:  hub.NonSecret.DockerHubUsername,
-			Password:  hub.Secret.DockerHubPassword,
-			NameSpace: hub.NonSecret.DockerHubNamespace,
-		}, nil
+func dockerHubCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
+	var (
+		err       error
+		hub       dockerhub.RegistryDockerHub
+		nonsecret dockerhub.NonSecret
+		secret    dockerhub.Secret
+	)
+	err = json.Unmarshal(reg.NonSecret, &nonsecret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.EncryptedSecret, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	hub = dockerhub.RegistryDockerHub{
+		Name:      reg.Name,
+		Secret:    secret,
+		NonSecret: nonsecret,
 	}
 
-	return regCreds{}, nil
+	err = hub.DecryptSecret(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	return regCreds{
+		URL:         "https://index.docker.io/v1/",
+		UserName:    hub.NonSecret.DockerHubUsername,
+		Password:    hub.Secret.DockerHubPassword,
+		NameSpace:   hub.NonSecret.DockerHubNamespace,
+		ImagePrefix: hub.NonSecret.DockerHubNamespace,
+	}, nil
+}
+
+func quayCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
+	var (
+		err       error
+		hub       quay.RegistryQuay
+		nonsecret quay.NonSecret
+		secret    quay.Secret
+	)
+	err = json.Unmarshal(reg.NonSecret, &nonsecret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.EncryptedSecret, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	hub = quay.RegistryQuay{
+		Name:      reg.Name,
+		Secret:    secret,
+		NonSecret: nonsecret,
+	}
+
+	err = hub.DecryptSecret(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	return regCreds{
+		URL:         hub.NonSecret.QuayRegistryURL,
+		UserName:    "$oauthtoken",
+		Password:    hub.Secret.QuayAccessToken,
+		NameSpace:   hub.NonSecret.QuayNamespace,
+		ImagePrefix: httpReplacer.Replace(hub.NonSecret.QuayRegistryURL) + "/" + hub.NonSecret.QuayNamespace,
+	}, nil
 }
 
 func GetDockerCredentials(registryData map[string]interface{}) (string, string, string) {

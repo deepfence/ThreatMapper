@@ -32,11 +32,17 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+
 	var registriesResponse []model.RegistryListResp
 	for _, r := range registries {
-		var registryResponse model.RegistryListResp
-		registryResponse = model.RegistryListResp{
-			ID:           r.ID,
+		reg, err := registry.GetRegistryWithRegistrySafeRow(r)
+		if err != nil {
+			log.Error().Err(err).Msgf("Fail to unmarshal registry from DB")
+			continue
+		}
+		registryId := model.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace())
+		registryResponse := model.RegistryListResp{
+			ID:           registryId,
 			Name:         r.Name,
 			RegistryType: r.RegistryType,
 			NonSecret:    r.NonSecret,

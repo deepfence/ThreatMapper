@@ -52,6 +52,9 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 		return nil
 	}
 
+	// send inprogress status
+	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, ""), rh)
+
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
 
 	mc, err := directory.MinioClient(ctx)

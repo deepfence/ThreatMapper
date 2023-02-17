@@ -26,6 +26,17 @@ func (KubernetesCluster) NodeType() string {
 	return "KubernetesCluster"
 }
 
+type RegularScanStatus struct {
+	VulnerabilitiesCount    int    `json:"vulnerabilities_count"  required:"true"`
+	VulnerabilityScanStatus string `json:"vulnerability_scan_status" required:"true"`
+	SecretsCount            int    `json:"secrets_count" required:"true"`
+	SecretScanStatus        string `json:"secret_scan_status" required:"true"`
+	MalwaresCount           int    `json:"malwares_count" required:"true"`
+	MalwareScanStatus       string `json:"malware_scan_status" required:"true"`
+	CompliancesCount        int    `json:"compliances_count" required:"true"`
+	ComplianceScanStatus    string `json:"compliance_scan_status" required:"true"`
+}
+
 type Host struct {
 	ID              string           `json:"node_id" required:"true"`
 	Name            string           `json:"host_name" required:"true"`
@@ -35,6 +46,7 @@ type Host struct {
 	ContainerImages []ContainerImage `json:"container_images" required:"true"`
 	Metadata        Metadata         `json:"cloud_metadata" required:"true" nested_json:"true"`
 	Metrics         ComputeMetrics   `json:"metrics" required:"true"`
+	RegularScanStatus
 }
 
 type RegistryAccount struct {
@@ -86,6 +98,7 @@ type Container struct {
 	Metadata       Metadata       `json:"metadata" required:"true" nested_json:"true"`
 	DockerLabels   Metadata       `json:"docker_labels" required:"true" nested_json:"true"`
 	HostName       string         `json:"host_name" required:"true"`
+	RegularScanStatus
 }
 
 func (Container) NodeType() string {
@@ -114,6 +127,7 @@ type ContainerImage struct {
 	Size     string         `json:"docker_image_size" required:"true"`
 	Metrics  ComputeMetrics `json:"metrics" required:"true"`
 	Metadata Metadata       `json:"metadata" required:"true" nested_json:"true"`
+	RegularScanStatus
 }
 
 func (ContainerImage) NodeType() string {

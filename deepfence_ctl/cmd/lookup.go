@@ -23,7 +23,10 @@ var lookupCmd = &cobra.Command{
 		ids := strings.Split(lookup_ids, ",")
 
 		lookup_fields, _ := cmd.Flags().GetString("fields")
-		fields := strings.Split(lookup_fields, ",")
+		fields := []string{}
+		if len(lookup_fields) != 0 {
+			fields = strings.Split(lookup_fields, ",")
+		}
 
 		filters := deepfence_server_client.ReportersLookupFilter{
 			InFieldFilter: fields,

@@ -60,20 +60,22 @@ type ComplianceBenchmarkTypes struct {
 type ScanStatus string
 
 type ScanInfo struct {
-	ScanId    string `json:"scan_id" required:"true"`
-	Status    string `json:"status" required:"true"`
-	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
-	NodeId    string `json:"node_id" required:"true"`
-	NodeType  string `json:"node_type" required:"true"`
+	ScanId         string         `json:"scan_id" required:"true"`
+	Status         string         `json:"status" required:"true"`
+	UpdatedAt      int64          `json:"updated_at" required:"true" format:"int64"`
+	NodeId         string         `json:"node_id" required:"true"`
+	NodeType       string         `json:"node_type" required:"true"`
+	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
 }
 
 type ComplianceScanInfo struct {
-	ScanId        string `json:"scan_id" required:"true"`
-	BenchmarkType string `json:"benchmark_type" required:"true"`
-	Status        string `json:"status" required:"true"`
-	UpdatedAt     int64  `json:"updated_at" required:"true" format:"int64"`
-	NodeId        string `json:"node_id" required:"true"`
-	NodeType      string `json:"node_type" required:"true"`
+	ScanId         string         `json:"scan_id" required:"true"`
+	BenchmarkType  string         `json:"benchmark_type" required:"true"`
+	Status         string         `json:"status" required:"true"`
+	UpdatedAt      int64          `json:"updated_at" required:"true" format:"int64"`
+	NodeId         string         `json:"node_id" required:"true"`
+	NodeType       string         `json:"node_type" required:"true"`
+	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
 }
 
 const (
@@ -101,9 +103,8 @@ type ComplianceScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	NodeId   string      `json:"node_id" required:"true"`
-	NodeType string      `json:"node_type" required:"true" enum:"image,host,container"`
-	Window   FetchWindow `json:"window"  required:"true"`
+	NodeIds []NodeIdentifier `json:"node_ids" required:"true"`
+	Window  FetchWindow      `json:"window"  required:"true"`
 }
 
 type ScanListResp struct {
@@ -176,6 +177,10 @@ type Secret struct {
 	MatchedContent        string `json:"matched_content" required:"true"`
 }
 
+func (Secret) NodeType() string {
+	return "Secret"
+}
+
 type Rule struct {
 	ID               int     `json:"id" required:"true" required:"true"`
 	Name             string  `json:"name" required:"true"`
@@ -202,6 +207,10 @@ type Vulnerability struct {
 	ExploitPOC                 string   `json:"exploit_poc" required:"true"`
 }
 
+func (Vulnerability) NodeType() string {
+	return "Vulnerability"
+}
+
 type Malware struct {
 	ImageLayerID     string  `json:"image_layer_id" required:"true"`
 	Class            string  `json:"class" required:"true"`
@@ -211,6 +220,10 @@ type Malware struct {
 	SeverityScore    float64 `json:"severity_score" required:"true"`
 	Summary          string  `json:"summary" required:"true"`
 	RuleName         string  `json:"rule_name" required:"true"`
+}
+
+func (Malware) NodeType() string {
+	return "Malware"
 }
 
 type Compliance struct {
@@ -227,6 +240,10 @@ type Compliance struct {
 	Status              string `json:"status" required:"true"`
 	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
 	ComplianceNodeType  string `json:"compliance_node_type" required:"true"`
+}
+
+func (Compliance) NodeType() string {
+	return "Compliance"
 }
 
 type CloudCompliance struct {
@@ -250,4 +267,8 @@ type CloudCompliance struct {
 	ControlID           string `json:"control_id" required:"true"`
 	Description         string `json:"description" required:"true"`
 	Severity            string `json:"severity" required:"true"`
+}
+
+func (CloudCompliance) NodeType() string {
+	return "CloudCompliance"
 }
