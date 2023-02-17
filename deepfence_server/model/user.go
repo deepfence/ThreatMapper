@@ -51,8 +51,8 @@ func init() {
 	accessTokenExpiryStr := os.Getenv("DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES")
 	if accessTokenExpiryStr != "" {
 		accessTokenExpiry, err := strconv.Atoi(accessTokenExpiryStr)
-		if err != nil {
-			if accessTokenExpiry > 0 && accessTokenExpiry < 1440 {
+		if err == nil {
+			if accessTokenExpiry > 0 && accessTokenExpiry <= 1440 {
 				AccessTokenExpiry = time.Minute * time.Duration(accessTokenExpiry)
 			}
 		}

@@ -775,6 +775,51 @@ func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode co
 	return res, nil
 }
 
+func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.ScanResultsActionRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case model.ScanResultsActionMask:
+		err = reporters_scan.UpdateScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds, "masked", "true")
+	case model.ScanResultsActionUnmask:
+		err = reporters_scan.UpdateScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds, "masked", "false")
+	case model.ScanResultsActionDelete:
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds)
+	case model.ScanResultsActionNotify:
+		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds)
+	}
+	if err != nil {
+		respondError(err, w)
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) ScanResultMaskHandler(w http.ResponseWriter, r *http.Request) {
+	h.parseScanResultActionRequest(w, r, model.ScanResultsActionMask)
+}
+
+func (h *Handler) ScanResultUnmaskHandler(w http.ResponseWriter, r *http.Request) {
+	h.parseScanResultActionRequest(w, r, model.ScanResultsActionUnmask)
+}
+
+func (h *Handler) ScanResultDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	h.parseScanResultActionRequest(w, r, model.ScanResultsActionDelete)
+}
+
+func (h *Handler) ScanResultNotifyHandler(w http.ResponseWriter, r *http.Request) {
+	h.parseScanResultActionRequest(w, r, model.ScanResultsActionNotify)
+}
+
 func FindNodesMatching(ctx context.Context,
 	host_ids []model.NodeIdentifier,
 	image_ids []model.NodeIdentifier,

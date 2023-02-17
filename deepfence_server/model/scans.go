@@ -108,6 +108,19 @@ type CloudComplianceScanListResp struct {
 	ScansInfo []ComplianceScanInfo `json:"scans_info" required:"true"`
 }
 
+const (
+	ScanResultsActionMask   = "mask"
+	ScanResultsActionUnmask = "unmask"
+	ScanResultsActionDelete = "delete"
+	ScanResultsActionNotify = "notify"
+)
+
+type ScanResultsActionRequest struct {
+	NodeIds  []string `json:"node_ids" validate:"gt=0,dive,len=3,dive,required" required:"true"`
+	ScanType string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	//utils.Neo4jScanType
+}
+
 type ScanResultsReq struct {
 	ScanId       string                  `json:"scan_id" required:"true"`
 	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`

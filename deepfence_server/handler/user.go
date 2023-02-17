@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	MaxPostRequestSize = 100000 // 100 KB
+	MaxPostRequestSize = 1000000 // 1 MB
 	DefaultNamespace   = "default"
 )
 
