@@ -103,7 +103,7 @@ export const SlidingModal: FC<ModalProps> = ({
     <DialogPrimitive.Root open={wasOpen} {...rest}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className={cx('inset-0 bg-black/50 dark:bg-black/50 fixed', {
+          className={cx('inset-0 bg-black/50 dark:bg-black/50 fixed overflow-y-auto', {
             'animate-opacity-in': wasOpen,
             'animate-slide-opacity-out': !wasOpen,
           })}
