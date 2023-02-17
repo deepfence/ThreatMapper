@@ -24,9 +24,11 @@ require (
 	github.com/aws/aws-sdk-go v1.44.180
 	github.com/deepfence/SecretScanner v1.2.0
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
-	github.com/deepfence/agent-plugins-grpc v0.0.0-00010101000000-000000000000
+	github.com/deepfence/YaraHunter v0.0.0-20230216141202-66379322d464
+	github.com/deepfence/agent-plugins-grpc v1.0.1
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230208050316-1756cc042520
 	github.com/deepfence/package-scanner v1.2.5
+	github.com/hillu/go-yara/v4 v4.2.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.47
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
@@ -125,6 +127,7 @@ require (
 	github.com/redis/go-redis/v9 v9.0.0-rc.4 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/spf13/afero v1.8.2 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.2.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/Shopify/sarama/otelsarama v0.31.0 // indirect

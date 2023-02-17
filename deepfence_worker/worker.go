@@ -10,6 +10,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/malwarescan"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -163,6 +164,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	worker.AddNoPublisherHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
 	worker.AddNoPublisherHandler(utils.SecretScanTask, secretscan.NewSecretScanner(ingestC).StartSecretScan)
+
+	worker.AddNoPublisherHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
 
 	log.Info().Msg("Starting the consumer")
 	if err = worker.Run(context.Background()); err != nil {
