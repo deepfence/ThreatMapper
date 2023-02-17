@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/samber/mo"
 )
 
 type NodeNotFoundError struct {
@@ -471,7 +472,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	return model.CloudComplianceScanListResp{ScansInfo: scansInfo}, nil
 }
 
-func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, scan_id string, fw model.FetchWindow) ([]T, model.ScanResultsCommon, error) {
+func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, scan_id string, ff reporters.FieldsFilters, fw model.FetchWindow) ([]T, model.ScanResultsCommon, error) {
 	res := []T{}
 	common := model.ScanResultsCommon{}
 	driver, err := directory.Neo4jClient(ctx)
@@ -492,8 +493,9 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	defer tx.Close()
 
 	r, err := tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s{node_id:$node_id})
-		RETURN n IS NOT NULL AS Exists`,
+		OPTIONAL MATCH (n:%s{node_id:$node_id})`+
+		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(ff), true)+
+		`RETURN n IS NOT NULL AS Exists`,
 		scan_type),
 		map[string]interface{}{
 			"node_id": scan_id,

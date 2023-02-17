@@ -83,3 +83,22 @@ func TestOrderFilter2CypherCondition(t *testing.T) {
 	assert.Equal(t, cypher, " ORDER BY n.toto ", "should be equal")
 
 }
+
+func TestContainsFilter2CypherWhereConditions(t *testing.T) {
+	node_name := "n"
+
+	ff := ContainsFilter{
+		FieldsValues: map[string][]interface{}{},
+	}
+
+	cypher := ContainsFilter2CypherWhereConditions(node_name, ff, true)
+	assert.Equal(t, cypher, "", "should be equal")
+
+	ff = ContainsFilter{
+		FieldsValues: map[string][]interface{}{"toto": []interface{}{"foo", "bar"}},
+	}
+
+	cypher = ContainsFilter2CypherWhereConditions(node_name, ff, true)
+	assert.Equal(t, cypher, " WHERE  n.toto IN ['foo','bar']", "should be equal")
+
+}

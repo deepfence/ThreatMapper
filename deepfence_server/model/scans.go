@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
@@ -26,21 +27,12 @@ type ComplianceScanTriggerReq struct {
 	ComplianceBenchmarkTypes
 }
 
-type KeyValues struct {
-	Key    string   `json:"key" required:"true"`
-	Values []string `json:"values" required:"true"`
-}
-
-type FieldsFilter struct {
-	FieldsValues []KeyValues `json:"fields_values" required:"true"`
-}
-
 type ScanFilter struct {
-	ImageScanFilter             FieldsFilter `json:"image_scan_filter" required:"true"`
-	ContainerScanFilter         FieldsFilter `json:"container_scan_filter" required:"true"`
-	HostScanFilter              FieldsFilter `json:"host_scan_filter" required:"true"`
-	CloudAccountScanFilter      FieldsFilter `json:"cloud_account_scan_filter" required:"true"`
-	KubernetesClusterScanFilter FieldsFilter `json:"kubernetes_cluster_scan_filter" required:"true"`
+	ImageScanFilter             reporters.ContainsFilter `json:"image_scan_filter" required:"true"`
+	ContainerScanFilter         reporters.ContainsFilter `json:"container_scan_filter" required:"true"`
+	HostScanFilter              reporters.ContainsFilter `json:"host_scan_filter" required:"true"`
+	CloudAccountScanFilter      reporters.ContainsFilter `json:"cloud_account_scan_filter" required:"true"`
+	KubernetesClusterScanFilter reporters.ContainsFilter `json:"kubernetes_cluster_scan_filter" required:"true"`
 }
 
 type ScanTriggerCommon struct {
@@ -117,8 +109,9 @@ type CloudComplianceScanListResp struct {
 }
 
 type ScanResultsReq struct {
-	ScanId string      `json:"scan_id" required:"true"`
-	Window FetchWindow `json:"window"  required:"true"`
+	ScanId       string                  `json:"scan_id" required:"true"`
+	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
+	Window       FetchWindow             `json:"window"  required:"true"`
 }
 
 type ScanResultsCommon struct {

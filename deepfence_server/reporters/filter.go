@@ -76,6 +76,25 @@ func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.O
 	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))
 }
 
+func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter ContainsFilter, starts_where_clause bool) string {
+	if len(filter.FieldsValues) == 0 {
+		return ""
+	}
+
+	conditions := containsFilter2CypherConditions(cypherNodeName, filter)
+
+	if len(conditions) == 0 {
+		return ""
+	}
+
+	first_clause := " AND "
+	if starts_where_clause {
+		first_clause = " WHERE "
+	}
+
+	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))
+}
+
 func FieldFilterCypher(node_name string, fields []string) string {
 	if len(fields) != 0 {
 		for i := range fields {

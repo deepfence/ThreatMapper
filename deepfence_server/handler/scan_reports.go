@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"path"
-	"strings"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -736,7 +735,7 @@ func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_
 		return nil, model.ScanResultsCommon{}, &BadDecoding{err}
 	}
 
-	entries, common, err := reporters_scan.GetScanResults[T](r.Context(), scan_type, req.ScanId, req.Window)
+	entries, common, err := reporters_scan.GetScanResults[T](r.Context(), scan_type, req.ScanId, req.FieldsFilter, req.Window)
 	if err != nil {
 		return nil, model.ScanResultsCommon{}, err
 	}
@@ -744,29 +743,9 @@ func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_
 	return entries, common, nil
 }
 
-func fields_filter2cypher(node string, firstCond bool, fieldsFilter model.FieldsFilter) string {
-	if len(fieldsFilter.FieldsValues) == 0 {
-		return ""
-	}
-	res := ""
-	if firstCond {
-		res += " WHERE "
-	} else {
-		res += " AND "
-	}
-	strs := []string{}
-	for _, fieldValue := range fieldsFilter.FieldsValues {
-		if len(fieldValue.Values) > 0 {
-			strs = append(strs, fmt.Sprintf("%s.%s IN ['%v']", node, fieldValue.Key, strings.Join(fieldValue.Values, "','")))
-		}
-	}
-
-	return res + strings.Join(strs, " AND ")
-}
-
-func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
+func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter reporters.ContainsFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
-	wherePattern := fields_filter2cypher("n", false, filter)
+	wherePattern := reporters.ContainsFilter2CypherWhereConditions("n", filter, false)
 	if len(wherePattern) == 0 {
 		return ids, nil
 	}
