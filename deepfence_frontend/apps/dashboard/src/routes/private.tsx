@@ -191,12 +191,12 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Vulnerability' },
       },
       {
-        path: 'vulnerability/scan-results/:scanOn',
+        path: 'vulnerability/scan-results/:nodeType',
         ...vulnerabilityScanResult,
         meta: { title: 'Vulnerability Scan Results' },
       },
       {
-        path: 'vulnerability/scan-results/:assetType',
+        path: 'vulnerability/scan-results/:nodeType/:assetType',
         ...uniqueScanResults,
         meta: { title: 'Vulnerability Scan Results' },
       },

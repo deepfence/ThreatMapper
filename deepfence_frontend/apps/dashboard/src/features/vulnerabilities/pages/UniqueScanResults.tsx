@@ -242,17 +242,19 @@ const CVETable = () => {
 
 const HeaderComponent = ({
   scanId,
+  nodeType,
   elementToFocusOnClose,
   setShowFilter,
 }: {
   scanId: string;
+  nodeType: string;
   elementToFocusOnClose: React.MutableRefObject<null>;
   setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <DFLink
-        to={'/vulnerability/scan-results'}
+        to={`/vulnerability/scan-results/${nodeType}`}
         className="flex hover:no-underline items-center justify-center  mr-2"
       >
         <IconContext.Provider
@@ -370,6 +372,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
 const UniqueScanResults = () => {
   const params = useParams() as {
     assetType: string;
+    nodeType: string;
   };
   const elementToFocusOnClose = useRef(null);
   const [showFilter, setShowFilter] = useState(false);
@@ -386,6 +389,7 @@ const UniqueScanResults = () => {
       />
       <HeaderComponent
         scanId={scanId}
+        nodeType={params.nodeType}
         elementToFocusOnClose={elementToFocusOnClose}
         setShowFilter={setShowFilter}
       />

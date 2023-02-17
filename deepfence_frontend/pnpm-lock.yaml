@@ -29,6 +29,7 @@ importers:
       '@vitest/coverage-c8': ^0.28.3
       autoprefixer: ^10.4.13
       classnames: ^2.3.2
+      dayjs: ^1.11.7
       echarts: ^5.4.1
       eslint: ^8.33.0
       eslint-config-prettier: ^8.6.0
@@ -60,6 +61,7 @@ importers:
       '@antv/g6': 4.8.5
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
       classnames: 2.3.2
+      dayjs: 1.11.7
       echarts: 5.4.1
       lodash-es: 4.17.21
       react: 18.2.0
@@ -7813,6 +7815,10 @@ packages:
     resolution: {integrity: sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==}
     engines: {node: '>=0.11'}
     dev: true
+
+  /dayjs/1.11.7:
+    resolution: {integrity: sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==}
+    dev: false
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
