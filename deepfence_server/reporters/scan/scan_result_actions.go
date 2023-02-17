@@ -13,7 +13,7 @@ func UpdateScanResult(ctx context.Context, scanType utils.Neo4jScanType, nodeIds
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func UpdateScanResult(ctx context.Context, scanType utils.Neo4jScanType, nodeIds
 	if err != nil {
 		return err
 	}
-	return nil
+	return tx.Commit()
 }
 
 func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, nodeIds []string) error {
@@ -40,7 +40,7 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, nodeIds
 	if err != nil {
 		return err
 	}
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, nodeIds
 	if err != nil {
 		return err
 	}
-	return nil
+	return tx.Commit()
 }
 
 func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanIDs []string) error {

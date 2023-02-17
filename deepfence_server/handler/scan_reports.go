@@ -800,6 +800,7 @@ func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Re
 	}
 	if err != nil {
 		respondError(err, w)
+		return
 	}
 	w.WriteHeader(http.StatusNoContent)
 }

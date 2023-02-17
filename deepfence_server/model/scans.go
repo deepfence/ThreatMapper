@@ -116,7 +116,7 @@ const (
 )
 
 type ScanResultsActionRequest struct {
-	NodeIds  []string `json:"node_ids" validate:"gt=0,dive,len=3,dive,required" required:"true"`
+	NodeIds  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
 	ScanType string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	//utils.Neo4jScanType
 }
