@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -71,7 +71,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			if err != nil {
 				complianceError(w, err.Error())
 			}
-			pendingScansList, err := reporters.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
+			pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
 			if err != nil {
 				continue
 			}
@@ -99,7 +99,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			logrus.Infof("Error while upserting node: %+v", err)
 			complianceError(w, err.Error())
 		}
-		pendingScansList, err := reporters.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
+		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, nodeId)
 		if err != nil || len(pendingScansList.ScansInfo) == 0 {
 			logrus.Debugf("No pending scans found for node id: %s", nodeId)
 			httpext.JSON(w, http.StatusOK,

@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	reporters_graph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
@@ -16,7 +16,7 @@ func (h *Handler) GetThreatGraph(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reporter, err := reporters.NewThreatGraphReporter(ctx)
+	reporter, err := reporters_graph.NewThreatGraphReporter(ctx)
 
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)

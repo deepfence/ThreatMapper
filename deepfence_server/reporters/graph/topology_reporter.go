@@ -1,16 +1,23 @@
-package reporters
+package reporters_graph
 
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"reflect"
-	"strings"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/samber/mo"
 )
+
+type TopologyReporter interface {
+	Graph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
+	HostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
+	KubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
+	ContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
+	PodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
+}
 
 type neo4jTopologyReporter struct {
 	driver neo4j.Driver
@@ -120,13 +127,13 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[FieldsFilters]) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:KubernetesCluster) -[:INSTANCIATE]-> (m:Node)
 		WITH DISTINCT m.cloud_provider as cloud_provider, n
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cloud_provider IN $providers END
-		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
+		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN cloud_provider, n.node_id, n.node_name`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
 
@@ -161,7 +168,7 @@ func filterNil(params map[string]interface{}) map[string]interface{} {
 	return params
 }
 
-func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string, fieldfilters mo.Option[FieldsFilters]) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
@@ -173,7 +180,7 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 		ELSE
 		    CASE WHEN $regions IS NULL THEN [1] ELSE n.cloud_region IN $regions END
 		END
-		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
+		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_name ELSE n.cloud_region END, n.node_id`,
 		filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions, "kubernetes": cloud_kubernetes}))
 	if err != nil {
@@ -233,12 +240,12 @@ func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []stri
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, fieldfilters mo.Option[FieldsFilters]) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
 		MATCH (n:Pod)
-		`+parseFieldFilters2CypherWhereConditions("n", fieldfilters, true)+`
+		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, true)+`
 		MATCH (m:Node{node_id:n.host_node_id})
 		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE m.host_name IN $hosts END
 		RETURN m.host_name, n.node_id, n.kubernetes_name`,
@@ -265,7 +272,7 @@ func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, f
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods []string, fieldfilters mo.Option[FieldsFilters]) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
@@ -274,7 +281,7 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods
 		OR CASE WHEN $pods IS NULL THEN [1] ELSE n.`+"`docker_label_io.kubernetes.pod.name`"+`IN $pods END
 		WITH n
 		MATCH (n)-[:HOSTS]->(m:Container)
-		`+parseFieldFilters2CypherWhereConditions("m", fieldfilters, true)+`
+		`+reporters.ParseFieldFilters2CypherWhereConditions("m", fieldfilters, true)+`
 		RETURN coalesce(n.`+"`docker_label_io.kubernetes.pod.name`"+`, n.node_id), m.node_id, m.docker_container_name`,
 		filterNil(map[string]interface{}{"hosts": hosts, "pods": pods}))
 	if err != nil {
@@ -315,82 +322,13 @@ type RenderedGraph struct {
 	Connections []ConnectionSummary   `json:"connections" required:"true"`
 }
 
-type FilterOperations string
-
-const (
-	CONTAINS FilterOperations = "contains"
-)
-
-type ContainsFilter struct {
-	FieldsValues map[string][]interface{} `json:"filter_in" required:"true"`
-}
-
-type OrderFilter struct {
-	OrderField string `json:"order_field" required:"true"`
-}
-
-type FieldsFilters struct {
-	ContainsFilter ContainsFilter `json:"contains_filter" required:"true"`
-	OrderFilter    OrderFilter    `json:"order_filter" required:"true"`
-}
-
-func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter) []string {
-	conditions := []string{}
-	for k, vs := range filter.FieldsValues {
-		var values []string
-		for i := range vs {
-			values = append(values, fmt.Sprintf("'%v'", vs[i]))
-		}
-
-		conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
-	}
-	return conditions
-}
-
-func orderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
-	if len(filter.OrderField) == 0 {
-		return ""
-	}
-	return fmt.Sprintf(" ORDER BY %s.%s ", cypherNodeName, filter.OrderField)
-}
-
-func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {
-	if filter.OrderField != "" {
-		return []string{fmt.Sprintf("%s.%s IS NOT NULL", cypherNodeName, filter.OrderField)}
-	}
-	return []string{}
-}
-
-func parseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {
-
-	f, has := filters.Get()
-	if !has {
-		return ""
-	}
-
-	conditions := containsFilter2CypherConditions(cypherNodeName, f.ContainsFilter)
-
-	conditions = append(conditions, orderFilter2CypherWhere(cypherNodeName, f.OrderFilter)...)
-
-	if len(conditions) == 0 {
-		return ""
-	}
-
-	first_clause := " AND "
-	if starts_where_clause {
-		first_clause = " WHERE "
-	}
-
-	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))
-}
-
 type TopologyFilters struct {
-	CloudFilter      []string      `json:"cloud_filter" required:"true"`
-	RegionFilter     []string      `json:"region_filter" required:"true"`
-	KubernetesFilter []string      `json:"kubernetes_filter" required:"true"`
-	HostFilter       []string      `json:"host_filter" required:"true"`
-	PodFilter        []string      `json:"pod_filter" required:"true"`
-	FieldFilter      FieldsFilters `json:"field_filters" required:"true"`
+	CloudFilter      []string                `json:"cloud_filter" required:"true"`
+	RegionFilter     []string                `json:"region_filter" required:"true"`
+	KubernetesFilter []string                `json:"kubernetes_filter" required:"true"`
+	HostFilter       []string                `json:"host_filter" required:"true"`
+	PodFilter        []string                `json:"pod_filter" required:"true"`
+	FieldFilter      reporters.FieldsFilters `json:"field_filters" required:"true"`
 }
 
 func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
@@ -441,7 +379,7 @@ func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, filters Topolo
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, []string{}, pod_filter, mo.None[FieldsFilters]())
+	res.Containers, err = nc.getContainers(tx, []string{}, pod_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -476,15 +414,15 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, []string{}, []string{}, kubernetes_filter, mo.None[FieldsFilters]())
+	res.Hosts, err = nc.getHosts(tx, []string{}, []string{}, kubernetes_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter, mo.None[FieldsFilters]())
+	res.Pods, err = nc.getPods(tx, host_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[FieldsFilters]())
+	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -522,11 +460,11 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter, mo.None[FieldsFilters]())
+	res.Pods, err = nc.getPods(tx, host_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[FieldsFilters]())
+	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -567,11 +505,11 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	if err != nil {
 		return res, err
 	}
-	res.Kubernetes, err = nc.getCloudKubernetes(tx, cloud_filter, mo.None[FieldsFilters]())
+	res.Kubernetes, err = nc.getCloudKubernetes(tx, cloud_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, cloud_filter, region_filter, kubernetes_filter, mo.None[FieldsFilters]())
+	res.Hosts, err = nc.getHosts(tx, cloud_filter, region_filter, kubernetes_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -579,11 +517,11 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, host_filter, mo.None[FieldsFilters]())
+	res.Pods, err = nc.getPods(tx, host_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
-	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[FieldsFilters]())
+	res.Containers, err = nc.getContainers(tx, host_filter, pod_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}

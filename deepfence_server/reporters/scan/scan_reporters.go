@@ -1,10 +1,11 @@
-package reporters
+package reporters_scan
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -72,7 +73,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 
 	recs, err := res.Collect()
 	if err != nil {
-		return model.ScanStatusResp{}, NotFoundErr
+		return model.ScanStatusResp{}, reporters.NotFoundErr
 	}
 
 	statuses := map[string]model.ScanInfo{}
@@ -404,7 +405,7 @@ func GetScansList(ctx context.Context,
 
 	recs, err := res.Collect()
 	if err != nil {
-		return model.ScanListResp{}, NotFoundErr
+		return model.ScanListResp{}, reporters.NotFoundErr
 	}
 
 	scans_info := []model.ScanInfo{}
@@ -721,7 +722,7 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 	recs, err := neo_res.Collect()
 	if err != nil {
-		return scan_ids, NotFoundErr
+		return scan_ids, reporters.NotFoundErr
 	}
 
 	for _, rec := range recs {

@@ -1,4 +1,4 @@
-package reporters
+package reporters_graph
 
 import (
 	"testing"

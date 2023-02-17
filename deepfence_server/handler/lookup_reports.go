@@ -3,17 +3,17 @@ package handler
 import (
 	"net/http"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	reporters_lookup "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
 func (h *Handler) GetHosts(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.LookupFilter
+	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.GetHostsReport(r.Context(), req)
+	hosts, err := reporters_lookup.GetHostsReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -27,10 +27,10 @@ func (h *Handler) GetHosts(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetContainers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.LookupFilter
+	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.GetContainersReport(r.Context(), req)
+	hosts, err := reporters_lookup.GetContainersReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -44,10 +44,10 @@ func (h *Handler) GetContainers(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetProcesses(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.LookupFilter
+	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.GetProcessesReport(r.Context(), req)
+	hosts, err := reporters_lookup.GetProcessesReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -61,10 +61,10 @@ func (h *Handler) GetProcesses(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetKubernetesClusters(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.LookupFilter
+	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	clusters, err := reporters.GetKubernetesClustersReport(r.Context(), req)
+	clusters, err := reporters_lookup.GetKubernetesClustersReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -78,10 +78,10 @@ func (h *Handler) GetKubernetesClusters(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) GetContainerImages(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.LookupFilter
+	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.GetContainerImagesReport(r.Context(), req)
+	hosts, err := reporters_lookup.GetContainerImagesReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -95,10 +95,10 @@ func (h *Handler) GetContainerImages(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.LookupFilter
+	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters.GetPodsReport(r.Context(), req)
+	hosts, err := reporters_lookup.GetPodsReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -112,237 +112,16 @@ func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetRegistryAccount(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters.LookupFilter
+	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	registry, err := reporters.GetRegistryAccountReport(r.Context(), req)
+	registry, err := reporters_lookup.GetRegistryAccountReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
 	}
 
 	err = httpext.JSON(w, http.StatusOK, registry)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchHosts(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchHostsReport(r.Context(), req.NodeFilter, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchContainers(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchContainersReport(r.Context(), req.NodeFilter, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchContainerImages(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchContainerImagesReport(r.Context(), req.NodeFilter, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchVulnerabilities(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchVulnerabilitiesReport(r.Context(), req.NodeFilter, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchSecrets(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchSecretsReport(r.Context(), req.NodeFilter, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchMalwares(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchMalwaresReport(r.Context(), req.NodeFilter, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchCloudCompliances(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchCloudCompliancesReport(r.Context(), req.NodeFilter, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchCompliances(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchNodeReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchCompliancesReport(r.Context(), req.NodeFilter, req.Window)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchVulnerabilityScans(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchScanReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchVulnerabilityScansReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchSecretScans(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchScanReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchSecretScansReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchMalwareScans(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchScanReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchMalwareScansReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchComplianceScans(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchScanReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchComplianceScansReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
-}
-
-func (h *Handler) SearchCloudComplianceScans(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req reporters.SearchScanReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	hosts, err := reporters.SearchCloudComplianceScansReport(r.Context(), req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		http.Error(w, "Error processing request body", http.StatusBadRequest)
-	}
-
-	err = httpext.JSON(w, http.StatusOK, hosts)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}

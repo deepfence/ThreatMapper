@@ -2,8 +2,6 @@ module github.com/deepfence/ThreatMapper/deepfence_server
 
 go 1.19
 
-replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
-
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
 replace github.com/weaveworks/scope => ../deepfence_agent/tools/apache/scope/
