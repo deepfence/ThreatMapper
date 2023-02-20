@@ -102,3 +102,21 @@ func TestContainsFilter2CypherWhereConditions(t *testing.T) {
 	assert.Equal(t, cypher, " WHERE  n.toto IN ['foo','bar']", "should be equal")
 
 }
+
+func TestMatchFilter2CypherWhereConditions(t *testing.T) {
+	node_name := "n"
+
+	ff := MatchFilter{
+		FieldsValues: map[string][]interface{}{},
+	}
+
+	cypher := matchFilter2CypherConditions(node_name, ff)
+	assert.Equal(t, len(cypher), 0, "should be equal")
+
+	ff = MatchFilter{
+		FieldsValues: map[string][]interface{}{"toto": []interface{}{"foo", "bar"}},
+	}
+
+	cypher = matchFilter2CypherConditions(node_name, ff)
+	assert.Equal(t, cypher[0], "n.toto =~ '(.*foo.*|.*bar.*)'", "should be equal")
+}

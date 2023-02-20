@@ -17,12 +17,17 @@ type ContainsFilter struct {
 	FieldsValues map[string][]interface{} `json:"filter_in" required:"true"`
 }
 
+type MatchFilter struct {
+	FieldsValues map[string][]interface{} `json:"filter_in" required:"true"`
+}
+
 type OrderFilter struct {
 	OrderField string `json:"order_field" required:"true"`
 }
 
 type FieldsFilters struct {
 	ContainsFilter ContainsFilter `json:"contains_filter" required:"true"`
+	MatchFilter    MatchFilter    `json:"match_filter" required:"true"`
 	OrderFilter    OrderFilter    `json:"order_filter" required:"true"`
 }
 
@@ -61,6 +66,8 @@ func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.O
 	}
 
 	conditions := containsFilter2CypherConditions(cypherNodeName, f.ContainsFilter)
+
+	conditions = append(conditions, matchFilter2CypherConditions(cypherNodeName, f.MatchFilter)...)
 
 	conditions = append(conditions, orderFilter2CypherWhere(cypherNodeName, f.OrderFilter)...)
 
@@ -104,4 +111,17 @@ func FieldFilterCypher(node_name string, fields []string) string {
 		return strings.Join(tmp, ",")
 	}
 	return node_name
+}
+
+func matchFilter2CypherConditions(cypherNodeName string, filter MatchFilter) []string {
+	conditions := []string{}
+	for k, vs := range filter.FieldsValues {
+		var values []string
+		for i := range vs {
+			values = append(values, fmt.Sprintf(".*%v.*", vs[i]))
+		}
+
+		conditions = append(conditions, fmt.Sprintf("%s.%s =~ '(%s)'", cypherNodeName, k, strings.Join(values, "|")))
+	}
+	return conditions
 }
