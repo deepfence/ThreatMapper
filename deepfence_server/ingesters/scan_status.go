@@ -158,7 +158,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	node_id string) error {
 
 	res, err := tx.Run(`
-		OPTIONAL MATCH (n:Node{node_id:$node_id})
+		OPTIONAL MATCH (n:KubernetesCluster{node_id:$node_id})
 		RETURN n IS NOT NULL AS Exists`,
 		map[string]interface{}{
 			"node_id": node_id,
@@ -179,7 +179,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:Node{node_id:$node_id})
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:KubernetesCluster{node_id:$node_id})
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND n.benchmark_type = $benchmark_type

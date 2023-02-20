@@ -1083,7 +1083,7 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 				req.NodeId)
 
 			if err != nil {
-				log.Error().Err(err)
+				log.Error().Msgf("%v", err)
 				return nil, "", err
 			}
 			scanIds = append(scanIds, scanId)
