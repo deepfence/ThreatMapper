@@ -250,7 +250,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
 async function getScanStatus(
   bulkScanId: string,
   nodeType: string,
-): Promise<Array<ModelScanInfo> | Array<ModelComplianceScanInfo>> {
+): Promise<Array<ModelScanInfo | ModelComplianceScanInfo>> {
   let scanType = 'compliance' as keyof typeof statusScanApiFunctionMap;
   // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
   if (nodeType === 'cloud_account') {
