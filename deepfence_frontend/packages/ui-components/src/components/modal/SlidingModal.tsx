@@ -110,7 +110,7 @@ export const SlidingModal: FC<ModalProps> = ({
         >
           <DialogPrimitive.Content
             className={cx(
-              'flex flex-col h-[100vh] fixed overflow-auto',
+              'flex flex-col h-[100vh] fixed',
               'overflow-hidden focus:outline-none',
               'bg-white text-gray-900',
               'dark:bg-gray-900 dark:text-white ',

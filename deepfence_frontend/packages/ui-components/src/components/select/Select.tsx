@@ -221,6 +221,7 @@ export function Select<T extends Value>({
             'focus:outline-none select-none',
             'max-h-[min(var(--popover-available-height,315px),315px)] overflow-y-auto',
             'animate-slide-down',
+            'pointer-events-auto',
           )}
           data-testid={`ariakit-portal-${name}`}
         >
