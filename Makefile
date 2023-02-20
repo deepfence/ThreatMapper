@@ -125,13 +125,7 @@ cli:
 discovery:
 	cd $(DEEPFENCE_AGENT_DIR)/tools/apache/scope &&\
 	make realclean && go mod vendor && make scope.tar
-	build_result=$?
-	if [ $build_result -ne 0 ]
-	then
-		echo "Scope build failed, bailing out"
-		exit 1
-	fi
-	docker tag weaveworks/scope $IMAGE_REPOSITORY/deepfence_discovery_ce:${DF_IMG_TAG:-latest}
+	docker tag weaveworks/scope $(IMAGE_REPOSITORY)/deepfence_discovery_ce:$(DF_IMG_TAG)
 
 .PHONY: publish
 publish:
