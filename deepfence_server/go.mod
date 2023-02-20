@@ -21,28 +21,28 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/bytedance/sonic v1.7.0
-	github.com/casbin/casbin/v2 v2.60.0
+	github.com/bytedance/sonic v1.8.1
+	github.com/casbin/casbin/v2 v2.63.0
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230208050316-1756cc042520
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
-	github.com/go-playground/pkg/v5 v5.11.0
-	github.com/go-playground/validator/v10 v10.11.1
+	github.com/go-playground/pkg/v5 v5.13.0
+	github.com/go-playground/validator/v10 v10.11.2
 	github.com/google/uuid v1.3.0
-	github.com/minio/minio-go/v7 v7.0.47
-	github.com/neo4j/neo4j-go-driver/v4 v4.4.4
+	github.com/minio/minio-go/v7 v7.0.49
+	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.0.0-rc.4
-	github.com/rs/zerolog v1.28.0
-	github.com/samber/mo v1.7.0
+	github.com/redis/go-redis/v9 v9.0.2
+	github.com/rs/zerolog v1.29.0
+	github.com/samber/mo v1.8.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.28
-	github.com/twmb/franz-go v1.11.3
-	github.com/ugorji/go/codec v1.2.8
+	github.com/twmb/franz-go v1.12.1
+	github.com/ugorji/go/codec v1.2.9
 	github.com/weaveworks/scope v1.13.2
-	golang.org/x/crypto v0.5.0
+	golang.org/x/crypto v0.6.0
 	gotest.tools v2.2.0+incompatible
 )
 
@@ -70,7 +70,7 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230123091013-6f8a19aeeb9d // indirect
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230208050316-1756cc042520 // indirect
 	github.com/deepfence/kubernetes-scanner v0.0.0-20230207104512-6629110f2033 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/docker v20.10.22+incompatible // indirect
@@ -88,8 +88,8 @@ require (
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
 	github.com/go-playground/form/v4 v4.2.0 // indirect
-	github.com/go-playground/locales v0.14.0 // indirect
-	github.com/go-playground/universal-translator v0.18.0 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -117,8 +117,8 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k-sone/critbitgo v1.4.0 // indirect
-	github.com/klauspost/compress v1.15.13 // indirect
-	github.com/klauspost/cpuid/v2 v2.1.0 // indirect
+	github.com/klauspost/compress v1.15.15 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
@@ -154,7 +154,7 @@ require (
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/twmb/franz-go/pkg/kadm v1.7.0 // indirect
-	github.com/twmb/franz-go/pkg/kmsg v1.2.0 // indirect
+	github.com/twmb/franz-go/pkg/kmsg v1.4.0 // indirect
 	github.com/typetypetype/conntrack v1.0.0 // indirect
 	github.com/ugorji/go/codec/codecgen v1.2.8 // indirect
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5 // indirect
@@ -168,11 +168,11 @@ require (
 	go.opentelemetry.io/otel/trace v1.6.1 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/term v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
@@ -180,7 +180,7 @@ require (
 	google.golang.org/grpc v1.52.3 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/ini.v1 v1.66.6 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.26.0 // indirect
