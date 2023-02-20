@@ -38,7 +38,7 @@ COPY scope/docker/deepfence_exe /home/deepfence/
 
 WORKDIR /opt/steampipe
 USER root
-RUN chown deepfence /opt/steampipe /home/deepfence/deepfence_exe /home/deepfence
+RUN chown -R deepfence /opt/steampipe /home/deepfence/deepfence_exe /home/deepfence
 
 USER deepfence
 COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
