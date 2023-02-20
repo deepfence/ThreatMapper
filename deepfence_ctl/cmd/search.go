@@ -120,7 +120,7 @@ var issuesCmd = &cobra.Command{
 					OrderFilter:    orderFilter,
 				},
 			},
-			Window: deepfence_server_client.ModelFetchWindow{Offset: 0, Size: 1000},
+			Window: deepfence_server_client.ModelFetchWindow{Offset: 0, Size: 0},
 		}
 
 		switch issue_type {

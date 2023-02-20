@@ -58,12 +58,10 @@ func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filt
 		MATCH (n:` + dummy.NodeType() + `) ` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + ` ` +
-		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
-		` SKIP $skip
-		LIMIT $limit`
+		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
-		map[string]interface{}{"skip": fw.Offset, "limit": fw.Size})
+		map[string]interface{}{})
 
 	if err != nil {
 		return res, err
@@ -130,11 +128,10 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
 		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, m.node_type, m.node_name` +
 		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
-		` SKIP $skip
-		LIMIT $limit`
+		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
-		map[string]interface{}{"skip": fw.Offset, "limit": fw.Size})
+		map[string]interface{}{})
 
 	if err != nil {
 		return res, err
