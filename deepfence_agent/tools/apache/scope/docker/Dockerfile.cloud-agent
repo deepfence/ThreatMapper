@@ -31,7 +31,7 @@ COPY scope/docker/deepfence_exe /home/deepfence/
 
 WORKDIR /opt/steampipe
 USER root
-RUN chown -R deepfence /opt/steampipe /home/deepfence/deepfence_exe
+RUN chown deepfence /opt/steampipe /home/deepfence/deepfence_exe
 
 USER deepfence
 RUN steampipe plugin install steampipe \
