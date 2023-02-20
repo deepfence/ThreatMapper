@@ -75,7 +75,7 @@ var scanStartSubCmd = &cobra.Command{
 				*deepfence_server_client.NewModelVulnerabilityScanTriggerReq(
 					*deepfence_server_client.NewModelScanFilterWithDefaults(),
 					identifiers,
-					vuln_scan_type,
+					[]deepfence_server_client.ModelVulnerabilityScanConfigLanguage{*deepfence_server_client.NewModelVulnerabilityScanConfigLanguage(vuln_scan_type)},
 				))
 			res, _, err = http.Client().VulnerabilityApi.StartVulnerabilityScanExecute(req)
 		case "compliance":
