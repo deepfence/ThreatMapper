@@ -91,7 +91,7 @@ func (Pod) NodeType() string {
 
 type Container struct {
 	ID             string         `json:"node_id" required:"true"`
-	Name           string         `json:"name" required:"true"`
+	Name           string         `json:"docker_container_name" required:"true"`
 	ContainerImage ContainerImage `json:"image" required:"true"`
 	Processes      []Process      `json:"processes" required:"true"`
 	Metrics        ComputeMetrics `json:"metrics" required:"true"`

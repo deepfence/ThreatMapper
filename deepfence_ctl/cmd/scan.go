@@ -244,6 +244,9 @@ var scanSearchSubCmd = &cobra.Command{
 					ContainsFilter: deepfence_server_client.ReportersContainsFilter{
 						FilterIn: sfields,
 					},
+					MatchFilter: deepfence_server_client.ReportersMatchFilter{
+						FilterIn: map[string][]interface{}{},
+					},
 					OrderFilter: orderFilter,
 				},
 			}
