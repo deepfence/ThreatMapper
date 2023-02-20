@@ -5,8 +5,12 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
+type VulnerabilityScanConfigLanguage struct {
+	Language string `json:"language" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+}
+
 type VulnerabilityScanConfig struct {
-	ScanConfig string `json:"scan_config" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+	ScanConfigLanguages []VulnerabilityScanConfigLanguage `json:"scan_config" required:"true"`
 }
 
 type VulnerabilityScanTriggerReq struct {

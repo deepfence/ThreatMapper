@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -105,8 +106,12 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			"registry_id": registryId,
 		}
 
-		if len(reqs.ScanConfig) != 0 {
-			binArgs["scan_type"] = reqs.ScanConfig
+		if len(reqs.ScanConfigLanguages) != 0 {
+			languages := []string{}
+			for i := range reqs.ScanConfigLanguages {
+				languages = append(languages, reqs.ScanConfigLanguages[i].Language)
+			}
+			binArgs["scan_type"] = strings.Join(languages, ",")
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
