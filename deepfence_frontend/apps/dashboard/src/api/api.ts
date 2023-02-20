@@ -65,6 +65,9 @@ export function getVulnerabilityApiClient() {
     statusVulnerabilityScan:
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
     searchVulnerabilityScan: searchApi.searchVulnerabilityScans.bind(searchApi),
+    searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
+    searchContainers: searchApi.searchContainers.bind(searchApi),
+    searchHosts: searchApi.searchHosts.bind(searchApi),
   };
 }
 
