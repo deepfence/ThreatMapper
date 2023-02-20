@@ -4,9 +4,11 @@ import (
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	k8sscanner "github.com/deepfence/kubernetes-scanner/scanner/compliance"
 	k8sscannerutil "github.com/deepfence/kubernetes-scanner/util"
+	log "github.com/sirupsen/logrus"
 )
 
 func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
+	log.Errorf("k8s start compliance received")
 	scanner, err := k8sscanner.NewComplianceScanner(
 		k8sscannerutil.Config{
 			ComplianceCheckType:       k8sscannerutil.NsaCisaCheckType,

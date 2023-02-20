@@ -221,7 +221,10 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	ctx := r.Context()
 
+	log.Error().Msgf("reqs: %#v\n", reqs)
 	regular, k8s, _ := extractBulksNodes(reqs.NodeIds)
+	log.Error().Msgf("regular: %#v\n", regular)
+	log.Error().Msgf("k8s: %#v\n", k8s)
 
 	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(ctx, regular)
 	if err != nil {
@@ -255,7 +258,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	var bulkId string
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) {
 		scanIds, bulkId, err = startMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
-	} else {
+	} else if scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	}
 
