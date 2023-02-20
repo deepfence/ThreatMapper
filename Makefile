@@ -123,7 +123,7 @@ cli:
 
 .PHONY: discovery
 discovery:
-	cd $(DEEPFENCE_AGENT_DIR)/tools/apache/scope
+	cd $(DEEPFENCE_AGENT_DIR)/tools/apache/scope &&\
 	make realclean && go mod vendor && make scope.tar
 	build_result=$?
 	if [ $build_result -ne 0 ]
@@ -132,7 +132,6 @@ discovery:
 		exit 1
 	fi
 	docker tag weaveworks/scope $IMAGE_REPOSITORY/deepfence_discovery_ce:${DF_IMG_TAG:-latest}
-	cd -
 
 .PHONY: publish
 publish:
