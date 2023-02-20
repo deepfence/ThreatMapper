@@ -1,11 +1,12 @@
-FROM alpine:3.17.1
+FROM debian:bullseye-slim
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true DOCKERVERSION=20.10.8 MGMT_CONSOLE_PORT=443
 
 WORKDIR /home/deepfence
-RUN apk add --no-cache --update bash conntrack-tools iproute2 util-linux curl bind-tools grep tar podman git wget \
+RUN apt-get update
+RUN apt-get install --no-cache --update bash conntrack-tools iproute2 util-linux curl bind-tools grep tar podman git wget \
     && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
     && rm docker-${DOCKERVERSION}.tgz \
@@ -23,7 +24,7 @@ RUN apk add --no-cache --update bash conntrack-tools iproute2 util-linux curl bi
 	&& rm -rf /var/cache/apk/* \
     && /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)" \
     && addgroup -S deepfence && adduser -S deepfence -G deepfence \
-    && apk add fluent-bit --repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing
+    && apt-get install fluent-bit --repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing
 
 COPY fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
 USER deepfence
