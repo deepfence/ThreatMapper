@@ -207,7 +207,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 			ScanType: string(utils.NEO4J_COMPLIANCE_SCAN),
 		}
 	}
-
+	action, _ := json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: "{}"})
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type, trigger_action: $action})
 		MERGE (m:KubernetesCluster{node_id:$node_id})
@@ -217,10 +217,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 			"status":         utils.SCAN_STATUS_STARTING,
 			"node_id":        node_id,
 			"benchmark_type": benchmark_type,
-			"action": ctl.Action{
-				ID:             ctl.StartComplianceScan,
-				RequestPayload: "{}",
-			},
+			"action":         string(action),
 		}); err != nil {
 		return err
 	}
