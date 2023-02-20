@@ -48,9 +48,9 @@ services:
       core: 0
     restart: on-failure
     networks:
-    - deepfence_net
+      - deepfence_net
     volumes:
-    - deepfence_data:/data:rw
+      - deepfence_data:/data:rw
     logging:
       driver: "json-file"
       options:
@@ -65,9 +65,9 @@ services:
       core: 0
     restart: on-failure
     networks:
-    - deepfence_net
-    #depends_on:
-    #  - deepfence-init-container
+      - deepfence_net
+      #depends_on:
+      #  - deepfence-init-container
     logging:
       driver: "json-file"
       options:
@@ -80,9 +80,9 @@ services:
       core: 0
     restart: on-failure
     tmpfs:
-    - /tmp
+      - /tmp
     networks:
-    - deepfence_net
+      - deepfence_net
     environment:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
@@ -114,16 +114,16 @@ services:
           cpus: ".2"
     restart: on-failure
     environment:
-    - MGMT_CONSOLE_URL=127.0.0.1
-    - MGMT_CONSOLE_PORT=443
-    - DEEPFENCE_KEY=""
+      - MGMT_CONSOLE_URL=127.0.0.1
+      - MGMT_CONSOLE_PORT=443
+      - DEEPFENCE_KEY=""
     network_mode: "host"
     volumes:
-    - /sys/kernel/debug:/sys/kernel/debug:rw
-    - /var/log/fenced
-    - /var/run/docker.sock:/var/run/docker.sock
-    - /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw
-    - /:/fenced/mnt/host/:ro
+      - /sys/kernel/debug:/sys/kernel/debug:rw
+      - /var/log/fenced
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/:/fenced/mnt/host/var/lib/docker/:rw
+      - /:/fenced/mnt/host/:ro
     privileged: true
     depends_on:
       - deepfence-server
@@ -248,36 +248,6 @@ services:
     restart: on-failure
     depends_on:
       - deepfence-server
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
-  deepfence-secret-scanner:
-    container_name: deepfence-secret-scanner
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_secret_scanner_ce:${DF_IMG_TAG:-1.4.1}
-    ulimits:
-      core: 0
-    restart: always
-    networks:
-      - deepfence_net
-    entrypoint: /home/deepfence/usr/SecretScanner
-    command: ["-config-path","/home/deepfence/usr", "-http-port", "8011"]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1g"
-
-  deepfence-yara-hunter:
-    container_name: deepfence-yara-hunter
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-1.4.0}
-    ulimits:
-      core: 0
-    restart: always
-    networks:
-      - deepfence_net
-    entrypoint: /home/deepfence/usr/YaRadare
-    command: ["-config-path","/home/deepfence/usr", "-http-port", "8012"]
     logging:
       driver: "json-file"
       options:

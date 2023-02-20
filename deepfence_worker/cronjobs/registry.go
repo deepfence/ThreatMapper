@@ -32,7 +32,7 @@ func SyncRegistry(msg *message.Message) error {
 
 		err = sync.SyncRegistry(ctx, pgClient, r, row.ID)
 		if err != nil {
-			log.Error().Msgf("unable to get sync registry: %s: %v", row.RegistryType, err)
+			log.Error().Msgf("unable to sync registry: %s: %v", row.RegistryType, err)
 			continue
 		}
 	}

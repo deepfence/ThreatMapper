@@ -62,6 +62,11 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 		return err
 	}
 
+	err = r.DecryptExtras(aes)
+	if err != nil {
+		return err
+	}
+
 	list, err := r.FetchImagesFromRegistry()
 	if err != nil {
 		return err

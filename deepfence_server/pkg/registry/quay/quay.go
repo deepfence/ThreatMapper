@@ -59,6 +59,14 @@ func (d *RegistryQuay) DecryptSecret(aes encryption.AES) error {
 	return err
 }
 
+func (d *RegistryQuay) EncryptExtras(aes encryption.AES) error {
+	return nil
+}
+
+func (d *RegistryQuay) DecryptExtras(aes encryption.AES) error {
+	return nil
+}
+
 func (d *RegistryQuay) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
 	return listImages(d.NonSecret.QuayRegistryURL, d.NonSecret.QuayNamespace, d.Secret.QuayAccessToken)
 }
@@ -76,6 +84,10 @@ func (d *RegistryQuay) GetSecret() map[string]interface{} {
 		return secret
 	}
 	return secret
+}
+
+func (d *RegistryQuay) GetExtras() map[string]interface{} {
+	return map[string]interface{}{}
 }
 
 func (d *RegistryQuay) GetNamespace() string {
