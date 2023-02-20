@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -183,7 +184,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND n.benchmark_type = $benchmark_type
-		RETURN n.node_id`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+		RETURN n.node_id`, utils.NEO4J_COMPLIANCE_SCAN),
 		map[string]interface{}{
 			"node_id":        node_id,
 			"complete":       utils.SCAN_STATUS_SUCCESS,
@@ -203,27 +204,31 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		return &AlreadyRunningScanError{
 			ScanId:   rec.Values[0].(string),
 			NodeId:   node_id,
-			ScanType: string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+			ScanType: string(utils.NEO4J_COMPLIANCE_SCAN),
 		}
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type})
-		MERGE (m:Node{node_id:$node_id})
-		MERGE (n)-[:SCANNED]->(m)`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type, trigger_action: $action})
+		MERGE (m:KubernetesCluster{node_id:$node_id})
+		MERGE (n)-[:SCANNED]->(m)`, utils.NEO4J_COMPLIANCE_SCAN),
 		map[string]interface{}{
 			"scan_id":        scan_id,
 			"status":         utils.SCAN_STATUS_STARTING,
 			"node_id":        node_id,
 			"benchmark_type": benchmark_type,
+			"action": ctl.Action{
+				ID:             ctl.StartComplianceScan,
+				RequestPayload: "{}",
+			},
 		}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
-		MATCH (m:Node{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+		MATCH (m:KubernetesCluster{node_id:$node_id})
+		MERGE (n)-[:SCHEDULED]->(m)`, utils.NEO4J_COMPLIANCE_SCAN),
 		map[string]interface{}{
 			"scan_id": scan_id,
 			"node_id": node_id,
