@@ -90,46 +90,6 @@ var topCmd = &cobra.Command{
 			}
 			log.Info().Msgf("%v", res)
 			output.Out(res)
-			//	case "vulnerability":
-			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
-			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
-			//		if err != nil {
-			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
-			//		}
-			//		output.Out(res)
-			//	case "secret":
-			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
-			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
-			//		if err != nil {
-			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
-			//		}
-			//		output.Out(res)
-			//	case "malware":
-			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
-			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
-			//		if err != nil {
-			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
-			//		}
-			//		output.Out(res)
-			//	case "compliance":
-			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
-			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
-			//		if err != nil {
-			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
-			//		}
-			//		output.Out(res)
-			//	case "cloud-compliance":
-			//		req := http.Client().SearchApi.SearchContainerImages(context.Background())
-			//		req = req.ReportersSearchFilter(filters)
-			//		res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
-			//		if err != nil {
-			//			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
-			//		}
-			//		output.Out(res)
 		default:
 			log.Fatal().Msgf("Unsupported type:%s", target_type)
 		}
@@ -137,11 +97,88 @@ var topCmd = &cobra.Command{
 	},
 }
 
+var issuesCmd = &cobra.Command{
+	Use:   "issues",
+	Short: "Issues search",
+	Long:  `This subcommand fetch details for issues`,
+	Run: func(cmd *cobra.Command, args []string) {
+		issue_type, _ := cmd.Flags().GetString("type")
+
+		search_fields, _ := cmd.Flags().GetString("fields")
+		fields := []string{}
+		if len(search_fields) != 0 {
+			fields = strings.Split(search_fields, ",")
+		}
+
+		orderFilter := deepfence_server_client.ReportersOrderFilter{}
+
+		filtreq := deepfence_server_client.SearchSearchNodeReq{
+			NodeFilter: deepfence_server_client.SearchSearchFilter{
+				InFieldFilter: fields,
+				Filters: deepfence_server_client.ReportersFieldsFilters{
+					ContainsFilter: deepfence_server_client.ReportersContainsFilter{},
+					OrderFilter:    orderFilter,
+				},
+			},
+			Window: deepfence_server_client.ModelFetchWindow{Offset: 0, Size: 1000},
+		}
+
+		switch issue_type {
+		case "vulnerability":
+			req := http.Client().SearchApi.SearchVulnerabilities(context.Background())
+			req = req.SearchSearchNodeReq(filtreq)
+			res, rh, err := http.Client().SearchApi.SearchVulnerabilitiesExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
+		case "secret":
+			req := http.Client().SearchApi.SearchSecrets(context.Background())
+			req = req.SearchSearchNodeReq(filtreq)
+			res, rh, err := http.Client().SearchApi.SearchSecretsExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
+		case "malware":
+			req := http.Client().SearchApi.SearchMalwares(context.Background())
+			req = req.SearchSearchNodeReq(filtreq)
+			res, rh, err := http.Client().SearchApi.SearchMalwaresExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
+		case "compliance":
+			req := http.Client().SearchApi.SearchCompliances(context.Background())
+			req = req.SearchSearchNodeReq(filtreq)
+			res, rh, err := http.Client().SearchApi.SearchCompliancesExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
+		case "cloud-compliance":
+			req := http.Client().SearchApi.SearchCloudCompliances(context.Background())
+			req = req.SearchSearchNodeReq(filtreq)
+			res, rh, err := http.Client().SearchApi.SearchCloudCompliancesExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
+		default:
+			log.Fatal().Msgf("Unsupported type:%s", issue_type)
+		}
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(topCmd)
+	rootCmd.AddCommand(issuesCmd)
 
 	topCmd.PersistentFlags().String("type", "", "host/container/process")
 	topCmd.PersistentFlags().String("toptype", "", "host/container/process")
 	topCmd.PersistentFlags().String("num", "", "Number of top")
 	topCmd.PersistentFlags().String("fields", "", "CSV fields to search")
+
+	issuesCmd.PersistentFlags().String("type", "", "vulnerability/secret/malware/compliance/cloud-compliance")
+	issuesCmd.PersistentFlags().String("fields", "", "CSV fields to search")
 }
