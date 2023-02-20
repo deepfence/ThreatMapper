@@ -1,5 +1,7 @@
 package model
 
+import "strconv"
+
 const (
 	DefaultUserGroup = "default"
 )
@@ -17,4 +19,11 @@ type ResponseAccessToken struct {
 type FetchWindow struct {
 	Offset int `json:"offset" required:"true"`
 	Size   int `json:"size" required:"true"`
+}
+
+func (fw FetchWindow) FetchWindow2CypherQuery() string {
+	if fw.Size == 0 {
+		return ""
+	}
+	return ` SKIP ` + strconv.Itoa(fw.Offset) + ` LIMIT ` + strconv.Itoa(fw.Size)
 }

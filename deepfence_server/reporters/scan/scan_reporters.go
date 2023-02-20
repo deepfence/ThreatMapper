@@ -396,10 +396,8 @@ func GetScansList(ctx context.Context,
 		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (n)
 		WHERE n.node_id IN $node_ids
 		RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_type
-		ORDER BY m.updated_at
-		SKIP $skip
-		LIMIT $limit`,
-		map[string]interface{}{"node_ids": NodeIdentifierToIdList(node_ids), "skip": fw.Offset, "limit": fw.Size})
+		ORDER BY m.updated_at`+fw.FetchWindow2CypherQuery(),
+		map[string]interface{}{"node_ids": NodeIdentifierToIdList(node_ids)})
 	if err != nil {
 		return model.ScanListResp{}, err
 	}
@@ -517,10 +515,8 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	nres, err := tx.Run(`
 		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
-		RETURN d
-		SKIP $skip
-		LIMIT $limit`,
-		map[string]interface{}{"scan_id": scan_id, "skip": fw.Offset, "limit": fw.Size})
+		RETURN d`+fw.FetchWindow2CypherQuery(),
+		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return res, common, err
 	}

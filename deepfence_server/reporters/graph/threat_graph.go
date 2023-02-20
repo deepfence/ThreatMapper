@@ -41,7 +41,7 @@ func (tc *ThreatGraphReporter) ComputeThreatGraph() error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("MATCH (s:CveScan) -[:SCANNED]-> (m) WITH max(s.time_stamp) as most_recent, m MATCH (s:CveScan {time_stamp: most_recent})-[:DETECTED]->(c:Cve) WITH m, count(distinct c) as num_cve SET m.num_cve = num_cve", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run("MATCH (s:VulnerabilityScan) -[:SCANNED]-> (m) WITH max(s.time_stamp) as most_recent, m MATCH (s:VulnerabilityScan{time_stamp: most_recent})-[:DETECTED]->(c:Vulnerability) WITH m, count(distinct c) as num_cve SET m.num_cve = num_cve", map[string]interface{}{}); err != nil {
 		return err
 	}
 
