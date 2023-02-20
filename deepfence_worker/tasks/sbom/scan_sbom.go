@@ -5,11 +5,14 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	psOutput "github.com/deepfence/package-scanner/output"
 	"github.com/deepfence/package-scanner/scanner/grype"
 	psUtils "github.com/deepfence/package-scanner/utils"
 	"github.com/minio/minio-go/v7"
@@ -48,19 +51,19 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 
 	if err := json.Unmarshal(msg.Payload, &params); err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
 	}
 
 	// send inprogress status
-	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, ""), rh)
+	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil), rh)
 
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
 
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
 	}
 
@@ -69,7 +72,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	err = mc.DownloadFile(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
 	}
 	defer func() {
@@ -81,7 +84,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFile, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
 	}
 
@@ -98,11 +101,13 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
 	if err != nil {
 		log.Error().Msgf("error on generate vulnerability report: %s", err)
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
 	}
 
-	log.Info().Msgf("scan-id=%s vulnerabilities=%d", params.ScanId, len(report))
+	details := psOutput.CountBySeverity(&report)
+
+	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanId, len(report), details.Severity)
 
 	// write reports and status to kafka ingester will process from there
 
@@ -120,7 +125,23 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	}
 
 	// scan status
-	if err := SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS, ""), rh); err != nil {
+	info := model.ScanInfo{
+		ScanId:    params.ScanId,
+		Status:    utils.SCAN_STATUS_SUCCESS,
+		UpdatedAt: time.Now().Unix(),
+		NodeId:    params.NodeId,
+		NodeType:  params.NodeType,
+		NodeName:  params.NodeId,
+		SeverityCounts: map[string]int{
+			"total":          details.Total,
+			psUtils.CRITICAL: details.Severity.Critical,
+			psUtils.HIGH:     details.Severity.High,
+			psUtils.MEDIUM:   details.Severity.Medium,
+			psUtils.LOW:      details.Severity.Low,
+		},
+	}
+
+	if err := SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS, "", &info), rh); err != nil {
 		log.Error().Msgf("error sending scan status: %s", err.Error())
 	}
 
