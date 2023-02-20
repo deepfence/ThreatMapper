@@ -8,6 +8,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -118,6 +119,12 @@ func setClusterAgentControls() {
 		log.Errorf("set controls: %v", err)
 	} else {
 		log.Errorf("k8s control registered")
+	}
+	_, err = exec.Command("/bin/sh", "/home/deepfence/token.sh").CombinedOutput()
+	if err != nil {
+		log.Errorf("generate token: %v", err)
+	} else {
+		log.Debug("Token generated successfully")
 	}
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {

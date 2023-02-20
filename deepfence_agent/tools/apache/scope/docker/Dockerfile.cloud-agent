@@ -41,6 +41,8 @@ USER root
 RUN chown deepfence /opt/steampipe /home/deepfence/deepfence_exe /home/deepfence
 
 USER deepfence
+COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
+COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
 RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
