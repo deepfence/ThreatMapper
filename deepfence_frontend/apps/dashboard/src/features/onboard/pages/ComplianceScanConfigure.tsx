@@ -65,11 +65,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
         modelComplianceScanTriggerReq: {
           benchmark_types: controls ? controls.split(',') : [],
           filters: {
-            cloud_account_scan_filter: { fields_values: null },
-            kubernetes_cluster_scan_filter: { fields_values: null },
-            container_scan_filter: { fields_values: null },
-            host_scan_filter: { fields_values: null },
-            image_scan_filter: { fields_values: null },
+            cloud_account_scan_filter: { filter_in: null },
+            kubernetes_cluster_scan_filter: { filter_in: null },
+            container_scan_filter: { filter_in: null },
+            host_scan_filter: { filter_in: null },
+            image_scan_filter: { filter_in: null },
           },
           node_ids: nodeIds.map((nodeId) => ({
             node_id: nodeId,

@@ -57,6 +57,17 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
       apiArgs: [
         {
           modelScanResultsReq: {
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_field: '',
+              },
+              match_filter: {
+                filter_in: {},
+              },
+            },
             scan_id: scanId,
             window: {
               offset: 0,
@@ -156,6 +167,17 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
       apiArgs: [
         {
           modelScanResultsReq: {
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_field: '',
+              },
+              match_filter: {
+                filter_in: {},
+              },
+            },
             scan_id: scanId,
             window: {
               offset: 0,
