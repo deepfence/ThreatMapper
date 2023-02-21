@@ -14,33 +14,35 @@ import (
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 )
 
-func Sync() error {
-	postgresCtx := directory.NewGlobalContext()
-	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-	pgClient, err := directory.PostgresClient(postgresCtx)
-	if err != nil {
-		return err
-	}
-	registries, err := pgClient.GetContainerRegistries(postgresCtx)
-	if err != nil {
-		return err
-	}
+// // moved to cronjobs
+//
+// func Sync() error {
+// 	postgresCtx := directory.NewGlobalContext()
+// 	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+// 	pgClient, err := directory.PostgresClient(postgresCtx)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	registries, err := pgClient.GetContainerRegistries(postgresCtx)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	for _, registryRow := range registries {
-		r, err := registry.GetRegistryWithRegistryRow(registryRow)
-		if err != nil {
-			log.Error().Msgf("unable to get registry for %s: %v", registryRow.RegistryType, err)
-			continue
-		}
+// 	for _, registryRow := range registries {
+// 		r, err := registry.GetRegistryWithRegistryRow(registryRow)
+// 		if err != nil {
+// 			log.Error().Msgf("unable to get registry for %s: %v", registryRow.RegistryType, err)
+// 			continue
+// 		}
 
-		err = SyncRegistry(ctx, pgClient, r, registryRow.ID)
-		if err != nil {
-			log.Error().Msgf("unable to get sync registry: %s: %v", registryRow.RegistryType, err)
-			continue
-		}
-	}
-	return nil
-}
+// 		err = SyncRegistry(ctx, pgClient, r, registryRow.ID)
+// 		if err != nil {
+// 			log.Error().Msgf("unable to get sync registry: %s: %v", registryRow.RegistryType, err)
+// 			continue
+// 		}
+// 	}
+// 	return nil
+// }
 
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
 

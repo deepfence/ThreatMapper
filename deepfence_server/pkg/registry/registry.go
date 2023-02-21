@@ -5,6 +5,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/acr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerhub"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
@@ -25,6 +26,8 @@ func GetRegistry(rType string, requestByte []byte) (Registry, error) {
 		r, err = quay.New(requestByte)
 	case constants.GCR:
 		r, err = gcr.New(requestByte)
+	case constants.ACR:
+		r, err = acr.New(requestByte)
 	}
 	return r, err
 }
@@ -112,6 +115,29 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, nil
+	case constants.ACR:
+		var nonSecret map[string]string
+		var secret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.EncryptedSecret, &secret)
+		if err != nil {
+			return nil, err
+		}
+		r = &acr.RegistryACR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: acr.NonSecret{
+				AzureRegistryURL:      nonSecret["azure_registry_url"],
+				AzureRegistryUsername: nonSecret["azure_registry_username"],
+			},
+			Secret: acr.Secret{
+				AzureRegistryPassword: secret["azure_registry_password"],
+			},
+		}
+		return r, nil
 	}
 	return r, err
 }
@@ -163,6 +189,21 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 			NonSecret: gcr.NonSecret{
 				RegistryURL: nonSecret["registry_url"],
 				ProjectId:   nonSecret["project_id"],
+			},
+		}
+		return r, nil
+	case constants.ACR:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &acr.RegistryACR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: acr.NonSecret{
+				AzureRegistryURL:      nonSecret["azure_registry_url"],
+				AzureRegistryUsername: nonSecret["azure_registry_username"],
 			},
 		}
 		return r, nil
