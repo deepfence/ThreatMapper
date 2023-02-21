@@ -356,11 +356,27 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Unmask Scans Results", "Unmask scan results",
 		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
 	d.AddOperation("deleteScanResult", http.MethodPost, "/deepfence/scan/results/action/delete",
-		"Delete Scans Results", "Delete scan results",
+		"Delete selected scan results", "Delete selected scan results",
 		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
 	d.AddOperation("notifyScanResult", http.MethodPost, "/deepfence/scan/results/action/notify",
 		"Notify Scans Results", "Notify scan results in connected integration channels",
 		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+
+	// Scan ID Actions
+	d.AddOperation("downloadScanResults", http.MethodGet, "/scan/{scan_type}/{scan_id}/download",
+		"Download Scans Results", "Download scan results",
+		http.StatusOK, []string{tagCommon}, bearerToken, new(ScanActionRequest), nil)
+	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/scan/{scan_type}/{scan_id}",
+		"Delete all scan results for a scan id", "Delete all scan results for a scan id",
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanActionRequest), nil)
+
+	// SBOM
+	d.AddOperation("getSBOM", http.MethodPost, "/deepfence/scan/sbom",
+		"Get SBOM for a node or scan id", "Get SBOM for a node or scan id",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), new([]SbomResponse))
+	d.AddOperation("downloadSBOM", http.MethodPost, "/deepfence/scan/sbom/download",
+		"Download SBOM for a node or scan id", "Download SBOM for a node or scan id",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), nil)
 }
 
 func (d *OpenApiDocs) AddDiagnosisOperations() {

@@ -180,6 +180,7 @@ services:
     environment:
       <<: *common-creds
       ELASTICSEARCH_SCHEME: "http"
+      DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 1440
     networks:
       - deepfence_net
     depends_on:

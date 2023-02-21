@@ -23,6 +23,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
@@ -794,14 +795,14 @@ func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Re
 		return
 	}
 	switch action {
-	case model.ScanResultsActionMask:
-		err = reporters_scan.UpdateScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds, "masked", "true")
-	case model.ScanResultsActionUnmask:
-		err = reporters_scan.UpdateScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds, "masked", "false")
-	case model.ScanResultsActionDelete:
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds)
-	case model.ScanResultsActionNotify:
-		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds)
+	case "mask":
+		err = reporters_scan.UpdateScanResultEdgeFields(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds, "masked", "true")
+	case "unmask":
+		err = reporters_scan.UpdateScanResultEdgeFields(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds, "masked", "false")
+	case "delete":
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+	case "notify":
+		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
 	}
 	if err != nil {
 		respondError(err, w)
@@ -811,19 +812,75 @@ func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handler) ScanResultMaskHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, model.ScanResultsActionMask)
+	h.parseScanResultActionRequest(w, r, "mask")
 }
 
 func (h *Handler) ScanResultUnmaskHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, model.ScanResultsActionUnmask)
+	h.parseScanResultActionRequest(w, r, "unmask")
 }
 
 func (h *Handler) ScanResultDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, model.ScanResultsActionDelete)
+	h.parseScanResultActionRequest(w, r, "delete")
 }
 
 func (h *Handler) ScanResultNotifyHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, model.ScanResultsActionNotify)
+	h.parseScanResultActionRequest(w, r, "notify")
+}
+
+func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, action string) {
+	req := model.ScanActionRequest{
+		ScanID:   chi.URLParam(r, "scan_id"),
+		ScanType: chi.URLParam(r, "scan_type"),
+	}
+	err := h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "download":
+	case "delete":
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func (h *Handler) ScanResultDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanIdActionHandler(w, r, "download")
+}
+
+func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanIdActionHandler(w, r, "delete")
+}
+
+func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.SbomRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	if req.ScanID == "" {
+		if req.NodeType == "" || req.NodeID == "" {
+			respondError(&BadDecoding{errors.New("scan_id is required or node_id and node_type are required")}, w)
+			return
+		}
+	}
+	switch action {
+	case "get":
+		var sbom []model.SbomResponse
+		httpext.JSON(w, http.StatusOK, sbom)
+	case "download":
+	}
+}
+
+func (h *Handler) GetSbomHandler(w http.ResponseWriter, r *http.Request) {
+	h.sbomHandler(w, r, "get")
+}
+
+func (h *Handler) SbomDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	h.sbomHandler(w, r, "download")
 }
 
 func FindNodesMatching(ctx context.Context,
