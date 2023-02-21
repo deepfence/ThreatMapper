@@ -6,7 +6,7 @@ ENV CHECKPOINT_DISABLE=true DOCKERVERSION=20.10.8 MGMT_CONSOLE_PORT=443
 
 WORKDIR /home/deepfence
 RUN apt-get update
-RUN apt-get install -y bash conntrack iproute2 util-linux curl grep tar git wget htop \
+RUN apt-get install -y bash conntrack iproute2 util-linux curl grep tar git wget supervisor \
     && apt-get -y --allow-unauthenticated install podman \
     && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
@@ -36,16 +36,18 @@ COPY scope/docker/fluent-bit.conf /etc/td-agent-bit/td-agent-bit.conf
 COPY fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
 USER deepfence
 COPY scope/docker/deepfence_exe /home/deepfence/
+COPY deepfence/supervisord_cluster_agent.conf /home/deepfence/supervisord-temp.conf
+COPY deepfence/start_cluster_agent.sh /usr/local/bin/start_services
 
 WORKDIR /opt/steampipe
 USER root
 COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
 COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
-RUN chown -R deepfence /opt/steampipe /home/deepfence /home/deepfence /var/log
+RUN chown -R deepfence /opt/steampipe /home/deepfence /home/deepfence /var/log /usr/local/bin/start_services && chmod +x /usr/local/bin/start_services
 
 USER deepfence
 RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
-ENTRYPOINT ["/home/deepfence/deepfence_exe"]
+ENTRYPOINT ["/usr/local/bin/start_services"]
