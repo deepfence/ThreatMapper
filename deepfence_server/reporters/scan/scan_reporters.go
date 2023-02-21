@@ -395,6 +395,7 @@ func GetScansList(ctx context.Context,
 	res, err := tx.Run(`
 		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (n)
 		WHERE n.node_id IN $node_ids
+		AND m.status = 'COMPLETE'
 		RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_type
 		ORDER BY m.updated_at`+fw.FetchWindow2CypherQuery(),
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(node_ids)})
