@@ -26,6 +26,7 @@ func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
 	}
 	err = scanner.RunComplianceScan()
 	if err != nil {
+		log.Errorf("%+v", err)
 		return err
 	}
 	return nil
