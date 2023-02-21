@@ -156,6 +156,7 @@ type ScanResultsCommon struct {
 	NodeName              string `json:"node_name" required:"true"`
 	NodeType              string `json:"node_type" required:"true"`
 	ScanID                string `json:"scan_id" required:"true"`
+	UpdatedAt             int64  `json:"updated_at" required:"true"`
 }
 
 type SecretScanResult struct {
