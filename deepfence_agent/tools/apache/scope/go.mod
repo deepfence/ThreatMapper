@@ -35,7 +35,7 @@ require (
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230123091013-6f8a19aeeb9d
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
-	github.com/deepfence/kubernetes-scanner v0.0.0-20230221113035-99b65c45cb7c
+	github.com/deepfence/kubernetes-scanner v0.0.0-20230221115505-ebbc553b988c
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fsouza/go-dockerclient v1.9.2
 	github.com/gogo/protobuf v1.3.2
