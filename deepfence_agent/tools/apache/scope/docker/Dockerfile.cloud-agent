@@ -43,7 +43,8 @@ WORKDIR /opt/steampipe
 USER root
 COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
 COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
-RUN chown -R deepfence /opt/steampipe /home/deepfence /home/deepfence /var/log /usr/local/bin/start_services && chmod +x /usr/local/bin/start_services
+RUN chown -R deepfence /opt/steampipe /home/deepfence /home/deepfence /var/log /usr/local/bin/start_services /var/run/ \
+     && chmod +x /usr/local/bin/start_services
 
 USER deepfence
 RUN steampipe plugin install steampipe \
