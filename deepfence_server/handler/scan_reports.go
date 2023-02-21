@@ -781,7 +781,33 @@ func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode co
 	return res, nil
 }
 
-func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Request, action string) {
+func (h *Handler) scanResultMaskHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.ScanResultsMaskRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "mask":
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "true")
+	case "unmask":
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "false")
+	}
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request, action string) {
 	defer r.Body.Close()
 	var req model.ScanResultsActionRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
@@ -795,10 +821,6 @@ func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Re
 		return
 	}
 	switch action {
-	case "mask":
-		err = reporters_scan.UpdateScanResultEdgeFields(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds, "masked", "true")
-	case "unmask":
-		err = reporters_scan.UpdateScanResultEdgeFields(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds, "masked", "false")
 	case "delete":
 		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
 	case "notify":
@@ -812,19 +834,19 @@ func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handler) ScanResultMaskHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, "mask")
+	h.scanResultMaskHandler(w, r, "mask")
 }
 
 func (h *Handler) ScanResultUnmaskHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, "unmask")
+	h.scanResultMaskHandler(w, r, "unmask")
 }
 
 func (h *Handler) ScanResultDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, "delete")
+	h.scanResultActionHandler(w, r, "delete")
 }
 
 func (h *Handler) ScanResultNotifyHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, "notify")
+	h.scanResultActionHandler(w, r, "notify")
 }
 
 func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, action string) {

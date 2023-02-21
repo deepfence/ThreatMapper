@@ -3,6 +3,7 @@ package reporters_scan
 import (
 	"context"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -37,7 +38,7 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	return tx.Commit()
 }
 
-func UpdateScanResultEdgeFields(ctx context.Context, scanType utils.Neo4jScanType, scanId string, nodeIds []string, key, value string) error {
+func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskRequest, value string) error {
 	// (m:VulnerabilityScan) - [r:DETECTED] -> (n:Cve)
 	// update fields of "DETECTED" edges
 	driver, err := directory.Neo4jClient(ctx)
@@ -57,11 +58,15 @@ func UpdateScanResultEdgeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	defer tx.Close()
 
 	_, err = tx.Run(`
-		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
+		MATCH (m:`+string(req.ScanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		SET r.`+key+` = $value`, map[string]interface{}{"node_ids": nodeIds, "value": value, "scan_id": scanId})
+		SET r.masked = $value`, map[string]interface{}{"node_ids": req.NodeIds, "value": value, "scan_id": req.ScanID})
 	if err != nil {
 		return err
+	}
+
+	if req.MaskAcrossHostsAndImages {
+		
 	}
 	return tx.Commit()
 }

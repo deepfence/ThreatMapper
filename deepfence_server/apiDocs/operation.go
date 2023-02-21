@@ -351,10 +351,10 @@ func (d *OpenApiDocs) AddScansOperations() {
 	// Scan Result Actions
 	d.AddOperation("maskScanResult", http.MethodPost, "/deepfence/scan/results/action/mask",
 		"Mask Scans Results", "Mask scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsMaskRequest), nil)
 	d.AddOperation("unmaskScanResult", http.MethodPost, "/deepfence/scan/results/action/unmask",
 		"Unmask Scans Results", "Unmask scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsMaskRequest), nil)
 	d.AddOperation("deleteScanResult", http.MethodPost, "/deepfence/scan/results/action/delete",
 		"Delete selected scan results", "Delete selected scan results",
 		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)

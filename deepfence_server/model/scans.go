@@ -112,6 +112,13 @@ type CloudComplianceScanListResp struct {
 	ScansInfo []ComplianceScanInfo `json:"scans_info" required:"true"`
 }
 
+type ScanResultsMaskRequest struct {
+	ScanID                   string   `json:"scan_id" validate:"required" required:"true"`
+	NodeIds                  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
+	ScanType                 string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	MaskAcrossHostsAndImages bool     `json:"mask_across_hosts_and_images"`
+}
+
 type ScanResultsActionRequest struct {
 	ScanID   string   `json:"scan_id" validate:"required" required:"true"`
 	NodeIds  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
