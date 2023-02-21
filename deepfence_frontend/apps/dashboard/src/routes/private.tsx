@@ -33,6 +33,11 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
+import { SettingsLoader } from '@/features/settings/layouts/SettingsLayout';
+import { LicenseDetails } from '@/features/settings/pages/LicenseDetails';
+import { ScheduledJobs } from '@/features/settings/pages/ScheduledJobs';
+import { Settings } from '@/features/settings/pages/settings';
+import { module as UserManagement } from '@/features/settings/pages/UserManagement';
 import { CustomRouteObject } from '@/utils/router';
 
 export const privateRoutes: CustomRouteObject[] = [
@@ -180,6 +185,29 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'integrations',
         ...integrations,
         meta: { title: 'Integrations' },
+      },
+      {
+        path: 'settings',
+        element: <Settings />,
+        loader: SettingsLoader,
+        children: [
+          {
+            path: 'license-details',
+            element: <LicenseDetails />,
+            meta: { title: 'License Details' },
+          },
+          {
+            path: 'scheduled-jobs',
+            element: <ScheduledJobs />,
+            meta: { title: 'Scheduled Jobs' },
+          },
+          {
+            path: 'user-management',
+            ...UserManagement,
+            meta: { title: 'User Management' },
+          },
+        ],
+        meta: { title: 'Settings' },
       },
     ],
   },

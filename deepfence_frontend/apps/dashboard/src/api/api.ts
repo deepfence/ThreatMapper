@@ -35,6 +35,9 @@ export function getUserApiClient() {
   const userApi = new UserApi(configuration);
   return {
     registerUser: userApi.registerUser.bind(userApi),
+    getUsers: userApi.getUsers.bind(userApi),
+    deleteCurrentUser: userApi.deleteCurrentUser.bind(userApi),
+    updateCurrentUser: userApi.updateCurrentUser.bind(userApi),
   };
 }
 
