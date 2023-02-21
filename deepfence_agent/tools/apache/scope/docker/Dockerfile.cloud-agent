@@ -44,7 +44,7 @@ WORKDIR /opt/steampipe
 USER root
 COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
 COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
-RUN chown -R deepfence /opt/steampipe /home/deepfence /home/deepfence /var/log /usr/local/bin/start_services /var/run/ \
+RUN chown -R deepfence /opt/ /home/deepfence /var/log /usr/local/bin/start_services /var/run/ /etc/td-agent-bit/ \
      && chmod +x /usr/local/bin/start_services
 
 USER deepfence
