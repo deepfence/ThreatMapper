@@ -16,50 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelKeyValues
+ * @interface ReportersMatchFilter
  */
-export interface ModelKeyValues {
+export interface ReportersMatchFilter {
     /**
      * 
-     * @type {string}
-     * @memberof ModelKeyValues
+     * @type {{ [key: string]: Array<any>; }}
+     * @memberof ReportersMatchFilter
      */
-    key: string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ModelKeyValues
-     */
-    values: Array<string> | null;
+    filter_in: { [key: string]: Array<any>; } | null;
 }
 
 /**
- * Check if a given object implements the ModelKeyValues interface.
+ * Check if a given object implements the ReportersMatchFilter interface.
  */
-export function instanceOfModelKeyValues(value: object): boolean {
+export function instanceOfReportersMatchFilter(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "key" in value;
-    isInstance = isInstance && "values" in value;
+    isInstance = isInstance && "filter_in" in value;
 
     return isInstance;
 }
 
-export function ModelKeyValuesFromJSON(json: any): ModelKeyValues {
-    return ModelKeyValuesFromJSONTyped(json, false);
+export function ReportersMatchFilterFromJSON(json: any): ReportersMatchFilter {
+    return ReportersMatchFilterFromJSONTyped(json, false);
 }
 
-export function ModelKeyValuesFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelKeyValues {
+export function ReportersMatchFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersMatchFilter {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'key': json['key'],
-        'values': json['values'],
+        'filter_in': json['filter_in'],
     };
 }
 
-export function ModelKeyValuesToJSON(value?: ModelKeyValues | null): any {
+export function ReportersMatchFilterToJSON(value?: ReportersMatchFilter | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +60,7 @@ export function ModelKeyValuesToJSON(value?: ModelKeyValues | null): any {
     }
     return {
         
-        'key': value.key,
-        'values': value.values,
+        'filter_in': value.filter_in,
     };
 }
 

@@ -52,6 +52,12 @@ export interface ModelContainer {
     compliances_count: number;
     /**
      * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    docker_container_name: string;
+    /**
+     * 
      * @type {{ [key: string]: any; }}
      * @memberof ModelContainer
      */
@@ -97,12 +103,6 @@ export interface ModelContainer {
      * @type {string}
      * @memberof ModelContainer
      */
-    name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelContainer
-     */
     node_id: string;
     /**
      * 
@@ -143,6 +143,7 @@ export function instanceOfModelContainer(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "compliance_scan_status" in value;
     isInstance = isInstance && "compliances_count" in value;
+    isInstance = isInstance && "docker_container_name" in value;
     isInstance = isInstance && "docker_labels" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "image" in value;
@@ -150,7 +151,6 @@ export function instanceOfModelContainer(value: object): boolean {
     isInstance = isInstance && "malwares_count" in value;
     isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "metrics" in value;
-    isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "processes" in value;
     isInstance = isInstance && "secret_scan_status" in value;
@@ -173,6 +173,7 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'compliance_scan_status': json['compliance_scan_status'],
         'compliances_count': json['compliances_count'],
+        'docker_container_name': json['docker_container_name'],
         'docker_labels': json['docker_labels'],
         'host_name': json['host_name'],
         'image': ModelContainerImageFromJSON(json['image']),
@@ -180,7 +181,6 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
         'malwares_count': json['malwares_count'],
         'metadata': json['metadata'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
-        'name': json['name'],
         'node_id': json['node_id'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
         'secret_scan_status': json['secret_scan_status'],
@@ -201,6 +201,7 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
         
         'compliance_scan_status': value.compliance_scan_status,
         'compliances_count': value.compliances_count,
+        'docker_container_name': value.docker_container_name,
         'docker_labels': value.docker_labels,
         'host_name': value.host_name,
         'image': ModelContainerImageToJSON(value.image),
@@ -208,7 +209,6 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
         'malwares_count': value.malwares_count,
         'metadata': value.metadata,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
-        'name': value.name,
         'node_id': value.node_id,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
         'secret_scan_status': value.secret_scan_status,
