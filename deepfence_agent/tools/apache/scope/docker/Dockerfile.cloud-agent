@@ -32,6 +32,7 @@ RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
     && apt-get update --allow-insecure-repositories \
     && apt-get install -y td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/
 
+COPY scope/docker/fluent-bit.conf /etc/td-agent-bit/td-agent-bit.conf
 COPY fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
 USER deepfence
 COPY scope/docker/deepfence_exe /home/deepfence/
