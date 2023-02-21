@@ -61,6 +61,11 @@ async function getScans(scanId: string): Promise<ScanResult[]> {
     apiArgs: [
       {
         modelScanResultsReq: {
+          fields_filter: {
+            contains_filter: { filter_in: {} },
+            match_filter: { filter_in: {} },
+            order_filter: { order_field: '' },
+          },
           scan_id: scanId,
           window: {
             offset: 0,
@@ -319,7 +324,7 @@ const HeaderComponent = ({
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <DFLink
-        to={`/vulnerability/scan-results/${nodeType}`}
+        to={`/vulnerability/scan-results?nodeType=${nodeType}`}
         className="flex hover:no-underline items-center justify-center  mr-2"
       >
         <IconContext.Provider
