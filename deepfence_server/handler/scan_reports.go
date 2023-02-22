@@ -487,6 +487,11 @@ func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.R
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestComplianceScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewComplianceScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func (h *Handler) IngestCloudComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCloudComplianceIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
