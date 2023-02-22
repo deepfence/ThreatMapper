@@ -330,6 +330,8 @@ github.com/deepfence/kubernetes-scanner v0.0.0-20230221115505-ebbc553b988c h1:Gs
 github.com/deepfence/kubernetes-scanner v0.0.0-20230221115505-ebbc553b988c/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230222110501-899fae28fa82 h1:+FiQqBe/xOCdDdLGx4CdJSlpF632aIzfyER02XfRlyg=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230222110501-899fae28fa82/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
+github.com/deepfence/kubernetes-scanner v0.0.0-20230222190441-07463e7251d0 h1:gvugHd+97LTi11Ovih0wYBAbqZz+vak7Qw51b82VP4w=
+github.com/deepfence/kubernetes-scanner v0.0.0-20230222190441-07463e7251d0/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
 github.com/denverdino/aliyungo v0.0.0-20190125010748-a747050bb1ba/go.mod h1:dV8lFg6daOBZbT6/BDGIz6Y3WFGn8juu6G+CQ6LHtl0=
 github.com/dgrijalva/jwt-go v0.0.0-20170104182250-a601269ab70c/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
