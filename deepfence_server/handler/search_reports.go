@@ -32,7 +32,7 @@ func SearchHandler[T model.Cypherable](w http.ResponseWriter, r *http.Request) {
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters_search.SearchReport[model.Host](r.Context(), req.NodeFilter, req.Window)
+	hosts, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -73,6 +73,38 @@ func (h *Handler) SearchCloudCompliances(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *Handler) SearchCompliances(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.Compliance](w, r)
+}
+
+func (h *Handler) SearchHostsCount(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.Host](w, r)
+}
+
+func (h *Handler) SearchContainersCount(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.Container](w, r)
+}
+
+func (h *Handler) SearchContainerImagesCount(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.ContainerImage](w, r)
+}
+
+func (h *Handler) SearchVulnerabilitiesCount(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.Vulnerability](w, r)
+}
+
+func (h *Handler) SearchSecretsCount(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.Secret](w, r)
+}
+
+func (h *Handler) SearchMalwaresCount(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.Malware](w, r)
+}
+
+func (h *Handler) SearchCloudCompliancesCount(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.CloudCompliance](w, r)
+}
+
+func (h *Handler) SearchCompliancesCount(w http.ResponseWriter, r *http.Request) {
 	SearchHandler[model.Compliance](w, r)
 }
 
