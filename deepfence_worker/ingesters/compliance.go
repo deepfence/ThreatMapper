@@ -75,7 +75,7 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:Compliance) MERGE (m:ComplianceScan{node_id: n.scan_id, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)",
+	if _, err = tx.Run("MATCH (n:Compliance) MERGE (m:ComplianceScan{node_id: n.scan_id}) MERGE (m) -[:DETECTED]-> (n)",
 		map[string]interface{}{}); err != nil {
 		log.Error().Msgf("row merge error:%v", err)
 		return err
