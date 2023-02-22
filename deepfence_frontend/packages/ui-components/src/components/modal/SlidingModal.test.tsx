@@ -51,10 +51,10 @@ describe(`Component SlidingModal`, () => {
     expect(getByText('This is a content')).toBeInTheDocument();
 
     // on close
-    const closeBtnForModal = getByTestId('sliding-modal-close-button');
-    expect(closeBtnForModal).toBeInTheDocument();
+    const overlay = getByTestId('sliding-modal-overlay');
+    expect(overlay).toBeInTheDocument();
 
-    await user.click(closeBtnForModal);
+    await user.click(overlay);
     expect(queryByText('This is a content')).toBeNull();
 
     // triggerer focus back
