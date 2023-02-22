@@ -126,6 +126,10 @@ type ScanResultsActionRequest struct {
 	//utils.Neo4jScanType
 }
 
+type DownloadReportResponse struct {
+	UrlLink string `json:"url_link"`
+}
+
 type ScanActionRequest struct {
 	ScanID   string `path:"scan_id" validate:"required" required:"true"`
 	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`

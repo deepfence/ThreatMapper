@@ -861,6 +861,8 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 	}
 	switch action {
 	case "download":
+		resp := model.DownloadReportResponse{}
+		httpext.JSON(w, http.StatusOK, resp)
 	case "delete":
 		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
 		w.WriteHeader(http.StatusNoContent)
@@ -894,6 +896,8 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		var sbom []model.SbomResponse
 		httpext.JSON(w, http.StatusOK, sbom)
 	case "download":
+		resp := model.DownloadReportResponse{}
+		httpext.JSON(w, http.StatusOK, resp)
 	}
 }
 

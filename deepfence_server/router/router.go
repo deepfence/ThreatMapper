@@ -127,10 +127,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/users", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUsers))
 			})
-			r.Route("/users/{userId}", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUser))
-				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUser))
-				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUser))
+			r.Route("/users/{id}", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUserByUserID))
+				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUserByUserID))
+				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUserByUserID))
 			})
 
 			r.Route("/graph", func(r chi.Router) {
@@ -254,7 +254,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/scan/results/action", func(r chi.Router) {
 				r.Post("/mask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultMaskHandler))
 				r.Post("/unmask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultUnmaskHandler))
-				r.Post("/delete", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanResultDeleteHandler))
+				r.Patch("/delete", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanResultDeleteHandler))
 				r.Post("/notify", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultNotifyHandler))
 			})
 

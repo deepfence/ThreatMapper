@@ -42,10 +42,24 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new(User))
 	d.AddOperation("updateCurrentUser", http.MethodPut, "/deepfence/user",
 		"Update Current User", "Update logged in user information",
-		http.StatusOK, []string{tagUser}, bearerToken, new(User), new(User))
+		http.StatusOK, []string{tagUser}, bearerToken, new(EditUserRequest), new(User))
 	d.AddOperation("deleteCurrentUser", http.MethodDelete, "/deepfence/user",
 		"Delete Current User", "Delete logged in user",
 		http.StatusNoContent, []string{tagUser}, bearerToken, nil, nil)
+
+	d.AddOperation("getUsers", http.MethodGet, "/deepfence/users",
+		"Get all users", "Get all users",
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]User))
+	d.AddOperation("getUser", http.MethodGet, "/deepfence/users/{id}",
+		"Get User by User ID", "Get User by User ID",
+		http.StatusOK, []string{tagUser}, bearerToken, new(UserIdRequest), new(User))
+	d.AddOperation("updateUser", http.MethodPut, "/deepfence/users/{id}",
+		"Update User by User ID", "Update User by User ID",
+		http.StatusOK, []string{tagUser}, bearerToken, new(EditUserRequest), new(User))
+	d.AddOperation("deleteUser", http.MethodDelete, "/deepfence/users/{id}",
+		"Delete User by User ID", "Delete User by User ID",
+		http.StatusNoContent, []string{tagUser}, bearerToken, new(UserIdRequest), nil)
+
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
@@ -66,10 +80,6 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(ResponseAccessToken))
-
-	d.AddOperation("getUsers", http.MethodGet, "/deepfence/users",
-		"Get users", "Get users",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]User))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -351,24 +361,24 @@ func (d *OpenApiDocs) AddScansOperations() {
 	// Scan Result Actions
 	d.AddOperation("maskScanResult", http.MethodPost, "/deepfence/scan/results/action/mask",
 		"Mask Scans Results", "Mask scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsMaskRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsMaskRequest), nil)
 	d.AddOperation("unmaskScanResult", http.MethodPost, "/deepfence/scan/results/action/unmask",
 		"Unmask Scans Results", "Unmask scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsMaskRequest), nil)
-	d.AddOperation("deleteScanResult", http.MethodPost, "/deepfence/scan/results/action/delete",
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsMaskRequest), nil)
+	d.AddOperation("deleteScanResult", http.MethodPatch, "/deepfence/scan/results/action/delete",
 		"Delete selected scan results", "Delete selected scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
 	d.AddOperation("notifyScanResult", http.MethodPost, "/deepfence/scan/results/action/notify",
 		"Notify Scans Results", "Notify scan results in connected integration channels",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
 
 	// Scan ID Actions
 	d.AddOperation("downloadScanResults", http.MethodGet, "/scan/{scan_type}/{scan_id}/download",
 		"Download Scans Results", "Download scan results",
-		http.StatusOK, []string{tagCommon}, bearerToken, new(ScanActionRequest), nil)
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanActionRequest), new(DownloadReportResponse))
 	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/scan/{scan_type}/{scan_id}",
 		"Delete all scan results for a scan id", "Delete all scan results for a scan id",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanActionRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanActionRequest), nil)
 
 	// SBOM
 	d.AddOperation("getSBOM", http.MethodPost, "/deepfence/scan/sbom",
@@ -376,7 +386,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), new([]SbomResponse))
 	d.AddOperation("downloadSBOM", http.MethodPost, "/deepfence/scan/sbom/download",
 		"Download SBOM for a node or scan id", "Download SBOM for a node or scan id",
-		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), nil)
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), new(DownloadReportResponse))
 }
 
 func (d *OpenApiDocs) AddDiagnosisOperations() {
