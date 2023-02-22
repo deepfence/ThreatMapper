@@ -525,6 +525,7 @@ func ingest_scan_report_kafka[T any](
 	}
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
@@ -534,11 +535,13 @@ func ingest_scan_report_kafka[T any](
 	var data T
 	err = json.Unmarshal(body, &data)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
 	err = ingester.Ingest(ctx, data, ingestChan)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
