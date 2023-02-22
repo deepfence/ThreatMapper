@@ -169,23 +169,23 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malware/scans", dfHandler.SearchMalwareScans)
 				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
 				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
-			})
 
-			r.Route("/count", func(r chi.Router) {
-				r.Post("/hosts", dfHandler.SearchHosts)
-				r.Post("/containers", dfHandler.SearchContainers)
-				r.Post("/images", dfHandler.SearchContainerImages)
-				r.Post("/vulnerabilities", dfHandler.SearchVulnerabilities)
-				r.Post("/secrets", dfHandler.SearchSecrets)
-				r.Post("/malwares", dfHandler.SearchMalwares)
-				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
-				r.Post("/compliances", dfHandler.SearchCompliances)
+				r.Route("/count", func(r chi.Router) {
+					r.Post("/hosts", dfHandler.SearchHostsCount)
+					r.Post("/containers", dfHandler.SearchContainersCount)
+					r.Post("/images", dfHandler.SearchContainerImagesCount)
+					r.Post("/vulnerabilities", dfHandler.SearchVulnerabilitiesCount)
+					r.Post("/secrets", dfHandler.SearchSecretsCount)
+					r.Post("/malwares", dfHandler.SearchMalwaresCount)
+					r.Post("/cloud-compliances", dfHandler.SearchCloudCompliancesCount)
+					r.Post("/compliances", dfHandler.SearchCompliancesCount)
 
-				r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScans)
-				r.Post("/secret/scans", dfHandler.SearchSecretScans)
-				r.Post("/malware/scans", dfHandler.SearchMalwareScans)
-				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
-				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
+					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
+					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)
+					r.Post("/malware/scans", dfHandler.SearchMalwareScansCount)
+					r.Post("/compliance/scans", dfHandler.SearchComplianceScansCount)
+					r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScansCount)
+				})
 			})
 
 			r.Route("/controls", func(r chi.Router) {

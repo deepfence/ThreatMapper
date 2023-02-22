@@ -195,6 +195,58 @@ func (d *OpenApiDocs) AddSearchOperations() {
 	d.AddOperation("searchCloudComplianceScans", http.MethodPost, "/deepfence/search/cloud-compliance/scans",
 		"Search Vulnerability Scan results", "Search scan results",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
+
+	d.AddOperation("countHosts", http.MethodPost, "/deepfence/search/count/hosts",
+		"Search hosts", "Retrieve all the data associated with hosts",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countContainers", http.MethodPost, "/deepfence/search/count/containers",
+		"Search Containers data", "Retrieve all the data associated with containers",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countContainerImages", http.MethodPost, "/deepfence/search/count/images",
+		"Search Container images", "Retrieve all the data associated with processes",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countVulnerabilities", http.MethodPost, "/deepfence/search/count/vulnerabilities",
+		"Search Vulnerabilities", "Retrieve all the data associated with k8s clusters",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countSecrets", http.MethodPost, "/deepfence/search/count/secrets",
+		"Search Secrets", "Retrieve all the data associated with pods",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countMalwares", http.MethodPost, "/deepfence/search/count/malwares",
+		"Search Malwares", "List all the images present in the given registry",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countCloudCompliances", http.MethodPost, "/deepfence/search/count/cloud-compliances",
+		"Search Cloud compliances", "List all the images present in the given registry",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countCompliances", http.MethodPost, "/deepfence/search/count/compliances",
+		"Search Compliances", "List all the images present in the given registry",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countVulnerabilityScans", http.MethodPost, "/deepfence/search/count/vulnerability/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countSecretsScans", http.MethodPost, "/deepfence/search/count/secret/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countMalwareScans", http.MethodPost, "/deepfence/search/count/malware/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countComplianceScans", http.MethodPost, "/deepfence/search/count/compliance/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countCloudComplianceScans", http.MethodPost, "/deepfence/search/count/cloud-compliance/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {
