@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -70,21 +71,25 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Compliance{node_id:row.node_id, test_number:row.test_number}) SET n+= row",
 		map[string]interface{}{"batch": CompliancesToMaps(data)}); err != nil {
+		log.Error().Msgf("row merge error:%v", err)
 		return err
 	}
 
 	if _, err = tx.Run("MATCH (n:Compliance) MERGE (m:ComplianceScan{node_id: n.scan_id, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)",
 		map[string]interface{}{}); err != nil {
+		log.Error().Msgf("row merge error:%v", err)
 		return err
 	}
 
 	if _, err = tx.Run("MATCH (n:Compliance) MERGE (m:ComplianceScan{node_id: n.scan_id}) MERGE (l:KCluster{node_id: n.kubernetes_cluster_id}) MERGE (m) -[:SCANNED]-> (l)",
 		map[string]interface{}{}); err != nil {
+		log.Error().Msgf("Kcluster merge error:%v", err)
 		return err
 	}
 
 	if _, err = tx.Run("MATCH (n:Node) WHERE n.kubernetes_cluster_id IS NOT NULL AND n.kubernetes_cluster_id <> '' MERGE (m:KCluster{node_id:n.kubernetes_cluster_id}) MERGE (m) -[:KHOSTS]-> (n)",
 		map[string]interface{}{}); err != nil {
+		log.Error().Msgf("node merge error:%v", err)
 		return err
 	}
 
