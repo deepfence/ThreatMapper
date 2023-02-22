@@ -10,8 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/acr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerhub"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
@@ -79,10 +81,14 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 	}
 
 	switch reg.RegistryType {
-	case registry.DOCKER_HUB:
+	case constants.DOCKER_HUB:
 		return dockerHubCreds(reg, aes)
-	case registry.QUAY:
+	case constants.QUAY:
 		return quayCreds(reg, aes)
+	case constants.GCR:
+		return gcrCreds(reg, aes)
+	case constants.ACR:
+		return acrCreds(reg, aes)
 	default:
 		return regCreds{}, nil
 	}
@@ -154,6 +160,87 @@ func quayCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (r
 		Password:    hub.Secret.QuayAccessToken,
 		NameSpace:   hub.NonSecret.QuayNamespace,
 		ImagePrefix: httpReplacer.Replace(hub.NonSecret.QuayRegistryURL) + "/" + hub.NonSecret.QuayNamespace,
+	}, nil
+}
+
+func gcrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
+	var (
+		err       error
+		hub       gcr.RegistryGCR
+		nonsecret gcr.NonSecret
+		secret    gcr.Secret
+		extras    gcr.Extras
+	)
+	err = json.Unmarshal(reg.NonSecret, &nonsecret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.EncryptedSecret, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.Extras, &extras)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	hub = gcr.RegistryGCR{
+		Name:      reg.Name,
+		Secret:    secret,
+		NonSecret: nonsecret,
+		Extras:    extras,
+	}
+
+	err = hub.DecryptSecret(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	err = hub.DecryptExtras(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	return regCreds{
+		URL:         hub.NonSecret.RegistryURL,
+		UserName:    "_json_key",
+		Password:    hub.Extras.ServiceAccountJson,
+		NameSpace:   hub.NonSecret.ProjectId,
+		ImagePrefix: httpReplacer.Replace(hub.NonSecret.RegistryURL),
+	}, nil
+}
+
+func acrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
+	var (
+		err       error
+		hub       acr.RegistryACR
+		nonsecret acr.NonSecret
+		secret    acr.Secret
+	)
+	err = json.Unmarshal(reg.NonSecret, &nonsecret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.EncryptedSecret, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	hub = acr.RegistryACR{
+		Name:      reg.Name,
+		Secret:    secret,
+		NonSecret: nonsecret,
+	}
+
+	err = hub.DecryptSecret(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	return regCreds{
+		URL:         hub.NonSecret.AzureRegistryURL,
+		UserName:    hub.NonSecret.AzureRegistryUsername,
+		Password:    hub.Secret.AzureRegistryPassword,
+		NameSpace:   "",
+		ImagePrefix: httpReplacer.Replace(hub.NonSecret.AzureRegistryURL),
 	}, nil
 }
 

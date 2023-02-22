@@ -301,19 +301,19 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(MalwareScanTriggerReq), nil)
 
 	// Status scan
-	d.AddOperation("statusVulnerabilityScan", http.MethodGet, "/deepfence/scan/status/vulnerability",
+	d.AddOperation("statusVulnerabilityScan", http.MethodPost, "/deepfence/scan/status/vulnerability",
 		"Get Vulnerability Scan Status", "Get Vulnerability Scan Status on agent or registry",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusSecretScan", http.MethodGet, "/deepfence/scan/status/secret",
+	d.AddOperation("statusSecretScan", http.MethodPost, "/deepfence/scan/status/secret",
 		"Get Secret Scan Status", "Get Secret Scan Status on agent or registry",
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusComplianceScan", http.MethodGet, "/deepfence/scan/status/compliance",
+	d.AddOperation("statusComplianceScan", http.MethodPost, "/deepfence/scan/status/compliance",
 		"Get Compliance Scan Status", "Get Compliance Scan Status on agent or registry",
 		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanStatusReq), new(ComplianceScanStatusResp))
-	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
+	d.AddOperation("statusMalwareScan", http.MethodPost, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusCloudComplianceScan", http.MethodGet, "/deepfence/scan/status/cloud-compliance",
+	d.AddOperation("statusCloudComplianceScan", http.MethodPost, "/deepfence/scan/status/cloud-compliance",
 		"Get Cloud Compliance Scan Status", "Get Cloud Compliance Scan Status on cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanStatusReq), new(ComplianceScanStatusResp))
 
@@ -351,16 +351,32 @@ func (d *OpenApiDocs) AddScansOperations() {
 	// Scan Result Actions
 	d.AddOperation("maskScanResult", http.MethodPost, "/deepfence/scan/results/action/mask",
 		"Mask Scans Results", "Mask scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsMaskRequest), nil)
 	d.AddOperation("unmaskScanResult", http.MethodPost, "/deepfence/scan/results/action/unmask",
 		"Unmask Scans Results", "Unmask scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsMaskRequest), nil)
 	d.AddOperation("deleteScanResult", http.MethodPost, "/deepfence/scan/results/action/delete",
-		"Delete Scans Results", "Delete scan results",
+		"Delete selected scan results", "Delete selected scan results",
 		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
 	d.AddOperation("notifyScanResult", http.MethodPost, "/deepfence/scan/results/action/notify",
 		"Notify Scans Results", "Notify scan results in connected integration channels",
 		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+
+	// Scan ID Actions
+	d.AddOperation("downloadScanResults", http.MethodGet, "/scan/{scan_type}/{scan_id}/download",
+		"Download Scans Results", "Download scan results",
+		http.StatusOK, []string{tagCommon}, bearerToken, new(ScanActionRequest), nil)
+	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/scan/{scan_type}/{scan_id}",
+		"Delete all scan results for a scan id", "Delete all scan results for a scan id",
+		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanActionRequest), nil)
+
+	// SBOM
+	d.AddOperation("getSBOM", http.MethodPost, "/deepfence/scan/sbom",
+		"Get SBOM for a node or scan id", "Get SBOM for a node or scan id",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), new([]SbomResponse))
+	d.AddOperation("downloadSBOM", http.MethodPost, "/deepfence/scan/sbom/download",
+		"Download SBOM for a node or scan id", "Download SBOM for a node or scan id",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), nil)
 }
 
 func (d *OpenApiDocs) AddDiagnosisOperations() {

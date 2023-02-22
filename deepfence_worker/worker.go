@@ -151,6 +151,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	worker.AddNoPublisherHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
 
+	worker.AddNoPublisherHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat)
+
 	worker.AddNoPublisherHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB)
 
 	worker.AddNoPublisherHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)

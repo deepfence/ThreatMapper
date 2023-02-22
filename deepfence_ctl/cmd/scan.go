@@ -125,23 +125,31 @@ var scanStatusSubCmd = &cobra.Command{
 		switch scan_type {
 		case "secret":
 			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
-			req = req.BulkScanId(scan_id)
-			req = req.ScanIds([]string{})
+			req = req.ModelScanStatusReq(*deepfence_server_client.NewModelScanStatusReq(
+				scan_id,
+				[]string{},
+			))
 			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StatusVulnerabilityScan(context.Background())
-			req = req.BulkScanId(scan_id)
-			req = req.ScanIds([]string{})
+			req = req.ModelScanStatusReq(*deepfence_server_client.NewModelScanStatusReq(
+				scan_id,
+				[]string{},
+			))
 			res, _, err = http.Client().VulnerabilityApi.StatusVulnerabilityScanExecute(req)
 		case "malware":
 			req := http.Client().MalwareScanApi.StatusMalwareScan(context.Background())
-			req = req.BulkScanId(scan_id)
-			req = req.ScanIds([]string{})
+			req = req.ModelScanStatusReq(*deepfence_server_client.NewModelScanStatusReq(
+				scan_id,
+				[]string{},
+			))
 			res, _, err = http.Client().MalwareScanApi.StatusMalwareScanExecute(req)
 		case "compliance":
 			req := http.Client().CloudScannerApi.StatusCloudComplianceScan(context.Background())
-			req = req.BulkScanId(scan_id)
-			req = req.ScanIds([]string{})
+			req = req.ModelScanStatusReq(*deepfence_server_client.NewModelScanStatusReq(
+				scan_id,
+				[]string{},
+			))
 			res2, _, err = http.Client().CloudScannerApi.StatusCloudComplianceScanExecute(req)
 		default:
 			log.Fatal().Msg("Unsupported")

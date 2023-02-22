@@ -103,6 +103,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
 		log.Error().Err(err).Msg(cmd.String())
 		log.Error().Msgf("output: %s", out.String())
+		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil
 	}
 

@@ -103,12 +103,16 @@ func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter Contains
 }
 
 func FieldFilterCypher(node_name string, fields []string) string {
-	tmp := make([]string, len(fields), len(fields))
+	tmp := []string{}
 	if len(fields) != 0 {
 		for i := range fields {
-			tmp[i] = fmt.Sprintf("%s.%s", node_name, fields[i])
+			if fields[i] != "" {
+				tmp = append(tmp, fmt.Sprintf("%s.%s", node_name, fields[i]))
+			}
 		}
-		return strings.Join(tmp, ",")
+		if len(tmp) != 0 {
+			return strings.Join(tmp, ",")
+		}
 	}
 	return node_name
 }

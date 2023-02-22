@@ -12,7 +12,7 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 
 replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/deepfence/tcptracer-bpf
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230220052522-c3e9346fafe3
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230220171022-ab21ec3b8c4f
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server/
 
@@ -26,7 +26,7 @@ require (
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-20230216141202-66379322d464
 	github.com/deepfence/agent-plugins-grpc v1.0.1
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230208050316-1756cc042520
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230220163433-a5d2f37fcf5f
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/hillu/go-yara/v4 v4.2.3
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -54,7 +54,7 @@ require (
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230208050316-1756cc042520 // indirect
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230220163433-a5d2f37fcf5f // indirect
 	github.com/deepfence/vessel v0.9.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
@@ -71,9 +71,9 @@ require (
 	github.com/go-chi/jwtauth/v5 v5.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-playground/locales v0.14.0 // indirect
-	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-playground/validator/v10 v10.11.1 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.11.2 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -129,10 +129,10 @@ require (
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/redis/go-redis/v9 v9.0.0-rc.4 // indirect
+	github.com/redis/go-redis/v9 v9.0.2 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/rs/xid v1.4.0 // indirect
-	github.com/samber/mo v1.7.0 // indirect
+	github.com/samber/mo v1.8.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.4.0 // indirect

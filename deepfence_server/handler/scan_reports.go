@@ -23,6 +23,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
@@ -578,7 +579,7 @@ func (h *Handler) StatusCloudComplianceScanHandler(w http.ResponseWriter, r *htt
 func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanStatusReq
-	err := httpext.DecodeQueryParams(r, &req)
+	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
@@ -791,7 +792,33 @@ func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode co
 	return res, nil
 }
 
-func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Request, action string) {
+func (h *Handler) scanResultMaskHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.ScanResultsMaskRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "mask":
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "true")
+	case "unmask":
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "false")
+	}
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request, action string) {
 	defer r.Body.Close()
 	var req model.ScanResultsActionRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
@@ -805,14 +832,10 @@ func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Re
 		return
 	}
 	switch action {
-	case model.ScanResultsActionMask:
-		err = reporters_scan.UpdateScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds, "masked", "true")
-	case model.ScanResultsActionUnmask:
-		err = reporters_scan.UpdateScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds, "masked", "false")
-	case model.ScanResultsActionDelete:
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds)
-	case model.ScanResultsActionNotify:
-		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.NodeIds)
+	case "delete":
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+	case "notify":
+		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
 	}
 	if err != nil {
 		respondError(err, w)
@@ -822,19 +845,75 @@ func (h *Handler) parseScanResultActionRequest(w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handler) ScanResultMaskHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, model.ScanResultsActionMask)
+	h.scanResultMaskHandler(w, r, "mask")
 }
 
 func (h *Handler) ScanResultUnmaskHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, model.ScanResultsActionUnmask)
+	h.scanResultMaskHandler(w, r, "unmask")
 }
 
 func (h *Handler) ScanResultDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, model.ScanResultsActionDelete)
+	h.scanResultActionHandler(w, r, "delete")
 }
 
 func (h *Handler) ScanResultNotifyHandler(w http.ResponseWriter, r *http.Request) {
-	h.parseScanResultActionRequest(w, r, model.ScanResultsActionNotify)
+	h.scanResultActionHandler(w, r, "notify")
+}
+
+func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, action string) {
+	req := model.ScanActionRequest{
+		ScanID:   chi.URLParam(r, "scan_id"),
+		ScanType: chi.URLParam(r, "scan_type"),
+	}
+	err := h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "download":
+	case "delete":
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func (h *Handler) ScanResultDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanIdActionHandler(w, r, "download")
+}
+
+func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanIdActionHandler(w, r, "delete")
+}
+
+func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.SbomRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	if req.ScanID == "" {
+		if req.NodeType == "" || req.NodeID == "" {
+			respondError(&BadDecoding{errors.New("scan_id is required or node_id and node_type are required")}, w)
+			return
+		}
+	}
+	switch action {
+	case "get":
+		var sbom []model.SbomResponse
+		httpext.JSON(w, http.StatusOK, sbom)
+	case "download":
+	}
+}
+
+func (h *Handler) GetSbomHandler(w http.ResponseWriter, r *http.Request) {
+	h.sbomHandler(w, r, "get")
+}
+
+func (h *Handler) SbomDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	h.sbomHandler(w, r, "download")
 }
 
 func FindNodesMatching(ctx context.Context,

@@ -87,8 +87,8 @@ type ScanTriggerResp struct {
 }
 
 type ScanStatusReq struct {
-	ScanIds    []string `query:"scan_ids" form:"scan_ids" required:"true"`
-	BulkScanId string   `query:"bulk_scan_id" form:"bulk_scan_id" required:"true"`
+	ScanIds    []string `json:"scan_ids" required:"true"`
+	BulkScanId string   `json:"bulk_scan_id" required:"true"`
 }
 
 type ScanStatusResp struct {
@@ -112,17 +112,40 @@ type CloudComplianceScanListResp struct {
 	ScansInfo []ComplianceScanInfo `json:"scans_info" required:"true"`
 }
 
-const (
-	ScanResultsActionMask   = "mask"
-	ScanResultsActionUnmask = "unmask"
-	ScanResultsActionDelete = "delete"
-	ScanResultsActionNotify = "notify"
-)
+type ScanResultsMaskRequest struct {
+	ScanID                   string   `json:"scan_id" validate:"required" required:"true"`
+	NodeIds                  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
+	ScanType                 string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	MaskAcrossHostsAndImages bool     `json:"mask_across_hosts_and_images"`
+}
 
 type ScanResultsActionRequest struct {
+	ScanID   string   `json:"scan_id" validate:"required" required:"true"`
 	NodeIds  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
 	ScanType string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	//utils.Neo4jScanType
+}
+
+type ScanActionRequest struct {
+	ScanID   string `path:"scan_id" validate:"required" required:"true"`
+	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	//utils.Neo4jScanType
+}
+
+type SbomRequest struct {
+	// either scan_id or node_id+node_type is required
+	ScanID   string `json:"scan_id"`
+	NodeID   string `json:"node_id"`
+	NodeType string `json:"node_type"`
+}
+
+type SbomResponse struct {
+	PackageName string   `json:"package_name"`
+	Version     string   `json:"version"`
+	Locations   []string `json:"locations"`
+	Licenses    []string `json:"licenses"`
+	CveID       string   `json:"cve_id"`
+	Severity    string   `json:"severity"`
 }
 
 type ScanResultsReq struct {
@@ -140,6 +163,7 @@ type ScanResultsCommon struct {
 	NodeName              string `json:"node_name" required:"true"`
 	NodeType              string `json:"node_type" required:"true"`
 	ScanID                string `json:"scan_id" required:"true"`
+	UpdatedAt             int64  `json:"updated_at" required:"true"`
 }
 
 type SecretScanResult struct {
