@@ -56,7 +56,6 @@ export function getCloudNodesApiClient() {
 
 export function getVulnerabilityApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
-  const searchApi = new SearchApi(configuration);
   return {
     startVulnerabilityScan:
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
@@ -64,10 +63,8 @@ export function getVulnerabilityApiClient() {
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
     statusVulnerabilityScan:
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
-    searchVulnerabilityScan: searchApi.searchVulnerabilityScans.bind(searchApi),
-    searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
-    searchContainers: searchApi.searchContainers.bind(searchApi),
-    searchHosts: searchApi.searchHosts.bind(searchApi),
+    listVulnerabilityScans:
+      vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
   };
 }
 
@@ -113,5 +110,15 @@ export function getMalwareScanApiClient() {
     startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
     resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
     statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),
+  };
+}
+
+export function getSearchApiClient() {
+  const searchApi = new SearchApi(configuration);
+  return {
+    searchVulnerabilityScan: searchApi.searchVulnerabilityScans.bind(searchApi),
+    searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
+    searchContainers: searchApi.searchContainers.bind(searchApi),
+    searchHosts: searchApi.searchHosts.bind(searchApi),
   };
 }
