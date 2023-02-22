@@ -71,6 +71,8 @@ export * from './ModelRegistryAddReq';
 export * from './ModelRegistryListResp';
 export * from './ModelResponseAccessToken';
 export * from './ModelRule';
+export * from './ModelSbomRequest';
+export * from './ModelSbomResponse';
 export * from './ModelScanFilter';
 export * from './ModelScanInfo';
 export * from './ModelScanListReq';

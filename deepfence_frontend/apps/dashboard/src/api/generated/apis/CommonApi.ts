@@ -32,6 +32,16 @@ export interface DeleteScanResultRequest {
     modelScanResultsActionRequest?: ModelScanResultsActionRequest;
 }
 
+export interface DeleteScanResultsForScanIDRequest {
+    scanId: string;
+    scanType: DeleteScanResultsForScanIDScanTypeEnum;
+}
+
+export interface DownloadScanResultsRequest {
+    scanId: string;
+    scanType: DownloadScanResultsScanTypeEnum;
+}
+
 export interface MaskScanResultRequest {
     modelScanResultsActionRequest?: ModelScanResultsActionRequest;
 }
@@ -52,8 +62,8 @@ export interface UnmaskScanResultRequest {
  */
 export interface CommonApiInterface {
     /**
-     * Delete scan results
-     * @summary Delete Scans Results
+     * Delete selected scan results
+     * @summary Delete selected scan results
      * @param {ModelScanResultsActionRequest} [modelScanResultsActionRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -62,10 +72,44 @@ export interface CommonApiInterface {
     deleteScanResultRaw(requestParameters: DeleteScanResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
-     * Delete scan results
-     * Delete Scans Results
+     * Delete selected scan results
+     * Delete selected scan results
      */
     deleteScanResult(requestParameters: DeleteScanResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Delete all scan results for a scan id
+     * @summary Delete all scan results for a scan id
+     * @param {string} scanId 
+     * @param {'SecretScan' | 'VulnerabilityScan' | 'MalwareScan' | 'ComplianceScan' | 'CloudComplianceScan'} scanType 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CommonApiInterface
+     */
+    deleteScanResultsForScanIDRaw(requestParameters: DeleteScanResultsForScanIDRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete all scan results for a scan id
+     * Delete all scan results for a scan id
+     */
+    deleteScanResultsForScanID(requestParameters: DeleteScanResultsForScanIDRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Download scan results
+     * @summary Download Scans Results
+     * @param {string} scanId 
+     * @param {'SecretScan' | 'VulnerabilityScan' | 'MalwareScan' | 'ComplianceScan' | 'CloudComplianceScan'} scanType 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CommonApiInterface
+     */
+    downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Download scan results
+     * Download Scans Results
+     */
+    downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Mask scan results
@@ -123,8 +167,8 @@ export interface CommonApiInterface {
 export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
 
     /**
-     * Delete scan results
-     * Delete Scans Results
+     * Delete selected scan results
+     * Delete selected scan results
      */
     async deleteScanResultRaw(requestParameters: DeleteScanResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
@@ -153,11 +197,97 @@ export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
     }
 
     /**
-     * Delete scan results
-     * Delete Scans Results
+     * Delete selected scan results
+     * Delete selected scan results
      */
     async deleteScanResult(requestParameters: DeleteScanResultRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteScanResultRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Delete all scan results for a scan id
+     * Delete all scan results for a scan id
+     */
+    async deleteScanResultsForScanIDRaw(requestParameters: DeleteScanResultsForScanIDRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
+            throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling deleteScanResultsForScanID.');
+        }
+
+        if (requestParameters.scanType === null || requestParameters.scanType === undefined) {
+            throw new runtime.RequiredError('scanType','Required parameter requestParameters.scanType was null or undefined when calling deleteScanResultsForScanID.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/scan/{scan_type}/{scan_id}`.replace(`{${"scan_id"}}`, encodeURIComponent(String(requestParameters.scanId))).replace(`{${"scan_type"}}`, encodeURIComponent(String(requestParameters.scanType))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete all scan results for a scan id
+     * Delete all scan results for a scan id
+     */
+    async deleteScanResultsForScanID(requestParameters: DeleteScanResultsForScanIDRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteScanResultsForScanIDRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Download scan results
+     * Download Scans Results
+     */
+    async downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
+            throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling downloadScanResults.');
+        }
+
+        if (requestParameters.scanType === null || requestParameters.scanType === undefined) {
+            throw new runtime.RequiredError('scanType','Required parameter requestParameters.scanType was null or undefined when calling downloadScanResults.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/scan/{scan_type}/{scan_id}/download`.replace(`{${"scan_id"}}`, encodeURIComponent(String(requestParameters.scanId))).replace(`{${"scan_type"}}`, encodeURIComponent(String(requestParameters.scanType))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Download scan results
+     * Download Scans Results
+     */
+    async downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.downloadScanResultsRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -275,3 +405,26 @@ export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
     }
 
 }
+
+/**
+ * @export
+ */
+export const DeleteScanResultsForScanIDScanTypeEnum = {
+    SecretScan: 'SecretScan',
+    VulnerabilityScan: 'VulnerabilityScan',
+    MalwareScan: 'MalwareScan',
+    ComplianceScan: 'ComplianceScan',
+    CloudComplianceScan: 'CloudComplianceScan'
+} as const;
+export type DeleteScanResultsForScanIDScanTypeEnum = typeof DeleteScanResultsForScanIDScanTypeEnum[keyof typeof DeleteScanResultsForScanIDScanTypeEnum];
+/**
+ * @export
+ */
+export const DownloadScanResultsScanTypeEnum = {
+    SecretScan: 'SecretScan',
+    VulnerabilityScan: 'VulnerabilityScan',
+    MalwareScan: 'MalwareScan',
+    ComplianceScan: 'ComplianceScan',
+    CloudComplianceScan: 'CloudComplianceScan'
+} as const;
+export type DownloadScanResultsScanTypeEnum = typeof DownloadScanResultsScanTypeEnum[keyof typeof DownloadScanResultsScanTypeEnum];

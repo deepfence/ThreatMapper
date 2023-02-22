@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import { capitalize, truncate } from 'lodash-es';
-import { Suspense, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
 import { RefObject } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
@@ -10,13 +10,17 @@ import {
   HiBell,
   HiDotsVertical,
   HiExternalLink,
+  HiEye,
   HiEyeOff,
   HiOutlineAdjustments,
+  HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
+  ActionFunctionArgs,
   Await,
   LoaderFunctionArgs,
+  useFetcher,
   useLoaderData,
   useSearchParams,
 } from 'react-router-dom';
@@ -30,16 +34,20 @@ import {
   Dropdown,
   DropdownItem,
   getRowSelectionColumn,
+  Modal,
   RowSelectionState,
   Select,
   SelectItem,
   Table,
   TableSkeleton,
 } from 'ui-components';
-import { Checkbox, ModalHeader, SlidingModal } from 'ui-components';
+import { ModalHeader, SlidingModal } from 'ui-components';
 
-import { getVulnerabilityApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { getCommonApiClient, getVulnerabilityApiClient } from '@/api/api';
+import {
+  ApiDocsBadRequestResponse,
+  ModelScanResultsActionRequestScanTypeEnum,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { MostExploitableChart } from '@/features/vulnerabilities/components/landing/MostExploitableChart';
@@ -51,6 +59,12 @@ import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 export interface FocusableElement {
   focus(options?: FocusOptions): void;
+}
+enum ActionEnumType {
+  MASK = 'mask',
+  UNMASK = 'unmask',
+  DELETE = 'delete',
+  NOTIFY = 'notify',
 }
 type TableType = {
   cveId: string;
@@ -164,10 +178,73 @@ async function getScans(
     severityCounts: result.severity_counts ?? {},
     hostName: result.host_name,
     nodeType: result.node_type,
-    timestamp: 0,
+    timestamp: result.updated_at,
     tableData: vulnerabilities,
   };
 }
+
+type ActionFunctionType =
+  | ReturnType<typeof getCommonApiClient>['deleteVulnerabilities']
+  | ReturnType<typeof getCommonApiClient>['maskVulnerabilities']
+  | ReturnType<typeof getCommonApiClient>['notifyVulnerabilities']
+  | ReturnType<typeof getCommonApiClient>['unMaskVulnerabilities'];
+
+const action = async ({
+  params: { scanId = '' },
+  request,
+}: ActionFunctionArgs): Promise<null> => {
+  const formData = await request.formData();
+  const cveIds = (formData.getAll('cveIds[]') ?? []) as string[];
+  const actionType = formData.get('actionType');
+  const _scanId = scanId;
+  if (!_scanId) {
+    throw new Error('Scan ID is required');
+  }
+  if (!actionType) {
+    return null;
+  }
+  let apiFunction: ActionFunctionType | null = null;
+
+  if (actionType === ActionEnumType.DELETE) {
+    apiFunction = getCommonApiClient().deleteVulnerabilities;
+  } else if (actionType === ActionEnumType.MASK) {
+    apiFunction = getCommonApiClient().maskVulnerabilities;
+  } else if (actionType === ActionEnumType.UNMASK) {
+    apiFunction = getCommonApiClient().unMaskVulnerabilities;
+  } else if (actionType === ActionEnumType.NOTIFY) {
+    apiFunction = getCommonApiClient().notifyVulnerabilities;
+  }
+
+  const r = await makeRequest({
+    apiFunction: apiFunction!,
+    apiArgs: [
+      {
+        modelScanResultsActionRequest: {
+          node_ids: [...cveIds],
+          scan_id: _scanId,
+          scan_type: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<{
+        message?: string;
+      }>({});
+      if (r.status === 400 || r.status === 409) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    // TODO: Handle error toasts message
+    return null;
+  }
+  return null;
+};
 
 const loader = async ({
   params,
@@ -211,7 +288,7 @@ const ScanResultFilterModal = ({
       width={'w-[350px]'}
     >
       <div className="dark:text-white p-4">
-        <Form className="flex flex-col gap-y-6">
+        <div className="flex flex-col gap-y-6">
           <fieldset>
             <Select
               name="severity"
@@ -240,55 +317,128 @@ const ScanResultFilterModal = ({
               )}
             </Select>
           </fieldset>
-        </Form>
+        </div>
       </div>
     </SlidingModal>
   );
 };
-const ActionDropdown = ({ icon }: { icon: React.ReactNode }) => {
+const ActionDropdown = ({ icon, ids }: { icon: React.ReactNode; ids: string[] }) => {
+  const fetcher = useFetcher();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const onTableAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+      ids.forEach((item) => formData.append('cveIds[]', item));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [ids],
+  );
+
   return (
-    <Dropdown
-      content={
-        <>
-          <DropdownItem className="text-sm">
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+    <>
+      {showDeleteDialog ? (
+        <Modal open={showDeleteDialog} onOpenChange={() => setShowDeleteDialog(false)}>
+          <div className="grid place-items-center">
+            <IconContext.Provider
+              value={{
+                className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+              }}
+            >
+              <HiOutlineExclamationCircle />
+            </IconContext.Provider>
+            <h3 className="mb-4 font-normal text-sm">
+              The selected vulnerabilities will be deleted. Are you sure you want to
+              delete?
+            </h3>
+            <div className="flex items-center justify-right gap-4">
+              <Button size="xs" onClick={() => setShowDeleteDialog(false)}>
+                No, cancel
+              </Button>
+              <Button
+                size="xs"
+                color="danger"
+                onClick={() => {
+                  onTableAction(ActionEnumType.DELETE);
+                  setShowDeleteDialog(false);
+                }}
               >
-                <HiEyeOff />
-              </IconContext.Provider>
-              Mask
-            </span>
-          </DropdownItem>
-          <DropdownItem className="text-sm">
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiBell />
-              </IconContext.Provider>
-              Notify
-            </span>
-          </DropdownItem>
-          <DropdownItem className="text-sm">
-            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-              <IconContext.Provider
-                value={{ className: 'text-red-700 dark:text-red-400' }}
-              >
-                <HiArchive />
-              </IconContext.Provider>
-              Delete
-            </span>
-          </DropdownItem>
-        </>
-      }
-    >
-      <Button className="ml-auto" size="xs" color="normal">
-        <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-          {icon}
-        </IconContext.Provider>
-      </Button>
-    </Dropdown>
+                Yes, I&apos;m sure
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      ) : null}
+      <Dropdown
+        content={
+          <>
+            <DropdownItem
+              className="text-sm"
+              onClick={() => onTableAction(ActionEnumType.MASK)}
+            >
+              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+                <IconContext.Provider
+                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                >
+                  <HiEyeOff />
+                </IconContext.Provider>
+                Mask
+              </span>
+            </DropdownItem>
+            <DropdownItem
+              className="text-sm"
+              onClick={() => onTableAction(ActionEnumType.UNMASK)}
+            >
+              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+                <IconContext.Provider
+                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                >
+                  <HiEye />
+                </IconContext.Provider>
+                Un Mask
+              </span>
+            </DropdownItem>
+            <DropdownItem
+              className="text-sm"
+              onClick={() => onTableAction(ActionEnumType.NOTIFY)}
+            >
+              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+                <IconContext.Provider
+                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                >
+                  <HiBell />
+                </IconContext.Provider>
+                Notify
+              </span>
+            </DropdownItem>
+            <DropdownItem
+              className="text-sm"
+              onClick={() => {
+                setShowDeleteDialog(true);
+              }}
+            >
+              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+                <IconContext.Provider
+                  value={{ className: 'text-red-700 dark:text-red-400' }}
+                >
+                  <HiArchive />
+                </IconContext.Provider>
+                Delete
+              </span>
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button className="ml-auto" size="xs" color="normal">
+          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
+            {icon}
+          </IconContext.Provider>
+        </Button>
+      </Dropdown>
+    </>
   );
 };
 const CVETable = () => {
@@ -389,7 +539,9 @@ const CVETable = () => {
       }),
       columnHelper.accessor('action', {
         enableSorting: false,
-        cell: () => <ActionDropdown icon={<HiDotsVertical />} />,
+        cell: (info) => (
+          <ActionDropdown icon={<HiDotsVertical />} ids={[info.row.original.cveId]} />
+        ),
         header: () => '',
         minSize: 10,
         size: 10,
@@ -399,7 +551,7 @@ const CVETable = () => {
 
     return columns;
   }, []);
-  console.log('===', rowSelectionState);
+
   return (
     <>
       <VulnerabilityDetails
@@ -411,14 +563,17 @@ const CVETable = () => {
         <Await resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType['data']) => {
             return (
-              <div>
+              <Form>
                 {Object.keys(rowSelectionState).length === 0 ? (
                   <div className="text-sm text-gray-400 font-medium py-2">
                     No rows selected
                   </div>
                 ) : (
                   <div className="mb-2">
-                    <ActionDropdown icon={<HiOutlineAdjustments />} />
+                    <ActionDropdown
+                      icon={<HiOutlineAdjustments />}
+                      ids={Object.keys(rowSelectionState)}
+                    />
                   </div>
                 )}
 
@@ -438,7 +593,7 @@ const CVETable = () => {
                   // pageIndex={pageIndex}
                   // onPaginationChange={setPagination}
                 />
-              </div>
+              </Form>
             );
           }}
         </Await>
@@ -650,5 +805,6 @@ const UniqueScanResults = () => {
 
 export const module = {
   loader,
+  action,
   element: <UniqueScanResults />,
 };
