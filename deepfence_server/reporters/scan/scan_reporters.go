@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/samber/mo"
@@ -491,11 +492,12 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	}
 	defer tx.Close()
 
-	r, err := tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s{node_id:$node_id})`+
-		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(ff), true)+
-		`RETURN n IS NOT NULL AS Exists`,
-		scan_type),
+	query := fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s{node_id:$node_id})
+		RETURN n IS NOT NULL AS Exists`,
+		scan_type)
+	log.Info().Msgf("query: %v", query)
+	r, err := tx.Run(query,
 		map[string]interface{}{
 			"node_id": scan_id,
 		})
@@ -514,9 +516,12 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		}
 	}
 
-	nres, err := tx.Run(`
-		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
-		RETURN d`+fw.FetchWindow2CypherQuery(),
+	query = `
+		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[:DETECTED]-> (d)` +
+		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
+		` RETURN d ` + fw.FetchWindow2CypherQuery()
+	log.Info().Msgf("query: %v", query)
+	nres, err := tx.Run(query,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return res, common, err

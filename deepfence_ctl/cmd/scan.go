@@ -126,12 +126,12 @@ var scanStatusSubCmd = &cobra.Command{
 		case "secret":
 			req := http.Client().SecretScanApi.StatusSecretScan(context.Background())
 			req = req.BulkScanId(scan_id)
-			req = req.ScanIds([]string{})
+			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().SecretScanApi.StatusSecretScanExecute(req)
 		case "vulnerability":
 			req := http.Client().VulnerabilityApi.StatusVulnerabilityScan(context.Background())
 			req = req.BulkScanId(scan_id)
-			req = req.ScanIds([]string{})
+			req = req.ScanIds([]string{scan_id})
 			res, _, err = http.Client().VulnerabilityApi.StatusVulnerabilityScanExecute(req)
 		case "malware":
 			req := http.Client().MalwareScanApi.StatusMalwareScan(context.Background())
@@ -347,6 +347,11 @@ var scanResultsSubCmd = &cobra.Command{
 			req := http.Client().VulnerabilityApi.ResultsVulnerabilityScans(context.Background())
 			req = req.ModelScanResultsReq(deepfence_server_client.ModelScanResultsReq{
 				ScanId: scan_id,
+				FieldsFilter: deepfence_server_client.ReportersFieldsFilters{
+					ContainsFilter: deepfence_server_client.ReportersContainsFilter{
+						FilterIn: map[string][]interface{}{"cve_severity": {"critical"}},
+					},
+				},
 				Window: deepfence_server_client.ModelFetchWindow{
 					Offset: 0,
 					Size:   20,
