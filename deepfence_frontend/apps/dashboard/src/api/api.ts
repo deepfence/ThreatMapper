@@ -120,6 +120,7 @@ export function getSearchApiClient() {
     searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
     searchContainers: searchApi.searchContainers.bind(searchApi),
     searchHosts: searchApi.searchHosts.bind(searchApi),
+    searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
   };
 }
 

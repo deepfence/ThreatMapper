@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 
+import { ErrorComponent } from '@/components/error/ErrorComponent';
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
@@ -170,6 +171,7 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/',
     loader: dashboardLoader,
     element: <DashboardLayout />,
+    errorElement: <ErrorComponent />,
     children: [
       {
         path: 'dashboard',
