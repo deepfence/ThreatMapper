@@ -5,6 +5,7 @@ import {
   AuthenticationApi,
   CloudNodesApi,
   CloudScannerApi,
+  CommonApi,
   ComplianceApi,
   Configuration,
   MalwareScanApi,
@@ -57,6 +58,7 @@ export function getCloudNodesApiClient() {
 export function getVulnerabilityApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
   const searchApi = new SearchApi(configuration);
+  const commonApi = new CommonApi(configuration);
   return {
     startVulnerabilityScan:
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
@@ -68,6 +70,10 @@ export function getVulnerabilityApiClient() {
     searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
     searchContainers: searchApi.searchContainers.bind(searchApi),
     searchHosts: searchApi.searchHosts.bind(searchApi),
+    deleteVulnerabilities: commonApi.deleteScanResult.bind(commonApi),
+    notifyVulnerabilities: commonApi.notifyScanResult.bind(commonApi),
+    maskVulnerabilities: commonApi.maskScanResult.bind(commonApi),
+    unMaskVulnerabilities: commonApi.unmaskScanResult.bind(commonApi),
   };
 }
 

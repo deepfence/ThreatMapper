@@ -90,6 +90,8 @@ models/ModelRegistryAddReq.ts
 models/ModelRegistryListResp.ts
 models/ModelResponseAccessToken.ts
 models/ModelRule.ts
+models/ModelSbomRequest.ts
+models/ModelSbomResponse.ts
 models/ModelScanFilter.ts
 models/ModelScanInfo.ts
 models/ModelScanListReq.ts
