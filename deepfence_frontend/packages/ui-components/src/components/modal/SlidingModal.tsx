@@ -105,33 +105,33 @@ export const SlidingModal: FC<ModalProps> = ({
         <DialogPrimitive.Overlay
           className={cx('inset-0 bg-black/50 dark:bg-black/50 fixed overflow-y-auto', {
             'animate-opacity-in': wasOpen,
-            'animate-slide-opacity-out': !wasOpen,
+            'animate-opacity-out': !wasOpen,
           })}
+          data-testid="sliding-modal-overlay"
+        />
+        <DialogPrimitive.Content
+          className={cx(
+            'flex flex-col fixed top-0 bottom-0',
+            'overflow-hidden focus:outline-none',
+            'bg-white text-gray-900',
+            'dark:bg-gray-900 dark:text-white ',
+            `${width}`,
+            {
+              '-left-[100%]': direction === 'left',
+              '-right-[100%]': direction === 'right',
+              [inAnimation]: wasOpen,
+              [outAnimation]: !wasOpen,
+            },
+          )}
+          onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
         >
-          <DialogPrimitive.Content
-            className={cx(
-              'flex flex-col h-[100vh] fixed',
-              'overflow-hidden focus:outline-none',
-              'bg-white text-gray-900',
-              'dark:bg-gray-900 dark:text-white ',
-              `${width}`,
-              {
-                '-left-[100%]': direction === 'left',
-                '-right-[100%]': direction === 'right',
-                [inAnimation]: wasOpen,
-                [outAnimation]: !wasOpen,
-              },
-            )}
-            onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
-          >
-            <>
-              {typeof header === 'string' ? <ModalHeader>{header}</ModalHeader> : header}
+          <>
+            {typeof header === 'string' ? <ModalHeader>{header}</ModalHeader> : header}
 
-              <div className="overflow-y-auto flex-auto">{children}</div>
-              <ModalFooter>{footer}</ModalFooter>
-            </>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Overlay>
+            <div className="overflow-y-auto flex-auto">{children}</div>
+            <ModalFooter>{footer}</ModalFooter>
+          </>
+        </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );
