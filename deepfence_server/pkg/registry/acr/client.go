@@ -11,6 +11,8 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
+var client = &http.Client{Timeout: 10 * time.Second}
+
 func listImagesRegistryV2(url, namespace, userName, password string) ([]model.ContainerImage, error) {
 
 	var (
@@ -41,8 +43,6 @@ func listCatalogRegistryV2(url, namespace, userName, password string) ([]string,
 		repositories []string
 		err          error
 	)
-
-	client := &http.Client{Timeout: 10 * time.Second}
 
 	listReposURL := "%s/v2/_catalog"
 	queryURL := fmt.Sprintf(listReposURL, url)
@@ -85,8 +85,6 @@ func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTa
 		err      error
 		repoTags RepoTagsResp
 	)
-
-	client := &http.Client{Timeout: 10 * time.Second}
 
 	listRepoTagsURL := "%s/v2/%s/tags/list"
 	queryURL := fmt.Sprintf(listRepoTagsURL, url, repoName)
@@ -131,7 +129,6 @@ func getManifestsAzure(url, namespace, userName, password, repoName string) (Man
 		manifests ManifestsAzureResp
 	)
 
-	client := &http.Client{Timeout: 10 * time.Second}
 	getManifestsURL := "%s/acr/v1/%s/_manifests"
 	queryURL := fmt.Sprintf(getManifestsURL, url, repoName)
 	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
