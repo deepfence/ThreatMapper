@@ -5485,6 +5485,7 @@
           "node_name",
           "node_type",
           "scan_id",
+          "updated_at",
           "benchmark_type",
           "status_counts",
           "compliance_percentage",
@@ -5511,7 +5512,8 @@
             "type": "object",
             "additionalProperties": { "type": "integer" },
             "nullable": true
-          }
+          },
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelCloudNodeAccountInfo": {
@@ -5669,6 +5671,7 @@
           "node_name",
           "node_type",
           "scan_id",
+          "updated_at",
           "benchmark_type",
           "status_counts",
           "compliance_percentage",
@@ -5695,7 +5698,8 @@
             "type": "object",
             "additionalProperties": { "type": "integer" },
             "nullable": true
-          }
+          },
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelComplianceScanStatusResp": {
@@ -5957,6 +5961,7 @@
           "node_name",
           "node_type",
           "scan_id",
+          "updated_at",
           "malwares",
           "severity_counts"
         ],
@@ -5979,7 +5984,8 @@
             "type": "object",
             "additionalProperties": { "type": "integer" },
             "nullable": true
-          }
+          },
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelMalwareScanTriggerReq": {
@@ -6115,6 +6121,7 @@
       "ModelRegistryAddReq": {
         "type": "object",
         "properties": {
+          "extras": { "type": "object", "additionalProperties": {}, "nullable": true },
           "name": { "type": "string" },
           "non_secret": {
             "type": "object",
@@ -6303,6 +6310,7 @@
           "node_name",
           "node_type",
           "scan_id",
+          "updated_at",
           "secrets",
           "rules",
           "rule_2_secrets",
@@ -6337,7 +6345,8 @@
             "type": "object",
             "additionalProperties": { "type": "integer" },
             "nullable": true
-          }
+          },
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelSecretScanTriggerReq": {
@@ -6459,6 +6468,7 @@
           "node_name",
           "node_type",
           "scan_id",
+          "updated_at",
           "vulnerabilities",
           "severity_counts"
         ],
@@ -6477,6 +6487,7 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
+          "updated_at": { "type": "integer" },
           "vulnerabilities": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelVulnerability" },

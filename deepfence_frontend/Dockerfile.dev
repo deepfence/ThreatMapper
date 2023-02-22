@@ -1,4 +1,8 @@
 FROM node:18-bullseye as build-stage
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt install -y --no-install-recommends default-jre
 RUN mkdir -p /app
 WORKDIR /app
 RUN corepack enable
