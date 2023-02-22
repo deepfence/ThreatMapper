@@ -33,10 +33,11 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
-import { module as uniqueScanResults } from '@/features/vulnerabilities/pages/UniqueScanResults';
-import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
+import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
-import { module as vulnerabilityScanResult } from '@/features/vulnerabilities/pages/VulnerabilityScanResult';
+import { module as vulnerabilityDetails } from '@/features/vulnerabilities/pages/VulnerabilityDetailModal';
+import { module as vulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
+import { module as vulnerabilityScans } from '@/features/vulnerabilities/pages/VulnerabilityScans';
 import { CustomRouteObject } from '@/utils/router';
 
 export const privateRoutes: CustomRouteObject[] = [
@@ -191,19 +192,26 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Vulnerability' },
       },
       {
-        path: 'vulnerability/scan-results',
-        ...vulnerabilityScanResult,
-        meta: { title: 'Vulnerability Scan Results' },
+        path: 'vulnerability/scans',
+        ...vulnerabilityScans,
+        meta: { title: 'Vulnerability Scans' },
       },
       {
         path: 'vulnerability/scan-results/:scanId',
-        ...uniqueScanResults,
+        ...vulnerabilityScanResults,
         meta: { title: 'Vulnerability Scan Results' },
+        children: [
+          {
+            path: ':cveId',
+            ...vulnerabilityDetails,
+            meta: { title: 'Vulnerability Details' },
+          },
+        ],
       },
       {
-        path: 'vulnerability/unique-vulnerabilities',
-        ...uniqueVulnerabilities,
-        meta: { title: 'Unique Vulnerabilities' },
+        path: 'vulnerability/most-exploitable',
+        ...mostExploitableVulnerabilities,
+        meta: { title: 'Most Exploitable Vulnerabilities' },
       },
     ],
   },

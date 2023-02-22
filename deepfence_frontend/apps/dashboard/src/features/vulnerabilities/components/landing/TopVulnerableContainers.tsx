@@ -150,7 +150,7 @@ export const TopVulnerableContainers = () => {
           Top Vulnerable Running Containers
         </h4>
         <DFLink
-          to={'/vulnerability/scan-results?nodeType=container'}
+          to={'/vulnerability/scans?nodeType=container'}
           className="flex items-center hover:no-underline active:no-underline focus:no-underline ml-auto mr-2"
         >
           <span className="text-xs text-blue-600 dark:text-blue-500">Go to Scans</span>
