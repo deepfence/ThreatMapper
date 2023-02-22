@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiCheck, HiOutlineDuplicate } from 'react-icons/hi';
 import { MdCopyAll } from 'react-icons/md';
@@ -31,15 +31,29 @@ export const CopyToClipboardIcon = ({ text, className }: CopyToClipboardIconProp
   );
 };
 
-export const CopyToClipboardAsJson = ({ text }: CopyToClipboardIconProps) => {
+export const CopyToClipboardAsJson = ({
+  data,
+}: {
+  data: {
+    [key: string]: any;
+  };
+}) => {
   const [_, copyToClipboard] = useCopyToClipboard();
   const [copied, setCopied] = useState(false);
 
-  const onCopy = () => {
-    setCopied(true);
-    setTimeout(() => setCopied(false), 5000);
-    copyToClipboard(text);
-  };
+  const onCopy = useCallback(() => {
+    navigator?.clipboard
+      ?.writeText(JSON.stringify(data))
+      .then((val) => {
+        copyToClipboard(val as unknown as string);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 5000);
+      })
+      .catch((error) => {
+        console.log(error);
+        setCopied(false);
+      });
+  }, []);
 
   return (
     <button
@@ -52,7 +66,7 @@ export const CopyToClipboardAsJson = ({ text }: CopyToClipboardIconProps) => {
       )}
     >
       {copied ? <HiCheck /> : <MdCopyAll />}
-      Copy as json
+      {copied ? 'Copied as json' : 'Copy as json'}
     </button>
   );
 };
