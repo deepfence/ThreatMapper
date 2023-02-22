@@ -33,7 +33,7 @@ export const UniqueVulnerabilitiesCount = ({ theme }: { theme: Mode }) => {
   return (
     <div className="flex gap-2 h-full">
       <div className="flex basis-[40%] h-full p-2 items-center justify-center">
-        <MostExploitableChart theme={theme} />
+        <MostExploitableChart theme={theme} data={{ test: 1 }} />
       </div>
       <div className="flex items-center justify-start gap-6">
         <div className="px-4 flex flex-col place-content-center gap-x-4">

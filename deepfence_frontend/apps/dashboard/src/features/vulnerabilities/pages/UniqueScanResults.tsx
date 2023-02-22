@@ -164,7 +164,7 @@ async function getScans(
     severityCounts: result.severity_counts ?? {},
     hostName: result.host_name,
     nodeType: result.node_type,
-    timestamp: 0,
+    timestamp: result.updated_at,
     tableData: vulnerabilities,
   };
 }
