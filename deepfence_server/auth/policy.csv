@@ -18,12 +18,10 @@ p, standard-user, scan, read
 p, read-only-user, scan, read
 
 p, admin, scan-report, delete
-p, admin, scan-report, mask
-p, admin, scan-report, unmask
+p, admin, scan-report, write
 p, admin, scan-report, ingest
 p, admin, scan-report, read
-p, standard-user, scan-report, mask
-p, standard-user, scan-report, unmask
+p, standard-user, scan-report, write
 p, standard-user, scan-report, ingest
 p, standard-user, scan-report, read
 p, read-only-user, scan-report, read

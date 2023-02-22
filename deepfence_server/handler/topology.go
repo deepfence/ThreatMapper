@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	reporters_graph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	hst "github.com/weaveworks/scope/probe/host"
@@ -16,14 +16,14 @@ import (
 	"github.com/weaveworks/scope/report"
 )
 
-var topology_reporters map[directory.NamespaceID]reporters.TopologyReporter
+var topology_reporters map[directory.NamespaceID]reporters_graph.TopologyReporter
 
 func init() {
 	agent_report_ingesters = map[directory.NamespaceID]*ingesters.Ingester[report.Report]{}
-	topology_reporters = map[directory.NamespaceID]reporters.TopologyReporter{}
+	topology_reporters = map[directory.NamespaceID]reporters_graph.TopologyReporter{}
 }
 
-func getTopologyReporter(ctx context.Context) (reporters.TopologyReporter, error) {
+func getTopologyReporter(ctx context.Context) (reporters_graph.TopologyReporter, error) {
 	nid, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func getTopologyReporter(ctx context.Context) (reporters.TopologyReporter, error
 	if has {
 		return ing, nil
 	}
-	new_entry, err := reporters.NewNeo4jCollector(ctx)
+	new_entry, err := reporters_graph.NewNeo4jCollector(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,36 +42,36 @@ func getTopologyReporter(ctx context.Context) (reporters.TopologyReporter, error
 }
 
 func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
 		return reporter.Graph(ctx, filters)
 	})
 }
 
 func (h *Handler) GetTopologyHostsGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
 		return reporter.HostGraph(ctx, filters)
 	})
 }
 
 func (h *Handler) GetTopologyKubernetesGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
 		return reporter.KubernetesGraph(ctx, filters)
 	})
 }
 
 func (h *Handler) GetTopologyContainersGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
 		return reporter.ContainerGraph(ctx, filters)
 	})
 }
 
 func (h *Handler) GetTopologyPodsGraph(w http.ResponseWriter, req *http.Request) {
-	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters.TopologyFilters, reporter reporters.TopologyReporter) (reporters.RenderedGraph, error) {
+	h.getTopologyGraph(w, req, func(ctx context.Context, filters reporters_graph.TopologyFilters, reporter reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error) {
 		return reporter.PodGraph(ctx, filters)
 	})
 }
 
-func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, getGraph func(context.Context, reporters.TopologyFilters, reporters.TopologyReporter) (reporters.RenderedGraph, error)) {
+func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, getGraph func(context.Context, reporters_graph.TopologyFilters, reporters_graph.TopologyReporter) (reporters_graph.RenderedGraph, error)) {
 
 	type GraphResult struct {
 		Nodes detailed.NodeSummaries               `json:"nodes" required:"true"`
@@ -86,7 +86,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 		return
 	}
 
-	filters := reporters.TopologyFilters{
+	filters := reporters_graph.TopologyFilters{
 		CloudFilter:      []string{},
 		RegionFilter:     []string{},
 		KubernetesFilter: []string{},
@@ -121,7 +121,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 	respondWith(ctx, w, http.StatusOK, GraphResult{Nodes: newTopo, Edges: newConnections})
 }
 
-func nodeStubToMetadata(stub reporters.NodeStub) []report.MetadataRow {
+func nodeStubToMetadata(stub reporters_graph.NodeStub) []report.MetadataRow {
 	return []report.MetadataRow{
 		{
 			ID:       "id",
@@ -138,14 +138,14 @@ func nodeStubToMetadata(stub reporters.NodeStub) []report.MetadataRow {
 	}
 }
 
-func nodeStubToSummary(stub reporters.NodeStub) detailed.BasicNodeSummary {
+func nodeStubToSummary(stub reporters_graph.NodeStub) detailed.BasicNodeSummary {
 	return detailed.BasicNodeSummary{
 		ID:    string(stub.ID),
 		Label: stub.Name,
 	}
 }
 
-func graphToSummaries(graph reporters.RenderedGraph, provider_filter, region_filter, kubernetes_filter, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
+func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, region_filter, kubernetes_filter, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
 	nodes := detailed.NodeSummaries{}
 	edges := detailed.TopologyConnectionSummaries{}
 

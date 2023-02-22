@@ -10,12 +10,86 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/message/router/plugin"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/malwarescan"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+type worker struct {
+	wml watermill.LoggerAdapter
+	cfg config
+	mux *message.Router
+}
+
+func NewWorker(wml watermill.LoggerAdapter, cfg config, mux *message.Router) worker {
+	return worker{wml: wml, cfg: cfg, mux: mux}
+}
+
+func (w *worker) Run(ctx context.Context) error {
+	return w.mux.Run(ctx)
+}
+
+func (w *worker) AddNoPublisherHandler(
+	task string,
+	taskCallback func(*message.Message) error,
+) error {
+	subscriber, err := subscribe(task, w.cfg.KafkaBrokers, w.wml)
+	if err != nil {
+		return err
+	}
+	w.mux.AddNoPublisherHandler(
+		task,
+		task,
+		subscriber,
+		taskCallback,
+	)
+	return nil
+}
+
+func (w *worker) AddHandler(
+	task string,
+	taskCallback func(msg *message.Message) ([]*message.Message, error),
+	receiverTask string,
+	publisher *kafka.Publisher,
+) error {
+	subscriber, err := subscribe(task, w.cfg.KafkaBrokers, w.wml)
+	if err != nil {
+		return err
+	}
+	w.mux.AddHandler(
+		task,
+		task,
+		subscriber,
+		receiverTask,
+		publisher,
+		taskCallback,
+	)
+	return nil
+}
+
+func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAdapter) (message.Subscriber, error) {
+
+	subscriberConf := kafka.DefaultSaramaSubscriberConfig()
+	subscriberConf.Consumer.Offsets.AutoCommit.Enable = true
+
+	sub, err := kafka.NewSubscriber(
+		kafka.SubscriberConfig{
+			Brokers:               brokers,
+			Unmarshaler:           kafka.DefaultMarshaler{},
+			ConsumerGroup:         consumerGroup,
+			OverwriteSaramaConfig: subscriberConf,
+		},
+		logger,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return sub, nil
+}
 
 func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	// this for sending messages to kafka
@@ -66,97 +140,40 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 		middleware.CorrelationID,
 	)
 
+	worker := NewWorker(wml, cfg, mux)
+
 	// sbom
-	addTerminalHandler(wml, cfg, mux, utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
+	worker.AddNoPublisherHandler(utils.ScanSBOMTask, sbom.NewSBOMScanner(ingestC).ScanSBOM)
+	worker.AddHandler(utils.GenerateSBOMTask, sbom.NewSbomGenerator(ingestC).GenerateSbom,
+		utils.ScanSBOMTask, publisher)
 
-	subscribe_generate_sbom, err := subscribe(utils.GenerateSBOMTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddHandler(
-		utils.GenerateSBOMTask,
-		utils.GenerateSBOMTask,
-		subscribe_generate_sbom,
-		utils.ScanSBOMTask,
-		publisher,
-		sbom.NewSbomGenerator(ingestC).GenerateSbom,
-	)
+	worker.AddNoPublisherHandler(utils.SetUpGraphDBTask, cronjobs.ApplyGraphDBStartup)
 
-	addTerminalHandler(wml, cfg, mux, utils.SetUpGraphDBTask, cronjobs.ApplyGraphDBStartup)
+	worker.AddNoPublisherHandler(utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
 
-	addTerminalHandler(wml, cfg, mux, utils.CleanUpGraphDBTask, cronjobs.CleanUpDB)
+	worker.AddNoPublisherHandler(utils.ComputeThreatTask, cronjobs.ComputeThreat)
 
-	addTerminalHandler(wml, cfg, mux, utils.RetryFailedScansTask, cronjobs.RetryScansDB)
+	worker.AddNoPublisherHandler(utils.RetryFailedScansTask, cronjobs.RetryScansDB)
 
-	addTerminalHandler(wml, cfg, mux, utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
+	worker.AddNoPublisherHandler(utils.RetryFailedUpgradesTask, cronjobs.RetryUpgradeAgent)
 
-	addTerminalHandler(wml, cfg, mux, utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
+	worker.AddNoPublisherHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
 
-	addTerminalHandler(wml, cfg, mux, utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
+	worker.AddNoPublisherHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
 
-	addTerminalHandler(wml, cfg, mux, utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
+	worker.AddNoPublisherHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
 
-	addTerminalHandler(wml, cfg, mux, utils.SyncRegistryTask, cronjobs.SyncRegistry)
+	worker.AddNoPublisherHandler(utils.SyncRegistryTask, cronjobs.SyncRegistry)
 
-	secret_scan_task, err := subscribe(utils.SecretScanTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		cancel()
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		utils.SecretScanTask,
-		utils.SecretScanTask,
-		secret_scan_task,
-		secretscan.NewSecretScanner(ingestC).StartSecretScan,
-	)
+	worker.AddNoPublisherHandler(utils.SecretScanTask, secretscan.NewSecretScanner(ingestC).StartSecretScan)
+
+	worker.AddNoPublisherHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
 
 	log.Info().Msg("Starting the consumer")
-	if err = mux.Run(context.Background()); err != nil {
+	if err = worker.Run(context.Background()); err != nil {
 		cancel()
 		return err
 	}
 	cancel()
-	return nil
-}
-
-func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAdapter) (message.Subscriber, error) {
-
-	subscriberConf := kafka.DefaultSaramaSubscriberConfig()
-	subscriberConf.Consumer.Offsets.AutoCommit.Enable = true
-
-	sub, err := kafka.NewSubscriber(
-		kafka.SubscriberConfig{
-			Brokers:               brokers,
-			Unmarshaler:           kafka.DefaultMarshaler{},
-			ConsumerGroup:         consumerGroup,
-			OverwriteSaramaConfig: subscriberConf,
-		},
-		logger,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return sub, nil
-}
-
-func addTerminalHandler(
-	wml watermill.LoggerAdapter,
-	cfg config,
-	mux *message.Router,
-	task string,
-	callback func(*message.Message) error) error {
-
-	subscriber, err := subscribe(utils.CleanUpGraphDBTask, cfg.KafkaBrokers, wml)
-	if err != nil {
-		return err
-	}
-	mux.AddNoPublisherHandler(
-		task,
-		task,
-		subscriber,
-		callback,
-	)
 	return nil
 }

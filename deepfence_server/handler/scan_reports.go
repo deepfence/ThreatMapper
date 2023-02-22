@@ -17,11 +17,13 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
@@ -105,8 +107,12 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			"registry_id": registryId,
 		}
 
-		if len(reqs.ScanConfig) != 0 {
-			binArgs["scan_type"] = reqs.ScanConfig
+		if len(reqs.ScanConfigLanguages) != 0 {
+			languages := []string{}
+			for i := range reqs.ScanConfigLanguages {
+				languages = append(languages, reqs.ScanConfigLanguages[i].Language)
+			}
+			binArgs["scan_type"] = strings.Join(languages, ",")
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
@@ -223,7 +229,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	regular, k8s, _ := extractBulksNodes(reqs.NodeIds)
 
-	cloudNodeIds, err := reporters.GetCloudAccountIDs(ctx, regular)
+	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(ctx, regular)
 	if err != nil {
 		respondError(errors.New(err.Error()), w)
 		return
@@ -300,8 +306,8 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 			if err != nil {
 				return ctl.Action{}, err
 			}
-			binArgs["node_id"] = fmt.Sprintf("%s;%s", req.NodeId, name+":"+tag)
-			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["node_id"])
+			binArgs["image_name"] = name + ":" + tag
+			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
 		}
 
 		internal_req := ctl.StartMalwareScanRequest{
@@ -562,7 +568,7 @@ func (h *Handler) StatusCloudComplianceScanHandler(w http.ResponseWriter, r *htt
 func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanStatusReq
-	err := httpext.DecodeQueryParams(r, &req)
+	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
@@ -571,9 +577,9 @@ func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.N
 
 	var statuses model.ScanStatusResp
 	if req.BulkScanId != "" {
-		statuses, err = reporters.GetBulkScans(r.Context(), scan_type, req.BulkScanId)
+		statuses, err = reporters_scan.GetBulkScans(r.Context(), scan_type, req.BulkScanId)
 	} else {
-		statuses, err = reporters.GetScanStatus(r.Context(), scan_type, req.ScanIds)
+		statuses, err = reporters_scan.GetScanStatus(r.Context(), scan_type, req.ScanIds)
 	}
 
 	if err == reporters.NotFoundErr {
@@ -601,9 +607,9 @@ func complianceStatusScanHandler(w http.ResponseWriter, r *http.Request, scan_ty
 
 	var statuses model.ComplianceScanStatusResp
 	if req.BulkScanId != "" {
-		statuses, err = reporters.GetComplianceBulkScans(r.Context(), scan_type, req.BulkScanId)
+		statuses, err = reporters_scan.GetComplianceBulkScans(r.Context(), scan_type, req.BulkScanId)
 	} else {
-		statuses, err = reporters.GetComplianceScanStatus(r.Context(), scan_type, req.ScanIds)
+		statuses, err = reporters_scan.GetComplianceScanStatus(r.Context(), scan_type, req.ScanIds)
 	}
 
 	if err != nil {
@@ -641,7 +647,7 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 		return
 	}
 
-	infos, err := reporters.GetScansList(r.Context(), scan_type, req.NodeId, controls.StringToResourceType(req.NodeType), req.Window)
+	infos, err := reporters_scan.GetScansList(r.Context(), scan_type, req.NodeIds, req.Window)
 	if err == reporters.NotFoundErr {
 		err = &NotFoundError{err}
 	}
@@ -660,7 +666,7 @@ func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *
 		respondError(err, w)
 		return
 	}
-	counts, err := reporters.GetSevCounts(r.Context(), utils.NEO4J_VULNERABILITY_SCAN, common.ScanID)
+	counts, err := reporters_scan.GetSevCounts(r.Context(), utils.NEO4J_VULNERABILITY_SCAN, common.ScanID)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -676,7 +682,7 @@ func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	counts, err := reporters.GetSevCounts(r.Context(), utils.NEO4J_SECRET_SCAN, common.ScanID)
+	counts, err := reporters_scan.GetSevCounts(r.Context(), utils.NEO4J_SECRET_SCAN, common.ScanID)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -702,7 +708,7 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	counts, err := reporters.GetSevCounts(r.Context(), utils.NEO4J_MALWARE_SCAN, common.ScanID)
+	counts, err := reporters_scan.GetSevCounts(r.Context(), utils.NEO4J_MALWARE_SCAN, common.ScanID)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -717,7 +723,7 @@ func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r
 		return
 	}
 
-	additionalInfo, err := reporters.GetCloudComplianceStats(r.Context(), common.ScanID)
+	additionalInfo, err := reporters_scan.GetCloudComplianceStats(r.Context(), common.ScanID)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -735,7 +741,7 @@ func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_
 		return nil, model.ScanResultsCommon{}, &BadDecoding{err}
 	}
 
-	entries, common, err := reporters.GetScanResults[T](r.Context(), scan_type, req.ScanId, req.Window)
+	entries, common, err := reporters_scan.GetScanResults[T](r.Context(), scan_type, req.ScanId, req.FieldsFilter, req.Window)
 	if err != nil {
 		return nil, model.ScanResultsCommon{}, err
 	}
@@ -743,29 +749,9 @@ func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_
 	return entries, common, nil
 }
 
-func fields_filter2cypher(node string, firstCond bool, fieldsFilter model.FieldsFilter) string {
-	if len(fieldsFilter.FieldsValues) == 0 {
-		return ""
-	}
-	res := ""
-	if firstCond {
-		res += " WHERE "
-	} else {
-		res += " AND "
-	}
-	strs := []string{}
-	for _, fieldValue := range fieldsFilter.FieldsValues {
-		if len(fieldValue.Values) > 0 {
-			strs = append(strs, fmt.Sprintf("%s.%s IN ['%v']", node, fieldValue.Key, strings.Join(fieldValue.Values, "','")))
-		}
-	}
-
-	return res + strings.Join(strs, " AND ")
-}
-
-func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter model.FieldsFilter) ([]model.NodeIdentifier, error) {
+func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode controls.ScanResource, filter reporters.ContainsFilter) ([]model.NodeIdentifier, error) {
 	res := []model.NodeIdentifier{}
-	wherePattern := fields_filter2cypher("n", false, filter)
+	wherePattern := reporters.ContainsFilter2CypherWhereConditions("n", filter, false)
 	if len(wherePattern) == 0 {
 		return ids, nil
 	}
@@ -776,7 +762,7 @@ func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode co
 		RETURN n.node_id`,
 		controls.ResourceTypeToNeo4j(neo4jNode),
 		wherePattern),
-		map[string]interface{}{"ids": reporters.NodeIdentifierToIdList(ids)})
+		map[string]interface{}{"ids": reporters_scan.NodeIdentifierToIdList(ids)})
 	if err != nil {
 		return res, err
 	}
@@ -793,6 +779,134 @@ func get_node_ids(tx neo4j.Transaction, ids []model.NodeIdentifier, neo4jNode co
 		})
 	}
 	return res, nil
+}
+
+func (h *Handler) scanResultMaskHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.ScanResultsMaskRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "mask":
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "true")
+	case "unmask":
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "false")
+	}
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.ScanResultsActionRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "delete":
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+	case "notify":
+		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+	}
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) ScanResultMaskHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanResultMaskHandler(w, r, "mask")
+}
+
+func (h *Handler) ScanResultUnmaskHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanResultMaskHandler(w, r, "unmask")
+}
+
+func (h *Handler) ScanResultDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanResultActionHandler(w, r, "delete")
+}
+
+func (h *Handler) ScanResultNotifyHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanResultActionHandler(w, r, "notify")
+}
+
+func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, action string) {
+	req := model.ScanActionRequest{
+		ScanID:   chi.URLParam(r, "scan_id"),
+		ScanType: chi.URLParam(r, "scan_type"),
+	}
+	err := h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "download":
+		resp := model.DownloadReportResponse{}
+		httpext.JSON(w, http.StatusOK, resp)
+	case "delete":
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func (h *Handler) ScanResultDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanIdActionHandler(w, r, "download")
+}
+
+func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	h.scanIdActionHandler(w, r, "delete")
+}
+
+func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.SbomRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	if req.ScanID == "" {
+		if req.NodeType == "" || req.NodeID == "" {
+			respondError(&BadDecoding{errors.New("scan_id is required or node_id and node_type are required")}, w)
+			return
+		}
+	}
+	switch action {
+	case "get":
+		var sbom []model.SbomResponse
+		httpext.JSON(w, http.StatusOK, sbom)
+	case "download":
+		resp := model.DownloadReportResponse{}
+		httpext.JSON(w, http.StatusOK, resp)
+	}
+}
+
+func (h *Handler) GetSbomHandler(w http.ResponseWriter, r *http.Request) {
+	h.sbomHandler(w, r, "get")
+}
+
+func (h *Handler) SbomDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	h.sbomHandler(w, r, "download")
 }
 
 func FindNodesMatching(ctx context.Context,
@@ -933,22 +1047,22 @@ func startMultiScan(ctx context.Context,
 
 	regular, k8s, registry := extractBulksNodes(req.NodeIds)
 
-	image_nodes, err := reporters.GetRegistriesImageIDs(ctx, registry)
+	image_nodes, err := reporters_scan.GetRegistriesImageIDs(ctx, registry)
 	if err != nil {
 		return nil, "", err
 	}
 
-	k8s_host_nodes, err := reporters.GetKubernetesHostsIDs(ctx, k8s)
+	k8s_host_nodes, err := reporters_scan.GetKubernetesHostsIDs(ctx, k8s)
 	if err != nil {
 		return nil, "", err
 	}
 
-	k8s_image_nodes, err := reporters.GetKubernetesImageIDs(ctx, k8s)
+	k8s_image_nodes, err := reporters_scan.GetKubernetesImageIDs(ctx, k8s)
 	if err != nil {
 		return nil, "", err
 	}
 
-	k8s_container_nodes, err := reporters.GetKubernetesContainerIDs(ctx, k8s)
+	k8s_container_nodes, err := reporters_scan.GetKubernetesContainerIDs(ctx, k8s)
 	if err != nil {
 		return nil, "", err
 	}

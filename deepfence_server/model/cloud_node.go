@@ -146,8 +146,11 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`MATCH (n:Node{cloud_provider: $cloud_provider}) RETURN n.node_id, n.node_name, n.cloud_provider ORDER BY n.updated_at SKIP $skip LIMIT $limit`,
-		map[string]interface{}{"cloud_provider": cloudProvider, "skip": fw.Offset, "limit": fw.Size})
+	res, err := tx.Run(`
+		MATCH (n:Node{cloud_provider: $cloud_provider}) 
+		RETURN n.node_id, n.node_name, n.cloud_provider 
+		ORDER BY n.updated_at`+fw.FetchWindow2CypherQuery(),
+		map[string]interface{}{"cloud_provider": cloudProvider})
 	if err != nil {
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
@@ -170,7 +173,9 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	}
 
 	total := fw.Offset + len(cloud_node_accounts_info)
-	countRes, err := tx.Run(`MATCH (n:Node {cloud_provider: $cloud_provider}) RETURN COUNT(*)`,
+	countRes, err := tx.Run(`
+		MATCH (n:Node {cloud_provider: $cloud_provider}) 
+		RETURN COUNT(*)`,
 		map[string]interface{}{"cloud_provider": cloudProvider})
 
 	countRec, err := countRes.Single()

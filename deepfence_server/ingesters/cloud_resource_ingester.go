@@ -62,7 +62,8 @@ func NewCloudResourceIngester() Ingester[[]CloudResource] {
 }
 
 func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource) error {
-	session, err := tc.driver.Session(neo4j.AccessModeWrite)
+	driver, err := directory.Neo4jClient(ctx)
+	session, err := driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return err

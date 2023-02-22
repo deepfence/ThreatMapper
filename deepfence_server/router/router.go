@@ -127,10 +127,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/users", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUsers))
 			})
-			r.Route("/users/{userId}", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUser))
-				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUser))
-				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUser))
+			r.Route("/users/{id}", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUserByUserID))
+				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUserByUserID))
+				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUserByUserID))
 			})
 
 			r.Route("/graph", func(r chi.Router) {
@@ -163,6 +163,29 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malwares", dfHandler.SearchMalwares)
 				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
 				r.Post("/compliances", dfHandler.SearchCompliances)
+
+				r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScans)
+				r.Post("/secret/scans", dfHandler.SearchSecretScans)
+				r.Post("/malware/scans", dfHandler.SearchMalwareScans)
+				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
+				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
+
+				r.Route("/count", func(r chi.Router) {
+					r.Post("/hosts", dfHandler.SearchHostsCount)
+					r.Post("/containers", dfHandler.SearchContainersCount)
+					r.Post("/images", dfHandler.SearchContainerImagesCount)
+					r.Post("/vulnerabilities", dfHandler.SearchVulnerabilitiesCount)
+					r.Post("/secrets", dfHandler.SearchSecretsCount)
+					r.Post("/malwares", dfHandler.SearchMalwaresCount)
+					r.Post("/cloud-compliances", dfHandler.SearchCloudCompliancesCount)
+					r.Post("/compliances", dfHandler.SearchCompliancesCount)
+
+					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
+					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)
+					r.Post("/malware/scans", dfHandler.SearchMalwareScansCount)
+					r.Post("/compliance/scans", dfHandler.SearchComplianceScansCount)
+					r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScansCount)
+				})
 			})
 
 			r.Route("/controls", func(r chi.Router) {
@@ -208,11 +231,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malware", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StopMalwareScanHandler))
 			})
 			r.Route("/scan/status", func(r chi.Router) {
-				r.Get("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusVulnerabilityScanHandler))
-				r.Get("/secret", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusSecretScanHandler))
-				r.Get("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusComplianceScanHandler))
-				r.Get("/malware", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusMalwareScanHandler))
-				r.Get("/cloud-compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusCloudComplianceScanHandler))
+				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusVulnerabilityScanHandler))
+				r.Post("/secret", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusSecretScanHandler))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusComplianceScanHandler))
+				r.Post("/malware", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusMalwareScanHandler))
+				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusCloudComplianceScanHandler))
 			})
 			r.Route("/scan/list", func(r chi.Router) {
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScansHandler))
@@ -228,9 +251,27 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListCloudComplianceScanResultsHandler))
 			})
 
+			r.Route("/scan/results/action", func(r chi.Router) {
+				r.Post("/mask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultMaskHandler))
+				r.Post("/unmask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultUnmaskHandler))
+				r.Patch("/delete", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanResultDeleteHandler))
+				r.Post("/notify", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultNotifyHandler))
+			})
+
+			r.Route("/scan/{scan_type}/{scan_id}", func(r chi.Router) {
+				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultDownloadHandler))
+				r.Delete("/", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanDeleteHandler))
+			})
+
+			r.Route("/scan/sbom", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetSbomHandler))
+				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.SbomDownloadHandler))
+			})
+
 			r.Route("/registryaccount", func(r chi.Router) {
 				r.Get("/list", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
+				r.Post("/gcr", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddGoogleContainerRegistry))
 				r.Route("/{registryId}", func(r chi.Router) {
 					// r.Use(directory.RegistryCtx)
 					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))

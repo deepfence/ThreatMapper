@@ -62,7 +62,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	}
 
 	// get registry credentials
-	authDir, namespace, _, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authDir, imagePrefix, _, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		return nil
 	}
@@ -78,8 +78,8 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	// pull image
 	var imageName string
 	if params.ImageName != "" {
-		if namespace != "" {
-			imageName = namespace + "/" + params.ImageName
+		if imagePrefix != "" {
+			imageName = imagePrefix + "/" + params.ImageName
 		} else {
 			imageName = params.ImageName
 		}
@@ -103,6 +103,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
 		log.Error().Err(err).Msg(cmd.String())
 		log.Error().Msgf("output: %s", out.String())
+		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil
 	}
 

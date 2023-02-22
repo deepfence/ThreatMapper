@@ -51,8 +51,8 @@ func init() {
 	accessTokenExpiryStr := os.Getenv("DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES")
 	if accessTokenExpiryStr != "" {
 		accessTokenExpiry, err := strconv.Atoi(accessTokenExpiryStr)
-		if err != nil {
-			if accessTokenExpiry > 0 && accessTokenExpiry < 1440 {
+		if err == nil {
+			if accessTokenExpiry > 0 && accessTokenExpiry <= 1440 {
 				AccessTokenExpiry = time.Minute * time.Duration(accessTokenExpiry)
 			}
 		}
@@ -224,6 +224,18 @@ type PasswordResetVerifyRequest struct {
 	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
 }
 
+type UserIdRequest struct {
+	ID int64 `path:"id"`
+}
+
+type EditUserRequest struct {
+	ID        int64  `path:"id"`
+	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
+	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
+	IsActive  bool   `json:"is_active"`
+	Role      string `json:"role"`
+}
+
 type User struct {
 	ID                  int64             `json:"id"`
 	FirstName           string            `json:"first_name" validate:"required,user_name,min=2,max=32"`
@@ -238,6 +250,7 @@ type User struct {
 	RoleID              int32             `json:"role_id"`
 	PasswordInvalidated bool              `json:"password_invalidated"`
 	CompanyNamespace    string            `json:"-"`
+	CurrentUser         *bool             `json:"current_user,omitempty"`
 }
 
 func (u *User) SetPassword(inputPassword string) error {

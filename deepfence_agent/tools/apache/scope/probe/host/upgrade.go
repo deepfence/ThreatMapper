@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 
 	"github.com/abrander/go-supervisord"
@@ -16,12 +15,8 @@ import (
 )
 
 func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
-
-	console_ip := os.Getenv("MGMT_CONSOLE_URL")
-	url := strings.ReplaceAll(req.HomeDirectoryUrl, "deepfence-file-server:9000", fmt.Sprintf("%s/file-server", console_ip))
-	url = strings.ReplaceAll(url, "http://", "https://")
-	fmt.Printf("Fetching %v\n", url)
-	err := downloadFile("/tmp/deepfence.tar.gz", url)
+	fmt.Printf("Fetching %v\n", req.HomeDirectoryUrl)
+	err := downloadFile("/tmp/deepfence.tar.gz", req.HomeDirectoryUrl)
 	if err != nil {
 		fmt.Printf("Download failed\n")
 		return err

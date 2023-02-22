@@ -4,7 +4,12 @@ import (
 	"encoding/json"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/acr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerhub"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerprivate"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
@@ -17,10 +22,18 @@ func GetRegistry(rType string, requestByte []byte) (Registry, error) {
 	err := errors.Errorf("registry type: %s, not supported", rType)
 
 	switch rType {
-	case DOCKER_HUB:
+	case constants.DOCKER_HUB:
 		r, err = dockerhub.New(requestByte)
-	case QUAY:
+	case constants.QUAY:
 		r, err = quay.New(requestByte)
+	case constants.GCR:
+		r, err = gcr.New(requestByte)
+	case constants.ACR:
+		r, err = acr.New(requestByte)
+	case constants.DOCKER_PRIVATE:
+		r, err = dockerprivate.New(requestByte)
+	case constants.HARBOR:
+		r, err = harbor.New(requestByte)
 	}
 	return r, err
 }
@@ -30,7 +43,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 	err := errors.Errorf("registry type: %s, not supported", row.RegistryType)
 
 	switch row.RegistryType {
-	case DOCKER_HUB:
+	case constants.DOCKER_HUB:
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
@@ -53,7 +66,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, nil
-	case QUAY:
+	case constants.QUAY:
 		var nonSecret map[string]string
 		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
@@ -73,6 +86,108 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 			Secret: quay.Secret{
 				QuayAccessToken: secret["quay_access_token"],
+			},
+		}
+		return r, nil
+	case constants.GCR:
+		var nonSecret map[string]string
+		var secret map[string]string
+		var extras map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.EncryptedSecret, &secret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.Extras, &extras)
+		if err != nil {
+			return nil, err
+		}
+		r = &gcr.RegistryGCR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: gcr.NonSecret{
+				RegistryURL: nonSecret["registry_url"],
+				ProjectId:   nonSecret["project_id"],
+			},
+			Secret: gcr.Secret{
+				ProjectId:    secret["project_id"],
+				PrivateKeyId: secret["private_key_id"],
+			},
+			Extras: gcr.Extras{
+				ServiceAccountJson: extras["service_account_json"],
+			},
+		}
+		return r, nil
+	case constants.ACR:
+		var nonSecret map[string]string
+		var secret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.EncryptedSecret, &secret)
+		if err != nil {
+			return nil, err
+		}
+		r = &acr.RegistryACR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: acr.NonSecret{
+				AzureRegistryURL:      nonSecret["azure_registry_url"],
+				AzureRegistryUsername: nonSecret["azure_registry_username"],
+			},
+			Secret: acr.Secret{
+				AzureRegistryPassword: secret["azure_registry_password"],
+			},
+		}
+		return r, nil
+	case constants.DOCKER_PRIVATE:
+		var nonSecret map[string]string
+		var secret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.EncryptedSecret, &secret)
+		if err != nil {
+			return nil, err
+		}
+		r = &dockerprivate.RegistryDockerPrivate{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: dockerprivate.NonSecret{
+				DockerRegistryURL: nonSecret["docker_registry_url"],
+				DockerUsername:    nonSecret["docker_username"],
+			},
+			Secret: dockerprivate.Secret{
+				DockerPassword: secret["docker_password"],
+			},
+		}
+		return r, nil
+	case constants.HARBOR:
+		var nonSecret map[string]string
+		var secret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.EncryptedSecret, &secret)
+		if err != nil {
+			return nil, err
+		}
+		r = &harbor.RegistryHarbor{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: harbor.NonSecret{
+				HarborRegistryURL: nonSecret["harbor_registry_url"],
+				HarborUsername:    nonSecret["harbor_username"],
+				HarborProjectName: nonSecret["harbor_project_name"],
+			},
+			Secret: harbor.Secret{
+				HarborPassword: secret["harbor_password"],
 			},
 		}
 		return r, nil
@@ -85,9 +200,8 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 	err := errors.Errorf("registry type: %s, not supported", row.RegistryType)
 
 	switch row.RegistryType {
-	case DOCKER_HUB:
+	case constants.DOCKER_HUB:
 		var nonSecret map[string]string
-		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
 		if err != nil {
 			return nil, err
@@ -99,14 +213,10 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 				DockerHubNamespace: nonSecret["docker_hub_namespace"],
 				DockerHubUsername:  nonSecret["docker_hub_username"],
 			},
-			Secret: dockerhub.Secret{
-				DockerHubPassword: secret["docker_hub_password"],
-			},
 		}
 		return r, nil
-	case QUAY:
+	case constants.QUAY:
 		var nonSecret map[string]string
-		var secret map[string]string
 		err := json.Unmarshal(row.NonSecret, &nonSecret)
 		if err != nil {
 			return nil, err
@@ -118,8 +228,66 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 				QuayNamespace:   nonSecret["quay_namespace"],
 				QuayRegistryURL: nonSecret["quay_registry_url"],
 			},
-			Secret: quay.Secret{
-				QuayAccessToken: secret["quay_access_token"],
+		}
+		return r, nil
+	case constants.GCR:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &gcr.RegistryGCR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: gcr.NonSecret{
+				RegistryURL: nonSecret["registry_url"],
+				ProjectId:   nonSecret["project_id"],
+			},
+		}
+		return r, nil
+	case constants.ACR:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &acr.RegistryACR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: acr.NonSecret{
+				AzureRegistryURL:      nonSecret["azure_registry_url"],
+				AzureRegistryUsername: nonSecret["azure_registry_username"],
+			},
+		}
+		return r, nil
+	case constants.DOCKER_PRIVATE:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &dockerprivate.RegistryDockerPrivate{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: dockerprivate.NonSecret{
+				DockerRegistryURL: nonSecret["docker_registry_url"],
+				DockerUsername:    nonSecret["docker_username"],
+			},
+		}
+		return r, nil
+	case constants.HARBOR:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &harbor.RegistryHarbor{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: harbor.NonSecret{
+				HarborRegistryURL: nonSecret["harbor_registry_url"],
+				HarborUsername:    nonSecret["harbor_username"],
+				HarborProjectName: nonSecret["harbor_project_name"],
 			},
 		}
 		return r, nil
@@ -132,7 +300,10 @@ type Registry interface {
 	IsValidCredential() bool
 	EncryptSecret(aes encryption.AES) error
 	DecryptSecret(aes encryption.AES) error
+	EncryptExtras(aes encryption.AES) error
+	DecryptExtras(aes encryption.AES) error
 	GetSecret() map[string]interface{}
+	GetExtras() map[string]interface{}
 	FetchImagesFromRegistry() ([]model.ContainerImage, error)
 	GetNamespace() string
 	GetRegistryType() string

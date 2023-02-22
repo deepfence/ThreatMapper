@@ -7,7 +7,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/opentracing/opentracing-go"
@@ -109,7 +109,7 @@ func respondError(err error, w http.ResponseWriter) error {
 	var code int
 	var errorFields map[string]string
 	switch err.(type) {
-	case *reporters.NodeNotFoundError:
+	case *reporters_scan.NodeNotFoundError:
 		code = http.StatusNotFound
 	case *ingesters.NodeNotFoundError:
 		code = http.StatusNotFound

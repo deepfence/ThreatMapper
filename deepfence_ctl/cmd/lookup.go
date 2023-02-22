@@ -23,9 +23,12 @@ var lookupCmd = &cobra.Command{
 		ids := strings.Split(lookup_ids, ",")
 
 		lookup_fields, _ := cmd.Flags().GetString("fields")
-		fields := strings.Split(lookup_fields, ",")
+		fields := []string{}
+		if len(lookup_fields) != 0 {
+			fields = strings.Split(lookup_fields, ",")
+		}
 
-		filters := deepfence_server_client.ReportersLookupFilter{
+		filters := deepfence_server_client.LookupLookupFilter{
 			InFieldFilter: fields,
 			NodeIds:       ids,
 		}
@@ -35,7 +38,7 @@ var lookupCmd = &cobra.Command{
 		switch lookup_type {
 		case "host":
 			req := http.Client().LookupApi.GetHosts(context.Background())
-			req = req.ReportersLookupFilter(filters)
+			req = req.LookupLookupFilter(filters)
 			res, rh, err := http.Client().LookupApi.GetHostsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -43,7 +46,7 @@ var lookupCmd = &cobra.Command{
 			output.Out(res)
 		case "container":
 			req := http.Client().LookupApi.GetContainers(context.Background())
-			req = req.ReportersLookupFilter(filters)
+			req = req.LookupLookupFilter(filters)
 			res, rh, err := http.Client().LookupApi.GetContainersExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -51,7 +54,7 @@ var lookupCmd = &cobra.Command{
 			output.Out(res)
 		case "process":
 			req := http.Client().LookupApi.GetProcesses(context.Background())
-			req = req.ReportersLookupFilter(filters)
+			req = req.LookupLookupFilter(filters)
 			res, rh, err := http.Client().LookupApi.GetProcessesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -59,7 +62,7 @@ var lookupCmd = &cobra.Command{
 			output.Out(res)
 		case "pod":
 			req := http.Client().LookupApi.GetPods(context.Background())
-			req = req.ReportersLookupFilter(filters)
+			req = req.LookupLookupFilter(filters)
 			res, rh, err := http.Client().LookupApi.GetPodsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -67,7 +70,7 @@ var lookupCmd = &cobra.Command{
 			output.Out(res)
 		case "cluster":
 			req := http.Client().LookupApi.GetKubernetesClusters(context.Background())
-			req = req.ReportersLookupFilter(filters)
+			req = req.LookupLookupFilter(filters)
 			res, rh, err := http.Client().LookupApi.GetKubernetesClustersExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -75,7 +78,7 @@ var lookupCmd = &cobra.Command{
 			output.Out(res)
 		case "image":
 			req := http.Client().LookupApi.GetContainerImages(context.Background())
-			req = req.ReportersLookupFilter(filters)
+			req = req.LookupLookupFilter(filters)
 			res, rh, err := http.Client().LookupApi.GetContainerImagesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)

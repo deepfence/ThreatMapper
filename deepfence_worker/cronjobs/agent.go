@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	url2 "net/url"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 
@@ -136,7 +138,7 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			key = res.Key
 		}
 
-		url, err := minio.ExposeFile(ctx, key)
+		url, err := minio.ExposeFile(ctx, key, 10*time.Hour, url2.Values{})
 		if err != nil {
 			log.Error().Err(err)
 			continue

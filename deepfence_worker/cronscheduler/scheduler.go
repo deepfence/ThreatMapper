@@ -44,6 +44,10 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.ComputeThreatTask))
+	if err != nil {
+		return err
+	}
 	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.RetryFailedScansTask))
 	if err != nil {
 		return err
@@ -64,10 +68,6 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
-	// _, err = s.cron.AddFunc("@every 120s", s.SecretScanTask)
-	// if err != nil {
-	// 	return err
-	// }
 	return nil
 }
 
@@ -93,22 +93,3 @@ func (s *Scheduler) enqeueTask(task string) func() {
 		}
 	}
 }
-
-// func (s *Scheduler) SecretScanTask() {
-// 	metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-// 	payload := sdkUtils.SecretScanParameters{
-// 		ImageName:  "deepfence_discovery_ce:latest",
-// 		ScanId:     sdkUtils.NewUUIDString(),
-// 		RegistryId: "1",
-// 		NodeType:   "container_image",
-// 	}
-// 	b, err := json.Marshal(payload)
-// 	if err != nil {
-// 		log.Error().Msg(err.Error())
-// 		return
-// 	}
-// 	err = utils.PublishNewJob(s.tasksPublisher, metadata, "task_secret_scan", b)
-// 	if err != nil {
-// 		log.Error().Msg(err.Error())
-// 	}
-// }

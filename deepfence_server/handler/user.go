@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -14,14 +15,25 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
 const (
-	MaxPostRequestSize = 100000 // 100 KB
+	MaxPostRequestSize = 1000000 // 1 MB
 	DefaultNamespace   = "default"
 )
+
+var (
+	True  = new(bool)
+	False = new(bool)
+)
+
+func init() {
+	*True = true
+	*False = false
+}
 
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var registerRequest model.UserRegisterRequest
@@ -290,10 +302,10 @@ func (h *Handler) userModel(pgUser postgresql_db.GetUsersRow) model.User {
 }
 
 func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(ctx)
+	currentUser, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
 	if err != nil {
-		respondError(&InternalServerError{err}, w)
+		respondWithErrorCode(err, w, statusCode)
+		return
 	}
 	pgUsers, err := pgClient.GetUsers(ctx)
 	if err != nil {
@@ -302,6 +314,11 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	users := make([]model.User, len(pgUsers))
 	for i, pgUser := range pgUsers {
 		users[i] = h.userModel(pgUser)
+		if pgUser.ID == currentUser.ID {
+			users[i].CurrentUser = True
+		} else {
+			users[i].CurrentUser = False
+		}
 	}
 	httpext.JSON(w, http.StatusOK, users)
 }
@@ -315,12 +332,72 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, user)
 }
 
+func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
+	user, _, _, err := h.GetUserByID(chi.URLParam(r, "id"))
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, user)
+}
+
+func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx context.Context, pgClient *postgresql_db.Queries, user *model.User) {
+	defer r.Body.Close()
+	var req model.EditUserRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	user.FirstName = req.FirstName
+	user.LastName = req.LastName
+	if user.Role != req.Role {
+		user.Role = req.Role
+		role, err := pgClient.GetRoleByName(ctx, req.Role)
+		if err != nil {
+			respondError(err, w)
+			return
+		}
+		user.RoleID = role.ID
+	}
+	user.IsActive = req.IsActive
+	_, err = user.Update(ctx, pgClient)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, user)
+}
+
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	return
+	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	h.updateUserHandler(w, r, ctx, pgClient, user)
+}
+
+func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
+	user, ctx, pgClient, err := h.GetUserByID(chi.URLParam(r, "id"))
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	h.updateUserHandler(w, r, ctx, pgClient, user)
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	return
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) DeleteUserByUserID(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
@@ -472,6 +549,24 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpext.JSON(w, http.StatusOK, apiTokens)
+}
+
+func (h *Handler) GetUserByID(userID string) (*model.User, context.Context, *postgresql_db.Queries, error) {
+	uID, err := strconv.ParseInt(userID, 10, 64)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	ctx := directory.NewGlobalContext()
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	user := model.User{ID: uID}
+	err = user.LoadFromDbByID(ctx, pgClient)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return &user, ctx, pgClient, nil
 }
 
 func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, context.Context, *postgresql_db.Queries, error) {

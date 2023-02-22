@@ -1,11 +1,16 @@
 package model
 
 import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
+type VulnerabilityScanConfigLanguage struct {
+	Language string `json:"language" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+}
+
 type VulnerabilityScanConfig struct {
-	ScanConfig string `json:"scan_config" required:"true" enum:"all,base,ruby,python,javascript,php,golang,java,rust,dotnet"`
+	ScanConfigLanguages []VulnerabilityScanConfigLanguage `json:"scan_config" required:"true"`
 }
 
 type VulnerabilityScanTriggerReq struct {
@@ -26,21 +31,12 @@ type ComplianceScanTriggerReq struct {
 	ComplianceBenchmarkTypes
 }
 
-type KeyValues struct {
-	Key    string   `json:"key" required:"true"`
-	Values []string `json:"values" required:"true"`
-}
-
-type FieldsFilter struct {
-	FieldsValues []KeyValues `json:"fields_values" required:"true"`
-}
-
 type ScanFilter struct {
-	ImageScanFilter             FieldsFilter `json:"image_scan_filter" required:"true"`
-	ContainerScanFilter         FieldsFilter `json:"container_scan_filter" required:"true"`
-	HostScanFilter              FieldsFilter `json:"host_scan_filter" required:"true"`
-	CloudAccountScanFilter      FieldsFilter `json:"cloud_account_scan_filter" required:"true"`
-	KubernetesClusterScanFilter FieldsFilter `json:"kubernetes_cluster_scan_filter" required:"true"`
+	ImageScanFilter             reporters.ContainsFilter `json:"image_scan_filter" required:"true"`
+	ContainerScanFilter         reporters.ContainsFilter `json:"container_scan_filter" required:"true"`
+	HostScanFilter              reporters.ContainsFilter `json:"host_scan_filter" required:"true"`
+	CloudAccountScanFilter      reporters.ContainsFilter `json:"cloud_account_scan_filter" required:"true"`
+	KubernetesClusterScanFilter reporters.ContainsFilter `json:"kubernetes_cluster_scan_filter" required:"true"`
 }
 
 type ScanTriggerCommon struct {
@@ -60,20 +56,23 @@ type ComplianceBenchmarkTypes struct {
 type ScanStatus string
 
 type ScanInfo struct {
-	ScanId    string `json:"scan_id" required:"true"`
-	Status    string `json:"status" required:"true"`
-	UpdatedAt int64  `json:"updated_at" required:"true" format:"int64"`
-	NodeId    string `json:"node_id" required:"true"`
-	NodeType  string `json:"node_type" required:"true"`
+	ScanId         string         `json:"scan_id" required:"true"`
+	Status         string         `json:"status" required:"true"`
+	UpdatedAt      int64          `json:"updated_at" required:"true" format:"int64"`
+	NodeId         string         `json:"node_id" required:"true"`
+	NodeType       string         `json:"node_type" required:"true"`
+	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
+	NodeName       string         `json:"node_name" required:"true"`
 }
 
 type ComplianceScanInfo struct {
-	ScanId        string `json:"scan_id" required:"true"`
-	BenchmarkType string `json:"benchmark_type" required:"true"`
-	Status        string `json:"status" required:"true"`
-	UpdatedAt     int64  `json:"updated_at" required:"true" format:"int64"`
-	NodeId        string `json:"node_id" required:"true"`
-	NodeType      string `json:"node_type" required:"true"`
+	ScanId         string         `json:"scan_id" required:"true"`
+	BenchmarkType  string         `json:"benchmark_type" required:"true"`
+	Status         string         `json:"status" required:"true"`
+	UpdatedAt      int64          `json:"updated_at" required:"true" format:"int64"`
+	NodeId         string         `json:"node_id" required:"true"`
+	NodeType       string         `json:"node_type" required:"true"`
+	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
 }
 
 const (
@@ -88,8 +87,8 @@ type ScanTriggerResp struct {
 }
 
 type ScanStatusReq struct {
-	ScanIds    []string `query:"scan_ids" form:"scan_ids" required:"true"`
-	BulkScanId string   `query:"bulk_scan_id" form:"bulk_scan_id" required:"true"`
+	ScanIds    []string `json:"scan_ids" required:"true"`
+	BulkScanId string   `json:"bulk_scan_id" required:"true"`
 }
 
 type ScanStatusResp struct {
@@ -101,9 +100,8 @@ type ComplianceScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	NodeId   string      `json:"node_id" required:"true"`
-	NodeType string      `json:"node_type" required:"true" enum:"image,host,container"`
-	Window   FetchWindow `json:"window"  required:"true"`
+	NodeIds []NodeIdentifier `json:"node_ids" required:"true"`
+	Window  FetchWindow      `json:"window"  required:"true"`
 }
 
 type ScanListResp struct {
@@ -114,9 +112,50 @@ type CloudComplianceScanListResp struct {
 	ScansInfo []ComplianceScanInfo `json:"scans_info" required:"true"`
 }
 
+type ScanResultsMaskRequest struct {
+	ScanID                   string   `json:"scan_id" validate:"required" required:"true"`
+	NodeIds                  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
+	ScanType                 string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	MaskAcrossHostsAndImages bool     `json:"mask_across_hosts_and_images"`
+}
+
+type ScanResultsActionRequest struct {
+	ScanID   string   `json:"scan_id" validate:"required" required:"true"`
+	NodeIds  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
+	ScanType string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	//utils.Neo4jScanType
+}
+
+type DownloadReportResponse struct {
+	UrlLink string `json:"url_link"`
+}
+
+type ScanActionRequest struct {
+	ScanID   string `path:"scan_id" validate:"required" required:"true"`
+	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	//utils.Neo4jScanType
+}
+
+type SbomRequest struct {
+	// either scan_id or node_id+node_type is required
+	ScanID   string `json:"scan_id"`
+	NodeID   string `json:"node_id"`
+	NodeType string `json:"node_type"`
+}
+
+type SbomResponse struct {
+	PackageName string   `json:"package_name"`
+	Version     string   `json:"version"`
+	Locations   []string `json:"locations"`
+	Licenses    []string `json:"licenses"`
+	CveID       string   `json:"cve_id"`
+	Severity    string   `json:"severity"`
+}
+
 type ScanResultsReq struct {
-	ScanId string      `json:"scan_id" required:"true"`
-	Window FetchWindow `json:"window"  required:"true"`
+	ScanId       string                  `json:"scan_id" required:"true"`
+	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
+	Window       FetchWindow             `json:"window"  required:"true"`
 }
 
 type ScanResultsCommon struct {
@@ -128,6 +167,7 @@ type ScanResultsCommon struct {
 	NodeName              string `json:"node_name" required:"true"`
 	NodeType              string `json:"node_type" required:"true"`
 	ScanID                string `json:"scan_id" required:"true"`
+	UpdatedAt             int64  `json:"updated_at" required:"true"`
 }
 
 type SecretScanResult struct {
