@@ -372,6 +372,18 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 	return res, nil
 }
 
+func nodeType2Neo4jType(node_type string) string {
+	switch node_type {
+	case "container":
+		return "Container"
+	case "image":
+		return "ContainerImage"
+	case "host":
+		return "Node"
+	}
+	return "unknown"
+}
+
 func GetScansList(ctx context.Context,
 	scan_type utils.Neo4jScanType,
 	node_ids []model.NodeIdentifier,
@@ -393,32 +405,35 @@ func GetScansList(ctx context.Context,
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`
-		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (n)
-		WHERE n.node_id IN $node_ids
-		AND m.status = 'COMPLETE'
-		RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_type
-		ORDER BY m.updated_at`+fw.FetchWindow2CypherQuery(),
-		map[string]interface{}{"node_ids": NodeIdentifierToIdList(node_ids)})
-	if err != nil {
-		return model.ScanListResp{}, err
-	}
-
-	recs, err := res.Collect()
-	if err != nil {
-		return model.ScanListResp{}, reporters.NotFoundErr
-	}
-
 	scans_info := []model.ScanInfo{}
-	for _, rec := range recs {
-		tmp := model.ScanInfo{
-			ScanId:    rec.Values[0].(string),
-			Status:    rec.Values[1].(string),
-			UpdatedAt: rec.Values[2].(int64),
-			NodeId:    rec.Values[3].(string),
-			NodeType:  rec.Values[4].(string),
+	for i := range node_ids {
+		query := `
+			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n:` + nodeType2Neo4jType(node_ids[i].NodeType) + `{node_id: $node_id})
+			WHERE m.status = 'COMPLETE'
+			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_type
+			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
+		fmt.Printf("list query %v\n", query)
+		res, err := tx.Run(query,
+			map[string]interface{}{"node_id": node_ids[i].NodeId})
+		if err != nil {
+			return model.ScanListResp{}, err
 		}
-		scans_info = append(scans_info, tmp)
+
+		recs, err := res.Collect()
+		if err != nil {
+			return model.ScanListResp{}, reporters.NotFoundErr
+		}
+
+		for _, rec := range recs {
+			tmp := model.ScanInfo{
+				ScanId:    rec.Values[0].(string),
+				Status:    rec.Values[1].(string),
+				UpdatedAt: rec.Values[2].(int64),
+				NodeId:    rec.Values[3].(string),
+				NodeType:  rec.Values[4].(string),
+			}
+			scans_info = append(scans_info, tmp)
+		}
 	}
 
 	return model.ScanListResp{ScansInfo: scans_info}, nil
