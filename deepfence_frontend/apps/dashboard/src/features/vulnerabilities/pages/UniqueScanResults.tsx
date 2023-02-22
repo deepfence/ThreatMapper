@@ -4,22 +4,35 @@ import { Suspense, useMemo, useRef, useState } from 'react';
 import { RefObject } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
-import { HiArrowSmLeft, HiDotsVertical, HiExternalLink } from 'react-icons/hi';
+import {
+  HiArchive,
+  HiArrowSmLeft,
+  HiBell,
+  HiDotsVertical,
+  HiExternalLink,
+  HiEyeOff,
+  HiOutlineAdjustments,
+} from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
   Await,
   LoaderFunctionArgs,
   useLoaderData,
-  useLocation,
-  useParams,
+  useSearchParams,
 } from 'react-router-dom';
 import { Form } from 'react-router-dom';
 import {
   Badge,
   Button,
   Card,
+  CircleSpinner,
   createColumnHelper,
+  Dropdown,
+  DropdownItem,
   getRowSelectionColumn,
+  RowSelectionState,
+  Select,
+  SelectItem,
   Table,
   TableSkeleton,
 } from 'ui-components';
@@ -39,30 +52,64 @@ import { typedDefer, TypedDeferredData } from '@/utils/router';
 export interface FocusableElement {
   focus(options?: FocusOptions): void;
 }
-
-type ScanResult = {
-  id: string;
+type TableType = {
+  cveId: string;
   package: string;
   severity: string;
   description: string;
   link: string;
   action?: null;
 };
+type ScanResult = {
+  totalSeverity: number;
+  severityCounts: { [key: string]: number };
+  hostName: string;
+  nodeType: string;
+  timestamp: number;
+  tableData: TableType[];
+};
 
 export type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ScanResult[];
+  data: ScanResult;
 };
 
-async function getScans(scanId: string): Promise<ScanResult[]> {
+const emptyData = {
+  totalSeverity: 0,
+  severityCounts: {},
+  hostName: '',
+  nodeType: '',
+  timestamp: 0,
+  tableData: [],
+};
+
+const getSeveritySearch = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('severity');
+};
+
+async function getScans(
+  scanId: string,
+  searchParams: URLSearchParams,
+): Promise<ScanResult> {
+  const severity = getSeveritySearch(searchParams);
+  const filters = {} as {
+    cve_severity: string[];
+  };
+  if (severity.length) {
+    filters.cve_severity = severity;
+  }
   const result = await makeRequest({
     apiFunction: getVulnerabilityApiClient().resultVulnerabilityScan,
     apiArgs: [
       {
         modelScanResultsReq: {
           fields_filter: {
-            contains_filter: { filter_in: {} },
+            contains_filter: {
+              filter_in: {
+                ...filters,
+              },
+            },
             match_filter: { filter_in: {} },
             order_filter: { order_field: '' },
           },
@@ -75,11 +122,12 @@ async function getScans(scanId: string): Promise<ScanResult[]> {
       },
     ],
     errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({});
+      const error = new ApiError<LoaderDataType>({ data: emptyData });
       if (r.status === 400) {
         const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           message: modelResponse.message,
+          data: emptyData,
         });
       }
     },
@@ -90,28 +138,47 @@ async function getScans(scanId: string): Promise<ScanResult[]> {
   }
 
   if (result === null) {
-    return [];
+    return emptyData;
   }
-  return (
+  const totalSeverity = Object.values(result.severity_counts ?? {}).reduce(
+    (acc, value) => {
+      acc = acc + value;
+      return acc;
+    },
+    0,
+  );
+
+  const vulnerabilities =
     result?.vulnerabilities?.map((res) => {
       return {
-        id: res.cve_id,
+        cveId: res.cve_id,
         package: res.cve_caused_by_package,
         severity: res.cve_severity,
         description: res.cve_description,
         link: res.cve_link,
       };
-    }) ?? []
-  );
+    }) ?? [];
+
+  return {
+    totalSeverity,
+    severityCounts: result.severity_counts ?? {},
+    hostName: result.host_name,
+    nodeType: result.node_type,
+    timestamp: 0,
+    tableData: vulnerabilities,
+  };
 }
 
 const loader = async ({
   params,
+  request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const nodeType = params?.scanId ?? '';
+  const scanId = params?.scanId ?? '';
+
+  const searchParams = new URL(request.url).searchParams;
 
   return typedDefer({
-    data: getScans(nodeType),
+    data: getScans(scanId, searchParams),
   });
 };
 
@@ -134,6 +201,7 @@ const ScanResultFilterModal = ({
   showFilter: boolean;
   setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   return (
     <SlidingModal
       header={<FilterHeader />}
@@ -145,26 +213,90 @@ const ScanResultFilterModal = ({
       <div className="dark:text-white p-4">
         <Form className="flex flex-col gap-y-6">
           <fieldset>
-            <legend className="text-sm font-medium">Severity</legend>
-            <div className="flex gap-x-4">
-              <Checkbox name="critical" label="Critical" />
-              <Checkbox name="high" label="High" />
-              <Checkbox name="medium" label="Medium" />
-              <Checkbox name="low" label="Low" />
-            </div>
+            <Select
+              name="severity"
+              label={'Severity'}
+              placeholder="Select Severity"
+              value={searchParams.getAll('severity')}
+              sizing="xs"
+              onChange={(value) => {
+                setSearchParams((prev) => {
+                  prev.delete('severity');
+                  value.forEach((language) => {
+                    prev.append('severity', language);
+                  });
+                  return prev;
+                });
+              }}
+            >
+              {['critical', 'high', 'medium', 'low', 'unknown'].map(
+                (severity: string) => {
+                  return (
+                    <SelectItem value={severity} key={severity}>
+                      {capitalize(severity)}
+                    </SelectItem>
+                  );
+                },
+              )}
+            </Select>
           </fieldset>
         </Form>
       </div>
     </SlidingModal>
   );
 };
-
-const CVETable = ({ data }: { data?: any[] }) => {
-  useLoaderData();
+const ActionDropdown = ({ icon }: { icon: React.ReactNode }) => {
+  return (
+    <Dropdown
+      content={
+        <>
+          <DropdownItem className="text-sm">
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+              <IconContext.Provider
+                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+              >
+                <HiEyeOff />
+              </IconContext.Provider>
+              Mask
+            </span>
+          </DropdownItem>
+          <DropdownItem className="text-sm">
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+              <IconContext.Provider
+                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+              >
+                <HiBell />
+              </IconContext.Provider>
+              Notify
+            </span>
+          </DropdownItem>
+          <DropdownItem className="text-sm">
+            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+              <IconContext.Provider
+                value={{ className: 'text-red-700 dark:text-red-400' }}
+              >
+                <HiArchive />
+              </IconContext.Provider>
+              Delete
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      <Button className="ml-auto" size="xs" color="normal">
+        <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
+          {icon}
+        </IconContext.Provider>
+      </Button>
+    </Dropdown>
+  );
+};
+const CVETable = () => {
+  const loaderData = useLoaderData() as LoaderDataType;
   const [showDetails, setShowDetails] = useState(false);
-  const columnHelper = createColumnHelper<ScanResult>();
+  const columnHelper = createColumnHelper<TableType>();
   const elementToFocusOnClose = useRef(null);
-
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
@@ -173,7 +305,7 @@ const CVETable = ({ data }: { data?: any[] }) => {
         maxSize: 0,
       }),
 
-      columnHelper.accessor('id', {
+      columnHelper.accessor('cveId', {
         enableSorting: false,
         cell: (info) => (
           <DFLink
@@ -183,12 +315,14 @@ const CVETable = ({ data }: { data?: any[] }) => {
             }}
             className="flex items-center gap-x-2"
           >
-            <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg">
-              <div className="w-5 h-5">
-                <VulnerabilityIcon />
+            <>
+              <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg">
+                <div className="w-5 h-5">
+                  <VulnerabilityIcon />
+                </div>
               </div>
-            </div>
-            {info.getValue()}
+              {info.getValue()}
+            </>
           </DFLink>
         ),
         header: () => 'CVE ID',
@@ -237,8 +371,8 @@ const CVETable = ({ data }: { data?: any[] }) => {
       }),
       columnHelper.accessor('link', {
         enableSorting: false,
-        cell: () => (
-          <DFLink to="#">
+        cell: (info) => (
+          <DFLink to={info.getValue()} target="_blank" rel="noopener noreferrer">
             <IconContext.Provider
               value={{
                 className: 'w-4 h-4',
@@ -255,11 +389,7 @@ const CVETable = ({ data }: { data?: any[] }) => {
       }),
       columnHelper.accessor('action', {
         enableSorting: false,
-        cell: () => (
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            <HiDotsVertical />
-          </IconContext.Provider>
-        ),
+        cell: () => <ActionDropdown icon={<HiDotsVertical />} />,
         header: () => '',
         minSize: 10,
         size: 10,
@@ -269,7 +399,7 @@ const CVETable = ({ data }: { data?: any[] }) => {
 
     return columns;
   }, []);
-
+  console.log('===', rowSelectionState);
   return (
     <>
       <VulnerabilityDetails
@@ -277,29 +407,38 @@ const CVETable = ({ data }: { data?: any[] }) => {
         setShowFilter={setShowDetails}
         elementToFocusOnClose={elementToFocusOnClose.current}
       />
-      <Suspense
-        fallback={
-          <div className="mt-16">
-            <TableSkeleton columns={10} rows={10} size={'md'} />
-          </div>
-        }
-      >
-        <Await resolve={data ?? []}>
-          {(resolvedData: ScanResult[]) => {
+      <Suspense fallback={<TableSkeleton columns={10} rows={10} size={'md'} />}>
+        <Await resolve={loaderData.data ?? []}>
+          {(resolvedData: LoaderDataType['data']) => {
             return (
-              <Table
-                size="sm"
-                data={resolvedData ?? []}
-                columns={columns}
-                enableRowSelection
-                enableSorting
-                enablePagination
-                manualPagination
-                // totalRows={totalRows}
-                // pageSize={pageSize}
-                // pageIndex={pageIndex}
-                // onPaginationChange={setPagination}
-              />
+              <div>
+                {Object.keys(rowSelectionState).length === 0 ? (
+                  <div className="text-sm text-gray-400 font-medium py-2">
+                    No rows selected
+                  </div>
+                ) : (
+                  <div className="mb-2">
+                    <ActionDropdown icon={<HiOutlineAdjustments />} />
+                  </div>
+                )}
+
+                <Table
+                  size="sm"
+                  data={resolvedData.tableData}
+                  columns={columns}
+                  enableRowSelection
+                  rowSelectionState={rowSelectionState}
+                  onRowSelectionChange={setRowSelectionState}
+                  enableSorting
+                  enablePagination
+                  manualPagination
+                  getRowId={(row) => row.cveId}
+                  // totalRows={totalRows}
+                  // pageSize={pageSize}
+                  // pageIndex={pageIndex}
+                  // onPaginationChange={setPagination}
+                />
+              </div>
             );
           }}
         </Await>
@@ -309,39 +448,52 @@ const CVETable = ({ data }: { data?: any[] }) => {
 };
 
 const HeaderComponent = ({
-  scanId,
-  nodeType,
-  timestamp,
   elementToFocusOnClose,
   setShowFilter,
 }: {
-  scanId: string;
-  nodeType: string;
-  timestamp: number;
   elementToFocusOnClose: React.MutableRefObject<null>;
   setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const loaderData = useLoaderData() as LoaderDataType;
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <DFLink
-        to={`/vulnerability/scan-results?nodeType=${nodeType}`}
-        className="flex hover:no-underline items-center justify-center  mr-2"
-      >
-        <IconContext.Provider
-          value={{
-            className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
+      <Suspense fallback={<CircleSpinner size="xs" />}>
+        <Await resolve={loaderData.data ?? []}>
+          {(resolvedData: LoaderDataType['data']) => {
+            const { nodeType, hostName } = resolvedData;
+            return (
+              <>
+                <DFLink
+                  to={`/vulnerability/scan-results?nodeType=${nodeType}`}
+                  className="flex hover:no-underline items-center justify-center  mr-2"
+                >
+                  <IconContext.Provider
+                    value={{
+                      className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
+                    }}
+                  >
+                    <HiArrowSmLeft />
+                  </IconContext.Provider>
+                </DFLink>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  VULNERABILITY SCAN RESULTS - {nodeType} / {hostName}
+                </span>
+              </>
+            );
           }}
-        >
-          <HiArrowSmLeft />
-        </IconContext.Provider>
-      </DFLink>
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        VULNERABILITY SCAN RESULTS - {nodeType.toUpperCase()} / {scanId}
-      </span>
+        </Await>
+      </Suspense>
       <div className="ml-auto flex items-center gap-x-4">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500 dark:text-gray-200">
-            {formatMilliseconds(timestamp)}
+            <Suspense fallback={<CircleSpinner size="xs" />}>
+              <Await resolve={loaderData.data ?? []}>
+                {(resolvedData: LoaderDataType['data']) => {
+                  const { timestamp } = resolvedData;
+                  return formatMilliseconds(timestamp);
+                }}
+              </Await>
+            </Suspense>
           </span>
           <span className="text-gray-400 text-[10px]">Last scan</span>
         </div>
@@ -386,80 +538,94 @@ const HeaderComponent = ({
     </div>
   );
 };
-const SeverityCountComponent = ({
-  theme,
-  data,
-}: {
-  theme: Mode;
-  data: {
-    total: number;
-    severityCounts: Record<string, number>;
-  };
-}) => {
+const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
+  const loaderData = useLoaderData() as LoaderDataType;
   return (
     <Card className="p-4 grid grid-flow-row-dense gap-y-8">
-      <div className="grid grid-flow-col-dense gap-x-4">
-        <div className="bg-red-100 dark:bg-red-500/10 rounded-lg flex items-center justify-center">
-          <div className="w-14 h-14 text-red-500 dark:text-red-400">
-            <VulnerabilityIcon />
+      <Suspense
+        fallback={
+          <div className="min-h-[300px] flex items-center justify-center">
+            <CircleSpinner size="md" />
           </div>
-        </div>
-        <div>
-          <h4 className="text-md font-semibold text-gray-900 dark:text-gray-200 tracking-wider">
-            Total vulnerabilities
-          </h4>
-          <div className="mt-2">
-            <span className="text-2xl text-gray-900 dark:text-gray-200">
-              {data.total}
-            </span>
-            <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">Total count</h5>
-            <div>
-              <span className="text-sm text-gray-900 dark:text-gray-200">{0}</span>
-              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                Active containers
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="min-h-[220px]">
-        <MostExploitableChart theme={theme} />
-      </div>
-      <div>
-        {Object.keys(data.severityCounts).map((key: string) => {
-          return (
-            <div key={key} className="flex items-center gap-2 p-1">
-              <div
-                className={cx('h-3 w-3 rounded-full', {
-                  'bg-red-400 dark:bg-red-500': key.toLowerCase() === 'critical',
-                  'bg-pink-400 dark:bg-pink-500': key.toLowerCase() === 'high',
-                  'bg-blue-400 dark:bg-blue-500': key.toLowerCase() === 'medium',
-                  'bg-yellow-400 dark:bg-yellow-500': key.toLowerCase() === 'low',
-                })}
-              />
-              <span className="text-sm text-gray-500 dark:text-gray-200">
-                {capitalize(key)}
-              </span>
-              <span className={cx('text-sm text-gray-900 dark:text-gray-200 ml-auto')}>
-                {data.severityCounts[key]}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+        }
+      >
+        <Await resolve={loaderData.data}>
+          {(resolvedData: ScanResult) => {
+            const { totalSeverity, severityCounts } = resolvedData;
+            return (
+              <>
+                <div className="grid grid-flow-col-dense gap-x-4">
+                  <div className="bg-red-100 dark:bg-red-500/10 rounded-lg flex items-center justify-center">
+                    <div className="w-14 h-14 text-red-500 dark:text-red-400">
+                      <VulnerabilityIcon />
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-md font-semibold text-gray-900 dark:text-gray-200 tracking-wider">
+                      Total vulnerabilities
+                    </h4>
+                    <div className="mt-2">
+                      <span className="text-2xl text-gray-900 dark:text-gray-200">
+                        {totalSeverity}
+                      </span>
+                      <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
+                        Total count
+                      </h5>
+                      <div>
+                        <span className="text-sm text-gray-900 dark:text-gray-200">
+                          {0}
+                        </span>
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                          Active containers
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="min-h-[220px]">
+                  <MostExploitableChart theme={theme} data={severityCounts} />
+                </div>
+                <div>
+                  {Object.keys(severityCounts)?.map((key: string) => {
+                    return (
+                      <div key={key} className="flex items-center gap-2 p-1">
+                        <div
+                          className={cx('h-3 w-3 rounded-full', {
+                            'bg-red-400 dark:bg-red-500':
+                              key.toLowerCase() === 'critical',
+                            'bg-pink-400 dark:bg-pink-500': key.toLowerCase() === 'high',
+                            'bg-blue-400 dark:bg-blue-500':
+                              key.toLowerCase() === 'medium',
+                            'bg-yellow-400 dark:bg-yellow-500':
+                              key.toLowerCase() === 'low',
+                          })}
+                        />
+                        <span className="text-sm text-gray-500 dark:text-gray-200">
+                          {capitalize(key)}
+                        </span>
+                        <span
+                          className={cx(
+                            'text-sm text-gray-900 dark:text-gray-200 ml-auto',
+                          )}
+                        >
+                          {severityCounts[key]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            );
+          }}
+        </Await>
+      </Suspense>
     </Card>
   );
 };
 const UniqueScanResults = () => {
-  const loaderData = useLoaderData() as LoaderDataType;
-  const params = useParams() as {
-    scanId: string;
-    nodeType: string;
-  };
   const elementToFocusOnClose = useRef(null);
   const [showFilter, setShowFilter] = useState(false);
   const { mode } = useTheme();
-  const location = useLocation();
 
   return (
     <>
@@ -469,30 +635,14 @@ const UniqueScanResults = () => {
         elementToFocusOnClose={elementToFocusOnClose.current}
       />
       <HeaderComponent
-        scanId={params.scanId}
-        nodeType={params.nodeType}
         elementToFocusOnClose={elementToFocusOnClose}
         setShowFilter={setShowFilter}
-        timestamp={location.state.updatedAt}
       />
       <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
         <div className="self-start grid gap-y-2">
-          <SeverityCountComponent
-            theme={mode}
-            data={{
-              total: location.state.severityCounts.total,
-              severityCounts: {
-                critical: location.state.severityCounts.critical,
-                medium: location.state.severityCounts.medium,
-                high: location.state.severityCounts.high,
-                low: location.state.severityCounts.low,
-              },
-            }}
-          />
+          <SeverityCountComponent theme={mode} />
         </div>
-        <div>
-          <CVETable data={loaderData.data} />
-        </div>
+        <CVETable />
       </div>
     </>
   );
