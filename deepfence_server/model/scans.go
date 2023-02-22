@@ -87,8 +87,8 @@ type ScanTriggerResp struct {
 }
 
 type ScanStatusReq struct {
-	ScanIds    []string `query:"scan_ids" form:"scan_ids" required:"true"`
-	BulkScanId string   `query:"bulk_scan_id" form:"bulk_scan_id" required:"true"`
+	ScanIds    []string `json:"scan_ids" required:"true"`
+	BulkScanId string   `json:"bulk_scan_id" required:"true"`
 }
 
 type ScanStatusResp struct {

@@ -301,19 +301,19 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(MalwareScanTriggerReq), nil)
 
 	// Status scan
-	d.AddOperation("statusVulnerabilityScan", http.MethodGet, "/deepfence/scan/status/vulnerability",
+	d.AddOperation("statusVulnerabilityScan", http.MethodPost, "/deepfence/scan/status/vulnerability",
 		"Get Vulnerability Scan Status", "Get Vulnerability Scan Status on agent or registry",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusSecretScan", http.MethodGet, "/deepfence/scan/status/secret",
+	d.AddOperation("statusSecretScan", http.MethodPost, "/deepfence/scan/status/secret",
 		"Get Secret Scan Status", "Get Secret Scan Status on agent or registry",
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusComplianceScan", http.MethodGet, "/deepfence/scan/status/compliance",
+	d.AddOperation("statusComplianceScan", http.MethodPost, "/deepfence/scan/status/compliance",
 		"Get Compliance Scan Status", "Get Compliance Scan Status on agent or registry",
 		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanStatusReq), new(ComplianceScanStatusResp))
-	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
+	d.AddOperation("statusMalwareScan", http.MethodPost, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusCloudComplianceScan", http.MethodGet, "/deepfence/scan/status/cloud-compliance",
+	d.AddOperation("statusCloudComplianceScan", http.MethodPost, "/deepfence/scan/status/cloud-compliance",
 		"Get Cloud Compliance Scan Status", "Get Cloud Compliance Scan Status on cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanStatusReq), new(ComplianceScanStatusResp))
 

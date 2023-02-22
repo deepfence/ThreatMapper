@@ -65,7 +65,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 	}
 
 	res, err := tx.Run(fmt.Sprintf(`
-		MATCH (m:%s) -> (n)
+		MATCH (m:%s) -[:SCANNED]-> (n)
 		WHERE m.node_id IN $scan_ids
 		RETURN m.node_id, m.status, n.node_id, n.node_type, m.updated_at`, scan_type),
 		map[string]interface{}{"scan_ids": scan_ids})
