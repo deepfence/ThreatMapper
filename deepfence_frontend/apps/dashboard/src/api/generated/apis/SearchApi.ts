@@ -26,6 +26,7 @@ import type {
   ModelScanInfo,
   ModelSecret,
   ModelVulnerability,
+  SearchSearchCountResp,
   SearchSearchNodeReq,
   SearchSearchScanReq,
 } from '../models';
@@ -52,11 +53,65 @@ import {
     ModelSecretToJSON,
     ModelVulnerabilityFromJSON,
     ModelVulnerabilityToJSON,
+    SearchSearchCountRespFromJSON,
+    SearchSearchCountRespToJSON,
     SearchSearchNodeReqFromJSON,
     SearchSearchNodeReqToJSON,
     SearchSearchScanReqFromJSON,
     SearchSearchScanReqToJSON,
 } from '../models';
+
+export interface CountCloudComplianceScansRequest {
+    searchSearchScanReq?: SearchSearchScanReq;
+}
+
+export interface CountCloudCompliancesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountComplianceScansRequest {
+    searchSearchScanReq?: SearchSearchScanReq;
+}
+
+export interface CountCompliancesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountContainerImagesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountContainersRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountHostsRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountMalwareScansRequest {
+    searchSearchScanReq?: SearchSearchScanReq;
+}
+
+export interface CountMalwaresRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountSecretsRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountSecretsScansRequest {
+    searchSearchScanReq?: SearchSearchScanReq;
+}
+
+export interface CountVulnerabilitiesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountVulnerabilityScansRequest {
+    searchSearchScanReq?: SearchSearchScanReq;
+}
 
 export interface SearchCloudComplianceScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
@@ -117,6 +172,214 @@ export interface SearchVulnerabilityScansRequest {
  * @interface SearchApiInterface
  */
 export interface SearchApiInterface {
+    /**
+     * Search scan results
+     * @summary Search Vulnerability Scan results
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countCloudComplianceScansRaw(requestParameters: CountCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    countCloudComplianceScans(requestParameters: CountCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * List all the images present in the given registry
+     * @summary Search Cloud compliances
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countCloudCompliancesRaw(requestParameters: CountCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * List all the images present in the given registry
+     * Search Cloud compliances
+     */
+    countCloudCompliances(requestParameters: CountCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Search scan results
+     * @summary Search Vulnerability Scan results
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countComplianceScansRaw(requestParameters: CountComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    countComplianceScans(requestParameters: CountComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * List all the images present in the given registry
+     * @summary Search Compliances
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countCompliancesRaw(requestParameters: CountCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * List all the images present in the given registry
+     * Search Compliances
+     */
+    countCompliances(requestParameters: CountCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Retrieve all the data associated with processes
+     * @summary Search Container images
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countContainerImagesRaw(requestParameters: CountContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Retrieve all the data associated with processes
+     * Search Container images
+     */
+    countContainerImages(requestParameters: CountContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Retrieve all the data associated with containers
+     * @summary Search Containers data
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countContainersRaw(requestParameters: CountContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Retrieve all the data associated with containers
+     * Search Containers data
+     */
+    countContainers(requestParameters: CountContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Retrieve all the data associated with hosts
+     * @summary Search hosts
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countHostsRaw(requestParameters: CountHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Retrieve all the data associated with hosts
+     * Search hosts
+     */
+    countHosts(requestParameters: CountHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Search scan results
+     * @summary Search Vulnerability Scan results
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countMalwareScansRaw(requestParameters: CountMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    countMalwareScans(requestParameters: CountMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * List all the images present in the given registry
+     * @summary Search Malwares
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countMalwaresRaw(requestParameters: CountMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * List all the images present in the given registry
+     * Search Malwares
+     */
+    countMalwares(requestParameters: CountMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Retrieve all the data associated with pods
+     * @summary Search Secrets
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countSecretsRaw(requestParameters: CountSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Retrieve all the data associated with pods
+     * Search Secrets
+     */
+    countSecrets(requestParameters: CountSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Search scan results
+     * @summary Search Vulnerability Scan results
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countSecretsScansRaw(requestParameters: CountSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    countSecretsScans(requestParameters: CountSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Retrieve all the data associated with k8s clusters
+     * @summary Search Vulnerabilities
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countVulnerabilitiesRaw(requestParameters: CountVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Retrieve all the data associated with k8s clusters
+     * Search Vulnerabilities
+     */
+    countVulnerabilities(requestParameters: CountVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Search scan results
+     * @summary Search Vulnerability Scan results
+     * @param {SearchSearchScanReq} [searchSearchScanReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countVulnerabilityScansRaw(requestParameters: CountVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    countVulnerabilityScans(requestParameters: CountVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
     /**
      * Search scan results
      * @summary Search Vulnerability Scan results
@@ -331,6 +594,513 @@ export interface SearchApiInterface {
  * 
  */
 export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countCloudComplianceScansRaw(requestParameters: CountCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/cloud-compliance/scans`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countCloudComplianceScans(requestParameters: CountCloudComplianceScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countCloudComplianceScansRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List all the images present in the given registry
+     * Search Cloud compliances
+     */
+    async countCloudCompliancesRaw(requestParameters: CountCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/cloud-compliances`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * List all the images present in the given registry
+     * Search Cloud compliances
+     */
+    async countCloudCompliances(requestParameters: CountCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countCloudCompliancesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countComplianceScansRaw(requestParameters: CountComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/compliance/scans`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countComplianceScans(requestParameters: CountComplianceScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countComplianceScansRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List all the images present in the given registry
+     * Search Compliances
+     */
+    async countCompliancesRaw(requestParameters: CountCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/compliances`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * List all the images present in the given registry
+     * Search Compliances
+     */
+    async countCompliances(requestParameters: CountCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countCompliancesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with processes
+     * Search Container images
+     */
+    async countContainerImagesRaw(requestParameters: CountContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/images`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Retrieve all the data associated with processes
+     * Search Container images
+     */
+    async countContainerImages(requestParameters: CountContainerImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countContainerImagesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with containers
+     * Search Containers data
+     */
+    async countContainersRaw(requestParameters: CountContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/containers`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Retrieve all the data associated with containers
+     * Search Containers data
+     */
+    async countContainers(requestParameters: CountContainersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countContainersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with hosts
+     * Search hosts
+     */
+    async countHostsRaw(requestParameters: CountHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/hosts`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Retrieve all the data associated with hosts
+     * Search hosts
+     */
+    async countHosts(requestParameters: CountHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countHostsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countMalwareScansRaw(requestParameters: CountMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/malware/scans`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countMalwareScans(requestParameters: CountMalwareScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countMalwareScansRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List all the images present in the given registry
+     * Search Malwares
+     */
+    async countMalwaresRaw(requestParameters: CountMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/malwares`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * List all the images present in the given registry
+     * Search Malwares
+     */
+    async countMalwares(requestParameters: CountMalwaresRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countMalwaresRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with pods
+     * Search Secrets
+     */
+    async countSecretsRaw(requestParameters: CountSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/secrets`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Retrieve all the data associated with pods
+     * Search Secrets
+     */
+    async countSecrets(requestParameters: CountSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countSecretsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countSecretsScansRaw(requestParameters: CountSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/secret/scans`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countSecretsScans(requestParameters: CountSecretsScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countSecretsScansRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with k8s clusters
+     * Search Vulnerabilities
+     */
+    async countVulnerabilitiesRaw(requestParameters: CountVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/vulnerabilities`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Retrieve all the data associated with k8s clusters
+     * Search Vulnerabilities
+     */
+    async countVulnerabilities(requestParameters: CountVulnerabilitiesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countVulnerabilitiesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countVulnerabilityScansRaw(requestParameters: CountVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/vulnerability/scans`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchScanReqToJSON(requestParameters.searchSearchScanReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Search scan results
+     * Search Vulnerability Scan results
+     */
+    async countVulnerabilityScans(requestParameters: CountVulnerabilityScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countVulnerabilityScansRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Search scan results

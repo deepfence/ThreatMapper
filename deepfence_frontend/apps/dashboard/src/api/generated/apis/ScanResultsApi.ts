@@ -17,15 +17,21 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelDownloadReportResponse,
   ModelScanResultsActionRequest,
+  ModelScanResultsMaskRequest,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelDownloadReportResponseFromJSON,
+    ModelDownloadReportResponseToJSON,
     ModelScanResultsActionRequestFromJSON,
     ModelScanResultsActionRequestToJSON,
+    ModelScanResultsMaskRequestFromJSON,
+    ModelScanResultsMaskRequestToJSON,
 } from '../models';
 
 export interface DeleteScanResultRequest {
@@ -43,7 +49,7 @@ export interface DownloadScanResultsRequest {
 }
 
 export interface MaskScanResultRequest {
-    modelScanResultsActionRequest?: ModelScanResultsActionRequest;
+    modelScanResultsMaskRequest?: ModelScanResultsMaskRequest;
 }
 
 export interface NotifyScanResultRequest {
@@ -51,23 +57,23 @@ export interface NotifyScanResultRequest {
 }
 
 export interface UnmaskScanResultRequest {
-    modelScanResultsActionRequest?: ModelScanResultsActionRequest;
+    modelScanResultsMaskRequest?: ModelScanResultsMaskRequest;
 }
 
 /**
- * CommonApi - interface
+ * ScanResultsApi - interface
  * 
  * @export
- * @interface CommonApiInterface
+ * @interface ScanResultsApiInterface
  */
-export interface CommonApiInterface {
+export interface ScanResultsApiInterface {
     /**
      * Delete selected scan results
      * @summary Delete selected scan results
      * @param {ModelScanResultsActionRequest} [modelScanResultsActionRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof CommonApiInterface
+     * @memberof ScanResultsApiInterface
      */
     deleteScanResultRaw(requestParameters: DeleteScanResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
@@ -84,7 +90,7 @@ export interface CommonApiInterface {
      * @param {'SecretScan' | 'VulnerabilityScan' | 'MalwareScan' | 'ComplianceScan' | 'CloudComplianceScan'} scanType 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof CommonApiInterface
+     * @memberof ScanResultsApiInterface
      */
     deleteScanResultsForScanIDRaw(requestParameters: DeleteScanResultsForScanIDRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
@@ -101,23 +107,23 @@ export interface CommonApiInterface {
      * @param {'SecretScan' | 'VulnerabilityScan' | 'MalwareScan' | 'ComplianceScan' | 'CloudComplianceScan'} scanType 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof CommonApiInterface
+     * @memberof ScanResultsApiInterface
      */
-    downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelDownloadReportResponse>>;
 
     /**
      * Download scan results
      * Download Scans Results
      */
-    downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelDownloadReportResponse>;
 
     /**
      * Mask scan results
      * @summary Mask Scans Results
-     * @param {ModelScanResultsActionRequest} [modelScanResultsActionRequest] 
+     * @param {ModelScanResultsMaskRequest} [modelScanResultsMaskRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof CommonApiInterface
+     * @memberof ScanResultsApiInterface
      */
     maskScanResultRaw(requestParameters: MaskScanResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
@@ -133,7 +139,7 @@ export interface CommonApiInterface {
      * @param {ModelScanResultsActionRequest} [modelScanResultsActionRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof CommonApiInterface
+     * @memberof ScanResultsApiInterface
      */
     notifyScanResultRaw(requestParameters: NotifyScanResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
@@ -146,10 +152,10 @@ export interface CommonApiInterface {
     /**
      * Unmask scan results
      * @summary Unmask Scans Results
-     * @param {ModelScanResultsActionRequest} [modelScanResultsActionRequest] 
+     * @param {ModelScanResultsMaskRequest} [modelScanResultsMaskRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof CommonApiInterface
+     * @memberof ScanResultsApiInterface
      */
     unmaskScanResultRaw(requestParameters: UnmaskScanResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
@@ -164,7 +170,7 @@ export interface CommonApiInterface {
 /**
  * 
  */
-export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
+export class ScanResultsApi extends runtime.BaseAPI implements ScanResultsApiInterface {
 
     /**
      * Delete selected scan results
@@ -187,7 +193,7 @@ export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
         }
         const response = await this.request({
             path: `/deepfence/scan/results/action/delete`,
-            method: 'POST',
+            method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
             body: ModelScanResultsActionRequestToJSON(requestParameters.modelScanResultsActionRequest),
@@ -251,7 +257,7 @@ export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
      * Download scan results
      * Download Scans Results
      */
-    async downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelDownloadReportResponse>> {
         if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
             throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling downloadScanResults.');
         }
@@ -279,15 +285,16 @@ export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelDownloadReportResponseFromJSON(jsonValue));
     }
 
     /**
      * Download scan results
      * Download Scans Results
      */
-    async downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.downloadScanResultsRaw(requestParameters, initOverrides);
+    async downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelDownloadReportResponse> {
+        const response = await this.downloadScanResultsRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -314,7 +321,7 @@ export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelScanResultsActionRequestToJSON(requestParameters.modelScanResultsActionRequest),
+            body: ModelScanResultsMaskRequestToJSON(requestParameters.modelScanResultsMaskRequest),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -390,7 +397,7 @@ export class CommonApi extends runtime.BaseAPI implements CommonApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelScanResultsActionRequestToJSON(requestParameters.modelScanResultsActionRequest),
+            body: ModelScanResultsMaskRequestToJSON(requestParameters.modelScanResultsMaskRequest),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

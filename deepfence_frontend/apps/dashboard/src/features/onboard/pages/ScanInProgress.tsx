@@ -120,8 +120,10 @@ async function getScanStatus(
     apiFunction: statusScanApiFunctionMap[scanType],
     apiArgs: [
       {
-        scanIds: [],
-        bulkScanId,
+        modelScanStatusReq: {
+          scan_ids: [],
+          bulk_scan_id: bulkScanId,
+        },
       },
     ],
     errorHandler: async (r) => {

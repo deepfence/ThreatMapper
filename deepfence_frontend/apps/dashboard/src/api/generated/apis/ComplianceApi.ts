@@ -24,6 +24,7 @@ import type {
   ModelScanListReq,
   ModelScanListResp,
   ModelScanResultsReq,
+  ModelScanStatusReq,
   ModelScanTriggerResp,
 } from '../models';
 import {
@@ -45,6 +46,8 @@ import {
     ModelScanListRespToJSON,
     ModelScanResultsReqFromJSON,
     ModelScanResultsReqToJSON,
+    ModelScanStatusReqFromJSON,
+    ModelScanStatusReqToJSON,
     ModelScanTriggerRespFromJSON,
     ModelScanTriggerRespToJSON,
 } from '../models';
@@ -66,8 +69,7 @@ export interface StartComplianceScanRequest {
 }
 
 export interface StatusComplianceScanRequest {
-    scanIds: Array<string>;
-    bulkScanId: string;
+    modelScanStatusReq?: ModelScanStatusReq;
 }
 
 export interface StopComplianceScanRequest {
@@ -148,8 +150,7 @@ export interface ComplianceApiInterface {
     /**
      * Get Compliance Scan Status on agent or registry
      * @summary Get Compliance Scan Status
-     * @param {Array<string>} scanIds 
-     * @param {string} bulkScanId 
+     * @param {ModelScanStatusReq} [modelScanStatusReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
@@ -345,25 +346,11 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Get Compliance Scan Status
      */
     async statusComplianceScanRaw(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanStatusResp>> {
-        if (requestParameters.scanIds === null || requestParameters.scanIds === undefined) {
-            throw new runtime.RequiredError('scanIds','Required parameter requestParameters.scanIds was null or undefined when calling statusComplianceScan.');
-        }
-
-        if (requestParameters.bulkScanId === null || requestParameters.bulkScanId === undefined) {
-            throw new runtime.RequiredError('bulkScanId','Required parameter requestParameters.bulkScanId was null or undefined when calling statusComplianceScan.');
-        }
-
         const queryParameters: any = {};
 
-        if (requestParameters.scanIds) {
-            queryParameters['scan_ids'] = requestParameters.scanIds;
-        }
-
-        if (requestParameters.bulkScanId !== undefined) {
-            queryParameters['bulk_scan_id'] = requestParameters.bulkScanId;
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -375,9 +362,10 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
         }
         const response = await this.request({
             path: `/deepfence/scan/status/compliance`,
-            method: 'GET',
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ModelScanStatusReqToJSON(requestParameters.modelScanStatusReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplianceScanStatusRespFromJSON(jsonValue));
@@ -387,7 +375,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Get Compliance Scan Status on agent or registry
      * Get Compliance Scan Status
      */
-    async statusComplianceScan(requestParameters: StatusComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanStatusResp> {
+    async statusComplianceScan(requestParameters: StatusComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanStatusResp> {
         const response = await this.statusComplianceScanRaw(requestParameters, initOverrides);
         return await response.value();
     }
