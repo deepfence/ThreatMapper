@@ -65,6 +65,8 @@ export function getVulnerabilityApiClient() {
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
     statusVulnerabilityScan:
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
+    listVulnerabilityScans:
+      vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
   };
 }
 
