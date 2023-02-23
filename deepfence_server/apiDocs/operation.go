@@ -42,10 +42,27 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new(User))
 	d.AddOperation("updateCurrentUser", http.MethodPut, "/deepfence/user",
 		"Update Current User", "Update logged in user information",
-		http.StatusOK, []string{tagUser}, bearerToken, new(User), new(User))
+		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserRequest), new(User))
+	d.AddOperation("updatePassword", http.MethodPut, "/deepfence/user/password",
+		"Update Password", "Update current user's password",
+		http.StatusNoContent, []string{tagUser}, bearerToken, new(UpdateUserPasswordRequest), nil)
 	d.AddOperation("deleteCurrentUser", http.MethodDelete, "/deepfence/user",
 		"Delete Current User", "Delete logged in user",
 		http.StatusNoContent, []string{tagUser}, bearerToken, nil, nil)
+
+	d.AddOperation("getUsers", http.MethodGet, "/deepfence/users",
+		"Get all users", "Get all users",
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]User))
+	d.AddOperation("getUser", http.MethodGet, "/deepfence/users/{id}",
+		"Get User by User ID", "Get User by User ID",
+		http.StatusOK, []string{tagUser}, bearerToken, new(UserIdRequest), new(User))
+	d.AddOperation("updateUser", http.MethodPut, "/deepfence/users/{id}",
+		"Update User by User ID", "Update User by User ID",
+		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserIdRequest), new(User))
+	d.AddOperation("deleteUser", http.MethodDelete, "/deepfence/users/{id}",
+		"Delete User by User ID", "Delete User by User ID",
+		http.StatusNoContent, []string{tagUser}, bearerToken, new(UserIdRequest), nil)
+
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
@@ -58,7 +75,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, nil, new(PasswordResetRequest), new(MessageResponse))
 	d.AddOperation("verifyResetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/verify",
 		"Verify and Reset Password", "Verify code and reset the password",
-		http.StatusOK, []string{tagUser}, nil, new(PasswordResetVerifyRequest), nil)
+		http.StatusNoContent, []string{tagUser}, nil, new(PasswordResetVerifyRequest), nil)
 
 	d.AddOperation("inviteUser", http.MethodPost, "/deepfence/user/invite",
 		"Invite User", "Invite a user",
@@ -66,10 +83,6 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(ResponseAccessToken))
-
-	d.AddOperation("getUsers", http.MethodGet, "/deepfence/users",
-		"Get users", "Get users",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]User))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -185,6 +198,58 @@ func (d *OpenApiDocs) AddSearchOperations() {
 	d.AddOperation("searchCloudComplianceScans", http.MethodPost, "/deepfence/search/cloud-compliance/scans",
 		"Search Vulnerability Scan results", "Search scan results",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
+
+	d.AddOperation("countHosts", http.MethodPost, "/deepfence/search/count/hosts",
+		"Search hosts", "Retrieve all the data associated with hosts",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countContainers", http.MethodPost, "/deepfence/search/count/containers",
+		"Search Containers data", "Retrieve all the data associated with containers",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countContainerImages", http.MethodPost, "/deepfence/search/count/images",
+		"Search Container images", "Retrieve all the data associated with processes",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countVulnerabilities", http.MethodPost, "/deepfence/search/count/vulnerabilities",
+		"Search Vulnerabilities", "Retrieve all the data associated with k8s clusters",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countSecrets", http.MethodPost, "/deepfence/search/count/secrets",
+		"Search Secrets", "Retrieve all the data associated with pods",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countMalwares", http.MethodPost, "/deepfence/search/count/malwares",
+		"Search Malwares", "List all the images present in the given registry",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countCloudCompliances", http.MethodPost, "/deepfence/search/count/cloud-compliances",
+		"Search Cloud compliances", "List all the images present in the given registry",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countCompliances", http.MethodPost, "/deepfence/search/count/compliances",
+		"Search Compliances", "List all the images present in the given registry",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countVulnerabilityScans", http.MethodPost, "/deepfence/search/count/vulnerability/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countSecretsScans", http.MethodPost, "/deepfence/search/count/secret/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countMalwareScans", http.MethodPost, "/deepfence/search/count/malware/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countComplianceScans", http.MethodPost, "/deepfence/search/count/compliance/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countCloudComplianceScans", http.MethodPost, "/deepfence/search/count/cloud-compliance/scans",
+		"Search Vulnerability Scan results", "Search scan results",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {
@@ -301,19 +366,19 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusAccepted, []string{tagMalwareScan}, bearerToken, new(MalwareScanTriggerReq), nil)
 
 	// Status scan
-	d.AddOperation("statusVulnerabilityScan", http.MethodGet, "/deepfence/scan/status/vulnerability",
+	d.AddOperation("statusVulnerabilityScan", http.MethodPost, "/deepfence/scan/status/vulnerability",
 		"Get Vulnerability Scan Status", "Get Vulnerability Scan Status on agent or registry",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusSecretScan", http.MethodGet, "/deepfence/scan/status/secret",
+	d.AddOperation("statusSecretScan", http.MethodPost, "/deepfence/scan/status/secret",
 		"Get Secret Scan Status", "Get Secret Scan Status on agent or registry",
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusComplianceScan", http.MethodGet, "/deepfence/scan/status/compliance",
+	d.AddOperation("statusComplianceScan", http.MethodPost, "/deepfence/scan/status/compliance",
 		"Get Compliance Scan Status", "Get Compliance Scan Status on agent or registry",
 		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanStatusReq), new(ComplianceScanStatusResp))
-	d.AddOperation("statusMalwareScan", http.MethodGet, "/deepfence/scan/status/malware",
+	d.AddOperation("statusMalwareScan", http.MethodPost, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
-	d.AddOperation("statusCloudComplianceScan", http.MethodGet, "/deepfence/scan/status/cloud-compliance",
+	d.AddOperation("statusCloudComplianceScan", http.MethodPost, "/deepfence/scan/status/cloud-compliance",
 		"Get Cloud Compliance Scan Status", "Get Cloud Compliance Scan Status on cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanStatusReq), new(ComplianceScanStatusResp))
 
@@ -348,27 +413,50 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(CloudComplianceScanResult))
 
+	d.AddOperation("countResultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/count/vulnerability",
+		"Get Vulnerability Scans Results", "Get Vulnerability Scan results on agent or registry",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsSecretScan", http.MethodPost, "/deepfence/scan/results/count/secret",
+		"Get Secret Scans Results", "Get Secret Scans results on agent or registry",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsComplianceScan", http.MethodPost, "/deepfence/scan/results/count/compliance",
+		"Get Compliance Scans Results", "Get Compliance Scans results on agent or registry",
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsMalwareScan", http.MethodPost, "/deepfence/scan/results/count/malware",
+		"Get Malware Scans Results", "Get Malware Scans results on agent or registry",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/count/cloud-compliance",
+		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+
+	d.AddOperation("getScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}",
+		"Get Scans Result Document", "Get Scans Result Document",
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new(map[string]string))
+	d.AddOperation("getAllNodesOfScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes",
+		"Get all nodes for given result document", "Get all nodes for given result document",
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new([]map[string]string))
+
 	// Scan Result Actions
 	d.AddOperation("maskScanResult", http.MethodPost, "/deepfence/scan/results/action/mask",
 		"Mask Scans Results", "Mask scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsMaskRequest), nil)
 	d.AddOperation("unmaskScanResult", http.MethodPost, "/deepfence/scan/results/action/unmask",
 		"Unmask Scans Results", "Unmask scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
-	d.AddOperation("deleteScanResult", http.MethodPost, "/deepfence/scan/results/action/delete",
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsMaskRequest), nil)
+	d.AddOperation("deleteScanResult", http.MethodPatch, "/deepfence/scan/results/action/delete",
 		"Delete selected scan results", "Delete selected scan results",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
 	d.AddOperation("notifyScanResult", http.MethodPost, "/deepfence/scan/results/action/notify",
 		"Notify Scans Results", "Notify scan results in connected integration channels",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanResultsActionRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
 
 	// Scan ID Actions
-	d.AddOperation("downloadScanResults", http.MethodGet, "/scan/{scan_type}/{scan_id}/download",
+	d.AddOperation("downloadScanResults", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/download",
 		"Download Scans Results", "Download scan results",
-		http.StatusOK, []string{tagCommon}, bearerToken, new(ScanActionRequest), nil)
-	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/scan/{scan_type}/{scan_id}",
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanActionRequest), new(DownloadReportResponse))
+	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/deepfence/scan/{scan_type}/{scan_id}",
 		"Delete all scan results for a scan id", "Delete all scan results for a scan id",
-		http.StatusNoContent, []string{tagCommon}, bearerToken, new(ScanActionRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanActionRequest), nil)
 
 	// SBOM
 	d.AddOperation("getSBOM", http.MethodPost, "/deepfence/scan/sbom",
@@ -376,7 +464,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), new([]SbomResponse))
 	d.AddOperation("downloadSBOM", http.MethodPost, "/deepfence/scan/sbom/download",
 		"Download SBOM for a node or scan id", "Download SBOM for a node or scan id",
-		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), nil)
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(SbomRequest), new(DownloadReportResponse))
 }
 
 func (d *OpenApiDocs) AddDiagnosisOperations() {

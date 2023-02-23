@@ -11,6 +11,8 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
+var client = &http.Client{Timeout: 10 * time.Second}
+
 func listImages(url, namespace, token string) ([]model.ContainerImage, error) {
 
 	var (
@@ -41,8 +43,6 @@ func listRepos(url, namespace, token string) ([]Repositories, error) {
 		repositories []Repositories
 		err          error
 	)
-
-	client := &http.Client{Timeout: 10 * time.Second}
 
 	for {
 		nextPageToken := ""
@@ -100,8 +100,6 @@ func listRepoTags(url, namespace, token, repoName string) (Tags, error) {
 		err  error
 		tags Tags
 	)
-
-	client := &http.Client{Timeout: 10 * time.Second}
 
 	listRepoTagsUrl := "%s/api/v1/repository/%s/%s?includeTags=true&includeStats=false"
 	queryURl := fmt.Sprintf(listRepoTagsUrl, url, namespace, repoName)

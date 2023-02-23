@@ -62,24 +62,26 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	}
 
 	// get registry credentials
-	authDir, imagePrefix, _, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
+	authDir, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
+		log.Error().Msg(err.Error())
+		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
 		return nil
 	}
-	defer func() {
-		log.Info().Msgf("remove auth directory %s", authDir)
-		if err := os.RemoveAll(authDir); err != nil {
-			log.Error().Msg(err.Error())
-		}
-	}()
+	// defer func() {
+	// 	log.Info().Msgf("remove auth directory %s", authDir)
+	// 	if err := os.RemoveAll(authDir); err != nil {
+	// 		log.Error().Msg(err.Error())
+	// 	}
+	// }()
 
 	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
 
 	// pull image
 	var imageName string
 	if params.ImageName != "" {
-		if imagePrefix != "" {
-			imageName = imagePrefix + "/" + params.ImageName
+		if creds.ImagePrefix != "" {
+			imageName = creds.ImagePrefix + "/" + params.ImageName
 		} else {
 			imageName = params.ImageName
 		}
@@ -96,10 +98,9 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 
 	authFile := authDir + "/config.json"
 	imgTar := dir + "/save-output.tar"
-	// todo: move to skopeo
-	cmd := exec.Command("skopeo", []string{"copy", "--authfile", authFile, "docker://" + imageName, "docker-archive:" + imgTar}...)
+	cmd := exec.Command("skopeo", []string{"copy", "--insecure-policy", "--src-tls-verify=false",
+		"--authfile", authFile, "docker://" + imageName, "docker-archive:" + imgTar}...)
 	log.Info().Msgf("command: %s", cmd.String())
-	// cmd.Env = append(cmd.Env, fmt.Sprintf("DOCKER_CONFIG=%s", authFile))
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
 		log.Error().Err(err).Msg(cmd.String())
 		log.Error().Msgf("output: %s", out.String())

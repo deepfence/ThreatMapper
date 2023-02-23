@@ -111,6 +111,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/user", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetUser))
 				r.Put("/", dfHandler.AuthHandler(ResourceUser, PermissionWrite, dfHandler.UpdateUser))
+				r.Put("/password", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.UpdateUserPassword))
 				r.Delete("/", dfHandler.AuthHandler(ResourceUser, PermissionDelete, dfHandler.DeleteUser))
 			})
 
@@ -127,10 +128,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/users", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUsers))
 			})
-			r.Route("/users/{userId}", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUser))
-				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUser))
-				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUser))
+			r.Route("/users/{id}", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetUserByUserID))
+				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUserByUserID))
+				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUserByUserID))
 			})
 
 			r.Route("/graph", func(r chi.Router) {
@@ -169,23 +170,23 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malware/scans", dfHandler.SearchMalwareScans)
 				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
 				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
-			})
 
-			r.Route("/count", func(r chi.Router) {
-				r.Post("/hosts", dfHandler.SearchHosts)
-				r.Post("/containers", dfHandler.SearchContainers)
-				r.Post("/images", dfHandler.SearchContainerImages)
-				r.Post("/vulnerabilities", dfHandler.SearchVulnerabilities)
-				r.Post("/secrets", dfHandler.SearchSecrets)
-				r.Post("/malwares", dfHandler.SearchMalwares)
-				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
-				r.Post("/compliances", dfHandler.SearchCompliances)
+				r.Route("/count", func(r chi.Router) {
+					r.Post("/hosts", dfHandler.SearchHostsCount)
+					r.Post("/containers", dfHandler.SearchContainersCount)
+					r.Post("/images", dfHandler.SearchContainerImagesCount)
+					r.Post("/vulnerabilities", dfHandler.SearchVulnerabilitiesCount)
+					r.Post("/secrets", dfHandler.SearchSecretsCount)
+					r.Post("/malwares", dfHandler.SearchMalwaresCount)
+					r.Post("/cloud-compliances", dfHandler.SearchCloudCompliancesCount)
+					r.Post("/compliances", dfHandler.SearchCompliancesCount)
 
-				r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScans)
-				r.Post("/secret/scans", dfHandler.SearchSecretScans)
-				r.Post("/malware/scans", dfHandler.SearchMalwareScans)
-				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
-				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
+					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
+					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)
+					r.Post("/malware/scans", dfHandler.SearchMalwareScansCount)
+					r.Post("/compliance/scans", dfHandler.SearchComplianceScansCount)
+					r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScansCount)
+				})
 			})
 
 			r.Route("/controls", func(r chi.Router) {
@@ -231,11 +232,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malware", dfHandler.AuthHandler(ResourceScan, PermissionStop, dfHandler.StopMalwareScanHandler))
 			})
 			r.Route("/scan/status", func(r chi.Router) {
-				r.Get("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusVulnerabilityScanHandler))
-				r.Get("/secret", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusSecretScanHandler))
-				r.Get("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusComplianceScanHandler))
-				r.Get("/malware", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusMalwareScanHandler))
-				r.Get("/cloud-compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusCloudComplianceScanHandler))
+				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusVulnerabilityScanHandler))
+				r.Post("/secret", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusSecretScanHandler))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusComplianceScanHandler))
+				r.Post("/malware", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusMalwareScanHandler))
+				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.StatusCloudComplianceScanHandler))
 			})
 			r.Route("/scan/list", func(r chi.Router) {
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScansHandler))
@@ -249,18 +250,30 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListComplianceScanResultsHandler))
 				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultsHandler))
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListCloudComplianceScanResultsHandler))
+
+				r.Route("/count", func(r chi.Router) {
+					r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountVulnerabilityScanResultsHandler))
+					r.Post("/secret", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountSecretScanResultsHandler))
+					r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountComplianceScanResultsHandler))
+					r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountMalwareScanResultsHandler))
+					r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountCloudComplianceScanResultsHandler))
+				})
 			})
 
 			r.Route("/scan/results/action", func(r chi.Router) {
 				r.Post("/mask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultMaskHandler))
 				r.Post("/unmask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultUnmaskHandler))
-				r.Post("/delete", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanResultDeleteHandler))
+				r.Patch("/delete", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanResultDeleteHandler))
 				r.Post("/notify", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultNotifyHandler))
 			})
 
 			r.Route("/scan/{scan_type}/{scan_id}", func(r chi.Router) {
 				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultDownloadHandler))
 				r.Delete("/", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanDeleteHandler))
+				r.Route("/{doc_id}", func(r chi.Router) {
+					r.Get("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanResultDocumentHandler))
+					r.Get("/nodes", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanResultDocumentNodesHandler))
+				})
 			})
 
 			r.Route("/scan/sbom", func(r chi.Router) {
