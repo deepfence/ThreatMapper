@@ -20,7 +20,6 @@ export const TopNVulnerableChart = ({
   data: Array<TopNVulnerableChartData>;
   loading?: boolean;
 }) => {
-  console.log(data);
   return (
     <ReactECharts
       theme={theme === 'dark' ? 'dark' : 'light'}
