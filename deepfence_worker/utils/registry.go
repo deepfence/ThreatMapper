@@ -16,6 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerprivate"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/jfrog"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
@@ -101,6 +102,8 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 		return harborCreds(reg, aes)
 	case constants.DOCKER_PRIVATE:
 		return dockerprivateCreds(reg, aes)
+	case constants.JFROG:
+		return jfrogCreds(reg, aes)
 	default:
 		return regCreds{}, nil
 	}
@@ -335,6 +338,43 @@ func dockerprivateCreds(reg postgresql_db.GetContainerRegistryRow, aes encryptio
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.DockerRegistryURL),
 		SkipTLSVerify: true,
 		UseHttp:       useHttp(hub.NonSecret.DockerRegistryURL),
+	}, nil
+}
+
+func jfrogCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
+	var (
+		err       error
+		hub       jfrog.RegistryJfrog
+		nonsecret jfrog.NonSecret
+		secret    jfrog.Secret
+	)
+	err = json.Unmarshal(reg.NonSecret, &nonsecret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.EncryptedSecret, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	hub = jfrog.RegistryJfrog{
+		Name:      reg.Name,
+		Secret:    secret,
+		NonSecret: nonsecret,
+	}
+
+	err = hub.DecryptSecret(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	return regCreds{
+		URL:           hub.NonSecret.JfrogRegistryURL,
+		UserName:      hub.NonSecret.JfrogUsername,
+		Password:      hub.Secret.JfrogPassword,
+		NameSpace:     hub.NonSecret.JfrogRepository,
+		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.JfrogRegistryURL) + "/" + hub.NonSecret.JfrogRepository,
+		SkipTLSVerify: true,
+		UseHttp:       useHttp(hub.NonSecret.JfrogRegistryURL),
 	}, nil
 }
 
