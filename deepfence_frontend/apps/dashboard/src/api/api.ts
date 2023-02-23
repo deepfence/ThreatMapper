@@ -123,6 +123,7 @@ export function getSearchApiClient() {
     searchContainers: searchApi.searchContainers.bind(searchApi),
     searchHosts: searchApi.searchHosts.bind(searchApi),
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
+    searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
   };
 }
 
