@@ -3,6 +3,7 @@ package ingesters
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -152,6 +153,8 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "resource_vpc_config")
 	bb = convertStructFieldToJSONString(bb, "network_configuration")
 	bb = convertStructFieldToJSONString(bb, "policy_std")
+
+	fmt.Println("the object bb is", bb)
 
 	if bb["resource_id"] == "aws_ecs_service" {
 		bb["arn"] = bb["service_name"]
