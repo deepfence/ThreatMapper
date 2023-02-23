@@ -128,16 +128,22 @@ func ResourceToMaps(ms []CloudResource) []map[string]interface{} {
 	for _, v := range ms {
 		res = append(res, v.ToMap())
 	}
+	fmt.Println("check ms size", len(res))
 	return res
 }
 
 func (c *CloudResource) ToMap() map[string]interface{} {
 	out, err := json.Marshal(*c)
 	if err != nil {
+		fmt.Println("check err", err)
 		return nil
 	}
 	bb := map[string]interface{}{}
 	err = json.Unmarshal(out, &bb)
+	if err != nil {
+		fmt.Println("check err 2", err)
+		return nil
+	}
 
 	bb = convertStructFieldToJSONString(bb, "task_definition")
 	bb = convertStructFieldToJSONString(bb, "vpc_options")
@@ -153,8 +159,6 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "resource_vpc_config")
 	bb = convertStructFieldToJSONString(bb, "network_configuration")
 	bb = convertStructFieldToJSONString(bb, "policy_std")
-
-	fmt.Println("the object bb is", bb)
 
 	if bb["resource_id"] == "aws_ecs_service" {
 		bb["arn"] = bb["service_name"]
