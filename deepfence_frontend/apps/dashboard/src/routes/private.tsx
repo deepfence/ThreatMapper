@@ -34,6 +34,7 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
+import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
 import { module as vulnerabilityDetails } from '@/features/vulnerabilities/pages/VulnerabilityDetailModal';
@@ -216,5 +217,9 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Most Exploitable Vulnerabilities' },
       },
     ],
+  },
+  {
+    path: '/_api/vulnerability/scan-results/history/:nodeType/:nodeId',
+    loader: vulnerabilityApiLoader,
   },
 ];
