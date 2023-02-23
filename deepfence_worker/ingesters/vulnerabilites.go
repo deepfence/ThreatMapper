@@ -76,17 +76,11 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Vulnerability{node_id:row.cve_id})
-		SET n+= row`,
-		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
-		log.Error().Msgf(err.Error())
-		return err
-	}
-
-	if _, err = tx.Run(`
-		MATCH (n:Vulnerability)
-		MERGE (m:VulnerabilityScan{node_id: n.scan_id})
+		SET n+= row
+		WITH n, row.scan_id as scan_id
+		MATCH (m:VulnerabilityScan{node_id: scan_id})
 		MERGE (m) -[:DETECTED]-> (n)`,
-		map[string]interface{}{}); err != nil {
+		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
 		log.Error().Msgf(err.Error())
 		return err
 	}
