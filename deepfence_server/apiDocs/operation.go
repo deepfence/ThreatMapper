@@ -413,6 +413,22 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(CloudComplianceScanResult))
 
+	d.AddOperation("countResultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/count/vulnerability",
+		"Get Vulnerability Scans Results", "Get Vulnerability Scan results on agent or registry",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsSecretScan", http.MethodPost, "/deepfence/scan/results/count/secret",
+		"Get Secret Scans Results", "Get Secret Scans results on agent or registry",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsComplianceScan", http.MethodPost, "/deepfence/scan/results/count/compliance",
+		"Get Compliance Scans Results", "Get Compliance Scans results on agent or registry",
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsMalwareScan", http.MethodPost, "/deepfence/scan/results/count/malware",
+		"Get Malware Scans Results", "Get Malware Scans results on agent or registry",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/count/cloud-compliance",
+		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+
 	d.AddOperation("getScanResultDocument", http.MethodGet, "/scan/{scan_type}/{scan_id}/{doc_id}",
 		"Get Scans Result Document", "Get Scans Result Document",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new(map[string]string))
