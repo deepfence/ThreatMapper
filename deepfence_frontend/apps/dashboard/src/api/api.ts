@@ -38,8 +38,9 @@ export function getUserApiClient() {
   return {
     registerUser: userApi.registerUser.bind(userApi),
     getUsers: userApi.getUsers.bind(userApi),
-    deleteCurrentUser: userApi.deleteCurrentUser.bind(userApi),
-    updateCurrentUser: userApi.updateCurrentUser.bind(userApi),
+    deleteCurrentUser: userApi.deleteUser.bind(userApi),
+    updateCurrentUser: userApi.updateUser.bind(userApi),
+    inviteUser: userApi.inviteUser.bind(userApi),
   };
 }
 

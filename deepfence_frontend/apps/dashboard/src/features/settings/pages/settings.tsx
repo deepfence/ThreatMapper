@@ -30,7 +30,7 @@ export const Settings = () => {
   };
 
   return (
-    <div className="flex flex-col space-y-8">
+    <div className="flex flex-col space-y-8 m-4">
       <Tabs
         tabs={settingsLayoutTabs}
         size="md"

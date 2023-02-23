@@ -8,13 +8,35 @@ import {
   DropdownItem,
   DropdownSeparator,
   Modal,
+  Radio,
+  Select,
+  SelectItem,
   Table,
   TextInput,
 } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { getUsersData } from '@/features/settings/pages/UserManagement';
 import { ApiError, makeRequest } from '@/utils/api';
+
+const inviteRole: Array<{
+  label: string;
+  value: string;
+}> = [
+  {
+    label: 'Admin',
+    value: 'admin',
+  },
+  {
+    label: 'User',
+    value: 'standard-user',
+  },
+  {
+    label: 'Read only user',
+    value: 'read-only-user',
+  },
+];
 
 export type LoaderDataType = {
   error?: string;
@@ -29,7 +51,7 @@ type ActionReturnType = {
 const deleteUser = async (id: number): Promise<void> => {
   const r = await makeRequest({
     apiFunction: getUserApiClient().deleteCurrentUser,
-    apiArgs: [],
+    apiArgs: [{ id: id }],
     errorHandler: async (r) => {
       const error = new ApiError<ActionReturnType>({});
       if (r.status === 400) {
@@ -47,25 +69,34 @@ const deleteUser = async (id: number): Promise<void> => {
 };
 
 const handleSaveChanges = async ({
-  company,
   firstName,
   lastName,
-  email,
+  id,
+  active,
+  roleInvite,
 }: ActionFunctionArgs & {
-  company: string;
   firstName: string;
   lastName: string;
-  email: string;
+  id: number;
+  active: string;
+  roleInvite: string;
 }): Promise<ActionReturnType> => {
+  let activeRole;
+  if (active === 'true') {
+    activeRole = true;
+  } else {
+    activeRole = false;
+  }
   const r = await makeRequest({
     apiFunction: getUserApiClient().updateCurrentUser,
     apiArgs: [
       {
-        modelUser: {
-          company: company,
-          email: email,
+        id: id,
+        modelEditUserRequest: {
           first_name: firstName,
           last_name: lastName,
+          is_active: activeRole,
+          role: roleInvite,
         },
       },
     ],
@@ -84,15 +115,65 @@ const handleSaveChanges = async ({
     return r.value();
   }
 
+  await getUsersData();
+
+  return { message: 'Action completed successfully' };
+};
+
+const handleInviteUser = async ({
+  emailInvite,
+  roleInvite,
+}: ActionFunctionArgs & {
+  emailInvite: string;
+  roleInvite: string;
+}): Promise<ActionReturnType> => {
+  const r = await makeRequest({
+    apiFunction: getUserApiClient().inviteUser,
+    apiArgs: [
+      {
+        modelInviteUserRequest: {
+          action: 'send-invite-email',
+          email: emailInvite,
+          role: roleInvite,
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<ActionReturnType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    return r.value();
+  }
+
+  await getUsersData();
+
   return { message: 'Action completed successfully' };
 };
 
 export const UserManagementForm = ({ loaderData }: { loaderData: LoaderDataType }) => {
-  const [open, setOpen] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openInviteModal, setOpenInviteModal] = useState(false);
+  const [openPasswordModal, setOpenPasswordModal] = useState(false);
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [company, setCompany] = useState('');
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState();
+  const [emailInvite, setEmailInvite] = useState('');
+  const [roleInvite, setRoleInvite] = useState('admin');
+  const [active, setActive] = useState('');
+
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+
   const tableColumns = [
     {
       accessorKey: 'id',
@@ -126,9 +207,8 @@ export const UserManagementForm = ({ loaderData }: { loaderData: LoaderDataType 
                 onClick={() => {
                   setFirstName(row.row.original.first_name);
                   setLastName(row.row.original.last_name);
-                  setCompany(row.row.original.company);
-                  setEmail(row.row.original.email);
-                  setOpen(true);
+                  setId(row.row.original.id);
+                  setOpenEditModal(true);
                 }}
               >
                 Edit
@@ -173,13 +253,121 @@ export const UserManagementForm = ({ loaderData }: { loaderData: LoaderDataType 
   return (
     <div>
       <div className="flex flex-row justify-end">
-        <Button size="md" color="primary" className="min-w-fit mx-2 mb-6">
+        <Button
+          size="md"
+          color="primary"
+          className="min-w-fit mx-2 mb-6"
+          onClick={() => {
+            setOpenPasswordModal(true);
+          }}
+        >
           Change Password
         </Button>
-        <Button size="md" color="normal" className="min-w-fit mb-6">
+        <Modal open={openPasswordModal} onOpenChange={() => setOpenPasswordModal(false)}>
+          <>
+            <div>
+              <div className="flex my-4">
+                <TextInput
+                  type={'password'}
+                  placeholder="Old Password"
+                  sizing="sm"
+                  name="password"
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  value={oldPassword}
+                />
+              </div>
+              <div className="flex my-4">
+                <TextInput
+                  type={'password'}
+                  placeholder="New Password"
+                  sizing="sm"
+                  name="password"
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  value={newPassword}
+                />
+              </div>
+              <div className="flex my-4">
+                <TextInput
+                  type={'password'}
+                  placeholder="Confirm New Password"
+                  sizing="sm"
+                  name="password"
+                  onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                  value={newPasswordConfirm}
+                  // color={data?.fieldErrors?.password ? 'error' : 'default'}
+                />
+              </div>
+              <div>
+                <Button size="md" color="primary" className="w-full mb-4">
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </>
+        </Modal>
+        <Button
+          size="md"
+          color="normal"
+          className="min-w-fit mb-6"
+          onClick={() => {
+            setOpenInviteModal(true);
+          }}
+        >
           Send Invite
         </Button>
       </div>
+      <Modal open={openInviteModal} onOpenChange={() => setOpenInviteModal(false)}>
+        <>
+          <div>
+            <div className="my-4">
+              <TextInput
+                value={emailInvite}
+                placeholder="Email"
+                onChange={(e) => setEmailInvite(e.target.value)}
+              />
+            </div>
+            <div className="my-4">
+              <Select
+                noPortal
+                value={roleInvite}
+                name="role"
+                onChange={(e) => {
+                  setRoleInvite(e);
+                }}
+                placeholder="Select a role"
+                sizing="sm"
+              >
+                {inviteRole.map((role) => {
+                  return (
+                    <SelectItem value={role.value} key={role.value}>
+                      {role.label}
+                    </SelectItem>
+                  );
+                })}
+              </Select>
+            </div>
+            <div>
+              <Button
+                size="md"
+                color="primary"
+                className="w-full mb-4"
+                onClick={() => {
+                  handleInviteUser({
+                    emailInvite,
+                    roleInvite,
+                  } as ActionFunctionArgs & {
+                    emailInvite: string;
+                    roleInvite: string;
+                  });
+                  setOpenInviteModal(false);
+                }}
+              >
+                Send Invite
+              </Button>
+            </div>
+          </div>
+        </>
+      </Modal>
       <Table
         size="sm"
         columns={tableColumns}
@@ -193,7 +381,7 @@ export const UserManagementForm = ({ loaderData }: { loaderData: LoaderDataType 
           is_active: user.is_active ? 'Active' : 'Inactive',
         }))}
       />
-      <Modal open={open} onOpenChange={() => setOpen(false)}>
+      <Modal open={openEditModal} onOpenChange={() => setOpenEditModal(false)}>
         <>
           <div>
             <div className="flex my-4">
@@ -208,12 +396,47 @@ export const UserManagementForm = ({ loaderData }: { loaderData: LoaderDataType 
               <TextInput value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </div>
             <div className="flex my-4">
-              <span className="w-2/4">Company</span>
-              <TextInput value={company} onChange={(e) => setCompany(e.target.value)} />
+              <span className="w-2/4">Role</span>
+              <div className="w-full">
+                <Select
+                  noPortal
+                  value={roleInvite}
+                  name="role"
+                  onChange={(e) => {
+                    setRoleInvite(e);
+                  }}
+                  placeholder="Select a role"
+                  sizing="sm"
+                >
+                  {inviteRole.map((role) => {
+                    return (
+                      <SelectItem value={role.value} key={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    );
+                  })}
+                </Select>
+              </div>
             </div>
             <div className="flex my-4">
-              <span className="w-2/4">Email</span>
-              <TextInput value={email} onChange={(e) => setEmail(e.target.value)} />
+              <span className="w-2/4">Active</span>
+              <Radio
+                direction="row"
+                name="active"
+                onValueChange={(e) => {
+                  setActive(e);
+                }}
+                options={[
+                  {
+                    label: 'True',
+                    value: 'true',
+                  },
+                  {
+                    label: 'False',
+                    value: 'false',
+                  },
+                ]}
+              />
             </div>
             <div>
               <Button
@@ -222,17 +445,19 @@ export const UserManagementForm = ({ loaderData }: { loaderData: LoaderDataType 
                 className="w-full mb-4"
                 onClick={() => {
                   handleSaveChanges({
-                    company,
                     firstName,
                     lastName,
-                    email,
-                  } as ActionFunctionArgs & {
-                    company: string;
+                    id,
+                    active,
+                    roleInvite,
+                  } as unknown as ActionFunctionArgs & {
                     firstName: string;
                     lastName: string;
-                    email: string;
+                    id: number;
+                    active: string;
+                    roleInvite: string;
                   });
-                  setOpen(false);
+                  setOpenEditModal(false);
                 }}
               >
                 Save Changes

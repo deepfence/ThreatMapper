@@ -11,7 +11,7 @@ export type LoaderDataType = {
   data?: object;
 };
 
-async function getUsersData(): Promise<LoaderDataType> {
+export async function getUsersData(): Promise<LoaderDataType> {
   const result = await makeRequest({
     apiFunction: getUserApiClient().getUsers,
     apiArgs: [],
@@ -48,7 +48,7 @@ const loader = async (): Promise<LoaderDataType> => {
 export const UserManagement = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   return (
-    <div className="w-full">
+    <div className="m-2">
       <UserManagementForm loaderData={loaderData} />
     </div>
   );

@@ -2,7 +2,7 @@ import { ScheduledJobsForm } from '@/features/settings/components/ScheduledJobsF
 
 export const ScheduledJobs = () => {
   return (
-    <div className="w-full">
+    <div className="m-2">
       <ScheduledJobsForm />
     </div>
   );

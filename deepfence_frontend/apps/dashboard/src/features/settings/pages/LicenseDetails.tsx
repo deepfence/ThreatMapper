@@ -2,7 +2,7 @@ import { LicenseDetailsForm } from '@/features/settings/components/LicenseDetail
 
 export const LicenseDetails = () => {
   return (
-    <div className="w-full">
+    <div className="m-2">
       <LicenseDetailsForm />
     </div>
   );
