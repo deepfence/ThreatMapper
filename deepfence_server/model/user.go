@@ -228,7 +228,12 @@ type UserIdRequest struct {
 	ID int64 `path:"id"`
 }
 
-type EditUserRequest struct {
+type UpdateUserPasswordRequest struct {
+	OldPassword string `json:"old_password" validate:"required,password,min=8,max=32"`
+	NewPassword string `json:"new_password" validate:"required,password,min=8,max=32"`
+}
+
+type UpdateUserRequest struct {
 	ID        int64  `path:"id"`
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`

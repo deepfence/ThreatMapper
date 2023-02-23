@@ -42,7 +42,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, bearerToken, nil, new(User))
 	d.AddOperation("updateCurrentUser", http.MethodPut, "/deepfence/user",
 		"Update Current User", "Update logged in user information",
-		http.StatusOK, []string{tagUser}, bearerToken, new(EditUserRequest), new(User))
+		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserRequest), new(User))
+	d.AddOperation("updatePassword", http.MethodPut, "/deepfence/user/password",
+		"Update Password", "Update current user's password",
+		http.StatusNoContent, []string{tagUser}, bearerToken, new(UpdateUserPasswordRequest), nil)
 	d.AddOperation("deleteCurrentUser", http.MethodDelete, "/deepfence/user",
 		"Delete Current User", "Delete logged in user",
 		http.StatusNoContent, []string{tagUser}, bearerToken, nil, nil)
@@ -55,7 +58,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, bearerToken, new(UserIdRequest), new(User))
 	d.AddOperation("updateUser", http.MethodPut, "/deepfence/users/{id}",
 		"Update User by User ID", "Update User by User ID",
-		http.StatusOK, []string{tagUser}, bearerToken, new(EditUserRequest), new(User))
+		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserRequest), new(User))
 	d.AddOperation("deleteUser", http.MethodDelete, "/deepfence/users/{id}",
 		"Delete User by User ID", "Delete User by User ID",
 		http.StatusNoContent, []string{tagUser}, bearerToken, new(UserIdRequest), nil)
@@ -72,7 +75,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, nil, new(PasswordResetRequest), new(MessageResponse))
 	d.AddOperation("verifyResetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/verify",
 		"Verify and Reset Password", "Verify code and reset the password",
-		http.StatusOK, []string{tagUser}, nil, new(PasswordResetVerifyRequest), nil)
+		http.StatusNoContent, []string{tagUser}, nil, new(PasswordResetVerifyRequest), nil)
 
 	d.AddOperation("inviteUser", http.MethodPost, "/deepfence/user/invite",
 		"Invite User", "Invite a user",
@@ -409,6 +412,13 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("resultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/cloud-compliance",
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(CloudComplianceScanResult))
+
+	d.AddOperation("getScanResultDocument", http.MethodGet, "/scan/{scan_type}/{scan_id}/{doc_id}",
+		"Get Scans Result Document", "Get Scans Result Document",
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new(map[string]string))
+	d.AddOperation("getAllNodesOfScanResultDocument", http.MethodGet, "/scan/{scan_type}/{scan_id}/{doc_id}/nodes",
+		"Get all nodes for given result document", "Get all nodes for given result document",
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new([]map[string]string))
 
 	// Scan Result Actions
 	d.AddOperation("maskScanResult", http.MethodPost, "/deepfence/scan/results/action/mask",

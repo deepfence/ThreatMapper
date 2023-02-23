@@ -622,6 +622,14 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	return res, nil
 }
 
+func GetScanResultDocument(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docId string) (map[string]string, error) {
+	return nil, nil
+}
+
+func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docId string) ([]map[string]string, error) {
+	return nil, nil
+}
+
 func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {
 	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}

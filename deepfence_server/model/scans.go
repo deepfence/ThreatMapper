@@ -114,14 +114,14 @@ type CloudComplianceScanListResp struct {
 
 type ScanResultsMaskRequest struct {
 	ScanID                   string   `json:"scan_id" validate:"required" required:"true"`
-	NodeIds                  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
+	DocIds                   []string `json:"doc_ids" validate:"required,gt=0,dive,min=3" required:"true"`
 	ScanType                 string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	MaskAcrossHostsAndImages bool     `json:"mask_across_hosts_and_images"`
 }
 
 type ScanResultsActionRequest struct {
 	ScanID   string   `json:"scan_id" validate:"required" required:"true"`
-	NodeIds  []string `json:"node_ids" validate:"required,gt=0,dive,min=3" required:"true"`
+	DocIds   []string `json:"doc_ids" validate:"required,gt=0,dive,min=3" required:"true"`
 	ScanType string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	//utils.Neo4jScanType
 }
@@ -131,6 +131,13 @@ type DownloadReportResponse struct {
 }
 
 type ScanActionRequest struct {
+	ScanID   string `path:"scan_id" validate:"required" required:"true"`
+	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
+	//utils.Neo4jScanType
+}
+
+type ScanResultDocumentRequest struct {
+	DocId    string `path:"doc_id" validate:"required" required:"true"`
 	ScanID   string `path:"scan_id" validate:"required" required:"true"`
 	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	//utils.Neo4jScanType

@@ -111,6 +111,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/user", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetUser))
 				r.Put("/", dfHandler.AuthHandler(ResourceUser, PermissionWrite, dfHandler.UpdateUser))
+				r.Put("/password", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.UpdateUserPassword))
 				r.Delete("/", dfHandler.AuthHandler(ResourceUser, PermissionDelete, dfHandler.DeleteUser))
 			})
 
@@ -261,6 +262,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/scan/{scan_type}/{scan_id}", func(r chi.Router) {
 				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultDownloadHandler))
 				r.Delete("/", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanDeleteHandler))
+				r.Route("/{doc_id}", func(r chi.Router) {
+					r.Get("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanResultDocumentHandler))
+					r.Get("/nodes", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanResultDocumentNodesHandler))
+				})
 			})
 
 			r.Route("/scan/sbom", func(r chi.Router) {

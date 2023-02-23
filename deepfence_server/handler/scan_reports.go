@@ -831,9 +831,9 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	}
 	switch action {
 	case "delete":
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocIds)
 	case "notify":
-		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocIds)
 	}
 	if err != nil {
 		respondError(err, w)
@@ -884,6 +884,43 @@ func (h *Handler) ScanResultDownloadHandler(w http.ResponseWriter, r *http.Reque
 
 func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	h.scanIdActionHandler(w, r, "delete")
+}
+
+func (h *Handler) getScanResultDocumentHandler(w http.ResponseWriter, r *http.Request, action string) {
+	req := model.ScanResultDocumentRequest{
+		DocId:    chi.URLParam(r, "doc_id"),
+		ScanID:   chi.URLParam(r, "scan_id"),
+		ScanType: chi.URLParam(r, "scan_type"),
+	}
+	err := h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "getDocument":
+		resp, err := reporters_scan.GetScanResultDocument(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocId)
+		if err != nil {
+			respondError(err, w)
+			return
+		}
+		httpext.JSON(w, http.StatusOK, resp)
+	case "getNodes":
+		resp, err := reporters_scan.GetScanResultDocumentNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocId)
+		if err != nil {
+			respondError(err, w)
+			return
+		}
+		httpext.JSON(w, http.StatusOK, resp)
+	}
+}
+
+func (h *Handler) GetScanResultDocumentHandler(w http.ResponseWriter, r *http.Request) {
+	h.getScanResultDocumentHandler(w, r, "getDocument")
+}
+
+func (h *Handler) GetScanResultDocumentNodesHandler(w http.ResponseWriter, r *http.Request) {
+	h.getScanResultDocumentHandler(w, r, "getNodes")
 }
 
 func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {
