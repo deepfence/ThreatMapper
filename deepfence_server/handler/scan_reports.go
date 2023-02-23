@@ -651,10 +651,19 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 	if err == reporters.NotFoundErr {
 		err = &NotFoundError{err}
 	}
+
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
 		respondError(err, w)
 		return
+	}
+
+	for i := range infos.ScansInfo {
+		counts, err := reporters_scan.GetSevCounts(r.Context(), scan_type, infos.ScansInfo[i].ScanId)
+		infos.ScansInfo[i].SeverityCounts = counts
+		if err != nil {
+			log.Error().Err(err).Msg("Counts computation issue")
+		}
 	}
 
 	httpext.JSON(w, http.StatusOK, infos)
