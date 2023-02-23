@@ -23,7 +23,7 @@ async function getVulnerabilityScanList(
   nodeType: string,
 ): Promise<ApiVulnerableLoaderDataType> {
   const result = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().vulnerabilityScanList,
+    apiFunction: getVulnerabilityApiClient().listVulnerabilityScans,
     apiArgs: [
       {
         modelScanListReq: {
