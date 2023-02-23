@@ -1,6 +1,7 @@
-package acr
+package dockerprivate
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +12,12 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
-var client = &http.Client{Timeout: 10 * time.Second}
+var client = &http.Client{
+	Timeout: 10 * time.Second,
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	},
+}
 
 func listImagesRegistryV2(url, namespace, userName, password string) ([]model.ContainerImage, error) {
 
@@ -123,85 +129,78 @@ func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTa
 	return repoTags, err
 }
 
-func getManifestsAzure(url, namespace, userName, password, repoName string) (ManifestsAzureResp, error) {
-	var (
-		err       error
-		manifests ManifestsAzureResp
-	)
+// func getManifestsV2(url, namespace, userName, password, repoName, tag string) (ManifestsResp, error) {
+// 	var (
+// 		err       error
+// 		manifests ManifestsResp
+// 	)
 
-	getManifestsURL := "%s/acr/v1/%s/_manifests"
-	queryURL := fmt.Sprintf(getManifestsURL, url, repoName)
-	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return manifests, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(userName, password)
+// 	getManifestsURL := "%s/v2/%s/manifests/%s"
+// 	queryURL := fmt.Sprintf(getManifestsURL, url, repoName, tag)
+// 	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
+// 	if err != nil {
+// 		log.Error().Msg(err.Error())
+// 		return manifests, err
+// 	}
+// 	req.Header.Set("Content-Type", "application/json")
+// 	req.SetBasicAuth(userName, password)
 
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return manifests, err
-	}
-	defer resp.Body.Close()
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		log.Error().Msg(err.Error())
+// 		return manifests, err
+// 	}
+// 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return manifests, err
-	}
+// 	body, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		log.Error().Msg(err.Error())
+// 		return manifests, err
+// 	}
 
-	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("error bad status code %d", resp.StatusCode)
-		log.Error().Msg(err.Error())
-		return manifests, err
-	}
+// 	if resp.StatusCode != http.StatusOK {
+// 		err = fmt.Errorf("error bad status code %d", resp.StatusCode)
+// 		log.Error().Msg(err.Error())
+// 		return manifests, err
+// 	}
 
-	if err := json.Unmarshal(body, &manifests); err != nil {
-		log.Error().Msg(err.Error())
-		return manifests, err
-	}
+// 	if err := json.Unmarshal(body, &manifests); err != nil {
+// 		log.Error().Msg(err.Error())
+// 		return manifests, err
+// 	}
 
-	return manifests, err
-}
+// 	return manifests, err
+// }
 
 func getImageWithTags(url, namespace, userName, password, repoName string, repoTags RepoTagsResp) []model.ContainerImage {
 	var imageAndTag []model.ContainerImage
-	manifests, err := getManifestsAzure(url, namespace, userName, password, repoName)
-	if err != nil {
-		return imageAndTag
-	}
 	for _, tag := range repoTags.Tags {
-		details := getImageDetails(tag, manifests)
-		if details != nil {
-			tt := model.ContainerImage{
-				ID:      model.DigestToID(details.Digest),
-				Name:    repoName,
-				Tag:     tag,
-				Size:    fmt.Sprint(details.ImageSize),
-				Metrics: model.ComputeMetrics{},
-				Metadata: model.Metadata{
-					"createdTime":    details.CreatedTime,
-					"digest":         details.Digest,
-					"lastUpdateTime": details.LastUpdateTime,
-					"os":             details.Os,
-				},
-			}
-			imageAndTag = append(imageAndTag, tt)
+		digest, details := getImageDetails(tag, repoTags)
+		tt := model.ContainerImage{
+			ID:      model.DigestToID(*digest),
+			Name:    repoName,
+			Tag:     tag,
+			Size:    fmt.Sprint(details.ImageSizeBytes),
+			Metrics: model.ComputeMetrics{},
+			Metadata: model.Metadata{
+				"timeCreatedMs":  details.TimeCreatedMs,
+				"digest":         *digest,
+				"timeUploadedMs": details.TimeUploadedMs,
+			},
 		}
+		imageAndTag = append(imageAndTag, tt)
 	}
 
 	return imageAndTag
 }
 
-func getImageDetails(tag string, manifests ManifestsAzureResp) *ManifestV1Azure {
-	for _, manifest := range manifests.Manifests {
-		for _, i := range manifest.Tags {
+func getImageDetails(tag string, repoTags RepoTagsResp) (*string, *Manifest) {
+	for k, manifest := range repoTags.Manifest {
+		for _, i := range manifest.Tag {
 			if i == tag {
-				return &manifest
+				return &k, &manifest
 			}
 		}
 	}
-	return nil
+	return nil, nil
 }

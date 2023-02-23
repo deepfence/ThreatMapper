@@ -2,7 +2,6 @@ package ingesters
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -77,20 +76,15 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 
 	if _, err = tx.Run(`
 		UNWIND $batch as row
-		MERGE (n:CloudComplianceResult{resource:row.resource, scan_id: row.scan_id, control_id: row.control_id})
+		MERGE (n:CloudCompliance{resource:row.resource, scan_id: row.scan_id, control_id: row.control_id})
 		MERGE (m:CloudResource{node_id: row.resource})
-		MERGE (n) -[:SCANNED]-> (m)
-		SET n+= row`,
+		SET n+= row
+		WITH n, m
+		MERGE (l:CloudComplianceScan{node_id: n.scan_id})
+		MERGE (l) -[:SCANNED]-> (m)
+		MERGE (l) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": CloudCompliancesToMaps(data)}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(fmt.Sprintf(`
-		MATCH (n:CloudComplianceResult)
-		MERGE (m:%s{node_id: n.scan_id})
-		SET m.time_stamp = timestamp()
-		MERGE (m) -[:DETECTED]-> (n)`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
-		map[string]interface{}{}); err != nil {
 		return err
 	}
 

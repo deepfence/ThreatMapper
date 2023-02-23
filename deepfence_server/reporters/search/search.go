@@ -33,6 +33,10 @@ type SearchScanReq struct {
 	Window     model.FetchWindow `json:"window" required:"true"`
 }
 
+type SearchCountResp struct {
+	Count int `json:"count" required:"true"`
+}
+
 func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	res := []T{}
 	var dummy T

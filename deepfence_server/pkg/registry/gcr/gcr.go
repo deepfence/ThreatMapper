@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
@@ -37,7 +36,6 @@ func (d *RegistryGCR) IsValidCredential() bool {
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth("_json_key", d.Extras.ServiceAccountJson)
 
-	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error().Msg(err.Error())

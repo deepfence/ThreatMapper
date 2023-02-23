@@ -372,6 +372,18 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 	return res, nil
 }
 
+func nodeType2Neo4jType(node_type string) string {
+	switch node_type {
+	case "container":
+		return "Container"
+	case "image":
+		return "ContainerImage"
+	case "host":
+		return "Node"
+	}
+	return "unknown"
+}
+
 func GetScansList(ctx context.Context,
 	scan_type utils.Neo4jScanType,
 	node_ids []model.NodeIdentifier,
@@ -393,32 +405,35 @@ func GetScansList(ctx context.Context,
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`
-		MATCH (m:`+string(scan_type)+`) -[:SCANNED]-> (n)
-		WHERE n.node_id IN $node_ids
-		AND m.status = 'COMPLETE'
-		RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_type
-		ORDER BY m.updated_at`+fw.FetchWindow2CypherQuery(),
-		map[string]interface{}{"node_ids": NodeIdentifierToIdList(node_ids)})
-	if err != nil {
-		return model.ScanListResp{}, err
-	}
-
-	recs, err := res.Collect()
-	if err != nil {
-		return model.ScanListResp{}, reporters.NotFoundErr
-	}
-
 	scans_info := []model.ScanInfo{}
-	for _, rec := range recs {
-		tmp := model.ScanInfo{
-			ScanId:    rec.Values[0].(string),
-			Status:    rec.Values[1].(string),
-			UpdatedAt: rec.Values[2].(int64),
-			NodeId:    rec.Values[3].(string),
-			NodeType:  rec.Values[4].(string),
+	for i := range node_ids {
+		query := `
+			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n:` + nodeType2Neo4jType(node_ids[i].NodeType) + `{node_id: $node_id})
+			WHERE m.status = 'COMPLETE'
+			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_type
+			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
+		fmt.Printf("list query %v\n", query)
+		res, err := tx.Run(query,
+			map[string]interface{}{"node_id": node_ids[i].NodeId})
+		if err != nil {
+			return model.ScanListResp{}, err
 		}
-		scans_info = append(scans_info, tmp)
+
+		recs, err := res.Collect()
+		if err != nil {
+			return model.ScanListResp{}, reporters.NotFoundErr
+		}
+
+		for _, rec := range recs {
+			tmp := model.ScanInfo{
+				ScanId:    rec.Values[0].(string),
+				Status:    rec.Values[1].(string),
+				UpdatedAt: rec.Values[2].(int64),
+				NodeId:    rec.Values[3].(string),
+				NodeType:  rec.Values[4].(string),
+			}
+			scans_info = append(scans_info, tmp)
+		}
 	}
 
 	return model.ScanListResp{ScansInfo: scans_info}, nil
@@ -568,8 +583,8 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 	return "error_sev_field_unknown"
 }
 
-func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (map[string]int, error) {
-	res := map[string]int{}
+func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (map[string]int32, error) {
+	res := map[string]int32{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
@@ -607,8 +622,16 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	return res, nil
 }
 
+func GetScanResultDocument(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docId string) (map[string]string, error) {
+	return nil, nil
+}
+
+func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docId string) ([]map[string]string, error) {
+	return nil, nil
+}
+
 func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {
-	res := map[string]int{}
+	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -656,11 +679,11 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 		return additionalInfo, err
 	}
 
-	var positiveStatusCount int
-	var totalStatusCount int
+	var positiveStatusCount int32
+	var totalStatusCount int32
 	for i := range recs {
 		status := recs[i].Values[0].(string)
-		statusCount := int(recs[i].Values[1].(int64))
+		statusCount := int32(recs[i].Values[1].(int64))
 		res[status] = statusCount
 		if status == "info" || status == "ok" {
 			positiveStatusCount += statusCount

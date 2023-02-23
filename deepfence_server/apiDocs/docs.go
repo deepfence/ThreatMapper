@@ -20,6 +20,7 @@ const (
 	tagLookup            = "Lookup"
 	tagSearch            = "Search"
 	tagThreat            = "Threat"
+	tagScanResults       = "Scan Results"
 	tagSecretScan        = "Secret Scan"
 	tagVulnerability     = "Vulnerability"
 	tagMalwareScan       = "Malware Scan"

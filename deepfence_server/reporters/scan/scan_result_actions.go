@@ -60,18 +60,18 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	_, err = tx.Run(`
 		MATCH (m:`+string(req.ScanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		SET r.masked = $value`, map[string]interface{}{"node_ids": req.NodeIds, "value": value, "scan_id": req.ScanID})
+		SET r.masked = $value`, map[string]interface{}{"node_ids": req.DocIds, "value": value, "scan_id": req.ScanID})
 	if err != nil {
 		return err
 	}
 
 	if req.MaskAcrossHostsAndImages {
-		
+
 	}
 	return tx.Commit()
 }
 
-func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, nodeIds []string) error {
+func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docIds []string) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -88,11 +88,11 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 	}
 	defer tx.Close()
 
-	if len(nodeIds) > 0 {
+	if len(docIds) > 0 {
 		_, err = tx.Run(`
 		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		DELETE r`, map[string]interface{}{"node_ids": nodeIds, "scan_id": scanId})
+		DELETE r`, map[string]interface{}{"node_ids": docIds, "scan_id": scanId})
 		if err != nil {
 			return err
 		}

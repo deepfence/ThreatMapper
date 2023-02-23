@@ -662,10 +662,19 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 	if err == reporters.NotFoundErr {
 		err = &NotFoundError{err}
 	}
+
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
 		respondError(err, w)
 		return
+	}
+
+	for i := range infos.ScansInfo {
+		counts, err := reporters_scan.GetSevCounts(r.Context(), scan_type, infos.ScansInfo[i].ScanId)
+		infos.ScansInfo[i].SeverityCounts = counts
+		if err != nil {
+			log.Error().Err(err).Msg("Counts computation issue")
+		}
 	}
 
 	httpext.JSON(w, http.StatusOK, infos)
@@ -833,9 +842,9 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	}
 	switch action {
 	case "delete":
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocIds)
 	case "notify":
-		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocIds)
 	}
 	if err != nil {
 		respondError(err, w)
@@ -872,6 +881,8 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 	}
 	switch action {
 	case "download":
+		resp := model.DownloadReportResponse{}
+		httpext.JSON(w, http.StatusOK, resp)
 	case "delete":
 		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
 		w.WriteHeader(http.StatusNoContent)
@@ -884,6 +895,43 @@ func (h *Handler) ScanResultDownloadHandler(w http.ResponseWriter, r *http.Reque
 
 func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	h.scanIdActionHandler(w, r, "delete")
+}
+
+func (h *Handler) getScanResultDocumentHandler(w http.ResponseWriter, r *http.Request, action string) {
+	req := model.ScanResultDocumentRequest{
+		DocId:    chi.URLParam(r, "doc_id"),
+		ScanID:   chi.URLParam(r, "scan_id"),
+		ScanType: chi.URLParam(r, "scan_type"),
+	}
+	err := h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	switch action {
+	case "getDocument":
+		resp, err := reporters_scan.GetScanResultDocument(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocId)
+		if err != nil {
+			respondError(err, w)
+			return
+		}
+		httpext.JSON(w, http.StatusOK, resp)
+	case "getNodes":
+		resp, err := reporters_scan.GetScanResultDocumentNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocId)
+		if err != nil {
+			respondError(err, w)
+			return
+		}
+		httpext.JSON(w, http.StatusOK, resp)
+	}
+}
+
+func (h *Handler) GetScanResultDocumentHandler(w http.ResponseWriter, r *http.Request) {
+	h.getScanResultDocumentHandler(w, r, "getDocument")
+}
+
+func (h *Handler) GetScanResultDocumentNodesHandler(w http.ResponseWriter, r *http.Request) {
+	h.getScanResultDocumentHandler(w, r, "getNodes")
 }
 
 func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {
@@ -905,6 +953,8 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		var sbom []model.SbomResponse
 		httpext.JSON(w, http.StatusOK, sbom)
 	case "download":
+		resp := model.DownloadReportResponse{}
+		httpext.JSON(w, http.StatusOK, resp)
 	}
 }
 
