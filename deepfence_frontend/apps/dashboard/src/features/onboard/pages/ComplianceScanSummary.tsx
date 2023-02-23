@@ -282,8 +282,10 @@ async function getScanStatus(
     apiFunction: statusScanApiFunctionMap[scanType],
     apiArgs: [
       {
-        scanIds: [],
-        bulkScanId,
+        modelScanStatusReq: {
+          bulk_scan_id: bulkScanId,
+          scan_ids: [],
+        },
       },
     ],
     errorHandler: async (r) => {

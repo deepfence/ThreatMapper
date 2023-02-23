@@ -151,8 +151,10 @@ async function getScanStatus(bulkScanId: string): Promise<Array<ModelScanInfo>> 
     apiFunction: statusScanApiFunctionMap['secret'],
     apiArgs: [
       {
-        scanIds: [],
-        bulkScanId,
+        modelScanStatusReq: {
+          scan_ids: [],
+          bulk_scan_id: bulkScanId,
+        },
       },
     ],
     errorHandler: async (r) => {

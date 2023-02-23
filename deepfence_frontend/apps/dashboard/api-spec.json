@@ -2452,8 +2452,8 @@
       }
     },
     "/deepfence/scan/results/action/delete": {
-      "post": {
-        "tags": ["Common"],
+      "patch": {
+        "tags": ["Scan Results"],
         "summary": "Delete selected scan results",
         "description": "Delete selected scan results",
         "operationId": "deleteScanResult",
@@ -2498,14 +2498,14 @@
     },
     "/deepfence/scan/results/action/mask": {
       "post": {
-        "tags": ["Common"],
+        "tags": ["Scan Results"],
         "summary": "Mask Scans Results",
         "description": "Mask scan results",
         "operationId": "maskScanResult",
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelScanResultsActionRequest" }
+              "schema": { "$ref": "#/components/schemas/ModelScanResultsMaskRequest" }
             }
           }
         },
@@ -2543,7 +2543,7 @@
     },
     "/deepfence/scan/results/action/notify": {
       "post": {
-        "tags": ["Common"],
+        "tags": ["Scan Results"],
         "summary": "Notify Scans Results",
         "description": "Notify scan results in connected integration channels",
         "operationId": "notifyScanResult",
@@ -2588,14 +2588,14 @@
     },
     "/deepfence/scan/results/action/unmask": {
       "post": {
-        "tags": ["Common"],
+        "tags": ["Scan Results"],
         "summary": "Unmask Scans Results",
         "description": "Unmask scan results",
         "operationId": "unmaskScanResult",
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelScanResultsActionRequest" }
+              "schema": { "$ref": "#/components/schemas/ModelScanResultsMaskRequest" }
             }
           }
         },
@@ -2962,7 +2962,14 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelDownloadReportResponse" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -3204,25 +3211,18 @@
       }
     },
     "/deepfence/scan/status/cloud-compliance": {
-      "get": {
+      "post": {
         "tags": ["Cloud Scanner"],
         "summary": "Get Cloud Compliance Scan Status",
         "description": "Get Cloud Compliance Scan Status on cloud node",
         "operationId": "statusCloudComplianceScan",
-        "parameters": [
-          {
-            "name": "scan_ids",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "bulk_scan_id",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "string" }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanStatusReq" }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -3263,25 +3263,18 @@
       }
     },
     "/deepfence/scan/status/compliance": {
-      "get": {
+      "post": {
         "tags": ["Compliance"],
         "summary": "Get Compliance Scan Status",
         "description": "Get Compliance Scan Status on agent or registry",
         "operationId": "statusComplianceScan",
-        "parameters": [
-          {
-            "name": "scan_ids",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "bulk_scan_id",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "string" }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanStatusReq" }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -3322,25 +3315,18 @@
       }
     },
     "/deepfence/scan/status/malware": {
-      "get": {
+      "post": {
         "tags": ["Malware Scan"],
         "summary": "Get Malware Scan Status",
         "description": "Get Malware Scan status on agent or registry",
         "operationId": "statusMalwareScan",
-        "parameters": [
-          {
-            "name": "scan_ids",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "bulk_scan_id",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "string" }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanStatusReq" }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -3381,25 +3367,18 @@
       }
     },
     "/deepfence/scan/status/secret": {
-      "get": {
+      "post": {
         "tags": ["Secret Scan"],
         "summary": "Get Secret Scan Status",
         "description": "Get Secret Scan Status on agent or registry",
         "operationId": "statusSecretScan",
-        "parameters": [
-          {
-            "name": "scan_ids",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "bulk_scan_id",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "string" }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanStatusReq" }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -3440,25 +3419,18 @@
       }
     },
     "/deepfence/scan/status/vulnerability": {
-      "get": {
+      "post": {
         "tags": ["Vulnerability"],
         "summary": "Get Vulnerability Scan Status",
         "description": "Get Vulnerability Scan Status on agent or registry",
         "operationId": "statusVulnerabilityScan",
-        "parameters": [
-          {
-            "name": "scan_ids",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "array", "items": { "type": "string" } }
-          },
-          {
-            "name": "bulk_scan_id",
-            "in": "query",
-            "required": true,
-            "schema": { "type": "string" }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanStatusReq" }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -3922,6 +3894,682 @@
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/ModelContainer" }
                 }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/cloud-compliance/scans": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Vulnerability Scan results",
+        "description": "Search scan results",
+        "operationId": "countCloudComplianceScans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/cloud-compliances": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Cloud compliances",
+        "description": "List all the images present in the given registry",
+        "operationId": "countCloudCompliances",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/compliance/scans": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Vulnerability Scan results",
+        "description": "Search scan results",
+        "operationId": "countComplianceScans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/compliances": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Compliances",
+        "description": "List all the images present in the given registry",
+        "operationId": "countCompliances",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/containers": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Containers data",
+        "description": "Retrieve all the data associated with containers",
+        "operationId": "countContainers",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/hosts": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search hosts",
+        "description": "Retrieve all the data associated with hosts",
+        "operationId": "countHosts",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/images": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Container images",
+        "description": "Retrieve all the data associated with processes",
+        "operationId": "countContainerImages",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/malware/scans": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Vulnerability Scan results",
+        "description": "Search scan results",
+        "operationId": "countMalwareScans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/malwares": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Malwares",
+        "description": "List all the images present in the given registry",
+        "operationId": "countMalwares",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/secret/scans": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Vulnerability Scan results",
+        "description": "Search scan results",
+        "operationId": "countSecretsScans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/secrets": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Secrets",
+        "description": "Retrieve all the data associated with pods",
+        "operationId": "countSecrets",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/vulnerabilities": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Vulnerabilities",
+        "description": "Retrieve all the data associated with k8s clusters",
+        "operationId": "countVulnerabilities",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/vulnerability/scans": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Vulnerability Scan results",
+        "description": "Search scan results",
+        "operationId": "countVulnerabilityScans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchScanReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
               }
             }
           },
@@ -4474,54 +5122,6 @@
           }
         },
         "security": [{ "bearer_token": [] }]
-      },
-      "put": {
-        "tags": ["User"],
-        "summary": "Update Current User",
-        "description": "Update logged in user information",
-        "operationId": "updateCurrentUser",
-        "requestBody": {
-          "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/ModelUser" } }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelUser" }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
       }
     },
     "/deepfence/user/invite": {
@@ -4865,8 +5465,8 @@
     "/deepfence/users": {
       "get": {
         "tags": ["User"],
-        "summary": "Get users",
-        "description": "Get users",
+        "summary": "Get all users",
+        "description": "Get all users",
         "operationId": "getUsers",
         "responses": {
           "200": {
@@ -4910,9 +5510,164 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/users/{id}": {
+      "delete": {
+        "tags": ["User"],
+        "summary": "Delete User by User ID",
+        "description": "Delete User by User ID",
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
+      "get": {
+        "tags": ["User"],
+        "summary": "Get User by User ID",
+        "description": "Get User by User ID",
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelUser" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
+      "put": {
+        "tags": ["User"],
+        "summary": "Update User by User ID",
+        "description": "Update User by User ID",
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelEditUserRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelUser" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/scan/{scan_type}/{scan_id}": {
       "delete": {
-        "tags": ["Common"],
+        "tags": ["Scan Results"],
         "summary": "Delete all scan results for a scan id",
         "description": "Delete all scan results for a scan id",
         "operationId": "deleteScanResultsForScanID",
@@ -4973,7 +5728,7 @@
     },
     "/scan/{scan_type}/{scan_id}/download": {
       "get": {
-        "tags": ["Common"],
+        "tags": ["Scan Results"],
         "summary": "Download Scans Results",
         "description": "Download scan results",
         "operationId": "downloadScanResults",
@@ -5001,7 +5756,14 @@
           }
         ],
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelDownloadReportResponse" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -6038,6 +6800,19 @@
           "vulnerability_scan_status": { "type": "string" }
         }
       },
+      "ModelDownloadReportResponse": {
+        "type": "object",
+        "properties": { "url_link": { "type": "string" } }
+      },
+      "ModelEditUserRequest": {
+        "type": "object",
+        "properties": {
+          "first_name": { "type": "string" },
+          "is_active": { "type": "boolean" },
+          "last_name": { "type": "string" },
+          "role": { "type": "string" }
+        }
+      },
       "ModelFetchWindow": {
         "required": ["offset", "size"],
         "type": "object",
@@ -6505,6 +7280,29 @@
           }
         }
       },
+      "ModelScanResultsMaskRequest": {
+        "required": ["scan_id", "node_ids", "scan_type"],
+        "type": "object",
+        "properties": {
+          "mask_across_hosts_and_images": { "type": "boolean" },
+          "node_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "scan_id": { "type": "string" },
+          "scan_type": {
+            "enum": [
+              "SecretScan",
+              "VulnerabilityScan",
+              "MalwareScan",
+              "ComplianceScan",
+              "CloudComplianceScan"
+            ],
+            "type": "string"
+          }
+        }
+      },
       "ModelScanResultsReq": {
         "required": ["scan_id", "fields_filter", "window"],
         "type": "object",
@@ -6512,6 +7310,14 @@
           "fields_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "scan_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
+        }
+      },
+      "ModelScanStatusReq": {
+        "required": ["scan_ids", "bulk_scan_id"],
+        "type": "object",
+        "properties": {
+          "bulk_scan_id": { "type": "string" },
+          "scan_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ModelScanStatusResp": {
@@ -6616,6 +7422,7 @@
         "properties": {
           "company": { "type": "string" },
           "company_id": { "type": "integer" },
+          "current_user": { "type": "boolean", "nullable": true },
           "email": { "type": "string" },
           "first_name": { "type": "string" },
           "groups": {
@@ -6856,6 +7663,11 @@
         "required": ["order_field"],
         "type": "object",
         "properties": { "order_field": { "type": "string" } }
+      },
+      "SearchSearchCountResp": {
+        "required": ["count"],
+        "type": "object",
+        "properties": { "count": { "type": "integer" } }
       },
       "SearchSearchFilter": {
         "required": ["in_field_filter", "filters"],

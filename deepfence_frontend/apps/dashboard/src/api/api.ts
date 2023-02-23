@@ -5,11 +5,11 @@ import {
   AuthenticationApi,
   CloudNodesApi,
   CloudScannerApi,
-  CommonApi,
   ComplianceApi,
   Configuration,
   MalwareScanApi,
   RegistryApi,
+  ScanResultsApi,
   SearchApi,
   SecretScanApi,
   TopologyApi,
@@ -124,13 +124,13 @@ export function getSearchApiClient() {
   };
 }
 
-export function getCommonApiClient() {
-  const commonApi = new CommonApi(configuration);
+export function getScanResultsApiClient() {
+  const scanResultsApi = new ScanResultsApi(configuration);
 
   return {
-    deleteVulnerabilities: commonApi.deleteScanResult.bind(commonApi),
-    notifyVulnerabilities: commonApi.notifyScanResult.bind(commonApi),
-    maskVulnerabilities: commonApi.maskScanResult.bind(commonApi),
-    unMaskVulnerabilities: commonApi.unmaskScanResult.bind(commonApi),
+    deleteVulnerabilities: scanResultsApi.deleteScanResult.bind(scanResultsApi),
+    notifyVulnerabilities: scanResultsApi.notifyScanResult.bind(scanResultsApi),
+    maskVulnerabilities: scanResultsApi.maskScanResult.bind(scanResultsApi),
+    unMaskVulnerabilities: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
   };
 }

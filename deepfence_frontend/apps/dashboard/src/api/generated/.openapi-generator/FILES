@@ -3,7 +3,6 @@ apis/AuthenticationApi.ts
 apis/CloudNodesApi.ts
 apis/CloudResourcesApi.ts
 apis/CloudScannerApi.ts
-apis/CommonApi.ts
 apis/ComplianceApi.ts
 apis/ControlsApi.ts
 apis/DiagnosisApi.ts
@@ -11,6 +10,7 @@ apis/InternalApi.ts
 apis/LookupApi.ts
 apis/MalwareScanApi.ts
 apis/RegistryApi.ts
+apis/ScanResultsApi.ts
 apis/SearchApi.ts
 apis/SecretScanApi.ts
 apis/ThreatApi.ts
@@ -68,6 +68,8 @@ models/ModelComplianceScanTriggerReq.ts
 models/ModelComputeMetrics.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
+models/ModelDownloadReportResponse.ts
+models/ModelEditUserRequest.ts
 models/ModelFetchWindow.ts
 models/ModelHost.ts
 models/ModelInitAgentReq.ts
@@ -97,7 +99,9 @@ models/ModelScanInfo.ts
 models/ModelScanListReq.ts
 models/ModelScanListResp.ts
 models/ModelScanResultsActionRequest.ts
+models/ModelScanResultsMaskRequest.ts
 models/ModelScanResultsReq.ts
+models/ModelScanStatusReq.ts
 models/ModelScanStatusResp.ts
 models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
@@ -118,6 +122,7 @@ models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
 models/ReportersMatchFilter.ts
 models/ReportersOrderFilter.ts
+models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts
 models/SearchSearchScanReq.ts
