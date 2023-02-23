@@ -19,6 +19,12 @@ import {
     ModelFetchWindowFromJSONTyped,
     ModelFetchWindowToJSON,
 } from './ModelFetchWindow';
+import type { ReportersFieldsFilters } from './ReportersFieldsFilters';
+import {
+    ReportersFieldsFiltersFromJSON,
+    ReportersFieldsFiltersFromJSONTyped,
+    ReportersFieldsFiltersToJSON,
+} from './ReportersFieldsFilters';
 
 /**
  * 
@@ -26,6 +32,12 @@ import {
  * @interface ModelScanResultsReq
  */
 export interface ModelScanResultsReq {
+    /**
+     * 
+     * @type {ReportersFieldsFilters}
+     * @memberof ModelScanResultsReq
+     */
+    fields_filter: ReportersFieldsFilters;
     /**
      * 
      * @type {string}
@@ -45,6 +57,7 @@ export interface ModelScanResultsReq {
  */
 export function instanceOfModelScanResultsReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "fields_filter" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "window" in value;
 
@@ -61,6 +74,7 @@ export function ModelScanResultsReqFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
+        'fields_filter': ReportersFieldsFiltersFromJSON(json['fields_filter']),
         'scan_id': json['scan_id'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
@@ -75,6 +89,7 @@ export function ModelScanResultsReqToJSON(value?: ModelScanResultsReq | null): a
     }
     return {
         
+        'fields_filter': ReportersFieldsFiltersToJSON(value.fields_filter),
         'scan_id': value.scan_id,
         'window': ModelFetchWindowToJSON(value.window),
     };

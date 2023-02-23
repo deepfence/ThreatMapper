@@ -98,6 +98,12 @@ export interface ModelComplianceScanResult {
      * @memberof ModelComplianceScanResult
      */
     status_counts: { [key: string]: number; } | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelComplianceScanResult
+     */
+    updated_at: number;
 }
 
 /**
@@ -117,6 +123,7 @@ export function instanceOfModelComplianceScanResult(value: object): boolean {
     isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "status_counts" in value;
+    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
@@ -143,6 +150,7 @@ export function ModelComplianceScanResultFromJSONTyped(json: any, ignoreDiscrimi
         'node_type': json['node_type'],
         'scan_id': json['scan_id'],
         'status_counts': json['status_counts'],
+        'updated_at': json['updated_at'],
     };
 }
 
@@ -167,6 +175,7 @@ export function ModelComplianceScanResultToJSON(value?: ModelComplianceScanResul
         'node_type': value.node_type,
         'scan_id': value.scan_id,
         'status_counts': value.status_counts,
+        'updated_at': value.updated_at,
     };
 }
 

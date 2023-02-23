@@ -13,52 +13,58 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelKeyValues } from './ModelKeyValues';
-import {
-    ModelKeyValuesFromJSON,
-    ModelKeyValuesFromJSONTyped,
-    ModelKeyValuesToJSON,
-} from './ModelKeyValues';
-
 /**
  * 
  * @export
- * @interface ModelFieldsFilter
+ * @interface ModelSbomRequest
  */
-export interface ModelFieldsFilter {
+export interface ModelSbomRequest {
     /**
      * 
-     * @type {Array<ModelKeyValues>}
-     * @memberof ModelFieldsFilter
+     * @type {string}
+     * @memberof ModelSbomRequest
      */
-    fields_values: Array<ModelKeyValues> | null;
+    node_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSbomRequest
+     */
+    node_type?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSbomRequest
+     */
+    scan_id?: string;
 }
 
 /**
- * Check if a given object implements the ModelFieldsFilter interface.
+ * Check if a given object implements the ModelSbomRequest interface.
  */
-export function instanceOfModelFieldsFilter(value: object): boolean {
+export function instanceOfModelSbomRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "fields_values" in value;
 
     return isInstance;
 }
 
-export function ModelFieldsFilterFromJSON(json: any): ModelFieldsFilter {
-    return ModelFieldsFilterFromJSONTyped(json, false);
+export function ModelSbomRequestFromJSON(json: any): ModelSbomRequest {
+    return ModelSbomRequestFromJSONTyped(json, false);
 }
 
-export function ModelFieldsFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelFieldsFilter {
+export function ModelSbomRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelSbomRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'fields_values': (json['fields_values'] === null ? null : (json['fields_values'] as Array<any>).map(ModelKeyValuesFromJSON)),
+        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
+        'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
+        'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
     };
 }
 
-export function ModelFieldsFilterToJSON(value?: ModelFieldsFilter | null): any {
+export function ModelSbomRequestToJSON(value?: ModelSbomRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -67,7 +73,9 @@ export function ModelFieldsFilterToJSON(value?: ModelFieldsFilter | null): any {
     }
     return {
         
-        'fields_values': (value.fields_values === null ? null : (value.fields_values as Array<any>).map(ModelKeyValuesToJSON)),
+        'node_id': value.node_id,
+        'node_type': value.node_type,
+        'scan_id': value.scan_id,
     };
 }
 

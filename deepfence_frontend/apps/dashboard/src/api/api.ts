@@ -9,6 +9,8 @@ import {
   Configuration,
   MalwareScanApi,
   RegistryApi,
+  ScanResultsApi,
+  SearchApi,
   SecretScanApi,
   TopologyApi,
   UserApi,
@@ -58,6 +60,7 @@ export function getCloudNodesApiClient() {
 
 export function getVulnerabilityApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
+
   return {
     startVulnerabilityScan:
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
@@ -65,6 +68,8 @@ export function getVulnerabilityApiClient() {
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
     statusVulnerabilityScan:
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
+    listVulnerabilityScans:
+      vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
   };
 }
 
@@ -110,5 +115,28 @@ export function getMalwareScanApiClient() {
     startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
     resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
     statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),
+  };
+}
+
+export function getSearchApiClient() {
+  const searchApi = new SearchApi(configuration);
+  return {
+    searchVulnerabilityScan: searchApi.searchVulnerabilityScans.bind(searchApi),
+    searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
+    searchContainers: searchApi.searchContainers.bind(searchApi),
+    searchHosts: searchApi.searchHosts.bind(searchApi),
+    searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
+    searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
+  };
+}
+
+export function getScanResultsApiClient() {
+  const scanResultsApi = new ScanResultsApi(configuration);
+
+  return {
+    deleteVulnerabilities: scanResultsApi.deleteScanResult.bind(scanResultsApi),
+    notifyVulnerabilities: scanResultsApi.notifyScanResult.bind(scanResultsApi),
+    maskVulnerabilities: scanResultsApi.maskScanResult.bind(scanResultsApi),
+    unMaskVulnerabilities: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
   };
 }

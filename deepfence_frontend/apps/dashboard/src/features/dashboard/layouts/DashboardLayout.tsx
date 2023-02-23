@@ -16,7 +16,7 @@ export const DashboardLayout = () => {
       />
       <div className="flex h-[calc(100%-64px)]">
         <SideNavigation expanded={sideNavExpanded} />
-        <div className="p-6 overflow-auto h-full">
+        <div className="overflow-auto h-full w-full">
           <Outlet />
         </div>
       </div>

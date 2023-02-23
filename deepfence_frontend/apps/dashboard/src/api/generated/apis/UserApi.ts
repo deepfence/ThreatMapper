@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelEditUserRequest,
   ModelInviteUserRequest,
   ModelInviteUserResponse,
   ModelMessageResponse,
@@ -32,6 +33,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelEditUserRequestFromJSON,
+    ModelEditUserRequestToJSON,
     ModelInviteUserRequestFromJSON,
     ModelInviteUserRequestToJSON,
     ModelInviteUserResponseFromJSON,
@@ -52,6 +55,14 @@ import {
     ModelUserRegisterRequestToJSON,
 } from '../models';
 
+export interface DeleteUserRequest {
+    id: number;
+}
+
+export interface GetUserRequest {
+    id: number;
+}
+
 export interface InviteUserRequest {
     modelInviteUserRequest?: ModelInviteUserRequest;
 }
@@ -68,8 +79,9 @@ export interface ResetPasswordRequestRequest {
     modelPasswordResetRequest?: ModelPasswordResetRequest;
 }
 
-export interface UpdateCurrentUserRequest {
-    modelUser?: ModelUser;
+export interface UpdateUserRequest {
+    id: number;
+    modelEditUserRequest?: ModelEditUserRequest;
 }
 
 export interface VerifyResetPasswordRequestRequest {
@@ -97,6 +109,22 @@ export interface UserApiInterface {
      * Delete Current User
      */
     deleteCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Delete User by User ID
+     * @summary Delete User by User ID
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApiInterface
+     */
+    deleteUserRaw(requestParameters: DeleteUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete User by User ID
+     * Delete User by User ID
+     */
+    deleteUser(requestParameters: DeleteUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Get logged in user\'s API Tokens
@@ -129,8 +157,24 @@ export interface UserApiInterface {
     getCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser>;
 
     /**
-     * Get users
-     * @summary Get users
+     * Get User by User ID
+     * @summary Get User by User ID
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApiInterface
+     */
+    getUserRaw(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelUser>>;
+
+    /**
+     * Get User by User ID
+     * Get User by User ID
+     */
+    getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser>;
+
+    /**
+     * Get all users
+     * @summary Get all users
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof UserApiInterface
@@ -138,8 +182,8 @@ export interface UserApiInterface {
     getUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelUser>>>;
 
     /**
-     * Get users
-     * Get users
+     * Get all users
+     * Get all users
      */
     getUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelUser>>;
 
@@ -223,20 +267,21 @@ export interface UserApiInterface {
     resetPasswordRequest(requestParameters: ResetPasswordRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
-     * Update logged in user information
-     * @summary Update Current User
-     * @param {ModelUser} [modelUser] 
+     * Update User by User ID
+     * @summary Update User by User ID
+     * @param {number} id 
+     * @param {ModelEditUserRequest} [modelEditUserRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    updateCurrentUserRaw(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelUser>>;
+    updateUserRaw(requestParameters: UpdateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelUser>>;
 
     /**
-     * Update logged in user information
-     * Update Current User
+     * Update User by User ID
+     * Update User by User ID
      */
-    updateCurrentUser(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser>;
+    updateUser(requestParameters: UpdateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser>;
 
     /**
      * Verify code and reset the password
@@ -294,6 +339,45 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      */
     async deleteCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteCurrentUserRaw(initOverrides);
+    }
+
+    /**
+     * Delete User by User ID
+     * Delete User by User ID
+     */
+    async deleteUserRaw(requestParameters: DeleteUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling deleteUser.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/users/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete User by User ID
+     * Delete User by User ID
+     */
+    async deleteUser(requestParameters: DeleteUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteUserRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -369,8 +453,48 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
     }
 
     /**
-     * Get users
-     * Get users
+     * Get User by User ID
+     * Get User by User ID
+     */
+    async getUserRaw(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelUser>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUser.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/users/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelUserFromJSON(jsonValue));
+    }
+
+    /**
+     * Get User by User ID
+     * Get User by User ID
+     */
+    async getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser> {
+        const response = await this.getUserRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all users
+     * Get all users
      */
     async getUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelUser>>> {
         const queryParameters: any = {};
@@ -396,8 +520,8 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
     }
 
     /**
-     * Get users
-     * Get users
+     * Get all users
+     * Get all users
      */
     async getUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelUser>> {
         const response = await this.getUsersRaw(initOverrides);
@@ -573,10 +697,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
     }
 
     /**
-     * Update logged in user information
-     * Update Current User
+     * Update User by User ID
+     * Update User by User ID
      */
-    async updateCurrentUserRaw(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelUser>> {
+    async updateUserRaw(requestParameters: UpdateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelUser>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling updateUser.');
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -592,22 +720,22 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             }
         }
         const response = await this.request({
-            path: `/deepfence/user`,
+            path: `/deepfence/users/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
             method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelUserToJSON(requestParameters.modelUser),
+            body: ModelEditUserRequestToJSON(requestParameters.modelEditUserRequest),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelUserFromJSON(jsonValue));
     }
 
     /**
-     * Update logged in user information
-     * Update Current User
+     * Update User by User ID
+     * Update User by User ID
      */
-    async updateCurrentUser(requestParameters: UpdateCurrentUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser> {
-        const response = await this.updateCurrentUserRaw(requestParameters, initOverrides);
+    async updateUser(requestParameters: UpdateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser> {
+        const response = await this.updateUserRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

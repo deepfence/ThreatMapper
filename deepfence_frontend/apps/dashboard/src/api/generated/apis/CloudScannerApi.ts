@@ -21,6 +21,7 @@ import type {
   ModelCloudComplianceScanResult,
   ModelComplianceScanStatusResp,
   ModelScanResultsReq,
+  ModelScanStatusReq,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -35,6 +36,8 @@ import {
     ModelComplianceScanStatusRespToJSON,
     ModelScanResultsReqFromJSON,
     ModelScanResultsReqToJSON,
+    ModelScanStatusReqFromJSON,
+    ModelScanStatusReqToJSON,
 } from '../models';
 
 export interface IngestCloudComplianceScanStatusRequest {
@@ -50,8 +53,7 @@ export interface ResultsCloudComplianceScanRequest {
 }
 
 export interface StatusCloudComplianceScanRequest {
-    scanIds: Array<string>;
-    bulkScanId: string;
+    modelScanStatusReq?: ModelScanStatusReq;
 }
 
 /**
@@ -112,8 +114,7 @@ export interface CloudScannerApiInterface {
     /**
      * Get Cloud Compliance Scan Status on cloud node
      * @summary Get Cloud Compliance Scan Status
-     * @param {Array<string>} scanIds 
-     * @param {string} bulkScanId 
+     * @param {ModelScanStatusReq} [modelScanStatusReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CloudScannerApiInterface
@@ -253,25 +254,11 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
      * Get Cloud Compliance Scan Status
      */
     async statusCloudComplianceScanRaw(requestParameters: StatusCloudComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanStatusResp>> {
-        if (requestParameters.scanIds === null || requestParameters.scanIds === undefined) {
-            throw new runtime.RequiredError('scanIds','Required parameter requestParameters.scanIds was null or undefined when calling statusCloudComplianceScan.');
-        }
-
-        if (requestParameters.bulkScanId === null || requestParameters.bulkScanId === undefined) {
-            throw new runtime.RequiredError('bulkScanId','Required parameter requestParameters.bulkScanId was null or undefined when calling statusCloudComplianceScan.');
-        }
-
         const queryParameters: any = {};
 
-        if (requestParameters.scanIds) {
-            queryParameters['scan_ids'] = requestParameters.scanIds;
-        }
-
-        if (requestParameters.bulkScanId !== undefined) {
-            queryParameters['bulk_scan_id'] = requestParameters.bulkScanId;
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -283,9 +270,10 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
         }
         const response = await this.request({
             path: `/deepfence/scan/status/cloud-compliance`,
-            method: 'GET',
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ModelScanStatusReqToJSON(requestParameters.modelScanStatusReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplianceScanStatusRespFromJSON(jsonValue));
@@ -295,7 +283,7 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
      * Get Cloud Compliance Scan Status on cloud node
      * Get Cloud Compliance Scan Status
      */
-    async statusCloudComplianceScan(requestParameters: StatusCloudComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanStatusResp> {
+    async statusCloudComplianceScan(requestParameters: StatusCloudComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanStatusResp> {
         const response = await this.statusCloudComplianceScanRaw(requestParameters, initOverrides);
         return await response.value();
     }

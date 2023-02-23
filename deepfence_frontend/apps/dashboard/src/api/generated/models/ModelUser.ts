@@ -33,6 +33,12 @@ export interface ModelUser {
     company_id?: number;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelUser
+     */
+    current_user?: boolean | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelUser
      */
@@ -108,6 +114,7 @@ export function ModelUserFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         
         'company': !exists(json, 'company') ? undefined : json['company'],
         'company_id': !exists(json, 'company_id') ? undefined : json['company_id'],
+        'current_user': !exists(json, 'current_user') ? undefined : json['current_user'],
         'email': !exists(json, 'email') ? undefined : json['email'],
         'first_name': !exists(json, 'first_name') ? undefined : json['first_name'],
         'groups': !exists(json, 'groups') ? undefined : json['groups'],
@@ -131,6 +138,7 @@ export function ModelUserToJSON(value?: ModelUser | null): any {
         
         'company': value.company,
         'company_id': value.company_id,
+        'current_user': value.current_user,
         'email': value.email,
         'first_name': value.first_name,
         'groups': value.groups,
