@@ -58,7 +58,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, bearerToken, new(UserIdRequest), new(User))
 	d.AddOperation("updateUser", http.MethodPut, "/deepfence/users/{id}",
 		"Update User by User ID", "Update User by User ID",
-		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserRequest), new(User))
+		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserIdRequest), new(User))
 	d.AddOperation("deleteUser", http.MethodDelete, "/deepfence/users/{id}",
 		"Delete User by User ID", "Delete User by User ID",
 		http.StatusNoContent, []string{tagUser}, bearerToken, new(UserIdRequest), nil)
@@ -429,10 +429,10 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
 
-	d.AddOperation("getScanResultDocument", http.MethodGet, "/scan/{scan_type}/{scan_id}/{doc_id}",
+	d.AddOperation("getScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}",
 		"Get Scans Result Document", "Get Scans Result Document",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new(map[string]string))
-	d.AddOperation("getAllNodesOfScanResultDocument", http.MethodGet, "/scan/{scan_type}/{scan_id}/{doc_id}/nodes",
+	d.AddOperation("getAllNodesOfScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes",
 		"Get all nodes for given result document", "Get all nodes for given result document",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new([]map[string]string))
 
@@ -451,10 +451,10 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
 
 	// Scan ID Actions
-	d.AddOperation("downloadScanResults", http.MethodGet, "/scan/{scan_type}/{scan_id}/download",
+	d.AddOperation("downloadScanResults", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/download",
 		"Download Scans Results", "Download scan results",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanActionRequest), new(DownloadReportResponse))
-	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/scan/{scan_type}/{scan_id}",
+	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/deepfence/scan/{scan_type}/{scan_id}",
 		"Delete all scan results for a scan id", "Delete all scan results for a scan id",
 		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanActionRequest), nil)
 

@@ -105,6 +105,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		Role:                role.Name,
 		RoleID:              role.ID,
 		PasswordInvalidated: registerRequest.IsTemporaryPassword,
+		CompanyNamespace:    c.Namespace,
 	}
 	user.Groups, err = c.GetDefaultUserGroupMap(ctx, pgClient)
 	if err != nil {

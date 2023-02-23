@@ -234,6 +234,13 @@ type UpdateUserPasswordRequest struct {
 }
 
 type UpdateUserRequest struct {
+	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
+	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
+	IsActive  bool   `json:"is_active"`
+	Role      string `json:"role"`
+}
+
+type UpdateUserIdRequest struct {
 	ID        int64  `path:"id"`
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
