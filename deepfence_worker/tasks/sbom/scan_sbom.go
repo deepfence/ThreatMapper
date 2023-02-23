@@ -132,12 +132,12 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 		NodeId:    params.NodeId,
 		NodeType:  params.NodeType,
 		NodeName:  params.NodeId,
-		SeverityCounts: map[string]int{
-			"total":          details.Total,
-			psUtils.CRITICAL: details.Severity.Critical,
-			psUtils.HIGH:     details.Severity.High,
-			psUtils.MEDIUM:   details.Severity.Medium,
-			psUtils.LOW:      details.Severity.Low,
+		SeverityCounts: map[string]int32{
+			"total":          int32(details.Total),
+			psUtils.CRITICAL: int32(details.Severity.Critical),
+			psUtils.HIGH:     int32(details.Severity.High),
+			psUtils.MEDIUM:   int32(details.Severity.Medium),
+			psUtils.LOW:      int32(details.Severity.Low),
 		},
 	}
 

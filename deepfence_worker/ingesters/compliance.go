@@ -74,7 +74,8 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 		SET n+= row
 		WITH n, row.scan_id as scan_id
 		MERGE (m:ComplianceScan{node_id: scan_id})
-		MERGE (m) -[:DETECTED]-> (n)`,
+		MERGE (m) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": CompliancesToMaps(data)}); err != nil {
 		return err
 	}

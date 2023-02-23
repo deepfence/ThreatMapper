@@ -79,7 +79,8 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 		SET n+= row
 		WITH n, row.scan_id as scan_id
 		MATCH (m:VulnerabilityScan{node_id: scan_id})
-		MERGE (m) -[:DETECTED]-> (n)`,
+		MERGE (m) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
 		log.Error().Msgf(err.Error())
 		return err

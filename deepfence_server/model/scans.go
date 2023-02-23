@@ -56,23 +56,23 @@ type ComplianceBenchmarkTypes struct {
 type ScanStatus string
 
 type ScanInfo struct {
-	ScanId         string         `json:"scan_id" required:"true"`
-	Status         string         `json:"status" required:"true"`
-	UpdatedAt      int64          `json:"updated_at" required:"true" format:"int64"`
-	NodeId         string         `json:"node_id" required:"true"`
-	NodeType       string         `json:"node_type" required:"true"`
-	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
-	NodeName       string         `json:"node_name" required:"true"`
+	ScanId         string           `json:"scan_id" required:"true"`
+	Status         string           `json:"status" required:"true"`
+	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
+	NodeId         string           `json:"node_id" required:"true"`
+	NodeType       string           `json:"node_type" required:"true"`
+	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
+	NodeName       string           `json:"node_name" required:"true"`
 }
 
 type ComplianceScanInfo struct {
-	ScanId         string         `json:"scan_id" required:"true"`
-	BenchmarkType  string         `json:"benchmark_type" required:"true"`
-	Status         string         `json:"status" required:"true"`
-	UpdatedAt      int64          `json:"updated_at" required:"true" format:"int64"`
-	NodeId         string         `json:"node_id" required:"true"`
-	NodeType       string         `json:"node_type" required:"true"`
-	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
+	ScanId         string           `json:"scan_id" required:"true"`
+	BenchmarkType  string           `json:"benchmark_type" required:"true"`
+	Status         string           `json:"status" required:"true"`
+	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
+	NodeId         string           `json:"node_id" required:"true"`
+	NodeType       string           `json:"node_type" required:"true"`
+	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
 }
 
 const (
@@ -172,22 +172,22 @@ type ScanResultsCommon struct {
 
 type SecretScanResult struct {
 	ScanResultsCommon
-	Secrets        []Secret       `json:"secrets" required:"true"`
-	Rules          []Rule         `json:"rules" required:"true"`
-	RuleSecrets    map[int][]int  `json:"rule_2_secrets" required:"true"`
-	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
+	Secrets        []Secret         `json:"secrets" required:"true"`
+	Rules          []Rule           `json:"rules" required:"true"`
+	RuleSecrets    map[int][]int32  `json:"rule_2_secrets" required:"true"`
+	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
 }
 
 type VulnerabilityScanResult struct {
 	ScanResultsCommon
-	Vulnerabilities []Vulnerability `json:"vulnerabilities" required:"true" required:"true"`
-	SeverityCounts  map[string]int  `json:"severity_counts" required:"true"`
+	Vulnerabilities []Vulnerability  `json:"vulnerabilities" required:"true" required:"true"`
+	SeverityCounts  map[string]int32 `json:"severity_counts" required:"true"`
 }
 
 type MalwareScanResult struct {
 	ScanResultsCommon
-	Malwares       []Malware      `json:"malwares" required:"true"`
-	SeverityCounts map[string]int `json:"severity_counts" required:"true"`
+	Malwares       []Malware        `json:"malwares" required:"true"`
+	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
 }
 
 type ComplianceScanResult struct {
@@ -197,9 +197,9 @@ type ComplianceScanResult struct {
 }
 
 type ComplianceAdditionalInfo struct {
-	BenchmarkType        string         `json:"benchmark_type" required:"true"`
-	StatusCounts         map[string]int `json:"status_counts" required:"true"`
-	CompliancePercentage float64        `json:"compliance_percentage" required:"true"`
+	BenchmarkType        string           `json:"benchmark_type" required:"true"`
+	StatusCounts         map[string]int32 `json:"status_counts" required:"true"`
+	CompliancePercentage float64          `json:"compliance_percentage" required:"true"`
 }
 
 type CloudComplianceScanResult struct {
@@ -209,9 +209,9 @@ type CloudComplianceScanResult struct {
 }
 
 type Secret struct {
-	StartingIndex         int    `json:"starting_index" required:"true"`
-	RelativeStartingIndex int    `json:"relative_starting_index" required:"true"`
-	RelativeEndingIndex   int    `json:"relative_ending_index" required:"true"`
+	StartingIndex         int32  `json:"starting_index" required:"true"`
+	RelativeStartingIndex int32  `json:"relative_starting_index" required:"true"`
+	RelativeEndingIndex   int32  `json:"relative_ending_index" required:"true"`
 	FullFilename          string `json:"full_filename" required:"true"`
 	MatchedContent        string `json:"matched_content" required:"true"`
 }
@@ -221,7 +221,7 @@ func (Secret) NodeType() string {
 }
 
 type Rule struct {
-	ID               int     `json:"id" required:"true" required:"true"`
+	ID               int32   `json:"id" required:"true" required:"true"`
 	Name             string  `json:"name" required:"true"`
 	Part             string  `json:"part" required:"true"`
 	SignatureToMatch string  `json:"signature_to_match" required:"true"`
@@ -287,7 +287,7 @@ func (Compliance) NodeType() string {
 
 type CloudCompliance struct {
 	Timestamp           string `json:"@timestamp" required:"true"`
-	Count               int    `json:"count,omitempty" required:"true"`
+	Count               int32  `json:"count,omitempty" required:"true"`
 	Reason              string `json:"reason" required:"true"`
 	Resource            string `json:"resource" required:"true"`
 	Status              string `json:"status" required:"true"`

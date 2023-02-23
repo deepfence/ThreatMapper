@@ -583,8 +583,8 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 	return "error_sev_field_unknown"
 }
 
-func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (map[string]int, error) {
-	res := map[string]int{}
+func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (map[string]int32, error) {
+	res := map[string]int32{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
@@ -623,7 +623,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 }
 
 func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {
-	res := map[string]int{}
+	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -671,11 +671,11 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 		return additionalInfo, err
 	}
 
-	var positiveStatusCount int
-	var totalStatusCount int
+	var positiveStatusCount int32
+	var totalStatusCount int32
 	for i := range recs {
 		status := recs[i].Values[0].(string)
-		statusCount := int(recs[i].Values[1].(int64))
+		statusCount := int32(recs[i].Values[1].(int64))
 		res[status] = statusCount
 		if status == "info" || status == "ok" {
 			positiveStatusCount += statusCount

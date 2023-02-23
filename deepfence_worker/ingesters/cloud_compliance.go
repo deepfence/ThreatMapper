@@ -82,7 +82,8 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 		WITH n, m
 		MERGE (l:CloudComplianceScan{node_id: n.scan_id})
 		MERGE (l) -[:SCANNED]-> (m)
-		MERGE (l) -[:DETECTED]-> (n)`,
+		MERGE (l) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": CloudCompliancesToMaps(data)}); err != nil {
 		return err
 	}
