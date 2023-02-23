@@ -532,7 +532,8 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	}
 
 	query = `
-		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[:DETECTED]-> (d)` +
+		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
+	    WITH d{.*, r} as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		` RETURN d ` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
@@ -549,7 +550,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	for _, rec := range recs {
 		var tmp T
-		utils.FromMap(rec.Values[0].(neo4j.Node).Props, &tmp)
+		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
 		res = append(res, tmp)
 	}
 
@@ -603,7 +604,8 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	defer tx.Close()
 
 	nres, err := tx.Run(`
-		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[r:DETECTED]-> (d)
+		WHERE r.masked = false
 		RETURN d.`+type2sev_field(scan_type),
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
