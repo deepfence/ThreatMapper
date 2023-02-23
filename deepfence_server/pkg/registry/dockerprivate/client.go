@@ -19,32 +19,32 @@ var client = &http.Client{
 	},
 }
 
-func listImagesRegistryV2(url, namespace, userName, password string) ([]model.ContainerImage, error) {
+func listImagesRegistryV2(url, userName, password string) ([]model.ContainerImage, error) {
 
 	var (
 		images []model.ContainerImage
 	)
 
-	repos, err := listCatalogRegistryV2(url, namespace, userName, password)
+	repos, err := listCatalogRegistryV2(url, userName, password)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
 	for _, repo := range repos {
-		repoTags, err := listRepoTagsV2(url, namespace, userName, password, repo)
+		repoTags, err := listRepoTagsV2(url, userName, password, repo)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			continue
 		}
 		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Tags)
 
-		images = append(images, getImageWithTags(url, namespace, userName, password, repo, repoTags)...)
+		images = append(images, getImageWithTags(url, userName, password, repo, repoTags)...)
 	}
 
 	return images, nil
 }
 
-func listCatalogRegistryV2(url, namespace, userName, password string) ([]string, error) {
+func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
 	var (
 		repositories []string
 		err          error
@@ -86,7 +86,7 @@ func listCatalogRegistryV2(url, namespace, userName, password string) ([]string,
 	return repositories, err
 }
 
-func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTagsResp, error) {
+func listRepoTagsV2(url, userName, password, repoName string) (RepoTagsResp, error) {
 	var (
 		err      error
 		repoTags RepoTagsResp
@@ -129,78 +129,82 @@ func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTa
 	return repoTags, err
 }
 
-// func getManifestsV2(url, namespace, userName, password, repoName, tag string) (ManifestsResp, error) {
-// 	var (
-// 		err       error
-// 		manifests ManifestsResp
-// 	)
+func getManifestsV2(url, userName, password, repoName, tag string) (string, Manifest, error) {
+	var (
+		err       error
+		manifests Manifest
+		digest    string
+	)
 
-// 	getManifestsURL := "%s/v2/%s/manifests/%s"
-// 	queryURL := fmt.Sprintf(getManifestsURL, url, repoName, tag)
-// 	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
-// 	if err != nil {
-// 		log.Error().Msg(err.Error())
-// 		return manifests, err
-// 	}
-// 	req.Header.Set("Content-Type", "application/json")
-// 	req.SetBasicAuth(userName, password)
+	getManifestsURL := "%s/v2/%s/manifests/%s"
+	queryURL := fmt.Sprintf(getManifestsURL, url, repoName, tag)
+	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return digest, manifests, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/vnd.docker.distribution.manifest.list.v2+json")
+	req.SetBasicAuth(userName, password)
 
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		log.Error().Msg(err.Error())
-// 		return manifests, err
-// 	}
-// 	defer resp.Body.Close()
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return digest, manifests, err
+	}
+	defer resp.Body.Close()
 
-// 	body, err := io.ReadAll(resp.Body)
-// 	if err != nil {
-// 		log.Error().Msg(err.Error())
-// 		return manifests, err
-// 	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return digest, manifests, err
+	}
 
-// 	if resp.StatusCode != http.StatusOK {
-// 		err = fmt.Errorf("error bad status code %d", resp.StatusCode)
-// 		log.Error().Msg(err.Error())
-// 		return manifests, err
-// 	}
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("error bad status code %d", resp.StatusCode)
+		log.Error().Msg(err.Error())
+		return digest, manifests, err
+	}
 
-// 	if err := json.Unmarshal(body, &manifests); err != nil {
-// 		log.Error().Msg(err.Error())
-// 		return manifests, err
-// 	}
+	if err := json.Unmarshal(body, &manifests); err != nil {
+		log.Error().Msg(err.Error())
+		return digest, manifests, err
+	}
 
-// 	return manifests, err
-// }
+	digest = resp.Header.Get("Docker-Content-Digest")
 
-func getImageWithTags(url, namespace, userName, password, repoName string, repoTags RepoTagsResp) []model.ContainerImage {
+	return digest, manifests, err
+}
+
+func getImageWithTags(url, userName, password, repoName string, repoTags RepoTagsResp) []model.ContainerImage {
 	var imageAndTag []model.ContainerImage
+
 	for _, tag := range repoTags.Tags {
-		digest, details := getImageDetails(tag, repoTags)
+		digest, manifest, err := getManifestsV2(url, userName, password, repoName, tag)
+		if err != nil {
+			continue
+		}
+
+		var comp HistoryV1Compatibility
+		if len(manifest.History) > 0 {
+			if err := json.Unmarshal([]byte(manifest.History[0].V1Compatibility), &comp); err != nil {
+				log.Error().Msg(err.Error())
+			}
+		}
+
 		tt := model.ContainerImage{
-			ID:      model.DigestToID(*digest),
+			ID:      model.DigestToID(digest),
 			Name:    repoName,
 			Tag:     tag,
-			Size:    fmt.Sprint(details.ImageSizeBytes),
+			Size:    "",
 			Metrics: model.ComputeMetrics{},
 			Metadata: model.Metadata{
-				"timeCreatedMs":  details.TimeCreatedMs,
-				"digest":         *digest,
-				"timeUploadedMs": details.TimeUploadedMs,
+				"created": comp.Created,
+				"digest":  digest,
 			},
 		}
 		imageAndTag = append(imageAndTag, tt)
 	}
 
 	return imageAndTag
-}
-
-func getImageDetails(tag string, repoTags RepoTagsResp) (*string, *Manifest) {
-	for k, manifest := range repoTags.Manifest {
-		for _, i := range manifest.Tag {
-			if i == tag {
-				return &k, &manifest
-			}
-		}
-	}
-	return nil, nil
 }
