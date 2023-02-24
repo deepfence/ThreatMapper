@@ -280,8 +280,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
 github.com/deepfence/SecretScanner v1.2.0 h1:FOyVrImNbtpqvBCrO+1CwksuXtRAl33SHvKHN6+U0W4=
 github.com/deepfence/SecretScanner v1.2.0/go.mod h1:4jjUsmJVc+rnGRyBzCTVkAzgVJ/rV0xNvP0L2+U7eYc=
-github.com/deepfence/YaraHunter v0.0.0-20230216141202-66379322d464 h1:15jf1Dlz3OhJXTRitRVVlZiFbEa+qvfMEBTLY3qQFeI=
-github.com/deepfence/YaraHunter v0.0.0-20230216141202-66379322d464/go.mod h1:/8OcLJU0WnWZ2dBDIzKO4nrhlX3MMoT+kvwCrUwk3ws=
+github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501 h1:fLO6l5BJzXlokDbdwBDBo9l+QpGAFpG1pxXmaR7ilwQ=
+github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501/go.mod h1:/8OcLJU0WnWZ2dBDIzKO4nrhlX3MMoT+kvwCrUwk3ws=
 github.com/deepfence/package-scanner v1.2.4-0.20230223120644-7489587a1448 h1:zUHTpLCtobMph49lyRykQe6h9MG6T75KIZZSBJJw0xw=
 github.com/deepfence/package-scanner v1.2.4-0.20230223120644-7489587a1448/go.mod h1:d2usebQcVk8i2o5BkdRz50T9FK1AtXkAey8WPIlPGxg=
 github.com/deepfence/vessel v0.9.1 h1:43IuWdrRqHRW8O065qtporepudEGQWhMSqpxiI0/lSE=
