@@ -22,6 +22,7 @@ import type {
   ModelComplianceScanStatusResp,
   ModelScanResultsReq,
   ModelScanStatusReq,
+  SearchSearchCountResp,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -38,7 +39,13 @@ import {
     ModelScanResultsReqToJSON,
     ModelScanStatusReqFromJSON,
     ModelScanStatusReqToJSON,
+    SearchSearchCountRespFromJSON,
+    SearchSearchCountRespToJSON,
 } from '../models';
+
+export interface CountResultsCloudComplianceScanRequest {
+    modelScanResultsReq?: ModelScanResultsReq;
+}
 
 export interface IngestCloudComplianceScanStatusRequest {
     ingestersCloudCompliance?: Array<IngestersCloudCompliance> | null;
@@ -63,6 +70,22 @@ export interface StatusCloudComplianceScanRequest {
  * @interface CloudScannerApiInterface
  */
 export interface CloudScannerApiInterface {
+    /**
+     * Get Cloud Compliance Scan results for cloud node
+     * @summary Get Cloud Compliance Scan Results
+     * @param {ModelScanResultsReq} [modelScanResultsReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CloudScannerApiInterface
+     */
+    countResultsCloudComplianceScanRaw(requestParameters: CountResultsCloudComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Get Cloud Compliance Scan results for cloud node
+     * Get Cloud Compliance Scan Results
+     */
+    countResultsCloudComplianceScan(requestParameters: CountResultsCloudComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
     /**
      * Ingest Cloud compliances found while scanning cloud provider
      * @summary Ingest Cloud Compliances
@@ -133,6 +156,45 @@ export interface CloudScannerApiInterface {
  * 
  */
 export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiInterface {
+
+    /**
+     * Get Cloud Compliance Scan results for cloud node
+     * Get Cloud Compliance Scan Results
+     */
+    async countResultsCloudComplianceScanRaw(requestParameters: CountResultsCloudComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/results/count/cloud-compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanResultsReqToJSON(requestParameters.modelScanResultsReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Cloud Compliance Scan results for cloud node
+     * Get Cloud Compliance Scan Results
+     */
+    async countResultsCloudComplianceScan(requestParameters: CountResultsCloudComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countResultsCloudComplianceScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Ingest Cloud compliances found while scanning cloud provider

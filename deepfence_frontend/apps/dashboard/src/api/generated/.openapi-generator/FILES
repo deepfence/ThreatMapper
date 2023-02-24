@@ -69,7 +69,6 @@ models/ModelComputeMetrics.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
 models/ModelDownloadReportResponse.ts
-models/ModelEditUserRequest.ts
 models/ModelFetchWindow.ts
 models/ModelHost.ts
 models/ModelInitAgentReq.ts
@@ -107,6 +106,9 @@ models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanTriggerReq.ts
+models/ModelUpdateUserIdRequest.ts
+models/ModelUpdateUserPasswordRequest.ts
+models/ModelUpdateUserRequest.ts
 models/ModelUser.ts
 models/ModelUserRegisterRequest.ts
 models/ModelVulnerability.ts

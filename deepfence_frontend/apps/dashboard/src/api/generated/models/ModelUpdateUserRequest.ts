@@ -16,49 +16,49 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelEditUserRequest
+ * @interface ModelUpdateUserRequest
  */
-export interface ModelEditUserRequest {
+export interface ModelUpdateUserRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelEditUserRequest
+     * @memberof ModelUpdateUserRequest
      */
     first_name?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ModelEditUserRequest
+     * @memberof ModelUpdateUserRequest
      */
     is_active?: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ModelEditUserRequest
+     * @memberof ModelUpdateUserRequest
      */
     last_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelEditUserRequest
+     * @memberof ModelUpdateUserRequest
      */
     role?: string;
 }
 
 /**
- * Check if a given object implements the ModelEditUserRequest interface.
+ * Check if a given object implements the ModelUpdateUserRequest interface.
  */
-export function instanceOfModelEditUserRequest(value: object): boolean {
+export function instanceOfModelUpdateUserRequest(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelEditUserRequestFromJSON(json: any): ModelEditUserRequest {
-    return ModelEditUserRequestFromJSONTyped(json, false);
+export function ModelUpdateUserRequestFromJSON(json: any): ModelUpdateUserRequest {
+    return ModelUpdateUserRequestFromJSONTyped(json, false);
 }
 
-export function ModelEditUserRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelEditUserRequest {
+export function ModelUpdateUserRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelUpdateUserRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -71,7 +71,7 @@ export function ModelEditUserRequestFromJSONTyped(json: any, ignoreDiscriminator
     };
 }
 
-export function ModelEditUserRequestToJSON(value?: ModelEditUserRequest | null): any {
+export function ModelUpdateUserRequestToJSON(value?: ModelUpdateUserRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
