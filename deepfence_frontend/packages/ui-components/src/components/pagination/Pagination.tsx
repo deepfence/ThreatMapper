@@ -42,6 +42,7 @@ const PageButton = memo(
         onClick={() => {
           onPageChange?.();
         }}
+        type="button"
         disabled={disabled}
         {...rest}
       >
