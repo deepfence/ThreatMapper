@@ -935,6 +935,10 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 		httpext.JSON(w, http.StatusOK, resp)
 	case "delete":
 		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
+		if err != nil {
+			respondError(err, w)
+			return
+		}
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
