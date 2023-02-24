@@ -38,18 +38,16 @@ COPY fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
 USER deepfence
 COPY scope/docker/deepfence_exe /home/deepfence/
 COPY deepfence/supervisord_cluster_agent.conf /home/deepfence/supervisord-temp.conf
-COPY deepfence/start_cluster_agent.sh /usr/local/bin/start_services
 
 WORKDIR /opt/steampipe
 USER root
 COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
 COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
-RUN chown -R deepfence /opt/ /home/deepfence /var/log /usr/local/bin/start_services /var/run/ /etc/td-agent-bit/ \
-     && chmod +x /usr/local/bin/start_services
+RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/ \
 
 USER deepfence
 RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
-ENTRYPOINT ["/usr/local/bin/start_services"]
+ENTRYPOINT ["/home/deepfence/deepfence_exe"]
