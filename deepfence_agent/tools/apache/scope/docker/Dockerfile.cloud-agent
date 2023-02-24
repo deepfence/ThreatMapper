@@ -43,7 +43,7 @@ WORKDIR /opt/steampipe
 USER root
 COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
 COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
-RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/ \
+RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/
 
 USER deepfence
 RUN steampipe plugin install steampipe \
