@@ -100,8 +100,9 @@ type ComplianceScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	NodeIds []NodeIdentifier `json:"node_ids" required:"true"`
-	Window  FetchWindow      `json:"window"  required:"true"`
+	ScanStatus []string         `json:"scan_status"`
+	NodeIds    []NodeIdentifier `json:"node_ids" required:"true"`
+	Window     FetchWindow      `json:"window"  required:"true"`
 }
 
 type ScanListResp struct {
@@ -136,7 +137,7 @@ type ScanActionRequest struct {
 	//utils.Neo4jScanType
 }
 
-type ScanResultDocumentRequest struct {
+type ScanDocFoundNodesRequest struct {
 	DocId    string `path:"doc_id" validate:"required" required:"true"`
 	ScanID   string `path:"scan_id" validate:"required" required:"true"`
 	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`

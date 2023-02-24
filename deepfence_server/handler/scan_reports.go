@@ -648,7 +648,7 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 		return
 	}
 
-	infos, err := reporters_scan.GetScansList(r.Context(), scan_type, req.NodeIds, req.Window)
+	infos, err := reporters_scan.GetScansList(r.Context(), scan_type, req.NodeIds, req.Window, req.ScanStatus)
 	if err == reporters.NotFoundErr {
 		err = &NotFoundError{err}
 	}
@@ -947,8 +947,8 @@ func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	h.scanIdActionHandler(w, r, "delete")
 }
 
-func (h *Handler) getScanResultDocumentHandler(w http.ResponseWriter, r *http.Request, action string) {
-	req := model.ScanResultDocumentRequest{
+func (h *Handler) GetScanResultDocumentNodesHandler(w http.ResponseWriter, r *http.Request) {
+	req := model.ScanDocFoundNodesRequest{
 		DocId:    chi.URLParam(r, "doc_id"),
 		ScanID:   chi.URLParam(r, "scan_id"),
 		ScanType: chi.URLParam(r, "scan_type"),
@@ -958,30 +958,12 @@ func (h *Handler) getScanResultDocumentHandler(w http.ResponseWriter, r *http.Re
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	switch action {
-	case "getDocument":
-		resp, err := reporters_scan.GetScanResultDocument(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocId)
-		if err != nil {
-			respondError(err, w)
-			return
-		}
-		httpext.JSON(w, http.StatusOK, resp)
-	case "getNodes":
-		resp, err := reporters_scan.GetScanResultDocumentNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocId)
-		if err != nil {
-			respondError(err, w)
-			return
-		}
-		httpext.JSON(w, http.StatusOK, resp)
+	resp, err := reporters_scan.GetScanResultDocumentNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocId)
+	if err != nil {
+		respondError(err, w)
+		return
 	}
-}
-
-func (h *Handler) GetScanResultDocumentHandler(w http.ResponseWriter, r *http.Request) {
-	h.getScanResultDocumentHandler(w, r, "getDocument")
-}
-
-func (h *Handler) GetScanResultDocumentNodesHandler(w http.ResponseWriter, r *http.Request) {
-	h.getScanResultDocumentHandler(w, r, "getNodes")
+	httpext.JSON(w, http.StatusOK, resp)
 }
 
 func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {

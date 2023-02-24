@@ -271,7 +271,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultDownloadHandler))
 				r.Delete("/", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanDeleteHandler))
 				r.Route("/{doc_id}", func(r chi.Router) {
-					r.Get("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanResultDocumentHandler))
 					r.Get("/nodes", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanResultDocumentNodesHandler))
 				})
 			})
