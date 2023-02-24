@@ -1,6 +1,6 @@
 import { HiArrowSmRight } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
-import { Card } from 'ui-components';
+import { Card, CircleSpinner } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import {
@@ -8,6 +8,14 @@ import {
   TopNVulnerableChartData,
 } from '@/features/vulnerabilities/components/landing/TopNVulnerableChart';
 import { useTheme } from '@/theme/ThemeContext';
+
+const LoadingComponent = () => {
+  return (
+    <div className="flex items-center justify-center absolute inset-0">
+      <CircleSpinner size="xl" />
+    </div>
+  );
+};
 
 export const TopNVulnerableCard = ({
   data,
@@ -22,12 +30,12 @@ export const TopNVulnerableCard = ({
 }) => {
   const { mode } = useTheme();
   return (
-    <Card className="w-full py-2 px-3 flex flex-col">
+    <Card className="w-full py-2 px-3 flex flex-col relative">
       <div className="flex">
-        <h4 className="text-gray-900 text-md dark:text-white">{title}</h4>
+        <h4 className="flex-1 text-gray-900 text-md dark:text-white truncate">{title}</h4>
         <DFLink
           to={link}
-          className="flex items-center hover:no-underline active:no-underline focus:no-underline ml-auto mr-2"
+          className="shrink-0 flex items-center justify-end hover:no-underline active:no-underline focus:no-underline ml-auto mr-2"
         >
           <span className="text-xs text-blue-600 dark:text-blue-500">Go to Scans</span>
           <IconContext.Provider
@@ -40,8 +48,9 @@ export const TopNVulnerableCard = ({
         </DFLink>
       </div>
       <div className="basis-60">
-        <TopNVulnerableChart theme={mode} data={data} loading={loading} />
+        {!loading && <TopNVulnerableChart theme={mode} data={data} />}
       </div>
+      {loading && <LoadingComponent />}
     </Card>
   );
 };

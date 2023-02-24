@@ -30,6 +30,12 @@ export interface ModelSecret {
      * @type {string}
      * @memberof ModelSecret
      */
+    masked: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecret
+     */
     matched_content: string;
     /**
      * 
@@ -57,6 +63,7 @@ export interface ModelSecret {
 export function instanceOfModelSecret(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "full_filename" in value;
+    isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "matched_content" in value;
     isInstance = isInstance && "relative_ending_index" in value;
     isInstance = isInstance && "relative_starting_index" in value;
@@ -76,6 +83,7 @@ export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean
     return {
         
         'full_filename': json['full_filename'],
+        'masked': json['masked'],
         'matched_content': json['matched_content'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
@@ -93,6 +101,7 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
     return {
         
         'full_filename': value.full_filename,
+        'masked': value.masked,
         'matched_content': value.matched_content,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
