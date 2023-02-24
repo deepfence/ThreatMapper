@@ -164,12 +164,11 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		neo4jNodeType = "KubernetesCluster"
 		scanType = utils.NEO4J_COMPLIANCE_SCAN
 	}
-	res, err := tx.Run(`
-		OPTIONAL MATCH (n:$neo4jNodeType{node_id:$node_id})
-		RETURN n IS NOT NULL AS Exists`,
+	res, err := tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s{node_id:$node_id})
+		RETURN n IS NOT NULL AS Exists`, neo4jNodeType),
 		map[string]interface{}{
-			"node_id":       nodeId,
-			"neo4jNodeType": neo4jNodeType,
+			"node_id": nodeId,
 		})
 	if err != nil {
 		return err
@@ -187,17 +186,16 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:$neo4jNodeType{node_id:$node_id})
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND n.benchmark_type = $benchmark_type
-		RETURN n.node_id`, scanType),
+		RETURN n.node_id`, scanType, neo4jNodeType),
 		map[string]interface{}{
 			"node_id":        nodeId,
 			"complete":       utils.SCAN_STATUS_SUCCESS,
 			"failed":         utils.SCAN_STATUS_FAILED,
 			"benchmark_type": benchmarkType,
-			"neo4jNodeType":  neo4jNodeType,
 		})
 	if err != nil {
 		return err
@@ -226,27 +224,25 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	}
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type, trigger_action: $action})
-		MERGE (m:$neo4jNodeType{node_id:$node_id})
-		MERGE (n)-[:SCANNED]->(m)`, scanType),
+		MERGE (m:%s{node_id:$node_id})
+		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
 			"scan_id":        scanId,
 			"status":         utils.SCAN_STATUS_STARTING,
 			"node_id":        nodeId,
 			"benchmark_type": benchmarkType,
 			"action":         string(action),
-			"neo4jNodeType":  neo4jNodeType,
 		}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
-		MATCH (m:$neo4jNodeType{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, scanType),
+		MATCH (m:%s{node_id:$node_id})
+		MERGE (n)-[:SCHEDULED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
-			"scan_id":       scanId,
-			"node_id":       nodeId,
-			"neo4jNodeType": neo4jNodeType,
+			"scan_id": scanId,
+			"node_id": nodeId,
 		}); err != nil {
 		return err
 	}
