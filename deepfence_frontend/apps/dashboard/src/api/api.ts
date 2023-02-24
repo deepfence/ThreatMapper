@@ -67,6 +67,8 @@ export function getVulnerabilityApiClient() {
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
     resultVulnerabilityScan:
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
+    resultCountVulnerabilityScan:
+      vulnerabilityApi.countResultsVulnerabilityScans.bind(vulnerabilityApi),
     statusVulnerabilityScan:
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
     listVulnerabilityScans:
@@ -136,6 +138,9 @@ export function getScanResultsApiClient() {
 
   return {
     deleteVulnerabilities: scanResultsApi.deleteScanResult.bind(scanResultsApi),
+    downloadScanResultsForScanID: scanResultsApi.downloadScanResults.bind(scanResultsApi),
+    deleteScanResultsForScanID:
+      scanResultsApi.deleteScanResultsForScanID.bind(scanResultsApi),
     notifyVulnerabilities: scanResultsApi.notifyScanResult.bind(scanResultsApi),
     maskVulnerabilities: scanResultsApi.maskScanResult.bind(scanResultsApi),
     unMaskVulnerabilities: scanResultsApi.unmaskScanResult.bind(scanResultsApi),

@@ -55,7 +55,7 @@ const Radio: FC<Props> = (props) => {
                   'rounded-full py-2 w-4 h-4 flex shrink-0',
                   'radix-state-checked:bg-blue-600 dark:radix-state-checked:bg-blue-600',
                   'focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-2 dark:focus:ring-blue-800',
-                  'radix-state-unchecked:ring-1 radix-state-unchecked:ring-inset ring-gray-300 bg-gray-50 dark:radix-state-unchecked:ring-1 dark:ring-gray-600 dark:bg-gray-700',
+                  'radix-state-unchecked:ring-2 radix-state-unchecked:ring-inset ring-gray-300 bg-gray-50 dark:radix-state-unchecked:ring-1 dark:ring-gray-600 dark:bg-gray-700',
                   'radix-state-disabled:pointer-events-none',
                   'disabled:cursor-not-allowed',
                 )}
@@ -63,7 +63,7 @@ const Radio: FC<Props> = (props) => {
                 <RadioGroupPrimitive.Indicator
                   className={cx(
                     'flex items-center justify-center w-full h-full relative shrink-0',
-                    'after:bg-white after:content-[""] dark:after:bg-gray-900',
+                    'after:bg-white after:content-[""] dark:after:bg-white',
                     'after:block after:w-2 after:h-2 after:rounded-full',
                     'radix-state-checked:bg-blue-800',
                     'dark:radix-state-unchecked:bg-gray-700',
@@ -75,7 +75,7 @@ const Radio: FC<Props> = (props) => {
               <Label
                 htmlFor={_id + ''}
                 className={cx(
-                  'px-2 text-gray-500 text-xs dark:text-gray-400 cursor-default',
+                  'ml-2 text-sm font-medium text-gray-900 dark:text-gray-300',
                   {
                     'cursor-not-allowed': disabled,
                   },

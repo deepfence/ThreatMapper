@@ -3,7 +3,7 @@ import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
 export const ErrorComponent = () => {
   return (
-    <div className="flex flex-col items-center mt-[10%] justify-center">
+    <div className="flex flex-col items-center justify-center h-screen">
       <IconContext.Provider
         value={{
           className: 'dark:text-gray-600 text-gray-400 w-[70px] h-[70px]',
