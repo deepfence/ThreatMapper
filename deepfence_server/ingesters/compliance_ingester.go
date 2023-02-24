@@ -58,7 +58,6 @@ func (tc *ComplianceScanStatusIngester) Ingest(
 	cs []ingesters.ComplianceScanStatus,
 	ingestC chan *kgo.Record,
 ) error {
-	log.Error().Msgf("ingesting compliancescanstatus:%+v", cs)
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
