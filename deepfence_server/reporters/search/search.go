@@ -131,7 +131,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
 		`MATCH (n) -[:SCANNED]- (m)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
-		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, m.node_type, m.node_name` +
+		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
 		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
@@ -154,10 +154,6 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		if err != nil {
 			log.Error().Msgf("%v", err)
 		}
-		node_type := ""
-		if rec.Values[4] != nil {
-			node_type = rec.Values[4].(string)
-		}
 		node_name := ""
 		if rec.Values[5] != nil {
 			node_name = rec.Values[5].(string)
@@ -167,7 +163,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 			Status:         rec.Values[1].(string),
 			UpdatedAt:      rec.Values[2].(int64),
 			NodeId:         rec.Values[3].(string),
-			NodeType:       node_type,
+			NodeType:       reporters_scan.Labels2NodeType(rec.Values[4].([]interface{})),
 			NodeName:       node_name,
 			SeverityCounts: counts,
 		})
