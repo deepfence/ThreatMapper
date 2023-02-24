@@ -17,7 +17,6 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ModelEditUserRequest,
   ModelInviteUserRequest,
   ModelInviteUserResponse,
   ModelMessageResponse,
@@ -25,6 +24,9 @@ import type {
   ModelPasswordResetVerifyRequest,
   ModelRegisterInvitedUserRequest,
   ModelResponseAccessToken,
+  ModelUpdateUserIdRequest,
+  ModelUpdateUserPasswordRequest,
+  ModelUpdateUserRequest,
   ModelUser,
   ModelUserRegisterRequest,
 } from '../models';
@@ -33,8 +35,6 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelEditUserRequestFromJSON,
-    ModelEditUserRequestToJSON,
     ModelInviteUserRequestFromJSON,
     ModelInviteUserRequestToJSON,
     ModelInviteUserResponseFromJSON,
@@ -49,6 +49,12 @@ import {
     ModelRegisterInvitedUserRequestToJSON,
     ModelResponseAccessTokenFromJSON,
     ModelResponseAccessTokenToJSON,
+    ModelUpdateUserIdRequestFromJSON,
+    ModelUpdateUserIdRequestToJSON,
+    ModelUpdateUserPasswordRequestFromJSON,
+    ModelUpdateUserPasswordRequestToJSON,
+    ModelUpdateUserRequestFromJSON,
+    ModelUpdateUserRequestToJSON,
     ModelUserFromJSON,
     ModelUserToJSON,
     ModelUserRegisterRequestFromJSON,
@@ -79,9 +85,17 @@ export interface ResetPasswordRequestRequest {
     modelPasswordResetRequest?: ModelPasswordResetRequest;
 }
 
+export interface UpdateCurrentUserRequest {
+    modelUpdateUserRequest?: ModelUpdateUserRequest;
+}
+
+export interface UpdatePasswordRequest {
+    modelUpdateUserPasswordRequest?: ModelUpdateUserPasswordRequest;
+}
+
 export interface UpdateUserRequest {
     id: number;
-    modelEditUserRequest?: ModelEditUserRequest;
+    modelUpdateUserIdRequest?: ModelUpdateUserIdRequest;
 }
 
 export interface VerifyResetPasswordRequestRequest {
@@ -267,10 +281,42 @@ export interface UserApiInterface {
     resetPasswordRequest(requestParameters: ResetPasswordRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
+     * Update logged in user information
+     * @summary Update Current User
+     * @param {ModelUpdateUserRequest} [modelUpdateUserRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApiInterface
+     */
+    updateCurrentUserRaw(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelUser>>;
+
+    /**
+     * Update logged in user information
+     * Update Current User
+     */
+    updateCurrentUser(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser>;
+
+    /**
+     * Update current user\'s password
+     * @summary Update Password
+     * @param {ModelUpdateUserPasswordRequest} [modelUpdateUserPasswordRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UserApiInterface
+     */
+    updatePasswordRaw(requestParameters: UpdatePasswordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Update current user\'s password
+     * Update Password
+     */
+    updatePassword(requestParameters: UpdatePasswordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * Update User by User ID
      * @summary Update User by User ID
      * @param {number} id 
-     * @param {ModelEditUserRequest} [modelEditUserRequest] 
+     * @param {ModelUpdateUserIdRequest} [modelUpdateUserIdRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof UserApiInterface
@@ -697,6 +743,83 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
     }
 
     /**
+     * Update logged in user information
+     * Update Current User
+     */
+    async updateCurrentUserRaw(requestParameters: UpdateCurrentUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelUser>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/user`,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelUpdateUserRequestToJSON(requestParameters.modelUpdateUserRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelUserFromJSON(jsonValue));
+    }
+
+    /**
+     * Update logged in user information
+     * Update Current User
+     */
+    async updateCurrentUser(requestParameters: UpdateCurrentUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser> {
+        const response = await this.updateCurrentUserRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update current user\'s password
+     * Update Password
+     */
+    async updatePasswordRaw(requestParameters: UpdatePasswordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/user/password`,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelUpdateUserPasswordRequestToJSON(requestParameters.modelUpdateUserPasswordRequest),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Update current user\'s password
+     * Update Password
+     */
+    async updatePassword(requestParameters: UpdatePasswordRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.updatePasswordRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * Update User by User ID
      * Update User by User ID
      */
@@ -724,7 +847,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelEditUserRequestToJSON(requestParameters.modelEditUserRequest),
+            body: ModelUpdateUserIdRequestToJSON(requestParameters.modelUpdateUserIdRequest),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelUserFromJSON(jsonValue));

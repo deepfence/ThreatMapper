@@ -24,7 +24,7 @@ export interface ModelScanResultsActionRequest {
      * @type {Array<string>}
      * @memberof ModelScanResultsActionRequest
      */
-    node_ids: Array<string> | null;
+    doc_ids: Array<string> | null;
     /**
      * 
      * @type {string}
@@ -58,7 +58,7 @@ export type ModelScanResultsActionRequestScanTypeEnum = typeof ModelScanResultsA
  */
 export function instanceOfModelScanResultsActionRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_ids" in value;
+    isInstance = isInstance && "doc_ids" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "scan_type" in value;
 
@@ -75,7 +75,7 @@ export function ModelScanResultsActionRequestFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
-        'node_ids': json['node_ids'],
+        'doc_ids': json['doc_ids'],
         'scan_id': json['scan_id'],
         'scan_type': json['scan_type'],
     };
@@ -90,7 +90,7 @@ export function ModelScanResultsActionRequestToJSON(value?: ModelScanResultsActi
     }
     return {
         
-        'node_ids': value.node_ids,
+        'doc_ids': value.doc_ids,
         'scan_id': value.scan_id,
         'scan_type': value.scan_type,
     };
