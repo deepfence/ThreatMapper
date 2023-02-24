@@ -866,9 +866,9 @@ func (h *Handler) scanResultMaskHandler(w http.ResponseWriter, r *http.Request, 
 	}
 	switch action {
 	case "mask":
-		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "true")
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, true)
 	case "unmask":
-		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "false")
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, false)
 	}
 	if err != nil {
 		respondError(err, w)

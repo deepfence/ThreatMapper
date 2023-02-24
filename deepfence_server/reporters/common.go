@@ -43,8 +43,8 @@ func GetCategoryCounts[T Categorizable](entries []T) map[string]int32 {
 
 func Neo4jGetStringRecord(rec *neo4j.Record, key, defaultVal string) string {
 	val, ok := rec.Get(key)
-	if !ok {
-		val = defaultVal
+	if ok && val != nil {
+		return val.(string)
 	}
-	return val.(string)
+	return defaultVal
 }

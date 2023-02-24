@@ -646,9 +646,9 @@ func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanTyp
 	defer tx.Close()
 
 	nres, err := tx.Run(`
-		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`{node_id: $scan_id}) -[r:DETECTED]-> (d:`+utils.ScanTypeDetectedNode[scanType]+`{node_id: $node_id})
+		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`{node_id: $scan_id}) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`{node_id: $node_id})
 		WHERE r.masked = false
-		RETURN return node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
+		RETURN node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
 		map[string]interface{}{"scan_id": scanId, "node_id": docId})
 	if err != nil {
 		return res, err
@@ -661,9 +661,9 @@ func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanTyp
 
 	for _, rec := range recs {
 		hostName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
-		containerName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
-		imageName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
-		imageTag := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
+		containerName := reporters.Neo4jGetStringRecord(rec, "node.docker_container_name", "")
+		imageName := reporters.Neo4jGetStringRecord(rec, "node.docker_image_name", "")
+		imageTag := reporters.Neo4jGetStringRecord(rec, "node.docker_image_tag", "")
 		var name string
 		nodeType := reporters.Neo4jGetStringRecord(rec, "node.node_type", "")
 		if nodeType == "container_image" {
@@ -681,7 +681,7 @@ func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanTyp
 		}
 		res = append(res, node)
 	}
-	return nil, nil
+	return res, nil
 }
 
 func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {

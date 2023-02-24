@@ -38,7 +38,7 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	return tx.Commit()
 }
 
-func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskRequest, value string) error {
+func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskRequest, value bool) error {
 	// (m:VulnerabilityScan) - [r:DETECTED] -> (n:Cve)
 	// update fields of "DETECTED" edges
 	driver, err := directory.Neo4jClient(ctx)
@@ -101,6 +101,14 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
 		WHERE m.node_id = $scan_id
 		DETACH DELETE m,r`, map[string]interface{}{"scan_id": scanId})
+		if err != nil {
+			return err
+		}
+		// Delete documents which are not part of any scan results now
+		_, err = tx.Run(`
+		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`) 
+		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)
+		DELETE (n)`, map[string]interface{}{})
 		if err != nil {
 			return err
 		}

@@ -431,7 +431,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 
 	d.AddOperation("getAllNodesOfScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes",
 		"Get all nodes for given result document", "Get all nodes for given result document",
-		http.StatusOK, []string{tagScanResults}, bearerToken, new(BasicNode), new([]map[string]string))
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanDocFoundNodesRequest), new([]BasicNode))
 
 	// Scan Result Actions
 	d.AddOperation("maskScanResult", http.MethodPost, "/deepfence/scan/results/action/mask",
