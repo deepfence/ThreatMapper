@@ -229,36 +229,36 @@ type UserIdRequest struct {
 }
 
 type UpdateUserPasswordRequest struct {
-	OldPassword string `json:"old_password" validate:"required,password,min=8,max=32"`
-	NewPassword string `json:"new_password" validate:"required,password,min=8,max=32"`
+	OldPassword string `json:"old_password" validate:"required,password,min=8,max=32" required:"true"`
+	NewPassword string `json:"new_password" validate:"required,password,min=8,max=32" required:"true"`
 }
 
 type UpdateUserRequest struct {
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
-	IsActive  bool   `json:"is_active"`
-	Role      string `json:"role"`
+	IsActive  bool   `json:"is_active" validate:"required"`
+	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
 }
 
 type UpdateUserIdRequest struct {
-	ID        int64  `path:"id"`
+	ID        int64  `path:"id" validate:"required"`
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
-	IsActive  bool   `json:"is_active"`
-	Role      string `json:"role"`
+	IsActive  bool   `json:"is_active" validate:"required"`
+	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
 }
 
 type User struct {
 	ID                  int64             `json:"id"`
-	FirstName           string            `json:"first_name" validate:"required,user_name,min=2,max=32"`
-	LastName            string            `json:"last_name" validate:"required,user_name,min=2,max=32"`
-	Email               string            `json:"email" validate:"required,email"`
-	Company             string            `json:"company" validate:"required,company_name,min=2,max=32"`
+	FirstName           string            `json:"first_name" validate:"required,user_name,min=2,max=32" required:"true"`
+	LastName            string            `json:"last_name" validate:"required,user_name,min=2,max=32" required:"true"`
+	Email               string            `json:"email" validate:"required,email" required:"true"`
+	Company             string            `json:"company" validate:"required,company_name,min=2,max=32" required:"true"`
 	CompanyID           int32             `json:"company_id"`
 	IsActive            bool              `json:"is_active"`
 	Password            string            `json:"-" validate:"required,password,min=8,max=32"`
 	Groups              map[string]string `json:"groups"`
-	Role                string            `json:"role"`
+	Role                string            `json:"role" validate:"oneof=admin standard-user read-only-user" enum:"admin,standard-user,read-only-user"`
 	RoleID              int32             `json:"role_id"`
 	PasswordInvalidated bool              `json:"password_invalidated"`
 	CompanyNamespace    string            `json:"-"`
@@ -380,6 +380,17 @@ func (u *User) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 	return &user, nil
 }
 
+func (u *User) UpdatePassword(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	err := pgClient.UpdatePassword(ctx, postgresqlDb.UpdatePasswordParams{
+		PasswordHash: u.Password,
+		ID:           u.ID,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (u *User) Update(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {
 	groupIDs, err := json.Marshal(utils.MapKeys(u.Groups))
 	if err != nil {
@@ -390,7 +401,6 @@ func (u *User) Update(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 		LastName:            u.LastName,
 		RoleID:              u.RoleID,
 		GroupIds:            groupIDs,
-		PasswordHash:        u.Password,
 		IsActive:            u.IsActive,
 		PasswordInvalidated: u.PasswordInvalidated,
 		ID:                  u.ID,

@@ -429,7 +429,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	_, err = user.Update(ctx, pgClient)
+	err = user.UpdatePassword(ctx, pgClient)
 	if err != nil {
 		respondError(err, w)
 		return
@@ -528,7 +528,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		respondError(err, w)
 		return
 	}
-	_, err = user.Update(ctx, pgClient)
+	err = user.UpdatePassword(ctx, pgClient)
 	if err != nil {
 		respondError(err, w)
 		return
