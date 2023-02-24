@@ -25,7 +25,7 @@ export const attackPathTabs: Array<{
 
 export const TopAttackPaths = () => {
   return (
-    <Card className="h-full p-2 grid grid-flow-row">
+    <Card className="h-full p-2">
       <div className="p-2 flex items-center">
         <h4 className="text-gray-900 text-sm dark:text-white">Top Attack Paths</h4>
         <DFLink

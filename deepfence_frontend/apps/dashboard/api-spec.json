@@ -7854,15 +7854,20 @@
         }
       },
       "ModelUpdateUserIdRequest": {
+        "required": ["role"],
         "type": "object",
         "properties": {
           "first_name": { "type": "string" },
           "is_active": { "type": "boolean" },
           "last_name": { "type": "string" },
-          "role": { "type": "string" }
+          "role": {
+            "enum": ["admin", "standard-user", "read-only-user"],
+            "type": "string"
+          }
         }
       },
       "ModelUpdateUserPasswordRequest": {
+        "required": ["old_password", "new_password"],
         "type": "object",
         "properties": {
           "new_password": { "type": "string" },
@@ -7870,15 +7875,20 @@
         }
       },
       "ModelUpdateUserRequest": {
+        "required": ["role"],
         "type": "object",
         "properties": {
           "first_name": { "type": "string" },
           "is_active": { "type": "boolean" },
           "last_name": { "type": "string" },
-          "role": { "type": "string" }
+          "role": {
+            "enum": ["admin", "standard-user", "read-only-user"],
+            "type": "string"
+          }
         }
       },
       "ModelUser": {
+        "required": ["first_name", "last_name", "email", "company"],
         "type": "object",
         "properties": {
           "company": { "type": "string" },
@@ -7895,7 +7905,10 @@
           "is_active": { "type": "boolean" },
           "last_name": { "type": "string" },
           "password_invalidated": { "type": "boolean" },
-          "role": { "type": "string" },
+          "role": {
+            "enum": ["admin", "standard-user", "read-only-user"],
+            "type": "string"
+          },
           "role_id": { "type": "integer" }
         }
       },

@@ -24,13 +24,13 @@ export interface ModelUpdateUserPasswordRequest {
      * @type {string}
      * @memberof ModelUpdateUserPasswordRequest
      */
-    new_password?: string;
+    new_password: string;
     /**
      * 
      * @type {string}
      * @memberof ModelUpdateUserPasswordRequest
      */
-    old_password?: string;
+    old_password: string;
 }
 
 /**
@@ -38,6 +38,8 @@ export interface ModelUpdateUserPasswordRequest {
  */
 export function instanceOfModelUpdateUserPasswordRequest(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "new_password" in value;
+    isInstance = isInstance && "old_password" in value;
 
     return isInstance;
 }
@@ -52,8 +54,8 @@ export function ModelUpdateUserPasswordRequestFromJSONTyped(json: any, ignoreDis
     }
     return {
         
-        'new_password': !exists(json, 'new_password') ? undefined : json['new_password'],
-        'old_password': !exists(json, 'old_password') ? undefined : json['old_password'],
+        'new_password': json['new_password'],
+        'old_password': json['old_password'],
     };
 }
 
