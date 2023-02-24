@@ -9,9 +9,6 @@ import (
 )
 
 func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
-	log.Errorf("k8s start compliance received")
-	log.Errorf("changes done")
-	log.Errorf("%+v", req.BinArgs)
 	scanner, err := k8sscanner.NewComplianceScanner(
 		k8sscannerutil.Config{
 			ComplianceCheckType:       k8sscannerutil.NsaCisaCheckType,
@@ -26,7 +23,7 @@ func StartComplianceScan(req ctl.StartComplianceScanRequest) error {
 	}
 	err = scanner.RunComplianceScan()
 	if err != nil {
-		log.Errorf("ERROR FROM SCAN: %+v", err)
+		log.Errorf("Error from scan: %+v", err)
 		return err
 	}
 	return nil

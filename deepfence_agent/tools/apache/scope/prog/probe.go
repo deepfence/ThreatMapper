@@ -117,8 +117,6 @@ func setClusterAgentControls() {
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
-	} else {
-		log.Errorf("k8s control registered")
 	}
 	_, err = exec.Command("/bin/sh", "/home/deepfence/token.sh").CombinedOutput()
 	if err != nil {
