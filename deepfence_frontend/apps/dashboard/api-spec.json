@@ -4041,83 +4041,6 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}": {
-      "get": {
-        "tags": ["Scan Results"],
-        "summary": "Get Scans Result Document",
-        "description": "Get Scans Result Document",
-        "operationId": "getScanResultDocument",
-        "parameters": [
-          {
-            "name": "doc_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "scan_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "scan_type",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "enum": [
-                "SecretScan",
-                "VulnerabilityScan",
-                "MalwareScan",
-                "ComplianceScan",
-                "CloudComplianceScan"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": { "type": "string" }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
     "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes": {
       "get": {
         "tags": ["Scan Results"],
@@ -4160,10 +4083,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": { "type": "string" }
-                  }
+                  "items": { "$ref": "#/components/schemas/ModelBasicNode" }
                 }
               }
             }
@@ -6911,6 +6831,16 @@
         "type": "object",
         "properties": { "api_token": { "type": "string" } }
       },
+      "ModelBasicNode": {
+        "required": ["node_id", "name", "node_type", "host_name"],
+        "type": "object",
+        "properties": {
+          "host_name": { "type": "string" },
+          "name": { "type": "string" },
+          "node_id": { "type": "string" },
+          "node_type": { "type": "string" }
+        }
+      },
       "ModelCloudCompliance": {
         "required": [
           "@timestamp",
@@ -6944,7 +6874,7 @@
           "count": { "type": "integer" },
           "description": { "type": "string" },
           "group": { "type": "string" },
-          "masked": { "type": "string" },
+          "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "reason": { "type": "string" },
@@ -7009,7 +6939,7 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "updated_at": { "type": "integer" }
+          "updated_at": { "type": "integer", "format": "int64" }
         }
       },
       "ModelCloudNodeAccountInfo": {
@@ -7113,13 +7043,15 @@
           "test_desc",
           "status",
           "compliance_check_type",
-          "compliance_node_type"
+          "compliance_node_type",
+          "masked"
         ],
         "type": "object",
         "properties": {
           "compliance_check_type": { "type": "string" },
           "compliance_node_type": { "type": "string" },
           "description": { "type": "string" },
+          "masked": { "type": "boolean" },
           "remediation_ansible": { "type": "string" },
           "remediation_puppet": { "type": "string" },
           "remediation_script": { "type": "string" },
@@ -7195,7 +7127,7 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "updated_at": { "type": "integer" }
+          "updated_at": { "type": "integer", "format": "int64" }
         }
       },
       "ModelComplianceScanStatusResp": {
@@ -7437,7 +7369,8 @@
           "file_severity",
           "severity_score",
           "summary",
-          "rule_name"
+          "rule_name",
+          "masked"
         ],
         "type": "object",
         "properties": {
@@ -7446,6 +7379,7 @@
           "file_sevScore": { "type": "number" },
           "file_severity": { "type": "string" },
           "image_layer_id": { "type": "string" },
+          "masked": { "type": "boolean" },
           "rule_name": { "type": "string" },
           "severity_score": { "type": "number" },
           "summary": { "type": "string" }
@@ -7485,7 +7419,7 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "updated_at": { "type": "integer" }
+          "updated_at": { "type": "integer", "format": "int64" }
         }
       },
       "ModelMalwareScanTriggerReq": {
@@ -7747,6 +7681,11 @@
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
             "nullable": true
           },
+          "scan_status": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
@@ -7840,11 +7779,13 @@
           "relative_starting_index",
           "relative_ending_index",
           "full_filename",
-          "matched_content"
+          "matched_content",
+          "masked"
         ],
         "type": "object",
         "properties": {
           "full_filename": { "type": "string" },
+          "masked": { "type": "boolean" },
           "matched_content": { "type": "string" },
           "relative_ending_index": { "type": "integer" },
           "relative_starting_index": { "type": "integer" },
@@ -7897,7 +7838,7 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "updated_at": { "type": "integer" }
+          "updated_at": { "type": "integer", "format": "int64" }
         }
       },
       "ModelSecretScanTriggerReq": {
@@ -7994,7 +7935,8 @@
           "cve_overall_score",
           "cve_attack_vector",
           "urls",
-          "exploit_poc"
+          "exploit_poc",
+          "masked"
         ],
         "type": "object",
         "properties": {
@@ -8011,6 +7953,7 @@
           "cve_severity": { "type": "string" },
           "cve_type": { "type": "string" },
           "exploit_poc": { "type": "string" },
+          "masked": { "type": "boolean" },
           "urls": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
@@ -8064,7 +8007,7 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "updated_at": { "type": "integer" },
+          "updated_at": { "type": "integer", "format": "int64" },
           "vulnerabilities": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelVulnerability" },
@@ -8185,9 +8128,16 @@
         "properties": { "order_field": { "type": "string" } }
       },
       "SearchSearchCountResp": {
-        "required": ["count"],
+        "required": ["count", "categories"],
         "type": "object",
-        "properties": { "count": { "type": "integer" } }
+        "properties": {
+          "categories": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" },
+            "nullable": true
+          },
+          "count": { "type": "integer" }
+        }
       },
       "SearchSearchFilter": {
         "required": ["in_field_filter", "filters"],

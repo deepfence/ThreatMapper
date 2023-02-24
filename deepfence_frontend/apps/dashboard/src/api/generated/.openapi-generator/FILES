@@ -49,6 +49,7 @@ models/LookupLookupFilter.ts
 models/ModelAgentId.ts
 models/ModelAgentUpgrade.ts
 models/ModelApiAuthRequest.ts
+models/ModelBasicNode.ts
 models/ModelCloudCompliance.ts
 models/ModelCloudComplianceScanDetails.ts
 models/ModelCloudComplianceScanResult.ts

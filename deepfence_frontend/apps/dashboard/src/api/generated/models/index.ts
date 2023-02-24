@@ -30,6 +30,7 @@ export * from './LookupLookupFilter';
 export * from './ModelAgentId';
 export * from './ModelAgentUpgrade';
 export * from './ModelApiAuthRequest';
+export * from './ModelBasicNode';
 export * from './ModelCloudCompliance';
 export * from './ModelCloudComplianceScanDetails';
 export * from './ModelCloudComplianceScanResult';

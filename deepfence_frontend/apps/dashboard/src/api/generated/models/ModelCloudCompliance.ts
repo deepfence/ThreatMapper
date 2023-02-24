@@ -69,10 +69,10 @@ export interface ModelCloudCompliance {
     group: string;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof ModelCloudCompliance
      */
-    masked: string;
+    masked: boolean;
     /**
      * 
      * @type {string}

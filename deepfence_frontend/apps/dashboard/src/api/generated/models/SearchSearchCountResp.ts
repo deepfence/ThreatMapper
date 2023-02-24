@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
 export interface SearchSearchCountResp {
     /**
      * 
+     * @type {{ [key: string]: number; }}
+     * @memberof SearchSearchCountResp
+     */
+    categories: { [key: string]: number; } | null;
+    /**
+     * 
      * @type {number}
      * @memberof SearchSearchCountResp
      */
@@ -32,6 +38,7 @@ export interface SearchSearchCountResp {
  */
 export function instanceOfSearchSearchCountResp(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "categories" in value;
     isInstance = isInstance && "count" in value;
 
     return isInstance;
@@ -47,6 +54,7 @@ export function SearchSearchCountRespFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
+        'categories': json['categories'],
         'count': json['count'],
     };
 }
@@ -60,6 +68,7 @@ export function SearchSearchCountRespToJSON(value?: SearchSearchCountResp | null
     }
     return {
         
+        'categories': value.categories,
         'count': value.count,
     };
 }
