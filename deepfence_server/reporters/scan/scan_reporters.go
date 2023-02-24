@@ -380,6 +380,8 @@ func nodeType2Neo4jType(node_type string) string {
 		return "ContainerImage"
 	case "host":
 		return "Node"
+	case "cluster":
+		return "KubernetesCluster"
 	}
 	return "unknown"
 }
