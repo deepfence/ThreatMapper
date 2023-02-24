@@ -355,6 +355,11 @@ var scanResultsSubCmd = &cobra.Command{
 			req := http.Client().VulnerabilityApi.ResultsVulnerabilityScans(context.Background())
 			req = req.ModelScanResultsReq(deepfence_server_client.ModelScanResultsReq{
 				ScanId: scan_id,
+				FieldsFilter: deepfence_server_client.ReportersFieldsFilters{
+					ContainsFilter: deepfence_server_client.ReportersContainsFilter{
+						FilterIn: map[string][]interface{}{"masked": {false}},
+					},
+				},
 				Window: deepfence_server_client.ModelFetchWindow{
 					Offset: 0,
 					Size:   20,

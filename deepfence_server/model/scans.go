@@ -174,7 +174,7 @@ type ScanResultsCommon struct {
 	NodeName              string `json:"node_name" required:"true"`
 	NodeType              string `json:"node_type" required:"true"`
 	ScanID                string `json:"scan_id" required:"true"`
-	UpdatedAt             int64  `json:"updated_at" required:"true"`
+	UpdatedAt             int64  `json:"updated_at" required:"true" format:"int64"`
 }
 
 type SecretScanResult struct {
@@ -227,6 +227,10 @@ func (Secret) NodeType() string {
 	return "Secret"
 }
 
+func (v Secret) GetCategory() string {
+	return ""
+}
+
 type Rule struct {
 	ID               int32   `json:"id" required:"true" required:"true"`
 	Name             string  `json:"name" required:"true"`
@@ -257,6 +261,10 @@ func (Vulnerability) NodeType() string {
 	return "Vulnerability"
 }
 
+func (v Vulnerability) GetCategory() string {
+	return v.Cve_severity
+}
+
 type Malware struct {
 	ImageLayerID     string  `json:"image_layer_id" required:"true"`
 	Class            string  `json:"class" required:"true"`
@@ -270,6 +278,10 @@ type Malware struct {
 
 func (Malware) NodeType() string {
 	return "Malware"
+}
+
+func (v Malware) GetCategory() string {
+	return v.Class
 }
 
 type Compliance struct {
@@ -290,6 +302,10 @@ type Compliance struct {
 
 func (Compliance) NodeType() string {
 	return "Compliance"
+}
+
+func (v Compliance) GetCategory() string {
+	return v.TestSeverity
 }
 
 type CloudCompliance struct {
@@ -317,4 +333,8 @@ type CloudCompliance struct {
 
 func (CloudCompliance) NodeType() string {
 	return "CloudCompliance"
+}
+
+func (v CloudCompliance) GetCategory() string {
+	return v.Severity
 }

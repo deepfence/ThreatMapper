@@ -1,10 +1,10 @@
-package dockerprivate
+package jfrog
 
 import (
 	"time"
 )
 
-type RegistryDockerPrivate struct {
+type RegistryJfrog struct {
 	Name         string    `json:"name"`
 	NonSecret    NonSecret `json:"non_secret"`
 	Secret       Secret    `json:"secret"`
@@ -12,12 +12,13 @@ type RegistryDockerPrivate struct {
 }
 
 type NonSecret struct {
-	DockerRegistryURL string `json:"docker_registry_url"`
-	DockerUsername    string `json:"docker_username"`
+	JfrogRegistryURL string `json:"jfrog_registry_url"`
+	JfrogRepository  string `json:"jfrog_repository"`
+	JfrogUsername    string `json:"jfrog_username"`
 }
 
 type Secret struct {
-	DockerPassword string `json:"docker_password"`
+	JfrogPassword string `json:"jfrog_password"`
 }
 
 type ReposResp struct {

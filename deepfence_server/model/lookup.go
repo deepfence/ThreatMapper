@@ -3,10 +3,6 @@ package model
 // "nested_json" fields are string json maps
 // that can be unmarshalled on the fly
 
-type Cypherable interface {
-	NodeType() string
-}
-
 type PresentationContext struct {
 	MetadataOrder map[string]int    `json:"metadata_order" required:"true"`
 	IDToLabels    map[string]string `json:"id_to_labels" required:"true"`
@@ -24,6 +20,10 @@ type KubernetesCluster struct {
 
 func (KubernetesCluster) NodeType() string {
 	return "KubernetesCluster"
+}
+
+func (KubernetesCluster) GetCategory() string {
+	return ""
 }
 
 type RegularScanStatus struct {
@@ -59,8 +59,16 @@ func (RegistryAccount) NodeType() string {
 	return "RegistryAccount"
 }
 
+func (RegistryAccount) GetCategory() string {
+	return ""
+}
+
 func (Host) NodeType() string {
 	return "Node"
+}
+
+func (Host) GetCategory() string {
+	return ""
 }
 
 type EndpointID struct {
@@ -89,6 +97,10 @@ func (Pod) NodeType() string {
 	return "Pod"
 }
 
+func (Pod) GetCategory() string {
+	return ""
+}
+
 type Container struct {
 	ID             string         `json:"node_id" required:"true"`
 	Name           string         `json:"docker_container_name" required:"true"`
@@ -103,6 +115,10 @@ type Container struct {
 
 func (Container) NodeType() string {
 	return "Container"
+}
+
+func (Container) GetCategory() string {
+	return ""
 }
 
 type Process struct {
@@ -120,6 +136,10 @@ func (Process) NodeType() string {
 	return "Process"
 }
 
+func (Process) GetCategory() string {
+	return ""
+}
+
 type ContainerImage struct {
 	ID       string         `json:"node_id" required:"true"`
 	Name     string         `json:"docker_image_name" required:"true"`
@@ -132,6 +152,10 @@ type ContainerImage struct {
 
 func (ContainerImage) NodeType() string {
 	return "ContainerImage"
+}
+
+func (ContainerImage) GetCategory() string {
+	return ""
 }
 
 type ComputeMetrics struct {

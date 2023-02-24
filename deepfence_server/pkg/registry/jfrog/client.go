@@ -1,4 +1,4 @@
-package dockerprivate
+package jfrog
 
 import (
 	"crypto/tls"
@@ -19,39 +19,39 @@ var client = &http.Client{
 	},
 }
 
-func listImagesRegistryV2(url, userName, password string) ([]model.ContainerImage, error) {
+func listImagesRegistryV2(url, repository, userName, password string) ([]model.ContainerImage, error) {
 
 	var (
 		images []model.ContainerImage
 	)
 
-	repos, err := listCatalogRegistryV2(url, userName, password)
+	repos, err := listCatalogRegistryV2(url, repository, userName, password)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
 	for _, repo := range repos {
-		repoTags, err := listRepoTagsV2(url, userName, password, repo)
+		repoTags, err := listRepoTagsV2(url, repository, userName, password, repo)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			continue
 		}
 		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Tags)
 
-		images = append(images, getImageWithTags(url, userName, password, repo, repoTags)...)
+		images = append(images, getImageWithTags(url, repository, userName, password, repo, repoTags)...)
 	}
 
 	return images, nil
 }
 
-func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
+func listCatalogRegistryV2(url, repository, userName, password string) ([]string, error) {
 	var (
 		repositories []string
 		err          error
 	)
 
-	listReposURL := "%s/v2/_catalog"
-	queryURL := fmt.Sprintf(listReposURL, url)
+	listReposURL := "%s/artifactory/api/docker/%s/v2/_catalog"
+	queryURL := fmt.Sprintf(listReposURL, url, repository)
 	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -86,14 +86,14 @@ func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
 	return repositories, err
 }
 
-func listRepoTagsV2(url, userName, password, repoName string) (RepoTagsResp, error) {
+func listRepoTagsV2(url, repository, userName, password, repoName string) (RepoTagsResp, error) {
 	var (
 		err      error
 		repoTags RepoTagsResp
 	)
 
-	listRepoTagsURL := "%s/v2/%s/tags/list"
-	queryURL := fmt.Sprintf(listRepoTagsURL, url, repoName)
+	listRepoTagsURL := "%s/artifactory/api/docker/%s/v2/%s/tags/list"
+	queryURL := fmt.Sprintf(listRepoTagsURL, url, repository, repoName)
 	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -129,15 +129,15 @@ func listRepoTagsV2(url, userName, password, repoName string) (RepoTagsResp, err
 	return repoTags, err
 }
 
-func getManifestsV2(url, userName, password, repoName, tag string) (string, Manifest, error) {
+func getManifestsV2(url, repository, userName, password, repoName, tag string) (string, Manifest, error) {
 	var (
 		err       error
 		manifests Manifest
 		digest    string
 	)
 
-	getManifestsURL := "%s/v2/%s/manifests/%s"
-	queryURL := fmt.Sprintf(getManifestsURL, url, repoName, tag)
+	getManifestsURL := "%s/artifactory/api/docker/%s/v2/%s/manifests/%s"
+	queryURL := fmt.Sprintf(getManifestsURL, url, repository, repoName, tag)
 	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -176,11 +176,11 @@ func getManifestsV2(url, userName, password, repoName, tag string) (string, Mani
 	return digest, manifests, err
 }
 
-func getImageWithTags(url, userName, password, repoName string, repoTags RepoTagsResp) []model.ContainerImage {
+func getImageWithTags(url, repository, userName, password, repoName string, repoTags RepoTagsResp) []model.ContainerImage {
 	var imageAndTag []model.ContainerImage
 
 	for _, tag := range repoTags.Tags {
-		digest, manifest, err := getManifestsV2(url, userName, password, repoName, tag)
+		digest, manifest, err := getManifestsV2(url, repository, userName, password, repoName, tag)
 		if err != nil {
 			continue
 		}

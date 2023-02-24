@@ -34,10 +34,11 @@ type SearchScanReq struct {
 }
 
 type SearchCountResp struct {
-	Count int `json:"count" required:"true"`
+	Count      int              `json:"count" required:"true"`
+	Categories map[string]int32 `json:"categories" required:"true"`
 }
 
-func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	res := []T{}
 	var dummy T
 
@@ -175,7 +176,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	return res, nil
 }
 
-func SearchReport[T model.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	hosts, err := searchGenericDirectNodeReport[T](ctx, filter, fw)
 	if err != nil {
 		return nil, err

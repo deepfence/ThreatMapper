@@ -58,7 +58,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, bearerToken, new(UserIdRequest), new(User))
 	d.AddOperation("updateUser", http.MethodPut, "/deepfence/users/{id}",
 		"Update User by User ID", "Update User by User ID",
-		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserRequest), new(User))
+		http.StatusOK, []string{tagUser}, bearerToken, new(UpdateUserIdRequest), new(User))
 	d.AddOperation("deleteUser", http.MethodDelete, "/deepfence/users/{id}",
 		"Delete User by User ID", "Delete User by User ID",
 		http.StatusNoContent, []string{tagUser}, bearerToken, new(UserIdRequest), nil)
@@ -413,10 +413,26 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(CloudComplianceScanResult))
 
-	d.AddOperation("getScanResultDocument", http.MethodGet, "/scan/{scan_type}/{scan_id}/{doc_id}",
+	d.AddOperation("countResultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/count/vulnerability",
+		"Get Vulnerability Scans Results", "Get Vulnerability Scan results on agent or registry",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsSecretScan", http.MethodPost, "/deepfence/scan/results/count/secret",
+		"Get Secret Scans Results", "Get Secret Scans results on agent or registry",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsComplianceScan", http.MethodPost, "/deepfence/scan/results/count/compliance",
+		"Get Compliance Scans Results", "Get Compliance Scans results on agent or registry",
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsMalwareScan", http.MethodPost, "/deepfence/scan/results/count/malware",
+		"Get Malware Scans Results", "Get Malware Scans results on agent or registry",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+	d.AddOperation("countResultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/count/cloud-compliance",
+		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+
+	d.AddOperation("getScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}",
 		"Get Scans Result Document", "Get Scans Result Document",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new(map[string]string))
-	d.AddOperation("getAllNodesOfScanResultDocument", http.MethodGet, "/scan/{scan_type}/{scan_id}/{doc_id}/nodes",
+	d.AddOperation("getAllNodesOfScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes",
 		"Get all nodes for given result document", "Get all nodes for given result document",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new([]map[string]string))
 
@@ -435,10 +451,10 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
 
 	// Scan ID Actions
-	d.AddOperation("downloadScanResults", http.MethodGet, "/scan/{scan_type}/{scan_id}/download",
+	d.AddOperation("downloadScanResults", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/download",
 		"Download Scans Results", "Download scan results",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanActionRequest), new(DownloadReportResponse))
-	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/scan/{scan_type}/{scan_id}",
+	d.AddOperation("deleteScanResultsForScanID", http.MethodDelete, "/deepfence/scan/{scan_type}/{scan_id}",
 		"Delete all scan results for a scan id", "Delete all scan results for a scan id",
 		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanActionRequest), nil)
 

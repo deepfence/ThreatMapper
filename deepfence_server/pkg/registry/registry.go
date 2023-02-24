@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerprivate"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/jfrog"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
@@ -33,6 +34,8 @@ func GetRegistry(rType string, requestByte []byte) (Registry, error) {
 	case constants.DOCKER_PRIVATE:
 		r, err = dockerprivate.New(requestByte)
 	case constants.HARBOR:
+		r, err = harbor.New(requestByte)
+	case constants.JFROG:
 		r, err = harbor.New(requestByte)
 	}
 	return r, err
@@ -191,6 +194,30 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, nil
+	case constants.JFROG:
+		var nonSecret map[string]string
+		var secret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.EncryptedSecret, &secret)
+		if err != nil {
+			return nil, err
+		}
+		r = &jfrog.RegistryJfrog{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: jfrog.NonSecret{
+				JfrogRegistryURL: nonSecret["jfrog_registry_url"],
+				JfrogRepository:  nonSecret["jfrog_repository"],
+				JfrogUsername:    nonSecret["jfrog_username"],
+			},
+			Secret: jfrog.Secret{
+				JfrogPassword: secret["jfrog_password"],
+			},
+		}
+		return r, nil
 	}
 	return r, err
 }
@@ -288,6 +315,22 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 				HarborRegistryURL: nonSecret["harbor_registry_url"],
 				HarborUsername:    nonSecret["harbor_username"],
 				HarborProjectName: nonSecret["harbor_project_name"],
+			},
+		}
+		return r, nil
+	case constants.JFROG:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &jfrog.RegistryJfrog{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: jfrog.NonSecret{
+				JfrogRegistryURL: nonSecret["jfrog_registry_url"],
+				JfrogRepository:  nonSecret["jfrog_repository"],
+				JfrogUsername:    nonSecret["jfrog_username"],
 			},
 		}
 		return r, nil
