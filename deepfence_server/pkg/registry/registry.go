@@ -36,7 +36,7 @@ func GetRegistry(rType string, requestByte []byte) (Registry, error) {
 	case constants.HARBOR:
 		r, err = harbor.New(requestByte)
 	case constants.JFROG:
-		r, err = harbor.New(requestByte)
+		r, err = jfrog.New(requestByte)
 	}
 	return r, err
 }

@@ -2,6 +2,8 @@ package reporters
 
 import (
 	"errors"
+
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 var (
@@ -37,4 +39,12 @@ func GetCategoryCounts[T Categorizable](entries []T) map[string]int32 {
 	}
 
 	return res
+}
+
+func Neo4jGetStringRecord(rec *neo4j.Record, key, defaultVal string) string {
+	val, ok := rec.Get(key)
+	if ok && val != nil {
+		return val.(string)
+	}
+	return defaultVal
 }

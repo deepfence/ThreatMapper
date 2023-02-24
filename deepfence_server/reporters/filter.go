@@ -36,7 +36,11 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 	for k, vs := range filter.FieldsValues {
 		var values []string
 		for i := range vs {
-			values = append(values, fmt.Sprintf("'%v'", vs[i]))
+			if str, ok := vs[i].(string); ok {
+				values = append(values, fmt.Sprintf("'%s'", str))
+			} else {
+				values = append(values, fmt.Sprintf("%v", vs[i]))
+			}
 		}
 
 		conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))

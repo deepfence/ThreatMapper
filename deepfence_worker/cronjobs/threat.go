@@ -24,32 +24,47 @@ func ComputeThreat(msg *message.Message) error {
 	defer tx.Close()
 
 	if _, err = tx.Run(`
-		MATCH (n:Vulnerability)
-		SET n.vulnerability_score = RAND()*10`, map[string]interface{}{}); err != nil {
+		MATCH (n:Vulnerability) -[:DETECTED]- (m)
+		WITH max(m.updated_at) as latest, m, n
+		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
+		WITH n, CASE WHEN n.cve_attack_vector =~ ".*AV:N.*" THEN 2 ELSE 1 END as score, count(r) as incoming
+		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Secret)
-		SET n.vulnerability_score = RAND()*10`, map[string]interface{}{}); err != nil {
+		MATCH (n:Secret) -[:DETECTED]- (m)
+		WITH max(m.updated_at) as latest, m, n
+		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
+		WITH n, 1 as score, count(r) as incoming
+		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Malware)
-		SET n.vulnerability_score = RAND()*10`, map[string]interface{}{}); err != nil {
+		MATCH (n:Malware) -[:DETECTED]- (m)
+		WITH max(m.updated_at) as latest, m, n
+		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
+		WITH n, 1 as score, count(r) as incoming
+		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Compliance)
-		SET n.vulnerability_score = RAND()*10`, map[string]interface{}{}); err != nil {
+		MATCH (n:Compliance) -[:DETECTED]- (m)
+		WITH max(m.updated_at) as latest, m, n
+		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
+		WITH n, 1 as score, count(r) as incoming
+		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:CloudCompliance)
-		SET n.vulnerability_score = RAND()*10`, map[string]interface{}{}); err != nil {
+		MATCH (n:CloudCompliance) -[:DETECTED]- (m)
+		WITH max(m.updated_at) as latest, m, n
+		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
+		WITH n, 1 as score, count(r) as incoming
+		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
 		return err
 	}
 

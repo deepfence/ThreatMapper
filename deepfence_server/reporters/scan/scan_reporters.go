@@ -384,10 +384,7 @@ func nodeType2Neo4jType(node_type string) string {
 	return "unknown"
 }
 
-func GetScansList(ctx context.Context,
-	scan_type utils.Neo4jScanType,
-	node_ids []model.NodeIdentifier,
-	fw model.FetchWindow) (model.ScanListResp, error) {
+func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids []model.NodeIdentifier, fw model.FetchWindow, scanStatus []string) (model.ScanListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.ScanListResp{}, err
@@ -405,16 +402,21 @@ func GetScansList(ctx context.Context,
 	}
 	defer tx.Close()
 
+	var statusQuery string
+	if len(scanStatus) >= 0 {
+		statusQuery = "WHERE m.status IN $scan_status"
+	}
+
 	scans_info := []model.ScanInfo{}
 	for i := range node_ids {
 		query := `
 			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n:` + nodeType2Neo4jType(node_ids[i].NodeType) + `{node_id: $node_id})
-			WHERE m.status = 'COMPLETE'
+			` + statusQuery + `
 			RETURN m.node_id, m.status, m.updated_at, n.node_id, labels(n) as node_type
 			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
 		fmt.Printf("list query %v\n", query)
 		res, err := tx.Run(query,
-			map[string]interface{}{"node_id": node_ids[i].NodeId})
+			map[string]interface{}{"node_id": node_ids[i].NodeId, "scan_status": scanStatus})
 		if err != nil {
 			return model.ScanListResp{}, err
 		}
@@ -533,7 +535,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	query = `
 		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
-	    WITH d{.*, r} as d` +
+		WITH d{.*, masked: r.masked} as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		` RETURN d ` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
@@ -624,12 +626,62 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	return res, nil
 }
 
-func GetScanResultDocument(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docId string) (map[string]string, error) {
-	return nil, nil
-}
+func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docId string) ([]model.BasicNode, error) {
+	var res []model.BasicNode
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
 
-func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docId string) ([]map[string]string, error) {
-	return nil, nil
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`{node_id: $scan_id}) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`{node_id: $node_id})
+		WHERE r.masked = false
+		RETURN node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
+		map[string]interface{}{"scan_id": scanId, "node_id": docId})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		hostName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
+		containerName := reporters.Neo4jGetStringRecord(rec, "node.docker_container_name", "")
+		imageName := reporters.Neo4jGetStringRecord(rec, "node.docker_image_name", "")
+		imageTag := reporters.Neo4jGetStringRecord(rec, "node.docker_image_tag", "")
+		var name string
+		nodeType := reporters.Neo4jGetStringRecord(rec, "node.node_type", "")
+		if nodeType == "container_image" {
+			name = imageName + ":" + imageTag
+		} else if nodeType == "container" {
+			name = containerName
+		} else {
+			name = hostName
+		}
+		node := model.BasicNode{
+			NodeId:   reporters.Neo4jGetStringRecord(rec, "node.node_id", ""),
+			Name:     name,
+			NodeType: nodeType,
+			HostName: hostName,
+		}
+		res = append(res, node)
+	}
+	return res, nil
 }
 
 func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {

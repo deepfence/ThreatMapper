@@ -429,12 +429,9 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
 
-	d.AddOperation("getScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}",
-		"Get Scans Result Document", "Get Scans Result Document",
-		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new(map[string]string))
 	d.AddOperation("getAllNodesOfScanResultDocument", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes",
 		"Get all nodes for given result document", "Get all nodes for given result document",
-		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanResultDocumentRequest), new([]map[string]string))
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(ScanDocFoundNodesRequest), new([]BasicNode))
 
 	// Scan Result Actions
 	d.AddOperation("maskScanResult", http.MethodPost, "/deepfence/scan/results/action/mask",

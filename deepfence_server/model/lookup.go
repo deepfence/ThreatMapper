@@ -37,6 +37,13 @@ type RegularScanStatus struct {
 	ComplianceScanStatus    string `json:"compliance_scan_status" required:"true"`
 }
 
+type BasicNode struct {
+	NodeId   string `json:"node_id" required:"true"`
+	Name     string `json:"name" required:"true"`
+	NodeType string `json:"node_type" required:"true"`
+	HostName string `json:"host_name" required:"true"`
+}
+
 type Host struct {
 	ID              string           `json:"node_id" required:"true"`
 	Name            string           `json:"host_name" required:"true"`
