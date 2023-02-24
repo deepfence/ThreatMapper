@@ -380,6 +380,8 @@ func nodeType2Neo4jType(node_type string) string {
 		return "ContainerImage"
 	case "host":
 		return "Node"
+	case "cluster":
+		return "KubernetesCluster"
 	}
 	return "unknown"
 }
@@ -403,7 +405,7 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids [
 	defer tx.Close()
 
 	var statusQuery string
-	if len(scanStatus) >= 0 {
+	if len(scanStatus) > 0 {
 		statusQuery = "WHERE m.status IN $scan_status"
 	}
 
@@ -582,6 +584,8 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 		return "level"
 	case utils.NEO4J_MALWARE_SCAN:
 		return "file_severity"
+	case utils.NEO4J_COMPLIANCE_SCAN:
+		return "status"
 	}
 	return "error_sev_field_unknown"
 }

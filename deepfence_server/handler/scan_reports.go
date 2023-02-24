@@ -260,7 +260,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	var scanIds []string
 	var bulkId string
-	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) {
+	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) || scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
 		scanIds, bulkId, err = startMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
@@ -486,6 +486,11 @@ func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.R
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestComplianceScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewComplianceScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func (h *Handler) IngestCloudComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCloudComplianceIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
@@ -519,6 +524,7 @@ func ingest_scan_report_kafka[T any](
 	}
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
@@ -528,11 +534,13 @@ func ingest_scan_report_kafka[T any](
 	var data T
 	err = json.Unmarshal(body, &data)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
 	err = ingester.Ingest(ctx, data, ingestChan)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
@@ -555,7 +563,7 @@ func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) StatusComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	complianceStatusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	statusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
 }
 
 func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -1258,10 +1266,11 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
 				scanId,
 				benchmarkType,
-				req.NodeId)
+				req.NodeId,
+				reqs[0].NodeType)
 
 			if err != nil {
-				log.Error().Err(err)
+				log.Error().Msgf("%v", err)
 				return nil, "", err
 			}
 			scanIds = append(scanIds, scanId)
@@ -1275,7 +1284,11 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	var bulkId string
 
 	bulkId = bulkScanId()
-	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, bulkId, scanIds)
+	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+		scanType = utils.NEO4J_COMPLIANCE_SCAN
+	}
+	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scanType, bulkId, scanIds)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		return nil, "", err
@@ -1289,7 +1302,8 @@ func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, 
 	bulkId := bulkScanId()
 	for _, req := range reqs {
 		for _, benchmarkType := range benchmarkTypes {
-			scanIds = append(scanIds, cloudComplianceScanId(req.NodeId, benchmarkType))
+			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
+			scanIds = append(scanIds, scanId)
 		}
 	}
 	return scanIds, bulkId, nil
