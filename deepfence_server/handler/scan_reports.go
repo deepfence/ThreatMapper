@@ -1280,7 +1280,8 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
 				scanId,
 				benchmarkType,
-				req.NodeId)
+				req.NodeId,
+				reqs[0].NodeType)
 
 			if err != nil {
 				log.Error().Msgf("%v", err)
@@ -1297,7 +1298,11 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	var bulkId string
 
 	bulkId = bulkScanId()
-	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, bulkId, scanIds)
+	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+		scanType = utils.NEO4J_COMPLIANCE_SCAN
+	}
+	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scanType, bulkId, scanIds)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		return nil, "", err

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -154,15 +153,23 @@ func AddNewScan(tx WriteDBTransaction,
 }
 
 func AddNewCloudComplianceScan(tx WriteDBTransaction,
-	scan_id string,
-	benchmark_type string,
-	node_id string) error {
+	scanId string,
+	benchmarkType string,
+	nodeId string,
+	nodeType string) error {
 
+	neo4jNodeType := "Node"
+	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+		neo4jNodeType = "KubernetesCluster"
+		scanType = utils.NEO4J_COMPLIANCE_SCAN
+	}
 	res, err := tx.Run(`
-		OPTIONAL MATCH (n:KubernetesCluster{node_id:$node_id})
+		OPTIONAL MATCH (n:$neo4jNodeType{node_id:$node_id})
 		RETURN n IS NOT NULL AS Exists`,
 		map[string]interface{}{
-			"node_id": node_id,
+			"node_id":       nodeId,
+			"neo4jNodeType": neo4jNodeType,
 		})
 	if err != nil {
 		return err
@@ -175,21 +182,22 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
-			NodeId: node_id,
+			NodeId: nodeId,
 		}
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:KubernetesCluster{node_id:$node_id})
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:$neo4jNodeType{node_id:$node_id})
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND n.benchmark_type = $benchmark_type
-		RETURN n.node_id`, utils.NEO4J_COMPLIANCE_SCAN),
+		RETURN n.node_id`, scanType),
 		map[string]interface{}{
-			"node_id":        node_id,
+			"node_id":        nodeId,
 			"complete":       utils.SCAN_STATUS_SUCCESS,
 			"failed":         utils.SCAN_STATUS_FAILED,
-			"benchmark_type": benchmark_type,
+			"benchmark_type": benchmarkType,
+			"neo4jNodeType":  neo4jNodeType,
 		})
 	if err != nil {
 		return err
@@ -203,37 +211,42 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	if rec.Values[0] != nil {
 		return &AlreadyRunningScanError{
 			ScanId:   rec.Values[0].(string),
-			NodeId:   node_id,
-			ScanType: string(utils.NEO4J_COMPLIANCE_SCAN),
+			NodeId:   nodeId,
+			ScanType: string(scanType),
 		}
 	}
 	internalReq, _ := json.Marshal(ctl.StartComplianceScanRequest{
-		NodeId:   node_id,
+		NodeId:   nodeId,
 		NodeType: ctl.KubernetesCluster,
-		BinArgs:  map[string]string{"scan_id": scan_id},
+		BinArgs:  map[string]string{"scan_id": scanId},
 	})
-	action, _ := json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
+	action, _ := json.Marshal("{}")
+	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
+	}
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type, trigger_action: $action})
-		MERGE (m:KubernetesCluster{node_id:$node_id})
-		MERGE (n)-[:SCANNED]->(m)`, utils.NEO4J_COMPLIANCE_SCAN),
+		MERGE (m:$neo4jNodeType{node_id:$node_id})
+		MERGE (n)-[:SCANNED]->(m)`, scanType),
 		map[string]interface{}{
-			"scan_id":        scan_id,
+			"scan_id":        scanId,
 			"status":         utils.SCAN_STATUS_STARTING,
-			"node_id":        node_id,
-			"benchmark_type": benchmark_type,
+			"node_id":        nodeId,
+			"benchmark_type": benchmarkType,
 			"action":         string(action),
+			"neo4jNodeType":  neo4jNodeType,
 		}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
-		MATCH (m:KubernetesCluster{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, utils.NEO4J_COMPLIANCE_SCAN),
+		MATCH (m:$neo4jNodeType{node_id:$node_id})
+		MERGE (n)-[:SCHEDULED]->(m)`, scanType),
 		map[string]interface{}{
-			"scan_id": scan_id,
-			"node_id": node_id,
+			"scan_id":       scanId,
+			"node_id":       nodeId,
+			"neo4jNodeType": neo4jNodeType,
 		}); err != nil {
 		return err
 	}
