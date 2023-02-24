@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -78,7 +77,6 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 		MERGE (m) -[r:DETECTED]-> (n)
 		SET r.masked = false`,
 		map[string]interface{}{"batch": CompliancesToMaps(data)}); err != nil {
-		log.Error().Msgf("row merge error:%v", err)
 		return err
 	}
 

@@ -565,7 +565,7 @@ func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) StatusComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	complianceStatusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	statusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
 }
 
 func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
