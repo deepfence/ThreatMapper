@@ -111,7 +111,7 @@ func GetRegistryAccountReport(ctx context.Context, filter LookupFilter) ([]model
 	return registry, nil
 }
 
-func getGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filter LookupFilter) ([]T, error) {
+func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter LookupFilter) ([]T, error) {
 	res := []T{}
 	var dummy T
 
