@@ -222,7 +222,7 @@ type Secret struct {
 	RelativeEndingIndex   int32  `json:"relative_ending_index" required:"true"`
 	FullFilename          string `json:"full_filename" required:"true"`
 	MatchedContent        string `json:"matched_content" required:"true"`
-	Masked                string `json:"masked" required:"true"`
+	Masked                bool   `json:"masked" required:"true"`
 }
 
 func (Secret) NodeType() string {
@@ -257,7 +257,7 @@ type Vulnerability struct {
 	Cve_attack_vector          string   `json:"cve_attack_vector" required:"true"`
 	URLs                       []string `json:"urls" required:"true"`
 	ExploitPOC                 string   `json:"exploit_poc" required:"true"`
-	Masked                     string   `json:"masked" required:"true"`
+	Masked                     bool     `json:"masked" required:"true"`
 }
 
 func (Vulnerability) NodeType() string {
@@ -277,7 +277,7 @@ type Malware struct {
 	SeverityScore    float64 `json:"severity_score" required:"true"`
 	Summary          string  `json:"summary" required:"true"`
 	RuleName         string  `json:"rule_name" required:"true"`
-	Masked           string  `json:"masked" required:"true"`
+	Masked           bool    `json:"masked" required:"true"`
 }
 
 func (Malware) NodeType() string {
@@ -302,7 +302,7 @@ type Compliance struct {
 	Status              string `json:"status" required:"true"`
 	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
 	ComplianceNodeType  string `json:"compliance_node_type" required:"true"`
-	Masked              string `json:"masked" required:"true"`
+	Masked              bool   `json:"masked" required:"true"`
 }
 
 func (Compliance) NodeType() string {
@@ -329,7 +329,7 @@ type CloudCompliance struct {
 	NodeName            string `json:"node_name" required:"true"`
 	NodeID              string `json:"node_id" required:"true"`
 	ScanID              string `json:"scan_id" required:"true"`
-	Masked              string `json:"masked" required:"true"`
+	Masked              bool   `json:"masked" required:"true"`
 	Type                string `json:"type" required:"true"`
 	ControlID           string `json:"control_id" required:"true"`
 	Description         string `json:"description" required:"true"`
