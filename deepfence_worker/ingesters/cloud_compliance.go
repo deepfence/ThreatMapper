@@ -21,7 +21,7 @@ type ComplianceStats struct {
 type CloudComplianceScanStatus struct {
 	Timestamp           time.Time       `json:"@timestamp"`
 	ComplianceCheckType string          `json:"compliance_check_type"`
-	Masked              string          `json:"masked"`
+	Masked              bool            `json:"masked"`
 	NodeID              string          `json:"node_id"`
 	Result              ComplianceStats `json:"result" nested_json:"true"`
 	ScanID              string          `json:"scan_id"`
@@ -48,7 +48,7 @@ type CloudCompliance struct {
 	NodeName            string `json:"node_name"`
 	NodeID              string `json:"node_id"`
 	ScanID              string `json:"scan_id"`
-	Masked              string `json:"masked"`
+	Masked              bool   `json:"masked"`
 	Type                string `json:"type"`
 	ControlID           string `json:"control_id"`
 	Description         string `json:"description"`

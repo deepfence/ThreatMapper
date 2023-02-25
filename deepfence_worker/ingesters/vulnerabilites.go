@@ -15,7 +15,7 @@ type VulnerabilityScanStatus struct {
 	ContainerName         string    `json:"container_name"`
 	HostName              string    `json:"host_name"`
 	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
-	Masked                string    `json:"masked"`
+	Masked                bool      `json:"masked"`
 	NodeID                string    `json:"node_id"`
 	NodeName              string    `json:"node_name"`
 	NodeType              string    `json:"node_type"`
@@ -28,7 +28,7 @@ type Vulnerability struct {
 	Timestamp                  string   `json:"@timestamp"`
 	CveTuple                   string   `json:"cve_id_cve_severity_cve_container_image"`
 	DocId                      string   `json:"doc_id"`
-	Masked                     string   `json:"masked"`
+	Masked                     bool     `json:"masked"`
 	Type                       string   `json:"type"`
 	Host                       string   `json:"host"`
 	HostName                   string   `json:"host_name"`

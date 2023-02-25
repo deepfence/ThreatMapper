@@ -14,7 +14,7 @@ type SecretScanStatus struct {
 	ContainerName         string    `json:"container_name"`
 	HostName              string    `json:"host_name"`
 	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
-	Masked                string    `json:"masked"`
+	Masked                bool      `json:"masked"`
 	NodeID                string    `json:"node_id"`
 	NodeName              string    `json:"node_name"`
 	NodeType              string    `json:"node_type"`
@@ -45,7 +45,7 @@ type Secret struct {
 	ContainerName         string `json:"container_name"`
 	HostName              string `json:"host_name"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name"`
-	Masked                string `json:"masked"`
+	Masked                bool   `json:"masked"`
 	NodeID                string `json:"node_id"`
 	NodeName              string `json:"node_name"`
 	NodeType              string `json:"node_type"`
