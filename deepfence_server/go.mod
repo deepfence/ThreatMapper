@@ -14,14 +14,14 @@ replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/d
 
 replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230223120644-7489587a1448
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230224172216-13acb3b88b5d
 
 replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/agent-plugins-grpc
 
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/bytedance/sonic v1.8.1
+	github.com/bytedance/sonic v1.8.2
 	github.com/casbin/casbin/v2 v2.63.0
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230220163433-a5d2f37fcf5f
@@ -40,7 +40,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.28
 	github.com/twmb/franz-go v1.12.1
-	github.com/ugorji/go/codec v1.2.9
+	github.com/ugorji/go/codec v1.2.10
 	github.com/weaveworks/scope v1.13.2
 	golang.org/x/crypto v0.6.0
 	gotest.tools v2.2.0+incompatible
@@ -71,7 +71,7 @@ require (
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230220163433-a5d2f37fcf5f // indirect
-	github.com/deepfence/kubernetes-scanner v0.0.0-20230207104512-6629110f2033 // indirect
+	github.com/deepfence/kubernetes-scanner v0.0.0-20230224160510-90e1d7a2f813 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/docker v20.10.22+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect

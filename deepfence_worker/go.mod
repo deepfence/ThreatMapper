@@ -12,7 +12,11 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 
 replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/deepfence/tcptracer-bpf
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230223120644-7489587a1448
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230224172216-13acb3b88b5d
+
+replace github.com/deepfence/SecretScanner => github.com/deepfence/SecretScanner v1.2.1-0.20230214033423-8a950b2b3f38
+
+replace github.com/deepfence/YaraHunter => github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501
 
 replace github.com/deepfence/ThreatMapper/deepfence_server => ../deepfence_server/
 
@@ -21,14 +25,14 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/aws/aws-sdk-go v1.44.180
-	github.com/deepfence/SecretScanner v1.2.0
+	github.com/aws/aws-sdk-go v1.44.209
+	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
-	github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501
+	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.0.1
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230220163433-a5d2f37fcf5f
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
-	github.com/hillu/go-yara/v4 v4.2.3
+	github.com/hillu/go-yara/v4 v4.2.4
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.49
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
