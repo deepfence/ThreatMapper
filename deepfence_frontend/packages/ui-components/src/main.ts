@@ -17,6 +17,7 @@ export {
   Dropdown,
   DropdownItem,
   DropdownSeparator,
+  DropdownSubMenu,
 } from '@/components/dropdown/Dropdown';
 export { default as TextInput } from '@/components/input/TextInput';
 export { default as TextInputArea } from '@/components/input/TextInputArea';
