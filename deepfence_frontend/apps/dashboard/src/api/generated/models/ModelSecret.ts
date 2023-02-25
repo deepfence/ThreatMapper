@@ -27,10 +27,10 @@ export interface ModelSecret {
     full_filename: string;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof ModelSecret
      */
-    masked: string;
+    masked: boolean;
     /**
      * 
      * @type {string}

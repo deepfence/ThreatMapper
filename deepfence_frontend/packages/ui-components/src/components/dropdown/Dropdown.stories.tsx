@@ -2,6 +2,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
+  HiArrowRight,
   HiInboxIn,
   HiInformationCircle,
   HiLogout,
@@ -14,6 +15,7 @@ import {
   Dropdown,
   DropdownItem,
   DropdownSeparator,
+  DropdownSubMenu,
 } from '@/components/dropdown/Dropdown';
 
 export default {
@@ -109,6 +111,7 @@ const ControlledTemplate: ComponentStory<typeof Dropdown> = (args) => {
     <Dropdown
       {...args}
       open={open}
+      loop
       onOpenChange={(open) => {
         setOpen(open);
       }}
@@ -118,6 +121,22 @@ const ControlledTemplate: ComponentStory<typeof Dropdown> = (args) => {
           <DropdownItem>Second Action</DropdownItem>
           <DropdownItem>Third Action</DropdownItem>
           <DropdownItem>Fourth Action</DropdownItem>
+          <DropdownSubMenu
+            triggerAsChild
+            content={
+              <>
+                <DropdownItem>Mask this</DropdownItem>
+                <DropdownItem>Mask across</DropdownItem>
+              </>
+            }
+          >
+            <DropdownItem className="text-blue-500 dark:blue-red-500">
+              <span>More</span>
+              <IconContext.Provider value={{ size: '18px' }}>
+                <HiArrowRight />
+              </IconContext.Provider>
+            </DropdownItem>
+          </DropdownSubMenu>
           <DropdownSeparator />
           <DropdownItem className="text-red-500 dark:text-red-500">Sign Out</DropdownItem>
         </>

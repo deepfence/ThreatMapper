@@ -42,14 +42,27 @@ export interface ModelUpdateUserIdRequest {
      * @type {string}
      * @memberof ModelUpdateUserIdRequest
      */
-    role?: string;
+    role: ModelUpdateUserIdRequestRoleEnum;
 }
+
+
+/**
+ * @export
+ */
+export const ModelUpdateUserIdRequestRoleEnum = {
+    Admin: 'admin',
+    StandardUser: 'standard-user',
+    ReadOnlyUser: 'read-only-user'
+} as const;
+export type ModelUpdateUserIdRequestRoleEnum = typeof ModelUpdateUserIdRequestRoleEnum[keyof typeof ModelUpdateUserIdRequestRoleEnum];
+
 
 /**
  * Check if a given object implements the ModelUpdateUserIdRequest interface.
  */
 export function instanceOfModelUpdateUserIdRequest(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "role" in value;
 
     return isInstance;
 }
@@ -67,7 +80,7 @@ export function ModelUpdateUserIdRequestFromJSONTyped(json: any, ignoreDiscrimin
         'first_name': !exists(json, 'first_name') ? undefined : json['first_name'],
         'is_active': !exists(json, 'is_active') ? undefined : json['is_active'],
         'last_name': !exists(json, 'last_name') ? undefined : json['last_name'],
-        'role': !exists(json, 'role') ? undefined : json['role'],
+        'role': json['role'],
     };
 }
 

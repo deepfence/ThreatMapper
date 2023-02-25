@@ -4041,83 +4041,6 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}": {
-      "get": {
-        "tags": ["Scan Results"],
-        "summary": "Get Scans Result Document",
-        "description": "Get Scans Result Document",
-        "operationId": "getScanResultDocument",
-        "parameters": [
-          {
-            "name": "doc_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "scan_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "scan_type",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "enum": [
-                "SecretScan",
-                "VulnerabilityScan",
-                "MalwareScan",
-                "ComplianceScan",
-                "CloudComplianceScan"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": { "type": "string" }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
     "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes": {
       "get": {
         "tags": ["Scan Results"],
@@ -4160,10 +4083,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": { "type": "string" }
-                  }
+                  "items": { "$ref": "#/components/schemas/ModelBasicNode" }
                 }
               }
             }
@@ -6911,6 +6831,16 @@
         "type": "object",
         "properties": { "api_token": { "type": "string" } }
       },
+      "ModelBasicNode": {
+        "required": ["node_id", "name", "node_type", "host_name"],
+        "type": "object",
+        "properties": {
+          "host_name": { "type": "string" },
+          "name": { "type": "string" },
+          "node_id": { "type": "string" },
+          "node_type": { "type": "string" }
+        }
+      },
       "ModelCloudCompliance": {
         "required": [
           "@timestamp",
@@ -6944,7 +6874,7 @@
           "count": { "type": "integer" },
           "description": { "type": "string" },
           "group": { "type": "string" },
-          "masked": { "type": "string" },
+          "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "reason": { "type": "string" },
@@ -7121,7 +7051,7 @@
           "compliance_check_type": { "type": "string" },
           "compliance_node_type": { "type": "string" },
           "description": { "type": "string" },
-          "masked": { "type": "string" },
+          "masked": { "type": "boolean" },
           "remediation_ansible": { "type": "string" },
           "remediation_puppet": { "type": "string" },
           "remediation_script": { "type": "string" },
@@ -7449,7 +7379,7 @@
           "file_sevScore": { "type": "number" },
           "file_severity": { "type": "string" },
           "image_layer_id": { "type": "string" },
-          "masked": { "type": "string" },
+          "masked": { "type": "boolean" },
           "rule_name": { "type": "string" },
           "severity_score": { "type": "number" },
           "summary": { "type": "string" }
@@ -7751,6 +7681,11 @@
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
             "nullable": true
           },
+          "scan_status": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
@@ -7850,7 +7785,7 @@
         "type": "object",
         "properties": {
           "full_filename": { "type": "string" },
-          "masked": { "type": "string" },
+          "masked": { "type": "boolean" },
           "matched_content": { "type": "string" },
           "relative_ending_index": { "type": "integer" },
           "relative_starting_index": { "type": "integer" },
@@ -7919,15 +7854,20 @@
         }
       },
       "ModelUpdateUserIdRequest": {
+        "required": ["role"],
         "type": "object",
         "properties": {
           "first_name": { "type": "string" },
           "is_active": { "type": "boolean" },
           "last_name": { "type": "string" },
-          "role": { "type": "string" }
+          "role": {
+            "enum": ["admin", "standard-user", "read-only-user"],
+            "type": "string"
+          }
         }
       },
       "ModelUpdateUserPasswordRequest": {
+        "required": ["old_password", "new_password"],
         "type": "object",
         "properties": {
           "new_password": { "type": "string" },
@@ -7935,15 +7875,20 @@
         }
       },
       "ModelUpdateUserRequest": {
+        "required": ["role"],
         "type": "object",
         "properties": {
           "first_name": { "type": "string" },
           "is_active": { "type": "boolean" },
           "last_name": { "type": "string" },
-          "role": { "type": "string" }
+          "role": {
+            "enum": ["admin", "standard-user", "read-only-user"],
+            "type": "string"
+          }
         }
       },
       "ModelUser": {
+        "required": ["first_name", "last_name", "email", "company"],
         "type": "object",
         "properties": {
           "company": { "type": "string" },
@@ -7960,7 +7905,10 @@
           "is_active": { "type": "boolean" },
           "last_name": { "type": "string" },
           "password_invalidated": { "type": "boolean" },
-          "role": { "type": "string" },
+          "role": {
+            "enum": ["admin", "standard-user", "read-only-user"],
+            "type": "string"
+          },
           "role_id": { "type": "integer" }
         }
       },
@@ -8018,7 +7966,7 @@
           "cve_severity": { "type": "string" },
           "cve_type": { "type": "string" },
           "exploit_poc": { "type": "string" },
-          "masked": { "type": "string" },
+          "masked": { "type": "boolean" },
           "urls": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },

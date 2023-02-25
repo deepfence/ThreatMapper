@@ -39,10 +39,10 @@ export interface ModelCompliance {
     description: string;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof ModelCompliance
      */
-    masked: string;
+    masked: boolean;
     /**
      * 
      * @type {string}

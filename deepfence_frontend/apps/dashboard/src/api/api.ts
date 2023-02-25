@@ -134,12 +134,12 @@ export function getScanResultsApiClient() {
   const scanResultsApi = new ScanResultsApi(configuration);
 
   return {
-    deleteVulnerabilities: scanResultsApi.deleteScanResult.bind(scanResultsApi),
+    deleteScanResult: scanResultsApi.deleteScanResult.bind(scanResultsApi),
     downloadScanResultsForScanID: scanResultsApi.downloadScanResults.bind(scanResultsApi),
     deleteScanResultsForScanID:
       scanResultsApi.deleteScanResultsForScanID.bind(scanResultsApi),
-    notifyVulnerabilities: scanResultsApi.notifyScanResult.bind(scanResultsApi),
-    maskVulnerabilities: scanResultsApi.maskScanResult.bind(scanResultsApi),
-    unMaskVulnerabilities: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
+    notifyScanResult: scanResultsApi.notifyScanResult.bind(scanResultsApi),
+    maskScanResult: scanResultsApi.maskScanResult.bind(scanResultsApi),
+    unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
   };
 }

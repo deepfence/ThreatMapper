@@ -15,8 +15,34 @@ export interface DropdownProps extends DropdownPrimitive.DropdownMenuProps {
   align?: DropdownPrimitive.MenuContentProps['align'];
 }
 
-export const Dropdown: React.FC<DropdownProps> = (props) => {
-  const { children, content, align = 'start', triggerAsChild, ...rest } = props;
+export const DropdownSubMenu: React.FC<
+  DropdownPrimitive.DropdownMenuSubProps & {
+    children: React.ReactNode;
+    content: React.ReactNode;
+    triggerAsChild?: boolean;
+  }
+> = ({ children, content, triggerAsChild }) => {
+  return (
+    <DropdownPrimitive.Sub>
+      <DropdownPrimitive.SubTrigger asChild={triggerAsChild}>
+        {children}
+      </DropdownPrimitive.SubTrigger>
+      <DropdownPrimitive.Portal>
+        <DropdownPrimitive.SubContent
+          className={cx(
+            'shadow-md bg-white dark:bg-gray-700 min-w-[195px]',
+            'rounded-md overflow-hidden',
+          )}
+        >
+          {content}
+        </DropdownPrimitive.SubContent>
+      </DropdownPrimitive.Portal>
+    </DropdownPrimitive.Sub>
+  );
+};
+
+export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) => {
+  const { children, content, align = 'start', triggerAsChild, loop, ...rest } = props;
   return (
     <DropdownPrimitive.Root {...rest}>
       <DropdownPrimitive.Trigger asChild={triggerAsChild}>
@@ -26,6 +52,7 @@ export const Dropdown: React.FC<DropdownProps> = (props) => {
         <DropdownPrimitive.Content
           sideOffset={4}
           align={align}
+          loop={loop}
           className={cx(
             'radix-side-top:animate-slide-up radix-side-bottom:animate-slide-down',
             'shadow-md bg-white dark:bg-gray-700 min-w-[195px]',

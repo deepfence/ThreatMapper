@@ -16,50 +16,66 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelUpdateUserPasswordRequest
+ * @interface ModelBasicNode
  */
-export interface ModelUpdateUserPasswordRequest {
+export interface ModelBasicNode {
     /**
      * 
      * @type {string}
-     * @memberof ModelUpdateUserPasswordRequest
+     * @memberof ModelBasicNode
      */
-    new_password: string;
+    host_name: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelUpdateUserPasswordRequest
+     * @memberof ModelBasicNode
      */
-    old_password: string;
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelBasicNode
+     */
+    node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelBasicNode
+     */
+    node_type: string;
 }
 
 /**
- * Check if a given object implements the ModelUpdateUserPasswordRequest interface.
+ * Check if a given object implements the ModelBasicNode interface.
  */
-export function instanceOfModelUpdateUserPasswordRequest(value: object): boolean {
+export function instanceOfModelBasicNode(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "new_password" in value;
-    isInstance = isInstance && "old_password" in value;
+    isInstance = isInstance && "host_name" in value;
+    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_type" in value;
 
     return isInstance;
 }
 
-export function ModelUpdateUserPasswordRequestFromJSON(json: any): ModelUpdateUserPasswordRequest {
-    return ModelUpdateUserPasswordRequestFromJSONTyped(json, false);
+export function ModelBasicNodeFromJSON(json: any): ModelBasicNode {
+    return ModelBasicNodeFromJSONTyped(json, false);
 }
 
-export function ModelUpdateUserPasswordRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelUpdateUserPasswordRequest {
+export function ModelBasicNodeFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelBasicNode {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'new_password': json['new_password'],
-        'old_password': json['old_password'],
+        'host_name': json['host_name'],
+        'name': json['name'],
+        'node_id': json['node_id'],
+        'node_type': json['node_type'],
     };
 }
 
-export function ModelUpdateUserPasswordRequestToJSON(value?: ModelUpdateUserPasswordRequest | null): any {
+export function ModelBasicNodeToJSON(value?: ModelBasicNode | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +84,10 @@ export function ModelUpdateUserPasswordRequestToJSON(value?: ModelUpdateUserPass
     }
     return {
         
-        'new_password': value.new_password,
-        'old_password': value.old_password,
+        'host_name': value.host_name,
+        'name': value.name,
+        'node_id': value.node_id,
+        'node_type': value.node_type,
     };
 }
 
