@@ -271,10 +271,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Route("/scan/{scan_type}/{scan_id}", func(r chi.Router) {
 				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultDownloadHandler))
 				r.Delete("/", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanDeleteHandler))
-				r.Route("/{doc_id}", func(r chi.Router) {
-					r.Get("/nodes", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanResultDocumentNodesHandler))
-				})
 			})
+			r.Get("/scan/nodes/{scan_type}/{doc_id}", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanResultDocumentNodesHandler))
 
 			r.Route("/scan/sbom", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetSbomHandler))

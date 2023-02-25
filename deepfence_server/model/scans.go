@@ -139,7 +139,6 @@ type ScanActionRequest struct {
 
 type ScanDocFoundNodesRequest struct {
 	DocId    string `path:"doc_id" validate:"required" required:"true"`
-	ScanID   string `path:"scan_id" validate:"required" required:"true"`
 	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	//utils.Neo4jScanType
 }

@@ -630,7 +630,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	return res, nil
 }
 
-func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docId string) ([]model.BasicNode, error) {
+func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanType, docId string) ([]model.BasicNode, error) {
 	var res []model.BasicNode
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -650,10 +650,10 @@ func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanTyp
 	defer tx.Close()
 
 	nres, err := tx.Run(`
-		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`{node_id: $scan_id}) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`{node_id: $node_id})
+		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`{node_id: $node_id})
 		WHERE r.masked = false
 		RETURN node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
-		map[string]interface{}{"scan_id": scanId, "node_id": docId})
+		map[string]interface{}{"node_id": docId})
 	if err != nil {
 		return res, err
 	}

@@ -962,7 +962,6 @@ func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetScanResultDocumentNodesHandler(w http.ResponseWriter, r *http.Request) {
 	req := model.ScanDocFoundNodesRequest{
 		DocId:    chi.URLParam(r, "doc_id"),
-		ScanID:   chi.URLParam(r, "scan_id"),
 		ScanType: chi.URLParam(r, "scan_type"),
 	}
 	err := h.Validator.Struct(req)
@@ -970,7 +969,7 @@ func (h *Handler) GetScanResultDocumentNodesHandler(w http.ResponseWriter, r *ht
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	resp, err := reporters_scan.GetScanResultDocumentNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocId)
+	resp, err := reporters_scan.GetScanResultDocumentNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.DocId)
 	if err != nil {
 		respondError(err, w)
 		return

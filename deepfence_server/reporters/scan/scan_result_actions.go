@@ -98,8 +98,8 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 		}
 	} else {
 		_, err = tx.Run(`
-		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
-		WHERE m.node_id = $scan_id
+		MATCH (m:`+string(scanType)+`{node_id: $scan_id})
+		OPTIONAL MATCH (m)-[r:DETECTED]-> (n:`+utils.ScanTypeDetectedNode[scanType]+`)
 		DETACH DELETE m,r`, map[string]interface{}{"scan_id": scanId})
 		if err != nil {
 			return err
