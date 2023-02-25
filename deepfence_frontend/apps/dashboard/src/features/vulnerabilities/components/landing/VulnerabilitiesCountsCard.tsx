@@ -119,7 +119,7 @@ export const VulnerabilitiesCountsCard = ({
             </div>
           </div>
           <div>
-            <div className="flex flex-wrap max-w-[200px] justify-center">
+            <div className="flex flex-wrap max-w-[250px] justify-center">
               {getObjectKeys(data.severityBreakdown).map((severity) => {
                 return (
                   <div className="flex flex-col p-4" key={severity}>
