@@ -16,6 +16,10 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 
 replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230224172216-13acb3b88b5d
 
+replace github.com/deepfence/SecretScanner => github.com/deepfence/SecretScanner v1.2.1-0.20230214033423-8a950b2b3f38
+
+replace github.com/deepfence/YaraHunter => github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501
+
 replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/agent-plugins-grpc
 
 require (
@@ -57,7 +61,7 @@ require (
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.44.180 // indirect
+	github.com/aws/aws-sdk-go v1.44.209 // indirect
 	github.com/bluele/gcache v0.0.2 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
