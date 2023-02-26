@@ -26,14 +26,16 @@ const Skeleton = ({ className, size = 'md', location }: SkeletonProps) => {
       })}
     >
       <div
-        className={classNames(
-          'bg-gray-300 dark:bg-gray-600 rounded-sm h5',
-          {
-            ['h-5']: size === 'md',
-            ['h-4']: size === 'sm',
-            ['bg-gray-400 dark:bg-gray-500']: location === 'header',
-          },
-          className,
+        className={twMerge(
+          classNames(
+            'bg-gray-200 dark:bg-gray-700 rounded-md h5',
+            {
+              ['h-5']: size === 'md',
+              ['h-4']: size === 'sm',
+              ['bg-gray-300 dark:bg-gray-600']: location === 'header',
+            },
+            className,
+          ),
         )}
       />
     </div>
@@ -74,10 +76,15 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
         </tr>
       </thead>
       <tbody>
-        {Array.from({ length: rows }).map((_, index) => (
-          <tr key={index}>
+        {Array.from({ length: rows }).map((_, rowIdx) => (
+          <tr key={rowIdx}>
             {Array.from({ length: columns }).map((_, index) => (
-              <td key={index} className="border-b border-gray-200 dark:border-gray-700">
+              <td
+                key={index}
+                className={classNames('border-gray-200 dark:border-gray-700', {
+                  ['border-b']: rowIdx !== rows - 1,
+                })}
+              >
                 <Skeleton size={size} location="body" />
               </td>
             ))}
