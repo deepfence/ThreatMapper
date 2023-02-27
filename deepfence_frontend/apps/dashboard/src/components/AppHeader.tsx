@@ -20,8 +20,8 @@ export function AppHeader({
   const { toggleMode, mode } = useTheme();
 
   return (
-    <div className="bg-white dark:bg-gray-800 h-[64px] w-full border-b border-gray-200 dark:border-gray-700">
-      <div className="h-full flex items-center mx-2">
+    <header className="fixed top-0 px-2 bg-white dark:bg-gray-800 h-[64px] w-full border-b border-gray-200 dark:border-gray-700">
+      <div className="h-full flex items-center">
         <div className="mr-auto flex gap-4">
           <button
             onClick={() => {
@@ -84,6 +84,6 @@ export function AppHeader({
           </Dropdown>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
