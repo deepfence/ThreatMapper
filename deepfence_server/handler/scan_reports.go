@@ -1003,7 +1003,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	switch action {
 	case "get":
 		var sbom []model.SbomResponse
-		runtimeSbom := path.Join("sbom/", "runtime-"+utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		runtimeSbom := path.Join("sbom", "runtime-"+utils.ScanIdReplacer.Replace(req.ScanID)+".json")
 		buff, err := mc.DownloadFileContexts(r.Context(), runtimeSbom, minio.GetObjectOptions{})
 		if err != nil {
 			log.Error().Msg(err.Error())
