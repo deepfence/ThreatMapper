@@ -23,48 +23,45 @@ func ComputeThreat(msg *message.Message) error {
 	}
 	defer tx.Close()
 
+	// First OPTIONAL applies for Hosts
+	// Second OPTIONAL applies for Containers & Images
 	if _, err = tx.Run(`
 		MATCH (n:Vulnerability) -[:DETECTED]- (m)
+		SET n.exploitability_score = 0
 		WITH max(m.updated_at) as latest, m, n
-		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
-		WITH n, CASE WHEN n.cve_attack_vector =~ ".*AV:N.*" THEN 2 ELSE 1 END as score, count(r) as incoming
-		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
+		WITH n, CASE WHEN n.cve_attack_vector =~ ".*AV:N.*" THEN 1 ELSE 0 END as score
+		OPTIONAL MATCH (m) -[:SCANNED]- (l:Node) <-[r:CONNECTS]- (o{node_id:"in-the-internet"})
+		WITH m, n, score, CASE WHEN r IS NOT NULL THEN 2 ELSE 1 END as is_incoming
+		SET n.exploitability_score = n.exploitability_score + score * is_incoming
+		WITH m, n, score
+		OPTIONAL MATCH (m) -[:SCANNED]- (l) -[:HOSTS]- (n:Node) <-[r:CONNECTS]- (o{node_id:"in-the-internet"})
+		WITH n, score, CASE WHEN r IS NOT NULL THEN 2 ELSE 1 END as is_incoming
+		SET n.exploitability_score = n.exploitability_score + score * is_incoming`,
+		map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Secret) -[:DETECTED]- (m)
-		WITH max(m.updated_at) as latest, m, n
-		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
-		WITH n, 1 as score, count(r) as incoming
-		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
+		MATCH (n:Secret)
+		SET n.exploitability_score = 0`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Malware) -[:DETECTED]- (m)
-		WITH max(m.updated_at) as latest, m, n
-		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
-		WITH n, 1 as score, count(r) as incoming
-		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
+		MATCH (n:Malware)
+		SET n.exploitability_score = 0`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Compliance) -[:DETECTED]- (m)
-		WITH max(m.updated_at) as latest, m, n
-		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
-		WITH n, 1 as score, count(r) as incoming
-		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
+		MATCH (n:Compliance)
+		SET n.exploitability_score = 0`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:CloudCompliance) -[:DETECTED]- (m)
-		WITH max(m.updated_at) as latest, m, n
-		MATCH (m) -[:SCANNED]- (l) -[r:CONNECTS]- (o)
-		WITH n, 1 as score, count(r) as incoming
-		SET n.exploitability_score = score * incoming`, map[string]interface{}{}); err != nil {
+		MATCH (n:CloudCompliance)
+		SET n.exploitability_score = 0`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
