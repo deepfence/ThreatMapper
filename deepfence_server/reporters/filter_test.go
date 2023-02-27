@@ -34,7 +34,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 
 	ff = FieldsFilters{
 		ContainsFilter: ContainsFilter{
-			FieldsValues: map[string][]interface{}{"toto": []interface{}{"foo", "bar"}},
+			FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
 		},
 		OrderFilter: OrderFilter{
 			OrderField: "",
@@ -45,7 +45,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 
 	ff = FieldsFilters{
 		ContainsFilter: ContainsFilter{
-			FieldsValues: map[string][]interface{}{"toto": []interface{}{"foo", "bar"}},
+			FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
 		},
 		OrderFilter: OrderFilter{
 			OrderField: "toto",
@@ -95,11 +95,11 @@ func TestContainsFilter2CypherWhereConditions(t *testing.T) {
 	assert.Equal(t, cypher, "", "should be equal")
 
 	ff = ContainsFilter{
-		FieldsValues: map[string][]interface{}{"toto": []interface{}{"foo", "bar"}},
+		FieldsValues: map[string][]interface{}{"toto": {"foo", false}},
 	}
 
 	cypher = ContainsFilter2CypherWhereConditions(node_name, ff, true)
-	assert.Equal(t, cypher, " WHERE  n.toto IN ['foo','bar']", "should be equal")
+	assert.Equal(t, cypher, " WHERE  n.toto IN ['foo',false]", "should be equal")
 
 }
 
@@ -114,7 +114,7 @@ func TestMatchFilter2CypherWhereConditions(t *testing.T) {
 	assert.Equal(t, len(cypher), 0, "should be equal")
 
 	ff = MatchFilter{
-		FieldsValues: map[string][]interface{}{"toto": []interface{}{"foo", "bar"}},
+		FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
 	}
 
 	cypher = matchFilter2CypherConditions(node_name, ff)

@@ -26,6 +26,10 @@ func (KubernetesCluster) GetCategory() string {
 	return ""
 }
 
+func (KubernetesCluster) GetJsonCategory() string {
+	return ""
+}
+
 type RegularScanStatus struct {
 	VulnerabilitiesCount    int    `json:"vulnerabilities_count"  required:"true"`
 	VulnerabilityScanStatus string `json:"vulnerability_scan_status" required:"true"`
@@ -70,11 +74,19 @@ func (RegistryAccount) GetCategory() string {
 	return ""
 }
 
+func (RegistryAccount) GetJsonCategory() string {
+	return ""
+}
+
 func (Host) NodeType() string {
 	return "Node"
 }
 
 func (Host) GetCategory() string {
+	return ""
+}
+
+func (Host) GetJsonCategory() string {
 	return ""
 }
 
@@ -108,6 +120,10 @@ func (Pod) GetCategory() string {
 	return ""
 }
 
+func (Pod) GetJsonCategory() string {
+	return ""
+}
+
 type Container struct {
 	ID             string         `json:"node_id" required:"true"`
 	Name           string         `json:"docker_container_name" required:"true"`
@@ -125,6 +141,10 @@ func (Container) NodeType() string {
 }
 
 func (Container) GetCategory() string {
+	return ""
+}
+
+func (Container) GetJsonCategory() string {
 	return ""
 }
 
@@ -147,6 +167,10 @@ func (Process) GetCategory() string {
 	return ""
 }
 
+func (Process) GetJsonCategory() string {
+	return ""
+}
+
 type ContainerImage struct {
 	ID       string         `json:"node_id" required:"true"`
 	Name     string         `json:"docker_image_name" required:"true"`
@@ -162,6 +186,10 @@ func (ContainerImage) NodeType() string {
 }
 
 func (ContainerImage) GetCategory() string {
+	return ""
+}
+
+func (ContainerImage) GetJsonCategory() string {
 	return ""
 }
 

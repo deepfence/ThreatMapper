@@ -146,109 +146,110 @@ func (d *OpenApiDocs) AddLookupOperations() {
 }
 
 func (d *OpenApiDocs) AddSearchOperations() {
-
+	// Search APIs
 	d.AddOperation("searchHosts", http.MethodPost, "/deepfence/search/hosts",
-		"Search hosts", "Retrieve all the data associated with hosts",
+		"Search hosts", "Search across all data associated with hosts",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Host))
 
 	d.AddOperation("searchContainers", http.MethodPost, "/deepfence/search/containers",
-		"Search Containers data", "Retrieve all the data associated with containers",
+		"Search Containers data", "Search across all data associated with containers",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Container))
 
 	d.AddOperation("searchContainerImages", http.MethodPost, "/deepfence/search/images",
-		"Search Container images", "Retrieve all the data associated with processes",
+		"Search Container images", "Search across all the data associated with container images",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]ContainerImage))
 
 	d.AddOperation("searchVulnerabilities", http.MethodPost, "/deepfence/search/vulnerabilities",
-		"Search Vulnerabilities", "Retrieve all the data associated with k8s clusters",
+		"Search Vulnerabilities", "Search across all the data associated with vulnerabilities",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Vulnerability))
 
 	d.AddOperation("searchSecrets", http.MethodPost, "/deepfence/search/secrets",
-		"Search Secrets", "Retrieve all the data associated with pods",
+		"Search Secrets", "Search across all the data associated with secrets",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Secret))
 
 	d.AddOperation("searchMalwares", http.MethodPost, "/deepfence/search/malwares",
-		"Search Malwares", "List all the images present in the given registry",
+		"Search Malwares", "Search across all the data associated with malwares",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Malware))
 
 	d.AddOperation("searchCloudCompliances", http.MethodPost, "/deepfence/search/cloud-compliances",
-		"Search Cloud compliances", "List all the images present in the given registry",
+		"Search Cloud compliances", "Search across all the data associated with cloud-compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]CloudCompliance))
 
 	d.AddOperation("searchCompliances", http.MethodPost, "/deepfence/search/compliances",
-		"Search Compliances", "List all the images present in the given registry",
+		"Search Compliances", "Search across all the data associated with compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Compliance))
 
 	d.AddOperation("searchVulnerabilityScans", http.MethodPost, "/deepfence/search/vulnerability/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Search Vulnerability Scan results", "Search across all the data associated with vulnerability scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
 
 	d.AddOperation("searchSecretsScans", http.MethodPost, "/deepfence/search/secret/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Search Secrets Scan results", "Search across all the data associated with secrets scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
 
 	d.AddOperation("searchMalwareScans", http.MethodPost, "/deepfence/search/malware/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Search Malware Scan results", "Search across all the data associated with malwares scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
 
 	d.AddOperation("searchComplianceScans", http.MethodPost, "/deepfence/search/compliance/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Search Compliance Scan results", "Search across all the data associated with compliance scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
 
 	d.AddOperation("searchCloudComplianceScans", http.MethodPost, "/deepfence/search/cloud-compliance/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Search Cloud Compliance Scan results", "Search across all the data associated with cloud-compliance scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
 
+	// Count APIs
 	d.AddOperation("countHosts", http.MethodPost, "/deepfence/search/count/hosts",
-		"Search hosts", "Retrieve all the data associated with hosts",
+		"Count hosts", "Count across all the data associated with hosts",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countContainers", http.MethodPost, "/deepfence/search/count/containers",
-		"Search Containers data", "Retrieve all the data associated with containers",
+		"Count Containers data", "Count across all the data associated with containers",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countContainerImages", http.MethodPost, "/deepfence/search/count/images",
-		"Search Container images", "Retrieve all the data associated with processes",
+		"Count Container images", "Count across all the data associated with container images",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countVulnerabilities", http.MethodPost, "/deepfence/search/count/vulnerabilities",
-		"Search Vulnerabilities", "Retrieve all the data associated with k8s clusters",
+		"Count Vulnerabilities", "Search across all the data associated with vulnerabilities",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countSecrets", http.MethodPost, "/deepfence/search/count/secrets",
-		"Search Secrets", "Retrieve all the data associated with pods",
+		"Count Secrets", "Count across all the data associated with secrets",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countMalwares", http.MethodPost, "/deepfence/search/count/malwares",
-		"Search Malwares", "List all the images present in the given registry",
+		"Count Malwares", "Count across all the data associated with malwares",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countCloudCompliances", http.MethodPost, "/deepfence/search/count/cloud-compliances",
-		"Search Cloud compliances", "List all the images present in the given registry",
+		"Count Cloud compliances", "Count across all the data ssociated with cloud compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countCompliances", http.MethodPost, "/deepfence/search/count/compliances",
-		"Search Compliances", "List all the images present in the given registry",
+		"Count Compliances", "Count across all the data associated with compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countVulnerabilityScans", http.MethodPost, "/deepfence/search/count/vulnerability/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Count Vulnerability Scan results", "Count across all the data associated with vulnerability scans",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
 
 	d.AddOperation("countSecretsScans", http.MethodPost, "/deepfence/search/count/secret/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Count Secret Scan results", "Count across all the data associated with secret scans",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
 
 	d.AddOperation("countMalwareScans", http.MethodPost, "/deepfence/search/count/malware/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Count Malware Scan results", "Count across all the data associated with malware scans",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
 
 	d.AddOperation("countComplianceScans", http.MethodPost, "/deepfence/search/count/compliance/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Count Compliance Scan results", "Count across all the data associated with compliance scans",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
 
 	d.AddOperation("countCloudComplianceScans", http.MethodPost, "/deepfence/search/count/cloud-compliance/scans",
-		"Search Vulnerability Scan results", "Search scan results",
+		"Count Cloud Compliance Scan results", "Count across all the data associated with cloud-compliance scans",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
 }
 
@@ -274,9 +275,11 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 	d.AddOperation("registerCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/account",
 		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountRegisterReq), new(CloudNodeAccountRegisterResp))
+
 	d.AddOperation("listCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/list/accounts",
 		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountsListReq), new(CloudNodeAccountsListResp))
+
 	d.AddOperation("listCloudProviders", http.MethodPost, "/deepfence/cloud-node/list/providers",
 		"List Cloud Node Providers", "List Cloud Node Providers registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeProvidersListReq), new(CloudNodeProvidersListResp))
@@ -413,6 +416,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(CloudComplianceScanResult))
 
+	// Scans results counts
 	d.AddOperation("countResultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/count/vulnerability",
 		"Get Vulnerability Scans Results", "Get Vulnerability Scan results on agent or registry",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanResultsReq), new(SearchCountResp))

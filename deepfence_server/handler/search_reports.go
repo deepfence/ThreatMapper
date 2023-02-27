@@ -16,7 +16,14 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.Window)
+	// Optimize query for counting
+	var dummy T
+	dummy_ff := reporters_search.SearchFilter{
+		InFieldFilter: []string{dummy.GetJsonCategory()},
+		Filters:       req.NodeFilter.Filters,
+	}
+
+	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)

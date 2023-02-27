@@ -331,8 +331,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
 github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230225132508-204b638c4402 h1:eyJwiFpTvNIwS5VSLTDiXnOVGhjgiebQ2R+JgS4hV6U=
 github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230225132508-204b638c4402/go.mod h1:rco4ZTBCAPvaqyHgKUD3lqxub8Km+5fxNk25nF3gRIc=
-github.com/deepfence/kubernetes-scanner v0.0.0-20230224160510-90e1d7a2f813 h1:llrcPFOa0h62EDyUhYI4q+rbLQs+nRbGL4HL+BeuwIY=
-github.com/deepfence/kubernetes-scanner v0.0.0-20230224160510-90e1d7a2f813/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
+github.com/deepfence/kubernetes-scanner v0.0.0-20230226173008-1eb7bc0b2b67 h1:wcedn9SNUILNxIz+Ye8q3UPYTW90/rdv9HRtyaHAa/k=
+github.com/deepfence/kubernetes-scanner v0.0.0-20230226173008-1eb7bc0b2b67/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
 github.com/denverdino/aliyungo v0.0.0-20190125010748-a747050bb1ba/go.mod h1:dV8lFg6daOBZbT6/BDGIz6Y3WFGn8juu6G+CQ6LHtl0=
 github.com/dgrijalva/jwt-go v0.0.0-20170104182250-a601269ab70c/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
