@@ -325,7 +325,10 @@ function Th<TData>({
         <div
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
-          className={`absolute right-0 top-3 bottom-3 w-1 border rounded-full bg-gray-200 dark:bg-gray-600 cursor-col-resize select-none`}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          className={`absolute right-0 top-3 bottom-3 w-1 rounded-full bg-gray-200 dark:bg-gray-600 cursor-col-resize select-none`}
           aria-hidden="true"
           data-testid={`column-resizer-${header.id}`}
         />
