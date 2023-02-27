@@ -92,7 +92,7 @@ const handleSaveChanges = async ({
     apiArgs: [
       {
         id: id,
-        modelEditUserRequest: {
+        modelUpdateUserIdRequest: {
           first_name: firstName,
           last_name: lastName,
           is_active: activeRole,
@@ -135,6 +135,43 @@ const handleInviteUser = async ({
           action: 'send-invite-email',
           email: emailInvite,
           role: roleInvite,
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<ActionReturnType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    return r.value();
+  }
+
+  await getUsersData();
+
+  return { message: 'Action completed successfully' };
+};
+
+const handleChangePassword = async ({
+  newPassword,
+  oldPassword,
+}: ActionFunctionArgs & {
+  newPassword: string;
+  oldPassword: string;
+}): Promise<ActionReturnType> => {
+  const r = await makeRequest({
+    apiFunction: getUserApiClient().updatePassword,
+    apiArgs: [
+      {
+        modelUpdateUserPasswordRequest: {
+          new_password: newPassword,
+          old_password: oldPassword,
         },
       },
     ],
@@ -294,12 +331,26 @@ export const UserManagementForm = ({ loaderData }: { loaderData: LoaderDataType 
                   name="password"
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
                   value={newPasswordConfirm}
-                  // color={data?.fieldErrors?.password ? 'error' : 'default'}
+                  color={newPasswordConfirm !== newPassword ? 'error' : 'default'}
                 />
               </div>
               <div>
-                <Button size="md" color="primary" className="w-full mb-4">
-                  Save Changes
+                <Button
+                  size="md"
+                  color="primary"
+                  className="w-full mb-4"
+                  onClick={() => {
+                    handleChangePassword({
+                      newPassword,
+                      oldPassword,
+                    } as ActionFunctionArgs & {
+                      newPassword: string;
+                      oldPassword: string;
+                    });
+                    setOpenPasswordModal(false);
+                  }}
+                >
+                  Change Password
                 </Button>
               </div>
             </div>
