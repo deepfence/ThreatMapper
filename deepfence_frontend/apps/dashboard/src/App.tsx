@@ -13,9 +13,7 @@ function App() {
   return (
     <ThemeProvider value={{ toggleMode, mode }}>
       <Toaster theme={mode === 'dark' ? 'dark' : 'light'} />
-      <div className="dark:bg-gray-900 bg-white">
-        <RouterProvider router={router} />
-      </div>
+      <RouterProvider router={router} />
     </ThemeProvider>
   );
 }
