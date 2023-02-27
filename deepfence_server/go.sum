@@ -159,8 +159,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/decred/dcrd/crypto/blake256 v1.0.0/go.mod h1:sQl2p6Y26YV+ZOcSTP6thNdn47hh8kt6rqSlvmrXFAc=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1owhMVTHFZIlnvd4=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
-github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230225132508-204b638c4402 h1:eyJwiFpTvNIwS5VSLTDiXnOVGhjgiebQ2R+JgS4hV6U=
-github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230225132508-204b638c4402/go.mod h1:rco4ZTBCAPvaqyHgKUD3lqxub8Km+5fxNk25nF3gRIc=
+github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230227162914-0400ffea289d h1:QwsUay0aMjh1MLDKNMseLXjdY3c1ZPrZk8gmXAVsgr8=
+github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230227162914-0400ffea289d/go.mod h1:rco4ZTBCAPvaqyHgKUD3lqxub8Km+5fxNk25nF3gRIc=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230226173008-1eb7bc0b2b67 h1:wcedn9SNUILNxIz+Ye8q3UPYTW90/rdv9HRtyaHAa/k=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230226173008-1eb7bc0b2b67/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=

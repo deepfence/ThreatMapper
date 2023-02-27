@@ -12,7 +12,7 @@ replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools
 
 replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/deepfence/tcptracer-bpf
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230227103858-cec180270bff
+replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230227182202-dff057b3607a
 
 replace github.com/deepfence/SecretScanner => github.com/deepfence/SecretScanner v1.2.1-0.20230214033423-8a950b2b3f38
 
@@ -31,7 +31,7 @@ require (
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.0.1
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230225132508-204b638c4402
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230227162914-0400ffea289d
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/hillu/go-yara/v4 v4.2.4
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -72,7 +72,7 @@ require (
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230225132508-204b638c4402 // indirect
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230227162914-0400ffea289d // indirect
 	github.com/deepfence/vessel v0.9.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/cli v20.10.20+incompatible // indirect
