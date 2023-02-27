@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 	"time"
@@ -982,21 +983,49 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	var req model.SbomRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		respondError(err, w)
 		return
 	}
+
 	if req.ScanID == "" {
-		if req.NodeType == "" || req.NodeID == "" {
-			respondError(&BadDecoding{errors.New("scan_id is required or node_id and node_type are required")}, w)
-			return
-		}
+		respondError(&BadDecoding{errors.New("scan_id is required")}, w)
+		return
 	}
+
+	mc, err := directory.MinioClient(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+		return
+	}
+
 	switch action {
 	case "get":
 		var sbom []model.SbomResponse
+		runtimeSbom := path.Join("sbom/", "runtime-"+utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		buff, err := mc.DownloadFileContexts(r.Context(), runtimeSbom, minio.GetObjectOptions{})
+		if err != nil {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+			return
+		}
+		if err := json.Unmarshal(buff, &sbom); err != nil {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+			return
+		}
 		httpext.JSON(w, http.StatusOK, sbom)
 	case "download":
 		resp := model.DownloadReportResponse{}
+		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		url, err := mc.ExposeFile(r.Context(), sbomFile, 5*time.Minute, url.Values{})
+		if err != nil {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+			return
+		}
+		resp.UrlLink = url
 		httpext.JSON(w, http.StatusOK, resp)
 	}
 }

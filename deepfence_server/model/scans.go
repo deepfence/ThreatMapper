@@ -151,12 +151,12 @@ type SbomRequest struct {
 }
 
 type SbomResponse struct {
-	PackageName string   `json:"package_name"`
-	Version     string   `json:"version"`
-	Locations   []string `json:"locations"`
-	Licenses    []string `json:"licenses"`
-	CveID       string   `json:"cve_id"`
-	Severity    string   `json:"severity"`
+	PackageName string   `json:"package_name,omitempty"`
+	Version     string   `json:"version,omitempty"`
+	Locations   []string `json:"locations,omitempty"`
+	Licenses    []string `json:"licenses,omitempty"`
+	CveID       string   `json:"cve_id,omitempty"`
+	Severity    string   `json:"severity,omitempty"`
 }
 
 type ScanResultsReq struct {
