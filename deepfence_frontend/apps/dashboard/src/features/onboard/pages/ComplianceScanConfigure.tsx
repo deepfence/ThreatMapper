@@ -244,13 +244,17 @@ const ComplianceTable = () => {
       columnHelper.accessor('id', {
         cell: (info) => info.getValue(),
         header: () => '#',
-        maxSize: 20,
+        maxSize: 40,
+        size: 30,
+        minSize: 30,
       }),
       columnHelper.accessor((row) => row.test_category, {
         id: 'category',
         cell: (info) => info.getValue(),
         header: () => <span>Category</span>,
-        maxSize: 50,
+        maxSize: 100,
+        size: 90,
+        minSize: 90,
       }),
       columnHelper.accessor('test_desc', {
         header: () => 'Description',

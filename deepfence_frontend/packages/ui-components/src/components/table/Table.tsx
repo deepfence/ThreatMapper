@@ -220,7 +220,7 @@ const CustomTable = <TData extends RowData>(
       >
         <table
           className={cx(
-            `w-full bg-white dark:bg-gray-800 border-spacing-0 border-collapse`,
+            `w-full bg-white dark:bg-gray-800 border-spacing-0 border-collapse table-fixed`,
           )}
           cellPadding="0"
           cellSpacing="0"
@@ -288,14 +288,16 @@ function Th<TData>({
       onClick={header.column.getToggleSortingHandler()}
     >
       <div
-        className={cx(`w-full h-full flex px-4`, {
+        className={cx(`w-full h-full flex px-4 truncate`, {
           ['py-3']: size === 'sm',
           ['p-4']: size === 'md',
         })}
       >
-        {header.isPlaceholder
-          ? null
-          : flexRender(header.column.columnDef.header, header.getContext())}
+        <span className="flex-1 truncate text-start">
+          {header.isPlaceholder
+            ? null
+            : flexRender(header.column.columnDef.header, header.getContext())}
+        </span>
         {header.column.getCanSort() ? (
           <span className="ml-1 flex items-center">
             <IconContext.Provider
@@ -323,7 +325,7 @@ function Th<TData>({
         <div
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
-          className={`absolute right-0 top-0 h-full w-1 bg-gray-200 dark:bg-gray-600 cursor-col-resize select-none`}
+          className={`absolute right-0 top-3 bottom-3 w-1 border rounded-full bg-gray-200 dark:bg-gray-600 cursor-col-resize select-none`}
           aria-hidden="true"
           data-testid={`column-resizer-${header.id}`}
         />
@@ -411,12 +413,16 @@ function Td<TData>({
       key={cell.id}
       style={{ width: cell.column.getSize() }}
       className={twMerge(
-        cx(`text-sm text-gray-900 dark:text-white px-4`, Typography.weight.normal, {
-          'border-b border-gray-200 dark:border-gray-700':
-            !striped && rowIdx !== totalRows - 1,
-          ['py-2']: size === 'sm',
-          ['py-4']: !size || size === 'md',
-        }),
+        cx(
+          `text-sm text-gray-900 dark:text-white px-4 truncate min-w-0`,
+          Typography.weight.normal,
+          {
+            'border-b border-gray-200 dark:border-gray-700':
+              !striped && rowIdx !== totalRows - 1,
+            ['py-2']: size === 'sm',
+            ['py-4']: !size || size === 'md',
+          },
+        ),
         rest.className ?? '',
       )}
     >

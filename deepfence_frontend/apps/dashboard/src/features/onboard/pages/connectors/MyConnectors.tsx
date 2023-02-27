@@ -282,9 +282,9 @@ function MyConnectorsTable({ data }: LoaderData) {
   const columns = useMemo(
     () => [
       getRowExpanderColumn(columnHelper, {
-        minSize: 5,
-        size: 5,
-        maxSize: 5,
+        minSize: 35,
+        size: 35,
+        maxSize: 35,
         cell: ({ row }) => {
           return row.getCanExpand() ? (
             <button
@@ -300,13 +300,12 @@ function MyConnectorsTable({ data }: LoaderData) {
         },
       }),
       getRowSelectionColumn(columnHelper, {
-        minSize: 5,
-        size: 5,
-        maxSize: 5,
+        minSize: 30,
+        size: 30,
+        maxSize: 30,
         header: () => null,
       }),
       columnHelper.accessor('accountType', {
-        size: 200,
         cell: (info) => {
           if (!info.row.original.count) {
             return info.getValue();
@@ -369,19 +368,28 @@ function MyConnectorsTable({ data }: LoaderData) {
           );
         },
         header: () => 'Account Type',
+        minSize: 100,
+        size: 110,
+        maxSize: 150,
       }),
       columnHelper.accessor('connectionMethod', {
-        size: 200,
+        minSize: 100,
+        size: 110,
+        maxSize: 150,
         cell: (info) => info.getValue(),
         header: () => 'Connection Method',
       }),
       columnHelper.accessor('accountId', {
-        size: 400,
+        minSize: 300,
+        size: 310,
+        maxSize: 350,
         header: () => 'Account ID',
         cell: (info) => info.getValue(),
       }),
       columnHelper.accessor('active', {
-        size: 100,
+        minSize: 60,
+        size: 60,
+        maxSize: 60,
         header: () => 'Active',
         cell: (info) => {
           const value = info.getValue();
@@ -389,7 +397,9 @@ function MyConnectorsTable({ data }: LoaderData) {
         },
       }),
       columnHelper.display({
-        size: 200,
+        minSize: 150,
+        size: 170,
+        maxSize: 200,
         id: 'actions',
         cell: (info) => {
           return (
