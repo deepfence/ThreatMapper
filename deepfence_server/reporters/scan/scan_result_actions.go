@@ -60,7 +60,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	_, err = tx.Run(`
 		MATCH (m:`+string(req.ScanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		SET r.masked = $value`, map[string]interface{}{"node_ids": req.DocIds, "value": value, "scan_id": req.ScanID})
+		SET r.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "scan_id": req.ScanID})
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 		if err != nil {
 			return err
 		}
-		// Delete documents which are not part of any scan results now
+		// Delete results which are not part of any scans now
 		_, err = tx.Run(`
 		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`) 
 		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)

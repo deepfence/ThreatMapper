@@ -900,9 +900,9 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	}
 	switch action {
 	case "delete":
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocIds)
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	case "notify":
-		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.DocIds)
+		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	}
 	if err != nil {
 		respondError(err, w)
@@ -959,9 +959,9 @@ func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	h.scanIdActionHandler(w, r, "delete")
 }
 
-func (h *Handler) GetScanResultDocumentNodesHandler(w http.ResponseWriter, r *http.Request) {
-	req := model.ScanDocFoundNodesRequest{
-		DocId:    chi.URLParam(r, "doc_id"),
+func (h *Handler) GetAllNodesForScanResultHandler(w http.ResponseWriter, r *http.Request) {
+	req := model.ScanResultFoundNodesRequest{
+		ResultID: chi.URLParam(r, "result_id"),
 		ScanType: chi.URLParam(r, "scan_type"),
 	}
 	err := h.Validator.Struct(req)
@@ -969,7 +969,7 @@ func (h *Handler) GetScanResultDocumentNodesHandler(w http.ResponseWriter, r *ht
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	resp, err := reporters_scan.GetScanResultDocumentNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.DocId)
+	resp, err := reporters_scan.GetScanResultDocumentNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ResultID)
 	if err != nil {
 		respondError(err, w)
 		return
