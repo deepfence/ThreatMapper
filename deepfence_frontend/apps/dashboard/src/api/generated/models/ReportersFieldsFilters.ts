@@ -19,6 +19,18 @@ import {
     ReportersContainsFilterFromJSONTyped,
     ReportersContainsFilterToJSON,
 } from './ReportersContainsFilter';
+import type { ReportersMatchFilter } from './ReportersMatchFilter';
+import {
+    ReportersMatchFilterFromJSON,
+    ReportersMatchFilterFromJSONTyped,
+    ReportersMatchFilterToJSON,
+} from './ReportersMatchFilter';
+import type { ReportersOrderFilter } from './ReportersOrderFilter';
+import {
+    ReportersOrderFilterFromJSON,
+    ReportersOrderFilterFromJSONTyped,
+    ReportersOrderFilterToJSON,
+} from './ReportersOrderFilter';
 
 /**
  * 
@@ -32,6 +44,18 @@ export interface ReportersFieldsFilters {
      * @memberof ReportersFieldsFilters
      */
     contains_filter: ReportersContainsFilter;
+    /**
+     * 
+     * @type {ReportersMatchFilter}
+     * @memberof ReportersFieldsFilters
+     */
+    match_filter: ReportersMatchFilter;
+    /**
+     * 
+     * @type {ReportersOrderFilter}
+     * @memberof ReportersFieldsFilters
+     */
+    order_filter: ReportersOrderFilter;
 }
 
 /**
@@ -40,6 +64,8 @@ export interface ReportersFieldsFilters {
 export function instanceOfReportersFieldsFilters(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "contains_filter" in value;
+    isInstance = isInstance && "match_filter" in value;
+    isInstance = isInstance && "order_filter" in value;
 
     return isInstance;
 }
@@ -55,6 +81,8 @@ export function ReportersFieldsFiltersFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'contains_filter': ReportersContainsFilterFromJSON(json['contains_filter']),
+        'match_filter': ReportersMatchFilterFromJSON(json['match_filter']),
+        'order_filter': ReportersOrderFilterFromJSON(json['order_filter']),
     };
 }
 
@@ -68,6 +96,8 @@ export function ReportersFieldsFiltersToJSON(value?: ReportersFieldsFilters | nu
     return {
         
         'contains_filter': ReportersContainsFilterToJSON(value.contains_filter),
+        'match_filter': ReportersMatchFilterToJSON(value.match_filter),
+        'order_filter': ReportersOrderFilterToJSON(value.order_filter),
     };
 }
 

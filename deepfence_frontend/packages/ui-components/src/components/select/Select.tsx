@@ -23,7 +23,7 @@ type MutableValue<T extends Value = Value> = T extends string ? string : T;
 
 export interface SelectProps<T extends Value = Value> {
   defaultValue?: T;
-  label?: string;
+  label?: React.ReactNode;
   children: React.ReactNode;
   name?: string;
   value?: MutableValue<T>;
@@ -36,6 +36,7 @@ export interface SelectProps<T extends Value = Value> {
   placeholder?: string;
   className?: string;
   prefixComponent?: React.ReactNode;
+  noPortal?: boolean;
 }
 
 type IconProps = {
@@ -136,6 +137,7 @@ export function Select<T extends Value>({
   startIcon,
   className = '',
   prefixComponent = null,
+  noPortal = false,
 }: SelectProps<T>) {
   const select = useSelectState<T>({
     defaultValue: defaultValue ?? ((Array.isArray(value) ? [] : '') as T),
@@ -181,14 +183,14 @@ export function Select<T extends Value>({
               {prefixComponent}
             </div>
           ) : null}
-          <div className="relative w-full">
+          <div className="relative w-full z-auto">
             <AriaKitSelect
               state={select}
               name={name}
               className={twMerge(
                 cx(
                   'w-full bg-gray-50 dark:bg-gray-700',
-                  'block text-left relative',
+                  'block text-left',
                   'focus:outline-none select-none overscroll-contain',
                   `${classes.color[color]}`,
                   `${classes.size[sizing]}`,
@@ -212,7 +214,7 @@ export function Select<T extends Value>({
           </div>
         </div>
         <AriakitSelectPopover
-          portal
+          portal={!noPortal}
           state={select}
           className={cx(
             'shadow-sm bg-white dark:bg-gray-700 py-1',
@@ -221,6 +223,9 @@ export function Select<T extends Value>({
             'focus:outline-none select-none',
             'max-h-[min(var(--popover-available-height,315px),315px)] overflow-y-auto',
             'animate-slide-down',
+            {
+              'z-10': noPortal, // TODO: see if there is any other way to get rid of zindex
+            },
           )}
           data-testid={`ariakit-portal-${name}`}
         >

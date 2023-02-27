@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import cx from 'classnames';
+import { useCallback, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiCheck, HiOutlineDuplicate } from 'react-icons/hi';
+import { MdCopyAll } from 'react-icons/md';
 import { useCopyToClipboard } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
@@ -12,7 +14,7 @@ export const CopyToClipboardIcon = ({ text, className }: CopyToClipboardIconProp
   const [_, copyToClipboard] = useCopyToClipboard();
   const [copied, setCopied] = useState(false);
 
-  const onCopy = (_: React.MouseEvent<HTMLButtonElement>) => {
+  const onCopy = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 5000);
     copyToClipboard(text);
@@ -26,5 +28,45 @@ export const CopyToClipboardIcon = ({ text, className }: CopyToClipboardIconProp
     >
       <button onClick={onCopy}>{copied ? <HiCheck /> : <HiOutlineDuplicate />}</button>
     </IconContext.Provider>
+  );
+};
+
+export const CopyToClipboardAsJson = ({
+  data,
+}: {
+  data: {
+    [key: string]: any;
+  };
+}) => {
+  const [_, copyToClipboard] = useCopyToClipboard();
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = useCallback(() => {
+    navigator?.clipboard
+      ?.writeText(JSON.stringify(data))
+      .then((val) => {
+        copyToClipboard(val as unknown as string);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 5000);
+      })
+      .catch((error) => {
+        console.log(error);
+        setCopied(false);
+      });
+  }, []);
+
+  return (
+    <button
+      onClick={onCopy}
+      className={cx(
+        'flex items-center gap-x-1 text-xs px-2 py-1 rounded-lg',
+        'bg-gray-100 dark:bg-gray-800',
+        'dark:text-white',
+        'outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+      )}
+    >
+      {copied ? <HiCheck /> : <MdCopyAll />}
+      {copied ? 'Copied as json' : 'Copy as json'}
+    </button>
   );
 };

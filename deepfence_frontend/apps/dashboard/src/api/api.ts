@@ -9,6 +9,8 @@ import {
   Configuration,
   MalwareScanApi,
   RegistryApi,
+  ScanResultsApi,
+  SearchApi,
   SecretScanApi,
   TopologyApi,
   UserApi,
@@ -55,13 +57,18 @@ export function getCloudNodesApiClient() {
 
 export function getVulnerabilityApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
+
   return {
     startVulnerabilityScan:
       vulnerabilityApi.startVulnerabilityScan.bind(vulnerabilityApi),
     resultVulnerabilityScan:
       vulnerabilityApi.resultsVulnerabilityScans.bind(vulnerabilityApi),
+    resultCountVulnerabilityScan:
+      vulnerabilityApi.countResultsVulnerabilityScans.bind(vulnerabilityApi),
     statusVulnerabilityScan:
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
+    listVulnerabilityScans:
+      vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
   };
 }
 
@@ -107,5 +114,32 @@ export function getMalwareScanApiClient() {
     startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
     resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
     statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),
+  };
+}
+
+export function getSearchApiClient() {
+  const searchApi = new SearchApi(configuration);
+  return {
+    searchVulnerabilityScan: searchApi.searchVulnerabilityScans.bind(searchApi),
+    searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
+    searchContainers: searchApi.searchContainers.bind(searchApi),
+    searchHosts: searchApi.searchHosts.bind(searchApi),
+    searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
+    searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
+    searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
+  };
+}
+
+export function getScanResultsApiClient() {
+  const scanResultsApi = new ScanResultsApi(configuration);
+
+  return {
+    deleteScanResult: scanResultsApi.deleteScanResult.bind(scanResultsApi),
+    downloadScanResultsForScanID: scanResultsApi.downloadScanResults.bind(scanResultsApi),
+    deleteScanResultsForScanID:
+      scanResultsApi.deleteScanResultsForScanID.bind(scanResultsApi),
+    notifyScanResult: scanResultsApi.notifyScanResult.bind(scanResultsApi),
+    maskScanResult: scanResultsApi.maskScanResult.bind(scanResultsApi),
+    unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
   };
 }

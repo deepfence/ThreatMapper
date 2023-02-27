@@ -57,6 +57,17 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
       apiArgs: [
         {
           modelScanResultsReq: {
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_field: '',
+              },
+              match_filter: {
+                filter_in: {},
+              },
+            },
             scan_id: scanId,
             window: {
               offset: 0,
@@ -156,6 +167,17 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
       apiArgs: [
         {
           modelScanResultsReq: {
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_field: '',
+              },
+              match_filter: {
+                filter_in: {},
+              },
+            },
             scan_id: scanId,
             window: {
               offset: 0,
@@ -250,7 +272,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
 async function getScanStatus(
   bulkScanId: string,
   nodeType: string,
-): Promise<Array<ModelScanInfo> | Array<ModelComplianceScanInfo>> {
+): Promise<Array<ModelScanInfo | ModelComplianceScanInfo>> {
   let scanType = 'compliance' as keyof typeof statusScanApiFunctionMap;
   // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
   if (nodeType === 'cloud_account') {
@@ -260,8 +282,10 @@ async function getScanStatus(
     apiFunction: statusScanApiFunctionMap[scanType],
     apiArgs: [
       {
-        scanIds: [],
-        bulkScanId,
+        modelScanStatusReq: {
+          bulk_scan_id: bulkScanId,
+          scan_ids: [],
+        },
       },
     ],
     errorHandler: async (r) => {

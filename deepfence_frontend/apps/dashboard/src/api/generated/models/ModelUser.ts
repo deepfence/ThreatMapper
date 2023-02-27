@@ -24,7 +24,7 @@ export interface ModelUser {
      * @type {string}
      * @memberof ModelUser
      */
-    company?: string;
+    company: string;
     /**
      * 
      * @type {number}
@@ -33,16 +33,22 @@ export interface ModelUser {
     company_id?: number;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof ModelUser
      */
-    email?: string;
+    current_user?: boolean | null;
     /**
      * 
      * @type {string}
      * @memberof ModelUser
      */
-    first_name?: string;
+    email: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelUser
+     */
+    first_name: string;
     /**
      * 
      * @type {{ [key: string]: string; }}
@@ -66,7 +72,7 @@ export interface ModelUser {
      * @type {string}
      * @memberof ModelUser
      */
-    last_name?: string;
+    last_name: string;
     /**
      * 
      * @type {boolean}
@@ -78,7 +84,7 @@ export interface ModelUser {
      * @type {string}
      * @memberof ModelUser
      */
-    role?: string;
+    role?: ModelUserRoleEnum;
     /**
      * 
      * @type {number}
@@ -87,11 +93,27 @@ export interface ModelUser {
     role_id?: number;
 }
 
+
+/**
+ * @export
+ */
+export const ModelUserRoleEnum = {
+    Admin: 'admin',
+    StandardUser: 'standard-user',
+    ReadOnlyUser: 'read-only-user'
+} as const;
+export type ModelUserRoleEnum = typeof ModelUserRoleEnum[keyof typeof ModelUserRoleEnum];
+
+
 /**
  * Check if a given object implements the ModelUser interface.
  */
 export function instanceOfModelUser(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "company" in value;
+    isInstance = isInstance && "email" in value;
+    isInstance = isInstance && "first_name" in value;
+    isInstance = isInstance && "last_name" in value;
 
     return isInstance;
 }
@@ -106,14 +128,15 @@ export function ModelUserFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     }
     return {
         
-        'company': !exists(json, 'company') ? undefined : json['company'],
+        'company': json['company'],
         'company_id': !exists(json, 'company_id') ? undefined : json['company_id'],
-        'email': !exists(json, 'email') ? undefined : json['email'],
-        'first_name': !exists(json, 'first_name') ? undefined : json['first_name'],
+        'current_user': !exists(json, 'current_user') ? undefined : json['current_user'],
+        'email': json['email'],
+        'first_name': json['first_name'],
         'groups': !exists(json, 'groups') ? undefined : json['groups'],
         'id': !exists(json, 'id') ? undefined : json['id'],
         'is_active': !exists(json, 'is_active') ? undefined : json['is_active'],
-        'last_name': !exists(json, 'last_name') ? undefined : json['last_name'],
+        'last_name': json['last_name'],
         'password_invalidated': !exists(json, 'password_invalidated') ? undefined : json['password_invalidated'],
         'role': !exists(json, 'role') ? undefined : json['role'],
         'role_id': !exists(json, 'role_id') ? undefined : json['role_id'],
@@ -131,6 +154,7 @@ export function ModelUserToJSON(value?: ModelUser | null): any {
         
         'company': value.company,
         'company_id': value.company_id,
+        'current_user': value.current_user,
         'email': value.email,
         'first_name': value.first_name,
         'groups': value.groups,

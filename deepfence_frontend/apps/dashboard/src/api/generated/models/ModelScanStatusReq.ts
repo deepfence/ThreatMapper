@@ -16,50 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelKeyValues
+ * @interface ModelScanStatusReq
  */
-export interface ModelKeyValues {
+export interface ModelScanStatusReq {
     /**
      * 
      * @type {string}
-     * @memberof ModelKeyValues
+     * @memberof ModelScanStatusReq
      */
-    key: string;
+    bulk_scan_id: string;
     /**
      * 
      * @type {Array<string>}
-     * @memberof ModelKeyValues
+     * @memberof ModelScanStatusReq
      */
-    values: Array<string> | null;
+    scan_ids: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the ModelKeyValues interface.
+ * Check if a given object implements the ModelScanStatusReq interface.
  */
-export function instanceOfModelKeyValues(value: object): boolean {
+export function instanceOfModelScanStatusReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "key" in value;
-    isInstance = isInstance && "values" in value;
+    isInstance = isInstance && "bulk_scan_id" in value;
+    isInstance = isInstance && "scan_ids" in value;
 
     return isInstance;
 }
 
-export function ModelKeyValuesFromJSON(json: any): ModelKeyValues {
-    return ModelKeyValuesFromJSONTyped(json, false);
+export function ModelScanStatusReqFromJSON(json: any): ModelScanStatusReq {
+    return ModelScanStatusReqFromJSONTyped(json, false);
 }
 
-export function ModelKeyValuesFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelKeyValues {
+export function ModelScanStatusReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanStatusReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'key': json['key'],
-        'values': json['values'],
+        'bulk_scan_id': json['bulk_scan_id'],
+        'scan_ids': json['scan_ids'],
     };
 }
 
-export function ModelKeyValuesToJSON(value?: ModelKeyValues | null): any {
+export function ModelScanStatusReqToJSON(value?: ModelScanStatusReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +68,8 @@ export function ModelKeyValuesToJSON(value?: ModelKeyValues | null): any {
     }
     return {
         
-        'key': value.key,
-        'values': value.values,
+        'bulk_scan_id': value.bulk_scan_id,
+        'scan_ids': value.scan_ids,
     };
 }
 

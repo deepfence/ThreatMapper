@@ -1,6 +1,7 @@
 import './index.css';
 
 import { RouterProvider } from 'react-router-dom';
+import { Toaster } from 'sonner';
 
 import { router } from '@/routes';
 import { ThemeProvider, useThemeMode } from '@/theme/ThemeContext';
@@ -11,9 +12,8 @@ function App() {
   useDocumentTitle();
   return (
     <ThemeProvider value={{ toggleMode, mode }}>
-      <div className="dark:bg-gray-900 bg-white">
-        <RouterProvider router={router} />
-      </div>
+      <Toaster theme={mode === 'dark' ? 'dark' : 'light'} />
+      <RouterProvider router={router} />
     </ThemeProvider>
   );
 }

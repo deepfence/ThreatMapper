@@ -13,49 +13,49 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ReportersThreatNodeInfo } from './ReportersThreatNodeInfo';
+import type { GraphThreatNodeInfo } from './GraphThreatNodeInfo';
 import {
-    ReportersThreatNodeInfoFromJSON,
-    ReportersThreatNodeInfoFromJSONTyped,
-    ReportersThreatNodeInfoToJSON,
-} from './ReportersThreatNodeInfo';
+    GraphThreatNodeInfoFromJSON,
+    GraphThreatNodeInfoFromJSONTyped,
+    GraphThreatNodeInfoToJSON,
+} from './GraphThreatNodeInfo';
 
 /**
  * 
  * @export
- * @interface ReportersProviderThreatGraph
+ * @interface GraphProviderThreatGraph
  */
-export interface ReportersProviderThreatGraph {
+export interface GraphProviderThreatGraph {
     /**
      * 
      * @type {number}
-     * @memberof ReportersProviderThreatGraph
+     * @memberof GraphProviderThreatGraph
      */
     compliance_count: number;
     /**
      * 
-     * @type {Array<ReportersThreatNodeInfo>}
-     * @memberof ReportersProviderThreatGraph
+     * @type {Array<GraphThreatNodeInfo>}
+     * @memberof GraphProviderThreatGraph
      */
-    resources: Array<ReportersThreatNodeInfo> | null;
+    resources: Array<GraphThreatNodeInfo> | null;
     /**
      * 
      * @type {number}
-     * @memberof ReportersProviderThreatGraph
+     * @memberof GraphProviderThreatGraph
      */
     secrets_count: number;
     /**
      * 
      * @type {number}
-     * @memberof ReportersProviderThreatGraph
+     * @memberof GraphProviderThreatGraph
      */
     vulnerability_count: number;
 }
 
 /**
- * Check if a given object implements the ReportersProviderThreatGraph interface.
+ * Check if a given object implements the GraphProviderThreatGraph interface.
  */
-export function instanceOfReportersProviderThreatGraph(value: object): boolean {
+export function instanceOfGraphProviderThreatGraph(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "compliance_count" in value;
     isInstance = isInstance && "resources" in value;
@@ -65,24 +65,24 @@ export function instanceOfReportersProviderThreatGraph(value: object): boolean {
     return isInstance;
 }
 
-export function ReportersProviderThreatGraphFromJSON(json: any): ReportersProviderThreatGraph {
-    return ReportersProviderThreatGraphFromJSONTyped(json, false);
+export function GraphProviderThreatGraphFromJSON(json: any): GraphProviderThreatGraph {
+    return GraphProviderThreatGraphFromJSONTyped(json, false);
 }
 
-export function ReportersProviderThreatGraphFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersProviderThreatGraph {
+export function GraphProviderThreatGraphFromJSONTyped(json: any, ignoreDiscriminator: boolean): GraphProviderThreatGraph {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'compliance_count': json['compliance_count'],
-        'resources': (json['resources'] === null ? null : (json['resources'] as Array<any>).map(ReportersThreatNodeInfoFromJSON)),
+        'resources': (json['resources'] === null ? null : (json['resources'] as Array<any>).map(GraphThreatNodeInfoFromJSON)),
         'secrets_count': json['secrets_count'],
         'vulnerability_count': json['vulnerability_count'],
     };
 }
 
-export function ReportersProviderThreatGraphToJSON(value?: ReportersProviderThreatGraph | null): any {
+export function GraphProviderThreatGraphToJSON(value?: GraphProviderThreatGraph | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -92,7 +92,7 @@ export function ReportersProviderThreatGraphToJSON(value?: ReportersProviderThre
     return {
         
         'compliance_count': value.compliance_count,
-        'resources': (value.resources === null ? null : (value.resources as Array<any>).map(ReportersThreatNodeInfoToJSON)),
+        'resources': (value.resources === null ? null : (value.resources as Array<any>).map(GraphThreatNodeInfoToJSON)),
         'secrets_count': value.secrets_count,
         'vulnerability_count': value.vulnerability_count,
     };

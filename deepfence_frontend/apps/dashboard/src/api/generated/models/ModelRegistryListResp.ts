@@ -27,10 +27,10 @@ export interface ModelRegistryListResp {
     created_at?: Date;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof ModelRegistryListResp
      */
-    id?: number;
+    id?: string;
     /**
      * 
      * @type {string}

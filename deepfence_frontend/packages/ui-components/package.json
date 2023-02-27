@@ -19,7 +19,7 @@
     "build": "tsc && vite build",
     "lint": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --ignore-path ./.gitignore",
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
-    "storybook": "start-storybook -p 6006",
+    "storybook": "env NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "test": "vitest",
     "coverage": "vitest run --coverage"

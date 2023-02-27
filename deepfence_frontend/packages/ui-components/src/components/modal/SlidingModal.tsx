@@ -17,52 +17,44 @@ type ChildrenType = {
 export interface ModalProps extends DialogPrimitive.DialogProps {
   direction?: 'left' | 'right';
   width?: string;
-  title?: string;
+  header?: React.ReactNode;
   footer?: React.ReactNode;
-  elementToFocusOnCloseRef?: React.RefObject<FocusableElement>;
+  elementToFocusOnCloseRef?: React.RefObject<FocusableElement> | null;
 }
 
-const ModalHeader: FC<{ title?: string }> = ({ title }) => {
+export const ModalHeader: FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
     <>
-      <div className={'w-full'}>
-        {title && (
+      <div className={'w-full flex flex-row items-center'}>
+        <DialogPrimitive.Close
+          aria-label="Close"
+          className={cx(
+            'absolute right-0 mr-2 h-36px rounded-lg cursor-pointer',
+            'text-gray-400 hover:text-gray-900 dark:hover:text-white',
+            'hover:bg-gray-200 dark:hover:bg-gray-600',
+            'focus:outline-none',
+            'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+          )}
+          id={'sliding-modal-close-button'}
+          data-testid={'sliding-modal-close-button'}
+        >
+          <IconContext.Provider
+            value={{
+              size: '20px',
+            }}
+          >
+            <HiX />
+          </IconContext.Provider>
+        </DialogPrimitive.Close>
+        {children && (
           <>
-            <DialogPrimitive.Title
-              className={cx('p-6')}
-              data-testid="sliding-modal-title"
-            >
-              {title}
-            </DialogPrimitive.Title>
-            <Separator className="h-px block bg-gray-200 dark:bg-gray-600" />
+            <div data-testid="sliding-modal-title" className="w-full">
+              {children}
+            </div>
           </>
         )}
       </div>
-      <DialogPrimitive.Close
-        aria-label="Close"
-        className={cx(
-          'h-36px rounded-lg cursor-pointer',
-          'text-gray-400 hover:text-gray-900 dark:hover:text-white',
-          'hover:bg-gray-200 dark:hover:bg-gray-600',
-          'absolute right-3.5 inline-flex items-center justify-center p-1',
-          'focus:outline-none',
-          'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
-          {
-            'top-[22px]': title,
-            'top-[8px]': !title,
-          },
-        )}
-        id={'sliding-modal-close-button'}
-        data-testid={'sliding-modal-close-button'}
-      >
-        <IconContext.Provider
-          value={{
-            size: '20px',
-          }}
-        >
-          <HiX />
-        </IconContext.Provider>
-      </DialogPrimitive.Close>
+      <Separator className="w-full h-px block bg-gray-200 dark:bg-gray-600" />
     </>
   );
 };
@@ -82,7 +74,7 @@ const ModalFooter: FC<ChildrenType> = ({ children }) => {
 };
 
 export const SlidingModal: FC<ModalProps> = ({
-  title,
+  header,
   children,
   footer,
   elementToFocusOnCloseRef,
@@ -111,32 +103,35 @@ export const SlidingModal: FC<ModalProps> = ({
     <DialogPrimitive.Root open={wasOpen} {...rest}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className={cx('inset-0 bg-black/50 dark:bg-black/50 fixed', {
+          className={cx('inset-0 bg-black/50 dark:bg-black/50 fixed overflow-y-auto', {
             'animate-opacity-in': wasOpen,
-            'animate-slide-opacity-out': !wasOpen,
+            'animate-opacity-out': !wasOpen,
           })}
+          data-testid="sliding-modal-overlay"
+        />
+        <DialogPrimitive.Content
+          className={cx(
+            'flex flex-col fixed top-0 bottom-0',
+            'overflow-hidden focus:outline-none',
+            'bg-white text-gray-900',
+            'dark:bg-gray-900 dark:text-white ',
+            `${width}`,
+            {
+              '-left-[100%]': direction === 'left',
+              '-right-[100%]': direction === 'right',
+              [inAnimation]: wasOpen,
+              [outAnimation]: !wasOpen,
+            },
+          )}
+          onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
         >
-          <DialogPrimitive.Content
-            className={cx(
-              'flex flex-col h-[100vh] fixed',
-              'overflow-hidden focus:outline-none',
-              'bg-white text-gray-900',
-              'dark:bg-gray-900 dark:text-white ',
-              `${width}`,
-              {
-                '-left-[100%]': direction === 'left',
-                '-right-[100%]': direction === 'right',
-                [inAnimation]: wasOpen,
-                [outAnimation]: !wasOpen,
-              },
-            )}
-            onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
-          >
-            <ModalHeader title={title} />
+          <>
+            {typeof header === 'string' ? <ModalHeader>{header}</ModalHeader> : header}
+
             <div className="overflow-y-auto flex-auto">{children}</div>
             <ModalFooter>{footer}</ModalFooter>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Overlay>
+          </>
+        </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );

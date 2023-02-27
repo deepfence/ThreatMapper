@@ -23,51 +23,51 @@ import {
 /**
  * 
  * @export
- * @interface ReportersTopologyFilters
+ * @interface GraphTopologyFilters
  */
-export interface ReportersTopologyFilters {
+export interface GraphTopologyFilters {
     /**
      * 
      * @type {Array<string>}
-     * @memberof ReportersTopologyFilters
+     * @memberof GraphTopologyFilters
      */
     cloud_filter: Array<string> | null;
     /**
      * 
      * @type {ReportersFieldsFilters}
-     * @memberof ReportersTopologyFilters
+     * @memberof GraphTopologyFilters
      */
     field_filters: ReportersFieldsFilters;
     /**
      * 
      * @type {Array<string>}
-     * @memberof ReportersTopologyFilters
+     * @memberof GraphTopologyFilters
      */
     host_filter: Array<string> | null;
     /**
      * 
      * @type {Array<string>}
-     * @memberof ReportersTopologyFilters
+     * @memberof GraphTopologyFilters
      */
     kubernetes_filter: Array<string> | null;
     /**
      * 
      * @type {Array<string>}
-     * @memberof ReportersTopologyFilters
+     * @memberof GraphTopologyFilters
      */
     pod_filter: Array<string> | null;
     /**
      * 
      * @type {Array<string>}
-     * @memberof ReportersTopologyFilters
+     * @memberof GraphTopologyFilters
      */
     region_filter: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the ReportersTopologyFilters interface.
+ * Check if a given object implements the GraphTopologyFilters interface.
  */
-export function instanceOfReportersTopologyFilters(value: object): boolean {
+export function instanceOfGraphTopologyFilters(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cloud_filter" in value;
     isInstance = isInstance && "field_filters" in value;
@@ -79,11 +79,11 @@ export function instanceOfReportersTopologyFilters(value: object): boolean {
     return isInstance;
 }
 
-export function ReportersTopologyFiltersFromJSON(json: any): ReportersTopologyFilters {
-    return ReportersTopologyFiltersFromJSONTyped(json, false);
+export function GraphTopologyFiltersFromJSON(json: any): GraphTopologyFilters {
+    return GraphTopologyFiltersFromJSONTyped(json, false);
 }
 
-export function ReportersTopologyFiltersFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersTopologyFilters {
+export function GraphTopologyFiltersFromJSONTyped(json: any, ignoreDiscriminator: boolean): GraphTopologyFilters {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -98,7 +98,7 @@ export function ReportersTopologyFiltersFromJSONTyped(json: any, ignoreDiscrimin
     };
 }
 
-export function ReportersTopologyFiltersToJSON(value?: ReportersTopologyFilters | null): any {
+export function GraphTopologyFiltersToJSON(value?: GraphTopologyFilters | null): any {
     if (value === undefined) {
         return undefined;
     }

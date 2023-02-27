@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 
+import { ErrorComponent } from '@/components/error/ErrorComponent';
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
@@ -33,6 +34,12 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
+import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
+import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
+import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
+import { module as vulnerabilityDetails } from '@/features/vulnerabilities/pages/VulnerabilityDetailModal';
+import { module as vulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
+import { module as vulnerabilityScans } from '@/features/vulnerabilities/pages/VulnerabilityScans';
 import { CustomRouteObject } from '@/utils/router';
 
 export const privateRoutes: CustomRouteObject[] = [
@@ -165,6 +172,7 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/',
     loader: dashboardLoader,
     element: <DashboardLayout />,
+    errorElement: <ErrorComponent />,
     children: [
       {
         path: 'dashboard',
@@ -181,6 +189,37 @@ export const privateRoutes: CustomRouteObject[] = [
         ...integrations,
         meta: { title: 'Integrations' },
       },
+      {
+        path: 'vulnerability',
+        ...vulnerability,
+        meta: { title: 'Vulnerability' },
+      },
+      {
+        path: 'vulnerability/scans',
+        ...vulnerabilityScans,
+        meta: { title: 'Vulnerability Scans' },
+      },
+      {
+        path: 'vulnerability/scan-results/:scanId',
+        ...vulnerabilityScanResults,
+        meta: { title: 'Vulnerability Scan Results' },
+        children: [
+          {
+            path: ':cveId',
+            ...vulnerabilityDetails,
+            meta: { title: 'Vulnerability Details' },
+          },
+        ],
+      },
+      {
+        path: 'vulnerability/most-exploitable',
+        ...mostExploitableVulnerabilities,
+        meta: { title: 'Most Exploitable Vulnerabilities' },
+      },
     ],
+  },
+  {
+    path: '/_api/vulnerability/scan-results/history/:nodeType/:nodeId',
+    loader: vulnerabilityApiLoader,
   },
 ];
