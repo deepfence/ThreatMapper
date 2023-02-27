@@ -222,6 +222,7 @@ type Secret struct {
 	FullFilename          string `json:"full_filename" required:"true"`
 	MatchedContent        string `json:"matched_content" required:"true"`
 	Masked                bool   `json:"masked" required:"true"`
+	UpdatedAt             int64  `json:"updated_at" required:"true"`
 }
 
 func (Secret) NodeType() string {
@@ -261,6 +262,7 @@ type Vulnerability struct {
 	URLs                       []string `json:"urls" required:"true"`
 	ExploitPOC                 string   `json:"exploit_poc" required:"true"`
 	Masked                     bool     `json:"masked" required:"true"`
+	UpdatedAt                  int64    `json:"updated_at" required:"true"`
 }
 
 func (Vulnerability) NodeType() string {
@@ -285,6 +287,7 @@ type Malware struct {
 	Summary          string  `json:"summary" required:"true"`
 	RuleName         string  `json:"rule_name" required:"true"`
 	Masked           bool    `json:"masked" required:"true"`
+	UpdatedAt        int64   `json:"updated_at" required:"true"`
 }
 
 func (Malware) NodeType() string {
@@ -314,6 +317,7 @@ type Compliance struct {
 	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
 	ComplianceNodeType  string `json:"compliance_node_type" required:"true"`
 	Masked              bool   `json:"masked" required:"true"`
+	UpdatedAt           int64  `json:"updated_at" required:"true"`
 }
 
 func (Compliance) NodeType() string {
@@ -345,6 +349,7 @@ type CloudCompliance struct {
 	NodeID              string `json:"node_id" required:"true"`
 	ScanID              string `json:"scan_id" required:"true"`
 	Masked              bool   `json:"masked" required:"true"`
+	UpdatedAt           int64  `json:"updated_at" required:"true"`
 	Type                string `json:"type" required:"true"`
 	ControlID           string `json:"control_id" required:"true"`
 	Description         string `json:"description" required:"true"`
