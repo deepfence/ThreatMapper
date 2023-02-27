@@ -12,36 +12,37 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	// "github.com/deepfence/golang_deepfence_sdk/utils/directory"
 )
 
-func Sync() error {
-	postgresCtx := directory.NewGlobalContext()
-	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-	pgClient, err := directory.PostgresClient(postgresCtx)
-	if err != nil {
-		return err
-	}
-	registries, err := pgClient.GetContainerRegistries(postgresCtx)
-	if err != nil {
-		return err
-	}
+// // moved to cronjobs
+//
+// func Sync() error {
+// 	postgresCtx := directory.NewGlobalContext()
+// 	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+// 	pgClient, err := directory.PostgresClient(postgresCtx)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	registries, err := pgClient.GetContainerRegistries(postgresCtx)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	for _, registryRow := range registries {
-		r, err := registry.GetRegistryWithRegistryRow(registryRow)
-		if err != nil {
-			log.Error().Msgf("unable to get registry for %s: %v", registryRow.RegistryType, err)
-			continue
-		}
+// 	for _, registryRow := range registries {
+// 		r, err := registry.GetRegistryWithRegistryRow(registryRow)
+// 		if err != nil {
+// 			log.Error().Msgf("unable to get registry for %s: %v", registryRow.RegistryType, err)
+// 			continue
+// 		}
 
-		err = SyncRegistry(ctx, pgClient, r, registryRow.ID)
-		if err != nil {
-			log.Error().Msgf("unable to get sync registry: %s: %v", registryRow.RegistryType, err)
-			continue
-		}
-	}
-	return nil
-}
+// 		err = SyncRegistry(ctx, pgClient, r, registryRow.ID)
+// 		if err != nil {
+// 			log.Error().Msgf("unable to get sync registry: %s: %v", registryRow.RegistryType, err)
+// 			continue
+// 		}
+// 	}
+// 	return nil
+// }
 
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
 
@@ -63,10 +64,16 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 		return err
 	}
 
+	err = r.DecryptExtras(aes)
+	if err != nil {
+		return err
+	}
+
 	list, err := r.FetchImagesFromRegistry()
 	if err != nil {
 		return err
 	}
+	log.Info().Msgf("sync registry id=%d type=%s found %d images", pgId, r.GetRegistryType(), len(list))
 	return insertToNeo4j(ctx, list, r, pgId)
 }
 
@@ -94,7 +101,7 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 	MERGE (n:ContainerImage{node_id:row.node_id})
 	MERGE (m:RegistryAccount{node_id: $node_id })
     MERGE (m) -[:HOSTS]-> (n)
-	SET n+= row, n.updated_at = TIMESTAMP(), m.container_registry_id=$pgId`,
+	SET n+= row, n.updated_at = TIMESTAMP(), m.container_registry_id=$pgId, n.node_type='container_image'`,
 		map[string]interface{}{"batch": imageMap, "node_id": registryId, "pgId": pgId})
 	if err != nil {
 		return err

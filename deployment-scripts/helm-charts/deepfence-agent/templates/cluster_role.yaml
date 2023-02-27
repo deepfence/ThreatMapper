@@ -25,6 +25,11 @@ rules:
       - persistentvolumeclaims
       - configmaps
       - endpoints
+      - replicationcontrollers
+      - serviceaccounts
+      - secrets
+      - limitranges
+      - resourcequotas
     verbs:
       - get
       - list
@@ -35,6 +40,15 @@ rules:
       - deployments
       - daemonsets
       - statefulsets
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - networkpolicies
     verbs:
       - get
       - list
@@ -53,6 +67,7 @@ rules:
     resources:
       - deployments
       - daemonsets
+      - ingresses
     verbs:
       - get
       - list
@@ -83,5 +98,24 @@ rules:
       - volumesnapshots
       - volumesnapshotdatas
     verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - rolebindings
+      - clusterroles
+    verbs:
+      - get
       - list
       - watch

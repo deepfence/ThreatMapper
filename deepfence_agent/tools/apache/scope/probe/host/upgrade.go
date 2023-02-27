@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 
 	"github.com/abrander/go-supervisord"
@@ -16,12 +15,8 @@ import (
 )
 
 func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
-
-	console_ip := os.Getenv("MGMT_CONSOLE_URL")
-	url := strings.ReplaceAll(req.HomeDirectoryUrl, "deepfence-file-server:9000", fmt.Sprintf("%s/file-server", console_ip))
-	url = strings.ReplaceAll(url, "http://", "https://")
-	fmt.Printf("Fetching %v\n", url)
-	err := downloadFile("/tmp/deepfence.tar.gz", url)
+	fmt.Printf("Fetching %v\n", req.HomeDirectoryUrl)
+	err := downloadFile("/tmp/deepfence.tar.gz", req.HomeDirectoryUrl)
 	if err != nil {
 		fmt.Printf("Download failed\n")
 		return err
@@ -36,30 +31,36 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 	pid, _, _ := syscall.Syscall(syscall.SYS_FORK, 0, 0, 0)
 	if pid == 0 {
 
-		fmt.Printf("Inside child")
+		fmt.Printf("Inside child\n")
 
 		c, err := supervisord.NewUnixSocketClient("/var/run/supervisor.sock")
 		if err != nil {
 			log.Fatal().Err(err)
 		}
 
-		fmt.Printf("Extract")
+		fmt.Printf("Extract\n")
 
 		err = extractTarGz("/tmp/deepfence.tar.gz", "/")
 		if err != nil {
 			log.Fatal().Err(err)
 		}
 
-		fmt.Printf("Restart")
+		fmt.Printf("Kill\n")
+		c.SignalAllProcesses(syscall.SIGKILL)
 
-		err = c.Restart()
-		if err != nil {
-			log.Fatal().Err(err)
-		}
+		fmt.Printf("Done\n")
+
 		os.Exit(0)
 	}
 
-	fmt.Printf("Child created: %v", pid)
+	fmt.Printf("Child created: %v\n", pid)
+
+	proc, err := os.FindProcess(int(pid))
+	proc.Wait()
+
+	fmt.Printf("Child dead\n")
+	os.Exit(0)
+
 	return nil
 }
 

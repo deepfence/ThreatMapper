@@ -49,6 +49,7 @@ func init() {
 }
 
 func ConsoleActionSetup(pub *kafka.Publisher) error {
+	// for vulnerability scan
 	err := RegisterControl(ctl.StartVulnerabilityScan,
 		func(req ctl.StartVulnerabilityScanRequest) error {
 			metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
@@ -59,6 +60,45 @@ func ConsoleActionSetup(pub *kafka.Publisher) error {
 				return err
 			}
 			if err := utils.PublishNewJob(pub, metadata, sdkUtils.GenerateSBOMTask, data); err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			return nil
+		})
+	if err != nil {
+		return err
+	}
+
+	// for secret scan
+	err = RegisterControl(ctl.StartSecretScan,
+		func(req ctl.StartSecretScanRequest) error {
+			metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+			log.Info().Msgf("payload: %+v", req.BinArgs)
+			data, err := json.Marshal(req.BinArgs)
+			if err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			if err := utils.PublishNewJob(pub, metadata, sdkUtils.SecretScanTask, data); err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			return nil
+		})
+	if err != nil {
+		return err
+	}
+	// for malware scan
+	err = RegisterControl(ctl.StartMalwareScan,
+		func(req ctl.StartMalwareScanRequest) error {
+			metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
+			log.Info().Msgf("payload: %+v", req.BinArgs)
+			data, err := json.Marshal(req.BinArgs)
+			if err != nil {
+				log.Error().Msg(err.Error())
+				return err
+			}
+			if err := utils.PublishNewJob(pub, metadata, sdkUtils.MalwareScanTask, data); err != nil {
 				log.Error().Msg(err.Error())
 				return err
 			}

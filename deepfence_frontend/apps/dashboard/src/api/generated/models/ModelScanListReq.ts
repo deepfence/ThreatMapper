@@ -19,6 +19,12 @@ import {
     ModelFetchWindowFromJSONTyped,
     ModelFetchWindowToJSON,
 } from './ModelFetchWindow';
+import type { ModelNodeIdentifier } from './ModelNodeIdentifier';
+import {
+    ModelNodeIdentifierFromJSON,
+    ModelNodeIdentifierFromJSONTyped,
+    ModelNodeIdentifierToJSON,
+} from './ModelNodeIdentifier';
 
 /**
  * 
@@ -28,16 +34,16 @@ import {
 export interface ModelScanListReq {
     /**
      * 
-     * @type {string}
+     * @type {Array<ModelNodeIdentifier>}
      * @memberof ModelScanListReq
      */
-    node_id: string;
+    node_ids: Array<ModelNodeIdentifier> | null;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof ModelScanListReq
      */
-    node_type: ModelScanListReqNodeTypeEnum;
+    scan_status?: Array<string> | null;
     /**
      * 
      * @type {ModelFetchWindow}
@@ -46,25 +52,12 @@ export interface ModelScanListReq {
     window: ModelFetchWindow;
 }
 
-
-/**
- * @export
- */
-export const ModelScanListReqNodeTypeEnum = {
-    Image: 'image',
-    Host: 'host',
-    Container: 'container'
-} as const;
-export type ModelScanListReqNodeTypeEnum = typeof ModelScanListReqNodeTypeEnum[keyof typeof ModelScanListReqNodeTypeEnum];
-
-
 /**
  * Check if a given object implements the ModelScanListReq interface.
  */
 export function instanceOfModelScanListReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "node_type" in value;
+    isInstance = isInstance && "node_ids" in value;
     isInstance = isInstance && "window" in value;
 
     return isInstance;
@@ -80,8 +73,8 @@ export function ModelScanListReqFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'node_id': json['node_id'],
-        'node_type': json['node_type'],
+        'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
+        'scan_status': !exists(json, 'scan_status') ? undefined : json['scan_status'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
@@ -95,8 +88,8 @@ export function ModelScanListReqToJSON(value?: ModelScanListReq | null): any {
     }
     return {
         
-        'node_id': value.node_id,
-        'node_type': value.node_type,
+        'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
+        'scan_status': value.scan_status,
         'window': ModelFetchWindowToJSON(value.window),
     };
 }

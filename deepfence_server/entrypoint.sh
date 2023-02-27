@@ -17,9 +17,16 @@ if [ ! $? -eq 0 ]; then
     exit 1
 fi
 
+# wait for neo4j to start
+until nc -z ${DEEPFENCE_NEO4J_HOST} ${DEEPFENCE_NEO4J_BOLT_PORT};
+do 
+  echo "neo4j is unavailable - sleeping"
+  sleep 5; 
+done
+
 until kcat -L -b ${DEEPFENCE_KAFKA_BROKERS};
 do
-  echo >&2 "kafka is unavailable - sleeping"
+  echo "kafka is unavailable - sleeping"
   sleep 5
 done
 

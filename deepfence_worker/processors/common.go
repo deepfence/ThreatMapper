@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -58,29 +58,29 @@ func StartKafkaProcessors(ctx context.Context) {
 		utils.SECRET_SCAN,
 		desWrapper(ingesters.CommitFuncSecrets),
 	)
-	processors[utils.SECRET_SCAN_STATUS] = NewBulkProcessor(
-		utils.SECRET_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncSecretScanStatus),
-	)
 	processors[utils.MALWARE_SCAN] = NewBulkProcessor(
 		utils.MALWARE_SCAN,
 		desWrapper(ingesters.CommitFuncMalware),
 	)
-	processors[utils.MALWARE_SCAN_STATUS] = NewBulkProcessor(
-		utils.MALWARE_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncMalwareScanStatus),
-	)
 	processors[utils.VULNERABILITY_SCAN_STATUS] = NewBulkProcessor(
 		utils.VULNERABILITY_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncVulnerabilitiesScanStatus),
+		desWrapper(ingesters.CommitFuncStatus[ingesters.VulnerabilityScanStatus](utils.NEO4J_VULNERABILITY_SCAN)),
 	)
 	processors[utils.COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
 		utils.COMPLIANCE_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncComplianceScanStatus),
+		desWrapper(ingesters.CommitFuncStatus[ingesters.ComplianceScanStatus](utils.NEO4J_COMPLIANCE_SCAN)),
+	)
+	processors[utils.SECRET_SCAN_STATUS] = NewBulkProcessor(
+		utils.SECRET_SCAN_STATUS,
+		desWrapper(ingesters.CommitFuncStatus[ingesters.SecretScanStatus](utils.NEO4J_SECRET_SCAN)),
+	)
+	processors[utils.MALWARE_SCAN_STATUS] = NewBulkProcessor(
+		utils.MALWARE_SCAN_STATUS,
+		desWrapper(ingesters.CommitFuncStatus[ingesters.MalwareScanStatus](utils.NEO4J_MALWARE_SCAN)),
 	)
 	processors[utils.CLOUD_COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
 		utils.CLOUD_COMPLIANCE_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncCloudComplianceScanStatus),
+		desWrapper(ingesters.CommitFuncStatus[ingesters.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN)),
 	)
 
 	for i := range processors {

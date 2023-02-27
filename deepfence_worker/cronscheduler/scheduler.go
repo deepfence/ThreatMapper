@@ -44,11 +44,15 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.ComputeThreatTask))
+	if err != nil {
+		return err
+	}
 	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.RetryFailedScansTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.RetryFailedUpgradesTask))
+	_, err = s.cron.AddFunc("@every 10m", s.enqeueTask(sdkUtils.RetryFailedUpgradesTask))
 	if err != nil {
 		return err
 	}
@@ -64,12 +68,12 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (s *Scheduler) startImmediately() {
 	log.Info().Msg("Start immediate cronjobs")
+	s.enqeueTask(sdkUtils.SetUpGraphDBTask)()
 	s.enqeueTask(sdkUtils.CheckAgentUpgradeTask)()
 	s.enqeueTask(sdkUtils.SyncRegistryTask)()
 }

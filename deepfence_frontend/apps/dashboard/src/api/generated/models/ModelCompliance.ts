@@ -39,6 +39,12 @@ export interface ModelCompliance {
     description: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelCompliance
+     */
+    masked: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelCompliance
      */
@@ -107,6 +113,7 @@ export function instanceOfModelCompliance(value: object): boolean {
     isInstance = isInstance && "compliance_check_type" in value;
     isInstance = isInstance && "compliance_node_type" in value;
     isInstance = isInstance && "description" in value;
+    isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "remediation_ansible" in value;
     isInstance = isInstance && "remediation_puppet" in value;
     isInstance = isInstance && "remediation_script" in value;
@@ -134,6 +141,7 @@ export function ModelComplianceFromJSONTyped(json: any, ignoreDiscriminator: boo
         'compliance_check_type': json['compliance_check_type'],
         'compliance_node_type': json['compliance_node_type'],
         'description': json['description'],
+        'masked': json['masked'],
         'remediation_ansible': json['remediation_ansible'],
         'remediation_puppet': json['remediation_puppet'],
         'remediation_script': json['remediation_script'],
@@ -159,6 +167,7 @@ export function ModelComplianceToJSON(value?: ModelCompliance | null): any {
         'compliance_check_type': value.compliance_check_type,
         'compliance_node_type': value.compliance_node_type,
         'description': value.description,
+        'masked': value.masked,
         'remediation_ansible': value.remediation_ansible,
         'remediation_puppet': value.remediation_puppet,
         'remediation_script': value.remediation_script,

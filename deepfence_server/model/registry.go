@@ -15,6 +15,7 @@ type RegistryAddReq struct {
 	Name         string                 `json:"name"`
 	NonSecret    map[string]interface{} `json:"non_secret"`
 	Secret       map[string]interface{} `json:"secret"`
+	Extras       map[string]interface{} `json:"extras"`
 	RegistryType string                 `json:"registry_type"`
 }
 
@@ -55,7 +56,7 @@ type RegistryImage struct {
 }
 
 type RegistryListResp struct {
-	ID           int32           `json:"id"`
+	ID           string          `json:"id"`
 	Name         string          `json:"name"`
 	RegistryType string          `json:"registry_type"`
 	NonSecret    json.RawMessage `json:"non_secret"`
@@ -116,13 +117,18 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 	if err != nil {
 		return err
 	}
-	extra := "{}"
+
+	bExtras, err := json.Marshal(ra.Extras)
+	if err != nil {
+		return err
+	}
+
 	_, err = pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
 		Name:            ra.Name,
 		RegistryType:    ra.RegistryType,
-		EncryptedSecret: bSecret,       // rawSecretJSON,
-		NonSecret:       bNonSecret,    //rawNonSecretJSON,
-		Extras:          []byte(extra), //json.RawMessage([]byte{}),
+		EncryptedSecret: bSecret,    // rawSecretJSON,
+		NonSecret:       bNonSecret, // rawNonSecretJSON,
+		Extras:          bExtras,    // rawExtrasJSON,
 	})
 	return err
 }

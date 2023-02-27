@@ -45,6 +45,12 @@ export interface ModelComplianceScanInfo {
     scan_id: string;
     /**
      * 
+     * @type {{ [key: string]: number; }}
+     * @memberof ModelComplianceScanInfo
+     */
+    severity_counts: { [key: string]: number; } | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelComplianceScanInfo
      */
@@ -66,6 +72,7 @@ export function instanceOfModelComplianceScanInfo(value: object): boolean {
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "scan_id" in value;
+    isInstance = isInstance && "severity_counts" in value;
     isInstance = isInstance && "status" in value;
     isInstance = isInstance && "updated_at" in value;
 
@@ -86,6 +93,7 @@ export function ModelComplianceScanInfoFromJSONTyped(json: any, ignoreDiscrimina
         'node_id': json['node_id'],
         'node_type': json['node_type'],
         'scan_id': json['scan_id'],
+        'severity_counts': json['severity_counts'],
         'status': json['status'],
         'updated_at': json['updated_at'],
     };
@@ -104,6 +112,7 @@ export function ModelComplianceScanInfoToJSON(value?: ModelComplianceScanInfo | 
         'node_id': value.node_id,
         'node_type': value.node_type,
         'scan_id': value.scan_id,
+        'severity_counts': value.severity_counts,
         'status': value.status,
         'updated_at': value.updated_at,
     };

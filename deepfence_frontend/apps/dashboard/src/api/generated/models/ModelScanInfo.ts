@@ -30,6 +30,12 @@ export interface ModelScanInfo {
      * @type {string}
      * @memberof ModelScanInfo
      */
+    node_name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelScanInfo
+     */
     node_type: string;
     /**
      * 
@@ -37,6 +43,12 @@ export interface ModelScanInfo {
      * @memberof ModelScanInfo
      */
     scan_id: string;
+    /**
+     * 
+     * @type {{ [key: string]: number; }}
+     * @memberof ModelScanInfo
+     */
+    severity_counts: { [key: string]: number; } | null;
     /**
      * 
      * @type {string}
@@ -57,8 +69,10 @@ export interface ModelScanInfo {
 export function instanceOfModelScanInfo(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "scan_id" in value;
+    isInstance = isInstance && "severity_counts" in value;
     isInstance = isInstance && "status" in value;
     isInstance = isInstance && "updated_at" in value;
 
@@ -76,8 +90,10 @@ export function ModelScanInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
     return {
         
         'node_id': json['node_id'],
+        'node_name': json['node_name'],
         'node_type': json['node_type'],
         'scan_id': json['scan_id'],
+        'severity_counts': json['severity_counts'],
         'status': json['status'],
         'updated_at': json['updated_at'],
     };
@@ -93,8 +109,10 @@ export function ModelScanInfoToJSON(value?: ModelScanInfo | null): any {
     return {
         
         'node_id': value.node_id,
+        'node_name': value.node_name,
         'node_type': value.node_type,
         'scan_id': value.scan_id,
+        'severity_counts': value.severity_counts,
         'status': value.status,
         'updated_at': value.updated_at,
     };

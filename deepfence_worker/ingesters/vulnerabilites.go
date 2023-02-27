@@ -15,7 +15,6 @@ type VulnerabilityScanStatus struct {
 	ContainerName         string    `json:"container_name"`
 	HostName              string    `json:"host_name"`
 	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
-	Masked                string    `json:"masked"`
 	NodeID                string    `json:"node_id"`
 	NodeName              string    `json:"node_name"`
 	NodeType              string    `json:"node_type"`
@@ -28,7 +27,7 @@ type Vulnerability struct {
 	Timestamp                  string   `json:"@timestamp"`
 	CveTuple                   string   `json:"cve_id_cve_severity_cve_container_image"`
 	DocId                      string   `json:"doc_id"`
-	Masked                     string   `json:"masked"`
+	Masked                     bool     `json:"masked"`
 	Type                       string   `json:"type"`
 	Host                       string   `json:"host"`
 	HostName                   string   `json:"host_name"`
@@ -73,14 +72,15 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Cve{node_id:row.cve_id}) SET n+= row",
+	if _, err = tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:Vulnerability{node_id:row.cve_id})
+		SET n+= row
+		WITH n, row.scan_id as scan_id
+		MATCH (m:VulnerabilityScan{node_id: scan_id})
+		MERGE (m) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
-		log.Error().Msgf(err.Error())
-		return err
-	}
-
-	if _, err = tx.Run("MATCH (n:Cve) MERGE (m:VulnerabilityScan{node_id: n.scan_id}) MERGE (m) -[:DETECTED]-> (n)",
-		map[string]interface{}{}); err != nil {
 		log.Error().Msgf(err.Error())
 		return err
 	}
@@ -92,41 +92,6 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 	// }
 
 	return tx.Commit()
-}
-
-func CommitFuncVulnerabilitiesScanStatus(ns string, data []VulnerabilityScanStatus) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:VulnerabilityScan{node_id: row.scan_id}) SET n.status = row.scan_status, n.updated_at = TIMESTAMP()",
-		map[string]interface{}{"batch": cveStatusToMaps(data)}); err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-func cveStatusToMaps(data []VulnerabilityScanStatus) []map[string]interface{} {
-	statuses := []map[string]interface{}{}
-	for _, i := range data {
-		statuses = append(statuses, utils.ToMap(i))
-	}
-	return statuses
 }
 
 func CVEsToMaps(ms []Vulnerability) []map[string]interface{} {

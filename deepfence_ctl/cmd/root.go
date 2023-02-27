@@ -15,7 +15,7 @@ var (
 var (
 	rootCmd = &cobra.Command{
 		Use:   "deepfencectl",
-		Short: "A deepfence controler CLI",
+		Short: "A deepfence controller CLI",
 		Long:  `A simple CLI alternative to deepfence UI`,
 	}
 )

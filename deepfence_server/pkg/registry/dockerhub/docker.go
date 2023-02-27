@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
@@ -42,13 +41,16 @@ func (d *RegistryDockerHub) IsValidCredential() bool {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return false
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Error().Msgf("failed to authenticate, response: %+v", resp)
+	}
 
 	return resp.StatusCode == http.StatusOK
 }
@@ -65,6 +67,14 @@ func (d *RegistryDockerHub) DecryptSecret(aes encryption.AES) error {
 	return err
 }
 
+func (d *RegistryDockerHub) EncryptExtras(aes encryption.AES) error {
+	return nil
+}
+
+func (d *RegistryDockerHub) DecryptExtras(aes encryption.AES) error {
+	return nil
+}
+
 func (d *RegistryDockerHub) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
 	return getImagesList(d.NonSecret.DockerHubUsername, d.Secret.DockerHubPassword, d.NonSecret.DockerHubNamespace)
 }
@@ -75,6 +85,10 @@ func (d *RegistryDockerHub) GetSecret() map[string]interface{} {
 	b, _ := json.Marshal(d.Secret)
 	json.Unmarshal(b, &secret)
 	return secret
+}
+
+func (d *RegistryDockerHub) GetExtras() map[string]interface{} {
+	return map[string]interface{}{}
 }
 
 func (d *RegistryDockerHub) GetNamespace() string {

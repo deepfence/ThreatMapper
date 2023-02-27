@@ -103,8 +103,9 @@ openapi: server
 
 	rm -rf golang_deepfence_sdk/client/*
 
+	docker pull openapitools/openapi-generator-cli:latest
 	docker run --rm \
-	-v $(PWD):/local openapitools/openapi-generator-cli generate \
+	-v $(PWD):/local openapitools/openapi-generator-cli:latest generate \
 	-i /local/openapi.yaml \
 	-g go \
 	-o /local/golang_deepfence_sdk/client \
@@ -119,6 +120,12 @@ openapi: server
 .PHONY: cli
 cli:
 	(cd $(DEEPFENCE_CTL) && make clean && make all)
+
+.PHONY: discovery
+discovery:
+	cd $(DEEPFENCE_AGENT_DIR)/tools/apache/scope &&\
+	make realclean && go mod vendor && make scope.tar
+	docker tag weaveworks/scope $(IMAGE_REPOSITORY)/deepfence_discovery_ce:$(DF_IMG_TAG)
 
 .PHONY: publish
 publish:

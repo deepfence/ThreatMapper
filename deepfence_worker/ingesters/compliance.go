@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -15,7 +14,6 @@ type ComplianceScanStatus struct {
 	ContainerName         string    `json:"container_name"`
 	HostName              string    `json:"host_name"`
 	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
-	Masked                string    `json:"masked"`
 	NodeID                string    `json:"node_id"`
 	NodeName              string    `json:"node_name"`
 	NodeType              string    `json:"node_type"`
@@ -28,7 +26,7 @@ type Compliance struct {
 	Type                  string `json:"type"`
 	TimeStamp             int64  `json:"time_stamp"`
 	Timestamp             string `json:"@timestamp"`
-	Masked                string `json:"masked"`
+	Masked                bool   `json:"masked"`
 	NodeId                string `json:"node_id"`
 	NodeType              string `json:"node_type"`
 	KubernetesClusterName string `json:"kubernetes_cluster_name"`
@@ -69,50 +67,17 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Compliance{node_id:row.node_id, test_number:row.test_number}) SET n+= row",
+	if _, err = tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:Compliance{node_id:row.node_id, test_number:row.test_number})
+		SET n+= row
+		WITH n, row.scan_id as scan_id
+		MERGE (m:ComplianceScan{node_id: scan_id})
+		MERGE (m) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": CompliancesToMaps(data)}); err != nil {
 		return err
 	}
-
-	if _, err = tx.Run("MATCH (n:Compliance) MERGE (m:ComplianceScan{node_id: n.scan_id, time_stamp: timestamp()}) MERGE (m) -[:DETECTED]-> (n)",
-		map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run("MATCH (n:Compliance) MERGE (m:ComplianceScan{node_id: n.scan_id}) MERGE (l:KCluster{node_id: n.kubernetes_cluster_id}) MERGE (m) -[:SCANNED]-> (l)",
-		map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run("MATCH (n:Node) WHERE n.kubernetes_cluster_id IS NOT NULL AND n.kubernetes_cluster_id <> '' MERGE (m:KCluster{node_id:n.kubernetes_cluster_id}) MERGE (m) -[:KHOSTS]-> (n)",
-		map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-func CommitFuncComplianceScanStatus(ns string, data []ComplianceScanStatus) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	// TODO: add query to commit for scan status
-	log.Error().Msg("Not implemented")
 
 	return tx.Commit()
 }

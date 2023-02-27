@@ -2,7 +2,7 @@ import { ComponentMeta } from '@storybook/react';
 import { useRef, useState } from 'react';
 
 import Button from '@/components/button/Button';
-import SlidingModal from '@/components/modal/SlidingModal';
+import SlidingModal, { ModalHeader } from '@/components/modal/SlidingModal';
 
 export default {
   title: 'Components/SlidingModal',
@@ -22,7 +22,7 @@ export const ModalWithTrigger = () => {
         Click to open
       </Button>
       <SlidingModal
-        title="Modal Title"
+        header="Modal Title"
         open={open}
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
@@ -37,13 +37,19 @@ export const TriggerFromLeft = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
+  const Header = () => (
+    <ModalHeader>
+      <div>Title</div>
+    </ModalHeader>
+  );
+
   return (
     <>
       <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
         Click to open
       </Button>
       <SlidingModal
-        title="Modal Title"
+        header={<Header />}
         open={open}
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
@@ -85,7 +91,7 @@ export const LongContent = () => {
         Click to open
       </Button>
       <SlidingModal
-        title="Modal Title"
+        header="Modal Title"
         open={open}
         onOpenChange={() => setOpen(false)}
         footer={<Footer />}

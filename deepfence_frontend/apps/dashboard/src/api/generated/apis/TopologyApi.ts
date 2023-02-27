@@ -18,9 +18,9 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ApiDocsGraphResult,
+  GraphTopologyFilters,
   IngestersReportIngestionData,
   ReportRawReport,
-  ReportersTopologyFilters,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -29,32 +29,32 @@ import {
     ApiDocsFailureResponseToJSON,
     ApiDocsGraphResultFromJSON,
     ApiDocsGraphResultToJSON,
+    GraphTopologyFiltersFromJSON,
+    GraphTopologyFiltersToJSON,
     IngestersReportIngestionDataFromJSON,
     IngestersReportIngestionDataToJSON,
     ReportRawReportFromJSON,
     ReportRawReportToJSON,
-    ReportersTopologyFiltersFromJSON,
-    ReportersTopologyFiltersToJSON,
 } from '../models';
 
 export interface GetContainersTopologyGraphRequest {
-    reportersTopologyFilters?: ReportersTopologyFilters;
+    graphTopologyFilters?: GraphTopologyFilters;
 }
 
 export interface GetHostsTopologyGraphRequest {
-    reportersTopologyFilters?: ReportersTopologyFilters;
+    graphTopologyFilters?: GraphTopologyFilters;
 }
 
 export interface GetKubernetesTopologyGraphRequest {
-    reportersTopologyFilters?: ReportersTopologyFilters;
+    graphTopologyFilters?: GraphTopologyFilters;
 }
 
 export interface GetPodsTopologyGraphRequest {
-    reportersTopologyFilters?: ReportersTopologyFilters;
+    graphTopologyFilters?: GraphTopologyFilters;
 }
 
 export interface GetTopologyGraphRequest {
-    reportersTopologyFilters?: ReportersTopologyFilters;
+    graphTopologyFilters?: GraphTopologyFilters;
 }
 
 export interface IngestAgentReportRequest {
@@ -75,7 +75,7 @@ export interface TopologyApiInterface {
     /**
      * Retrieve the full topology graph associated with the account from Containers
      * @summary Get Containers Topology Graph
-     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
+     * @param {GraphTopologyFilters} [graphTopologyFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
@@ -91,7 +91,7 @@ export interface TopologyApiInterface {
     /**
      * Retrieve the full topology graph associated with the account from Hosts
      * @summary Get Hosts Topology Graph
-     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
+     * @param {GraphTopologyFilters} [graphTopologyFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
@@ -107,7 +107,7 @@ export interface TopologyApiInterface {
     /**
      * Retrieve the full topology graph associated with the account from Kubernetes
      * @summary Get Kubernetes Topology Graph
-     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
+     * @param {GraphTopologyFilters} [graphTopologyFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
@@ -123,7 +123,7 @@ export interface TopologyApiInterface {
     /**
      * Retrieve the full topology graph associated with the account from Pods
      * @summary Get Pods Topology Graph
-     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
+     * @param {GraphTopologyFilters} [graphTopologyFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
@@ -139,7 +139,7 @@ export interface TopologyApiInterface {
     /**
      * Retrieve the full topology graph associated with the account
      * @summary Get Topology Graph
-     * @param {ReportersTopologyFilters} [reportersTopologyFilters] 
+     * @param {GraphTopologyFilters} [graphTopologyFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
@@ -215,7 +215,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
+            body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
@@ -254,7 +254,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
+            body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
@@ -293,7 +293,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
+            body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
@@ -332,7 +332,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
+            body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));
@@ -371,7 +371,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ReportersTopologyFiltersToJSON(requestParameters.reportersTopologyFilters),
+            body: GraphTopologyFiltersToJSON(requestParameters.graphTopologyFilters),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ApiDocsGraphResultFromJSON(jsonValue));

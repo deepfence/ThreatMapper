@@ -8,10 +8,13 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
+
+var client = &http.Client{Timeout: 10 * time.Second}
 
 func getImagesList(u, p, ns string) ([]model.ContainerImage, error) {
 	token, cookies, err := getAuthTokenAndCookies(u, p)
@@ -31,7 +34,6 @@ func getImagesList(u, p, ns string) ([]model.ContainerImage, error) {
 
 	req.Header.Add("Authorization", "JWT "+token)
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -43,7 +45,6 @@ func getImagesList(u, p, ns string) ([]model.ContainerImage, error) {
 			"\nresp.StatusCode: " + strconv.Itoa(resp.StatusCode))
 		return nil, err
 	}
-	log.Info().Msgf("respo: %+v", resp)
 
 	repo, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -71,7 +72,6 @@ func getAuthTokenAndCookies(u, p string) (string, []*http.Cookie, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", nil, err
@@ -100,10 +100,6 @@ func getAuthTokenAndCookies(u, p string) (string, []*http.Cookie, error) {
 
 	return dAuth["token"], resp.Cookies(), nil
 }
-
-// func getImageWithTags(repoB []byte, ns, token string, cookies []*http.Cookie) {
-// 	getRepoTags(repoB, ns, token, cookies)
-// }
 
 func getRepoTags(repoB []byte, ns, token string, cookies []*http.Cookie) ([]model.ContainerImage, error) {
 	var imagesWithTag []model.ContainerImage
@@ -136,7 +132,6 @@ func getRepoTag(repoName, ns, token string, cookies []*http.Cookie) (ImageTag, e
 
 	req.Header.Add("Authorization", "JWT "+token)
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return ImageTag{}, err
@@ -184,8 +179,3 @@ func getImageWithTags(imageName string, tag ImageTag) []model.ContainerImage {
 	}
 	return imageAndTag
 }
-
-// image {
-// 	name: asda
-// 	tag: latest
-// }

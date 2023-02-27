@@ -65,11 +65,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
         modelComplianceScanTriggerReq: {
           benchmark_types: controls ? controls.split(',') : [],
           filters: {
-            cloud_account_scan_filter: { fields_values: null },
-            kubernetes_cluster_scan_filter: { fields_values: null },
-            container_scan_filter: { fields_values: null },
-            host_scan_filter: { fields_values: null },
-            image_scan_filter: { fields_values: null },
+            cloud_account_scan_filter: { filter_in: null },
+            kubernetes_cluster_scan_filter: { filter_in: null },
+            container_scan_filter: { filter_in: null },
+            host_scan_filter: { filter_in: null },
+            image_scan_filter: { filter_in: null },
           },
           node_ids: nodeIds.map((nodeId) => ({
             node_id: nodeId,
@@ -244,13 +244,17 @@ const ComplianceTable = () => {
       columnHelper.accessor('id', {
         cell: (info) => info.getValue(),
         header: () => '#',
-        maxSize: 20,
+        maxSize: 40,
+        size: 30,
+        minSize: 30,
       }),
       columnHelper.accessor((row) => row.test_category, {
         id: 'category',
         cell: (info) => info.getValue(),
         header: () => <span>Category</span>,
-        maxSize: 50,
+        maxSize: 100,
+        size: 90,
+        minSize: 90,
       }),
       columnHelper.accessor('test_desc', {
         header: () => 'Description',

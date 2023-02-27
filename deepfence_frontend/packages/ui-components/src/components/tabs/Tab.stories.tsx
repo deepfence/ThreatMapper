@@ -61,3 +61,54 @@ const WithContent = () => {
   );
 };
 export const TabWithContent = WithContent.bind({});
+const WithBackgroundComp = () => {
+  const [tab, setTab] = useState('tab1');
+  return (
+    <Tab
+      value={tab}
+      defaultValue={tab}
+      tabs={tabs2}
+      onValueChange={(v) => setTab(v)}
+      variant={'tab'}
+    >
+      <div className="h-full p-2 dark:text-white">
+        You are now on {tabs2.find((t) => t.value === tab)?.label}
+      </div>
+    </Tab>
+  );
+};
+export const TabWithBackground = WithBackgroundComp.bind({});
+
+export const DefaultXS = Template.bind({});
+DefaultXS.args = {
+  tabs,
+  variant: 'tab',
+  size: 'xs',
+};
+export const DefaultSM = Template.bind({});
+DefaultSM.args = {
+  tabs,
+  variant: 'tab',
+  size: 'sm',
+};
+
+export const DefaultMD = Template.bind({});
+DefaultMD.args = {
+  tabs,
+  variant: 'tab',
+  size: 'md',
+};
+
+export const DefaultLG = Template.bind({});
+DefaultLG.args = {
+  tabs,
+  variant: 'tab',
+  size: 'lg',
+};
+
+export const DefaultXL = Template.bind({});
+DefaultXL.args = {
+  tabs,
+  variant: 'tab',
+  size: 'xl',
+};

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -39,7 +39,7 @@ func GetHTTPResponse(client *http.Client, method string, url string, body io.Rea
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return "", err
 		}
@@ -115,13 +115,13 @@ func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
 		if strings.HasPrefix(instanceID, "i-") && strings.HasPrefix(imageId, "ami-") {
 			return nil
 		}
-		sysVendor, err := ioutil.ReadFile("/sys/class/dmi/id/sys_vendor")
+		sysVendor, err := os.ReadFile("/sys/class/dmi/id/sys_vendor")
 		if err == nil {
 			if strings.Contains(string(sysVendor), "Amazon") {
 				return nil
 			}
 		}
-		productVersion, err := ioutil.ReadFile("/sys/class/dmi/id/product_version")
+		productVersion, err := os.ReadFile("/sys/class/dmi/id/product_version")
 		if err == nil {
 			if strings.Contains(string(productVersion), "amazon") {
 				return nil
@@ -195,13 +195,13 @@ func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
 
 func GetGoogleCloudMetadata(onlyValidate bool) (CloudMetadata, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
-	gcpMetadata := CloudMetadata{CloudProvider: "gcp"}
+	gcpMetadata := CloudMetadata{CloudProvider: "gcp", Label: "Google Cloud"}
 	resp, err := GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", googleCloudMetadataBaseUrl, "instance/?recursive=true&timeout_sec=1"), nil, map[string]string{"Metadata-Flavor": "Google"})
 	if err != nil {
 		return gcpMetadata, err
 	}
 	verifyIfGcp := func() error {
-		productName, err := ioutil.ReadFile("/sys/class/dmi/id/product_name")
+		productName, err := os.ReadFile("/sys/class/dmi/id/product_name")
 		if err != nil {
 			return incorrectMetadataError
 		}
@@ -251,9 +251,9 @@ func GetGoogleCloudMetadata(onlyValidate bool) (CloudMetadata, error) {
 
 func GetAzureMetadata(onlyValidate bool) (CloudMetadata, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
-	azureMetadata := CloudMetadata{CloudProvider: "azure"}
+	azureMetadata := CloudMetadata{CloudProvider: "azure", Label: "Azure"}
 	verifyIfAzure := func() error {
-		sysVendor, err := ioutil.ReadFile("/sys/class/dmi/id/sys_vendor")
+		sysVendor, err := os.ReadFile("/sys/class/dmi/id/sys_vendor")
 		if err != nil {
 			return incorrectMetadataError
 		}
@@ -291,7 +291,7 @@ func GetAzureMetadata(onlyValidate bool) (CloudMetadata, error) {
 
 func GetDigitalOceanMetadata(onlyValidate bool) (CloudMetadata, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
-	digitalOceanMetadata := CloudMetadata{CloudProvider: "digital_ocean"}
+	digitalOceanMetadata := CloudMetadata{CloudProvider: "digital_ocean", Label: "DigitalOcean"}
 	resp, err := GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", digitalOceanMetadaBaseUrl, "v1.json"), nil, map[string]string{"Metadata": "true"})
 	if err != nil {
 		return digitalOceanMetadata, err
@@ -305,7 +305,7 @@ func GetDigitalOceanMetadata(onlyValidate bool) (CloudMetadata, error) {
 		if dropletID == 0 {
 			return incorrectMetadataError
 		}
-		sysVendor, err := ioutil.ReadFile("/sys/class/dmi/id/sys_vendor")
+		sysVendor, err := os.ReadFile("/sys/class/dmi/id/sys_vendor")
 		if err != nil {
 			return incorrectMetadataError
 		}
