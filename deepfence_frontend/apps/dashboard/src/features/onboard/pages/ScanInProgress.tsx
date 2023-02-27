@@ -253,12 +253,14 @@ const ScanInProgress = () => {
           );
         },
         header: () => 'Type',
-        minSize: 200,
+        minSize: 50,
+        size: 70,
       }),
       columnHelper.accessor('node_id', {
         cell: (info) => info.getValue(),
         header: () => 'Name',
-        minSize: 500,
+        minSize: 125,
+        size: 150,
       }),
     ];
     if (scanType.startsWith('compliance')) {
@@ -266,14 +268,16 @@ const ScanInProgress = () => {
         columnHelper.accessor('benchmark_type', {
           cell: (info) => info.getValue()?.toUpperCase(),
           header: () => 'Control Type',
-          minSize: 200,
+          minSize: 50,
+          size: 70,
         }),
       );
     }
     columns.push(
       columnHelper.accessor((row) => row.status, {
         id: 'status',
-        minSize: 200,
+        minSize: 50,
+        size: 70,
         cell: (info) => {
           let color = null;
           let icon = null;
@@ -305,9 +309,9 @@ const ScanInProgress = () => {
     );
     columns.push(
       getRowExpanderColumn(columnHelper, {
-        minSize: 10,
-        size: 10,
-        maxSize: 10,
+        minSize: 30,
+        size: 30,
+        maxSize: 30,
         cell: ({ row }) => {
           if (!isScanFailed(row.original.status)) {
             return null;
@@ -418,22 +422,24 @@ const ScanInProgress = () => {
         </Button>
       </section>
       {expand ? (
-        <section className="mt-4 flex justify-center">
-          <Table
-            size="sm"
-            data={loaderData.data ?? []}
-            columns={columns}
-            getRowCanExpand={() => {
-              return true;
-            }}
-            renderSubComponent={() => {
-              return (
-                <p className="dark:text-gray-200 py-2 px-4 overflow-auto text-sm">
-                  Error message will be displayed here
-                </p>
-              );
-            }}
-          />
+        <section className="mt-4 flex justify-center ">
+          <div className="max-w-[900px]">
+            <Table
+              size="sm"
+              data={loaderData.data ?? []}
+              columns={columns}
+              getRowCanExpand={() => {
+                return true;
+              }}
+              renderSubComponent={() => {
+                return (
+                  <p className="dark:text-gray-200 py-2 px-4 overflow-auto text-sm">
+                    Error message will be displayed here
+                  </p>
+                );
+              }}
+            />
+          </div>
         </section>
       ) : null}
     </>

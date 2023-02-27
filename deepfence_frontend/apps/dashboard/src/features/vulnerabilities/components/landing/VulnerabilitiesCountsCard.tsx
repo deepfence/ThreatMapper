@@ -38,13 +38,20 @@ const MostExploitableChartVertial = ({
       {
         name: 'Vulnerabilities',
         type: 'pie',
-        radius: ['85%', '100%'],
+        radius: ['80%', '100%'],
         top: '10%',
         avoidLabelOverlap: true,
         label: {
           show: false,
           position: 'center',
         },
+        color: [
+          VULNERABILITY_SEVERITY_COLORS['critical'],
+          VULNERABILITY_SEVERITY_COLORS['high'],
+          VULNERABILITY_SEVERITY_COLORS['medium'],
+          VULNERABILITY_SEVERITY_COLORS['low'],
+          VULNERABILITY_SEVERITY_COLORS['unknown'],
+        ],
       },
     ],
   };
@@ -119,7 +126,7 @@ export const VulnerabilitiesCountsCard = ({
             </div>
           </div>
           <div>
-            <div className="flex flex-wrap max-w-[200px] justify-center">
+            <div className="flex flex-wrap max-w-[250px] justify-center">
               {getObjectKeys(data.severityBreakdown).map((severity) => {
                 return (
                   <div className="flex flex-col p-4" key={severity}>
