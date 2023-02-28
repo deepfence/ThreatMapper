@@ -115,14 +115,14 @@ type CloudComplianceScanListResp struct {
 
 type ScanResultsMaskRequest struct {
 	ScanID                   string   `json:"scan_id" validate:"required" required:"true"`
-	ResultIDs                []string `json:"result_ids" validate:"required,gt=0,dive,min=3" required:"true"`
+	ResultIDs                []string `json:"result_ids" validate:"required,gt=0,dive,min=1" required:"true"`
 	ScanType                 string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	MaskAcrossHostsAndImages bool     `json:"mask_across_hosts_and_images"`
 }
 
 type ScanResultsActionRequest struct {
 	ScanID    string   `json:"scan_id" validate:"required" required:"true"`
-	ResultIDs []string `json:"result_ids" validate:"required,gt=0,dive,min=3" required:"true"`
+	ResultIDs []string `json:"result_ids" validate:"required,gt=0,dive,min=1" required:"true"`
 	ScanType  string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	//utils.Neo4jScanType
 }
@@ -138,7 +138,7 @@ type ScanActionRequest struct {
 }
 
 type NodesInScanResultRequest struct {
-	ResultIDs []string `json:"result_ids" validate:"required" required:"true"`
+	ResultIDs []string `json:"result_ids" validate:"required,gt=0,dive,min=1" required:"true"`
 	ScanType  string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 }
 
