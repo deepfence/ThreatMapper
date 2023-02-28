@@ -33,6 +33,7 @@ import { module as secretScanConfigure } from '@/features/onboard/pages/SecretSc
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
+import { module as posture } from '@/features/postures/pages/Posture';
 import { Registries } from '@/features/registries/pages/Registries';
 import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
@@ -215,6 +216,11 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/most-exploitable',
         ...mostExploitableVulnerabilities,
         meta: { title: 'Most Exploitable Vulnerabilities' },
+      },
+      {
+        path: 'posture',
+        ...posture,
+        meta: { title: 'Posture' },
       },
     ],
   },

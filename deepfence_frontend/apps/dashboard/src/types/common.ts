@@ -4,3 +4,5 @@ export type VulnerabilitySeverityType =
   | 'low'
   | 'medium'
   | 'unknown';
+
+export type PostureSeverityType = 'alarm' | 'info' | 'skip' | 'ok';
