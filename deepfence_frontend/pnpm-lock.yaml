@@ -4,8 +4,11 @@ importers:
 
   .:
     specifiers:
+      moment: ^2.29.4
       prettier: latest
       turbo: latest
+    dependencies:
+      moment: 2.29.4
     devDependencies:
       prettier: 2.8.4
       turbo: 1.8.2
@@ -11609,6 +11612,10 @@ packages:
       pkg-types: 1.0.1
       ufo: 1.0.1
     dev: true
+
+  /moment/2.29.4:
+    resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
+    dev: false
 
   /move-concurrently/1.0.1:
     resolution: {integrity: sha512-hdrFxZOycD/g6A6SoI2bB5NA/5NEqD0569+S47WZhPvm46sD50ZHdYaFmnua5lndde9rCHGjmfK7Z8BuCt/PcQ==}
