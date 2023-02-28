@@ -215,6 +215,13 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/most-exploitable',
         ...mostExploitableVulnerabilities,
         meta: { title: 'Most Exploitable Vulnerabilities' },
+        children: [
+          {
+            path: ':cveId',
+            ...vulnerabilityDetails,
+            meta: { title: 'Most Exploitable Vulnerability Details' },
+          },
+        ],
       },
     ],
   },

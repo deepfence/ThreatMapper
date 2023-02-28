@@ -127,6 +127,7 @@ export function getSearchApiClient() {
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
+    searchVulnerabilityCount: searchApi.countVulnerabilities.bind(searchApi),
   };
 }
 
