@@ -119,7 +119,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindR
 	secretScanLogDoc["kubernetes_cluster_name"] = controlArgs["kubernetes_cluster_name"]
 	secretScanLogDoc["host_name"] = hostName
 	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
-	secretScanLogDoc["masked"] = "false"
+	// secretScanLogDoc["masked"] = "false"
 	secretScanLogDoc["scan_status"] = "IN_PROGRESS"
 	secretScanLogDoc["time_stamp"] = getTimestamp()
 	secretScanLogDoc["@timestamp"] = getCurrentTime()
@@ -167,7 +167,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindR
 		secretScanDoc["node_id"] = controlArgs["node_id"]
 		secretScanDoc["node_type"] = controlArgs["node_type"]
 		secretScanDoc["node_name"] = hostName
-		secretScanDoc["masked"] = "false"
+		// secretScanDoc["masked"] = "false"
 		secretScanDoc["host_name"] = hostName
 		secretScanDoc["scan_id"] = controlArgs["scan_id"]
 		secretScanDoc["container_name"] = controlArgs["container_name"]
