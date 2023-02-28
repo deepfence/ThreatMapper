@@ -40,7 +40,6 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 
 func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskRequest, value bool) error {
 	// (m:VulnerabilityScan) - [r:DETECTED] -> (n:Cve)
-	// update fields of "DETECTED" edges
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -57,16 +56,19 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	}
 	defer tx.Close()
 
-	_, err = tx.Run(`
+	if req.MaskAcrossHostsAndImages {
+		_, err = tx.Run(`
 		MATCH (m:`+string(req.ScanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
 		SET r.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "scan_id": req.ScanID})
+	} else {
+		_, err = tx.Run(`
+		MATCH (m:`+string(req.ScanType)+`) -[:DETECTED]-> (n)
+		WHERE n.node_id IN $node_ids
+		SET n.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+	}
 	if err != nil {
 		return err
-	}
-
-	if req.MaskAcrossHostsAndImages {
-
 	}
 	return tx.Commit()
 }

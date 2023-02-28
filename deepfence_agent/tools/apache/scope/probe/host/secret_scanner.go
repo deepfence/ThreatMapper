@@ -112,16 +112,8 @@ func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) 
 
 func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindRequest, controlArgs map[string]string, hostName string) {
 	var secretScanLogDoc = make(map[string]interface{})
-	secretScanLogDoc["node_id"] = controlArgs["node_id"]
-	secretScanLogDoc["node_type"] = controlArgs["node_type"]
-	secretScanLogDoc["node_name"] = hostName
-	secretScanLogDoc["container_name"] = controlArgs["container_name"]
-	secretScanLogDoc["kubernetes_cluster_name"] = controlArgs["kubernetes_cluster_name"]
-	secretScanLogDoc["host_name"] = hostName
 	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
-	// secretScanLogDoc["masked"] = "false"
 	secretScanLogDoc["scan_status"] = "IN_PROGRESS"
-	secretScanLogDoc["time_stamp"] = getTimestamp()
 	secretScanLogDoc["@timestamp"] = getCurrentTime()
 
 	byteJson, err := json.Marshal(secretScanLogDoc)
@@ -144,13 +136,11 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindR
 			}
 		}
 	}
-	timestamp := getTimestamp()
 	currTime := getCurrentTime()
 	if err != nil {
 		secretScanLogDoc["scan_status"] = "ERROR"
 		secretScanLogDoc["scan_message"] = err.Error()
-		secretScanLogDoc["time_stamp"] = getTimestamp()
-		secretScanLogDoc["@timestamp"] = getCurrentTime()
+		secretScanLogDoc["@timestamp"] = currTime
 		byteJson, err = json.Marshal(secretScanLogDoc)
 		if err != nil {
 			fmt.Println("Error marshalling json: ", err)
@@ -164,15 +154,8 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindR
 	}
 	for _, secret := range res.Secrets {
 		var secretScanDoc = make(map[string]interface{})
-		secretScanDoc["node_id"] = controlArgs["node_id"]
-		secretScanDoc["node_type"] = controlArgs["node_type"]
-		secretScanDoc["node_name"] = hostName
-		// secretScanDoc["masked"] = "false"
-		secretScanDoc["host_name"] = hostName
+		secretScanDoc["masked"] = false
 		secretScanDoc["scan_id"] = controlArgs["scan_id"]
-		secretScanDoc["container_name"] = controlArgs["container_name"]
-		secretScanDoc["kubernetes_cluster_name"] = controlArgs["kubernetes_cluster_name"]
-		secretScanDoc["time_stamp"] = timestamp
 		secretScanDoc["@timestamp"] = currTime
 		values := reflect.ValueOf(*secret)
 		typeOfS := values.Type()
@@ -198,7 +181,6 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindR
 		secretScanLogDoc["scan_status"] = "ERROR"
 		secretScanLogDoc["scan_message"] = err.Error()
 	}
-	secretScanLogDoc["time_stamp"] = timestamp
 	secretScanLogDoc["@timestamp"] = currTime
 	byteJson, err = json.Marshal(secretScanLogDoc)
 	if err != nil {
