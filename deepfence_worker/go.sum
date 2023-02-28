@@ -339,8 +339,8 @@ github.com/deepfence/SecretScanner v1.2.1-0.20230214033423-8a950b2b3f38 h1:lHVfx
 github.com/deepfence/SecretScanner v1.2.1-0.20230214033423-8a950b2b3f38/go.mod h1:4jjUsmJVc+rnGRyBzCTVkAzgVJ/rV0xNvP0L2+U7eYc=
 github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501 h1:fLO6l5BJzXlokDbdwBDBo9l+QpGAFpG1pxXmaR7ilwQ=
 github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501/go.mod h1:/8OcLJU0WnWZ2dBDIzKO4nrhlX3MMoT+kvwCrUwk3ws=
-github.com/deepfence/package-scanner v1.2.4-0.20230227182202-dff057b3607a h1:jRhvqqa2qz0EeuKOzHDUqJiErF5Tb+njiHDMACITTmM=
-github.com/deepfence/package-scanner v1.2.4-0.20230227182202-dff057b3607a/go.mod h1:en+gwafof4bmdaa63qy5Kpe5F0OFUFQn1kxULdLI/+A=
+github.com/deepfence/package-scanner v1.2.4-0.20230228081619-d7bced3d2e40 h1:vROluDWTtpRark2S4LjGKALgP2pxqVIDFayvdeG3Bi0=
+github.com/deepfence/package-scanner v1.2.4-0.20230228081619-d7bced3d2e40/go.mod h1:en+gwafof4bmdaa63qy5Kpe5F0OFUFQn1kxULdLI/+A=
 github.com/deepfence/vessel v0.9.2 h1:j7Q3BayywHFA6IUvuvnZ+6QiJHY5ElWAcSaylvQ6vOQ=
 github.com/deepfence/vessel v0.9.2/go.mod h1:Ifxpwywfi7dhn5NdWc4AdwVteG/kmvkGD+avxeXYvcI=
 github.com/denverdino/aliyungo v0.0.0-20190125010748-a747050bb1ba/go.mod h1:dV8lFg6daOBZbT6/BDGIz6Y3WFGn8juu6G+CQ6LHtl0=
