@@ -34,8 +34,8 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 
 	r, err := tx.Run(`
 	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
-	WITH coalesce(n.kubernetes_cluster_name, '') <> '' AS is_kub, n, m, r
-	RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_name ELSE n.cloud_region END, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid`, nil)
+	WITH coalesce(n.kubernetes_cluster_id, '') <> '' AS is_kub, n, m, r
+	RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_id ELSE n.cloud_region END, n.node_id, r.left_pid, m.cloud_provider, m.cloud_region, m.node_id, r.right_pid`, nil)
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -101,7 +101,7 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WHERE n.kubernetes_cluster_name = ""
+		WHERE n.kubernetes_cluster_id = ""
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
 		RETURN n.cloud_provider, n.cloud_region`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
@@ -173,15 +173,15 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WITH coalesce(n.kubernetes_cluster_name, '') <> '' AS is_kub, n
+		WITH coalesce(n.kubernetes_cluster_id, '') <> '' AS is_kub, n
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
 		AND CASE WHEN is_kub THEN
-		    CASE WHEN $kubernetes IS NULL THEN [1] ELSE n.kubernetes_cluster_name IN $kubernetes END
+		    CASE WHEN $kubernetes IS NULL THEN [1] ELSE n.kubernetes_cluster_id IN $kubernetes END
 		ELSE
 		    CASE WHEN $regions IS NULL THEN [1] ELSE n.cloud_region IN $regions END
 		END
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
-		RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_name ELSE n.cloud_region END, n.node_id`,
+		RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_id ELSE n.cloud_region END, n.node_id`,
 		filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions, "kubernetes": cloud_kubernetes}))
 	if err != nil {
 		return res, err

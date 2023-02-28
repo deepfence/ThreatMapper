@@ -263,6 +263,8 @@ type Vulnerability struct {
 	ExploitPOC                 string   `json:"exploit_poc" required:"true"`
 	Masked                     bool     `json:"masked" required:"true"`
 	UpdatedAt                  int64    `json:"updated_at" required:"true"`
+	ParsedAttackVector         string   `json:"parsed_attack_vector" required:"true"`
+	HasLiveConnection          bool     `json:"has_live_connection" required:"true"`
 }
 
 func (Vulnerability) NodeType() string {
