@@ -23,6 +23,7 @@ func ComputeThreat(msg *message.Message) error {
 	}
 	defer tx.Close()
 
+	// Following cypher queries applies to Vulnerabilities
 	if _, err = tx.Run(`
 		MATCH (v:Vulnerability)
 		WITH v, CASE WHEN v.cve_attack_vector =~ ".*AV:N.*" THEN 1 ELSE 0 END as score
@@ -31,42 +32,27 @@ func ComputeThreat(msg *message.Message) error {
 		return err
 	}
 
-	// First OPTIONAL applies for Containers & Images
-	// Second OPTIONAL applies for Hosts
+	// Following cypher request applies to Images & Containers
 	if _, err = tx.Run(`
-		MATCH (s:VulnerabilityScan) -[r:SCANNED]- (n)
-		WITH max(s.updated_at) as latest, n
-		MATCH (v:Vulnerability) -[:DETECTED]- (m:VulnerabilityScan{updated_at: latest}) -[:SCANNED]- (n)
-		OPTIONAL MATCH (n) -[o:HOSTS]- (:Node) <-[r:CONNECTS]- (:Node{node_id:"in-the-internet"})
-		SET v.exploitability_score = v.exploitability_score + CASE WHEN r IS NULL OR o IS NULL OR v.exploitability_score = 0 THEN 0 ELSE 1 END
-		WITH n, v
-		OPTIONAL MATCH (n) <-[r:CONNECTS]- (:Node{node_id:"in-the-internet"})
-		SET v.exploitability_score = v.exploitability_score + CASE WHEN r IS NULL OR v.exploitability_score = 0 THEN 0 ELSE 1 END`,
+		MATCH (n:Node{node_id:"in-the-internet"}) -[:CONNECTS]-> (m:Node)
+		WITH DISTINCT m
+		MATCH (m) -[:HOSTS]-> (o) <-[:SCANNED]- (s)
+		WITH DISTINCT o, max(s.updated_at) as latest, s
+		MATCH (s) -[:DETECTED]-> (v:Vulnerability) 
+		SET v.exploitability_score = v.exploitability_score + CASE WHEN v.exploitability_score = 0 THEN 0 ELSE 1 END`,
 		map[string]interface{}{}); err != nil {
 		return err
 	}
 
+	// Following cypher request applies to Hosts
 	if _, err = tx.Run(`
-		MATCH (n:Secret)
-		SET n.exploitability_score = 0`, map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
-		MATCH (n:Malware)
-		SET n.exploitability_score = 0`, map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
-		MATCH (n:Compliance)
-		SET n.exploitability_score = 0`, map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
-		MATCH (n:CloudCompliance)
-		SET n.exploitability_score = 0`, map[string]interface{}{}); err != nil {
+		MATCH (n:Node{node_id:"in-the-internet"}) -[:CONNECTS]-> (m:Node)
+		WITH DISTINCT m
+		MATCH (m) <-[:SCANNED]- (s)
+		WITH DISTINCT m, max(s.updated_at) as latest, s
+		MATCH (s) -[:DETECTED]-> (v:Vulnerability) 
+		SET v.exploitability_score = v.exploitability_score + CASE WHEN v.exploitability_score = 0 THEN 0 ELSE 1 END`,
+		map[string]interface{}{}); err != nil {
 		return err
 	}
 
