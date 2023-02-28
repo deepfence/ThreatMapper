@@ -23,20 +23,25 @@ func ComputeThreat(msg *message.Message) error {
 	}
 	defer tx.Close()
 
-	// First OPTIONAL applies for Hosts
-	// Second OPTIONAL applies for Containers & Images
 	if _, err = tx.Run(`
-		MATCH (n:Vulnerability) -[:DETECTED]- (m)
-		SET n.exploitability_score = 0
-		WITH max(m.updated_at) as latest, m, n
-		WITH n, CASE WHEN n.cve_attack_vector =~ ".*AV:N.*" THEN 1 ELSE 0 END as score
-		OPTIONAL MATCH (m) -[:SCANNED]- (l:Node) <-[r:CONNECTS]- (o{node_id:"in-the-internet"})
-		WITH m, n, score, CASE WHEN r IS NOT NULL THEN 2 ELSE 1 END as is_incoming
-		SET n.exploitability_score = n.exploitability_score + score * is_incoming
-		WITH m, n, score
-		OPTIONAL MATCH (m) -[:SCANNED]- (l) -[:HOSTS]- (n:Node) <-[r:CONNECTS]- (o{node_id:"in-the-internet"})
-		WITH n, score, CASE WHEN r IS NOT NULL THEN 2 ELSE 1 END as is_incoming
-		SET n.exploitability_score = n.exploitability_score + score * is_incoming`,
+		MATCH (v:Vulnerability)
+		WITH v, CASE WHEN v.cve_attack_vector =~ ".*AV:N.*" THEN 1 ELSE 0 END as score
+		SET v.exploitability_score = score`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	// First OPTIONAL applies for Containers & Images
+	// Second OPTIONAL applies for Hosts
+	if _, err = tx.Run(`
+		MATCH (s:VulnerabilityScan) -[r:SCANNED]- (n)
+		WITH max(s.updated_at) as latest, n
+		MATCH (v:Vulnerability) -[:DETECTED]- (m:VulnerabilityScan{updated_at: latest}) -[:SCANNED]- (n)
+		OPTIONAL MATCH (n) -[o:HOSTS]- (:Node) <-[r:CONNECTS]- (:Node{node_id:"in-the-internet"})
+		SET v.exploitability_score = v.exploitability_score + CASE WHEN r IS NULL OR o IS NULL OR v.exploitability_score = 0 THEN 0 ELSE 1 END
+		WITH n, v
+		OPTIONAL MATCH (n) <-[r:CONNECTS]- (:Node{node_id:"in-the-internet"})
+		SET v.exploitability_score = v.exploitability_score + CASE WHEN r IS NULL OR v.exploitability_score = 0 THEN 0 ELSE 1 END`,
 		map[string]interface{}{}); err != nil {
 		return err
 	}
