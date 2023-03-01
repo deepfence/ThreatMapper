@@ -228,10 +228,15 @@ type Secret struct {
 	MatchedContent        string `json:"matched_content" required:"true"`
 	Masked                bool   `json:"masked" required:"true"`
 	UpdatedAt             int64  `json:"updated_at" required:"true"`
+	RuleId                string `json:"rule_id" required:"true"`
 }
 
 func (Secret) NodeType() string {
 	return "Secret"
+}
+
+func (Secret) ExtendedField() string {
+	return "rule_id"
 }
 
 func (v Secret) GetCategory() string {
@@ -276,6 +281,10 @@ func (Vulnerability) NodeType() string {
 	return "Vulnerability"
 }
 
+func (Vulnerability) ExtendedField() string {
+	return ""
+}
+
 func (v Vulnerability) GetCategory() string {
 	return v.Cve_severity
 }
@@ -299,6 +308,10 @@ type Malware struct {
 
 func (Malware) NodeType() string {
 	return "Malware"
+}
+
+func (Malware) ExtendedField() string {
+	return ""
 }
 
 func (v Malware) GetCategory() string {
@@ -329,6 +342,10 @@ type Compliance struct {
 
 func (Compliance) NodeType() string {
 	return "Compliance"
+}
+
+func (Compliance) ExtendedField() string {
+	return ""
 }
 
 func (v Compliance) GetCategory() string {
@@ -365,6 +382,10 @@ type CloudCompliance struct {
 
 func (CloudCompliance) NodeType() string {
 	return "CloudCompliance"
+}
+
+func (CloudCompliance) ExtendedField() string {
+	return ""
 }
 
 func (v CloudCompliance) GetCategory() string {
