@@ -49,6 +49,7 @@ import { DFLink } from '@/components/DFLink';
 import { POSTURE_SEVERITY_COLORS } from '@/constants/charts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { ApiError, makeRequest } from '@/utils/api';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 enum ActionEnumType {
   START_SCAN = 'start_scan',
@@ -362,6 +363,14 @@ const ActionDropdown = ({
   id: string;
   label?: string;
 }) => {
+  const { navigate } = usePageNavigation();
+  const onTableAction = (action: string) => () => {
+    switch (action) {
+      case ActionEnumType.VIEW_SCAN_RESULT:
+        navigate(`/posture/scan-results/${id}`);
+        break;
+    }
+  };
   return (
     <>
       <Dropdown
@@ -369,7 +378,10 @@ const ActionDropdown = ({
         align="end"
         content={
           <>
-            <DropdownItem className="text-sm">
+            <DropdownItem
+              className="text-sm"
+              onClick={onTableAction(ActionEnumType.VIEW_SCAN_RESULT)}
+            >
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
                 <IconContext.Provider
                   value={{ className: 'text-gray-700 dark:text-gray-400' }}

@@ -8,7 +8,7 @@ import { CircleSpinner } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
-export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type SizeType = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export const Loader = ({
   color,
@@ -76,6 +76,7 @@ export const buttonCva = cva(
   {
     variants: {
       size: {
+        xxs: 'text-xs px-2 py-1',
         xs: 'text-xs px-3 py-2',
         sm: 'text-sm px-3 py-2',
         md: 'text-base px-5 py-2.5',
@@ -245,6 +246,7 @@ interface ButtonProps
 const iconCva = cva('', {
   variants: {
     size: {
+      xxs: 'w-3 h-3',
       xs: 'w-3 h-3',
       sm: 'w-3.5 h-3.5',
       md: 'w-4 h-4',
@@ -263,6 +265,11 @@ const iconCva = cva('', {
   },
   compoundVariants: [
     {
+      size: ['xxs'],
+      withStartIcon: true,
+      className: 'mr-[8px]',
+    },
+    {
       size: ['xs', 'sm'],
       withStartIcon: true,
       className: 'mr-[10.4px]',
@@ -278,6 +285,11 @@ const iconCva = cva('', {
       className: 'mr-[15px]',
     },
     {
+      size: ['xxs'],
+      withLoader: true,
+      className: 'mr-[8px]',
+    },
+    {
       size: ['xs', 'sm'],
       withLoader: true,
       className: 'mr-[10.4px]',
@@ -292,7 +304,11 @@ const iconCva = cva('', {
       withLoader: true,
       className: 'mr-[15px]',
     },
-
+    {
+      size: ['xxs'],
+      withEndIcon: true,
+      className: 'ml-[8px]',
+    },
     {
       size: ['xs', 'sm'],
       withEndIcon: true,

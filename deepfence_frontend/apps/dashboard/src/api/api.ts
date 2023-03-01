@@ -87,6 +87,8 @@ export function getComplianceApiClient() {
     startComplianceScan: complianceApi.startComplianceScan.bind(complianceApi),
     statusComplianceScan: complianceApi.statusComplianceScan.bind(complianceApi),
     resultComplianceScan: complianceApi.resultsComplianceScan.bind(complianceApi),
+    resultCountComplianceScan:
+      complianceApi.countResultsComplianceScan.bind(complianceApi),
   };
 }
 
@@ -97,6 +99,8 @@ export function getCloudComplianceApiClient() {
       cloudScannerApi.statusCloudComplianceScan.bind(cloudScannerApi),
     resultCloudComplianceScan:
       cloudScannerApi.resultsCloudComplianceScan.bind(cloudScannerApi),
+    resultCountCloudComplianceScan:
+      cloudScannerApi.countResultsCloudComplianceScan.bind(cloudScannerApi),
   };
 }
 
