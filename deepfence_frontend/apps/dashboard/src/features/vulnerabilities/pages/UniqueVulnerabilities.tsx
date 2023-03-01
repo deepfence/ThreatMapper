@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { toNumber } from 'lodash-es';
+import { capitalize, toNumber } from 'lodash-es';
 import { Suspense, useMemo } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowSmLeft, HiExternalLink } from 'react-icons/hi';
@@ -250,7 +250,7 @@ const UniqueVulnerabilities = () => {
           >
             <>
               <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg">
-                <div className="w-5 h-5">
+                <div className="w-4 h-4">
                   <VulnerabilityIcon />
                 </div>
               </div>
@@ -301,7 +301,7 @@ const UniqueVulnerabilities = () => {
       columnHelper.accessor('cveAttackVector', {
         enableSorting: false,
         enableResizing: false,
-        cell: (info) => info.getValue(),
+        cell: (info) => capitalize(info.getValue()),
         header: () => 'Attack Vector',
         minSize: 100,
         size: 120,
@@ -383,7 +383,7 @@ const UniqueVulnerabilities = () => {
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
           UNIQUE VULNERABILITIES
         </span>
-        <span className="ml-2">
+        <span className="ml-2 max-h-5 flex items-center">
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
         </span>
       </div>
