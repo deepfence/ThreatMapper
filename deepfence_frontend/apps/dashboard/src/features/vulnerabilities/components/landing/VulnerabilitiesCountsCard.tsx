@@ -88,7 +88,7 @@ export const VulnerabilitiesCountsCard = ({
       <div className="p-2 flex">
         <h4 className="text-gray-900 text-sm dark:text-white truncate">{title}</h4>
         <DFLink
-          to={'/vulnerability/most-exploitable'}
+          to={'/vulnerability/unique-vulnerabilities'}
           className="shrink-0 flex hover:no-underline ml-auto mr-2"
         >
           <span className="text-xs text-blue-600 dark:text-blue-500">Details</span>

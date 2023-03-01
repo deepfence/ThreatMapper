@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { groupBy, toNumber } from 'lodash-es';
+import { toNumber } from 'lodash-es';
 import { Suspense, useMemo } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowSmLeft, HiExternalLink } from 'react-icons/hi';
@@ -22,7 +22,8 @@ import {
 import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  GetAllNodesInScanResultScanTypeEnum,
+  ModelNodesInScanResultRequestScanTypeEnum,
+  ModelScanResultBasicNode,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
@@ -72,12 +73,6 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
   };
 
   const page = getPageFromSearchParams(searchParams);
-
-  let offsetSize = page * PAGE_SIZE;
-  if (offsetSize > 1000) {
-    offsetSize = (page - 1) * PAGE_SIZE;
-  }
-
   const result = await makeRequest({
     apiFunction: getSearchApiClient().searchVulnerabilities,
     apiArgs: [
@@ -98,7 +93,7 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
             in_field_filter: null,
           },
           window: {
-            offset: offsetSize,
+            offset: page * PAGE_SIZE,
             size: PAGE_SIZE,
           },
         },
@@ -128,16 +123,10 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
           node_filter: {
             filters: {
               contains_filter: {
-                filter_in: {
-                  exploitability_score: [1, 2, 3],
-                },
+                filter_in: {},
               },
               order_filter: {
-                order_fields: [
-                  'exploitability_score',
-                  'cve_severity',
-                  'vulnerability_score',
-                ],
+                order_fields: [],
               },
               match_filter: {
                 filter_in: {},
@@ -146,8 +135,8 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
             in_field_filter: null,
           },
           window: {
-            offset: 0,
-            size: 1000,
+            offset: page * PAGE_SIZE,
+            size: 10 * PAGE_SIZE,
           },
         },
       },
@@ -167,13 +156,15 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
   if (ApiError.isApiError(countsResult)) {
     throw countsResult.value();
   }
-  debugger;
+
   const allNodes = await makeRequest({
     apiFunction: getScanResultsApiClient().getAllNodesInScanResults,
     apiArgs: [
       {
-        resultId: result.map((res) => res.cve_id),
-        scanType: GetAllNodesInScanResultScanTypeEnum.VulnerabilityScan,
+        modelNodesInScanResultRequest: {
+          result_ids: result.map((res) => res.cve_id),
+          scan_type: ModelNodesInScanResultRequestScanTypeEnum.VulnerabilityScan,
+        },
       },
     ],
     errorHandler: async (r) => {
@@ -188,14 +179,27 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
     },
   });
 
+  if (ApiError.isApiError(allNodes)) {
+    throw allNodes.value();
+  }
+
   if (result === null) {
     return results;
   }
-  debugger;
-  const groupByNodes = groupBy(allNodes, 'name');
-  console.log(groupByNodes);
+  const groupByNodes = allNodes.reduce((acc, data) => {
+    const { result_id, ...rest } = data;
+    acc[result_id] = rest as ModelScanResultBasicNode;
+    return acc;
+  }, {} as { [k: string]: ModelScanResultBasicNode });
+
   results.vulnerabilities = result
     .map((res) => {
+      const resources = groupByNodes[res.cve_id];
+      const resourcesLen = resources?.basic_nodes?.length ?? 0;
+      let resourcesAsset = resources?.basic_nodes?.[0]?.name ?? '';
+      if (resourcesAsset && resourcesLen > 1) {
+        resourcesAsset = `${resourcesAsset} + ${resourcesLen - 1} more`;
+      }
       return {
         cveId: res.cve_id,
         cveDescription: res.cve_description,
@@ -204,7 +208,7 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
         cveSeverity: res.cve_severity,
         cveCVSSScore: res.cve_cvss_score,
         cveAttackVector: res.parsed_attack_vector,
-        // cveAssetAffected: groupByNodes[res.cve_id][0].,
+        cveAssetAffected: resourcesAsset,
         active: res.has_live_connection,
         exploitPoc: res.exploit_poc,
       };
@@ -377,7 +381,7 @@ const UniqueVulnerabilities = () => {
           </IconContext.Provider>
         </DFLink>
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          MOST EXPLOITABLE VULNERABILITIES
+          UNIQUE VULNERABILITIES
         </span>
         <span className="ml-2">
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
